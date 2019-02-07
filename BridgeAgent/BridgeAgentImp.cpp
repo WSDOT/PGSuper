@@ -1191,11 +1191,57 @@ void CBridgeAgentImp::ValidatePointLoads()
             upl.m_LoadCase = Project2BridgeLoads(pPointLoad->m_LoadCase);
             upl.m_Description = pPointLoad->m_Description;
 
+            CString strSpan;
+            if (pPointLoad->m_SpanKey.spanIndex == ALL_SPANS)
+            {
+               strSpan.Format(_T("%s"), _T("All Spans"));
+            }
+            else
+            {
+               if (pPointLoad->m_bLoadOnCantilever[pgsTypes::metStart])
+               {
+                  strSpan.Format(_T("Span %d Start Cantilever"), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex));
+               }
+               else if (pPointLoad->m_bLoadOnCantilever[pgsTypes::metEnd])
+               {
+                  strSpan.Format(_T("Span %d End Cantilever"), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex));
+               }
+               else
+               {
+                  strSpan.Format(_T("Span %d"), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex));
+               }
+            }
+
+            CString strGirder;
+            if (pPointLoad->m_SpanKey.girderIndex == ALL_GIRDERS)
+            {
+               strGirder.Format(_T("%s"), _T("All Girders"));
+            }
+            else
+            {
+               strGirder.Format(_T("Girder %s"), LABEL_GIRDER(pPointLoad->m_SpanKey.girderIndex));
+            }
+
+            CString strLocation;
+            if (pPointLoad->m_Fractional)
+            {
+               strLocation.Format(_T("%s"), FormatPercentage(pPointLoad->m_Location));
+            }
+            else
+            {
+               GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+               strLocation.Format(_T("%s"), FormatDimension(pPointLoad->m_Location, pDisplayUnits->GetSpanLengthUnit()));
+            }
+
+            CString strLabel;
+            strLabel.Format(_T("%s, %s, %s"), strSpan, strGirder, strLocation);
+
             // only a light warning for zero loads - don't bail out
             if (IsZero(pPointLoad->m_Magnitude))
             {
+
                CString strMsg;
-               strMsg.Format(_T("Magnitude of point load is zero"));
+               strMsg.Format(_T("Magnitude of point load is zero - %s"),strLabel);
                pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
                pStatusCenter->Add(pStatusItem);
             }
@@ -1212,7 +1258,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                if ( !pPier->HasCantilever() )
                {
                   CString strMsg;
-                  strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored."));
+                  strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored. - %s"), strLabel);
                   pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
                   pStatusCenter->Add(pStatusItem);
                   continue;
@@ -1225,7 +1271,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                if ( !pPier->HasCantilever() )
                {
                   CString strMsg;
-                  strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored."));
+                  strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored. - %s"),strLabel);
                   pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
                   pStatusCenter->Add(pStatusItem);
                   continue;
@@ -1252,7 +1298,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                else
                {
                   CString strMsg;
-                  strMsg.Format(_T("Fractional location value for point load is out of range. Value must range from 0.0 to 1.0. This load will be ignored."));
+                  strMsg.Format(_T("Fractional location value for point load is out of range. Value must range from 0.0 to 1.0. This load will be ignored. - %s"),strLabel);
                   pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
                   pStatusCenter->Add(pStatusItem);
                   continue;
@@ -1269,7 +1315,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                   else
                   {
                      CString strMsg;
-                     strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to start cantilever length. This load will be ignored."));
+                     strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to start cantilever length. This load will be ignored. - %s"),strLabel);
                      pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
                      pStatusCenter->Add(pStatusItem);
                      continue;
@@ -1284,7 +1330,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                   else
                   {
                      CString strMsg;
-                     strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to end cantilever length. This load will be ignored."));
+                     strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to end cantilever length. This load will be ignored. - %s"),strLabel);
                      pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
                      pStatusCenter->Add(pStatusItem);
                      continue;
@@ -1299,7 +1345,7 @@ void CBridgeAgentImp::ValidatePointLoads()
                   else
                   {
                      CString strMsg;
-                     strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to span length. This load will be ignored."));
+                     strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to span length. This load will be ignored. - %s"),strLabel);
                      pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
                      pStatusCenter->Add(pStatusItem);
                      continue;
@@ -1431,12 +1477,53 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             upl.m_LoadCase = Project2BridgeLoads(pDistLoad->m_LoadCase);
             upl.m_Description = pDistLoad->m_Description;
 
+            CString strSpan;
+            if (pDistLoad->m_SpanKey.spanIndex == ALL_SPANS)
+            {
+               strSpan.Format(_T("%s"), _T("All Spans"));
+            }
+            else
+            {
+               strSpan.Format(_T("Span %d"), LABEL_SPAN(pDistLoad->m_SpanKey.spanIndex));
+            }
+
+            CString strGirder;
+            if (pDistLoad->m_SpanKey.girderIndex == ALL_GIRDERS)
+            {
+               strGirder.Format(_T("%s"), _T("All Girders"));
+            }
+            else
+            {
+               strGirder.Format(_T("Girder %s"), LABEL_GIRDER(pDistLoad->m_SpanKey.girderIndex));
+            }
+
+            CString strLocation;
+            if (pDistLoad->m_Type == UserLoads::Uniform)
+            {
+               strLocation.Format(_T("%s"), _T("Entire Span"));
+            }
+            else
+            {
+               if (pDistLoad->m_Fractional)
+               {
+                  strLocation.Format(_T("%s - %s"), FormatPercentage(pDistLoad->m_StartLocation, false), FormatPercentage(pDistLoad->m_EndLocation));
+               }
+               else
+               {
+                  GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+                  strLocation.Format(_T("%s - %s"), FormatDimension(pDistLoad->m_StartLocation, pDisplayUnits->GetSpanLengthUnit(), false), FormatDimension(pDistLoad->m_EndLocation, pDisplayUnits->GetSpanLengthUnit()));
+               }
+            }
+
+            CString strLabel;
+            strLabel.Format(_T("%s, %s, %s"), strSpan, strGirder, strLocation);
+
             if (pDistLoad->m_Type == UserLoads::Uniform)
             {
                if (IsZero(pDistLoad->m_WStart) && IsZero(pDistLoad->m_WEnd))
                {
                   CString strMsg;
-                  strMsg.Format(_T("Magnitude of Distributed load is zero"));
+                  strMsg.Format(_T("Magnitude of Distributed load is zero - %s"),strLabel);
                   pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
                   pStatusCenter->Add(pStatusItem);
                }
@@ -1454,7 +1541,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                if (IsZero(pDistLoad->m_WStart) && IsZero(pDistLoad->m_WEnd))
                {
                   CString strMsg;
-                  strMsg.Format(_T("Magnitude of Distributed load is zero"));
+                  strMsg.Format(_T("Magnitude of Distributed load is zero - %s"), strLabel);
                   pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
                   pStatusCenter->Add(pStatusItem);
                }
@@ -1466,7 +1553,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                if( pDistLoad->m_EndLocation <= pDistLoad->m_StartLocation )
                {
                   CString strMsg;
-                  strMsg.Format(_T("Start locaton of distributed load is greater than end location. This load will be ignored."));
+                  strMsg.Format(_T("Start locaton of distributed load is greater than end location. This load will be ignored. - %s"),strLabel);
                   pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,103,strMsg,thisSpanKey);
                   pStatusCenter->Add(pStatusItem);
                   continue;
@@ -1483,7 +1570,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                   else
                   {
                      CString strMsg;
-                     strMsg.Format(_T("Fractional location value for Distributed load is out of range. Value must range from 0.0 to 1.0. This load will be ignored."));
+                     strMsg.Format(_T("Fractional location value for Distributed load is out of range. Value must range from 0.0 to 1.0. This load will be ignored. - %s"),strLabel);
                      pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
                      pStatusCenter->Add(pStatusItem);
                      continue;
@@ -1510,7 +1597,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                   else
                   {
                      CString strMsg;
-                     strMsg.Format(_T("Location value for Distributed load is out of range. Value must range from 0.0 to span length. This load will be ignored."));
+                     strMsg.Format(_T("Location value for Distributed load is out of range. Value must range from 0.0 to span length. This load will be ignored. - %s"),strLabel);
                      pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
                      pStatusCenter->Add(pStatusItem);
                      continue;
@@ -1638,6 +1725,40 @@ void CBridgeAgentImp::ValidateMomentLoads()
             }
          }
 
+         CString strSpan;
+         if (pMomentLoad->m_SpanKey.spanIndex == ALL_SPANS)
+         {
+            strSpan.Format(_T("%s"), _T("All Spans"));
+         }
+         else
+         {
+            strSpan.Format(_T("Span %d"), LABEL_SPAN(pMomentLoad->m_SpanKey.spanIndex));
+         }
+
+         CString strGirder;
+         if (pMomentLoad->m_SpanKey.girderIndex == ALL_GIRDERS)
+         {
+            strGirder.Format(_T("%s"), _T("All Girders"));
+         }
+         else
+         {
+            strGirder.Format(_T("Girder %s"), LABEL_GIRDER(pMomentLoad->m_SpanKey.girderIndex));
+         }
+
+         CString strLocation;
+         if (pMomentLoad->m_Fractional)
+         {
+            strLocation.Format(_T("%s"), FormatPercentage(pMomentLoad->m_Location));
+         }
+         else
+         {
+            GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+            strLocation.Format(_T("%s"), FormatDimension(pMomentLoad->m_Location, pDisplayUnits->GetSpanLengthUnit()));
+         }
+
+         CString strLabel;
+         strLabel.Format(_T("%s, %s, %s"), strSpan, strGirder, strLocation);
+
          std::vector<GirderIndexType>::iterator gdrIter(girders.begin());
          std::vector<GirderIndexType>::iterator gdrIterEnd(girders.end());
          for ( ; gdrIter != gdrIterEnd; gdrIter++ )
@@ -1654,7 +1775,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
             if (IsZero(pMomentLoad->m_Magnitude))
             {
                CString strMsg;
-               strMsg.Format(_T("Magnitude of moment load is zero"));
+               strMsg.Format(_T("Magnitude of moment load is zero - %s"),strLabel);
                pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,thisSpanKey);
                pStatusCenter->Add(pStatusItem);
             }
@@ -1672,7 +1793,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
                else
                {
                   CString strMsg;
-                  strMsg.Format(_T("Fractional location value for moment load is out of range. Value must range from 0.0 to 1.0. This load will be ignored."));
+                  strMsg.Format(_T("Fractional location value for moment load is out of range. Value must range from 0.0 to 1.0. This load will be ignored. - %s"),strLabel);
                   pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,thisSpanKey);
                   pStatusCenter->Add(pStatusItem);
                   continue;
@@ -1687,7 +1808,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
                else
                {
                   CString strMsg;
-                  strMsg.Format(_T("Location value for moment load is out of range. Value must range from 0.0 to span length. This load will be ignored."));
+                  strMsg.Format(_T("Location value for moment load is out of range. Value must range from 0.0 to span length. This load will be ignored. - %s"),strLabel);
                   pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,thisSpanKey);
                   pStatusCenter->Add(pStatusItem);
                   continue;
