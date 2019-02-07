@@ -81,7 +81,7 @@ BEGIN
             VALUE "FileDescription", "ProjectAgent Module\0"
             VALUE "FileVersion", "4.0.11.0\0"
             VALUE "InternalName", "PROJECTAGENT\0"
-            VALUE "LegalCopyright", "Copyright © 1999-2018, Washington State Department of Transportation, All Rights Reserved\0"
+            VALUE "LegalCopyright", "Copyright © 1999-2019, Washington State Department of Transportation, All Rights Reserved\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OLESelfRegister", "\0"
             VALUE "OriginalFilename", "PROJECTAGENT.DLL\0"

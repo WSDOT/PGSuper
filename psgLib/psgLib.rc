@@ -9,7 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -87,6 +87,7 @@ BEGIN
             VALUE "FileDescription", "psgLib DLL"
             VALUE "FileVersion", "4.0.11.0"
             VALUE "InternalName", "psgLib"
+            VALUE "LegalCopyright", "Copyright © 1999-2019, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "4.0.11.0"
@@ -2806,7 +2807,7 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
+#include "grid\gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
