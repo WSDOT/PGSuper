@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1147,7 +1147,7 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
    }
 
    GET_IFACE2( pBroker, ISpecification, pSpec );
-   bool doCamber = pSpec->IsAssExcessCamberInputEnabled();
+   bool doCamber = pSpec->IsAssumedExcessCamberInputEnabled();
    if (doCamber)
    {
       *pPara << _T("- Allowable tolerance between assumed and computed excess camber = ") << dim.SetValue(pSpecEntry->GetHaunchLoadCamberTolerance()) << rptNewLine;

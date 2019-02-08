@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -75,6 +75,9 @@ bool txnEditPrecastSegment::Execute()
       oldSegmentData.m_SegmentData = *pSegment;
       oldSegmentData.m_TimelineMgr = *(pIBridgeDesc->GetTimelineManager());
 
+      oldSegmentData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
+      pSegment->GetSlabOffset(&oldSegmentData.m_SlabOffset[pgsTypes::metStart], &oldSegmentData.m_SlabOffset[pgsTypes::metEnd]);
+
       m_OldSegmentData.insert(oldSegmentData);
 
       // Copy the new segment data onto this segment
@@ -132,4 +135,15 @@ void txnEditPrecastSegment::SetSegmentData(const CSegmentKey& segmentKey,const t
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetPrecastSegmentData(segmentKey,data.m_SegmentData);
    pIBridgeDesc->SetTimelineManager(data.m_TimelineMgr);
+
+   // NOTE: Calling SetSlabOffset sets the bridge-level slab offset type parameter automatically
+   // we don't call SetSlabOffsetType here because it is redundant and creates extra events for processing
+   if (data.m_SlabOffsetType == pgsTypes::sotBridge)
+   {
+      pIBridgeDesc->SetSlabOffset(data.m_SlabOffset[pgsTypes::metStart]); 
+   }
+   else
+   {
+      pIBridgeDesc->SetSlabOffset(segmentKey, data.m_SlabOffset[pgsTypes::metStart], data.m_SlabOffset[pgsTypes::metEnd]);
+   }
 }

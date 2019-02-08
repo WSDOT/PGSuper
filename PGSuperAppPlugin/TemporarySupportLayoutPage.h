@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,10 +43,15 @@ protected:
    void FillEventList();
    EventIndexType CreateEvent();
 
+   void UpdateSlabOffsetControls();
+
    Float64 m_Station;
    std::_tstring m_strOrientation;
    pgsTypes::TemporarySupportType m_Type;
    Float64 m_ElevAdjustment;
+   pgsTypes::SlabOffsetType m_SlabOffsetType;
+   std::array<Float64, 2> m_SlabOffset; // use pgsTypes::PierFaceType to access array
+   pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
 
    int m_PrevErectionEventIdx;
    int m_PrevRemovalEventIdx;
@@ -60,5 +65,6 @@ public:
    afx_msg void OnErectionEventChanging();
    afx_msg void OnRemovalEventChanged();
    afx_msg void OnRemovalEventChanging();
+   afx_msg void OnSlabOffsetTypeChanged();
    afx_msg void OnHelp();
 };

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@
 #include "BridgeDescLongitudinalRebar.h"
 #include "BridgeDescLiftingPage.h"
 #include "DebondDlg.h"
-#include "BridgeDescGirderMaterialsPage.h"
+#include "GirderDescGeneralPage.h"
 #include "SpanGdrDetailsBearingsPage.h"
 
 #include <PgsExt\SplicedGirderData.h>
@@ -154,7 +154,7 @@ public:
    // for all the extension pages. The caller is responsble for deleting this object
    txnTransaction* GetExtensionPageTransaction();
 
-   void DoUpdate();
+   void InitialzePages();
 
    void OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebonding);
 
@@ -197,7 +197,7 @@ protected:
    Float64 m_ConditionFactor;
 
    pgsTypes::SupportedDeckType m_DeckType;
-   bool m_bCanAssExcessCamberInputBeEnabled;
+   bool m_bCanAssumedExcessCamberInputBeEnabled;
 
    CButton m_CheckBox;
 };

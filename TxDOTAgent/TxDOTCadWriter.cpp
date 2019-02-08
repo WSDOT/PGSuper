@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -157,7 +157,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 
 	/* Create pois at the start of girder and mid-span */
    PoiList vPoi;
-   pPointOfInterest->GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT, &vPoi);
+   pPointOfInterest->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& pois(vPoi.front());
 	
@@ -394,8 +394,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       PierIndexType startPierIdx, endPierIdx;
       pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
 
-      Float64 astart = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
-      Float64 aend = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
+      Float64 astart = pBridge->GetSlabOffset(segmentKey, pgsTypes::metStart);
+      Float64 aend = pBridge->GetSlabOffset(segmentKey, pgsTypes::metEnd);
 
 
       astart = ::ConvertFromSysUnits( astart, unitMeasure::Inch );
@@ -407,9 +407,9 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       extraSpacesForSlabOffset = 14; // width of two data fields above = 7+7
 
       GET_IFACE2(pBroker,ISpecification,pSpec);
-      if (pSpec->IsAssExcessCamberInputEnabled())
+      if (pSpec->IsAssumedExcessCamberInputEnabled())
       {
-         value = pIBridgeDesc->GetAssExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex);
+         value = pIBridgeDesc->GetAssumedExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex);
       	Float64 aecamber = ::ConvertFromSysUnits( value, unitMeasure::Inch );
          workerB.WriteFloat64(aecamber,_T("AECmbr"),7,5,_T("%5.2f"));
          extraSpacesForSlabOffset += 7;

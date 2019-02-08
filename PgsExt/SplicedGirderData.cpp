@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1222,6 +1222,36 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
          pLeftSegment->EndBlockLength[pgsTypes::metEnd]           = pRightSegment->EndBlockLength[pgsTypes::metEnd];
          pLeftSegment->EndBlockTransitionLength[pgsTypes::metEnd] = pRightSegment->EndBlockTransitionLength[pgsTypes::metEnd];
          pLeftSegment->EndBlockWidth[pgsTypes::metEnd]            = pRightSegment->EndBlockWidth[pgsTypes::metEnd];
+
+         // the left and right segments have been merged into a single segment
+         // now, look at the construction and erection events.... use the earliest
+         // event for construction and erection
+         CTimelineManager* pTimelineMgr = GetTimelineManager();
+         if (pTimelineMgr)
+         {
+            SegmentIDType leftSegID = pLeftSegment->GetID();
+            SegmentIDType rightSegID = pRightSegment->GetID();
+
+            EventIndexType leftSegConstructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(leftSegID);
+            EventIndexType rightSegConstructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(rightSegID);
+            if (rightSegConstructEventIdx < leftSegConstructEventIdx)
+            {
+               CTimelineEvent* pLeftSegConstructionEvent = pTimelineMgr->GetEventByIndex(leftSegConstructEventIdx);
+               CTimelineEvent* pRightSegConstructionEvent = pTimelineMgr->GetEventByIndex(rightSegConstructEventIdx);
+               pLeftSegConstructionEvent->GetConstructSegmentsActivity().RemoveSegment(leftSegID);
+               pRightSegConstructionEvent->GetConstructSegmentsActivity().AddSegment(leftSegID);
+            }
+
+            EventIndexType leftSegErectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(leftSegID);
+            EventIndexType rightSegErectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(rightSegID);
+            if (rightSegErectionEventIdx < leftSegErectionEventIdx)
+            {
+               CTimelineEvent* pLeftSegErectionEvent = pTimelineMgr->GetEventByIndex(leftSegErectionEventIdx);
+               CTimelineEvent* pRightSegErectionEvent = pTimelineMgr->GetEventByIndex(rightSegErectionEventIdx);
+               pLeftSegErectionEvent->GetErectSegmentsActivity().RemoveSegment(leftSegID);
+               pRightSegErectionEvent->GetErectSegmentsActivity().AddSegment(leftSegID);
+            }
+         }
 
          RemoveSegmentFromTimelineManager(pRightSegment);
 

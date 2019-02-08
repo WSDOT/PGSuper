@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -636,8 +636,8 @@ void CBridgeSectionView::UpdateGirderTooltips()
          PierIndexType startPierIdx, endPierIdx;
          pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
 
-         Float64 startOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
-         Float64 endOffset = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
+         Float64 startOffset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+         Float64 endOffset   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
 
          CSpanKey spanKey;
          Float64 Xspan;

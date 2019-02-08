@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -625,18 +625,18 @@ bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream&
    GirderIndexType gdr = segmentKey.girderIndex;
    SpanIndexType span = segmentKey.groupIndex;
 
-   const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
+   const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
 
-   for ( const auto& haunch : haunch_details.Haunch)
+   for ( const auto& slab_offset : slab_offset_details.SlabOffset)
    {
-      const pgsPointOfInterest& rpoi = haunch.PointOfInterest;
+      const pgsPointOfInterest& rpoi = slab_offset.PointOfInterest;
       Float64 loc = ::ConvertFromSysUnits(rpoi.GetDistFromStart(), unitMeasure::Millimeter);
 
-      Float64 camber = ::ConvertFromSysUnits(haunch.CamberEffect, unitMeasure::Millimeter);
-      Float64 orientation = ::ConvertFromSysUnits(haunch.GirderOrientationEffect, unitMeasure::Millimeter);
-      Float64 profile = ::ConvertFromSysUnits(haunch.ProfileEffect, unitMeasure::Millimeter);
-      Float64 required = ::ConvertFromSysUnits(haunch.RequiredHaunchDepth, unitMeasure::Millimeter);
-      Float64 actual = ::ConvertFromSysUnits(haunch.TopSlabToTopGirder, unitMeasure::Millimeter);
+      Float64 camber = ::ConvertFromSysUnits(slab_offset.CamberEffect, unitMeasure::Millimeter);
+      Float64 orientation = ::ConvertFromSysUnits(slab_offset.GirderOrientationEffect, unitMeasure::Millimeter);
+      Float64 profile = ::ConvertFromSysUnits(slab_offset.ProfileEffect, unitMeasure::Millimeter);
+      Float64 required = ::ConvertFromSysUnits(slab_offset.RequiredSlabOffset, unitMeasure::Millimeter);
+      Float64 actual = ::ConvertFromSysUnits(slab_offset.TopSlabToTopGirder, unitMeasure::Millimeter);
 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 89000, ")<<loc<<_T(", ")<< QUITE(camber) <<_T(", 7, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 89001, ")<<loc<<_T(", ")<< QUITE(orientation) <<_T(", 7, ")<<gdr<<std::endl;

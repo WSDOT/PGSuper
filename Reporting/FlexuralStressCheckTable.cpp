@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -333,7 +333,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    rptRcTable* p_table;
    ColumnIndexType nColumns = 1; // location column
 
-   if ( segIdx == ALL_SEGMENTS )
+   if (refAttribute != POI_SPAN)
    {
       nColumns++; // second location column
    }
@@ -436,7 +436,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
    ColumnIndexType col = 0;
 
-   if ( segIdx == ALL_SEGMENTS )
+   if (refAttribute != POI_SPAN)
    {
       p_table->SetRowSpan(0,col,2);
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,    rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -659,7 +659,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
          const pgsPointOfInterest& poi( pTensionArtifact ? pTensionArtifact->GetPointOfInterest() : pCompressionArtifact->GetPointOfInterest());
 
-         if ( segIdx == ALL_SEGMENTS )
+         if (refAttribute != POI_SPAN)
          {
             (*p_table)(row,col++) << location.SetValue( POI_SPAN, poi );
          }

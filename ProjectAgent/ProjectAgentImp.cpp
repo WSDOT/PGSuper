@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -5850,7 +5850,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
 
       if ( !(vst&&vhp&&vtp) )
       {
-         std::_tstring msg(_T("Direct filled strands no longer fit in girder because library entry changed. All strands were removed."));
+         std::_tstring msg(std::_tstring(SEGMENT_LABEL(segmentKey)) + _T("Direct filled strands no longer fit in girder because library entry changed. All strands were removed."));
          AddSegmentStatusItem(segmentKey, msg);
 
          clean = false;
@@ -6548,46 +6548,126 @@ void CProjectAgentImp::SetWearingSurfaceType(pgsTypes::WearingSurfaceType wearin
 
 void CProjectAgentImp::SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType)
 {
-   if ( m_BridgeDescription.GetSlabOffsetType() != offsetType )
+   if ( m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotSegment || m_BridgeDescription.GetSlabOffsetType() != offsetType )
    {
       m_BridgeDescription.SetSlabOffsetType(offsetType);
       Fire_BridgeChanged();
    }
 }
 
-void CProjectAgentImp::SetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx, Float64 offset)
-{
-   // Changing slab offset type to pier
-   CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
-   if ( !IsEqual(pGroup->GetSlabOffset(pierIdx,0),offset) )
-   {
-      m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotPier);
-      pGroup->SetSlabOffset(pierIdx,offset);
-      Fire_BridgeChanged();
-   }
-}
-
-void CProjectAgentImp::SetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset)
-{
-   CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
-   if ( m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotGirder || !IsEqual(pGroup->GetSlabOffset(pierIdx,gdrIdx),offset) )
-   {
-      m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotGirder);
-      pGroup->SetSlabOffset(pierIdx,gdrIdx,offset);
-
-      Fire_BridgeChanged();
-   }
-}
-
-Float64 CProjectAgentImp::GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx, GirderIndexType gdrIdx) const
-{
-   const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
-   return pGroup->GetSlabOffset(pierIdx,gdrIdx);
-}
-
 pgsTypes::SlabOffsetType CProjectAgentImp::GetSlabOffsetType() const
 {
    return m_BridgeDescription.GetSlabOffsetType();
+}
+
+void CProjectAgentImp::SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face, Float64 offset)
+{
+   if (supportType == pgsTypes::stPier)
+   {
+      CPierData2* pPier = m_BridgeDescription.GetPier(supportIdx);
+      if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotBearingLine || !IsEqual(pPier->GetSlabOffset(face), offset))
+      {
+         pPier->SetSlabOffset(face, offset);
+         m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotBearingLine);
+         Fire_BridgeChanged();
+      }
+   }
+   else
+   {
+      CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(supportIdx);
+      if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotBearingLine || !IsEqual(pTS->GetSlabOffset(face), offset))
+      {
+         pTS->SetSlabOffset(face, offset);
+         m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotBearingLine);
+         Fire_BridgeChanged();
+      }
+   }
+}
+
+void CProjectAgentImp::SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64 backSlabOffset,Float64 aheadSlabOffset)
+{
+   if (supportType == pgsTypes::stPier)
+   {
+      CPierData2* pPier = m_BridgeDescription.GetPier(supportIdx);
+      if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotBearingLine || !IsEqual(pPier->GetSlabOffset(pgsTypes::Back), backSlabOffset) || !IsEqual(pPier->GetSlabOffset(pgsTypes::Ahead), aheadSlabOffset))
+      {
+         pPier->SetSlabOffset(backSlabOffset,aheadSlabOffset);
+         m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotBearingLine);
+         Fire_BridgeChanged();
+      }
+   }
+   else
+   {
+      CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(supportIdx);
+      if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotBearingLine || !IsEqual(pTS->GetSlabOffset(pgsTypes::Back), backSlabOffset) || !IsEqual(pTS->GetSlabOffset(pgsTypes::Ahead), aheadSlabOffset))
+      {
+         pTS->SetSlabOffset(backSlabOffset, aheadSlabOffset);
+         m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotBearingLine);
+         Fire_BridgeChanged();
+      }
+   }
+}
+
+Float64 CProjectAgentImp::GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face) const
+{
+   if (supportType == pgsTypes::stPier)
+   {
+      const CPierData2* pPier = m_BridgeDescription.GetPier(supportIdx);
+      return pPier->GetSlabOffset(face);
+   }
+   else
+   {
+      const CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(supportIdx);
+      return pTS->GetSlabOffset(face);
+   }
+}
+
+void CProjectAgentImp::GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const
+{
+   if (supportType == pgsTypes::stPier)
+   {
+      const CPierData2* pPier = m_BridgeDescription.GetPier(supportIdx);
+      pPier->GetSlabOffset(pBackSlabOffset,pAheadSlabOffset);
+   }
+   else
+   {
+      const CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(supportIdx);
+      pTS->GetSlabOffset(pBackSlabOffset, pAheadSlabOffset);
+   }
+}
+
+void CProjectAgentImp::SetSlabOffset(const CSegmentKey& segmentKey, pgsTypes::MemberEndType end, Float64 offset)
+{
+   CPrecastSegmentData* pSegment = m_BridgeDescription.GetSegment(segmentKey);
+   if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotSegment || !IsEqual(pSegment->GetSlabOffset(end), offset))
+   {
+      pSegment->SetSlabOffset(end, offset);
+      m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotSegment);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetSlabOffset(const CSegmentKey& segmentKey, Float64 startSlabOffset, Float64 endSlabOffset)
+{
+   CPrecastSegmentData* pSegment = m_BridgeDescription.GetSegment(segmentKey);
+   if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotSegment || !IsEqual(pSegment->GetSlabOffset(pgsTypes::metStart), startSlabOffset) || !IsEqual(pSegment->GetSlabOffset(pgsTypes::metEnd), endSlabOffset))
+   {
+      pSegment->SetSlabOffset(startSlabOffset,endSlabOffset);
+      m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotSegment);
+      Fire_BridgeChanged();
+   }
+}
+
+Float64 CProjectAgentImp::GetSlabOffset(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const
+{
+   CPrecastSegmentData* pSegment = m_BridgeDescription.GetSegment(segmentKey);
+   return pSegment->GetSlabOffset(end);
+}
+
+void CProjectAgentImp::GetSlabOffset(const CSegmentKey& segmentKey, Float64* pStartSlabOffset, Float64* pEndSlabOffset) const
+{
+   CPrecastSegmentData* pSegment = m_BridgeDescription.GetSegment(segmentKey);
+   pSegment->GetSlabOffset(pStartSlabOffset, pEndSlabOffset);
 }
 
 void CProjectAgentImp::SetFillet( Float64 Fillet)
@@ -6604,60 +6684,60 @@ Float64 CProjectAgentImp::GetFillet() const
    return m_BridgeDescription.GetFillet();
 }
 
-void CProjectAgentImp::SetAssExcessCamberType(pgsTypes::AssExcessCamberType type)
+void CProjectAgentImp::SetAssumedExcessCamberType(pgsTypes::AssumedExcessCamberType type)
 {
-   if ( m_BridgeDescription.GetAssExcessCamberType() != type )
+   if ( m_BridgeDescription.GetAssumedExcessCamberType() != type )
    {
-      m_BridgeDescription.SetAssExcessCamberType(type);
+      m_BridgeDescription.SetAssumedExcessCamberType(type);
       Fire_BridgeChanged();
    }
 }
 
-pgsTypes::AssExcessCamberType CProjectAgentImp::GetAssExcessCamberType() const
+pgsTypes::AssumedExcessCamberType CProjectAgentImp::GetAssumedExcessCamberType() const
 {
-   return m_BridgeDescription.GetAssExcessCamberType();
+   return m_BridgeDescription.GetAssumedExcessCamberType();
 }
 
-void CProjectAgentImp::SetAssExcessCamber( Float64 camber)
+void CProjectAgentImp::SetAssumedExcessCamber( Float64 assumedExcessCamber)
 {
-   if ( m_BridgeDescription.GetAssExcessCamberType() != pgsTypes::aecBridge ||
-        !IsEqual(camber,m_BridgeDescription.GetAssExcessCamber()) )
+   if ( m_BridgeDescription.GetAssumedExcessCamberType() != pgsTypes::aecBridge ||
+        !IsEqual(assumedExcessCamber,m_BridgeDescription.GetAssumedExcessCamber()) )
    {
       // AssExcessCamber type and/or value is changing
-      m_BridgeDescription.SetAssExcessCamberType(pgsTypes::aecBridge);
-      m_BridgeDescription.SetAssExcessCamber(camber);
+      m_BridgeDescription.SetAssumedExcessCamberType(pgsTypes::aecBridge);
+      m_BridgeDescription.SetAssumedExcessCamber(assumedExcessCamber);
       Fire_BridgeChanged();
    }
 }
 
-void CProjectAgentImp::SetAssExcessCamber(SpanIndexType spanIdx, Float64 camber)
+void CProjectAgentImp::SetAssumedExcessCamber(SpanIndexType spanIdx, Float64 assumedExcessCamber)
 {
    CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
-   if ( m_BridgeDescription.GetAssExcessCamberType() != pgsTypes::aecSpan || 
-        !IsEqual(pSpan->GetAssExcessCamber(0),camber) )
+   if ( m_BridgeDescription.GetAssumedExcessCamberType() != pgsTypes::aecSpan || 
+        !IsEqual(pSpan->GetAssumedExcessCamber(0), assumedExcessCamber) )
    {
-      m_BridgeDescription.SetAssExcessCamberType(pgsTypes::aecSpan);
-      pSpan->SetAssExcessCamber(camber);
+      m_BridgeDescription.SetAssumedExcessCamberType(pgsTypes::aecSpan);
+      pSpan->SetAssumedExcessCamber(assumedExcessCamber);
       Fire_BridgeChanged();
    }
 }
 
-void CProjectAgentImp::SetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 camber)
+void CProjectAgentImp::SetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 assumedExcessCamber)
 {
    CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
-   if ( m_BridgeDescription.GetAssExcessCamberType() != pgsTypes::aecGirder ||
-       !IsEqual(pSpan->GetAssExcessCamber(gdrIdx),camber) )
+   if ( m_BridgeDescription.GetAssumedExcessCamberType() != pgsTypes::aecGirder ||
+       !IsEqual(pSpan->GetAssumedExcessCamber(gdrIdx), assumedExcessCamber) )
    {
-      m_BridgeDescription.SetAssExcessCamberType(pgsTypes::aecGirder);
-      pSpan->SetAssExcessCamber(gdrIdx,camber);
+      m_BridgeDescription.SetAssumedExcessCamberType(pgsTypes::aecGirder);
+      pSpan->SetAssumedExcessCamber(gdrIdx, assumedExcessCamber);
       Fire_BridgeChanged();
    }
 }
 
-Float64 CProjectAgentImp::GetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx) const
+Float64 CProjectAgentImp::GetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx) const
 {
-   CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
-   return pSpan->GetAssExcessCamber(gdrIdx);
+   const CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+   return pSpan->GetAssumedExcessCamber(gdrIdx);
 }
 
 std::vector<pgsTypes::BoundaryConditionType> CProjectAgentImp::GetBoundaryConditionTypes(PierIndexType pierIdx) const
@@ -8782,9 +8862,9 @@ Float64 CProjectAgentImp::GetHaunchLoadCamberFactor() const
    return m_pSpecEntry->GetHaunchLoadCamberFactor();
 }
 
-bool CProjectAgentImp::IsAssExcessCamberInputEnabled(bool considerDeckType) const
+bool CProjectAgentImp::IsAssumedExcessCamberInputEnabled(bool considerDeckType) const
 {
-   if (IsAssExcessCamberForLoad() || IsAssExcessCamberForSectProps())
+   if (IsAssumedExcessCamberForLoad() || IsAssumedExcessCamberForSectProps())
    {
       if (!considerDeckType || m_BridgeDescription.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
       {
@@ -8801,12 +8881,12 @@ bool CProjectAgentImp::IsAssExcessCamberInputEnabled(bool considerDeckType) cons
    }
 }
 
-bool CProjectAgentImp::IsAssExcessCamberForLoad() const
+bool CProjectAgentImp::IsAssumedExcessCamberForLoad() const
 {
    return m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
 }
 
-bool CProjectAgentImp::IsAssExcessCamberForSectProps() const
+bool CProjectAgentImp::IsAssumedExcessCamberForSectProps() const
 {
    return m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic;
 }
@@ -8862,7 +8942,7 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       option.maxFci = fci_max;
       option.maxFc  = fc_max;
 
-      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled() ? sodAandAssExcessCamber : sodNoADesign; // option same as in 2.9x versions
+      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled() ? sodSlabOffsetandAssumedExcessCamberDesign : sodNoSlabOffsetDesign; // option same as in 2.9x versions
       option.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
       option.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
 

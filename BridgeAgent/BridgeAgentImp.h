@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -267,10 +267,11 @@ public:
    virtual Float64 GetSegmentFramingLength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentPlanLength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentSlope(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx) const override;
-   virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
-   virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
-   virtual Float64 GetSpanLength(SpanIndexType spanIdx,GirderIndexType gdrIdx) const override;
+   virtual Float64 GetSlabOffset(const CSegmentKey& segmentKey, pgsTypes::MemberEndType end) const override;
+   virtual void GetSlabOffset(const CSegmentKey& segmentKey, Float64* pStart, Float64* pEnd) const override;
+   virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const override;
+   virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const override;
+   virtual Float64 GetSpanLength(SpanIndexType spanIdx, GirderIndexType gdrIdx) const override;
    virtual Float64 GetSpanLength(const CSpanKey& spanKey) const override;
    virtual Float64 GetFullSpanLength(const CSpanKey& spanKey) const override;
    virtual Float64 GetGirderlineLength(GirderIndexType gdrLineIdx) const override;
@@ -325,7 +326,7 @@ public:
    virtual Float64 GetOverlayDepth() const override;
    virtual Float64 GetSacrificalDepth() const override;
    virtual Float64 GetFillet() const override;
-   virtual Float64 GetAssExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) const override;
+   virtual Float64 GetAssumedExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) const override;
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi) const override;
@@ -398,6 +399,7 @@ public:
    virtual pgsTypes::TempSupportSegmentConnectionType GetSegmentConnectionTypeAtTemporarySupport(SupportIndexType tsIdx) const override;
    virtual void GetSegmentsAtTemporarySupport(GirderIndexType gdrIdx,SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey) const override;
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const override;
+   virtual bool HasTemporarySupportElevationAdjustments() const override;
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
 
@@ -1650,17 +1652,13 @@ private:
    Float64 GetOverallHeight(const pgsPointOfInterest& poi) const;
 
    const mathLinFunc2d& GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const;
-   const mathLinFunc2d& GetGirderBaselineElevationFunction(const CSegmentKey& segmentKey) const;
    void ValidateGirderTopChordElevation(const CGirderKey& girderKey) const;
-   void ValidateElevationAdjustments(const CGirderKey& girderKey) const;
-   void ValidateGirderTopChordElevation(const CGirderKey& girderKey,bool bIgnoreElevationAdjustments, std::map<CSegmentKey, mathLinFunc2d>* pFunctions) const;
-   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier, bool bIgnoreElevationAdjustments) const;
-   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions_Case1(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier, bool bIgnoreElevationAdjustments) const;
-   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions_Case2(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier, bool bIgnoreElevationAdjustments) const;
-   mathLinFunc2d GetTopGirderChordFunction(const CPrecastSegmentData* pThisSegment, IPoint2d* pControlPnt, const mathLinFunc2d& controlFn, bool bIgnoreElevationAdjustments) const;
-   mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderTopChordElevationFunctions; // top girder chord elevations with temporary support elevation adjustments
-   mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderBaselineElevationFunctions; // top girder chord elevations without temporary support elevation adjustments
-   // elevation adjustment at any poi is the difference between m_GirderTopChordElevationFunctions and m_GirderBaselineElevationFunctions
+   void ValidateGirderTopChordElevation(const CGirderKey& girderKey,std::map<CSegmentKey, mathLinFunc2d>* pFunctions) const;
+   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier) const;
+   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions_Case1(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier) const;
+   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions_Case2(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier) const;
+   mathLinFunc2d GetTopGirderChordFunction(const CPrecastSegmentData* pThisSegment, IPoint2d* pControlPnt, const mathLinFunc2d& controlFn) const;
+   mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderTopChordElevationFunctions; // linear functions that represent the top girder chord elevations
 
    // Common function to return bearing elevation details at bearings or at girder edges
    enum BearingElevLocType { batBearings, batGirderEdges };

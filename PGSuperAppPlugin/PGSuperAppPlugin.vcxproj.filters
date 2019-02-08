@@ -110,21 +110,6 @@
     <ClCompile Include="GirderSegmentStrandsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HaunchByGirderDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HaunchGirderGrid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HaunchSame4BridgeDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HaunchSpanBySpanDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HaunchSpanGrid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InplaceTemporarySupportStationEditEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -183,9 +168,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SelectGirderSegmentDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SlabOffsetGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SplicedGirderGeneralPage.cpp">
@@ -254,24 +236,6 @@
     <ClCompile Include="SpanGdrDetailsBearingsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AssExcessCamberSame4BridgeDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AssExcessCamberGrid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AssExcessCamberGirderGrid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AssExcessCamberByGirderDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AssExcessCamberSpanBySpanDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AssExcessCamberSpanGrid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AbutmentConnectionsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -312,9 +276,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BridgeDescGeneralPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BridgeDescGirderMaterialsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BridgeDescLiftingPage.cpp">
@@ -803,6 +764,39 @@
     <ClCompile Include="TrafficBarrierDisplayObjectEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HaunchSegmentGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HaunchBearingGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HaunchBySegmentDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HaunchByBearingDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HaunchByBridgeDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssumedExcessCamberByGirderDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssumedExcessCamberGirderGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssumedExcessCamberByBridgeDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssumedExcessCamberBySpanDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AssumedExcessCamberSpanGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GirderDescGeneralPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -938,21 +932,6 @@
     <ClInclude Include="GirderSegmentStrandsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HaunchByGirderDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HaunchGirderGrid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HaunchSame4BridgeDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HaunchSpanBySpanDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HaunchSpanGrid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InplaceTemporarySupportStationEditEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1032,9 +1011,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SelectGirderSegmentDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SlabOffsetGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SplicedGirderGeneralPage.h">
@@ -1139,24 +1115,6 @@
     <ClInclude Include="..\Include\LoadsViewController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AssExcessCamberSame4BridgeDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssExcessCamberGrid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssExcessCamberGirderGrid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssExcessCamberByGirderDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssExcessCamberSpanBySpanDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssExcessCamberSpanGrid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="AbutmentConnectionsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1197,9 +1155,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BridgeDescGeneralPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BridgeDescGirderMaterialsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BridgeDescLiftingPage.h">
@@ -1705,6 +1660,39 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Hints.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HaunchSegmentGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HaunchBearingGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HaunchBySegmentDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HaunchByBearingDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HaunchByBridgeDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssumedExcessCamberByGirderDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssumedExcessCamberGirderGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssumedExcessCamberByBridgeDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssumedExcessCamberBySpanDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssumedExcessCamberSpanGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GirderDescGeneralPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

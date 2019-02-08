@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -297,11 +297,12 @@ interface IBridge : IUnknown
    virtual Float64 GetSegmentSlope(const CSegmentKey& segmentKey) const = 0;
 
    // Slab Offset
-   virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx) const = 0;
+   virtual Float64 GetSlabOffset(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const = 0;
+   virtual void GetSlabOffset(const CSegmentKey& segmentKey, Float64* pStart, Float64* pEnd) const = 0;
 
    // Adjustments from temporary support elevation adjustments
-   virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
 
    // Distnace from CLPier to CL Bearing, measured along CL of segment
    virtual Float64 GetCLPierToCLBearingDistance(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::MeasurementType measure) const = 0;
@@ -446,7 +447,7 @@ interface IBridge : IUnknown
    virtual Float64 GetOverlayDepth() const = 0;
    virtual Float64 GetSacrificalDepth() const = 0;
    virtual Float64 GetFillet() const = 0;
-   virtual Float64 GetAssExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) const = 0;
+   virtual Float64 GetAssumedExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) const = 0;
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi) const = 0;
@@ -619,7 +620,10 @@ interface IBridge : IUnknown
 
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const = 0;
 
-   // Compute bearing elevation data for each girder along bearing line for each defined bearing
+   // returns true if any of the temporary supports have non-zero elevation adjustments
+   virtual bool HasTemporarySupportElevationAdjustments() const = 0;
+
+   // Compute bearing elevation data for each girder along bearing line
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
 
    // Compute bearing elevation data for each girder along bearing line at edges of girder bottom. Will return two values 0=Left, 1=Right

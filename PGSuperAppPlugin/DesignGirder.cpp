@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -57,19 +57,19 @@ txnDesignGirder::txnDesignGirder( std::vector<const pgsGirderDesignArtifact*>& a
    // AssExcessCamber design uses same input as slab offset
    if (m_NewSlabOffsetType == sodtBridge)
    {
-      m_NewAssExcessCamberType = pgsTypes::aecBridge;
+      m_NewAssumedExcessCamberType = pgsTypes::aecBridge;
    }
    else if (m_NewSlabOffsetType == sodtPier)
    {
-      m_NewAssExcessCamberType = pgsTypes::aecSpan;
+      m_NewAssumedExcessCamberType = pgsTypes::aecSpan;
    }
    else if (m_NewSlabOffsetType == sodtGirder || m_NewSlabOffsetType == sodtAllSelectedGirders)
    {
-      m_NewAssExcessCamberType = pgsTypes::aecGirder;
+      m_NewAssumedExcessCamberType = pgsTypes::aecGirder;
    }
 
    m_DidSlabOffsetDesign = false; // until we determine otherwise
-   m_DidAssExcessCamberDesign = false;
+   m_DidAssumedExcessCamberDesign = false;
 
    m_bInit = false;
 }
@@ -158,7 +158,7 @@ void txnDesignGirder::Init()
       rdata.m_SegmentData[1] = pSegmentDesignArtifact->GetSegmentData();
 
       // Slab offset design data
-      if ( m_NewSlabOffsetType!=sodtDoNotDesign && pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset != sodNoADesign )
+      if ( m_NewSlabOffsetType!=sodtDoNotDesign && pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset != sodNoSlabOffsetDesign )
       {
          if (m_NewSlabOffsetType==sodtAllSelectedGirders ||
              (rdata.m_DesignArtifact.GetGirderKey().groupIndex == m_FromSpanIdx && rdata.m_DesignArtifact.GetGirderKey().girderIndex == m_FromGirderIdx))
@@ -168,12 +168,12 @@ void txnDesignGirder::Init()
             m_DesignSlabOffset[pgsTypes::metEnd]   = pSegmentDesignArtifact->GetSlabOffset(pgsTypes::metEnd);
 
             GET_IFACE2(pBroker,ISpecification,pSpec);
-            if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodAandAssExcessCamber &&
-                 pSpec->IsAssExcessCamberForLoad())
+            if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodSlabOffsetandAssumedExcessCamberDesign &&
+                 pSpec->IsAssumedExcessCamberForLoad())
             {
                // AssExcessCamber was done too - store it
-               m_DidAssExcessCamberDesign = true;
-               m_DesignAssExcessCamber = pSegmentDesignArtifact->GetAssExcessCamber();
+               m_DidAssumedExcessCamberDesign = true;
+               m_DesignAssumedExcessCamber = pSegmentDesignArtifact->GetAssumedExcessCamber();
             }
          }
       }
@@ -184,46 +184,41 @@ void txnDesignGirder::Init()
    {
       GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
 
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       m_OldSlabOffsetType = pIBridgeDesc->GetSlabOffsetType();
       if (m_OldSlabOffsetType==pgsTypes::sotBridge)
       {
-         m_OldBridgeSlabOffset = pIBridgeDesc->GetSlabOffset(0,0,0); // same for all
+         m_OldBridgeSlabOffset = pBridgeDesc->GetSlabOffset();
       }
-      else if (m_OldSlabOffsetType==pgsTypes::sotPier)
+      else if (m_OldSlabOffsetType==pgsTypes::sotBearingLine)
       {
          // Store per pier
-         GroupIndexType ngrp = pIBridgeDesc->GetGirderGroupCount();
-         for (GroupIndexType igrp=0; igrp<ngrp; igrp++)
+         PierIndexType nPiers = pBridgeDesc->GetPierCount();
+         for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
          {
-            const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(igrp);
-            PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
-            PierIndexType endPierIdx = pGroup->GetPierIndex(pgsTypes::metEnd);
-            for (PierIndexType ipier=startPierIdx; ipier<=endPierIdx; ipier++)
-            {
-               Float64 slabOffset = pIBridgeDesc->GetSlabOffset(igrp,ipier,0);
-
-               m_OldSlabOffsetData.push_back( OldSlabOffsetData(igrp,ipier,INVALID_INDEX,slabOffset) );
-            }
+            const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
+            Float64 back, ahead;
+            pPier->GetSlabOffset(&back, &ahead);
+            m_OldPierSlabOffsets.push_back(std::make_pair(back, ahead));
          }
       }
-      else if (m_OldSlabOffsetType==pgsTypes::sotGirder)
+      else if (m_OldSlabOffsetType==pgsTypes::sotSegment)
       {
          // Store per girder
-         GroupIndexType ngrp = pIBridgeDesc->GetGirderGroupCount();
-         for (GroupIndexType igrp=0; igrp<ngrp; igrp++)
+         GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
+         for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
          {
-            const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(igrp);
-            GirderIndexType ngdrs = pGroup->GetGirderCount();
+            const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(grpIdx);
+            GirderIndexType nGirders = pGroup->GetGirderCount();
 
-            PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
-            PierIndexType endPierIdx = pGroup->GetPierIndex(pgsTypes::metEnd);
-            for (PierIndexType ipier=startPierIdx; ipier<=endPierIdx; ipier++)
+            for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
             {
-               for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
-               {
-                  Float64 slabOffset = pIBridgeDesc->GetSlabOffset(igrp,ipier,igdr);
-                  m_OldSlabOffsetData.push_back( OldSlabOffsetData(igrp,ipier,igdr,slabOffset) );
-               }
+               ATLASSERT(pGroup->GetGirder(gdrIdx)->GetSegmentCount() == 1); // design is only for PGSuper which is one segment per girder
+               CSegmentKey segmentKey(grpIdx, gdrIdx, 0);
+               const CPrecastSegmentData* pSegment = pGroup->GetGirder(gdrIdx)->GetSegment(0);
+               Float64 start, end;
+               pSegment->GetSlabOffset(&start, &end);
+               m_OldSegmentSlabOffsets.insert(std::make_pair(segmentKey, std::make_pair(start, end)));
             }
          }
       }
@@ -234,28 +229,28 @@ void txnDesignGirder::Init()
       }
    }
 
-   // Store original AssExcessCamber data. Format depends on type
-   if (m_DidAssExcessCamberDesign)
+   // Store original AssumedExcessCamber data. Format depends on type
+   if (m_DidAssumedExcessCamberDesign)
    {
       GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
 
-      m_OldAssExcessCamberType = pIBridgeDesc->GetAssExcessCamberType();
-      if (m_OldAssExcessCamberType==pgsTypes::aecBridge)
+      m_OldAssumedExcessCamberType = pIBridgeDesc->GetAssumedExcessCamberType();
+      if (m_OldAssumedExcessCamberType==pgsTypes::aecBridge)
       {
-         m_OldBridgeAssExcessCamber = pIBridgeDesc->GetAssExcessCamber(0,0); // same for all
+         m_OldBridgeAssumedExcessCamber = pIBridgeDesc->GetAssumedExcessCamber(0,0); // same for all
       }
-      else if (m_OldAssExcessCamberType==pgsTypes::aecSpan)
+      else if (m_OldAssumedExcessCamberType==pgsTypes::aecSpan)
       {
          // Store per span
          GroupIndexType ngrp = pIBridgeDesc->GetGirderGroupCount();
          for (GroupIndexType igrp=0; igrp<ngrp; igrp++)
          {
             const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(igrp);
-            Float64 assExcessCamber = pIBridgeDesc->GetAssExcessCamber(igrp,0);
-            m_OldAssExcessCamberData.push_back( OldAssExcessCamberData(igrp,INVALID_INDEX,assExcessCamber) );
+            Float64 assumedExcessCamber = pIBridgeDesc->GetAssumedExcessCamber(igrp,0);
+            m_OldAssumedExcessCamberData.push_back( OldAssumedExcessCamberData(igrp,INVALID_INDEX,assumedExcessCamber) );
          }
       }
-      else if (m_OldAssExcessCamberType==pgsTypes::aecGirder)
+      else if (m_OldAssumedExcessCamberType==pgsTypes::aecGirder)
       {
          // Store per girder
          GroupIndexType ngrp = pIBridgeDesc->GetGirderGroupCount();
@@ -265,15 +260,15 @@ void txnDesignGirder::Init()
             GirderIndexType ngdrs = pGroup->GetGirderCount();
             for (GirderIndexType igdr=0; igdr<ngdrs; igdr++)
             {
-               Float64 assExcessCamber = pIBridgeDesc->GetAssExcessCamber(igrp,igdr);
-               m_OldAssExcessCamberData.push_back( OldAssExcessCamberData(igrp,igdr,assExcessCamber) );
+               Float64 assumedExcessCamber = pIBridgeDesc->GetAssumedExcessCamber(igrp,igdr);
+               m_OldAssumedExcessCamberData.push_back( OldAssumedExcessCamberData(igrp,igdr,assumedExcessCamber) );
             }
          }
       }
       else
       {
          ATLASSERT(0);
-         m_DidAssExcessCamberDesign = false;
+         m_DidAssumedExcessCamberDesign = false;
       }
    }
 
@@ -319,20 +314,20 @@ void txnDesignGirder::DoExecute(int i)
          {
             pIBridgeDesc->SetSlabOffset(m_OldBridgeSlabOffset);
          }
-         else if (m_OldSlabOffsetType==pgsTypes::sotPier)
+         else if (m_OldSlabOffsetType==pgsTypes::sotBearingLine)
          {
-            for (std::vector<OldSlabOffsetData>::const_iterator it=m_OldSlabOffsetData.begin(); it!=m_OldSlabOffsetData.end(); it++)
+            PierIndexType pierIdx = 0;
+            for (const auto& offsets : m_OldPierSlabOffsets)
             {
-               const OldSlabOffsetData& rdata = *it;
-               pIBridgeDesc->SetSlabOffset(rdata.GroupIdx, rdata.PierIdx, rdata.SlabOffset);
+               pIBridgeDesc->SetSlabOffset(pgsTypes::stPier,pierIdx, offsets.first, offsets. second);
+               pierIdx++;
             }
          }
-         else if (m_OldSlabOffsetType==pgsTypes::sotGirder)
+         else if (m_OldSlabOffsetType==pgsTypes::sotSegment)
          {
-            for (std::vector<OldSlabOffsetData>::const_iterator it=m_OldSlabOffsetData.begin(); it!=m_OldSlabOffsetData.end(); it++)
+            for (const auto& item : m_OldSegmentSlabOffsets)
             {
-               const OldSlabOffsetData& rdata = *it;
-               pIBridgeDesc->SetSlabOffset(rdata.GroupIdx, rdata.PierIdx, rdata.GirderIdx, rdata.SlabOffset);
+               pIBridgeDesc->SetSlabOffset(item.first, item.second.first, item.second.second);
             }
          }
          else
@@ -345,7 +340,7 @@ void txnDesignGirder::DoExecute(int i)
          // Data for new design
          if (m_NewSlabOffsetType == sodtAllSelectedGirders)
          {
-            pIBridgeDesc->SetSlabOffsetType(pgsTypes::sotGirder);
+            pIBridgeDesc->SetSlabOffsetType(pgsTypes::sotSegment);
 
             for (DesignDataConstIter itdd=m_DesignDataColl.begin(); itdd!=m_DesignDataColl.end(); itdd++)
             {
@@ -353,11 +348,8 @@ void txnDesignGirder::DoExecute(int i)
                Float64 aStart = pArtifact->GetSlabOffset(pgsTypes::metStart);
                Float64 aEnd = pArtifact->GetSlabOffset(pgsTypes::metEnd);
 
-               SpanIndexType span = itdd->m_DesignArtifact.GetGirderKey().groupIndex;
-               SpanIndexType gdr  = itdd->m_DesignArtifact.GetGirderKey().girderIndex;
-
-               pIBridgeDesc->SetSlabOffset(span, span,   gdr, aStart);
-               pIBridgeDesc->SetSlabOffset(span, span+1, gdr, aEnd);
+               CSegmentKey segmentKey(itdd->m_DesignArtifact.GetGirderKey(), 0);
+               pIBridgeDesc->SetSlabOffset(segmentKey, aStart, aEnd);
             }
          }
          else if (m_NewSlabOffsetType==sodtBridge)
@@ -367,15 +359,15 @@ void txnDesignGirder::DoExecute(int i)
          }
          else if (m_NewSlabOffsetType==sodtPier)
          {
-            pIBridgeDesc->SetSlabOffsetType(pgsTypes::sotPier);
-            pIBridgeDesc->SetSlabOffset(m_FromSpanIdx, m_FromSpanIdx,   m_DesignSlabOffset[pgsTypes::metStart]);
-            pIBridgeDesc->SetSlabOffset(m_FromSpanIdx, m_FromSpanIdx+1, m_DesignSlabOffset[pgsTypes::metEnd]);
+            pIBridgeDesc->SetSlabOffsetType(pgsTypes::sotBearingLine);
+            pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, (PierIndexType)m_FromSpanIdx, pgsTypes::Ahead,   m_DesignSlabOffset[pgsTypes::metStart]);
+            pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, (PierIndexType)(m_FromSpanIdx+1), pgsTypes::Back, m_DesignSlabOffset[pgsTypes::metEnd]);
          }
          else if (m_NewSlabOffsetType==sodtGirder)
          {
-            pIBridgeDesc->SetSlabOffsetType(pgsTypes::sotGirder);
-            pIBridgeDesc->SetSlabOffset(m_FromSpanIdx, m_FromSpanIdx,   m_FromGirderIdx, m_DesignSlabOffset[pgsTypes::metStart]);
-            pIBridgeDesc->SetSlabOffset(m_FromSpanIdx, m_FromSpanIdx+1, m_FromGirderIdx, m_DesignSlabOffset[pgsTypes::metEnd]);
+            pIBridgeDesc->SetSlabOffsetType(pgsTypes::sotSegment);
+            CSegmentKey segmentKey((GroupIndexType)m_FromSpanIdx, m_FromGirderIdx, 0);
+            pIBridgeDesc->SetSlabOffset(segmentKey, m_DesignSlabOffset[pgsTypes::metStart], m_DesignSlabOffset[pgsTypes::metEnd]);
          }
          else
          {
@@ -384,31 +376,29 @@ void txnDesignGirder::DoExecute(int i)
       }
    }
 
-   if (m_DidAssExcessCamberDesign)
+   if (m_DidAssumedExcessCamberDesign)
    {
       if (i==0)
       {
          // restore old data
-         pIBridgeDesc->SetAssExcessCamberType(m_OldAssExcessCamberType);
+         pIBridgeDesc->SetAssumedExcessCamberType(m_OldAssumedExcessCamberType);
 
-         if (m_OldAssExcessCamberType==pgsTypes::aecBridge)
+         if (m_OldAssumedExcessCamberType==pgsTypes::aecBridge)
          {
-            pIBridgeDesc->SetAssExcessCamber(m_OldBridgeAssExcessCamber);
+            pIBridgeDesc->SetAssumedExcessCamber(m_OldBridgeAssumedExcessCamber);
          }
-         else if (m_OldAssExcessCamberType==pgsTypes::aecSpan)
+         else if (m_OldAssumedExcessCamberType==pgsTypes::aecSpan)
          {
-            for (std::vector<OldAssExcessCamberData>::const_iterator it=m_OldAssExcessCamberData.begin(); it!=m_OldAssExcessCamberData.end(); it++)
+            for(const auto& rdata : m_OldAssumedExcessCamberData)
             {
-               const OldAssExcessCamberData& rdata = *it;
-               pIBridgeDesc->SetAssExcessCamber(rdata.GroupIdx, rdata.AssExcessCamber);
+               pIBridgeDesc->SetAssumedExcessCamber(rdata.GroupIdx, rdata.AssumedExcessCamber);
             }
          }
-         else if (m_OldAssExcessCamberType==pgsTypes::aecGirder)
+         else if (m_OldAssumedExcessCamberType==pgsTypes::aecGirder)
          {
-            for (std::vector<OldAssExcessCamberData>::const_iterator it=m_OldAssExcessCamberData.begin(); it!=m_OldAssExcessCamberData.end(); it++)
+            for (const auto& rdata : m_OldAssumedExcessCamberData)
             {
-               const OldAssExcessCamberData& rdata = *it;
-               pIBridgeDesc->SetAssExcessCamber(rdata.GroupIdx, rdata.GirderIdx, rdata.AssExcessCamber);
+               pIBridgeDesc->SetAssumedExcessCamber(rdata.GroupIdx, rdata.GirderIdx, rdata.AssumedExcessCamber);
             }
          }
          else
@@ -421,33 +411,33 @@ void txnDesignGirder::DoExecute(int i)
          // Data for new design
          if (m_NewSlabOffsetType == sodtAllSelectedGirders)
          {
-            pIBridgeDesc->SetAssExcessCamberType(pgsTypes::aecGirder);
+            pIBridgeDesc->SetAssumedExcessCamberType(pgsTypes::aecGirder);
 
             for (DesignDataConstIter itdd=m_DesignDataColl.begin(); itdd!=m_DesignDataColl.end(); itdd++)
             {
                const pgsSegmentDesignArtifact* pArtifact = itdd->m_DesignArtifact.GetSegmentDesignArtifact(0);
-               Float64 assExcessCamber = pArtifact->GetAssExcessCamber();
+               Float64 assumedExcessCamber = pArtifact->GetAssumedExcessCamber();
 
                SpanIndexType span = itdd->m_DesignArtifact.GetGirderKey().groupIndex;
                SpanIndexType gdr  = itdd->m_DesignArtifact.GetGirderKey().girderIndex;
 
-               pIBridgeDesc->SetAssExcessCamber(span, gdr, assExcessCamber);
+               pIBridgeDesc->SetAssumedExcessCamber(span, gdr, assumedExcessCamber);
             }
          }
-         else if (m_NewAssExcessCamberType==pgsTypes::aecBridge)
+         else if (m_NewAssumedExcessCamberType==pgsTypes::aecBridge)
          {
-            pIBridgeDesc->SetAssExcessCamberType(m_NewAssExcessCamberType);
-            pIBridgeDesc->SetAssExcessCamber(m_DesignAssExcessCamber);
+            pIBridgeDesc->SetAssumedExcessCamberType(m_NewAssumedExcessCamberType);
+            pIBridgeDesc->SetAssumedExcessCamber(m_DesignAssumedExcessCamber);
          }
-         else if (m_NewAssExcessCamberType==pgsTypes::aecSpan)
+         else if (m_NewAssumedExcessCamberType==pgsTypes::aecSpan)
          {
-            pIBridgeDesc->SetAssExcessCamberType(m_NewAssExcessCamberType);
-            pIBridgeDesc->SetAssExcessCamber(m_FromSpanIdx,m_DesignAssExcessCamber);
+            pIBridgeDesc->SetAssumedExcessCamberType(m_NewAssumedExcessCamberType);
+            pIBridgeDesc->SetAssumedExcessCamber(m_FromSpanIdx,m_DesignAssumedExcessCamber);
          }
-         else if (m_NewAssExcessCamberType==pgsTypes::aecGirder)
+         else if (m_NewAssumedExcessCamberType==pgsTypes::aecGirder)
          {
-            pIBridgeDesc->SetAssExcessCamberType(m_NewAssExcessCamberType);
-            pIBridgeDesc->SetAssExcessCamber(m_FromSpanIdx, m_FromGirderIdx, m_DesignAssExcessCamber);
+            pIBridgeDesc->SetAssumedExcessCamberType(m_NewAssumedExcessCamberType);
+            pIBridgeDesc->SetAssumedExcessCamber(m_FromSpanIdx, m_FromGirderIdx, m_DesignAssumedExcessCamber);
          }
       }
    }

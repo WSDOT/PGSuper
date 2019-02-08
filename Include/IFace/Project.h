@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -502,9 +502,9 @@ interface ISpecification : IUnknown
 
    // Assumed excess camber is used for parabolic variation of haunch load and composite props. These functions see if it
    // is applicable at all or for either
-   virtual bool IsAssExcessCamberInputEnabled(bool considerDeckType=true) const = 0; // Depends on library and deck type
-   virtual bool IsAssExcessCamberForLoad() const = 0; 
-   virtual bool IsAssExcessCamberForSectProps() const = 0; 
+   virtual bool IsAssumedExcessCamberInputEnabled(bool considerDeckType=true) const = 0; // Depends on library and deck type
+   virtual bool IsAssumedExcessCamberForLoad() const = 0; 
+   virtual bool IsAssumedExcessCamberForSectProps() const = 0; 
 };
 
 /*****************************************************************************
@@ -1049,27 +1049,32 @@ interface IBridgeDescription : IUnknown
    // changes slab offset type to be sotBridge
    virtual void SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType) = 0;
    virtual void SetSlabOffset( Float64 slabOffset) = 0;
-   // changes slab offset type to sotPier
-   virtual void SetSlabOffset( GroupIndexType grpIdx, PierIndexType pierIdx, Float64 offset) = 0;
-   // sets slab offset per girder ... sets the slab offset type to sotGirder
-   virtual void SetSlabOffset( GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx, Float64 offset) = 0;
-   virtual Float64 GetSlabOffset( GroupIndexType grpIdx, PierIndexType pierIdx, GirderIndexType gdrIdx) const = 0;
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() const = 0;
+   // changes slab offset type to sotBearingLine
+   virtual void SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face, Float64 offset) = 0;
+   virtual void SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64 backSlabOffset,Float64 aheadSlabOffset) = 0;
+   virtual Float64 GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face) const = 0;
+   virtual void GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const = 0;
+   // sets slab offset per girder ... sets the slab offset type to sotSegment
+   virtual void SetSlabOffset(const CSegmentKey& segmentKey, pgsTypes::MemberEndType end, Float64 offset) = 0;
+   virtual void SetSlabOffset(const CSegmentKey& segmentKey, Float64 startSlabOffset,Float64 endSlabOffset) = 0;
+   virtual Float64 GetSlabOffset(const CSegmentKey& segmentKey, pgsTypes::MemberEndType end) const = 0;
+   virtual void GetSlabOffset(const CSegmentKey& segmentKey, Float64* pStartSlabOffset,Float64* pEndSlabOffset) const = 0;
 
    // fillet
    virtual void SetFillet( Float64 Fillet) = 0;
    virtual Float64 GetFillet() const = 0;
 
    // Assumed Excess Camber
-   virtual void SetAssExcessCamberType(pgsTypes::AssExcessCamberType cType) = 0;
-   virtual pgsTypes::AssExcessCamberType GetAssExcessCamberType() const = 0;
-   // changes AssExcessCamber type to be aecBridge
-   virtual void SetAssExcessCamber( Float64 assExcessCamber) = 0;
-   // changes AssExcessCamber type to fttPier
-   virtual void SetAssExcessCamber(SpanIndexType spanIdx, Float64 offset) = 0;
-   // sets AssExcessCamber per girder ... sets the AssExcessCamber type to aecGirder
-   virtual void SetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 camber) = 0;
-   virtual Float64 GetAssExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx) const = 0;
+   virtual void SetAssumedExcessCamberType(pgsTypes::AssumedExcessCamberType cType) = 0;
+   virtual pgsTypes::AssumedExcessCamberType GetAssumedExcessCamberType() const = 0;
+   // changes AssumedExcessCamber type to be aecBridge
+   virtual void SetAssumedExcessCamber( Float64 assumedExcessCamber) = 0;
+   // changes AssumedExcessCamber type to fttPier
+   virtual void SetAssumedExcessCamber(SpanIndexType spanIdx, Float64 assumedExcessCamber) = 0;
+   // sets AssExcessCamber per girder ... sets the AssumedExcessCamber type to aecGirder
+   virtual void SetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 assumedExcessCamber) = 0;
+   virtual Float64 GetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx) const = 0;
 
    // Returns a vector of valid connection types
    virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) const = 0;

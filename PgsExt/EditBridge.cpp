@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,8 +35,8 @@ txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBri
                              Float64 oldRelHumidity, Float64 newRelHumidity)
 {
    m_bBridgeDescOnly = false;
-   m_pBridgeDesc[0] = new CBridgeDescription2(oldBridgeDesc);
-   m_pBridgeDesc[1] = new CBridgeDescription2(newBridgeDesc);
+   m_BridgeDesc[0] = oldBridgeDesc;
+   m_BridgeDesc[1] = newBridgeDesc;
 
    m_ExposureCondition[0] = oldExposureCondition;
    m_ExposureCondition[1] = newExposureCondition;
@@ -48,14 +48,12 @@ txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBri
 txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc)
 {
    m_bBridgeDescOnly = true;
-   m_pBridgeDesc[0] = new CBridgeDescription2(oldBridgeDesc);
-   m_pBridgeDesc[1] = new CBridgeDescription2(newBridgeDesc);
+   m_BridgeDesc[0] = oldBridgeDesc;
+   m_BridgeDesc[1] = newBridgeDesc;
 }
 
 txnEditBridge::~txnEditBridge()
 {
-   delete m_pBridgeDesc[0];
-   delete m_pBridgeDesc[1];
 }
 
 bool txnEditBridge::Execute()
@@ -86,7 +84,7 @@ void txnEditBridge::Execute(int i)
       pEnvironment->SetRelHumidity( m_RelHumidity[i] );
    }
 
-   pBridgeDesc->SetBridgeDescription( *m_pBridgeDesc[i] );
+   pBridgeDesc->SetBridgeDescription( m_BridgeDesc[i] );
 
    pEvents->FirePendingEvents();
 }
@@ -95,11 +93,11 @@ txnTransaction* txnEditBridge::CreateClone() const
 {
    if ( m_bBridgeDescOnly )
    {
-      return new txnEditBridge(*m_pBridgeDesc[0],*m_pBridgeDesc[1]);
+      return new txnEditBridge(m_BridgeDesc[0],m_BridgeDesc[1]);
    }
    else
    {
-      return new txnEditBridge(*m_pBridgeDesc[0],       *m_pBridgeDesc[1],
+      return new txnEditBridge(m_BridgeDesc[0],        m_BridgeDesc[1],
                                m_ExposureCondition[0], m_ExposureCondition[1],
                                m_RelHumidity[0],       m_RelHumidity[1] );
    }

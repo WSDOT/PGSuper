@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2919,7 +2919,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
          CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          PoiList vPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_RELEASED_SEGMENT, &vPoi);
+         pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
          const pgsPointOfInterest& start_poi(vPoi.front());
          Float64 top_flange_thickening_at_start = pIGirder->GetTopFlangeThickening(start_poi);
 
@@ -2942,7 +2942,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
          }
 
          PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
-         Float64 slab_offset = pBridge->GetSlabOffset(segmentKey.groupIndex,startPierIdx,segmentKey.girderIndex); // use for dummy top of stirrup if they are extended into deck
+         Float64 slab_offset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart); // use for dummy top of stirrup if they are extended into deck
 
          bool bDoStirrupsEngageDeck = pStirrupGeom->DoStirrupsEngageDeck(segmentKey);
 

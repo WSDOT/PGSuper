@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -421,10 +421,10 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row++,1) << component.SetValue(pBridge->GetGrossSlabDepth( poi ));
 
    (*pTable)(row,0) << _T("\"A\" Dimension at Start");
-   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex));
+   (*pTable)(row++,1) << component.SetValue(pSegment->GetSlabOffset(pgsTypes::metStart));
 
    (*pTable)(row,0) << _T("\"A\" Dimension at End");
-   (*pTable)(row++,1) << component.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex));
+   (*pTable)(row++,1) << component.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
 
    if ( pDeck->WearingSurface == pgsTypes::wstOverlay )
    {

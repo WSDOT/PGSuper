@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1587,7 +1587,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
 
    if (newDeckType == pgsTypes::sdtCompositeCIP || IsOverlayDeck(newDeckType))
    {
-      Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      Float64 minSlabOffset = pParent->m_BridgeDesc.GetLeastSlabOffset();
       if ( minSlabOffset < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth )
       {
          pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset;
@@ -1603,7 +1603,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
    }
    else if (newDeckType == pgsTypes::sdtCompositeSIP )
    {
-      Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
+      Float64 minSlabOffset = pParent->m_BridgeDesc.GetLeastSlabOffset();
       if ( minSlabOffset < pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth )
       {
          pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = minSlabOffset - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth; // decrease the cast depth

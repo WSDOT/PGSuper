@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -66,7 +66,7 @@ DEFINE_GUID(IID_IGirderHaunch,
 interface IGirderHaunch : IUnknown
 {
    virtual Float64 GetRequiredSlabOffset(const CSegmentKey& segmentKey) const = 0;
-   virtual const HAUNCHDETAILS& GetHaunchDetails(const CSegmentKey& segmentKey) const = 0;
+   virtual const SLABOFFSETDETAILS& GetSlabOffsetDetails(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const = 0;
 };
 

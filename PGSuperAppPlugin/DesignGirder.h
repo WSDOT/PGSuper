@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,43 +86,31 @@ private:
    bool    m_DidSlabOffsetDesign; // true only if slab offset was designed
    Float64 m_DesignSlabOffset[2]; // ahead:back
 
-   pgsTypes::AssExcessCamberType m_NewAssExcessCamberType;
-   bool    m_DidAssExcessCamberDesign; // true only if Assumed Excess Camber was designed
-   Float64 m_DesignAssExcessCamber;
+   pgsTypes::AssumedExcessCamberType m_NewAssumedExcessCamberType;
+   bool    m_DidAssumedExcessCamberDesign; // true only if Assumed Excess Camber was designed
+   Float64 m_DesignAssumedExcessCamber;
 
    // Old data
    pgsTypes::SlabOffsetType m_OldSlabOffsetType;
    Float64 m_OldBridgeSlabOffset; // Only if old type was sotBridge
-   typedef struct OldSlabOffsetData // Data for each girder or span/pier depending on SlabOffsetType
-   {
-      GroupIndexType  GroupIdx;
-      PierIndexType   PierIdx;
-      GirderIndexType GirderIdx; // only used for sotGirder
-      Float64 SlabOffset;
+   std::vector<std::pair<Float64,Float64>> m_OldPierSlabOffsets; // slab offsets for sotBearingLine
+   std::map<CSegmentKey, std::pair<Float64, Float64>> m_OldSegmentSlabOffsets; // slab offsets for sotSegment
 
-      // constructor
-      OldSlabOffsetData(GroupIndexType groupIdx, PierIndexType pierIdx, GirderIndexType girderIdx, Float64 slabOffset):
-         GroupIdx(groupIdx),PierIdx(pierIdx),GirderIdx(girderIdx),SlabOffset(slabOffset)
-         {;}
-
-   } OldSlabOffsetData;
-   std::vector<OldSlabOffsetData> m_OldSlabOffsetData;
-
-   pgsTypes::AssExcessCamberType m_OldAssExcessCamberType;
-   Float64 m_OldBridgeAssExcessCamber; // Only if old type was aecBridge
-   typedef struct OldAssExcessCamberData // Data for each girder or span/pier depending on AssExcessCamberType
+   pgsTypes::AssumedExcessCamberType m_OldAssumedExcessCamberType;
+   Float64 m_OldBridgeAssumedExcessCamber; // Only if old type was aecBridge
+   typedef struct OldAssumedExcessCamberData // Data for each girder or span/pier depending on AssumedExcessCamberType
    {
       GroupIndexType  GroupIdx;
       GirderIndexType GirderIdx; // only used for fttGirder
-      Float64 AssExcessCamber;
+      Float64 AssumedExcessCamber;
 
       // constructor
-      OldAssExcessCamberData(GroupIndexType groupIdx, GirderIndexType girderIdx, Float64 assExcessCamber):
-         GroupIdx(groupIdx),GirderIdx(girderIdx),AssExcessCamber(assExcessCamber)
+      OldAssumedExcessCamberData(GroupIndexType groupIdx, GirderIndexType girderIdx, Float64 assumedExcessCamber):
+         GroupIdx(groupIdx),GirderIdx(girderIdx),AssumedExcessCamber(assumedExcessCamber)
          {;}
 
-   } OldAssExcessCamberData;
-   std::vector<OldAssExcessCamberData> m_OldAssExcessCamberData;
+   } OldAssumedExcessCamberData;
+   std::vector<OldAssumedExcessCamberData> m_OldAssumedExcessCamberData;
 
 };
 

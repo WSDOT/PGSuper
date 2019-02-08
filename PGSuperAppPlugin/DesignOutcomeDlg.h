@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -61,7 +61,7 @@ public:
 
 // Operations
    // Returns true if A design exists, and returns method for setting A for design. 
-   // for sotGirder, use the individual A's per girder designed.
+   // for sotSegment, use the individual A's per girder designed.
    bool GetSlabOffsetDesign(SlabOffsetDesignSelectionType* pSoSelectionType, SpanIndexType* pFromSpan, GirderIndexType* pFromGirder);
 
 // Overrides

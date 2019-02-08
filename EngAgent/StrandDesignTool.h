@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -346,10 +346,10 @@ public:
    Float64 GetAbsoluteMinimumSlabOffset() const; // based on girder library entry
 
    bool IsDesignExcessCamber() const;
-   Float64 GetAssExcessCamberTolerance() const;
+   Float64 GetAssumedExcessCamberTolerance() const;
 
-   void SetAssExcessCamber(Float64 camber);
-   Float64 GetAssExcessCamber() const;
+   void SetAssumedExcessCamber(Float64 camber);
+   Float64 GetAssumedExcessCamber() const;
 
    // Lifting and hauling
    void SetLiftingLocations(Float64 left,Float64 right);
@@ -445,7 +445,7 @@ private:
 
    // Are we designing assumed excess camber?
    bool m_bIsDesignExcessCamber;
-   Float64 m_AssExcessCamberTolerance;
+   Float64 m_AssumedExcessCamberTolerance;
 
    // Points of interest to be used for design
    mutable pgsPoiMgr m_PoiMgr;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,9 @@
 #include "SpanLayoutPage.h"
 #include "SpanDetailsDlg.h"
 #include "SelectItemDlg.h"
+#include "Utilities.h"
+
+#include <IFace\DocumentType.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
@@ -51,6 +54,8 @@ CSpanLayoutPage::CSpanLayoutPage() : CPropertyPage(CSpanLayoutPage::IDD)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
    m_SpanLength = -1;
+   m_bHasCantilevers = false;
+   m_bHasSlabOffset = true;
 }
 
 CSpanLayoutPage::~CSpanLayoutPage()
@@ -72,32 +77,33 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_Control(pDX, IDC_START_SLAB_OFFSET, m_ctrlStartSlabOffset);
    DDX_Control(pDX, IDC_END_SLAB_OFFSET,   m_ctrlEndSlabOffset);
-   DDX_Control(pDX, IDC_ASSEXCESSCAMBER, m_ctrlAssExcessCamber);
+   DDX_Control(pDX, IDC_ASSUMED_EXCESS_CAMBER, m_ctrlAssumedExcessCamber);
 
    // display units no matter what
-   DDX_Tag( pDX, IDC_ASSEXCESSCAMBER_UNIT,pDisplayUnits->GetComponentDimUnit() );
-
-
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
+   DDX_Tag( pDX, IDC_ASSUMED_EXCESS_CAMBER_UNIT,pDisplayUnits->GetComponentDimUnit() );
 
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
    DDV_UnitValueGreaterThanZero(pDX,IDC_SPAN_LENGTH,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
 
-   PierIndexType startPierIdx = pParent->m_pSpanData->GetPrevPier()->GetIndex();
-   PierIndexType endPierIdx   = pParent->m_pSpanData->GetNextPier()->GetIndex();
-   CGirderGroupData* pStartGroup = pParent->m_pSpanData->GetPrevPier()->GetGirderGroup(pgsTypes::Ahead);
-   CGirderGroupData* pEndGroup   = pParent->m_pSpanData->GetNextPier()->GetGirderGroup(pgsTypes::Back);
-   Float64 slabOffset[2] = {pStartGroup->GetSlabOffset(startPierIdx,0,m_InitialSlabOffsetType == pgsTypes::sotGirder ? true : false),
-                            pEndGroup->GetSlabOffset(endPierIdx,0,m_InitialSlabOffsetType == pgsTypes::sotGirder ? true : false)};
+   DDX_CBItemData(pDX, IDC_SLAB_OFFSET_TYPE, m_SlabOffsetType);
 
-   DDX_UnitValueAndTag(pDX,IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT,slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX,IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,  slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit());
-
-   Float64 AssExcessCamber = 0;
-   if (m_bCanAssExcessCamberInputBeEnabled)
+   CPierData2* pStartPier = pParent->m_pSpanData->GetPrevPier();
+   CPierData2* pEndPier = pParent->m_pSpanData->GetNextPier();
+   if (pStartPier->HasSlabOffset())
    {
-      AssExcessCamber = pParent->m_pSpanData->GetAssExcessCamber(0);
-      DDX_UnitValueAndTag(pDX, IDC_ASSEXCESSCAMBER, IDC_ASSEXCESSCAMBER_UNIT, AssExcessCamber, pDisplayUnits->GetComponentDimUnit());
+      DDX_UnitValueAndTag(pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
+   }
+   
+   if(pEndPier->HasSlabOffset())
+   {
+      DDX_UnitValueAndTag(pDX, IDC_END_SLAB_OFFSET, IDC_END_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit());
+   };
+
+   Float64 AssumedExcessCamber = 0;
+   if (m_bCanAssumedExcessCamberInputBeEnabled)
+   {
+      AssumedExcessCamber = pParent->m_pSpanData->GetAssumedExcessCamber(0);
+      DDX_UnitValueAndTag(pDX, IDC_ASSUMED_EXCESS_CAMBER, IDC_ASSUMED_EXCESS_CAMBER_UNIT, AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit());
    }
 
    bool bHasCantilever[2] = { false,false };
@@ -130,26 +136,21 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    {
       pParent->m_BridgeDesc.SetSpanLength(pParent->m_pSpanData->GetIndex(),m_SpanLength);
 
-      if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
+      if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone && m_SlabOffsetType != pgsTypes::sotSegment && m_bHasSlabOffset)
       {
-         Float64 minA  = pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth;
-         if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP)
-         {
-            minA += pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth;
-         }
+         Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
 
-         cmpdim.SetValue(minA);
          CString strMinValError;
-         strMinValError.Format(_T("Slab Offset value must be greater or equal to gross slab depth (%.4f %s)"), cmpdim.GetValue(true), cmpdim.GetUnitTag().c_str());
+         strMinValError.Format(_T("Slab Offset value must be greater or equal to (%s)"), FormatDimension(minSlabOffset,pDisplayUnits->GetComponentDimUnit()));
 
-         if (slabOffset[pgsTypes::metStart] < minA)
+         if (pStartPier->HasSlabOffset() && m_SlabOffset[pgsTypes::metStart] < minSlabOffset)
          {
             pDX->PrepareCtrl(IDC_START_SLAB_OFFSET);
             AfxMessageBox(strMinValError);
             pDX->Fail();
          }
 
-         if (pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier && slabOffset[pgsTypes::metEnd] < minA)
+         if (pEndPier->HasSlabOffset() && m_SlabOffset[pgsTypes::metEnd] < minSlabOffset)
          {
             pDX->PrepareCtrl(IDC_END_SLAB_OFFSET);
             AfxMessageBox(strMinValError);
@@ -157,52 +158,46 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
          }
 
          // Slab offset
-         if (pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge)
+         pParent->m_BridgeDesc.SetSlabOffsetType(m_SlabOffsetType);
+         if (m_SlabOffsetType == pgsTypes::sotBridge)
          {
-            pParent->m_BridgeDesc.SetSlabOffset(slabOffset[pgsTypes::metStart]);
+            pParent->m_BridgeDesc.SetSlabOffset(m_SlabOffset[pStartPier->HasSlabOffset() ? pgsTypes::metStart : pgsTypes::metEnd]);
          }
-         else if (pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotPier)
+         else 
          {
-            pStartGroup->SetSlabOffset(startPierIdx, slabOffset[pgsTypes::metStart]);
-            pEndGroup->SetSlabOffset(endPierIdx, slabOffset[pgsTypes::metEnd]);
-         }
-         else
-         {
-            if (m_InitialSlabOffsetType != pgsTypes::sotGirder)
+            // this is not a context where we can change individual segment slab offsets
+            // so the slab offset type must sotBearingLine here
+            ASSERT(m_SlabOffsetType == pgsTypes::sotBearingLine);
+            if (pStartPier->HasSlabOffset())
             {
-               // Slab offset started off as Bridge or Pier and now it is Girder... this means the
-               // slab offset applies to all girders in the Span
-               CGirderGroupData* pGroup = pParent->m_BridgeDesc.GetGirderGroup(pParent->m_pSpanData);
-               GirderIndexType nGirders = pGroup->GetGirderCount();
-               for (PierIndexType pierIdx = m_PrevPierIdx; pierIdx <= m_NextPierIdx; pierIdx++)
-               {
-                  for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
-                  {
-                     pGroup->SetSlabOffset(pierIdx, gdrIdx, slabOffset[pgsTypes::metStart]);
-                  }
-               }
+               pStartPier->SetSlabOffset(pgsTypes::Ahead, m_SlabOffset[pgsTypes::metStart]);
+            }
+
+            if (pEndPier->HasSlabOffset())
+            {
+               pEndPier->SetSlabOffset(pgsTypes::Back, m_SlabOffset[pgsTypes::metEnd]);
             }
          }
 
          // excess camber
-         if (m_bCanAssExcessCamberInputBeEnabled)
+         if (m_bCanAssumedExcessCamberInputBeEnabled)
          {
-            if (pParent->m_BridgeDesc.GetAssExcessCamberType() == pgsTypes::aecBridge)
-         {
-               pParent->m_BridgeDesc.SetAssExcessCamber(AssExcessCamber);
-         }
-            else if (pParent->m_BridgeDesc.GetAssExcessCamberType() == pgsTypes::aecSpan)
-         {
-               pParent->m_pSpanData->SetAssExcessCamber(AssExcessCamber);
-         }
-         else
-         {
-               if (m_InitialAssExcessCamberType != pgsTypes::aecGirder)
+            if (pParent->m_BridgeDesc.GetAssumedExcessCamberType() == pgsTypes::aecBridge)
             {
-               GirderIndexType nGirders = pParent->m_pSpanData->GetGirderCount();
-                  for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+               pParent->m_BridgeDesc.SetAssumedExcessCamber(AssumedExcessCamber);
+            }
+            else if (pParent->m_BridgeDesc.GetAssumedExcessCamberType() == pgsTypes::aecSpan)
+            {
+               pParent->m_pSpanData->SetAssumedExcessCamber(AssumedExcessCamber);
+            }
+            else
+            {
+               if (m_InitialAssumedExcessCamberType != pgsTypes::aecGirder)
                {
-                     pParent->m_pSpanData->SetAssExcessCamber(gdrIdx, AssExcessCamber);
+                  GirderIndexType nGirders = pParent->m_pSpanData->GetGirderCount();
+                  for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+                  {
+                     pParent->m_pSpanData->SetAssumedExcessCamber(gdrIdx, AssumedExcessCamber);
                   }
                }
             }
@@ -229,18 +224,13 @@ BEGIN_MESSAGE_MAP(CSpanLayoutPage, CPropertyPage)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_START_CANTILEVER, &CSpanLayoutPage::OnBnClickedStartCantilever)
    ON_BN_CLICKED(IDC_END_CANTILEVER, &CSpanLayoutPage::OnBnClickedEndCantilever)
-   ON_CBN_SELCHANGE(IDC_ASSEXCESSCAMBER_COMBO, &CSpanLayoutPage::OnCbnSelchangeAssExcessCamberCombo)
-   ON_CBN_SELCHANGE(IDC_SLABOFFSET_COMBO, &CSpanLayoutPage::OnChangeSlabOffset)
+   ON_CBN_SELCHANGE(IDC_ASSUMED_EXCESS_CAMBER_TYPE, &CSpanLayoutPage::OnCbnSelchangeAssumedExcessCamberCombo)
+   ON_CBN_DROPDOWN(IDC_SLAB_OFFSET_TYPE, &CSpanLayoutPage::OnChangingSlabOffset)
+   ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE, &CSpanLayoutPage::OnChangeSlabOffset)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanLayoutPage message handlers
-void CSpanLayoutPage::Init(CSpanDetailsDlg* pParent)
-{
-   m_SpanLength = pParent->m_pSpanData->GetSpanLength();
-   m_InitialSlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
-   m_InitialAssExcessCamberType = pParent->m_BridgeDesc.GetAssExcessCamberType();
-}
 
 BOOL CSpanLayoutPage::OnInitDialog() 
 {
@@ -249,8 +239,42 @@ BOOL CSpanLayoutPage::OnInitDialog()
    m_PrevPierIdx = (PierIndexType)m_SpanIdx;
    m_NextPierIdx = m_PrevPierIdx+1;
 
-   if ( m_InitialSlabOffsetType == pgsTypes::sotGirder )
+   m_SpanLength = pParent->m_pSpanData->GetSpanLength();
+   m_InitialAssumedExcessCamberType = pParent->m_BridgeDesc.GetAssumedExcessCamberType();
+
+
+   m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   BOOL bIsPGSuper = (pDocType->IsPGSuperDocument() ? TRUE : FALSE);
+   CComboBox* pSlabOffsetCB = (CComboBox*)this->GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+   if (m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotBearingLine)
    {
+      // in the context of this dialog, all we can edit is bridge or pier level values
+      int idx = pSlabOffsetCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge, bIsPGSuper));
+      pSlabOffsetCB->SetItemData(idx, pgsTypes::sotBridge);
+      idx = pSlabOffsetCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, bIsPGSuper));
+      pSlabOffsetCB->SetItemData(idx, pgsTypes::sotBearingLine);
+   }
+   else
+   {
+      // we go to this dialog with the slab offset by segment
+      // since segment values can't be edited here, the only choice we have to to edit the bearing line values
+      // however, we need the by segment option so the UI shows the current state. If by segment is
+      // selected when the dialog closes, the slab offset information is not updated
+      ASSERT(m_SlabOffsetType == pgsTypes::sotSegment);
+      int idx = pSlabOffsetCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, bIsPGSuper));
+      pSlabOffsetCB->SetItemData(idx, pgsTypes::sotBearingLine);
+      idx = pSlabOffsetCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotSegment, bIsPGSuper));
+      pSlabOffsetCB->SetItemData(idx, pgsTypes::sotSegment);
+   }
+
+   if (m_SlabOffsetType == pgsTypes::sotSegment)
+   {
+      // since the context of this dialog is such that we can't edit segment level slab offsets
+      // don't show the numbers in the controls when segment is the selected type
       m_ctrlStartSlabOffset.ShowDefaultWhenDisabled(FALSE);
       m_ctrlEndSlabOffset.ShowDefaultWhenDisabled(FALSE);
    }
@@ -258,6 +282,38 @@ BOOL CSpanLayoutPage::OnInitDialog()
    {
       m_ctrlStartSlabOffset.ShowDefaultWhenDisabled(TRUE);
       m_ctrlEndSlabOffset.ShowDefaultWhenDisabled(TRUE);
+   }
+
+   // not all piers have slab offsets... hide controls if piers don't have it
+   const CPierData2* pPrevPier = pParent->GetBridgeDescription()->GetPier(m_PrevPierIdx);
+   const CPierData2* pNextPier = pParent->GetBridgeDescription()->GetPier(m_NextPierIdx);
+   m_bHasSlabOffset = pPrevPier->HasSlabOffset() || pNextPier->HasSlabOffset();
+   if (pPrevPier->HasSlabOffset())
+   {
+      m_SlabOffset[pgsTypes::metStart] = pPrevPier->GetSlabOffset(pgsTypes::Ahead, m_SlabOffsetType == pgsTypes::sotSegment ? true : false);
+   }
+   else
+   {
+      GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_START_SLAB_OFFSET)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
+   }
+
+   if (pNextPier->HasSlabOffset())
+   {
+      m_SlabOffset[pgsTypes::metEnd] = pNextPier->GetSlabOffset(pgsTypes::Back, m_SlabOffsetType == pgsTypes::sotSegment ? true : false);
+   }
+   else
+   {
+      GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_END_SLAB_OFFSET)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->ShowWindow(SW_HIDE);
+   }
+
+   if (!m_bHasSlabOffset)
+   {
+      GetDlgItem(IDC_SLAB_OFFSET_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_SLAB_OFFSET_TYPE)->ShowWindow(SW_HIDE);
    }
 
    CEAFDocument* pDoc = EAFGetDocument();
@@ -271,72 +327,39 @@ BOOL CSpanLayoutPage::OnInitDialog()
       ShowCantilevers(FALSE,FALSE);
    }
    
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISpecification, pSpec );
 
-   m_bCanAssExcessCamberInputBeEnabled = pSpec->IsAssExcessCamberInputEnabled();
+   m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
    
    CPropertyPage::OnInitDialog();
 
-   CComboBox* pAssExcessCamberCB = (CComboBox*)this->GetDlgItem(IDC_ASSEXCESSCAMBER_COMBO);
+   CComboBox* pAssumedExcessCamberCB = (CComboBox*)this->GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPE);
 
-   if (m_bCanAssExcessCamberInputBeEnabled)
+   if (m_bCanAssumedExcessCamberInputBeEnabled)
    {
-      if (m_InitialAssExcessCamberType == pgsTypes::aecGirder)
+      if (m_InitialAssumedExcessCamberType == pgsTypes::aecGirder)
    {
-         m_ctrlAssExcessCamber.ShowDefaultWhenDisabled(FALSE);
+         m_ctrlAssumedExcessCamber.ShowDefaultWhenDisabled(FALSE);
       }
       else
       {
-         m_ctrlAssExcessCamber.ShowDefaultWhenDisabled(TRUE);
+         m_ctrlAssumedExcessCamber.ShowDefaultWhenDisabled(TRUE);
       }
 
-      pgsTypes::AssExcessCamberType AssExcessCamberType = pParent->m_BridgeDesc.GetAssExcessCamberType();
-      ATLASSERT(m_InitialAssExcessCamberType == AssExcessCamberType); // if this is not true, then 
+      pgsTypes::AssumedExcessCamberType AssumedExcessCamberType = pParent->m_BridgeDesc.GetAssumedExcessCamberType();
+      ATLASSERT(m_InitialAssumedExcessCamberType == AssumedExcessCamberType); // if this is not true, then 
 
-      if (AssExcessCamberType == pgsTypes::aecBridge || AssExcessCamberType == pgsTypes::aecSpan)
+      if (AssumedExcessCamberType == pgsTypes::aecBridge || AssumedExcessCamberType == pgsTypes::aecSpan)
       {
-         pAssExcessCamberCB->AddString(_T("The same Assumed Excess Camber is used for the entire bridge"));
-         pAssExcessCamberCB->AddString(_T("Assumed Excess Camber is defined span by span"));
-         pAssExcessCamberCB->SetCurSel(AssExcessCamberType == pgsTypes::aecBridge ? 0 : 1);
+         pAssumedExcessCamberCB->AddString(_T("The same Assumed Excess Camber is used for the entire bridge"));
+         pAssumedExcessCamberCB->AddString(_T("Assumed Excess Camber is defined span by span"));
+         pAssumedExcessCamberCB->SetCurSel(AssumedExcessCamberType == pgsTypes::aecBridge ? 0 : 1);
       }
-      else if (AssExcessCamberType == pgsTypes::aecGirder)
+      else if (AssumedExcessCamberType == pgsTypes::aecGirder)
       {
-         pAssExcessCamberCB->AddString(_T("A unique assumed excess camber is used for every girder"));
-         pAssExcessCamberCB->AddString(_T("Assumed Excess Camber is defined span by span"));
-         pAssExcessCamberCB->SetCurSel(0);
-      }
-      else
-      {
-         ATLASSERT(0);
-      }
-   }
-   else
-   {
-      m_ctrlAssExcessCamber.EnableWindow(FALSE);
-      pAssExcessCamberCB->EnableWindow(FALSE);
-   }
-
-   CComboBox* pSlabOffsetCB = (CComboBox*)this->GetDlgItem(IDC_SLABOFFSET_COMBO);
-
-   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
-   if (deckType != pgsTypes::sdtNone)
-   {
-
-      pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
-
-      if (slabOffsetType == pgsTypes::sotBridge || slabOffsetType == pgsTypes::sotPier)
-      {
-         pSlabOffsetCB->AddString(_T("The same slab offset is used for the entire bridge"));
-         pSlabOffsetCB->AddString(_T("Slab offset is defined span by span"));
-         pSlabOffsetCB->SetCurSel(slabOffsetType == pgsTypes::sotBridge ? 0:1);
-      }
-      else if ( slabOffsetType == pgsTypes::sotGirder )
-      {
-         pSlabOffsetCB->AddString(_T("A unique slab offset is used for every girder"));
-         pSlabOffsetCB->AddString(_T("Slab offset is defined span by span"));
-         pSlabOffsetCB->SetCurSel(0);
+         pAssumedExcessCamberCB->AddString(_T("A unique assumed excess camber is used for every girder"));
+         pAssumedExcessCamberCB->AddString(_T("Assumed Excess Camber is defined span by span"));
+         pAssumedExcessCamberCB->SetCurSel(0);
       }
       else
       {
@@ -345,10 +368,8 @@ BOOL CSpanLayoutPage::OnInitDialog()
    }
    else
    {
-      pSlabOffsetCB->EnableWindow(FALSE);
-      m_ctrlStartSlabOffset.EnableWindow(FALSE);
-      m_ctrlEndSlabOffset.EnableWindow(FALSE);
-      this->GetDlgItem(IDC_SLABOFFSET_LABEL)->EnableWindow(FALSE);
+      m_ctrlAssumedExcessCamber.EnableWindow(FALSE);
+      pAssumedExcessCamberCB->EnableWindow(FALSE);
    }
 
    const CSpanData2* pPrevSpan = pParent->m_pSpanData->GetPrevPier()->GetPrevSpan();
@@ -371,7 +392,7 @@ BOOL CSpanLayoutPage::OnInitDialog()
 
    UpdateSlabOffsetWindowState();
 
-   UpdateAssExcessCamberWindowState();
+   UpdateAssumedExcessCamberWindowState();
 
    OnBnClickedStartCantilever();
    OnBnClickedEndCantilever();
@@ -385,187 +406,223 @@ void CSpanLayoutPage::OnHelp()
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_SPANDETAILS_GENERAL );
 }
 
+void CSpanLayoutPage::OnChangingSlabOffset()
+{
+   m_PrevSlabOffsetType = GetCurrentSlabOffsetType();
+}
+
 void CSpanLayoutPage::OnChangeSlabOffset()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
+   ASSERT(m_bHasSlabOffset);
 
-   if ( m_InitialSlabOffsetType == pgsTypes::sotBridge || m_InitialSlabOffsetType == pgsTypes::sotPier )
+   pgsTypes::SlabOffsetType slabOffsetType = GetCurrentSlabOffsetType();
+  
+   if (slabOffsetType == pgsTypes::sotBridge)
    {
-      // if slab offset was bridge or pier when the dialog was created, toggle between
-      // bridge and pier mode
-      if ( slabOffsetType == pgsTypes::sotPier )
-      {
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotBridge);
-      }
-      else
-      {
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotPier);
-      }
-   }
-   else
-   {
-      // if slab offset was girder when the dialog was created, toggle between
-      // girder and pier
-      if ( slabOffsetType == pgsTypes::sotPier )
-      {
-         // going from pier to girder so both ends of girder are the same. default values can be shown
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotGirder);
-         m_ctrlStartSlabOffset.ShowDefaultWhenDisabled(TRUE);
-         m_ctrlEndSlabOffset.ShowDefaultWhenDisabled(TRUE);
-      }
-      else
-      {
-         pParent->m_BridgeDesc.SetSlabOffsetType(pgsTypes::sotPier);
-      }
-   }
-
-   if ( slabOffsetType == pgsTypes::sotPier && pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotBridge )
-   {
-      // going from span-by-span to one for the entire bridge
-      // need to check the span values and if they are different, ask the user which one is to
-      // be used for the entire bridge
+      // just switch to slab offset by bridge
+      // need to deal with possibly 2 values that aren't equal mapping to a single value
 
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-      // get current values out of the controls
-      Float64 slabOffset[2];
-      CDataExchange dx(this,TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,   slabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit());
-
-      // take start value as default
-      Float64 slab_offset = slabOffset[pgsTypes::metStart];
-
-      // check if start/end values are equal
-      if ( !IsEqual(slabOffset[pgsTypes::metStart],slabOffset[pgsTypes::metEnd]) )
+      CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+      const CPierData2* pPrevPier = pParent->GetBridgeDescription()->GetPier(m_PrevPierIdx);
+      const CPierData2* pNextPier = pParent->GetBridgeDescription()->GetPier(m_NextPierIdx);
+      if (pPrevPier->HasSlabOffset() && pNextPier->HasSlabOffset())
       {
-         // nope... make the user select which slab offset to use
-         CSelectItemDlg dlg;
-         dlg.m_ItemIdx = 0;
-         dlg.m_strTitle = _T("Select Slab Offset");
-         dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
-         
-         CString strItems;
-         strItems.Format(_T("Start of Span (%s)\nEnd of Span (%s)"),
-                         ::FormatDimension(slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit()),
-                         ::FormatDimension(slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit()));
+         // both piers can have slab offsets so this gives rise to the possibility that
+         // there are two unequal values mapping into a single value for the bridge
 
-         dlg.m_strItems = strItems;
-         if ( dlg.DoModal() == IDOK )
+         // get current values out of the controls
+         std::array<Float64,2> slabOffset;
+         CDataExchange dx(this,TRUE);
+         DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
+         DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,   slabOffset[pgsTypes::metEnd],   pDisplayUnits->GetComponentDimUnit());
+         if (!IsEqual(slabOffset[pgsTypes::metStart], slabOffset[pgsTypes::metEnd]))
          {
-            if ( dlg.m_ItemIdx == 0 )
+            // slab offsets are different... which one should we use? Ask the user.
+            CSelectItemDlg dlg;
+            dlg.m_ItemIdx = 0;
+            dlg.m_strTitle = _T("Select Slab Offset");
+            dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
+                  
+            CString strItems;
+            strItems.Format(_T("Start of Span (%s)\nEnd of Span (%s)"),
+                              ::FormatDimension(slabOffset[pgsTypes::metStart],pDisplayUnits->GetComponentDimUnit()),
+                              ::FormatDimension(slabOffset[pgsTypes::metEnd],  pDisplayUnits->GetComponentDimUnit()));
+
+            dlg.m_strItems = strItems;
+            Float64 slab_offset;
+            if ( dlg.DoModal() == IDOK )
             {
-               slab_offset = slabOffset[pgsTypes::metStart];
+               slab_offset = slabOffset[dlg.m_ItemIdx == 0 ? pgsTypes::metStart : pgsTypes::metEnd];
             }
             else
             {
-               slab_offset = slabOffset[pgsTypes::metEnd];
+               // user cancelled... get the heck outta here
+               ComboBoxSelectByItemData(this, IDC_SLAB_OFFSET_TYPE, m_PrevSlabOffsetType);
+               return;
             }
+
+            Float64 minSlabOffset = pParent->GetBridgeDescription()->GetMinSlabOffset();
+            if (::IsLT(slab_offset, minSlabOffset))
+            {
+               CDataExchange dx(this, TRUE);
+               dx.PrepareEditCtrl(pPrevPier->HasSlabOffset() ? IDC_START_SLAB_OFFSET : IDC_END_SLAB_OFFSET);
+               CString msg;
+               msg.Format(_T("The slab offset must be at least equal to the slab depth of %s"), FormatDimension(minSlabOffset, pDisplayUnits->GetComponentDimUnit()));
+               AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+
+               ComboBoxSelectByItemData(this, IDC_SLAB_OFFSET_TYPE, m_PrevSlabOffsetType);
+
+               dx.Fail();
+            }
+
+            // put the data back in the controls
+            dx.m_bSaveAndValidate = FALSE;
+            DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT, slab_offset, pDisplayUnits->GetComponentDimUnit());
+            DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,   slab_offset, pDisplayUnits->GetComponentDimUnit());
+         }
+      }
+      else
+      {
+         // this may look silly, but it updates the default value for the edit control to the current value
+         // and the default value is displayed when the control is disabled, which will happen when we
+         // call UpdateSlabOffsetWindowState below
+         UINT nIDC, nIDCUnit;
+         if (pPrevPier->HasSlabOffset())
+         {
+            nIDC = IDC_START_SLAB_OFFSET;
+            nIDCUnit = IDC_START_SLAB_OFFSET_UNIT;
          }
          else
          {
-            // user cancelled... get the heck outta here
-            return;
+            ASSERT(pNextPier->HasSlabOffset());
+            nIDC = IDC_END_SLAB_OFFSET;
+            nIDCUnit = IDC_END_SLAB_OFFSET_UNIT;
          }
+
+         Float64 slab_offset;
+         CDataExchange dx(this, TRUE);
+         DDX_UnitValueAndTag(&dx, nIDC, nIDCUnit, slab_offset, pDisplayUnits->GetComponentDimUnit());
+
+         Float64 minSlabOffset = pParent->GetBridgeDescription()->GetMinSlabOffset();
+         if (::IsLT(slab_offset,minSlabOffset))
+         {
+            CDataExchange dx(this, TRUE);
+            dx.PrepareEditCtrl(nIDC);
+            CString msg;
+            msg.Format(_T("The slab offset must be at least equal to the slab depth of %s"), FormatDimension(minSlabOffset, pDisplayUnits->GetComponentDimUnit()));
+            AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+
+            ComboBoxSelectByItemData(this, IDC_SLAB_OFFSET_TYPE, m_PrevSlabOffsetType);
+
+            dx.Fail();
+         }
+
+         dx.m_bSaveAndValidate = FALSE;
+         DDX_UnitValueAndTag(&dx, nIDC, nIDCUnit, slab_offset, pDisplayUnits->GetComponentDimUnit());
       }
-
-      // put the data back in the controls
-      dx.m_bSaveAndValidate = FALSE;
-      DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT, slab_offset, pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET,  IDC_END_SLAB_OFFSET_UNIT,   slab_offset, pDisplayUnits->GetComponentDimUnit());
    }
-
    UpdateSlabOffsetWindowState();
+}
+
+pgsTypes::SlabOffsetType CSpanLayoutPage::GetCurrentSlabOffsetType()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+   int curSel = pCB->GetCurSel();
+   pgsTypes::SlabOffsetType slabOffsetType = (pgsTypes::SlabOffsetType)(pCB->GetItemData(curSel));
+   return slabOffsetType;
 }
 
 void CSpanLayoutPage::UpdateSlabOffsetWindowState()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
+   pgsTypes::SlabOffsetType slabOffsetType = GetCurrentSlabOffsetType();
+
    BOOL bEnable = TRUE;
-   if (deckType == pgsTypes::sdtNone || slabOffsetType == pgsTypes::sotBridge || slabOffsetType == pgsTypes::sotGirder )
+   if (deckType == pgsTypes::sdtNone || slabOffsetType == pgsTypes::sotBridge || slabOffsetType == pgsTypes::sotSegment )
    {
       bEnable = FALSE;
    }
 
    m_ctrlStartSlabOffset.EnableWindow(bEnable);
-   GetDlgItem(IDC_START)->EnableWindow(bEnable);
+   GetDlgItem(IDC_START_SLAB_OFFSET)->EnableWindow(bEnable);
    GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
+
    m_ctrlEndSlabOffset.EnableWindow(bEnable);
+   GetDlgItem(IDC_END_SLAB_OFFSET)->EnableWindow(bEnable);
    GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END)->EnableWindow(bEnable);
 }
 
-void CSpanLayoutPage::OnCbnSelchangeAssExcessCamberCombo()
+void CSpanLayoutPage::OnCbnSelchangeAssumedExcessCamberCombo()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-   pgsTypes::AssExcessCamberType AssExcessCamberType = pParent->m_BridgeDesc.GetAssExcessCamberType();
+   pgsTypes::AssumedExcessCamberType AssumedExcessCamberType = pParent->m_BridgeDesc.GetAssumedExcessCamberType();
 
-   if ( m_InitialAssExcessCamberType == pgsTypes::aecBridge || m_InitialAssExcessCamberType == pgsTypes::aecSpan )
+   if ( m_InitialAssumedExcessCamberType == pgsTypes::aecBridge || m_InitialAssumedExcessCamberType == pgsTypes::aecSpan )
    {
       // if camber was bridge or span when the dialog was created, toggle between
       // bridge and span mode
-      if ( AssExcessCamberType == pgsTypes::aecSpan )
+      if ( AssumedExcessCamberType == pgsTypes::aecSpan )
       {
-         pParent->m_BridgeDesc.SetAssExcessCamberType(pgsTypes::aecBridge);
+         pParent->m_BridgeDesc.SetAssumedExcessCamberType(pgsTypes::aecBridge);
       }
       else
       {
-         pParent->m_BridgeDesc.SetAssExcessCamberType(pgsTypes::aecSpan);
+         pParent->m_BridgeDesc.SetAssumedExcessCamberType(pgsTypes::aecSpan);
       }
    }
    else
    {
       // if camber was girder when the dialog was created, toggle between
       // girder and span
-      if ( AssExcessCamberType == pgsTypes::aecSpan )
+      if ( AssumedExcessCamberType == pgsTypes::aecSpan )
       {
          // going from pier to girder so both ends of girder are the same. default values can be shown
-         pParent->m_BridgeDesc.SetAssExcessCamberType(pgsTypes::aecGirder);
-         m_ctrlAssExcessCamber.ShowDefaultWhenDisabled(TRUE);
+         pParent->m_BridgeDesc.SetAssumedExcessCamberType(pgsTypes::aecGirder);
+         m_ctrlAssumedExcessCamber.ShowDefaultWhenDisabled(TRUE);
       }
       else
       {
-         pParent->m_BridgeDesc.SetAssExcessCamberType(pgsTypes::aecSpan);
+         pParent->m_BridgeDesc.SetAssumedExcessCamberType(pgsTypes::aecSpan);
       }
    }
 
-   UpdateAssExcessCamberWindowState();
+   UpdateAssumedExcessCamberWindowState();
 }
 
-void CSpanLayoutPage::UpdateAssExcessCamberWindowState()
+void CSpanLayoutPage::UpdateAssumedExcessCamberWindowState()
 {
-   if (m_bCanAssExcessCamberInputBeEnabled)
+   if (m_bCanAssumedExcessCamberInputBeEnabled)
    {
-   CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
-      pgsTypes::AssExcessCamberType AssExcessCamberType = pParent->m_BridgeDesc.GetAssExcessCamberType();
+      CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
+      pgsTypes::AssumedExcessCamberType AssumedExcessCamberType = pParent->m_BridgeDesc.GetAssumedExcessCamberType();
 
-   BOOL bEnable = TRUE;
-      if (AssExcessCamberType == pgsTypes::aecBridge || AssExcessCamberType == pgsTypes::aecGirder)
-   {
-      bEnable = FALSE;
-   }
+      BOOL bEnable = TRUE;
+      if (AssumedExcessCamberType == pgsTypes::aecBridge || AssumedExcessCamberType == pgsTypes::aecGirder)
+      {
+         bEnable = FALSE;
+      }
 
-      m_ctrlAssExcessCamber.EnableWindow(bEnable);
-      GetDlgItem(IDC_ASSEXCESSCAMBER_UNIT)->EnableWindow(bEnable);
-      GetDlgItem(IDC_ASSEXCESSCAMBER_LABEL)->EnableWindow(bEnable);
+      m_ctrlAssumedExcessCamber.EnableWindow(bEnable);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_UNIT)->EnableWindow(bEnable);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL)->EnableWindow(bEnable);
    }
    else
    {
-      GetDlgItem(IDC_ASSEXCESSCAMBER_COMBO)->EnableWindow(FALSE);
-      m_ctrlAssExcessCamber.EnableWindow(FALSE);
-      GetDlgItem(IDC_ASSEXCESSCAMBER_UNIT)->EnableWindow(FALSE);
-      GetDlgItem(IDC_ASSEXCESSCAMBER_LABEL2)->EnableWindow(FALSE);
-      GetDlgItem(IDC_ASSEXCESSCAMBER_LABEL)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPE)->EnableWindow(FALSE);
+      m_ctrlAssumedExcessCamber.EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_UNIT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL2)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL)->EnableWindow(FALSE);
    }
 }
 

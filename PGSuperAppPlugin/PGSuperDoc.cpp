@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -223,8 +223,8 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       newGirderData.m_SlabOffset[pgsTypes::metStart] = dlg.m_General.m_SlabOffset[pgsTypes::metStart];
       newGirderData.m_SlabOffset[pgsTypes::metEnd]   = dlg.m_General.m_SlabOffset[pgsTypes::metEnd];
 
-      newGirderData.m_AssExcessCamberType = dlg.m_General.m_AssExcessCamberType;
-      newGirderData.m_AssExcessCamber = dlg.m_General.m_AssExcessCamber;
+      newGirderData.m_AssumedExcessCamberType = dlg.m_General.m_AssumedExcessCamberType;
+      newGirderData.m_AssumedExcessCamber = dlg.m_General.m_AssumedExcessCamber;
 
       newGirderData.m_strGirderName = dlg.m_strGirderName;
 
@@ -321,7 +321,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOff
 
    if (!can_design_Adim)
    {
-      m_DesignSlabOffset = sodNoADesign; // only show design A if it's possible
+      m_DesignSlabOffset = sodNoSlabOffsetDesign; // only show design A if it's possible
    }
    else
    {
@@ -407,12 +407,12 @@ void CPGSuperDoc::OnProjectAnalysis()
 
 void CPGSuperDoc::OnProjectDesignGirderDirect()
 {
-   DesignGirder(false,sodAandAssExcessCamber,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
+   DesignGirder(false,sodSlabOffsetandAssumedExcessCamberDesign,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
 void CPGSuperDoc::OnProjectDesignGirderDirectHoldSlabOffset()
 {
-   DesignGirder(false,sodNoADesign,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
+   DesignGirder(false,sodNoSlabOffsetDesign,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
 void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim)

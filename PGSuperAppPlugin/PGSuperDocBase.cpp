@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -190,6 +190,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma Reminder("WORKING HERE - Mantis 889 - Update documentation for all places where slab offset can be input")
+#pragma Reminder("WORKING HERE - Mantis 889 - Update technical guide for PGSplice")
+
 // cause the resource control values to be defined
 #define APSTUDIO_INVOKED
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -301,7 +304,7 @@ END_MESSAGE_MAP()
 // CPGSDocBase construction/destruction
 
 CPGSDocBase::CPGSDocBase():
-m_DesignSlabOffset(sodAandAssExcessCamber),
+m_DesignSlabOffset(sodSlabOffsetandAssumedExcessCamberDesign),
 m_bAutoCalcEnabled(true)
 {
 	EnableAutomation();
@@ -568,12 +571,8 @@ void CPGSDocBase::OnEditHaunch()
       GET_IFACE(IEnvironment, pEnvironment );
       enumExposureCondition oldExposureCondition = pEnvironment->GetExposureCondition();
       Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
-      CBridgeDescription2 newBridgeDesc = *pOldBridgeDesc;
 
-      // dialog modifies descr
-      dlg.ModifyBridgeDescr(&newBridgeDesc);
-
-      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     newBridgeDesc,
+      txnTransaction* pTxn = new txnEditBridge(*pOldBridgeDesc,     dlg.m_BridgeDesc,
                                               oldExposureCondition, oldExposureCondition, 
                                               oldRelHumidity,       oldRelHumidity);
 
@@ -1121,9 +1120,10 @@ bool CPGSDocBase::EditEffectiveFlangeWidth()
 {
    GET_IFACE(IEffectiveFlangeWidth, pEFW);
    CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are considered applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S."));
-   strQuestion += _T("\r\nIn unusual cases where these limits are violated, a refined analysis should be used.");
-   strQuestion += _T("\r\n\r\nWhen the overhang width exceeds 0.5S, it will be taken equal to 0.5S and contribution of structrually continuous barriers will be ignored for purposes of computing the effective flange width.");
-   strQuestion += _T("\r\n\r\nSelect a method for addressing cases when the other limits are exeeded.");
+   strQuestion += _T(" In unusual cases where these limits are violated, a refined analysis should be used.");
+   strQuestion += _T("\r\n\r\nWhen the setting below is set to \"Stop analysis...\" and the overhang width exceeds 0.5S, the analysis will not stop. The overhang width will be taken equal to 0.5S and contribution of structurally continuous barriers will be ignored for purposes of computing the effective flange width.");
+   strQuestion += _T(" When the setting below is set to \"Ignore...\", the full actual overhang width will be used.");
+   strQuestion += _T("\r\n\r\nSelect a method for addressing cases when the limits are exeeded:");
    CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
 
    CEAFHelpHandler helpHandler(GetDocumentationSetName(), IDH_EFFECTIVE_FLANGE_WIDTH);

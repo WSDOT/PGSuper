@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -126,26 +126,6 @@ public:
    CSplicedGirderData* GetGirder(GirderIndexType gdrIdx);
    const CSplicedGirderData* GetGirder(GirderIndexType gdrIdx) const;
 
-
-   // =================================================================================
-   // Slab Offset (Haunch) Used only when the parent bridge's SlabOffsetType is sotPier or sotGirder
-   // =================================================================================
-
-   // Set the slab offset at a pier within this girder group (same offset for all segments)
-   // Use when slab offset type is pgsTypes::sotPier
-   // The slab offset is applied to the ahead/back side of the first/pier of the group
-   // or both sides if the pier is interior to the group
-   void SetSlabOffset(PierIndexType pierIdx,Float64 offset);
-
-   // Set/Get the slab offset at a pier for a specific girder within the group
-   // Use when slab offset type is pgsTypes::sotGirder
-   void SetSlabOffset(PierIndexType pierIdx,GirderIndexType gdrIdx,Float64 offset);
-   Float64 GetSlabOffset(PierIndexType pierIdx,GirderIndexType gdrIdx,bool bGetRawValue = false) const;
-
-   // Copies girder-by-girder slab offset data from one girder to another
-   void CopySlabOffset(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx);
-
-
    // =================================================================================
    // Grouping of Girder Types (3@WF42G 1@WF42G_Modified 3@WF42G)
    // =================================================================================
@@ -259,8 +239,6 @@ private:
    CPierData2* m_pPier[2]; // pier at the start of the group
    PierIndexType m_PierIndex[2]; // pier index at the start of the group (INVALID_INDEX if m_pPier points to an actual pier)
 
-   std::vector<std::vector<Float64>> m_SlabOffsets; // outer vector, one entry per pier... inner vector, one entry per girder
-
    std::vector<CSplicedGirderData*> m_Girders;
 
    typedef std::pair<GirderIndexType,GirderIndexType> GirderGroup; // index of first and last girder in the group
@@ -279,7 +257,6 @@ private:
    void RepairGirderTypeGroups();
 
    void UpdatePiers();
-   void UpdateSlabOffsets(PierIndexType newPierIdx);
 
    GirderIndexType GetPrivateGirderCount() const;
    friend CBridgeDescription2;

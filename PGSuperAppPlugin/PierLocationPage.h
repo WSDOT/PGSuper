@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -79,7 +79,7 @@ protected:
    afx_msg HBRUSH OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
 	//}}AFX_MSG
    afx_msg void OnChangeSlabOffset();
-	DECLARE_MESSAGE_MAP()
+   DECLARE_MESSAGE_MAP()
 
    CComPtr<IStation> m_objStation;
    Float64 m_FromStation;
@@ -89,20 +89,18 @@ protected:
    PierIndexType   m_PierIdx;
    SpanIndexType   m_nSpans;
 
+   virtual BOOL OnSetActive();
    void UpdateMoveOptionList();
 
-   void DisableAll();
-   void UpdateChildWindowState();
    void FillEventList();
    EventIndexType CreateEvent();
    BOOL IsValidStation(Float64* pStation);
 
    int m_PrevEventIdx;
 
-
    int m_PierFaceCount;
 
-   Float64 m_SlabOffset[2]; // access with pgsTypes::PierFaceType
+   std::array<Float64,2> m_SlabOffset; // access with pgsTypes::PierFaceType
 
    CCacheEdit m_ctrlBackSlabOffset;
    CCacheEdit m_ctrlAheadSlabOffset;

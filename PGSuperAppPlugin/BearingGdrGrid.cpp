@@ -348,8 +348,8 @@ void CBearingGdrGrid::FillGrid()
 
       col++;
 
-      SetStyleRange(CGXRange(BackRow,col), CGXStyle().SetValue(_BACKSTR));
-      SetStyleRange(CGXRange(AheadRow,col++), CGXStyle().SetValue(_AHEADSTR));
+      SetStyleRange(CGXRange(BackRow,col), CGXStyle().SetValue(_T("Back")));
+      SetStyleRange(CGXRange(AheadRow,col++), CGXStyle().SetValue(_T("Ahead")));
 
       WriteBearingRow(BackRow,  rBack.m_BearingsForGirders[gdrIdx]);
       WriteBearingRow(AheadRow, rAhead.m_BearingsForGirders[gdrIdx]);

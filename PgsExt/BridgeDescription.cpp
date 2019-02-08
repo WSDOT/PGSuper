@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -598,8 +598,11 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
       GirderIndexType nGirders = pOldSpan->GetGirderCount();
       pGroup->Initialize(nGirders);
 
-      pGroup->SetSlabOffset(pNewSpan->GetPier(pgsTypes::metStart)->GetIndex(),pOldSpan->GetSlabOffset(pgsTypes::metStart));
-      pGroup->SetSlabOffset(pNewSpan->GetPier(pgsTypes::metEnd)->GetIndex()  ,pOldSpan->GetSlabOffset(pgsTypes::metEnd));
+      CPierData2* pStartPier = pNewSpan->GetPier(pgsTypes::metStart);
+      CPierData2* pEndPier = pNewSpan->GetPier(pgsTypes::metEnd);
+
+      pStartPier->SetSlabOffset(pgsTypes::Ahead, pOldSpan->GetSlabOffset(pgsTypes::metStart));
+      pEndPier->SetSlabOffset(pgsTypes::Back, pOldSpan->GetSlabOffset(pgsTypes::metEnd));
 
       // Copy over girder data
       const CGirderTypes* pGirderTypes = pOldSpan->GetGirderTypes();
@@ -645,9 +648,7 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
 
          pNewSegment->Strands = girderData.Strands;
 
-         pGroup->SetSlabOffset(pNewSpan->GetPrevPier()->GetIndex(),gdrIdx,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metStart));
-         pGroup->SetSlabOffset(pNewSpan->GetNextPier()->GetIndex(),gdrIdx,pGirderTypes->GetSlabOffset(gdrIdx,pgsTypes::metEnd)  );
-
+         pNewSegment->SetSlabOffset(pGirderTypes->GetSlabOffset(gdrIdx, pgsTypes::metStart), pGirderTypes->GetSlabOffset(gdrIdx, pgsTypes::metEnd));
 
          // copy over distribution factor data
          for ( int i = 0; i < 2; i++ )
@@ -1250,7 +1251,7 @@ Float64 CBridgeDescription::GetSlabOffset() const
    return m_SlabOffset;
 }
 
-Float64 CBridgeDescription::GetMinSlabOffset() const
+Float64 CBridgeDescription::GetLeastSlabOffset() const
 {
    if ( m_SlabOffsetType == pgsTypes::sotBridge )
       return GetSlabOffset();

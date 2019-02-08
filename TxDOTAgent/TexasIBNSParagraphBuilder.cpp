@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -310,10 +310,13 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
 
          // check that eccentricity is same at ends and mid-girder
          PoiList vPoi;
-         pPointOfInterest->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT, &vPoi);
-         ATLASSERT(vPoi.size()==2);
+         pPointOfInterest->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
+         ATLASSERT(vPoi.size()==1);
          const pgsPointOfInterest& pois(vPoi.front());
-         const pgsPointOfInterest& pmid(vPoi.back());
+         vPoi.clear();
+         pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         const pgsPointOfInterest& pmid(vPoi.front());
 
          Float64 nEff;
          Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois, pgsTypes::Harped, &nEff);
@@ -549,10 +552,14 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       // create pois at the start of girder and mid-span
       PoiList vPoiRel, vPoiEre;
-      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_RELEASED_SEGMENT, &vPoiRel);
-      ATLASSERT(vPoiRel.size()==2);
+      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoiRel);
+      ATLASSERT(vPoiRel.size() == 1);
       const pgsPointOfInterest& pois(vPoiRel.front());
-      const pgsPointOfInterest& pmidrel(vPoiRel.back());
+      vPoiRel.clear();
+      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoiRel);
+      ATLASSERT(vPoiRel.size() == 1);
+      const pgsPointOfInterest& pmidrel(vPoiRel.front());
+
 
       pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoiEre);
       ATLASSERT(vPoiEre.size()==1);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,8 @@
 #include <PgsExt\ColumnData.h>
 #include <PgsExt\ConcreteMaterial.h>
 #include <PgsExt\BearingData2.h>
+
+#include <array>
 
 class CSpanData2;
 class CBridgeDescription2;
@@ -200,6 +202,13 @@ public:
    CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx);
    const CClosureJointData* GetClosureJoint(GirderIndexType gdrIdx) const;
 
+   // Slab offsets
+   bool HasSlabOffset() const; // returns true if slab offset is applicable to this pier
+   void SetSlabOffset(pgsTypes::PierFaceType face, Float64 slabOffset);
+   void SetSlabOffset(Float64 back, Float64 ahead);
+   Float64 GetSlabOffset(pgsTypes::PierFaceType face,bool bRawData=false) const;
+   void GetSlabOffset(Float64* pBack, Float64* pAhead, bool bRawData = false) const;
+
    // =================================================================================
    // Pier Model - left/right side of pier is based on looking ahead on station
    // =================================================================================
@@ -339,7 +348,10 @@ private:
 
    GirderIndexType GetGirderCount(pgsTypes::PierFaceType face) const;
 
-   CGirderSpacing2 m_GirderSpacing[2]; // index is pgsTypes::PierFaceType
+   std::array<CGirderSpacing2,2> m_GirderSpacing; // index is pgsTypes::PierFaceType
+
+   std::array<Float64, 2> m_SlabOffset{ 0.0,0.0 };
+
 
    pgsTypes::PierModelType m_PierModelType; 
 

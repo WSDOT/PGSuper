@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,10 +29,10 @@
 #include <Lrfd\Lrfd.h>
 #include <WBFLRCCapacity.h>
 
-#define HAUNCH_TOLERANCE_US ::ConvertToSysUnits(0.25,unitMeasure::Inch)
-#define HAUNCH_TOLERANCE_SI ::ConvertToSysUnits(5.0,unitMeasure::Millimeter)
+#define SLAB_OFFSET_TOLERANCE_US ::ConvertToSysUnits(0.25,unitMeasure::Inch)
+#define SLAB_OFFSET_TOLERANCE_SI ::ConvertToSysUnits(5.0,unitMeasure::Millimeter)
 
-struct SECTIONHAUNCH
+struct SLAB_OFFSET_AT_SECTION
 {
    pgsPointOfInterest PointOfInterest;
    Float64 Station;
@@ -40,7 +40,7 @@ struct SECTIONHAUNCH
    Float64 tSlab;
    Float64 Fillet;
    Float64 ElevAlignment;
-   Float64 ElevGirder;
+   Float64 ElevGirderChord; // elevation of girder chord without camber effects
    Float64 CrownSlope;
    Float64 GirderTopSlope;
    Float64 Wtop;
@@ -50,14 +50,15 @@ struct SECTIONHAUNCH
    Float64 GirderOrientationEffect;
    Float64 ProfileEffect;
    Float64 TopFlangeShapeEffect;
-   Float64 RequiredHaunchDepth;
-   Float64 ElevTopGirder;
+   Float64 ElevTopGirder; // elevation of top of girder, including camber, precamber, elevation adjustment, and top flange thickening effects
    Float64 TopSlabToTopGirder;
+   Float64 ElevAdjustment; // elevation adjustment at temporary supports
+   Float64 RequiredSlabOffset;
 };
 
-struct HAUNCHDETAILS
+struct SLABOFFSETDETAILS
 {
-   std::vector<SECTIONHAUNCH> Haunch;
+   std::vector<SLAB_OFFSET_AT_SECTION> SlabOffset;
    Float64 RequiredSlabOffset; // "A" Dimension
    Float64 HaunchDiff; // maximum difference in haunch thickness
 };

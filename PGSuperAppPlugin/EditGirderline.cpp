@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -92,8 +92,6 @@ bool txnEditGirderline::Execute()
 
          CSplicedGirderData* pOtherGirder = pGroup->GetGirder(gdrIdx);
          pOtherGirder->CopySplicedGirderData(pGirder);
-
-         pGroup->CopySlabOffset(m_GirderKey.groupIndex,gdrIdx);
 
          ATLASSERT(nSegments == pOtherGirder->GetSegmentCount());
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )

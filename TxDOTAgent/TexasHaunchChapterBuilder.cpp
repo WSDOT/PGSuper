@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -187,21 +187,21 @@ void haunch_minimum_note(rptChapter* pChapter, IBroker* pBroker, const std::vect
    {
       CSegmentKey segKey(girderKey, 0); // no spliced girders here
 
-      const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segKey);
+      const auto& haunch_details = pGdrHaunch->GetSlabOffsetDetails(segKey);
 
       // Get min haunch along girder
       Float64 minHaunch(Float64_Max);
-      for (const auto& haunchdet : haunch_details.Haunch)
+      for (const auto& slab_offset : haunch_details.SlabOffset)
       {
 
          Float64 dHaunch;
-         if (haunchdet.GirderOrientationEffect < 0.0)
+         if (slab_offset.GirderOrientationEffect < 0.0)
          {
-            dHaunch = haunchdet.TopSlabToTopGirder; // cl girder in a valley
+            dHaunch = slab_offset.TopSlabToTopGirder; // cl girder in a valley
          }
          else
          {
-            dHaunch = haunchdet.TopSlabToTopGirder - haunchdet.tSlab - haunchdet.GirderOrientationEffect;
+            dHaunch = slab_offset.TopSlabToTopGirder - slab_offset.tSlab - slab_offset.GirderOrientationEffect;
          }
 
          minHaunch = min(minHaunch, dHaunch);
@@ -280,9 +280,10 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    for (ColumnIndexType gdr_idx=startIdx; gdr_idx<=endIdx; gdr_idx++)
    {
       CGirderKey girderKey(girderList[gdr_idx]);
+      CSegmentKey segmentKey(girderKey, 0);
 
-      Float64 Astart = pBridge->GetSlabOffset(girderKey.groupIndex, girderKey.groupIndex,   girderKey.girderIndex);
-      Float64 Aend   = pBridge->GetSlabOffset(girderKey.groupIndex, girderKey.groupIndex+1, girderKey.girderIndex);
+      Float64 Astart = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+      Float64 Aend   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
       if (!IsEqual(Astart, Aend))
       {
          areAsSymm = false;
@@ -290,7 +291,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
 
       // Get Midspan poi and take averages at 0.2, 0.3 points to compute quarter point reactions
       PoiList vPoi;
-      pIPOI->GetPointsOfInterest(CSegmentKey(girderKey, 0), POI_2L | POI_3L | POI_7L | POI_8L | POI_ERECTED_SEGMENT, &vPoi);
+      pIPOI->GetPointsOfInterest(segmentKey, POI_2L | POI_3L | POI_7L | POI_8L | POI_ERECTED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size()==4);
       const pgsPointOfInterest& poi_2 = vPoi[0];
       const pgsPointOfInterest& poi_3 = vPoi[1];
@@ -344,8 +345,8 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       // X,Y,Z
       PierIndexType startPierIdx = girderKey.groupIndex; // again, assumptions of pgsuper abound here
       PierIndexType endPierIdx   = girderKey.groupIndex+1;
-      Float64 Xstart = pBridge->GetSlabOffset(girderKey.groupIndex, startPierIdx, girderKey.girderIndex);
-      Float64 Xend   = pBridge->GetSlabOffset(girderKey.groupIndex, endPierIdx,   girderKey.girderIndex);
+      Float64 Xstart = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+      Float64 Xend   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
 
       Float64 height = pGirder->GetHeight(poi_0); // assume prismatic girders
 
@@ -362,21 +363,20 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       }
 
       // haunch all along the girder
-      const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
+      const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
 
       // find Z value at mid-span
       Float64 Z(0);
       Float64 Wtop(0);
       Float64 tslab(0);
       Float64 midloc = poi_5.GetDistFromStart();
-      for (std::vector<SECTIONHAUNCH>::const_iterator ith=haunch_details.Haunch.begin(); ith!=haunch_details.Haunch.end(); ith++)
+      for( const auto& slab_offset : slab_offset_details.SlabOffset)
       {
-         const SECTIONHAUNCH& haunch = *ith;
-         if (ith->PointOfInterest.GetDistFromStart()==midloc)
+         if (slab_offset.PointOfInterest.GetDistFromStart()==midloc)
          {
-            Z = haunch.TopSlabToTopGirder;
-            Wtop = haunch.Wtop;
-            tslab = haunch.tSlab;
+            Z = slab_offset.TopSlabToTopGirder;
+            Wtop = slab_offset.Wtop;
+            tslab = slab_offset.tSlab;
             break;
          }
       }

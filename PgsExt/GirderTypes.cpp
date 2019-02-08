@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -89,7 +89,7 @@ bool CGirderTypes::operator == (const CGirderTypes& rOther) const
       return false;
    }
 
-   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotGirder )
+   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
    {
       if ( m_SlabOffset[pgsTypes::metStart] != rOther.m_SlabOffset[pgsTypes::metStart] )
       {
@@ -279,7 +279,7 @@ HRESULT CGirderTypes::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
 
       // added in version 2
-      if ( 2 <= version && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotGirder )
+      if ( 2 <= version && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
       {
          pStrLoad->BeginUnit(_T("SlabOffset"));
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -366,7 +366,7 @@ HRESULT CGirderTypes::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->EndUnit(); // added in version 3 of GirderTypes
 
    // added in version 2
-   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotGirder )
+   if ( m_pSpan->GetBridgeDescription()->GetSlabOffsetType() == pgsTypes::sotSegment )
    {
       pStrSave->BeginUnit(_T("SlabOffset"),1.0);
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -938,7 +938,7 @@ void CGirderTypes::SetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType 
 
 Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end)
 {
-   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotGirder )
+   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotSegment )
    {
       return m_pSpan->GetSlabOffset(end);
    }
@@ -951,7 +951,7 @@ Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndTy
 
 Float64 CGirderTypes::GetSlabOffset(GirderIndexType gdrIdx,pgsTypes::MemberEndType end) const
 {
-   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotGirder )
+   if ( m_pSpan && m_pSpan->GetBridgeDescription()->GetSlabOffsetType() != pgsTypes::sotSegment )
    {
       return m_pSpan->GetSlabOffset(end);
    }

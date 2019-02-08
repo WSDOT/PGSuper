@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -5188,7 +5188,7 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
       result->get_XRight(&PxRight);
 
       Float64 Px;
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 )
+      if ( poi.HasAttribute(POI_START_FACE) )
       {
          Px = -PxRight;
       }
@@ -5293,7 +5293,7 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
       result->get_ZRight(&MzRight);
 
       Float64 Mz;
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 )
+      if ( poi.HasAttribute(POI_START_FACE) )
       {
          Mz = -MzRight;
       }
@@ -14343,8 +14343,8 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
          PierIndexType startPierIdx, endPierIdx;
          pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
 
-         Float64 startA = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
-         Float64 endA = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
+         Float64 startA = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+         Float64 endA   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
 
          Float64 dSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(segmentKey,0.0));
          if ( startA-dSlab-fillet < -TOLERANCE || endA-dSlab-fillet < -TOLERANCE )
@@ -15102,12 +15102,12 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    std::unique_ptr<mathFunction2d> imposedShape;
    // precamber and top flange thickening is measured using the ends of the girder as the datum
    PoiList vPoi2;
-   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi2);
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi2);
    ATLASSERT(vPoi2.size() == 2);
    const pgsPointOfInterest& poi_left(vPoi2.front());
    const pgsPointOfInterest& poi_right(vPoi2.back());
 
-   if (pSpec->IsAssExcessCamberForLoad())
+   if (pSpec->IsAssumedExcessCamberForLoad())
    {
 #pragma Reminder("UPDATE: assuming precast girder bridge - Note that time-dependent analyses only use the zero camber approach below")
       // Shape of girder is assumed to follow the fillet dimension. Assume parabolic shape with zero at supports and
@@ -15130,7 +15130,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          Float64 Xspan;
          pPoi->ConvertPoiToSpanPoint(poi_mid,&spanKey,&Xspan);
 
-         assumed_excess_camber = pBridge->GetAssExcessCamber(spanKey.spanIndex, spanKey.girderIndex);
+         assumed_excess_camber = pBridge->GetAssumedExcessCamber(spanKey.spanIndex, spanKey.girderIndex);
          assumed_excess_camber *= camberFactor;
       }
 
