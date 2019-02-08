@@ -157,9 +157,13 @@ bool CTemporarySupportData::operator==(const CTemporarySupportData& rOther) cons
       return false;
    }
 
-   if (HasSlabOffset() && !IsEqual(m_SlabOffset[pgsTypes::Back], rOther.m_SlabOffset[pgsTypes::Back]) || !IsEqual(m_SlabOffset[pgsTypes::Ahead], rOther.m_SlabOffset[pgsTypes::Ahead]))
+   const auto* pBridge = GetBridgeDescription();
+   if (pBridge && pBridge->GetSlabOffsetType() == pgsTypes::sotBearingLine && HasSlabOffset())
    {
+      if (!IsEqual(GetSlabOffset(pgsTypes::Back), rOther.GetSlabOffset(pgsTypes::Back)) || !IsEqual(GetSlabOffset(pgsTypes::Ahead), rOther.GetSlabOffset(pgsTypes::Ahead)))
+      {
          return false;
+      }
    }
 
    if ( HasElevationAdjustment() && !IsEqual(m_ElevationAdjustment,rOther.m_ElevationAdjustment) )
