@@ -297,9 +297,6 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       {
          // Slab offset applies to the entire bridge... have users adjust Slab offset if it doesn't
          // fit with the slab depth
-
-         DDV_UnitValueLimitOrMore(pDX, IDC_SLAB_OFFSET, m_SlabOffset, pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth + pParent->m_BridgeDesc.GetFillet(), pDisplayUnits->GetComponentDimUnit());
-
          Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
          bool bCheckDepth = false;
          CString strMsg;
@@ -312,7 +309,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          }
          else if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP ) // SIP
          {
-            strMsg = _T("Slab Offset must be larger than the cast depth + fillet + panel depth");
+            strMsg = _T("Slab Offset must be larger than the cast depth + panel depth + fillet");
             bCheckDepth = true;
          }
          else
@@ -321,7 +318,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
             // should not get here
          }
 
-         if ( bCheckDepth && m_SlabOffset < minSlabOffset )
+         if ( bCheckDepth && ::IsLT(m_SlabOffset,minSlabOffset) )
          {
             AfxMessageBox(strMsg);
             pDX->PrepareEditCtrl(IDC_SLAB_OFFSET);
