@@ -408,19 +408,6 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       }
    }
 
-   if (HasSlabOffset())
-   {
-      if (m_pPrevSpan && !IsEqual(m_SlabOffset[pgsTypes::Back], rOther.m_SlabOffset[pgsTypes::Back]))
-      {
-         return false;
-      }
-
-      if (m_pNextSpan && !IsEqual(m_SlabOffset[pgsTypes::Ahead], rOther.m_SlabOffset[pgsTypes::Ahead]))
-      {
-         return false;
-      }
-   }
-
    return true;
 }
 
