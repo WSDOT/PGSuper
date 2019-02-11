@@ -959,7 +959,6 @@ void write_fpo_table(IBroker* pBroker,
       {
          DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
-         const matPsStrand* pTendon = pMaterial->GetTendonMaterial(girderKey);
          if ( 1 < vGirderKeys.size() )
          {
             *pParagraph << _T("Girder ") << LABEL_GIRDER(girderKey.girderIndex) << rptNewLine;
@@ -981,16 +980,8 @@ void write_fpo_table(IBroker* pBroker,
             }
 
             const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-            if ( pStrand->GetType() == matPsStrand::LowRelaxation )
-            {
-               Kps = 0.75;
-               *pParagraph << italic(ON) << Sub2(_T("f"),_T("po")) << _T(" = 0.75") << Sub2(_T("f"),_T("pu")) << italic(OFF) << _T(" (See PCI Bridge Design Manual, 3rd Edition, MNL-133-11, §8.4.1.1.4)");
-            }
-            else
-            {
-               Kps = 0.70;
-               *pParagraph << italic(ON) << Sub2(_T("f"),_T("po")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
-            }
+            Kps = 0.70;
+            *pParagraph << italic(ON) << Sub2(_T("f"),_T("po")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
 
             *pParagraph << _T(" = ") << stress.SetValue(Kps*pStrand->GetUltimateStrength()) << rptNewLine;
             
@@ -1000,18 +991,10 @@ void write_fpo_table(IBroker* pBroker,
          if ( 0 < nDucts )
          {
             *pParagraph << _T("Tendons") << rptNewLine;
-            if ( pTendon->GetType() == matPsStrand::LowRelaxation )
-            {
-               Kpt = 0.75;
-               *pParagraph << italic(ON) << Sub2(_T("f"),_T("po pt")) << _T(" = 0.75") << Sub2(_T("f"),_T("pu")) << italic(OFF) << _T(" (See PCI Bridge Design Manual, 3rd Edition, MNL-133-11, §8.4.1.1.4)");
-            }
-            else
-            {
-               Kpt = 0.70;
-               *pParagraph << italic(ON) << Sub2(_T("f"),_T("po pt")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
-            }
-
-            *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
+            const matPsStrand* pTendon = pMaterial->GetTendonMaterial(girderKey);
+            Kpt = 0.70;
+             *pParagraph << italic(ON) << Sub2(_T("f"),_T("po pt")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
+                         *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
          }
       }
    }
@@ -1028,12 +1011,6 @@ void write_fpo_table(IBroker* pBroker,
          ColumnIndexType nCols = (0 == nDucts ? 6 : 9);
 
          rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols);
-
-         //if ( segmentKey.groupIndex == ALL_GROUPS )
-         //{
-         //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-         //}
 
          if ( 1 < vGirderKeys.size() )
          {
