@@ -354,9 +354,19 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    // when we have a future overlay and two applicable stress types (tension/compression), we need to list both limit state and demand stresses for tension and compression cases
    // recall that tension top is worse before future overlay and compression bottom is worse after future overlay.
    // this flag tells if we are listing both cases
-   bool bFutureOverlay = ((bApplicableTensionTop && bApplicableCompressionBot) || (bApplicableTensionBot && bApplicableCompressionTop)) // two stress cases that include/exclude future overlay are applicable
-                         &&  // -AND-
-                         (intervalIdx == overlayIntervalIdx && wearingSurfaceType == pgsTypes::wstFutureOverlay); // we are in the overlay interval and the overlay is a future overlay
+   bool bListTensionAndCompression = ((bApplicableTensionTop && bApplicableCompressionBot) || (bApplicableTensionBot && bApplicableCompressionTop)) // two stress cases that include/exclude future overlay are applicable
+                                     &&  // -AND-
+                                     (intervalIdx == overlayIntervalIdx && wearingSurfaceType == pgsTypes::wstFutureOverlay); // we are in the overlay interval and the overlay is a future overlay
+
+   // if we are in envelope mode and the final dead load tension stress limit is applicable and this is the final dead load interval
+   // then we have to report both tension and compression
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+   GET_IFACE2_NOCHECK(pBroker, IAllowableConcreteStress, pAllowables);
+   if (railingSystemIntervalIdx == intervalIdx && pAllowables->CheckFinalDeadLoadTensionStress() && analysisType == pgsTypes::Envelope)
+   {
+      bListTensionAndCompression = true;
+   }
 
 
    ColumnIndexType columnInc = 0;
@@ -420,7 +430,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       nColumns++; // compression status
    }
 
-   if (bFutureOverlay)
+   if (bListTensionAndCompression)
    {
       nColumns += 2 * columnInc; // need to added Limit State and Demand columns so we can have tension and compression values
    }
@@ -499,7 +509,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
          p_table->SetColumnSpan(0,col,2);
       }
 
-      if (bFutureOverlay)
+      if (bListTensionAndCompression)
       {
          (*p_table)(0, col) << strLimitState << rptNewLine << _T("Tension");
       }
@@ -520,7 +530,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
       {
          p_table->SetColumnSpan(0,col,2);
       }
-      if (bFutureOverlay)
+      if (bListTensionAndCompression)
       {
          (*p_table)(0, col) << _T("Demand") << rptNewLine << _T("Tension");
       }
@@ -537,7 +547,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
          (*p_table)(1,col++) << COLHDR(RPT_FBOT, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
 
-      if (bFutureOverlay)
+      if (bListTensionAndCompression)
       {
          if (columnInc == 2)
          {
@@ -767,7 +777,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                (*p_table)(row,col++) << _T("-");
             }
 
-            if (bFutureOverlay)
+            if (bListTensionAndCompression)
             {
                col += 2 * columnInc; // jump over the compression limit state and demand stresses
             }
@@ -818,7 +828,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                (*p_table)(row,col++) << RPT_NA;
             }
 
-            if (bFutureOverlay)
+            if (bListTensionAndCompression)
             {
                col -= 3; // go back 2 PTZ columns and the tension status column
             }
@@ -828,11 +838,11 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
          if ( pCompressionArtifact )
          {
             Float64 fTop, fBot;
-            if ( pTensionArtifact == nullptr || bFutureOverlay)
+            if ( pTensionArtifact == nullptr || bListTensionAndCompression)
             {
                // if there is a tension artifact, then this stuff is already reported
                // if not, report it here
-               if (!bFutureOverlay)
+               if (!bListTensionAndCompression)
                {
                   if (bIncludePrestress && (bApplicableTensionTop || bApplicableCompressionTop || bApplicableTensionBot || bApplicableCompressionBot))
                   {
@@ -863,7 +873,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
                   }
                }
 
-               if (bFutureOverlay)
+               if (bListTensionAndCompression)
                {
                   col -= 2*columnInc; // jump back to the compression limit state and demand stresses (we jumped over them above)
                }
@@ -929,7 +939,7 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
 
             if ( bApplicableCompressionTop || bApplicableCompressionBot )
             {
-               if (bFutureOverlay)
+               if (bListTensionAndCompression)
                {
                   col += 3; // jump over the 2 PTZ columns and the tension status
                }
