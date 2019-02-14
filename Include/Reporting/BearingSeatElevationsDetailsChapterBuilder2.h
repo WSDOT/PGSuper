@@ -33,4 +33,8 @@ public:
    virtual LPCTSTR GetName() const;
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
    virtual CChapterBuilder* Clone() const;
+
+private:
+   void BuildBearingsTables(CComPtr<IBroker> pBroker, rptChapter* pChapter) const;
+   void BuildGirderEdgesTables(CComPtr<IBroker> pBroker, rptChapter* pChapter) const;
 };

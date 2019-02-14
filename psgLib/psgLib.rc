@@ -9,8 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -272,7 +271,7 @@ BEGIN
     LTEXT           "NOTE: These are seed values and must be copied into your project",IDC_STATIC,7,267,213,8
 END
 
-IDD_GIRDER_DIMENSIONS DIALOGEX 0, 0, 491, 379
+IDD_GIRDER_DIMENSIONS DIALOGEX 0, 0, 491, 400
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -285,12 +284,14 @@ BEGIN
     GROUPBOX        "Girder Dimensions",IDC_STATIC,7,63,205,217,0,WS_EX_TRANSPARENT
     CONTROL         "Custom1",IDC_DIMENSIONS,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,77,189,193
     CONTROL         "",IDC_GIRDER_MF,"Static",SS_ENHMETAFILE | SS_SUNKEN,217,7,267,273
-    GROUPBOX        "Other Parameters",IDC_STATIC,7,282,477,29
+    GROUPBOX        "Other Parameters",IDC_STATIC,7,282,477,43
     LTEXT           "Drag Coefficient (bare girder) - Used for wind analysis during lifting and hauling - Cd",IDC_STATIC,17,294,260,8
     EDITTEXT        IDC_DRAG_COEFFICIENT,282,291,40,14,ES_AUTOHSCROLL
-    GROUPBOX        "Variable Depth Girders",IDC_VARIABLE_DEPTH_GROUP,7,313,477,59
-    CONTROL         "Section depth can vary",IDC_VARIABLE_DEPTH_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,325,89,10
-    LTEXT           "Static",IDC_NOTES,119,325,356,43
+    GROUPBOX        "Variable Depth Girders",IDC_VARIABLE_DEPTH_GROUP,7,334,477,59
+    CONTROL         "Section depth can vary",IDC_VARIABLE_DEPTH_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,346,89,10
+    LTEXT           "Static",IDC_NOTES,119,346,356,43
+    CONTROL         "Report bearing seat elevations at bottom edges of girders",IDC_BEARING_ELEVS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,308,188,10
 END
 
 IDD_EDIT_SHEAR_STEEL DIALOGEX 0, 0, 420, 358
@@ -1939,7 +1940,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 484
         TOPMARGIN, 7
-        BOTTOMMARGIN, 372
+        BOTTOMMARGIN, 393
     END
 
     IDD_EDIT_SHEAR_STEEL, DIALOG
@@ -2818,8 +2819,7 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
-
+#include "grid\gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -712,6 +712,10 @@ public:
    Float64 GetPrecamberLimit() const;
    bool CanPrecamber() const; // returns true if the girder can be precambered
 
+   void SetDoReportBearingElevationsAtGirderEdges(bool doit);
+   bool GetDoReportBearingElevationsAtGirderEdges() const;
+
+
    pgsCompatibilityData* GetCompatibilityData() const;
 
 protected:
@@ -1022,6 +1026,8 @@ private:
    Float64 m_DragCoefficient;
 
    Float64 m_PrecamberLimit;
+
+   bool m_DoReportBearingElevationsAtGirderEdges;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

@@ -184,6 +184,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_Entry.m_pBeamFactory);
 
    DDX_Check_Bool(pDX,IDC_VARIABLE_DEPTH_CHECK,m_Entry.m_bIsVariableDepthSectionEnabled);
+   DDX_Check_Bool(pDX,IDC_BEARING_ELEVS,m_Entry.m_DoReportBearingElevationsAtGirderEdges);
 
    if ( pDX->m_bSaveAndValidate )
    {
