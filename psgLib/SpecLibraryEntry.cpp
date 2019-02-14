@@ -45,7 +45,9 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 66.0 
+// The develop (patches) branch started at version 64. We need to make room so
+// the version number can increment. Jump our version number to 70
+#define CURRENT_VERSION 70.0 
 
 /****************************************************************************
 CLASS
@@ -487,16 +489,16 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxSlope07"), m_MaxSlope07); // added in version 35
    pSave->Property(_T("DoCheckHoldDown"), m_DoCheckHoldDown);
    pSave->Property(_T("DoDesignHoldDown"), m_DoDesignHoldDown);
-   pSave->Property(_T("HoldDownForceType"), m_HoldDownForceType); // added in version 65
+   pSave->Property(_T("HoldDownForceType"), m_HoldDownForceType); // added in version 70
    pSave->Property(_T("HoldDownForce"), m_HoldDownForce);
-   pSave->Property(_T("HoldDownFriction"), m_HoldDownFriction); // added in version 65
+   pSave->Property(_T("HoldDownFriction"), m_HoldDownFriction); // added in version 70
    pSave->Property(_T("DoCheckSplitting"), m_DoCheckSplitting);
    pSave->Property(_T("DoDesignSplitting"), m_DoDesignSplitting);
    pSave->Property(_T("DoCheckConfinement"), m_DoCheckConfinement);
    pSave->Property(_T("DoDesignConfinement"), m_DoDesignConfinement);
 
-   pSave->Property(_T("DoCheckHandlingWeightLimit"), m_bCheckHandlingWeightLimit); // added version 65
-   pSave->Property(_T("HandlingWeightLimit"), m_HandlingWeightLimit); // added version 65
+   pSave->Property(_T("DoCheckHandlingWeightLimit"), m_bCheckHandlingWeightLimit); // added version 70
+   pSave->Property(_T("HandlingWeightLimit"), m_HandlingWeightLimit); // added version 70
 
    //pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing); // removed in version 46
    pSave->Property(_T("StirrupSpacingCoefficient1"),m_StirrupSpacingCoefficient[0]); // added in version 46
@@ -721,7 +723,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxAngularDeviationBetweenGirders"),m_MaxAngularDeviationBetweenGirders);
    pSave->Property(_T("MinGirderStiffnessRatio"),m_MinGirderStiffnessRatio);
    pSave->Property(_T("LLDFGirderSpacingLocation"),m_LLDFGirderSpacingLocation);
-   pSave->Property(_T("UseRigidMethod"), m_bUseRigidMethod); // added in version 66
+   pSave->Property(_T("UseRigidMethod"), m_bUseRigidMethod); // added in version 70
 
    pSave->Property(_T("IncludeDualTandem"), m_bIncludeDualTandem); // added in version 61
 
@@ -1113,9 +1115,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      if (64 < version)
+      if (69 < version)
       {
-         // added in version 65
+         // added in version 70
          if (!pLoad->Property(_T("HoldDownForceType"), &m_HoldDownForceType))
          {
             THROW_LOAD(InvalidFileFormat, pLoad);
@@ -1127,9 +1129,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if (64 < version)
+      if (69 < version)
       {
-         // added in version 65
+         // added in version 70
          if (!pLoad->Property(_T("HoldDownFriction"), &m_HoldDownFriction))
          {
             THROW_LOAD(InvalidFileFormat, pLoad);
@@ -1173,9 +1175,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      if (64 < version)
+      if (69 < version)
       {
-         // added in version 65
+         // added in version 70
          if (!pLoad->Property(_T("DoCheckHandlingWeightLimit"), &m_bCheckHandlingWeightLimit))
          {
             THROW_LOAD(InvalidFileFormat, pLoad);
@@ -2690,9 +2692,9 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
-      if (65 < version)
+      if (69 < version)
       {
-         // added in version 66
+         // added in version 70
          if (!pLoad->Property(_T("UseRigidMethod"), &m_bUseRigidMethod))
          {
             THROW_LOAD(InvalidFileFormat, pLoad);

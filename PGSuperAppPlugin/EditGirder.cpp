@@ -115,7 +115,7 @@ bool txnEditGirder::Execute()
       PierIndexType endPierIdx = pGroup->GetPierIndex(pgsTypes::metEnd);
 
       ATLASSERT(pGroup->GetGirder(gdrIdx)->GetSegmentCount() == 1); // this is for PGSuper only
-      CSegmentKey segmentKey(m_GirderKey, 0);
+      CSegmentKey segmentKey(m_GirderKey.groupIndex, gdrIdx, 0);
 
       oldGirderData.m_SlabOffset[pgsTypes::metStart] = pIBridgeDesc->GetSlabOffset(segmentKey,pgsTypes::metStart);
       oldGirderData.m_SlabOffset[pgsTypes::metEnd] = pIBridgeDesc->GetSlabOffset(segmentKey,pgsTypes::metEnd);
