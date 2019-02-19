@@ -1961,6 +1961,8 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
             GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
             CSpanKey spanKey(spanIdx,gdrIdx);
 
+            CSpanKey startOfGroupSpanKey(pBridge->GetGirderGroupStartSpan(grpIdx), gdrIdx);
+
             Float64 cantilever_length = pBridge->GetCantileverLength(spanKey.spanIndex,spanKey.girderIndex,(spanKey.spanIndex == 0 ? pgsTypes::metStart : pgsTypes::metEnd));
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
@@ -1998,10 +2000,9 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
             pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey, Xspan, &segmentKey, &Xsp); // get start of load location (we can get it in segment path coordinates)
             Float64 Xgp = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp); // convert to girder path coordinates
 
-            Float64 groupOffset = GetSpanStartLocation(spanKey); // get the offset to the start of the span
+            Float64 groupOffset = GetSpanStartLocation(startOfGroupSpanKey); // get the offset to the start of the span
 
             Float64 x_position = Xgp + groupOffset - span_offset; // load position
-
 
             CComPtr<IPoint2d> point;
             point.CoCreateInstance(__uuidof(Point2d));
@@ -2096,6 +2097,8 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
             GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
             CSpanKey spanKey(spanIdx,gdrIdx);
 
+            CSpanKey startOfGroupSpanKey(pBridge->GetGirderGroupStartSpan(grpIdx), gdrIdx);
+
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
             Float64 Xspan_start, Xspan_end;
@@ -2139,7 +2142,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
             pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey, Xspan_start, &segmentKey, &Xsp); // get start of load location (we can get it in segment path coordinates)
             Float64 Xgp = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp); // convert to girder path coordinates
 
-            Float64 groupOffset = GetSpanStartLocation(spanKey); // get the offset to the start of the span
+            Float64 groupOffset = GetSpanStartLocation(startOfGroupSpanKey); // get the offset to the start of the span
 
             Float64 x_position = Xgp + groupOffset - span_offset; // load position
 
@@ -2262,6 +2265,8 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
             GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
             CSpanKey spanKey(spanIdx,gdrIdx);
 
+            CSpanKey startOfGroupSpanKey(pBridge->GetGirderGroupStartSpan(grpIdx), gdrIdx);
+
             Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex,spanKey.girderIndex);
 
             Float64 Xspan = pLoad->m_Location;
@@ -2287,7 +2292,7 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
             pPoi->ConvertSpanPointToSegmentPathCoordiante(spanKey, Xspan, &segmentKey, &Xsp); // get start of load location (we can get it in segment path coordinates)
             Float64 Xgp = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp); // convert to girder path coordinates
 
-            Float64 groupOffset = GetSpanStartLocation(spanKey); // get the offset to the start of the span
+            Float64 groupOffset = GetSpanStartLocation(startOfGroupSpanKey); // get the offset to the start of the span
 
             Float64 x_position = Xgp + groupOffset - span_offset; // load position
 
@@ -3585,7 +3590,7 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
       std::vector<std::pair<SegmentIndexType,Float64>> vSegments = pBridge->GetSegmentLengths(CSpanKey(spanIdx,gdrIdx));
       std::vector<std::pair<SegmentIndexType,Float64>>::iterator iter(vSegments.begin());
       std::vector<std::pair<SegmentIndexType,Float64>>::iterator end(vSegments.end());
-      for ( ; iter != end; iter++ )
+      for (; iter != end; iter++)
       {
          span_offset += iter->second;
       }
