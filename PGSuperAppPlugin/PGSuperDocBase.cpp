@@ -190,9 +190,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma Reminder("WORKING HERE - Mantis 889 - Update documentation for all places where slab offset can be input")
-#pragma Reminder("WORKING HERE - Mantis 889 - Update technical guide for PGSplice")
-
 // cause the resource control values to be defined
 #define APSTUDIO_INVOKED
 #undef APSTUDIO_READONLY_SYMBOLS
