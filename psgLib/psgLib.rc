@@ -2703,7 +2703,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_LIBRARYTYPE         "PGSLibrary Editor\nUntitled\nPGSLibrary Editor\nPGSLibrary File (*.lbr)\n.lbr\nPGSLibrary.Document\nPGSLibrary File"
+    IDR_LIBRARYTYPE         "\nPGSLibrary\nPGSLibrary Editor\nPGSLibrary File (*.lbr)\n.lbr\nPGSLibrary.Document\nPGSLibrary File"
 END
 
 STRINGTABLE

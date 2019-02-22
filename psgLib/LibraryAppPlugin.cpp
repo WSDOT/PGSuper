@@ -132,9 +132,6 @@ std::vector<CEAFDocTemplate*> CLibraryAppPlugin::CreateDocTemplates()
 
    pLibMgrDocTemplate->SetPlugin(this);
 
-   HICON hIcon = AfxGetApp()->LoadIcon(IDI_LIBRARY_MANAGER);
-   pLibMgrDocTemplate->CreateDefaultItem(hIcon);
-
    vDocTemplates.push_back(pLibMgrDocTemplate);
    return vDocTemplates;
 }
