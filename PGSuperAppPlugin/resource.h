@@ -580,7 +580,7 @@
 #define IDC_GIRDER_NAME                 1416
 #define IDC_GIRDER_NAMEUSE              1417
 #define IDC_MOVE_PIER                   1418
-#define IDC_CB_ASSEXCESSCAMBER          1418
+#define IDC_ASSUMED_EXCESS_CAMBER_TYPES          1418
 #define IDC_SLAB_OFFSET_TYPE            1419
 #define IDC_PREV_SPAN_SPACING_MEASUREMENT 1420
 #define IDC_ROA_CB                      1421
