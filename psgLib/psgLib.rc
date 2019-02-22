@@ -9,8 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -2715,7 +2714,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_LIBRARYTYPE         "PGSLibrary Editor\nUntitled\nPGSLibrary Editor\nPGSLibrary File (*.lbr)\n.lbr\nPGSLibrary.Document\nPGSLibrary File"
+    IDR_LIBRARYTYPE         "\nPGSLibrary\nPGSLibrary Editor\nPGSLibrary File (*.lbr)\n.lbr\nPGSLibrary.Document\nPGSLibrary File"
 END
 
 STRINGTABLE
@@ -2817,8 +2816,7 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
-
+#include "grid\gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

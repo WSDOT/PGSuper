@@ -42,13 +42,17 @@ CLibraryDocTemplate::CLibraryDocTemplate(UINT nIDResource,
 CEAFDocTemplate(nIDResource,pCallback,pDocClass,pFrameClass,pViewClass,hSharedMenu,maxViewCount)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString strDocName;
+   GetDocString(strDocName, CDocTemplate::docName);
+
    CWinApp* pApp = AfxGetApp();
    HICON hIcon = pApp->LoadIcon(IDI_LIBRARY_MANAGER);
+   m_TemplateGroup.AddItem(new CEAFTemplateItem(this, strDocName, nullptr, hIcon));
    m_TemplateGroup.SetIcon(hIcon);
 }
 
 CString CLibraryDocTemplate::GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const
 {
-   CString strDescription("Create a new Master Library file");
+   CString strDescription("Create a new PGSuper/PGSplice Library");
    return strDescription;
 }
