@@ -1,27 +1,24 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     1    WF66G    *     35  0.6  270  28.72  17.63  13.25  13.25                                               7  62.0  4.0  4.600  5.300   3.187    -3.596     8729   0.528  0.671   8.051 -3.056 -0.210 -0.446 -3.712 206.76  285.87    3.00    5.50    5.50 
+ 27.83    5   6.00                     1     1    WF66G    *     35  0.6  270  28.72  17.63  13.50  13.50                                               7  62.0  4.0  4.600  5.600   3.219    -3.619     8770   0.529  0.671   8.054 -3.048 -0.207 -0.440 -3.695 206.76  287.53    3.00    5.50    5.50 
 
 
-The Specification Check was Not Successful
-Stirrup detailing checks failed for the Strength I Limit State.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     2    WF66G    *     35  0.6  270  28.72  17.63  13.25  13.25                                               7  62.0  4.0  4.600  5.300   3.174    -3.584     8708   0.528  0.671   7.948 -3.024 -0.210 -0.446 -3.680 206.76  287.11    3.00    5.50    5.50 
-
-
-The Specification Check was Not Successful
-Stirrup detailing checks failed for the Strength I Limit State.
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     3    WF66G    *     35  0.6  270  28.72  17.63  13.25  13.25                                               7  62.0  4.0  4.600  5.300   3.174    -3.584     8708   0.528  0.671   7.948 -3.024 -0.210 -0.446 -3.680 206.76  287.11    3.00    5.50    5.50 
+ 27.83    5   6.00                     1     2    WF66G    *     35  0.6  270  28.72  17.63  13.50  13.50                                               7  62.0  4.0  4.600  5.600   3.205    -3.606     8745   0.529  0.671   7.954 -3.012 -0.207 -0.440 -3.659 206.76  288.98    3.00    5.50    5.50 
 
 
-The Specification Check was Not Successful
-Stirrup detailing checks failed for the Strength I Limit State.
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     3    WF66G    *     35  0.6  270  28.72  17.63  13.50  13.50                                               7  62.0  4.0  4.600  5.600   3.205    -3.606     8745   0.529  0.671   7.954 -3.012 -0.207 -0.440 -3.659 206.76  288.98    3.00    5.50    5.50 
+
+
+The Specification Check was Successful
 
 

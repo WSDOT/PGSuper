@@ -81,7 +81,8 @@ m_DoDesignConfinement(true),
 m_CyLiftingCrackFs(1.0),
 m_CyLiftingFailFs(1.5),
 m_CyCompStressServ(0.45),
-m_CyCompStressLifting(0.6),
+m_LiftingCompressionStressCoefficient_GlobalStress(0.65),
+m_LiftingCompressionStressCoefficient_PeakStress(0.70),
 m_CyTensStressServ(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
 m_CyDoTensStressServMax(true),
 m_CyTensStressServMax(::ConvertToSysUnits(0.200,unitMeasure::KSI)),
@@ -107,13 +108,10 @@ m_EnableHaulingDesign(true),
 m_HaulingAnalysisMethod(pgsTypes::hmWSDOT),
 m_MaxGirderSweepHauling(::ConvertToSysUnits(1. / 8., unitMeasure::Inch) / ::ConvertToSysUnits(10.0, unitMeasure::Feet)),
 m_HaulingSupportPlacementTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
-m_HaulingCamberMethod(pgsTypes::cmApproximate),
-m_HaulingCamberPercentEstimate(0.02), // 2%
-m_LiftingCamberMethod(pgsTypes::cmDirect),
-m_LiftingCamberPercentEstimate(0.02), // 2%
 m_LiftingLoopTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
 m_MinCableInclination(ConvertToSysUnits(90.,unitMeasure::Degree)),
-m_CompStressHauling(0.6),
+m_GlobalCompStressHauling(0.6),
+m_PeakCompStressHauling(0.6),
 m_TensStressHaulingNormalCrown(::ConvertToSysUnits(0.0948,unitMeasure::SqrtKSI)),
 m_DoTensStressHaulingMaxNormalCrown(false),
 m_TensStressHaulingMaxNormalCrown(0),
@@ -251,10 +249,8 @@ m_HaunchLoadCamberFactor(1.0),
 m_HaunchAnalysisSectionPropertiesType(pgsTypes::hspZeroHaunch),
 m_LiftingWindType(pgsTypes::Speed),
 m_LiftingWindLoad(0),
-m_bComputeLiftingStressesAtEquilibriumAngle(false),
 m_HaulingWindType(pgsTypes::Speed),
 m_HaulingWindLoad(0),
-m_bComputeHaulingStressesAtEquilibriumAngle(true),
 m_CentrifugalForceType(pgsTypes::Favorable),
 m_HaulingSpeed(0),
 m_TurningRadius(::ConvertToSysUnits(1000,unitMeasure::Feet)),
@@ -508,7 +504,9 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CyLiftingCrackFs"), m_CyLiftingCrackFs);
    pSave->Property(_T("CyLiftingFailFs"), m_CyLiftingFailFs);
    pSave->Property(_T("CyCompStressServ"), m_CyCompStressServ);
-   pSave->Property(_T("CyCompStressLifting"), m_CyCompStressLifting);
+   //pSave->Property(_T("CyCompStressLifting"), m_LiftingCompressionStressCoefficient_GlobalStress); // removed in version 65
+   pSave->Property(_T("CyGlobalCompStressLifting"), m_LiftingCompressionStressCoefficient_GlobalStress); // added in version 65
+   pSave->Property(_T("CyPeakCompStressLifting"), m_LiftingCompressionStressCoefficient_PeakStress); // added in version 65
    pSave->Property(_T("CyTensStressServ"), m_CyTensStressServ);
    pSave->Property(_T("CyDoTensStressServMax"), m_CyDoTensStressServMax);
    pSave->Property(_T("CyTensStressServMax"), m_CyTensStressServMax);
@@ -527,13 +525,13 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("LiftingLoopTolerance"),m_LiftingLoopTolerance);
    pSave->Property(_T("MinCableInclination"),m_MinCableInclination);
    pSave->Property(_T("MaxGirderSweepLifting"), m_MaxGirderSweepLifting);
-   pSave->Property(_T("LiftingCamberMethod"),(Int32)m_LiftingCamberMethod); // added version 56
-   pSave->Property(_T("LiftingCamberPercentEstimate"),m_LiftingCamberPercentEstimate); // added version 56
+   //pSave->Property(_T("LiftingCamberMethod"),(Int32)m_LiftingCamberMethod); // added version 56, removed in version 65
+   //pSave->Property(_T("LiftingCamberPercentEstimate"),m_LiftingCamberPercentEstimate); // added version 56, removed in version 65
    pSave->Property(_T("LiftingCamberMultiplier"), m_LiftingCamberMultiplier); // added version 58
    pSave->Property(_T("LiftingWindType"),(Int32)m_LiftingWindType); // added in version 56
    pSave->Property(_T("LiftingWindLoad"),m_LiftingWindLoad); // added in version 56
    //pSave->Property(_T("LiftingStressesPlumbGirder"), m_LiftingStressesPlumbGirder); // added in version 56, removed 59
-   pSave->Property(_T("LiftingStressesEquilibriumAngle"), m_bComputeLiftingStressesAtEquilibriumAngle); // added in version 59
+   //pSave->Property(_T("LiftingStressesEquilibriumAngle"), m_bComputeLiftingStressesAtEquilibriumAngle); // added in version 59, removed in version 65
    pSave->Property(_T("EnableHaulingCheck"), m_EnableHaulingCheck);
    pSave->Property(_T("EnableHaulingDesign"), m_EnableHaulingDesign);
    pSave->Property(_T("HaulingAnalysisMethod"), (Int32)m_HaulingAnalysisMethod); // added version 43
@@ -541,16 +539,18 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    //pSave->Property(_T("HaulingSupportDistance"),m_HaulingSupportDistance); // removed version 56
    //pSave->Property(_T("MaxHaulingOverhang"), m_MaxHaulingOverhang); // removed version 56
    pSave->Property(_T("HaulingSupportPlacementTolerance"),m_HaulingSupportPlacementTolerance);
-   pSave->Property(_T("HaulingCamberMethod"),(Int32)m_HaulingCamberMethod); // added version 56
-   pSave->Property(_T("HaulingCamberPercentEstimate"),m_HaulingCamberPercentEstimate);
+   //pSave->Property(_T("HaulingCamberMethod"),(Int32)m_HaulingCamberMethod); // added version 56, removed in version 65
+   //pSave->Property(_T("HaulingCamberPercentEstimate"),m_HaulingCamberPercentEstimate); // added version 56, removed in version 65
    pSave->Property(_T("HaulingCamberMultiplier"), m_HaulingCamberMultiplier); // added version 58
    pSave->Property(_T("HaulingWindType"),(Int32)m_HaulingWindType); // added in version 56
    pSave->Property(_T("HaulingWindLoad"),m_HaulingWindLoad); // added in version 56
    pSave->Property(_T("CentrifugalForceType"),(Int32)m_CentrifugalForceType); // added in version 56
    pSave->Property(_T("HaulingSpeed"),m_HaulingSpeed); // added in version 56
    pSave->Property(_T("TurningRadius"),m_TurningRadius); // added in version 56
-   pSave->Property(_T("HaulingStressesEquilibriumAngle"), m_bComputeHaulingStressesAtEquilibriumAngle); // added in version 59
-   pSave->Property(_T("CompStressHauling"), m_CompStressHauling);
+   //pSave->Property(_T("HaulingStressesEquilibriumAngle"), m_bComputeHaulingStressesAtEquilibriumAngle); // added in version 59, removed in version 65
+   //pSave->Property(_T("CompStressHauling"), m_CompStressHauling); // removed in version 65
+   pSave->Property(_T("GlobalCompStressHauling"), m_GlobalCompStressHauling); // added in version 65
+   pSave->Property(_T("PeakCompStressHauling"), m_PeakCompStressHauling); // added in version 65
 
    //pSave->Property(_T("TensStressHauling"),m_TensStressHauling); // removed in version 56
    //pSave->Property(_T("DoTensStressHaulingMax"),m_DoTensStressHaulingMax);  // removed in version 56
@@ -1247,9 +1247,25 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
 
-      if(!pLoad->Property(_T("CyCompStressLifting"), &m_CyCompStressLifting))
+      if (version < 65)
       {
-         THROW_LOAD(InvalidFileFormat,pLoad);
+         if (!pLoad->Property(_T("CyCompStressLifting"), &m_LiftingCompressionStressCoefficient_GlobalStress))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+      else
+      {
+         if (!pLoad->Property(_T("CyGlobalCompStressLifting"), &m_LiftingCompressionStressCoefficient_GlobalStress))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("CyPeakCompStressLifting"), &m_LiftingCompressionStressCoefficient_PeakStress))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
       }
 
       if(!pLoad->Property(_T("CyTensStressServ"), &m_CyTensStressServ))
@@ -1393,17 +1409,21 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( 55 < version )
       {
-         // added in version 56
-         Int32 temp;
-         if ( !pLoad->Property(_T("LiftingCamberMethod"),&temp) )
+         // added in version 56, removed in version 65
+         if (version < 65)
          {
-            THROW_LOAD(InvalidFileFormat,pLoad);
-         }
-         m_LiftingCamberMethod = (pgsTypes::CamberMethod)temp;
+            Int32 temp;
+            if (!pLoad->Property(_T("LiftingCamberMethod"), &temp))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+            //m_LiftingCamberMethod = (pgsTypes::CamberMethod)temp; ignore value
 
-         if ( !pLoad->Property(_T("LiftingCamberPercentEstimate"),&m_LiftingCamberPercentEstimate) )
-         {
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            Float64 liftingCamberPrecentEstimate;
+            if (!pLoad->Property(_T("LiftingCamberPercentEstimate"), &liftingCamberPrecentEstimate/*&m_LiftingCamberPercentEstimate*/))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
          }
 
          if (57 < version)
@@ -1433,11 +1453,13 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             {
                THROW_LOAD(InvalidFileFormat, pLoad);
             }
-            m_bComputeLiftingStressesAtEquilibriumAngle = !bPlumbGirder;
+            //m_bComputeLiftingStressesAtEquilibriumAngle = !bPlumbGirder; removed in version 65
          }
-         else
+         else if (version < 65)
          {
-            if (!pLoad->Property(_T("LiftingStressesEquilibriumAngle"), &m_bComputeLiftingStressesAtEquilibriumAngle))
+            // removed in version 65
+            bool bComputeLiftingStressAtEquilibriumAngle;
+            if (!pLoad->Property(_T("LiftingStressesEquilibriumAngle"), &bComputeLiftingStressAtEquilibriumAngle/*&m_bComputeLiftingStressesAtEquilibriumAngle*/))
             {
                THROW_LOAD(InvalidFileFormat, pLoad);
             }
@@ -1517,25 +1539,37 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
       if ( 55 < version )
       {
-         // added in version 56
-         Int32 temp;
-         if ( !pLoad->Property(_T("HaulingCamberMethod"),&temp) )
+         // added in version 56, removed version 65
+         if (version < 65)
          {
-            THROW_LOAD(InvalidFileFormat,pLoad);
+            Int32 temp;
+            if (!pLoad->Property(_T("HaulingCamberMethod"), &temp))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+            //m_HaulingCamberMethod = (pgsTypes::CamberMethod)temp;
          }
-         m_HaulingCamberMethod = (pgsTypes::CamberMethod)temp;
+
       }
 
-      if(!pLoad->Property(_T("HaulingCamberPercentEstimate"), &m_HaulingCamberPercentEstimate))
+      // removed in version 65
+      if (version < 65)
       {
-         THROW_LOAD(InvalidFileFormat,pLoad);
+         Float64 haulingCamberPrecentEstimate;
+         if (!pLoad->Property(_T("HaulingCamberPercentEstimate"), &haulingCamberPrecentEstimate/*&m_HaulingCamberPercentEstimate*/))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
       }
-      if ( version < 56 )
-      {
-         // in version 56 this value changed from a whole percentage to a fraction
-         // e.g. 2% became 0.02
-         m_HaulingCamberPercentEstimate /= 100;
-      }
+
+      // Removed in version 65
+      //if ( version < 56 )
+      //{
+         //// in version 56 this value changed from a whole percentage to a fraction
+         //// e.g. 2% became 0.02
+         //m_HaulingCamberPercentEstimate /= 100;
+      //}
+
       if (57 < version)
       {
          // added in version 50
@@ -1575,19 +1609,35 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         if (58 < version)
+         if (58 < version && version < 65)
          {
-            // added in version 59
-            if (!pLoad->Property(_T("HaulingStressesEquilibriumAngle"), &m_bComputeHaulingStressesAtEquilibriumAngle))
+            // added in version 59, removed in version 65
+            bool bComputeHaulingStressAtEquilibriumAngle;
+            if (!pLoad->Property(_T("HaulingStressesEquilibriumAngle"), &bComputeHaulingStressAtEquilibriumAngle/*&m_bComputeHaulingStressesAtEquilibriumAngle*/))
             {
                THROW_LOAD(InvalidFileFormat, pLoad);
             }
          }
       }
 
-      if(!pLoad->Property(_T("CompStressHauling"), &m_CompStressHauling))
+      if (version < 65)
       {
-         THROW_LOAD(InvalidFileFormat,pLoad);
+         if (!pLoad->Property(_T("CompStressHauling"), &m_GlobalCompStressHauling))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+      else
+      {
+         if (!pLoad->Property(_T("GlobalCompStressHauling"), &m_GlobalCompStressHauling))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("PeakCompStressHauling"), &m_PeakCompStressHauling))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
       }
 
       if ( version < 56 )
@@ -4486,19 +4536,17 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
         !::IsEqual(m_LiftingLoopTolerance , rOther.m_LiftingLoopTolerance) ||
         !::IsEqual(m_MaxGirderSweepLifting, rOther.m_MaxGirderSweepLifting) ||
         !::IsEqual(m_MinCableInclination  , rOther.m_MinCableInclination) ||
-        m_LiftingCamberMethod != rOther.m_LiftingCamberMethod ||
-        (m_LiftingCamberMethod == pgsTypes::cmApproximate && !::IsEqual(m_LiftingCamberPercentEstimate, rOther.m_LiftingCamberPercentEstimate)) ||
-        (m_LiftingCamberMethod == pgsTypes::cmDirect && !::IsEqual(m_LiftingCamberMultiplier, rOther.m_LiftingCamberMultiplier)) ||
+        !::IsEqual(m_LiftingCamberMultiplier, rOther.m_LiftingCamberMultiplier) ||
         m_LiftingWindType != rOther.m_LiftingWindType ||
-        !::IsEqual(m_LiftingWindLoad,rOther.m_LiftingWindLoad) ||
-        m_bComputeLiftingStressesAtEquilibriumAngle != rOther.m_bComputeLiftingStressesAtEquilibriumAngle
+        !::IsEqual(m_LiftingWindLoad,rOther.m_LiftingWindLoad)
      )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Lifting Analysis Parameters are different"),_T(""),_T("")));
    }
 
-   if ( !::IsEqual(m_CyCompStressLifting, rOther.m_CyCompStressLifting) ||
+   if ( !::IsEqual(m_LiftingCompressionStressCoefficient_GlobalStress, rOther.m_LiftingCompressionStressCoefficient_GlobalStress) ||
+        !::IsEqual(m_LiftingCompressionStressCoefficient_PeakStress, rOther.m_LiftingCompressionStressCoefficient_PeakStress) ||
         !::IsEqual(m_CyTensStressLifting        , rOther.m_CyTensStressLifting) ||
         (m_CyDoTensStressLiftingMax != rOther.m_CyDoTensStressLiftingMax || (m_CyDoTensStressLiftingMax == true && !::IsEqual(m_CyTensStressLiftingMax, rOther.m_CyTensStressLiftingMax))) ||
         !::IsEqual(m_TensStressLiftingWithRebar , rOther.m_TensStressLiftingWithRebar) ||
@@ -4546,15 +4594,12 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
             !::IsEqual(m_RoadwaySuperelevation, rOther.m_RoadwaySuperelevation) ||
             !::IsEqual(m_MaxGirderSweepHauling, rOther.m_MaxGirderSweepHauling) ||
             !::IsEqual(m_HaulingSupportPlacementTolerance, rOther.m_HaulingSupportPlacementTolerance) ||
-            m_HaulingCamberMethod != rOther.m_HaulingCamberMethod ||
-            (m_HaulingCamberMethod == pgsTypes::cmApproximate && !::IsEqual(m_HaulingCamberPercentEstimate, rOther.m_HaulingCamberPercentEstimate)) ||
-            (m_HaulingCamberMethod == pgsTypes::cmDirect && !::IsEqual(m_HaulingCamberMultiplier,rOther.m_HaulingCamberMultiplier)) ||
+            !::IsEqual(m_HaulingCamberMultiplier,rOther.m_HaulingCamberMultiplier) ||
             m_HaulingWindType != rOther.m_HaulingWindType ||
             !::IsEqual(m_HaulingWindLoad,rOther.m_HaulingWindLoad) ||
             m_CentrifugalForceType != rOther.m_CentrifugalForceType ||
             !::IsEqual(m_HaulingSpeed,rOther.m_HaulingSpeed) ||
-            !::IsEqual(m_TurningRadius,rOther.m_TurningRadius) ||
-            m_bComputeHaulingStressesAtEquilibriumAngle != rOther.m_bComputeHaulingStressesAtEquilibriumAngle
+            !::IsEqual(m_TurningRadius,rOther.m_TurningRadius)
             )
          {
             RETURN_ON_DIFFERENCE;
@@ -4573,7 +4618,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       }
 
       // common to both methods
-      if ( !::IsEqual(m_CompStressHauling, rOther.m_CompStressHauling) ||
+      if ( !::IsEqual(m_GlobalCompStressHauling, rOther.m_GlobalCompStressHauling) ||
+           !::IsEqual(m_PeakCompStressHauling, rOther.m_PeakCompStressHauling) ||
            !::IsEqual(m_TensStressHaulingNormalCrown, rOther.m_TensStressHaulingNormalCrown) ||
            !::IsEqual(m_TensStressHaulingMaxSuper, rOther.m_TensStressHaulingMaxSuper) ||
            (m_DoTensStressHaulingMaxNormalCrown != rOther.m_DoTensStressHaulingMaxNormalCrown || (m_DoTensStressHaulingMaxNormalCrown == true && !::IsEqual(m_TensStressHaulingMaxNormalCrown, rOther.m_TensStressHaulingMaxNormalCrown))) ||
@@ -5292,14 +5338,24 @@ void SpecLibraryEntry::SetAtReleaseCompressionStressFactor(Float64 stress)
    m_CyCompStressServ = stress;
 }
 
-Float64 SpecLibraryEntry::GetLiftingCompressionStressFactor() const
+Float64 SpecLibraryEntry::GetLiftingCompressionGlobalStressFactor() const
 {
-   return m_CyCompStressLifting;
+   return m_LiftingCompressionStressCoefficient_GlobalStress;
 }
 
-void SpecLibraryEntry::SetLiftingCompressionStressFactor(Float64 stress)
+void SpecLibraryEntry::SetLiftingCompressionGlobalStressFactor(Float64 stress)
 {
-   m_CyCompStressLifting = stress;
+   m_LiftingCompressionStressCoefficient_GlobalStress = stress;
+}
+
+Float64 SpecLibraryEntry::GetLiftingCompressionPeakStressFactor() const
+{
+   return m_LiftingCompressionStressCoefficient_PeakStress;
+}
+
+void SpecLibraryEntry::SetLiftingCompressionPeakStressFactor(Float64 stress)
+{
+   m_LiftingCompressionStressCoefficient_PeakStress = stress;
 }
 
 Float64 SpecLibraryEntry::GetAtReleaseTensionStressFactor() const
@@ -5416,26 +5472,6 @@ void SpecLibraryEntry::SetHaulingSupportPlacementTolerance(Float64 tol)
    m_HaulingSupportPlacementTolerance = tol;
 }
 
-pgsTypes::CamberMethod SpecLibraryEntry::GetHaulingCamberMethod() const
-{
-   return m_HaulingCamberMethod;
-}
-
-void SpecLibraryEntry::SetHaulingCamberMethod(pgsTypes::CamberMethod camberMethod)
-{
-   m_HaulingCamberMethod = camberMethod;
-}
-
-Float64 SpecLibraryEntry::GetHaulingCamberPercentEstimate() const
-{
-   return m_HaulingCamberPercentEstimate;
-}
-
-void SpecLibraryEntry::SetHaulingCamberPercentEstimate(Float64 per)
-{
-   m_HaulingCamberPercentEstimate = per;
-}
-
 Float64 SpecLibraryEntry::GetHaulingCamberMultiplier() const
 {
    return m_HaulingCamberMultiplier;
@@ -5458,14 +5494,24 @@ const COldHaulTruck* SpecLibraryEntry::GetOldHaulTruck() const
    }
 }
 
-Float64 SpecLibraryEntry::GetHaulingCompressionStressFactor() const
+Float64 SpecLibraryEntry::GetHaulingCompressionGlobalStressFactor() const
 {
-   return m_CompStressHauling;
+   return m_GlobalCompStressHauling;
 }
 
-void SpecLibraryEntry::SetHaulingCompressionStressFactor(Float64 stress)
+void SpecLibraryEntry::SetHaulingCompressionGlobalStressFactor(Float64 stress)
 {
-   m_CompStressHauling = stress;
+   m_GlobalCompStressHauling = stress;
+}
+
+Float64 SpecLibraryEntry::GetHaulingCompressionPeakStressFactor() const
+{
+   return m_PeakCompStressHauling;
+}
+
+void SpecLibraryEntry::SetHaulingCompressionPeakStressFactor(Float64 stress)
+{
+   m_PeakCompStressHauling = stress;
 }
 
 Float64 SpecLibraryEntry::GetHaulingTensionStressFactorNormalCrown() const
@@ -5617,16 +5663,6 @@ void SpecLibraryEntry::SetTurningRadius(Float64 r)
    m_TurningRadius = r;
 }
 
-bool SpecLibraryEntry::EvaluateHaulingStressesAtEquilibriumAngle() const
-{
-   return m_bComputeHaulingStressesAtEquilibriumAngle;
-}
-
-void SpecLibraryEntry::EvaluateHaulingStressesAtEquilibriumAngle(bool bComputeStressesAtEquilibriumAngle)
-{
-   m_bComputeHaulingStressesAtEquilibriumAngle = bComputeStressesAtEquilibriumAngle;
-}
-
 Float64 SpecLibraryEntry::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const
 {
    return m_HaulingModulusOfRuptureCoefficient[type];
@@ -5640,26 +5676,6 @@ void SpecLibraryEntry::SetLiftingModulusOfRuptureFactor(Float64 fr,pgsTypes::Con
 Float64 SpecLibraryEntry::GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const
 {
    return m_LiftingModulusOfRuptureCoefficient[type];
-}
-
-pgsTypes::CamberMethod SpecLibraryEntry::GetLiftingCamberMethod() const
-{
-   return m_LiftingCamberMethod;
-}
-
-void SpecLibraryEntry::SetLiftingCamberMethod(pgsTypes::CamberMethod method)
-{
-   m_LiftingCamberMethod = method;
-}
-
-Float64 SpecLibraryEntry::GetLiftingCamberPercentEstimate() const
-{
-   return m_LiftingCamberPercentEstimate;
-}
-
-void SpecLibraryEntry::SetLiftingCamberPercentEstimate(Float64 per)
-{
-   m_LiftingCamberPercentEstimate = per;
 }
 
 Float64 SpecLibraryEntry::GetLiftingCamberMultiplier() const
@@ -5690,16 +5706,6 @@ Float64 SpecLibraryEntry::GetLiftingWindLoad() const
 void SpecLibraryEntry::SetLiftingWindLoad(Float64 wl)
 {
    m_LiftingWindLoad = wl;
-}
-
-bool SpecLibraryEntry::EvaluateLiftingStressesAtEquilibriumAngle() const
-{
-   return m_bComputeLiftingStressesAtEquilibriumAngle;
-}
-
-void SpecLibraryEntry::EvaluateLiftingStressesAtEquilibriumAngle(bool bComputeStressesAtEquilibriumAngle)
-{
-   m_bComputeLiftingStressesAtEquilibriumAngle = bComputeStressesAtEquilibriumAngle;
 }
 
 Float64 SpecLibraryEntry::GetAtReleaseTensionStressFactorWithRebar() const
@@ -7289,7 +7295,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_CyLiftingCrackFs           = rOther.m_CyLiftingCrackFs;
    m_CyLiftingFailFs            = rOther.m_CyLiftingFailFs;
    m_CyCompStressServ           = rOther.m_CyCompStressServ;
-   m_CyCompStressLifting        = rOther.m_CyCompStressLifting;
+   m_LiftingCompressionStressCoefficient_GlobalStress        = rOther.m_LiftingCompressionStressCoefficient_GlobalStress;
+   m_LiftingCompressionStressCoefficient_PeakStress = rOther.m_LiftingCompressionStressCoefficient_PeakStress;
    m_CyTensStressServ           = rOther.m_CyTensStressServ;
    m_CyDoTensStressServMax      = rOther.m_CyDoTensStressServMax;
    m_CyTensStressServMax        = rOther.m_CyTensStressServMax;
@@ -7313,24 +7320,19 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_HaulingAnalysisMethod      = rOther.m_HaulingAnalysisMethod;
    m_MaxGirderSweepHauling      = rOther.m_MaxGirderSweepHauling;
    m_HaulingSupportPlacementTolerance = rOther.m_HaulingSupportPlacementTolerance;
-   m_HaulingCamberMethod = rOther.m_HaulingCamberMethod;
-   m_HaulingCamberPercentEstimate    = rOther.m_HaulingCamberPercentEstimate;
    m_HaulingCamberMultiplier = rOther.m_HaulingCamberMultiplier;
-   m_LiftingCamberMethod = rOther.m_LiftingCamberMethod;
-   m_LiftingCamberPercentEstimate = rOther.m_LiftingCamberPercentEstimate;
    m_LiftingCamberMultiplier = rOther.m_LiftingCamberMultiplier;
 
    m_LiftingWindType = rOther.m_LiftingWindType;
    m_LiftingWindLoad = rOther.m_LiftingWindLoad;
-   m_bComputeLiftingStressesAtEquilibriumAngle = rOther.m_bComputeLiftingStressesAtEquilibriumAngle;
    m_HaulingWindType = rOther.m_HaulingWindType;
    m_HaulingWindLoad = rOther.m_HaulingWindLoad;
    m_CentrifugalForceType = rOther.m_CentrifugalForceType;
    m_HaulingSpeed = rOther.m_HaulingSpeed;
    m_TurningRadius = rOther.m_TurningRadius;
-   m_bComputeHaulingStressesAtEquilibriumAngle = rOther.m_bComputeHaulingStressesAtEquilibriumAngle;
 
-   m_CompStressHauling          = rOther.m_CompStressHauling;
+   m_GlobalCompStressHauling          = rOther.m_GlobalCompStressHauling;
+   m_PeakCompStressHauling = rOther.m_PeakCompStressHauling;
    m_TensStressHaulingNormalCrown          = rOther.m_TensStressHaulingNormalCrown;
    m_DoTensStressHaulingMaxNormalCrown     = rOther.m_DoTensStressHaulingMaxNormalCrown;
    m_TensStressHaulingMaxNormalCrown       = rOther.m_TensStressHaulingMaxNormalCrown;

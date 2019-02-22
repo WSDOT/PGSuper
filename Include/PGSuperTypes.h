@@ -746,13 +746,6 @@ typedef struct pgsTypes
       hsFilleted   // Haunch cut at 45 degrees (like WSDOT)
    } HaunchShapeType;
 
-   // method of dealing with camber for stability analysis
-   typedef enum CamberMethod
-   {
-      cmApproximate, // camber is approximated with a percent increase of CG from roll axis
-      cmDirect // a value for camber is computed
-   } CamberMethod;
-
    typedef enum WindType
    {
       Speed,

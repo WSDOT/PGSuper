@@ -636,7 +636,8 @@
                 <CyLiftingCrackFs>0.10000000000000001</CyLiftingCrackFs>
                 <CyLiftingFailFs>0.10000000000000001</CyLiftingFailFs>
                 <CyCompStressServ>0.65000000000000002</CyCompStressServ>
-                <CyCompStressLifting>9.9000000000000004</CyCompStressLifting>
+                <CyGlobalCompStressLifting>9.9000000000000004</CyGlobalCompStressLifting>
+                <CyPeakCompStressLifting>9.9000000000000004</CyPeakCompStressLifting>
                 <CyTensStressServ>630.18887682959996</CyTensStressServ>
                 <CyDoTensStressServMax>0</CyDoTensStressServMax>
                 <CyTensStressServMax>1378951.4586340003</CyTensStressServMax>
@@ -655,27 +656,22 @@
                 <LiftingLoopTolerance>0.0063499999999999997</LiftingLoopTolerance>
                 <MinCableInclination>1.5707963267910001</MinCableInclination>
                 <MaxGirderSweepLifting>0.00051999999999999995</MaxGirderSweepLifting>
-                <LiftingCamberMethod>1</LiftingCamberMethod>
-                <LiftingCamberPercentEstimate>0.02</LiftingCamberPercentEstimate>
                 <LiftingCamberMultiplier>1</LiftingCamberMultiplier>
                 <LiftingWindType>0</LiftingWindType>
                 <LiftingWindLoad>0</LiftingWindLoad>
-                <LiftingStressesEquilibriumAngle>0</LiftingStressesEquilibriumAngle>
                 <EnableHaulingCheck>0</EnableHaulingCheck>
                 <EnableHaulingDesign>0</EnableHaulingDesign>
                 <HaulingAnalysisMethod>0</HaulingAnalysisMethod>
                 <MaxGirderSweepHauling>0.001</MaxGirderSweepHauling>
                 <HaulingSupportPlacementTolerance>0.025399999999999999</HaulingSupportPlacementTolerance>
-                <HaulingCamberMethod>0</HaulingCamberMethod>
-                <HaulingCamberPercentEstimate>0.02</HaulingCamberPercentEstimate>
                 <HaulingCamberMultiplier>1</HaulingCamberMultiplier>
                 <HaulingWindType>0</HaulingWindType>
                 <HaulingWindLoad>0</HaulingWindLoad>
                 <CentrifugalForceType>1</CentrifugalForceType>
                 <HaulingSpeed>0</HaulingSpeed>
                 <TurningRadius>304.80000000000001</TurningRadius>
-                <HaulingStressesEquilibriumAngle>-1</HaulingStressesEquilibriumAngle>
-                <CompStressHauling>9.9000000000000004</CompStressHauling>
+                <GlobalCompStressHauling>9.9000000000000004</GlobalCompStressHauling>
+                <PeakCompStressHauling>9.9000000000000004</PeakCompStressHauling>
                 <TensStressHaulingNormalCrown>25995.291169221</TensStressHaulingNormalCrown>
                 <DoTensStressHaulingMaxNormalCrown>0</DoTensStressHaulingMaxNormalCrown>
                 <TensStressHaulingMaxNormalCrown>0</TensStressHaulingMaxNormalCrown>

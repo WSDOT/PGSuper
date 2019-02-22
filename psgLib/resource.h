@@ -451,15 +451,18 @@
 #define IDC_LIFTING_COMPRESSION         1126
 #define IDC_HAULING_TENSION_WITH_REBAR  1126
 #define IDC_AFTER_SIDL                  1126
+#define IDC_LIFTING_GLOBAL_COMPRESSION  1126
 #define IDC_LIFTING_TENSION             1127
 #define IDC_AFTER_DECK_PLACEMENT_TAG2   1127
 #define IDC_AFTER_SIDL_TAG              1127
 #define IDC_LIFTING_TENSION_UNITS       1128
+#define IDC_LIFTING_PEAK_COMPRESSION    1128
 #define IDC_CHECK_LIFTING_TENSION_MAX   1129
 #define IDC_LIFTING_TENSION_MAX         1130
 #define IDC_LIFTING_TENSION_MAX_UNIT    1131
 #define IDC_HAULING_TENSION_UNITS       1132
 #define IDC_LIFTING_TENSION_UNITS2      1132
+#define IDC_LIFTING_GLOBAL_COMPRESSION_UNIT 1132
 #define IDC_IMPACT_UPWARD_LIFTING       1133
 #define IDC_IMPACT_DOWNWARD_LIFTING     1134
 #define IDC_RELEASE_TENSION_UNIT        1135
@@ -471,6 +474,7 @@
 #define IDC_TS_REMOVAL_TENSION_UNIT     1137
 #define IDC_HAULING_TENSION_WITH_REBAR_UNIT 1138
 #define IDC_AFTER_DECK_TENSION_UNIT     1138
+#define IDC_LIFTING_PEAK_COMPRESSION_UNIT 1138
 #define IDC_SERVICE_III_TENSION_UNIT    1139
 #define IDC_SEVERE_SERVICE_III_TENSION_UNIT 1140
 #define IDC_SERVICE_I_TENSION_UNIT      1141
@@ -708,6 +712,7 @@
 #define IDC_STATIC_GH18                 1317
 #define IDC_STATIC_GH20                 1319
 #define IDC_STATIC_GH25                 1324
+#define IDC_STATIC_GH26                 1325
 #define IDC_FR_SQRT                     1327
 #define IDC_ALWC_FR_SQRT                1328
 #define IDC_APPROXIMATE_SHIPPING_TIME_NOTE 1329
@@ -1238,6 +1243,7 @@
 #define IDC_STATIC_H                    1641
 #define IDS_E_FILENOTFOUND              1642
 #define IDC_STATIC_K                    1642
+#define IDC_STATIC_HD                   1643
 #define IDS_E_READ                      1644
 #define IDC_STATIC_SPL                  1644
 #define IDC_STATIC_SH                   1645
@@ -1309,6 +1315,8 @@
 #define IDC_GPERM                       1701
 #define IDC_STATIC_PHIDEBOND            1702
 #define IDC_STATIC_PHI_DEBOND           1702
+#define IDC_HAULING_GLOBAL_COMPRESSION  1703
+#define IDC_HAULING_PEAK_COMPRESSION    1704
 #define IDC_CHECK_HANDLING_WEIGHT       1703
 #define IDC_EDIT7                       1704
 #define IDC_HANDLING_WEIGHT             1704

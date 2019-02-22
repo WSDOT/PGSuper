@@ -54,9 +54,11 @@ AASHTO suggests that the required tensile steel can be computed per the figure b
 
 In addition to the basic approach descrbed in LRFD 5.9.2.3.1b (*pre-2017: 5.9.4.1.2*), the following assumptions are made:
 1. The actual area of the tension zone is computed based on the location of the neutral (bending) axis and the geometry of the girder cross section.
-2. Longitudinal reinforcement will only be utilized if it lies on the tension side of the neutral axis. 
-3. Reinforcement is only considered at sections where it is fully developed.
-4. The area of prestressing strands will not be considered. It is assumed that the stress capacity of prestressing steel is already fully utilized after jacking and losses at release. Hence, only mild steel reinforcement is considered when computing A<sub>s</sub> for this requirement.
+2. Sufficiency of reinforcement in the tension zone is determined without consideration of lateral bending (only primary bending about the strong axis is considered).
+3. Longitudinal reinforcement will only be utilized if it lies on the tension side of the neutral axis. 
+4. Reinforcement is only considered at sections where it is fully developed.
+5. The area of prestressing strands will not be considered. It is assumed that the stress capacity of prestressing steel is already fully utilized after jacking and losses at release. Hence, only mild steel reinforcement is considered when computing A<sub>s</sub> for this requirement.
+6. If the reinforcement is sufficient to resist the tensile force for primary bending, the alternative (higher) tensile stress limit is utilized for primary bending stresses and stresses that include lateral bending effects.
 
-> TIP: A common source of confusion is adding reinforcement to your model and finding that the allowable tension did not increase. The most common reason for this is that the reinforcement is on the compression side of the beam. Use the stress diagram shown above to compute "x". If your reinforcement is below "x" it is on the compression side and does not contribute to the tensile resistance and therefore does not constitute _bonded reinforcement sufficient to resist the tensile force in the concrete computed assuming an uncracked section_ .
+> TIP: A common source of confusion is adding reinforcement to your model and finding that the tension limit did not increase. The most common reason for this is that the reinforcement is on the compression side of the beam. Use the stress diagram shown above to compute "x". If your reinforcement is below "x" it is on the compression side and does not contribute to the tensile resistance and therefore does not constitute _bonded reinforcement sufficient to resist the tensile force in the concrete computed assuming an uncracked section_ .
 
