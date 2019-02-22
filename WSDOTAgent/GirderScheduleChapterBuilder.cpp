@@ -628,18 +628,9 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    if ( pHaulingArtifact != nullptr )
    {
       const stbHaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
-      bool bDirectCamber;
-      Float64 camber;
-      pHaulProblem->GetCamber(&bDirectCamber,&camber);
+      Float64 camber = pHaulProblem->GetCamber();
       (*pTable)(++row,0) << _T("Maximum midspan vertical deflection, shipping");
-      if ( bDirectCamber )
-      {
-         (*pTable)(row,  1) << gdim.SetValue(camber);
-      }
-      else
-      {
-         (*pTable)(row,  1) << _T("");
-      }
+      (*pTable)(row,  1) << gdim.SetValue(camber);
    }
 
    const stbLiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();

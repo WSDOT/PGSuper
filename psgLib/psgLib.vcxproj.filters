@@ -671,6 +671,21 @@
     <Image Include="res\LibraryManager.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\PGSuperAppPlugin\res\LibEntryInUse.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\PGSuperAppPlugin\res\LibEntryInUseAndReadOnly.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\PGSuperAppPlugin\res\LibEntryReadOnly.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\PGSuperAppPlugin\res\folder_closed.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\PGSuperAppPlugin\res\folder_open.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Connection.emf">

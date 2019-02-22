@@ -37,7 +37,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
 // CWsdotHaulingDlg dialog
 
 IMPLEMENT_DYNAMIC(CWsdotHaulingDlg, CDialog)
@@ -54,10 +53,6 @@ CWsdotHaulingDlg::~CWsdotHaulingDlg()
 
 BOOL CWsdotHaulingDlg::OnInitDialog()
 {
-   CComboBox* pcbStresses = (CComboBox*)GetDlgItem(IDC_STRESSES);
-   pcbStresses->SetItemData(pcbStresses->AddString(_T("Include girder stability equilibrium angle in stress calculations")), (DWORD_PTR)true);
-   pcbStresses->SetItemData(pcbStresses->AddString(_T("Ignore girder stability equilibrium angle in stress calculations")), (DWORD_PTR)false);
-
    CComboBox* pcbWind = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
    pcbWind->SetItemData(pcbWind->AddString(_T("Pressure")),(DWORD_PTR)pgsTypes::Pressure);
    pcbWind->SetItemData(pcbWind->AddString(_T("Speed")),   (DWORD_PTR)pgsTypes::Speed);

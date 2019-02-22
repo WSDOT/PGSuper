@@ -56,7 +56,8 @@ Girder stresses can be computed either with or without consideration for the sta
 
 Item | Description
 -----|----------------
-Compressive Stress | Enter the coefficient for the allowable concrete compressive stress.
+Compressive Stress - General | Enter the coefficient for the allowable concrete compressive stress for the general bending case (girder selfweight + prestress).
+Compressive Stress - With lateral bending | Enter the coefficient for the allowable concrete compressive stress for the cases that include lateral bending due to girder tilt, wind and centrifugal force.
 Tensile Stress - in areas without sufficient bonded reinforcement | Enter the coefficient for the allowable tensile stress. Check the "But not greater than" box to establish an upper limit on the allowable tensile stress.
 Tensile Stress - in areas with sufficient bonded reinforcement | Enter the coefficient for the allowable tensile stress.
 
