@@ -569,7 +569,13 @@
     <CustomBuild Include="psgLib.def" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\barrier.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
     <Image Include="res\concrete.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\connecti.bmp">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\connection.ico">
@@ -599,6 +605,42 @@
     <Image Include="res\haul_truck.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="ico00001.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ico00001.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ico00002.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="ico00002.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ico00003.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="ico00003.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ico00004.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="ico00004.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="ico00005.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ico00005.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
     <Image Include="res\LibEditorToolbar.bmp">
       <Filter>Resource Files</Filter>
     </Image>
@@ -612,6 +654,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\live_loa.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\LibraryEditorDoc.ico">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\Rating.ico">

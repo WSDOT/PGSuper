@@ -1391,13 +1391,21 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             m_CacheGirderSpacingMeasureIdx = curSel;
          }
 
-         if (m_GirderSpacingType == pgsTypes::sbsGeneralAdjacent && old_spacing_type == pgsTypes::sbsGeneral)
+         if ( m_GirderSpacingType == pgsTypes::sbsGeneralAdjacent && old_spacing_type == pgsTypes::sbsGeneral)
          {
             // oddball case changing from general spread to general adjacent. Need to change spacing values to 
             // something reasonable
             m_GirderSpacing = m_MaxGirderSpacing; // get some spread since we a coming from that world
             pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
             pParent->m_BridgeDesc.CopyDown(false,false,true,false,false,false);
+         }
+         else if (m_GirderSpacingType == pgsTypes::sbsGeneral && old_spacing_type == pgsTypes::sbsUniformAdjacent)
+         {
+            // oddball case changing from uniform adjacent to general. Need to change spacing values to 
+            // something reasonable
+            m_GirderSpacing = m_MinGirderSpacing; // get some spread since we a coming from that world
+            pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
+            pParent->m_BridgeDesc.CopyDown(false, false, true, false, false, false);
          }
          else
          {

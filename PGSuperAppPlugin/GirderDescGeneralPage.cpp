@@ -215,6 +215,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    if (m_bCanAssumedExcessCamberInputBeEnabled)
    {
+      DDX_CBItemData(pDX, IDC_ASSUMED_EXCESS_CAMBER_TYPES, m_AssumedExcessCamberType);
       DDX_UnitValueAndTag(pDX, IDC_ASSUMED_EXCESS_CAMBER, IDC_ASSUMED_EXCESS_CAMBER_UNIT, m_AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit());
    }
 
@@ -294,7 +295,7 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAMEUSE,OnChangeSameGirderType)
    ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE,OnChangeSlabOffsetType)
-   ON_CBN_SELCHANGE(IDC_CB_ASSEXCESSCAMBER,OnChangeAssumedExcessCamberType)
+   ON_CBN_SELCHANGE(IDC_ASSUMED_EXCESS_CAMBER_TYPES,OnChangeAssumedExcessCamberType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME,OnChangeGirderName)
    ON_CBN_DROPDOWN(IDC_GIRDER_NAME,OnBeforeChangeGirderName)
    ON_BN_CLICKED(IDC_FC1,OnConcreteStrength)
@@ -568,7 +569,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    if (!m_bCanAssumedExcessCamberInputBeEnabled)
    {
       GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL)->EnableWindow(FALSE);
-      GetDlgItem(IDC_CB_ASSEXCESSCAMBER)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPES)->EnableWindow(FALSE);
       GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->EnableWindow(FALSE);
       GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_UNIT)->EnableWindow(FALSE);
       GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->SetWindowText(_T(""));
@@ -1381,19 +1382,8 @@ void CGirderDescGeneralPage::OnChangeAssumedExcessCamberType()
 
 
    m_strAssumedExcessCamberCache.Format(_T("%s"), FormatDimension(m_AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit(), false));
-
-   CComboBox* pcbAssumedExcessCamberType = (CComboBox*)GetDlgItem(IDC_CB_ASSEXCESSCAMBER);
-
-   if (m_AssumedExcessCamberType == pgsTypes::aecBridge || m_AssumedExcessCamberType == pgsTypes::aecGirder)
-   {
-      pcbAssumedExcessCamberType->AddString(_T("A single Assumed Excess Camber is used for the entire bridge"));
-   }
-   else
-   {
-      pcbAssumedExcessCamberType->AddString(_T("A unique Assumed Excess Camber is used in each span"));
-   }
-   pcbAssumedExcessCamberType->AddString(_T("Assumed Excess Cambers are defined girder by girder"));
-
+   FillAssumedExcessCamberComboBox();
+   CComboBox* pcbAssumedExcessCamberType = (CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPES);
    pcbAssumedExcessCamberType->SetCurSel(m_AssumedExcessCamberType == pgsTypes::aecGirder ? 1 : 0);
 
    UpdateAssumedExcessCamberControls();
@@ -1738,6 +1728,7 @@ void CGirderDescGeneralPage::OnTopWidthTypeChanged()
 void CGirderDescGeneralPage::FillSlabOffsetComboBox()
 {
    CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+   pcbSlabOffsetType->ResetContent();
 
    if (m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotSegment)
    {
@@ -1755,15 +1746,19 @@ void CGirderDescGeneralPage::FillSlabOffsetComboBox()
 
 void CGirderDescGeneralPage::FillAssumedExcessCamberComboBox()
 {
-   CComboBox* pcbAssumedExcessCamberType = (CComboBox*)GetDlgItem(IDC_CB_ASSEXCESSCAMBER);
+   CComboBox* pcbAssumedExcessCamberType = (CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPES);
+   pcbAssumedExcessCamberType->ResetContent();
 
    if (m_AssumedExcessCamberType == pgsTypes::aecBridge || m_AssumedExcessCamberType == pgsTypes::aecGirder)
    {
-      pcbAssumedExcessCamberType->AddString(_T("A single Assumed Excess Camber is used for the entire bridge"));
+      int idx = pcbAssumedExcessCamberType->AddString(_T("A single Assumed Excess Camber is used for the entire bridge"));
+      pcbAssumedExcessCamberType->SetItemData(idx, (DWORD_PTR)pgsTypes::aecBridge);
    }
    else
    {
-      pcbAssumedExcessCamberType->AddString(_T("A unique Assumed Excess Camber is used in each span"));
+      int idx = pcbAssumedExcessCamberType->AddString(_T("A unique Assumed Excess Camber is used in each span"));
+      pcbAssumedExcessCamberType->SetItemData(idx, (DWORD_PTR)pgsTypes::aecSpan);
    }
-   pcbAssumedExcessCamberType->AddString(_T("Assumed Excess Cambers are defined girder by girder"));
+   int idx = pcbAssumedExcessCamberType->AddString(_T("Assumed Excess Cambers are defined girder by girder"));
+   pcbAssumedExcessCamberType->SetItemData(idx, (DWORD_PTR)pgsTypes::aecGirder);
 }

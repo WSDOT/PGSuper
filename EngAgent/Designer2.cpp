@@ -8908,9 +8908,11 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
 
       GET_IFACE(ISegmentLiftingSpecCriteria,pLiftingCrit);
       Float64 allowable_tension = pLiftingCrit->GetLiftingAllowableTensileConcreteStressEx(segmentKey,fci,true);
-      Float64 allowable_compression = pLiftingCrit->GetLiftingAllowableCompressiveConcreteStressEx(segmentKey,fci);
+      Float64 allowable_global_compression = pLiftingCrit->GetLiftingAllowableGlobalCompressiveConcreteStressEx(segmentKey, fci);
+      Float64 allowable_peak_compression = pLiftingCrit->GetLiftingAllowablePeakCompressiveConcreteStressEx(segmentKey, fci);
       LOG(_T("Allowable tensile stress after Release     = ") << ::ConvertFromSysUnits(allowable_tension,unitMeasure::KSI) << _T(" KSI - min rebar was required for this strength"));
-      LOG(_T("Allowable compressive stress after Release = ") << ::ConvertFromSysUnits(allowable_compression,unitMeasure::KSI) << _T(" KSI") );
+      LOG(_T("Allowable global compressive stress after Release = ") << ::ConvertFromSysUnits(allowable_global_compression, unitMeasure::KSI) << _T(" KSI"));
+      LOG(_T("Allowable peak compressive stress after Release = ") << ::ConvertFromSysUnits(allowable_peak_compression, unitMeasure::KSI) << _T(" KSI"));
 
       // This is an analysis to determine stresses that must be reduced by debonding
       LOG(_T("Debond levels measured from fully bonded section"));
@@ -8994,7 +8996,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
-      lifting_debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, liftConfig.GdrConfig, cgy, liftingIntervalIdx, allowable_tension, allowable_compression);
+      lifting_debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, liftConfig.GdrConfig, cgy, liftingIntervalIdx, allowable_tension, allowable_global_compression);
 
       if ( lifting_debond_levels.empty() )
       {
@@ -10214,7 +10216,8 @@ void pgsDesigner2::DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabil
          os << _T("Flange=BottomFlange");
       }
 
-      Float64 stress = sectionResult.fDirect[impact][wind][corner];
+      //Float64 stress = sectionResult.fDirect[impact][wind][corner];
+      Float64 stress = sectionResult.f[impact][wind][corner];
       Float64 fs = sectionResult.FScr[impact][wind][corner];
       os<<_T(" Lateral Stress = ")<<::ConvertFromSysUnits(stress,unitMeasure::KSI)<<_T("ksi, FS =")<<fs<<endl;
    }

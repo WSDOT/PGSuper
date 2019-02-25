@@ -556,7 +556,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    Float64 t_max; // maximum allowable tension
    bool b_t_max; // true if max allowable tension is applicable
 
-   c = pSpecEntry->GetHaulingCompressionStressFactor();
+   c = pSpecEntry->GetHaulingCompressionGlobalStressFactor();
    t = pSpecEntry->GetHaulingTensionStressFactorNormalCrown();
    pSpecEntry->GetHaulingMaximumTensionStressNormalCrown(&b_t_max,&t_max);
 
@@ -564,7 +564,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
 
    bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
 
-   Float64 capCompression = pSegmentHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+   Float64 capCompression = pSegmentHaulingSpecCriteria->GetHaulingAllowableGlobalCompressiveConcreteStress(segmentKey);
 
    *p <<_T("Maximum allowable concrete compressive stress = -") << c << RPT_FC << _T(" = ") << 
       stress.SetValue(capCompression)<< _T(" ") <<

@@ -833,14 +833,14 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
    return f;
 }
 
-Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStressFactor()
+Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStressFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = pSpec->GetLiftingTensionStressFactorWithRebar();
    return x;
 }
 
-Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStress(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
@@ -854,14 +854,14 @@ Float64 CSpecAgentImp::GetLiftingWithMildRebarAllowableStress(const CSegmentKey&
    return x*lambda*sqrt(fci);
 }
 
-Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactorNormalCrown()
+Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactorNormalCrown() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = pSpec->GetHaulingTensionStressFactorWithRebarNormalCrown();
    return x;
 }
 
-Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressNormalCrown(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressNormalCrown(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -875,14 +875,14 @@ Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressNormalCrown(const C
    return x*lambda*sqrt(fc);
 }
 
-Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactorMaxSuper(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressFactorMaxSuper(const CSegmentKey& segmentKey) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = pSpec->GetHaulingTensionStressFactorWithRebarMaxSuper();
    return x;
 }
 
-Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressMaxSuper(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressMaxSuper(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -896,7 +896,7 @@ Float64 CSpecAgentImp::GetHaulingWithMildRebarAllowableStressMaxSuper(const CSeg
    return x*lambda*sqrt(fc);
 }
 
-Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -908,7 +908,7 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey)
    return GetHaulingModulusOfRupture(segmentKey,fc,type);
 }
 
-Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fc,pgsTypes::ConcreteType concType)
+Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fc,pgsTypes::ConcreteType concType) const
 {
    Float64 x = GetHaulingModulusOfRuptureFactor(concType);
 
@@ -918,7 +918,7 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRupture(const CSegmentKey& segmentKey,
    return x*lambda*sqrt(fc);
 }
 
-Float64 CSpecAgentImp::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType)
+Float64 CSpecAgentImp::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingModulusOfRuptureFactor(concType);
@@ -947,7 +947,8 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
    if ( intervalIdx == liftIntervalIdx )
    {
       ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetLiftingCompressionStressFactor();
+      ATLASSERT(false); // this assert is to get your attention... there are two compression limits for lifting, you are only getting one of them here. Is that what you want?
+      x = pSpec->GetLiftingCompressionGlobalStressFactor();
    }
    else if ( storageIntervalIdx <= intervalIdx && intervalIdx < haulIntervalIdx )
    {
@@ -957,7 +958,8 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
    else if ( intervalIdx == haulIntervalIdx )
    {
       ATLASSERT( ls == pgsTypes::ServiceI );
-      x = pSpec->GetHaulingCompressionStressFactor();
+      ATLASSERT(false); // this assert is to get your attention... there are two compression limits for hauling, you are only getting one of them here. Is that what you want?
+      x = pSpec->GetHaulingCompressionGlobalStressFactor();
    }
    else if ( intervalIdx == tempStrandRemovalIdx )
    {
@@ -1707,39 +1709,39 @@ Float64 CSpecAgentImp::GetMinBottomFlangeThickness()
 
 /////////////////////////////////////////////////////////////////////
 //  ISegmentLiftingSpecCriteria
-bool CSpecAgentImp::IsLiftingAnalysisEnabled()
+bool CSpecAgentImp::IsLiftingAnalysisEnabled() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->IsLiftingAnalysisEnabled();
 }
 
-void  CSpecAgentImp::GetLiftingImpact(Float64* pDownward, Float64* pUpward)
+void  CSpecAgentImp::GetLiftingImpact(Float64* pDownward, Float64* pUpward) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    *pDownward = pSpec->GetLiftingDownwardImpactFactor();
    *pUpward   = pSpec->GetLiftingUpwardImpactFactor();
 }
 
-Float64 CSpecAgentImp::GetLiftingCrackingFs()
+Float64 CSpecAgentImp::GetLiftingCrackingFs() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetCrackingFOSLifting();
 }
 
-Float64 CSpecAgentImp::GetLiftingFailureFs()
+Float64 CSpecAgentImp::GetLiftingFailureFs() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetLiftingFailureFOS();
 }
 
-void CSpecAgentImp::GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax)
+void CSpecAgentImp::GetLiftingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    *factor = GetLiftingAllowableTensionFactor();
    pSpec->GetLiftingMaximumTensionStress(pbMax,fmax);
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStress(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStress(const CSegmentKey& segmentKey) const
 {
    Float64 factor = GetLiftingAllowableTensionFactor();
 
@@ -1765,7 +1767,7 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStress(const CSegmentKe
    return f;
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableTensionFactor()
+Float64 CSpecAgentImp::GetLiftingAllowableTensionFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
@@ -1773,9 +1775,9 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensionFactor()
    return factor;
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetLiftingAllowableGlobalCompressiveConcreteStress(const CSegmentKey& segmentKey) const
 {
-   Float64 factor = GetLiftingAllowableCompressionFactor();
+   Float64 factor = GetLiftingAllowableGlobalCompressionFactor();
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
@@ -1788,15 +1790,38 @@ Float64 CSpecAgentImp::GetLiftingAllowableCompressiveConcreteStress(const CSegme
    return allowable;
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableCompressionFactor()
+Float64 CSpecAgentImp::GetLiftingAllowablePeakCompressiveConcreteStress(const CSegmentKey& segmentKey) const
+{
+   Float64 factor = GetLiftingAllowablePeakCompressionFactor();
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+
+   GET_IFACE(IMaterials, pMaterial);
+   Float64 fci = pMaterial->GetSegmentDesignFc(segmentKey, liftSegmentIntervalIdx);
+
+   Float64 allowable = factor * fci;
+
+   return allowable;
+}
+
+Float64 CSpecAgentImp::GetLiftingAllowableGlobalCompressionFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
-   Float64 factor = pSpec->GetLiftingCompressionStressFactor();
+   Float64 factor = pSpec->GetLiftingCompressionGlobalStressFactor();
    return -factor;
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fci, bool withMinRebar)
+Float64 CSpecAgentImp::GetLiftingAllowablePeakCompressionFactor() const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+
+   Float64 factor = pSpec->GetLiftingCompressionPeakStressFactor();
+   return -factor;
+}
+
+Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fci, bool withMinRebar) const
 {
    GET_IFACE(IMaterials,pMaterials);
    Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
@@ -1827,42 +1852,49 @@ Float64 CSpecAgentImp::GetLiftingAllowableTensileConcreteStressEx(const CSegment
    }
 }
 
-Float64 CSpecAgentImp::GetLiftingAllowableCompressiveConcreteStressEx(const CSegmentKey &segmentKey,Float64 fci)
+Float64 CSpecAgentImp::GetLiftingAllowableGlobalCompressiveConcreteStressEx(const CSegmentKey &segmentKey, Float64 fci) const
 {
-   Float64 x = GetLiftingAllowableCompressionFactor();
+   Float64 x = GetLiftingAllowableGlobalCompressionFactor();
 
    return x*fci;
 }
 
-Float64 CSpecAgentImp::GetHeightOfPickPointAboveGirderTop()
+Float64 CSpecAgentImp::GetLiftingAllowablePeakCompressiveConcreteStressEx(const CSegmentKey &segmentKey, Float64 fci) const
+{
+   Float64 x = GetLiftingAllowablePeakCompressionFactor();
+
+   return x*fci;
+}
+
+Float64 CSpecAgentImp::GetHeightOfPickPointAboveGirderTop() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
    return pSpec->GetPickPointHeight();
 }
 
-Float64 CSpecAgentImp::GetLiftingLoopPlacementTolerance()
+Float64 CSpecAgentImp::GetLiftingLoopPlacementTolerance() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
    return pSpec->GetLiftingLoopTolerance();
 }
 
-Float64 CSpecAgentImp::GetLiftingCableMinInclination()
+Float64 CSpecAgentImp::GetLiftingCableMinInclination() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
    return pSpec->GetMinCableInclination();
 }
 
-Float64 CSpecAgentImp::GetLiftingSweepTolerance()
+Float64 CSpecAgentImp::GetLiftingSweepTolerance() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
    return pSpec->GetLiftingMaximumGirderSweepTolerance();
 }
 
-Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
@@ -1874,7 +1906,7 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey)
    return GetLiftingModulusOfRupture(segmentKey,fci,type);
 }
 
-Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fci,pgsTypes::ConcreteType concType)
+Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey,Float64 fci,pgsTypes::ConcreteType concType) const
 {
    Float64 x = GetLiftingModulusOfRuptureFactor(concType);
 
@@ -1884,13 +1916,13 @@ Float64 CSpecAgentImp::GetLiftingModulusOfRupture(const CSegmentKey& segmentKey,
    return x*lambda*sqrt(fci);
 }
 
-Float64 CSpecAgentImp::GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType concType)
+Float64 CSpecAgentImp::GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType concType) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetLiftingModulusOfRuptureFactor(concType);
 }
 
-Float64 CSpecAgentImp::GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end)
+Float64 CSpecAgentImp::GetMinimumLiftingPointLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 min_lift_point = pSpec->GetMininumLiftingPointLocation();
@@ -1925,22 +1957,24 @@ Float64 CSpecAgentImp::GetMinimumLiftingPointLocation(const CSegmentKey& segment
    return min_lift_point;
 }
 
-Float64 CSpecAgentImp::GetLiftingPointLocationAccuracy()
+Float64 CSpecAgentImp::GetLiftingPointLocationAccuracy() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetLiftingPointLocationAccuracy();
 }
 
-stbLiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(const CSegmentKey& segmentKey)
+stbLiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) const
 {
    stbLiftingCriteria criteria;
 
    GET_IFACE(IMaterials,pMaterial);
    criteria.Lambda = pMaterial->GetSegmentLambda(segmentKey);
-   criteria.CompressionCoefficient = -GetLiftingAllowableCompressionFactor();
+   criteria.CompressionCoefficient_GlobalStress = -GetLiftingAllowableGlobalCompressionFactor();
+   criteria.CompressionCoefficient_PeakStress = -GetLiftingAllowablePeakCompressionFactor();
    GetLiftingAllowableTensileConcreteStressParameters(&criteria.TensionCoefficient,&criteria.bMaxTension,&criteria.MaxTension);
    criteria.TensionCoefficientWithRebar = GetLiftingWithMildRebarAllowableStressFactor();
-   criteria.AllowableCompression = GetLiftingAllowableCompressiveConcreteStress(segmentKey);
+   criteria.AllowableCompression_GlobalStress = GetLiftingAllowableGlobalCompressiveConcreteStress(segmentKey);
+   criteria.AllowableCompression_PeakStress = GetLiftingAllowablePeakCompressiveConcreteStress(segmentKey);
    criteria.AllowableTension = GetLiftingAllowableTensileConcreteStress(segmentKey);
    criteria.AllowableTensionWithRebar = GetLiftingWithMildRebarAllowableStress(segmentKey);
    criteria.MinFScr = GetLiftingCrackingFs();
@@ -1949,16 +1983,18 @@ stbLiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(const CSegmentKey&
    return criteria;
 }
 
-stbLiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig)
+stbLiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) const
 {
    stbLiftingCriteria criteria;
 
    GET_IFACE(IMaterials,pMaterial);
    criteria.Lambda = pMaterial->GetSegmentLambda(segmentKey);
-   criteria.CompressionCoefficient = -GetLiftingAllowableCompressionFactor();
+   criteria.CompressionCoefficient_GlobalStress = -GetLiftingAllowableGlobalCompressionFactor();
+   criteria.CompressionCoefficient_PeakStress = -GetLiftingAllowablePeakCompressionFactor();
    GetLiftingAllowableTensileConcreteStressParameters(&criteria.TensionCoefficient,&criteria.bMaxTension,&criteria.MaxTension);
    criteria.TensionCoefficientWithRebar = GetLiftingWithMildRebarAllowableStressFactor();
-   criteria.AllowableCompression = GetLiftingAllowableCompressiveConcreteStressEx(segmentKey,liftConfig.GdrConfig.Fci);
+   criteria.AllowableCompression_GlobalStress = GetLiftingAllowableGlobalCompressiveConcreteStressEx(segmentKey, liftConfig.GdrConfig.Fci);
+   criteria.AllowableCompression_PeakStress = GetLiftingAllowablePeakCompressiveConcreteStressEx(segmentKey, liftConfig.GdrConfig.Fci);
    criteria.AllowableTension = GetLiftingAllowableTensileConcreteStressEx(segmentKey,liftConfig.GdrConfig.Fci,false);
    criteria.AllowableTensionWithRebar = GetLiftingAllowableTensileConcreteStressEx(segmentKey,liftConfig.GdrConfig.Fci,true);
    criteria.MinFScr = GetLiftingCrackingFs();
@@ -1967,83 +2003,65 @@ stbLiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(const CSegmentKey&
    return criteria;
 }
 
-pgsTypes::CamberMethod CSpecAgentImp::GetLiftingCamberMethod()
-{
-   const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingCamberMethod();
-}
-
-Float64 CSpecAgentImp::GetLiftingIncreaseInCgForCamber()
-{
-   const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetLiftingCamberPercentEstimate();
-}
-
-Float64 CSpecAgentImp::GetLiftingCamberMultiplier()
+Float64 CSpecAgentImp::GetLiftingCamberMultiplier() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetLiftingCamberMultiplier();
 }
 
-pgsTypes::WindType CSpecAgentImp::GetLiftingWindType()
+pgsTypes::WindType CSpecAgentImp::GetLiftingWindType() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetLiftingWindType();
 }
 
-Float64 CSpecAgentImp::GetLiftingWindLoad()
+Float64 CSpecAgentImp::GetLiftingWindLoad() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetLiftingWindLoad();
 }
 
-bool CSpecAgentImp::EvaluateLiftingStressesAtEquilibriumAngle()
-{
-   const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->EvaluateLiftingStressesAtEquilibriumAngle();
-}
-
 //////////////////////////////////////////////////////////////////////
 // ISegmentHaulingSpecCriteria
-bool CSpecAgentImp::IsHaulingAnalysisEnabled()
+bool CSpecAgentImp::IsHaulingAnalysisEnabled() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->IsHaulingAnalysisEnabled();
 }
 
-pgsTypes::HaulingAnalysisMethod CSpecAgentImp::GetHaulingAnalysisMethod()
+pgsTypes::HaulingAnalysisMethod CSpecAgentImp::GetHaulingAnalysisMethod() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingAnalysisMethod();
 }
 
-void CSpecAgentImp::GetHaulingImpact(Float64* pDownward, Float64* pUpward)
+void CSpecAgentImp::GetHaulingImpact(Float64* pDownward, Float64* pUpward) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    *pDownward = pSpec->GetHaulingDownwardImpactFactor();
    *pUpward   = pSpec->GetHaulingUpwardImpactFactor();
 }
 
-Float64 CSpecAgentImp::GetHaulingCrackingFs()
+Float64 CSpecAgentImp::GetHaulingCrackingFs() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingCrackingFOS();
 }
 
-Float64 CSpecAgentImp::GetHaulingRolloverFs()
+Float64 CSpecAgentImp::GetHaulingRolloverFs() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingFailureFOS();
 }
 
-void CSpecAgentImp::GetHaulingAllowableTensileConcreteStressParametersNormalCrown(Float64* factor,bool* pbMax,Float64* fmax)
+void CSpecAgentImp::GetHaulingAllowableTensileConcreteStressParametersNormalCrown(Float64* factor,bool* pbMax,Float64* fmax) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    *factor = GetHaulingAllowableTensionFactorNormalCrown();
    pSpec->GetHaulingMaximumTensionStressNormalCrown(pbMax,fmax);
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressNormalCrown(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressNormalCrown(const CSegmentKey& segmentKey) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 factor = GetHaulingAllowableTensionFactorNormalCrown();
@@ -2068,14 +2086,14 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressNormalCrown(const
    return allow;
 }
 
-void CSpecAgentImp::GetHaulingAllowableTensileConcreteStressParametersMaxSuper(Float64* factor,bool* pbMax,Float64* fmax)
+void CSpecAgentImp::GetHaulingAllowableTensileConcreteStressParametersMaxSuper(Float64* factor,bool* pbMax,Float64* fmax) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    *factor = GetHaulingAllowableTensionFactorMaxSuper();
    pSpec->GetHaulingMaximumTensionStressMaxSuper(pbMax,fmax);
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressMaxSuper(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressMaxSuper(const CSegmentKey& segmentKey) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 factor = GetHaulingAllowableTensionFactorMaxSuper();
@@ -2100,42 +2118,63 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressMaxSuper(const CS
    return allow;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetHaulingAllowableGlobalCompressiveConcreteStress(const CSegmentKey& segmentKey) const
 {
-   Float64 factor = GetHaulingAllowableCompressionFactor();
+   Float64 factor = GetHaulingAllowableGlobalCompressionFactor();
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
-   GET_IFACE(IMaterials,pMaterial);
-   Float64 fc = pMaterial->GetSegmentDesignFc(segmentKey,haulSegmentIntervalIdx);
+   GET_IFACE(IMaterials, pMaterial);
+   Float64 fc = pMaterial->GetSegmentDesignFc(segmentKey, haulSegmentIntervalIdx);
 
    Float64 allowable = factor * fc;
    return allowable;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensionFactorNormalCrown()
+Float64 CSpecAgentImp::GetHaulingAllowablePeakCompressiveConcreteStress(const CSegmentKey& segmentKey) const
+{
+   Float64 factor = GetHaulingAllowablePeakCompressionFactor();
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+
+   GET_IFACE(IMaterials, pMaterial);
+   Float64 fc = pMaterial->GetSegmentDesignFc(segmentKey, haulSegmentIntervalIdx);
+
+   Float64 allowable = factor * fc;
+   return allowable;
+}
+
+Float64 CSpecAgentImp::GetHaulingAllowableTensionFactorNormalCrown() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 factor = pSpec->GetHaulingTensionStressFactorNormalCrown();
    return factor;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensionFactorMaxSuper()
+Float64 CSpecAgentImp::GetHaulingAllowableTensionFactorMaxSuper() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 factor = pSpec->GetHaulingTensionStressFactorMaxSuper();
    return factor;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableCompressionFactor()
+Float64 CSpecAgentImp::GetHaulingAllowableGlobalCompressionFactor() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
-   Float64 factor = pSpec->GetHaulingCompressionStressFactor();
+   Float64 factor = pSpec->GetHaulingCompressionGlobalStressFactor();
    return -factor;
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressExNormalCrown(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar)
+Float64 CSpecAgentImp::GetHaulingAllowablePeakCompressionFactor() const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   Float64 factor = pSpec->GetHaulingCompressionPeakStressFactor();
+   return -factor;
+}
+
+Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressExNormalCrown(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const
 {
    GET_IFACE(IMaterials,pMaterials);
    Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
@@ -2166,7 +2205,7 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressExNormalCrown(con
    }
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressExMaxSuper(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar)
+Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressExMaxSuper(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const
 {
    GET_IFACE(IMaterials,pMaterials);
    Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
@@ -2197,62 +2236,57 @@ Float64 CSpecAgentImp::GetHaulingAllowableTensileConcreteStressExMaxSuper(const 
    }
 }
 
-Float64 CSpecAgentImp::GetHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc)
+Float64 CSpecAgentImp::GetHaulingAllowableGlobalCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const
 {
-   Float64 x = GetHaulingAllowableCompressionFactor();
+   Float64 x = GetHaulingAllowableGlobalCompressionFactor();
 
    return x*fc;
 }
 
-pgsTypes::HaulingImpact CSpecAgentImp::GetHaulingImpactUsage()
+Float64 CSpecAgentImp::GetHaulingAllowablePeakCompressiveConcreteStressEx(const CSegmentKey& segmentKey, Float64 fc) const
+{
+   Float64 x = GetHaulingAllowablePeakCompressionFactor();
+
+   return x*fc;
+}
+
+pgsTypes::HaulingImpact CSpecAgentImp::GetHaulingImpactUsage() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingImpactUsage();
 }
 
-Float64 CSpecAgentImp::GetNormalCrownSlope()
+Float64 CSpecAgentImp::GetNormalCrownSlope() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetRoadwayCrownSlope();
 }
 
-Float64 CSpecAgentImp::GetMaxSuperelevation()
+Float64 CSpecAgentImp::GetMaxSuperelevation() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetRoadwaySuperelevation();
 }
 
-Float64 CSpecAgentImp::GetHaulingSweepTolerance()
+Float64 CSpecAgentImp::GetHaulingSweepTolerance() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingMaximumGirderSweepTolerance();
 }
 
-Float64 CSpecAgentImp::GetHaulingSupportPlacementTolerance()
+Float64 CSpecAgentImp::GetHaulingSupportPlacementTolerance() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingSupportPlacementTolerance();
 }
 
-pgsTypes::CamberMethod CSpecAgentImp::GetHaulingCamberMethod()
-{
-   const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingCamberMethod();
-}
-
-Float64 CSpecAgentImp::GetHaulingIncreaseInCgForCamber()
-{
-   const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->GetHaulingCamberPercentEstimate();
-}
-
-Float64 CSpecAgentImp::GetHaulingCamberMultiplier()
+Float64 CSpecAgentImp::GetHaulingCamberMultiplier() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingCamberMultiplier();
 }
 
-Float64 CSpecAgentImp::GetRollStiffness(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetRollStiffness(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -2260,7 +2294,7 @@ Float64 CSpecAgentImp::GetRollStiffness(const CSegmentKey& segmentKey)
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness();
 }
 
-Float64 CSpecAgentImp::GetHeightOfGirderBottomAboveRoadway(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetHeightOfGirderBottomAboveRoadway(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -2268,7 +2302,7 @@ Float64 CSpecAgentImp::GetHeightOfGirderBottomAboveRoadway(const CSegmentKey& se
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetBottomOfGirderHeight();
 }
 
-Float64 CSpecAgentImp::GetHeightOfTruckRollCenterAboveRoadway(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetHeightOfTruckRollCenterAboveRoadway(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -2276,7 +2310,7 @@ Float64 CSpecAgentImp::GetHeightOfTruckRollCenterAboveRoadway(const CSegmentKey&
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollCenterHeight();
 }
 
-Float64 CSpecAgentImp::GetAxleWidth(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetAxleWidth(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -2284,7 +2318,7 @@ Float64 CSpecAgentImp::GetAxleWidth(const CSegmentKey& segmentKey)
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetAxleWidth();
 }
 
-Float64 CSpecAgentImp::GetAllowableDistanceBetweenSupports(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetAllowableDistanceBetweenSupports(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -2292,7 +2326,7 @@ Float64 CSpecAgentImp::GetAllowableDistanceBetweenSupports(const CSegmentKey& se
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetMaxDistanceBetweenBunkPoints();
 }
 
-Float64 CSpecAgentImp::GetAllowableLeadingOverhang(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetAllowableLeadingOverhang(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -2300,7 +2334,7 @@ Float64 CSpecAgentImp::GetAllowableLeadingOverhang(const CSegmentKey& segmentKey
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetMaximumLeadingOverhang();
 }
 
-Float64 CSpecAgentImp::GetMaxGirderWgt(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetMaxGirderWgt(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -2308,7 +2342,7 @@ Float64 CSpecAgentImp::GetMaxGirderWgt(const CSegmentKey& segmentKey)
    return pSegment->HandlingData.pHaulTruckLibraryEntry->GetMaxGirderWeight();
 }
 
-Float64 CSpecAgentImp::GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end)
+Float64 CSpecAgentImp::GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 min_pick_point = pSpec->GetMininumTruckSupportLocation();
@@ -2343,49 +2377,43 @@ Float64 CSpecAgentImp::GetMinimumHaulingSupportLocation(const CSegmentKey& segme
    return min_pick_point;
 }
 
-Float64 CSpecAgentImp::GetHaulingSupportLocationAccuracy()
+Float64 CSpecAgentImp::GetHaulingSupportLocationAccuracy() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetTruckSupportLocationAccuracy();
 }
 
-pgsTypes::WindType CSpecAgentImp::GetHaulingWindType()
+pgsTypes::WindType CSpecAgentImp::GetHaulingWindType() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingWindType();
 }
 
-Float64 CSpecAgentImp::GetHaulingWindLoad()
+Float64 CSpecAgentImp::GetHaulingWindLoad() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingWindLoad();
 }
 
-pgsTypes::CFType CSpecAgentImp::GetCentrifugalForceType()
+pgsTypes::CFType CSpecAgentImp::GetCentrifugalForceType() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetCentrifugalForceType();
 }
 
-Float64 CSpecAgentImp::GetHaulingSpeed()
+Float64 CSpecAgentImp::GetHaulingSpeed() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetHaulingSpeed();
 }
 
-Float64 CSpecAgentImp::GetTurningRadius()
+Float64 CSpecAgentImp::GetTurningRadius() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetTurningRadius();
 }
 
-bool CSpecAgentImp::EvaluateHaulingStressesAtEquilibriumAngle()
-{
-   const SpecLibraryEntry* pSpec = GetSpec();
-   return pSpec->EvaluateHaulingStressesAtEquilibriumAngle();
-}
-
-stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey& segmentKey)
+stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) const
 {
    stbHaulingCriteria criteria;
 
@@ -2393,8 +2421,10 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
    pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
    criteria.Lambda = pMaterial->GetSegmentLambda(segmentKey);
 
-   criteria.CompressionCoefficient         = -GetHaulingAllowableCompressionFactor();
-   criteria.AllowableCompression           = GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+   criteria.CompressionCoefficient_GlobalStress = -GetHaulingAllowableGlobalCompressionFactor();
+   criteria.CompressionCoefficient_PeakStress = -GetHaulingAllowablePeakCompressionFactor();
+   criteria.AllowableCompression_GlobalStress = GetHaulingAllowableGlobalCompressiveConcreteStress(segmentKey);
+   criteria.AllowableCompression_PeakStress = GetHaulingAllowablePeakCompressiveConcreteStress(segmentKey);
 
    GetHaulingAllowableTensileConcreteStressParametersNormalCrown(&criteria.TensionCoefficient[stbTypes::CrownSlope],&criteria.bMaxTension[stbTypes::CrownSlope],&criteria.MaxTension[stbTypes::CrownSlope]);
    criteria.TensionCoefficientWithRebar[stbTypes::CrownSlope]    = GetHaulingWithMildRebarAllowableStressFactorNormalCrown();
@@ -2417,7 +2447,7 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
    return criteria;
 }
 
-stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig)
+stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) const
 {
    stbHaulingCriteria criteria;
 
@@ -2425,8 +2455,10 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
    pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
    criteria.Lambda = pMaterial->GetSegmentLambda(segmentKey);
 
-   criteria.CompressionCoefficient = -GetHaulingAllowableCompressionFactor();
-   criteria.AllowableCompression = GetHaulingAllowableCompressiveConcreteStressEx(segmentKey,haulConfig.GdrConfig.Fc);
+   criteria.CompressionCoefficient_GlobalStress = -GetHaulingAllowableGlobalCompressionFactor();
+   criteria.CompressionCoefficient_PeakStress = -GetHaulingAllowablePeakCompressionFactor();
+   criteria.AllowableCompression_GlobalStress = GetHaulingAllowableGlobalCompressiveConcreteStressEx(segmentKey, haulConfig.GdrConfig.Fc);
+   criteria.AllowableCompression_PeakStress = GetHaulingAllowablePeakCompressiveConcreteStressEx(segmentKey, haulConfig.GdrConfig.Fc);
 
    GetHaulingAllowableTensileConcreteStressParametersNormalCrown(&criteria.TensionCoefficient[stbTypes::CrownSlope],&criteria.bMaxTension[stbTypes::CrownSlope],&criteria.MaxTension[stbTypes::CrownSlope]);
    criteria.TensionCoefficientWithRebar[stbTypes::CrownSlope] = GetHaulingWithMildRebarAllowableStressFactorNormalCrown();
@@ -2484,7 +2516,7 @@ Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStress(const CSegme
 
 Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey)
 {
-   return GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+   return GetHaulingAllowableGlobalCompressiveConcreteStress(segmentKey);
 }
 
 Float64 CSpecAgentImp::GetKdotHaulingAllowableTensionFactor()
@@ -2494,7 +2526,7 @@ Float64 CSpecAgentImp::GetKdotHaulingAllowableTensionFactor()
 
 Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressionFactor()
 {
-   return GetHaulingAllowableCompressionFactor();
+   return GetHaulingAllowableGlobalCompressionFactor();
 }
 
 Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey)
@@ -2520,7 +2552,7 @@ Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressEx(const CSeg
 
 Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc)
 {
-   return GetHaulingAllowableCompressiveConcreteStressEx(segmentKey,fc);
+   return GetHaulingAllowableGlobalCompressiveConcreteStressEx(segmentKey,fc);
 }
 
 void CSpecAgentImp::GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor)
@@ -2815,7 +2847,7 @@ Float64 CSpecAgentImp::GetDuctSizeLimit(const CGirderKey& girderKey)
 ////////////////////
 // Private methods
 
-const SpecLibraryEntry* CSpecAgentImp::GetSpec()
+const SpecLibraryEntry* CSpecAgentImp::GetSpec() const
 {
    GET_IFACE( ISpecification, pSpec );
    GET_IFACE( ILibrary,       pLib );
@@ -2824,7 +2856,7 @@ const SpecLibraryEntry* CSpecAgentImp::GetSpec()
    return pLib->GetSpecEntry( specName.c_str() );
 }
 
-const GirderLibraryEntry* CSpecAgentImp::GetGirderEntry(const CSegmentKey& segmentKey)
+const GirderLibraryEntry* CSpecAgentImp::GetGirderEntry(const CSegmentKey& segmentKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2843,7 +2875,7 @@ bool CSpecAgentImp::IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls)
             ls == pgsTypes::ServiceIII_LegalEmergency) ? true : false;
 }
 
-void CSpecAgentImp::ValidateHaulTruck(const CPrecastSegmentData* pSegment)
+void CSpecAgentImp::ValidateHaulTruck(const CPrecastSegmentData* pSegment) const
 {
    if (pSegment->HandlingData.pHaulTruckLibraryEntry == nullptr)
    {

@@ -511,14 +511,6 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    *pPara << _T("Min. angle of inclination of lifting cables = ") << angle.SetValue(pSpecEntry->GetMinCableInclination()) << rptNewLine;
 
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   if ( pSegmentLiftingSpecCriteria->GetLiftingCamberMethod() == pgsTypes::cmApproximate )
-   {
-      *pPara << _T("Increase girder CG for camber by ") << percentage.SetValue(pSegmentLiftingSpecCriteria->GetLiftingIncreaseInCgForCamber()) << rptNewLine;
-   }
-   else
-   {
-      *pPara << _T("Computed camber is used when locating girder CG") << rptNewLine;
-   }
 
    *pPara << _T("Wind Loading") << rptNewLine;
    if ( pSegmentLiftingSpecCriteria->GetLiftingWindType() == pgsTypes::Speed )
@@ -534,19 +526,13 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
    Float64 fr = pSegmentLiftingSpecCriteria->GetLiftingModulusOfRupture(segmentKey);
    *pPara << _T("Modulus of rupture = ") << stress.SetValue(fr) << rptNewLine;
    
-   Float64 fccy = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
+   Float64 fccy_global = pSegmentLiftingSpecCriteria->GetLiftingAllowableGlobalCompressiveConcreteStress(segmentKey);
+   Float64 fccy_peak = pSegmentLiftingSpecCriteria->GetLiftingAllowablePeakCompressiveConcreteStress(segmentKey);
    Float64 ftcy = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
    Float64 ft   = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
    *pPara << _T("Concrete Stress Limits - Lifting (5.9.4.1.1)") << rptNewLine;
-   if ( pSegmentLiftingSpecCriteria->EvaluateLiftingStressesAtEquilibriumAngle() )
-   {
-      *pPara << _T("Stability equilibrium angle is included in stress calculations.") << rptNewLine;
-   }
-   else
-   {
-      *pPara << _T("Stability equilibrium angle is not included in stress calculations.") << rptNewLine;
-   }
-   *pPara << _T("- Compressive Stress = ") << stress.SetValue(fccy) << rptNewLine;
+   *pPara << _T("- Compressive Stress (General) = ") << stress.SetValue(fccy_global) << rptNewLine;
+   *pPara << _T("- Compressive Stress (With Lateral Bending) = ") << stress.SetValue(fccy_peak) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
 }
@@ -596,15 +582,6 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
 
    *pPara << _T("Support placement lateral tolerance = ") << dim.SetValue(pHauling->GetHaulingSupportPlacementTolerance()) << rptNewLine;
 
-   if ( pHauling->GetHaulingCamberMethod() == pgsTypes::cmApproximate )
-   {
-      *pPara << _T("Increase girder CG for camber by ") << percentage.SetValue(pHauling->GetHaulingIncreaseInCgForCamber()) << rptNewLine;
-   }
-   else
-   {
-      *pPara << _T("Computed camber is used when locating girder CG") << rptNewLine;
-   }
-
    *pPara << _T("Wind Loading") << rptNewLine;
    if ( pHauling->GetHaulingWindType() == pgsTypes::Speed )
    {
@@ -645,29 +622,23 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
    Float64 fr = pHauling->GetHaulingModulusOfRupture(segmentKey);
    *pPara << _T("Modulus of rupture = ") << stress.SetValue(fr) << rptNewLine;
 
-   Float64 fccy = pHauling->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+   Float64 fccy_global = pHauling->GetHaulingAllowableGlobalCompressiveConcreteStress(segmentKey);
+   Float64 fccy_peak = pHauling->GetHaulingAllowablePeakCompressiveConcreteStress(segmentKey);
    Float64 ftcy = pHauling->GetHaulingAllowableTensileConcreteStressNormalCrown(segmentKey);
    Float64 ft   = pHauling->GetHaulingWithMildRebarAllowableStressNormalCrown(segmentKey);
    *pPara << _T("Concrete Stress Limits - Hauling (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(") - Normal Crown Slope") << rptNewLine;
-   *pPara << _T("- Compressive Stress = ")<<stress.SetValue(fccy) << rptNewLine;
+   *pPara << _T("- Compressive Stress (General) = ") << stress.SetValue(fccy_global) << rptNewLine;
+   *pPara << _T("- Compressive Stress (With lateral bending) = ") << stress.SetValue(fccy_peak) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
 
    ftcy = pHauling->GetHaulingAllowableTensileConcreteStressMaxSuper(segmentKey);
    ft   = pHauling->GetHaulingWithMildRebarAllowableStressMaxSuper(segmentKey);
    *pPara << _T(" Concrete Stress Limits - Hauling (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(") - Maximum Superelevation") << rptNewLine;
-   *pPara << _T("- Compressive Stress = ")<<stress.SetValue(fccy) << rptNewLine;
+   *pPara << _T("- Compressive Stress (General) = ") << stress.SetValue(fccy_global) << rptNewLine;
+   *pPara << _T("- Compressive Stress (With lateral bending) = ") << stress.SetValue(fccy_peak) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
-
-   if (pHauling->EvaluateHaulingStressesAtEquilibriumAngle())
-   {
-      *pPara << _T("Stability equilibrium angle is included in stress calculations.") << rptNewLine;
-   }
-   else
-   {
-      *pPara << _T("Stability equilibrium angle is not included in stress calculations.") << rptNewLine;
-   }
 }
 
 void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry, const CSegmentKey& segmentKey)

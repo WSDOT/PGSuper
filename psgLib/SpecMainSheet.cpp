@@ -400,8 +400,10 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDV_NonNegativeDouble(pDX, IDC_GIRDER_SWEEP_TOL, sweepTolerance);
    m_Entry.m_MaxGirderSweepLifting = sweepTolerance;
 
-	DDX_Text(pDX, IDC_LIFTING_COMPRESSION, m_Entry.m_CyCompStressLifting);
-   DDV_GreaterThanZero(pDX, IDC_LIFTING_COMPRESSION, m_Entry.m_CyCompStressLifting);
+   DDX_Text(pDX, IDC_LIFTING_GLOBAL_COMPRESSION, m_Entry.m_LiftingCompressionStressCoefficient_GlobalStress);
+   DDV_GreaterThanZero(pDX, IDC_LIFTING_GLOBAL_COMPRESSION, m_Entry.m_LiftingCompressionStressCoefficient_GlobalStress);
+   DDX_Text(pDX, IDC_LIFTING_PEAK_COMPRESSION, m_Entry.m_LiftingCompressionStressCoefficient_PeakStress);
+   DDV_GreaterThanZero(pDX, IDC_LIFTING_PEAK_COMPRESSION, m_Entry.m_LiftingCompressionStressCoefficient_PeakStress);
 
    DDX_UnitValueAndTag(pDX, IDC_LIFTING_TENSION, IDC_LIFTING_TENSION_UNIT, m_Entry.m_CyTensStressLifting, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_LIFTING_TENSION_UNIT,tag);
@@ -428,12 +430,6 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
 	DDX_Percentage(pDX, IDC_IMPACT_DOWNWARD_LIFTING, m_Entry.m_LiftingDownwardImpact);
    DDV_MinMaxDouble(pDX, m_Entry.m_LiftingDownwardImpact, 0.0, 1.0);
 
-   DDX_RadioEnum(pDX,IDC_CAMBER1,m_Entry.m_LiftingCamberMethod);
-   DDX_Percentage(pDX,IDC_CAMBER_CG_ADJUSTMENT,m_Entry.m_LiftingCamberPercentEstimate);
-   if ( m_Entry.m_LiftingCamberMethod == pgsTypes::cmApproximate )
-   {
-      DDV_MinMaxDouble(pDX, m_Entry.m_LiftingCamberPercentEstimate, 0.0, 1.0);
-   }
    DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_LiftingCamberMultiplier);
 
    DDX_CBEnum(pDX,IDC_WIND_TYPE,m_Entry.m_LiftingWindType);
@@ -446,8 +442,6 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
       DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_LiftingWindLoad,pDisplayUnits->Velocity);
    }
    DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_LiftingWindLoad);
-
-   DDX_CBItemData(pDX,IDC_STRESSES,m_Entry.m_bComputeLiftingStressesAtEquilibriumAngle);
 }
 
 bool CSpecMainSheet::IsHaulingEnabled() const
@@ -473,8 +467,11 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    DDX_Text(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_HaulingRollFs);
    DDV_NonNegativeDouble(pDX, IDC_HE_HAULING_FS_ROLLOVER, m_Entry.m_HaulingRollFs);
 
-	DDX_Text(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);
-   DDV_GreaterThanZero(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);
+   DDX_Text(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
+   DDV_GreaterThanZero(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
+
+   DDX_Text(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
+   DDV_GreaterThanZero(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
 
    CString tag;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
@@ -590,12 +587,6 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE, IDC_SUPPORT_PLACEMENT_TOLERANCE_UNITS, m_Entry.m_HaulingSupportPlacementTolerance, pDisplayUnits->ComponentDim );
    DDV_UnitValueGreaterThanZero(pDX, IDC_SUPPORT_PLACEMENT_TOLERANCE,m_Entry.m_HaulingSupportPlacementTolerance, pDisplayUnits->ComponentDim );
 
-   DDX_RadioEnum(pDX,IDC_CAMBER1,m_Entry.m_HaulingCamberMethod);
-   DDX_Percentage(pDX,IDC_CAMBER_CG_ADJUSTMENT,m_Entry.m_HaulingCamberPercentEstimate);
-   if ( m_Entry.m_HaulingCamberMethod == pgsTypes::cmApproximate )
-   {
-      DDV_MinMaxDouble(pDX, m_Entry.m_HaulingCamberPercentEstimate, 0.0, 1.0);
-   }
    DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_HaulingCamberMultiplier);
 
 
@@ -616,8 +607,6 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX,IDC_RADIUS,IDC_RADIUS_UNIT,m_Entry.m_TurningRadius,pDisplayUnits->SpanLength);
    DDV_UnitValueGreaterThanZero(pDX, IDC_RADIUS,m_Entry.m_TurningRadius, pDisplayUnits->SpanLength );
-
-   DDX_CBItemData(pDX, IDC_STRESSES, m_Entry.m_bComputeHaulingStressesAtEquilibriumAngle);
 }
 
 void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
@@ -631,8 +620,8 @@ void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
       m_Entry.m_HaulingAnalysisMethod = pgsTypes::hmKDOT;
    }
 
-	DDX_Text(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);
-   DDV_GreaterThanZero(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_CompStressHauling);
+	DDX_Text(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
+   DDV_GreaterThanZero(pDX, IDC_HAULING_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
 
    CString tag;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )

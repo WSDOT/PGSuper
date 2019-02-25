@@ -32,7 +32,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     1    WF74G          69  0.6  270  31.37  13.39  11.75  11.75                                              23  70.0  6.0  9.000 10.300   6.967    -6.613    18340   0.932  0.957   6.663 -3.274 -0.239 -0.241 -3.754 355.21  470.78    1.75   13.13   13.13 
+ 40.00    6   6.58 Puyallup River B    2     1    WF74G          69  0.6  270  31.37  13.39  11.75  11.75                                              23  70.0  6.0  9.100 10.300   6.967    -6.613    18340   0.932  0.957   6.618 -3.274 -0.239 -0.241 -3.754 353.66  466.59    1.75   13.13   13.13 
 
 
 The Specification Check was Not Successful

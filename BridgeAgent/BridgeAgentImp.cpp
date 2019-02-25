@@ -26315,7 +26315,6 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    Float64 impactDown,impactUp;
    pLiftingCriteria->GetLiftingImpact(&impactDown,&impactUp);
    pProblem->SetImpact(impactUp,impactDown);
-   pProblem->EvaluateStressesAtEquilibriumAngle(pLiftingCriteria->EvaluateLiftingStressesAtEquilibriumAngle());
    
    pProblem->SetYRollAxis(pLiftingCriteria->GetHeightOfPickPointAboveGirderTop());
    pProblem->SetSupportPlacementTolerance(pLiftingCriteria->GetLiftingLoopPlacementTolerance());
@@ -26417,16 +26416,9 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
       DXgdrEnd = pProduct->GetXDeflection(liftingIntervalIdx, pgsTypes::pftGirder, poiEnd, bat, rtCumulative);
    }
 
-   if (pLiftingCriteria->GetLiftingCamberMethod() == pgsTypes::cmApproximate)
-   {
-      pProblem->SetCamber(false, pLiftingCriteria->GetLiftingIncreaseInCgForCamber());
-   }
-   else
-   {
-      Float64 camber = (DgdrMS + DpsMS + DtpsMS) - (DgdrEnd + DpsEnd + DtpsEnd);
-      pProblem->SetCamber(true, camber);
-      pProblem->SetCamberMultiplier(pLiftingCriteria->GetLiftingCamberMultiplier());
-   }
+   Float64 camber = (DgdrMS + DpsMS + DtpsMS) - (DgdrEnd + DpsEnd + DtpsEnd);
+   pProblem->SetCamber(camber);
+   pProblem->SetCamberMultiplier(pLiftingCriteria->GetLiftingCamberMultiplier());
 
    Float64 xcamber = (DXgdrMS + DXpsMS + DXtpsMS) - (DXgdrEnd + DXpsEnd + DXtpsEnd);
    if (!IsZero(xcamber))
@@ -26585,9 +26577,6 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    pProblem->SetImpact(impactUp,impactDown);
    pProblem->SetImpactUsage((stbTypes::HaulingImpact)pHaulingCriteria->GetHaulingImpactUsage());
 
-   pProblem->EvaluateStressesAtEquilibriumAngle(stbTypes::CrownSlope, pHaulingCriteria->EvaluateHaulingStressesAtEquilibriumAngle());
-   pProblem->EvaluateStressesAtEquilibriumAngle(stbTypes::Superelevation, true);
-
    PoiList vPoi;
    GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
    const pgsPointOfInterest& poiEnd(vPoi.front());
@@ -26725,17 +26714,9 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    Float64 DcreepEnd = pCamber->GetCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
    Float64 DXcreepEnd = pCamber->GetXCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
 
-   if (pHaulingCriteria->GetHaulingCamberMethod() == pgsTypes::cmApproximate)
-   {
-      pProblem->SetCamber(false, pHaulingCriteria->GetHaulingIncreaseInCgForCamber());
-   }
-   else
-   {
-      Float64 camber = (DgdrMS + DpsMS + DcreepMS) - (DgdrEnd + DpsEnd + DcreepEnd);
-
-      pProblem->SetCamber(true, camber);
-      pProblem->SetCamberMultiplier(pHaulingCriteria->GetHaulingCamberMultiplier());
-   }
+   Float64 camber = (DgdrMS + DpsMS + DcreepMS) - (DgdrEnd + DpsEnd + DcreepEnd);
+   pProblem->SetCamber(camber);
+   pProblem->SetCamberMultiplier(pHaulingCriteria->GetHaulingCamberMultiplier());
 
    Float64 xcamber = (DXgdrMS + DXpsMS + DXcreepMS) - (DXgdrEnd + DXpsEnd + DXcreepEnd);
    if (!IsZero(xcamber))
