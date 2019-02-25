@@ -272,7 +272,8 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType castJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    ///////////////////////////////////
    // Permanent Strand Force Column
@@ -314,7 +315,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    }
 
    (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End/*pgsTypes::AfterSIDL*/));
-   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End/*pgsTypes::AfterLosses*/));
+   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End/*pgsTypes::AfterLosses*/));
 
    if (bRating)
    {
@@ -413,7 +414,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    }
 
    (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End)/*pLosses->GetSIDLLosses(poi,pgsTypes::Permanent)*/);
-   (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); //
+   (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); //
 
    if (bRating)
    {
@@ -435,7 +436,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
                if (IsDesignRatingType(ratingType))
                {
-                  (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End));
+                  (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, loadRatingIntervalIdx, pgsTypes::End));
                }
                else
                {
@@ -452,7 +453,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                      {
                         continue;
                      }
-                     (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End));
+                     (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, loadRatingIntervalIdx, pgsTypes::End));
                   }
                }
             }
@@ -461,9 +462,9 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    }
    else
    {
-      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Service I
-      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Service III
-      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Fatigue I/Service IA
+      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Service I
+      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Service III
+      (*p_table)(row++, col) << stress.SetValue(pLosses->GetTimeDependentLosses(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/); // Fatigue I/Service IA
    }
 
    ///////////////////////////////////
@@ -506,7 +507,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    }
 
    (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End)/*pLosses->GetSIDLLosses(poi,pgsTypes::Permanent)*/);
-   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/);
+   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/);
 
    if (bRating)
    {
@@ -606,7 +607,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    }
 
    (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End));
-   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, lastIntervalIdx, pgsTypes::End/*pgsTypes::AfterLosses*/));
+   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End/*pgsTypes::AfterLosses*/));
 
    if (bRating)
    {
