@@ -83,6 +83,16 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
          m_bShowSplash      = FALSE;
          bMyParameter       = true;
       }
+      else if ( strParam.CompareNoCase(_T("TestGeometry")) == 0 )
+      {
+         // Run distribution factor regression tests suite
+         m_TxRunType        = txrGeometry;
+         m_TxFType          = txfNormal;
+         m_DoTxCadReport    = true;
+         m_bCommandLineMode = TRUE;
+         m_bShowSplash      = FALSE;
+         bMyParameter       = true;
+      }
       else if (strParam.Left(2).CompareNoCase(_T("Tx")) == 0)
       {   
          // probable TxDOT CAD or TOGA report

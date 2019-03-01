@@ -480,6 +480,12 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
             return false;
          }
          break;
+      case RUN_GEOMTEST:
+         if ( !RunGeometryTest(resf, poif, segmentKey) )
+         {
+            return false;
+         }
+         break;
 
       case RUN_REGRESSION:
       case RUN_CADTEST:
@@ -694,6 +700,41 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
 
    L = pBridge->GetSegmentPlanLength(segmentKey);
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88102, ")<<_T("-1")<<_T(", ")<< QUITE(L) <<_T(", 55, ")<<gdr<<std::endl;
+
+   // Bearing seat elevations
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   PierIndexType startPierIdx = (SpanIndexType)(pSegment->GetGirder()->GetGirderGroup()->GetPierIndex(pgsTypes::metStart));
+   PierIndexType endPierIdx = startPierIdx + 1;
+
+   // Bearing Seat elevation data
+   // ============================
+   CGirderKey testGirder(segmentKey);
+   // Write out all bearings at start end of girder
+   std::vector<BearingElevationDetails> startBearings = pBridge->GetBearingElevationDetails(startPierIdx, pgsTypes::Ahead);
+   for (const BearingElevationDetails& beDet : startBearings)
+   {
+      if (beDet.GirderKey == testGirder)
+      {
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88200, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.BrgSeatElevation) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88201, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.Station) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88202, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.Offset) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88203, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.FinishedGradeElevation) <<_T(", 55, ")<<gdr<<std::endl;
+      }
+   }
+
+   // Write out all bearings at end end of girder
+   std::vector<BearingElevationDetails> endBearings = pBridge->GetBearingElevationDetails(endPierIdx, pgsTypes::Back);
+   for (const BearingElevationDetails& beDet : endBearings)
+   {
+      if (beDet.GirderKey == testGirder)
+      {
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88210, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.BrgSeatElevation) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88211, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.Station) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88212, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.Offset) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88213, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.FinishedGradeElevation) <<_T(", 55, ")<<gdr<<std::endl;
+      }
+   }
 
    return true;
 }

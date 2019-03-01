@@ -150,7 +150,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(ncols,strLabel);
 
    (*pTable)(0,0) << _T("Girder");
-   (*pTable)(0,1) << _T("Bearing");
+   (*pTable)(0,1) << _T("Bearing") << rptNewLine << _T("#");
 
    if (m_TableType == ttBearingDeduct)
    {
@@ -174,6 +174,12 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
    {
       BearingElevationDetails& elevDetails = *iter;
 
+      if (elevDetails.BearingIdx == INVALID_INDEX)
+      {
+         // bearings with this value are CL bearings and are only printed in the details tables
+         continue;
+      }
+
       // put multiple bearings for same girder in same row
       bool newRow = (lastGdrIdx == INVALID_INDEX) || (lastGdrIdx != elevDetails.GirderKey.girderIndex);
       if (newRow)
@@ -190,7 +196,14 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
          WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 0, LABEL_GIRDER(elevDetails.GirderKey.girderIndex))
       }
 
-      WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 1, elevDetails.BearingIdx+1)
+      if (elevDetails.BearingIdx == IBridge::sbiSingleBearingValue)
+      {
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 1, _T("1"))
+      }
+      else
+      {
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 1, elevDetails.BearingIdx + 1)
+      }
 
       if (m_TableType == ttBearingDeduct)
       {

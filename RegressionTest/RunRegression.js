@@ -491,6 +491,10 @@ function ParseCommandFromFolderName(currCommand, folderName)
      {
         cmd = "XBRTest"
      }
+     else if ( s == "TESTGEOMETRY" )
+     {
+        cmd = "TestGeometry"
+     }
      else
      {
          DisplayMessage("Error - Invalid Folder Name, could not parse command: "+s);

@@ -564,8 +564,20 @@ private:
 
 const Uint16 SimpleMutex::m_Default=666; // evil number to search for
 
-
 static Uint16 st_MutexValue = SimpleMutex::m_Default; // store m_level
+
+// functions to get sin and cos of slope (y/x) angles
+inline Float64 CosSlope(Float64 slope)
+{
+   return 1.0 / sqrt(1 + slope*slope);
+}
+
+inline Float64 SinSlope(Float64 slope)
+{
+   Float64 s = slope/sqrt(1 + slope*slope);
+   return s;
+}
+
 // There is a special case during design where the inital adjustable strand type is straight, but the designer
 // wants to do a harped design. For this case, we need to swap out the istrandmover and harping boundaries,
 // so the precast girder can deal with vertical adjustment correctly. 
@@ -11613,27 +11625,15 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
 
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
-      CGirderKey girderKey(grpIdx, gdrIdx);
-
-      // Get segment that intersects this pier
-      CSegmentKey segmentKey = GetSegmentAtPier(pierIdx, girderKey);
-
-      // get point at along girder cl at bearing cl
-      Float64 brgStation, brgOffset;
-      GetBearingPoint(pierIdx, face, girderKey, &brgStation, &brgOffset);
-
-      CComPtr<IDirection> normal;
-      GetBearingNormal(brgStation,&normal);
-
-      CComPtr<IPoint2d> pntBrglClg;
-      GetPoint(brgStation, brgOffset,  normal, pgsTypes::pcGlobal, &pntBrglClg);
-
       const CBearingData2* pBearingData = pBridgeDesc->GetBearingData(pierIdx, face, gdrIdx);
       if (pBearingData == nullptr)
       {
          THROW_UNWIND(_T("Bearing data is incomplete. Cannot compute bearing seat elevations"), XREASON_BAD_BEARING_DATA);
       }
 
+      // Get segment that intersects this pier
+      CGirderKey girderKey(grpIdx, gdrIdx);
+      CSegmentKey segmentKey = GetSegmentAtPier(pierIdx, girderKey);
 
       pgsPointOfInterest poi;
       if (isBoundaryPier)
@@ -11650,50 +11650,152 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          poi = GetPierPointOfInterest(girderKey, pierIdx);
       }
 
-      // Some data not bearing dependent
-      IntervalIndexType intervalIdx = GetPrestressReleaseInterval(segmentKey);
+      // girder slope angles
       Float64 girderOrientation = GetOrientation(segmentKey);
       girderOrientation = IsZero(girderOrientation) ? 0 : girderOrientation;
 
-      // Adjust height for cross slope orientation. This is a reduction because the distance is measured 
-      // along the cl of the tilted girder
-      Float64 gdrOrtnAdjust = sqrt(1 + girderOrientation*girderOrientation);
-
       Float64 basicGirderSlope = GetSegmentSlope(segmentKey); // includes temporary support elevation adjustment slopes
       basicGirderSlope = IsZero(basicGirderSlope) ? 0 : basicGirderSlope;
+      Float64 precamberSlope = GetPrecamberSlope(poi);
 
-      Float64 precamber_slope = GetPrecamberSlope(poi);
+      Float64 girderSlope = basicGirderSlope + precamberSlope;
 
-      Float64 girderSlope = basicGirderSlope + precamber_slope;
+      Float64 cosGirderLatSlope = CosSlope(girderOrientation);
+      Float64 cosGirderLongSlope = CosSlope(girderSlope);
 
-      // Adjust height for profile slope. This increases height because the bearing lies vertically 
-      // below the bearing station.
-      Float64 gdrSlopeAdjust = sqrt(1 + girderSlope*girderSlope); // adjust for slope
+      // Find Work Point (WP) Location. WP is at the top CL of girder at girderline/bearingline intersections
+      // Get point at along girder cl at bearing cl. This is x,y of work point
+      Float64 workPointStation, workPointOffset;
+      GetBearingPoint(pierIdx, face, girderKey, &workPointStation, &workPointOffset);
 
-      // total adjustment due to slope and tilt angle of girder
-      Float64 gdrTotalAngleAdjust = gdrSlopeAdjust / gdrOrtnAdjust;
+      CComPtr<IDirection> normal;
+      GetBearingNormal(workPointStation,&normal);
 
+      // 2D Location of work point at CL girder/bearingline intersect
+      CComPtr<IPoint2d> workPointPoint;
+      GetPoint(workPointStation, workPointOffset,  normal, pgsTypes::pcGlobal, &workPointPoint);
 
+      // Get finished grade elevation at work point
+      Float64 workPointFinishedGradeElevation = GetElevation(workPointStation, workPointOffset);
+
+      Float64 crossSlope = GetSlope(workPointStation, workPointOffset);
+      crossSlope = IsZero(crossSlope) ? 0 : crossSlope;
+      Float64 crossSlopeAngleAdjust = sqrt(1 +crossSlope*crossSlope);
+
+      Float64 profileGrade = GetProfileGrade(workPointStation);
+      profileGrade = IsZero(profileGrade) ? 0 : profileGrade;
+
+      // Height of overlay lies along roadway grade and super
+      Float64 profileAngleAdjust = sqrt(1 + profileGrade*profileGrade);
+      Float64 roadwayAngleAdjust = crossSlopeAngleAdjust * profileAngleAdjust;
+
+      Float64 adjOverlayDepth = overlayDepth * roadwayAngleAdjust; // Height increases with slope
+
+      Float64 slabOffset = GetSlabOffset(segmentKey,face == pgsTypes::Ahead ? pgsTypes::metStart : pgsTypes::metEnd);
+
+      Float64 workPointElevation = workPointFinishedGradeElevation - adjOverlayDepth - slabOffset;
+
+      // Now locate BCL. BCL is CL bearing seat location at CL girder adjusted for girder orientation.
+      // This is the location on pier where bearings are measured from along bearing line
+      // BCL exists even if no physical bearing is actually there.
+      // Refer to bearing computations documentation for more details
+      IntervalIndexType intervalIdx = GetPrestressReleaseInterval(segmentKey);
       Float64 Hg = GetHg(intervalIdx, poi);
-      Float64 Hg_adj = Hg * gdrTotalAngleAdjust;
+      Float64 Hb = pBearingData->GetNetBearingHeight();
 
-      Float64 SlabOffset = GetSlabOffset(segmentKey,face == pgsTypes::Ahead ? pgsTypes::metStart : pgsTypes::metEnd);
+      // BCL elevation
+      // Adjust height for cross slope orientation. This is a reduction because the distance is measured along the cl of the tilted girder
+      // Adjust height for profile longitudinal slope. This increases height because the bearing lies vertically below the bearing station.
+      Float64 girderHeightAdjustment = cosGirderLatSlope / cosGirderLongSlope;
+      Float64 heightBCL = (Hg + Hb) * girderHeightAdjustment;
 
-      // Girders can have multiple bearings
+      Float64 elevBCL = workPointElevation - heightBCL;
+
+      // BCL station and offset
+      // Need slope of girder in plane of pier - this changes with skew angle between pier and girderline
+      CComPtr<ISuperstructureMemberSegment> segment;
+      GetSegment(segmentKey, &segment);
+      CComPtr<IGirderLine> girderLine;
+      segment->get_GirderLine(&girderLine);
+      CComPtr<IDirection> girderDirection;
+      girderLine->get_Direction(&girderDirection);
+      CComPtr<IAngle> angleBetweenPierGirder;
+      pierDirection->AngleBetween(girderDirection, &angleBetweenPierGirder);
+      Float64 girderPierSkewAngle;
+      angleBetweenPierGirder->get_Value(&girderPierSkewAngle);
+      girderPierSkewAngle = M_PI - girderPierSkewAngle; // see sign convention in design doc
+
+      // Horizontal distance between WP and BCL along pier line. Girder orientation is only aspect that affects this
+      Float64 horizDistAlongPierToBCL = heightBCL * girderOrientation / sin(girderPierSkewAngle);
+
+      CComPtr<IPoint2d> pointBCL;
+      ByDistDir(workPointPoint, horizDistAlongPierToBCL, pierDirVar, 0.0, &pointBCL);
+
+      Float64 stationBCL, offsetBCL;
+      GetStationAndOffset(pgsTypes::pcGlobal, pointBCL, &stationBCL, &offsetBCL);
+
+      // Girders can have multiple bearings measured by spacing from BCL. Need total slope of girder along pier
+      // Sign convention here is looking up station; right to left going upwards
+      Float64 girderSlopeAlongPier = girderOrientation*sin(girderPierSkewAngle) + girderSlope*cos(girderPierSkewAngle);
+
+      Float64 cosGirderSlopeAlongPier = CosSlope(girderSlopeAlongPier);
+      Float64 sinGirderSlopeAlongPier = SinSlope(girderSlopeAlongPier);
+
       IndexType numBrgs = pBearingData->BearingCount;
-      Float64 BrgLoc = (numBrgs==0) ? 0.0 : ((numBrgs-1) * pBearingData->Spacing)/2.0; // location of first bearing from cl girder
+      Float64 leftBrgLoc = (numBrgs==0) ? 0.0 : ((numBrgs-1) * pBearingData->Spacing)/2.0; // location of first bearing from cl girder
 
-      for (IndexType brgIdx = 0; brgIdx < numBrgs; brgIdx++)
+      // Tricky: For multiple bearings at a girder, Bearing information of the BCL will always be the first result in the collection
+      //         and the number of bearings reported will be numBrgs + 1.
+      //         For single bearing cases, there will be only one result
+      Float64 brgLoc = 0;
+      for (IndexType brgIdx = 0; brgIdx <= numBrgs; brgIdx++)
       {
+         if (1 == brgIdx)
+         {
+            if (1 == numBrgs)
+            {
+               break; // Only one result is created for this case
+            }
+            else
+            {
+               brgLoc = leftBrgLoc;
+            }
+         }
+         else if (1 < brgIdx)
+         {
+            brgLoc -= pBearingData->Spacing;
+         }
+
+         // brgLoc is along pier at pier slope. Adjust bearing location to horizontal distance from BCL
+         Float64 brgLocAdjusted = brgLoc * cosGirderSlopeAlongPier;
+
          BearingElevationDetails elevDetails;
          elevDetails.GirderKey = girderKey;
          elevDetails.PierFace = face;
-         elevDetails.BearingIdx = brgIdx;
+
+         if (0 == brgIdx)
+         {
+            if (1 == numBrgs)
+            {
+               // only one bearing and this one is it
+               elevDetails.BearingIdx = IBridge::sbiSingleBearingValue;
+            }
+            else
+            {
+               // multiple bearings exist and the first one is the CL value
+               elevDetails.BearingIdx = IBridge::sbiCLValue;
+            }
+         }
+         else
+         {
+            // multiple bearings exist and this is just one of them
+            elevDetails.BearingIdx = brgIdx - 1;
+         }
 
          Float64 station, offset;
 
          CComPtr<IPoint2d> brgPoint;
-         ByDistDir(pntBrglClg, BrgLoc, pierDirVar, 0.0, &brgPoint);
+         ByDistDir(pointBCL, brgLocAdjusted, pierDirVar, 0.0, &brgPoint);
          GetStationAndOffset(pgsTypes::pcGlobal, brgPoint, &station, &offset);
 
          elevDetails.Station = station;
@@ -11701,43 +11803,33 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
 
          elevDetails.FinishedGradeElevation = GetElevation(station, offset);
 
-         elevDetails.Hg = Hg_adj;
+         elevDetails.Hg = Hg * girderHeightAdjustment;
 
-         // Do not adjust bearing and soleplate heights for angle
-         elevDetails.BrgRecess = pBearingData->RecessHeight;
-         elevDetails.BrgHeight = pBearingData->Height;
-         elevDetails.SolePlateHeight = pBearingData->SolePlateHeight;
-
-         Float64 crossSlope = GetSlope(station, offset);
-         crossSlope = IsZero(crossSlope) ? 0 : crossSlope;
-         Float64 crossSlopeAngleAdjust = sqrt(1 +crossSlope*crossSlope);
-
-         Float64 profileGrade = GetProfileGrade(station);
-         profileGrade = IsZero(profileGrade) ? 0 : profileGrade;
-         Float64 profileAngleAdjust = sqrt(1 + profileGrade*profileGrade);
-
-         Float64 roadwayAngleAdjust = crossSlopeAngleAdjust * profileAngleAdjust;
+         // adjust bearing and soleplate heights for angle
+         elevDetails.BrgRecess = pBearingData->RecessHeight * girderHeightAdjustment;
+         elevDetails.BrgHeight = pBearingData->Height * girderHeightAdjustment;
+         elevDetails.SolePlateHeight = pBearingData->SolePlateHeight * girderHeightAdjustment;
 
          elevDetails.BasicGirderGrade = basicGirderSlope;
-         elevDetails.PrecamberSlope = precamber_slope;
+         elevDetails.PrecamberSlope = precamberSlope;
 
+         elevDetails.CrossSlope        = crossSlope;
          elevDetails.ProfileGrade      = profileGrade;
          elevDetails.GirderGrade       = girderSlope;
          elevDetails.GirderOrientation = girderOrientation;
 
-         elevDetails.OverlayDepth = overlayDepth / roadwayAngleAdjust;
-         elevDetails.SlabOffset = SlabOffset; // this is a vertical dimension.... don't adjust for roadway angle
+         elevDetails.OverlayDepth = adjOverlayDepth;
+         elevDetails.SlabOffset = slabOffset; // this is a vertical dimension.... don't adjust for roadway angle
 
-         elevDetails.TopBrgElevation = elevDetails.FinishedGradeElevation - elevDetails.OverlayDepth - elevDetails.SlabOffset - elevDetails.Hg + elevDetails.BrgRecess - elevDetails.SolePlateHeight;
+         // Bearing seat elevation is elevBCL + rize of pier over bearing spacing
+         elevDetails.BrgSeatElevation = elevBCL + brgLoc*sinGirderSlopeAlongPier;
 
-         elevDetails.BrgSeatElevation = elevDetails.TopBrgElevation - elevDetails.BrgHeight;
+         elevDetails.TopBrgElevation =  elevDetails.BrgSeatElevation + elevDetails.BrgHeight;
 
          elevDetails.BearingDeduct = elevDetails.FinishedGradeElevation - elevDetails.BrgSeatElevation;
          elevDetails.BearingDeduct = RoundOff(elevDetails.BearingDeduct, ::ConvertToSysUnits(0.125, unitMeasure::Inch) ); // TxDOT standard rounding
 
          vElevDetails.push_back(elevDetails);
-
-         BrgLoc -= pBearingData->Spacing; // walk across bearing line
       }
    }
    

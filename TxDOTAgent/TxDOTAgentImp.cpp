@@ -482,112 +482,149 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   // Loop over all span/girder combos and create results
-   std::vector<SpanGirderHashType>::iterator it(spn_grd_list.begin());
-   std::vector<SpanGirderHashType>::iterator end(spn_grd_list.end());
-   for( ; it != end; it++)
+   if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrGeometry)
    {
-      SpanGirderHashType key = *it;
-      SpanIndexType span;
-      GirderIndexType girder;
-      UnhashSpanGirder(key, &span, &girder);
+      // Geometry test only - save some text to .test file to placate comparisons
+      _ftprintf(fp, _T("Bridge Geometry Test. See .dbr file for results."));
 
-      CSegmentKey segmentKey(span,girder,0);
-
-      CString strMessage;
-      strMessage.Format(_T("Creating TxDOT CAD report for Span %d, Girder %s"),LABEL_SPAN(span), LABEL_GIRDER(girder));
-      pProgress->UpdateMessage(strMessage);
-
-      // See if we need to run a design
-      bool designSucceeded=true;
-      if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesign || txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear)
+      // file names
+      CString resultsfile, poifile, errfile;
+      CString strExt(_T(".pgs"));
+      if (create_test_file_names(strExt, txInfo.m_strFileName, &resultsfile, &poifile, &errfile))
       {
-         // get design options from library entry. 
-         GET_IFACE(ISpecification,pSpecification);
+         GET_IFACE(ITest1250, ptst);
 
-         std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(segmentKey);
-         IndexType do_cnt = des_options_coll.size();
-         IndexType do_idx = 1;
-
-         // Add command line settings to options
-         for(std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it!=des_options_coll.end(); it++)
-         {
-            arDesignOptions& des_options = *it;
-
-            // Set up for shear design. 
-            des_options.doDesignForShear = txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear;
-            if(des_options.doDesignForShear)
-            {
-               // If stirrup zones are not symmetrical in test file, design using existing layout
-               GET_IFACE(IStirrupGeometry,pStirrupGeom);
-               bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey);
-               des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
-            }
-         }
-
-         GET_IFACE(IArtifact,pIArtifact);
-         const pgsGirderDesignArtifact* pGirderDesignArtifact;
-         const pgsSegmentDesignArtifact* pArtifact;
          try
          {
-            // Design the girder
-            pGirderDesignArtifact = pIArtifact->CreateDesignArtifact( segmentKey, des_options_coll);
-            pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
-            ATLASSERT(segmentKey.IsEqual(pArtifact->GetSegmentKey()));
-         
-            if (pArtifact->GetOutcome() != pgsSegmentDesignArtifact::Success)
+            if (!ptst->RunTestEx(RUN_GEOMTEST, spn_grd_list, std::_tstring(resultsfile), std::_tstring(poifile)))
             {
-               err_file <<_T("Design was unsuccessful")<<std::endl;
-               designSucceeded=false;
+               CString msg = CString(_T("Error - Running geometry test on file")) + txInfo.m_strFileName;
+               ::AfxMessageBox(msg);
             }
-
-            // Copy the design to the bridge
-            SaveFlexureDesign(segmentKey, pArtifact);
          }
-         catch(...)
+         catch (...)
          {
-           err_file <<_T("Design Failed for span")<<span<<_T(" girder ")<<girder<<std::endl;
+            CString msg = CString(_T("Error - running geometry test for input file:")) + txInfo.m_strFileName;
+            ::AfxMessageBox(msg);
             return false;
-         }
-      }
-
-      GET_IFACE(ITxDOTCadExport,pTxDOTCadExport);
-      if ( !pTxDOTCadExport )
-      {
-         AfxMessageBox(_T("The TxDOT Cad Exporter is not currently installed"));
-         return false;
-      }
-
-      if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::TxrDistributionFactors)
-      {
-         // Write distribution factor data to file
-         try
-         {
-            if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile (fp, this->m_pBroker, segmentKey))
-            {
-               err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
-	            return false;
-            }
-         }
-         catch(CXUnwind* pExc)
-         {
-            // Probable lldf out of range error
-            std::_tstring sCause;
-            pExc->GetErrorMessage(&sCause);
-            _ftprintf(fp, sCause.c_str());
-            _ftprintf(fp, _T("\n"));
-            pExc->Delete();
          }
       }
       else
       {
-         /* Write CAD data to text file */
-         if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, segmentKey, (TxDOTCadExportFormatType)txInfo.m_TxFType, designSucceeded) )
+         CString msg = CString(_T("Error - Determining 1250 test file names for")) + txInfo.m_strFileName;
+         ::AfxMessageBox(msg);
+         return false;
+      }
+   }
+   else
+   {
+      // Loop over all span/girder combos and create results
+      std::vector<SpanGirderHashType>::iterator it(spn_grd_list.begin());
+      std::vector<SpanGirderHashType>::iterator end(spn_grd_list.end());
+      for (; it != end; it++)
+      {
+         SpanGirderHashType key = *it;
+         SpanIndexType span;
+         GirderIndexType girder;
+         UnhashSpanGirder(key, &span, &girder);
+
+         CSegmentKey segmentKey(span, girder, 0);
+
+         CString strMessage;
+         strMessage.Format(_T("Creating TxDOT CAD report for Span %d, Girder %s"), LABEL_SPAN(span), LABEL_GIRDER(girder));
+         pProgress->UpdateMessage(strMessage);
+
+         // See if we need to run a design
+         bool designSucceeded = true;
+         if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesign || txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear)
          {
-            err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
-	         return false;
+            // get design options from library entry. 
+            GET_IFACE(ISpecification, pSpecification);
+
+            std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(segmentKey);
+            IndexType do_cnt = des_options_coll.size();
+            IndexType do_idx = 1;
+
+            // Add command line settings to options
+            for (std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it != des_options_coll.end(); it++)
+            {
+               arDesignOptions& des_options = *it;
+
+               // Set up for shear design. 
+               des_options.doDesignForShear = txInfo.m_TxRunType == CTxDOTCommandLineInfo::txrDesignShear;
+               if (des_options.doDesignForShear)
+               {
+                  // If stirrup zones are not symmetrical in test file, design using existing layout
+                     GET_IFACE(IStirrupGeometry, pStirrupGeom);
+                  bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey);
+                  des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
+               }
+            }
+
+            GET_IFACE(IArtifact, pIArtifact);
+            const pgsGirderDesignArtifact* pGirderDesignArtifact;
+            const pgsSegmentDesignArtifact* pArtifact;
+            try
+            {
+               // Design the girder
+               pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey, des_options_coll);
+               pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
+               ATLASSERT(segmentKey.IsEqual(pArtifact->GetSegmentKey()));
+         
+               if (pArtifact->GetOutcome() != pgsSegmentDesignArtifact::Success)
+               {
+                     err_file << _T("Design was unsuccessful") << std::endl;
+                     designSucceeded = false;
+               }
+
+               // Copy the design to the bridge
+               SaveFlexureDesign(segmentKey, pArtifact);
+            }
+               catch (...)
+            {
+               err_file << _T("Design Failed for span") << span << _T(" girder ") << girder << std::endl;
+               return false;
+            }
          }
-	  }
+
+         GET_IFACE(ITxDOTCadExport, pTxDOTCadExport);
+         if (!pTxDOTCadExport)
+         {
+            AfxMessageBox(_T("The TxDOT Cad Exporter is not currently installed"));
+            return false;
+         }
+
+         if (txInfo.m_TxRunType == CTxDOTCommandLineInfo::TxrDistributionFactors)
+         {
+            // Write distribution factor data to file
+            try
+            {
+               if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile(fp, this->m_pBroker, segmentKey))
+               {
+                  err_file << _T("Warning: An error occured while writing to File") << std::endl;
+	               return false;
+               }
+            }
+               catch (CXUnwind* pExc)
+            {
+               // Probable lldf out of range error
+               std::_tstring sCause;
+               pExc->GetErrorMessage(&sCause);
+               _ftprintf(fp, sCause.c_str());
+               _ftprintf(fp, _T("\n"));
+               pExc->Delete();
+            }
+         }
+         else
+         {
+            /* Write CAD data to text file */
+            if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, segmentKey, (TxDOTCadExportFormatType)txInfo.m_TxFType, designSucceeded))
+            {
+               err_file << _T("Warning: An error occured while writing to File") << std::endl;
+	            return false;
+            }
+	      }
+      }
    }
 
    /* Close the open text file */

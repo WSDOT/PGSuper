@@ -43,7 +43,7 @@ class  CTxDOTCommandLineInfo : public CPGSBaseCommandLineInfo
 {
 public:
    // Different types of Analysis/Design and level of detail (Ext==extended) for TxDOT CAD reports
-   enum TxRunType {txrDesign, txrAnalysis, TxrDistributionFactors, txrDesignShear};
+   enum TxRunType {txrDesign, txrAnalysis, TxrDistributionFactors, txrDesignShear,txrGeometry};
    enum TxFType {txfNormal, txfExtended, txfTest};
 
 
