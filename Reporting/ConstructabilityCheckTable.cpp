@@ -838,6 +838,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    slope.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -881,7 +882,14 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
       (*pTable)(1, col++) << dim.SetValue(zo);
       (*pTable)(1, col++) << slope.SetValue(Orientation);
       (*pTable)(1, col++) << slope.SetValue(ThetaMax);
-      (*pTable)(1, col++) << slope.SetValue(FS);
+      if (10 <= FS)
+      {
+         (*pTable)(1, col++) << _T("10+");
+      }
+      else
+      {
+         (*pTable)(1, col++) << scalar.SetValue(FS);
+      }
 
       if ( pArtifact->Passed() )
       {
@@ -892,7 +900,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
          (*pTable)(1,col++) << RPT_FAIL;
       }
       
-      *pBody << _T("Allowable Factor of Safety = ") << FSmax << rptNewLine;
+      *pBody << _T("Minimum Factor of Safety = ") << FSmax << rptNewLine;
       *pBody << pTable;
    } // next segment
 }

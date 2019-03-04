@@ -5530,11 +5530,11 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
             {
                CthisSegment = Min(Cleft,Cright);
             }
-            else if ( Cleft < 0 )
+            else if ( Cleft < 0 && 0 < Cright)
             {
                CthisSegment = Cright;
             }
-            else if ( Cright < 0 )
+            else if (0 < Cleft && Cright < 0 )
             {
                CthisSegment = Cleft;
             }
