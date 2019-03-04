@@ -850,6 +850,11 @@ public:
    // If true, girder mild reinforcement is included in the moment capacity calculations.
    void IncludeRebarForMoment(bool bInclude);
    bool IncludeRebarForMoment() const;
+   
+   // Set/Get a paramter that indicates if pretensioned strands are included in negative moment capacity calculations.
+   // If true, the pretensioned strands are included in negative moment capacity calculuations
+   void IncludeStrandForNegativeMoment(bool bInclude);
+   bool IncludeStrandForNegativeMoment() const;
 
    // Set/Get the coefficient for computing modulus of rupture for moment capacity analysis
    void SetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
@@ -1369,6 +1374,7 @@ private:
    bool    m_Bs3IgnoreRangeOfApplicability;  // this will only be found in library entries older than version 29
    int     m_Bs3LRFDOverReinforcedMomentCapacity;
    bool    m_bIncludeRebar_Moment;
+   bool    m_bIncludeStrand_NegMoment;
    Float64  m_FlexureModulusOfRuptureCoefficient[3]; // index is pgsTypes::ConcreteType enum
    Float64  m_ShearModulusOfRuptureCoefficient[3];   // index is pgsTypes::ConcreteType enum
 

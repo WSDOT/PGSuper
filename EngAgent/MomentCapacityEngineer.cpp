@@ -1765,6 +1765,12 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight,pConfig);
    StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped,pConfig);
 
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   bool bIncludeRebar = pSpecEntry->IncludeRebarForMoment(); // only include rebar if permitted by the project criteria... 
+   bool bIncludeStrandsWithNegativeMoment = pSpecEntry->IncludeStrandForNegativeMoment();
+
    //
    // Create Materials
    //
@@ -1913,7 +1919,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       sacDepth = pBridge->GetSacrificalDepth();
    }
 
-   if ( bPositiveMoment || 0 < nDucts ) // only model strands for positive moment or if there are tendons in the model
+   if ( bPositiveMoment || bIncludeStrandsWithNegativeMoment || 0 < nDucts ) // only model strands for positive moment, the spec says to use them, or if there are tendons in the model
    {
       // strands
       if ( bIsOnSegment || bIsInBoundaryPierDiaphragm )
@@ -2088,11 +2094,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    }
 
    // girder rebar
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( 
-        pSpecEntry->IncludeRebarForMoment() // only include rebar if permitted by the project criteria... 
+   if ( bIncludeRebar // only include rebar if permitted by the project criteria... 
         ||   // ... EXCEPT...
         (IsNonstructuralDeck(deckType) && !bPositiveMoment) // it must be included for negative moment capacity of "no deck" bridge systems (the girder has the only reinforcement available to develop capacity)
       )

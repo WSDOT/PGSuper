@@ -193,6 +193,7 @@ m_LiveLoadElasticGain(0.0),
 m_LongReinfShearMethod(LRFD_METHOD),
 m_bDoEvaluateDeflection(true),
 m_DeflectionLimit(800.0),
+m_bIncludeStrand_NegMoment(false),
 m_bIncludeRebar_Moment(false),
 m_bIncludeRebar_Shear(false),
 m_AnalysisType(pgsTypes::Envelope),
@@ -653,8 +654,9 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    //pSave->Property(_T("IncludeRebar_MomentCapacity"),m_bIncludeRebar_Moment); // added for version 7.0
 
    // added in version 37
-   pSave->BeginUnit(_T("MomentCapacity"),3.0);
+   pSave->BeginUnit(_T("MomentCapacity"),4.0);
       pSave->Property(_T("Bs3LRFDOverreinforcedMomentCapacity"),(Int16)m_Bs3LRFDOverReinforcedMomentCapacity);
+      pSave->Property(_T("IncludeStrandForNegMoment"), m_bIncludeStrand_NegMoment); // added in version 4 of this data block
       pSave->Property(_T("IncludeRebarForCapacity"),m_bIncludeRebar_Moment);
       pSave->Property(_T("IncludeNoncompositeMomentForNegMomentDesign"),m_bIncludeForNegMoment); // added version 2 of this data block
       pSave->BeginUnit(_T("ResistanceFactor"),1.0);
@@ -2376,6 +2378,16 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
 
          m_Bs3LRFDOverReinforcedMomentCapacity = temp;
+
+         // added in version 4
+         if (3 < mc_version)
+         {
+            if (!pLoad->Property(_T("IncludeStrandForNegMoment"), &temp) )
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+            m_bIncludeStrand_NegMoment = (temp == 0 ? false : true);
+         }
 
          if ( !pLoad->Property(_T("IncludeRebarForCapacity"),&temp) )
          {
@@ -4695,6 +4707,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    // Moment Capacity Tab
    //
    if ( (GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims && m_Bs3LRFDOverReinforcedMomentCapacity != rOther.m_Bs3LRFDOverReinforcedMomentCapacity) ||
+        m_bIncludeStrand_NegMoment != rOther.m_bIncludeStrand_NegMoment ||
         m_bIncludeRebar_Moment != rOther.m_bIncludeRebar_Moment ||
         !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
         !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
@@ -6531,6 +6544,16 @@ void SpecLibraryEntry::SetLLDeflectionLimit(Float64 limit)
    m_DeflectionLimit = limit;
 }
 
+void SpecLibraryEntry::IncludeStrandForNegativeMoment(bool bInclude)
+{
+   m_bIncludeStrand_NegMoment = bInclude;
+}
+
+bool SpecLibraryEntry::IncludeStrandForNegativeMoment() const
+{
+   return m_bIncludeStrand_NegMoment;
+}
+
 void SpecLibraryEntry::IncludeRebarForMoment(bool bInclude)
 {
    m_bIncludeRebar_Moment = bInclude;
@@ -7475,6 +7498,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_bDoEvaluateDeflection = rOther.m_bDoEvaluateDeflection;
    m_DeflectionLimit       = rOther.m_DeflectionLimit;
 
+   m_bIncludeStrand_NegMoment = rOther.m_bIncludeStrand_NegMoment;
    m_bIncludeRebar_Moment = rOther.m_bIncludeRebar_Moment;
    m_bIncludeRebar_Shear = rOther.m_bIncludeRebar_Shear;
 
