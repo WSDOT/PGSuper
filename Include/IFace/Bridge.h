@@ -423,7 +423,7 @@ interface IBridge : IUnknown
    virtual void GetPierDiaphragmSize(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,Float64* pW,Float64* pH) const = 0;
    // return true if weight of diaphragm is carried by girder
    virtual bool DoesPierDiaphragmLoadGirder(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const = 0;
-   // Get location of end diaphragm load (c.g.) measured from c.l. pier. along girder
+   // Get location of end diaphragm load (c.g.) measured from c.l. bearing along girder
    // Only applicable if DoesPierDiaphragmLoadGirder returns true
    virtual Float64 GetPierDiaphragmLoadLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType) const = 0;
    

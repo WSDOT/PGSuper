@@ -9404,11 +9404,11 @@ Float64 CBridgeAgentImp::GetPierDiaphragmLoadLocation(const CSegmentKey& segment
    }
 #endif
 
-   Float64 dist;
+   Float64 dist = 0;
    if (pPierData->GetDiaphragmLoadType(pierFace) == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
    {
       // return distance adjusted for skew
-      dist = pPierData->GetDiaphragmLoadLocation(pierFace);
+      dist = pPierData->GetDiaphragmLoadLocation(pierFace); // distance from CL Bearing
 
       CComPtr<IAngle> angle;
       GetPierSkew(pPierData->GetIndex(),&angle);
@@ -9416,15 +9416,6 @@ Float64 CBridgeAgentImp::GetPierDiaphragmLoadLocation(const CSegmentKey& segment
       angle->get_Value(&value);
 
       dist /=  cos ( fabs(value) );
-   }
-   else if (pPierData->GetDiaphragmLoadType(pierFace) == ConnectionLibraryEntry::ApplyAtBearingCenterline)
-   {
-      // same as bearing offset
-      dist = GetSegmentEndBearingOffset(segmentKey);
-   }
-   else
-   {
-      dist = 0.0;
    }
 
    return dist;
