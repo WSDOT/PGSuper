@@ -1739,6 +1739,9 @@ interface IGirder : public IUnknown
    virtual Float64 GetStructuralLongitudinalJointWidth(const pgsPointOfInterest& poi) const = 0;
    virtual void GetStructuralLongitudinalJointWidth(const pgsPointOfInterest& poi, Float64* pLeft, Float64* pRight) const = 0;
 
+   // Returns a plan view polygon shape of the segment
+   virtual void GetSegmentPlan(const CSegmentKey& segmentKey, IShape** ppShape) const = 0;
+
    // Returns the shape of the segment profile. If bIncludeClosure is true, the segment shape
    // includes its projection into the closure joint. Y=0 is at the top of the segment
    // X values are in Girder Path Coordinates.

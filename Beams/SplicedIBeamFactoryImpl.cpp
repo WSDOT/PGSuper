@@ -302,22 +302,7 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    //
    // end block transition points
    //
-
-   // start of end block transition (wide end, tapering down to width of web)
-   pgsPointOfInterest poiStartEndBlock1(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart],POI_SECTCHANGE_TRANSITION);
-   pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
-
-   // end of end block transition (end block is the width of the web)
-   pgsPointOfInterest poiStartEndBlock2(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart] + pSegment->EndBlockTransitionLength[pgsTypes::metStart],POI_SECTCHANGE_TRANSITION);
-   pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
-
-   // end of end block transition (end block is the width of the web)
-   pgsPointOfInterest poiEndEndBlock2(  segmentKey, segment_length - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_TRANSITION);
-   pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
-
-   // start of end block transition (wide end)
-   pgsPointOfInterest poiEndEndBlock1(  segmentKey, segment_length - pSegment->EndBlockLength[pgsTypes::metEnd],POI_SECTCHANGE_TRANSITION);
-   pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+   LayoutIBeamEndBlockPointsOfInterest(segmentKey, pSegment, segment_length, pPoiMgr);
 
    // POI for transition points
    pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();

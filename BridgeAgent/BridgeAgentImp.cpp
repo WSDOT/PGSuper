@@ -25432,6 +25432,84 @@ Float64 CBridgeAgentImp::GetSegmentSlope(const CSegmentKey& segmentKey) const
    return fn.GetSlope();
 }
 
+void CBridgeAgentImp::GetSegmentPlan(const CSegmentKey& segmentKey, IShape** ppShape) const
+{
+   CComPtr<IPoint2d> pntEnd1Left, pntEnd1, pntEnd1Right, pntEnd2Right, pntEnd2, pntEnd2Left;
+   GetSegmentPlanPoints(segmentKey, pgsTypes::pcGlobal, &pntEnd1Left, &pntEnd1, &pntEnd1Right, &pntEnd2Right, &pntEnd2, &pntEnd2Left);
+
+   CComPtr<IPolyShape> polyShape;
+   polyShape.CoCreateInstance(CLSID_PolyShape);
+   polyShape->AddPointEx(pntEnd1Left);
+   polyShape->AddPointEx(pntEnd1);
+   polyShape->AddPointEx(pntEnd1Right);
+
+
+   CComPtr<IPierLine> startLine, endLine;
+   GetSupports(segmentKey, &startLine, &endLine);
+
+   CComPtr<IDirection> startDirection;
+   startLine->get_Direction(&startDirection);
+   Float64 dirStart;
+   startDirection->get_Value(&dirStart);
+
+   CComPtr<IDirection> endDirection;
+   endLine->get_Direction(&endDirection);
+   Float64 dirEnd;
+   endDirection->get_Value(&dirEnd);
+
+   CComPtr<IDirection> segmentDirection;
+   GetSegmentDirection(segmentKey, &segmentDirection);
+   Float64 dirSegment;
+   segmentDirection->get_Value(&dirSegment);
+
+   Float64 start_angle = dirStart - dirSegment;
+   Float64 end_angle = dirEnd - dirSegment;
+
+   Float64 Ls = GetSegmentLength(segmentKey);
+
+   // Get all the section change transition points
+   PoiList vPoi;
+   GetPointsOfInterest(segmentKey, POI_SECTCHANGE,&vPoi);
+   RemovePointsOfInterest(vPoi, POI_START_FACE, 0);
+   RemovePointsOfInterest(vPoi, POI_END_FACE, 0);
+   std::vector<CComPtr<IPoint2d>> vLeft; // cache all the points on the left side of the girder
+   for (const pgsPointOfInterest& poi : vPoi)
+   {
+      CComPtr<IPoint2d> pnt;
+      GetPoint(poi, pgsTypes::pcGlobal, &pnt);
+
+      Float64 left, right;
+      GetTopWidth(poi, &left, &right);
+
+      Float64 angle = ::LinInterp(poi.GetDistFromStart(), start_angle, end_angle, Ls);
+
+      right /= sin(angle);
+      left /= sin(angle);
+
+      Float64 dir = dirSegment + angle;
+
+      CComPtr<IPoint2d> pntLeft;
+      ByDistDir(pnt, left, CComVariant(dir), 0.0, &pntLeft);
+      vLeft.insert(vLeft.begin(), pntLeft);
+
+      CComPtr<IPoint2d> pntRight;
+      ByDistDir(pnt, -right, CComVariant(dir), 0.0, &pntRight);
+      polyShape->AddPointEx(pntRight);
+   }
+
+   polyShape->AddPointEx(pntEnd2Right);
+   polyShape->AddPointEx(pntEnd2);
+   polyShape->AddPointEx(pntEnd2Left);
+
+   for (const auto& pnt : vLeft)
+   {
+      polyShape->AddPointEx(pnt);
+   }
+
+   CComQIPtr<IShape> shape(polyShape);
+   shape.CopyTo(ppShape);
+}
+
 void CBridgeAgentImp::GetSegmentProfile(const CSegmentKey& segmentKey,bool bIncludeClosure,IShape** ppShape) const
 {
    CComPtr<ISuperstructureMemberSegment> segment;
