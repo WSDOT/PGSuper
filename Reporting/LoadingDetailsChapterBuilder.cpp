@@ -654,8 +654,8 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          (*p_table)(1,3) << COLHDR(_T("Point Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
          (*p_table)(1,4) << COLHDR(_T("Point Moment"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
-         (*p_table)(2,0) << _T("Left Bearing");
-         (*p_table)(3,0) << _T("Right Bearing");
+         (*p_table)(2,0) << _T("Back Bearing");
+         (*p_table)(3,0) << _T("Ahead Bearing");
 
          Float64 P1, P2, M1, M2;
          pProdLoads->GetCantileverSlabLoad(thisSegmentKey, &P1, &M1, &P2, &M2);
@@ -1190,10 +1190,11 @@ void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChap
 
 void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSpanKey& spanKey) const
 {
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  loc,    pDisplayUnits->GetSpanLengthUnit(),   false );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,   force,  pDisplayUnits->GetGeneralForceUnit(), false );
-   INIT_UV_PROTOTYPE( rptMomentUnitValue,  moment, pDisplayUnits->GetMomentUnit(),       false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,  dim,    pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,    pDisplayUnits->GetSpanLengthUnit(),   false);
+   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), false);
+   INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(),       false);
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dist,   pDisplayUnits->GetSpanLengthUnit(),   false);
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,    pDisplayUnits->GetComponentDimUnit(), false);
 
    std::vector<DiaphragmLoad> diap_loads; // these are the actual loads that have been generated from the user input/diaphragm rules
    pProdLoads->GetIntermediateDiaphragmLoads(spanKey, &diap_loads);
@@ -1258,43 +1259,58 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
    *pPara << p_table;
 
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   (*p_table)(0,0) << _T("Pier");
-   (*p_table)(0,1) << _T("Location");
-   (*p_table)(0,2) << COLHDR(_T("P"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-   (*p_table)(0,3) << COLHDR(_T("M"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*p_table)(0, 0) << _T("Pier");
+   (*p_table)(0, 1) << _T("Location");
+   (*p_table)(0, 2) << COLHDR(_T("P"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*p_table)(0, 3) << COLHDR(_T("Moment") << rptNewLine << _T("Arm"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*p_table)(0, 4) << COLHDR(_T("M"),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
+   PierIndexType nPiers = (PierIndexType)(nSpans + 1);
    SpanIndexType startSpanIdx = (spanKey.spanIndex == ALL_SPANS ? 0 : spanKey.spanIndex);
    SpanIndexType endSpanIdx   = (spanKey.spanIndex == ALL_SPANS ? nSpans-1 : startSpanIdx);
    PierIndexType startPierIdx = (PierIndexType)startSpanIdx;
    PierIndexType endPierIdx   = (PierIndexType)(endSpanIdx+1);
    for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
-      Float64 Pback, Mback, Pahead, Mahead;
-      pProdLoads->GetPierDiaphragmLoads( pierIdx, spanKey.girderIndex, &Pback, &Mback, &Pahead, &Mahead);
+      Float64 Pback, Mback, backMomentArm, Pahead, Mahead, aheadMomentArm;
+      pProdLoads->GetPierDiaphragmLoads( pierIdx, spanKey.girderIndex, &Pback, &Mback, &backMomentArm, &Pahead, &Mahead, &aheadMomentArm);
 
-      p_table->SetRowSpan(row,0,2);
-      (*p_table)(row,0) << LABEL_PIER(pierIdx);
+      if (0 < pierIdx && pierIdx < nPiers - 1)
+      {
+         p_table->SetRowSpan(row, 0, 2);
+      }
 
-      (*p_table)(row,1) << _T("Left Bearing");
-      (*p_table)(row,2) << force.SetValue(-Pback);
-      (*p_table)(row,3) << moment.SetValue(Mback);
+      (*p_table)(row, 0) << LABEL_PIER(pierIdx);
 
-      row++;
+      if (0 < pierIdx)
+      {
+         (*p_table)(row, 1) << _T("Back Bearing");
+         (*p_table)(row, 2) << force.SetValue(-Pback);
+         (*p_table)(row, 3) << dist.SetValue(backMomentArm);
+         (*p_table)(row, 4) << moment.SetValue(Mback);
 
-      (*p_table)(row,1) << _T("Right Bearing");
-      (*p_table)(row,2) << force.SetValue(-Pahead);
-      (*p_table)(row,3) << moment.SetValue(Mahead);
+         row++;
+      }
 
-      row++;
+
+      if (pierIdx < nPiers - 1)
+      {
+         (*p_table)(row, 1) << _T("Ahead Bearing");
+         (*p_table)(row, 2) << force.SetValue(-Pahead);
+         (*p_table)(row, 3) << dist.SetValue(aheadMomentArm);
+         (*p_table)(row, 4) << moment.SetValue(Mahead);
+
+         row++;
+      }
    }
 }
 
