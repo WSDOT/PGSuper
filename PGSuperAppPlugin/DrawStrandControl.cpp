@@ -506,7 +506,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
                rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
             }
 
-            if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
+            if (strandDefinitionType == CStrandData::sdtDirectRowInput && ( (IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z))) )
             {
                // Z must be zero if nStrands is odd... it's not, so use the error color
                pDC->SelectObject(&errorPen);
@@ -553,7 +553,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
          //
          // Draw in strands segment profile
          //
-         if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
+         if (strandDefinitionType == CStrandData::sdtDirectRowInput && ((IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z))))
          {
             // m_Z must be zero if nStrands is odd
             pDC->SelectObject(&errorPen);

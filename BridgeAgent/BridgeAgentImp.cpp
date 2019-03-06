@@ -3175,9 +3175,9 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
             GridIndexType nGridPoints = strandRow.m_nStrands / 2; // strand grid is only half the full grid (just the grid on the positive X side)
             Float64 Xi = strandRow.m_Z / 2; // distance from CL Girder to first strand
             ATLASSERT(IsOdd(strandRow.m_nStrands) ? IsZero(Xi) : !IsZero(Xi));
-            if (strandRow.m_nStrands == 1)
+            if (IsOdd(strandRow.m_nStrands))
             {
-               nGridPoints = 1;
+               nGridPoints++;
             }
 
             std::array<Float64,4> Y;
