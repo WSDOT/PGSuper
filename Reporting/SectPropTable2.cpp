@@ -235,7 +235,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
    PoiList vPoiSpecial;
-   pIPoi->GetPointsOfInterest(segmentKey, POI_SPECIAL, &vPoiSpecial);
+   pIPoi->GetPointsOfInterest(segmentKey, POI_SPECIAL | POI_START_FACE | POI_END_FACE | POI_SECTCHANGE, &vPoiSpecial);
    pIPoi->MergePoiLists(vPoi, vPoiSpecial, &vPoi);
 
    RowIndexType row = xs_table->GetNumberOfHeaderRows();

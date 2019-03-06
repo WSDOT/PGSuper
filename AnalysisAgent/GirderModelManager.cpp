@@ -14479,7 +14479,10 @@ void CGirderModelManager::GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey
       Float64 Wstart   = -Ag_Prev*density*g;
       Float64 Wend     = -Ag_Curr*density*g;
 
-      pSegmentLoads->emplace_back(Xstart, Xend, Wstart, Wend);
+      if (!IsZero(Xend, Xstart))
+      {
+         pSegmentLoads->emplace_back(Xstart, Xend, Wstart, Wend);
+      }
 
       prevPoi = currPoi;
       Ag_Prev = Ag_Curr;
