@@ -966,13 +966,13 @@ UINT CRowStrandGrid::Validate(ROWCOL nRow, CStrandRow& strandRow)
    {
       return ERROR_S1_MUST_BE_ZERO;
    }
-   else if (IsEven(strandRow.m_nStrands) && IsLE(strandRow.m_Z, 0.0, 0.0))
+   else if (IsEven(strandRow.m_nStrands) && strandRow.m_Z <= 0)
    {
       return ERROR_S1_MUST_BE_POSITIVE;
    }
 
    // Check main spacing requirement
-   if (3 < strandRow.m_nStrands && IsLE(strandRow.m_Spacing, 0.0, 0.0))
+   if (3 < strandRow.m_nStrands && strandRow.m_Spacing <= 0)
    {
       return ERROR_S2_MUST_BE_POSITIVE;
    }
