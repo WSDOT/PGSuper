@@ -72,6 +72,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// NOTE: See GirderModelChildFrame.cpp for information about the coordinate systems used in this view
+
 // display list constants
 #define GDR_LIST          1
 #define TENDON_LIST       2
@@ -721,7 +723,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       *pbIsPier = true;
 
       GET_IFACE2(pBroker,IBridge,pBridge);
-      VERIFY(pBridge->GetPierLocation(segmentKey,pierIdx,&pierLocation));
+      VERIFY(pBridge->GetPierLocation(segmentKey,pierIdx,&pierLocation)); // pier location is in girder path coordinates
       ID = (IDType)pierIdx;
 
       // adjust location so that it is at the CL Bearing and not the pier reference line
@@ -775,9 +777,10 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       sectionHeight = pSectProp->GetSegmentHeightAtPier(segmentKey,pierIdx);
 
-      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
+
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       PoiAttributeType attribute = (endType == pgsTypes::metStart ? POI_0L : POI_10L);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | attribute, &vPoi);
@@ -793,7 +796,10 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       ATLASSERT(pTS != nullptr);
 
       EventIndexType erectionEventIdx, removalEventIdx;
-      pTimelineMgr->GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removalEventIdx);
+      ID = pTS->GetID();
+      SupportIndexType tsIdx = pTS->GetIndex();
+
+      pTimelineMgr->GetTempSupportEvents(ID,&erectionEventIdx,&removalEventIdx);
       if ( eventIdx < erectionEventIdx || removalEventIdx <= eventIdx )
       {
          return;
@@ -803,9 +809,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       *pbIsPier = false;
 
       GET_IFACE2(pBroker,IBridge,pBridge);
-      pierLocation = pBridge->GetTemporarySupportLocation(pTS->GetIndex(),segmentKey.girderIndex);
-
-      ID = pTS->GetID();
+      pierLocation = pBridge->GetTemporarySupportLocation(tsIdx,segmentKey.girderIndex);
 
       GET_IFACE2(pBroker,IPointOfInterest,pPoi);
       GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -1183,14 +1187,20 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBr
          if ( erectSegmentEventIdx <= eventIdx )
          {
             CComPtr<IShape> shape;
-            pIGirder->GetSegmentProfile(segmentKey,false,&shape);
+            pIGirder->GetSegmentProfile(segmentKey,false,&shape); // X values are in girder path coordinates
+
+            CComQIPtr<IXYPosition> position(shape);
+            if (!IsZero(group_offset))
+            {
+               // the group offset moves the segment to the right, based on all the groups
+               // that have been previously drawn
+               position->Offset(group_offset, 0);
+            }
 
             // create the display object
             CComPtr<iPointDisplayObject> doPnt;
             ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
 
-            CComQIPtr<IXYPosition> position(shape);
-            position->Offset(group_offset,0);
             CComPtr<IPoint2d> pnt;
             position->get_LocatorPoint(lpTopLeft,&pnt);
             doPnt->SetPosition(pnt,FALSE,FALSE);

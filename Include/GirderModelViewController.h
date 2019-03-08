@@ -45,8 +45,7 @@ interface IGirderModelViewController : IEAFViewController
    virtual void CutAt(Float64 Xg) = 0;
    virtual void CutAtNext() = 0;
    virtual void CutAtPrev() = 0;
-   virtual Float64 GetMinCutLocation() const = 0;
-   virtual Float64 GetMaxCutLocation() const = 0;
+   virtual void GetCutRange(Float64* pMin, Float64* pMax) const = 0;
 
    // View Settings
    virtual void ShowStrands(bool bShow) = 0;

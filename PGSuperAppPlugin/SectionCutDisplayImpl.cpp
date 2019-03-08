@@ -39,6 +39,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// NOTE: See GirderModelChildFrame.cpp for information about the coordinate systems used girder model views
+
+
 // height of section cut above/below girder
 static const Uint32 SSIZE = 1440 * 3/8; // (twips)
 
@@ -96,25 +99,9 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObject*
 
    pThis->m_GirderKey = girderKey;
 
-   pThis->m_MinCutLocation = pCutLoc->GetMinCutLocation();
-   pThis->m_MaxCutLocation = pCutLoc->GetMaxCutLocation();
-
+   pCutLoc->GetCutRange(&(pThis->m_MinCutLocation), &(pThis->m_MaxCutLocation));
+  
    pThis->m_pCutLocation = pCutLoc;
-
-   // need offset because view starts at cl pier
-   if ( pThis->m_GirderKey.groupIndex == ALL_GROUPS )
-   {
-      pThis->m_StartOffset = 0.0;
-   }
-   else
-   {
-      GET_IFACE2(pBroker,IBridge,pBridge);
-      CSegmentKey segmentKey(girderKey.groupIndex,girderKey.girderIndex,0);
-      Float64 start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
-      Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(segmentKey);
-
-      pThis->m_StartOffset = start_brg_offset - start_end_distance;
-   }
 
    Float64 Xgl = pThis->m_pCutLocation->GetCurrentCutLocation();
 
@@ -240,7 +227,7 @@ void CSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 Xg
 
    *top = dy + top_flange_thickening + precamber;
    *bottom = *top - Hg - 2*dy;
-   *left   = Xgl + m_StartOffset; // add offset to get into correct coord's
+   *left   = Xgl;
    *right  = *left + dx;
 }
 
@@ -313,7 +300,7 @@ pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl)
    }
    else
    {
-      return pPoi->ConvertGirderCoordinateToPoi(m_GirderKey,Xgl);
+      return pPoi->ConvertGirderPathCoordinateToPoi(m_GirderKey,Xgl);
    }
 }
 
@@ -513,10 +500,9 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(
    return false;
 }
 
-void CSectionCutDisplayImpl::PutPosition(Float64 Xgl)
+void CSectionCutDisplayImpl::PutPosition(Float64 X)
 {
-   Xgl = ::ForceIntoRange(m_MinCutLocation,Xgl,m_MaxCutLocation);
-   m_pCutLocation->CutAt(Xgl);
+   m_pCutLocation->CutAt(X);
 }
 
 

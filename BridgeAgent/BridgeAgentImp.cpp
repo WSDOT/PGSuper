@@ -7169,26 +7169,24 @@ Float64 CBridgeAgentImp::GetGirderLength(const CGirderKey& girderKey) const
 {
    Float64 layout_length = GetGirderLayoutLength(girderKey);
 
-   // layout length goes from between the back of pavement seats at the end piers
-   // need to deduct for connection geometry at end piers
-
    CSegmentKey startSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0);
    Float64 startBrgOffset, endBrgOffset;
    GetSegmentBearingOffset(startSegmentKey,&startBrgOffset,&endBrgOffset);
-   layout_length -= startBrgOffset;
 
    Float64 startEndDist, endEndDist;
    GetSegmentEndDistance(startSegmentKey,&startEndDist,&endEndDist);
-   layout_length += startEndDist;
+
+   Float64 offset = startEndDist - startBrgOffset;
+   layout_length += offset;
 
    SegmentIndexType nSegments = GetSegmentCount(girderKey);
    CSegmentKey endSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1);
 
    GetSegmentBearingOffset(endSegmentKey,&startBrgOffset,&endBrgOffset);
-   layout_length -= endBrgOffset;
-
    GetSegmentEndDistance(endSegmentKey,&startEndDist,&endEndDist);
-   layout_length += endEndDist;
+
+   offset = endEndDist - endBrgOffset;
+   layout_length += offset;
 
    return layout_length;
 }
@@ -8261,7 +8259,29 @@ Float64 CBridgeAgentImp::GetGirderlineLength(GirderIndexType gdrLineIdx) const
 Float64 CBridgeAgentImp::GetCantileverLength(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType endType) const
 {
    ATLASSERT(spanIdx != ALL_SPANS && gdrIdx != ALL_GIRDERS);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+
+   // Since cantilevers can only happen on the first or last spans, we can easily infer the segment key
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   SpanIndexType nSpans = pIBridgeDesc->GetSpanCount();
+
+   if (spanIdx != 0 || spanIdx != nSpans - 1)
+   {
+      return 0;
+   }
+
+   CSegmentKey segmentKey(0, gdrIdx, 0);
+   if (0 < spanIdx || (spanIdx == nSpans-1 && endType == pgsTypes::metEnd))
+   {
+      GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
+      const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(CGirderKey(nGroups - 1, gdrIdx));
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      segmentKey.groupIndex = nGroups - 1;
+      segmentKey.segmentIndex = nSegments - 1;
+   }
+   bool bStartCantilever, bEndCantilever;
+   ModelCantilevers(segmentKey, &bStartCantilever, &bEndCantilever);
+   bool bCantilever = (endType == pgsTypes::metStart ? bStartCantilever : bEndCantilever);
+
    PierIndexType pierIdx = (PierIndexType)spanIdx;
    if ( endType == pgsTypes::metEnd )
    {
@@ -8269,21 +8289,11 @@ Float64 CBridgeAgentImp::GetCantileverLength(SpanIndexType spanIdx,GirderIndexTy
    }
 
    const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
-   if ( !pPier->HasCantilever() )
+   if ( !pPier->HasCantilever() && !bCantilever)
    {
       return 0;
    }
 
-   // Since cantilevers can only happen on the first or last spans, we can easily infer the segment key
-   CSegmentKey segmentKey(0,gdrIdx,0);
-   if ( 0 < spanIdx ) 
-   {
-      GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
-      const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(CGirderKey(nGroups-1,gdrIdx));
-      SegmentIndexType nSegments = pGirder->GetSegmentCount();
-      segmentKey.groupIndex = nGroups-1;
-      segmentKey.segmentIndex = nSegments-1;
-   }
 
    Float64 Lc = 0;
    if ( endType == pgsTypes::metStart )
@@ -11476,11 +11486,12 @@ bool CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,const C
    CComPtr<IPoint2d> pntTS;
    if ( !GetSegmentTempSupportIntersection(segmentKey,tsIdx,pgsTypes::pcLocal,&pntTS) )
    {
+      *pXs = -99999; // obvious bogus value
       return false;
    }
 
-   // Measure offset from pntSupport1 so that offset is in the segment coordinate system
-   pntTS->DistanceEx(pntSupport1,pXs);
+   // Measure from pntEnd1 so that location is in the segment coordinate system
+   pntTS->DistanceEx(pntEnd1,pXs);
  
    return true;
 }
@@ -11490,7 +11501,6 @@ Float64 CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,Gird
    GroupIndexType nGroups = GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      Float64 Xgp = 0;
       GirderIndexType nGirders = GetGirderCount(grpIdx);
       GirderIndexType thisGdrIdx = Min(gdrIdx,nGirders-1);
       SegmentIndexType nSegments = GetSegmentCount(grpIdx,thisGdrIdx);
@@ -11501,12 +11511,9 @@ Float64 CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,Gird
          bool bResult = GetTemporarySupportLocation(tsIdx,segmentKey,&Xs);
          if ( bResult == true )
          {
-            Xgp += Xs;
+            Float64 Xsp = ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey, Xs);
+            Float64 Xgp = ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp);
             return Xgp;
-         }
-         else
-         {
-            Xgp += GetSegmentLayoutLength(segmentKey);
          }
       }
    }
@@ -20262,7 +20269,7 @@ Float64 CBridgeAgentImp::ConvertPoiToGirderPathCoordinate(const pgsPointOfIntere
 
          Xgp += L;
       }
-      
+
       // add the distance from the start of the segment to the poi
       Float64 Xsp = ConvertPoiToSegmentPathCoordinate(poi);
       Xgp += Xsp;
@@ -20511,9 +20518,9 @@ Float64 CBridgeAgentImp::ConvertGirderPathCoordinateToGirderCoordinate(const CGi
    return Xg;
 }
 
-Float64 CBridgeAgentImp::ConvertGirderPathCoordinateToGirderlineCoordinate(const CGirderKey& girderKey,Float64 Xgp) const
+Float64 CBridgeAgentImp::ConvertGirderPathCoordinateToGirderlineCoordinate(const CGirderKey& girderKey, Float64 Xgp) const
 {
-   pgsPointOfInterest poi = ConvertGirderPathCoordinateToPoi(girderKey,Xgp);
+   pgsPointOfInterest poi = ConvertGirderPathCoordinateToPoi(girderKey, Xgp);
    return ConvertPoiToGirderlineCoordinate(poi);
 }
 
@@ -20571,7 +20578,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertGirderlineCoordinateToPoi(GirderIndex
 {
    // It will be easier to find which group Xgl is located in if we
    // convert it to a measurement from the Pier line at abutment 0.
-   CSegmentKey segmentKey(0,Min(GetGirderCount(0)-1,gdrIdx),0);
+   CSegmentKey segmentKey(0, Min(GetGirderCount(0) - 1, gdrIdx), 0);
    Float64 brg_offset = GetSegmentStartBearingOffset(segmentKey);
    Float64 end_dist   = GetSegmentStartEndDistance(segmentKey);
    Float64 start_offset = brg_offset - end_dist;
@@ -20590,8 +20597,23 @@ pgsPointOfInterest CBridgeAgentImp::ConvertGirderlineCoordinateToPoi(GirderIndex
       Float64 Xend   = 0; // distance from Pier 0 to end of current group
       for ( grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
-         CGirderKey girderKey(grpIdx,Min(gdrIdx,GetGirderCount(grpIdx)-1));
+         GirderIndexType thisGdrIdx = Min(gdrIdx, GetGirderCount(grpIdx) - 1);
+         CGirderKey girderKey(grpIdx,thisGdrIdx);
          Xend += GetGirderLayoutLength(girderKey); // update end of current group
+
+         if (grpIdx == nGroups - 1)
+         {
+            // deal with the last sgment extending beyond the last pier line
+            SegmentIndexType nSegments = GetSegmentCount(girderKey);
+            CSegmentKey segmentKey(girderKey,nSegments-1);
+            Float64 brg_offset = GetSegmentEndBearingOffset(segmentKey);
+            Float64 end_dist = GetSegmentEndEndDistance(segmentKey);
+            Float64 end_offset = brg_offset - end_dist;
+            if (end_offset < 0)
+            {
+               Xend -= end_offset;
+            }
+         }
 
          // is target point in this group?
          if ( ::InRange(Xstart,X,Xend) )
