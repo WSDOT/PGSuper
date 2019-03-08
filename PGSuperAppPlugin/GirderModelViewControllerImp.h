@@ -78,8 +78,7 @@ public:
    virtual void CutAt(Float64 Xg) override;
    virtual void CutAtNext() override;
    virtual void CutAtPrev() override;
-   virtual Float64 GetMinCutLocation() const override;
-   virtual Float64 GetMaxCutLocation() const override;
+   virtual void GetCutRange(Float64* pMin,Float64* pMax) const override;
 
    virtual void ShowStrands(bool bShow) override;
    virtual bool ShowStrands() const override;

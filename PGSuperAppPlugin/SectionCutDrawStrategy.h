@@ -30,19 +30,17 @@ interface IRoadway;
 interface IBridge;
 class CBridgeModelViewChildFrame;
 
-// pure virtual class for determining cut location along girder
-// no need for com here
+// pure virtual class for determining cut location
 class iCutLocation
 {
 public:
-   // Cut locations are in the Girderline Coordinate System
+   // Cut location coordinate system depends on implementation
    virtual Float64 GetCurrentCutLocation() = 0;
-   virtual void CutAt(Float64 Xgl) = 0;
+   virtual void CutAt(Float64 X) = 0;
    virtual void CutAtNext() = 0;
    virtual void CutAtPrev() = 0;
    virtual void ShowCutDlg() = 0;
-   virtual Float64 GetMinCutLocation() = 0;
-   virtual Float64 GetMaxCutLocation() = 0;
+   virtual void GetCutRange(Float64* pMin, Float64* pMax) = 0;
 };
 
 // {C56878AE-5504-4f1a-A060-F2C56991663D}
@@ -67,11 +65,3 @@ interface iBridgeSectionCutDrawStrategy : public IUnknown
    STDMETHOD_(void,SetColor)(COLORREF color) PURE;
 	STDMETHOD_(void,Init)(CBridgeModelViewChildFrame* pFrame,iPointDisplayObject* pDO, IRoadway* pRoadway, IBridge* pBridge, iCutLocation* pCutLoc) PURE;
 };
-//
-//// {F238C162-A106-4056-975A-20D3E4002512}
-//DEFINE_GUID(IID_iSectionCutEvents, 
-//0xf238c162, 0xa106, 0x4056, 0x97, 0x5a, 0x20, 0xd3, 0xe4, 0x0, 0x25, 0x12);
-//
-//interface iSectionCutEvents : public IUnknown
-//{
-//};

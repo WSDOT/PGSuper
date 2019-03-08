@@ -63,6 +63,20 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// NOTES:
+// The girder model elevation view uses one of two coordinate systems depending on what is being displayed.
+// If the girder elevation view is for a single group (or span), the girder path coordinate system is used.
+// If the girder elevation is for ALL GROUPS a coordinate system similar to the girder line coordinate system is used.
+// Call this the pseudo girder line coordinate system. This coordinate system is like the girder line coordinate system
+// in that it begins at its origin and continues for the entire lenght of the girder line. However, the origin
+// is different then the girder line coordate system. In the girder line coordinate system, the origin is at the start
+// face of the first segment. For the pseudo-girder line coordinate system, the origin is at the point where the
+// first Abutment Reference Line intersects the girder line. This is origin is in the same location as the origin
+// of the girder path coordinate system.
+//
+// Use the ConvertToGirderlineCoordinates and ConvertFromGirderlineCoordinates functions to convert girderline coordinates
+// to/from the pseudo-girder line coordinate system.
+
 // template function to directly set item data in a combo box
 template <class T>
 int SetCBCurSelItemData( CComboBox* pCB, T& itemdata )
@@ -88,12 +102,10 @@ int SetCBCurSelItemData( CComboBox* pCB, T& itemdata )
 IMPLEMENT_DYNCREATE(CGirderModelChildFrame, CSplitChildFrame)
 
 CGirderModelChildFrame::CGirderModelChildFrame():
-m_CurrentCutLocation(0),
 m_EventIndex(0),
 m_GirderKey(ALL_GROUPS,0),
 m_bIsAfterFirstUpdate(false)
 {
-
    CEAFViewControllerFactory::Init(this);
 }
 
@@ -616,17 +628,7 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
       }
    }
 
-   UpdateMaxCutLocation();
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   PoiList vPoi;
-   pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &vPoi);
-
-   IndexType pos = vPoi.size()/2; // default is mid-span
-   const pgsPointOfInterest& poi(vPoi.at(pos));
-   m_CurrentCutLocation = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+   UpdateCutRange();
 
    FillEventComboBox();
    UpdateBar();
@@ -691,20 +693,97 @@ void CGirderModelChildFrame::UpdateViews()
 
 void CGirderModelChildFrame::UpdateCutLocation(const pgsPointOfInterest& poi)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   if ( m_GirderKey.groupIndex == ALL_GROUPS )
-   {
-      m_CurrentCutLocation = pPoi->ConvertPoiToGirderlineCoordinate(poi);
-   }
-   else
-   {
-      m_CurrentCutLocation = pPoi->ConvertPoiToGirderCoordinate(poi);
-   }
+   m_cutPoi = poi;
    UpdateBar();
    GetGirderModelSectionView()->OnUpdate(nullptr, HINT_GIRDERVIEWSECTIONCUTCHANGED, nullptr);
    GetGirderModelElevationView()->OnUpdate(nullptr, HINT_GIRDERVIEWSECTIONCUTCHANGED, nullptr);
+}
+
+Float64 CGirderModelChildFrame::ConvertFromGirderlineCoordinate(Float64 Xgl) const
+{
+   // we aren't actually working in girder line coordinates
+   // we need X as a distance along the girder line measured relative to the first support
+   // this method makes the conversion
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GirderIndexType nGirders = pBridge->GetGirderCount(0);
+   CSegmentKey segmentKey(0, Min(m_GirderKey.girderIndex, nGirders - 1), 0);
+   Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+   Float64 endDist = pBridge->GetSegmentStartEndDistance(segmentKey);
+   Float64 offset = brgOffset - endDist;
+   Float64 X = Xgl + offset;
+   return X;
+}
+
+Float64 CGirderModelChildFrame::ConvertToGirderlineCoordinate(Float64 Xgl) const
+{
+   // we aren't actually working in girder line coordinates
+   // we need X as a distance along the girder line measured relative to the first support
+   // this method makes the conversion
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GirderIndexType nGirders = pBridge->GetGirderCount(0);
+   CSegmentKey segmentKey(0, Min(m_GirderKey.girderIndex, nGirders - 1), 0);
+   Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+   Float64 endDist = pBridge->GetSegmentStartEndDistance(segmentKey);
+   Float64 offset = brgOffset - endDist;
+   Float64 X = Xgl - offset;
+   return X;
+}
+
+void CGirderModelChildFrame::UpdateCutRange()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &vPoi);
+
+   m_minPoi = vPoi.front();
+   m_maxPoi = vPoi.back();
+
+   if (m_bFirstCut)
+   {
+      IndexType pos = vPoi.size() / 2; // default is mid-span
+      m_cutPoi = vPoi.at(pos);
+      m_bFirstCut = false;
+   }
+   else
+   {
+      CSegmentKey segmentKey = m_cutPoi.GetSegmentKey();
+      if (segmentKey.girderIndex != m_GirderKey.girderIndex)
+      {
+         // if the cut poi is no longer on the selected girder, update it
+         segmentKey.girderIndex = m_GirderKey.girderIndex;
+         m_cutPoi = pPoi->GetNearestPointOfInterest(segmentKey, m_cutPoi.GetDistFromStart());
+      }
+
+      Float64 Xmin, Xmax, X;
+      if (m_GirderKey.groupIndex == ALL_GROUPS)
+      {
+         Xmin = pPoi->ConvertPoiToGirderlineCoordinate(m_minPoi);
+         Xmax = pPoi->ConvertPoiToGirderlineCoordinate(m_maxPoi);
+         X = pPoi->ConvertPoiToGirderlineCoordinate(m_cutPoi);
+
+         Xmin = ConvertFromGirderlineCoordinate(Xmin);
+         Xmax = ConvertFromGirderlineCoordinate(Xmax);
+         X    = ConvertFromGirderlineCoordinate(X);
+      }
+      else
+      {
+         Xmin = pPoi->ConvertPoiToGirderPathCoordinate(m_minPoi);
+         Xmax = pPoi->ConvertPoiToGirderPathCoordinate(m_maxPoi);
+         X = pPoi->ConvertPoiToGirderPathCoordinate(m_cutPoi);
+      }
+
+      if (!InRange(Xmin, X, Xmax))
+      {
+         IndexType pos = vPoi.size() / 2; // default is mid-span
+         m_cutPoi = vPoi.at(pos);
+      }
+   }
 }
 
 void CGirderModelChildFrame::UpdateBar()
@@ -784,15 +863,22 @@ void CGirderModelChildFrame::UpdateBar()
       m_GirderKey.girderIndex = 0;
    }
 
-   UpdateMaxCutLocation();
-   if ( m_MaxCutLocation < m_CurrentCutLocation )
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+
+   Float64 cut;
+   if (m_GirderKey.groupIndex == ALL_GROUPS)
    {
-      m_CurrentCutLocation = m_MaxCutLocation;
+      cut = pPoi->ConvertPoiToGirderlineCoordinate(m_cutPoi);
+      cut = ConvertFromGirderlineCoordinate(cut);
+   }
+   else
+   {
+      cut = pPoi->ConvertPoiToGirderPathCoordinate(m_cutPoi);
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString msg;
-   msg.Format(_T("Section Cut: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetSpanLengthUnit()));
+   msg.Format(_T("Section Cut: %s"),FormatDimension(cut,pDisplayUnits->GetSpanLengthUnit()));
 
    pwndCutLocation->SetWindowText(msg);
    pwndCutLocation->EnableWindow();
@@ -801,65 +887,12 @@ void CGirderModelChildFrame::UpdateBar()
    OnUpdateFrameTitle(TRUE);
 }
 
-void CGirderModelChildFrame::UpdateMaxCutLocation()
-{
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   // Update the section cut range
-   ATLASSERT(m_GirderKey.girderIndex != ALL_GIRDERS);
-   if ( m_GirderKey.groupIndex == ALL_GROUPS )
-   {
-      // sum the length of all the girders
-      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-      m_MaxCutLocation = 0;
-      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-      {
-         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-         GirderIndexType gdrIdx = Min(m_GirderKey.girderIndex,nGirders-1);
-         CGirderKey thisGirderKey(grpIdx,gdrIdx);
-         Float64 lg = pBridge->GetGirderLayoutLength(thisGirderKey);
-
-         // if this is the first group, deduct the distance from the pier line to the end of the girder
-         // from the girder layout length (basically coverting from
-         // girder path length to girder length)
-         if ( grpIdx == 0 )
-         {
-            CSegmentKey segmentKey(thisGirderKey,0);
-            Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
-            Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
-            Float64 start_offset = brgOffset - endDist;
-            lg -= start_offset;
-         }
-
-         // if this is the last group, deduct the distance from the last pier line to the end of the girder
-         // from the girder layout length (basically coverting from
-         // girder path length to girder length)
-         if ( grpIdx == nGroups-1 )
-         {
-            SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-            CSegmentKey segmentKey(thisGirderKey,nSegments-1);
-            Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(segmentKey);
-            Float64 endDist   = pBridge->GetSegmentEndEndDistance(segmentKey);
-            Float64 end_offset = brgOffset - endDist;
-            lg -= end_offset;
-         }
-
-         m_MaxCutLocation += lg;
-      }
-   }
-   else
-   {
-      m_MaxCutLocation = pBridge->GetGirderLength(m_GirderKey);
-   }
-}
-
 void CGirderModelChildFrame::OnGirderChanged()
 {
    CComboBox* pcbGirder   = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_GIRDER);
    m_GirderKey.girderIndex = pcbGirder->GetCurSel();
 
+   UpdateCutRange();
    UpdateBar();
    UpdateViews();
 
@@ -889,6 +922,7 @@ void CGirderModelChildFrame::OnGroupChanged()
       m_GirderKey.girderIndex = Min(m_GirderKey.girderIndex,nGirders-1);
    }
 
+   UpdateCutRange();
    UpdateBar();
    UpdateViews();
 
@@ -928,34 +962,61 @@ void CGirderModelChildFrame::ShowCutDlg()
    }
 }
 
-Float64 CGirderModelChildFrame::GetMinCutLocation()
+void CGirderModelChildFrame::GetCutRange(Float64* pMin, Float64* pMax)
 {
-   return 0.0;
-}
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
-Float64 CGirderModelChildFrame::GetMaxCutLocation()
-{
-   return m_MaxCutLocation;
+   if (m_GirderKey.groupIndex == ALL_GROUPS)
+   {
+      *pMin = pPoi->ConvertPoiToGirderlineCoordinate(m_minPoi);
+      *pMax = pPoi->ConvertPoiToGirderlineCoordinate(m_maxPoi);
+
+      *pMin = ConvertFromGirderlineCoordinate(*pMin);
+      *pMax = ConvertFromGirderlineCoordinate(*pMax);
+   }
+   else
+   {
+      *pMin = pPoi->ConvertPoiToGirderPathCoordinate(m_minPoi);
+      *pMax = pPoi->ConvertPoiToGirderPathCoordinate(m_maxPoi);
+   }
 }
 
 Float64 CGirderModelChildFrame::GetCurrentCutLocation() 
 {
-   return m_CurrentCutLocation;
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+
+   Float64 cut;
+   if (m_GirderKey.groupIndex == ALL_GROUPS)
+   {
+      cut = pPoi->ConvertPoiToGirderlineCoordinate(m_cutPoi);
+      cut = ConvertFromGirderlineCoordinate(cut);
+   }
+   else
+   {
+      cut = pPoi->ConvertPoiToGirderPathCoordinate(m_cutPoi);
+   }
+
+   return cut;
 }
 
-void CGirderModelChildFrame::CutAt(Float64 Xgl)
+void CGirderModelChildFrame::CutAt(Float64 X)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    pgsPointOfInterest poi;
-   if ( m_GirderKey.groupIndex == ALL_GROUPS )
+   if (m_GirderKey.groupIndex == ALL_GROUPS)
    {
-      poi = pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex,Xgl);
+      X = ConvertToGirderlineCoordinate(X);
+      poi = pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex, X);
    }
    else
    {
-      poi = pPoi->ConvertGirderCoordinateToPoi(m_GirderKey,Xgl);
+      poi = pPoi->ConvertGirderPathCoordinateToPoi(m_GirderKey, X);
    }
 
    if ( poi.GetID() == INVALID_ID )
@@ -995,7 +1056,7 @@ void CGirderModelChildFrame::CutAtPrev()
 
 pgsPointOfInterest CGirderModelChildFrame::GetCutLocation()
 {
-   return GetGirderModelElevationView()->GetCutLocation();
+   return m_cutPoi;
 }
 
 void CGirderModelChildFrame::CreateViewController(IEAFViewController** ppController)

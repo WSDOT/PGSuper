@@ -82,13 +82,12 @@ public:
    void InvalidateCutLocation() {m_bCutLocationInitialized = false;}
 
    // iCutLocation
-   virtual Float64 GetCurrentCutLocation();
-   virtual void CutAt(Float64 X);
-   virtual void CutAtNext();
-   virtual void CutAtPrev();
-   virtual void ShowCutDlg();
-   virtual Float64 GetMinCutLocation();
-   virtual Float64 GetMaxCutLocation();
+   virtual Float64 GetCurrentCutLocation() override;
+   virtual void CutAt(Float64 X) override;
+   virtual void CutAtNext() override;
+   virtual void CutAtPrev() override;
+   virtual void ShowCutDlg() override;
+   virtual void GetCutRange(Float64* pMin, Float64* pMax) override;
 
    // CEAFViewControllerFactory
 protected:

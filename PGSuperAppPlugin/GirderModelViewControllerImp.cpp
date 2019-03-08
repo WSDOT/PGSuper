@@ -168,27 +168,11 @@ void CGirderModelViewController::CutAtPrev()
    }
 }
 
-Float64 CGirderModelViewController::GetMinCutLocation() const
+void CGirderModelViewController::GetCutRange(Float64* pMin, Float64* pMax) const
 {
    if (IsOpen())
    {
-      return m_pFrame->GetMinCutLocation();
-   }
-   else
-   {
-      return 0;
-   }
-}
-
-Float64 CGirderModelViewController::GetMaxCutLocation() const
-{
-   if (IsOpen())
-   {
-      return m_pFrame->GetMaxCutLocation();
-   }
-   else
-   {
-      return 0;
+      m_pFrame->GetCutRange(pMin, pMax);
    }
 }
 

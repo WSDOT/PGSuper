@@ -94,13 +94,12 @@ public:
 
 
    // iCutLocation
-   virtual Float64 GetCurrentCutLocation();
-   virtual void CutAt(Float64 Xg);
-   virtual void CutAtNext();
-   virtual void CutAtPrev();
-   virtual void ShowCutDlg();
-   virtual Float64 GetMinCutLocation();
-   virtual Float64 GetMaxCutLocation();
+   virtual Float64 GetCurrentCutLocation() override;
+   virtual void CutAt(Float64 Xgp) override;
+   virtual void CutAtNext() override;
+   virtual void CutAtPrev() override;
+   virtual void ShowCutDlg() override;
+   virtual void GetCutRange(Float64* pMin, Float64* pMax) override;
 
    pgsPointOfInterest GetCutLocation();
 
@@ -174,8 +173,6 @@ protected:
    // update bar - set dialog bar content and update views
    void UpdateBar();
 
-   void UpdateMaxCutLocation();
-
    virtual CRuntimeClass* GetLowerPaneClass() const;
    virtual Float64 GetTopFrameFraction() const;
    void UpdateCutLocation(const pgsPointOfInterest& poi);
@@ -196,15 +193,18 @@ private:
    CToolPalette m_SettingsBar;
 
    // view variables
-   Float64 m_CurrentCutLocation; // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
-   Float64 m_MaxCutLocation; // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
+   Float64 ConvertToGirderlineCoordinate(Float64 Xgl) const;
+   Float64 ConvertFromGirderlineCoordinate(Float64 Xgl) const;
+   void UpdateCutRange();
+   pgsPointOfInterest m_cutPoi;
+   pgsPointOfInterest m_minPoi;
+   pgsPointOfInterest m_maxPoi;
+   bool m_bFirstCut{ true };
    
    EventIndexType m_EventIndex; 
 
    CGirderKey m_GirderKey;
    bool m_bIsAfterFirstUpdate;
-
-   CSpanKey GetLoadSpanKey() const;
 
    template <class T>
    void InitLoad(T& load) const
