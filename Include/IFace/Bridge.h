@@ -423,7 +423,7 @@ interface IBridge : IUnknown
    virtual void GetPierDiaphragmSize(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,Float64* pW,Float64* pH) const = 0;
    // return true if weight of diaphragm is carried by girder
    virtual bool DoesPierDiaphragmLoadGirder(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const = 0;
-   // Get location of end diaphragm load (c.g.) measured from c.l. pier. along girder
+   // Get location of end diaphragm load (c.g.) measured from c.l. bearing along girder
    // Only applicable if DoesPierDiaphragmLoadGirder returns true
    virtual Float64 GetPierDiaphragmLoadLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType) const = 0;
    
@@ -1741,6 +1741,9 @@ interface IGirder : public IUnknown
    // Returns the width of the structural joints
    virtual Float64 GetStructuralLongitudinalJointWidth(const pgsPointOfInterest& poi) const = 0;
    virtual void GetStructuralLongitudinalJointWidth(const pgsPointOfInterest& poi, Float64* pLeft, Float64* pRight) const = 0;
+
+   // Returns a plan view polygon shape of the segment
+   virtual void GetSegmentPlan(const CSegmentKey& segmentKey, IShape** ppShape) const = 0;
 
    // Returns the shape of the segment profile. If bIncludeClosure is true, the segment shape
    // includes its projection into the closure joint. Y=0 is at the top of the segment

@@ -353,3 +353,59 @@ bool IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const IBeamFactor
    auto found = std::find(deckTypes.cbegin(), deckTypes.cend(), deckType);
    return found == deckTypes.end() ? false : true;
 }
+
+void LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey,const CPrecastSegmentData* pSegment, Float64 segmentLength,pgsPoiMgr* pPoiMgr)
+{
+   if (0 < (pSegment->EndBlockLength[pgsTypes::metStart] + pSegment->EndBlockTransitionLength[pgsTypes::metStart]))
+   {
+      // start of end block transition (wide end, tapering down to width of web)
+      if (IsZero(pSegment->EndBlockTransitionLength[pgsTypes::metStart]))
+      {
+         // there is an abrupt section change
+         pgsPointOfInterest poiStartEndBlock1(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart], POI_SECTCHANGE_LEFTFACE);
+         poiStartEndBlock1.CanMerge(false);
+         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
+
+         pgsPointOfInterest poiStartEndBlock2(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart], POI_SECTCHANGE_RIGHTFACE);
+         poiStartEndBlock2.CanMerge(false);
+         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+      }
+      else
+      {
+         // there is a smooth taper over the transition length
+         pgsPointOfInterest poiStartEndBlock1(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart], POI_SECTCHANGE_TRANSITION);
+         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
+
+         // end of end block transition (end block is the width of the web)
+         pgsPointOfInterest poiStartEndBlock2(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart] + pSegment->EndBlockTransitionLength[pgsTypes::metStart], POI_SECTCHANGE_TRANSITION);
+         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+      }
+   }
+
+   if (0 < (pSegment->EndBlockLength[pgsTypes::metEnd] + pSegment->EndBlockTransitionLength[pgsTypes::metEnd]))
+   {
+      if (IsZero(pSegment->EndBlockTransitionLength[pgsTypes::metEnd]))
+      {
+         // there is an abrupt section change
+         pgsPointOfInterest poiEndEndBlock2(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_LEFTFACE);
+         poiEndEndBlock2.CanMerge(false);
+         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+
+         pgsPointOfInterest poiEndEndBlock1(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_RIGHTFACE);
+         poiEndEndBlock1.CanMerge(false);
+         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+      }
+      else
+      {
+         // there is a smooth taper over the transition length
+
+         // end of end block transition (end block is the width of the web)
+         pgsPointOfInterest poiEndEndBlock2(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_TRANSITION);
+         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+
+         // start of end block transition (wide end)
+         pgsPointOfInterest poiEndEndBlock1(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd], POI_SECTCHANGE_TRANSITION);
+         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+      }
+   }
+}

@@ -162,26 +162,20 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    DDX_KeywordUnitValueAndTag(pDX,IDC_BACK_DIAPHRAGM_WIDTH, IDC_BACK_DIAPHRAGM_WIDTH_T, _T("Compute"),m_DiaphragmWidth[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
    DDX_CBItemData(pDX,IDC_BACK_DIAPHRAGM_LOAD,m_DiaphragmLoadType[pgsTypes::Back]);
    DDX_Tag( pDX, IDC_BACK_DIAPHRAGM_OFFSET_UNITS, pDisplayUnits->GetComponentDimUnit() );
-   if ( m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation )
+   if (m_pPier->GetPrevSpan() != nullptr && m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation )
    {
-      DDX_UnitValue( pDX, IDC_BACK_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit() );
-      if ( m_pPier->GetPrevSpan() )
-      {
-         DDV_UnitValueZeroOrMore(pDX, IDC_BACK_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit() );
-      }
+      DDX_UnitValue(pDX, IDC_BACK_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
+      DDV_UnitValueZeroOrMore(pDX, IDC_BACK_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit() );
    }
 
    DDX_KeywordUnitValueAndTag(pDX,IDC_AHEAD_DIAPHRAGM_HEIGHT,IDC_AHEAD_DIAPHRAGM_HEIGHT_T,_T("Compute"),m_DiaphragmHeight[pgsTypes::Ahead],pDisplayUnits->GetComponentDimUnit());
    DDX_KeywordUnitValueAndTag(pDX,IDC_AHEAD_DIAPHRAGM_WIDTH, IDC_AHEAD_DIAPHRAGM_WIDTH_T, _T("Compute"),m_DiaphragmWidth[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
    DDX_CBItemData(pDX,IDC_AHEAD_DIAPHRAGM_LOAD,m_DiaphragmLoadType[pgsTypes::Ahead]);
    DDX_Tag( pDX, IDC_AHEAD_DIAPHRAGM_OFFSET_UNITS, pDisplayUnits->GetComponentDimUnit() );
-   if ( m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation )
+   if (m_pPier->GetNextSpan() != nullptr && m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation )
    {
       DDX_UnitValue( pDX, IDC_AHEAD_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
-      if ( m_pPier->GetNextSpan() )
-      {
-         DDV_UnitValueZeroOrMore(pDX, IDC_AHEAD_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
-      }
+      DDV_UnitValueZeroOrMore(pDX, IDC_AHEAD_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
    }
 
    if ( pDX->m_bSaveAndValidate )
@@ -240,11 +234,8 @@ BOOL CPierConnectionsPage::OnInitDialog()
 
    FillBoundaryConditionComboBox(); // must do this after OnInitDialog
 
-   CString strType(m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
-   CString strLabel;
-   strLabel.Format(_T("Distance from %s Line to C.G. of Diaphragm"),strType);
-   GetDlgItem(IDC_BACK_DIAPHRAGM_OFFSET_LABEL)->SetWindowText(strLabel);
-   GetDlgItem(IDC_AHEAD_DIAPHRAGM_OFFSET_LABEL)->SetWindowText(strLabel);
+   GetDlgItem(IDC_BACK_DIAPHRAGM_OFFSET_LABEL)->SetWindowText(_T("Distance from CL Brg Line to C.G. of Diaphragm"));
+   GetDlgItem(IDC_AHEAD_DIAPHRAGM_OFFSET_LABEL)->SetWindowText(_T("Distance from CL Brg Line to C.G. of Diaphragm"));
 
 
    if ( m_pPier->IsPier() || m_pPier->HasCantilever() )
@@ -386,11 +377,6 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
 
    OnBackDiaphragmLoadTypeChanged();
    OnAheadDiaphragmLoadTypeChanged();
-
-   //GetDlgItem(IDC_BEARING_OFFSET_LABEL)->EnableWindow(bEnable);
-   //GetDlgItem(IDC_END_DISTANCE_LABEL)->EnableWindow(bEnable);
-   //m_cbBearingOffsetMeasurementType.EnableWindow(bEnable);
-   //m_cbEndDistanceMeasurementType.EnableWindow(bEnable);
 
    UpdateConnectionPicture();
 }
@@ -604,7 +590,7 @@ void CPierConnectionsPage::OnBackDiaphragmLoadTypeChanged()
    int cursel = pCB->GetCurSel();
    ConnectionLibraryEntry::DiaphragmLoadType loadType = (ConnectionLibraryEntry::DiaphragmLoadType)pCB->GetItemData(cursel);
 
-   BOOL bEnable = (loadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation) ? TRUE : FALSE;
+   BOOL bEnable = (m_pPier->GetPrevSpan() == nullptr ? FALSE : (loadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)) ? TRUE : FALSE;
 
    GetDlgItem(IDC_BACK_DIAPHRAGM_OFFSET_LABEL)->EnableWindow(bEnable);
    m_DiaphragmLoadLocationEdit[pgsTypes::Back].EnableWindow(bEnable);
@@ -617,7 +603,7 @@ void CPierConnectionsPage::OnAheadDiaphragmLoadTypeChanged()
    int cursel = pCB->GetCurSel();
    ConnectionLibraryEntry::DiaphragmLoadType loadType = (ConnectionLibraryEntry::DiaphragmLoadType)pCB->GetItemData(cursel);
 
-   BOOL bEnable = (loadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation) ? TRUE : FALSE;
+   BOOL bEnable = (m_pPier->GetNextSpan() == nullptr ? FALSE : (loadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)) ? TRUE : FALSE;
 
    GetDlgItem(IDC_AHEAD_DIAPHRAGM_OFFSET_LABEL)->EnableWindow(bEnable);
    m_DiaphragmLoadLocationEdit[pgsTypes::Ahead].EnableWindow(bEnable);

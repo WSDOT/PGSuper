@@ -1118,6 +1118,7 @@ public:
    virtual bool HasStructuralLongitudinalJoints() const override;
    virtual Float64 GetStructuralLongitudinalJointWidth(const pgsPointOfInterest& poi) const override;
    virtual void GetStructuralLongitudinalJointWidth(const pgsPointOfInterest& poi, Float64* pLeft, Float64* pRight) const override;
+   virtual void GetSegmentPlan(const CSegmentKey& segmentKey, IShape** ppShape) const override;
    virtual void GetSegmentProfile(const CSegmentKey& segmentKey,bool bIncludeClosure,IShape** ppShape) const override;
    virtual void GetSegmentProfile(const CSegmentKey& segmentKey,const CSplicedGirderData* pGirder,bool bIncludeClosure,IShape** ppShape) const override;
    virtual void GetClosureJointProfile(const CClosureKey& closureKey, IShape** ppShape) const override;

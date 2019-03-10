@@ -179,7 +179,7 @@ BOOL CAbutmentConnectionsPage::OnInitDialog()
 
    FillBoundaryConditionComboBox(); // must do this after OnInitDialog
 
-   GetDlgItem(IDC_DIAPHRAGM_OFFSET_LABEL)->SetWindowText(_T("Distance from Abutment Line to C.G. of Diaphragm"));
+   GetDlgItem(IDC_DIAPHRAGM_OFFSET_LABEL)->SetWindowText(_T("Distance from CL Bearing to C.G. of Diaphragm"));
 
 
    if ( m_pPier->GetIndex() == 0 )

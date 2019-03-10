@@ -100,7 +100,6 @@ private:
    IBroker*           m_pBroker;
    Float64            m_MinCutLocation;  // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
    Float64            m_MaxCutLocation; // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
-   Float64            m_StartOffset; // view is not displayed in girder coord's
    iCutLocation*      m_pCutLocation;
    
    CComPtr<IPoint2d> m_CachePoint;

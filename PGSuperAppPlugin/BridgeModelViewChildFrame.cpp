@@ -491,50 +491,25 @@ void CBridgeModelViewChildFrame::ShowCutDlg()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   PierIndexType nPiers = pBridge->GetPierCount();
-   Float64 start = pBridge->GetPierStation(0);
-   Float64 end   = pBridge->GetPierStation(nPiers-1);
+   Float64 startStation, endStation;
+   GetCutRange(&startStation, &endStation);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
-   CStationCutDlg dlg(m_CurrentCutLocation,start,end,bUnitsSI);
+   CStationCutDlg dlg(m_CurrentCutLocation,startStation,endStation,bUnitsSI);
    if ( dlg.DoModal() == IDOK )
    {
       UpdateCutLocation(dlg.GetValue());
    }
 }
 
-Float64 CBridgeModelViewChildFrame::GetMinCutLocation()
+void CBridgeModelViewChildFrame::GetCutRange(Float64* pMin, Float64* pMax)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   return pBridge->GetPierStation(0);
-}
-
-Float64 CBridgeModelViewChildFrame::GetMaxCutLocation()
-{
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   PierIndexType nPiers = pBridge->GetPierCount();
-   return pBridge->GetPierStation(nPiers-1);
-}
-
-void CBridgeModelViewChildFrame::UpdateCutLocation(Float64 cut)
-{
-   m_CurrentCutLocation = cut;
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
 
    SpanIndexType startSpanIdx, endSpanIdx;
    GetBridgePlanView()->GetSpanRange(&startSpanIdx,&endSpanIdx);
@@ -542,12 +517,47 @@ void CBridgeModelViewChildFrame::UpdateCutLocation(Float64 cut)
    PierIndexType startPierIdx = (PierIndexType)startSpanIdx;
    PierIndexType endPierIdx   = (PierIndexType)(endSpanIdx + 1);
 
-   Float64 start = pBridge->GetPierStation(startPierIdx);
-   Float64 end   = pBridge->GetPierStation(endPierIdx);
+   *pMin = pBridge->GetPierStation(startPierIdx);
+   *pMax = pBridge->GetPierStation(endPierIdx);
 
-   m_CurrentCutLocation = ForceIntoRange(start,m_CurrentCutLocation,end);
+   if (startPierIdx == 0)
+   {
+      // adjust for start cantilever if present
+      GroupIndexType grpIdx = 0;
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      Float64 Lc = 0;
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+      {
+         Float64 lc = pBridge->GetCantileverLength(startSpanIdx, gdrIdx, pgsTypes::metStart);
+         Lc = Max(Lc, lc);
+      }
 
-//   UpdateBar();
+      *pMin -= Lc;
+   }
+
+   PierIndexType nPiers = pBridge->GetPierCount();
+   if (endPierIdx == nPiers - 1)
+   {
+      // adjust for end cantilever if present
+      GroupIndexType grpIdx = pBridge->GetGirderGroupCount() - 1;
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      Float64 Lc = 0;
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+      {
+         Float64 lc = pBridge->GetCantileverLength(endSpanIdx, gdrIdx, pgsTypes::metEnd);
+         Lc = Max(Lc, lc);
+      }
+
+      *pMax += Lc;
+   }
+}
+
+void CBridgeModelViewChildFrame::UpdateCutLocation(Float64 cut)
+{
+   Float64 startStation, endStation;
+   GetCutRange(&startStation, &endStation);
+   m_CurrentCutLocation = ForceIntoRange(startStation, cut, endStation);
+
    GetUpperView()->OnUpdate(nullptr, HINT_BRIDGEVIEWSECTIONCUTCHANGED, nullptr);
    GetLowerView()->OnUpdate(nullptr, HINT_BRIDGEVIEWSECTIONCUTCHANGED, nullptr);
 }
@@ -556,19 +566,9 @@ Float64 CBridgeModelViewChildFrame::GetCurrentCutLocation()
 {
    if ( !m_bCutLocationInitialized )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-
-      SpanIndexType startSpanIdx, endSpanIdx;
-      CBridgePlanView* pPlanView = GetBridgePlanView();
-      pPlanView->GetSpanRange(&startSpanIdx,&endSpanIdx);
-      PierIndexType startPierIdx = (PierIndexType)startSpanIdx;
-      PierIndexType endPierIdx   = (PierIndexType)(endSpanIdx+1);
-
-      GET_IFACE2(pBroker,IBridge,pBridge);
-      Float64 start = pBridge->GetPierStation(startPierIdx);
-      Float64 end   = pBridge->GetPierStation(endPierIdx);
-      m_CurrentCutLocation = 0.5*(end-start) + start;
+      Float64 startStation, endStation;
+      GetCutRange(&startStation, &endStation);
+      m_CurrentCutLocation = 0.5*(startStation+endStation);
       m_bCutLocationInitialized = true;
    }
 

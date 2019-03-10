@@ -1565,12 +1565,18 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-            CComPtr<IPoint2d> pntEnd1Left, pntEnd1, pntEnd1Right, pntEnd2Right, pntEnd2, pntEnd2Left;
-            pIGirder->GetSegmentPlanPoints(segmentKey, pgsTypes::pcGlobal, &pntEnd1Left, &pntEnd1, &pntEnd1Right, &pntEnd2Right, &pntEnd2, &pntEnd2Left);
+            CComPtr<IShape> shape;
+            pIGirder->GetSegmentPlan(segmentKey, &shape);
+            CComQIPtr<IPolyShape> polyShape(shape);
+            CComPtr<IPoint2d> pntStart, pntEnd;
+            IndexType nPoints;
+            polyShape->get_NumPoints(&nPoints);
+            polyShape->get_Point(1, &pntStart);
+            polyShape->get_Point(2+(nPoints-6)/2+2, &pntEnd);
 
             CComPtr<iPointDisplayObject> doSegment;
             doSegment.CoCreateInstance(CLSID_PointDisplayObject);
-            doSegment->SetPosition(pntEnd1, FALSE, FALSE);
+            doSegment->SetPosition(pntStart, FALSE, FALSE);
 
             IDType ID = m_NextSegmentID++;
             m_SegmentIDs.insert( std::make_pair(segmentKey,ID) );
@@ -1578,17 +1584,6 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
             SegmentDisplayObjectInfo* pInfo = new SegmentDisplayObjectInfo(segmentKey,SEGMENT_DISPLAY_LIST);
             doSegment->SetItemData((void*)pInfo,true);
             doSegment->SetSelectionType(stAll);
-
-            CComPtr<IPolyShape> polyShape;
-            polyShape.CoCreateInstance(CLSID_PolyShape);
-            polyShape->AddPointEx(pntEnd1Left);
-            polyShape->AddPointEx(pntEnd1);
-            polyShape->AddPointEx(pntEnd1Right);
-            polyShape->AddPointEx(pntEnd2Right);
-            polyShape->AddPointEx(pntEnd2);
-            polyShape->AddPointEx(pntEnd2Left);
-
-            CComQIPtr<IShape> shape(polyShape);
 
             CComPtr<iShapeDrawStrategy> shapeDrawStrategy;
             shapeDrawStrategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
@@ -1622,8 +1617,8 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
                doText2.CoCreateInstance(CLSID_TextBlock);
 
                Float64 x1,y1, x2,y2;
-               pntEnd1->Location(&x1,&y1);
-               pntEnd2->Location(&x2,&y2);
+               pntStart->Location(&x1,&y1);
+               pntEnd->Location(&x2,&y2);
 
                Float64 x = x1 + (x2-x1)/2;
                Float64 y = y1 + (y2-y1)/2;

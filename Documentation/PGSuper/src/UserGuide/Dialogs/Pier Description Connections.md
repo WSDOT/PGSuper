@@ -50,4 +50,4 @@ Item | Description
 Diaphragm Height | Height of the diaphragm. Enter the keyword "Compute" to have this value computed based on the girder size and connection geometry.
 Diaphragm Width | Cross sectional width of the diaphragm. Enter the keyword "Compute" to have this value computed based on the girder size and connection geometry.
 Load Application | Use the drop down list to define how the weight of the diaphragm is applied to the model.
-Distance from Abutment/Pier Line to C.G. of Diaphragm | If "Apply weight of diaphragm to girder" is selected for the load application option, this parameter defines the distance from the Abutment/Pier line to the center of gravity of the diaphragm.
+Distance from CL Bearing to C.G. of Diaphragm | If "Apply weight of diaphragm to girder" is selected for the load application option, this parameter defines the distance from the CL Bearing to the center of gravity of the diaphragm. This is the moment arm for the diaphragm dead load. If the moment arm exceeds the girder end distance, an equivalent force and moment will be applied at the end of the segment.
