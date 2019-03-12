@@ -71,6 +71,7 @@ inline bool create_test_file_names(const CString& strExt,const CString& input, C
 // special long for regression tests
 #define RUN_REGRESSION 666666
 #define RUN_CADTEST    777777
+#define RUN_GEOMTEST   777666
 
 /*****************************************************************************
 INTERFACE

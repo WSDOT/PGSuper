@@ -120,6 +120,7 @@ struct BearingElevationDetails
    Float64 TopBrgElevation;  // elevation at top of bearing
    Float64 BrgSeatElevation; // elevation at bottom of bearing
    Float64 ProfileGrade; // profile grade at CL Bearing
+   Float64 CrossSlope; // Cross slope taken at work point
    Float64 BasicGirderGrade; // basic slope of girder (straight line between supports, includes temporary support elevation adjustments)
    Float64 PrecamberSlope; // rotation due to precamber
    Float64 GirderGrade; // slope of the girder with precamber rotation applied
@@ -624,6 +625,10 @@ interface IBridge : IUnknown
    virtual bool HasTemporarySupportElevationAdjustments() const = 0;
 
    // Compute bearing elevation data for each girder along bearing line
+   // Vector returned has special cases for results with BearingIndex values at CL girder and for single bearing locations. For multi
+   // bearing cases an extra CL value is inserted at the start of each girder location. For single bearings, only one value is 
+   // returned since it is by definition at the CL.
+   enum specialBearingIndexType {sbiCLValue=INVALID_INDEX, sbiSingleBearingValue=INVALID_INDEX-1};
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
 
    // Compute bearing elevation data for each girder along bearing line at edges of girder bottom. Will return two values 0=Left, 1=Right
