@@ -253,6 +253,7 @@ public:
    virtual Float64 GetNormalCrownSlope() const override;
    virtual Float64 GetMaxSuperelevation() const override;
    virtual Float64 GetHaulingSweepTolerance() const override;
+   virtual Float64 GetHaulingSweepGrowth() const override;
    virtual Float64 GetHaulingSupportPlacementTolerance() const override;
    virtual Float64 GetHaulingCamberMultiplier() const override;
    virtual Float64 GetRollStiffness(const CSegmentKey& segmentKey) const override;

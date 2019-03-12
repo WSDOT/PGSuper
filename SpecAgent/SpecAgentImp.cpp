@@ -2274,6 +2274,12 @@ Float64 CSpecAgentImp::GetHaulingSweepTolerance() const
    return pSpec->GetHaulingMaximumGirderSweepTolerance();
 }
 
+Float64 CSpecAgentImp::GetHaulingSweepGrowth() const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   return pSpec->GetHaulingSweepGrowth();
+}
+
 Float64 CSpecAgentImp::GetHaulingSupportPlacementTolerance() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();

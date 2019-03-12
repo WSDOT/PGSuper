@@ -1297,6 +1297,7 @@
 #define IDC_PRECAMBER_LIMIT             1686
 #define IDC_EDIT6                       1687
 #define IDC_ELEVATION_TOLERANCE         1687
+#define IDC_SWEEP_GROWTH                1687
 #define IDC_ELEVATION_TOLERANCE_GROUP   1688
 #define IDC_ELEVATION_TOLERANCE_LABEL   1689
 #define IDC_ELEVATION_TOLERANCE_UNIT    1690
@@ -1315,6 +1316,7 @@
 #define IDC_STATIC_PHI_DEBOND           1702
 #define IDC_HAULING_GLOBAL_COMPRESSION  1703
 #define IDC_HAULING_PEAK_COMPRESSION    1704
+#define IDC_SWEEP_GROWTH_UNIT           1705
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1346,7 +1348,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1704
+#define _APS_NEXT_CONTROL_VALUE         1706
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
