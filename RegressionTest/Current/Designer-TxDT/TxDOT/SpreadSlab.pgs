@@ -663,6 +663,7 @@
                 <EnableHaulingDesign>0</EnableHaulingDesign>
                 <HaulingAnalysisMethod>0</HaulingAnalysisMethod>
                 <MaxGirderSweepHauling>0.001</MaxGirderSweepHauling>
+                <SweepGrowthHauling>0</SweepGrowthHauling>
                 <HaulingSupportPlacementTolerance>0.025399999999999999</HaulingSupportPlacementTolerance>
                 <HaulingCamberMultiplier>1</HaulingCamberMultiplier>
                 <HaulingWindType>0</HaulingWindType>

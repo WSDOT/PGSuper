@@ -180,6 +180,7 @@ interface ISegmentHaulingSpecCriteria : IUnknown
 
    // Girder sweep tolerance
    virtual Float64 GetHaulingSweepTolerance() const = 0;
+   virtual Float64 GetHaulingSweepGrowth() const = 0;
 
    // Lateral tolerance for placement of girder onto supports
    virtual Float64 GetHaulingSupportPlacementTolerance() const = 0;

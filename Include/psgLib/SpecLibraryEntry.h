@@ -653,6 +653,12 @@ public:
    Float64 GetHaulingMaximumGirderSweepTolerance() const;
    void SetHaulingMaximumGirderSweepTolerance(Float64 sweep);
 
+   // Set/Get the the sweep growth for hauling.
+   // PCI models sweep at hauling as (1/8" per 10 ft + 1")
+   // The 1" is the sweep growth
+   Float64 GetHaulingSweepGrowth() const;
+   void SetHaulingSweepGrowth(Float64 sweepGrowth);
+
    // Set/Get the maximum lateral tolerance for hauling support placement
    Float64 GetHaulingSupportPlacementTolerance() const;
    void SetHaulingSupportPlacementTolerance(Float64 tol);
@@ -1302,6 +1308,7 @@ private:
    Float64 m_RoadwayCrownSlope;
    Float64 m_RoadwaySuperelevation;
    Float64 m_MaxGirderSweepHauling;
+   Float64 m_HaulingSweepGrowth;
    Float64 m_HaulingSupportPlacementTolerance;
 
    Float64 m_GlobalCompStressHauling;

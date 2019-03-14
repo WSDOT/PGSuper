@@ -26508,6 +26508,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    pProblem->SetSupportPlacementTolerance(pLiftingCriteria->GetLiftingLoopPlacementTolerance());
    pProblem->SetLiftAngle(pLiftingCriteria->GetLiftingCableMinInclination());
    pProblem->SetSweepTolerance(pLiftingCriteria->GetLiftingSweepTolerance());
+   pProblem->SetSweepGrowth(0.0); // no sweep growth at initial lifting
    pProblem->SetWindLoading((stbTypes::WindType)pLiftingCriteria->GetLiftingWindType(),pLiftingCriteria->GetLiftingWindLoad());
 
    Float64 Loh, Roh;
@@ -26800,6 +26801,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
 
    pProblem->SetSupportPlacementTolerance(pHaulingCriteria->GetHaulingSupportPlacementTolerance());
    pProblem->SetSweepTolerance(pHaulingCriteria->GetHaulingSweepTolerance());
+   pProblem->SetSweepGrowth(pHaulingCriteria->GetHaulingSweepGrowth());
    pProblem->SetWindLoading((stbTypes::WindType)pHaulingCriteria->GetHaulingWindType(),pHaulingCriteria->GetHaulingWindLoad());
 
    pProblem->SetCrownSlope(pHaulingCriteria->GetNormalCrownSlope());

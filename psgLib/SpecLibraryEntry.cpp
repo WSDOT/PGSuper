@@ -107,6 +107,7 @@ m_EnableHaulingCheck(true),
 m_EnableHaulingDesign(true),
 m_HaulingAnalysisMethod(pgsTypes::hmWSDOT),
 m_MaxGirderSweepHauling(::ConvertToSysUnits(1. / 8., unitMeasure::Inch) / ::ConvertToSysUnits(10.0, unitMeasure::Feet)),
+m_HaulingSweepGrowth(0.0), // PCI's value is 1.0", but we've never used this before so we'll default to 0.0
 m_HaulingSupportPlacementTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
 m_LiftingLoopTolerance(ConvertToSysUnits(1.0,unitMeasure::Inch)),
 m_MinCableInclination(ConvertToSysUnits(90.,unitMeasure::Degree)),
@@ -537,6 +538,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("EnableHaulingDesign"), m_EnableHaulingDesign);
    pSave->Property(_T("HaulingAnalysisMethod"), (Int32)m_HaulingAnalysisMethod); // added version 43
    pSave->Property(_T("MaxGirderSweepHauling"), m_MaxGirderSweepHauling);
+   pSave->Property(_T("SweepGrowthHauling"), m_HaulingSweepGrowth); // added version 66
    //pSave->Property(_T("HaulingSupportDistance"),m_HaulingSupportDistance); // removed version 56
    //pSave->Property(_T("MaxHaulingOverhang"), m_MaxHaulingOverhang); // removed version 56
    pSave->Property(_T("HaulingSupportPlacementTolerance"),m_HaulingSupportPlacementTolerance);
@@ -1509,6 +1511,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if(!pLoad->Property(_T("MaxGirderSweepHauling"), &m_MaxGirderSweepHauling))
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if (65 < version)
+      {
+         // added version 66
+         if (!pLoad->Property(_T("SweepGrowthHauling"), &m_HaulingSweepGrowth))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
       }
 
       if ( version < 56 )
@@ -4605,6 +4616,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
             !::IsEqual(m_RoadwayCrownSlope,rOther.m_RoadwayCrownSlope) ||
             !::IsEqual(m_RoadwaySuperelevation, rOther.m_RoadwaySuperelevation) ||
             !::IsEqual(m_MaxGirderSweepHauling, rOther.m_MaxGirderSweepHauling) ||
+            !::IsEqual(m_HaulingSweepGrowth,rOther.m_HaulingSweepGrowth) ||
             !::IsEqual(m_HaulingSupportPlacementTolerance, rOther.m_HaulingSupportPlacementTolerance) ||
             !::IsEqual(m_HaulingCamberMultiplier,rOther.m_HaulingCamberMultiplier) ||
             m_HaulingWindType != rOther.m_HaulingWindType ||
@@ -5473,6 +5485,16 @@ Float64 SpecLibraryEntry::GetHaulingMaximumGirderSweepTolerance() const
 void SpecLibraryEntry::SetHaulingMaximumGirderSweepTolerance(Float64 sweep)
 {
    m_MaxGirderSweepHauling = sweep;
+}
+
+Float64 SpecLibraryEntry::GetHaulingSweepGrowth() const
+{
+   return m_HaulingSweepGrowth;
+}
+
+void SpecLibraryEntry::SetHaulingSweepGrowth(Float64 sweepGrowth)
+{
+   m_HaulingSweepGrowth = sweepGrowth;
 }
 
 Float64 SpecLibraryEntry::GetHaulingSupportPlacementTolerance() const
@@ -7342,6 +7364,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_EnableHaulingDesign        = rOther.m_EnableHaulingDesign;
    m_HaulingAnalysisMethod      = rOther.m_HaulingAnalysisMethod;
    m_MaxGirderSweepHauling      = rOther.m_MaxGirderSweepHauling;
+   m_HaulingSweepGrowth = rOther.m_HaulingSweepGrowth;
    m_HaulingSupportPlacementTolerance = rOther.m_HaulingSupportPlacementTolerance;
    m_HaulingCamberMultiplier = rOther.m_HaulingCamberMultiplier;
    m_LiftingCamberMultiplier = rOther.m_LiftingCamberMultiplier;
