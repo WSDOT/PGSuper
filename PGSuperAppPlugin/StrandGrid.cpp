@@ -972,7 +972,7 @@ UINT CRowStrandGrid::Validate(ROWCOL nRow, CStrandRow& strandRow)
    }
 
    // Check main spacing requirement
-   if (3 < strandRow.m_nStrands && strandRow.m_Spacing <= 0)
+   if (3 <= strandRow.m_nStrands && strandRow.m_Spacing <= 0)
    {
       return ERROR_S2_MUST_BE_POSITIVE;
    }

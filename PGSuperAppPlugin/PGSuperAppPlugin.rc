@@ -12,8 +12,7 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1684,9 +1683,9 @@ BEGIN
     RTEXT           "Gross Depth",IDC_GROSS_DEPTH_LABEL,55,40,47,8
     EDITTEXT        IDC_GROSS_DEPTH,108,38,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_GROSS_DEPTH_UNIT,153,41,19,8
-       RTEXT           "Overhang Edge Depth", IDC_OVERHANG_DEPTH_LABEL, 12, 63, 94, 9
-       EDITTEXT        IDC_OVERHANG_DEPTH, 109, 61, 40, 14, ES_RIGHT | ES_AUTOHSCROLL
-       LTEXT           "Static",IDC_OVERHANG_DEPTH_UNIT,154,64,19,8
+    RTEXT           "Overhang Edge Depth",IDC_OVERHANG_DEPTH_LABEL,12,63,94,9
+    EDITTEXT        IDC_OVERHANG_DEPTH,109,61,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_OVERHANG_DEPTH_UNIT,154,64,19,8
     COMBOBOX        IDC_OVERHANG_TAPER,36,78,129,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Stay in Place Deck Panel Dimensions",IDC_SIP_LABEL,18,100,151,9,SS_SUNKEN
     RTEXT           "Panel Depth",IDC_PANEL_DEPTH_LABEL,10,116,92,8
@@ -3072,8 +3071,8 @@ BEGIN
     PUSHBUTTON      "Add",IDC_ADD,7,245,50,14
     PUSHBUTTON      "Remove",IDC_REMOVE,61,245,50,14
     LTEXT           "Segment Length: ",IDC_SEGMENT_LENGTH_LABEL,117,248,123,8
-    LTEXT           "S1 = Inner strand spacing\nS2 = Horizontal spacing between strands",IDC_SPACING_LABEL,618,246,142,19
-    CONTROL         "",IDC_SPACING,"Static",SS_ENHMETAFILE,628,260,111,98
+    LTEXT           "S1 = Inner strand spacing\nS2 = Horizontal spacing between strands",IDC_SPACING_LABEL,618,245,142,17
+    CONTROL         "",IDC_SPACING,"Static",SS_ENHMETAFILE,628,266,115,92
     LTEXT           "Permanent Strands",IDC_STATIC,7,267,62,8
     COMBOBOX        IDC_STRAND_SIZE,7,277,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Grit impregnated epoxy coating",IDC_EPOXY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,293,113,10
@@ -5072,6 +5071,7 @@ IDD_HAUNCH_BY_SEGMENT AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

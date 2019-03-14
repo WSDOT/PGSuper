@@ -506,9 +506,12 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
                rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
             }
 
-            if (strandDefinitionType == CStrandData::sdtDirectRowInput && ( (IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z))) )
+            if (strandDefinitionType == CStrandData::sdtDirectRowInput && ( (IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z)) || (3 <= strandRow.m_nStrands && IsZero(strandRow.m_Spacing)) ) )
             {
                // Z must be zero if nStrands is odd... it's not, so use the error color
+               // spacing cannot be zero if there is 3 or more strands
+               // spacing can be zero if there are 2 strands and Z is not zero
+               // if there are 3 strands, Z must be zero so spacing cannot be zero
                pDC->SelectObject(&errorPen);
                pDC->SelectObject(&errorBrush);
             }
