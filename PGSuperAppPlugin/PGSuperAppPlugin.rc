@@ -3075,8 +3075,8 @@ BEGIN
     PUSHBUTTON      "Add",IDC_ADD,7,245,50,14
     PUSHBUTTON      "Remove",IDC_REMOVE,61,245,50,14
     LTEXT           "Segment Length: ",IDC_SEGMENT_LENGTH_LABEL,117,248,123,8
-    LTEXT           "S1 = Inner strand spacing\nS2 = Horizontal spacing between strands",IDC_SPACING_LABEL,618,246,142,19
-    CONTROL         "",IDC_SPACING,"Static",SS_ENHMETAFILE,628,260,111,98
+    LTEXT           "S1 = Inner strand spacing\nS2 = Horizontal spacing between strands",IDC_SPACING_LABEL,618,245,142,17
+    CONTROL         "",IDC_SPACING,"Static",SS_ENHMETAFILE,628,266,115,92
     LTEXT           "Permanent Strands",IDC_STATIC,7,267,62,8
     COMBOBOX        IDC_STRAND_SIZE,7,277,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Grit impregnated epoxy coating",IDC_EPOXY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,293,113,10
@@ -5076,6 +5076,7 @@ BEGIN
     0
 END
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
@@ -5492,3 +5493,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
+
