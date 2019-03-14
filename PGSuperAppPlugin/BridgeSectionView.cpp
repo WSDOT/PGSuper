@@ -50,7 +50,7 @@
 #include "GirderDisplayObjectEvents.h"
 #include "TrafficBarrierDisplayObjectEvents.h"
 
-#include <WBFLDManip.h>
+#include <DManip\DManip.h>
 #include <DManipTools\DManipTools.h>
 
 #include <Material\Material.h>
@@ -315,6 +315,11 @@ void CBridgeSectionView::BuildDisplayLists()
    title_list->SetID(TITLE_DISPLAY_LIST);
    dispMgr->AddDisplayList(title_list);
 
+   CComPtr<iDisplayList> girder_list;
+   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&girder_list);
+   girder_list->SetID(GIRDER_DISPLAY_LIST);
+   dispMgr->AddDisplayList(girder_list);
+
    CComPtr<iDisplayList> traffic_barrier_list;
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&traffic_barrier_list);
    traffic_barrier_list->SetID(TRAFFIC_BARRIER_DISPLAY_LIST);
@@ -334,11 +339,6 @@ void CBridgeSectionView::BuildDisplayLists()
    ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&joint_list);
    joint_list->SetID(JOINT_DISPLAY_LIST);
    dispMgr->AddDisplayList(joint_list);
-
-   CComPtr<iDisplayList> girder_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_list);
-   girder_list->SetID(GIRDER_DISPLAY_LIST);
-   dispMgr->AddDisplayList(girder_list);
 
    // OnInitialUpdate eventually calls OnUpdate... OnUpdate calls the
    // following two methods so there isn't any need to call them here
@@ -924,22 +924,42 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
          shape = skewedShape;
       }
 
+
+      CComPtr<IPoint2d> pntWorkPoint;
+      CComQIPtr<IGirderSection> section(shape);
       CComQIPtr<IXYPosition> position(shape);
+      if (section)
+      {
+         section->get_WorkPoint(&pntWorkPoint);
+      }
+      else
+      {
+         position->get_LocatorPoint(lpTopCenter, &pntWorkPoint);
+      }
+      dispObj->SetPosition(pntWorkPoint,FALSE,FALSE);
 
-      CComPtr<IPoint2d> topCenter;
-      position->get_LocatorPoint(lpTopCenter,&topCenter);
-      dispObj->SetPosition(topCenter,FALSE,FALSE);
+      CComPtr<iCompoundDrawPointStrategy> compound_strategy;
+      compound_strategy.CoCreateInstance(CLSID_CompoundDrawPointStrategy);
 
-      CComPtr<iShapeDrawStrategy> strategy;
-      strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-      strategy->SetShape(shape);
-      strategy->SetSolidLineColor(segment_border_color);
-      strategy->SetSolidFillColor(segment_fill_color);
-      strategy->SetVoidLineColor(VOID_BORDER_COLOR);
-      strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
-      strategy->DoFill(true);
+      CComPtr<iSimpleDrawPointStrategy> draw_work_point_strategy;
+      draw_work_point_strategy.CoCreateInstance(CLSID_SimpleDrawPointStrategy);
+      draw_work_point_strategy->SetColor(RED);
+      draw_work_point_strategy->SetPointSize(5);
+      draw_work_point_strategy->SetPointType(ptCircle);
 
-      dispObj->SetDrawingStrategy(strategy);
+      CComPtr<iShapeDrawStrategy> shape_draw_strategy;
+      shape_draw_strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+      shape_draw_strategy->SetShape(shape);
+      shape_draw_strategy->SetSolidLineColor(segment_border_color);
+      shape_draw_strategy->SetSolidFillColor(segment_fill_color);
+      shape_draw_strategy->SetVoidLineColor(VOID_BORDER_COLOR);
+      shape_draw_strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
+      shape_draw_strategy->DoFill(true);
+
+      compound_strategy->AddStrategy(shape_draw_strategy);
+      compound_strategy->AddStrategy(draw_work_point_strategy); // draw second so it goes over the girder shape
+
+      dispObj->SetDrawingStrategy(compound_strategy);
 
       dispObj->SetSelectionType(stAll);
 
@@ -1562,7 +1582,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    CComPtr<iSocket> firstSocket, lastSocket;
    long witness_length;
 
-   // find the bottom of the "lowest" girder so all the dimension lines can be at
+   // find the top of the "lowest" girder so all the dimension lines can be at
    // the same elevation
    Float64 yLowest = DBL_MAX;
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -1588,12 +1608,16 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       CComQIPtr<iPointDisplayObject> pdoGirder(doGirder);
 
-      // We know that these display objects use ShapeDrawStrategy objects, and they hold the girder shape
+      // We know that these display objects use CompoundDrawPointStrategy and the second strategy, index 0, is ShapeDrawStrategy objects, and they hold the girder shape
       // Get the strategies and then the shapes
       CComPtr<iDrawPointStrategy> dsGirder;
       pdoGirder->GetDrawingStrategy(&dsGirder);
 
-      CComQIPtr<iShapeDrawStrategy> strategy(dsGirder);
+      CComQIPtr<iCompoundDrawPointStrategy> compound_strategy(dsGirder);
+
+      CComQIPtr<iDrawPointStrategy> dps;
+      compound_strategy->GetStrategy(0, &dps);
+      CComQIPtr<iShapeDrawStrategy> strategy(dps);
 
       CComPtr<IShape> shape;
       strategy->GetShape(&shape);
@@ -1602,36 +1626,47 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       CComQIPtr<IXYPosition> position(shape);
 
       CComPtr<IPoint2d> p;
-      position->get_LocatorPoint(lpBottomCenter,&p);
+      position->get_LocatorPoint(lpTopCenter, &p);
 
       Float64 y;
       p->get_Y(&y);
-      yLowest = Min(y,yLowest);
+      yLowest = Min(y, yLowest);
    }
 
    // make a dimension line for each spacing group
-   if ( nGirders == 1 )
+   if (nGirders == 1)
    {
       CComPtr<iDisplayObject> dispObj;
-      girder_list->GetDisplayObject(0,&dispObj);
+      girder_list->GetDisplayObject(0, &dispObj);
 
       CComQIPtr<iPointDisplayObject> pntDO(dispObj);
 
-      // We know that these display objects use ShapeDrawStrategy objects, and they hold the girder shape
+      // We know that these display objects use CompoundDrawPointStrategy and the second strategy, index 0, is ShapeDrawStrategy objects, and they hold the girder shape
       // Get the strategies and then the shapes
       CComPtr<iDrawPointStrategy> ds;
       pntDO->GetDrawingStrategy(&ds);
 
-      CComQIPtr<iShapeDrawStrategy> strategy(ds);
+      CComQIPtr<iCompoundDrawPointStrategy> compound_strategy(ds);
+
+      CComQIPtr<iDrawPointStrategy> dps;
+      compound_strategy->GetStrategy(0, &dps);
+      CComQIPtr<iShapeDrawStrategy> strategy(dps);
 
       CComPtr<IShape> shape;
       strategy->GetShape(&shape);
 
-      // Get bottom center coordinates of teh exterior girders
-      CComQIPtr<IXYPosition> position(shape);
-
+      // Get bottom center coordinates of the exterior girders
       CComPtr<IPoint2d> p1;
-      position->get_LocatorPoint(lpBottomCenter,&p1);
+      CComQIPtr<IGirderSection> section(shape);
+      if (section)
+      {
+         section->get_WorkPoint(&p1);
+      }
+      else
+      {
+         CComQIPtr<IXYPosition> position(shape);
+         position->get_LocatorPoint(lpTopCenter, &p1);
+      }
 
       CComQIPtr<iConnectable> c1(dispObj);
       c1->AddSocket(0,p1,&firstSocket);
@@ -1695,8 +1730,16 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             pdo1->GetDrawingStrategy(&ds1);
             pdo2->GetDrawingStrategy(&ds2);
 
-            CComQIPtr<iShapeDrawStrategy> strategy1(ds1);
-            CComQIPtr<iShapeDrawStrategy> strategy2(ds2);
+            CComQIPtr<iCompoundDrawPointStrategy> compound_strategy1(ds1);
+            CComQIPtr<iCompoundDrawPointStrategy> compound_strategy2(ds2);
+
+            CComPtr<iDrawPointStrategy> dps1;
+            CComPtr<iDrawPointStrategy> dps2;
+            compound_strategy1->GetStrategy(0, &dps1);
+            compound_strategy2->GetStrategy(0, &dps2);
+
+            CComQIPtr<iShapeDrawStrategy> strategy1(dps1);
+            CComQIPtr<iShapeDrawStrategy> strategy2(dps2);
 
             CComPtr<IShape> shape1, shape2;
             strategy1->GetShape(&shape1);
@@ -1706,64 +1749,24 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             CComQIPtr<IGirderSection> section1(shape1);
             if (section1)
             {
-               Float64 top_width1, bottom_width1;
-               section1->get_TopWidth(&top_width1);
-               section1->get_BottomWidth(&bottom_width1);
-
-               if (bottom_width1 < top_width1)
-               {
-                  CComQIPtr<IXYPosition> position1(shape1);
-                  position1->get_LocatorPoint(lpTopCenter, &p1);
-                  CComQIPtr<IAsymmetricSection> asymmetric(shape1);
-                  if (asymmetric)
-                  {
-                     Float64 wLeft, wRight;
-                     asymmetric->GetTopWidth(&wLeft, &wRight);
-                     p1->Offset(0.5*(wLeft - wRight), 0);
-                  }
-               }
-               else
-               {
-                  CComQIPtr<IXYPosition> position1(shape1);
-                  position1->get_LocatorPoint(lpBottomCenter, &p1);
-               }
+               section1->get_WorkPoint(&p1);
             }
             else
             {
                CComQIPtr<IXYPosition> position1(shape1);
-               position1->get_LocatorPoint(lpBottomCenter, &p1);
+               position1->get_LocatorPoint(lpTopCenter, &p1);
             }
 
             CComPtr<IPoint2d> p2;
             CComQIPtr<IGirderSection> section2(shape2);
             if (section2)
             {
-               Float64 top_width2, bottom_width2;
-               section2->get_TopWidth(&top_width2);
-               section2->get_BottomWidth(&bottom_width2);
-
-               if (bottom_width2 < top_width2)
-               {
-                  CComQIPtr<IXYPosition> position2(shape2);
-                  position2->get_LocatorPoint(lpTopCenter, &p2);
-                  CComQIPtr<IAsymmetricSection> asymmetric(shape2);
-                  if (asymmetric)
-                  {
-                     Float64 wLeft, wRight;
-                     asymmetric->GetTopWidth(&wLeft, &wRight);
-                     p2->Offset(0.5*(wLeft - wRight), 0);
-                  }
-               }
-               else
-               {
-                  CComQIPtr<IXYPosition> position2(shape2);
-                  position2->get_LocatorPoint(lpBottomCenter, &p2);
-               }
+               section2->get_WorkPoint(&p2);
             }
             else
             {
                CComQIPtr<IXYPosition> position2(shape2);
-               position2->get_LocatorPoint(lpBottomCenter, &p2);
+               position2->get_LocatorPoint(lpTopCenter, &p2);
             }
 
             // adjust points so both are at the same, and lowest, elevation
@@ -1802,7 +1805,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
             // Orient dimension line
             witness_length = doDimLine->GetWitnessLength();
-            doDimLine->SetWitnessLength(-witness_length);
+            witness_length *= 2;
+            doDimLine->SetWitnessLength(witness_length);
 
             //
             // Develop the text for the dimension line
@@ -1895,7 +1899,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             firstSocket->Connect(endPlug,&dwCookie);
 
             witness_length = leftOverhangDimLine->GetWitnessLength();
-            leftOverhangDimLine->SetWitnessLength(-witness_length);
+            witness_length *= 2;
+            leftOverhangDimLine->SetWitnessLength(witness_length);
 
             CComPtr<iTextBlock> leftOverhangText;
             leftOverhangText.CoCreateInstance(CLSID_TextBlock);
@@ -1947,7 +1952,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             rightOverhangSocket->Connect(endPlug,&dwCookie);
 
             witness_length = rightOverhangDimLine->GetWitnessLength();
-            rightOverhangDimLine->SetWitnessLength(-witness_length);
+            witness_length *= 2;
+            rightOverhangDimLine->SetWitnessLength(witness_length);
 
             CComPtr<iTextBlock> rightOverhangText;
             rightOverhangText.CoCreateInstance(CLSID_TextBlock);
@@ -2009,7 +2015,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       // increase witness line length
       long witness_length = curbDimLine->GetWitnessLength();
-      curbDimLine->SetWitnessLength((long)(1.75*witness_length));
+      witness_length *= 3;
+      curbDimLine->SetWitnessLength(witness_length);
 
       curbDimLine->SetTextBlock(ccText);
 
@@ -2056,7 +2063,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
             // increase witness line length
             long witness_length = tbDimLine->GetWitnessLength();
-            tbDimLine->SetWitnessLength((long)(1.75*witness_length));
+            witness_length *= 3;
+            tbDimLine->SetWitnessLength(witness_length);
 
             display_list->AddDisplayObject(tbDimLine);
          }
@@ -2099,7 +2107,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
             // increase witness line length
             long witness_length = tbDimLine->GetWitnessLength();
-            tbDimLine->SetWitnessLength((long)(1.75*witness_length));
+            witness_length *= 3;
+            tbDimLine->SetWitnessLength(witness_length);
 
             display_list->AddDisplayObject(tbDimLine);
          }
@@ -2142,6 +2151,10 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             CString strCurb = FormatDimension(width,rlen);
             ccText->SetText(strCurb);
 
+            witness_length = swDimLine->GetWitnessLength();
+            witness_length *= 4;
+            swDimLine->SetWitnessLength(witness_length);
+
             swDimLine->SetTextBlock(ccText);
 
             display_list->AddDisplayObject(swDimLine);
@@ -2183,6 +2196,10 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             ccText->SetBkMode(TRANSPARENT);
             CString strCurb = FormatDimension(width,rlen);
             ccText->SetText(strCurb);
+
+            witness_length = swDimLine->GetWitnessLength();
+            witness_length *= 4;
+            swDimLine->SetWitnessLength(witness_length);
 
             swDimLine->SetTextBlock(ccText);
 
@@ -2229,6 +2246,10 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             ccText->SetText(strCurb);
 
             icbDimLine->SetTextBlock(ccText);
+
+            witness_length = icbDimLine->GetWitnessLength();
+            witness_length *= 4;
+            icbDimLine->SetWitnessLength(witness_length);
 
             display_list->AddDisplayObject(icbDimLine);
          }
