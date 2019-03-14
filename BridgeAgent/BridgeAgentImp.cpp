@@ -5062,9 +5062,6 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float6
          new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
 
       pStatusCenter->Add(pStatusItem);
-
-      os << _T("See Status Center for Details");
-      THROW_UNWIND(os.str().c_str(),XREASON_NEGATIVE_GIRDER_LENGTH);
    }
 
    m_pPoiMgr->AddPointOfInterest( poiHP1 );
