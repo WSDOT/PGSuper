@@ -30838,11 +30838,10 @@ void CBridgeAgentImp::CheckBridge()
 {
    GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter); // only used if there is an issue
 
-   GET_IFACE(IBridge,pBridge);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   if ( pBridge->HasOverlay() && IsZero(pBridge->GetOverlayWeight()) )
+   if ( HasOverlay() && IsZero(GetOverlayWeight()) )
    {
       CString strMsg(_T("An overlay is specified, but the overlay load is zero."));
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidZeroOverlayWarning,strMsg);
@@ -30877,9 +30876,6 @@ void CBridgeAgentImp::CheckBridge()
                   new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
 
                pStatusCenter->Add(pStatusItem);
-
-               os << _T("See Status Center for Details");
-               THROW_UNWIND(os.str().c_str(),XREASON_NEGATIVE_GIRDER_LENGTH);
             }
 
             // Check location of temporary strands... usually in the top half of the girder
@@ -30928,14 +30924,61 @@ void CBridgeAgentImp::CheckBridge()
                      new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::Framing,os.str().c_str());
 
                   pStatusCenter->Add(pStatusItem);
-
-                  os << _T("See Status Center for Details");
-                  THROW_UNWIND(os.str().c_str(),XREASON_INVALID_CLOSURE_JOINT_LENGTH);
                }
             }
          } // next segment
       } // next girder
    } // next group
+
+   // Make sure support lines don't intersect
+   // this can happen with really short, wide bridges with high skew angles
+   CComPtr<IBridgeGeometry> bridgeGeometry;
+   m_Bridge->get_BridgeGeometry(&bridgeGeometry);
+   PierIndexType nPierLines; // these are "generic piers"... piers and temporayr supports
+   bridgeGeometry->get_PierLineCount(&nPierLines);
+   CComPtr<IPierLine> prevPierLine;
+   bridgeGeometry->GetPierLine(0, &prevPierLine);
+   CComPtr<ILineSegment2d> line1, line2;
+   line1.CoCreateInstance(CLSID_LineSegment2d);
+   line2.CoCreateInstance(CLSID_LineSegment2d);
+
+   CComPtr<IPoint2d> pntLeft1, pntRight1;
+   prevPierLine->get_LeftPoint(&pntLeft1);
+   prevPierLine->get_RightPoint(&pntRight1);
+   line1->ThroughPoints(pntLeft1, pntRight1);
+
+   CComPtr<IGeomUtil2d> geomUtil;
+   geomUtil.CoCreateInstance(CLSID_GeomUtil);
+   for (PierIndexType pierLineIdx = 1; pierLineIdx < nPierLines; pierLineIdx++)
+   {
+      CComPtr<IPierLine> pierLine;
+      bridgeGeometry->GetPierLine(pierLineIdx, &pierLine);
+
+      CComPtr<IPoint2d> pntLeft2, pntRight2;
+      pierLine->get_LeftPoint(&pntLeft2);
+      pierLine->get_RightPoint(&pntRight2);
+      line2->ThroughPoints(pntLeft2, pntRight2);
+
+      CComPtr<IPoint2d> pnt;
+      HRESULT result = geomUtil->SegSegIntersect(line1, line2, &pnt);
+      if (result == S_OK)
+      {
+         // the line segments intersect... there the pier lines cross... this is bad
+         std::_tostringstream os;
+         os << _T("Abutment/Pier/Temporary Support line ") << LABEL_PIER(pierLineIdx-1) << _T(" intersects with abutment/pier/temporary support line ") << LABEL_PIER(pierLineIdx) << _T(". This is invalid framing geometry.") << std::endl;
+
+         pgsBridgeDescriptionStatusItem* pStatusItem =
+            new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::Framing, os.str().c_str());
+
+         pStatusCenter->Add(pStatusItem);
+      }
+
+      pntLeft1 = pntLeft2;
+      pntRight1 = pntRight2;
+      line1->ThroughPoints(pntLeft1, pntRight1);
+      prevPierLine = pierLine;
+   }
+   
 
    // COGO model doesn't save correctly... fix this later
 //#if defined _DEBUG
