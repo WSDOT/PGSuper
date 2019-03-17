@@ -11670,7 +11670,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
 
       // 2D Location of work point at CL girder/bearingline intersect
       CComPtr<IPoint2d> workPointPoint;
-      GetPoint(workPointStation, workPointOffset,  normal, pgsTypes::pcGlobal, &workPointPoint);
+      GetPoint(workPointStation, workPointOffset,  normal, pgsTypes::pcLocal, &workPointPoint);
 
       // Get finished grade elevation at work point
       Float64 workPointFinishedGradeElevation = GetElevation(workPointStation, workPointOffset);
@@ -11729,7 +11729,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
       ByDistDir(workPointPoint, horizDistAlongPierToBCL, pierDirVar, 0.0, &pointBCL);
 
       Float64 stationBCL, offsetBCL;
-      GetStationAndOffset(pgsTypes::pcGlobal, pointBCL, &stationBCL, &offsetBCL);
+      GetStationAndOffset(pgsTypes::pcLocal, pointBCL, &stationBCL, &offsetBCL);
 
       // Girders can have multiple bearings measured by spacing from BCL. Need total slope of girder along pier
       // Sign convention here is looking up station; right to left going upwards
@@ -11793,7 +11793,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
 
          CComPtr<IPoint2d> brgPoint;
          ByDistDir(pointBCL, brgLocAdjusted, pierDirVar, 0.0, &brgPoint);
-         GetStationAndOffset(pgsTypes::pcGlobal, brgPoint, &station, &offset);
+         GetStationAndOffset(pgsTypes::pcLocal, brgPoint, &station, &offset);
 
          elevDetails.Station = station;
          elevDetails.Offset = offset;
