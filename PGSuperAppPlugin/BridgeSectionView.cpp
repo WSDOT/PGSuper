@@ -944,7 +944,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       CComPtr<iSimpleDrawPointStrategy> draw_work_point_strategy;
       draw_work_point_strategy.CoCreateInstance(CLSID_SimpleDrawPointStrategy);
       draw_work_point_strategy->SetColor(RED);
-      draw_work_point_strategy->SetPointSize(5);
+      draw_work_point_strategy->SetLogicalPointSize(5); // make the "meatballs" 5 pixels
       draw_work_point_strategy->SetPointType(ptCircle);
 
       CComPtr<iShapeDrawStrategy> shape_draw_strategy;
