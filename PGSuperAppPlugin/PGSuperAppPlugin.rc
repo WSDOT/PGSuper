@@ -12,7 +12,8 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
+#include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -3718,6 +3719,17 @@ BEGIN
     CONTROL         "",IDC_BEARING,"Static",SS_ENHMETAFILE,358,138,183,126
 END
 
+IDD_SELECT_BOUNDARY_CONDITION DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Boundary Condition"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,198,155,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,252,155,50,14
+    LTEXT           "Static",IDC_PROMPT,7,7,295,19
+    COMBOBOX        IDC_BOUNDARY_CONDITIONS,7,34,295,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -4610,6 +4622,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 300
     END
+
+    IDD_SELECT_BOUNDARY_CONDITION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -5068,6 +5088,11 @@ BEGIN
 END
 
 IDD_HAUNCH_BY_SEGMENT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SELECT_BOUNDARY_CONDITION AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

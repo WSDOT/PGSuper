@@ -118,16 +118,18 @@ void txnInsertSpan::Undo()
 
 ///////////////////////////////////////////////
 
-txnDeleteSpan::txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace)
+txnDeleteSpan::txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::BoundaryConditionType boundaryCondition)
 {
    m_RefPierIdx = refPierIdx;
    m_PierFace   = pierFace;
+   m_BoundaryCondition = boundaryCondition;
 }
 
 txnDeleteSpan::txnDeleteSpan(const txnDeleteSpan& other)
 {
    m_RefPierIdx = other.m_RefPierIdx;
    m_PierFace = other.m_PierFace;
+   m_BoundaryCondition = other.m_BoundaryCondition;
 
    m_BridgeDescription = other.m_BridgeDescription;
    m_StartSpanIdx = other.m_StartSpanIdx;
@@ -216,7 +218,10 @@ bool txnDeleteSpan::Execute()
       }
    }
 
-   pIBridgeDesc->DeletePier(m_RefPierIdx,m_PierFace);
+   PierIndexType pierIdx = (m_PierFace == pgsTypes::Back ? m_RefPierIdx - 1 : m_RefPierIdx + 1); // index of the pier that is not deleted
+   pIBridgeDesc->SetBoundaryCondition(pierIdx, m_BoundaryCondition);
+
+   pIBridgeDesc->DeletePier(m_RefPierIdx, m_PierFace);
 
    return true;
 }

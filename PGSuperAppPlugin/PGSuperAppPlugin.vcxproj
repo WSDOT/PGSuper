@@ -688,6 +688,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="SectionCutDisplayImpl.cpp" />
     <ClCompile Include="SectionCutDlg.cpp" />
     <ClCompile Include="SectionCutDlgEx.cpp" />
+    <ClCompile Include="SelectBoundaryConditionDlg.cpp" />
     <ClCompile Include="SelectGirderDlg.cpp" />
     <ClCompile Include="SelectItemDlg.cpp" />
     <ClCompile Include="..\SharedCtrls\MultiGirderSelectGrid.cpp">
@@ -1127,6 +1128,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="SectionCutDlg.h" />
     <ClInclude Include="SectionCutDlgEx.h" />
     <ClInclude Include="SectionCutDrawStrategy.h" />
+    <ClInclude Include="SelectBoundaryConditionDlg.h" />
     <ClInclude Include="SelectGirderDlg.h" />
     <ClInclude Include="SelectItemDlg.h" />
     <ClInclude Include="ShearSteelPage2.h" />

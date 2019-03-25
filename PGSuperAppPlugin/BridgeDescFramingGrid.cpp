@@ -1156,13 +1156,6 @@ void CBridgeDescFramingGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    {
       return;
    }
- 
-   CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
-   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
-   if ( !pParent->UpdateData() )
-   {
-      return;
-   }
 
    CGXStyle style1, style2;
    GetStyleRowCol(nRow, 0, style1); // piers and temp support info is in column 0

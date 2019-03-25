@@ -22,6 +22,7 @@
 #define IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN 106
 #define IDD_CLOSURE_CONNECTION          107
 #define IDR_PGSPLICECOMPONENTINFO       110
+#define IDD_SELECTBOUNDARYCONDITION  113
 #define IDR_PGSUPER                     130
 #define IDD_PROJECTPROPERTIES           131
 #define IDR_BRIDGEMODELEDITOR           132
@@ -185,6 +186,7 @@
 #define IDD_PIER_BEARINGS_PAGE          387
 #define IDD_GIRDER_SELECT_STRANDS       390
 #define IDD_PIERCONNECTIONS2            391
+#define IDD_SELECT_BOUNDARY_CONDITION   392
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDR_PGSPLICE_TEMPLATE_ICON      501
 #define IDD_ABOUTBOX                    999
@@ -580,7 +582,7 @@
 #define IDC_GIRDER_NAME                 1416
 #define IDC_GIRDER_NAMEUSE              1417
 #define IDC_MOVE_PIER                   1418
-#define IDC_ASSUMED_EXCESS_CAMBER_TYPES          1418
+#define IDC_ASSUMED_EXCESS_CAMBER_TYPES 1418
 #define IDC_SLAB_OFFSET_TYPE            1419
 #define IDC_PREV_SPAN_SPACING_MEASUREMENT 1420
 #define IDC_ROA_CB                      1421
@@ -1348,6 +1350,8 @@
 #define IDC_RIGHT_OVERHANG_DEPTH_LABEL  2000
 #define IDC_SLAB_OFFSET_GROUP           2001
 #define IDC_ADJUSTMENT_GROUP            2004
+#define IDC_PROMPT                      2005
+#define IDC_LIST1                       2006
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1503,9 +1507,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        392
+#define _APS_NEXT_RESOURCE_VALUE        394
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         2005
-#define _APS_NEXT_SYMED_VALUE           113
+#define _APS_NEXT_CONTROL_VALUE         2007
+#define _APS_NEXT_SYMED_VALUE           114
 #endif
 #endif
