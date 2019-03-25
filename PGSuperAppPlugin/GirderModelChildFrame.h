@@ -175,6 +175,7 @@ protected:
 
    virtual CRuntimeClass* GetLowerPaneClass() const;
    virtual Float64 GetTopFrameFraction() const;
+   pgsPointOfInterest GetCutPointOfInterest(Float64 X);
    void UpdateCutLocation(const pgsPointOfInterest& poi);
    void OnUpdateFrameTitle(BOOL bAddToTitle);
    

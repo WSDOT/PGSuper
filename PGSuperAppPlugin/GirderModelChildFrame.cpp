@@ -657,8 +657,10 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
          }
       }
    }
-   else if ( lHint == HINT_BRIDGECHANGED || lHint == HINT_UNITSCHANGED )
+   else if ( lHint == HINT_BRIDGECHANGED || lHint == HINT_GIRDERCHANGED || lHint == HINT_UNITSCHANGED )
    {
+      UpdateCutRange();
+      m_cutPoi = GetCutPointOfInterest(m_cutPoi.GetDistFromStart());
       FillEventComboBox();
       UpdateBar();
    }
@@ -1003,11 +1005,11 @@ Float64 CGirderModelChildFrame::GetCurrentCutLocation()
    return cut;
 }
 
-void CGirderModelChildFrame::CutAt(Float64 X)
+pgsPointOfInterest CGirderModelChildFrame::GetCutPointOfInterest(Float64 X)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    pgsPointOfInterest poi;
    if (m_GirderKey.groupIndex == ALL_GROUPS)
    {
@@ -1019,12 +1021,18 @@ void CGirderModelChildFrame::CutAt(Float64 X)
       poi = pPoi->ConvertGirderPathCoordinateToPoi(m_GirderKey, X);
    }
 
-   if ( poi.GetID() == INVALID_ID )
+   if (poi.GetID() == INVALID_ID)
    {
       // make sure we are at an actual poi
-      poi = pPoi->GetNearestPointOfInterest(poi.GetSegmentKey(),poi.GetDistFromStart());
+      poi = pPoi->GetNearestPointOfInterest(poi.GetSegmentKey(), poi.GetDistFromStart());
    }
 
+   return poi;
+}
+
+void CGirderModelChildFrame::CutAt(Float64 X)
+{
+   pgsPointOfInterest poi = GetCutPointOfInterest(X);
    UpdateCutLocation(poi);
 }
 
