@@ -3229,6 +3229,7 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
                   strandGridModel->put_HarpingPointReference(hprEndOfGirder);
                   strandGridModel->put_EndHarpingPointMeasure(hpmAbsoluteDistance);
                   strandGridModel->put_EndHarpingPointReference(hprEndOfGirder);
+                  strandGridModel->put_AllowOddNumberOfHarpedStrands(VARIANT_FALSE);
 
                   harpGrdEnd[etStart]->AddGridPoint(pntStart);
                   harpGrdEnd[etEnd]->AddGridPoint(pntEnd);
