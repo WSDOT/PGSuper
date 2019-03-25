@@ -797,6 +797,9 @@
     <ClCompile Include="GirderDescGeneralPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SelectBoundaryConditionDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -1693,6 +1696,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GirderDescGeneralPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectBoundaryConditionDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

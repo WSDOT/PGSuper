@@ -140,6 +140,7 @@
 #include "EditTimelineDlg.h"
 #include "EditHaunchDlg.h"
 #include "EditBearingDlg.h"
+#include "SelectBoundaryConditionDlg.h"
 
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
@@ -4003,18 +4004,72 @@ void CPGSDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
    }
 }
 
-void CPGSDocBase::DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType face)
+void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType deleteSpanOnPierFace)
 {
-   txnDeleteSpan* pTxn = new txnDeleteSpan(pierIdx,face);
+   // A span is deleted with the pier. The span is supported by two piers. For the pier that remains,
+   // make sure it's boundary condition remains valid. The pier that remains will end up in the position of the pier that is being deleted
+   PierIndexType pierIdx = (deleteSpanOnPierFace == pgsTypes::Back ? deletePierIdx-1 : deletePierIdx+1); // index of the pier that is not deleted
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
+   pgsTypes::BoundaryConditionType bc = pPier->GetBoundaryConditionType(); // current boundary condition
+
+   std::vector<pgsTypes::BoundaryConditionType> connections(pBridgeDesc->GetBoundaryConditionTypes(deletePierIdx)); // boundary conditions of the pier being deleted
+
+   const CPierData2* pDeletePier = pBridgeDesc->GetPier(deletePierIdx);
+
+   auto found = std::find(connections.begin(), connections.end(), bc);
+   if (found == connections.end())
+   {
+      // the boundary conditions of the pier will become invalid, select a new bc
+      SpanIndexType deleteSpanIdx = (SpanIndexType)(deleteSpanOnPierFace == pgsTypes::Back ? deletePierIdx - 1 : deletePierIdx);
+      CString strPrompt;
+      strPrompt.Format(_T("Removing Span %d and Pier %d will make the boundary condition of Pier %d invalid.\r\nSelect a valid boundary condition."), LABEL_SPAN(deleteSpanIdx), LABEL_PIER(deletePierIdx), LABEL_PIER(pierIdx));
+
+      CSelectBoundaryConditionDlg dlg;
+      dlg.m_strPrompt = strPrompt;
+      dlg.m_BoundaryCondition = connections.front();
+      dlg.m_Connections = connections;
+      dlg.m_bIsBoundaryPier = pPier->IsBoundaryPier();
+      dlg.m_bIsNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+      if (pDeletePier->IsPier() || pDeletePier->HasCantilever())
+      {
+         dlg.m_PierType = PIERTYPE_INTERMEDIATE;
+      }
+      else
+      {
+         if (pDeletePier->GetIndex() == 0)
+         {
+            dlg.m_PierType = PIERTYPE_START;
+         }
+         else
+         {
+            dlg.m_PierType = PIERTYPE_END;
+         }
+      }
+
+      if (dlg.DoModal() == IDOK)
+      {
+         bc = dlg.m_BoundaryCondition;
+      }
+      else
+      {
+         // user cancelled
+         return;
+      }
+   }
+
+   txnDeleteSpan* pTxn = new txnDeleteSpan(deletePierIdx, deleteSpanOnPierFace, bc);
    GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(pTxn);
 }
 
 void CPGSDocBase::DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pierRemoveType)
 {
-   PierIndexType pierIdx = (pierRemoveType == pgsTypes::PrevPier ? spanIdx : spanIdx+1);
-   pgsTypes::PierFaceType pierFace = (pierRemoveType == pgsTypes::PrevPier ? pgsTypes::Ahead : pgsTypes::Back);
-   DeletePier(pierIdx,pierFace);
+   PierIndexType deletePierIdx = (PierIndexType)(pierRemoveType == pgsTypes::PrevPier ? spanIdx : spanIdx+1);
+   pgsTypes::PierFaceType deletePierFace = (pierRemoveType == pgsTypes::PrevPier ? pgsTypes::Ahead : pgsTypes::Back);
+   DeletePier(deletePierIdx, deletePierFace);
 }
 
 void CPGSDocBase::OnInsert() 

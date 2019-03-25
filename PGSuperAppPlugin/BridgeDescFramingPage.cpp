@@ -74,6 +74,24 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
       DDV_GXGridWnd(pDX, &m_Grid);
       // why validate grid and then not get the data out of it?
       // pParent->m_BridgeDesc is kept continuously up to date with grid
+
+      PierIndexType nPiers = pParent->m_BridgeDesc.GetPierCount();
+      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+      {
+         const CPierData2* pPier = pParent->m_BridgeDesc.GetPier(pierIdx);
+         pgsTypes::BoundaryConditionType bc = pPier->GetBoundaryConditionType();
+         std::vector<pgsTypes::BoundaryConditionType> boundary_conditions = pParent->m_BridgeDesc.GetBoundaryConditionTypes(pierIdx);
+         auto found = std::find(std::cbegin(boundary_conditions), std::cend(boundary_conditions), bc);
+         if (found == std::cend(boundary_conditions))
+         {
+            CString strPier(pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abut") : _T("Pier"));
+            CString strMsg;
+            strMsg.Format(_T("The boundary conditions for %s %d are invalid.\r\nPress the Edit button in the grid to update the boundary conditions."), strPier, LABEL_PIER(pierIdx));
+            AfxMessageBox(strMsg, MB_ICONERROR | MB_OK);
+            pDX->PrepareCtrl(IDC_PIER_GRID);
+            pDX->Fail();
+         }
+      }
    }
    else
    {
