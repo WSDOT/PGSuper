@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,9 @@
 #define PGSEXT_AUTOLIBNAME "PGSuperExt.lib"
 
 #pragma comment(lib,PGSEXT_AUTOLIBNAME)
-//#pragma message("PGSuper::PGSEXT will automatically link with " PGSEXT_AUTOLIBNAME )
+#if defined AUTOLIB
+#pragma message("Linking with " PGSEXT_AUTOLIBNAME )
+#endif
 
 #endif // BUILDPGSEXTLIB
 

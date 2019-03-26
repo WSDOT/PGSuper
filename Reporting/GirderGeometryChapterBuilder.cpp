@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -562,7 +562,7 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
    if ( nSpans == nGroups )
    {
       *pPara << _T("C-C Pier = Abutment/Pier Line to Abutment/Pier Line length measured along the girder") << rptNewLine;
-      *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the girder") << rptNewLine;
+      *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the girder centerline") << rptNewLine;
       *pPara << _T("Girder Length, Plan = End to end length of the girder projected into a horizontal plane") << rptNewLine;
       *pPara << _T("Girder Length, Along Grade = End to end length of girder measured along grade of the girder (slope adjusted) = ") << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
    }
@@ -729,6 +729,8 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+
       SegmentIndexType nSegments = pBridge->GetSegmentCount( CGirderKey(grpIdx,0) );
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
@@ -787,11 +789,9 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
          RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
          {
-
-            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
 
 #pragma Reminder("UPDATE: spacing is measured at ends of segments")
             // need to get piers at the ends of the segmetns
@@ -799,17 +799,38 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             // then need to get spacing at pier or TS
 
             PierIndexType prevPierIdx, nextPierIdx;
-            pBridge->GetGirderGroupPiers(grpIdx,&prevPierIdx,&nextPierIdx);
+            pBridge->GetGirderGroupPiers(grpIdx, &prevPierIdx, &nextPierIdx);
 
             std::vector<Float64> spacing[8];
-            spacing[0] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine,    pgsTypes::NormalToItem);
-            spacing[1] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine,    pgsTypes::AlongItem);
-            spacing[2] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlineBearing, pgsTypes::NormalToItem);
-            spacing[3] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlineBearing, pgsTypes::AlongItem);
-            spacing[4] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtCenterlineBearing, pgsTypes::NormalToItem);
-            spacing[5] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtCenterlineBearing, pgsTypes::AlongItem);
-            spacing[6] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtPierLine,    pgsTypes::NormalToItem);
-            spacing[7] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back,  pgsTypes::AtPierLine,    pgsTypes::AlongItem);
+            if (1 < nGirders)
+            {
+               spacing[0] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine, pgsTypes::NormalToItem);
+               spacing[1] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine, pgsTypes::AlongItem);
+               spacing[2] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlineBearing, pgsTypes::NormalToItem);
+               spacing[3] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlineBearing, pgsTypes::AlongItem);
+               spacing[4] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back, pgsTypes::AtCenterlineBearing, pgsTypes::NormalToItem);
+               spacing[5] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back, pgsTypes::AtCenterlineBearing, pgsTypes::AlongItem);
+               spacing[6] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back, pgsTypes::AtPierLine, pgsTypes::NormalToItem);
+               spacing[7] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back, pgsTypes::AtPierLine, pgsTypes::AlongItem);
+            }
+
+            CComPtr<IAngle> objStartAngle, objEndAngle;
+            pBridge->GetSegmentAngle(segmentKey, pgsTypes::metStart, &objStartAngle);
+            pBridge->GetSegmentAngle(segmentKey, pgsTypes::metEnd, &objEndAngle);
+
+            Float64 startAngle;
+            objStartAngle->get_Value(&startAngle);
+            if (M_PI <= startAngle)
+            {
+               startAngle -= M_PI;
+            }
+
+            Float64 endAngle;
+            objEndAngle->get_Value(&endAngle);
+            if (M_PI <= endAngle)
+            {
+               endAngle -= M_PI;
+            }
 
             (*pTable)(row,0) << LABEL_GIRDER(gdrIdx);
 
@@ -819,19 +840,9 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,3) << _T("");
             (*pTable)(row,4) << _T("");
 
-            CComPtr<IAngle> startAngle, endAngle;
-            pBridge->GetSegmentAngle(segmentKey,pgsTypes::metStart,&startAngle);
-            pBridge->GetSegmentAngle(segmentKey,pgsTypes::metEnd,  &endAngle);
-
-            Float64 angle;
-            startAngle->get_Value(&angle);
-            if ( M_PI <= angle )
-            {
-               angle -= M_PI;
-            }
 
             CComBSTR bstrStartAngle;
-            angle_formatter->Format(angle,CComBSTR("°,\',\""),&bstrStartAngle);
+            angle_formatter->Format(startAngle,CComBSTR("°,\',\""),&bstrStartAngle);
             (*pTable)(row,5) << RPT_ANGLE(OLE2T(bstrStartAngle));
 
             (*pTable)(row,6) << _T("");
@@ -840,13 +851,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             (*pTable)(row,9) << _T("");
 
             CComBSTR bstrEndAngle;
-            endAngle->get_Value(&angle);
-            if ( M_PI <= angle )
-            {
-               angle -= M_PI;
-            }
-
-            angle_formatter->Format(angle,CComBSTR("°,\',\""),&bstrEndAngle);
+            angle_formatter->Format(endAngle,CComBSTR("°,\',\""),&bstrEndAngle);
             (*pTable)(row,10) << RPT_ANGLE(OLE2T(bstrEndAngle));
 
             // girder spacing (between girders)

@@ -83,51 +83,57 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="$(BRIDGELINKDIR)\BridgeLink.props" />
+    <Import Project="$(BRIDGELINKDIR)\ObjectiveGrid.props" />
+    <Import Project="$(WBFLDIR)\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="$(BRIDGELINKDIR)\BridgeLink.props" />
+    <Import Project="$(BRIDGELINKDIR)\ObjectiveGrid.props" />
+    <Import Project="$(WBFLDIR)\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="$(BRIDGELINKDIR)\BridgeLink.props" />
+    <Import Project="$(BRIDGELINKDIR)\ObjectiveGrid.props" />
+    <Import Project="$(WBFLDIR)\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="$(BRIDGELINKDIR)\BridgeLink.props" />
+    <Import Project="$(BRIDGELINKDIR)\ObjectiveGrid.props" />
+    <Import Project="$(WBFLDIR)\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="$(BRIDGELINKDIR)\BridgeLink.props" />
+    <Import Project="$(BRIDGELINKDIR)\ObjectiveGrid.props" />
+    <Import Project="$(WBFLDIR)\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC60.props" />
-    <Import Project="..\..\BridgeLink\BridgeLink.props" />
-    <Import Project="..\..\BridgeLink\ObjectiveGrid.props" />
-    <Import Project="..\..\WBFL\WBFL.props" />
+    <Import Project="$(BRIDGELINKDIR)\BridgeLink.props" />
+    <Import Project="$(BRIDGELINKDIR)\ObjectiveGrid.props" />
+    <Import Project="$(WBFLDIR)\WBFL.props" />
+    <Import Project="..\PGSuper.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>14.0.25431.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>true</LinkIncremental>
@@ -136,7 +142,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>true</LinkIncremental>
@@ -145,7 +151,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
@@ -154,7 +160,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
@@ -163,7 +169,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
@@ -172,7 +178,7 @@
     <CodeAnalysisRuleAssemblies />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <OutDir>\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>false</LinkIncremental>
@@ -192,7 +198,6 @@
     <ClCompile>
       <AdditionalOptions>/Zm200  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDPSGLIBLIB;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -203,16 +208,17 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\WBFL\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(WBFLDIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>PGSuperExt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\psgLib.def</ModuleDefinitionFile>
@@ -229,6 +235,11 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM</Command>
+      <Message>Installing WBFL for BridgeLink</Message>
+      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -242,7 +253,6 @@
     <ClCompile>
       <AdditionalOptions>/Zm200  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDPSGLIBLIB;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -253,16 +263,17 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\WBFL\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(WBFLDIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>PGSuperExt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\psgLib.def</ModuleDefinitionFile>
@@ -279,6 +290,11 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM</Command>
+      <Message>Installing WBFL for BridgeLink</Message>
+      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -291,7 +307,6 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>/Zm200  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -300,16 +315,17 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\WBFL\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(WBFLDIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>PGSuperExt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\psgLib.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
@@ -327,6 +343,11 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM</Command>
+      <Message>Installing WBFL for BridgeLink</Message>
+      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -339,7 +360,6 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>/Zm200  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -348,16 +368,17 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\WBFL\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(WBFLDIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>PGSuperExt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\psgLib.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
@@ -375,6 +396,11 @@
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
+    <CustomBuildStep>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM</Command>
+      <Message>Installing WBFL for BridgeLink</Message>
+      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
     <Midl>
@@ -392,7 +418,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -402,16 +427,17 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\WBFL\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(WBFLDIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>PGSuperExt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\psgLib.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -427,6 +453,11 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <OutputFile>.\..\Lib/psgLib.bsc</OutputFile>
     </Bscmake>
+    <CustomBuildStep>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM</Command>
+      <Message>Installing WBFL for BridgeLink</Message>
+      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <Midl>
@@ -444,7 +475,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>\ARP\PGSuper\Include;\ARP\PGSuper\Include\$(Platform);\ARP\WBFL\Include;\ARP\WBFL\Include\$(Platform);\ARP\BridgeLink\Include;\ARP\PGSuper\Documentation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -454,17 +484,18 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\Include</AdditionalIncludeDirectories>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
-      <AdditionalIncludeDirectories>$(IntDir);\ARP\WBFL\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(IntDir);$(WBFLDIR)\Include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>\ARP\WBFL\RegFreeCOM\$(Platform)\$(Configuration);\ARP\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>PGSuperExt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\psgLib.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -481,6 +512,11 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <OutputFile>.\..\Lib/psgLib.bsc</OutputFile>
     </Bscmake>
+    <CustomBuildStep>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM</Command>
+      <Message>Installing WBFL for BridgeLink</Message>
+      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AASHTOConcretePage.cpp" />
@@ -708,6 +744,11 @@
     <ClInclude Include="WsdotHaulingDlg.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\PGSuperAppPlugin\res\folder_closed.ico" />
+    <Image Include="..\PGSuperAppPlugin\res\folder_open.ico" />
+    <Image Include="..\PGSuperAppPlugin\res\LibEntryInUse.bmp" />
+    <Image Include="..\PGSuperAppPlugin\res\LibEntryInUseAndReadOnly.bmp" />
+    <Image Include="..\PGSuperAppPlugin\res\LibEntryReadOnly.bmp" />
     <Image Include="..\res\folder_closed.ico" />
     <Image Include="..\res\folder_open.ico" />
     <Image Include="..\res\LibEntryInUse.bmp" />

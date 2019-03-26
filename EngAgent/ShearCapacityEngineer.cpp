@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include "ShearCapacityEngineer.h"
 #include <ReinforcedConcrete\ReinforcedConcrete.h>
 #include <Units\SysUnits.h>
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
@@ -39,6 +39,7 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\statusitem.h>
 #include <PgsExt\DesignConfigUtil.h>
+#include <PgsExt\GirderLabel.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -140,12 +141,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       {
          Float64 fpu = pStrand->GetUltimateStrength();
 
-         // use 0.75 for low relax strands, otherwise 0.7 (see PCI BDM 8.4.1.1.4)
          Float64 K = 0.70;
-         if ( pStrand->GetType() == matPsStrand::LowRelaxation )
-         {
-            K = 0.75;
-         }
 
          pscd->fpops = xfer*K*fpu;
       }
@@ -169,12 +165,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       {
          Float64 fpu = pTendon ->GetUltimateStrength();
 
-         // use 0.75 for low relax strands, otherwise 0.7 (see PCI BDM 8.4.1.1.4)
          Float64 K = 0.70;
-         if ( pTendon->GetType() == matPsStrand::LowRelaxation )
-         {
-            K = 0.75;
-         }
 
          pscd->fpopt = K*fpu;
       }
@@ -194,7 +185,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    {
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-      std::_tstring msg(_T("An error occured while computing shear capacity"));
+      std::_tstring msg =  std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": An error occured while computing shear capacity");
       pgsGirderDescriptionStatusItem* pStatusItem =
             new pgsGirderDescriptionStatusItem(segmentKey,EGD_STIRRUPS,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
 
@@ -997,7 +988,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
       {
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-         std::_tstring msg(_T("Error computing shear capacity - could not converge on a solution"));
+         std::_tstring msg(std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Error computing shear capacity - could not converge on a solution"));
          pgsGirderDescriptionStatusItem* pStatusItem =
             new pgsGirderDescriptionStatusItem(segmentKey,2,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
 

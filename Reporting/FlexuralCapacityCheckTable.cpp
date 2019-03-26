@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@
 #include <PgsExt\CapacityToDemand.h>
 #include <PgsExt\ClosureJointData.h>
 
+#include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\Project.h>
@@ -143,7 +144,9 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 

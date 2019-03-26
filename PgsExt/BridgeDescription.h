@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,13 +23,14 @@
 #pragma once
 #include <PgsExt\DeckDescription.h>
 #include <PgsExt\RailingSystem.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\SpanData.h>
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\TimelineManager.h>
 
 #include <PsgLib\GirderLibraryEntry.h>
 #include <WBFLCore.h>
+
+#include "PierData.h"
+#include "SpanData.h"
 
 class CBridgeDescription2;
 
@@ -140,7 +141,7 @@ public:
    Float64 GetSlabOffset() const;
 
    // returns the least slab offset defined for the bridge
-   Float64 GetMinSlabOffset() const;
+   Float64 GetLeastSlabOffset() const;
 
    bool SetSpanLength(SpanIndexType spanIdx,Float64 newLength);
    bool MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -75,7 +75,6 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                                          bool bIncludeImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -694,7 +693,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
             }
             else
             {
-               (*p_table)(row,col++) << RPT_NA;
+               (*p_table)(row, col++) << RPT_NA;
+               (*p_table)(row, col++) << RPT_NA;
             }
          }
 

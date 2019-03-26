@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,6 +87,10 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
       (*ppModel) = model;
       (*ppModel)->AddRef();
    }
+
+   // This is the same tolerance as used to build LBAM's in CGirderModelManager::BuildLBAM()
+   (*ppModel)->put_ForceEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::Kip));
+   (*ppModel)->put_MomentEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::KipFeet));
 
    // get all the cross section changes
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -917,10 +921,13 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
       if ( mbrIDStart == mbrIDEnd )
       {
          // load is contained on a single member and is all interior
+         if (!IsEqual(xStart, xEnd)) // No use creating a load if it's zero length
+         {
          slabDistLoad.Release();
          slabPadDistLoad.Release();
-         slabDistributedLoads->Create(   loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wslabStart,   wslabEnd,   lotMember,&slabDistLoad);
-         slabPadDistributedLoads->Create(loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wslabPadStart,wslabPadEnd,lotMember,&slabPadDistLoad);
+            slabDistributedLoads->Create(loadID++, mbrIDStart, loadDirFy, xStart, xEnd, wslabStart, wslabEnd, lotMember, &slabDistLoad);
+            slabPadDistributedLoads->Create(loadID++, mbrIDStart, loadDirFy, xStart, xEnd, wslabPadStart, wslabPadEnd, lotMember, &slabPadDistLoad);
+         }
       }
       else
       {
@@ -976,11 +983,13 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
                x2 = Lmbr; // end of member
             }
 
-
+            if (!IsEqual(x1, x2)) // No use creating a load if it's zero length
+            {
             slabDistLoad.Release();
             slabPadDistLoad.Release();
-            slabDistributedLoads->Create(   loadID++,mbrID,loadDirFy,x1,x2,wsl1,wsl2,lotMember,&slabDistLoad);
-            slabPadDistributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,wsp1,wsp2,lotMember,&slabPadDistLoad);
+               slabDistributedLoads->Create(loadID++, mbrID, loadDirFy, x1, x2, wsl1, wsl2, lotMember, &slabDistLoad);
+               slabPadDistributedLoads->Create(loadID++, mbrID, loadDirFy, x1, x2, wsp1, wsp2, lotMember, &slabPadDistLoad);
+            }
          }
       }
 

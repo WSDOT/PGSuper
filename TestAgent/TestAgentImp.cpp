@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -480,6 +480,12 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
             return false;
          }
          break;
+      case RUN_GEOMTEST:
+         if ( !RunGeometryTest(resf, poif, segmentKey) )
+         {
+            return false;
+         }
+         break;
 
       case RUN_REGRESSION:
       case RUN_CADTEST:
@@ -625,18 +631,18 @@ bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream&
    GirderIndexType gdr = segmentKey.girderIndex;
    SpanIndexType span = segmentKey.groupIndex;
 
-   const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
+   const auto& slab_offset_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
 
-   for ( const auto& haunch : haunch_details.Haunch)
+   for ( const auto& slab_offset : slab_offset_details.SlabOffset)
    {
-      const pgsPointOfInterest& rpoi = haunch.PointOfInterest;
+      const pgsPointOfInterest& rpoi = slab_offset.PointOfInterest;
       Float64 loc = ::ConvertFromSysUnits(rpoi.GetDistFromStart(), unitMeasure::Millimeter);
 
-      Float64 camber = ::ConvertFromSysUnits(haunch.CamberEffect, unitMeasure::Millimeter);
-      Float64 orientation = ::ConvertFromSysUnits(haunch.GirderOrientationEffect, unitMeasure::Millimeter);
-      Float64 profile = ::ConvertFromSysUnits(haunch.ProfileEffect, unitMeasure::Millimeter);
-      Float64 required = ::ConvertFromSysUnits(haunch.RequiredHaunchDepth, unitMeasure::Millimeter);
-      Float64 actual = ::ConvertFromSysUnits(haunch.TopSlabToTopGirder, unitMeasure::Millimeter);
+      Float64 camber = ::ConvertFromSysUnits(slab_offset.CamberEffect, unitMeasure::Millimeter);
+      Float64 orientation = ::ConvertFromSysUnits(slab_offset.GirderOrientationEffect, unitMeasure::Millimeter);
+      Float64 profile = ::ConvertFromSysUnits(slab_offset.ProfileEffect, unitMeasure::Millimeter);
+      Float64 required = ::ConvertFromSysUnits(slab_offset.RequiredSlabOffset, unitMeasure::Millimeter);
+      Float64 actual = ::ConvertFromSysUnits(slab_offset.TopSlabToTopGirder, unitMeasure::Millimeter);
 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 89000, ")<<loc<<_T(", ")<< QUITE(camber) <<_T(", 7, ")<<gdr<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 89001, ")<<loc<<_T(", ")<< QUITE(orientation) <<_T(", 7, ")<<gdr<<std::endl;
@@ -694,6 +700,41 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
 
    L = pBridge->GetSegmentPlanLength(segmentKey);
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88102, ")<<_T("-1")<<_T(", ")<< QUITE(L) <<_T(", 55, ")<<gdr<<std::endl;
+
+   // Bearing seat elevations
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   PierIndexType startPierIdx = (SpanIndexType)(pSegment->GetGirder()->GetGirderGroup()->GetPierIndex(pgsTypes::metStart));
+   PierIndexType endPierIdx = startPierIdx + 1;
+
+   // Bearing Seat elevation data
+   // ============================
+   CGirderKey testGirder(segmentKey);
+   // Write out all bearings at start end of girder
+   std::vector<BearingElevationDetails> startBearings = pBridge->GetBearingElevationDetails(startPierIdx, pgsTypes::Ahead);
+   for (const BearingElevationDetails& beDet : startBearings)
+   {
+      if (beDet.GirderKey == testGirder)
+      {
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88200, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.BrgSeatElevation) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88201, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.Station) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88202, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.Offset) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88203, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.FinishedGradeElevation) <<_T(", 55, ")<<gdr<<std::endl;
+      }
+   }
+
+   // Write out all bearings at end end of girder
+   std::vector<BearingElevationDetails> endBearings = pBridge->GetBearingElevationDetails(endPierIdx, pgsTypes::Back);
+   for (const BearingElevationDetails& beDet : endBearings)
+   {
+      if (beDet.GirderKey == testGirder)
+      {
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88210, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.BrgSeatElevation) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88211, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.Station) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88212, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.Offset) <<_T(", 55, ")<<gdr<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88213, ")<<_T("-1")<<_T(", ")<< QUITE(beDet.FinishedGradeElevation) <<_T(", 55, ")<<gdr<<std::endl;
+      }
+   }
 
    return true;
 }
@@ -2112,48 +2153,36 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
          return true;
       }
 
-      GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
-      PoiList vPoi;
-      pSegmentLiftingPointsOfInterest->GetLiftingPointsOfInterest(segmentKey, POI_5L | POI_LIFT_SEGMENT, &vPoi);
-      ATLASSERT(vPoi.size()==1);
-      const pgsPointOfInterest& poi = vPoi.front();
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100001a, ") << QUITE(::ConvertFromSysUnits(liftingResults.MaxDirectStress, unitMeasure::MPa)) << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100001b, ") << liftingResults.MaxDirectStressAnalysisPointIndex << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100001c, ") << liftingResults.MaxDirectStressImpactDirection << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100001d, ") << liftingResults.MaxDirectStressCorner << _T(", 50, ") << gdrIdx << std::endl;
 
-      Float64 loc = poi.GetDistFromStart();
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100002a, ") << QUITE(::ConvertFromSysUnits(liftingResults.MinDirectStress, unitMeasure::MPa)) << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100002b, ") << liftingResults.MinDirectStressAnalysisPointIndex << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100002c, ") << liftingResults.MinDirectStressImpactDirection << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100002d, ") << liftingResults.MinDirectStressCorner << _T(", 50, ") << gdrIdx << std::endl;
 
-      GET_IFACE(IGirder,pGirder);
-      const stbLiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100003a, ") << QUITE(::ConvertFromSysUnits(liftingResults.MaxStress, unitMeasure::MPa)) << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100003b, ") << liftingResults.MaxStressAnalysisPointIndex << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100003c, ") << liftingResults.MaxStressImpactDirection << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100003d, ") << liftingResults.MaxStressCorner << _T(", 50, ") << gdrIdx << std::endl;
 
-      std::vector<stbLiftingSectionResult>::const_iterator iter(liftingResults.vSectionResults.begin());
-      std::vector<stbLiftingSectionResult>::const_iterator end(liftingResults.vSectionResults.end());
-      for ( ; iter != end; iter++ )
-      {
-         const stbLiftingSectionResult& sectionResult = *iter;
-         const stbIAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
-         if ( ::IsEqual(pAnalysisPoint->GetLocation(),loc) )
-         {
-            Float64 maxStress(0), minStress(0);
-            if ( pLiftArtifact->EvaluateStressesAtEquilibriumAngle() )
-            {
-               maxStress = Max(sectionResult.fMax[stbTypes::Top], sectionResult.fMax[stbTypes::Bottom]);
-               minStress = Min(sectionResult.fMin[stbTypes::Top], sectionResult.fMin[stbTypes::Bottom]);
-            }
-            else
-            {
-               maxStress = Max(sectionResult.fMaxDirect[stbTypes::Top], sectionResult.fMaxDirect[stbTypes::Bottom]);
-               minStress = Min(sectionResult.fMinDirect[stbTypes::Top], sectionResult.fMinDirect[stbTypes::Bottom]);
-            }
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(maxStress, unitMeasure::MPa)) <<_T(", 50, ")<<gdrIdx<<std::endl;
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(minStress, unitMeasure::MPa)) <<_T(", 50, ")<<gdrIdx<<std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100004a, ") << QUITE(::ConvertFromSysUnits(liftingResults.MinStress, unitMeasure::MPa)) << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100004b, ") << liftingResults.MinStressAnalysisPointIndex << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100004c, ") << liftingResults.MinStressImpactDirection << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100004d, ") << liftingResults.MinStressCorner << _T(", 50, ") << gdrIdx << std::endl;
 
-            Float64 FScr = liftingResults.FScrMin; // this is the absolute minimum FScr... we should be testing this value
-            Float64 FSf  = liftingResults.MinAdjFsFailure; // the old stability implementation had an FSf at each POI... this was wrong, there is only one FSf since it is a global phenomenom
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100003, ")<<loc<<_T(", ")<<FScr<<_T(", 50, ")<<gdrIdx<<std::endl;
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100004, ")<<loc<<_T(", ")<<FSf<<_T(", 50, ")<<gdrIdx<<std::endl;
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100009, ")<<loc<<_T(", ")<<(int)(pLiftArtifact->Passed()?1:0)<<_T(", 50, ")<<gdrIdx<<std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005a, ") << liftingResults.FScrMin << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005b, ") << liftingResults.FScrMinAnalysisPointIndex << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005c, ") << liftingResults.FScrMinImpactDirection << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005d, ") << liftingResults.FScrMinWindDirection << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100005e, ") << liftingResults.FScrMinCorner << _T(", 50, ") << gdrIdx << std::endl;
 
-            break;
-         }
-      }
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100006a, ") << liftingResults.MinFsFailure << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100006b, ") << liftingResults.MinAdjFsFailure << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100006c, ") << liftingResults.FSfImpactDirection << _T(", 50, ") << gdrIdx << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100006d, ") << liftingResults.FSfWindDirection << _T(", 50, ") << gdrIdx << std::endl;
    }
 
    // hauling

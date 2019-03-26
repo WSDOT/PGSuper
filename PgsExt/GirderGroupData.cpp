@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -159,31 +159,12 @@ bool CGirderGroupData::operator==(const CGirderGroupData& rOther) const
       }
    }
 
-   bool bCheckSlabOffset = false;
-   if ( m_pBridgeDesc && (m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier || m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder))
-   {
-      bCheckSlabOffset = true;
-   }
-
    GirderIndexType nGirders = m_Girders.size();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       if ( *m_Girders[gdrIdx] != *rOther.m_Girders[gdrIdx] )
       {
          return false;
-      }
-
-      if ( bCheckSlabOffset )
-      {
-         PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-         PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
-         for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
-         {
-            if ( !IsEqual(GetSlabOffset(pierIdx,gdrIdx),rOther.GetSlabOffset(pierIdx,gdrIdx)) )
-            {
-               return false;
-            }
-         }
       }
    }
 
@@ -289,8 +270,6 @@ void CGirderGroupData::SetPiers(CPierData2* pStartPier,CPierData2* pEndPier)
 
 void CGirderGroupData::AddSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
 {
-   UpdateSlabOffsets(refPierIdx);
-
    std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
    std::vector<CSplicedGirderData*>::iterator end(m_Girders.end());
    for ( ; iter != end; iter++ )
@@ -306,7 +285,6 @@ void CGirderGroupData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType
    PierIndexType pierIdx = (PierIndexType)spanIdx + (rmPierType == pgsTypes::PrevPier ? 0 : 1);
    PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
    PierIndexType nPiersToRemove = pierIdx - startPierIdx;
-   m_SlabOffsets.erase(m_SlabOffsets.begin()+nPiersToRemove);
 
    // Adjust the girders in the group for the span that is removed
    // remove span references from the girders before the span is destroyed
@@ -443,14 +421,6 @@ void CGirderGroupData::SetGirderCount(GirderIndexType nGirders)
       group.second = 0;
       m_GirderTypeGroups.push_back(group);
       m_GirderTopWidthGroups.push_back(group);
-
-      std::vector<std::vector<Float64>>::iterator iter(m_SlabOffsets.begin());
-      std::vector<std::vector<Float64>>::iterator end(m_SlabOffsets.end());
-      for ( ; iter != end; iter++ )
-      {
-         std::vector<Float64>& vSlabOffset(*iter);
-         vSlabOffset.push_back(::ConvertToSysUnits(10.0,unitMeasure::Inch));
-      }
    }
 
    if ( nGirders < m_Girders.size() )
@@ -481,13 +451,6 @@ void CGirderGroupData::Initialize(GirderIndexType nGirders)
 
    m_Girders.clear();
 
-   PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-   PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
-   for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
-   {
-      m_SlabOffsets.push_back(std::vector<Float64>());
-   }
-
    if ( nGirders == 0 )
    {
       return;
@@ -507,14 +470,6 @@ void CGirderGroupData::Initialize(GirderIndexType nGirders)
       GirderIDType newGdrID = pNewGirder->GetID();
 
       pNewGirder->Initialize(); // creates the default segment
-
-      std::vector<std::vector<Float64>>::iterator iter(m_SlabOffsets.begin());
-      std::vector<std::vector<Float64>>::iterator end(m_SlabOffsets.end());
-      for ( ; iter != end; iter++ )
-      {
-         std::vector<Float64>& vSlabOffset(*iter);
-         vSlabOffset.push_back( ::ConvertToSysUnits( 10.0, unitMeasure::Inch ) );
-      }
    }
 
    m_GirderTypeGroups.push_back( GirderGroup(0,m_Girders.size()-1) );
@@ -548,13 +503,6 @@ void CGirderGroupData::RemoveGirders(GirderIndexType nGirdersToRemove)
    }
 
    GirderIndexType nGirders = m_Girders.size();
-   std::vector<std::vector<Float64>>::iterator soIter(m_SlabOffsets.begin());
-   std::vector<std::vector<Float64>>::iterator soIterEnd(m_SlabOffsets.end());
-   for ( ; soIter != soIterEnd; soIter++ )
-   {
-      std::vector<Float64>& vSlabOffset(*soIter);
-      vSlabOffset.resize(nGirders-nGirdersToRemove);
-   }
    m_Girders.resize(nGirders-nGirdersToRemove);
 
 
@@ -609,14 +557,6 @@ void CGirderGroupData::AddGirders(GirderIndexType nGirdersToAdd)
       m_Girders.push_back(pNewGirder);
 
       CGirderKey newGirderKey(pNewGirder->GetGirderKey());
-
-      std::vector<std::vector<Float64>>::iterator soIter(m_SlabOffsets.begin());
-      std::vector<std::vector<Float64>>::iterator soIterEnd(m_SlabOffsets.end());
-      for ( ; soIter != soIterEnd; soIter++ )
-      {
-         std::vector<Float64>& vSlabOffset(*soIter);
-         vSlabOffset.push_back(vSlabOffset.back());
-      }
 
       // set the construction and erection event information for the segments of this new girder
       SegmentIndexType segIdx = 0;
@@ -711,102 +651,6 @@ const CSplicedGirderData* CGirderGroupData::GetGirder(GirderIndexType gdrIdx) co
    }
 
    return m_Girders[gdrIdx];
-}
-
-void CGirderGroupData::SetSlabOffset(PierIndexType pierIdx,Float64 offset)
-{
-   ATLASSERT(GetPierIndex(pgsTypes::metStart) <= pierIdx && pierIdx <= GetPierIndex(pgsTypes::metEnd));
-
-   // set the slab offset for all girders at this pier
-   IndexType idx = pierIdx - GetPierIndex(pgsTypes::metStart);
-   std::vector<Float64>& vSlabOffsets(m_SlabOffsets[idx]);
-   std::vector<Float64>::iterator iter(vSlabOffsets.begin());
-   std::vector<Float64>::iterator iterEnd(vSlabOffsets.end());
-   for ( ; iter != iterEnd; iter++ )
-   {
-      *iter = offset;
-   }
-}
-
-void CGirderGroupData::SetSlabOffset(PierIndexType pierIdx,GirderIndexType gdrIdx,Float64 offset)
-{
-   ATLASSERT(GetPierIndex(pgsTypes::metStart) <= pierIdx && pierIdx <= GetPierIndex(pgsTypes::metEnd));
-
-   // set the slab offset for a specific girders at this pier
-   IndexType idx = pierIdx - GetPierIndex(pgsTypes::metStart);
-   std::vector<Float64>& vSlabOffsets(m_SlabOffsets[idx]);
-   ATLASSERT(gdrIdx < vSlabOffsets.size());
-   vSlabOffsets[gdrIdx] = offset;
-}
-
-Float64 CGirderGroupData::GetSlabOffset(PierIndexType pierIdx,GirderIndexType gdrIdx,bool bGetRawValue) const
-{
-   Float64 offset;
-   if ( bGetRawValue )
-   {
-      ATLASSERT(GetPierIndex(pgsTypes::metStart) <= pierIdx && pierIdx <= GetPierIndex(pgsTypes::metEnd));
-
-      // set the slab offset for a specific girders at this pier
-      IndexType idx = pierIdx - GetPierIndex(pgsTypes::metStart);
-      const std::vector<Float64>& vSlabOffsets(m_SlabOffsets[idx]);
-
-      ATLASSERT(gdrIdx < vSlabOffsets.size());
-      offset = vSlabOffsets[gdrIdx];
-   }
-   else
-   {
-      pgsTypes::SlabOffsetType slabOffsetType = m_pBridgeDesc->GetSlabOffsetType();
-      if ( slabOffsetType == pgsTypes::sotBridge )
-      {
-         offset = m_pBridgeDesc->GetSlabOffset();
-      }
-      else if ( slabOffsetType == pgsTypes::sotPier )
-      {
-         if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
-         {
-            return 0;
-         }
-
-         ATLASSERT(GetPierIndex(pgsTypes::metStart) <= pierIdx && pierIdx <= GetPierIndex(pgsTypes::metEnd));
-
-         // set the slab offset for a specific girders at this pier
-         IndexType idx = pierIdx - GetPierIndex(pgsTypes::metStart);
-         const std::vector<Float64>& vSlabOffsets(m_SlabOffsets[idx]);
-
-         // slab offsets should be the same across the pier so just use the one for the first girder
-         offset = vSlabOffsets.front();
-      }
-      else
-      {
-         if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone )
-         {
-            return 0;
-         }
-
-         ATLASSERT(GetPierIndex(pgsTypes::metStart) <= pierIdx && pierIdx <= GetPierIndex(pgsTypes::metEnd));
-
-         // set the slab offset for a specific girders at this pier
-         IndexType idx = pierIdx - GetPierIndex(pgsTypes::metStart);
-         const std::vector<Float64>& vSlabOffsets(m_SlabOffsets[idx]);
-
-         ATLASSERT(gdrIdx < vSlabOffsets.size());
-         offset = vSlabOffsets[gdrIdx];
-      }
-   }
-
-   return offset;
-}
-
-void CGirderGroupData::CopySlabOffset(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx)
-{
-   PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-   PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
-   for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
-   {
-      IndexType idx = pierIdx - startPierIdx;
-      std::vector<Float64>& vSlabOffsets(m_SlabOffsets[idx]);
-      vSlabOffsets[targetGdrIdx] = vSlabOffsets[sourceGdrIdx];
-   }
 }
 
 GroupIndexType CGirderGroupData::CreateGirderTypeGroup(GirderIndexType firstGdrIdx,GirderIndexType lastGdrIdx)
@@ -1526,14 +1370,6 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       UpdatePiers();
 
-      PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-      PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
-      ATLASSERT(m_SlabOffsets.size() == 0);
-      for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
-      {
-         m_SlabOffsets.push_back(std::vector<Float64>());
-      }
-
       hr = pStrLoad->BeginUnit(_T("Girders"));
 
       var.vt = VT_INDEX;
@@ -1694,61 +1530,163 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       }
 #endif
 
-
       // Slab Offset
-      if (m_pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge )
+      // Slab offset removed from girder group data in version 3 of this data block
+      // map the old data into the new locations where slab offsets are stored
+      if (version < 3)
       {
-         hr = pStrLoad->BeginUnit(_T("SlabOffset"));
-         if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier )
+         if (m_pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge)
          {
-            // Slab offset per pier (one value for all girders)
-            PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-            PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
-            IndexType index = 0;
-            for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++, index++ )
+            hr = pStrLoad->BeginUnit(_T("SlabOffset"));
+            if (m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBearingLine)
             {
-               std::vector<Float64>& vSlabOffset(m_SlabOffsets[index]);
-               ATLASSERT(vSlabOffset.size() == 0);
-
-               var.vt = VT_R8;
-               hr = pStrLoad->get_Property(_T("SlabOffset"),&var);
-               // Insert for all girders so our data structure is sized properly
-               vSlabOffset.insert(vSlabOffset.begin(),nGirders,var.dblVal);
-            }
-         }
-         else
-         {
-            ATLASSERT(m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder);
-            PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-            PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
-            IndexType index = 0;
-            for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++, index++ )
-            {
-               hr = pStrLoad->BeginUnit(_T("GirderSlabOffsets"));
-
-               std::vector<Float64>& vSlabOffset(m_SlabOffsets[index]);
-               ATLASSERT(vSlabOffset.size() == 0);
-               for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+               // Slab offset per pier (one value for all girders)
+               PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
+               PierIndexType endPierIdx = GetPierIndex(pgsTypes::metEnd);
+               for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
                {
                   var.vt = VT_R8;
-                  hr = pStrLoad->get_Property(_T("SlabOffset"),&var);
-                  vSlabOffset.push_back(var.dblVal);
-               }
+                  hr = pStrLoad->get_Property(_T("SlabOffset"), &var);
+                  Float64 slabOffset = var.dblVal;
 
-               hr = pStrLoad->EndUnit();
+                  CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
+
+                  if (pierIdx == startPierIdx)
+                  {
+                     pPier->SetSlabOffset(pgsTypes::Ahead, slabOffset);
+
+                     // the old implementation copied the slab offset down to the individual girders... we do the same here
+                     GirderIndexType nGirders = GetGirderCount();
+                     for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+                     {
+                        CSplicedGirderData* pGirder = GetGirder(gdrIdx);
+                        pGirder->GetSegment(0)->SetSlabOffset(pgsTypes::metStart, slabOffset);
+                     }
+                  }
+                  else if (pierIdx == endPierIdx)
+                  {
+                     pPier->SetSlabOffset(pgsTypes::Back, slabOffset);
+
+                     // the old implementation copied the slab offset down to the individual girders... we do the same here
+                     GirderIndexType nGirders = GetGirderCount();
+                     for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+                     {
+                        CSplicedGirderData* pGirder = GetGirder(gdrIdx);
+                        SegmentIndexType nSegments = pGirder->GetSegmentCount();
+                        pGirder->GetSegment(nSegments-1)->SetSlabOffset(pgsTypes::metEnd, slabOffset);
+                     }
+                  }
+                  else
+                  {
+                     pPier->SetSlabOffset(slabOffset, slabOffset);
+
+                     // the old implementation copied the slab offset down to the individual girders... we do the same here
+                     // we know all girders in the group have the same number of segments so we will work by segment along
+                     // girder 0 until we find a place that the end of the segment is supported by pPier. Once we find
+                     // that segment, set the slab offset at the appropreate end of that segment in all girders across the group
+                     GirderIndexType nGirders = GetGirderCount();
+                     CSplicedGirderData* pGirder = GetGirder(0); // girder girder 0
+                     SegmentIndexType nSegments = pGirder->GetSegmentCount();
+                     for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++) // work our way down the segments in girder 0
+                     {
+                        CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+                        for (int i = 0; i < 2; i++) // check both ends
+                        {
+                           pgsTypes::MemberEndType end = pgsTypes::MemberEndType(i);
+                           CPierData2* pSupportingPier;
+                           CTemporarySupportData* pTS;
+                           pSegment->GetSupport(end, &pSupportingPier, &pTS);
+                           if (pSupportingPier && pSupportingPier->GetIndex() == pierIdx)
+                           {
+                              // the current end is supported by pPier so set the slab offset for this segment in all girders
+                              for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+                              {
+                                 GetGirder(gdrIdx)->GetSegment(segIdx)->SetSlabOffset(end, slabOffset);
+                              } // next girder
+                           } // supported by our pier
+                        } // next end
+                     } // next segment
+                  }
+               }
             }
-         }
-         hr = pStrLoad->EndUnit(); // SlabOffset
-      }
-      else
-      {
-         // make sure slab offset data structures are sized correctly
-         std::vector<std::vector<Float64>>::iterator iter(m_SlabOffsets.begin());
-         std::vector<std::vector<Float64>>::iterator end(m_SlabOffsets.end());
-         for ( ; iter != end; iter++ )
-         {
-            std::vector<Float64>& vSlabOffsets(*iter);
-            vSlabOffsets.resize(nGirders);
+            else
+            {
+               ATLASSERT(m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotSegment);
+               PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
+               PierIndexType endPierIdx = GetPierIndex(pgsTypes::metEnd);
+               for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+               {
+                  hr = pStrLoad->BeginUnit(_T("GirderSlabOffsets"));
+
+                  for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+                  {
+                     var.vt = VT_R8;
+                     hr = pStrLoad->get_Property(_T("SlabOffset"), &var);
+                     Float64 slabOffset = var.dblVal;
+
+                     CSplicedGirderData* pGirder = GetGirder(gdrIdx);
+
+                     SegmentIndexType nSegments = pGirder->GetSegmentCount();
+                     for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+                     {
+                        CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+                        if (pierIdx == startPierIdx)
+                        {
+                           pSegment->SetSlabOffset(pgsTypes::metStart, slabOffset);
+
+                           if (gdrIdx == 0)
+                           {
+                              CPierData2* pSupportingPier;
+                              CTemporarySupportData* pTS;
+                              pSegment->GetSupport(pgsTypes::metStart, &pSupportingPier, &pTS);
+                              if (pSupportingPier && pSupportingPier->GetIndex() == pierIdx)
+                              {
+                                 pSupportingPier->SetSlabOffset(pgsTypes::Ahead, slabOffset);
+                              }
+                           }
+                        }
+                        else if (pierIdx == endPierIdx)
+                        {
+                           pSegment->SetSlabOffset(pgsTypes::metEnd, slabOffset);
+
+                           if (gdrIdx == 0)
+                           {
+                              CPierData2* pSupportingPier;
+                              CTemporarySupportData* pTS;
+                              pSegment->GetSupport(pgsTypes::metEnd, &pSupportingPier, &pTS);
+                              if (pSupportingPier && pSupportingPier->GetIndex() == pierIdx)
+                              {
+                                 pSupportingPier->SetSlabOffset(pgsTypes::Back, slabOffset);
+                              }
+                           }
+                        }
+                        else
+                        {
+                           pSegment->SetSlabOffset(slabOffset, slabOffset);
+
+                           if (gdrIdx == 0)
+                           {
+                              for (int i = 0; i < 2; i++)
+                              {
+                                 pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+                                 CPierData2* pSupportingPier;
+                                 CTemporarySupportData* pTS;
+                                 pSegment->GetSupport(end, &pSupportingPier, &pTS);
+                                 if (pSupportingPier && pSupportingPier->GetIndex() == pierIdx)
+                                 {
+                                    pSupportingPier->SetSlabOffset((pgsTypes::PierFaceType)end, slabOffset); // NOTE: metStart = Ahead and metEnd = Back
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+
+                  hr = pStrLoad->EndUnit();
+               }
+            }
+            hr = pStrLoad->EndUnit(); // SlabOffset
          }
       }
 
@@ -1767,7 +1705,7 @@ HRESULT CGirderGroupData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CGirderGroupData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("GirderGroup"),2.0);
+   pStrSave->BeginUnit(_T("GirderGroup"),3.0);
 
    pStrSave->put_Property(_T("ID"), CComVariant(m_GroupID) );
 
@@ -1819,44 +1757,45 @@ HRESULT CGirderGroupData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    }
 
    // Slab Offset
-   if (m_pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge )
-   {
-      pStrSave->BeginUnit(_T("SlabOffset"),1.0);
-      if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier )
-      {
-         // Slab offset per pier (one value for all girders)
-         PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-         PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
-         IndexType index = 0;
-         for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++, index++ )
-         {
-            std::vector<Float64>& vSlabOffset(m_SlabOffsets[index]);
-            pStrSave->put_Property(_T("SlabOffset"),CComVariant(vSlabOffset.front()));
-         }
-      }
-      else
-      {
-         ATLASSERT(m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder);
-         PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-         PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
-         IndexType index = 0;
-         for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++, index++ )
-         {
-            pStrSave->BeginUnit(_T("GirderSlabOffsets"),1.0);
+   // Removed in version 3
+   //if (m_pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge )
+   //{
+   //   pStrSave->BeginUnit(_T("SlabOffset"),1.0);
+   //   if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBearingLine )
+   //   {
+   //      // Slab offset per pier (one value for all girders)
+   //      PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
+   //      PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
+   //      IndexType index = 0;
+   //      for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++, index++ )
+   //      {
+   //         std::vector<Float64>& vSlabOffset(m_SlabOffsets[index]);
+   //         pStrSave->put_Property(_T("SlabOffset"),CComVariant(vSlabOffset.front()));
+   //      }
+   //   }
+   //   else
+   //   {
+   //      ATLASSERT(m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotSegment);
+   //      PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
+   //      PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
+   //      IndexType index = 0;
+   //      for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++, index++ )
+   //      {
+   //         pStrSave->BeginUnit(_T("GirderSlabOffsets"),1.0);
 
-            std::vector<Float64>& vSlabOffset(m_SlabOffsets[index]);
-            std::vector<Float64>::iterator iter(vSlabOffset.begin());
-            std::vector<Float64>::iterator end(vSlabOffset.end());
-            for ( ; iter != end; iter++ )
-            {
-               pStrSave->put_Property(_T("SlabOffset"),CComVariant(*iter));
-            }
+   //         std::vector<Float64>& vSlabOffset(m_SlabOffsets[index]);
+   //         std::vector<Float64>::iterator iter(vSlabOffset.begin());
+   //         std::vector<Float64>::iterator end(vSlabOffset.end());
+   //         for ( ; iter != end; iter++ )
+   //         {
+   //            pStrSave->put_Property(_T("SlabOffset"),CComVariant(*iter));
+   //         }
 
-            pStrSave->EndUnit();
-         }
-      }
-      pStrSave->EndUnit(); // SlabOffset
-   }
+   //         pStrSave->EndUnit();
+   //      }
+   //   }
+   //   pStrSave->EndUnit(); // SlabOffset
+   //}
 
    pStrSave->EndUnit(); // GirderGroup
 
@@ -1876,8 +1815,6 @@ void CGirderGroupData::MakeCopy(const CGirderGroupData& rOther,bool bCopyDataOnl
    m_PierIndex[pgsTypes::metStart] = rOther.GetPierIndex(pgsTypes::metStart);
    m_PierIndex[pgsTypes::metEnd]   = rOther.GetPierIndex(pgsTypes::metEnd);
    UpdatePiers();
-
-   m_SlabOffsets = rOther.m_SlabOffsets;
 
    if ( m_Girders.size() == 0 )
    {
@@ -2004,8 +1941,6 @@ void CGirderGroupData::Clear()
 
    m_GirderTypeGroups.clear();
    m_GirderTopWidthGroups.clear();
-
-   m_SlabOffsets.clear();
 }
 
 void CGirderGroupData::UpdatePiers()
@@ -2021,20 +1956,6 @@ void CGirderGroupData::UpdatePiers()
       m_PierIndex[pgsTypes::metStart] = INVALID_INDEX;
       m_PierIndex[pgsTypes::metEnd]   = INVALID_INDEX;
    }
-}
-
-void CGirderGroupData::UpdateSlabOffsets(PierIndexType newPierIdx)
-{
-   PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-   PierIndexType endPierIdx   = GetPierIndex(pgsTypes::metEnd);
-   
-   ATLASSERT(startPierIdx <= newPierIdx && newPierIdx <= endPierIdx);
-
-   PierIndexType relPierIdx = newPierIdx - startPierIdx; // relative location in the m_SlabOffsets collection
-   // for the slab offsets we want to copy and insert into the collection
-
-   // use the reference pier's slab offsets
-   m_SlabOffsets.insert(m_SlabOffsets.begin() + relPierIdx + 1,m_SlabOffsets[relPierIdx]);
 }
 
 GirderIndexType CGirderGroupData::GetPrivateGirderCount() const
@@ -2062,8 +1983,6 @@ void CGirderGroupData::AssertValid()
       _ASSERT(pGirder->GetPier(pgsTypes::metStart) == m_pPier[pgsTypes::metStart] );
       _ASSERT(pGirder->GetPier(pgsTypes::metEnd)   == m_pPier[pgsTypes::metEnd] );
    }
-
-   ATLASSERT( m_SlabOffsets.size() == GetPierCount() );
 
    // Girder type groups must be consistent with number of girders
    if ( 0 < m_Girders.size() )
@@ -2098,17 +2017,6 @@ void CGirderGroupData::AssertValid()
             ATLASSERT(iter1->first <= iter1->second);
             ATLASSERT(iter2->first <= iter2->second);
             ATLASSERT(iter1->second < iter2->first);
-         }
-      }
-
-      if ( m_pBridgeDesc && m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotGirder )
-      {
-         std::vector<std::vector<Float64>>::iterator iter(m_SlabOffsets.begin());
-         std::vector<std::vector<Float64>>::iterator end(m_SlabOffsets.end());
-         for ( ; iter != end; iter++ )
-         {
-            std::vector<Float64>& vSlabOffsets(*iter);
-            ATLASSERT(vSlabOffsets.size() == m_Girders.size());
          }
       }
    }

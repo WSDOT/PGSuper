@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,10 +23,10 @@
 // SplicedGirderGeneralPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "SplicedGirderGeneralPage.h"
-#include "..\SplicedGirderDescDlg.h"
+#include "SplicedGirderDescDlg.h"
 #include <LRFD\StrandPool.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
@@ -99,19 +99,6 @@ void DDX_PTData(CDataExchange* pDX,INT nIDC,CPTData* ptData)
    }
 }
 
-void DDX_SlabOffsetGrid(CDataExchange* pDX,INT nIDC)
-{
-   CSlabOffsetGrid* pGrid = (CSlabOffsetGrid*)pDX->m_pDlgWnd->GetDlgItem(nIDC);
-   if ( pDX->m_bSaveAndValidate )
-   {
-      pGrid->UpdateSlabOffsetData();
-   }
-   else
-   {
-      pGrid->FillGrid();
-   }
-}
-
 IMPLEMENT_DYNAMIC(CSplicedGirderGeneralPage, CPropertyPage)
 
 CSplicedGirderGeneralPage::CSplicedGirderGeneralPage()
@@ -149,8 +136,6 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_Strand(pDX,IDC_STRAND,&pParent->m_pGirder->GetPostTensioning()->pStrand);
-
-   DDX_SlabOffsetGrid(pDX,IDC_SLABOFFSET_GRID);
 
    Float64 conditionFactor = pParent->m_pGirder->GetConditionFactor();
    pgsTypes::ConditionFactorType conditionFactorType = pParent->m_pGirder->GetConditionFactorType();
@@ -202,7 +187,6 @@ BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_INSTALLATION_TYPE, &CSplicedGirderGeneralPage::OnInstallationTypeChanged)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CSplicedGirderGeneralPage::OnConditionFactorTypeChanged)
    ON_COMMAND(ID_HELP, &CSplicedGirderGeneralPage::OnHelp)
-   ON_CBN_SELCHANGE(IDC_CB_SLABOFFSET,OnChangeSlabOffsetType)
    ON_CBN_SELCHANGE(IDC_CB_SAMEGIRDER,OnChangeGirderType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME, &CSplicedGirderGeneralPage::OnChangedGirderName)
 END_MESSAGE_MAP()
@@ -223,10 +207,6 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    // initialize duct grid
 	m_DuctGrid.SubclassDlgItem(IDC_DUCT_GRID, this);
    m_DuctGrid.CustomInit(pParent->m_pGirder);
-
-   // initialize slab offset grid
-   m_SlabOffsetGrid.SubclassDlgItem(IDC_SLABOFFSET_GRID,this);
-   m_SlabOffsetGrid.CustomInit(pParent->m_pGirder);
 
    // subclass the schematic drawing of the tendons
    m_DrawTendons.SubclassDlgItem(IDC_TENDONS,this);
@@ -261,25 +241,7 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
-   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
-
    OnConditionFactorTypeChanged();
-
-   m_SlabOffsetTypeOriginal = pBridge->GetSlabOffsetType();
-
-   CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_CB_SLABOFFSET);
-   if ( m_SlabOffsetTypeOriginal == pgsTypes::sotPier )
-   {
-      pcbSlabOffsetType->AddString(_T("A unique Slab Offset (\"A\" Dimension) is used at each Pier"));
-   }
-   else
-   {
-      pcbSlabOffsetType->AddString(_T("A single Slab Offset (\"A\" Dimension) is used for the entire bridge"));
-   }
-   pcbSlabOffsetType->AddString(_T("Slab Offsets are defined girder by girder"));
-   pcbSlabOffsetType->SetCurSel(m_SlabOffsetTypeOriginal==pgsTypes::sotGirder ? 1:0);
-
-   UpdateSlabOffsetControls();
 
    UpdateGirderTypeControls();
 
@@ -546,63 +508,6 @@ int CSplicedGirderGeneralPage::GetDuctCount()
 void CSplicedGirderGeneralPage::OnHelp()
 {
    EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_SPLICED_GIRDER_GENERAL);
-}
-
-void CSplicedGirderGeneralPage::OnChangeSlabOffsetType()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
-   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
-
-   pgsTypes::SlabOffsetType newType;
-   if ( pBridge->GetSlabOffsetType() == m_SlabOffsetTypeOriginal )
-   {
-      if (m_SlabOffsetTypeOriginal != pgsTypes::sotGirder)
-      {
-         newType = pgsTypes::sotGirder;
-      }
-      else
-      {
-         newType = pgsTypes::sotBridge;
-      }
-   }
-   else
-   {
-      newType = m_SlabOffsetTypeOriginal;
-   }
-
-   if (pgsTypes::sotBridge == newType)
-   {
-      // ask user to select value
-      Float64 slaboff;
-      if (m_SlabOffsetGrid.SelectSingleValue(&slaboff))
-      {
-         pBridge->SetSlabOffsetType(pgsTypes::sotBridge);
-         pBridge->SetSlabOffset(slaboff);
-      }
-      else
-      {
-         // selection was cancelled. reset combo back to original (bridge is always zero)
-         CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_CB_SLABOFFSET);
-         pcbSlabOffsetType->SetCurSel(1);
-      }
-   }
-   else
-   {
-      pBridge->SetSlabOffsetType(newType);
-   }
-
-   UpdateSlabOffsetControls();
-}
-
-void CSplicedGirderGeneralPage::UpdateSlabOffsetControls()
-{
-   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
-   CBridgeDescription2* pBridge = pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription();
-
-   BOOL bEnable = ( pBridge->GetSlabOffsetType() == pgsTypes::sotGirder ? TRUE : FALSE );
-   m_SlabOffsetGrid.EnableWindow(bEnable);
 }
 
 void CSplicedGirderGeneralPage::OnChangeGirderType()

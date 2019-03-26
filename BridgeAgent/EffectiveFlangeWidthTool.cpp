@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@
 #include <PgsExt\GirderLabel.h>
 
 #include <MfcTools\Exceptions.h>
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -514,9 +514,9 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	
 	            // overhang is too big
 	            std::_tostringstream os;
-	            os << "The deck overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)" << std::endl;
-	
+	            os << SEGMENT_LABEL(segmentKey) << _T(": The deck overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)") << std::endl;
 	            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,os.str().c_str());
+
 	            pStatusCenter->Add(pStatusItem);
 	
 	            wTrib = twLeft + twRight;
@@ -528,7 +528,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             // check maximum skew angle... AASHTO defines the skew angle as...
             // The largest skew angle (theta) in the BRIDGE SYSTEM where (theta)
             // is the angle of a bearing line measured relative to a normal to
-            // the cneterline of a longitudial component
+            // the centerline of a longitudial component
             if ( !m_bMaxSkewAngleComputed )
             {
                // the max skew angle for the BRIDGE SYSTEM only needs to be

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,7 @@
 #include <Graphing\DrawBeamTool.h>
 #include "EffectivePrestressGraphController.h"
 #include "EffectivePrestressGraphViewControllerImp.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -429,17 +430,21 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
    } // next interval
 }
 
-IntervalIndexType CEffectivePrestressGraphBuilder::GetBeamDrawInterval()
+void CEffectivePrestressGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx, IntervalIndexType* pLastIntervalIdx)
 {
    CEffectivePrestressGraphController* pMyGraphController = (CEffectivePrestressGraphController*)m_pGraphController;
    std::vector<IntervalIndexType> vIntervals(pMyGraphController->GetSelectedIntervals());
-   if ( 0 < vIntervals.size() )
+   if (0 < vIntervals.size())
    {
-      return vIntervals.back();
+      *pFirstIntervalIdx = vIntervals.front();
+      *pLastIntervalIdx = vIntervals.back();
    }
-
-   CGirderKey girderKey = pMyGraphController->GetGirderKey();
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType intervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
-   return intervalIdx;
+   else
+   {
+      CGirderKey girderKey = pMyGraphController->GetGirderKey();
+      GET_IFACE(IIntervals, pIntervals);
+      IntervalIndexType intervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+      *pFirstIntervalIdx = intervalIdx;
+      *pLastIntervalIdx = *pFirstIntervalIdx;
+   }
 }

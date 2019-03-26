@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -262,10 +262,10 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
          Float64 C = pCamber->GetScreedCamber( poiMidSpan, CREEP_MINTIME );
    
          std::_tstring camberType;
-         Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
-         Float64 D = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME); // upper bound camber
-         Float64 Dlower = D*Cfactor;
+         Float64 Dupper, Davg, Dlower;
+         pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dupper, &Davg, &Dlower);
 
+         Float64 D = 999999; // initialize to obvious bogus value
          switch(pSpecEntry->GetSagCamberType())
          {
          case pgsTypes::LowerBoundCamber:
@@ -274,13 +274,17 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
             break;
 
          case pgsTypes::AverageCamber:
-            D *= (1+Cfactor)/2;
+            D = Davg;
             camberType = _T("average");
             break;
 
          case pgsTypes::UpperBoundCamber:
+            D = Dupper;
             camberType = _T("upper bound");
             break;
+
+         default:
+            ATLASSERT(false); // is there a new type of sag camber?
          }
 
          if ( D < C )

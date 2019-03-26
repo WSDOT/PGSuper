@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include "SegmentModelManager.h"
-#include "AnalysisResult.h"
+#include <pgsExt\AnalysisResult.h>
 
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderModelFactory.h>
@@ -338,7 +338,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
       // at release, during storage, and after erection. However, the deflected shape of the girder
       // due to prestress does not change. We account for the rigid body displacement by deducting
       // the release deflection at the support locations from the deflections.
-      GET_IFACE(ISectionProperties, pSectProps);
+      GET_IFACE_NOCHECK(ISectionProperties, pSectProps);
       GET_IFACE(IIntervals,pIntervals);
       GET_IFACE(IPointOfInterest,pPoi);
       std::list<PoiList> sPoi;
@@ -359,27 +359,43 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
          IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
          IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
-         if ( resultsType == rtCumulative || intervalIdx == releaseIntervalIdx )
+         if (resultsType == rtCumulative || intervalIdx == releaseIntervalIdx || intervalIdx == tsRemovalIntervalIdx)
          {
+            int firstStrandType = 0;
             int nStrandTypes = 2;
             if (tsInstallationIntervalIdx != INVALID_INDEX && (tsInstallationIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx))
             {
                nStrandTypes++;
             }
+            if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
+            {
+               firstStrandType = (int)(pgsTypes::Temporary);
+               nStrandTypes = firstStrandType+1;
+            }
 
-            for ( int i = 0; i < nStrandTypes; i++ )
+            for (int i = firstStrandType; i < nStrandTypes; i++)
             {
                pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
                LoadCaseIDType lcidMx, lcidMy;
-               GetLoadCaseID(strandType,&lcidMx,&lcidMy);
+               GetLoadCaseID(strandType, &lcidMx, &lcidMy);
 
                std::vector<Float64> vDyThisStrandType;
-               GetSectionResults(releaseIntervalIdx, lcidMx, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDyThisStrandType, &vRz );
-               std::transform(vDyThisStrandType.cbegin(),vDyThisStrandType.cend(),vDyThisSegment.cbegin(),vDyThisSegment.begin(),[](const auto& a, const auto& b) {return a + b;});
+               GetSectionResults(releaseIntervalIdx, lcidMx, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDyThisStrandType, &vRz);
+               std::transform(vDyThisStrandType.cbegin(), vDyThisStrandType.cend(), vDyThisSegment.cbegin(), vDyThisSegment.begin(), [](const auto& a, const auto& b) {return a + b; });
 
                std::vector<Float64> vDxThisStrandType;
                GetSectionResults(releaseIntervalIdx, lcidMy, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDxThisStrandType, &vRz);
-               std::transform(vDxThisStrandType.cbegin(), vDxThisStrandType.cend(), vDxThisSegment.cbegin(), vDxThisSegment.begin(), [](const auto& a, const auto& b) {return a + b;});
+               std::transform(vDxThisStrandType.cbegin(), vDxThisStrandType.cend(), vDxThisSegment.cbegin(), vDxThisSegment.begin(), [](const auto& a, const auto& b) {return a + b; });
+            }
+
+            if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
+            {
+               // removal of strands causes opposite deflection and Ec changes
+               GET_IFACE(IMaterials, pMaterials);
+               Float64 Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
+               Float64 Ec = pMaterials->GetSegmentEc(segmentKey, intervalIdx);
+               std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), vDyThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
+               std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), vDxThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
             }
 
             // at this time, vDxThisSegment has deflections due to the lateral prestressing moment based on the vertical stiffness of the girder
@@ -410,8 +426,8 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
             // add vdy with vDyThisSegment to get total y deflection
             std::transform(vdy.cbegin(), vdy.cend(), vDyThisSegment.cbegin(), vdy.begin(), [](const auto& dy1, const auto& dy2) {return dy1 + dy2;});
 #endif
-            //Float64 D = (Ixx/Iyy)*(-Ixy/Ixx) = -Ixy/Iyy
 
+            //Float64 D = (Ixx/Iyy)*(-Ixy/Ixx) = -Ixy/Iyy
             Float64 D = -Ixy / Iyy;
 
             // multiply vDxThisSegment by D to get the indirect deflection in the y-direction
@@ -433,13 +449,15 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
 #endif
          }
 
+         // if this is an interval when support locations change, the deflections must be adjusted for the new support datum
+         IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+         IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+         IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
          static bool bGettingSupportAdjustment = false; // this method is recursive... we don't want to apply the support datum adjustment when getting the deflections to make the support datum adjustment
-         if( releaseIntervalIdx < intervalIdx && !bGettingSupportAdjustment )
+         if( (intervalIdx == liftingIntervalIdx || intervalIdx == storageIntervalIdx || intervalIdx == haulingIntervalIdx || intervalIdx == haulingIntervalIdx || erectionIntervalIdx <= intervalIdx)
+            && !bGettingSupportAdjustment)
          {
-            IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
-            IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
-            IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
-            IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
             PoiAttributeType poiAttribute;
 
             if ( liftingIntervalIdx <= intervalIdx && intervalIdx < storageIntervalIdx )
@@ -499,7 +517,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
          }
          else
          {
-            // before storage... the deflections don't need to be adjusted
+            // not an interval when supports locations change... the deflections don't need to be adjusted
             vDy.insert(vDy.end(),vDyThisSegment.begin(),vDyThisSegment.end());
          }
       }
@@ -551,10 +569,24 @@ std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalInde
       vDyThisSegment.resize(vPoiThisSegment.size(), 0.0);
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+      IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
-      if (resultsType == rtCumulative || intervalIdx == releaseIntervalIdx)
+      if (resultsType == rtCumulative || intervalIdx == releaseIntervalIdx || intervalIdx == tsRemovalIntervalIdx)
       {
-         for (int i = 0; i < 3; i++)
+         int firstStrandType = 0;
+         int nStrandTypes = 2;
+         if (tsInstallationIntervalIdx != INVALID_INDEX && (tsInstallationIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx))
+         {
+            nStrandTypes++;
+         }
+         if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
+         {
+            firstStrandType = (int)(pgsTypes::Temporary);
+            nStrandTypes = firstStrandType + 1;
+         }
+
+         for (int i = firstStrandType; i < nStrandTypes; i++)
          {
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
             LoadCaseIDType lcidMx, lcidMy;
@@ -567,6 +599,16 @@ std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalInde
             std::vector<Float64> vDyThisStrandType;
             GetSectionResults(releaseIntervalIdx, lcidMx, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDyThisStrandType, &vRz);
             std::transform(vDyThisStrandType.cbegin(), vDyThisStrandType.cend(), vDyThisSegment.cbegin(), vDyThisSegment.begin(), [](const auto& a, const auto& b) {return a + b;});
+         }
+
+         if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
+         {
+            // removal of strands causes opposite deflection and Ec changes
+            GET_IFACE(IMaterials, pMaterials);
+            Float64 Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
+            Float64 Ec = pMaterials->GetSegmentEc(segmentKey, intervalIdx);
+            std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), vDyThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
+            std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), vDxThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
          }
 
          // at this time, vDxThisSegment has deflections due to the lateral prestressing moment based on the vertical stiffness of the girder
@@ -591,12 +633,13 @@ std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalInde
          std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), vDyThisSegment.cbegin(), vDxThisSegment.begin(), [&D1,&D2](const auto& dx,const auto& dy) {return D1*dx + D2*dy;});
       }
 
-      if (releaseIntervalIdx < intervalIdx)
+      // if this is an interval when support locations change, the deflections must be adjusted for the new support datum
+      IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+      IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+      IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+      if (intervalIdx == liftingIntervalIdx || intervalIdx == storageIntervalIdx || intervalIdx == haulingIntervalIdx || intervalIdx == haulingIntervalIdx || intervalIdx == erectionIntervalIdx)
       {
-         IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
-         IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
-         IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
-         IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
          PoiAttributeType poiAttribute;
 
          if (liftingIntervalIdx <= intervalIdx && intervalIdx < storageIntervalIdx)
@@ -654,7 +697,7 @@ std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalInde
       }
       else
       {
-         // before storage... the deflections don't need to be adjusted
+         // not an interval when supports locations change... the deflections don't need to be adjusted
          result.insert(result.end(), vDxThisSegment.begin(), vDxThisSegment.end());
       }
    }
@@ -669,9 +712,7 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
 
    if ( pfType == pgsTypes::pftPretension )
    {
-      GET_IFACE(IIntervals, pIntervals);
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().get().GetSegmentKey());
-      GetPrestressSectionResults(releaseIntervalIdx, vPoi, resultsType, &vFx, &vFy, &vMz, &vDx, &vDy, &vRz );
+      GetPrestressSectionResults(intervalIdx, vPoi, resultsType, &vFx, &vFy, &vMz, &vDx, &vDy, &vRz );
    }
    else if ( pfType == pgsTypes::pftSecondaryEffects || pfType == pgsTypes::pftPostTensioning )
    {
@@ -1601,6 +1642,12 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 
 void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType intervalIdx,const PoiList& vPoi,ResultsType resultsType,std::vector<sysSectionValue>* pvFx,std::vector<sysSectionValue>* pvFy,std::vector<sysSectionValue>* pvMz,std::vector<Float64>* pvDx,std::vector<Float64>* pvDy,std::vector<Float64>* pvRz) const
 {
+   // all requests for pretension results come to the segment model manager
+   // however, the segment model manager needs the intervalIdx to be less then the erection interval
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().get().GetSegmentKey());
+   intervalIdx = Min(intervalIdx, erectionIntervalIdx - 1);
+
    if ( resultsType == rtIncremental )
    {
       std::vector<sysSectionValue> fxPrev, fyPrev, mzPrev, fxThis, fyThis, mzThis;
@@ -2271,9 +2318,6 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
    pModelData->Model->get_Loadings(&loadings);
 
    GET_IFACE_NOCHECK(IProductLoads,pProductLoads);
-
-   GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
 
    for (int i = 0; i < 3; i++)
    {

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -145,7 +145,7 @@ public:
    virtual void GetCantileverSlabPadLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2) const override;
    virtual void GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads) const override;
    virtual void GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, std::vector<DiaphragmLoad>* pLoads) const override;
-   virtual void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead) const override;
+   virtual void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pBackMomentArm, Float64* pPahead, Float64* pMahead, Float64* pAheadMomentArm) const override;
    virtual bool HasShearKeyLoad(const CGirderKey& girderKey) const override; // checks for load in adjacent continuous beams as well as current beam
    virtual void GetShearKeyLoad(const CSegmentKey& segmentKey,std::vector<ShearKeyLoad>* pLoads) const override;
    virtual bool HasLongitudinalJointLoad() const override;
@@ -358,14 +358,15 @@ public:
    virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetExcessCamber(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetExcessCamberUnfactored(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetExcessCamberEx(const pgsPointOfInterest& poi, Int16 time, Float64* pDy, Float64* pCy, const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetExcessCamberRotation(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetExcessCamberRotationUnfactored(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetDCamberForGirderScheduleUnfactored(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;
-
+   virtual void GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual void GetDCamberForGirderScheduleUnfactoredEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetLowerBoundCamberVariabilityFactor()const override;
    virtual CamberMultipliers GetCamberMultipliers(const CSegmentKey& segmentKey) const override;
+   virtual bool HasPrecamber(const CGirderKey& girderKey) const override;
    virtual Float64 GetPrecamber(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetPrecamber(const pgsPointOfInterest& poi, pgsTypes::PrestressDeflectionDatum datum) const override;
    virtual void GetPrecamber(const pgsPointOfInterest& poi, pgsTypes::PrestressDeflectionDatum datum, Float64* pDprecamber, Float64* pRprecamber) const override;
@@ -554,8 +555,8 @@ private:
 
    void GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig,bool applyFactors,Float64* pDy,Float64* pRz) const;
 
-   Float64 GetExcessCamberEx(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig,bool applyFactors) const;
-   void GetExcessCamberEx2(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& pInitTempModelData,CamberModelData& releaseTempModelData,Int16 time,bool applyFactors,Float64* pDy,Float64* pRz) const;
+   Float64 GetExcessCamberEx(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig,bool applyFactors, Float64* pDy, Float64* pCy) const;
+   void GetExcessCamberEx2(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,CamberModelData& initModelData,CamberModelData& pInitTempModelData,CamberModelData& releaseTempModelData,Int16 time,bool applyFactors,Float64* pDd,Float64* pDr,Float64* pCd,Float64* pCr,Float64* pEd,Float64* pEr) const;
 
    Float64 GetExcessCamberRotationEx(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig, bool applyFactors) const;
 

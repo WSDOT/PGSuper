@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -570,8 +570,11 @@ public:
    void SetLiftingDownwardImpactFactor(Float64 impact);
 
    // Set/Get the max allowable compressive concrete stress for lifting as a factor times f'ci
-   Float64 GetLiftingCompressionStressFactor() const;
-   void SetLiftingCompressionStressFactor(Float64 stress);
+   Float64 GetLiftingCompressionGlobalStressFactor() const;
+   void SetLiftingCompressionGlobalStressFactor(Float64 stress);
+
+   Float64 GetLiftingCompressionPeakStressFactor() const;
+   void SetLiftingCompressionPeakStressFactor(Float64 stress);
 
    // Set/Get the maximum allowable concrete tension stress during lifting as a factor times sqrt(f'ci)
    Float64 GetLiftingTensionStressFactor() const;
@@ -608,12 +611,6 @@ public:
    Float64 GetLiftingModulusOfRuptureFactor(pgsTypes::ConcreteType type) const;
    void SetLiftingModulusOfRuptureFactor(Float64 fr,pgsTypes::ConcreteType type);
 
-   pgsTypes::CamberMethod GetLiftingCamberMethod() const;
-   void SetLiftingCamberMethod(pgsTypes::CamberMethod method);
-
-   Float64 GetLiftingCamberPercentEstimate() const;
-   void SetLiftingCamberPercentEstimate(Float64 per);
-
    Float64 GetLiftingCamberMultiplier() const;
    void SetLiftingCamberMultiplier(Float64 m);
 
@@ -623,9 +620,6 @@ public:
    // wind load is either pressure or speed depending on the wind type
    Float64 GetLiftingWindLoad() const;
    void SetLiftingWindLoad(Float64 wl);
-
-   bool EvaluateLiftingStressesAtEquilibriumAngle() const;
-   void EvaluateLiftingStressesAtEquilibriumAngle(bool bComputeStressesAtEquilibriumAngle);
 
    //////////////////////////////////////
    //
@@ -651,19 +645,15 @@ public:
    Float64 GetHaulingMaximumGirderSweepTolerance() const;
    void SetHaulingMaximumGirderSweepTolerance(Float64 sweep);
 
+   // Set/Get the the sweep growth for hauling.
+   // PCI models sweep at hauling as (1/8" per 10 ft + 1")
+   // The 1" is the sweep growth
+   Float64 GetHaulingSweepGrowth() const;
+   void SetHaulingSweepGrowth(Float64 sweepGrowth);
+
    // Set/Get the maximum lateral tolerance for hauling support placement
    Float64 GetHaulingSupportPlacementTolerance() const;
    void SetHaulingSupportPlacementTolerance(Float64 tol);
-
-   // Set/Get the method for hauling camber. If camber method is cmApproximate,
-   // camber is estimated with GetHaulingCamberPercentEstimate, otherwise
-   // camber is computed
-   pgsTypes::CamberMethod GetHaulingCamberMethod() const;
-   void SetHaulingCamberMethod(pgsTypes::CamberMethod camberMethod);
-   
-   // Set/Get the percent the radius of stability is to be increased for camber
-   Float64 GetHaulingCamberPercentEstimate() const;
-   void SetHaulingCamberPercentEstimate(Float64 per);
 
    Float64 GetHaulingCamberMultiplier() const;
    void SetHaulingCamberMultiplier(Float64 m);
@@ -680,9 +670,13 @@ public:
    Float64 GetRoadwaySuperelevation() const;
    void SetRoadwaySuperelevation(Float64 dist);
 
-   // Set/Get the max allowable compressive concrete stress for hauling as a factor times f'ci
-   Float64 GetHaulingCompressionStressFactor() const;
-   void SetHaulingCompressionStressFactor(Float64 stress);
+   // Set/Get the max allowable compressive concrete stress for global stresses for hauling as a factor times f'c
+   Float64 GetHaulingCompressionGlobalStressFactor() const;
+   void SetHaulingCompressionGlobalStressFactor(Float64 stress);
+
+   // Set/Get the max allowable compressive concrete stress for peak stresses for hauling as a factor times f'c
+   Float64 GetHaulingCompressionPeakStressFactor() const;
+   void SetHaulingCompressionPeakStressFactor(Float64 stress);
 
    // Set/Get the maximum allowable concrete tension stress during during hauling as a factor times sqrt(f'ci)
    Float64 GetHaulingTensionStressFactorNormalCrown() const;
@@ -741,9 +735,6 @@ public:
 
    Float64 GetTurningRadius() const;
    void SetTurningRadius(Float64 r);
-
-   bool EvaluateHaulingStressesAtEquilibriumAngle() const;
-   void EvaluateHaulingStressesAtEquilibriumAngle(bool bComputeStressesAtEquilibriumAngle);
 
    //
    // Values used for KDOT method only
@@ -853,6 +844,11 @@ public:
    // If true, girder mild reinforcement is included in the moment capacity calculations.
    void IncludeRebarForMoment(bool bInclude);
    bool IncludeRebarForMoment() const;
+   
+   // Set/Get a paramter that indicates if pretensioned strands are included in negative moment capacity calculations.
+   // If true, the pretensioned strands are included in negative moment capacity calculuations
+   void IncludeStrandForNegativeMoment(bool bInclude);
+   bool IncludeStrandForNegativeMoment() const;
 
    // Set/Get the coefficient for computing modulus of rupture for moment capacity analysis
    void SetFlexureModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
@@ -1248,7 +1244,8 @@ private:
    Float64 m_CyLiftingCrackFs;
    Float64 m_CyLiftingFailFs;
    Float64 m_CyCompStressServ;
-   Float64 m_CyCompStressLifting;
+   Float64 m_LiftingCompressionStressCoefficient_GlobalStress;
+   Float64 m_LiftingCompressionStressCoefficient_PeakStress;
 
    Float64 m_CyTensStressServ;
    bool    m_CyDoTensStressServMax;
@@ -1272,12 +1269,9 @@ private:
    Float64 m_LiftingUpwardImpact;
    Float64 m_LiftingDownwardImpact;
    int     m_CuringMethod;
-   pgsTypes::CamberMethod m_LiftingCamberMethod;
-   Float64 m_LiftingCamberPercentEstimate;
    Float64 m_LiftingCamberMultiplier; // multilplier for direct camber
    pgsTypes::WindType m_LiftingWindType;
    Float64 m_LiftingWindLoad;
-   bool m_bComputeLiftingStressesAtEquilibriumAngle;
    Float64 m_SplittingZoneLengthFactor;
 
    // hauling
@@ -1291,8 +1285,6 @@ private:
    Float64 m_HaulingUpwardImpact;
    Float64 m_HaulingDownwardImpact;
 
-   pgsTypes::CamberMethod m_HaulingCamberMethod;
-   Float64 m_HaulingCamberPercentEstimate;
    Float64 m_HaulingCamberMultiplier; // multilplier for direct camber
 
    bool m_bHasOldHaulTruck; // if true, an old spec library entry was read and the hauling truck information is stored in m_OldHaulTruck
@@ -1301,9 +1293,11 @@ private:
    Float64 m_RoadwayCrownSlope;
    Float64 m_RoadwaySuperelevation;
    Float64 m_MaxGirderSweepHauling;
+   Float64 m_HaulingSweepGrowth;
    Float64 m_HaulingSupportPlacementTolerance;
 
-   Float64 m_CompStressHauling;
+   Float64 m_GlobalCompStressHauling;
+   Float64 m_PeakCompStressHauling;
    Float64 m_TensStressHaulingNormalCrown;
    bool    m_DoTensStressHaulingMaxNormalCrown;
    Float64 m_TensStressHaulingMaxNormalCrown;
@@ -1325,8 +1319,6 @@ private:
    pgsTypes::CFType m_CentrifugalForceType;
    Float64 m_HaulingSpeed;
    Float64 m_TurningRadius;
-
-   bool m_bComputeHaulingStressesAtEquilibriumAngle;
 
    // Used for KDOT only
    bool    m_UseMinTruckSupportLocationFactor;
@@ -1374,6 +1366,7 @@ private:
    bool    m_Bs3IgnoreRangeOfApplicability;  // this will only be found in library entries older than version 29
    int     m_Bs3LRFDOverReinforcedMomentCapacity;
    bool    m_bIncludeRebar_Moment;
+   bool    m_bIncludeStrand_NegMoment;
    Float64  m_FlexureModulusOfRuptureCoefficient[3]; // index is pgsTypes::ConcreteType enum
    Float64  m_ShearModulusOfRuptureCoefficient[3];   // index is pgsTypes::ConcreteType enum
 

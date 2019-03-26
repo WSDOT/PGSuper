@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -77,6 +77,16 @@ void CTxDOTCommandLineInfo::ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast
       {
          // Run distribution factor regression tests suite
          m_TxRunType        = TxrDistributionFactors;
+         m_TxFType          = txfNormal;
+         m_DoTxCadReport    = true;
+         m_bCommandLineMode = TRUE;
+         m_bShowSplash      = FALSE;
+         bMyParameter       = true;
+      }
+      else if ( strParam.CompareNoCase(_T("TestGeometry")) == 0 )
+      {
+         // Run distribution factor regression tests suite
+         m_TxRunType        = txrGeometry;
          m_TxFType          = txfNormal;
          m_DoTxCadReport    = true;
          m_bCommandLineMode = TRUE;

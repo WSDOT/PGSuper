@@ -1,27 +1,27 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   0.00                     1     1    W35DG          14  0.6  270  20.75  15.32                                              4.000  5.000   1.565    -2.634     1960   0.625  0.625   2.009 -0.006 -0.076 -0.072 -0.155  46.60  128.41    1.00    1.00    1.00 
+ 28.25    5   0.00                     1     1    W35DG    *     14  0.6  270  20.75  15.32                                              4.000  5.000   1.565    -2.634     1960   0.625  0.625   2.009 -0.006 -0.076 -0.072 -0.155  46.60  128.41    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
 Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
+Lifting checks failed
 Finished elevation check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   0.00                     1     2    W35DG          14  0.6  270  20.75  15.32                                              4.000  5.000   1.441    -2.446     1780   0.534  0.667   2.000 -0.013 -0.076 -0.072 -0.161  46.60  127.85    1.00    1.00    1.00 
+ 28.25    5   0.00                     1     2    W35DG    *     14  0.6  270  20.75  15.32                                              4.000  5.000   1.441    -2.446     1780   0.534  0.667   2.000 -0.013 -0.076 -0.072 -0.161  46.60  127.85    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
+Lifting checks failed
 Finished elevation check failed
 
 

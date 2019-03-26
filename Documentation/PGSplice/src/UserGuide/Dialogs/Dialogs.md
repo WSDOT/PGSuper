@@ -10,6 +10,7 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_cast_closure_joints
 * @subpage ug_dialogs_cast_deck
 * @subpage ug_dialogs_cast_longitudinal_joints
+* @subpage ug_dialogs_cast_intermediate_diaphragms
 * @subpage ug_dialogs_closure_joint_details
 * @subpage ug_dialogs_configure_prestress_losses
 * @subpage ug_dialogs_configure_reports

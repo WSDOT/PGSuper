@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -522,10 +522,10 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       else
       {
          (*pTable)(++row, 0) << _T("\"A\" Dimension at CL Bearing End 1");
-         (*pTable)(row, 1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart), segmentKey.girderIndex));
+         (*pTable)(row, 1) << gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metStart));
 
          (*pTable)(++row, 0) << _T("\"A\" Dimension at CL Bearing End 2");
-         (*pTable)(row, 1) << gdim.SetValue(pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd), segmentKey.girderIndex));
+         (*pTable)(row, 1) << gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
       }
 
       C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
@@ -536,15 +536,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    // get # of days for creep
    Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
    Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
-   Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
-   Dmin_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-   Dmax_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
-   
-   Dmin_LowerBound = Cfactor*Dmin_UpperBound;
-   Dmin_Average    = (1+Cfactor)/2*Dmin_UpperBound;
-   
-   Dmax_LowerBound = Cfactor*Dmax_UpperBound;
-   Dmax_Average    = (1+Cfactor)/2*Dmax_UpperBound;
+   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MAXTIME, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
+   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
 
 
    (*pTable)(++row,0) << _T("Lower bound @ ")<< min_days<<_T(" days");
@@ -619,14 +612,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          (*pTable)(++row,0) << _T("H1 at End 1 (##)");
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poiStart);
-         Float64 H1 = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metStart),segmentKey.girderIndex) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         Float64 H1 = pSegment->GetSlabOffset(pgsTypes::metStart) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
 
          (*pTable)(++row,0) << _T("H1 at End 2 (##)");
          pgsPointOfInterest poiEnd(poiStart);
          poiEnd.SetDistFromStart(pBridge->GetSegmentLength(segmentKey));
          Hg = pSectProp->GetHg(releaseIntervalIdx,poiEnd);
-         H1 = pGroup->GetSlabOffset(pGroup->GetPierIndex(pgsTypes::metEnd),segmentKey.girderIndex) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
       }
    }
@@ -635,18 +628,9 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    if ( pHaulingArtifact != nullptr )
    {
       const stbHaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
-      bool bDirectCamber;
-      Float64 camber;
-      pHaulProblem->GetCamber(&bDirectCamber,&camber);
+      Float64 camber = pHaulProblem->GetCamber();
       (*pTable)(++row,0) << _T("Maximum midspan vertical deflection, shipping");
-      if ( bDirectCamber )
-      {
-         (*pTable)(row,  1) << gdim.SetValue(camber);
-      }
-      else
-      {
-         (*pTable)(row,  1) << _T("");
-      }
+      (*pTable)(row,  1) << gdim.SetValue(camber);
    }
 
    const stbLiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
@@ -751,6 +735,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
             rptParagraph* p = new rptParagraph;
             *pChapter << p;
 
+            Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
             *p << _T("Screed camber (C) is greater than the lower bound camber at time of deck casting (") << Cfactor * 100 << _T("% of D") << Sub(min_days) << _T("). The girder may end up with a sag if the deck is placed at day ") << min_days << _T(" and the actual camber is a lower bound value.") << rptNewLine;
          }
       }

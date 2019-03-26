@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -374,7 +374,7 @@ void pgsLoadRater::InitCriticalSectionZones(const CGirderKey& girderKey,pgsTypes
          vCSPoi.erase(
             std::remove_if(vCSPoi.begin(), vCSPoi.end(), [&vCS](const pgsPointOfInterest& poi) 
                {
-                  return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.pCriticalSection->Poi.AtExactSamePlace(poi);}) == vCS.cend();
+                  return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.GetPointOfInterest().AtExactSamePlace(poi);}) == vCS.cend();
                }),
             vCSPoi.end());
       }

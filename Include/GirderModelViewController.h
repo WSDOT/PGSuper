@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,8 +45,7 @@ interface IGirderModelViewController : IEAFViewController
    virtual void CutAt(Float64 Xg) = 0;
    virtual void CutAtNext() = 0;
    virtual void CutAtPrev() = 0;
-   virtual Float64 GetMinCutLocation() const = 0;
-   virtual Float64 GetMaxCutLocation() const = 0;
+   virtual void GetCutRange(Float64* pMin, Float64* pMax) const = 0;
 
    // View Settings
    virtual void ShowStrands(bool bShow) = 0;

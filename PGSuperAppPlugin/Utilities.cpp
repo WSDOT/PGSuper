@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "Utilities.h"
 
 #ifdef _DEBUG
@@ -48,4 +48,47 @@ pgsTypes::SupportedBeamSpacing ToggleGirderSpacingType(pgsTypes::SupportedBeamSp
       ATLASSERT(false); // is there a new spacing type???
 
    return spacing;
+}
+
+
+CString GetSlabOffsetTypeAsString(pgsTypes::SlabOffsetType type, BOOL bIsPGSuper)
+{
+   if (type == pgsTypes::sotBridge)
+   {
+      return _T("Define single slab offset for entire Bridge");
+   }
+   else if (type == pgsTypes::sotBearingLine)
+   {
+      return bIsPGSuper ? _T("Define unique slab offsets for each Pier") : _T("Define unique slab offsets for each segment bearing line");
+   }
+   else if (type == pgsTypes::sotSegment)
+   {
+      return bIsPGSuper ? _T("Define unique slab offsets for each Girder") : _T("Define unique slab offset at every segment end");
+   }
+   else
+   {
+      ATLASSERT(0);
+      return _T("Error, bad haunch type");
+   }
+}
+
+CString GetAssumedExcessCamberTypeAsString(pgsTypes::AssumedExcessCamberType type)
+{
+   if (type == pgsTypes::aecBridge)
+   {
+      return _T("Define single Assumed Excess Camber for entire Bridge");
+   }
+   else if (type == pgsTypes::aecSpan)
+   {
+      return _T("Define unique Assumed Excess Cambers for each Span");
+   }
+   else if (type == pgsTypes::aecGirder)
+   {
+      return _T("Define unique Assumed Excess Cambers for each Girder");
+   }
+   else
+   {
+      ATLASSERT(0);
+      return _T("Error, bad camber type");
+   }
 }

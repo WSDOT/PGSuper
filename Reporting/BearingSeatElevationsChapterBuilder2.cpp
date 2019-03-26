@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -150,7 +150,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(ncols,strLabel);
 
    (*pTable)(0,0) << _T("Girder");
-   (*pTable)(0,1) << _T("Bearing");
+   (*pTable)(0,1) << _T("Bearing") << rptNewLine << _T("#");
 
    if (m_TableType == ttBearingDeduct)
    {
@@ -174,6 +174,12 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
    {
       BearingElevationDetails& elevDetails = *iter;
 
+      if (elevDetails.BearingIdx == INVALID_INDEX)
+      {
+         // bearings with this value are CL bearings and are only printed in the details tables
+         continue;
+      }
+
       // put multiple bearings for same girder in same row
       bool newRow = (lastGdrIdx == INVALID_INDEX) || (lastGdrIdx != elevDetails.GirderKey.girderIndex);
       if (newRow)
@@ -190,15 +196,22 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
          WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 0, LABEL_GIRDER(elevDetails.GirderKey.girderIndex))
       }
 
-      WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 1, elevDetails.BearingIdx+1)
-
-      if (m_TableType == ttBearingDeduct)
+      if (elevDetails.BearingIdx == IBridge::sbiSingleBearingValue)
       {
-         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, elevDetails.BearingDeduct)
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 1, _T("1"))
       }
       else
       {
-         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, elevDetails.TopBrgElevation)
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 1, elevDetails.BearingIdx + 1)
+      }
+
+      if (m_TableType == ttBearingDeduct)
+      {
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, dim.SetValue(elevDetails.BearingDeduct))
+      }
+      else
+      {
+         WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 2, dist.SetValue(elevDetails.TopBrgElevation))
       }
 
       WRITE_NEWLINE_BEFORE(writeNewLineBefore, row, 3, dist.SetValue(elevDetails.BrgSeatElevation))

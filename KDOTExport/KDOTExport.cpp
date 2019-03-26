@@ -9,7 +9,7 @@
 #include "resource.h"
 #include <initguid.h>
 #include "KDOTExport.h"
-#include <PGSuperIEPlugin.h>
+#include <Plugins\PGSuperIEPlugin.h>
 #include "PGSuperCatCom.h"
 #include <BridgeLinkCATID.h>
 #include <WBFLCore_i.c>

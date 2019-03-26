@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,14 +23,14 @@
 // ClosureJointGeometryPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
-#include "PGSuperAppPlugin\Resource.h"
+#include "resource.h"
 #include "ClosureJointGeometryPage.h"
 
 #include "TemporarySupportDlg.h"
 #include "PierDetailsDlg.h"
-#include "PGSuperAppPlugin\TimelineEventDlg.h"
+#include "TimelineEventDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>

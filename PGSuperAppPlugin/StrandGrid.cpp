@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,9 +23,9 @@
 // DebondGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperDoc.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "resource.h"
 #include "StrandGrid.h"
 #include "GirderSegmentStrandsPage.h"
 #include "PGSuperUnits.h"
@@ -966,13 +966,13 @@ UINT CRowStrandGrid::Validate(ROWCOL nRow, CStrandRow& strandRow)
    {
       return ERROR_S1_MUST_BE_ZERO;
    }
-   else if (IsEven(strandRow.m_nStrands) && IsLE(strandRow.m_Z, 0.0, 0.0))
+   else if (IsEven(strandRow.m_nStrands) && strandRow.m_Z <= 0)
    {
       return ERROR_S1_MUST_BE_POSITIVE;
    }
 
    // Check main spacing requirement
-   if (3 < strandRow.m_nStrands && IsLE(strandRow.m_Spacing, 0.0, 0.0))
+   if (3 <= strandRow.m_nStrands && strandRow.m_Spacing <= 0)
    {
       return ERROR_S2_MUST_BE_POSITIVE;
    }

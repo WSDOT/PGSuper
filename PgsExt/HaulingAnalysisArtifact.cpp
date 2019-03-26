@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -123,41 +123,49 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKe
 void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, IBroker* pBroker,
                                                     const std::_tstring& pid, const std::_tstring& bridgeId) const
 {
-   GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
-
-   PoiList vPoi;
-   pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey, POI_5L,&vPoi);
-   ATLASSERT(vPoi.size()==1);
-   const pgsPointOfInterest& poi = vPoi.front();
-   Float64 loc = poi.GetDistFromStart();
-
    GET_IFACE2(pBroker,IGirder,pGirder);
    const stbHaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
 
+   GirderIndexType gdr = segmentKey.girderIndex;
+
    const stbHaulingResults& haulingResults = m_HaulingArtifact.GetHaulingResults();
-   std::vector<stbHaulingSectionResult>::const_iterator iter(haulingResults.vSectionResults.begin());
-   std::vector<stbHaulingSectionResult>::const_iterator end(haulingResults.vSectionResults.end());
-   for ( ; iter != end; iter++ )
+   for (int i = 0; i < 2; i++)
    {
-      const stbHaulingSectionResult& sectionResult = *iter;
-      const stbIAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
-      Float64 X = pAnalysisPoint->GetLocation();
-      if ( ::IsEqual(X,loc) )
-      {
-         GirderIndexType gdr = segmentKey.girderIndex;
-         Float64 fMax = Max(sectionResult.fMaxDirect[stbTypes::CrownSlope][stbTypes::Top],sectionResult.fMaxDirect[stbTypes::CrownSlope][stbTypes::Bottom]);
-         Float64 fMin = Min(sectionResult.fMinDirect[stbTypes::CrownSlope][stbTypes::Top],sectionResult.fMinDirect[stbTypes::CrownSlope][stbTypes::Bottom]);
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100005, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(fMax, unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100006, ")<<loc<<_T(", ")<< ::ConvertFromSysUnits(fMin, unitMeasure::MPa) <<_T(", 50, ")<<gdr<<std::endl;
+      stbTypes::HaulingSlope slope = (stbTypes::HaulingSlope)i;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100007a, ") << ::ConvertFromSysUnits(haulingResults.MaxDirectStress[slope], unitMeasure::MPa) << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100007b, ") << haulingResults.MaxDirectStressAnalysisPointIndex[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100007c, ") << haulingResults.MaxDirectStressImpactDirection[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100007d, ") << haulingResults.MaxDirectStressCorner[slope] << _T(", 50, ") << gdr << std::endl;
 
-         Float64 FScr = sectionResult.FScrMin[stbTypes::Superelevation];
-         Float64 FSro = haulingResults.MinFsRollover[stbTypes::Superelevation];
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100007, ")<<loc<<_T(", ")<< FScr <<_T(", 50, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100008, ")<<loc<<_T(", ")<< FSro <<_T(", 50, ")<<gdr<<std::endl;
-         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100010, ")<<loc<<_T(", ")<<(int)(Passed()?1:0)<<_T(", 50, ")<<gdr<<std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100008a, ") << ::ConvertFromSysUnits(haulingResults.MinDirectStress[slope], unitMeasure::MPa) << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100008b, ") << haulingResults.MinDirectStressAnalysisPointIndex[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100008c, ") << haulingResults.MinDirectStressImpactDirection[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100008d, ") << haulingResults.MinDirectStressCorner[slope] << _T(", 50, ") << gdr << std::endl;
 
-         break;
-      }
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100009a, ") << ::ConvertFromSysUnits(haulingResults.MaxStress[slope], unitMeasure::MPa) << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100009b, ") << haulingResults.MaxStressAnalysisPointIndex[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100009c, ") << haulingResults.MaxStressImpactDirection[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100009d, ") << haulingResults.MaxStressCorner[slope] << _T(", 50, ") << gdr << std::endl;
+
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100010a, ") << ::ConvertFromSysUnits(haulingResults.MinStress[slope], unitMeasure::MPa) << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100010b, ") << haulingResults.MinStressAnalysisPointIndex[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100010c, ") << haulingResults.MinStressImpactDirection[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100010d, ") << haulingResults.MinStressCorner[slope] << _T(", 50, ") << gdr << std::endl;
+
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100011a, ") << haulingResults.MinFScr[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100011b, ") << haulingResults.FScrAnalysisPointIndex[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100011c, ") << haulingResults.FScrImpactDirection[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100011d, ") << haulingResults.FScrWindDirection[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100011e, ") << haulingResults.FScrCorner[slope] << _T(", 50, ") << gdr << std::endl;
+
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100012a, ") << haulingResults.MinFsFailure[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100012b, ") << haulingResults.MinAdjFsFailure[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100012c, ") << haulingResults.FSfImpactDirection[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100012d, ") << haulingResults.FSfWindDirection[slope] << _T(", 50, ") << gdr << std::endl;
+
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100013a, ") << haulingResults.MinFsRollover[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100013b, ") << haulingResults.FSroImpactDirection[slope] << _T(", 50, ") << gdr << std::endl;
+      resultsFile << bridgeId << _T(", ") << pid << _T(", 100013c, ") << haulingResults.FSroWindDirection[slope] << _T(", 50, ") << gdr << std::endl;
    }
 }
 

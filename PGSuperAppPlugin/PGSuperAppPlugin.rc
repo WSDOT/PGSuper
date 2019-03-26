@@ -98,7 +98,7 @@ IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSpliceProje
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_PGSUPER             ICON                    "..\\res\\PGSuperDoc.ico"
+IDR_PGSUPER             ICON                    "res\\PGSuperDoc.ico"
 
 IDI_BSS                 ICON                    "res\\bss.ico"
 
@@ -108,83 +108,83 @@ IDI_TXDOT               ICON                    "res\\txdot.ico"
 
 IDI_KDOT                ICON                    "res\\KDOT.ico"
 
-IDR_PGSPLICE            ICON                    "..\\res\\PGSpliceDoc.ico"
+IDR_PGSPLICE            ICON                    "res\\PGSpliceDoc.ico"
 
-IDR_PGSUPER_TEMPLATE_ICON ICON                    "..\\res\\PGSuperTemplate.ico"
+IDR_PGSUPER_TEMPLATE_ICON ICON                    "res\\PGSuperTemplate.ico"
 
-IDR_PGSPLICE_TEMPLATE_ICON ICON                    "..\\res\\PGSpliceTemplate.ico"
+IDR_PGSPLICE_TEMPLATE_ICON ICON                    "res\\PGSpliceTemplate.ico"
 
-IDR_BRIDGEMODELEDITOR   ICON                    "..\\res\\ViewBridge.ico"
+IDR_BRIDGEMODELEDITOR   ICON                    "res\\ViewBridge.ico"
 
-IDR_GIRDERMODELEDITOR   ICON                    "..\\res\\GirderView.ico"
+IDR_GIRDERMODELEDITOR   ICON                    "res\\GirderView.ico"
 
-IDR_ANALYSISRESULTS     ICON                    "..\\res\\AnalysisResultsView.ico"
+IDR_ANALYSISRESULTS     ICON                    "res\\AnalysisResultsView.ico"
 
-IDR_GRAPHING            ICON                    "..\\res\\AnalysisResultsView.ico"
+IDR_GRAPHING            ICON                    "res\\AnalysisResultsView.ico"
 
-IDR_REPORT              ICON                    "..\\res\\ReportView.ico"
+IDR_REPORT              ICON                    "res\\ReportView.ico"
 
-IDR_FACTOROFSAFETY      ICON                    "..\\res\\Stable.ico"
+IDR_FACTOROFSAFETY      ICON                    "res\\Stable.ico"
 
-IDR_EDITLOADS           ICON                    "..\\res\\edit_loa.ico"
+IDR_EDITLOADS           ICON                    "res\\edit_loa.ico"
 
-IDI_DEFAULT_ENTRY       ICON                    "..\\res\\DefaultEntry.ico"
+IDI_DEFAULT_ENTRY       ICON                    "res\\DefaultEntry.ico"
 
-IDI_FOLDER              ICON                    "..\\res\\folder_closed.ico"
+IDI_FOLDER              ICON                    "res\\folder_closed.ico"
 
-IDI_OPEN_FOLDER         ICON                    "..\\res\\folder_open.ico"
+IDI_OPEN_FOLDER         ICON                    "res\\folder_open.ico"
 
-IDI_LIBRARY_MANAGER     ICON                    "..\\res\\library_manager.ico"
+IDI_LIBRARY_MANAGER     ICON                    "res\\library_manager.ico"
 
-IDI_WARNING2            ICON                    "..\\res\\warning2.ico"
+IDI_WARNING2            ICON                    "res\\warning2.ico"
 
-IDI_EDIT_LOADS          ICON                    "..\\res\\edit_loa.ico"
+IDI_EDIT_LOADS          ICON                    "res\\edit_loa.ico"
 
-IDI_POINT_LOAD          ICON                    "..\\res\\point_load.ico"
+IDI_POINT_LOAD          ICON                    "res\\point_load.ico"
 
-IDI_DISTRIBUTED_LOAD    ICON                    "..\\res\\distributed_load.ico"
+IDI_DISTRIBUTED_LOAD    ICON                    "res\\distributed_load.ico"
 
-IDI_MOMENT_LOAD         ICON                    "..\\res\\moment.ico"
+IDI_MOMENT_LOAD         ICON                    "res\\moment.ico"
 
-IDR_PGSUPERPROJECTIMPORTER ICON                    "..\\res\\Bridge2.ico"
+IDR_PGSUPERPROJECTIMPORTER ICON                    "res\\Bridge2.ico"
 
-IDR_PGSPLICEPROJECTIMPORTER ICON                    "..\\res\\Bridge2.ico"
+IDR_PGSPLICEPROJECTIMPORTER ICON                    "res\\Bridge2.ico"
 
-IDI_EDIT_BRIDGE         ICON                    "..\\res\\EditBridge.ico"
+IDI_EDIT_BRIDGE         ICON                    "res\\EditBridge.ico"
 
-IDI_EDIT_GIRDER         ICON                    "..\\res\\EditGirder.ico"
+IDI_EDIT_GIRDER         ICON                    "res\\EditGirder.ico"
 
-IDI_LIVELOAD            ICON                    "..\\res\\LiveLoad.ico"
+IDI_LIVELOAD            ICON                    "res\\LiveLoad.ico"
 
-IDI_RF                  ICON                    "..\\res\\RatingFactor.ico"
+IDI_RF                  ICON                    "res\\RatingFactor.ico"
 
-IDI_COPY_PROPERTIES     ICON                    "..\\res\\CopyProperties.ico"
+IDI_COPY_PROPERTIES     ICON                    "res\\CopyProperties.ico"
 
-IDI_STRANDS             ICON                    "..\\res\\Strands.ico"
+IDI_STRANDS             ICON                    "res\\Strands.ico"
 
-IDI_STRANDS_CG          ICON                    "..\\res\\StrandsCG.ico"
+IDI_STRANDS_CG          ICON                    "res\\StrandsCG.ico"
 
-IDI_DIMENSIONS          ICON                    "..\\res\\Dimensions.ico"
+IDI_DIMENSIONS          ICON                    "res\\Dimensions.ico"
 
-IDI_PROPERTIES          ICON                    "..\\res\\Properties.ico"
+IDI_PROPERTIES          ICON                    "res\\Properties.ico"
 
-IDI_LONGITUDINAL_REINFORCEMENT ICON                    "..\\res\\LongitudinalReinforcement.ico"
+IDI_LONGITUDINAL_REINFORCEMENT ICON                    "res\\LongitudinalReinforcement.ico"
 
-IDI_STIRRUPS            ICON                    "..\\res\\Stirrups.ico"
+IDI_STIRRUPS            ICON                    "res\\Stirrups.ico"
 
-IDI_USER_LOADS          ICON                    "..\\res\\UserLoads.ico"
+IDI_USER_LOADS          ICON                    "res\\UserLoads.ico"
 
-IDI_SCHEMATIC           ICON                    "..\\res\\Schematic.ico"
+IDI_SCHEMATIC           ICON                    "res\\Schematic.ico"
 
-IDI_SECTION_CG          ICON                    "..\\res\\SectionCG.ico"
+IDI_SECTION_CG          ICON                    "res\\SectionCG.ico"
 
-IDI_NORTH               ICON                    "..\\res\\North.ico"
+IDI_NORTH               ICON                    "res\\North.ico"
 
-IDI_LABELS              ICON                    "..\\res\\Labels.ico"
+IDI_LABELS              ICON                    "res\\Labels.ico"
 
-IDI_BRIDGE              ICON                    "..\\res\\Bridge.ico"
+IDI_BRIDGE              ICON                    "res\\Bridge.ico"
 
-IDI_SCHEMATIC_PROFILE   ICON                    "..\\res\\SchematicProfile.ico"
+IDI_SCHEMATIC_PROFILE   ICON                    "res\\SchematicProfile.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -192,21 +192,21 @@ IDI_SCHEMATIC_PROFILE   ICON                    "..\\res\\SchematicProfile.ico"
 // Bitmap
 //
 
-IDR_PGSUPER_STDTOOLBAR  BITMAP                  "..\\res\\PGSuperToolbar.bmp"
+IDR_PGSUPER_STDTOOLBAR  BITMAP                  "res\\PGSuperToolbar.bmp"
 
-IDR_PGSPLICE_STDTOOLBAR BITMAP                  "..\\res\\PGSpliceToolbar.bmp"
+IDR_PGSPLICE_STDTOOLBAR BITMAP                  "res\\PGSpliceToolbar.bmp"
 
-IDR_LIBTOOLBAR          BITMAP                  "..\\res\\LibraryToolbar.bmp"
+IDR_LIBTOOLBAR          BITMAP                  "res\\LibraryToolbar.bmp"
 
-IDR_HELPTOOLBAR         BITMAP                  "..\\res\\HelpToolbar.bmp"
+IDR_HELPTOOLBAR         BITMAP                  "res\\HelpToolbar.bmp"
 
-IDB_IN_USE              BITMAP                  "..\\res\\LibEntryInUse.bmp"
+IDB_IN_USE              BITMAP                  "res\\LibEntryInUse.bmp"
 
-IDB_IN_USE_AND_READ_ONLY BITMAP                  "..\\res\\LibEntryInUseAndReadOnly.bmp"
+IDB_IN_USE_AND_READ_ONLY BITMAP                  "res\\LibEntryInUseAndReadOnly.bmp"
 
-IDB_READ_ONLY           BITMAP                  "..\\res\\LibEntryReadOnly.bmp"
+IDB_READ_ONLY           BITMAP                  "res\\LibEntryReadOnly.bmp"
 
-IDB_GIRDERDESIGNER      BITMAP                  "..\\res\\GirderDesigner.bmp"
+IDB_GIRDERDESIGNER      BITMAP                  "res\\GirderDesigner.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1600,23 +1600,23 @@ BEGIN
     EDITTEXT        IDC_EC,149,202,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_EC_UNIT,193,204,26,8
     PUSHBUTTON      "More Properties...",IDC_MORE,237,193,83,14
-    EDITTEXT        IDC_ASSEXCESSCAMBER,69,307,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_ASSUMED_EXCESS_CAMBER,69,307,40,14,ES_RIGHT | ES_AUTOHSCROLL
     GROUPBOX        "Haunch Geometry",IDC_STATIC,7,227,411,106
-    COMBOBOX        IDC_CB_SLABOFFSET,112,240,235,94,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Start of Girder",IDC_ADIM_START_LABEL,21,263,44,8
-    EDITTEXT        IDC_ADIM_START,69,260,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ADIM_START_UNIT,113,263,19,8
-    LTEXT           "End of Girder",IDC_ADIM_END_LABEL,145,263,42,8
-    EDITTEXT        IDC_ADIM_END,193,260,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ADIM_END_UNIT,237,263,19,8
-    LTEXT           "Static",IDC_ASSEXCESSCAMBER_UNIT,113,310,19,8
-    COMBOBOX        IDC_CB_ASSEXCESSCAMBER,112,287,235,94,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SLAB_OFFSET_TYPE,112,240,235,94,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Start of Girder",IDC_START_SLAB_OFFSET_LABEL,21,263,44,8
+    EDITTEXT        IDC_START_SLAB_OFFSET,69,260,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_START_SLAB_OFFSET_UNIT,113,263,19,8
+    LTEXT           "End of Girder",IDC_END_SLAB_OFFSET_LABEL,145,263,42,8
+    EDITTEXT        IDC_END_SLAB_OFFSET,193,260,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_END_SLAB_OFFSET_UNIT,237,263,19,8
+    LTEXT           "Static",IDC_ASSUMED_EXCESS_CAMBER_UNIT,113,310,19,8
+    COMBOBOX        IDC_ASSUMED_EXCESS_CAMBER_TYPES,112,287,235,94,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Condition and Rating",IDC_STATIC,7,336,385,44
     LTEXT           "Condition Factor (MBE 6A.4.2.3)",IDC_STATIC,13,348,105,8
     COMBOBOX        IDC_CONDITION_FACTOR_TYPE,13,360,243,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_CONDITION_FACTOR,259,360,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Assumed Excess Camber",IDC_ASSEXCESSCAMBER_LABEL,22,290,84,8
-    LTEXT           "Slab Offset (""A"" Dimension)",IDC_ADIM_START_LABEL3,19,243,92,8
+    LTEXT           "Assumed Excess Camber",IDC_ASSUMED_EXCESS_CAMBER_LABEL,22,290,84,8
+    LTEXT           "Slab Offset (""A"" Dimension)",IDC_SLAB_OFFSET_LABEL,19,243,92,8
 END
 
 IDD_BRIDGEDESC_DECKREINFORCEMENT DIALOGEX 0, 0, 307, 239
@@ -1682,10 +1682,10 @@ BEGIN
     COMBOBOX        IDC_DECK_EVENT,274,7,152,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Cross Section",IDC_STATIC,7,25,171,131
     RTEXT           "Gross Depth",IDC_GROSS_DEPTH_LABEL,55,40,47,8
-    EDITTEXT        IDC_GROSS_DEPTH,108,40,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_GROSS_DEPTH_UNIT,154,44,19,8
-    RTEXT           "Overhang Edge Depth",IDC_OVERHANG_DEPTH_LABEL,30,61,72,8
-    EDITTEXT        IDC_OVERHANG_DEPTH,108,60,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_GROSS_DEPTH,108,38,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_GROSS_DEPTH_UNIT,153,41,19,8
+    RTEXT           "Overhang Edge Depth",IDC_OVERHANG_DEPTH_LABEL,12,63,94,9
+    EDITTEXT        IDC_OVERHANG_DEPTH,109,61,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_OVERHANG_DEPTH_UNIT,154,64,19,8
     COMBOBOX        IDC_OVERHANG_TAPER,36,78,129,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Stay in Place Deck Panel Dimensions",IDC_SIP_LABEL,18,100,151,9,SS_SUNKEN
@@ -1701,16 +1701,16 @@ BEGIN
     LTEXT           "Static",IDC_FILLET_UNIT,78,175,21,8
     RTEXT           "Haunch Shape",IDC_HAUNCH_SHAPE_LABEL,108,172,26,16
     COMBOBOX        IDC_HAUNCH_SHAPE2,139,174,107,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_SAMESLABOFFSET,14,198,214,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "Slab Offset (""A"" Dimension)",IDC_ADIM_LABEL,21,220,91,8
-    EDITTEXT        IDC_ADIM,117,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    COMBOBOX        IDC_SLAB_OFFSET_TYPE,14,198,214,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Slab Offset (""A"" Dimension)",IDC_SLAB_OFFSET_LABEL,21,220,91,8
+    EDITTEXT        IDC_SLAB_OFFSET,117,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
     PUSHBUTTON      "Edit Haunch Geometry...",IDC_EDIT_HAUNCH_BUTTON,121,217,92,15
-    LTEXT           "Static",IDC_ADIM_UNIT,161,220,15,8
-    COMBOBOX        IDC_ASSEXCESSCAMBERTYPE,13,243,215,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "Assumed Excess Camber",IDC_ASSEXCESSCAMBER_LABEL,24,263,87,8
-    EDITTEXT        IDC_ASSEXCESSCAMBER,117,260,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_SLAB_OFFSET_UNIT,161,220,15,8
+    COMBOBOX        IDC_ASSUMED_EXCESS_CAMBER_TYPE,13,243,215,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Assumed Excess Camber",IDC_ASSUMED_EXCESS_CAMBER_LABEL,24,263,87,8
+    EDITTEXT        IDC_ASSUMED_EXCESS_CAMBER,117,260,40,14,ES_RIGHT | ES_AUTOHSCROLL
     PUSHBUTTON      "Edit Haunch Geometry...",IDC_EDIT_HAUNCH_BUTTON2,121,260,92,15
-    LTEXT           "Static",IDC_ASSEXCESSCAMBER_UNIT,161,263,19,8
+    LTEXT           "Static",IDC_ASSUMED_EXCESS_CAMBER_UNIT,161,263,19,8
     GROUPBOX        "Wearing Surface",IDC_STATIC,7,289,419,58
     COMBOBOX        IDC_WEARINGSURFACETYPE,19,302,109,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_OVERLAY_EVENT,137,302,128,73,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1898,10 +1898,10 @@ BEGIN
     LTEXT           "Static",IDC_SPAN_LENGTH_UNIT,104,57,19,8
     LTEXT           "Static",IDC_SPAN_LENGTH_NOTE,14,73,301,31
     GROUPBOX        "Haunch Geometry",IDC_STATIC,7,119,339,117
-    LTEXT           "Start",IDC_START,14,163,16,8
+    LTEXT           "Start",IDC_START_SLAB_OFFSET_LABEL,14,163,16,8
     EDITTEXT        IDC_START_SLAB_OFFSET,37,160,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_START_SLAB_OFFSET_UNIT,81,163,19,8
-    LTEXT           "End",IDC_END,113,164,14,8
+    LTEXT           "End",IDC_END_SLAB_OFFSET_LABEL,113,164,14,8
     EDITTEXT        IDC_END_SLAB_OFFSET,137,161,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_END_SLAB_OFFSET_UNIT,181,164,19,8
     GROUPBOX        "Cantilevers",IDC_CANTILEVER_GROUP,7,244,339,57
@@ -1913,13 +1913,13 @@ BEGIN
     LTEXT           "Length",IDC_END_CANTILEVER_LABEL,81,279,23,8
     EDITTEXT        IDC_END_CANTILEVER_LENGTH,111,277,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_END_CANTILEVER_UNIT,155,279,19,8
-    EDITTEXT        IDC_ASSEXCESSCAMBER,67,210,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ASSEXCESSCAMBER_UNIT,111,213,19,8
-    COMBOBOX        IDC_ASSEXCESSCAMBER_COMBO,107,188,229,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_SLABOFFSET_COMBO,107,137,229,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Slab Offset (""A"" Dimension)",IDC_SLABOFFSET_LABEL,15,139,87,8
-    LTEXT           "Assumed Excess Camber",IDC_ASSEXCESSCAMBER_LABEL2,14,190,84,8
-    RTEXT           "Camber",IDC_ASSEXCESSCAMBER_LABEL,30,214,31,8
+    EDITTEXT        IDC_ASSUMED_EXCESS_CAMBER,67,210,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ASSUMED_EXCESS_CAMBER_UNIT,111,213,19,8
+    COMBOBOX        IDC_ASSUMED_EXCESS_CAMBER_TYPE,107,188,229,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SLAB_OFFSET_TYPE,107,137,229,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Slab Offset (""A"" Dimension)",IDC_SLAB_OFFSET_LABEL,15,139,87,8
+    LTEXT           "Assumed Excess Camber",IDC_ASSUMED_EXCESS_CAMBER_LABEL2,14,190,84,8
+    RTEXT           "Camber",IDC_ASSUMED_EXCESS_CAMBER_LABEL,30,214,31,8
 END
 
 IDD_PIER_LOCATION DIALOGEX 0, 0, 344, 222
@@ -1940,14 +1940,14 @@ BEGIN
     LTEXT           "Orientation format note",IDC_ORIENTATION_FORMAT,16,111,318,22
     LTEXT           "Erection Event",IDC_ERECTION_LABEL,16,137,51,8
     COMBOBOX        IDC_ERECTION_EVENT,105,135,213,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Slab Offset (""A"" Dimension)",IDC_STATIC,7,159,330,54
+    GROUPBOX        "Slab Offset (""A"" Dimension)",IDC_SLAB_OFFSET_GROUP,7,159,330,54
     LTEXT           "Back",IDC_BACK_SLAB_OFFSET_LABEL,17,190,24,8
     EDITTEXT        IDC_BACK_SLAB_OFFSET,42,187,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_BACK_SLAB_OFFSET_UNIT,90,190,19,8
     LTEXT           "Ahead",IDC_AHEAD_SLAB_OFFSET_LABEL,119,190,22,8
     EDITTEXT        IDC_AHEAD_SLAB_OFFSET,144,187,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_AHEAD_SLAB_OFFSET_UNIT,189,190,19,8
-    COMBOBOX        IDC_CB_SLABOFFSETTYPE,14,170,213,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SLAB_OFFSET_TYPE,14,170,213,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PIERCONNECTIONS DIALOGEX 0, 0, 488, 355
@@ -2545,10 +2545,7 @@ BEGIN
     LTEXT           "Condition Factor (MBE 6A.4.2.3)",IDC_STATIC,7,345,105,8
     COMBOBOX        IDC_CONDITION_FACTOR_TYPE,7,358,243,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_CONDITION_FACTOR,255,356,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Slab Offsets (""A"" Dimensions)",IDC_STATIC,158,167,443,108
-    CONTROL         "Custom1",IDC_SLABOFFSET_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,167,199,423,68
     COMBOBOX        IDC_CB_SAMEGIRDER,10,17,140,125,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_CB_SLABOFFSET,167,178,267,138,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_MULTI_GIRDER_SELECT DIALOGEX 0, 0, 364, 239
@@ -2821,12 +2818,12 @@ BEGIN
     LTEXT           "Positive offset values place this duct above the reference duct",IDC_STATIC,7,148,202,8
 END
 
-IDD_TS_GENERAL DIALOGEX 0, 0, 333, 182
+IDD_TS_GENERAL DIALOGEX 0, 0, 333, 256
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Temporary Support Line",IDC_STATIC,7,7,319,168
+    GROUPBOX        "Temporary Support Line",IDC_STATIC,7,7,319,139
     LTEXT           "Type",IDC_STATIC,15,26,17,8
     COMBOBOX        IDC_TS_TYPE,55,23,78,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Station",IDC_STATIC,15,42,24,8
@@ -2838,9 +2835,18 @@ BEGIN
     COMBOBOX        IDC_ERECTION_EVENT,74,103,174,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Removal Event",IDC_STATIC,15,126,49,8
     COMBOBOX        IDC_REMOVAL_EVENT,74,123,174,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Elevation Adjustment",IDC_ADJUSTMENT_LABEL,15,152,69,8
-    EDITTEXT        IDC_ADJUSTMENT,89,150,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ADJUSTMENT_UNIT,133,152,19,8
+    GROUPBOX        "Slab Offset (""A"" Dimension)",IDC_SLAB_OFFSET_GROUP,7,154,319,60
+    COMBOBOX        IDC_SLAB_OFFSET_TYPE,19,166,235,94,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "End of Left Segment",IDC_BACK_SLAB_OFFSET_LABEL,21,191,66,8
+    EDITTEXT        IDC_BACK_SLAB_OFFSET,91,188,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_BACK_SLAB_OFFSET_UNIT,135,190,19,8
+    LTEXT           "Start of Right Segment",IDC_AHEAD_SLAB_OFFSET_LABEL,164,191,74,8
+    EDITTEXT        IDC_AHEAD_SLAB_OFFSET,240,188,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_AHEAD_SLAB_OFFSET_UNIT,284,190,19,8
+    GROUPBOX        "Elevation Adjustment at Installation",IDC_ADJUSTMENT_GROUP,7,215,319,34
+    LTEXT           "Elevation Adjustment",IDC_ADJUSTMENT_LABEL,15,230,69,8
+    EDITTEXT        IDC_ADJUSTMENT,89,228,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ADJUSTMENT_UNIT,133,230,19,8
 END
 
 IDD_CLOSURE_CONNECTION DIALOGEX 0, 0, 402, 233
@@ -2953,17 +2959,17 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,170,93,50,14
 END
 
-IDD_SEGMENT_GENERAL DIALOGEX 0, 0, 384, 382
+IDD_SEGMENT_GENERAL DIALOGEX 0, 0, 385, 444
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Events",IDC_STATIC,7,7,370,44
+    GROUPBOX        "Events",IDC_STATIC,7,7,371,44
     LTEXT           "Construction",IDC_STATIC,17,17,42,8
     COMBOBOX        IDC_CONSTRUCTION_EVENT,18,29,158,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Erection",IDC_STATIC,199,17,27,8
     COMBOBOX        IDC_ERECTION_EVENT,199,29,158,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Section Variation",IDC_STATIC,7,56,370,246
+    GROUPBOX        "Section Variation",IDC_STATIC,7,56,371,246
     LTEXT           "Variation Type",IDC_STATIC,21,68,49,8
     COMBOBOX        IDC_VARIATION_TYPE,73,67,110,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Segment Length",IDC_SEGMENT_LENGTH,200,65,170,25
@@ -3015,7 +3021,7 @@ BEGIN
     EDITTEXT        IDC_RIGHT_END_BLOCK_WIDTH,240,205,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_RIGHT_END_BLOCK_WIDTH_UNIT,283,208,19,8
     LTEXT           "Custom1",IDC_DRAW_SEGMENT,14,230,355,63,NOT WS_GROUP | WS_TABSTOP
-    GROUPBOX        "Precast Segment Concrete Properties",IDC_STATIC,7,308,370,66
+    GROUPBOX        "Precast Segment Concrete Properties",IDC_STATIC,7,308,371,66
     LTEXT           "Static",IDC_CONCRETE_TYPE_LABEL,17,322,352,8
     CONTROL         "f'ci",IDC_FC1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,339,25,10
     CONTROL         "f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON,23,353,23,10
@@ -3031,6 +3037,14 @@ BEGIN
     LTEXT           "Static",IDC_EC_UNIT,203,352,26,8
     PUSHBUTTON      "More Properties...",IDC_MORE,232,340,83,14
     CONTROL         "Bottom Flange Depth",IDC_BOTTOM_FLANGE_DEPTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,241,93,92,10
+    GROUPBOX        "Slab Offset (""A"" Dimension)",IDC_SLAB_OFFSET_GROUP,7,381,371,56
+    LTEXT           "Start of Segment",IDC_START_SLAB_OFFSET_LABEL,17,415,56,8
+    EDITTEXT        IDC_START_SLAB_OFFSET,76,412,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_START_SLAB_OFFSET_UNIT,124,415,19,8
+    LTEXT           "End of Segment",IDC_END_SLAB_OFFSET_LABEL,165,415,52,8
+    EDITTEXT        IDC_END_SLAB_OFFSET,221,412,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_END_SLAB_OFFSET_UNIT,266,415,19,8
+    COMBOBOX        IDC_SLAB_OFFSET_TYPE,14,395,213,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SEGMENT_LONGITUDINAL_REBAR DIALOGEX 0, 0, 479, 233
@@ -3058,8 +3072,8 @@ BEGIN
     PUSHBUTTON      "Add",IDC_ADD,7,245,50,14
     PUSHBUTTON      "Remove",IDC_REMOVE,61,245,50,14
     LTEXT           "Segment Length: ",IDC_SEGMENT_LENGTH_LABEL,117,248,123,8
-    LTEXT           "S1 = Inner strand spacing\nS2 = Horizontal spacing between strands",IDC_SPACING_LABEL,618,246,142,19
-    CONTROL         "",IDC_SPACING,"Static",SS_ENHMETAFILE,628,260,111,98
+    LTEXT           "S1 = Inner strand spacing\nS2 = Horizontal spacing between strands",IDC_SPACING_LABEL,618,245,142,17
+    CONTROL         "",IDC_SPACING,"Static",SS_ENHMETAFILE,628,266,115,92
     LTEXT           "Permanent Strands",IDC_STATIC,7,267,62,8
     COMBOBOX        IDC_STRAND_SIZE,7,277,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Grit impregnated epoxy coating",IDC_EPOXY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,293,113,10
@@ -3479,22 +3493,22 @@ CAPTION "Haunch Geometry"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     COMBOBOX        IDC_HAUNCH_SHAPE,218,18,107,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_SORT | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_ASSEXCESSCAMBER_TYPE,18,238,203,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Static",IDC_ASSEXCESSCAMBER_BOX,18,256,323,121
-    COMBOBOX        IDC_A_TYPE,18,61,157,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Static",IDC_A_BOX,18,79,323,121
+    COMBOBOX        IDC_ASSUMED_EXCESS_CAMBER_TYPE,18,238,203,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Static",IDC_ASSUMED_EXCESS_CAMBER_BOX,18,256,323,121
+    COMBOBOX        IDC_SLAB_OFFSET_TYPE,18,61,157,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Static",IDC_SLAB_OFFSET_BOX,18,79,323,121
     DEFPUSHBUTTON   "OK",IDOK,195,398,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,247,398,50,14
     PUSHBUTTON      "Help",ID_HELP,299,398,50,14
     LTEXT           "Haunch Shape",IDC_HAUNCH_SHAPE_LABEL,167,21,47,8
     GROUPBOX        "Slab Offset (""A"" Dimension)",IDC_STATIC,7,43,342,170
-    GROUPBOX        "Assumed Excess Camber",IDC_ASSEXCESSCAMBER_GROUP,7,220,342,170
+    GROUPBOX        "Assumed Excess Camber",IDC_ASSUMED_EXCESS_CAMBER_GROUP,7,220,342,170
     LTEXT           "Fillet",IDC_FILLET_LABEL,28,21,18,8
     EDITTEXT        IDC_FILLET,50,17,46,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_FILLET_UNIT,100,21,24,8
 END
 
-IDD_HAUNCHSAME4_BRIDGE DIALOGEX 0, 0, 219, 65
+IDD_HAUNCH_BY_BRIDGE DIALOGEX 0, 0, 219, 65
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -3503,40 +3517,40 @@ BEGIN
     LTEXT           "in",IDC_SLAB_OFFSET_UNITS,148,14,15,8
 END
 
-IDD_HAUNCH_SPAN_BY_SPAN DIALOGEX 0, 0, 249, 126
+IDD_HAUNCH_BY_BEARING DIALOGEX 0, 0, 249, 126
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Custom1",IDC_HAUNCH_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,18,227,100
-    LTEXT           "Enter Slab Offset (""A"" Dimension) for Individual Spans",IDC_STATIC,7,3,173,8
+    LTEXT           "Slab Offset (""A"" Dimension)",IDC_STATIC,7,3,88,8
 END
 
-IDD_HAUNCH_BY_GIRDER DIALOGEX 0, 0, 321, 126
+IDD_HAUNCH_BY_SEGMENT DIALOGEX 0, 0, 321, 126
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Custom1",IDC_HAUNCH_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,18,273,100
-    LTEXT           "Enter Slab Offset (""A"" Dimension) for Individual Girders",IDC_STATIC,7,3,176,8
+    CONTROL         "Custom1",IDC_HAUNCH_GRID,"GXWND",WS_BORDER | WS_TABSTOP,7,18,273,100
+    LTEXT           "Slab Offset (""A"" Dimension)",IDC_STATIC,7,3,88,8
 END
 
-IDD_ASSEXCESSCAMBERSAME4_BRIDGE DIALOGEX 0, 0, 219, 65
+IDD_ASSUMED_EXCESS_CAMBER_BY_BRIDGE DIALOGEX 0, 0, 219, 65
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_ASSEXCESSCAMBER,104,9,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    RTEXT           "Assumed Excess Camber",IDC_ASSEXCESSCAMBER_LABEL,7,12,92,8
-    LTEXT           "in",IDC_ASSEXCESSCAMBER_UNITS,148,12,15,8
+    EDITTEXT        IDC_ASSUMED_EXCESS_CAMBER,104,9,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    RTEXT           "Assumed Excess Camber",IDC_ASSUMED_EXCESS_CAMBER_LABEL,7,12,92,8
+    LTEXT           "in",IDC_ASSUMED_EXCESS_CAMBER_UNITS,148,12,15,8
 END
 
-IDD_ASSEXCESSCAMBER_SPAN_BY_SPAN DIALOGEX 0, 0, 249, 126
+IDD_ASSUMED_EXCESS_CAMBER_BY_SPAN DIALOGEX 0, 0, 249, 126
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Enter Assumed Excess Camber for Individual Spans",IDC_STATIC,7,3,100,8
-    CONTROL         "Custom1",IDC_ASSEXCESSCAMBER_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,18,112,100
+    CONTROL         "Custom1",IDC_ASSUMED_EXCESS_CAMBER_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,18,112,100
 END
 
-IDD_ASSEXCESSCAMBER_BY_GIRDER DIALOGEX 0, 0, 321, 126
+IDD_ASSUMED_EXCESS_CAMBER_BY_GIRDER DIALOGEX 0, 0, 321, 126
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
@@ -3705,6 +3719,17 @@ BEGIN
     CONTROL         "",IDC_BEARING,"Static",SS_ENHMETAFILE,358,138,183,126
 END
 
+IDD_SELECT_BOUNDARY_CONDITION DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Boundary Condition"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,198,155,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,252,155,50,14
+    LTEXT           "Static",IDC_PROMPT,7,7,295,19
+    COMBOBOX        IDC_BOUNDARY_CONDITIONS,7,34,295,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3712,8 +3737,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,0,11,0
- PRODUCTVERSION 4,0,11,0
+ FILEVERSION 4,1,0,0
+ PRODUCTVERSION 4,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3730,12 +3755,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "4.0.11.0"
+            VALUE "FileVersion", "4.1.0.0"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 1999-2018, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2019, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "4.0.11.0"
+            VALUE "ProductVersion", "4.1.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -4287,7 +4312,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 326
         TOPMARGIN, 7
-        BOTTOMMARGIN, 175
+        BOTTOMMARGIN, 249
     END
 
     IDD_CLOSURE_CONNECTION, DIALOG
@@ -4329,9 +4354,9 @@ BEGIN
     IDD_SEGMENT_GENERAL, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 377
+        RIGHTMARGIN, 378
         TOPMARGIN, 7
-        BOTTOMMARGIN, 375
+        BOTTOMMARGIN, 437
     END
 
     IDD_SEGMENT_LONGITUDINAL_REBAR, DIALOG
@@ -4494,7 +4519,7 @@ BEGIN
         BOTTOMMARGIN, 411
     END
 
-    IDD_HAUNCHSAME4_BRIDGE, DIALOG
+    IDD_HAUNCH_BY_BRIDGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 212
@@ -4502,7 +4527,7 @@ BEGIN
         BOTTOMMARGIN, 58
     END
 
-    IDD_HAUNCH_SPAN_BY_SPAN, DIALOG
+    IDD_HAUNCH_BY_BEARING, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 242
@@ -4510,7 +4535,7 @@ BEGIN
         BOTTOMMARGIN, 119
     END
 
-    IDD_HAUNCH_BY_GIRDER, DIALOG
+    IDD_HAUNCH_BY_SEGMENT, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 314
@@ -4518,7 +4543,7 @@ BEGIN
         BOTTOMMARGIN, 119
     END
 
-    IDD_ASSEXCESSCAMBERSAME4_BRIDGE, DIALOG
+    IDD_ASSUMED_EXCESS_CAMBER_BY_BRIDGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 212
@@ -4526,7 +4551,7 @@ BEGIN
         BOTTOMMARGIN, 58
     END
 
-    IDD_ASSEXCESSCAMBER_SPAN_BY_SPAN, DIALOG
+    IDD_ASSUMED_EXCESS_CAMBER_BY_SPAN, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 242
@@ -4534,7 +4559,7 @@ BEGIN
         BOTTOMMARGIN, 118
     END
 
-    IDD_ASSEXCESSCAMBER_BY_GIRDER, DIALOG
+    IDD_ASSUMED_EXCESS_CAMBER_BY_GIRDER, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 314
@@ -4597,6 +4622,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 300
     END
+
+    IDD_SELECT_BOUNDARY_CONDITION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -4606,7 +4639,7 @@ END
 // METAFILE
 //
 
-HAULINGOVERHANGS        METAFILE                "..\\res\\HaulingOverhangs.emf"
+HAULINGOVERHANGS        METAFILE                "res\\HaulingOverhangs.emf"
 
 CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\Closure_BrgAlongGdr_EndAlongGdrFromBrg.emf"
 
@@ -4894,17 +4927,17 @@ BEGIN
     0
 END
 
-IDD_ASSEXCESSCAMBER_SPAN_BY_SPAN AFX_DIALOG_LAYOUT
+IDD_ASSUMED_EXCESS_CAMBER_BY_SPAN AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
 
-IDD_ASSEXCESSCAMBERSAME4_BRIDGE AFX_DIALOG_LAYOUT
+IDD_ASSUMED_EXCESS_CAMBER_BY_BRIDGE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
 
-IDD_ASSEXCESSCAMBER_BY_GIRDER AFX_DIALOG_LAYOUT
+IDD_ASSUMED_EXCESS_CAMBER_BY_GIRDER AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -4939,7 +4972,7 @@ BEGIN
     0
 END
 
-IDD_HAUNCH_SPAN_BY_SPAN AFX_DIALOG_LAYOUT
+IDD_HAUNCH_BY_BEARING AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -5040,6 +5073,26 @@ BEGIN
 END
 
 IDD_EDIT_LOADS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_TS_GENERAL AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PIER_LOCATION AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_HAUNCH_BY_SEGMENT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SELECT_BOUNDARY_CONDITION AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -5432,6 +5485,14 @@ BEGIN
     IDS_E_FILENOTFOUND      "File %1 was not found"
     IDS_E_READ              "An error has occured while reading %1"
     IDS_E_FORMAT            "%1\n\n %2"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_E_WRITE             "An error has occured while writing to %1"
+    IDS_E_UNSAFESAVE        "PGSuper could not make a backup copy of your last successful save. If an error occurs while saving  your bridge model, your PGSuper file may become corrupt and unrecoverable.\n\n Would  you like to proceed?"
+    IDS_E_SAVERECOVER1      "An error occured while restoring your last sucessful save.  It is highly likely that the file %1 is corrupt.  Try saving your project to another locaion.  If this fails, see %2  for manual recovery instructions."
+    IDS_E_SAVERECOVER2      "An error occured while restoring your last sucessful save. The file %1 no longer exists.  Try saving your project again, preferable  to another locaion.  If this fails, see %2 for manual recovery instructions."
 END
 
 STRINGTABLE

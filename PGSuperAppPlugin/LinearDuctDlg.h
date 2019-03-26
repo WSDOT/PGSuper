@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LinearDuctGrid.h"
-#include "PGSuperAppPlugin\SplicedGirderGeneralPage.h"
+#include "SplicedGirderGeneralPage.h"
 
 // CLinearDuctDlg dialog
 

@@ -1,0 +1,25 @@
+HKCR
+{
+	LibraryMgrPluginExample.LibMgrDocPlug.1 = s 'Library Manager Plugin Example'
+	{
+		CLSID = s '{894AE5FD-E157-4935-A1C6-2E032CF014A6}'
+	}
+	LibraryMgrPluginExample.LibMgrDocPlugin = s 'Library Manager Plugin Example'
+	{
+		CLSID = s '{894AE5FD-E157-4935-A1C6-2E032CF014A6}'
+		CurVer = s 'LibraryMgrPluginExample.LibMgrDocPlug.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {894AE5FD-E157-4935-A1C6-2E032CF014A6} = s 'Library Manager Plugin Example'
+		{
+			ProgID = s 'LibraryMgrPluginExample.LibMgrDocPlug.1'
+			VersionIndependentProgID = s 'LibraryMgrPluginExample.LibMgrDocPlugin'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{A395C172-DAFC-426D-AB37-DC15D4908C3C}'
+		}
+	}
+}

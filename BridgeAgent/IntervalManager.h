@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -89,6 +89,9 @@ public:
 
    // returns the index of the interval when the segment is transported to the bridge site
    IntervalIndexType GetHaulingInterval(const CSegmentKey& segmentKey) const;
+
+   // returns true if hauling occurs during this interval
+   bool IsHaulingInterval(IntervalIndexType intervalIdx) const;
 
    // returns the index of the interval for the first segment
    // to be erected

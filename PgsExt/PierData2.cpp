@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <PgsExt\GirderSpacing2.h>
 #include <PgsExt\ClosureJointData.h>
 
-#include <PierData.h>
+#include "PierData.h"
 
 #include <Units\SysUnits.h>
 #include <StdIo.h>
@@ -201,6 +201,14 @@ bool CPierData2::operator==(const CPierData2& rOther) const
    if ( m_BoundaryConditionType != rOther.m_BoundaryConditionType )
    {
       return false;
+   }
+
+   if (m_pBridgeDesc && m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBearingLine && HasSlabOffset())
+   {
+      if (!IsEqual(GetSlabOffset(pgsTypes::Back), rOther.GetSlabOffset(pgsTypes::Back)) || !IsEqual(GetSlabOffset(pgsTypes::Ahead), rOther.GetSlabOffset(pgsTypes::Ahead)))
+      {
+         return false;
+      }
    }
 
    if ( IsInteriorPier() )
@@ -494,7 +502,9 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierDataDetails"),18.0);
+   // Make sure outside changes to the bridge haven't made our data out of sync
+   ProtectBearingData();
+   pStrSave->BeginUnit(_T("PierDataDetails"),19.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -513,6 +523,10 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    {
       pStrSave->put_Property(_T("CantileverLength"),CComVariant(m_CantileverLength));
    }
+
+   // added in version 19
+   pStrSave->put_Property(_T("BackSlabOffset"), CComVariant(m_SlabOffset[pgsTypes::Back]));
+   pStrSave->put_Property(_T("AheadSlabOffset"), CComVariant(m_SlabOffset[pgsTypes::Ahead]));
 
    pStrSave->put_Property(_T("PierModelType"),CComVariant(m_PierModelType));
    if ( m_PierModelType == pgsTypes::pmtPhysical )
@@ -569,7 +583,8 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       if (m_pBridgeDesc->GetBearingType() == pgsTypes::brtPier)
       {
          std::size_t cnt = m_BearingData[pgsTypes::Back].size();
-         pStrSave->put_Property(_T("Count"), CComVariant(std::size_t(1)));
+         cnt = cnt > 0 ? 1 : 0;
+         pStrSave->put_Property(_T("Count"), CComVariant(cnt));
          if (cnt > 0)
          {
             m_BearingData[pgsTypes::Back][0].Save(pStrSave, pProgress);
@@ -632,7 +647,8 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       if (m_pBridgeDesc->GetBearingType() == pgsTypes::brtPier)
       {
          std::size_t cnt = m_BearingData[pgsTypes::Ahead].size();
-         pStrSave->put_Property(_T("Count"), CComVariant(std::size_t(1)));
+         cnt = cnt > 0 ? 1 : 0;
+         pStrSave->put_Property(_T("Count"), CComVariant(cnt));
          if (cnt > 0)
          {
             m_BearingData[pgsTypes::Ahead][0].Save(pStrSave, pProgress);
@@ -809,6 +825,17 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          }
       }
 
+      if (18 < version)
+      {
+         // added in version 19
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("BackSlabOffset"), &var);
+         m_SlabOffset[pgsTypes::Back] = var.dblVal;
+
+         hr = pStrLoad->get_Property(_T("AheadSlabOffset"), &var);
+         m_SlabOffset[pgsTypes::Ahead] = var.dblVal;
+      }
+
       if ( 13 < version )
       {
          // added in version 14
@@ -967,14 +994,24 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             var.vt = VT_I4;
             hr = pStrLoad->get_Property(_T("Count"),&var);
             Uint32 cnt = var.lVal;
-            for (Uint32 ib = 0; ib < cnt; ib++)
-            {
-               CBearingData2 bd;
-               hr = bd.Load(pStrLoad, pProgress);
-               m_BearingData[pgsTypes::Back].push_back(bd);
-            }
 
-            hr = pStrLoad->EndUnit();
+            try 
+            {
+               for (Uint32 ib = 0; ib < cnt; ib++)
+               {
+                  CBearingData2 bd;
+                  hr = bd.Load(pStrLoad, pProgress);
+                  m_BearingData[pgsTypes::Back].push_back(bd);
+               }
+
+               hr = pStrLoad->EndUnit();
+            }
+            catch (...)
+            {
+               // This was a bug in pgsuper version 4.0.10. The program could write out a value of cnt==1, but then have no data to read.
+               ATLASSERT(cnt == 1);
+               hr = pStrLoad->EndUnit();
+            }
          }
       }
 
@@ -1081,14 +1118,24 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             var.vt = VT_I4;
             hr = pStrLoad->get_Property(_T("Count"),&var);
             Uint32 cnt = var.lVal;
-            for (Uint32 ib = 0; ib < cnt; ib++)
-            {
-               CBearingData2 bd;
-               hr = bd.Load(pStrLoad, pProgress);
-               m_BearingData[pgsTypes::Ahead].push_back(bd);
-            }
 
-            hr = pStrLoad->EndUnit();
+            try
+            {
+               for (Uint32 ib = 0; ib < cnt; ib++)
+               {
+                  CBearingData2 bd;
+                  hr = bd.Load(pStrLoad, pProgress);
+                  m_BearingData[pgsTypes::Ahead].push_back(bd);
+               }
+
+               hr = pStrLoad->EndUnit();
+            }
+            catch (...)
+            {
+               // This was a bug in pgsuper version 4.0.10. The program could write out a value of cnt==1, but then have no data to read.
+               ATLASSERT(cnt == 1);
+               hr = pStrLoad->EndUnit();
+            }
          }
       }
 
@@ -1359,6 +1406,8 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    m_RefColumnIdx = rOther.m_RefColumnIdx;
    m_TransverseOffset = rOther.m_TransverseOffset;
    m_TransverseOffsetMeasurement = rOther.m_TransverseOffsetMeasurement;
+
+   m_SlabOffset = rOther.m_SlabOffset;
 
    m_ColumnFixity = rOther.m_ColumnFixity;
    m_ColumnSpacing = rOther.m_ColumnSpacing;
@@ -1931,6 +1980,50 @@ const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) con
    }
 
    return nullptr;
+}
+
+bool CPierData2::HasSlabOffset() const
+{
+   // interior piers with segments that are continuous over them do not have slab offsets
+   return (IsInteriorPier() && ::IsSegmentContinuousOverPier(m_SegmentConnectionType) ? false : true);
+}
+
+void CPierData2::SetSlabOffset(pgsTypes::PierFaceType face, Float64 slabOffset)
+{
+   m_SlabOffset[face] = slabOffset;
+}
+
+void CPierData2::SetSlabOffset(Float64 back, Float64 ahead)
+{
+   m_SlabOffset[pgsTypes::Back] = back;
+   m_SlabOffset[pgsTypes::Ahead] = ahead;
+}
+
+Float64 CPierData2::GetSlabOffset(pgsTypes::PierFaceType face, bool bRawData) const
+{
+   // if this assert fires, there isn't a slab offset at this pier
+   ATLASSERT( HasSlabOffset() );
+
+   if (bRawData || m_pBridgeDesc == nullptr || m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBearingLine)
+   {
+      return m_SlabOffset[face];
+   }
+   else if(m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
+   {
+      return m_pBridgeDesc->GetSlabOffset();
+   }
+   else
+   {
+      ATLASSERT(false); // should never get here
+      // if slab offset type is sotSegment, we don't know which girder
+      return m_SlabOffset[face];
+   }
+}
+
+void CPierData2::GetSlabOffset(Float64* pBack, Float64* pAhead, bool bRawData) const
+{
+   *pBack = GetSlabOffset(pgsTypes::Back, bRawData);
+   *pAhead = GetSlabOffset(pgsTypes::Ahead, bRawData);
 }
 
 pgsTypes::PierModelType CPierData2::GetPierModelType() const

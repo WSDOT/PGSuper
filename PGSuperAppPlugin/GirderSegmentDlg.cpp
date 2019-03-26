@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 // GirderSegmentDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "GirderSegmentDlg.h"
 
@@ -118,6 +118,10 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    m_Girder = *pGirder;
    m_SegmentKey = segmentKey;
    m_SegmentID = pSegment->GetID();
+
+   m_GeneralPage.m_MinSlabOffset = pBridgeDesc->GetMinSlabOffset();
+   m_GeneralPage.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
+   pSegment->GetSlabOffset(&m_GeneralPage.m_SlabOffset[pgsTypes::metStart], &m_GeneralPage.m_SlabOffset[pgsTypes::metEnd]);
 
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 

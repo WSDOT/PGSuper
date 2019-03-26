@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include "stdafx.h"
 #include <Reporting\EquilibriumCheckReportSpecificationBuilder.h>
 #include <Reporting\EquilibriumCheckReportSpecification.h>
-#include <Reporting\EquilibriumCheckDlg.h>
+#include "EquilibriumCheckDlg.h"
 
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 // GirderGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "GirderGrid.h"
 #include "SplicedGirderDescDlg.h"
 #include "GirderDescDlg.h"
@@ -235,6 +235,11 @@ void CGirderGrid::EditSegment(SegmentIndexType segIdx)
       // so it works seamlessly for all cases
       dlg.m_Girder.GetSegment(segIdx)->ShearData = dlg.m_StirrupsPage.m_ShearData;
 
+      if (pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription()->GetSlabOffsetType() != dlg.m_GeneralPage.m_SlabOffsetType)
+      {
+         pParent->m_pGirder->GetGirderGroup()->GetBridgeDescription()->SetSlabOffsetType(dlg.m_GeneralPage.m_SlabOffsetType);
+      }
+
       if ( dlg.m_bCopyToAll )
       {
          // copy the data for the segment that was edited to all the segments in this girder
@@ -247,11 +252,13 @@ void CGirderGrid::EditSegment(SegmentIndexType segIdx)
             SegmentIDType segID = pSegment->GetID();
             dlg.m_TimelineMgr.SetSegmentConstructionEventByIndex(segID,constructionEventIdx);
             dlg.m_TimelineMgr.SetSegmentErectionEventByIndex(segID,erectionEventIdx);
+            pParent->m_pGirder->GetSegment(idx)->SetSlabOffset(dlg.m_GeneralPage.m_SlabOffset[pgsTypes::metStart], dlg.m_GeneralPage.m_SlabOffset[pgsTypes::metEnd]);
          }
       }
       else
       {
          pParent->m_pGirder->SetSegment(segIdx,*dlg.m_Girder.GetSegment(segIdx));
+         pParent->m_pGirder->GetSegment(segIdx)->SetSlabOffset(dlg.m_GeneralPage.m_SlabOffset[pgsTypes::metStart], dlg.m_GeneralPage.m_SlabOffset[pgsTypes::metEnd]);
       }
 
       pParent->m_BridgeDescription.SetTimelineManager(&dlg.m_TimelineMgr);

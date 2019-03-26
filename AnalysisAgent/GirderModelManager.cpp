@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\StatusItem.h>
 
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include "BarrierSidewalkLoadDistributionTool.h"
 
@@ -48,7 +48,7 @@
 
 #include <Math\MathUtils.h>
 
-#include "AnalysisResult.h"
+#include <pgsExt\AnalysisResult.h>
 
 #include <iterator>
 #include <algorithm>
@@ -5188,7 +5188,7 @@ std::vector<Float64> CGirderModelManager::GetAxial(IntervalIndexType intervalIdx
       result->get_XRight(&PxRight);
 
       Float64 Px;
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 )
+      if ( poi.HasAttribute(POI_START_FACE) )
       {
          Px = -PxRight;
       }
@@ -5293,7 +5293,7 @@ std::vector<Float64> CGirderModelManager::GetMoment(IntervalIndexType intervalId
       result->get_ZRight(&MzRight);
 
       Float64 Mz;
-      if ( poi.IsTenthPoint(POI_RELEASED_SEGMENT) == 1 )
+      if ( poi.HasAttribute(POI_START_FACE) )
       {
          Mz = -MzRight;
       }
@@ -7290,6 +7290,8 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
    // only used if there are temporary supports
    GET_IFACE_NOCHECK(IIntervals,pIntervals);
 
+   IntervalIndexType startIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(CGirderKey(ALL_GROUPS,gdr)); // this is the interval that the LBAM starts with
+
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
@@ -7331,11 +7333,17 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
 
          objTS->put_BoundaryCondition(bcRoller);
 
-         IntervalIndexType erectIntervalIdx   = pIntervals->GetTemporarySupportErectionInterval(tsIdx);
+         IntervalIndexType erectionIntervalIdx = pIntervals->GetTemporarySupportErectionInterval(tsIdx);
          IntervalIndexType removalIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(tsIdx);
 
-         //ATLASSERT(erectIntervalIdx == 0); // LBAM doesn't support the stage when a TS is erected
-         //objTS->put_StageErected( GetLBAMStageName(erectIntervalIdx) );
+         ATLASSERT(erectionIntervalIdx < removalIntervalIdx);
+
+         // temporary supports are often erected in an interval that occurs before the LBAM models
+         // e.g. if erected in intervalIdx = 0, and the LBAM starts at startIntervalIdx, then the TS is erected before the LBAM
+         // Make sure the erection interval isn't before the start of the LBAM
+         erectionIntervalIdx = Max(erectionIntervalIdx, startIntervalIdx);
+
+         objTS->put_StageErected( GetLBAMStageName(erectionIntervalIdx) );
          objTS->put_StageRemoved( GetLBAMStageName(removalIntervalIdx) );
 
          objTemporarySupports->Add(objTS);
@@ -8088,6 +8096,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
 
                   // If there is a continuous connection at the pier, remove the temporary support when the 
                   // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
+                  objLeftTS->put_StageErected(CComBSTR(""));
                   if (bContinuousConnection)
                   {
                      objLeftTS->put_StageRemoved(GetLBAMStageName(leftContinuityIntervalIdx));
@@ -8147,6 +8156,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
 
                   // If there is a continuous connection at the pier, remove the temporary support when the 
                   // connection becomes continuous, otherwise keep it to preserve the stability of the LBAM
+                  objRightTS->put_StageErected(CComBSTR(""));
                   if (bContinuousConnection)
                   {
                      objRightTS->put_StageRemoved(GetLBAMStageName(rightContinuityIntervalIdx));
@@ -11708,6 +11718,7 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             pPier = (pPier->GetNextSpan() ? pPier->GetNextSpan()->GetNextPier() : nullptr) // increment
           )
       {
+         PierIndexType pierIdx = pPier->GetIndex();
          if ( pPier == pStartPier )
          {
             // only add the load on the ahead side of the pier
@@ -11716,24 +11727,34 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             ATLASSERT(vPoi.size() == 1);
             const pgsPointOfInterest& poi(vPoi.front());
 
-            Float64 Pback,  Mback;  // load on back side of pier
-            Float64 Pahead, Mahead; // load on ahead side of pier
-            GetPierDiaphragmLoads( pPier->GetIndex(), girderKey.girderIndex, &Pback, &Mback, &Pahead, &Mahead);
+            Float64 Pback,  Mback, backMomentArm;  // load on back side of pier
+            Float64 Pahead, Mahead, aheadMomentArm; // load on ahead side of pier
+            GetPierDiaphragmLoads(pierIdx, girderKey.girderIndex, &Pback, &Mback, &backMomentArm, &Pahead, &Mahead, &aheadMomentArm);
 
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
-            Float64 start_end_dist = pBridge->GetSegmentStartEndDistance(segmentKey);
-
-            MemberIDType mbrID = GetFirstSuperstructureMemberID(segmentKey);
-            if ( !IsZero(start_end_dist) )
+            Float64 end_dist = pBridge->GetSegmentStartEndDistance(segmentKey);
+            Float64 Xs = end_dist; // assume P and M are applied at CL Bearing
+            if (!IsZero(aheadMomentArm))
             {
-               mbrID++;
+               // P is applied at another location (that is why moment arm != 0)
+               Xs = end_dist - aheadMomentArm; // moment arm is measured from CL Bearing towards the left where the load occurs... convert to the Segment Coordinate System
             }
+            Xs = IsZero(Xs) ? 0.0 : Xs;
+            ATLASSERT(0 <= Xs); // load must be on the segment
+
+            bool bStartCantilever, bEndCantilever;
+            pBridge->ModelCantilevers(segmentKey, &bStartCantilever, &bEndCantilever);
+
+            MemberType mbrType;
+            MemberIDType mbrID;
+            Float64 Xmbr;
+            GetLoadPosition(pModel, segmentKey, Xs, bStartCantilever, &mbrType, &mbrID, &Xmbr);
 
             CComPtr<IPointLoad> load;
             load.CoCreateInstance(CLSID_PointLoad);
-            load->put_MemberType(mtSuperstructureMember);
+            load->put_MemberType(mbrType);
             load->put_MemberID(mbrID);
-            load->put_Location(poi.GetDistFromStart() - start_end_dist);
+            load->put_Location(Xmbr);
             load->put_Fy(Pahead);
             load->put_Mz(Mahead);
 
@@ -11766,27 +11787,38 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             ATLASSERT(vPoi.size() == 1);
             const pgsPointOfInterest& poi(vPoi.front());
 
+            Float64 Pback, Mback, backMomentArm;  // load on back side of pier
+            Float64 Pahead, Mahead, aheadMomentArm; // load on ahead side of pier
+            GetPierDiaphragmLoads(pierIdx, girderKey.girderIndex, &Pback, &Mback, &backMomentArm, &Pahead, &Mahead, &aheadMomentArm);
+
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
-            Float64 start_end_dist = pBridge->GetSegmentStartEndDistance(segmentKey);
-
-            MemberIDType mbrID = GetFirstSuperstructureMemberID(segmentKey);
-            if ( !IsZero(start_end_dist) )
+            Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+            Float64 end_dist = pBridge->GetSegmentEndEndDistance(segmentKey);
+            Float64 Xs = Ls - end_dist;
+            if (!IsZero(backMomentArm))
             {
-               mbrID++;
+               // P is applied at another location (this is why moment arm != 0)
+               Xs += backMomentArm; // moment are is measured from CL Bearing towards the right where the load occurs... convert to Segment Coordinate System
             }
+            Xs = IsZero(Xs) ? 0.0 : Xs;
+            Xs = IsEqual(Xs, Ls) ? Ls : Xs;
+            ATLASSERT(0 <= Xs && Xs <= Ls);
 
-            Float64 Pback,  Mback;  // load on back side of pier
-            Float64 Pahead, Mahead; // load on ahead side of pier
-            GetPierDiaphragmLoads( pPier->GetIndex(), girderKey.girderIndex, &Pback, &Mback, &Pahead, &Mahead);
+            bool bStartCantilever, bEndCantilever;
+            pBridge->ModelCantilevers(segmentKey, &bStartCantilever, &bEndCantilever);
+
+            MemberType mbrType;
+            MemberIDType mbrID;
+            Float64 Xmbr;
+            GetLoadPosition(pModel, segmentKey, Xs, bEndCantilever, &mbrType, &mbrID, &Xmbr);
 
             CComPtr<IPointLoad> load;
             load.CoCreateInstance(CLSID_PointLoad);
-            load->put_MemberType(mtSuperstructureMember);
+            load->put_MemberType(mbrType);
             load->put_MemberID(mbrID);
-            load->put_Location(poi.GetDistFromStart() - start_end_dist);
+            load->put_Location(Xmbr);
             load->put_Fy(Pback);
             load->put_Mz(Mback);
-
 
             CComBSTR bstrStage;
             pgsTypes::BoundaryConditionType bcType = pPier->GetBoundaryConditionType();
@@ -11814,7 +11846,7 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             // This pier is interior to the group... this only happens with spliced girder bridges
             ATLASSERT(pPier->IsInteriorPier());
 
-            CSegmentKey segmentKey = pBridge->GetSegmentAtPier(pPier->GetIndex(),girderKey);
+            CSegmentKey segmentKey = pBridge->GetSegmentAtPier(pierIdx,girderKey);
             Float64 start_end_dist = pBridge->GetSegmentStartEndDistance(segmentKey);
 
             // get superstructure member ID where the segment starts
@@ -11829,7 +11861,7 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
 
             // get location where CL-Segment intersects CL-Pier (could be betweens ends of segment or after end of segment)
             CComPtr<IPoint2d> pntSegPierIntersection;
-            bool bIntersect = pBridge->GetSegmentPierIntersection(segmentKey,pPier->GetIndex(),pgsTypes::pcLocal,&pntSegPierIntersection);
+            bool bIntersect = pBridge->GetSegmentPierIntersection(segmentKey, pierIdx,pgsTypes::pcLocal,&pntSegPierIntersection);
             ATLASSERT(bIntersect == true);
 
             // get the distance from the the start face of the segment to the intersection point
@@ -11844,18 +11876,18 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
             Float64 dist_along_segment;
             pntEnd[pgsTypes::metStart]->DistanceEx(pntSegPierIntersection,&dist_along_segment);
 
-            pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pPier->GetIndex());
+            pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
 
-            Float64 Pback,  Mback;  // load on back side of pier
-            Float64 Pahead, Mahead; // load on ahead side of pier
-            GetPierDiaphragmLoads( pPier->GetIndex(), girderKey.girderIndex, &Pback, &Mback, &Pahead, &Mahead);
+            Float64 Pback,  Mback, backMomentArm;  // load on back side of pier
+            Float64 Pahead, Mahead, aheadMomentArm; // load on ahead side of pier
+            GetPierDiaphragmLoads(pierIdx, girderKey.girderIndex, &Pback, &Mback, &backMomentArm, &Pahead, &Mahead, &aheadMomentArm);
 
             if ( pPier->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment ||
                  pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment) 
             {
                // there should not be any moment at intermediate piers with continuous segments
-               ATLASSERT(IsZero(Mback));
-               ATLASSERT(IsZero(Mahead));
+               ATLASSERT(IsZero(Mback) && IsZero(backMomentArm));
+               ATLASSERT(IsZero(Mahead) && IsZero(aheadMomentArm));
 
                // Segment is continuous over the pier... apply the total load at the CL Pier
                //
@@ -14333,8 +14365,8 @@ void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderK
          PierIndexType startPierIdx, endPierIdx;
          pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
 
-         Float64 startA = pBridge->GetSlabOffset(segmentKey.groupIndex, startPierIdx, segmentKey.girderIndex);
-         Float64 endA = pBridge->GetSlabOffset(segmentKey.groupIndex, endPierIdx, segmentKey.girderIndex);
+         Float64 startA = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
+         Float64 endA   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
 
          Float64 dSlab = pBridge->GetGrossSlabDepth(pgsPointOfInterest(segmentKey,0.0));
          if ( startA-dSlab-fillet < -TOLERANCE || endA-dSlab-fillet < -TOLERANCE )
@@ -14447,7 +14479,10 @@ void CGirderModelManager::GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey
       Float64 Wstart   = -Ag_Prev*density*g;
       Float64 Wend     = -Ag_Curr*density*g;
 
-      pSegmentLoads->emplace_back(Xstart, Xend, Wstart, Wend);
+      if (!IsZero(Xend, Xstart))
+      {
+         pSegmentLoads->emplace_back(Xstart, Xend, Wstart, Wend);
+      }
 
       prevPoi = currPoi;
       Ag_Prev = Ag_Curr;
@@ -14558,17 +14593,22 @@ void CGirderModelManager::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey,
    }
 }
 
-void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead) const
+void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pBackMomentArm, Float64* pPahead, Float64* pMahead, Float64* pAheadMomentArm) const
 {
    GET_IFACE(IBridge,    pBridge );
    GET_IFACE(IMaterials, pMaterial);
    GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+
+   const auto* pPier = pIBridgeDesc->GetPier(pierIdx);
 
    *pPback  = 0.0;
    *pMback  = 0.0;
+   *pBackMomentArm = 0.0;
    *pPahead = 0.0;
    *pMahead = 0.0;
+   *pAheadMomentArm = 0.0;
 
    GroupIndexType backGroupIdx, aheadGroupIdx;
    pBridge->GetGirderGroupIndex(pierIdx,&backGroupIdx,&aheadGroupIdx);
@@ -14588,6 +14628,8 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
    pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
+   CSegmentKey backSegmentKey, aheadSegmentKey;
+   pBridge->GetSegmentsAtPier(pierIdx, girderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
 
    IntervalIndexType castDiaphragmsIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
 
@@ -14645,12 +14687,40 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
 
       if ( pBridge->IsBoundaryPier(pierIdx) )
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
-         CSegmentKey endSegmentKey(segmentKey);
-         endSegmentKey.segmentIndex = nSegments-1;
-         Float64 brg_offset = pBridge->GetSegmentEndBearingOffset(endSegmentKey);
-         Float64 moment_arm = brg_offset - pBridge->GetPierDiaphragmLoadLocation(endSegmentKey,pgsTypes::metEnd);
-         *pMback = *pPback * moment_arm;
+         ATLASSERT(backSegmentKey.groupIndex != INVALID_INDEX);
+
+         ConnectionLibraryEntry::DiaphragmLoadType diaphragmLoadType = pPier->GetDiaphragmLoadType(pgsTypes::Back);
+
+         bool bStartCantilever, bEndCantilever;
+         pBridge->ModelCantilevers(backSegmentKey, &bStartCantilever, &bEndCantilever);
+
+         Float64 moment_arm = pBridge->GetPierDiaphragmLoadLocation(backSegmentKey, pgsTypes::metEnd); // dist from CL Brg to CG Diaphragm
+
+         if (bEndCantilever && diaphragmLoadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
+         {
+            // cantilever is long enough to be explicitly modeled
+            Float64 end_dist = pBridge->GetSegmentEndEndDistance(backSegmentKey);
+            if (end_dist < moment_arm)
+            {
+               // the load is beyond the end of the segment so put an equivalent force/moment at the end of the segment
+               *pBackMomentArm = end_dist; // moment arm to end of segment
+               moment_arm -= end_dist; // moment arm for P from end of segment to get moment at end of segment
+               *pMback = *pPback * moment_arm;
+            }
+            else
+            {
+               // the load is on the end of the segment, model it with just the point load and moment arm
+               *pMback = 0.0;
+               *pBackMomentArm = moment_arm;
+            }
+         }
+         else
+         {
+            // cantilever is too short for explicit load modeling... use an equivalent force/moment at the CL Bearing
+            *pMback = *pPback * moment_arm;
+            *pBackMomentArm = 0.0;
+         }
+
       }
    }
 
@@ -14663,11 +14733,38 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
 
       if ( pBridge->IsBoundaryPier(pierIdx) )
       {
-         CSegmentKey startSegmentKey(segmentKey);
-         startSegmentKey.segmentIndex = 0;
-         Float64 brg_offset = pBridge->GetSegmentEndBearingOffset(startSegmentKey);
-         Float64 moment_arm = brg_offset - pBridge->GetPierDiaphragmLoadLocation(startSegmentKey,pgsTypes::metStart);
-         *pMahead = -1 * (*pPahead) * moment_arm;
+         ATLASSERT(aheadSegmentKey.groupIndex != INVALID_INDEX);
+
+         ConnectionLibraryEntry::DiaphragmLoadType diaphragmLoadType = pPier->GetDiaphragmLoadType(pgsTypes::Ahead);
+
+         bool bStartCantilever, bEndCantilever;
+         pBridge->ModelCantilevers(aheadSegmentKey, &bStartCantilever, &bEndCantilever);
+
+         Float64 moment_arm = pBridge->GetPierDiaphragmLoadLocation(aheadSegmentKey, pgsTypes::metStart); // dist from CL Brg to CG Diaphragm
+         if (bStartCantilever && diaphragmLoadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
+         {
+            // cantilever is long enough to be explicitly modeled
+            Float64 end_dist = pBridge->GetSegmentStartEndDistance(aheadSegmentKey);
+            if (end_dist < moment_arm)
+            {
+               // the load is beyond the end of the segment so put an equivalent force/moment at the end of the segment
+               *pAheadMomentArm = end_dist; // moment arm to end of segment
+               moment_arm -= end_dist; // moment arm for P from end of segment to get moment at end of segment
+               *pMahead = -1*(*pPahead) * moment_arm;
+            }
+            else
+            {
+               // the load is on the end of the segment, model it with just the point load and moment arm
+               *pMahead = 0.0;
+               *pAheadMomentArm = moment_arm;
+            }
+         }
+         else
+         {
+            // cantilever is too short for explicit load modeling... use an equivalent force/moment at the CL Bearing
+            *pMahead = -1*(*pPahead) * moment_arm;
+            *pAheadMomentArm = 0.0;
+         }
       }
    }
 }
@@ -15091,12 +15188,12 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    std::unique_ptr<mathFunction2d> imposedShape;
    // precamber and top flange thickening is measured using the ends of the girder as the datum
    PoiList vPoi2;
-   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi2);
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi2);
    ATLASSERT(vPoi2.size() == 2);
    const pgsPointOfInterest& poi_left(vPoi2.front());
    const pgsPointOfInterest& poi_right(vPoi2.back());
 
-   if (pSpec->IsAssExcessCamberForLoad())
+   if (pSpec->IsAssumedExcessCamberForLoad())
    {
 #pragma Reminder("UPDATE: assuming precast girder bridge - Note that time-dependent analyses only use the zero camber approach below")
       // Shape of girder is assumed to follow the fillet dimension. Assume parabolic shape with zero at supports and
@@ -15119,7 +15216,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          Float64 Xspan;
          pPoi->ConvertPoiToSpanPoint(poi_mid,&spanKey,&Xspan);
 
-         assumed_excess_camber = pBridge->GetAssExcessCamber(spanKey.spanIndex, spanKey.girderIndex);
+         assumed_excess_camber = pBridge->GetAssumedExcessCamber(spanKey.spanIndex, spanKey.girderIndex);
          assumed_excess_camber *= camberFactor;
       }
 
@@ -17375,7 +17472,7 @@ void CGirderModelManager::ConfigureLBAMPoisForReactions(const CGirderKey& girder
 
       if ( !pBridge->IsAbutment(pierIdx) && // This is a boundary pier and not and abutnment (don't use IsBoundaryPier because an abutment is also a boundary pier)
           ( 
-            (resultsType == rtCumulative || intervalIdx < backContinuityIntervalIdx || intervalIdx < aheadContinuityIntervalIdx) // We want cumulative results and we are before continunity is achieved
+            (resultsType == rtCumulative && (intervalIdx < backContinuityIntervalIdx || intervalIdx < aheadContinuityIntervalIdx)) // We want cumulative results and we are before continunity is achieved
             || // OR
             (!bContinuousBack && !bContinuousAhead && !bIntegralBack && !bIntegralAhead && bBearingReactions) // there is no continuity at the pier and bearing reactions are requested
           )
@@ -17583,18 +17680,20 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    // Stress in the girder due to prestressing
    ATLASSERT(!IsStrengthLimitState(limitState));
 
-   if ( ::IsDeckStressLocation(topLoc) && ::IsDeckStressLocation(botLoc) )
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   if ( ::IsDeckStressLocation(topLoc) && ::IsDeckStressLocation(botLoc) || intervalIdx < releaseIntervalIdx)
    {
       // pretensioning does not cause stress in the deck
+      // or the interval is before release, so no stress in girder either
       *pfTop = 0;
       *pfBot = 0;
       return; 
    }
 
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx   = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
 

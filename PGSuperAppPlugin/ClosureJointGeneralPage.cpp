@@ -1,8 +1,8 @@
 // ClosureJointGeneralPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "stdafx.h"
+#include "resource.h"
 #include "PGSuperAppPlugin.h"
 #include "ClosureJointGeneralPage.h"
 #include "ClosureJointDlg.h"

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -120,6 +120,7 @@ struct BearingElevationDetails
    Float64 TopBrgElevation;  // elevation at top of bearing
    Float64 BrgSeatElevation; // elevation at bottom of bearing
    Float64 ProfileGrade; // profile grade at CL Bearing
+   Float64 CrossSlope; // Cross slope taken at work point
    Float64 BasicGirderGrade; // basic slope of girder (straight line between supports, includes temporary support elevation adjustments)
    Float64 PrecamberSlope; // rotation due to precamber
    Float64 GirderGrade; // slope of the girder with precamber rotation applied
@@ -297,11 +298,12 @@ interface IBridge : IUnknown
    virtual Float64 GetSegmentSlope(const CSegmentKey& segmentKey) const = 0;
 
    // Slab Offset
-   virtual Float64 GetSlabOffset(GroupIndexType grpIdx,PierIndexType pierIdx,GirderIndexType gdrIdx) const = 0;
+   virtual Float64 GetSlabOffset(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const = 0;
+   virtual void GetSlabOffset(const CSegmentKey& segmentKey, Float64* pStart, Float64* pEnd) const = 0;
 
    // Adjustments from temporary support elevation adjustments
-   virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetElevationAdjustment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetRotationAdjustment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
 
    // Distnace from CLPier to CL Bearing, measured along CL of segment
    virtual Float64 GetCLPierToCLBearingDistance(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::MeasurementType measure) const = 0;
@@ -406,10 +408,6 @@ interface IBridge : IUnknown
    // Closure Joints
    ///////////////////////////////////////////////////
 
-   // X values are in girder path coordinates.
-   // Y = 0 is at the top of the closure joint
-   virtual void GetClosureJointProfile(const CClosureKey& closureKey,IShape** ppShape) const = 0;
-
    // Returns the length of the specified closure joint
    virtual Float64 GetClosureJointLength(const CClosureKey& closureKey) const = 0;
 
@@ -426,7 +424,7 @@ interface IBridge : IUnknown
    virtual void GetPierDiaphragmSize(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,Float64* pW,Float64* pH) const = 0;
    // return true if weight of diaphragm is carried by girder
    virtual bool DoesPierDiaphragmLoadGirder(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const = 0;
-   // Get location of end diaphragm load (c.g.) measured from c.l. pier. along girder
+   // Get location of end diaphragm load (c.g.) measured from c.l. bearing along girder
    // Only applicable if DoesPierDiaphragmLoadGirder returns true
    virtual Float64 GetPierDiaphragmLoadLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType) const = 0;
    
@@ -450,7 +448,7 @@ interface IBridge : IUnknown
    virtual Float64 GetOverlayDepth() const = 0;
    virtual Float64 GetSacrificalDepth() const = 0;
    virtual Float64 GetFillet() const = 0;
-   virtual Float64 GetAssExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) const = 0;
+   virtual Float64 GetAssumedExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) const = 0;
    virtual Float64 GetGrossSlabDepth(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi) const = 0;
@@ -623,7 +621,14 @@ interface IBridge : IUnknown
 
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const = 0;
 
+   // returns true if any of the temporary supports have non-zero elevation adjustments
+   virtual bool HasTemporarySupportElevationAdjustments() const = 0;
+
    // Compute bearing elevation data for each girder along bearing line
+   // Vector returned has special cases for results with BearingIndex values at CL girder and for single bearing locations. For multi
+   // bearing cases an extra CL value is inserted at the start of each girder location. For single bearings, only one value is 
+   // returned since it is by definition at the CL.
+   enum specialBearingIndexType {sbiCLValue=INVALID_INDEX, sbiSingleBearingValue=INVALID_INDEX-1};
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
 };
 
@@ -1712,6 +1717,13 @@ interface IGirder : public IUnknown
    // where the transverse line intersects the edges of the girder. If pDirection is nullptr, the transverse line is taken to be normal to the girder
    virtual void GetTopGirderElevation(const pgsPointOfInterest& poi, IDirection* pDirection,Float64* pLeft, Float64* pCenter, Float64* pRight) const = 0;
 
+   // Returns the finished top of girder elevation for the left, center, and right edges of the girder at the specified poi. The elevation takes into
+   // account slab offsets and excess camber. Direction defines a tranverse line passing through poi. Left and Right elevations are computed
+   // where the transverse line intersects the edges of the girder. If pDirection is nullptr, the transverse line is taken to be normal to the girder.
+   // if bIncludeOverlay is true, the depth of the overlay is included (future overlays are not included), otherwise this method is the same
+   // as GetTopGirderElevation
+   virtual void GetFinishedElevation(const pgsPointOfInterest& poi, IDirection* pDirection, bool bIncludeOverlay, Float64* pLeft, Float64* pCenter, Float64* pRight) const = 0;
+
    // Returns the height of the splitting zone 
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi) const = 0;
 
@@ -1732,6 +1744,9 @@ interface IGirder : public IUnknown
    virtual Float64 GetStructuralLongitudinalJointWidth(const pgsPointOfInterest& poi) const = 0;
    virtual void GetStructuralLongitudinalJointWidth(const pgsPointOfInterest& poi, Float64* pLeft, Float64* pRight) const = 0;
 
+   // Returns a plan view polygon shape of the segment
+   virtual void GetSegmentPlan(const CSegmentKey& segmentKey, IShape** ppShape) const = 0;
+
    // Returns the shape of the segment profile. If bIncludeClosure is true, the segment shape
    // includes its projection into the closure joint. Y=0 is at the top of the segment
    // X values are in Girder Path Coordinates.
@@ -1741,6 +1756,11 @@ interface IGirder : public IUnknown
    // true, the segment shape includes its projection into the closure joint. Y=0 is at the top of the segment
    // X values are in Girder Path Coordinates.
    virtual void GetSegmentProfile(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,bool bIncludeClosure,IShape** ppShape) const = 0;
+
+   // Returns the shape of the closure joint profile
+   // X values are in Girder Path Coordinates.
+   // Y = 0 is at the top of the closure joint
+   virtual void GetClosureJointProfile(const CClosureKey& closureKey, IShape** ppShape) const = 0;
 
    // Returns the height of the segment at the specified location (Xsp is in Segment Path Coordinates)
    virtual Float64 GetSegmentHeight(const CSegmentKey& segmentKey,const CSplicedGirderData* pSplicedGirder,Float64 Xsp) const = 0;

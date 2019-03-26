@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,7 +96,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    // for transformed section analysis, stresses are computed with prestress force P at the start of the interval because elastic effects are intrinsic to the stress analysis
    // for gross section analysis, stresses are computed with prestress force P at the end of the interval because the elastic effects during the interval must be included in the prestress force
    GET_IFACE2(pBroker,ISectionProperties,pSectProps);
-   pgsTypes::IntervalTimeType intervalTime = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed && !bTimeStepAnalysis ? pgsTypes::Start : pgsTypes::End);
+   pgsTypes::IntervalTimeType intervalTime = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed ? pgsTypes::Start : pgsTypes::End);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));

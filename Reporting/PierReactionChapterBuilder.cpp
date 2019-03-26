@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -109,6 +109,11 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
    {
       nCols += 4; // min/max for fatigue live load reactions
+   }
+
+   if(bPermit)
+   {
+      nCols += 4; // min/max for permit live load reactions
    }
 
    if (bPedLoading)
@@ -351,6 +356,27 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
       col += 2;
    }
 
+   if (bPermit)
+   {
+      p_table->SetColumnSpan(0, col, 2);
+      (*p_table)(0, col) << _T("* Permit Live Load") << rptNewLine << _T("Optimize Fx");
+      (*p_table)(1, col) << _T("Max");
+      (*p_table)(1, col + 1) << _T("Min");
+      col += 2;
+
+      p_table->SetColumnSpan(0, col, 2);
+      (*p_table)(0, col) << _T("* Permit Live Load") << rptNewLine << _T("Optimize Fy");
+      (*p_table)(1, col) << _T("Max");
+      (*p_table)(1, col + 1) << _T("Min");
+      col += 2;
+
+      p_table->SetColumnSpan(0, col, 2);
+      (*p_table)(0, col) << _T("* Permit Live Load") << rptNewLine << _T("Optimize Mz");
+      (*p_table)(1, col) << _T("Max");
+      (*p_table)(1, col + 1) << _T("Min");
+      col += 2;
+   }
+
    *pPara << p_table << rptNewLine;
    *pPara << LIVELOAD_PER_LANE << rptNewLine;
    LiveLoadTableFooter(pBroker, pPara, girderKey, true, false);
@@ -479,6 +505,9 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    std::vector<VehicleIndexType> vMinLLVehicleSimpleSpan[3], vMaxLLVehicleSimpleSpan[3], vMinLLVehicleContinuousSpan[3], vMaxLLVehicleContinuousSpan[3];
    std::vector<REACTION> vMinFatigueReactionsSimpleSpan[3], vMaxFatigueReactionsSimpleSpan[3], vMinFatigueReactionsContinuousSpan[3], vMaxFatigueReactionsContinuousSpan[3];
    std::vector<VehicleIndexType> vMinFatigueVehicleSimpleSpan[3], vMaxFatigueVehicleSimpleSpan[3], vMinFatigueVehicleContinuousSpan[3], vMaxFatigueVehicleContinuousSpan[3];
+   std::vector<REACTION> vMinPermitReactionsSimpleSpan[3], vMaxPermitReactionsSimpleSpan[3], vMinPermitReactionsContinuousSpan[3], vMaxPermitReactionsContinuousSpan[3];
+   std::vector<VehicleIndexType> vMinPermitVehicleSimpleSpan[3], vMaxPermitVehicleSimpleSpan[3], vMinPermitVehicleContinuousSpan[3], vMaxPermitVehicleContinuousSpan[3];
+
    for ( int i = 0; i < 3; i++ )
    {
       pgsTypes::ForceEffectType fetPrimary = (pgsTypes::ForceEffectType)i;
@@ -492,6 +521,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
          {
             pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batSS, true, false, fetPrimary, &vMinFatigueReactionsSimpleSpan[fetPrimary], &vMaxFatigueReactionsSimpleSpan[fetPrimary], &vMinFatigueVehicleSimpleSpan[fetPrimary], &vMaxFatigueVehicleSimpleSpan[fetPrimary]);
             pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batCS, true, false, fetPrimary, &vMinFatigueReactionsContinuousSpan[fetPrimary], &vMaxFatigueReactionsContinuousSpan[fetPrimary], &vMinFatigueVehicleContinuousSpan[fetPrimary], &vMaxFatigueVehicleContinuousSpan[fetPrimary]);
+         }
+
+         if (bPermit)
+         {
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batSS, true, false, fetPrimary, &vMinPermitReactionsSimpleSpan[fetPrimary], &vMaxPermitReactionsSimpleSpan[fetPrimary], &vMinPermitVehicleSimpleSpan[fetPrimary], &vMaxPermitVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batCS, true, false, fetPrimary, &vMinPermitReactionsContinuousSpan[fetPrimary], &vMaxPermitReactionsContinuousSpan[fetPrimary], &vMinPermitVehicleContinuousSpan[fetPrimary], &vMaxPermitVehicleContinuousSpan[fetPrimary]);
          }
 
          if (bPedLoading)
@@ -509,6 +544,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
          {
             pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batMax, true, false, fetPrimary, &vMinFatigueReactionsSimpleSpan[fetPrimary], &vMaxFatigueReactionsSimpleSpan[fetPrimary], &vMinFatigueVehicleSimpleSpan[fetPrimary], &vMaxFatigueVehicleSimpleSpan[fetPrimary]);
             pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batMin, true, false, fetPrimary, &vMinFatigueReactionsContinuousSpan[fetPrimary], &vMaxFatigueReactionsContinuousSpan[fetPrimary], &vMinFatigueVehicleContinuousSpan[fetPrimary], &vMaxFatigueVehicleContinuousSpan[fetPrimary]);
+         }
+
+         if (bPermit)
+         {
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batMax, true, false, fetPrimary, &vMinPermitReactionsSimpleSpan[fetPrimary], &vMaxPermitReactionsSimpleSpan[fetPrimary], &vMinPermitVehicleSimpleSpan[fetPrimary], &vMaxPermitVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batMin, true, false, fetPrimary, &vMinPermitReactionsContinuousSpan[fetPrimary], &vMaxPermitReactionsContinuousSpan[fetPrimary], &vMinPermitVehicleContinuousSpan[fetPrimary], &vMaxPermitVehicleContinuousSpan[fetPrimary]);
          }
 
          if (bPedLoading)
@@ -799,7 +840,8 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
 
          IndexType maxLLVehicle, minLLVehicle;
          IndexType maxFatigueVehicle, minFatigueVehicle;
-         
+         IndexType maxPermitVehicle, minPermitVehicle;
+
          col = startCol + 2*i;
          ColumnIndexType colOffset = 0;
          if ( bPedLoading )
@@ -922,10 +964,10 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
          (*p_table)(row+2,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minLLVehicle << _T(")");
          col++;
 
-         colOffset += 4;
-
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
+            colOffset += 4;
+
             ssReaction = vMaxFatigueReactionsSimpleSpan[fetPrimary][pierIdx];
             csReaction = vMaxFatigueReactionsContinuousSpan[fetPrimary][pierIdx];
             if (fetPrimary == pgsTypes::fetFx)
@@ -988,6 +1030,76 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
             (*p_table)(row+1,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minFatigueVehicle << _T(")");
             (*p_table)(row+2,col+colOffset) << moment.SetValue(reaction.Mz);
             (*p_table)(row+2,col+colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltFatigue) << minFatigueVehicle << _T(")");
+            col++;
+         }
+
+
+         if (bPermit)
+         {
+            colOffset += 4;
+
+            ssReaction = vMaxPermitReactionsSimpleSpan[fetPrimary][pierIdx];
+            csReaction = vMaxPermitReactionsContinuousSpan[fetPrimary][pierIdx];
+            if (fetPrimary == pgsTypes::fetFx)
+            {
+               reaction.Fx = Max(ssReaction.Fx, csReaction.Fx);
+               reaction.Fy = MaxIndex(ssReaction.Fx, csReaction.Fx) == 0 ? ssReaction.Fy : csReaction.Fy;
+               reaction.Mz = MaxIndex(ssReaction.Fx, csReaction.Fx) == 0 ? ssReaction.Mz : csReaction.Mz;
+               maxPermitVehicle = MaxIndex(ssReaction.Fx, csReaction.Fx) == 0 ? vMaxPermitVehicleSimpleSpan[fetPrimary][pierIdx] : vMaxPermitVehicleContinuousSpan[fetPrimary][pierIdx];
+            }
+            else if (fetPrimary == pgsTypes::fetFy)
+            {
+               reaction.Fy = Max(ssReaction.Fy, csReaction.Fy);
+               reaction.Fx = MaxIndex(ssReaction.Fy, csReaction.Fy) == 0 ? ssReaction.Fx : csReaction.Fx;
+               reaction.Mz = MaxIndex(ssReaction.Fy, csReaction.Fy) == 0 ? ssReaction.Mz : csReaction.Mz;
+               maxPermitVehicle = MaxIndex(ssReaction.Fy, csReaction.Fy) == 0 ? vMaxPermitVehicleSimpleSpan[fetPrimary][pierIdx] : vMaxPermitVehicleContinuousSpan[fetPrimary][pierIdx];
+            }
+            else
+            {
+               reaction.Mz = Max(ssReaction.Mz, csReaction.Mz);
+               reaction.Fx = MaxIndex(ssReaction.Mz, csReaction.Mz) == 0 ? ssReaction.Fx : csReaction.Fx;
+               reaction.Fy = MaxIndex(ssReaction.Mz, csReaction.Mz) == 0 ? ssReaction.Fy : csReaction.Fy;
+               maxPermitVehicle = MaxIndex(ssReaction.Mz, csReaction.Mz) == 0 ? vMaxPermitVehicleSimpleSpan[fetPrimary][pierIdx] : vMaxPermitVehicleContinuousSpan[fetPrimary][pierIdx];
+            }
+
+            (*p_table)(row, col + colOffset) << force.SetValue(reaction.Fx);
+            (*p_table)(row, col + colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitVehicle << _T(")");
+            (*p_table)(row + 1, col + colOffset) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 1, col + colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitVehicle << _T(")");
+            (*p_table)(row + 2, col + colOffset) << moment.SetValue(reaction.Mz);
+            (*p_table)(row + 2, col + colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << maxPermitVehicle << _T(")");
+            col++;
+
+            ssReaction = vMinPermitReactionsSimpleSpan[fetPrimary][pierIdx];
+            csReaction = vMinPermitReactionsContinuousSpan[fetPrimary][pierIdx];
+            if (fetPrimary == pgsTypes::fetFx)
+            {
+               reaction.Fx = Min(ssReaction.Fx, csReaction.Fx);
+               reaction.Fy = MinIndex(ssReaction.Fx, csReaction.Fx) == 0 ? ssReaction.Fy : csReaction.Fy;
+               reaction.Mz = MinIndex(ssReaction.Fx, csReaction.Fx) == 0 ? ssReaction.Mz : csReaction.Mz;
+               minPermitVehicle = MinIndex(ssReaction.Fx, csReaction.Fx) == 0 ? vMinPermitVehicleSimpleSpan[fetPrimary][pierIdx] : vMinPermitVehicleContinuousSpan[fetPrimary][pierIdx];
+            }
+            else if (fetPrimary == pgsTypes::fetFy)
+            {
+               reaction.Fy = Min(ssReaction.Fy, csReaction.Fy);
+               reaction.Fx = MinIndex(ssReaction.Fy, csReaction.Fy) == 0 ? ssReaction.Fx : csReaction.Fx;
+               reaction.Mz = MinIndex(ssReaction.Fy, csReaction.Fy) == 0 ? ssReaction.Mz : csReaction.Mz;
+               minPermitVehicle = MinIndex(ssReaction.Fy, csReaction.Fy) == 0 ? vMinPermitVehicleSimpleSpan[fetPrimary][pierIdx] : vMinPermitVehicleContinuousSpan[fetPrimary][pierIdx];
+            }
+            else
+            {
+               reaction.Mz = Min(ssReaction.Mz, csReaction.Mz);
+               reaction.Fx = MinIndex(ssReaction.Mz, csReaction.Mz) == 0 ? ssReaction.Fx : csReaction.Fx;
+               reaction.Fy = MinIndex(ssReaction.Mz, csReaction.Mz) == 0 ? ssReaction.Fy : csReaction.Fy;
+               minPermitVehicle = MinIndex(ssReaction.Mz, csReaction.Mz) == 0 ? vMinPermitVehicleSimpleSpan[fetPrimary][pierIdx] : vMinPermitVehicleContinuousSpan[fetPrimary][pierIdx];
+            }
+
+            (*p_table)(row, col + colOffset) << force.SetValue(reaction.Fx);
+            (*p_table)(row, col + colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitVehicle << _T(")");
+            (*p_table)(row + 1, col + colOffset) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 1, col + colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitVehicle << _T(")");
+            (*p_table)(row + 2, col + colOffset) << moment.SetValue(reaction.Mz);
+            (*p_table)(row + 2, col + colOffset) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltPermit) << minPermitVehicle << _T(")");
             col++;
          }
       }

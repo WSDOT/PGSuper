@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   CPrestressLossTable();
+   CPrestressLossTable(bool bIsSplicedGirder=false);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -88,6 +88,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
+   bool m_bSplicedGirder;
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS

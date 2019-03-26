@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -319,7 +319,10 @@ interface IProductLoads : IUnknown
    // + force is up, + moment is ccw.
    virtual void GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey, std::vector<DiaphragmLoad>* pLoads) const = 0;
    virtual void GetIntermediateDiaphragmLoads(const CSpanKey& spanKey, std::vector<DiaphragmLoad>* pLoads) const = 0;
-   virtual void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pPahead, Float64* pMahead) const = 0;
+   // At abutments, the diaphragm load can be offset from the CL Bearing. The load is defined as an equivalent force/moment system depending on how the loading is specified
+   // if the girder end distance is long enough to be modeled as a cantilever, the load applied on or at the tip the cantilever depending on its definition. The moment
+   // arm parameter is the distance from the vertical load (P) to the CL Bearing.
+   virtual void GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIndexType gdrIdx, Float64* pPback, Float64 *pMback, Float64* pBackMomentArm, Float64* pPahead, Float64* pMahead,Float64* pAheadMomentArm) const = 0;
 
    virtual std::vector<std::_tstring> GetVehicleNames(pgsTypes::LiveLoadType llType,const CGirderKey& girderKey) const = 0;
 
@@ -800,22 +803,27 @@ interface ICamber : IUnknown
    // This is the camber that remains in the girder after the slab pour
    // It is equal to the Total camber less the screed camber.
    virtual Float64 GetExcessCamber(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetExcessCamberUnfactored(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetExcessCamberEx(const pgsPointOfInterest& poi, Int16 time, Float64* pDy, Float64* pCy,const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // This is the rotation in the girder that renames after the slab pour
    // It is equal to the rotation due to total camber, less the rotation for screed camber
    virtual Float64 GetExcessCamberRotation(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetExcessCamberRotationUnfactored(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
 
    // This is the camber in the girder, just prior to slab casting.
    virtual Float64 GetDCamberForGirderSchedule(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetDCamberForGirderScheduleUnfactored(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
+
+   virtual void GetDCamberForGirderScheduleEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound,Float64* pAvg,Float64* pLowerBound,const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual void GetDCamberForGirderScheduleUnfactoredEx(const pgsPointOfInterest& poi, Int16 time, Float64* pUpperBound, Float64* pAvg, Float64* pLowerBound, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // This is the factor that the min timing camber is multiplied by the compute the lower bound camber
    virtual Float64 GetLowerBoundCamberVariabilityFactor()const = 0;
 
    // Camber multipliers for final factored camber
    virtual CamberMultipliers GetCamberMultipliers(const CSegmentKey& segmentKey) const = 0;
+
+   // Returns true if at least on of the segments in the girder has precamber
+   virtual bool HasPrecamber(const CGirderKey& girderKey) const = 0;
 
    // returns the total precamber
    virtual Float64 GetPrecamber(const CSegmentKey& segmentKey) const = 0;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -317,15 +317,41 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
    pPoiMgr->AddPointOfInterest(poiEnd);
 
    // end block transition points
-   pgsPointOfInterest poiStartEndBlock1(segmentKey, ebLength,                            POI_SECTCHANGE_TRANSITION);
-   pgsPointOfInterest poiStartEndBlock2(segmentKey, ebLength  + ebTransition,            POI_SECTCHANGE_TRANSITION);
-   pgsPointOfInterest poiEndEndBlock2(  segmentKey, gdrLength - ebLength - ebTransition, POI_SECTCHANGE_TRANSITION);
-   pgsPointOfInterest poiEndEndBlock1(  segmentKey, gdrLength - ebLength,                POI_SECTCHANGE_TRANSITION);
+   if (0 < (ebLength + ebTransition))
+   {
+      if (IsZero(ebTransition))
+      {
+         // there is an abrupt section change
+         pgsPointOfInterest poiStartEndBlock1(segmentKey, ebLength, POI_SECTCHANGE_LEFTFACE);
+         poiStartEndBlock1.CanMerge(false);
+         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
 
-   pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
-   pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
-   pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
-   pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+         pgsPointOfInterest poiStartEndBlock2(segmentKey, ebLength, POI_SECTCHANGE_RIGHTFACE);
+         poiStartEndBlock2.CanMerge(false);
+         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+
+         pgsPointOfInterest poiEndEndBlock1(segmentKey, gdrLength - ebLength, POI_SECTCHANGE_LEFTFACE);
+         poiEndEndBlock1.CanMerge(false);
+         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+
+         pgsPointOfInterest poiEndEndBlock2(segmentKey, gdrLength - ebLength, POI_SECTCHANGE_RIGHTFACE);
+         poiEndEndBlock2.CanMerge(false);
+         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+      }
+      else
+      {
+         // there is a smooth taper over the transition length
+         pgsPointOfInterest poiStartEndBlock1(segmentKey, ebLength, POI_SECTCHANGE_TRANSITION);
+         pgsPointOfInterest poiStartEndBlock2(segmentKey, ebLength + ebTransition, POI_SECTCHANGE_TRANSITION);
+         pgsPointOfInterest poiEndEndBlock2(segmentKey, gdrLength - ebLength - ebTransition, POI_SECTCHANGE_TRANSITION);
+         pgsPointOfInterest poiEndEndBlock1(segmentKey, gdrLength - ebLength, POI_SECTCHANGE_TRANSITION);
+
+         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
+         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+      }
+   }
 }
 
 void CIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const

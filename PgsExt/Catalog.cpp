@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,18 +31,126 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// Class to compare version numbers as numbers and not alpha value. This was a bug prior and in version 4.0.11
+class VersionComparator
+{
+	std::_tstring m_Prolog;
+public:
+   VersionComparator(const std::_tstring& proLog) :
+      m_Prolog(proLog)
+	{}
+
+	bool operator() (const std::_tstring& ver1, const std::_tstring& ver2) const
+	{
+      Uint32 V1PrimeVersion, V1SecVersion, V1TersVersion;
+      Uint32 V2PrimeVersion, V2SecVersion, V2TersVersion;
+      if (!ParseVersionString(ver1, &V1PrimeVersion, &V1SecVersion, &V1TersVersion))
+      {
+         throw CCatalogParsingException(CCatalogParsingException::cteUnknownError);
+      }
+
+      // now deal with integer version numbering
+      if (!ParseVersionString(ver2, &V2PrimeVersion, &V2SecVersion, &V2TersVersion))
+      {
+         throw CCatalogParsingException(CCatalogParsingException::cteUnknownError);
+      }
+
+      // correct comparators are tricky
+      if (V1PrimeVersion < V2PrimeVersion)
+      {
+         return true;
+      }
+      else if (V1PrimeVersion == V2PrimeVersion)
+      {
+         if (V1SecVersion < V2SecVersion)
+         {
+            return true;
+         }
+         else if (V1SecVersion == V2SecVersion)
+         {
+            if (V1TersVersion < V2TersVersion)
+            {
+               return true;
+            }
+         }
+      }
+
+      return false;
+	}
+
+   bool ParseVersionString(const std::_tstring& verstr, Uint32* pPrimeVersion, Uint32* pSecVersion, Uint32* pTersVersion) const
+   {
+      *pPrimeVersion = 0;
+      *pSecVersion = 0;
+      *pTersVersion = 0;
+
+      // strip prolog from version names
+      std::_tstring newstr;
+      std::_tstring::size_type midpos = verstr.find(m_Prolog);
+      if (std::_tstring::npos == midpos)
+      {
+         ATLASSERT(0); // string format is likely invalid,
+         throw CCatalogParsingException(CCatalogParsingException::cteUnknownError);
+      }
+      else
+      {
+         newstr = verstr.substr(midpos+m_Prolog.size(), verstr.size()-1);
+      }
+
+      // get version numbers
+      sysTokenizer tokenizer(_T("."));
+      tokenizer.push_back(newstr);
+      if (tokenizer.size() != 3)// should always be the case
+      {
+         throw CCatalogParsingException(CCatalogParsingException::cteVersionStringNotValid);
+      }
+
+      Uint32 n = 0;
+      sysTokenizer::iterator iter;
+      for ( iter = tokenizer.begin(); iter != tokenizer.end(); iter++ )
+      {
+         long vn; 
+         if (tokenizer.ParseLong(iter->c_str(), &vn))
+         {
+            if (0 == n)
+            {
+               *pPrimeVersion = vn;
+            }
+            if (1 == n)
+            {
+               *pSecVersion = vn;
+            }
+            if (2 == n)
+            {
+               *pTersVersion = vn;
+            }
+         }
+         else
+         {
+            throw CCatalogParsingException(CCatalogParsingException::cteVersionStringNotValid);
+         }
+
+         n++;
+      }
+
+      return true;
+   }
+};
+
+typedef std::set<std::_tstring, VersionComparator> VersionSet;
+
 // function to find closest compatible version of catalog entry for current software version
 // find the key closest to the one for the current version (but not after)
-static bool FindCompatibleVersion(std::set<std::_tstring>& rEntries, std::_tstring& rVersion)
+static bool FindCompatibleVersion(VersionSet& rEntries, std::_tstring& rVersion)
 {
    bool did_find = true;
-   std::set<std::_tstring>::const_iterator found( rEntries.find(rVersion) );
+   VersionSet::const_iterator found( rEntries.find(rVersion) );
    if ( found == rEntries.end() )
    {
       // Not in the set... add it and then try to use most recent version to this one.
-      std::pair<std::set<std::_tstring>::iterator,bool> result( rEntries.insert(rVersion) );
+      std::pair<VersionSet::iterator,bool> result( rEntries.insert(rVersion) );
       ASSERT( result.second == true );
-      std::set<std::_tstring>::iterator insert_loc( result.first );
+      VersionSet::iterator insert_loc( result.first );
 
       if (insert_loc != rEntries.begin())
       {
@@ -61,6 +169,8 @@ static bool FindCompatibleVersion(std::set<std::_tstring>& rEntries, std::_tstri
    return did_find;
 }
 
+
+// Our Catalog class
 
 CCatalog::CCatalog():
 m_DidParse(false)
@@ -204,7 +314,8 @@ bool CCatalog::DoParse()
 
          // sort the key values pairs into keys for MasterLibrary and WorkgroupTemplates
          // remove the value part
-         std::set<std::_tstring> MasterLibraryEntries, WorkgroupTemplateEntries;
+         VersionSet MasterLibraryEntries(VersionComparator(_T("Version_")));
+         VersionSet WorkgroupTemplateEntries(VersionComparator(_T("Version_")));
          TCHAR sep[] = _T("\n");
          LPTSTR next_token;
          LPTSTR token = _tcstok_s(sections,sep,&next_token);
@@ -216,14 +327,34 @@ bool CCatalog::DoParse()
             if ( pos != std::_tstring::npos )
             {
                std::_tstring::size_type eqpos = strToken.find(_T("_MasterLibrary"));
-               MasterLibraryEntries.insert(strToken.substr(0,eqpos));
+
+               try
+               {
+                  MasterLibraryEntries.insert(strToken.substr(0, eqpos));
+               }
+               catch (CCatalogParsingException& ex)
+               {
+                  // Comparator can throw - we are toast
+                  ex.SetLineBeingParsed(strToken.c_str());
+                  throw ex;
+               }
             }
 
             pos = strToken.find(_T("WorkgroupTemplates"));
             if ( pos != std::_tstring::npos )
             {
                std::_tstring::size_type eqpos = strToken.find(_T("_WorkgroupTemplates"));
-               WorkgroupTemplateEntries.insert(strToken.substr(0,eqpos));
+
+               try
+               {
+                  WorkgroupTemplateEntries.insert(strToken.substr(0, eqpos));
+               }
+               catch (CCatalogParsingException& ex)
+               {
+                  // Comparator can throw - we are toast
+                  ex.SetLineBeingParsed(strToken.c_str());
+                  throw ex;
+               }
             }
 
             token = _tcstok_s(nullptr,sep,&next_token);
@@ -299,7 +430,7 @@ bool CCatalog::DoParse()
       {
          // Format is pgz. This means that each version has a key/value pair pointing to a pgz file
          // sort the key values pairs into keys for PgzFiles remove the value part
-         std::set<std::_tstring> PgzEntries;
+         VersionSet PgzEntries(VersionComparator(_T("Version_")));
          TCHAR sep[] = _T("\n");
          LPTSTR next_token;
          LPTSTR token = _tcstok_s(sections,sep,&next_token);
@@ -312,7 +443,17 @@ bool CCatalog::DoParse()
             {
                std::_tstring::size_type eqpos = strToken.find(_T("_PgzFiles"));
                std::_tstring strPgzEntry(strToken.substr(0,eqpos));
-               PgzEntries.insert(strPgzEntry);
+
+               try
+               {
+                  PgzEntries.insert(strPgzEntry);
+               }
+               catch (CCatalogParsingException& ex)
+               {
+                  // Comparator can throw - we are toast
+                  ex.SetLineBeingParsed(strToken.c_str());
+                  throw ex;
+               }
             }
 
             token = _tcstok_s(nullptr,sep,&next_token);

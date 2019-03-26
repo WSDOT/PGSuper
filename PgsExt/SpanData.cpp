@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,9 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include <PgsExt\PgsExtLib.h>
-#include <SpanData.h>
-#include <PgsExt\PierData.h>
-#include <PgsExt\BridgeDescription.h>
+#include "BridgeDescription.h"
 
 #include <WbflAtlExt.h>
 
@@ -218,7 +216,7 @@ HRESULT CSpanData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       if ( 2 <= version )
       {
          // added in version 2 of SpanDataDetails data block
-         if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier )
+         if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBearingLine )
          {
             var.vt = VT_R8;
             pStrLoad->get_Property(_T("SlabOffsetAtStart"),&var);
@@ -493,7 +491,7 @@ HRESULT CSpanData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
 
    // added in version 2 of SpanDataDetails data block
-   if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotPier )
+   if ( m_pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBearingLine )
    {
       pStrSave->put_Property(_T("SlabOffsetAtStart"),CComVariant(m_SlabOffset[pgsTypes::metStart]));
       pStrSave->put_Property(_T("SlabOffsetAtEnd"),  CComVariant(m_SlabOffset[pgsTypes::metEnd]));
@@ -765,7 +763,7 @@ void CSpanData::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset)
    {
       m_pBridgeDesc->SetSlabOffset(offset);
    }
-   else if ( slabOffsetType == pgsTypes::sotPier )
+   else if ( slabOffsetType == pgsTypes::sotBearingLine )
    {
       m_SlabOffset[end] = offset;
    }
@@ -783,7 +781,7 @@ Float64 CSpanData::GetSlabOffset(pgsTypes::MemberEndType end) const
    {
       return m_pBridgeDesc->GetSlabOffset();
    }
-   else if ( slabOffsetType == pgsTypes::sotPier )
+   else if ( slabOffsetType == pgsTypes::sotBearingLine )
    {
       if ( m_pBridgeDesc->GetDeckDescription()->DeckType == pgsTypes::sdtNone )
       {

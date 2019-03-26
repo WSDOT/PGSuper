@@ -23,7 +23,7 @@
 // BearingPierGrid.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "BearingPierGrid.h"
 
 #include <System\Tokenizer.h>
@@ -508,17 +508,17 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
       if (hp.m_BPDType == BearingPierData::bpdAhead)
       {
          face = pgsTypes::Ahead;
-         crow = _AHEADSTR;
+         crow = _T("Ahead");
       }
       else if (hp.m_BPDType == BearingPierData::bpdBack)
       {
          face = pgsTypes::Back;
-         crow = _BACKSTR;
+         crow = _T("Back");
       }
       else if (hp.m_BPDType == BearingPierData::bpdCL)
       {
          face = pgsTypes::Back;
-         crow = _CLSTR;
+         crow = _T("C.L.");
       }
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetValue(crow));

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -76,6 +76,7 @@ typedef Uint32 PoiAttributeType; // NOTE: if more bits are needed use a 64-bit t
 
 
 // The lower 12 bits are reserved for 10th point attributes
+// L, for 10th Points, is measured between points of support
 #define POI_10L                    0x00000400 //1.0L
 #define POI_9L                     0x00000200 //0.9L
 #define POI_8L                     0x00000100 //0.8L
@@ -106,8 +107,8 @@ typedef Uint32 PoiAttributeType; // NOTE: if more bits are needed use a 64-bit t
 //#define POI_NONREF3                0x02000000
 
 // Special Points
-#define POI_END_FACE                 0x01000000 // End face of a segment (right end)
-#define POI_START_FACE               0x00800000 // Start face of a segment (left end)
+#define POI_START_FACE               0x01000000 // Start face of a segment (left end)
+#define POI_END_FACE                 0x00800000 // End face of a segment (right end)
 #define POI_STIRRUP_ZONE             0x00400000 // Stirrup Zone Boundary
 #define POI_CRITSECTSHEAR1           0x00200000 // critical section for shear, for strength I limit state
 #define POI_CRITSECTSHEAR2           0x00100000 // critical section for shear, for strength II limit state
@@ -277,6 +278,13 @@ public:
    // returns true if the girder path coordinate has been set
    bool HasGirderPathCoordinate() const;
 
+   // Set/Get the location of this poi in Girderline Coordinates
+   void SetGirderlineCoordinate(Float64 Xgp);
+   Float64 GetGirderlineCoordinate() const;
+
+   // returns true if the girder line coordinate has been set
+   bool HasGirderlineCoordinate() const;
+
    // Set/Get the span location of this poi
    void SetSpanPoint(SpanIndexType spanIdx,Float64 Xspan);
    void GetSpanPoint(SpanIndexType* pSpanIdx,Float64* pXspan) const;
@@ -405,6 +413,9 @@ protected:
 
    bool m_bHasGirderPathCoordinate; // tracks if m_Xgp has been set
    Float64 m_Xgp; // location of this POI in girder path coordinates (X=0 is the CL Pier TS at the start of the first segment in the girder)
+
+   bool m_bHasGirderlineCoordinate; // tracks if m_Xgl has been set
+   Float64 m_Xgl; // location of this POI in girder line coordinates
 
    bool m_bHasSpanPoint;
    SpanIndexType m_SpanIdx;

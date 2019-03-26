@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 // DrawStrandControl.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "PGSuperColors.h"
 #include "DrawStrandControl.h"
@@ -131,7 +131,7 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
 
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
-   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
    ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& startPoi(vPoi.front());
    const pgsPointOfInterest& endPoi(vPoi.back());
@@ -506,9 +506,12 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
                rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
             }
 
-            if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
+            if (strandDefinitionType == CStrandData::sdtDirectRowInput && ( (IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z)) || (3 <= strandRow.m_nStrands && IsZero(strandRow.m_Spacing)) ) )
             {
                // Z must be zero if nStrands is odd... it's not, so use the error color
+               // spacing cannot be zero if there is 3 or more strands
+               // spacing can be zero if there are 2 strands and Z is not zero
+               // if there are 3 strands, Z must be zero so spacing cannot be zero
                pDC->SelectObject(&errorPen);
                pDC->SelectObject(&errorBrush);
             }
@@ -553,7 +556,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
          //
          // Draw in strands segment profile
          //
-         if (strandDefinitionType == CStrandData::sdtDirectRowInput && IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z))
+         if (strandDefinitionType == CStrandData::sdtDirectRowInput && ((IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z))))
          {
             // m_Z must be zero if nStrands is odd
             pDC->SelectObject(&errorPen);

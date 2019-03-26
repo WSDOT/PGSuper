@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1760,19 +1760,12 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
       Float64 max_all_stress   = pSegmentLiftingSpecCriteria->GetLiftingAllowableTensileConcreteStress(segmentKey);
       Float64 allow_with_rebar = pSegmentLiftingSpecCriteria->GetLiftingWithMildRebarAllowableStress(segmentKey);
-      Float64 min_all_stress   = pSegmentLiftingSpecCriteria->GetLiftingAllowableCompressiveConcreteStress(segmentKey);
+      Float64 min_all_stress_global = pSegmentLiftingSpecCriteria->GetLiftingAllowableGlobalCompressiveConcreteStress(segmentKey);
+      Float64 min_all_stress_peak = pSegmentLiftingSpecCriteria->GetLiftingAllowablePeakCompressiveConcreteStress(segmentKey);
 
-      Float64 min_stress,max_stress;
-      if ( pSegmentLiftingSpecCriteria->EvaluateLiftingStressesAtEquilibriumAngle() )
-      {
-         min_stress = liftingResults.MinStress;
-         max_stress = liftingResults.MaxStress;
-      }
-      else
-      {
-         min_stress = liftingResults.MinDirectStress;
-         max_stress = liftingResults.MaxDirectStress;
-      }
+      Float64 min_stress_global = liftingResults.MinDirectStress;
+      Float64 min_stress_peak = liftingResults.MinStress;
+      Float64 max_stress = liftingResults.MaxStress;
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -1803,16 +1796,29 @@ void lifting(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       }
       row++;
 
-      (*pTable)(row,0) << _T("Compressive Stress");
-      (*pTable)(row,1) <<  stress.SetValue(min_stress);
-      (*pTable)(row,2) <<  stress.SetValue(min_all_stress);
-      if (min_all_stress <= min_stress)
+      (*pTable)(row,0) << _T("Compressive Stress - General");
+      (*pTable)(row,1) <<  stress.SetValue(min_stress_global);
+      (*pTable)(row,2) <<  stress.SetValue(min_all_stress_global);
+      if (min_all_stress_global <= min_stress_global)
       {
          (*pTable)(row,3) << RPT_PASS;
       }
       else
       {
          (*pTable)(row,3) << RPT_FAIL;
+      }
+      row++;
+
+      (*pTable)(row, 0) << _T("Compressive Stress - With lateral bending");
+      (*pTable)(row, 1) << stress.SetValue(min_stress_peak);
+      (*pTable)(row, 2) << stress.SetValue(min_all_stress_peak);
+      if (min_all_stress_peak <= min_stress_peak)
+      {
+         (*pTable)(row, 3) << RPT_PASS;
+      }
+      else
+      {
+         (*pTable)(row, 3) << RPT_FAIL;
       }
       row++;
 
@@ -1906,17 +1912,9 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       (*pTable)(0,2) << _T("Limit");
       (*pTable)(0,3) << _T("Status");
 
-      Float64 min_stress, max_stress;
-      if (pSegmentHaulingSpecCriteria->EvaluateHaulingStressesAtEquilibriumAngle())
-      {
-         min_stress = haulingResults.MinStress[slope];
-         max_stress = haulingResults.MaxStress[slope];
-      }
-      else
-      {
-         min_stress = haulingResults.MinDirectStress[slope];
-         max_stress = haulingResults.MaxDirectStress[slope];
-      }
+      Float64 min_stress_global = haulingResults.MinDirectStress[slope];
+      Float64 min_stress_peak = haulingResults.MinStress[slope];
+      Float64 max_stress = haulingResults.MaxStress[slope];
 
       Float64 max_all_stress, allow_with_rebar;
       if ( slope == pgsTypes::CrownSlope )
@@ -1929,7 +1927,8 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
          max_all_stress   = pSegmentHaulingSpecCriteria->GetHaulingAllowableTensileConcreteStressMaxSuper(segmentKey);
          allow_with_rebar = pSegmentHaulingSpecCriteria->GetHaulingWithMildRebarAllowableStressMaxSuper(segmentKey);
       }
-      Float64 min_all_stress   = pSegmentHaulingSpecCriteria->GetHaulingAllowableCompressiveConcreteStress(segmentKey);
+      Float64 min_all_stress_global = pSegmentHaulingSpecCriteria->GetHaulingAllowableGlobalCompressiveConcreteStress(segmentKey);
+      Float64 min_all_stress_peak = pSegmentHaulingSpecCriteria->GetHaulingAllowablePeakCompressiveConcreteStress(segmentKey);
 
       RowIndexType row = 1;
       (*pTable)(row,0) << _T("Tensile Stress (w/o mild rebar)");
@@ -1959,16 +1958,30 @@ void hauling(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey
       }
       row++;
 
-      (*pTable)(row,0) << _T("Compressive Stress");
-      (*pTable)(row,1) <<  stress.SetValue(min_stress);
-      (*pTable)(row,2) <<  stress.SetValue(min_all_stress);
-      if (min_all_stress <= min_stress)
+      (*pTable)(row,0) << _T("Compressive Stress - General");
+      (*pTable)(row,1) <<  stress.SetValue(min_stress_global);
+      (*pTable)(row,2) <<  stress.SetValue(min_all_stress_global);
+      if (min_all_stress_global <= min_stress_global)
       {
          (*pTable)(row,3) << RPT_PASS;
       }
       else
       {
          (*pTable)(row,3) << RPT_FAIL;
+      }
+      row++;
+
+
+      (*pTable)(row, 0) << _T("Compressive Stress - With lateral bending");
+      (*pTable)(row, 1) << stress.SetValue(min_stress_peak);
+      (*pTable)(row, 2) << stress.SetValue(min_all_stress_peak);
+      if (min_all_stress_peak <= min_stress_peak)
+      {
+         (*pTable)(row, 3) << RPT_PASS;
+      }
+      else
+      {
+         (*pTable)(row, 3) << RPT_FAIL;
       }
       row++;
 

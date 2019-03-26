@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -209,7 +209,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
       {
          CSegmentKey segmentKey(girderKey, segIdx);
          const auto& artifact = pConstrArtifact->GetSegmentArtifact(segIdx);
-         const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
+         const auto& haunch_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
 
          Float64 endA, startA;
          artifact.GetProvidedSlabOffset(&startA, &endA); // both values are same because of what function we are in
@@ -427,7 +427,7 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
             if (artifact.CheckStirrupLength() )
             {
                didNote = true;
-               const auto& haunch_details = pGdrHaunch->GetHaunchDetails(segmentKey);
+               const auto& haunch_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
                (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(haunch_details.HaunchDiff) 
                                                  << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
                                                  
@@ -765,12 +765,12 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
       *pTitle << _T("Excess Camber Check");
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
-      if (pSpec->IsAssExcessCamberForLoad())
+      if (pSpec->IsAssumedExcessCamberForLoad())
       {
          *pBody << _T("Haunch dead load is affected by variable haunch depth along the girder. ");
       }
 
-      if (pSpec->IsAssExcessCamberForSectProps())
+      if (pSpec->IsAssumedExcessCamberForSectProps())
       {
          *pBody << _T("Composite section properties are affected by haunch depth variation along the girder. ");
       }
@@ -838,6 +838,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    slope.SetPrecision(pDisplayUnits->GetScalarFormat().Precision);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -881,7 +882,14 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
       (*pTable)(1, col++) << dim.SetValue(zo);
       (*pTable)(1, col++) << slope.SetValue(Orientation);
       (*pTable)(1, col++) << slope.SetValue(ThetaMax);
-      (*pTable)(1, col++) << slope.SetValue(FS);
+      if (10 <= FS)
+      {
+         (*pTable)(1, col++) << _T("10+");
+      }
+      else
+      {
+         (*pTable)(1, col++) << scalar.SetValue(FS);
+      }
 
       if ( pArtifact->Passed() )
       {
@@ -892,7 +900,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
          (*pTable)(1,col++) << RPT_FAIL;
       }
       
-      *pBody << _T("Allowable Factor of Safety = ") << FSmax << rptNewLine;
+      *pBody << _T("Minimum Factor of Safety = ") << FSmax << rptNewLine;
       *pBody << pTable;
    } // next segment
 }
@@ -1253,23 +1261,12 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
          (*pTable)(row++, 1) << dim.SetValue(C);
       }
 
-      Float64 precamber = pCamber->GetPrecamber(poiMidSpan, pgsTypes::pddErected);
-   
       Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
       Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
-      Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
-      Dmin_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MINTIME);
-      Dmax_UpperBound = pCamber->GetDCamberForGirderSchedule( poiMidSpan, CREEP_MAXTIME);
-
-      // don't apply lower, average, upper bound scaling to precamber
-      // precamber is a fixed, built in camber and isn't subject to natural variability
-      
-      Dmin_LowerBound = Cfactor*(Dmin_UpperBound-precamber)+precamber;
-      Dmin_Average = (1 + Cfactor) / 2 * (Dmin_UpperBound - precamber) + precamber;
-      
-      Dmax_LowerBound = Cfactor*(Dmax_UpperBound-precamber)+precamber;
-      Dmax_Average = (1 + Cfactor) / 2 * (Dmax_UpperBound - precamber) + precamber;
+      pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MAXTIME, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
+      pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
    
+      Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
    
       if ( IsEqual(min_days,max_days) )
       {

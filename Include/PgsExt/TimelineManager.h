@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -46,12 +46,13 @@
 #define TLM_STRESS_TENDONS_ACTIVITY_REQUIRED             0x00004000 // an activity for stressing tendons is required
 #define TLM_CAST_LONGITUDINAL_JOINT_ACTIVITY_REQUIRED    0x00008000 // an activity for casting the longitudinal joints is required
 
-#define TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR              0x00010000 // temporary support was removed before it was erected or before the segments were lifted off by PT
-#define TLM_SEGMENT_ERECTION_ERROR                       0x00020000 // segment erected before its supports are erected
-#define TLM_CLOSURE_JOINT_ERROR                          0x00040000 // closure joint is cast before the segment is erected or PT is applied before it is cased and cured
-#define TLM_RAILING_SYSTEM_ERROR                         0x00080000 // railing system is installed before deck is cast
-#define TLM_STRESS_TENDON_ERROR                          0x00100000 // tendon stressed before closure joints are cast or segments are erected
-#define TLM_LOAD_RATING_ERROR                            0x00200000 // load rating occurs before bridge is open to traffic
+#define TLM_STRONGBACK_ERECTION_ERROR                    0x00010000 // strongback erected before segment
+#define TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR              0x00020000 // temporary support was removed before it was erected or before the segments were lifted off by PT
+#define TLM_SEGMENT_ERECTION_ERROR                       0x00040000 // segment erected before its supports are erected
+#define TLM_CLOSURE_JOINT_ERROR                          0x00080000 // closure joint is cast before the segment is erected or PT is applied before it is cased and cured
+#define TLM_RAILING_SYSTEM_ERROR                         0x00100000 // railing system is installed before deck is cast
+#define TLM_STRESS_TENDON_ERROR                          0x00200000 // tendon stressed before closure joints are cast or segments are erected
+#define TLM_LOAD_RATING_ERROR                            0x00400000 // load rating occurs before bridge is open to traffic
 
 #define TLM_SUCCESS                                      0xffffffff // event was successfully added
 

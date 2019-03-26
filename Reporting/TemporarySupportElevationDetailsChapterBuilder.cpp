@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -104,8 +104,8 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
       {
          (*pTable)(0, col++) << COLHDR(_T("Overlay Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       }
-      (*pTable)(0, col++) << COLHDR(_T("Slab") << rptNewLine << _T("Offset"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable)(0, col++) << COLHDR(_T("Height") << rptNewLine << _T("of") << rptNewLine << _T("Girder"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << COLHDR(_T("Haunch") << rptNewLine << _T("Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << COLHDR(_T("Adjusted") << rptNewLine << _T("Girder") << rptNewLine << _T("Height"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << COLHDR(_T("Bottom") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();

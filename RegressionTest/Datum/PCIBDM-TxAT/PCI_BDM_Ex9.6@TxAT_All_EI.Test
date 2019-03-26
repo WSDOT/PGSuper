@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                     1     1     BT72           0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   2.730    -3.678     8487   1.018  1.000  -1.034 -1.192 -0.076 -0.044 -1.312   0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                     1     1     BT72    *      0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   2.730    -3.678     8487   1.018  1.000  -1.034 -1.192 -0.076 -0.044 -1.312   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -18,7 +18,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                     1     2     BT72           0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   2.875    -3.776     8412   0.925  1.083  -1.034 -1.401 -0.075 -0.043 -1.520   0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                     1     2     BT72    *      0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   2.875    -3.776     8412   0.925  1.083  -1.034 -1.401 -0.075 -0.043 -1.520   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -35,7 +35,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                     2     1     BT72           0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   3.002    -3.815     8325   1.000  1.000  -1.420 -1.637 -0.027 -0.016 -1.680   0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                     2     1     BT72    *      0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   3.002    -3.815     8325   1.000  1.000  -1.420 -1.637 -0.027 -0.016 -1.680   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -43,8 +43,8 @@ Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
 Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed
@@ -66,7 +66,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                     3     1     BT72           0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   2.730    -3.678     8487   1.018  1.000  -1.034 -1.192 -0.076 -0.044 -1.312   0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                     3     1     BT72    *      0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   2.730    -3.678     8487   1.018  1.000  -1.034 -1.192 -0.076 -0.044 -1.312   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
@@ -74,8 +74,8 @@ Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
 Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
@@ -86,7 +86,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 42.00    4  12.00                     3     2     BT72           0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   2.875    -3.776     8412   0.925  1.083  -1.034 -1.401 -0.075 -0.043 -1.520   0.00    0.00    4.00   10.00   10.00 
+ 42.00    4  12.00                     3     2     BT72    *      0  1/2  270   0.00   0.00   8.50   8.50                                               0   0.0  0.0  5.500  7.000   2.875    -3.776     8412   0.925  1.083  -1.034 -1.401 -0.075 -0.043 -1.520   0.00    0.00    4.00   10.00   10.00 
 
 
 The Specification Check was Not Successful

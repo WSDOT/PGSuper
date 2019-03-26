@@ -1,11 +1,13 @@
 // GirderSegmentGeneralPage.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
+#include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 
 #include "GirderSegmentGeneralPage.h"
 #include "GirderSegmentDlg.h"
+#include "SelectItemDlg.h"
+#include "Utilities.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
@@ -76,9 +78,9 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
    pgsTypes::SegmentVariationType variationType;
-   Float64 VariationLength[4];
-   Float64 VariationHeight[4];
-   Float64 VariationBottomFlangeDepth[4];
+   std::array<Float64, 4> VariationLength;
+   std::array<Float64, 4> VariationHeight;
+   std::array<Float64, 4> VariationBottomFlangeDepth;
    bool bBottomFlangeDepth = false;
 
    if ( !pDX->m_bSaveAndValidate )
@@ -128,6 +130,13 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
+   Float64 segment_length = GetSegmentLength();
+   if (pDX->m_bSaveAndValidate && !pSegment->AreSegmentVariationsValid(segment_length))
+   {
+      AfxMessageBox(_T("Segment length parameters exceed the overall length of the segment."), MB_OK);
+      pDX->Fail();
+   }
+
    // no precamber in spliced girder segments
    //DDX_UnitValueAndTag(pDX, IDC_PRECAMBER, IDC_PRECAMBER_UNIT, pSegment->Precamber, pDisplayUnits->GetComponentDimUnit());
    pSegment->Precamber = 0.0;
@@ -139,11 +148,29 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    // Validation: 0 < f'ci <= f'c   
    DDV_UnitValueLimitOrLess( pDX, IDC_FCI, pSegment->Material.Concrete.Fci,  pSegment->Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
 
-   Float64 segment_length = GetSegmentLength();
-   if ( pDX->m_bSaveAndValidate && !pSegment->AreSegmentVariationsValid(segment_length) )
+   DDX_CBItemData(pDX, IDC_SLAB_OFFSET_TYPE, m_SlabOffsetType);
+   DDX_UnitValueAndTag(pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX, IDC_END_SLAB_OFFSET, IDC_END_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit());
+
+   if (pDX->m_bSaveAndValidate && m_SlabOffsetType == pgsTypes::sotSegment)
    {
-      AfxMessageBox(_T("Segment length parameters exceed the overall length of the segment."),MB_OK);
-      pDX->Fail();
+      if (::IsLT(m_SlabOffset[pgsTypes::metStart], m_MinSlabOffset))
+      {
+         pDX->PrepareEditCtrl(IDC_START_SLAB_OFFSET);
+         CString msg;
+         msg.Format(_T("The slab offset at the start of the segment must be at least equal to the slab depth of %s"), FormatDimension(m_MinSlabOffset, pDisplayUnits->GetComponentDimUnit()));
+         AfxMessageBox(msg, MB_ICONEXCLAMATION);
+         pDX->Fail();
+      }
+
+      if (::IsLT(m_SlabOffset[pgsTypes::metEnd], m_MinSlabOffset))
+      {
+         pDX->PrepareEditCtrl(IDC_END_SLAB_OFFSET);
+         CString msg;
+         msg.Format(_T("The slab offset at the end of the segment must be at least equal to the slab depth of %s"), FormatDimension(m_MinSlabOffset, pDisplayUnits->GetComponentDimUnit()));
+         AfxMessageBox(msg, MB_ICONEXCLAMATION);
+         pDX->Fail();
+      }
    }
 
    if ( !pDX->m_bSaveAndValidate )
@@ -201,6 +228,8 @@ BEGIN_MESSAGE_MAP(CGirderSegmentGeneralPage, CPropertyPage)
    ON_BN_CLICKED(IDC_FC1, &CGirderSegmentGeneralPage::OnConcreteStrength)
    ON_BN_CLICKED(IDC_FC2, &CGirderSegmentGeneralPage::OnConcreteStrength)
    ON_BN_CLICKED(IDC_BOTTOM_FLANGE_DEPTH, &CGirderSegmentGeneralPage::OnBnClickedBottomFlangeDepth)
+   ON_CBN_DROPDOWN(IDC_SLAB_OFFSET_TYPE, &CGirderSegmentGeneralPage::OnChangingSlabOffsetType)
+   ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE, &CGirderSegmentGeneralPage::OnChangeSlabOffsetType)
    ON_COMMAND(ID_HELP, &CGirderSegmentGeneralPage::OnHelp)
 END_MESSAGE_MAP()
 
@@ -208,29 +237,43 @@ END_MESSAGE_MAP()
 // CGirderSegmentGeneralPage message handlers
 BOOL CGirderSegmentGeneralPage::OnInitDialog() 
 {
-   FillVariationTypeComboBox();
-   FillEventList();
-
-   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(strSpecName.c_str());
    m_LossMethod = pSpecEntry->GetLossMethod();
    m_TimeDependentModel = pSpecEntry->GetTimeDependentModel();
 
-   m_ctrlDrawSegment.SubclassDlgItem(IDC_DRAW_SEGMENT,this);
+   m_ctrlDrawSegment.SubclassDlgItem(IDC_DRAW_SEGMENT, this);
    m_ctrlDrawSegment.CustomInit(this);
+
+   // since the bridge model isn't accessable from here,
+   // slab offset type and slab offset are initialized in CGirderSegmentDlg::CommonInit
+   //CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+   //CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
+   //m_SlabOffsetType = pParent->m_Girder.GetGirderGroup()->GetBridgeDescription()->GetSlabOffsetType();
+   //pSegment->GetSlabOffset(&m_SlabOffset[pgsTypes::metStart], &m_SlabOffset[pgsTypes::metEnd]);
+
+   m_strSlabOffsetCache[pgsTypes::metStart].Format(_T("%s"), FormatDimension(m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit(), false));
+   m_strSlabOffsetCache[pgsTypes::metEnd].Format(_T("%s"), FormatDimension(m_SlabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit(), false));
+
+   FillSlabOffsetComboBox();
+
+   FillVariationTypeComboBox();
+   FillEventList();
 
    CPropertyPage::OnInitDialog();
 
    InitBottomFlangeDepthControls();
    InitEndBlockControls();
 
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_SegmentID);
    m_AgeAtRelease = pParent->m_TimelineMgr.GetEventByID(constructionEventID)->GetConstructSegmentsActivity().GetAgeAtRelease();
 
@@ -260,6 +303,8 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    {
       OnChangeFc();
    }
+
+   UpdateSlabOffsetControls();
 
    UpdateConcreteControls(true);
 
@@ -1509,4 +1554,141 @@ void CGirderSegmentGeneralPage::OnBnClickedBottomFlangeDepth()
 void CGirderSegmentGeneralPage::OnHelp()
 {
    EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_SEGMENTDETAILS_GENERAL);
+}
+
+pgsTypes::SlabOffsetType CGirderSegmentGeneralPage::GetCurrentSlabOffsetType()
+{
+   CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+   int curSel = pcbSlabOffsetType->GetCurSel();
+   return (pgsTypes::SlabOffsetType)pcbSlabOffsetType->GetItemData(curSel);
+}
+
+void CGirderSegmentGeneralPage::UpdateSlabOffsetControls()
+{
+   // Enable/Disable Slab Offset controls
+   pgsTypes::SlabOffsetType slabOffsetType = GetCurrentSlabOffsetType();
+   BOOL bEnable = (slabOffsetType == pgsTypes::sotSegment ? TRUE : FALSE);
+
+   GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_START_SLAB_OFFSET)->EnableWindow(bEnable);
+   GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
+
+   GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_END_SLAB_OFFSET)->EnableWindow(bEnable);
+   GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
+}
+
+void CGirderSegmentGeneralPage::OnChangingSlabOffsetType()
+{
+   m_PrevSlabOffsetType = GetCurrentSlabOffsetType();
+}
+
+void CGirderSegmentGeneralPage::OnChangeSlabOffsetType()
+{
+   pgsTypes::SlabOffsetType slabOffsetType = GetCurrentSlabOffsetType();
+
+   CWnd* pwndStart = GetDlgItem(IDC_START_SLAB_OFFSET);
+   CWnd* pwndEnd = GetDlgItem(IDC_END_SLAB_OFFSET);
+   if (slabOffsetType == pgsTypes::sotSegment)
+   {
+      // going into girder by girder slab offset mode
+      CString strTempStart = m_strSlabOffsetCache[pgsTypes::metStart];
+      CString strTempEnd = m_strSlabOffsetCache[pgsTypes::metEnd];
+
+      pwndStart->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
+      pwndEnd->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
+
+      pwndStart->SetWindowText(strTempStart);
+      pwndEnd->SetWindowText(strTempEnd);
+   }
+   else if (slabOffsetType == pgsTypes::sotBearingLine)
+   {
+      // Do nothing here... the same data for segments is used for bearing lines
+   }
+   else
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+      std::array<Float64,2> slabOffset;
+      CDataExchange dx(this, TRUE);
+      DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
+      DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET, IDC_END_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit());
+
+      Float64 slab_offset = slabOffset[pgsTypes::metStart];
+
+      if (!IsEqual(slabOffset[pgsTypes::metStart], slabOffset[pgsTypes::metEnd]))
+      {
+         // going to a single slab offset for the entire bridge, but the current start and end are different
+         // make the user choose one
+         CSelectItemDlg dlg;
+         dlg.m_ItemIdx = 0;
+         dlg.m_strTitle = _T("Select Slab Offset");
+         dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
+
+         CString strItems;
+         strItems.Format(_T("Start of Segment (%s)\nEnd of Segment (%s)"),
+            ::FormatDimension(slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit()),
+            ::FormatDimension(slabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit()));
+
+         dlg.m_strItems = strItems;
+         if (dlg.DoModal() == IDOK)
+         {
+            slab_offset = slabOffset[dlg.m_ItemIdx == 0 ? pgsTypes::metStart : pgsTypes::metEnd];
+         }
+         else
+         {
+            // roll back the edit... nothing is changing
+            ComboBoxSelectByItemData(this, IDC_SLAB_OFFSET_TYPE, m_PrevSlabOffsetType);
+            return;
+         }
+      }
+
+      // when we switch to slab offset by bridge, the UI is disabled and you can't change the slab offset value
+      // the slab offset must be valid before going on
+      // when we switch to slab offset by bridge, the UI is disabled and you can't change the slab offset value
+      // the slab offset must be valid before going on
+      if (::IsLT(slab_offset, m_MinSlabOffset))
+      {
+         CDataExchange dx(this, TRUE);
+         dx.PrepareEditCtrl(IDC_START_SLAB_OFFSET);
+         CString msg;
+         msg.Format(_T("The slab offset must be at least equal to the slab depth of %s"), FormatDimension(m_MinSlabOffset, pDisplayUnits->GetComponentDimUnit()));
+         AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+
+         // roll back the edit... nothing is changing
+         ComboBoxSelectByItemData(this, IDC_SLAB_OFFSET_TYPE, m_PrevSlabOffsetType);
+
+         dx.Fail();
+      }
+
+      GetDlgItem(IDC_START_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
+      GetDlgItem(IDC_END_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
+
+      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(::FormatDimension(slab_offset, pDisplayUnits->GetComponentDimUnit(), false));
+      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(::FormatDimension(slab_offset, pDisplayUnits->GetComponentDimUnit(), false));
+   }
+
+   UpdateSlabOffsetControls();
+}
+
+void CGirderSegmentGeneralPage::FillSlabOffsetComboBox()
+{
+   CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
+
+   if (m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotSegment)
+   {
+      int idx = pcbSlabOffsetType->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge, FALSE));
+      pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBridge);
+   }
+   else
+   {
+      int idx = pcbSlabOffsetType->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, FALSE));
+      pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBearingLine);
+   }
+   int idx = pcbSlabOffsetType->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotSegment, FALSE));
+   pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotSegment);
+
+   pcbSlabOffsetType->SetCurSel(m_SlabOffsetType == pgsTypes::sotSegment ? 1 : 0);
 }

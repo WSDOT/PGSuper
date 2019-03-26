@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 #include <IFace\BeamFactory.h>
 #include <IFace\RatingSpecification.h>
 
-#include "..\PGSuperException.h"
+#include <PGSuperException.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
@@ -731,7 +731,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
    GET_IFACE(ISectionProperties,pSectProps);
-   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
+   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross || intervalTime == pgsTypes::End ? true : false);
    Float64 fpe = GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,pConfig,bIncludeElasticEffects);
 
    Float64 aps = pStrand->GetNominalArea();
@@ -789,20 +789,13 @@ Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& p
    GET_IFACE(ISegmentData,pSegmentData );
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
-   GET_IFACE(ISectionProperties,pSectProps);
-   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
-   Float64 fpe = GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,pConfig,bIncludeElasticEffects);
+   Float64 fpe = GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,pConfig);
 
    Float64 aps = pStrand->GetNominalArea();
 
    Float64 P = aps*N*fpe;
 
    return P;
-}
-
-Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, const GDRCONFIG* pConfig) const
-{
-   return GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,pConfig,true/*include elastic effects*/);
 }
 
 Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
@@ -1559,7 +1552,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
    return fps;
 }
 
-Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, const GDRCONFIG* pConfig,bool bIncludeElasticEffects) const
+Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1626,44 +1619,7 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
 
 
    // Compute the requested strand stress
-   Float64 loss;
-   if ( bIncludeElasticEffects )
-   {
-      loss = GetEffectivePrestressLossWithLiveLoad(poi,strandType,limitState,vehicleIndex,pConfig);
-   }
-   else
-   {
-      loss = GetTimeDependentLosses(poi,strandType,liveLoadIntervalIdx,pgsTypes::Start,pConfig);
-
-      GET_IFACE(ILosses, pLosses);
-      const LOSSDETAILS* pDetails;
-#pragma Reminder("REVIEW = why does one version of GetLossDetails use the intervalIdx and the other doesnt?")
-      if (pConfig)
-      {
-         pDetails = pLosses->GetLossDetails(poi, *pConfig);
-      }
-      else
-      {
-         pDetails = pLosses->GetLossDetails(poi, liveLoadIntervalIdx);
-      }
-
-      if (pDetails->LossMethod != pgsTypes::TIME_STEP)
-      {
-         // we still must account for elastic shortening losses
-         if (strandType == pgsTypes::Temporary)
-         {
-            loss += pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses();
-         }
-         else
-         {
-            loss += pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
-         }
-
-         // we are asking for "with live load" so include the elastic gain due to live load
-         Float64 gain = GetElasticGainDueToLiveLoad(poi, strandType, limitState, vehicleIndex, pConfig, pDetails);
-         loss -= gain;
-      }
-   }
+   Float64 loss = GetEffectivePrestressLossWithLiveLoad(poi,strandType,limitState,vehicleIndex,pConfig);
 
    Float64 fps = fpj - loss;
 

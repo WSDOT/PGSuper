@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,10 +23,10 @@
 // SelectGirderSegmentDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\PGSuperApp.h"
-#include "PGSuperAppPlugin\Resource.h"
-#include "PGSuperAppPlugin\SelectGirderSegmentDlg.h"
+#include "stdafx.h"
+#include "PGSuperApp.h"
+#include "resource.h"
+#include "SelectGirderSegmentDlg.h"
 
 
 #include <IFace\Project.h>

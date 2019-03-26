@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -130,11 +130,8 @@ inline CString get_strand_size( matPsStrand::Size size )
    return sz;
 }
 
-// Criteria for NonStandard design
-inline bool IsNonStandardStrands(StrandIndexType nperm, bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType)
-{
-   return isHarpedDesign && sdtType != CStrandData::sdtTotal && nperm > 0;
-}
+// Criteria for TxDOT Non/Standard design
+bool IsTxDOTStandardStrands(bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker);
 
 
 BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 

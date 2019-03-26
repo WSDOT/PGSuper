@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,8 +32,10 @@ public:
       PermanentStrandsChanged,
       TemporaryStrandsChanged,
       ShearDesignChanged,
-      FcChanged,
-      FciChanged,
+      FcIncreased,
+      FcDecreased,
+      FciIncreased,
+      FciDecreased,
       LiftingConfigChanged,
       HaulingConfigChanged,
       SlabOffsetChanged,
@@ -68,12 +70,12 @@ public:
 
    bool DidConcreteChange() const
    {
-      return m_Outcomes[FcChanged] || m_Outcomes[FciChanged];
+      return m_Outcomes[FcIncreased] || m_Outcomes[FcDecreased] || m_Outcomes[FciIncreased] || m_Outcomes[FciDecreased];
    }
 
    bool DidFinalConcreteStrengthChange() const
    {
-      return m_Outcomes[FcChanged];
+      return  m_Outcomes[FcIncreased] || m_Outcomes[FcDecreased];
    }
 
    bool DidStrandsChange() const

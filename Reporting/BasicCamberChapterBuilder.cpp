@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
@@ -234,6 +235,12 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
          (*pTable1)(0, 1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber"))  << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
       }
       (*pTable1)(0,1) << _T("Rows with ") << Bold(_T("bold text")) << _T(" are at the support locations after erection") << rptNewLine;
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+      Float64 start = pIntervals->GetTime(storageIntervalIdx, pgsTypes::Start);
+      Float64 duration = ::ConvertFromSysUnits(details[0].t, unitMeasure::Day);
+      Float64 end = start + duration;
+      (*pTable1)(0, 1) << _T("Storage Duration: Start ") << start << _T(" day, End ") << end << _T(" day, Duration ") << duration << _T(" days") << rptNewLine;;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -419,6 +426,12 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
          (*pTable1)(0, 1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber")) << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
       }
       (*pTable1)(0, 1) << _T("Rows with ") << Bold(_T("bold text")) << _T(" are at the support locations after erection") << rptNewLine;
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+      Float64 start = pIntervals->GetTime(storageIntervalIdx, pgsTypes::Start);
+      Float64 duration = ::ConvertFromSysUnits(details[0].t, unitMeasure::Day);
+      Float64 end = start + duration;
+      (*pTable1)(0, 1) << _T("Storage Duration: Start ") << start << _T(" day, End ") << end << _T(" day, Duration ") << duration << _T(" days") << rptNewLine;;
 
       pPara = new rptParagraph;
       *pChapter << pPara;

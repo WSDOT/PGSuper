@@ -32,7 +32,7 @@ Height of Roll Center of Truck Above Roadway | Enter the height of the roll cent
 Truck Width (C-C distance between dual tires) | Enter the width of the standard truck for your agency. The width of the truck is measured as the center to center distance between the left hand side and right hand side dual tires.
 Max Distance Between Girder Supports | Enter the maximum distance between girder support locations (trailer length) for the standard truck for your agency.
 Max Expected Roadway Superelevation | Enter the maximum expected slope of the roadway elevation to be encountered by the vehicle hauling the girder to the bridge site. This is a unitless slope value, so a six percent slope would be entered as 0.06
-Max Girder Sweep Tolerance | Enter the maximum girder sweep tolerance expected for manufacturers in your area. The sweep tolerance is the horizontal deviation of the girder from end to end along the total length of the girder.
+Sweep | Enter the girder sweep expected for manufacturers in your area. The sweep tolerance is the horizontal deviation of the girder from end to end along the total length of the girder. Sweep is modeled as an offet per unit length of girder plus and additional amount to account for time dependent changes to the initial sweep.
 Support Placement Lateral Tolerance | Enter the lateral tolerance for placement of girder onto support points.
 Increase Girder C.G. Height for Camber by | Enter the percentage to increase the height of the C.G. of the girder above the roll center to account for camber.
 Maximum Girder Weight | Enter the maximum girder weight. This value will depend on the plant lift capabilities of your local precasters and the capabilities of the available trucking, rail, and barge equipment. Your organization should perform a study to determine a value appropriate in your area.  
@@ -56,7 +56,8 @@ Girder stresses can be computed either with or without consideration for the sta
 
 Item | Description
 -----|----------------
-Compressive Stress | Enter the coefficient for the allowable concrete compressive stress.
+Compressive Stress - General | Enter the coefficient for the allowable concrete compressive stress for the general bending case (girder selfweight + prestress).
+Compressive Stress - With lateral bending | Enter the coefficient for the allowable concrete compressive stress for the cases that include lateral bending due to girder tilt, wind and centrifugal force.
 Tensile Stress - in areas without sufficient bonded reinforcement | Enter the coefficient for the allowable tensile stress. Check the "But not greater than" box to establish an upper limit on the allowable tensile stress.
 Tensile Stress - in areas with sufficient bonded reinforcement | Enter the coefficient for the allowable tensile stress.
 

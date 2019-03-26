@@ -1,0 +1,26 @@
+HKCR
+{
+	PluginExample.PGSuperProjectImporter.1 = s 'Example PGSuper Project Importer'
+	{
+		CLSID = s '{B3123F22-AB1D-4553-AA99-E791AD72EE2E}'
+	}
+	PluginExample.PGSuperProjectImporter = s 'Example PGSuper Project Importer'
+	{
+		CLSID = s '{B3123F22-AB1D-4553-AA99-E791AD72EE2E}'
+		CurVer = s 'PluginExample.PGSuperProjectImporter.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {B3123F22-AB1D-4553-AA99-E791AD72EE2E} = s 'Example PGSuper Project Importer'
+		{
+			ProgID = s 'PluginExample.PGSuperProjectImporter.1'
+			VersionIndependentProgID = s 'PluginExample.PGSuperProjectImporter'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Apartment'
+			}
+			'TypeLib' = s '{DE0B8F6F-AB24-4463-919B-B470CBF05FAD}'
+		}
+	}
+}

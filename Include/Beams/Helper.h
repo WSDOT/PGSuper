@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,6 +38,7 @@
 
 class rptParagraph;
 interface IBeamFactory;
+class pgsPoiMgr;
 
 void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
 void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
@@ -57,6 +58,7 @@ bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float
 
 bool BEAMSFUNC IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const IBeamFactory* pFactory, pgsTypes::SupportedBeamSpacing spacingType);
 
+void BEAMSFUNC LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, pgsPoiMgr* pPoiMgr);
 
 /////////////////////////////////////////////////////////////////////////////
 // IBeamFamilyImpl

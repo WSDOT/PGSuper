@@ -8,6 +8,7 @@ Moment Capacity
 
 Item | Description
 -----|-------------
+Include pretensioned strand in negative moment capacity calculations | When checked, the pretensioned strands will be included in the negative moment capacity analysis. Typically the strands are neglected, however for cantilevered girders, the strands may provide significant capacity and should be included in the analysis.
 Include girder longitudinal mild reinforcement in capacity calculations | When checked, the mild steel longitudinal reinforcement in the girder will be included in the capacity analysis. Prestressing strand is always included the capacity analysis. For bridges without a cast-in-place deck or overlay, this setting is ignored and mild steel longitudinal reinforcement in the girder will always be included in the negative moment capacity analysis. Without a deck structure, the girder is the only source of reinforcement for negative moment capacity.
 Modulus of rupture for cracking moment (LRFD 5.4.2.6, 5.6.3.3 (*pre-2017: 5.7.3.3.2*)) | Enter the coefficient for the modulus of rupture for computing cracking moment.
 

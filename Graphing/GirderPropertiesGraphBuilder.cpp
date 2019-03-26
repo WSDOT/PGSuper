@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,9 +23,9 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <Graphing\GirderPropertiesGraphBuilder.h>
-#include <Graphing\DrawBeamTool.h>
 #include "GirderPropertiesGraphController.h"
 #include "GirderPropertiesGraphViewControllerImp.h"
+#include "..\Documentation\PGSuper.hh"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -751,7 +751,8 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    }
 }
 
-IntervalIndexType CGirderPropertiesGraphBuilder::GetBeamDrawInterval()
+void CGirderPropertiesGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx, IntervalIndexType* pLastIntervalIdx)
 {
-   return ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
+   *pFirstIntervalIdx = ((CIntervalGirderGraphControllerBase*)m_pGraphController)->GetInterval();
+   *pLastIntervalIdx = *pFirstIntervalIdx;
 }

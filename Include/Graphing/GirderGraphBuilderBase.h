@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -81,8 +81,11 @@ protected:
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
    void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC);
 
-   // returns the interval for when the beam is drawn
-   virtual IntervalIndexType GetBeamDrawInterval() = 0;
+   // returns the range of intervals overwhich the beam must be represented
+   virtual void GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx,IntervalIndexType* pLastIntervalIdx) = 0;
+
+   // returns the style parameters for beam drawing
+   virtual DWORD GetDrawBeamStyle() const;
 
 private:
    bool m_bShift;

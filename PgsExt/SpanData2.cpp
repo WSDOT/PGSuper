@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -152,9 +152,9 @@ bool CSpanData2::operator==(const CSpanData2& rOther) const
       }
    }
 
-   if ( m_pBridgeDesc->GetAssExcessCamberType() != pgsTypes::aecBridge )
+   if ( m_pBridgeDesc->GetAssumedExcessCamberType() != pgsTypes::aecBridge )
    {
-      if (m_AssExcessCambers != rOther.m_AssExcessCambers)
+      if (m_vAssumedExcessCambers != rOther.m_vAssumedExcessCambers)
       {
          return false;
       }
@@ -337,22 +337,22 @@ HRESULT CSpanData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          if (3 < version)
          {
-            if (m_pBridgeDesc->GetAssExcessCamberType() != pgsTypes::aecBridge)
+            if (m_pBridgeDesc->GetAssumedExcessCamberType() != pgsTypes::aecBridge)
             {
                pStrLoad->BeginUnit(_T("AssExcessCambers"));
-               Float64 AssExcessCamber_version;
-               pStrLoad->get_Version(&AssExcessCamber_version);
+               Float64 AssumedExcessCamber_version;
+               pStrLoad->get_Version(&AssumedExcessCamber_version);
 
             var.vt = VT_INDEX;
                hr = pStrLoad->get_Property(_T("nFGirders"), &var);
             IndexType ng = VARIANT2INDEX(var);
 
             var.vt = VT_R8;
-               m_AssExcessCambers.clear();
+            m_vAssumedExcessCambers.clear();
                for (IndexType ig = 0; ig < ng; ig++)
             {
                   hr = pStrLoad->get_Property(_T("AssExcessCamber"), &var);
-                  m_AssExcessCambers.push_back(var.dblVal);
+                  m_vAssumedExcessCambers.push_back(var.dblVal);
             }
 
                pStrLoad->EndUnit(); // AssExcessCambers
@@ -426,7 +426,7 @@ HRESULT CSpanData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    }
 
    // Assummed excess camber was added in version 4
-   if ( m_pBridgeDesc->GetAssExcessCamberType() != pgsTypes::aecBridge )
+   if ( m_pBridgeDesc->GetAssumedExcessCamberType() != pgsTypes::aecBridge )
    {
       pStrSave->BeginUnit(_T("AssExcessCambers"),1.0);
 
@@ -439,9 +439,9 @@ HRESULT CSpanData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
       pStrSave->put_Property(_T("nFGirders"),CComVariant(ngs));
 
-      for (GirderIndexType igs=0; igs<ngs; igs++)
+      for (GirderIndexType igs = 0; igs < ngs; igs++)
       {
-         Float64 filval = this->GetAssExcessCamber(igs);
+         Float64 filval = GetAssumedExcessCamber(igs);
          pStrSave->put_Property(_T("AssExcessCamber"),CComVariant(filval));
       }
 
@@ -463,7 +463,7 @@ void CSpanData2::MakeCopy(const CSpanData2& rOther,bool bCopyDataOnly)
 
    m_LLDFs   = rOther.m_LLDFs;
 
-   m_AssExcessCambers = rOther.m_AssExcessCambers;
+   m_vAssumedExcessCambers = rOther.m_vAssumedExcessCambers;
 
    PGS_ASSERT_VALID;
 }
@@ -473,89 +473,89 @@ void CSpanData2::MakeAssignment(const CSpanData2& rOther)
    MakeCopy( rOther, false /*copy everything*/ );
 }
 
-void CSpanData2::SetAssExcessCamber(Float64 AssExcessCamber)
+void CSpanData2::SetAssumedExcessCamber(Float64 assumedExcessCamber)
 {
    GirderIndexType nGirders = GetGirderCount();
-   m_AssExcessCambers.assign(nGirders, AssExcessCamber);
+   m_vAssumedExcessCambers.assign(nGirders, assumedExcessCamber);
 }
 
-void CSpanData2::SetAssExcessCamber(GirderIndexType gdrIdx,Float64 AssExcessCamber)
+void CSpanData2::SetAssumedExcessCamber(GirderIndexType gdrIdx,Float64 assumedExcessCamber)
 {
-   ProtectAssExcessCamber();
-   ATLASSERT(gdrIdx < m_AssExcessCambers.size());
+   ProtectAssumedExcessCamber();
+   ATLASSERT(gdrIdx < m_vAssumedExcessCambers.size());
 
-   m_AssExcessCambers[gdrIdx] = AssExcessCamber;
+   m_vAssumedExcessCambers[gdrIdx] = assumedExcessCamber;
 }
 
-Float64 CSpanData2::GetAssExcessCamber(GirderIndexType gdrIdx,bool bGetRawValue) const
+Float64 CSpanData2::GetAssumedExcessCamber(GirderIndexType gdrIdx,bool bGetRawValue) const
 {
    if (bGetRawValue)
    {
-      ProtectAssExcessCamber();
-      ATLASSERT(gdrIdx < m_AssExcessCambers.size());
-      return m_AssExcessCambers[gdrIdx];
+      ProtectAssumedExcessCamber();
+      ATLASSERT(gdrIdx < m_vAssumedExcessCambers.size());
+      return m_vAssumedExcessCambers[gdrIdx];
    }
    else
    {
-      pgsTypes::AssExcessCamberType ftype = m_pBridgeDesc->GetAssExcessCamberType();
-      if (ftype == pgsTypes::aecBridge)
+      pgsTypes::AssumedExcessCamberType aecType = m_pBridgeDesc->GetAssumedExcessCamberType();
+      if (aecType == pgsTypes::aecBridge)
       {
-         return m_pBridgeDesc->GetAssExcessCamber();
+         return m_pBridgeDesc->GetAssumedExcessCamber();
       }
       else
       {
-         ProtectAssExcessCamber();
-         ATLASSERT(gdrIdx < m_AssExcessCambers.size());
-         if (ftype == pgsTypes::aecSpan)
+         ProtectAssumedExcessCamber();
+         ATLASSERT(gdrIdx < m_vAssumedExcessCambers.size());
+         if (aecType == pgsTypes::aecSpan)
          {
             // use front value for span values
-            return m_AssExcessCambers.front();
+            return m_vAssumedExcessCambers.front();
          }
          else
          {
-            return m_AssExcessCambers[gdrIdx];
+            return m_vAssumedExcessCambers[gdrIdx];
          }
       }
    }
 }
 
-void CSpanData2::CopyAssExcessCamber(GirderIndexType sourceGdrIdx, GirderIndexType targetGdrIdx)
+void CSpanData2::CopyAssumedExcessCamber(GirderIndexType sourceGdrIdx, GirderIndexType targetGdrIdx)
 {
-   ProtectAssExcessCamber();
-   ATLASSERT(sourceGdrIdx < m_AssExcessCambers.size() && targetGdrIdx < m_AssExcessCambers.size());
+   ProtectAssumedExcessCamber();
+   ATLASSERT(sourceGdrIdx < m_vAssumedExcessCambers.size() && targetGdrIdx < m_vAssumedExcessCambers.size());
 
-   m_AssExcessCambers[targetGdrIdx] = m_AssExcessCambers[sourceGdrIdx];
+   m_vAssumedExcessCambers[targetGdrIdx] = m_vAssumedExcessCambers[sourceGdrIdx];
 }
 
-void CSpanData2::ProtectAssExcessCamber() const
+void CSpanData2::ProtectAssumedExcessCamber() const
 {
    // First: Compare size of our collection with current number of girders and resize if they don't match
    GirderIndexType nGirders = GetGirderCount();
-   IndexType nFlts = m_AssExcessCambers.size();
+   IndexType nFlts = m_vAssumedExcessCambers.size();
 
    if (nFlts == 0)
    {
-      // probably switched from aecBridge. Get AssExcessCamber value from bridge and assign as a default
-      Float64 defVal = m_pBridgeDesc->GetAssExcessCamber();
+      // probably switched from aecBridge. Get AssumedExcessCamber value from bridge and assign as a default
+      Float64 defVal = m_pBridgeDesc->GetAssumedExcessCamber();
       defVal = Max(0.0, defVal);
 
-      m_AssExcessCambers.assign(nGirders,defVal);
+      m_vAssumedExcessCambers.assign(nGirders,defVal);
    }
    else if (nFlts < nGirders)
    {
       // More girders than data - use back value for remaining girders
-      Float64 back = m_AssExcessCambers.back();
+      Float64 back = m_vAssumedExcessCambers.back();
 
-      m_AssExcessCambers.resize(nGirders); // performance
+      m_vAssumedExcessCambers.resize(nGirders); // performance
       for (IndexType i = nFlts; i < nGirders; i++)
       {
-         m_AssExcessCambers.push_back(back);
+         m_vAssumedExcessCambers.push_back(back);
       }
     }
    else if (nGirders < nFlts)
    {
       // more AssExcessCambers than girders - truncate
-      m_AssExcessCambers.resize(nGirders);
+      m_vAssumedExcessCambers.resize(nGirders);
    }
 }
 

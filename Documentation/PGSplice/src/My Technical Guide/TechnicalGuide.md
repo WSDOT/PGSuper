@@ -5,6 +5,7 @@ The purpose of this Technical Guide is to detail the algorithms and computationa
 
 Topics
 * @subpage tg_anchor_set
+* @subpage tg_bearing_seat_geometry
 * @subpage tg_elongation
 * @subpage tg_capacity_demand_ratios
 * @subpage tg_computing_pier_diaphragm_dimensions
@@ -22,6 +23,7 @@ Topics
 * @subpage tg_lightweight_concrete
 * @subpage tg_lldf
 * @subpage tg_live_load
+* @subpage tg_live_load_deflection
 * @subpage tg_longitudinal_reinforcement
 * @subpage tg_moment_capacity
 * @subpage tg_prestress_losses_time_step

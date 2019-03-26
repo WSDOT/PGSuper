@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ParabolicDuctGrid.h"
-#include "PGSuperAppPlugin\SplicedGirderGeneralPage.h"
+#include "SplicedGirderGeneralPage.h"
 
 // CParabolicDuctDlg dialog
 

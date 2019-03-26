@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -348,16 +348,23 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
          shift = ComputeShift(girderKey);
       }
 
-      IntervalIndexType intervalIdx = GetBeamDrawInterval();
+      IntervalIndexType firstIntervalIdx, lastIntervalIdx;
+      GetBeamDrawIntervals(&firstIntervalIdx,&lastIntervalIdx);
       grlibPointMapper mapper( m_Graph.GetClientAreaPointMapper(pDC->GetSafeHdc()) );
       CDrawBeamTool drawBeam;
-      drawBeam.DrawBeam(m_pBroker,pDC,mapper,m_pXFormat,intervalIdx,girderKey,shift);
+      drawBeam.SetStyle(GetDrawBeamStyle());
+      drawBeam.DrawBeam(m_pBroker,pDC,mapper,m_pXFormat,firstIntervalIdx,lastIntervalIdx,girderKey,shift);
    }
 
    // draw the data series
    m_Graph.DrawDataSeries(pDC->GetSafeHdc());
 
    pDC->RestoreDC(save);
+}
+
+DWORD CGirderGraphBuilderBase::GetDrawBeamStyle() const
+{
+   return 0;
 }
 
 void CGirderGraphBuilderBase::ShowGrid(bool bShow)

@@ -1,8 +1,8 @@
 // ConstructSegmentsDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "stdafx.h"
+#include "resource.h"
 #include "ConstructSegmentsDlg.h"
 
 #include <IFace\Project.h>

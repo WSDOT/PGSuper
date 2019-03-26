@@ -1,8 +1,8 @@
 // ErectPiersDlg.cpp : implementation file
 //
 
-#include "PGSuperAppPlugin\stdafx.h"
-#include "PGSuperAppPlugin\resource.h"
+#include "stdafx.h"
+#include "resource.h"
 #include "ErectPiersDlg.h"
 
 #include <IFace\Project.h>
@@ -15,7 +15,7 @@
 // Pier and Temporary Support indicies are stored in the ItemData member of the
 // list box controls. To differentiate between a Pier index and a Temporary Support index
 // the Temporary Support indices are encoded/decoded with the following methods
-#include <PGSuperAppPlugin\CastClosureJointDlg.h> // use Encode/Decode methods from CastClosureJointDlg
+#include "CastClosureJointDlg.h" // use Encode/Decode methods from CastClosureJointDlg
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

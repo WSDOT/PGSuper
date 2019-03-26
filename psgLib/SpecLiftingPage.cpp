@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2018  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,10 +96,6 @@ void CSpecLiftingPage::DoCheckMax()
 
 BOOL CSpecLiftingPage::OnInitDialog() 
 {
-   CComboBox* pcbStresses = (CComboBox*)GetDlgItem(IDC_STRESSES);
-   pcbStresses->SetItemData(pcbStresses->AddString(_T("Include girder stability equilibrium angle in stress calculations")),(DWORD_PTR)true);
-   pcbStresses->SetItemData(pcbStresses->AddString(_T("Ignore girder stability equilibrium angle in stress calculations")),(DWORD_PTR)false);
-
    CComboBox* pcbWind = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
    pcbWind->SetItemData(pcbWind->AddString(_T("Pressure")),(DWORD_PTR)pgsTypes::Pressure);
    pcbWind->SetItemData(pcbWind->AddString(_T("Speed")),   (DWORD_PTR)pgsTypes::Speed);
