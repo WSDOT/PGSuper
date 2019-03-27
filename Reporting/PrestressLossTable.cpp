@@ -1106,6 +1106,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
 void CPrestressLossTable::MakeCopy(const CPrestressLossTable& rOther)
 {
    // Add copy code here...
+   m_bSplicedGirder = rOther.m_bSplicedGirder;
 }
 
 void CPrestressLossTable::MakeAssignment(const CPrestressLossTable& rOther)

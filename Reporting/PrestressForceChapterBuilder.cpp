@@ -195,7 +195,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
             // Write out strand forces and stresses at the various stages of prestress loss
             pPara = new rptParagraph;
             *pChapter << pPara;
-            *pPara << CPrestressLossTable().Build(pBroker,thisSegmentKey,m_bRating,pDisplayUnits) << rptNewLine;
+            *pPara << CPrestressLossTable(bIsSplicedGirder).Build(pBroker,thisSegmentKey,m_bRating,pDisplayUnits) << rptNewLine;
 
             pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
             *pChapter << pPara;
