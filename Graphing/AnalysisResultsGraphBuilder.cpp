@@ -545,15 +545,16 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
 
    std::vector<pgsTypes::LoadRatingType> vLoadRatingTypes;
    GET_IFACE(IRatingSpecification,pRatingSpec);
-   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory))
-   {
-      vLoadRatingTypes.push_back(pgsTypes::lrDesign_Inventory);
-   }
+   // Don't include these or we'll get a bunch of duplicates with the design live loads
+   //if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory))
+   //{
+   //   vLoadRatingTypes.push_back(pgsTypes::lrDesign_Inventory);
+   //}
 
-   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
-   {
-      vLoadRatingTypes.push_back(pgsTypes::lrDesign_Operating);
-   }
+   //if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
+   //{
+   //   vLoadRatingTypes.push_back(pgsTypes::lrDesign_Operating);
+   //}
 
    if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine))
    {
@@ -687,7 +688,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
             continue;
          }
 
-         std::_tstring strLLName( strBase + _T(" - ") + strName );
+         std::_tstring strLLName( strRating + _T(" - ") + strName );
 
          CAnalysisResultsGraphDefinition def(graphID++,
                                              strLLName,
