@@ -41,7 +41,7 @@ public:
 
    virtual CGraphBuilder* Clone() const override;
 
-   void UpdateGraphDefinitions();
+   void UpdateGraphDefinitions(const CGirderKey& girderKey);
    std::vector<std::pair<std::_tstring,IDType>> GetLoadings(IntervalIndexType intervalIdx,ActionType actionType);
 
    GraphType GetGraphType(IDType graphID);

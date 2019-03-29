@@ -49,6 +49,7 @@
 #include <IFace\ShearCapacity.h>
 #include <IFace\Artifact.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\Selection.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
@@ -114,9 +115,18 @@ void CAnalysisResultsGraphBuilder::Init()
 
 BOOL CAnalysisResultsGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
 {
+   CGirderKey girderKey;
+   GET_IFACE(ISelection, pSelection);
+   CSelection selection = pSelection->GetSelection();
+   if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment)
+   {
+      girderKey.groupIndex = selection.GroupIdx;
+      girderKey.girderIndex = selection.GirderIdx;
+   }
+   
    // update the graph definitions before creating the controller. the graph controller
    // uses the graph definitions to initialize the options within its controls
-   UpdateGraphDefinitions();
+   UpdateGraphDefinitions(girderKey);
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    ATLASSERT(m_pGraphController != nullptr);
@@ -190,15 +200,11 @@ std::vector<IntervalIndexType> CAnalysisResultsGraphBuilder::AddTSRemovalInterva
    return intervals;
 }
 
-void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
+void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& girderKey)
 {
    m_pGraphDefinitions->Clear();
 
    IDType graphID = 0;
-
-   GroupIndexType grpIdx  = m_pGraphController->GetGirderGroup();
-   GirderIndexType gdrIdx = m_pGraphController->GetGirder();
-   CGirderKey girderKey(grpIdx,gdrIdx);
 
    GET_IFACE(IProductLoads,pProductLoads);
 
@@ -206,8 +212,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    // for this group
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   GroupIndexType startGroupIdx = (grpIdx == ALL_GROUPS ? 0 : grpIdx);
-   GroupIndexType endGroupIdx   = (grpIdx == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx);
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx);
    bool bTempStrand = false;
    bool bPedLoading = false;
    bool bSidewalk   = false;
@@ -216,7 +222,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-      GirderIndexType girderIdx = Min(gdrIdx,nGirders-1);
+      GirderIndexType girderIdx = Min(girderKey.girderIndex,nGirders-1);
 
       CGirderKey thisGirderKey(groupIdx,girderIdx);
 
@@ -306,7 +312,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions()
    for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-      GirderIndexType girderIdx = Min(gdrIdx,nGirders-1);
+      GirderIndexType girderIdx = Min(girderKey.girderIndex,nGirders-1);
 
       CGirderKey thisGirderKey(groupIdx,girderIdx);
 
