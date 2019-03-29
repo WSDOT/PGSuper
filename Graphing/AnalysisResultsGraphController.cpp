@@ -492,7 +492,8 @@ void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, COb
         lHint == HINT_RATINGSPECCHANGED
       )
    {
-      ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->UpdateGraphDefinitions();
+      const CGirderKey& girderKey = GetGirderKey();
+      ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->UpdateGraphDefinitions(girderKey);
       FillDropListCtrl(true);
       FillSelectListCtrl(true);
       UpdateGraph();
