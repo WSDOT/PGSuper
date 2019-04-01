@@ -66,7 +66,7 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
       return false;
    }
 
-   pBridgeGeometry->UpdateGeometry(); // this makes the pier lines available
+   pBridgeGeometry->UpdateGeometry(GF_BRIDGELINE | GF_PIERS); // this makes the pier lines available so we can layout girder lines and diaphagm lines
 
    if ( !LayoutGirderLines(pBridgeDesc,pBridgeGeometry) )
    {
@@ -77,6 +77,8 @@ bool CBridgeGeometryModelBuilder::BuildBridgeGeometryModel(const CBridgeDescript
    {
       return false;
    }
+
+   pBridgeGeometry->UpdateGeometry(GF_GIRDERS | GF_DIAPHRAGMS);
 
    return true;
 }
