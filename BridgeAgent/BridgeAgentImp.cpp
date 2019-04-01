@@ -2772,11 +2772,6 @@ bool CBridgeAgentImp::BuildBridgeModel()
 
    BuildBridgeGeometryModel(); // creates the framing geometry for the bridge model
 
-   // Now that the basic input has been generated, update the bridge model
-   // This will get all the geometry correct and build the pier objects.
-   // This basic geometry is needed to lay out girders, deck, etc
-   m_Bridge->UpdateBridgeModel();
-
    WATCH(_T("Validating Bridge Model"));
 
    if ( !LayoutPiers(pBridgeDesc) )
@@ -2801,7 +2796,7 @@ bool CBridgeAgentImp::BuildBridgeModel()
 
    // Layout the bridge again to complete the geometry
    // This updates the geometry for the items that were added (girder, deck, etc)
-   m_Bridge->UpdateBridgeModel();
+   m_Bridge->UpdateBridgeModel(GF_DECK);
 
    // check bridge for errors - will throw an exception if there are errors
    CheckBridge();
@@ -2894,6 +2889,8 @@ bool CBridgeAgentImp::LayoutPiers(const CBridgeDescription2* pBridgeDesc)
    //      pier->putref_ColumnLayout(columnLayout);
    //   }
    //}
+
+   m_Bridge->UpdateBridgeModel(BGF_PIERS);
 
    return true;
 }
@@ -3600,7 +3597,7 @@ bool CBridgeAgentImp::LayoutNoDeck(const CBridgeDescription2* pBridgeDesc,IBridg
 {
    // There isn't an explicit deck in this case, so layout of the slab must be done
    // based on the girder geometry. Update the bridge model now so that the girder geometry is correct
-   m_Bridge->UpdateBridgeModel();
+   //m_Bridge->UpdateBridgeModel(GF_GIRDERS);
 
    CComPtr<IBridgeGeometry> bridgeGeometry;
    m_Bridge->get_BridgeGeometry(&bridgeGeometry);
