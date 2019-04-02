@@ -184,31 +184,31 @@ HRESULT CSpecAgentImp::OnConstructionLoadChanged()
 /////////////////////////////////////////////////////////////////////////////
 // IAllowableStrandStress
 //
-bool CSpecAgentImp::CheckStressAtJacking()
+bool CSpecAgentImp::CheckStressAtJacking() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->CheckStrandStress(CSS_AT_JACKING);
 }
 
-bool CSpecAgentImp::CheckStressBeforeXfer()
+bool CSpecAgentImp::CheckStressBeforeXfer() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->CheckStrandStress(CSS_BEFORE_TRANSFER);
 }
 
-bool CSpecAgentImp::CheckStressAfterXfer()
+bool CSpecAgentImp::CheckStressAfterXfer() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->CheckStrandStress(CSS_AFTER_TRANSFER);
 }
 
-bool CSpecAgentImp::CheckStressAfterLosses()
+bool CSpecAgentImp::CheckStressAfterLosses() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->CheckStrandStress(CSS_AFTER_ALL_LOSSES);
 }
 
-Float64 CSpecAgentImp::GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
+Float64 CSpecAgentImp::GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
 {
    if ( !CheckStressAtJacking() )
    {
@@ -226,7 +226,7 @@ Float64 CSpecAgentImp::GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTy
    return coeff*fpu;
 }
 
-Float64 CSpecAgentImp::GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
+Float64 CSpecAgentImp::GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
 {
    if ( !CheckStressBeforeXfer() )
    {
@@ -244,7 +244,7 @@ Float64 CSpecAgentImp::GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsT
    return coeff*fpu;
 }
 
-Float64 CSpecAgentImp::GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
+Float64 CSpecAgentImp::GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
 {
    if ( !CheckStressAfterXfer() )
    {
@@ -262,7 +262,7 @@ Float64 CSpecAgentImp::GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTy
    return coeff*fpu;
 }
 
-Float64 CSpecAgentImp::GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType)
+Float64 CSpecAgentImp::GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
 {
    if ( !CheckStressAfterLosses() )
    {
@@ -283,19 +283,19 @@ Float64 CSpecAgentImp::GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgs
 /////////////////////////////////////////////////////////
 // IAllowableTendonStress
 //
-bool CSpecAgentImp::CheckTendonStressAtJacking()
+bool CSpecAgentImp::CheckTendonStressAtJacking() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->CheckTendonStressAtJacking();
 }
 
-bool CSpecAgentImp::CheckTendonStressPriorToSeating()
+bool CSpecAgentImp::CheckTendonStressPriorToSeating() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->CheckTendonStressPriorToSeating();
 }
 
-Float64 CSpecAgentImp::GetAllowableAtJacking(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowableAtJacking(const CGirderKey& girderKey) const
 {
    if ( !CheckTendonStressAtJacking() )
    {
@@ -312,7 +312,7 @@ Float64 CSpecAgentImp::GetAllowableAtJacking(const CGirderKey& girderKey)
    return coeff*fpu;
 }
 
-Float64 CSpecAgentImp::GetAllowablePriorToSeating(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowablePriorToSeating(const CGirderKey& girderKey) const
 {
    if ( !CheckTendonStressPriorToSeating() )
    {
@@ -329,7 +329,7 @@ Float64 CSpecAgentImp::GetAllowablePriorToSeating(const CGirderKey& girderKey)
    return coeff*fpy;
 }
 
-Float64 CSpecAgentImp::GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -341,7 +341,7 @@ Float64 CSpecAgentImp::GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& g
    return coeff*fpu;
 }
 
-Float64 CSpecAgentImp::GetAllowableAfterAnchorSet(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowableAfterAnchorSet(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -353,7 +353,7 @@ Float64 CSpecAgentImp::GetAllowableAfterAnchorSet(const CGirderKey& girderKey)
    return coeff*fpu;
 }
 
-Float64 CSpecAgentImp::GetAllowableAfterLosses(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowableAfterLosses(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -365,7 +365,7 @@ Float64 CSpecAgentImp::GetAllowableAfterLosses(const CGirderKey& girderKey)
    return coeff*fpy;
 }
 
-Float64 CSpecAgentImp::GetAllowableCoefficientAtJacking(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowableCoefficientAtJacking(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -375,7 +375,7 @@ Float64 CSpecAgentImp::GetAllowableCoefficientAtJacking(const CGirderKey& girder
    return coeff;
 }
 
-Float64 CSpecAgentImp::GetAllowableCoefficientPriorToSeating(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -385,7 +385,7 @@ Float64 CSpecAgentImp::GetAllowableCoefficientPriorToSeating(const CGirderKey& g
    return coeff;
 }
 
-Float64 CSpecAgentImp::GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -395,7 +395,7 @@ Float64 CSpecAgentImp::GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CG
    return coeff;
 }
 
-Float64 CSpecAgentImp::GetAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -405,7 +405,7 @@ Float64 CSpecAgentImp::GetAllowableCoefficientAfterAnchorSet(const CGirderKey& g
    return coeff;
 }
 
-Float64 CSpecAgentImp::GetAllowableCoefficientAfterLosses(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const
 {
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetTendonMaterial(girderKey);
@@ -419,7 +419,7 @@ Float64 CSpecAgentImp::GetAllowableCoefficientAfterLosses(const CGirderKey& gird
 /////////////////////////////////////////////////////////////////////////////
 // IAllowableConcreteStress
 //
-Float64 CSpecAgentImp::GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+Float64 CSpecAgentImp::GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    if ( IsGirderStressLocation(stressLocation) )
    {
@@ -441,7 +441,7 @@ Float64 CSpecAgentImp::GetAllowableCompressionStress(const pgsPointOfInterest& p
    }
 }
 
-Float64 CSpecAgentImp::GetAllowableTensionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone)
+Float64 CSpecAgentImp::GetAllowableTensionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const
 {
    if ( IsGirderStressLocation(stressLocation) )
    {
@@ -463,7 +463,7 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(const pgsPointOfInterest& poi,p
    }
 }
 
-Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation)
+Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation) const
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -502,7 +502,7 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
    return fallow;
 }
 
-Float64 CSpecAgentImp::GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+Float64 CSpecAgentImp::GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    if ( IsGirderStressLocation(stressLocation) )
    {
@@ -524,7 +524,7 @@ Float64 CSpecAgentImp::GetAllowableCompressionStressCoefficient(const pgsPointOf
    }
 }
 
-void CSpecAgentImp::GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue)
+void CSpecAgentImp::GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const
 {
    if ( IsGirderStressLocation(stressLocation) )
    {
@@ -546,7 +546,7 @@ void CSpecAgentImp::GetAllowableTensionStressCoefficient(const pgsPointOfInteres
    }
 }
 
-Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -560,7 +560,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInte
    return fAllow;
 }
 
-Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    CClosureKey closureKey;
@@ -576,7 +576,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointO
    return fAllow;
 }
 
-Float64 CSpecAgentImp::GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+Float64 CSpecAgentImp::GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -590,7 +590,7 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStress(const pgsPointOfInteres
    return fAllow;
 }
 
-Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement)
+Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -616,7 +616,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
    return fAllow;
 }
 
-Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone)
+Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -642,7 +642,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
    return fAllow;
 }
 
-Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement)
+Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -668,7 +668,7 @@ Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& p
    return fAllow;
 }
 
-std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    ATLASSERT(IsStressCheckApplicable(vPoi.front().get().GetSegmentKey(),intervalIdx,ls,pgsTypes::Compression));
 
@@ -692,7 +692,7 @@ std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const Po
    return vStress;
 }
 
-std::vector<Float64> CSpecAgentImp::GetDeckAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+std::vector<Float64> CSpecAgentImp::GetDeckAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    ATLASSERT(IsStressCheckApplicable(vPoi.front().get().GetSegmentKey(),intervalIdx,ls,pgsTypes::Compression));
 
@@ -706,7 +706,7 @@ std::vector<Float64> CSpecAgentImp::GetDeckAllowableCompressionStress(const PoiL
    return vStress;
 }
 
-std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone)
+std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) const
 {
    ATLASSERT(IsStressCheckApplicable(vPoi.front().get().GetSegmentKey(),intervalIdx,ls,pgsTypes::Tension));
 
@@ -730,7 +730,7 @@ std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const PoiLis
    return vStress;
 }
 
-std::vector<Float64> CSpecAgentImp::GetDeckAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement)
+std::vector<Float64> CSpecAgentImp::GetDeckAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement) const
 {
    ATLASSERT(IsStressCheckApplicable(vPoi.front().get().GetSegmentKey(),intervalIdx,ls,pgsTypes::Tension));
 
@@ -744,7 +744,7 @@ std::vector<Float64> CSpecAgentImp::GetDeckAllowableTensionStress(const PoiList&
    return vStress;
 }
 
-Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc)
+Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc) const
 {
    Float64 x = GetSegmentAllowableCompressionStressCoefficient(poi,intervalIdx,ls);
 
@@ -752,7 +752,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStress(const pgsPointOfInte
    return -x*fc;
 }
 
-Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc)
+Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc) const
 {
    Float64 x = GetClosureJointAllowableCompressionStressCoefficient(poi,intervalIdx,ls);
 
@@ -764,7 +764,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStress(const pgsPointO
    return -x*fc;
 }
 
-Float64 CSpecAgentImp::GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc)
+Float64 CSpecAgentImp::GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc) const
 {
    Float64 x = GetDeckAllowableCompressionStressCoefficient(poi,intervalIdx,ls);
 
@@ -772,7 +772,7 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStress(const pgsPointOfInteres
    return -x*fc;
 }
 
-Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement)
+Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement) const
 {
    Float64 x;
    bool bCheckMax;
@@ -791,7 +791,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableTensionStress(const pgsPointOfInterest
    return f;
 }
 
-Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone)
+Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const
 {
    Float64 x;
    bool bCheckMax;
@@ -814,7 +814,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
    return f;
 }
 
-Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement)
+Float64 CSpecAgentImp::GetDeckAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement) const
 {
    Float64 x;
    bool bCheckMax;
@@ -924,7 +924,7 @@ Float64 CSpecAgentImp::GetHaulingModulusOfRuptureFactor(pgsTypes::ConcreteType c
    return pSpec->GetHaulingModulusOfRuptureFactor(concType);
 }
 
-Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = -999999;
@@ -1010,7 +1010,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
    return x;
 }
 
-Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = -999999;
@@ -1055,7 +1055,7 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(cons
    return x;
 }
 
-Float64 CSpecAgentImp::GetDeckAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls)
+Float64 CSpecAgentImp::GetDeckAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = -999999;
@@ -1109,7 +1109,7 @@ Float64 CSpecAgentImp::GetDeckAllowableCompressionStressCoefficient(const pgsPoi
    return x;
 }
 
-void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue)
+void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = -999999;
@@ -1249,7 +1249,7 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
    *pMaxValue = fmax;
 }
 
-void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue)
+void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = -999999;
@@ -1325,7 +1325,7 @@ void CSpecAgentImp::GetClosureJointAllowableTensionStressCoefficient(const pgsPo
    *pMaxValue = fmax;
 }
 
-void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue)
+void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 x = -999999;
@@ -1372,7 +1372,7 @@ void CSpecAgentImp::GetDeckAllowableTensionStressCoefficient(const pgsPointOfInt
    *pMaxValue = fmax;
 }
 
-std::vector<pgsTypes::LimitState> CSpecAgentImp::GetStressCheckLimitStates(IntervalIndexType intervalIdx)
+std::vector<pgsTypes::LimitState> CSpecAgentImp::GetStressCheckLimitStates(IntervalIndexType intervalIdx) const
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -1387,7 +1387,7 @@ std::vector<pgsTypes::LimitState> CSpecAgentImp::GetStressCheckLimitStates(Inter
    return vLimitStates;
 }
 
-bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType)
+bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType) const
 {
    ATLASSERT(::IsServiceLimitState(limitState) || ::IsFatigueLimitState(limitState) ); // must be a service limit state
    if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && limitState == pgsTypes::FatigueI) || 
@@ -1497,7 +1497,7 @@ bool CSpecAgentImp::IsStressCheckApplicable(const CGirderKey& girderKey,Interval
    return false;
 }
 
-bool CSpecAgentImp::HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey)
+bool CSpecAgentImp::HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) const
 {
    if ( !bSegment )
    {
@@ -1527,7 +1527,7 @@ bool CSpecAgentImp::HasAllowableTensionWithRebarOption(IntervalIndexType interva
    return false;
 }
 
-bool CSpecAgentImp::CheckTemporaryStresses()
+bool CSpecAgentImp::CheckTemporaryStresses() const
 {
    // I hate using the IDocumentType interface, but I don't
    // think there is a better way to figure out if we have a PGSuper or PGSplice file
@@ -1545,7 +1545,7 @@ bool CSpecAgentImp::CheckTemporaryStresses()
    }
 }
 
-bool CSpecAgentImp::CheckFinalDeadLoadTensionStress()
+bool CSpecAgentImp::CheckFinalDeadLoadTensionStress() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->CheckBs2Tension();
@@ -1554,12 +1554,12 @@ bool CSpecAgentImp::CheckFinalDeadLoadTensionStress()
 /////////////////////////////////////////////////////////////////////////////
 // ITransverseReinforcementSpec
 //
-Float64 CSpecAgentImp::GetMaxSplittingStress(Float64 fyRebar)
+Float64 CSpecAgentImp::GetMaxSplittingStress(Float64 fyRebar) const
 {
    return lrfdRebar::GetMaxBurstingStress(fyRebar);
 }
 
-Float64 CSpecAgentImp::GetSplittingZoneLengthFactor()
+Float64 CSpecAgentImp::GetSplittingZoneLengthFactor() const
 {
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
@@ -1569,27 +1569,27 @@ Float64 CSpecAgentImp::GetSplittingZoneLengthFactor()
    return bzlf;
 }
 
-Float64 CSpecAgentImp::GetSplittingZoneLength( Float64 girderHeight )
+Float64 CSpecAgentImp::GetSplittingZoneLength( Float64 girderHeight ) const
 {
    return girderHeight / GetSplittingZoneLengthFactor();
 }
 
-matRebar::Size CSpecAgentImp::GetMinConfinmentBarSize()
+matRebar::Size CSpecAgentImp::GetMinConfinmentBarSize() const
 {
    return lrfdRebar::GetMinConfinmentBarSize();
 }
 
-Float64 CSpecAgentImp::GetMaxConfinmentBarSpacing()
+Float64 CSpecAgentImp::GetMaxConfinmentBarSpacing() const
 {
    return lrfdRebar::GetMaxConfinmentBarSpacing();
 }
 
-Float64 CSpecAgentImp::GetMinConfinmentAvS()
+Float64 CSpecAgentImp::GetMinConfinmentAvS() const
 {
    return lrfdRebar::GetMinConfinmentAvS();
 }
 
-void CSpecAgentImp::GetMaxStirrupSpacing(Float64 dv,Float64* pSmax1, Float64* pSmax2)
+void CSpecAgentImp::GetMaxStirrupSpacing(Float64 dv,Float64* pSmax1, Float64* pSmax2) const
 {
    Float64 k1,k2,s1,s2;
    const SpecLibraryEntry* pSpec = GetSpec();
@@ -1598,7 +1598,7 @@ void CSpecAgentImp::GetMaxStirrupSpacing(Float64 dv,Float64* pSmax1, Float64* pS
    *pSmax2 = min(k2*dv,s2); // LRFD equation 5.7.2.6-2 (pre2017: 5.8.2.7-2) 
 }
 
-Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter)
+Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter) const
 {
    ATLASSERT(maxAggregateSize>0.0);
    ATLASSERT(barDiameter>0.0);
@@ -1624,7 +1624,7 @@ Float64 CSpecAgentImp::GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 ba
 }
 
 
-Float64 CSpecAgentImp::GetMinTopFlangeThickness()
+Float64 CSpecAgentImp::GetMinTopFlangeThickness() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
@@ -1641,7 +1641,7 @@ Float64 CSpecAgentImp::GetMinTopFlangeThickness()
    return dim;
 }
 
-Float64 CSpecAgentImp::GetMinWebThickness()
+Float64 CSpecAgentImp::GetMinWebThickness() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
@@ -1690,7 +1690,7 @@ Float64 CSpecAgentImp::GetMinWebThickness()
    return dim;
 }
 
-Float64 CSpecAgentImp::GetMinBottomFlangeThickness()
+Float64 CSpecAgentImp::GetMinBottomFlangeThickness() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
@@ -2515,53 +2515,53 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
 /////////////////////////////////////////////////////////////////////
 //  IKdotGirderLiftingSpecCriteria
 // Spec criteria for KDOT analyses
-Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey) const
 {
    return GetHaulingAllowableTensileConcreteStressNormalCrown(segmentKey);
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey) const
 {
    return GetHaulingAllowableGlobalCompressiveConcreteStress(segmentKey);
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingAllowableTensionFactor()
+Float64 CSpecAgentImp::GetKdotHaulingAllowableTensionFactor() const
 {
    return GetHaulingAllowableTensionFactorNormalCrown();
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressionFactor()
+Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressionFactor() const
 {
    return GetHaulingAllowableGlobalCompressionFactor();
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) const
 
 {
    return GetHaulingWithMildRebarAllowableStressNormalCrown(segmentKey);
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStressFactor()
+Float64 CSpecAgentImp::GetKdotHaulingWithMildRebarAllowableStressFactor() const
 {
    return GetHaulingWithMildRebarAllowableStressFactorNormalCrown();
 }
 
-void CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax)
+void CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) const
 {
    GetHaulingAllowableTensileConcreteStressParametersNormalCrown(factor, pbMax, fmax);
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar)
+Float64 CSpecAgentImp::GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const
 {
    return GetHaulingAllowableTensileConcreteStressExNormalCrown(segmentKey, fc, includeRebar);
 }
 
-Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc)
+Float64 CSpecAgentImp::GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc) const
 {
    return GetHaulingAllowableGlobalCompressiveConcreteStressEx(segmentKey,fc);
 }
 
-void CSpecAgentImp::GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor)
+void CSpecAgentImp::GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    *pHardDistance = pSpec->GetMininumTruckSupportLocation();
@@ -2569,13 +2569,13 @@ void CSpecAgentImp::GetMinimumHaulingSupportLocation(Float64* pHardDistance, boo
    *pLengthFactor = pSpec->GetMinTruckSupportLocationFactor();
 }
 
-Float64 CSpecAgentImp::GetHaulingDesignLocationAccuracy()
+Float64 CSpecAgentImp::GetHaulingDesignLocationAccuracy() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetTruckSupportLocationAccuracy();
 }
 
-void CSpecAgentImp::GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor)
+void CSpecAgentImp::GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
 
@@ -2585,20 +2585,20 @@ void CSpecAgentImp::GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInter
 
 /////////////////////////////////////////////////////////////////////
 // IDebondLimits
-Float64 CSpecAgentImp::GetMaxDebondedStrands(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetMaxDebondedStrands(const CSegmentKey& segmentKey) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
 
    return pGirderEntry->GetMaxTotalFractionDebondedStrands();
 }
 
-Float64 CSpecAgentImp::GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
    return pGirderEntry->GetMaxFractionDebondedStrandsPerRow();
 }
 
-Float64 CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) const
 {
    StrandIndexType nMax;
    Float64 fMax;
@@ -2609,7 +2609,7 @@ Float64 CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmen
    return fMax;
 }
 
-StrandIndexType CSpecAgentImp::GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey)
+StrandIndexType CSpecAgentImp::GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) const
 {
    StrandIndexType nMax;
    Float64 fMax;
@@ -2620,7 +2620,7 @@ StrandIndexType CSpecAgentImp::GetMaxNumDebondedStrandsPerSection(const CSegment
    return nMax;
 }
 
-void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl)
+void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
 
@@ -2667,7 +2667,7 @@ void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* p
    *pLen = min_len>0.0 ? min_len : 0.0; // don't return less than zero
 }
 
-Float64 CSpecAgentImp::GetMinDebondSectionDistance(const CSegmentKey& segmentKey)
+Float64 CSpecAgentImp::GetMinDebondSectionDistance(const CSegmentKey& segmentKey) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
    return pGirderEntry->GetMinDebondSectionLength();
@@ -2675,19 +2675,19 @@ Float64 CSpecAgentImp::GetMinDebondSectionDistance(const CSegmentKey& segmentKey
 
 /////////////////////////////////////////////////////////////////////
 // IResistanceFactors
-void CSpecAgentImp::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression)
+void CSpecAgentImp::GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    pSpec->GetFlexureResistanceFactors(type,phiTensionPS,phiTensionRC,phiTensionSpliced,phiCompression);
 }
 
-void CSpecAgentImp::GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl)
+void CSpecAgentImp::GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl) const
 {
    // The values for Grade 60 are the same as for all types of strand
    GetFlexuralStrainLimits(matRebar::Grade60,pecl,petl);
 }
 
-void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl)
+void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) const
 {
    *pecl = lrfdRebar::GetCompressionControlledStrainLimit(rebarGrade);
    *petl = lrfdRebar::GetTensionControlledStrainLimit(rebarGrade);
@@ -2729,13 +2729,13 @@ void CSpecAgentImp::GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* 
 #endif
 }
 
-Float64 CSpecAgentImp::GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type)
+Float64 CSpecAgentImp::GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetShearResistanceFactor(isDebonded, type);
 }
 
-Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type)
+Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type) const
 {
    // Test to see if poi is in a debonded region
    bool is_debond = false;
@@ -2781,13 +2781,13 @@ Float64 CSpecAgentImp::GetShearResistanceFactor(const pgsPointOfInterest& poi, p
    return pSpec->GetShearResistanceFactor(is_debond, type);
 }
 
-Float64 CSpecAgentImp::GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type)
+Float64 CSpecAgentImp::GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetClosureJointFlexureResistanceFactor(type);
 }
 
-Float64 CSpecAgentImp::GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type)
+Float64 CSpecAgentImp::GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetClosureJointShearResistanceFactor(type);
@@ -2795,13 +2795,13 @@ Float64 CSpecAgentImp::GetClosureJointShearResistanceFactor(pgsTypes::ConcreteTy
 
 ///////////////////////////////////////////////////
 // IInterfaceShearRequirements 
-ShearFlowMethod CSpecAgentImp::GetShearFlowMethod()
+ShearFlowMethod CSpecAgentImp::GetShearFlowMethod() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    return pSpec->GetShearFlowMethod();
 }
 
-Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi)
+Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi) const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    Float64 sMax = pSpec->GetMaxInterfaceShearConnectorSpacing();
@@ -2818,7 +2818,7 @@ Float64 CSpecAgentImp::GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi
 
 ////////////////////
 // IDuctLimits
-Float64 CSpecAgentImp::GetRadiusOfCurvatureLimit(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetRadiusOfCurvatureLimit(const CGirderKey& girderKey) const
 {
    // LRFD 5.4.6.1
    // NOTE: This requirement changed from the 30 ft for plastic and 20 ft for metal in the 7th Edition and earlier to
@@ -2831,7 +2831,7 @@ Float64 CSpecAgentImp::GetRadiusOfCurvatureLimit(const CGirderKey& girderKey)
    return ::ConvertToSysUnits(pPTData->DuctType == pgsTypes::dtPlastic ? 30.0 : 20.0,unitMeasure::Feet);
 }
 
-Float64 CSpecAgentImp::GetTendonAreaLimit(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetTendonAreaLimit(const CGirderKey& girderKey) const
 {
    // LRFD 5.4.6.2
    const SpecLibraryEntry* pSpecEntry = GetSpec();
@@ -2843,7 +2843,7 @@ Float64 CSpecAgentImp::GetTendonAreaLimit(const CGirderKey& girderKey)
    return (pPTData->InstallationType == pgsTypes::sitPush ? pushRatio : pullRatio);
 }
 
-Float64 CSpecAgentImp::GetDuctSizeLimit(const CGirderKey& girderKey)
+Float64 CSpecAgentImp::GetDuctSizeLimit(const CGirderKey& girderKey) const
 {
    // LRFD 5.4.6.2
    const SpecLibraryEntry* pSpecEntry = GetSpec();
@@ -2872,7 +2872,7 @@ const GirderLibraryEntry* CSpecAgentImp::GetGirderEntry(const CSegmentKey& segme
    return pGirderEntry;
 }
 
-bool CSpecAgentImp::IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls)
+bool CSpecAgentImp::IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls) const
 {
    return ( ls == pgsTypes::ServiceIII_Inventory ||
             ls == pgsTypes::ServiceIII_Operating ||
