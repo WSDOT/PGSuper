@@ -212,12 +212,11 @@ void write_cracked_section_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      CRACKEDSECTIONDETAILS csd;
-      pCrackedSection->GetCrackedSectionDetails(poi,true,&csd);
+      const CRACKEDSECTIONDETAILS* pCSD = pCrackedSection->GetCrackedSectionDetails(poi,true);
 
       Float64 h = pSectProp->GetHg(liveLoadIntervalIdx,poi);
 
-      Float64 Yt = csd.c;
+      Float64 Yt = pCSD->c;
       Float64 Yb = h - Yt;
 
       col = 0;
@@ -225,16 +224,16 @@ void write_cracked_section_table(IBroker* pBroker,
       (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
       (*table)(row,col++) << dim.SetValue( Yt );
       (*table)(row,col++) << dim.SetValue( Yb );
-      (*table)(row,col++) << mom_i.SetValue( csd.Icr );
+      (*table)(row,col++) << mom_i.SetValue( pCSD->Icr );
 
       if ( bIncludeNegMoment )
       {
-         pCrackedSection->GetCrackedSectionDetails(poi,false,&csd);
-         Yt = csd.c;
+         pCSD = pCrackedSection->GetCrackedSectionDetails(poi,false);
+         Yt = pCSD->c;
          Yb = h - Yt;
          (*table)(row,col++) << dim.SetValue( Yt );
          (*table)(row,col++) << dim.SetValue( Yb );
-         (*table)(row,col++) << mom_i.SetValue( csd.Icr );
+         (*table)(row,col++) << mom_i.SetValue( pCSD->Icr );
       }
 
       row++;

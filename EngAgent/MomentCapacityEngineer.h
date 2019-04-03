@@ -97,9 +97,9 @@ public:
    std::vector<Float64> GetCrackingMoment(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const;
    std::vector<Float64> GetMinMomentCapacity(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const;
 
-   void GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKEDSECTIONDETAILS* pCSD) const;
    Float64 GetIcr(const pgsPointOfInterest& poi, bool bPositiveMoment) const;
-   std::vector<CRACKEDSECTIONDETAILS> GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const;
+   const CRACKEDSECTIONDETAILS* GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const;
+   std::vector<const CRACKEDSECTIONDETAILS*> GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const;
 
 private:
    //------------------------------------------------------------------------

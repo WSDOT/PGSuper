@@ -3889,17 +3889,17 @@ const pgsHaulingAnalysisArtifact* CEngAgentImp::CreateHaulingAnalysisArtifact(co
 
 /////////////////////////////////////////////////////////////////////////////
 // ICrackedSection
-void CEngAgentImp::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKEDSECTIONDETAILS* pCSD) const
-{
-   m_pMomentCapacityEngineer->GetCrackedSectionDetails(poi, bPositiveMoment, pCSD);
-}
-
 Float64 CEngAgentImp::GetIcr(const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetIcr(poi, bPositiveMoment);
 }
 
-std::vector<CRACKEDSECTIONDETAILS> CEngAgentImp::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
+const CRACKEDSECTIONDETAILS* CEngAgentImp::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   return m_pMomentCapacityEngineer->GetCrackedSectionDetails(poi, bPositiveMoment);
+}
+
+std::vector<const CRACKEDSECTIONDETAILS*> CEngAgentImp::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetCrackedSectionDetails(vPoi, bPositiveMoment);
 }

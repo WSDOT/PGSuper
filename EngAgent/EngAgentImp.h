@@ -351,9 +351,9 @@ public:
 
 // ICrackedSection
 public:
-   virtual void GetCrackedSectionDetails(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD) const override;
    virtual Float64 GetIcr(const pgsPointOfInterest& poi,bool bPositiveMoment) const override;
-   virtual std::vector<CRACKEDSECTIONDETAILS> GetCrackedSectionDetails(const PoiList& vPoi,bool bPositiveMoment) const override;
+   virtual const CRACKEDSECTIONDETAILS* GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const override;
+   virtual std::vector<const CRACKEDSECTIONDETAILS*> GetCrackedSectionDetails(const PoiList& vPoi,bool bPositiveMoment) const override;
 
 // IBridgeDescriptionEventSink
 public:
