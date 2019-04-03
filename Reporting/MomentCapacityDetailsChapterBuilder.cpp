@@ -640,8 +640,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    bool bFirstPoi = true;
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      CRACKINGMOMENTDETAILS cmd;
-      pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment,&cmd);
+      const CRACKINGMOMENTDETAILS* pcmd = pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment);
 
       if ( bFirstPoi )
       {
@@ -649,24 +648,24 @@ void write_crack_moment_data_table(IBroker* pBroker,
          if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
          {
             *pPara << rptNewLine;
-            *pPara << _T("Flexural cracking variability factor, ") << Sub2(symbol(gamma),_T("1")) << _T(" = ") << scalar.SetValue(cmd.g1) << rptNewLine;
-            *pPara << _T("Prestress variability factor, ") << Sub2(symbol(gamma),_T("2")) << _T(" = ") << scalar.SetValue(cmd.g2) << rptNewLine;
-            *pPara << _T("Ratio of specified minimum yield strength to ultimate tensile strength of the reinforcement," ) << Sub2(symbol(gamma),_T("3")) << _T(" = ") << scalar.SetValue(cmd.g3) << rptNewLine;
+            *pPara << _T("Flexural cracking variability factor, ") << Sub2(symbol(gamma),_T("1")) << _T(" = ") << scalar.SetValue(pcmd->g1) << rptNewLine;
+            *pPara << _T("Prestress variability factor, ") << Sub2(symbol(gamma),_T("2")) << _T(" = ") << scalar.SetValue(pcmd->g2) << rptNewLine;
+            *pPara << _T("Ratio of specified minimum yield strength to ultimate tensile strength of the reinforcement," ) << Sub2(symbol(gamma),_T("3")) << _T(" = ") << scalar.SetValue(pcmd->g3) << rptNewLine;
             *pPara << rptNewLine;
          }
       }
 
       (*table)(row,0) << location.SetValue( POI_SPAN, poi );
-      (*table)(row,1) << stress.SetValue( cmd.fr );
-      (*table)(row,2) << stress.SetValue( cmd.fcpe);
-      (*table)(row,3) << sect_mod.SetValue( cmd.Sb );
-      (*table)(row,4) << sect_mod.SetValue( cmd.Sbc );
-      (*table)(row,5) << moment.SetValue( cmd.Mdnc);
-      (*table)(row,6) << moment.SetValue( cmd.Mcr );
+      (*table)(row,1) << stress.SetValue( pcmd->fr );
+      (*table)(row,2) << stress.SetValue( pcmd->fcpe);
+      (*table)(row,3) << sect_mod.SetValue( pcmd->Sb );
+      (*table)(row,4) << sect_mod.SetValue( pcmd->Sbc );
+      (*table)(row,5) << moment.SetValue( pcmd->Mdnc);
+      (*table)(row,6) << moment.SetValue( pcmd->Mcr );
 
       if ( bAfter2002 && bBefore2012 )
       {
-         (*table)(row,7) << moment.SetValue( cmd.McrLimit );
+         (*table)(row,7) << moment.SetValue( pcmd->McrLimit );
       }
 
       row++;
@@ -802,19 +801,18 @@ void write_min_moment_data_table(IBroker* pBroker,
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
-      MINMOMENTCAPDETAILS mmcd;
-      pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mmcd);
+      const MINMOMENTCAPDETAILS* pmmcd = pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       if ( bBefore2012 )
       {
-         (*table)(row,col++) << moment.SetValue( mmcd.Mcr );
+         (*table)(row,col++) << moment.SetValue( pmmcd->Mcr );
       }
-      (*table)(row,col++) << moment.SetValue( mmcd.MrMin1 );
-      (*table)(row,col++) << mmcd.LimitState;
-      (*table)(row,col++) << moment.SetValue( mmcd.Mu );
-      (*table)(row,col++) << moment.SetValue( mmcd.MrMin2 );
-      (*table)(row,col++) << moment.SetValue( mmcd.MrMin );
+      (*table)(row,col++) << moment.SetValue( pmmcd->MrMin1 );
+      (*table)(row,col++) << pmmcd->LimitState;
+      (*table)(row,col++) << moment.SetValue( pmmcd->Mu );
+      (*table)(row,col++) << moment.SetValue( pmmcd->MrMin2 );
+      (*table)(row,col++) << moment.SetValue( pmmcd->MrMin );
 
       row++;
    }

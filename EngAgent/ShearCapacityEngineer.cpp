@@ -792,7 +792,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    CRACKINGMOMENTDETAILS mcr_details;
    if ( pConfig == nullptr )
    {
-      pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,(pscd->bTensionBottom ? true : false),&mcr_details);
+      mcr_details = *(pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,(pscd->bTensionBottom ? true : false)));
    }
    else
    {

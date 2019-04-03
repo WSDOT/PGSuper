@@ -338,9 +338,8 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
 	Float64 designLoadTensileStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
 
    /* 16. REQUIRED MINIMUM ULTIMATE MOMENT CAPACITY */
-   MINMOMENTCAPDETAILS mmcd;
-   pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid,true,&mmcd);
-   value = Max(mmcd.Mu,mmcd.MrMin);
+   const MINMOMENTCAPDETAILS* pmmcd = pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid,true);
+   value = Max(pmmcd->Mu,pmmcd->MrMin);
 
 	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
 
