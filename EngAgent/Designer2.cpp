@@ -3061,7 +3061,7 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
    MINMOMENTCAPDETAILS mmcd;
    pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx, poi, config, bPositiveMoment, &mmcd);
 
-   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,pmcd,mmcd,true/*designing*/,pArtifact);
+   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,pmcd,&mmcd,true/*designing*/,pArtifact);
 }
 
 void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact) const
@@ -3070,13 +3070,12 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
 
    const MOMENTCAPACITYDETAILS* pmcd = pMomentCapacity->GetMomentCapacityDetails( intervalIdx, poi, bPositiveMoment );
 
-   MINMOMENTCAPDETAILS mmcd;
-   pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, &mmcd);
+   const MINMOMENTCAPDETAILS* pmmcd = pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment);
 
-   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,pmcd,mmcd,false/*checking*/,pArtifact);
+   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,pmcd,pmmcd,false/*checking*/,pArtifact);
 }
 
-void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const MINMOMENTCAPDETAILS& mmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact) const
+void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const MINMOMENTCAPDETAILS* pmmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact) const
 {
    GET_IFACE(ILimitStateForces, pLimitStateForces);
    GET_IFACE(ILibrary,pLib);
@@ -3144,7 +3143,7 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
 
    pArtifact->SetCapacity( pmcd->Phi * pmcd->Mn );
    pArtifact->SetDemand( Mu );
-   pArtifact->SetMinCapacity( mmcd.MrMin );
+   pArtifact->SetMinCapacity( pmmcd->MrMin );
 
    // When capacity is zero, there is no reinforcing ratio.
    // We need to simulate some numbers so everything works.

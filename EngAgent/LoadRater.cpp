@@ -175,7 +175,7 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    std::vector<const MOMENTCAPACITYDETAILS*> vM = pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
-   std::vector<MINMOMENTCAPDETAILS> vMmin = pMomentCapacity->GetMinMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
+   std::vector<const MINMOMENTCAPDETAILS*> vMmin = pMomentCapacity->GetMinMomentCapacityDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
 
    ATLASSERT(vPoi.size()     == moments.vDCmax.size());
    ATLASSERT(vPoi.size()     == moments.vDWmax.size());
@@ -305,7 +305,7 @@ void pgsLoadRater::MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,
       // and Mu > 0.... Since we are looking at the negative end of things, Mmin = 1.33Mu. +/- = -... it doesn't
       // make since for K to be negative... K < 0 indicates that the section is most definate NOT under reinforced.
       // No adjustment needs to be made for underreinforcement so take K = 1.0
-      Float64 K = (IsZero(vMmin[i].MrMin) ? 1.0 : vMmin[i].Mr/vMmin[i].MrMin); // MBE 6A.5.6
+      Float64 K = (IsZero(vMmin[i]->MrMin) ? 1.0 : vMmin[i]->Mr/vMmin[i]->MrMin); // MBE 6A.5.6
       if ( K < 0.0 || 1.0 < K )
       {
          K = 1.0;
@@ -961,7 +961,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
    GET_IFACE(IMomentCapacity,pMomentCapacity);
-   std::vector<CRACKINGMOMENTDETAILS> vMcr = pMomentCapacity->GetCrackingMomentDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
+   std::vector<const CRACKINGMOMENTDETAILS*> vMcr = pMomentCapacity->GetCrackingMomentDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
 
    GET_IFACE(ICrackedSection,pCrackedSection);
    std::vector<const CRACKEDSECTIONDETAILS*> vCrackedSection = pCrackedSection->GetCrackedSectionDetails(vPoi,bPositiveMoment);
@@ -1336,7 +1336,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       }
 
 
-      Float64 Mcr = vMcr[i].Mcr;
+      Float64 Mcr = vMcr[i]->Mcr;
 
       Float64 Icr = vCrackedSection[i]->Icr;
       Float64 c   = vCrackedSection[i]->c; // measured from tension face to crack

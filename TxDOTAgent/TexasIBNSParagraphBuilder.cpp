@@ -772,14 +772,12 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       (*p_table)(row++,col) << stress.SetValue(-ftBot);
 
-      //const pgsFlexuralCapacityArtifact* pFlexureArtifact = pGdrArtifact->GetFlexuralCapacityArtifact( pgsFlexuralCapacityArtifactKey(pgsTypes::BridgeSite3,pgsTypes::StrengthI,pmid[0].GetDistFromStart()) );
-      MINMOMENTCAPDETAILS mmcd;
-      pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmidere,true,&mmcd);
+      const MINMOMENTCAPDETAILS* pmmcd = pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmidere,true);
 
       if (bFirst)
          (*p_table)(row,0) << _T("Required minimum ultimate moment capacity ");
 
-      (*p_table)(row++,col) << moment.SetValue( Max(mmcd.Mu,mmcd.MrMin) );
+      (*p_table)(row++,col) << moment.SetValue( Max(pmmcd->Mu,pmmcd->MrMin) );
 
       if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
       {
