@@ -964,7 +964,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
    std::vector<CRACKINGMOMENTDETAILS> vMcr = pMomentCapacity->GetCrackingMomentDetails(loadRatingIntervalIdx,vPoi,bPositiveMoment);
 
    GET_IFACE(ICrackedSection,pCrackedSection);
-   std::vector<CRACKEDSECTIONDETAILS> vCrackedSection = pCrackedSection->GetCrackedSectionDetails(vPoi,bPositiveMoment);
+   std::vector<const CRACKEDSECTIONDETAILS*> vCrackedSection = pCrackedSection->GetCrackedSectionDetails(vPoi,bPositiveMoment);
    
    ATLASSERT(vPoi.size()     == moments.vDCmax.size());
    ATLASSERT(vPoi.size()     == moments.vDWmax.size());
@@ -1338,8 +1338,8 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
 
       Float64 Mcr = vMcr[i].Mcr;
 
-      Float64 Icr = vCrackedSection[i].Icr;
-      Float64 c   = vCrackedSection[i].c; // measured from tension face to crack
+      Float64 Icr = vCrackedSection[i]->Icr;
+      Float64 c   = vCrackedSection[i]->c; // measured from tension face to crack
 
       // make sure reinforcement is on the tension side of the crack
       bRebar   = (db  < Hg + ts - c ? false : bRebar);
@@ -1438,7 +1438,7 @@ void pgsLoadRater::CheckReinforcementYielding(const CGirderKey& girderKey,const 
       stressRatioArtifact.SetLiveLoadMoment(LLIM+PL);
       stressRatioArtifact.SetCrackingMoment(Mcr);
       stressRatioArtifact.SetIcr(Icr);
-      stressRatioArtifact.SetCrackDepth(vCrackedSection[i].c);
+      stressRatioArtifact.SetCrackDepth(vCrackedSection[i]->c);
       stressRatioArtifact.SetEg(Eg);
 
       if ( bRebar )

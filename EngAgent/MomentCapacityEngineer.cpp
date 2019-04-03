@@ -388,27 +388,25 @@ std::vector<CRACKINGMOMENTDETAILS> pgsMomentCapacityEngineer::GetCrackingMomentD
    return details;
 }
 
-void pgsMomentCapacityEngineer::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKEDSECTIONDETAILS* pCSD) const
-{
-   *pCSD = *ValidateCrackedSectionDetails(poi, bPositiveMoment);
-}
-
 Float64 pgsMomentCapacityEngineer::GetIcr(const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-   CRACKEDSECTIONDETAILS csd;
-   GetCrackedSectionDetails(poi, bPositiveMoment, &csd);
-   return csd.Icr;
+   const CRACKEDSECTIONDETAILS* pCSD = GetCrackedSectionDetails(poi, bPositiveMoment);
+   return pCSD->Icr;
 }
 
-std::vector<CRACKEDSECTIONDETAILS> pgsMomentCapacityEngineer::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
+const CRACKEDSECTIONDETAILS* pgsMomentCapacityEngineer::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-   std::vector<CRACKEDSECTIONDETAILS> details;
+   return ValidateCrackedSectionDetails(poi, bPositiveMoment);
+}
+
+std::vector<const CRACKEDSECTIONDETAILS*> pgsMomentCapacityEngineer::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
+{
+   std::vector<const CRACKEDSECTIONDETAILS*> details;
    details.reserve(vPoi.size());
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      CRACKEDSECTIONDETAILS csd;
-      GetCrackedSectionDetails(poi, bPositiveMoment, &csd);
-      details.push_back(csd);
+      const CRACKEDSECTIONDETAILS* pCSD = GetCrackedSectionDetails(poi, bPositiveMoment);
+      details.push_back(pCSD);
    }
 
    return details;
