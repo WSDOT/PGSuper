@@ -3493,22 +3493,12 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
 
       if ( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP )
       {
-         (*table)(0,0) << _T("Overhang Edge Depth") << _T(" = ") << dim.SetValue(pDeck->OverhangEdgeDepth) << rptNewLine;
-         (*table)(0,0) << _T("Overhang Taper") << _T(" = ");
-         switch(pDeck->OverhangTaper)
-         {
-         case pgsTypes::dotNone:
-            (*table)(0,0) << _T("None") << rptNewLine;
-            break;
+         std::array<std::_tstring, 3> strOverhangTaper{_T("None"),_T("Taper overhang to top of girder top flange"),_T("Taper overhang to bottom of girder top flange")};
+         (*table)(0,0) << _T("Left Overhang Edge Depth") << _T(" = ") << dim.SetValue(pDeck->OverhangEdgeDepth[pgsTypes::stLeft]) << rptNewLine;
+         (*table)(0,0) << _T("Left Overhang Taper") << _T(" = ") << strOverhangTaper[pDeck->OverhangTaper[pgsTypes::stLeft]] << rptNewLine;
 
-         case pgsTypes::dotTopTopFlange:
-            (*table)(0,0) << _T("Taper overhang to top of girder top flange") << rptNewLine;
-            break;
-
-         case pgsTypes::dotBottomTopFlange:
-            (*table)(0,0) << _T("Taper overhang to bottom of girder top flange") << rptNewLine;
-            break;
-         }
+         (*table)(0, 0) << _T("Right Overhang Edge Depth") << _T(" = ") << dim.SetValue(pDeck->OverhangEdgeDepth[pgsTypes::stRight]) << rptNewLine;
+         (*table)(0, 0) << _T("Right Overhang Taper") << _T(" = ") << strOverhangTaper[pDeck->OverhangTaper[pgsTypes::stRight]] << rptNewLine;
       }
 
       if (!IsOverlayDeck(deckType))

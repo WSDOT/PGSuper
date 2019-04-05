@@ -186,8 +186,10 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    {
    case pgsTypes::sdtCompositeCIP:
       deck.GrossDepth        = ::ConvertToSysUnits(8.0,unitMeasure::Inch);
-      deck.OverhangTaper     = pgsTypes::dotTopTopFlange;
-      deck.OverhangEdgeDepth = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
+      deck.OverhangTaper[pgsTypes::stLeft] = pgsTypes::dotTopTopFlange;
+      deck.OverhangTaper[pgsTypes::stRight] = pgsTypes::dotTopTopFlange;
+      deck.OverhangEdgeDepth[pgsTypes::stLeft] = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
+      deck.OverhangEdgeDepth[pgsTypes::stRight] = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
       deck.DeckEdgePoints.push_back(point);
       break;
 
@@ -195,8 +197,10 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
       deck.GrossDepth        = ::ConvertToSysUnits(4.0,unitMeasure::Inch);
       deck.PanelDepth        = ::ConvertToSysUnits(4.0,unitMeasure::Inch);
       deck.PanelSupport      = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
-      deck.OverhangTaper     = pgsTypes::dotTopTopFlange;
-      deck.OverhangEdgeDepth = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
+      deck.OverhangTaper[pgsTypes::stLeft] = pgsTypes::dotTopTopFlange;
+      deck.OverhangTaper[pgsTypes::stRight] = pgsTypes::dotTopTopFlange;
+      deck.OverhangEdgeDepth[pgsTypes::stLeft] = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
+      deck.OverhangEdgeDepth[pgsTypes::stRight] = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
       deck.DeckEdgePoints.push_back(point);
       break;
 

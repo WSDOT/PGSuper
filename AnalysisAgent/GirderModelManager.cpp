@@ -15173,6 +15173,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    ATLASSERT(vPoi.size()!=0);
 
    bool bIsInteriorGirder = pBridge->IsInteriorGirder( segmentKey );
+   pgsTypes::SideType side = (segmentKey.girderIndex == 0 ? pgsTypes::stLeft : pgsTypes::stRight);
 
    // Account for girder camber
    std::unique_ptr<mathFunction2d> camberShape;
@@ -15354,19 +15355,19 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          // on the left and right of the girder instead of using the tributary width and slab depth
 
          // determine depth of the slab at the edge and flange tip
-         Float64 overhang_edge_depth = pDeck->OverhangEdgeDepth;
+         Float64 overhang_edge_depth = pDeck->OverhangEdgeDepth[side];
          Float64 overhang_depth_at_flange_tip;
-         if ( pDeck->OverhangTaper == pgsTypes::dotNone )
+         if ( pDeck->OverhangTaper[side] == pgsTypes::dotNone )
          {
             // overhang is constant depth
             overhang_depth_at_flange_tip = overhang_edge_depth;
          }
-         else if ( pDeck->OverhangTaper == pgsTypes::dotTopTopFlange )
+         else if ( pDeck->OverhangTaper[side] == pgsTypes::dotTopTopFlange )
          {
             // deck overhang tapers to the top of the top flange
             overhang_depth_at_flange_tip = slab_offset;
          }
-         else if ( pDeck->OverhangTaper == pgsTypes::dotBottomTopFlange )
+         else if ( pDeck->OverhangTaper[side] == pgsTypes::dotBottomTopFlange )
          {
             // deck overhang tapers to the bottom of the top flange
             FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
