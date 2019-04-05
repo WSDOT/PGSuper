@@ -810,23 +810,27 @@ interface IEvents : IUnknown
 //////////////////////////////////////////////////////////////
 // Simple exception-safe class for holding and releasing I events
 //
-class CIEventsHolder
+template<class T> class CIEventsHolderT
 {
 public:
-   CIEventsHolder(IEvents* pIEvents):
+   CIEventsHolderT(T* pIEvents):
    m_pIEvents(pIEvents)
    {
       m_pIEvents->HoldEvents();
    }
 
-   ~CIEventsHolder()
+   ~CIEventsHolderT() noexcept(false)
    {
-      m_pIEvents->FirePendingEvents();
+      // exceptions downstream from this call can throw so we have to set 
+      // the exception spec to permit it, otherwise the default is to call terminate()
+      m_pIEvents->FirePendingEvents(); 
    }
 
 private:
-   CComPtr<IEvents> m_pIEvents;
+   CComPtr<T> m_pIEvents;
 };
+
+typedef CIEventsHolderT<IEvents> CIEventsHolder;
 
 /*****************************************************************************
 INTERFACE
@@ -865,27 +869,7 @@ interface IUIEvents : IUnknown
    virtual void CancelPendingEvents() = 0;
    virtual void FireEvent(CView* pSender = nullptr,LPARAM lHint = 0,std::shared_ptr<CObject> pHint = nullptr) = 0;
 };
-
-//////////////////////////////////////////////////////////////
-// Simple exception-safe class for holding and releasing UI events
-//
-class CUIEventsHolder
-{
-public:
-   CUIEventsHolder(IUIEvents* pUIEvents):
-   m_pUIEvents(pUIEvents)
-   {
-      m_pUIEvents->HoldEvents();
-   }
-
-   ~CUIEventsHolder()
-   {
-      m_pUIEvents->FirePendingEvents();
-   }
-
-private:
-   CComPtr<IUIEvents> m_pUIEvents;
-};
+typedef CIEventsHolderT<IUIEvents> CUIEventsHolder;
 
 /*****************************************************************************
 INTERFACE
