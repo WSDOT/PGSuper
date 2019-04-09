@@ -1012,6 +1012,8 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
          }
 
          SetStyleRange(CGXRange(startRow,col), CGXStyle()
+            .SetEnabled(FALSE)
+            .SetReadOnly(TRUE)
             .SetHorizontalAlignment(DT_CENTER)
             .SetVerticalAlignment(DT_VCENTER)
             .SetInterior( ::GetSysColor(COLOR_BTNFACE) )
@@ -1020,6 +1022,8 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
          );
 
          SetStyleRange(CGXRange(endRow,col), CGXStyle()
+            .SetEnabled(FALSE)
+            .SetReadOnly(TRUE)
             .SetHorizontalAlignment(DT_CENTER)
             .SetVerticalAlignment(DT_VCENTER)
             .SetInterior( ::GetSysColor(COLOR_BTNFACE) )
@@ -1033,6 +1037,8 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
          for ( ROWCOL row = startRow+1; row < endRow; row++ )
          {
             SetStyleRange(CGXRange(row,col), CGXStyle()
+               .SetEnabled(FALSE)
+               .SetReadOnly(TRUE)
                .SetHorizontalAlignment(DT_CENTER)
                .SetVerticalAlignment(DT_VCENTER)
                .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
@@ -1085,6 +1091,8 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 
       // label prev pier
       SetStyleRange(CGXRange(prevPierRow,col), CGXStyle()
+         .SetEnabled(FALSE)
+         .SetReadOnly(TRUE)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior( ::GetSysColor(COLOR_BTNFACE) )
@@ -1102,6 +1110,8 @@ void CBridgeDescFramingGrid::FillSpanColumn()
       
       // label next pier
       SetStyleRange(CGXRange(nextPierRow,col), CGXStyle()
+         .SetEnabled(FALSE)
+         .SetReadOnly(TRUE)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior( ::GetSysColor(COLOR_BTNFACE) )
@@ -1124,6 +1134,8 @@ void CBridgeDescFramingGrid::FillSpanColumn()
       for (ROWCOL row = prevPierRow + 1; row < nextPierRow; row++)
       {
          SetStyleRange(CGXRange(row, col), CGXStyle()
+            .SetEnabled(FALSE)
+            .SetReadOnly(TRUE)
             .SetHorizontalAlignment(DT_CENTER)
             .SetVerticalAlignment(DT_VCENTER)
             .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
@@ -1257,17 +1269,29 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       }
       else
       {
-         SupportIndexType tsIdx = GetTemporarySupportIndex(nRow);
+         SupportIndexType currTsIdx = GetTemporarySupportIndex(nRow);
          CTemporarySupportData tsData = GetTemporarySupportRowData(nRow);
          if ( tsData.GetStation() <= pDlg->m_BridgeDesc.GetPier(0)->GetStation() ||
               pDlg->m_BridgeDesc.GetPier(pDlg->m_BridgeDesc.GetPierCount()-1)->GetStation() <= tsData.GetStation() )
          {
             // new station is not on the bridge
+            CComPtr<IBroker> pBroker;
+            EAFGetBroker(&pBroker);
+            GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+            CString strStation = FormatStation(pDisplayUnits->GetStationFormat(), tsData.GetStation());
+            m_sWarningText.Format(_T("Station %s is not on the bridge"), strStation);
             return FALSE;
          }
-         pDlg->m_BridgeDesc.SetTemporarySupportByIndex(tsIdx,tsData);
-         const CTemporarySupportData* pTS = pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx);
-         FillTemporarySupportRow(nRow,pTS); // updates station and orientation formatting
+
+         SupportIndexType newTsIdx = pDlg->m_BridgeDesc.SetTemporarySupportByIndex(currTsIdx, tsData);
+         // temporary support station could have changed... if so, update the grid for all temporary support
+         // rows from where the ts used to be to where it is now
+         for (SupportIndexType tsIdx = Min(newTsIdx, currTsIdx); tsIdx <= Max(newTsIdx, currTsIdx); tsIdx++)
+         {
+            const CTemporarySupportData* pTS = pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx);
+            ROWCOL tsRow = GetTemporarySupportRow(tsIdx);
+            FillTemporarySupportRow(tsRow, pTS); // updates station and orientation formatting
+         }
       }
 
       FillSpanColumn();   // updates span lengths
