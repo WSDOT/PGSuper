@@ -14689,6 +14689,14 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
       {
          ATLASSERT(backSegmentKey.groupIndex != INVALID_INDEX);
 
+         if (backSegmentKey.segmentIndex == INVALID_INDEX)
+         {
+            GirderIndexType nGirdersBack = pBridge->GetGirderCount(backSegmentKey.groupIndex);
+            ATLASSERT(nGirdersBack <= gdrIdx);
+            backSegmentKey.girderIndex = nGirdersBack - 1;
+            backSegmentKey.segmentIndex = pBridge->GetSegmentCount(backSegmentKey) - 1;
+         }
+
          ConnectionLibraryEntry::DiaphragmLoadType diaphragmLoadType = pPier->GetDiaphragmLoadType(pgsTypes::Back);
 
          bool bStartCantilever, bEndCantilever;
@@ -14734,6 +14742,14 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
       if ( pBridge->IsBoundaryPier(pierIdx) )
       {
          ATLASSERT(aheadSegmentKey.groupIndex != INVALID_INDEX);
+
+         if (aheadSegmentKey.segmentIndex == INVALID_INDEX)
+         {
+            GirderIndexType nGirdersAhead = pBridge->GetGirderCount(aheadSegmentKey.groupIndex);
+            ATLASSERT(nGirdersAhead <= gdrIdx);
+            aheadSegmentKey.girderIndex = nGirdersAhead - 1;
+            aheadSegmentKey.segmentIndex = 0;
+         }
 
          ConnectionLibraryEntry::DiaphragmLoadType diaphragmLoadType = pPier->GetDiaphragmLoadType(pgsTypes::Ahead);
 

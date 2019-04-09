@@ -9180,6 +9180,10 @@ void CBridgeAgentImp::GetSegmentsAtPier(PierIndexType pierIdx, GirderIndexType g
             }
          }
       }
+      else
+      {
+         backSegmentKey.groupIndex = backGroupIdx;
+      }
    }
 
    if (aheadGroupIdx != INVALID_INDEX)
@@ -9201,6 +9205,10 @@ void CBridgeAgentImp::GetSegmentsAtPier(PierIndexType pierIdx, GirderIndexType g
                break;
             }
          }
+      }
+      else
+      {
+         aheadSegmentKey.groupIndex = aheadGroupIdx;
       }
    }
 
