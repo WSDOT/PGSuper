@@ -4,7 +4,6 @@
 
 
 The Specification Check was Not Successful
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
 
@@ -39,7 +38,6 @@ Confinement zone check failed.
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Splitting zone check failed.
 
 
