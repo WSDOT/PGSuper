@@ -168,10 +168,13 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       }
 
       // overhang
-      DDX_UnitValue(pDX, IDC_LEFT_OVERHANG_DEPTH, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth[pgsTypes::stLeft], pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(pDX, IDC_RIGHT_OVERHANG_DEPTH, IDC_OVERHANG_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth[pgsTypes::stRight], pDisplayUnits->GetComponentDimUnit());
-      DDX_CBItemData( pDX, IDC_OVERHANG_TAPER, pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper[pgsTypes::stLeft]);
-      pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper[pgsTypes::stRight] = pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper[pgsTypes::stLeft];
+      if (IsCastDeck(deckType))
+      {
+         DDX_UnitValue(pDX, IDC_LEFT_OVERHANG_DEPTH, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth[pgsTypes::stLeft], pDisplayUnits->GetComponentDimUnit());
+         DDX_UnitValueAndTag(pDX, IDC_RIGHT_OVERHANG_DEPTH, IDC_OVERHANG_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth[pgsTypes::stRight], pDisplayUnits->GetComponentDimUnit());
+         DDX_CBItemData(pDX, IDC_OVERHANG_TAPER, pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper[pgsTypes::stLeft]);
+         pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper[pgsTypes::stRight] = pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper[pgsTypes::stLeft];
+      }
 
       // deck panel
       DDX_UnitValueAndTag(pDX, IDC_PANEL_DEPTH, IDC_PANEL_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit());
@@ -613,13 +616,14 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    GetDlgItem(IDC_GROSS_DEPTH)->EnableWindow(       deckType != pgsTypes::sdtNone);
    GetDlgItem(IDC_GROSS_DEPTH_UNIT)->EnableWindow(  deckType != pgsTypes::sdtNone);
 
-   GetDlgItem(IDC_OVERHANG_DEPTH_LABEL)->EnableWindow( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_LEFT_OVERHANG_DEPTH_LABEL)->EnableWindow(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_RIGHT_OVERHANG_DEPTH_LABEL)->EnableWindow(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   m_ctrlLeftOverhangEdgeDepth.EnableWindow(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   m_ctrlRightOverhangEdgeDepth.EnableWindow(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_OVERHANG_DEPTH_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   m_ctrlOverhangTaper.EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
+   bool bIsCastDeck = IsCastDeck(deckType);
+   GetDlgItem(IDC_OVERHANG_DEPTH_LABEL)->EnableWindow( bIsCastDeck );
+   GetDlgItem(IDC_LEFT_OVERHANG_DEPTH_LABEL)->EnableWindow(bIsCastDeck);
+   GetDlgItem(IDC_RIGHT_OVERHANG_DEPTH_LABEL)->EnableWindow(bIsCastDeck);
+   m_ctrlLeftOverhangEdgeDepth.EnableWindow(bIsCastDeck);
+   m_ctrlRightOverhangEdgeDepth.EnableWindow(bIsCastDeck);
+   GetDlgItem(IDC_OVERHANG_DEPTH_UNIT)->EnableWindow(bIsCastDeck);
+   m_ctrlOverhangTaper.EnableWindow(bIsCastDeck);
 
 
    UpdateDeckRelatedControls();
