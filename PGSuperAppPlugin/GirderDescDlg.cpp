@@ -108,7 +108,9 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
    
+   m_Group = *pGroup;
    m_Girder = *pGirder;
+   m_Girder.SetGirderGroup(&m_Group);
    m_pSegment = m_Girder.GetSegment(segmentKey.segmentIndex);
    m_SegmentKey = segmentKey;
    m_SegmentID = pSegment->GetID();
