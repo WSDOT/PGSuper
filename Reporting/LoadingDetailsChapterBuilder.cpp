@@ -2208,53 +2208,13 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                   ATLASSERT(IsZero(equivLoad.N));
 
                   *pPara << Sub2(_T("M"), _T("x")) << _T(" = ");
-                  if (bPrecamber && !bTopFlangeThickening)
-                  {
-                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
-                     *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")");
-                     if (!IsZero(equivLoad.PrecamberAtLoadPoint))
-                     {
-                        *pPara << _T(" - ") << ecc.SetValue(equivLoad.PrecamberAtLoadPoint);
-                     }
-                     *pPara << _T("]");
-                  }
-                  else if (!bPrecamber && bTopFlangeThickening)
-                  {
-                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
-                     *pPara << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
-                     *pPara << ecc.SetValue(equivLoad.Ybe) << _T(")]");
-                  }
-                  else if (bPrecamber && bTopFlangeThickening)
-                  {
-                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
-                     *pPara << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
-                     *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" + ");
-                     *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")");
-                     if (!IsZero(equivLoad.PrecamberAtLoadPoint))
-                     {
-                        *pPara << _T(" - ") << ecc.SetValue(equivLoad.PrecamberAtLoadPoint);
-                     }
-                     *pPara << _T("]");
-                  }
-                  else
-                  {
-                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
-                  }
+                  *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
                   *pPara << _T(" = ") << moment.SetValue(equivLoad.Mx) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
 
                   if (bHasAsymmetricGirders)
                   {
-                     *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.ex) << _T(" + (2/3)(");
-                     *pPara << ecc.SetValue(equivLoad.Xlm) << _T(" - ");
-                     *pPara << ecc.SetValue(equivLoad.Xle) << _T(")] = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
-                  }
-
-                  if (!IsZero(equivLoad.wy))
-                  {
-                     *pPara << Sub2(_T("w"), _T("y")) << _T(" = -8(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.Precamber) << _T(")/");
-                     *pPara << _T("(") << loc.SetValue(equivLoad.Ls) << Super2(_T(")"), _T("2")) << _T(" = ");
-                     *pPara << distributed.SetValue(equivLoad.wy) << _T(" from ") << loc.SetValue(equivLoad.Xs);
-                     *pPara << _T(" to ") << loc.SetValue(equivLoad.Xe) << rptNewLine;
+                     *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.ex) << _T(")");
+                     *pPara << _T(" = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
                   }
                }
 
@@ -2289,76 +2249,37 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                {
                   if ( IsZero(equivLoad.Mx) )
                   {
-                     if (bPrecamber && !bTopFlangeThickening)
+                     *pPara << Sub2(_T("e'"), _T("y")) << _T(" = ");
+                     *pPara << _T("(") << ecc.SetValue(equivLoad.eyh) << _T(" - ");
+                     *pPara << ecc.SetValue(equivLoad.eye);
+                     if (bPrecamber)
                      {
-                        *pPara << Sub2(_T("e'"), _T("y")) << _T(" = ");
-                        *pPara << _T("(") << ecc.SetValue(equivLoad.eyh) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.eye) << _T(") - ");
-                        *pPara << ecc.SetValue(equivLoad.PrecamberAtLoadPoint);
-                        *pPara << _T(" = ") << ecc.SetValue(equivLoad.eprime) << rptNewLine;
+                        *pPara << _T(" - ") << ecc.SetValue(equivLoad.PrecamberAtLoadPoint);
                      }
-                     else if (!bPrecamber && bTopFlangeThickening)
-                     {
-                        *pPara << Sub2(_T("e'"), _T("y")) << _T(" = ");
-                        *pPara << _T("(") << ecc.SetValue(equivLoad.eyh) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.eye) << _T(") + (");
-                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.Ybh) << _T(")");
-                        *pPara << _T(" = ") << ecc.SetValue(equivLoad.eprime) << rptNewLine;
-                     }
-                     else if (bPrecamber && bTopFlangeThickening)
-                     {
-                        *pPara << Sub2(_T("e'"), _T("y")) << _T(" = ");
-                        *pPara << _T("(") << ecc.SetValue(equivLoad.eyh) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.eye) << _T(") + (");
-                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.Ybh) << _T(") - ");
-                        *pPara << ecc.SetValue(equivLoad.PrecamberAtLoadPoint);
-                        *pPara << _T(" = ") << ecc.SetValue(equivLoad.eprime) << rptNewLine;
-                     }
-                     else
-                     {
-                        *pPara << Sub2(_T("e'"), _T("y")) << _T(" = ");
-                        *pPara << _T("(") << ecc.SetValue(equivLoad.eyh) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.eye) << _T(")");
-                        *pPara << _T(" = ") << ecc.SetValue(equivLoad.eprime) << rptNewLine;
-                     }
+                     *pPara << _T(")");
+                     *pPara << _T(" = ") << ecc.SetValue(equivLoad.eprime) << rptNewLine;
                      *pPara << _T("N = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eprime) << _T(")/(") << loc.SetValue(equivLoad.b) << _T(") = ");
                      *pPara << force.SetValue(equivLoad.N) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
                   }
                   else
                   {
                      *pPara << Sub2(_T("M"), _T("x")) << _T(" = ");
-                     if (bPrecamber && !bTopFlangeThickening)
-                     {
-                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + ");
-                        *pPara << _T("(2/3)(") << ecc.SetValue(equivLoad.Precamber) << _T(")]");
-                     }
-                     else if (!bPrecamber && bTopFlangeThickening)
-                     {
-                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + ");
-                        *pPara << _T("(2/3)(") << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(")]");
-                     }
-                     else if (bPrecamber && bTopFlangeThickening)
-                     {
-                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + ");
-                        *pPara << _T("(2/3)(") << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" + ");
-                        *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")]");
-                     }
-                     else
-                     {
-                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
-                     }
+                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
                      *pPara << _T(" = ") << moment.SetValue(equivLoad.Mx) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                  }
 
-                     if (bHasAsymmetricGirders)
-                     {
-                        *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.ex) << _T(" + (2/3)(");
-                        *pPara << ecc.SetValue(equivLoad.Xlm) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.Xle) << _T(")] = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
-                     }
+                  if (!IsZero(equivLoad.wy))
+                  {
+                     *pPara << Sub2(_T("w"), _T("y")) << _T(" = 8(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.Precamber) << _T(")/");
+                     *pPara << _T("(") << loc.SetValue(equivLoad.Ls) << Super2(_T(")"), _T("2")) << _T(" = ");
+                     *pPara << distributed.SetValue(equivLoad.wy) << _T(" from ") << loc.SetValue(equivLoad.Xs);
+                     *pPara << _T(" to ") << loc.SetValue(equivLoad.Xe) << rptNewLine;
+                  }
+
+                  if (bHasAsymmetricGirders)
+                  {
+                     *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.ex) << _T(")");
+                     *pPara << _T(" = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
                   }
                }
 
@@ -2391,43 +2312,21 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                   {
                      ATLASSERT(IsZero(equivLoad.N));
                      *pPara << Sub2(_T("M"), _T("x")) << _T(" = ");
-                     if (bPrecamber && !bTopFlangeThickening)
-                     {
-                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
-                        *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")]");
-                     }
-                     else if (!bPrecamber && bTopFlangeThickening)
-                     {
-                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
-                        *pPara << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(")]");
-                     }
-                     else if (bPrecamber && bTopFlangeThickening)
-                     {
-                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.eye) << _T(" + (2/3)(");
-                        *pPara << ecc.SetValue(equivLoad.Ybm) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.Ybe) << _T(" + ");
-                        *pPara << ecc.SetValue(equivLoad.Precamber) << _T(")]");
-                     }
-                     else
-                     {
-                        *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
-                     }
+                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
                      *pPara << _T(" = ") << moment.SetValue(equivLoad.Mx) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
-
-                     if (bHasAsymmetricGirders)
-                     {
-                        *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")[") << ecc.SetValue(equivLoad.ex) << _T(" + (2/3)(");
-                        *pPara << ecc.SetValue(equivLoad.Xlm) << _T(" - ");
-                        *pPara << ecc.SetValue(equivLoad.Xle) << _T(")] = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
-                     }
 
                      if (!IsZero(equivLoad.wy))
                      {
-                        *pPara << Sub2(_T("w"), _T("y")) << _T(" = -8(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.Precamber) << _T(")/");
+                        *pPara << Sub2(_T("w"), _T("y")) << _T(" = 8(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.Precamber) << _T(")/");
                         *pPara << _T("(") << loc.SetValue(equivLoad.Ls) << Super2(_T(")"), _T("2")) << _T(" = ");
                         *pPara << distributed.SetValue(equivLoad.wy) << _T(" from ") << loc.SetValue(equivLoad.Xs);
                         *pPara << _T(" to ") << loc.SetValue(equivLoad.Xe) << rptNewLine;
+                     }
+
+                     if (bHasAsymmetricGirders)
+                     {
+                        *pPara << Sub2(_T("M"), _T("y")) << _T(" = (") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.ex) << _T(")");
+                        *pPara << _T(" = ") << moment.SetValue(equivLoad.My) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
                      }
                   }
                }

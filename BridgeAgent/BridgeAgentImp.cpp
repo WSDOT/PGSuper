@@ -4356,6 +4356,7 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
             CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
 
             strandModel->put_StraightStrandProfileType(FollowGirder); // straight strands always follow the bottom of the girder
+            ATLASSERT(IsZero(pSegment->Precamber) ? true : pSegment->Strands.GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned); // UI forces TTS to be post-tensioned if there is precamber
             strandModel->put_TemporaryStrandProfileType(pSegment->Strands.GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? Linear : FollowGirder); // PT TTS follow girder (shielding can be curved)
 
             // Inititalize a strand filler for each girder
