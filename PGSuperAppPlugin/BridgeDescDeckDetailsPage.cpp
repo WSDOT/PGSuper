@@ -1356,6 +1356,7 @@ void CBridgeDescDeckDetailsPage::OnOverlayEventChanged()
    EventIndexType eventIdx = (EventIndexType)pCB->GetItemData(curSel);
    if ( eventIdx == CREATE_TIMELINE_EVENT )
    {
+      eventIdx = INVALID_INDEX;
       CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
       CTimelineEventDlg dlg(*pParent->m_BridgeDesc.GetTimelineManager(),INVALID_INDEX,FALSE);
       if ( dlg.DoModal() == IDOK )
