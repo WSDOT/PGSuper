@@ -1,9 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    1     1    WF74G    *     33  0.6  270  32.74  23.56  11.25  11.25                                               5  66.0  3.0  5.000  6.200   3.454    -3.150     9680   0.887  0.915   3.093 -0.775 -0.059 -0.060 -0.894 124.89  263.19    1.75    5.00    5.00 
+ 40.00    6   6.58 Puyallup River B    1     1    WF74G    *     34  0.6  270  32.74  21.97  11.50  11.50                                               6  66.0  3.0  4.900  6.100   3.462    -3.163     9836   0.887  0.915   3.225 -0.794 -0.060 -0.060 -0.914 133.86  281.22    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
@@ -42,7 +43,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     2    WF74G          58  0.6  270  31.76  18.93  11.50  11.50                                              12  70.0  3.0  7.900  9.200   5.701    -5.535    15514   0.723  0.743   5.753 -2.606 -0.249 -0.251 -3.105 260.94  398.58    1.75   13.13   13.13 
+ 40.00    6   6.58 Puyallup River B    2     2    WF74G    *     58  0.6  270  31.48  15.55  11.50  11.50                                              16  70.0  6.0  7.400  8.700   5.668    -5.526    15319   0.723  0.743   5.835 -2.679 -0.254 -0.256 -3.189 267.35  408.51    2.25   13.13   13.13 
 
 
 The Specification Check was Not Successful
@@ -52,7 +53,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     4    WF74G          58  0.6  270  31.76  18.93  11.75  11.75                                              12  70.0  3.0  7.900  9.200   5.727    -5.559    15544   0.723  0.743   5.945 -2.643 -0.249 -0.251 -3.143 262.55  392.32    2.00   13.13   13.13 
+ 40.00    6   6.58 Puyallup River B    2     4    WF74G    *     59  0.6  270  31.33  16.81  11.75  11.75                                              15  70.0  6.0  7.400  8.800   5.701    -5.552    15483   0.723  0.743   6.082 -2.702 -0.253 -0.255 -3.210 276.10  421.66    2.25   13.13   13.13 
 
 
 The Specification Check was Not Successful

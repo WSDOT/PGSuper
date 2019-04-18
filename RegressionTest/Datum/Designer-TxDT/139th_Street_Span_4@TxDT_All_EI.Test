@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 107.2   12   9.33 SR 5/205 NE 139t    1     1    FDiap    *     37  0.6  270  32.52  23.82  10.00  10.00                                               5  70.0  4.0  5.200  6.300   3.590    -3.555    10757   0.760  0.760   3.762 -1.117 -0.101 -0.080 -1.299 149.15  282.24    3.00    6.17    6.17 
+ 107.2   12   9.33 SR 5/205 NE 139t    1     1    FDiap    *     37  0.6  270  32.52  20.52  10.00  10.00                                               7  70.0  4.0  5.000  6.100   3.574    -3.550    10675   0.760  0.760   3.740 -1.136 -0.103 -0.081 -1.320 151.51  289.50    3.00    6.17    6.17 
 
 
 The Specification Check was Successful
@@ -8,15 +8,19 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 107.2   12   9.33 SR 5/205 NE 139t    1     2    FDiap    *     40  0.6  270  32.36  22.76  10.00  10.00                                               6  70.0  4.0  5.500  6.700   3.734    -3.789    11461   0.944  0.944   3.731 -1.110 -0.097 -0.077 -1.285 169.04  322.76    3.00    6.17    6.17 
+ 107.2   12   9.33 SR 5/205 NE 139t    1     2    FDiap    *     40  0.6  270  32.46  20.26  10.25  10.25                                               8  68.0  4.0  5.100  6.100   3.697    -3.787    11279   0.944  0.944   3.863 -1.176 -0.101 -0.080 -1.357 174.75  337.61    3.00    6.17    6.17 
 
 
-The Specification Check was Successful
+Girder design was Not Successful
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 107.2   12   9.33 SR 5/205 NE 139t    1     7    FDiap    *     38  0.6  270  32.50  22.39  10.25  10.25                                               6  70.0  4.0  5.200  6.300   3.652    -3.616    10891   0.944  0.944   3.801 -1.166 -0.101  0.000 -1.267 157.29  308.46    3.00    6.17    6.17 
+ 107.2   12   9.33 SR 5/205 NE 139t    1     7    FDiap    *     39  0.6  270  32.48  21.09  10.25  10.25                                               7  70.0  4.0  5.100  6.300   3.652    -3.616    11054   0.944  0.944   3.948 -1.166 -0.101  0.000 -1.267 167.12  329.04    3.00    6.17    6.17 
 
 
 The Specification Check was Successful
