@@ -29,6 +29,7 @@
 #include <IFace\Project.h>
 
 #include <Reporting\ProductMomentsTable.h>
+#include <Reporting\UserReactionTable.h>
 
 
 #ifdef _DEBUG
@@ -1103,6 +1104,13 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
             col++;
          }
       }
+   }
+
+   GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
+   bool bAreThereUserLoads = pUDL->DoUserLoadsExist(girderKey);
+   if (bAreThereUserLoads)
+   {
+      *pPara << CUserReactionTable().Build(pBroker, girderKey, analysisType, PierReactionsTable, intervalIdx, pDisplayUnits) << rptNewLine;
    }
 
    return pChapter;
