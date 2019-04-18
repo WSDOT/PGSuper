@@ -252,8 +252,8 @@ void CGirderDescDlg::InitialzePages()
    // Setup girder data for our pages
    m_General.m_bUseSameGirderType = pBridgeDesc->UseSameGirderForEntireBridge();
    m_General.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   m_General.m_SlabOffset[pgsTypes::metStart] = m_pSegment->GetSlabOffset(pgsTypes::metStart);
-   m_General.m_SlabOffset[pgsTypes::metEnd] = m_pSegment->GetSlabOffset(pgsTypes::metEnd);
+   m_General.m_SlabOffset[pgsTypes::metStart] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metStart); // must use original girder, not our local copy
+   m_General.m_SlabOffset[pgsTypes::metEnd] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metEnd);
 
    // assumed excess camber
    GET_IFACE2(pBroker,ISpecification, pSpec );
