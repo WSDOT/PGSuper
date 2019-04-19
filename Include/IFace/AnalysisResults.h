@@ -148,11 +148,6 @@ typedef struct EquivPretensionLoad
    Float64 eye; // vertical eccentricty at end of girder
    Float64 eyh; // vertical eccentricity at harp point
    Float64 eprime;
-   Float64 Xle; // Xleft at end of girder
-   Float64 Xlm; // Xleft at middle of girder
-   Float64 Ybe; // Ybottom at end of girder
-   Float64 Ybh; // Ybottom at harp point
-   Float64 Ybm; // Ybottom at middle of girder
    Float64 PrecamberAtLoadPoint; // precamber at the location this load is applied
    Float64 Precamber; // total precamber
    Float64 b; // distance between end of girder and harp point

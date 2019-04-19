@@ -14689,6 +14689,14 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
       {
          ATLASSERT(backSegmentKey.groupIndex != INVALID_INDEX);
 
+         if (backSegmentKey.segmentIndex == INVALID_INDEX)
+         {
+            GirderIndexType nGirdersBack = pBridge->GetGirderCount(backSegmentKey.groupIndex);
+            ATLASSERT(nGirdersBack <= gdrIdx);
+            backSegmentKey.girderIndex = nGirdersBack - 1;
+            backSegmentKey.segmentIndex = pBridge->GetSegmentCount(backSegmentKey) - 1;
+         }
+
          ConnectionLibraryEntry::DiaphragmLoadType diaphragmLoadType = pPier->GetDiaphragmLoadType(pgsTypes::Back);
 
          bool bStartCantilever, bEndCantilever;
@@ -14734,6 +14742,14 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
       if ( pBridge->IsBoundaryPier(pierIdx) )
       {
          ATLASSERT(aheadSegmentKey.groupIndex != INVALID_INDEX);
+
+         if (aheadSegmentKey.segmentIndex == INVALID_INDEX)
+         {
+            GirderIndexType nGirdersAhead = pBridge->GetGirderCount(aheadSegmentKey.groupIndex);
+            ATLASSERT(nGirdersAhead <= gdrIdx);
+            aheadSegmentKey.girderIndex = nGirdersAhead - 1;
+            aheadSegmentKey.segmentIndex = 0;
+         }
 
          ConnectionLibraryEntry::DiaphragmLoadType diaphragmLoadType = pPier->GetDiaphragmLoadType(pgsTypes::Ahead);
 
@@ -15170,7 +15186,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    // Get the POIs for getting the deck load.
    PoiList vPoi;
    GetLinearPointPointsOfInterest(segmentKey, &vPoi);
-   ATLASSERT(vPoi.size()!=0);
+   ATLASSERT(vPoi.size() != 0);
 
    bool bIsInteriorGirder = pBridge->IsInteriorGirder( segmentKey );
    pgsTypes::SideType side = (segmentKey.girderIndex == 0 ? pgsTypes::stLeft : pgsTypes::stRight);
@@ -15231,7 +15247,6 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          camberShape = std::make_unique<ZeroFunction>();
       }
 
-
       Float64 top_flange_thickening = 0;
       const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
       if (pSegment->TopFlangeThickeningType != pgsTypes::tftNone && !IsZero(pSegment->TopFlangeThickening))
@@ -15281,6 +15296,9 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          imposedShape = std::make_unique<ZeroFunction>();
       }
    }
+
+   Float64 imposed_at_left_brg = imposedShape->Evaluate(poi_left_brg.GetDistFromStart());
+   Float64 imposed_at_right_brg = imposedShape->Evaluate(poi_right_brg.GetDistFromStart());
 
    // Increased/Reduced pad depth due to Sag/Crest vertical curves is accounted for
    bool bKeepLast = false;
@@ -15452,7 +15470,13 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       ASSERT( 0 <= wslab_panel );
 
       // Excess camber of girder + imposed girder shape
-      Float64 camber = camberShape->Evaluate(poi.GetDistFromStart()) + imposedShape->Evaluate(poi.GetDistFromStart());;
+      Float64 Xs = poi.GetDistFromStart();
+      Float64 camber = camberShape->Evaluate(Xs) + imposedShape->Evaluate(Xs);
+
+      // imposed shape is measured from end faces of the girder... we need to make and adjustment so the zero datum
+      // is at the CL Brg.
+      Float64 imposed_shape_adj = -::LinInterp(Xs, imposed_at_left_brg, imposed_at_right_brg, Ls);
+      camber += imposed_shape_adj;
 
       // height of pad for slab pad load
       Float64 real_pad_hgt = top_girder_to_top_slab - cast_depth - camber;
