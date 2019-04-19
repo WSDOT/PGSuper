@@ -1806,7 +1806,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          ATLASSERT(bIsInBoundaryPierDiaphragm);
          // poi is not in the segment and isn't in a closure joint
          // this means the POI is in a cast-in-place diaphragm between girder groups
-         // LRFD 5.14.1.4.10 says if the diaphragm is confined by the girders, the girder strength can be used.
+         // LRFD 5.12.3.3.10 (5.14.1.4.10) says if the diaphragm is confined by the girders, the girder strength can be used.
          if (IsDiaphragmConfined(poi))
          {
             matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
@@ -2667,7 +2667,7 @@ const CRACKEDSECTIONDETAILS* pgsMomentCapacityEngineer::ValidateCrackedSectionDe
 
 bool pgsMomentCapacityEngineer::IsDiaphragmConfined(const pgsPointOfInterest& poi) const
 {
-   // LRFD 5.14.1.1.10 says we can use the girder concrete strength at the intermediate diaphragm if the
+   // LRFD 5.12.3.3.10 (5.14.1.1.10) says we can use the girder concrete strength at the intermediate diaphragm if the
    // diaphragm is confined by the girder ends and the diaphragm extends beyond the girders.
    GET_IFACE(IPointOfInterest, pPoi);
    PierIndexType pierIdx = pPoi->GetPier(poi);
@@ -2694,8 +2694,15 @@ bool pgsMomentCapacityEngineer::IsDiaphragmConfined(const pgsPointOfInterest& po
    Float64 W = Wb + Wa;
 
    // 2) Get the distance between girder ends
-   const CSegmentKey& backSegmentKey(poi.GetSegmentKey()); // segment framing into back side of pier
-   CSegmentKey aheadSegmentKey(aheadGroupIdx,backSegmentKey.girderIndex,0); // segment framing into ahead side of pier
+   GirderIndexType nGirdersBack = pBridge->GetGirderCount(backGroupIdx);
+   GirderIndexType nGirdersAhead = pBridge->GetGirderCount(aheadGroupIdx);
+   GirderIndexType nGirders = Max(nGirdersBack, nGirdersAhead);
+   SegmentIndexType nSegmentsBack = pBridge->GetSegmentCount(backGroupIdx, 0);
+   GirderIndexType gdrIdx = poi.GetSegmentKey().girderIndex;
+   GirderIndexType backGdrIdx = (nGirdersBack <= gdrIdx ? nGirdersBack - 1 : gdrIdx);
+   GirderIndexType aheadGdrIdx = (nGirdersAhead <= gdrIdx ? nGirdersAhead - 1 : gdrIdx);
+   CSegmentKey backSegmentKey(backGroupIdx, backGdrIdx,nSegmentsBack-1);
+   CSegmentKey aheadSegmentKey(aheadGroupIdx, aheadGdrIdx,0);
 
    GET_IFACE(IGirder, pGirder);
    Float64 dummy, backEndDist, backBrgOffset, aheadEndDist, aheadBrgOffset;
@@ -2713,33 +2720,49 @@ bool pgsMomentCapacityEngineer::IsDiaphragmConfined(const pgsPointOfInterest& po
    if (::IsLE(W, 1.05*end_to_end_of_girders))
       return false; // diaphragm width is not 5% more than the end to end distance between girders
 
-   // OK... diaphragm confines girders
+   // OK... diaphragm extends beyond the girders
 
    // Now, check that the girders confine the diaphragm concrete.
    // We will consider the diaphragm concrete confined if the girder framing on
-   // both sides of the pier is exactly the same.
+   // both sides of the pier nearly aligned. Project the girder lines onto
+   // the centerline of the pier. If the distance between the points where the 
+   // girderlines intersect the CL pier line is less 5% of the bottom width
+   // of the girders, we will consider them to be aligned and confining
+   // the diaphragm concrete. If the girders on either side of the pier
+   // have different bottom widths, we'll base the 5% on the lessor bottom width
 
-   std::vector<Float64> vBackSpacing = pBridge->GetGirderSpacing(pierIdx, pgsTypes::Back, pgsTypes::AtPierLine, pgsTypes::AlongItem);
-   std::vector<Float64> vAheadSpacing = pBridge->GetGirderSpacing(pierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine, pgsTypes::AlongItem);
+   CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
+   pGirder->GetSegmentEndPoints(backSegmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
+   CComPtr<IPoint2d> pntA(pntPier2);
 
-   // if spacing is equal, the girders confine the diaphragm
-   if (vBackSpacing.size() != vAheadSpacing.size())
+   pntPier1.Release();
+   pntEnd1.Release();
+   pntBrg1.Release();
+   pntBrg2.Release();
+   pntEnd2.Release();
+   pntPier2.Release();
+   pGirder->GetSegmentEndPoints(aheadSegmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
+   CComPtr<IPoint2d> pntB(pntPier1);
+
+   Float64 dist;
+   pntA->DistanceEx(pntB, &dist);
+
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(backSegmentKey, POI_END_FACE, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiA = vPoi.front();
+   vPoi.clear();
+   pPoi->GetPointsOfInterest(aheadSegmentKey, POI_START_FACE, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   pgsPointOfInterest poiB = vPoi.front();
+
+   Float64 Wba = pGirder->GetBottomWidth(poiA);
+   Float64 Wbb = pGirder->GetBottomWidth(poiB);
+   W = Min(Wa, Wb);
+
+   if (0.05*W < dist)
    {
       return false;
-   }
-
-   auto iBack = vBackSpacing.begin();
-   auto eBack = vBackSpacing.end();
-   auto iAhead = vAheadSpacing.begin();
-   auto eAhead = vAheadSpacing.end();
-   for (; iBack != eBack && iAhead != eAhead; iBack++, iAhead++)
-   {
-      const auto& back(*iBack);
-      const auto& ahead(*iAhead);
-      if (!IsEqual(back, ahead))
-      {
-         return false;
-      }
    }
    return true;
 }
