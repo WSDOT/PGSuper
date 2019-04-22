@@ -430,7 +430,7 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
 
    DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_LiftingCamberMultiplier);
 
-   DDX_CBEnum(pDX,IDC_WIND_TYPE,m_Entry.m_LiftingWindType);
+   DDX_CBItemData(pDX,IDC_WIND_TYPE,m_Entry.m_LiftingWindType);
    if ( m_Entry.m_LiftingWindType == pgsTypes::Pressure )
    {
       DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_LiftingWindLoad,pDisplayUnits->WindPressure);
@@ -590,7 +590,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    DDX_Text(pDX, IDC_CAMBER_MULTIPLIER, m_Entry.m_HaulingCamberMultiplier);
 
 
-   DDX_CBEnum(pDX,IDC_WIND_TYPE,m_Entry.m_HaulingWindType);
+   DDX_CBItemData(pDX,IDC_WIND_TYPE,m_Entry.m_HaulingWindType);
    if ( m_Entry.m_HaulingWindType == pgsTypes::Pressure )
    {
       DDX_UnitValueAndTag(pDX,IDC_WIND_LOAD,IDC_WIND_LOAD_UNIT,m_Entry.m_HaulingWindLoad,pDisplayUnits->WindPressure);
@@ -601,7 +601,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    }
    DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_HaulingWindLoad);
 
-   DDX_CBEnum(pDX,IDC_CF_TYPE,m_Entry.m_CentrifugalForceType);
+   DDX_CBItemData(pDX,IDC_CF_TYPE,m_Entry.m_CentrifugalForceType);
    DDX_UnitValueAndTag(pDX,IDC_HAUL_SPEED,IDC_HAUL_SPEED_UNIT,m_Entry.m_HaulingSpeed,pDisplayUnits->Velocity);
    DDV_NonNegativeDouble(pDX, IDC_WIND_LOAD, m_Entry.m_HaulingSpeed);
 
