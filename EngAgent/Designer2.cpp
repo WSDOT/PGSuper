@@ -8339,10 +8339,10 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
          std::vector<stbLiftingSectionResult>::const_iterator found = std::find_if(liftingResults.vSectionResults.begin(),liftingResults.vSectionResults.end(),SectionFinder::Find);
          ATLASSERT(found != liftingResults.vSectionResults.end());
          const stbLiftingSectionResult& sectionResult = *found;
-         fHpTopMin.push_back(sectionResult.fMin[stbTypes::Top]);
-         fHpTopMax.push_back(sectionResult.fMax[stbTypes::Top]);
-         fHpBotMin.push_back(sectionResult.fMin[stbTypes::Bottom]);
-         fHpBotMax.push_back(sectionResult.fMax[stbTypes::Bottom]);
+         fHpTopMin.push_back(sectionResult.fMinDirect[stbTypes::Top]);
+         fHpTopMax.push_back(sectionResult.fMaxDirect[stbTypes::Top]);
+         fHpBotMin.push_back(sectionResult.fMinDirect[stbTypes::Bottom]);
+         fHpBotMax.push_back(sectionResult.fMaxDirect[stbTypes::Bottom]);
       }
 
       Float64 fTopHpMin = *std::min_element(fHpTopMin.begin(),fHpTopMin.end());
@@ -8593,11 +8593,11 @@ void pgsDesigner2::GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,con
    const stbLiftingSectionResult& leftSection  = *foundLeft;
    const stbLiftingSectionResult& rightSection = *foundRight;
 
-   Float64 fMaxTopLeftEnd = leftSection.fMax[stbTypes::Top] - leftSection.fps[stbTypes::TopLeft];
-   Float64 fMaxTopRightEnd = rightSection.fMax[stbTypes::Top] - rightSection.fps[stbTypes::TopRight];
+   Float64 fMaxTopLeftEnd = leftSection.fMaxDirect[stbTypes::Top] - leftSection.fps[stbTypes::TopLeft];
+   Float64 fMaxTopRightEnd = rightSection.fMaxDirect[stbTypes::Top] - rightSection.fps[stbTypes::TopRight];
 
-   Float64 fMinBottomLeftEnd = leftSection.fMin[stbTypes::Bottom] - leftSection.fps[stbTypes::BottomLeft];
-   Float64 fMinBottomRightEnd = rightSection.fMin[stbTypes::Bottom] - rightSection.fps[stbTypes::BottomRight];
+   Float64 fMinBottomLeftEnd = leftSection.fMinDirect[stbTypes::Bottom] - leftSection.fps[stbTypes::BottomLeft];
+   Float64 fMinBottomRightEnd = rightSection.fMinDirect[stbTypes::Bottom] - rightSection.fps[stbTypes::BottomRight];
 
    *pftop = Max(fMaxTopLeftEnd,fMaxTopRightEnd);
    *ptop_loc = (MaxIndex(fMaxTopLeftEnd,fMaxTopRightEnd) == 0 ? left_loc : right_loc);
@@ -8942,8 +8942,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
             Float64 Fpe = FpeStraight + FpeHarped + FpeTemporary;
             force_per_strand = Fpe / (nperm+ntemp);
 
-            Float64 fTop = sectionResult.fMax[stbTypes::Top];
-            Float64 fBot = sectionResult.fMin[stbTypes::Bottom];
+            Float64 fTop = sectionResult.fMaxDirect[stbTypes::Top];
+            Float64 fBot = sectionResult.fMinDirect[stbTypes::Bottom];
 
             LOG(_T("At ")<< ::ConvertFromSysUnits(poi_loc,unitMeasure::Feet)<<_T(" ft, Ftop = ")<< ::ConvertFromSysUnits(fTop,unitMeasure::KSI) << _T(" ksi Fbot = ")<< ::ConvertFromSysUnits(fBot,unitMeasure::KSI) << _T(" ksi") );
             LOG(_T("Average force per strand = ") << ::ConvertFromSysUnits(Fpe/(nperm+ntemp),unitMeasure::Kip) << _T(" kip"));
@@ -10156,8 +10156,8 @@ void pgsDesigner2::DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabil
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 
       // NOTE: min_stress and max_stress are backwards to match the original log file dump code from pgsLiftingAnalysisArtifact
-      Float64 min_stress = Max(sectionResult.fMax[stbTypes::Top],sectionResult.fMax[stbTypes::Bottom]);
-      Float64 max_stress = Min(sectionResult.fMin[stbTypes::Top],sectionResult.fMin[stbTypes::Bottom]);
+      Float64 min_stress = Max(sectionResult.fMaxDirect[stbTypes::Top],sectionResult.fMaxDirect[stbTypes::Bottom]);
+      Float64 max_stress = Min(sectionResult.fMinDirect[stbTypes::Top],sectionResult.fMinDirect[stbTypes::Bottom]);
       os<<_T("Total Stress: Min =")<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<_T("ksi, Max=")<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<_T("ksi")<<endl;
    }
 
@@ -10183,7 +10183,6 @@ void pgsDesigner2::DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabil
          os << _T("Flange=BottomFlange");
       }
 
-      //Float64 stress = sectionResult.fDirect[impact][wind][corner];
       Float64 stress = sectionResult.f[impact][wind][corner];
       Float64 fs = sectionResult.FScr[impact][wind][corner];
       os<<_T(" Lateral Stress = ")<<::ConvertFromSysUnits(stress,unitMeasure::KSI)<<_T("ksi, FS =")<<fs<<endl;

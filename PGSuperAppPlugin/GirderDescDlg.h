@@ -110,6 +110,7 @@ public:
 public:
    pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
    CTimelineManager m_TimelineMgr; // copy of the timeine manager we are editing
+   CGirderGroupData m_Group;
    CSplicedGirderData m_Girder; // copy of the girder we are editing (contains the segment we are editing)
    CPrecastSegmentData* m_pSegment;
    CSegmentKey m_SegmentKey; // key to the segment we are editing

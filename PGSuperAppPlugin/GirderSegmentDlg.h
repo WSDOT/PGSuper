@@ -46,6 +46,7 @@ public:
    virtual const CSegmentKey& GetSegmentKey() { return m_SegmentKey; }
 
    CTimelineManager m_TimelineMgr; // copy of the timeine manager we are editing
+   CGirderGroupData m_Group;
    CSplicedGirderData m_Girder; // copy of the girder we are editing (contains the segment we are editing)
    CSegmentKey m_SegmentKey; // key to the segment we are editing
    SegmentIDType m_SegmentID; // ID of the segment we are editing
