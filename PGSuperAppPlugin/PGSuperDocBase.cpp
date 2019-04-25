@@ -783,6 +783,8 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
 
    CSplicedGirderData girder = *pIBridgeDesc->GetGirder(segmentKey);
    girder.SetIndex(segmentKey.girderIndex);
+   CGirderGroupData group = *pIBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   girder.SetGirderGroup(&group);
    CPrecastSegmentData* pSegment = girder.GetSegment(segmentKey.segmentIndex);
 
    txnEditPrecastSegmentData oldSegmentData;
@@ -857,6 +859,8 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
 
    CSplicedGirderData girder = *pIBridgeDesc->GetGirder(segmentKey);
    girder.SetIndex(segmentKey.girderIndex);
+   CGirderGroupData group = *pIBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   girder.SetGirderGroup(&group);
    CPrecastSegmentData* pSegment = girder.GetSegment(segmentKey.segmentIndex);
 
    txnEditPrecastSegmentData oldSegmentData;
