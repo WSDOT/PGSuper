@@ -22563,10 +22563,21 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
 
       Float64 rotation_angle = -orientation;
 
+      // if possible, rotate the girder around its work point
+      // if the workpoint isn't available, use the top center
+      CComPtr<IPoint2d> pntWorkPoint;
+      CComQIPtr<IGirderSection> section(*ppShape);
       CComQIPtr<IXYPosition> position(*ppShape);
-      CComPtr<IPoint2d> top_center;
-      position->get_LocatorPoint(lpTopCenter,&top_center);
-      position->RotateEx(top_center,rotation_angle);
+      if (section)
+      {
+         section->get_WorkPoint(&pntWorkPoint);
+      }
+      else
+      {
+         position->get_LocatorPoint(lpTopCenter, &pntWorkPoint);
+      }
+
+      position->RotateEx(pntWorkPoint,rotation_angle);
    }
 }
 
