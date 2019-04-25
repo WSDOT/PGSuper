@@ -798,6 +798,9 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 
 void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::PierFaceType pierFace,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pTmin,Float64* pTmax,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig,VehicleIndexType* pMaxConfig) const
 {
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+
    // need the POI where the girder intersects the pier
    GET_IFACE(IPointOfInterest,pPoi);
    pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pier);
@@ -1953,6 +1956,9 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
 {
    USES_CONVERSION;
 
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   
    pPmin->clear();
    pPmax->clear();
 
@@ -2054,6 +2060,9 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
 void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<VehicleIndexType>* pMminTruck,std::vector<VehicleIndexType>* pMmaxTruck) const
 {
    USES_CONVERSION;
+
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
 
    pVmin->clear();
    pVmax->clear();
@@ -2161,6 +2170,9 @@ void CGirderModelManager::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTyp
 {
    USES_CONVERSION;
 
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+
    pMmin->clear();
    pMmax->clear();
 
@@ -2265,6 +2277,9 @@ void CGirderModelManager::GetLiveLoadDeflection(IntervalIndexType intervalIdx,pg
 {
    USES_CONVERSION;
 
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+
    pDmin->clear();
    pDmax->clear();
 
@@ -2335,6 +2350,9 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 {
    USES_CONVERSION;
 
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+
    pRmin->clear();
    pRmax->clear();
 
@@ -2404,6 +2422,9 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<VehicleIndexType>* pTopMinIndex,std::vector<VehicleIndexType>* pTopMaxIndex,std::vector<VehicleIndexType>* pBotMinIndex,std::vector<VehicleIndexType>* pBotMaxIndex) const
 {
    USES_CONVERSION;
+
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
 
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -6021,6 +6042,9 @@ void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsT
    // Start by checking if the model exists
    CGirderModelData* pModelData = nullptr;
    pModelData = GetGirderModel(GetGirderLineIndex(girderKey),bat);
+
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
 
    if ( pTmin )
    {
