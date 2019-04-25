@@ -112,7 +112,7 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
       nCols += 4; // min/max for fatigue live load reactions
    }
 
-   if(bPermit)
+   if (bPermit)
    {
       nCols += 4; // min/max for permit live load reactions
    }
@@ -379,6 +379,12 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    }
 
    *pPara << p_table << rptNewLine;
+
+   if (bPedLoading)
+   {
+      *pPara << _T("$ Pedestrian values are per girder") << rptNewLine;
+   }
+
    *pPara << LIVELOAD_PER_LANE << rptNewLine;
    LiveLoadTableFooter(pBroker, pPara, girderKey, true, false);
 
@@ -532,8 +538,9 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
 
          if (bPedLoading)
          {
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batSS, true, false, fetPrimary, &vMinPedLLReactionsSimpleSpan[fetPrimary], &vMaxPedLLReactionsSimpleSpan[fetPrimary], &vMinPedLLVehicleSimpleSpan[fetPrimary], &vMaxPedLLVehicleSimpleSpan[fetPrimary]);
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batCS, true, false, fetPrimary, &vMinPedLLReactionsContinuousSpan[fetPrimary], &vMaxPedLLReactionsContinuousSpan[fetPrimary], &vMinPedLLVehicleContinuousSpan[fetPrimary], &vMaxPedLLVehicleContinuousSpan[fetPrimary]);
+            // ped loads are funny. the LLDF is the loading so include it
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batSS, true, true, fetPrimary, &vMinPedLLReactionsSimpleSpan[fetPrimary], &vMaxPedLLReactionsSimpleSpan[fetPrimary], &vMinPedLLVehicleSimpleSpan[fetPrimary], &vMaxPedLLVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batCS, true, true, fetPrimary, &vMinPedLLReactionsContinuousSpan[fetPrimary], &vMaxPedLLReactionsContinuousSpan[fetPrimary], &vMinPedLLVehicleContinuousSpan[fetPrimary], &vMaxPedLLVehicleContinuousSpan[fetPrimary]);
          }
       }
       else
@@ -555,8 +562,9 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
 
          if (bPedLoading)
          {
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batMax, true, false, fetPrimary, &vMinPedLLReactionsSimpleSpan[fetPrimary], &vMaxPedLLReactionsSimpleSpan[fetPrimary], &vMinPedLLVehicleSimpleSpan[fetPrimary], &vMaxPedLLVehicleSimpleSpan[fetPrimary]);
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batMin, true, false, fetPrimary, &vMinPedLLReactionsContinuousSpan[fetPrimary], &vMaxPedLLReactionsContinuousSpan[fetPrimary], &vMinPedLLVehicleContinuousSpan[fetPrimary], &vMaxPedLLVehicleContinuousSpan[fetPrimary]);
+            // ped loads are funny. the LLDF is the loading so include it
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batMax, true, true, fetPrimary, &vMinPedLLReactionsSimpleSpan[fetPrimary], &vMaxPedLLReactionsSimpleSpan[fetPrimary], &vMinPedLLVehicleSimpleSpan[fetPrimary], &vMaxPedLLVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batMin, true, true, fetPrimary, &vMinPedLLReactionsContinuousSpan[fetPrimary], &vMaxPedLLReactionsContinuousSpan[fetPrimary], &vMinPedLLVehicleContinuousSpan[fetPrimary], &vMaxPedLLVehicleContinuousSpan[fetPrimary]);
          }
       }
    }
