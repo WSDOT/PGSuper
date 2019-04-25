@@ -63,7 +63,7 @@
 #define IDH_EDIT_HAUNCH                420
 #define IDH_EDIT_BEARINGS              421
 
-#define IDH_LOAD_FACTORS 421
+#define IDH_LOAD_FACTORS 422
 
 
 #define IDH_GIRDERDETAILS_GENERAL           2001
