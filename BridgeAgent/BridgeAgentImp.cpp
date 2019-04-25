@@ -4165,11 +4165,16 @@ void CBridgeAgentImp::ValidateGirder()
             GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi);
             if (0 < vPoi.size())
             {
-               const pgsPointOfInterest& poiStart = vPoi.front();
+               pgsPointOfInterest poiStart = vPoi.front();
                pgsPointOfInterest poiEnd;
                if (vPoi.size() == 1)
                {
-                  poiEnd = vPoi.front();
+                  // there is only one harp point. if we use the same poi to get the start and
+                  // end strand slopes, they will be equal. This will be interpreted as an
+                  // upside down drape
+                  // Use the POI on either side of the harp point poi
+                  poiEnd = GetNextPointOfInterest(poiStart.GetID()); // get next poi first (order is important here)
+                  poiStart = GetPrevPointOfInterest(poiStart.GetID());
                }
                else
                {
