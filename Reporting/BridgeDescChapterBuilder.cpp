@@ -1,6 +1,6 @@
-///////////////////////////////////////////////////////////////////////
+﻿///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright � 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2019  Washington State Department of Transportation 
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -183,7 +183,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
 
    CComBSTR bstrBearing;
-   direction_formatter->Format(alignment.Direction, CComBSTR("�,\',\""), &bstrBearing);
+   direction_formatter->Format(alignment.Direction, CComBSTR("°,\',\""), &bstrBearing);
    *pPara << _T("Direction: ") << RPT_BEARING(OLE2T(bstrBearing)) << rptNewLine;
 
    *pPara << _T("Ref. Point: ") << rptRcStation(alignment.RefStation, &pDisplayUnits->GetStationFormat())
@@ -403,7 +403,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
       bkTangent->get_Value(&bk_tangent_value);
 
       CComBSTR bstrBkTangent;
-      direction_formatter->Format(bk_tangent_value, CComBSTR("�,\',\""), &bstrBkTangent);
+      direction_formatter->Format(bk_tangent_value, CComBSTR("°,\',\""), &bstrBkTangent);
       (*pTable)(row++, col) << RPT_BEARING(OLE2T(bstrBkTangent));
 
       if (bHasEntrySpirals || bHasExitSpirals)
@@ -417,7 +417,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
       fwdTangent->get_Value(&fwd_tangent_value);
 
       CComBSTR bstrFwdTangent;
-      direction_formatter->Format(fwd_tangent_value, CComBSTR("�,\',\""), &bstrFwdTangent);
+      direction_formatter->Format(fwd_tangent_value, CComBSTR("°,\',\""), &bstrFwdTangent);
       (*pTable)(row++, col) << RPT_BEARING(OLE2T(bstrFwdTangent));
 
       if (bHasEntrySpirals || bHasExitSpirals)
@@ -545,7 +545,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
          delta_value *= (direction == cdRight ? -1 : 1);
 
          angle_formatter->put_Signed(VARIANT_FALSE);
-         angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+         angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
          (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
       }
 
@@ -576,28 +576,28 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             hc->get_SpiralAngle(spiralType, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_FALSE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
             (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
             delta.Release();
             hc->get_DE(spiralType, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_TRUE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
             (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
             delta.Release();
             hc->get_DF(spiralType, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_TRUE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
             (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
             delta.Release();
             hc->get_DH(spiralType, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_TRUE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
             (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
             Float64 longTangent, shortTangent;
@@ -653,14 +653,14 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             delta_value *= (direction == cdRight ? -1 : 1);
             bstrDelta.Empty();
             angle_formatter->put_Signed(VARIANT_FALSE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
 
             CComBSTR bstrDC;
             delta.Release();
             hc->get_DegreeCurvature(::ConvertToSysUnits(100.0, unitMeasure::Feet), dcHighway, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_TRUE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDC);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDC);
 
             Float64 tangent;
             hc->get_Tangent(&tangent);
@@ -716,28 +716,28 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             hc->get_SpiralAngle(spiralType, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_FALSE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
             (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
             delta.Release();
             hc->get_DE(spiralType, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_TRUE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
             (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
             delta.Release();
             hc->get_DF(spiralType, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_TRUE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
             (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
             delta.Release();
             hc->get_DH(spiralType, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_TRUE);
-            angle_formatter->Format(delta_value, CComBSTR("�,\',\""), &bstrDelta);
+            angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDelta);
             (*pTable)(row++, col) << RPT_ANGLE(OLE2T(bstrDelta));
 
             Float64 longTangent, shortTangent;
@@ -1128,35 +1128,77 @@ void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapte
 {
    GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
    rptParagraph* pPara;
+   pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Roadway Cross Sections") << rptNewLine;
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   // Setup the table
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(5,_T("Superelevation Details"));
-   *pPara << pTable << rptNewLine;
-
-   std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
-
-   (*pTable)(0,0) << _T("Section");
-   (*pTable)(0,1) << _T("Station");
-   (*pTable)(0,2) << _T("Left Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-   (*pTable)(0,3) << _T("Right Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-   (*pTable)(0,4) << COLHDR(_T("Crown Point Offset"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit() );
-
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false );
-
    const RoadwaySectionData& section = pAlignment->GetRoadwaySectionData();
 
-   RowIndexType row = pTable->GetNumberOfHeaderRows();
-   for ( const auto& crown : section.Superelevations )
+   if (section.RoadwaySectionTemplates.empty())
    {
-      (*pTable)(row,0) << row;
-      (*pTable)(row,1) << rptRcStation(crown.Station,&pDisplayUnits->GetStationFormat());
-      (*pTable)(row,2) << crown.Left;
-      (*pTable)(row,3) << crown.Right;
-      (*pTable)(row,4) << RPT_OFFSET(crown.CrownPointOffset,length);
+      *pPara << _T("No roadway templates are defined. The roadway is flat with no superelevations") << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("Each Roadway Cross Section Template contains ") << section.NumberOfSegmentsPerSection << _T(" segments per section.") << rptNewLine;
+      *pPara << _T("Ridge Point #") << section.ControllingRidgePointIdx << _T(" is the controlling ridge point. It defines the slope sign convention and coincides with the horizontal alignment, profile grade, and superelevation pivot location.") << rptNewLine;
 
-      row++;
+      IndexType numcols = 2 + section.NumberOfSegmentsPerSection * 2 - 2;
+
+      // Setup the table
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(numcols, _T(""));
+      *pPara << pTable << rptNewLine;
+
+      pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+      pTable->SetNumberOfHeaderRows(2);
+
+      std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+
+      ColumnIndexType col = 0;
+      pTable->SetRowSpan(0, col, 2);
+      (*pTable)(0, col++) << rptNewLine << _T("Template");
+      pTable->SetRowSpan(0, col, 2);
+      (*pTable)(0, col++) << rptNewLine << _T("Station");
+
+      (*pTable)(0, col) << _T("Segment 1");
+      (*pTable)(1, col++) << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+
+      for (IndexType ns = 2; ns <= section.NumberOfSegmentsPerSection - 1; ns++)
+      {
+         pTable->SetColumnSpan(0, col, 2);
+         (*pTable)(0, col) << _T("Segment ") << ns;
+         (*pTable)(1, col++) << COLHDR(_T("Length"), rptLengthUnitTag, pDisplayUnits->GetAlignmentLengthUnit());
+         (*pTable)(1, col++) << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+      }
+
+      (*pTable)(0, col) << _T("Segment ") << section.NumberOfSegmentsPerSection;
+      (*pTable)(1, col) << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+
+
+      INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false);
+
+      RowIndexType row = pTable->GetNumberOfHeaderRows() + 1;
+      IndexType ntempl = 1;
+      for (const auto& crown : section.RoadwaySectionTemplates)
+      {
+         col = 0;
+         (*pTable)(row, col++) << ntempl++;
+         (*pTable)(row, col++) << rptRcStation(crown.Station, &pDisplayUnits->GetStationFormat());
+         (*pTable)(row, col++) << crown.LeftSlope;
+         for (const auto& segm : crown.SegmentDataVec)
+         {
+            (*pTable)(row, col++) << length.SetValue(segm.Length);
+            (*pTable)(row, col++) << segm.Slope;
+         }
+
+         (*pTable)(row, col++) << crown.RightSlope;
+
+         row++;
+      }
    }
 }
 
@@ -1952,13 +1994,13 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       skew->get_Value(&skew_value);
 
       CComBSTR bstrAngle;
-      angle_formatter->Format(skew_value,CComBSTR("�,\',\""),&bstrAngle);
+      angle_formatter->Format(skew_value,CComBSTR("°,\',\""),&bstrAngle);
 
       Float64 bearing_value;
       bearing->get_Value(&bearing_value);
 
       CComBSTR bstrBearing;
-      direction_formatter->Format(bearing_value,CComBSTR("�,\',\""),&bstrBearing);
+      direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
       bool bAbutment = pPier->IsAbutment();
       if ( bAbutment )
@@ -2321,13 +2363,13 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       skew->get_Value(&skew_value);
 
       CComBSTR bstrAngle;
-      angle_formatter->Format(skew_value,CComBSTR("�,\',\""),&bstrAngle);
+      angle_formatter->Format(skew_value,CComBSTR("°,\',\""),&bstrAngle);
 
       Float64 bearing_value;
       bearing->get_Value(&bearing_value);
 
       CComBSTR bstrBearing;
-      direction_formatter->Format(bearing_value,CComBSTR("�,\',\""),&bstrBearing);
+      direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
       (*pLayoutTable)(row1,0) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
 

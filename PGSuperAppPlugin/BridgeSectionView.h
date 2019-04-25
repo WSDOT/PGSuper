@@ -104,6 +104,7 @@ protected:
    void BuildTrafficBarrierDisplayObjects();
    void BuildDimensionLineDisplayObjects();
    void BuildAlignmentDisplayObjects();
+   void BuildRoadwayCrossSectionDisplayObjects();
 
    void UpdateGirderTooltips();
    CString GetBarrierToolTip(IBroker* pBroker, const CRailingSystem* pRailingSystem);

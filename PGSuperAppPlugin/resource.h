@@ -22,7 +22,7 @@
 #define IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN 106
 #define IDD_CLOSURE_CONNECTION          107
 #define IDR_PGSPLICECOMPONENTINFO       110
-#define IDD_SELECTBOUNDARYCONDITION  113
+#define IDD_SELECTBOUNDARYCONDITION     113
 #define IDR_PGSUPER                     130
 #define IDD_PROJECTPROPERTIES           131
 #define IDR_BRIDGEMODELEDITOR           132
@@ -187,6 +187,8 @@
 #define IDD_GIRDER_SELECT_STRANDS       390
 #define IDD_PIERCONNECTIONS2            391
 #define IDD_SELECT_BOUNDARY_CONDITION   392
+#define IDI_ICON1                       395
+#define IDI_RW_CS                       395
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDR_PGSPLICE_TEMPLATE_ICON      501
 #define IDD_ABOUTBOX                    999
@@ -582,7 +584,7 @@
 #define IDC_GIRDER_NAME                 1416
 #define IDC_GIRDER_NAMEUSE              1417
 #define IDC_MOVE_PIER                   1418
-#define IDC_ASSUMED_EXCESS_CAMBER_TYPES          1418
+#define IDC_ASSUMED_EXCESS_CAMBER_TYPES 1418
 #define IDC_SLAB_OFFSET_TYPE            1419
 #define IDC_PREV_SPAN_SPACING_MEASUREMENT 1420
 #define IDC_ROA_CB                      1421
@@ -1241,6 +1243,8 @@
 #define IDC_SCHEMATIC                   1909
 #define IDC_ASSUMED_EXCESS_CAMBER_LABEL2 1909
 #define IDC_BRG_COUNT                   1910
+#define IDC_SCHEMATIC2                  1910
+#define IDC_RW_CS                       1910
 #define IDC_BRG_SPACING                 1911
 #define IDC_ASSUMED_EXCESS_CAMBER_GROUP 1911
 #define IDC_TOP_WIDTH_GRID_LABEL        1912
@@ -1312,10 +1316,13 @@
 #define IDC_RIGHT_TOP_WIDTH_LABEL       1960
 #define IDC_COMBO1                      1961
 #define IDC_X1_MEASURE                  1961
+#define IDC_NUMSEGMENTS_COMBO           1961
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_X2_MEASURE                  1962
+#define IDC_RIDGEPT_COMBO               1962
 #define IDI_STRANDS                     1963
 #define IDC_X3_MEASURE                  1963
+#define IDC_VIEW_TEMPLATE_COMBO         1963
 #define IDI_STRANDS_CG                  1964
 #define IDC_X1_MEASURE4                 1964
 #define IDC_X4_MEASURE                  1964
@@ -1510,7 +1517,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        392
+#define _APS_NEXT_RESOURCE_VALUE        396
 #define _APS_NEXT_COMMAND_VALUE         37001
 #define _APS_NEXT_CONTROL_VALUE         2005
 #define _APS_NEXT_SYMED_VALUE           113

@@ -759,6 +759,8 @@ private:
    ProfileData2   m_ProfileData2;
    RoadwaySectionData m_RoadwaySectionData;
 
+   static HRESULT LoadOldSuperelevationData(bool bNewerFormat, IStructuredLoad* pLoad, CProjectAgentImp* pObj);
+
    // Bridge Description Data
    mutable CBridgeDescription2 m_BridgeDescription;
 

@@ -71,6 +71,7 @@ static char THIS_FILE[] = __FILE__;
 #define GIRDER_LABEL_DISPLAY_LIST      6
 #define TRAFFIC_BARRIER_DISPLAY_LIST   7
 #define ALIGNMENT_DISPLAY_LIST         8
+#define RW_CROSS_SECTION_DISPLAY_LIST  9
 
 #define LEFT_CURB_SOCKET         100
 #define RIGHT_CURB_SOCKET        200
@@ -309,6 +310,11 @@ void CBridgeSectionView::BuildDisplayLists()
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&dim_line_list);
    dim_line_list->SetID(DIMENSION_DISPLAY_LIST);
    dispMgr->AddDisplayList(dim_line_list);
+
+   CComPtr<iDisplayList> rwxs_line_list;
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&rwxs_line_list);
+   rwxs_line_list->SetID(RW_CROSS_SECTION_DISPLAY_LIST);
+   dispMgr->AddDisplayList(rwxs_line_list);
 
    CComPtr<iDisplayList> title_list;
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
@@ -784,6 +790,7 @@ void CBridgeSectionView::UpdateDisplayObjects()
    BuildTrafficBarrierDisplayObjects();
    BuildDimensionLineDisplayObjects();
    BuildAlignmentDisplayObjects();
+   BuildRoadwayCrossSectionDisplayObjects();
 
    UpdateGirderTooltips();
 
@@ -2328,6 +2335,153 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
 
       // Need to add a dimension line between the alignment and the BLO
    }
+}
+
+void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
+
+   UINT settings = pDoc->GetBridgeEditorSettings();
+
+   if (!(settings & IDB_PV_DRAW_RW_CS))
+   {
+      return;
+   }
+
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CDManipClientDC dc(this);
+
+   CComPtr<iDisplayList> displayList;
+   dispMgr->FindDisplayList(RW_CROSS_SECTION_DISPLAY_LIST, &displayList);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   CString strDimTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag().c_str();
+   CString strSlopeTag = strDimTag + _T("/") + strDimTag;
+
+   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
+   Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(cut_station);
+
+   Float64 feets = ::ConvertToSysUnits(1.0, unitMeasure::Feet); //  make sure alignment is also in there
+   Float64 left_offset = pBridge->GetLeftSlabEdgeOffset(Xb);
+   left_offset = min(left_offset, 0.0);
+   Float64 right_offset = pBridge->GetRightSlabEdgeOffset(Xb);
+   right_offset = max(right_offset, 0.0);
+
+   left_offset -= feets; // display line a bit wider than bridge.
+   right_offset += feets;
+
+
+   Float64 left_elev = pRoadway->GetElevation(cut_station, left_offset);
+
+   CComPtr<IPoint2d> pnt1, pnt2;
+   pnt1.CoCreateInstance(CLSID_Point2d);
+   pnt1->Move(left_offset, left_elev);
+
+   bool bfinished = false;
+   IndexType contrl_crown_point = pRoadway->GetControllingCrownPointIndex();
+   IndexType num_crown_points = pRoadway->GetCrownPointIndexCount();
+   for (IndexType icp = 0; icp < num_crown_points; icp++)
+   {
+      Float64 cp_offset = pRoadway->GetCrownPointOffset(icp, cut_station);
+      Float64 cp_elev = pRoadway->GetElevation(cut_station, cp_offset);
+
+      if (cp_offset > left_offset && cp_offset < right_offset)
+      {
+         pnt2.CoCreateInstance(CLSID_Point2d);
+         pnt2->Move(cp_offset, cp_elev);
+      }
+      else if (cp_offset > right_offset)
+      {
+         bfinished = true;
+         cp_offset = right_offset;
+         cp_elev = pRoadway->GetElevation(cut_station, right_offset);
+
+         pnt2.CoCreateInstance(CLSID_Point2d);
+         pnt2->Move(cp_offset, cp_elev);
+      }
+
+      if (pnt2)
+      {
+         // Line segment
+         CComPtr<iLineDisplayObject> doRwXsLine;
+         CreateLineDisplayObject(pnt1, pnt2, &doRwXsLine);
+         CComPtr<iDrawLineStrategy> drawStrategy;
+         doRwXsLine->GetDrawLineStrategy(&drawStrategy);
+         CComQIPtr<iSimpleDrawLineStrategy> drawRwXsLineStrategy(drawStrategy);
+         drawRwXsLineStrategy->SetWidth(ALIGNMENT_LINE_WEIGHT);
+         drawRwXsLineStrategy->SetColor(ALIGNMENT_COLOR);
+         drawRwXsLineStrategy->SetLineStyle(lsCenterline);
+
+         displayList->AddDisplayObject(doRwXsLine);
+
+         if (!bfinished)
+         {
+            // ridge points
+            CComPtr<iPointDisplayObject> dispPnt;
+            dispPnt.CoCreateInstance(CLSID_PointDisplayObject);
+            dispPnt->SetPosition(pnt2,FALSE,FALSE);
+
+            CComPtr<iDrawPointStrategy> draw_point_strategy;
+            dispPnt->GetDrawingStrategy(&draw_point_strategy);
+            CComQIPtr<iSimpleDrawPointStrategy> drawRwXsPointStrategy(draw_point_strategy);
+            drawRwXsPointStrategy->SetColor(ALIGNMENT_COLOR);
+            drawRwXsPointStrategy->SetLogicalPointSize((icp==contrl_crown_point) ? 12 : 8); // make controlling point bigger
+            drawRwXsPointStrategy->SetPointType(ptCircle);
+
+            displayList->AddDisplayObject(dispPnt);
+         }
+
+         // Slope text
+         CComPtr<IPoint2d> txtLoc;
+         txtLoc.CoCreateInstance(CLSID_Point2d);
+         Float64 x1, x2, y1, y2;
+         pnt1->get_X(&x1);
+         pnt1->get_Y(&y1);
+         pnt2->get_X(&x2);
+         pnt2->get_Y(&y2);
+         txtLoc->Move((x1+x2)/2.0, (y1+y2)/2.0);
+
+         Float64 slope(0.0);
+         if (!IsEqual(x1, x2))
+         {
+            slope = (y2-y1)/(x2-x1);
+         }
+
+         CComPtr<iTextBlock> doText;
+         doText.CoCreateInstance(CLSID_TextBlock);
+         doText->SetPosition(txtLoc);
+         Float64 angle = atan(slope) * 1800.0 / M_PI;
+         doText->SetAngle((LONG)angle); 
+
+         CString strLabel;
+         strLabel.Format(_T("%.3f %s"), slope, strSlopeTag);
+         doText->SetText(strLabel);
+         doText->SetBkMode(TRANSPARENT);
+         doText->SetTextColor(ALIGNMENT_COLOR);
+         doText->SetTextAlign(TA_CENTER | TA_BOTTOM);
+         displayList->AddDisplayObject(doText);
+
+         // clean up for next point
+         pnt1.Release();
+         pnt2->Clone(&pnt1);
+         pnt2.Release();
+      }
+
+      if (bfinished)
+      {
+         break;
+      }
+   }
+
+   ATLASSERT(bfinished); // crown point model is not wide enough for our needs
 }
 
 void CBridgeSectionView::CreateLineDisplayObject(IPoint2d* pntStart,IPoint2d* pntEnd,iLineDisplayObject** ppLineDO)

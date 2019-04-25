@@ -1945,6 +1945,126 @@ void CBridgeAgentImp::ValidateSegmentOrientation(const CSegmentKey& segmentKey) 
    segment->put_Orientation(orientation);
 }
 
+static void ComputeReasonableSurfaceStationRange(CComPtr<ICogoModel> pCogoModel, const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, CComPtr<IAlignment> alignment, 
+                                          const ProfileData2&   profileData, Float64* pStartStation, Float64* pEndStation)
+{
+   // Want a reasonable start and end station where we can put our model and retain some numerical accuracy
+   Float64 bridge_length = pBridgeDesc->GetLength();
+   const CPierData2* pPier = pBridgeDesc->GetPier(0);
+   Float64 startStation = pPier->GetStation();
+   startStation -= bridge_length;
+
+   if ( 0 < alignmentData.HorzCurves.size() )
+   {
+      const auto& curve_data = alignmentData.HorzCurves.front();
+      CComPtr<IHorzCurveCollection> curves;
+      pCogoModel->get_HorzCurves(&curves);
+      IndexType nHCurves;
+      curves->get_Count(&nHCurves);
+
+      if ( IsZero(curve_data.Radius) || nHCurves == 0 )
+      {
+         startStation = Min(startStation,curve_data.PIStation);
+      }
+      else
+      {
+         CComPtr<IHorzCurve> hc;
+         CogoObjectID curveID;
+         curves->ID(0,&curveID);
+         curves->get_Item(curveID,&hc);
+
+         CComPtr<IPoint2d> pntTS;
+         hc->get_TS(&pntTS);
+
+         CComPtr<IStation> objStation;
+         Float64 offset;
+         alignment->Offset(pntTS,&objStation,&offset);
+
+         Float64 station;
+         objStation->get_NormalizedValue(alignment,&station);
+         startStation = Min(startStation,station);
+      }
+   }
+
+   CComPtr<IVertCurveCollection> vcurves;
+   pCogoModel->get_VertCurves(&vcurves);
+   IndexType nVCurves;
+   vcurves->get_Count(&nVCurves);
+   if ( 0 < nVCurves )
+   {
+      CComPtr<IVertCurve> vc;
+      CogoObjectID curveID;
+      vcurves->ID(0,&curveID);
+      vcurves->get_Item(curveID,&vc);
+      CComPtr<IProfilePoint> bvcPoint;
+      vc->get_BVC(&bvcPoint);
+      CComPtr<IStation> objStation;
+      bvcPoint->get_Station(&objStation);
+      Float64 station;
+      objStation->get_NormalizedValue(alignment,&station);
+      startStation = Min(startStation,station);
+   }
+
+   // end station
+   pPier = pBridgeDesc->GetPier(pBridgeDesc->GetPierCount()-1);
+   Float64 endStation = pPier->GetStation();
+   endStation += bridge_length;
+
+   if ( 0 < alignmentData.HorzCurves.size() )
+   {
+      const auto& curve_data = alignmentData.HorzCurves.back();
+      CComPtr<IHorzCurveCollection> curves;
+      pCogoModel->get_HorzCurves(&curves);
+      IndexType nHCurves;
+      curves->get_Count(&nHCurves);
+      if ( IsZero(curve_data.Radius) || nHCurves == 0 )
+      {
+         endStation = Max(endStation,curve_data.PIStation);
+      }
+      else
+      {
+         CComPtr<IHorzCurve> hc;
+         CogoObjectID curveID;
+         HRESULT hr = curves->ID(nHCurves-1,&curveID);
+         ATLASSERT(SUCCEEDED(hr));
+         hr = curves->get_Item(curveID,&hc); // 1 is the ID of the first curve
+         ATLASSERT(SUCCEEDED(hr));
+
+         CComPtr<IPoint2d> pntST;
+         hc->get_ST(&pntST);
+
+         CComPtr<IStation> objStation;
+         Float64 offset;
+         alignment->Offset(pntST,&objStation,&offset);
+
+         Float64 station;
+         objStation->get_NormalizedValue(alignment,&station);
+         endStation = Max(endStation,station);
+      }
+   }
+
+   if ( 0 < nVCurves )
+   {
+      CComPtr<IVertCurveCollection> vcurves;
+      pCogoModel->get_VertCurves(&vcurves);
+      CComPtr<IVertCurve> vc;
+      CogoObjectID curveID;
+      vcurves->ID(profileData.VertCurves.size()-1,&curveID);
+      vcurves->get_Item(curveID,&vc);
+      CComPtr<IProfilePoint> evcPoint;
+      vc->get_EVC(&evcPoint);
+      CComPtr<IStation> objStation;
+      evcPoint->get_Station(&objStation);
+      Float64 station;
+      objStation->get_NormalizedValue(alignment,&station);
+      endStation = Max(endStation,station);
+   }
+
+   *pStartStation = startStation;
+   *pEndStation = endStation;
+}
+
+
 bool CBridgeAgentImp::BuildCogoModel()
 {
    ATLASSERT(m_CogoModel == nullptr);
@@ -2479,7 +2599,7 @@ bool CBridgeAgentImp::BuildCogoModel()
       }
    }
 
-   // Create the roadway surface model. Make it very much larger than the bridge so
+   // Create the roadway surface model. Make it much wider than the bridge so
    // none of the points fall off the surface.
    CComPtr<ISurfaceCollection> surfaces;
    profile->get_Surfaces(&surfaces);
@@ -2493,27 +2613,7 @@ bool CBridgeAgentImp::BuildCogoModel()
    CComPtr<ISurfaceTemplateCollection> templates;
    surface->get_SurfaceTemplates(&templates);
 
-#pragma Reminder("UPDATE: assumes crown point is on the same side of the alignment at all sections")
-   // need to update the UI to make this TRUE
-
-   // Ridge Point 2 is always the crown point
-   if ( 0 < section_data.Superelevations.front().CrownPointOffset )
-   {
-      surface->put_AlignmentPoint(1);
-      surface->put_ProfileGradePoint(1);
-   }
-   else if ( section_data.Superelevations.front().CrownPointOffset < 0 )
-   {
-      surface->put_AlignmentPoint(3);
-      surface->put_ProfileGradePoint(3);
-   }
-   else
-   {
-      surface->put_AlignmentPoint(2);
-      surface->put_ProfileGradePoint(2);
-   }
-
-   // NOTE: width of roadway surface is arbitrary... just make sure it is wider than the bridge
+   // NOTE: total width of roadway surface is arbitrary... just make sure it is wider than the bridge
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    Float64 bridge_width = pBridgeDesc->GetBridgeWidth(); // this is an approximate width, but we are going to double it so that's ok
    if ( bridge_width <= 0 )
@@ -2521,179 +2621,104 @@ bool CBridgeAgentImp::BuildCogoModel()
       ATLASSERT(false); // this should never happen
       bridge_width = 100;
    }
-   Float64 width = 2*bridge_width;
+   Float64 width = 4*bridge_width;
 
-   // Create a template section well before the start of the bridge
-   Float64 bridge_length = pBridgeDesc->GetLength();
+   // Before we start building the roadway surface, determine a reasonable station range in which to layout the surface
+   Float64 startStation, endStation;
+   ComputeReasonableSurfaceStationRange(m_CogoModel, pBridgeDesc, alignment_data, alignment, profile_data, &startStation, &endStation);
 
-   const auto& startCrown = section_data.Superelevations.front();
-   const CPierData2* pPier = pBridgeDesc->GetPier(0);
-   Float64 startStation = pPier->GetStation();
-   startStation -= bridge_length;
-
-   if ( section_data.Superelevations.size() == 1 && section_data.Superelevations.front().Station < startStation && IsZero(section_data.Superelevations.front().Station) )
+   std::size_t numTempls = section_data.RoadwaySectionTemplates.size();
+   if (numTempls==0)
    {
-      // often, the roadway surface is defined by a single point at station 0+00
-      // if there is only one crown defintion and it starts before the bridge
-      // and it is at 0+00, skip it so we don't end up with a really long alignment
-      // and a really short bridge.
+      // If no section templates are defined, we have a flat level roadway with crown at center
+      surface->put_AlignmentPoint(1);
+      surface->put_ProfileGradePoint(1);
+
+      CComPtr<ISurfaceTemplate> leftTemplate;
+      leftTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
+      leftTemplate->put_Station(CComVariant(startStation));
+      leftTemplate->AddSegment(width, 0.0, tsHorizontal);
+      templates->Add(leftTemplate);
+
+      CComPtr<ISurfaceTemplate> rightTemplate;
+      rightTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
+      rightTemplate->put_Station(CComVariant(endStation));
+      rightTemplate->AddSegment(width, 0.0, tsHorizontal);
+      templates->Add(rightTemplate);
    }
    else
    {
-      startStation = Min(startStation,section_data.Superelevations.front().Station);
-   }
+      // we have user defined templates. use input data
+      IndexType controllingRidgePoint = section_data.ControllingRidgePointIdx;
+      surface->put_AlignmentPoint(controllingRidgePoint);
+      surface->put_ProfileGradePoint(controllingRidgePoint);
 
-   if ( 0 < alignment_data.HorzCurves.size() )
-   {
-      const auto& curve_data = alignment_data.HorzCurves.front();
-      CComPtr<IHorzCurveCollection> curves;
-      m_CogoModel->get_HorzCurves(&curves);
-      IndexType nHCurves;
-      curves->get_Count(&nHCurves);
-
-      if ( IsZero(curve_data.Radius) || nHCurves == 0 )
+      std::size_t it = 0;
+      for (const auto& super : section_data.RoadwaySectionTemplates)
       {
-         startStation = Min(startStation,curve_data.PIStation);
-      }
-      else
-      {
-         CComPtr<IHorzCurve> hc;
-         CogoObjectID curveID;
-         curves->ID(0,&curveID);
-         curves->get_Item(curveID,&hc);
+         CComPtr<ISurfaceTemplate> surfaceTemplate;
+         surfaceTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
+         surfaceTemplate->put_Station(CComVariant(super.Station));
 
-         CComPtr<IPoint2d> pntTS;
-         hc->get_TS(&pntTS);
+         // left infinite segment
+         surfaceTemplate->AddSegment(width, super.LeftSlope, tsHorizontal);
 
-         CComPtr<IStation> objStation;
-         Float64 offset;
-         alignment->Offset(pntTS,&objStation,&offset);
+         // interior segments
+         for (const auto& segment : super.SegmentDataVec)
+         {
+            surfaceTemplate->AddSegment(segment.Length, segment.Slope, tsHorizontal);
+         }
 
-         Float64 station;
-         objStation->get_NormalizedValue(alignment,&station);
-         startStation = Min(startStation,station);
-      }
-   }
+         // right infinite segment
+         surfaceTemplate->AddSegment(width, super.RightSlope, tsHorizontal);
 
-   CComPtr<IVertCurveCollection> vcurves;
-   m_CogoModel->get_VertCurves(&vcurves);
-   IndexType nVCurves;
-   vcurves->get_Count(&nVCurves);
-   if ( 0 < nVCurves )
-   {
-      CComPtr<IVertCurve> vc;
-      CogoObjectID curveID;
-      vcurves->ID(0,&curveID);
-      vcurves->get_Item(curveID,&vc);
-      CComPtr<IProfilePoint> bvcPoint;
-      vc->get_BVC(&bvcPoint);
-      CComPtr<IStation> objStation;
-      bvcPoint->get_Station(&objStation);
-      Float64 station;
-      objStation->get_NormalizedValue(alignment,&station);
-      startStation = Min(startStation,station);
-   }
+         // Deal with bounding stations. We need to make sure our template collection spans the required boundaries
+         if (numTempls == 1)
+         {
+            // Only one template. We need to create a prismatic surface along bounds
+            surfaceTemplate->put_Station(CComVariant(startStation));  // place at startstation
+            templates->Add(surfaceTemplate);
 
-   if ( startStation < startCrown.Station )
-   {
-      CComPtr<ISurfaceTemplate> startSurfaceTemplate;
-      startSurfaceTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
-      startSurfaceTemplate->put_Station(CComVariant(startStation));
-      startSurfaceTemplate->AddSegment(width,-startCrown.Left,tsHorizontal);
-      startSurfaceTemplate->AddSegment(fabs(startCrown.CrownPointOffset),-startCrown.Left,tsHorizontal);
-      startSurfaceTemplate->AddSegment(fabs(startCrown.CrownPointOffset), startCrown.Right,tsHorizontal);
-      startSurfaceTemplate->AddSegment(width, startCrown.Right,tsHorizontal);
+            CComPtr<ISurfaceTemplate> endTemplate;
+            surfaceTemplate->Clone(&endTemplate);
+            endTemplate->put_Station(CComVariant(endStation));
+            templates->Add(endTemplate);
+         }
+         else if (it == 0)
+         {
+            if (super.Station > startStation)
+            {
+               // add a template at start so we have a prismatic surface until our first defined template
+               CComPtr<ISurfaceTemplate> startTemplate;
+               surfaceTemplate->Clone(&startTemplate);
+               startTemplate->put_Station(CComVariant(startStation));
+               templates->Add(startTemplate);
+            }
 
-      templates->Add(startSurfaceTemplate);
-   }
+            templates->Add(surfaceTemplate);
+         }
+         else if (it == numTempls-1)
+         {
+            templates->Add(surfaceTemplate);
 
-   // NOTE: Should be using the Cogo Model Superelevation objects, but
-   // this is easier....
-   for( const auto& super : section_data.Superelevations)
-   {
-      CComPtr<ISurfaceTemplate> surfaceTemplate;
-      surfaceTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
-      surfaceTemplate->put_Station(CComVariant(super.Station));
-      surfaceTemplate->AddSegment(width,-super.Left,tsHorizontal);
-      surfaceTemplate->AddSegment(fabs(super.CrownPointOffset),-super.Left,tsHorizontal);
-      surfaceTemplate->AddSegment(fabs(super.CrownPointOffset), super.Right,tsHorizontal);
-      surfaceTemplate->AddSegment(width, super.Right,tsHorizontal);
+            if (super.Station < endStation)
+            {
+               // add a template at end so we have a prismatic surface until the end station
+               CComPtr<ISurfaceTemplate> endTemplate;
+               surfaceTemplate->Clone(&endTemplate);
+               endTemplate->put_Station(CComVariant(endStation));
+               templates->Add(endTemplate);
+            }
+         }
+         else
+         {
+            templates->Add(surfaceTemplate);
+         }
 
-      templates->Add(surfaceTemplate);
-   }
-
-   // Create a template section well after the end of the bridge
-   const auto& endCrown = section_data.Superelevations.back();
-   pPier = pBridgeDesc->GetPier(pBridgeDesc->GetPierCount()-1);
-   Float64 endStation = pPier->GetStation();
-   endStation += bridge_length;
-
-
-   if ( 0 < alignment_data.HorzCurves.size() )
-   {
-      const auto& curve_data = alignment_data.HorzCurves.back();
-      CComPtr<IHorzCurveCollection> curves;
-      m_CogoModel->get_HorzCurves(&curves);
-      IndexType nHCurves;
-      curves->get_Count(&nHCurves);
-      if ( IsZero(curve_data.Radius) || nHCurves == 0 )
-      {
-         endStation = Max(endStation,curve_data.PIStation);
-      }
-      else
-      {
-         CComPtr<IHorzCurve> hc;
-         CogoObjectID curveID;
-         HRESULT hr = curves->ID(nHCurves-1,&curveID);
-         ATLASSERT(SUCCEEDED(hr));
-         hr = curves->get_Item(curveID,&hc); // 1 is the ID of the first curve
-         ATLASSERT(SUCCEEDED(hr));
-
-         CComPtr<IPoint2d> pntST;
-         hc->get_ST(&pntST);
-
-         CComPtr<IStation> objStation;
-         Float64 offset;
-         alignment->Offset(pntST,&objStation,&offset);
-
-         Float64 station;
-         objStation->get_NormalizedValue(alignment,&station);
-         endStation = Max(endStation,station);
+         it++;
       }
    }
-
-   if ( 0 < nVCurves )
-   {
-      CComPtr<IVertCurveCollection> vcurves;
-      m_CogoModel->get_VertCurves(&vcurves);
-      CComPtr<IVertCurve> vc;
-      CogoObjectID curveID;
-      vcurves->ID(profile_data.VertCurves.size()-1,&curveID);
-      vcurves->get_Item(curveID,&vc);
-      CComPtr<IProfilePoint> evcPoint;
-      vc->get_EVC(&evcPoint);
-      CComPtr<IStation> objStation;
-      evcPoint->get_Station(&objStation);
-      Float64 station;
-      objStation->get_NormalizedValue(alignment,&station);
-      endStation = Max(endStation,station);
-   }
-
-   endStation = Max(endStation,section_data.Superelevations.back().Station);
-
-   if ( endCrown.Station < endStation )
-   {
-      CComPtr<ISurfaceTemplate> endSurfaceTemplate;
-      endSurfaceTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
-      endSurfaceTemplate->put_Station(CComVariant(endStation));
-      endSurfaceTemplate->AddSegment(width,-endCrown.Left,tsHorizontal);
-      endSurfaceTemplate->AddSegment(fabs(endCrown.CrownPointOffset),-endCrown.Left,tsHorizontal);
-      endSurfaceTemplate->AddSegment(fabs(endCrown.CrownPointOffset), endCrown.Right,tsHorizontal);
-      endSurfaceTemplate->AddSegment(width, endCrown.Right,tsHorizontal);
-
-      templates->Add(endSurfaceTemplate);
-   }
-
+   
    return true;
 }
 
@@ -6743,7 +6768,52 @@ void CBridgeAgentImp::GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IP
    }
 }
 
-Float64 CBridgeAgentImp::GetCrownPointOffset(Float64 station) const
+IndexType CBridgeAgentImp::GetCrownPointIndexCount() const
+{
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+
+   CComPtr<IStation> objStation;
+   objStation.CoCreateInstance(CLSID_Station);
+   objStation->SetStation(INVALID_INDEX,0.0); // In pgsuper we only have one profile and surface so any station will do
+   CComVariant varStation(objStation);
+
+   CComPtr<IProfile> profile;
+   alignment->get_Profile(&profile);
+
+   CComPtr<ISurface> surface;
+   profile->GetSurface(COGO_FINISHED_SURFACE_ID,varStation,&surface);
+
+   IndexType cnt;
+   surface->get_SegmentCount(&cnt);
+
+   return cnt+1;
+}
+
+IndexType CBridgeAgentImp::GetControllingCrownPointIndex() const
+{
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+
+   CComPtr<IStation> objStation;
+   objStation.CoCreateInstance(CLSID_Station);
+   objStation->SetStation(INVALID_INDEX,0.0); // In pgsuper we only have one profile and surface so any station will do
+   CComVariant varStation(objStation);
+
+   CComPtr<IProfile> profile;
+   alignment->get_Profile(&profile);
+
+   CComPtr<ISurface> surface;
+   profile->GetSurface(COGO_FINISHED_SURFACE_ID,varStation,&surface);
+
+   IndexType cnt;
+   surface->get_AlignmentPoint(&cnt);
+
+   return cnt;
+}
+
+
+Float64 CBridgeAgentImp::GetCrownPointOffset(IndexType crownPointIdx, Float64 station) const
 {
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
@@ -6766,7 +6836,7 @@ Float64 CBridgeAgentImp::GetCrownPointOffset(Float64 station) const
    surface->CreateSurfaceTemplate(varStation,VARIANT_TRUE,&surfaceTemplate);
 
    Float64 offset;
-   surfaceTemplate->GetRidgePointOffset(2,alignmentRidgePointIdx,&offset);
+   surfaceTemplate->GetRidgePointOffset(crownPointIdx,alignmentRidgePointIdx,&offset);
 
    return offset;
 }

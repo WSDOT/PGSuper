@@ -133,6 +133,9 @@ private:
    mutable bool m_bHaveOldTopFlangeThickening; // set to true if we have an old D8 value that hasn't been retreived yet (this is just for debugging... we don't want to override a value and lose it)
    mutable Float64 m_OldTopFlangeThickening; /// this is the obsolete D8 value we justed loaded
 
+   StatusCallbackIDType m_scidInformationalWarning;
+   mutable StatusGroupIDType m_StatusGroupID;
+
    void GetDimensions(const IBeamFactory::Dimensions& dimensions, Float64& c1,
                       Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& d7,
                       Float64& w1,Float64& w2,Float64& w3,Float64& w4,Float64& wmin,Float64& wmax,

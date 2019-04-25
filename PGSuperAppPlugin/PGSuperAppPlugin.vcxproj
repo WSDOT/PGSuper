@@ -1260,6 +1260,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <Image Include="res\GirderView.ico" />
     <Image Include="res\HelpToolbar.bmp" />
     <Image Include="res\Hinges.bmp" />
+    <Image Include="res\icon1.ico" />
     <Image Include="res\Labels.ico" />
     <Image Include="res\LibEntryInUse.bmp" />
     <Image Include="res\LibEntryInUseAndReadOnly.bmp" />
@@ -1285,6 +1286,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <Image Include="res\RatingFactor.ico" />
     <Image Include="res\ReportView.ico" />
     <Image Include="res\Rollers.bmp" />
+    <Image Include="res\RW_Crosssection.ico" />
     <Image Include="res\Schematic.ico" />
     <Image Include="res\SchematicProfile.ico" />
     <Image Include="res\SectionCG.ico" />

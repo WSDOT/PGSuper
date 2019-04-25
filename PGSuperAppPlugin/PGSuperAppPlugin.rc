@@ -12,8 +12,7 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -185,6 +184,8 @@ IDI_LABELS              ICON                    "res\\Labels.ico"
 IDI_BRIDGE              ICON                    "res\\Bridge.ico"
 
 IDI_SCHEMATIC_PROFILE   ICON                    "res\\SchematicProfile.ico"
+
+IDI_RW_CS               ICON                    "res\\RW_Crosssection.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1497,16 +1498,24 @@ BEGIN
     LTEXT           "Vertical Curves",IDC_STATIC,7,52,48,8
 END
 
-IDD_SUPERELEVATIONS DIALOG 0, 0, 274, 185
+IDD_SUPERELEVATIONS DIALOGEX 0, 0, 423, 276
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
-CAPTION "Superelevations"
-FONT 8, "MS Sans Serif"
+CAPTION "Roadway Cross Sections"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,7,260,90
-    PUSHBUTTON      "Add",IDC_ADD,57,103,50,14
-    PUSHBUTTON      "Remove",IDC_REMOVE,111,103,50,14
-    PUSHBUTTON      "Sort",IDC_SORT,165,103,50,14
-    LTEXT           "Negative slopes are measured downwards from the crown point\n\nLocate the crown point with respect to the alignment with an offset (+/-xxx.xx OR xxx.xx L|R)\nExample: -2.25 OR 2.25 L\nA positive offset places the crown point to the right of the alignment",IDC_STATIC,7,126,260,51
+    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,27,409,70
+    PUSHBUTTON      "Add Row",IDC_ADD,84,100,50,14
+    PUSHBUTTON      "Remove Row",IDC_REMOVE,138,100,50,14
+    PUSHBUTTON      "Sort",IDC_SORT,192,100,50,14
+    LTEXT           "Number of Slope Segments per Roadway Cross Section Template ",IDC_STATIC,7,8,201,8
+    COMBOBOX        IDC_NUMSEGMENTS_COMBO,213,7,21,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Controlling Ridge Point",IDC_STATIC,253,8,69,8
+    COMBOBOX        IDC_RIDGEPT_COMBO,326,7,21,98,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "",IDC_PICTURE,12,145,397,94,WS_BORDER
+    GROUPBOX        "Roadway Section Template View",IDC_STATIC,7,119,409,123
+    LTEXT           "Select a Template to View",IDC_STATIC,14,133,79,8
+    COMBOBOX        IDC_VIEW_TEMPLATE_COMBO,95,131,55,98,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Cross Section Templates define the roadway cross sectional shape at specified stations. All section templates have the same number of linear segments. Segment widths and slopes are linearly interpolated between specified stations thus defining the roadway.",IDC_STATIC,14,245,401,22
 END
 
 IDD_SPAN_LENGTHS DIALOGEX 0, 0, 143, 171
@@ -2600,21 +2609,22 @@ IDD_BRIDGEVIEW_CONTROLS DIALOGEX 0, 0, 556, 20
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Bridge Plan/Section",IDC_BRIDGE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,4,73,10
-    CONTROL         "Alignment Plan/Profile",IDC_ALIGNMENT,"Button",BS_AUTORADIOBUTTON,85,4,85,10
-    LTEXT           "View Spans",IDC_SPAN_RANGE_LABEL,335,5,39,8
-    EDITTEXT        IDC_START_SPAN_EDIT,375,3,32,14,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
-    CONTROL         "",IDC_START_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,397,2,11,16
-    LTEXT           "to",IDC_SPAN_RANGE_TO,410,5,8,8
-    EDITTEXT        IDC_END_SPAN_EDIT,417,3,32,14,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
-    CONTROL         "",IDC_END_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,439,2,11,16
-    LTEXT           "of n Spans",IDC_SPAN_COUNT,451,5,76,8
-    CONTROL         "North Up",IDC_NORTH,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,227,2,16,16
-    LTEXT           "View Settings",IDC_SPAN_RANGE_LABEL2,179,5,45,8
-    CONTROL         "Show Labels",IDC_LABELS,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,245,2,16,16
-    CONTROL         "Dimensions",IDC_DIMENSIONS,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,263,2,16,16
-    CONTROL         "Bridge",IDC_SHOW_BRIDGE,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,281,2,16,16
-    CONTROL         "Schematic Profile",IDC_SCHEMATIC,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,299,2,16,16
+    CONTROL         "Bridge Plan/Section",IDC_BRIDGE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,4,79,10
+    CONTROL         "Alignment Plan/Profile",IDC_ALIGNMENT,"Button",BS_AUTORADIOBUTTON,88,4,85,10
+    LTEXT           "View Spans",IDC_SPAN_RANGE_LABEL,347,5,39,8
+    EDITTEXT        IDC_START_SPAN_EDIT,387,3,32,14,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
+    CONTROL         "",IDC_START_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,409,2,11,16
+    LTEXT           "to",IDC_SPAN_RANGE_TO,422,5,8,8
+    EDITTEXT        IDC_END_SPAN_EDIT,429,3,32,14,ES_AUTOHSCROLL | ES_READONLY,WS_EX_RIGHT
+    CONTROL         "",IDC_END_SPAN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HOTTRACK,451,2,11,16
+    LTEXT           "of n Spans",IDC_SPAN_COUNT,463,5,76,8
+    CONTROL         "North Up",IDC_NORTH,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,230,2,16,16
+    LTEXT           "View Settings",IDC_SPAN_RANGE_LABEL2,182,5,45,8
+    CONTROL         "Show Labels",IDC_LABELS,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,248,2,16,16
+    CONTROL         "Dimensions",IDC_DIMENSIONS,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,266,2,16,16
+    CONTROL         "Bridge",IDC_SHOW_BRIDGE,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,284,2,16,16
+    CONTROL         "Schematic Profile",IDC_SCHEMATIC,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,302,2,16,16
+    CONTROL         "Roadway Cross Section",IDC_RW_CS,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,320,2,16,16
 END
 
 IDD_LINEAR_DUCT DIALOGEX 0, 0, 316, 305
@@ -4001,9 +4011,9 @@ BEGIN
     IDD_SUPERELEVATIONS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 267
+        RIGHTMARGIN, 416
         TOPMARGIN, 7
-        BOTTOMMARGIN, 178
+        BOTTOMMARGIN, 268
     END
 
     IDD_SPAN_LENGTHS, DIALOG
@@ -5096,6 +5106,11 @@ BEGIN
 END
 
 IDD_SELECT_BOUNDARY_CONDITION AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SUPERELEVATIONS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
