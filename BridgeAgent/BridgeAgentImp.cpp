@@ -6769,14 +6769,14 @@ void CBridgeAgentImp::GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IP
    }
 }
 
-IndexType CBridgeAgentImp::GetCrownPointIndexCount() const
+IndexType CBridgeAgentImp::GetCrownPointIndexCount(Float64 station) const
 {
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
 
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
-   objStation->SetStation(INVALID_INDEX,0.0); // In pgsuper we only have one profile and surface so any station will do
+   objStation->SetStation(INVALID_INDEX,station);
    CComVariant varStation(objStation);
 
    CComPtr<IProfile> profile;
@@ -6791,14 +6791,14 @@ IndexType CBridgeAgentImp::GetCrownPointIndexCount() const
    return cnt+1;
 }
 
-IndexType CBridgeAgentImp::GetControllingCrownPointIndex() const
+IndexType CBridgeAgentImp::GetControllingCrownPointIndex(Float64 station) const
 {
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
 
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
-   objStation->SetStation(INVALID_INDEX,0.0); // In pgsuper we only have one profile and surface so any station will do
+   objStation->SetStation(INVALID_INDEX,station);
    CComVariant varStation(objStation);
 
    CComPtr<IProfile> profile;

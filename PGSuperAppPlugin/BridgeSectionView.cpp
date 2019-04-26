@@ -2386,8 +2386,8 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
    pnt1->Move(left_offset, left_elev);
 
    bool bfinished = false;
-   IndexType contrl_crown_point = pRoadway->GetControllingCrownPointIndex();
-   IndexType num_crown_points = pRoadway->GetCrownPointIndexCount();
+   IndexType contrl_crown_point = pRoadway->GetControllingCrownPointIndex(cut_station);
+   IndexType num_crown_points = pRoadway->GetCrownPointIndexCount(cut_station);
    for (IndexType icp = 0; icp < num_crown_points; icp++)
    {
       Float64 cp_offset = pRoadway->GetCrownPointOffset(icp, cut_station);

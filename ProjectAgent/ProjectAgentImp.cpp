@@ -2738,7 +2738,6 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
       else if (IsLT(cd.CrownPointOffset, 0.0))
       {
          defaultLeftOffset =  abs( cd.CrownPointOffset ); // remove sign
-         break;
       }
    }
 
@@ -2845,7 +2844,7 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
             // crown to left
             // left segment
             sd.Slope = -1.0 * cd.Right;
-            sd.Length = cd.CrownPointOffset;
+            sd.Length = abs(cd.CrownPointOffset);
             templ.SegmentDataVec.push_back(sd);
 
             // right segment
@@ -2857,7 +2856,7 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
          {
             // crown to right
             // left segment
-            sd.Slope = -1.0 * cd.Left;
+            sd.Slope = cd.Left;
             sd.Length = defaultLeftOffset;
             templ.SegmentDataVec.push_back(sd);
 

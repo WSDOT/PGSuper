@@ -1382,7 +1382,7 @@ void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSeg
 
       GET_IFACE2(pBroker, IRoadway, pAlignment);
       // Loop over crown points to see if one lies within the flange width
-      IndexType numCPs = pAlignment->GetCrownPointIndexCount();
+      IndexType numCPs = pAlignment->GetCrownPointIndexCount(station);
       IndexType numCPsfound(0);
       // Assumption here that outer-most ridge points are off of the bridge. Done for performance
       for (IndexType iCP = 1; iCP < numCPs-1; iCP++)

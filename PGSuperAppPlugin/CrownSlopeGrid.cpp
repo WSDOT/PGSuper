@@ -87,24 +87,63 @@ void CCrownSlopeGrid::RemoveRows()
 		range.ExpandRange(1, 0, GetRowCount(), 0);
       CGXGridWnd::RemoveRows(range.top, range.bottom);
 	}
+
+   // renumber rows
+   ROWCOL nrows = GetRowCount();
+   for (ROWCOL row = 2; row <= nrows; row++)
+   {
+      SetValueRange(CGXRange(row,0),row-1); // row num
+   }
+}
+
+bool CCrownSlopeGrid::IsRowSelected()
+{
+	CGXRangeList* pSelList = GetParam()->GetRangeList();
+   return (pSelList->IsAnyCellFromCol(0) && pSelList->GetCount() == 1);
+}
+
+bool CCrownSlopeGrid::IsGridEmpty()
+{
+   ROWCOL nrows = GetRowCount();
+   return nrows == 1;
 }
 
 void CCrownSlopeGrid::InitRowData(ROWCOL row)
 {
 	GetParam()->EnableUndo(FALSE);
 
-   SetValueRange(CGXRange(row,0),row-1); // row num
-   SetValueRange(CGXRange(row,1),"0+00");
-   SetValueRange(CGXRange(row,2),"-0.02");
+   SetValueRange(CGXRange(row, 0), row - 1); // row num
 
-   ROWCOL col = 3;
-   for (IndexType ir = 0; ir < m_pRoadwaySectionData->NumberOfSegmentsPerSection - 2; ir++)
+   ROWCOL nrows = GetRowCount();
+   if (nrows > 2)
    {
-      SetValueRange(CGXRange(row,col++),"10.00");
-      SetValueRange(CGXRange(row,col++),"-0.02");
-   }
+      // copy data from row above
+      ROWCOL cprow = max(2, row-1);
+      ROWCOL ncols = GetColCount();
+      for (ROWCOL icol = 1; icol <= ncols; icol++)
+      {
+         CString s;
+         CGXControl* pControl = GetControl(cprow, icol);
+         pControl->GetValue(s);
 
-   SetValueRange(CGXRange(row,col),"-0.02");
+         SetValueRange(CGXRange(row, icol), s);
+      }
+   }
+   else
+   {
+      // No row to copy. just make some reasonable assumptions
+      SetValueRange(CGXRange(row, 1), "0+00");
+      SetValueRange(CGXRange(row, 2), "-0.02");
+
+      ROWCOL col = 3;
+      for (IndexType ir = 0; ir < m_pRoadwaySectionData->NumberOfSegmentsPerSection - 2; ir++)
+      {
+         SetValueRange(CGXRange(row, col++), "10.00");
+         SetValueRange(CGXRange(row, col++), "-0.02");
+      }
+
+      SetValueRange(CGXRange(row, col), "-0.02");
+   }
 
    GetParam()->EnableUndo(TRUE);
 }
@@ -357,7 +396,8 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
    data.Station = station_value;
 
    CString strVal = GetCellValue(nRow,2);
-   if (!sysTokenizer::ParseDouble(strVal, &data.LeftSlope))
+   data.LeftSlope = 0.0;
+   if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.LeftSlope))
 	{
       CString msg;
       msg.Format(_T("Leftmost slope value not a number for template %d"), nRow-1);
@@ -372,8 +412,8 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
    {
       RoadwaySegmentData seg;
       strVal = GetCellValue(nRow,col++);
-      Float64 length;
-      if (!sysTokenizer::ParseDouble(strVal, &length))
+      Float64 length = 0.0;
+      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &length))
 	   {
          CString msg;
          msg.Format(_T("Length value not a number for template %d"), nRow-1);
@@ -392,7 +432,8 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
       seg.Length = ::ConvertToSysUnits(length,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
       strVal = GetCellValue(nRow,col++);
-      if (!sysTokenizer::ParseDouble(strVal, &seg.Slope))
+      seg.Slope = 0.0;
+      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &seg.Slope))
 	   {
          CString msg;
          msg.Format(_T("A slope value is not a number for template %d"), nRow-1);
@@ -404,7 +445,8 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
    }
 
    strVal = GetCellValue(nRow,col);
-   if (!sysTokenizer::ParseDouble(strVal, &data.RightSlope))
+   data.RightSlope = 0.0;
+   if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.RightSlope))
 	{
       CString msg;
       msg.Format(_T("Rightmost slope value not a number for template %d"), nRow-1);
@@ -468,6 +510,25 @@ bool CCrownSlopeGrid::SortCrossSections()
    {
       std::sort(m_pRoadwaySectionData->RoadwaySectionTemplates.begin(),m_pRoadwaySectionData->RoadwaySectionTemplates.end(),SortByStation);
       InitRoadwaySectionData(false);
+
+      if (!m_pRoadwaySectionData->RoadwaySectionTemplates.empty())
+      {
+         std::vector<RoadwaySectionTemplate>::const_iterator iter = m_pRoadwaySectionData->RoadwaySectionTemplates.begin();
+         Float64 sta = iter->Station;
+         iter++;
+         while (iter != m_pRoadwaySectionData->RoadwaySectionTemplates.end())
+         {
+            if (sta == iter->Station)
+            {
+               // can't have templates at the same station
+               return false;
+            }
+
+            sta = iter->Station;
+            iter++;
+         }
+      }
+
       return true;
    }
 

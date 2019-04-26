@@ -130,10 +130,10 @@ interface IRoadway : IUnknown
    virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) const = 0;
 
    // returns number of crown points along alignment
-   virtual IndexType GetCrownPointIndexCount() const = 0;
+   virtual IndexType GetCrownPointIndexCount(Float64 station) const = 0;
 
    // returns index of crown point at alignment, PG
-   virtual IndexType GetControllingCrownPointIndex() const = 0;
+   virtual IndexType GetControllingCrownPointIndex(Float64 station) const = 0;
 
    // offset for each crown point
    virtual Float64 GetCrownPointOffset(IndexType crownPointIdx, Float64 station) const = 0;

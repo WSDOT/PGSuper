@@ -74,12 +74,16 @@ protected:
    afx_msg void OnCbnSelchangeNumsegmentsCombo();
    afx_msg void OnCbnSelchangeRidgeptCombo();
    afx_msg void OnCbnSelchangeViewTemplateCombo();
+   afx_msg void OnUpdateRemove(CCmdUI* pCmdUI);
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
+
 	//}}AFX_MSG
 
    afx_msg void OnHelp();
 
    void OnChange();
    void FillNumSegsCtrl();
+   void UpdateNumSegsCtrl();
    void UpdateRidgeptData();
    void UpdateViewCombo();
 

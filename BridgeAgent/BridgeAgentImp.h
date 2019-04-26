@@ -189,8 +189,8 @@ public:
    virtual CollectionIndexType GetVertCurveCount() const override;
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) const override;
    virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) const override;
-   virtual IndexType GetCrownPointIndexCount() const override;
-   virtual IndexType GetControllingCrownPointIndex() const override;
+   virtual IndexType GetCrownPointIndexCount(Float64 station) const override;
+   virtual IndexType GetControllingCrownPointIndex(Float64 station) const override;
    virtual Float64 GetCrownPointOffset(IndexType crownPointIdx, Float64 station) const override;
 
 // IGeometry

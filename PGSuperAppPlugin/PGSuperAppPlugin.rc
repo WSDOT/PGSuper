@@ -1498,7 +1498,7 @@ BEGIN
     LTEXT           "Vertical Curves",IDC_STATIC,7,52,48,8
 END
 
-IDD_SUPERELEVATIONS DIALOGEX 0, 0, 423, 276
+IDD_SUPERELEVATIONS DIALOGEX 0, 0, 423, 293
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Roadway Cross Sections"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1512,10 +1512,11 @@ BEGIN
     LTEXT           "Controlling Ridge Point",IDC_STATIC,253,8,69,8
     COMBOBOX        IDC_RIDGEPT_COMBO,326,7,21,98,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "",IDC_PICTURE,12,145,397,94,WS_BORDER
-    GROUPBOX        "Roadway Section Template View",IDC_STATIC,7,119,409,123
+    GROUPBOX        "Roadway Cross Section Template View",IDC_STATIC,7,119,409,123
     LTEXT           "Select a Template to View",IDC_STATIC,14,133,79,8
     COMBOBOX        IDC_VIEW_TEMPLATE_COMBO,95,131,55,98,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Cross Section Templates define the roadway cross sectional shape at specified stations. All section templates have the same number of linear segments. Segment widths and slopes are linearly interpolated between specified stations thus defining the roadway.",IDC_STATIC,14,245,401,22
+    LTEXT           "Cross Section Templates define the roadway cross section at specified stations. Segment Lengths and Slopes are linearly interpolated between specified stations thus defining the roadway surface. All templates have the same number of linear segments.",IDC_STATIC,12,245,401,18
+    LTEXT           "Slope Sign Convention: Slopes upward and away from the Controlling Ridge Point are positive, downward and away are negative. See Help for more details.",IDC_STATIC,12,266,385,19
 END
 
 IDD_SPAN_LENGTHS DIALOGEX 0, 0, 143, 171
@@ -4013,7 +4014,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 416
         TOPMARGIN, 7
-        BOTTOMMARGIN, 268
+        BOTTOMMARGIN, 285
     END
 
     IDD_SPAN_LENGTHS, DIALOG

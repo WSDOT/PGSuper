@@ -73,6 +73,8 @@ public:
    void CustomInit();
    void AppendRow();
    void RemoveRows();
+   bool IsRowSelected();
+   bool IsGridEmpty();
 
    void UpdateGridSizeAndHeaders(const RoadwaySectionData& data);
 

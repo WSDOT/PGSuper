@@ -105,7 +105,7 @@ void CCrownSlopePage::DoDataExchange(CDataExchange* pDX)
    {
       if (!m_Grid.SortCrossSections() || !m_Grid.UpdateRoadwaySectionData() )
       {
-         AfxMessageBox(_T("Invalid superelevation parameters"));
+         AfxMessageBox(_T("Invalid cross section parameters"));
          pDX->Fail();
       }
    }
@@ -117,9 +117,11 @@ void CCrownSlopePage::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CCrownSlopePage, CPropertyPage)
 	//{{AFX_MSG_MAP(CCrownSlopePage)
+   ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_ADD, OnAdd)
 	ON_BN_CLICKED(IDC_REMOVE, OnRemove)
+   ON_UPDATE_COMMAND_UI(IDC_REMOVE, &CCrownSlopePage::OnUpdateRemove)
 	ON_BN_CLICKED(IDC_SORT, OnSort)
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_HELP, OnHelp)
@@ -135,6 +137,8 @@ void CCrownSlopePage::OnAdd()
 {
    m_Grid.AppendRow();
 
+   UpdateNumSegsCtrl();
+   UpdateRidgeptData();
    UpdateViewCombo();
 }
 
@@ -142,12 +146,26 @@ void CCrownSlopePage::OnRemove()
 {
    m_Grid.RemoveRows();
 
+   if (m_Grid.IsGridEmpty())
+   {
+      // Just emptied out the grid. Force data to defaults
+      m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
+      m_RoadwaySectionData.RoadwaySectionTemplates.clear();
+
+      UpdateNumSegsCtrl();
+      UpdateRidgeptData();
+   }
+
    UpdateViewCombo();
 }
 
 void CCrownSlopePage::OnSort() 
 {
-   m_Grid.SortCrossSections();
+   if (!m_Grid.SortCrossSections())
+   {
+      ::AfxMessageBox(_T("Each template must have a unique Station"),MB_OK | MB_ICONWARNING); 
+   }
 }
 
 BOOL CCrownSlopePage::OnInitDialog() 
@@ -184,8 +202,19 @@ void CCrownSlopePage::FillNumSegsCtrl()
       int idx = pcbRidgePts->AddString(strval);
       pcbRidgePts->SetItemData(idx,is);
    }
+}
 
-   pcbRidgePts->SetCurSel((int)m_RoadwaySectionData.NumberOfSegmentsPerSection-1);
+void CCrownSlopePage::UpdateNumSegsCtrl()
+{
+   CComboBox* pcbRidgePts = (CComboBox*)GetDlgItem(IDC_NUMSEGMENTS_COMBO);
+   int cursel = pcbRidgePts->GetCurSel();
+   if (cursel == CB_ERR)
+   {
+      pcbRidgePts->SetCurSel((int)m_RoadwaySectionData.NumberOfSegmentsPerSection - 2);
+   }
+
+   BOOL bEnable = m_Grid.IsGridEmpty() ? FALSE : TRUE;
+   pcbRidgePts->EnableWindow(bEnable);
 }
 
 void CCrownSlopePage::UpdateRidgeptData()
@@ -217,6 +246,9 @@ void CCrownSlopePage::UpdateRidgeptData()
    }
 
    pcbRidgePts->SetCurSel((int)m_RoadwaySectionData.ControllingRidgePointIdx-1);
+
+   BOOL bEnable = m_Grid.IsGridEmpty() ? FALSE : TRUE;
+   pcbRidgePts->EnableWindow(bEnable);
 }
 
 void CCrownSlopePage::OnCbnSelchangeNumsegmentsCombo()
@@ -237,7 +269,7 @@ void CCrownSlopePage::OnCbnSelchangeNumsegmentsCombo()
    }
 
    UpdateRidgeptData();
-   
+
    m_Grid.InitRoadwaySectionData(true);
 
    OnChange();
@@ -279,7 +311,7 @@ RoadwaySectionTemplate CCrownSlopePage::GetSelectedTemplate()
          }
          else
          {
-            ATLASSERT(0); // combo showing something it should not
+            ATLASSERT(m_RoadwaySectionData.RoadwaySectionTemplates.empty() ? TRUE : FALSE); // combo showing something it should not
          }
       }
    }
@@ -540,3 +572,15 @@ void CCrownSlopePage::OnCbnSelchangeViewTemplateCombo()
 {
    OnChange();
 }
+
+void CCrownSlopePage::OnUpdateRemove(CCmdUI * pCmdUI)
+{
+   pCmdUI->Enable(m_Grid.IsRowSelected());
+}
+
+LRESULT CCrownSlopePage::OnKickIdle(WPARAM, LPARAM)
+{
+	UpdateDialogControls(this, FALSE);
+	return 0L;
+}
+
