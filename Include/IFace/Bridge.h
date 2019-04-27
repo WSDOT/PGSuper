@@ -553,7 +553,7 @@ interface IBridge : IUnknown
 
    virtual Float64 GetPierStation(PierIndexType pierIdx) const = 0;
    virtual Float64 GetBearingStation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const = 0;
-   virtual void GetBearingPoint(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const = 0;
+   virtual void GetWorkingPointLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const = 0;
    virtual void GetPierDirection(PierIndexType pierIdx,IDirection** ppDirection) const = 0;
    virtual void GetPierSkew(PierIndexType pierIdx,IAngle** ppAngle) const = 0;
    virtual void GetPierPoints(PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right) const = 0;

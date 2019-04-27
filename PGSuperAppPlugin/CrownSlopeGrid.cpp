@@ -88,11 +88,21 @@ void CCrownSlopeGrid::RemoveRows()
       CGXGridWnd::RemoveRows(range.top, range.bottom);
 	}
 
-   // renumber rows
+   // renumber rows or blast segments data if no more segments
    ROWCOL nrows = GetRowCount();
-   for (ROWCOL row = 2; row <= nrows; row++)
+   if (nrows > 1)
    {
-      SetValueRange(CGXRange(row,0),row-1); // row num
+      for (ROWCOL row = 2; row <= nrows; row++)
+      {
+         SetValueRange(CGXRange(row, 0), row - 1); // row num
+      }
+   }
+   else
+   {
+      m_pRoadwaySectionData->NumberOfSegmentsPerSection = 2;
+      m_pRoadwaySectionData->ControllingRidgePointIdx = 1;
+      m_pRoadwaySectionData->RoadwaySectionTemplates.clear();
+      UpdateGridSizeAndHeaders(*m_pRoadwaySectionData);
    }
 }
 
@@ -112,26 +122,23 @@ void CCrownSlopeGrid::InitRowData(ROWCOL row)
 {
 	GetParam()->EnableUndo(FALSE);
 
-   SetValueRange(CGXRange(row, 0), row - 1); // row num
-
    ROWCOL nrows = GetRowCount();
    if (nrows > 2)
    {
+      SetValueRange(CGXRange(row, 0), row - 1); // row num
       // copy data from row above
       ROWCOL cprow = max(2, row-1);
       ROWCOL ncols = GetColCount();
       for (ROWCOL icol = 1; icol <= ncols; icol++)
       {
-         CString s;
-         CGXControl* pControl = GetControl(cprow, icol);
-         pControl->GetValue(s);
-
+         CString s = GetCellValue(cprow, icol);
          SetValueRange(CGXRange(row, icol), s);
       }
    }
    else
    {
       // No row to copy. just make some reasonable assumptions
+      SetValueRange(CGXRange(row, 0), row - 1); // row num
       SetValueRange(CGXRange(row, 1), "0+00");
       SetValueRange(CGXRange(row, 2), "-0.02");
 
@@ -176,13 +183,13 @@ void CCrownSlopeGrid::UpdateGridSizeAndHeaders(const RoadwaySectionData& data)
 
 	this->SetRowCount(num_rows);
 	this->SetColCount(num_cols);
-
+/*
 		// Turn off selecting whole columns when clicking on a column header
 	this->GetParam()->EnableSelection((WORD) (GX_SELFULL & ~GX_SELCOL & ~GX_SELTABLE));
 
    // no row moving
 	this->GetParam()->EnableMoveRows(FALSE);
-
+*/
    // we want to merge cells
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 

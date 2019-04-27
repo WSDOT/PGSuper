@@ -2637,13 +2637,15 @@ bool CBridgeAgentImp::BuildCogoModel()
       CComPtr<ISurfaceTemplate> leftTemplate;
       leftTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
       leftTemplate->put_Station(CComVariant(startStation));
-      leftTemplate->AddSegment(width, 0.0, tsHorizontal);
+      leftTemplate->AddSegment(width/2, 0.0, tsHorizontal);
+      leftTemplate->AddSegment(width/2, 0.0, tsHorizontal);
       templates->Add(leftTemplate);
 
       CComPtr<ISurfaceTemplate> rightTemplate;
       rightTemplate.CoCreateInstance(CLSID_SurfaceTemplate);
       rightTemplate->put_Station(CComVariant(endStation));
-      rightTemplate->AddSegment(width, 0.0, tsHorizontal);
+      rightTemplate->AddSegment(width/2, 0.0, tsHorizontal);
+      rightTemplate->AddSegment(width/2, 0.0, tsHorizontal);
       templates->Add(rightTemplate);
    }
    else
@@ -10928,7 +10930,7 @@ Float64 CBridgeAgentImp::GetBearingStation(PierIndexType pierIdx,pgsTypes::PierF
    return station;
 }
 
-void CBridgeAgentImp::GetBearingPoint(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const
+void CBridgeAgentImp::GetWorkingPointLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const
 {
    // returns the station, where a line projected from the intersection of the
    // centerline of bearing and the centerline of girder, intersects the alignment
@@ -11753,7 +11755,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
       // Find Work Point (WP) Location. WP is at the top CL of girder at girderline/bearingline intersections
       // Get point at along girder cl at bearing cl. This is x,y of work point
       Float64 workPointStation, workPointOffset;
-      GetBearingPoint(pierIdx, face, girderKey, &workPointStation, &workPointOffset);
+      GetWorkingPointLocation(pierIdx, face, girderKey, &workPointStation, &workPointOffset);
 
       CComPtr<IDirection> normal;
       GetBearingNormal(workPointStation,&normal);

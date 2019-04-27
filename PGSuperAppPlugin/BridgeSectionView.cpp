@@ -29,6 +29,7 @@
 #include "PGSuperDocBase.h"
 #include "BridgeSectionView.h"
 #include "SlabDisplayObjectEvents.h"
+#include "AlignmentDisplayObjectEvents.h"
 #include "BridgePlanView.h"
 
 #include "PGSuperUnits.h"
@@ -2378,12 +2379,29 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
    left_offset -= feets; // display line a bit wider than bridge.
    right_offset += feets;
 
-
    Float64 left_elev = pRoadway->GetElevation(cut_station, left_offset);
+
+   // The alignment is represented on the screen by a poly line object
+   CComPtr<iPolyLineDisplayObject> doAlignment;
+   doAlignment.CoCreateInstance(CLSID_PolyLineDisplayObject);
+
+   // Register an event sink with the alignment object so that we can handle Float64 clicks
+   // on the alignment differently then a general dbl-click
+   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::Bridge);
+   CComPtr<iDisplayObjectEvents> events;
+   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
+
+   CComPtr<iDisplayObject> dispObj;
+   doAlignment->QueryInterface(IID_iDisplayObject, (void**)&dispObj);
+   dispObj->RegisterEventSink(events);
+   dispObj->SetToolTipText(_T("Double click to edit alignment"));
+   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
+   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
 
    CComPtr<IPoint2d> pnt1, pnt2;
    pnt1.CoCreateInstance(CLSID_Point2d);
    pnt1->Move(left_offset, left_elev);
+   doAlignment->AddPoint(pnt1);
 
    bool bfinished = false;
    IndexType contrl_crown_point = pRoadway->GetControllingCrownPointIndex(cut_station);
@@ -2410,17 +2428,7 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
 
       if (pnt2)
       {
-         // Line segment
-         CComPtr<iLineDisplayObject> doRwXsLine;
-         CreateLineDisplayObject(pnt1, pnt2, &doRwXsLine);
-         CComPtr<iDrawLineStrategy> drawStrategy;
-         doRwXsLine->GetDrawLineStrategy(&drawStrategy);
-         CComQIPtr<iSimpleDrawLineStrategy> drawRwXsLineStrategy(drawStrategy);
-         drawRwXsLineStrategy->SetWidth(ALIGNMENT_LINE_WEIGHT);
-         drawRwXsLineStrategy->SetColor(ALIGNMENT_COLOR);
-         drawRwXsLineStrategy->SetLineStyle(lsCenterline);
-
-         displayList->AddDisplayObject(doRwXsLine);
+         doAlignment->AddPoint(pnt2);
 
          if (!bfinished)
          {
@@ -2480,6 +2488,21 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
          break;
       }
    }
+
+   doAlignment->put_Width(ALIGNMENT_LINE_WEIGHT);
+   doAlignment->put_Color(ALIGNMENT_COLOR);
+   doAlignment->put_PointType(plpNone);
+   doAlignment->Commit();
+
+   displayList->AddDisplayObject(dispObj);
+
+   dispObj->SetSelectionType(stAll);
+//   dispObj->SetID(ALIGNMENT_ID);
+
+   // the alignment is going to be the drop site for the section cut object
+   CComQIPtr<iDropSite> drop_site(events);
+   dispObj->RegisterDropSite(drop_site);
+
 
    ATLASSERT(bfinished); // crown point model is not wide enough for our needs
 }

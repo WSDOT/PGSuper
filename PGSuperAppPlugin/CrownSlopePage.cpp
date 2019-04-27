@@ -105,7 +105,7 @@ void CCrownSlopePage::DoDataExchange(CDataExchange* pDX)
    {
       if (!m_Grid.SortCrossSections() || !m_Grid.UpdateRoadwaySectionData() )
       {
-         AfxMessageBox(_T("Invalid cross section parameters"));
+         AfxMessageBox(_T("Invalid cross section parameters. Are there duplicate stations?"));
          pDX->Fail();
       }
    }
@@ -148,11 +148,7 @@ void CCrownSlopePage::OnRemove()
 
    if (m_Grid.IsGridEmpty())
    {
-      // Just emptied out the grid. Force data to defaults
-      m_RoadwaySectionData.ControllingRidgePointIdx = 1;
-      m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
-      m_RoadwaySectionData.RoadwaySectionTemplates.clear();
-
+      // Just emptied out the grid. data was changed by grid to defaults
       UpdateNumSegsCtrl();
       UpdateRidgeptData();
    }
@@ -165,6 +161,10 @@ void CCrownSlopePage::OnSort()
    if (!m_Grid.SortCrossSections())
    {
       ::AfxMessageBox(_T("Each template must have a unique Station"),MB_OK | MB_ICONWARNING); 
+   }
+   else
+   {
+      OnChange();
    }
 }
 
@@ -208,7 +208,7 @@ void CCrownSlopePage::UpdateNumSegsCtrl()
 {
    CComboBox* pcbRidgePts = (CComboBox*)GetDlgItem(IDC_NUMSEGMENTS_COMBO);
    int cursel = pcbRidgePts->GetCurSel();
-   if (cursel == CB_ERR)
+   if (cursel == CB_ERR || cursel > m_RoadwaySectionData.NumberOfSegmentsPerSection-2)
    {
       pcbRidgePts->SetCurSel((int)m_RoadwaySectionData.NumberOfSegmentsPerSection - 2);
    }
