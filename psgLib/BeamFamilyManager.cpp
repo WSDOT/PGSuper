@@ -58,11 +58,9 @@ HRESULT CBeamFamilyManager::Init(CATID catid)
    pICatReg->QueryInterface(IID_ICatInformation,(void**)&pICatInfo);
    CComPtr<IEnumCLSID> pIEnumCLSID;
 
-   const int nID = 1;
-   CATID ID[nID];
-   ID[0] = catid;
-
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
+   const CATID ID[1]{ catid };
+   
+   pICatInfo->EnumClassesOfCategories(1,ID,0,nullptr,&pIEnumCLSID);
 
    FamilyContainer::iterator found(m_Families.find(catid));
    if ( found == m_Families.end() )
@@ -74,14 +72,15 @@ HRESULT CBeamFamilyManager::Init(CATID catid)
 
    BeamContainer& beams = found->second;
 
-   CLSID clsid[1];
-   while ( pIEnumCLSID->Next(1,clsid,nullptr) != S_FALSE )
+   CLSID clsid;
+   ULONG nFetched;
+   while ( pIEnumCLSID->Next(1,&clsid,&nFetched) != S_FALSE )
    {
       LPOLESTR pszUserType;
-      OleRegGetUserType(clsid[0],USERCLASSTYPE_SHORT,&pszUserType);
+      OleRegGetUserType(clsid,USERCLASSTYPE_SHORT,&pszUserType);
       CString str(pszUserType);
 
-      beams.insert( std::make_pair(str,clsid[0]) );
+      beams.insert( std::make_pair(str,clsid) );
    }
 
    return S_OK;

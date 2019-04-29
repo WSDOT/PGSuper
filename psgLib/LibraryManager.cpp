@@ -146,6 +146,7 @@ psgLibraryManager::~psgLibraryManager()
 {
    // Release all the class factories before the DLL unloads
    GirderLibraryEntry::ms_ClassFactories.clear();
+   GirderLibraryEntry::ms_ExternalCLSIDTranslators.clear();
 }
 
 //======================== OPERATORS  =======================================
