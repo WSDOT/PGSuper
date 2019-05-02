@@ -3014,8 +3014,10 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
          // add a tendon collection to the superstructure member... spliced girders know how to use it
          CComQIPtr<IItemData> ssmbrItemData(ssmbr);
          CComPtr<ITendonCollection> tendons;
-         CreateTendons(pBridgeDesc,girderKey,ssmbr,&tendons);
-         ssmbrItemData->AddItemData(CComBSTR(_T("Tendons")),tendons);
+         if (CreateTendons(pBridgeDesc, girderKey, ssmbr, &tendons))
+         {
+            ssmbrItemData->AddItemData(CComBSTR(_T("Tendons")), tendons);
+         }
       } // girder loop
 
       // now that all the girders are layed out, we can layout the rebar
@@ -27737,12 +27739,18 @@ DuctIndexType CBridgeAgentImp::GetDuctCount(const CGirderKey& girderKey) const
 
    CComPtr<IUnknown> unk;
    itemData->GetItemData(CComBSTR(_T("Tendons")),&unk);
+   if (unk)
+   {
+      CComQIPtr<ITendonCollection> tendons(unk);
 
-   CComQIPtr<ITendonCollection> tendons(unk);
-
-   DuctIndexType nDucts;
-   tendons->get_Count(&nDucts);
-   return nDucts;
+      DuctIndexType nDucts;
+      tendons->get_Count(&nDucts);
+      return nDucts;
+   }
+   else
+   {
+      return 0;
+   }
 }
 
 void CBridgeAgentImp::GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,const CSplicedGirderData* pGirder,IPoint2dCollection** ppPoints) const
@@ -32677,12 +32685,17 @@ GroupIndexType CBridgeAgentImp::GetGirderGroupAtPier(PierIndexType pierIdx,pgsTy
    }
 }
 
-void CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,ITendonCollection** ppTendons) const
+bool CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,ITendonCollection** ppTendons) const
 {
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
    const CPTData* pPTData = pGirder->GetPostTensioning();
    DuctIndexType nDucts = pPTData->GetDuctCount();
+
+   if (nDucts == 0)
+   {
+      return false; // nothing created
+   }
 
    const matPsStrand* pStrand = pPTData->pStrand;
 
@@ -32752,6 +32765,8 @@ void CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
    }
 
    tendons.CopyTo(ppTendons);
+
+   return true;
 }
 
 void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,const CParabolicDuctGeometry& ductGeometry,ITendonCollection** ppTendons) const
