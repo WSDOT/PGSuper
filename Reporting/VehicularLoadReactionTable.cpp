@@ -167,17 +167,18 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       }
    }
 
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+
    // Get POI at start and end of the span
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    PoiList vPoi;
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
          PoiList vSegPoi;
          pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_ERECTED_SEGMENT, &vSegPoi);
          ATLASSERT(vSegPoi.size() == 2);

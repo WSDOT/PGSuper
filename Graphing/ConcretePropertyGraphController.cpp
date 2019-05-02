@@ -353,10 +353,12 @@ void CConcretePropertyGraphController::FillGirderControl()
    if ( curSel == CB_ERR )
    {
       pcbGirder->SetCurSel(0);
+      m_SegmentKey.girderIndex = 0;
    }
    else
    {
       curSel = Min(curSel,(int)(nGirders-1));
+      m_SegmentKey.girderIndex = curSel;
       pcbGirder->SetCurSel(curSel);
    }
 }
@@ -381,10 +383,12 @@ void CConcretePropertyGraphController::FillSegmentControl()
    if ( curSel == CB_ERR )
    {
       pcbSegment->SetCurSel(0);
+      m_SegmentKey.segmentIndex = 0;
    }
    else
    {
       curSel = Min(curSel,(int)(nSegments-1));
+      m_SegmentKey.segmentIndex = curSel;
       pcbSegment->SetCurSel(curSel);
    }
 

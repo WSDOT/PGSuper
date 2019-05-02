@@ -243,6 +243,9 @@ public:
    virtual GroupIndexType GetGirderGroupCount() const override;
    virtual GirderIndexType GetGirderCount(GroupIndexType grpIdx) const override;
    virtual GirderIndexType GetGirderlineCount() const override;
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, std::vector<CGirderKey>* pvGirderKeys) const override;
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, GroupIndexType startGroupIdx, GroupIndexType endGroupIdx, std::vector<CGirderKey>* pvGirderKeys) const override;
+   virtual void GetGirderline(const CGirderKey& girderKey, std::vector<CGirderKey>* pvGirderKeys) const override;
    virtual GirderIndexType GetGirderCountBySpan(SpanIndexType spanIdx) const override;
    virtual SegmentIndexType GetSegmentCount(const CGirderKey& girderKey) const override;
    virtual SegmentIndexType GetSegmentCount(GroupIndexType grpIdx,GirderIndexType gdrIdx) const override;

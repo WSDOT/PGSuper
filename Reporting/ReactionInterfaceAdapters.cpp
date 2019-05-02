@@ -83,19 +83,13 @@ ReactionLocationContainer GetBearingReactionLocations(IntervalIndexType interval
    ReactionLocationContainer container;
 
    PierIndexType nPiers = pBridge->GetPierCount();
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = (girderKey.girderIndex < nGirders ? girderKey.girderIndex : nGirders-1);
-
-      CGirderKey thisGirderKey(grpIdx,gdrIdx);
-
       PierIndexType startPierIdx, endPierIdx;
-      pBridge->GetGirderGroupPiers(grpIdx,&startPierIdx,&endPierIdx);
+      pBridge->GetGirderGroupPiers(thisGirderKey.groupIndex,&startPierIdx,&endPierIdx);
 
       std::vector<PierIndexType> vPiers = pBearing->GetBearingReactionPiers(intervalIdx,thisGirderKey);
       for (const auto& pierIdx : vPiers)
@@ -146,7 +140,10 @@ ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, 
       GroupIndexType grpIdx = (aheadGroupIdx == INVALID_INDEX ? backGroupIdx : aheadGroupIdx);
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
 
-      CGirderKey thisGirderKey(grpIdx,Min(girderKey.girderIndex,nGirders-1));
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey.girderIndex, grpIdx, grpIdx, &vGirderKeys);
+      ATLASSERT(vGirderKeys.size() == 1);
+      const auto& thisGirderKey = vGirderKeys.front();
 
       PierReactionFaceType face = rftMid; // pier reactions are always for the whole pier, not just a face
       ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey);

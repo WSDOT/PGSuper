@@ -147,12 +147,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-
    // Casting Yard Results
+   std::vector<CGirderKey> vGirderKeys;
    if ( bDesign )
    {
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -160,15 +156,14 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       p->SetName(_T("Casting Yard Results"));
       *pChapter << p;
 
-      for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+      pBridge->GetGirderline(girderKey, &vGirderKeys);
+      for(const auto& thisGirderKey : vGirderKeys)
       {
-         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-         GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
-
          rptRcTable* pReleaseLayoutTable = nullptr;
          rptRcTable* pStorageLayoutTable = nullptr;
          rptRcTable* pLayoutTable        = nullptr;
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
          if ( 1 < nSegments )
          {
             pReleaseLayoutTable = rptStyleManager::CreateLayoutTable(nSegments,_T("Girder Dead Load Moment/Shear at Prestress Release"));
@@ -185,7 +180,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            CSegmentKey segmentKey(thisGirderKey,segIdx);
 
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
@@ -208,205 +203,186 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    }
 
    // Bridge Site Results
-   if (bRating)
+   bool bAreThereUserLoads = pUDL->DoUserLoadsExist(girderKey);
+
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType lastIntervalIdx = nIntervals-1;
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
+
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *p << _T("Responses from Externally Applied Loads at the Bridge Site")<<rptNewLine;
+   p->SetName(_T("Bridge Site Results"));
+   *pChapter << p;
+
+   // Product Axial
+   if ( bReportAxial )
    {
-      // if we are rating, want to report all groups at once
-      // to do this, we only want to go through the loop below once
-      // change the loop limits so this happens
-      firstGroupIdx = 0;
-      lastGroupIdx = 0;
+      p = new rptParagraph;
+      *pChapter << p;
+      *p << CProductAxialTable().Build(pBroker, girderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+      if ( bPedestrian )
+      {
+         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+      }
+
+      *p << LIVELOAD_PER_LANE << rptNewLine;
+      LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
+
+      if (bAreThereUserLoads)
+      {
+         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+         for ( ; iter != end; iter++ )
+         {
+            IntervalIndexType intervalIdx = *iter;
+            if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+            {
+               *p << CUserAxialTable().Build(pBroker, girderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+            }
+         }
+      }
    }
 
-   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   // Product Moments
+   p = new rptParagraph;
+   *pChapter << p;
+   *p << CProductMomentsTable().Build(pBroker, girderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+   if ( bPedestrian )
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
-      CGirderKey thisGirderKey(grpIdx,gdrIdx);
+      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+   }
 
-      if (bRating)
+   *p << LIVELOAD_PER_LANE << rptNewLine;
+   LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
+
+   if (bAreThereUserLoads)
+   {
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
       {
-         thisGirderKey.groupIndex = ALL_GROUPS;
+         IntervalIndexType intervalIdx = *iter;
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            *p << CUserMomentsTable().Build(pBroker, girderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+         }
+      }
+   }
+
+   // Product Shears
+   p = new rptParagraph;
+   *pChapter << p;
+   *p << CProductShearTable().Build(pBroker, girderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+   if ( bPedestrian )
+   {
+      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+   }
+
+   *p << LIVELOAD_PER_LANE << rptNewLine;
+   *p << rptNewLine;
+   LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
+   *p << rptNewLine;
+
+   if (bAreThereUserLoads)
+   {
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
+
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            *p << CUserShearTable().Build(pBroker, girderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+         }
+      }
+   }
+
+   // Product Reactions
+   p = new rptParagraph;
+   *pChapter << p;
+   *p << CProductReactionTable().Build(pBroker, girderKey,analysisType,PierReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+   if ( bPedestrian )
+   {
+      *p << _T("$ Pedestrian values are per girder") << rptNewLine;
+   }
+
+   *p << LIVELOAD_PER_LANE << rptNewLine;
+   *p << rptNewLine;
+   LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
+   *p << rptNewLine;
+
+   // For girder bearing reactions
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx, girderKey);
+   if( 0 < vPiers.size() )
+   {
+      *p << CProductReactionTable().Build(pBroker, girderKey,analysisType,BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+
+      if ( bPedestrian )
+      {
+         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
       }
 
+      *p << LIVELOAD_PER_LANE << rptNewLine;
+      *p << rptNewLine;
+      LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
+   }
 
-      bool bAreThereUserLoads = pUDL->DoUserLoadsExist(thisGirderKey);
+   if (bAreThereUserLoads)
+   {
+      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
+      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
+      for ( ; iter != end; iter++ )
+      {
+         IntervalIndexType intervalIdx = *iter;
+         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
+         {
+            *p << CUserReactionTable().Build(pBroker, girderKey,analysisType,PierReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
+            if( 0 < vPiers.size() )
+            {
+               *p << CUserReactionTable().Build(pBroker, girderKey,analysisType,BearingReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
+            }
+         }
+      }
+   }
 
-      IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-      IntervalIndexType lastIntervalIdx = nIntervals-1;
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-
-      std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
-
-      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      *p << _T("Responses from Externally Applied Loads at the Bridge Site")<<rptNewLine;
-      p->SetName(_T("Bridge Site Results"));
-      *pChapter << p;
-
-      // Product Axial
-      if ( bReportAxial )
+   // Product Deflections
+   if ( bDesign )
+   {
+      for (const auto& thisGirderKey : vGirderKeys)
       {
          p = new rptParagraph;
          *pChapter << p;
-         *p << CProductAxialTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+         *p << CProductDeflectionsTable().Build(pBroker, thisGirderKey, analysisType, bDesign, bRating, bIndicateControllingLoad, pDisplayUnits) << rptNewLine;
 
-         if ( bPedestrian )
-         {
-            *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-         }
-
-         *p << LIVELOAD_PER_LANE << rptNewLine;
-         LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
-
-         if (bAreThereUserLoads)
-         {
-            std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-            std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-            for ( ; iter != end; iter++ )
-            {
-               IntervalIndexType intervalIdx = *iter;
-               if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
-               {
-                  *p << CUserAxialTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
-               }
-            }
-         }
-      }
-
-      // Product Moments
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << CProductMomentsTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-      if ( bPedestrian )
-      {
-         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-      }
-
-      *p << LIVELOAD_PER_LANE << rptNewLine;
-      LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
-
-      if (bAreThereUserLoads)
-      {
-         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-         for ( ; iter != end; iter++ )
-         {
-            IntervalIndexType intervalIdx = *iter;
-            if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
-            {
-               *p << CUserMomentsTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
-            }
-         }
-      }
-
-      // Product Shears
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << CProductShearTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-      if ( bPedestrian )
-      {
-         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-      }
-
-      *p << LIVELOAD_PER_LANE << rptNewLine;
-      *p << rptNewLine;
-      LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
-      *p << rptNewLine;
-
-      if (bAreThereUserLoads)
-      {
-         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-         for ( ; iter != end; iter++ )
-         {
-            IntervalIndexType intervalIdx = *iter;
-
-            if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
-            {
-               *p << CUserShearTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
-            }
-         }
-      }
-
-      // Product Reactions
-      p = new rptParagraph;
-      *pChapter << p;
-      *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,PierReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-      if ( bPedestrian )
-      {
-         *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-      }
-
-      *p << LIVELOAD_PER_LANE << rptNewLine;
-      *p << rptNewLine;
-      LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
-      *p << rptNewLine;
-
-      // For girder bearing reactions
-      GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-      std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx,thisGirderKey);
-      if( 0 < vPiers.size() )
-      {
-         *p << CProductReactionTable().Build(pBroker,thisGirderKey,analysisType,BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-         if ( bPedestrian )
+         if (bPedestrian)
          {
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
          }
 
          *p << LIVELOAD_PER_LANE << rptNewLine;
          *p << rptNewLine;
-         LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
-      }
-
-      if (bAreThereUserLoads)
-      {
-         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-         for ( ; iter != end; iter++ )
-         {
-            IntervalIndexType intervalIdx = *iter;
-            if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
-            {
-               *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,PierReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
-               if( 0 < vPiers.size() )
-               {
-                  *p << CUserReactionTable().Build(pBroker,thisGirderKey,analysisType,BearingReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
-               }
-            }
-         }
-      }
-
-      // Product Deflections
-      if ( bDesign )
-      {
-         p = new rptParagraph;
-         *pChapter << p;
-         *p << CProductDeflectionsTable().Build(pBroker,thisGirderKey,analysisType,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
-
-         if ( bPedestrian )
-         {
-            *p << _T("$ Pedestrian values are per girder") << rptNewLine;
-         }
-
-         *p << LIVELOAD_PER_LANE << rptNewLine;
-         *p << rptNewLine;
-         LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
+         LiveLoadTableFooter(pBroker, p, thisGirderKey, bDesign, bRating);
 
          if (bAreThereUserLoads)
          {
             std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
             std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-            for ( ; iter != end; iter++ )
+            for (; iter != end; iter++)
             {
                IntervalIndexType intervalIdx = *iter;
 
-               if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
+               if (pUDL->DoUserLoadsExist(thisGirderKey, intervalIdx))
                {
-                  *p << CUserDeflectionsTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+                  *p << CUserDeflectionsTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits) << rptNewLine;
                }
             }
          }
@@ -414,28 +390,28 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          // Product Rotations
          p = new rptParagraph;
          *pChapter << p;
-         *p << CProductRotationTable().Build(pBroker,thisGirderKey,analysisType,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+         *p << CProductRotationTable().Build(pBroker, thisGirderKey, analysisType, true, false, bDesign, bRating, bIndicateControllingLoad, pDisplayUnits) << rptNewLine;
 
-         if ( bPedestrian )
+         if (bPedestrian)
          {
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
          }
 
          *p << LIVELOAD_PER_LANE << rptNewLine;
          *p << rptNewLine;
-         LiveLoadTableFooter(pBroker,p,thisGirderKey,bDesign,bRating);
+         LiveLoadTableFooter(pBroker, p, thisGirderKey, bDesign, bRating);
 
          if (bAreThereUserLoads)
          {
             std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
             std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-            for ( ; iter != end; iter++ )
+            for (; iter != end; iter++)
             {
                IntervalIndexType intervalIdx = *iter;
 
-               if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx) )
+               if (pUDL->DoUserLoadsExist(thisGirderKey, intervalIdx))
                {
-                  *p << CUserRotationTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
+                  *p << CUserRotationTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits) << rptNewLine;
                }
             }
          }
@@ -446,105 +422,106 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             p = new rptParagraph;
             p->SetName(_T("Live Load Deflections"));
             *pChapter << p;
-            *p << CProductDeflectionsTable().BuildLiveLoadTable(pBroker,thisGirderKey,pDisplayUnits) << rptNewLine;
-            *p << _T("D1 = LRFD Design truck without lane load and including impact")<< rptNewLine;
-            *p << _T("D2 = 0.25*(Design truck) + lane load, including impact")<< rptNewLine;
-            *p << _T("D(Controlling) = Max(D1, D2)")<< rptNewLine;
+            *p << CProductDeflectionsTable().BuildLiveLoadTable(pBroker, thisGirderKey, pDisplayUnits) << rptNewLine;
+            *p << _T("D1 = LRFD Design truck without lane load and including impact") << rptNewLine;
+            *p << _T("D2 = 0.25*(Design truck) + lane load, including impact") << rptNewLine;
+            *p << _T("D(Controlling) = Max(D1, D2)") << rptNewLine;
             *p << _T("EI = Bridge EI / Number of Girders") << rptNewLine;
             *p << _T("Live Load Distribution Factor = (Multiple Presence Factor)(Number of Lanes)/(Number of Girders)") << rptNewLine;
             *p << rptNewLine;
          }
-      } // if design
-
-
-      vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx,thisGirderKey);
-
-      // Load Combinations (DC, DW, etc) & Limit States
-      // if we are doing a time-step analysis, we need to report for all intervals from
-      // the first prestress release to the end to report all time-dependent effects
-      bool bTimeDependentNote = false;
-      if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
-      {
-         bTimeDependentNote = true;
-         IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(thisGirderKey);
-         vIntervals.clear();
-         vIntervals.resize(nIntervals-firstReleaseIntervalIdx);
-         std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(firstReleaseIntervalIdx));
-         // when we go to C++ 11, use the std::itoa algorithm
       }
-      for (const auto& intervalIdx : vIntervals)
-      {
-         p = new rptParagraph(rptStyleManager::GetHeadingStyle());
-         *pChapter << p;
-         CString strName;
-         strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-         p->SetName(strName);
-         *p << p->GetName() << rptNewLine;
+   } // if design
 
-         p = new rptParagraph;
-         *pChapter << p;
 
-         if ( bReportAxial )
-         {
-            CCombinedAxialTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
-            if ( bTimeDependentNote )
-            {
-               p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
-               *pChapter << p;
-               *p << TIME_DEPENDENT_NOTE << rptNewLine;
-               p = new rptParagraph;
-               *pChapter << p;
-            }
-         }
-         CCombinedMomentsTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
-         if ( bTimeDependentNote )
-         {
-            p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
-            *pChapter << p;
-            *p << TIME_DEPENDENT_NOTE << rptNewLine;
-            p = new rptParagraph;
-            *pChapter << p;
-         }
-         CCombinedShearTable().Build(  pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
-         if ( bTimeDependentNote )
-         {
-            p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
-            *pChapter << p;
-            *p << TIME_DEPENDENT_NOTE << rptNewLine;
-            p = new rptParagraph;
-            *pChapter << p;
-         }
-         if ( castDeckIntervalIdx <= intervalIdx )
-         {
-            CCombinedReactionTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx,analysisType,PierReactionsTable, bDesign, bRating);
-            if( 0 < vPiers.size() )
-            {
-               CCombinedReactionTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
-            }
+   vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx,girderKey);
 
-            if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )
-            {
-               p = new rptParagraph(rptStyleManager::GetHeadingStyle());
-               *pChapter << p;
-               *p << _T("Concurrent Shears") << rptNewLine;
-               p->SetName(_T("Concurrent Shears"));
-               CConcurrentShearTable().Build(pBroker,pChapter,thisGirderKey,pDisplayUnits,intervalIdx, analysisType);
-            }
-         }
-      } // next interval
-
+   // Load Combinations (DC, DW, etc) & Limit States
+   // if we are doing a time-step analysis, we need to report for all intervals from
+   // the first prestress release to the end to report all time-dependent effects
+   bool bTimeDependentNote = false;
+   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+   {
+      bTimeDependentNote = true;
+      IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+      vIntervals.clear();
+      vIntervals.resize(nIntervals-firstReleaseIntervalIdx);
+      std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(firstReleaseIntervalIdx));
+      // when we go to C++ 11, use the std::itoa algorithm
+   }
+   for (const auto& intervalIdx : vIntervals)
+   {
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
-      *p << _T("Live Load Reactions Without Impact") << rptNewLine;
-      p->SetName(_T("Live Load Reactions Without Impact"));
-      //CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,thisGirderKey,pDisplayUnits);
-      CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,thisGirderKey,pDisplayUnits,analysisType,PierReactionsTable, false, true, false);
+      CString strName;
+      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      p->SetName(strName);
+      *p << p->GetName() << rptNewLine;
 
-      if( 0 < vPiers.size() )
+      p = new rptParagraph;
+      *pChapter << p;
+
+      if ( bReportAxial )
       {
-         CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter,thisGirderKey,pDisplayUnits,analysisType,BearingReactionsTable, false, true, false);
+         CCombinedAxialTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+         if ( bTimeDependentNote )
+         {
+            p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+            *pChapter << p;
+            *p << TIME_DEPENDENT_NOTE << rptNewLine;
+            p = new rptParagraph;
+            *pChapter << p;
+         }
       }
-   } // next group
+      CCombinedMomentsTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+      if ( bTimeDependentNote )
+      {
+         p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+         *pChapter << p;
+         *p << TIME_DEPENDENT_NOTE << rptNewLine;
+         p = new rptParagraph;
+         *pChapter << p;
+      }
+      CCombinedShearTable().Build(  pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
+      if ( bTimeDependentNote )
+      {
+         p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+         *pChapter << p;
+         *p << TIME_DEPENDENT_NOTE << rptNewLine;
+         p = new rptParagraph;
+         *pChapter << p;
+      }
+
+      if ( castDeckIntervalIdx <= intervalIdx )
+      {
+         CCombinedReactionTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx,analysisType,PierReactionsTable, bDesign, bRating);
+         if( 0 < vPiers.size() )
+         {
+            CCombinedReactionTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
+         }
+
+         if ( pSpecEntry->GetShearCapacityMethod() == scmVciVcw )
+         {
+            p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+            *pChapter << p;
+            *p << _T("Concurrent Shears") << rptNewLine;
+            p->SetName(_T("Concurrent Shears"));
+            CConcurrentShearTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx, analysisType);
+         }
+      }
+   } // next interval
+
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << p;
+   *p << _T("Live Load Reactions Without Impact") << rptNewLine;
+   p->SetName(_T("Live Load Reactions Without Impact"));
+   //CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,girderKey,pDisplayUnits);
+   CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter, girderKey,pDisplayUnits,analysisType,PierReactionsTable, false, true, false);
+
+   if( 0 < vPiers.size() )
+   {
+      CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter, girderKey,pDisplayUnits,analysisType,BearingReactionsTable, false, true, false);
+   }
 
    return pChapter;
 }

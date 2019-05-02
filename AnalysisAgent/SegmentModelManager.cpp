@@ -1357,15 +1357,12 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Lim
 // IExternalLoading
 bool CSegmentModelManager::CreateLoading(GirderIndexType girderLineIdx,LPCTSTR strLoadingName)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderLineIdx, &vGirderKeys);
+   for(const auto& girderKey : vGirderKeys)
    {
-      GirderIndexType nGirdersThisGroup = pIBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
-      GirderIndexType gdrIdx = Min(girderLineIdx,nGirdersThisGroup-1);
-
-      CGirderKey girderKey(grpIdx,gdrIdx);
-
       const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -1412,16 +1409,13 @@ bool CSegmentModelManager::CreateLoading(GirderIndexType girderLineIdx,LPCTSTR s
    return true;
 }
 
-bool CSegmentModelManager::AddLoadingToLoadCombination(GirderIndexType girderLineIdx,LPCTSTR strLoadingName,LoadingCombinationType comboType)
+bool CSegmentModelManager::AddLoadingToLoadCombination(GirderIndexType girderLineIdx, LPCTSTR strLoadingName, LoadingCombinationType comboType)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderLineIdx, &vGirderKeys);
+   for (const auto& girderKey : vGirderKeys)
    {
-      GirderIndexType nGirdersThisGroup = pIBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
-      GirderIndexType gdrIdx = Min(girderLineIdx,nGirdersThisGroup-1);
-
-      CGirderKey girderKey(grpIdx,gdrIdx);
       auto& loadCombinationMap(GetLoadCombinationMap(girderKey));
       loadCombinationMap.insert(std::make_pair(comboType,strLoadingName));
    }

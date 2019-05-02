@@ -240,160 +240,146 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
+   std::_tstring stage_name(pIntervals->GetDescription(intervalIdx));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+
+      bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
+
+      // vBasicPoi does not contain CS for shear POI
+      PoiList vBasicPoi;
+      pPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), &vBasicPoi);;
+      pPoi->RemovePointsOfInterest(vBasicPoi,POI_BOUNDARY_PIER);
+
+      std::vector<pgsTypes::LimitState> vLimitStates;
+      if ( bDesign )
       {
-         CGirderKey thisGirderKey(grpIdx,gdrIdx);
+         vLimitStates.push_back(pgsTypes::StrengthI);
+         if ( bPermit )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthII);
+         }
+      }
 
-         IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
-         std::_tstring stage_name( pIntervals->GetDescription(intervalIdx) );
+      if ( bRating )
+      {
+         GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_Inventory);
+         }
 
-         rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-         *pChapter << pPara;
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_Operating);
+         }
 
-         bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_LegalRoutine);
+         }
 
-         // vBasicPoi does not contain CS for shear POI
-         PoiList vBasicPoi;
-         pPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), &vBasicPoi);;
-         pPoi->RemovePointsOfInterest(vBasicPoi,POI_BOUNDARY_PIER);
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_LegalSpecial);
+         }
 
-         std::vector<pgsTypes::LimitState> vLimitStates;
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency))
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_LegalEmergency);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthII_PermitRoutine);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Special) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
+         }
+      }
+
+      for (const auto& ls : vLimitStates)
+      {
+         PoiList vCSPoi;
+         pPoi->GetCriticalSections(ls, thisGirderKey,&vCSPoi);
+         PoiList vPoi;
+         pPoi->MergePoiLists(vBasicPoi, vCSPoi,&vPoi); // merge, sort, and remove duplicates
+
+         write_shear_dimensions_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+
+         if ( shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001 )
+         {
+            write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_fpc_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Fe_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+         }
+         else if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
+         {
+            write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+         }
+         else if ( shear_capacity_method == scmVciVcw )
+         {
+            write_fpce_table            (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vci_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_fpc_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vcw_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_theta_table           (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+         }
+
+         write_Vn_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+
          if ( bDesign )
          {
-            vLimitStates.push_back(pgsTypes::StrengthI);
+            write_Avs_table(        pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_bar_spacing_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+
             if ( bPermit )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthII);
-            }
-         }
-
-         if ( bRating )
-         {
-            GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_Inventory);
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_Operating);
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_LegalRoutine);
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_LegalSpecial);
-            }
-
-            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency))
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_LegalEmergency);
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthII_PermitRoutine);
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Special) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
-            }
-         }
-
-         std::vector<pgsTypes::LimitState>::iterator iter;
-         for ( iter = vLimitStates.begin(); iter != vLimitStates.end(); iter++ )
-         {
-            pgsTypes::LimitState ls = *iter;
-
-            PoiList vCSPoi;
-            pPoi->GetCriticalSections(ls, thisGirderKey,&vCSPoi);
-            PoiList vPoi;
-            pPoi->MergePoiLists(vBasicPoi, vCSPoi,&vPoi); // merge, sort, and remove duplicates
-
-            write_shear_dimensions_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-
-            if ( shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001 )
-            {
-               write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_fpc_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Fe_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            }
-            else if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
-            {
-               write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            }
-            else if ( shear_capacity_method == scmVciVcw )
-            {
-               write_fpce_table            (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vci_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_fpc_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vcw_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_theta_table           (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            }
-
-            write_Vn_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-
-            if ( bDesign )
             {
                write_Avs_table(        pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
                write_bar_spacing_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-
-               if ( bPermit )
-               {
-                  write_Avs_table(        pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-                  write_bar_spacing_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               }
             }
          }
+      }
 
-         /////////////////////////////////////////////
-         // Horizontal interface shear - only reported for design
-         /////////////////////////////////////////////
-         if ( bDesign )
+      /////////////////////////////////////////////
+      // Horizontal interface shear - only reported for design
+      /////////////////////////////////////////////
+      if ( bDesign )
+      {
+         if ( pBridge->IsCompositeDeck() )
          {
-            GET_IFACE2(pBroker,IBridge,pBridge);
-            if ( pBridge->IsCompositeDeck() )
-            {
-               pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-               pPara->SetName(_T("Horizontal Interface Shear"));
-               *pPara << pPara->GetName() << rptNewLine;
-               *pChapter << pPara;
-               CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthI);
+            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+            pPara->SetName(_T("Horizontal Interface Shear"));
+            *pPara << pPara->GetName() << rptNewLine;
+            *pChapter << pPara;
+            CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthI);
 
-               if ( bPermit )
-               {
-                  CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthII);
-               }
+            if ( bPermit )
+            {
+               CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthII);
             }
          }
-      } // next girder
+      }
    } // next group
 
    return pChapter;
@@ -982,6 +968,7 @@ void write_fpo_table(IBroker* pBroker,
             const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
             Kps = 0.70;
             *pParagraph << italic(ON) << Sub2(_T("f"),_T("po")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
+
             *pParagraph << _T(" = ") << stress.SetValue(Kps*pStrand->GetUltimateStrength()) << rptNewLine;
             
             *pParagraph << rptNewLine;
@@ -992,8 +979,8 @@ void write_fpo_table(IBroker* pBroker,
             *pParagraph << _T("Tendons") << rptNewLine;
             const matPsStrand* pTendon = pMaterial->GetTendonMaterial(girderKey);
             Kpt = 0.70;
-            *pParagraph << italic(ON) << Sub2(_T("f"),_T("po pt")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
-            *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
+             *pParagraph << italic(ON) << Sub2(_T("f"),_T("po pt")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
+                         *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
          }
       }
    }
@@ -1010,12 +997,6 @@ void write_fpo_table(IBroker* pBroker,
          ColumnIndexType nCols = (0 == nDucts ? 6 : 9);
 
          rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols);
-
-         //if ( segmentKey.groupIndex == ALL_GROUPS )
-         //{
-         //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-         //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-         //}
 
          if ( 1 < vGirderKeys.size() )
          {
