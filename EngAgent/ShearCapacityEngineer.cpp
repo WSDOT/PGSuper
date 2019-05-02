@@ -272,11 +272,6 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
    CGirderKey girderKey(poi.GetSegmentKey());
-   
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
