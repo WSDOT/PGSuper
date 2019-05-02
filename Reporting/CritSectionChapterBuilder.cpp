@@ -109,81 +109,72 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
 
    GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLimitStateForces); // not used if bDesign = false
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = Min(nGirders,  (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      rptParagraph* pPara;
+      if ( girderKey.groupIndex == ALL_GROUPS )
       {
-         CGirderKey thisGirderKey(grpIdx,gdrIdx);
+         pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         *pChapter << pPara;
+         std::_tostringstream os;
+         os << _T("Group ") << LABEL_GROUP(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex);
+         pPara->SetName( os.str().c_str() );
+         (*pPara) << pPara->GetName() << rptNewLine;
+      }
 
-         rptParagraph* pPara;
-         if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
+      if ( bDesign )
+      {
+         Build(pChapter,pgsTypes::StrengthI,pBroker,thisGirderKey,pDisplayUnits,level);
+
+         if ( pLimitStateForces->IsStrengthIIApplicable(thisGirderKey) && !bAfterThirdEdition )
          {
-            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-            *pChapter << pPara;
-            std::_tostringstream os;
-            os << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
-            pPara->SetName( os.str().c_str() );
-            (*pPara) << pPara->GetName() << rptNewLine;
+            Build(pChapter,pgsTypes::StrengthII,pBroker,thisGirderKey,pDisplayUnits,level);
          }
+      }
 
-         if ( bDesign )
+      if ( bRating )
+      {
+         if ( bAfterThirdEdition )
          {
             Build(pChapter,pgsTypes::StrengthI,pBroker,thisGirderKey,pDisplayUnits,level);
-
-            if ( pLimitStateForces->IsStrengthIIApplicable(thisGirderKey) && !bAfterThirdEdition )
-            {
-               Build(pChapter,pgsTypes::StrengthII,pBroker,thisGirderKey,pDisplayUnits,level);
-            }
          }
-
-         if ( bRating )
+         else
          {
-            if ( bAfterThirdEdition )
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
             {
-               Build(pChapter,pgsTypes::StrengthI,pBroker,thisGirderKey,pDisplayUnits,level);
+               Build(pChapter,pgsTypes::StrengthI_Inventory,pBroker,thisGirderKey,pDisplayUnits,level);
             }
-            else
+
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
             {
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
-               {
-                  Build(pChapter,pgsTypes::StrengthI_Inventory,pBroker,thisGirderKey,pDisplayUnits,level);
-               }
+               Build(pChapter,pgsTypes::StrengthI_Operating,pBroker,thisGirderKey,pDisplayUnits,level);
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
-               {
-                  Build(pChapter,pgsTypes::StrengthI_Operating,pBroker,thisGirderKey,pDisplayUnits,level);
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
+            {
+               Build(pChapter,pgsTypes::StrengthI_LegalRoutine,pBroker,thisGirderKey,pDisplayUnits,level);
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
-               {
-                  Build(pChapter,pgsTypes::StrengthI_LegalRoutine,pBroker,thisGirderKey,pDisplayUnits,level);
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
+            {
+               Build(pChapter,pgsTypes::StrengthI_LegalSpecial,pBroker,thisGirderKey,pDisplayUnits,level);
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
-               {
-                  Build(pChapter,pgsTypes::StrengthI_LegalSpecial,pBroker,thisGirderKey,pDisplayUnits,level);
-               }
+            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
+            {
+               Build(pChapter, pgsTypes::StrengthI_LegalEmergency, pBroker, thisGirderKey, pDisplayUnits, level);
+            }
 
-               if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
-               {
-                  Build(pChapter, pgsTypes::StrengthI_LegalEmergency, pBroker, thisGirderKey, pDisplayUnits, level);
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
+            {
+               Build(pChapter,pgsTypes::StrengthII_PermitRoutine,pBroker,thisGirderKey,pDisplayUnits,level);
+            }
 
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
-               {
-                  Build(pChapter,pgsTypes::StrengthII_PermitRoutine,pBroker,thisGirderKey,pDisplayUnits,level);
-               }
-
-               if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
-               {
-                  Build(pChapter,pgsTypes::StrengthII_PermitSpecial,pBroker,thisGirderKey,pDisplayUnits,level);
-               }
+            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
+            {
+               Build(pChapter,pgsTypes::StrengthII_PermitSpecial,pBroker,thisGirderKey,pDisplayUnits,level);
             }
          }
       }

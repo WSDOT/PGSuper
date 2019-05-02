@@ -1,0 +1,148 @@
+Alignment Data
+Direction : 6.17217
+Ref Point, X : 300569, Y : 443798
+HCurveCount : 2
+Curve 0
+TS : 8894.61
+SPI1 : 8894.61
+SC : 8894.61
+PI : 8935.04
+CS : 8972.88
+SPI2 : 8972.88
+ST : 8972.88
+Back Tangent Direction : 6.17217
+Back Tangent Length : 40.434
+Forward Tangent Direction : 5.55339
+Foward Tangent Length : 40.434
+Entry Spiral
+Length : 0
+Angle : 0
+DE : 0
+DF : 0
+DH : 0
+LT : 0
+ST : 0
+Chord : 0
+X : 0
+Y : 0
+Q : 0
+T : 0
+Circular Curve
+Delta : -0.618782
+T : 40.434
+L : 78.271
+E : 6.30533
+LC : 77.0282
+MO : 6.00595
+Exit Spiral
+Length : 0
+Angle : 0
+DE : 0
+DF : 0
+DH : 0
+LT : 0
+ST : 0
+Chord : 0
+X : 0
+Y : 0
+Q : 0
+T : 0
+Curve 1
+TS : 8972.88
+SPI1 : 8972.88
+SC : 8972.88
+PI : 9016.05
+CS : 9059.05
+SPI2 : 9059.05
+ST : 9059.05
+Back Tangent Direction : 5.55339
+Back Tangent Length : 43.1749
+Forward Tangent Direction : 5.39633
+Foward Tangent Length : 43.1749
+Entry Spiral
+Length : 0
+Angle : 0
+DE : 0
+DF : 0
+DH : 0
+LT : 0
+ST : 0
+Chord : 0
+X : 0
+Y : 0
+Q : 0
+T : 0
+Circular Curve
+Delta : -0.157065
+T : 43.1749
+L : 86.1722
+E : 1.69619
+LC : 86.0836
+MO : 1.69096
+Exit Spiral
+Length : 0
+Angle : 0
+DE : 0
+DF : 0
+DH : 0
+LT : 0
+ST : 0
+Chord : 0
+X : 0
+Y : 0
+Q : 0
+T : 0
+Profile Data
+Station : 8787.96
+Elevation : 82.0095
+Grade : 0.00432
+VCurveCount : 4
+Vert Curve 0
+BVC Sta: 8757.48, Elev : 81.8778
+PVI Sta: 8787.96, Elev : 82.0095
+EVC Sta: 8818.44, Elev : 83.5335
+High Point Sta: 8818.44, Elev : 83.5335
+Low Point Sta: 8757.48, Elev : 81.8778
+Grades g1 : 0.00432, g2 : 0.05
+Lengths L1 : 30.48, L2 : 30.48, L: 60.96
+Vert Curve 1
+BVC Sta: 8941.84, Elev : 89.7036
+PVI Sta: 8972.32, Elev : 91.2276
+EVC Sta: 9002.8, Elev : 91.9771
+High Point Sta: 9002.8, Elev : 91.9771
+Low Point Sta: 8941.84, Elev : 89.7036
+Grades g1 : 0.05, g2 : 0.02459
+Lengths L1 : 30.48, L2 : 30.48, L: 60.96
+Vert Curve 2
+BVC Sta: 9036.73, Elev : 92.8113
+PVI Sta: 9059.59, Elev : 93.3734
+EVC Sta: 9082.45, Elev : 92.2304
+High Point Sta: 9051.8, Elev : 92.9966
+Low Point Sta: 9082.45, Elev : 92.2304
+Grades g1 : 0.02459, g2 : -0.05
+Lengths L1 : 22.86, L2 : 22.86, L: 45.72
+Vert Curve 3
+BVC Sta: 9129.8, Elev : 89.863
+PVI Sta: 9141.23, Elev : 89.2915
+EVC Sta: 9152.66, Elev : 89.0629
+High Point Sta: 9129.8, Elev : 89.863
+Low Point Sta: 9152.66, Elev : 89.0629
+Grades g1 : -0.05, g2 : -0.02
+Lengths L1 : 11.43, L2 : 11.43, L: 22.86
+ass, 4.1.1.0, 123001, 18.1811, 89.417, 101, 0
+ass, 4.1.1.0, 123002, 18.1811, 89.442, 101, 0
+ass, 4.1.1.0, 123003, 18.1811, 8766.05, 101, 0
+ass, 4.1.1.0, 123004, 18.1811, 209.55, 101, 0
+ass, 4.1.1.0, 123005, 18.1811, 8766.5, 101, 0
+ass, 4.1.1.0, 123006, 18.1811, 209.56, 101, 0
+ass, 4.1.1.0, 123007, 18.1811, 27805.7, 101, 0
+ass, 4.1.1.0, 123008, 18.1811, 62.053, 101, 0
+ass, 4.1.1.0, 123009, 18.1811, 51.711, 101, 0
+ass, 4.1.1.0, 123010, 18.1811, 8, 101, 0
+ass, 4.1.1.0, 123011, 18.1811, 1.56373e+06, 101, 0
+ass, 4.1.1.0, 123012, 18.1811, 30, 101, 0
+ass, 4.1.1.0, 123013, 18.1811, 5.86398e+06, 101, 0
+ass, 4.1.1.0, 123014, 18.1811, 0, 101, 0
+ass, 4.1.1.0, 123015, 18.1811, 0, 101, 0
+ass, 4.1.1.0, 123016, 18.1811, 447.04, 101, 0
+ass, 4.1.1.0, 123017, 18.1811, 101.6, 101, 0

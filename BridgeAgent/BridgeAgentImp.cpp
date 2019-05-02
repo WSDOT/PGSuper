@@ -7334,6 +7334,38 @@ GirderIndexType CBridgeAgentImp::GetGirderlineCount() const
    return nGirderLines;
 }
 
+void CBridgeAgentImp::GetGirderline(GirderIndexType gdrLineIdx, std::vector<CGirderKey>* pvGirderKeys) const
+{
+   GetGirderline(CGirderKey(ALL_GROUPS,gdrLineIdx),pvGirderKeys);
+}
+
+void CBridgeAgentImp::GetGirderline(GirderIndexType gdrLineIdx, GroupIndexType startGroupIdx, GroupIndexType endGroupIdx, std::vector<CGirderKey>* pvGirderKeys) const
+{
+   ATLASSERT(gdrLineIdx != INVALID_INDEX);
+   ATLASSERT(startGroupIdx != INVALID_INDEX);
+   ATLASSERT(endGroupIdx != INVALID_INDEX);
+   ATLASSERT(startGroupIdx <= endGroupIdx);
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   pvGirderKeys->reserve(endGroupIdx - startGroupIdx + 1);
+   for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
+   {
+      GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
+      GirderIndexType gdrIdx = Min(gdrLineIdx, nGirders - 1);
+      pvGirderKeys->emplace_back(grpIdx, gdrIdx);
+   }
+}
+
+void CBridgeAgentImp::GetGirderline(const CGirderKey& girderKey, std::vector<CGirderKey>* pvGirderKeys) const
+{
+   ATLASSERT(girderKey.girderIndex != INVALID_INDEX);
+   GroupIndexType nGroups = GetGirderGroupCount();
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : startGroupIdx);
+   GetGirderline(girderKey.girderIndex, startGroupIdx, endGroupIdx, pvGirderKeys);
+}
+
 GirderIndexType CBridgeAgentImp::GetGirderCountBySpan(SpanIndexType spanIdx) const
 {
    ATLASSERT( spanIdx != ALL_SPANS );
@@ -9195,15 +9227,15 @@ CSegmentKey CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirde
    // Gets the girder segment that touches the pier 
    // When two segments touch a pier, the segment will be in the girder group defined by the girderKey
    // If both girders are in the same group, the left segment is returned
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+
+   std::vector<CGirderKey> vGirderKeys;
+   GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
 
       const CPierData2* pPierData = pBridgeDesc->GetPier(pierIdx);
       Float64 pierStation = pPierData->GetStation();
@@ -9217,8 +9249,8 @@ CSegmentKey CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirde
 
          if ( ::InRange(startStation,pierStation,endStation) )
          {
-            segmentKey.groupIndex = grpIdx;
-            segmentKey.girderIndex = girderKey.girderIndex;
+            segmentKey.groupIndex = thisGirderKey.groupIndex;
+            segmentKey.girderIndex = thisGirderKey.girderIndex;
             segmentKey.segmentIndex = segIdx;
             return segmentKey;
          }
@@ -9231,59 +9263,51 @@ CSegmentKey CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirde
 
 void CBridgeAgentImp::GetSegmentsAtPier(PierIndexType pierIdx, GirderIndexType gdrIdx, CSegmentKey* pBackSegmentKey, CSegmentKey* pAheadSegmentKey) const
 {
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
    CSegmentKey backSegmentKey, aheadSegmentKey;
    GroupIndexType backGroupIdx, aheadGroupIdx;
    GetGirderGroupIndex(pierIdx, &backGroupIdx, &aheadGroupIdx);
    if (backGroupIdx != INVALID_INDEX)
    {
-      GirderIndexType nGirders = GetGirderCount(backGroupIdx);
-      if (gdrIdx < nGirders)
+      std::vector<CGirderKey> vGirderKeys;
+      GetGirderline(gdrIdx, backGroupIdx, backGroupIdx, &vGirderKeys);
+      ATLASSERT(vGirderKeys.size() == 1);
+      const auto& thisGirderKey = vGirderKeys.front();
+      SegmentIndexType nSegments = GetSegmentCount(thisGirderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
-         SegmentIndexType nSegments = GetSegmentCount(backGroupIdx, gdrIdx);
-         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         CSegmentKey segmentKey(thisGirderKey, segIdx);
+         const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pSegment->GetSupport(pgsTypes::metEnd, &pPier, &pTS);
+         if (pPier && pPier->GetIndex() == pierIdx)
          {
-            CSegmentKey segmentKey(backGroupIdx, gdrIdx, segIdx);
-            const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-            const CPierData2* pPier;
-            const CTemporarySupportData* pTS;
-            pSegment->GetSupport(pgsTypes::metEnd, &pPier, &pTS);
-            if (pPier && pPier->GetIndex() == pierIdx)
-            {
-               backSegmentKey = segmentKey;
-               break;
-            }
+            backSegmentKey = segmentKey;
+            break;
          }
-      }
-      else
-      {
-         backSegmentKey.groupIndex = backGroupIdx;
       }
    }
 
    if (aheadGroupIdx != INVALID_INDEX)
    {
-      GirderIndexType nGirders = GetGirderCount(aheadGroupIdx);
-      if (gdrIdx < nGirders)
+      std::vector<CGirderKey> vGirderKeys;
+      GetGirderline(gdrIdx, aheadGroupIdx, aheadGroupIdx, &vGirderKeys);
+      ATLASSERT(vGirderKeys.size() == 1);
+      const auto& thisGirderKey = vGirderKeys.front();
+      SegmentIndexType nSegments = GetSegmentCount(thisGirderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
-         SegmentIndexType nSegments = GetSegmentCount(aheadGroupIdx, gdrIdx);
-         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         CSegmentKey segmentKey(thisGirderKey, segIdx);
+         const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+         const CPierData2* pPier;
+         const CTemporarySupportData* pTS;
+         pSegment->GetSupport(pgsTypes::metStart, &pPier, &pTS);
+         if (pPier && pPier->GetIndex() == pierIdx)
          {
-            CSegmentKey segmentKey(aheadGroupIdx, gdrIdx, segIdx);
-            const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-            const CPierData2* pPier;
-            const CTemporarySupportData* pTS;
-            pSegment->GetSupport(pgsTypes::metStart, &pPier, &pTS);
-            if (pPier && pPier->GetIndex() == pierIdx)
-            {
-               aheadSegmentKey = segmentKey;
-               break;
-            }
+            aheadSegmentKey = segmentKey;
+            break;
          }
-      }
-      else
-      {
-         aheadSegmentKey.groupIndex = aheadGroupIdx;
       }
    }
 
@@ -11591,15 +11615,14 @@ bool CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,const C
 
 Float64 CBridgeAgentImp::GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx) const
 {
-   GroupIndexType nGroups = GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   GetGirderline(gdrIdx, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = GetGirderCount(grpIdx);
-      GirderIndexType thisGdrIdx = Min(gdrIdx,nGirders-1);
-      SegmentIndexType nSegments = GetSegmentCount(grpIdx,thisGdrIdx);
+      SegmentIndexType nSegments = GetSegmentCount(thisGirderKey);
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,thisGdrIdx,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
          Float64 Xs;
          bool bResult = GetTemporarySupportLocation(tsIdx,segmentKey,&Xs);
          if ( bResult == true )

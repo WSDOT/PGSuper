@@ -115,7 +115,7 @@ void CAnalysisResultsGraphBuilder::Init()
 
 BOOL CAnalysisResultsGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
 {
-   CGirderKey girderKey;
+   CGirderKey girderKey(ALL_GROUPS,0);
    GET_IFACE(ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
    if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment)
@@ -212,20 +212,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    // for this group
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
    bool bTempStrand = false;
    bool bPedLoading = false;
    bool bSidewalk   = false;
    bool bShearKey   = false;
 
-   for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
+   for (const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-      GirderIndexType girderIdx = Min(girderKey.girderIndex,nGirders-1);
-
-      CGirderKey thisGirderKey(groupIdx,girderIdx);
-
       bPedLoading |= pProductLoads->HasPedestrianLoad(thisGirderKey);
       bSidewalk   |= pProductLoads->HasSidewalkLoad(thisGirderKey);
       bShearKey   |= pProductLoads->HasShearKeyLoad(thisGirderKey);
@@ -309,13 +304,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    std::vector<IntervalIndexType> vPTIntervals, vAllPTIntervals;
    GET_IFACE(ITendonGeometry,pTendonGeometry);
    IntervalIndexType firstPTIntervalIdx = nIntervals;
-   for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-      GirderIndexType girderIdx = Min(girderKey.girderIndex,nGirders-1);
-
-      CGirderKey thisGirderKey(groupIdx,girderIdx);
-
       DuctIndexType nDucts = pTendonGeometry->GetDuctCount(thisGirderKey);
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
@@ -400,7 +390,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Deck Shrinkage"),   graphDeckShrinkageStress ,   vRailingSystemIntervals) );
    }
-
 
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
@@ -1227,10 +1216,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    m_Graph.ClearData();
    m_UsedDataLabels.clear();
 
-   GroupIndexType  grpIdx = m_pGraphController->GetGirderGroup();
-   GirderIndexType gdrIdx = m_pGraphController->GetGirder();
-
-   CGirderKey girderKey(grpIdx == ALL_GROUPS ? 0 : grpIdx, gdrIdx);
+   const auto& girderKey = m_pGraphController->GetGirderKey();
 
    ActionType actionType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
 
@@ -1249,9 +1235,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    GET_IFACE(IIntervals, pIntervals);
    bool bSimpleSpanSegments = true;
    GET_IFACE(IBridge, pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType startGroupIdx = (grpIdx == ALL_GROUPS ? 0 : grpIdx);
-   GroupIndexType endGroupIdx = (grpIdx == ALL_GROUPS ? nGroups - 1 : Min(nGroups - 1, startGroupIdx));
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
 
    std::vector<IntervalIndexType>::iterator intervalIter(vIntervals.begin());
    std::vector<IntervalIndexType>::iterator intervalIterEnd(vIntervals.end());
@@ -1259,11 +1244,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    {
       IntervalIndexType intervalIdx = *intervalIter;
 
-      for (GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++)
+      for(const auto& thisGirderKey : vGirderKeys)
       {
-         GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-         GirderIndexType girderIdx = Min(gdrIdx, nGirders - 1);
-         CGirderKey thisGirderKey(groupIdx, girderIdx);
          SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
          if (1 < nSegments)
          {
@@ -1285,7 +1267,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       // deck is composite with the girders (in which case we can assume continuity has occured)
       if (bSimpleSpanSegments)
       {
-         if (pIntervals->GetCompositeDeckInterval() <= intervalIdx && grpIdx == ALL_GROUPS)
+         if (pIntervals->GetCompositeDeckInterval() <= intervalIdx && girderKey.groupIndex == ALL_GROUPS)
          {
             bSimpleSpanSegments = false;
          }
@@ -1295,11 +1277,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    // Determine the interval when the first segment is erected for the girder groups
    // that are being plotted
    IntervalIndexType firstSegmentErectionIntervalIdx = INVALID_INDEX;
-   for (GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++)
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-      GirderIndexType girderIdx = Min(gdrIdx, nGirders - 1);
-      CGirderKey thisGirderKey(groupIdx, girderIdx);
       firstSegmentErectionIntervalIdx = Min(firstSegmentErectionIntervalIdx, pIntervals->GetFirstSegmentErectionInterval(thisGirderKey));
    }
 
@@ -1315,12 +1294,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
 
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   for ( GroupIndexType groupIdx = startGroupIdx; groupIdx <= endGroupIdx; groupIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-      GirderIndexType girderIdx = Min(gdrIdx,nGirders-1);
-      CGirderKey thisGirderKey(groupIdx,girderIdx);
-
       m_GroupOffset = -ComputeShift(thisGirderKey); // shift is negative, we want positive value... change sign
 
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
@@ -1328,7 +1303,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       SegmentIndexType endSegmentIdx = (bSimpleSpanSegments ? nSegments-1 : 0);
       for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
       {
-         CSegmentKey segmentKey(groupIdx, girderIdx, segIdx);
+         CSegmentKey segmentKey(thisGirderKey, segIdx);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
          IntervalIndexType segmentErectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
          IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -1342,7 +1317,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
          //}
          //
          PoiList vPoi;
-         pIPoi->GetPointsOfInterest(CSegmentKey(groupIdx, girderIdx, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), &vPoi);
+         pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), &vPoi);
 
          if ( bSimpleSpanSegments )
          {
@@ -1353,7 +1328,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
 
          // Map POI coordinates to X-values for the graph
          std::vector<Float64> xVals;
-         Shift(grpIdx == ALL_GROUPS ? false : true);
+         Shift(girderKey.groupIndex == ALL_GROUPS ? false : true);
          GetXValues(vPoi,&xVals);
 
          for ( IndexType graphIdx = 0; graphIdx < nSelectedGraphs; graphIdx++ )

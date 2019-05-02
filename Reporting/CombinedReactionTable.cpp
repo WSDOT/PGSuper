@@ -205,7 +205,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
 
    rptRcTable* p_table=0;
 
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,iter.CurrentItem().GirderKey,(tableType==PierReactionsTable ? _T("Total Girder Line Reactions at Abutments and Piers"): _T("Girder Bearing Reactions")),
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,(tableType==PierReactionsTable ? _T("Total Girder Line Reactions at Abutments and Piers"): _T("Girder Bearing Reactions")),
                                  true ,bRating,intervalIdx,
                                  analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
 

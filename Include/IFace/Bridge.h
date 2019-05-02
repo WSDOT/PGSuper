@@ -240,6 +240,16 @@ interface IBridge : IUnknown
    // returns the end to end length of the girder measured along the centerline of its segments
    virtual Float64 GetGirderLength(const CGirderKey& girderKey) const = 0;
 
+   // fills vGirderKeys with the girder keys that make up a girder line (does not empty the container)
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, std::vector<CGirderKey>* pvGirderKeys) const = 0;
+
+   // fills vGirderKeys with the girder keys that make up a girder line between start and end group
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, GroupIndexType startGroupIdx, GroupIndexType endGroupIdx,std::vector<CGirderKey>* pvGirderKeys) const = 0;
+
+   // fills the vector with girder keys that make up the girder line described by girderKey. If girderKey.groupIndex == ALL_GROUPS
+   // all groups are used, otherwise the specified group is used.
+   virtual void GetGirderline(const CGirderKey& girderKey, std::vector<CGirderKey>* pvGirderKeys) const = 0;
+
    // returns the cantilever length of a girder. If the girder end is not cantilevered, returns 0.
    // The cantilever length applies to spans where one of the end piers is designated as a cantilever.
    // This is NOT the member end distance!

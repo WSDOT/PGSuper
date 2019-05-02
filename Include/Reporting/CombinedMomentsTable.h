@@ -641,12 +641,10 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
 }
 
 template <class M,class T>
-RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker* pBroker,const CGirderKey& girderKey,LPCTSTR strLabel,bool bPierTable, bool bRating,IntervalIndexType intervalIdx,
+RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker* pBroker,LPCTSTR strLabel,bool bPierTable, bool bRating,IntervalIndexType intervalIdx,
                                                pgsTypes::AnalysisType analysisType,
                                                IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
-   ASSERT_GIRDER_KEY(girderKey);
-
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();

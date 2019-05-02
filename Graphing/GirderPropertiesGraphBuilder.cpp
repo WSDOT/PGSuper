@@ -305,14 +305,11 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
    PoiList vPoi;
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IIntervals, pIntervals);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx = (girderKey.groupIndex== ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-      CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
+      CSegmentKey segmentKey(thisGirderKey,ALL_SEGMENTS);
       PoiList vSegmentPoi;
       pPoi->GetPointsOfInterest(segmentKey, &vSegmentPoi);
 
