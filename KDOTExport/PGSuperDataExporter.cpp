@@ -1110,16 +1110,7 @@ CString CPGSuperDataExporter::GetDocumentationURL() const
    strAppName += _T(".dll");
    verInfo.Load(strAppName);
 
-   CString strVersion = verInfo.GetProductVersionAsString();
-
-   std::_tstring v(strVersion);
-   auto count = std::count(std::begin(v), std::end(v), _T('.'));
-
-   for (auto i = 0; i < count - 1; i++)
-   {
-      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-      strVersion = strVersion.Left(pos);
-   }
+   CString strVersion = verInfo.GetProductVersionAsString(false);
 
    CString strURL;
    strURL.Format(_T("%s%s/"), strDocumentationURL, strVersion);

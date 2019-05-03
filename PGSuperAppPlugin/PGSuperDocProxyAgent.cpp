@@ -1339,24 +1339,12 @@ CString CPGSuperDocProxyAgent::GetVersion(bool bIncludeBuildNumber)
    CVersionInfo verInfo;
    verInfo.Load(strExe);
    
-   CString strVersion = verInfo.GetProductVersionAsString();
 
 #if defined _DEBUG || defined _BETA_VERSION
    // always include the build number in debug and beta versions
    bIncludeBuildNumber = true;
 #endif
-
-   if (!bIncludeBuildNumber)
-   {
-      std::_tstring v(strVersion);
-      auto count = std::count(std::begin(v), std::end(v), _T('.'));
-
-      for (auto i = 0; i < count - 1; i++)
-      {
-         int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-         strVersion = strVersion.Left(pos);
-      }
-   }
+   CString strVersion = verInfo.GetProductVersionAsString(bIncludeBuildNumber);
 
    return strVersion;
 }
