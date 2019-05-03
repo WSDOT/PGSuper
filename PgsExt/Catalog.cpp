@@ -517,16 +517,7 @@ CString CCatalog::GetAppVersion()
    CVersionInfo verInfo;
    verInfo.Load(strExe);
    
-   CString strVersion = verInfo.GetProductVersionAsString();
-
-   std::_tstring v(strVersion);
-   auto count = std::count(std::begin(v), std::end(v), _T('.'));
-   count -= 2; // always want version number in the form x.y.z so remove all dots from the back end of the string except 2
-   for (auto i = 0; i < count; i++)
-   {
-      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-      strVersion = strVersion.Left(pos);
-   }
+   CString strVersion = verInfo.GetProductVersionAsString(false);
 
    return strVersion;
 }

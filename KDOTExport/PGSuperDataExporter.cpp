@@ -1110,13 +1110,7 @@ CString CPGSuperDataExporter::GetDocumentationURL() const
    strAppName += _T(".dll");
    verInfo.Load(strAppName);
 
-   CString strVersion = verInfo.GetProductVersionAsString();
-
-   // remove the build and release number
-   int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-   strVersion = strVersion.Left(pos);
-   pos = strVersion.ReverseFind(_T('.')); // find the last '.'
-   strVersion = strVersion.Left(pos);
+   CString strVersion = verInfo.GetProductVersionAsString(false);
 
    CString strURL;
    strURL.Format(_T("%s%s/"), strDocumentationURL, strVersion);
