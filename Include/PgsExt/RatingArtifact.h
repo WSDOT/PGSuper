@@ -65,6 +65,11 @@ public:
    void AddArtifact(const pgsPointOfInterest& poi,const pgsStressRatingArtifact& artifact);
    void AddArtifact(const pgsPointOfInterest& poi,const pgsYieldStressRatioArtifact& artifact,bool bPositiveMoment);
 
+   const pgsMomentRatingArtifact* GetMomentRatingArtifact(const pgsPointOfInterest& poi, bool bPositiveMoment) const;
+   const pgsShearRatingArtifact* GetShearRatingArtifact(const pgsPointOfInterest& poi) const;
+   const pgsStressRatingArtifact* GetStressRatingArtifact(const pgsPointOfInterest& poi) const;
+   const pgsYieldStressRatioArtifact* GetYieldStressRatioArtifact(const pgsPointOfInterest& poi, bool bPositiveMoment) const;
+
    const MomentRatings& GetMomentRatings(bool bPositiveMoment) const;
    const ShearRatings& GetShearRatings() const;
    const StressRatings& GetStressRatings() const;

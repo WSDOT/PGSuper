@@ -27,6 +27,7 @@
 #include "VoidedSlabFactory.h"
 #include "IBeamDistFactorEngineer.h"
 #include "VoidedSlabDistFactorEngineer.h"
+#include "TxDOTSpreadSlabBeamDistFactorEngineer.h"
 #include "UBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
 #include "TimeStepLossEngineer.h"
@@ -216,15 +217,31 @@ void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupID
    }
    else
    {
-      // this is a type b section... type b's are the same as type c's which are U-beams
-      ATLASSERT( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
+      GET_IFACE2(pBroker, ILibrary,       pLib);
+      GET_IFACE2(pBroker, ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-      CComObject<CUBeamDistFactorEngineer>* pEngineer;
-      CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-      pEngineer->Init(true,true); // this is a type b cross section, and a spread slab
-      pEngineer->SetBroker(pBroker,statusGroupID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      int lldf_method = pSpecEntry->GetLiveLoadDistributionMethod();
+      if (lldf_method == LLDF_TXDOT)
+      {
+         CComObject<CTxDOTSpreadSlabBeamDistFactorEngineer>* pEngineer;
+         CComObject<CTxDOTSpreadSlabBeamDistFactorEngineer>::CreateInstance(&pEngineer);
+         pEngineer->SetBroker(pBroker, statusGroupID);
+         (*ppEng) = pEngineer;
+         (*ppEng)->AddRef();
+      }
+      else
+      {
+         // this is a type b section... type b's are the same as type c's which are U-beams
+         ATLASSERT(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
+
+         CComObject<CUBeamDistFactorEngineer>* pEngineer;
+         CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
+         pEngineer->Init(true, true); // this is a type b cross section, and a spread slab
+         pEngineer->SetBroker(pBroker, statusGroupID);
+         (*ppEng) = pEngineer;
+         (*ppEng)->AddRef();
+      }
    }
 }
 

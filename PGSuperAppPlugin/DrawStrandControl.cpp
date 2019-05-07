@@ -439,6 +439,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
 
    std::array<StrandIndexType, 3> strandIdx{ 0,0,0 };
    const auto& strandRows = m_pStrands->GetStrandRows();
+   std::array<StrandIndexType, 3> nStrandsDefined{ m_pStrands->GetStrandCount(pgsTypes::Straight), m_pStrands->GetStrandCount(pgsTypes::Harped), m_pStrands->GetStrandCount(pgsTypes::Temporary) };
    for( const auto& strandRow : strandRows)
    {
       GridIndexType nGridPoints = 0;
@@ -571,6 +572,9 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
          CComPtr<IPoint2dCollection> profile; // profile points in Girder Path Coordinates
          pStrandGeom->GetStrandProfile(m_pSegment, m_pStrands, strandRow.m_StrandType, strandIdx[strandRow.m_StrandType], &profile);
          strandIdx[strandRow.m_StrandType] += nStrandsPerGridPoint;
+         // The number of strands and the strand spacing dimensions can be inconsistent
+         // so we have to protected against having and index that is beyond the array bounds
+         strandIdx[strandRow.m_StrandType] = Min(nStrandsDefined[strandRow.m_StrandType]-1, strandIdx[strandRow.m_StrandType]);
 
          CComPtr<IPoint2d> pnt;
          IndexType nPoints;

@@ -597,6 +597,7 @@
     <ClCompile Include="MomentRatingArtifact.cpp" />
     <ClCompile Include="PierData.cpp" />
     <ClCompile Include="PierData2.cpp" />
+    <ClCompile Include="PlantHandlingWeightArtifact.cpp" />
     <ClCompile Include="PoiArtifactKey.cpp" />
     <ClCompile Include="PoiMap.cpp" />
     <ClCompile Include="PoiMgr.cpp" />
@@ -718,6 +719,7 @@
     <ClInclude Include="..\Include\PgsExt\PgsExtExp.h" />
     <ClInclude Include="..\Include\PgsExt\PgsExtLib.h" />
     <ClInclude Include="..\Include\PgsExt\PierData2.h" />
+    <ClInclude Include="..\Include\PgsExt\PlantHandlingWeightArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\PoiArtifactKey.h" />
     <ClInclude Include="..\Include\PgsExt\PoiKey.h" />
     <ClInclude Include="..\Include\PgsExt\PoiMap.h" />

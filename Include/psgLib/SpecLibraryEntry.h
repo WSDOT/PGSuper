@@ -89,6 +89,10 @@ PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 #define TDM_ACI209    1
 #define TDM_CEBFIP    2
 
+// hold down force type
+#define HOLD_DOWN_TOTAL 0
+#define HOLD_DOWN_PER_STRAND 1
+
 // MISCELLANEOUS
 //
 
@@ -226,8 +230,12 @@ public:
    //  Set/Get maximum allowable force to hold down strand bundles at harp point.
    //  If doCheck is false, then hold down forces do not need to be 
    //  checked and hold down force value is undefined.
-   void GetHoldDownForce(bool* doCheck, bool* doDesign, Float64* force) const;
-   void SetHoldDownForce(bool doCheck, bool doDesign, Float64 force=0.0);
+   void GetHoldDownForce(bool* doCheck, bool* doDesign, int* holdDownForceType,Float64* force,Float64* pFriction) const;
+   void SetHoldDownForce(bool doCheck, bool doDesign, int holdDownForceType=HOLD_DOWN_TOTAL,Float64 force=0.0,Float64 friction=0.0);
+
+   // Set/Get the maximum girder weight for plant handling
+   void GetPlantHandlingWeightLimit(bool* pbDoCheck, Float64* pLimit) const;
+   void SetPlantHandlingWeightLimit(bool bDoCheck, Float64 limit);
 
    // Splitting zone length h/n (h/4 or h/5) per LRFD 5.9.4.4.1 (pre2017: 5.10.10.1)
    void SetSplittingZoneLengthFactor(Float64 n);
@@ -824,6 +832,10 @@ public:
    void SetLLDFGirderSpacingLocation(Float64 fra);
    Float64 GetLLDFGirderSpacingLocation() const;
 
+   // Set/Get rigid method option
+   void UseRigidMethod(bool bUseRigidMethod);
+   bool UseRigidMethod() const;
+
    // Set/Get inclusion of HL93 low boy, tandem vehicle
    void IncludeDualTandem(bool bInclude);
    bool IncludeDualTandem() const;
@@ -921,6 +933,13 @@ public:
 
    void SetMaxInterfaceShearConnectionSpacing(Float64 sMax);
    Float64 GetMaxInterfaceShearConnectorSpacing() const;
+
+   // Set/Get parameter that indicates if the weight of cast in place
+   // deck is used for the permanent net compressive force normal to 
+   // the shear plane.
+   // if true, Pc for LRFD5.7.4.3 is computed otherwise it is taken as 0.0.
+   void UseDeckWeightForPermanentNetCompressiveForce(bool bUse);
+   bool UseDeckWeightForPermanentNetCompressiveForce() const;
 
    //////////////////////////////////////
    //
@@ -1199,15 +1218,6 @@ public:
    // live load distribution factors is to be ignored.
    bool IgnoreRangeOfApplicabilityRequirements() const;
 
-
-   
-   //------------------------------------------------------------------------
-   // OBSOLETE: NEED TO BE REMOVED
-   Float64 GetErectionCrackFs() const;
-   void SetErectionCrackFs(Float64 fs);
-   Float64 GetErectionFailFs() const;
-   void SetErectionFailFs(Float64 fs);
-
    // set version of these methods are obsolete and should be removed
    void IgnoreRangeOfApplicabilityRequirements(bool bIgnore);
 
@@ -1233,7 +1243,12 @@ private:
 
    bool    m_DoCheckHoldDown;
    bool    m_DoDesignHoldDown;
+   int     m_HoldDownForceType; // one of the HOLD_DOWN_XXX constants
    Float64 m_HoldDownForce;
+   Float64 m_HoldDownFriction;
+
+   bool m_bCheckHandlingWeightLimit;
+   Float64 m_HandlingWeightLimit;
 
    bool    m_DoCheckSplitting;    // 5.9.4.4 (pre2017: 5.10.10)
    bool    m_DoCheckConfinement;  // 5.9.4.4
@@ -1484,6 +1499,7 @@ private:
 
    ShearFlowMethod m_ShearFlowMethod;
    Float64 m_MaxInterfaceShearConnectorSpacing;
+   bool m_bUseDeckWeightForPc;
 
    Float64 m_StirrupSpacingCoefficient[2];
    Float64 m_MaxStirrupSpacing[2];
@@ -1504,6 +1520,8 @@ private:
    bool m_bIncludeDualTandem; // if true, the dual tandem loading from LRFD C3.6.1.3.1 is included in the HL93 model
 
    bool m_LimitDistributionFactorsToLanesBeams; 
+
+   bool m_bUseRigidMethod; // if true, the rigid method is always used with Type a, e, and k cross section for exterior beam LLDF
 
    pgsTypes::PrestressTransferComputationType m_PrestressTransferComputationType;
 

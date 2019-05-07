@@ -71,10 +71,9 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GroupIndexType groupIdx      = girderKey.groupIndex;
-   GroupIndexType startGroupIdx = (groupIdx == ALL_GROUPS ? 0 : groupIdx);
-   GroupIndexType nGroups       = (groupIdx == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount() : 1);
-   GroupIndexType endGroupIdx   = startGroupIdx + nGroups - 1;
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
 
    IntervalIndexType firstErectedSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
 
@@ -135,17 +134,11 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
    //
    // Draw the segments
    //
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
       // deal with girder index when there are different number of girders in each group
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-
-      CGirderKey thisGirderKey(grpIdx, gdrIdx);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
 
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -187,8 +180,8 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
       //
       if (bIsPermanentInterval)
       {
-         PierIndexType startPierIdx = pBridgeDesc->GetGirderGroup(startGroupIdx)->GetPierIndex(pgsTypes::metStart);
-         PierIndexType endPierIdx = pBridgeDesc->GetGirderGroup(endGroupIdx)->GetPierIndex(pgsTypes::metEnd);
+         PierIndexType startPierIdx = pBridgeDesc->GetGirderGroup(vGirderKeys.front().groupIndex)->GetPierIndex(pgsTypes::metStart);
+         PierIndexType endPierIdx = pBridgeDesc->GetGirderGroup(vGirderKeys.back().groupIndex)->GetPierIndex(pgsTypes::metEnd);
          for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
          {
             DrawPier(beamShift, intervalIdx, girderKey, pierIdx, mapper, pDC);

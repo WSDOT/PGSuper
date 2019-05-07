@@ -40,6 +40,7 @@
 #define IDB_CS_DRAW_ISOTROPIC   ((DWORD)0x00000400)
 #define IDB_CS_DRAW_TO_SCALE    ((DWORD)0x00000800)
 #define IDB_PV_LABEL_BEARINGS   ((DWORD)0x00001000)
+#define IDB_PV_DRAW_RW_CS       ((DWORD)0x00002000)
 
 // #define                   ((DWORD)0x00001000)
 

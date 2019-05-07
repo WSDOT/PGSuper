@@ -38,6 +38,8 @@
 #include <psgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 
+#include <IFace\BeamFactory.h>
+
 #include <GeometricPrimitives\GeometricPrimitives.h>
 
 #include <System\SubjectT.h>
@@ -65,7 +67,6 @@ PSGLIBTPL sysSubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
 
 interface IStrandGrid;
 interface IBeamFactory;
-interface IBeamFactoryCLSIDTranslator;
 
 // MISCELLANEOUS
 //
@@ -148,6 +149,7 @@ class PSGLIBCLASS GirderLibraryEntry : public libLibraryEntry, public ISupportIc
 public:
    typedef std::map<std::_tstring,CClassFactoryHolder> ClassFactoryCollection;
    static ClassFactoryCollection ms_ClassFactories;
+   static std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> ms_ExternalCLSIDTranslators; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs for external beam publishers
 
    static CString GetAdjustableStrandType(pgsTypes::AdjustableStrandType strandType);
 
@@ -712,6 +714,10 @@ public:
    Float64 GetPrecamberLimit() const;
    bool CanPrecamber() const; // returns true if the girder can be precambered
 
+   void SetDoReportBearingElevationsAtGirderEdges(bool doit);
+   bool GetDoReportBearingElevationsAtGirderEdges() const;
+
+
    pgsCompatibilityData* GetCompatibilityData() const;
 
 protected:
@@ -1023,6 +1029,8 @@ private:
 
    Float64 m_PrecamberLimit;
 
+   bool m_DoReportBearingElevationsAtGirderEdges;
+
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
@@ -1037,10 +1045,10 @@ private:
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
-   std::map<std::_tstring,std::_tstring> m_CLSIDMap; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs
-   std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> m_ExternalCLSIDTranslators; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs for external beam publishers
-   void InitCLSIDMap();
-   std::_tstring TranslateCLSID(const std::_tstring& strCLSID);
+   static std::map<std::_tstring,std::_tstring> m_CLSIDMap; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs
+   static void InitCLSIDMap();
+   static std::_tstring TranslateCLSID(const std::_tstring& strCLSID);
+   static bool m_bsInitCLSIDMap;
 };
 
 // INLINE METHODS

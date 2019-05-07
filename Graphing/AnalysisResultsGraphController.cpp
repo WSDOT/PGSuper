@@ -52,6 +52,7 @@ void CAnalysisResultsGraphController::SetGraphMode(CAnalysisResultsGraphControll
    pCB->SetCurSel((CAnalysisResultsGraphController::GraphModeType)(pCB->GetItemData(0)) == mode ? 0 : 1);
    FillDropListCtrl(false);
    FillSelectListCtrl(false);
+   FillActionTypeCtrl();
    UpdateListInfo();
    UpdateGraph();
 }
@@ -180,7 +181,7 @@ bool CAnalysisResultsGraphController::PlotStresses(pgsTypes::StressLocation stre
    return IsDlgButtonChecked(nIDC[stressLocation]) == BST_CHECKED ? true : false;
 }
 
-IntervalIndexType CAnalysisResultsGraphController::GetInterval()
+IntervalIndexType CAnalysisResultsGraphController::GetInterval() const
 {
    if ( GetGraphMode() == Interval )
    {
@@ -193,7 +194,7 @@ IntervalIndexType CAnalysisResultsGraphController::GetInterval()
    return intervalIdx;
 }
 
-std::vector<IntervalIndexType> CAnalysisResultsGraphController::GetSelectedIntervals()
+std::vector<IntervalIndexType> CAnalysisResultsGraphController::GetSelectedIntervals() const
 {
    std::vector<IntervalIndexType> vIntervals;
 
@@ -432,6 +433,7 @@ void CAnalysisResultsGraphController::OnDropDownChanged()
 {
    if ( GetGraphMode() == Loading )
    {
+      FillActionTypeCtrl();
       FillSelectListCtrl(true);
    }
    else
@@ -485,6 +487,9 @@ void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, COb
 {
    CGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
 
+   GET_IFACE(IIntervals, pIntervals);
+   m_LoadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
+
    if ( 
         lHint == HINT_LIVELOADCHANGED || 
         lHint == HINT_BRIDGECHANGED   ||
@@ -492,7 +497,8 @@ void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, COb
         lHint == HINT_RATINGSPECCHANGED
       )
    {
-      ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->UpdateGraphDefinitions();
+      const CGirderKey& girderKey = GetGirderKey();
+      ((CAnalysisResultsGraphBuilder*)GetGraphBuilder())->UpdateGraphDefinitions(girderKey);
       FillDropListCtrl(true);
       FillSelectListCtrl(true);
       UpdateGraph();
@@ -541,6 +547,12 @@ std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
    vActions.push_back(actionStress);
    vActions.push_back(actionReaction);
 
+   if (GetInterval() == m_LoadRatingIntervalIdx && GetGraphMode() == Loading)
+   {
+      // rating factors are only applicable for "By Loading" results the interval when load rating occurs
+      vActions.push_back(actionLoadRating);
+   }
+
    return vActions;
 }
 
@@ -566,7 +578,8 @@ LPCTSTR CAnalysisResultsGraphController::GetActionName(ActionType action) const
       _T("Deflection"),
       _T("Deflection X"),
       _T("Rotation"),
-      _T("Stress")
+      _T("Stress"),
+      _T("Load Rating")
    };
 
 #if defined _DEBUG
@@ -580,6 +593,7 @@ LPCTSTR CAnalysisResultsGraphController::GetActionName(ActionType action) const
    case actionXDeflection:
    case actionRotation:
    case actionStress:
+   case actionLoadRating:
       break;
    default:
       ATLASSERT(false); // is there a new action type?
@@ -678,7 +692,13 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Loadings(bool bRetainSele
 
    CAnalysisResultsGraphBuilder* pGraphBuilder = (CAnalysisResultsGraphBuilder*)GetGraphBuilder();
    
-   std::vector<std::pair<std::_tstring,IDType>> vLoadings( pGraphBuilder->GetLoadings(INVALID_INDEX,GetActionType()) );
+   ActionType actionType = GetActionType();
+   if (actionType == actionLoadRating)
+   {
+      // load rating is not an option for results by loading
+      actionType = actionMoment;
+   }
+   std::vector<std::pair<std::_tstring,IDType>> vLoadings( pGraphBuilder->GetLoadings(INVALID_INDEX,actionType) );
    std::vector<std::pair<std::_tstring,IDType>>::iterator iter(vLoadings.begin());
    std::vector<std::pair<std::_tstring,IDType>>::iterator end(vLoadings.end());
    for ( ; iter != end; iter++ )
@@ -866,7 +886,8 @@ bool IsCumulativeOnlyGraphType(GraphType graphType)
            graphType == graphDemand     ||
            graphType == graphAllowable  ||
            graphType == graphCapacity   ||
-           graphType == graphMinCapacity) ? true : false;
+           graphType == graphMinCapacity ||
+           graphType == graphLoadRating) ? true : false;
 }
 
 void CAnalysisResultsGraphController::UpdateResultsType()

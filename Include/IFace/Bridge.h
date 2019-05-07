@@ -240,6 +240,16 @@ interface IBridge : IUnknown
    // returns the end to end length of the girder measured along the centerline of its segments
    virtual Float64 GetGirderLength(const CGirderKey& girderKey) const = 0;
 
+   // fills vGirderKeys with the girder keys that make up a girder line (does not empty the container)
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, std::vector<CGirderKey>* pvGirderKeys) const = 0;
+
+   // fills vGirderKeys with the girder keys that make up a girder line between start and end group
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, GroupIndexType startGroupIdx, GroupIndexType endGroupIdx,std::vector<CGirderKey>* pvGirderKeys) const = 0;
+
+   // fills the vector with girder keys that make up the girder line described by girderKey. If girderKey.groupIndex == ALL_GROUPS
+   // all groups are used, otherwise the specified group is used.
+   virtual void GetGirderline(const CGirderKey& girderKey, std::vector<CGirderKey>* pvGirderKeys) const = 0;
+
    // returns the cantilever length of a girder. If the girder end is not cantilevered, returns 0.
    // The cantilever length applies to spans where one of the end piers is designated as a cantilever.
    // This is NOT the member end distance!
@@ -553,7 +563,7 @@ interface IBridge : IUnknown
 
    virtual Float64 GetPierStation(PierIndexType pierIdx) const = 0;
    virtual Float64 GetBearingStation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const = 0;
-   virtual void GetBearingPoint(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const = 0;
+   virtual void GetWorkingPointLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const = 0;
    virtual void GetPierDirection(PierIndexType pierIdx,IDirection** ppDirection) const = 0;
    virtual void GetPierSkew(PierIndexType pierIdx,IAngle** ppAngle) const = 0;
    virtual void GetPierPoints(PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right) const = 0;
@@ -630,6 +640,9 @@ interface IBridge : IUnknown
    // returned since it is by definition at the CL.
    enum specialBearingIndexType {sbiCLValue=INVALID_INDEX, sbiSingleBearingValue=INVALID_INDEX-1};
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
+
+   // Compute bearing elevation data for each girder along bearing line at edges of girder bottom. Will return two values 0=Left, 1=Right
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
 };
 
 /*****************************************************************************

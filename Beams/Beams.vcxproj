@@ -561,6 +561,7 @@
     <ClInclude Include="TxDOT2013RelaxationAftertransferTable.h" />
     <ClInclude Include="TxDOT2013TimeDependentLossesTable.h" />
     <ClInclude Include="TxDotDoubleTFactory.h" />
+    <ClInclude Include="TxDOTSpreadSlabBeamDistFactorEngineer.h" />
     <ClInclude Include="UBeam2Factory.h" />
     <ClInclude Include="UBeamDistFactorEngineer.h" />
     <ClInclude Include="UBeamFactory.h" />
@@ -619,6 +620,7 @@
     <None Include="TaperedIBeamFactory.rgs" />
     <None Include="TimeStepLossEngineer.rgs" />
     <None Include="TxDotDoubleTFactory.rgs" />
+    <None Include="TxDOTSpreadSlabBeamDistFactorEngineer.rgs" />
     <None Include="UBeam2Factory.rgs" />
     <None Include="UBeamDistFactorEngineer.rgs" />
     <None Include="UBeamFactory.rgs" />
@@ -716,6 +718,7 @@
     <ClCompile Include="TxDOT2013RelaxationAftertransferTable.cpp" />
     <ClCompile Include="TxDOT2013TimeDependentLossesTable.cpp" />
     <ClCompile Include="TxDotDoubleTFactory.cpp" />
+    <ClCompile Include="TxDOTSpreadSlabBeamDistFactorEngineer.cpp" />
     <ClCompile Include="UBeam2Factory.cpp" />
     <ClCompile Include="UBeamDistFactorEngineer.cpp" />
     <ClCompile Include="UBeamFactory.cpp" />

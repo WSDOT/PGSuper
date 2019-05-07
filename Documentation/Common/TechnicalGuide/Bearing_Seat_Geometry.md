@@ -1,4 +1,4 @@
-Bearing Seat Elevations and Locations - Geometric Assumptions  {#tg_bearing_seat_geometry}
+Bearing Seat Elevations and Locations - Geometric Assumptions {#tg_bearing_seat_geometry}
 ======================================
 
 PGSuper and PGSplice can provide an accurate computation of bearing seat elevations and other bearing geometry information based on input bridge geometry. The figures in the section describe how bearing locations are computed.

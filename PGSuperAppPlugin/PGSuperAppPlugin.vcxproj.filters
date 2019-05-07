@@ -1883,6 +1883,12 @@
     <Image Include="res\warning2.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\RW_Crosssection.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="PGSuperAppPlugin.idl" />

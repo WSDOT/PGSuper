@@ -334,29 +334,61 @@ struct ProfileData2
    }
 };
 
-struct CrownData2
+struct RoadwaySegmentData
+{
+   Float64 Length;
+   Float64 Slope;
+
+   bool operator==(const RoadwaySegmentData& other) const
+   {
+      if (Length != other.Length)
+      {
+         return false;
+      }
+
+      if (Slope != other.Slope)
+      {
+         return false;
+      }
+
+      return true;
+   }
+
+
+};
+
+struct RoadwaySectionTemplate
 {
    Float64 Station;
-   Float64 Left;
-   Float64 Right;
-   Float64 CrownPointOffset;
+   Float64 LeftSlope;
+   Float64 RightSlope;
+   std::vector<RoadwaySegmentData> SegmentDataVec; // only used if number of slope segments > 2
 
-   bool operator==(const CrownData2& other) const
+   bool operator==(const RoadwaySectionTemplate& other) const
    {
       return (Station == other.Station) &&
-             (Left == other.Left) &&
-             (Right == other.Right) &&
-             (CrownPointOffset == other.CrownPointOffset);
+             (LeftSlope == other.LeftSlope) &&
+             (RightSlope == other.RightSlope) &&
+             (SegmentDataVec == other.SegmentDataVec);
    }
 };
 
 struct RoadwaySectionData
 {
-   std::vector<CrownData2> Superelevations;
+   IndexType NumberOfSegmentsPerSection; // Always have at least 2 outer infinite segments. Inner segments add to this
+   IndexType ControllingRidgePointIdx;   // Not zero based. No ridge points at ends of outer segments. For 2 segment case,
+                                         // this value is 1.
+   std::vector<RoadwaySectionTemplate> RoadwaySectionTemplates;
 
    bool operator==(const RoadwaySectionData& other) const
    {
-      return Superelevations == other.Superelevations;
+      if (NumberOfSegmentsPerSection != other.NumberOfSegmentsPerSection)
+         return false;
+
+      if (ControllingRidgePointIdx != other.ControllingRidgePointIdx)
+         return false;
+
+      return RoadwaySectionTemplates == other.RoadwaySectionTemplates;
    }
 
    bool operator!=(const RoadwaySectionData& other) const

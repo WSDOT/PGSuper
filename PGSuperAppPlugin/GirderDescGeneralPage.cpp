@@ -1382,7 +1382,6 @@ void CGirderDescGeneralPage::OnChangeAssumedExcessCamberType()
 
 
    m_strAssumedExcessCamberCache.Format(_T("%s"), FormatDimension(m_AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit(), false));
-
    FillAssumedExcessCamberComboBox();
    CComboBox* pcbAssumedExcessCamberType = (CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPES);
    pcbAssumedExcessCamberType->SetCurSel(m_AssumedExcessCamberType == pgsTypes::aecGirder ? 1 : 0);

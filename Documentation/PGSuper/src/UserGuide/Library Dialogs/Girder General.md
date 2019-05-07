@@ -15,6 +15,7 @@ Other Parameters
 Item | Description
 ----|-----
 Drag Coefficient | Enter the drag coefficient for the bare girder. This parameter is used to determine wind pressure loading from wind speed for the lifting and hauling analysis. Typical values are 1.5 for U-beams and 2.2 for all other beams. (See University of Florida research http://ufdc.ufl.edu/UFE0045616/00001)
+Report Bearing Elevations at Girder Edges | Click the check box to report bearing elevations at the outmost edges of the bottom of the girder. For multi-web girders this will be the outside edges of the outside webs. The information will be reported in the Bridge Geometry report and Details report.
 
 Notes for Girders with End Blocks
 -----------------------------

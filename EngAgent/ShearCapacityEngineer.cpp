@@ -140,9 +140,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       if (0 < pscd->Aps)
       {
          Float64 fpu = pStrand->GetUltimateStrength();
-
          Float64 K = 0.70;
-
          pscd->fpops = xfer*K*fpu;
       }
       else
@@ -164,9 +162,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       if (0 < pscd->Apt)
       {
          Float64 fpu = pTendon ->GetUltimateStrength();
-
          Float64 K = 0.70;
-
          pscd->fpopt = K*fpu;
       }
       else
@@ -276,11 +272,6 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
    CGirderKey girderKey(poi.GetSegmentKey());
-   
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
@@ -796,7 +787,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    CRACKINGMOMENTDETAILS mcr_details;
    if ( pConfig == nullptr )
    {
-      pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,(pscd->bTensionBottom ? true : false),&mcr_details);
+      mcr_details = *(pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,(pscd->bTensionBottom ? true : false)));
    }
    else
    {

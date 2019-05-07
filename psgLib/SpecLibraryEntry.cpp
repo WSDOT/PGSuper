@@ -45,7 +45,9 @@ static char THIS_FILE[] = __FILE__;
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
 #define MAX_OVERLAP_VERSION 53.0 // overlap of data blocks between PGS 2.9 and 3.0 end with this version
 
-#define CURRENT_VERSION 66.0 
+// The develop (patches) branch started at version 64. We need to make room so
+// the version number can increment. Jump our version number to 70
+#define CURRENT_VERSION 70.0 
 
 /****************************************************************************
 CLASS
@@ -67,7 +69,11 @@ m_MaxSlope06(8),
 m_MaxSlope07(10),
 m_DoCheckHoldDown(false),
 m_DoDesignHoldDown(false),
+m_HoldDownForceType(HOLD_DOWN_TOTAL),
 m_HoldDownForce(ConvertToSysUnits(45,unitMeasure::Kip)),
+m_HoldDownFriction(0.0),
+m_bCheckHandlingWeightLimit(false),
+m_HandlingWeightLimit(ConvertToSysUnits(130,unitMeasure::Kip)),
 m_DoCheckSplitting(true),
 m_DoCheckConfinement(true),
 m_DoDesignSplitting(true),
@@ -165,6 +171,7 @@ m_ShippingLosses(::ConvertToSysUnits(20,unitMeasure::KSI)),
 m_FinalLosses(0),
 m_ShippingTime(::ConvertToSysUnits(10,unitMeasure::Day)),
 m_LldfMethod(LLDF_LRFD),
+m_bUseRigidMethod(false),
 m_BeforeTempStrandRemovalLosses(0),
 m_AfterTempStrandRemovalLosses(0),
 m_AfterDeckPlacementLosses(0),
@@ -197,6 +204,7 @@ m_DesignStrandFillType(ftMinimizeHarping),
 m_EffFlangeWidthMethod(pgsTypes::efwmLRFD),
 m_ShearFlowMethod(sfmClassical),
 m_MaxInterfaceShearConnectorSpacing(::ConvertToSysUnits(48.0,unitMeasure::Inch)),
+m_bUseDeckWeightForPc(true),
 m_ShearCapacityMethod(scmBTEquations),
 m_CuringMethodTimeAdjustmentFactor(7),
 m_MinLiftPoint(-1), // H
@@ -479,11 +487,17 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxSlope07"), m_MaxSlope07); // added in version 35
    pSave->Property(_T("DoCheckHoldDown"), m_DoCheckHoldDown);
    pSave->Property(_T("DoDesignHoldDown"), m_DoDesignHoldDown);
+   pSave->Property(_T("HoldDownForceType"), m_HoldDownForceType); // added in version 70
    pSave->Property(_T("HoldDownForce"), m_HoldDownForce);
+   pSave->Property(_T("HoldDownFriction"), m_HoldDownFriction); // added in version 70
    pSave->Property(_T("DoCheckSplitting"), m_DoCheckSplitting);
    pSave->Property(_T("DoDesignSplitting"), m_DoDesignSplitting);
    pSave->Property(_T("DoCheckConfinement"), m_DoCheckConfinement);
    pSave->Property(_T("DoDesignConfinement"), m_DoDesignConfinement);
+
+   pSave->Property(_T("DoCheckHandlingWeightLimit"), m_bCheckHandlingWeightLimit); // added version 70
+   pSave->Property(_T("HandlingWeightLimit"), m_HandlingWeightLimit); // added version 70
+
    //pSave->Property(_T("MaxStirrupSpacing"), m_MaxStirrupSpacing); // removed in version 46
    pSave->Property(_T("StirrupSpacingCoefficient1"),m_StirrupSpacingCoefficient[0]); // added in version 46
    pSave->Property(_T("MaxStirrupSpacing1"),m_MaxStirrupSpacing[0]); // added in version 46
@@ -713,6 +727,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("MaxAngularDeviationBetweenGirders"),m_MaxAngularDeviationBetweenGirders);
    pSave->Property(_T("MinGirderStiffnessRatio"),m_MinGirderStiffnessRatio);
    pSave->Property(_T("LLDFGirderSpacingLocation"),m_LLDFGirderSpacingLocation);
+   pSave->Property(_T("UseRigidMethod"), m_bUseRigidMethod); // added in version 70
 
    pSave->Property(_T("IncludeDualTandem"), m_bIncludeDualTandem); // added in version 61
 
@@ -885,7 +900,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 //   pSave->Property(_T("SlabOffsetMethod"),(long)m_SlabOffsetMethod);
 
    // reconfigured in version 37 and added Phi
-   pSave->BeginUnit(_T("Shear"),2.0);
+   pSave->BeginUnit(_T("Shear"),3.0);
       // moved here in version 37
       pSave->Property(_T("LongReinfShearMethod"),(Int16)m_LongReinfShearMethod); // added for version 1.2
 
@@ -895,6 +910,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       // added in version 18 (moved into datablock in version 37)
       pSave->Property(_T("ShearFlowMethod"),(long)m_ShearFlowMethod);
       pSave->Property(_T("MaxInterfaceShearConnectorSpacing"),m_MaxInterfaceShearConnectorSpacing);
+      pSave->Property(_T("UseDeckWeightForPc"), m_bUseDeckWeightForPc); // added in version 3 of Shear data block
       pSave->Property(_T("ShearCapacityMethod"),(long)m_ShearCapacityMethod);
 
       // added in version 37
@@ -1103,9 +1119,27 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if (69 < version)
+      {
+         // added in version 70
+         if (!pLoad->Property(_T("HoldDownForceType"), &m_HoldDownForceType))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
       if(!pLoad->Property(_T("HoldDownForce"), &m_HoldDownForce))
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if (69 < version)
+      {
+         // added in version 70
+         if (!pLoad->Property(_T("HoldDownFriction"), &m_HoldDownFriction))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
       }
 
       if (32 < version && version < 39)
@@ -1142,6 +1176,20 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if(!pLoad->Property(_T("DoDesignConfinement"), &m_DoDesignConfinement))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+      if (69 < version)
+      {
+         // added in version 70
+         if (!pLoad->Property(_T("DoCheckHandlingWeightLimit"), &m_bCheckHandlingWeightLimit))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+         
+         if (!pLoad->Property(_T("HandlingWeightLimit"), &m_HandlingWeightLimit))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
          }
       }
 
@@ -2345,7 +2393,7 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          // added in version 4
          if (3 < mc_version)
          {
-            if (!pLoad->Property(_T("IncludeStrandForNegMoment"), &temp))
+            if (!pLoad->Property(_T("IncludeStrandForNegMoment"), &temp) )
             {
                THROW_LOAD(InvalidFileFormat, pLoad);
             }
@@ -2714,6 +2762,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("LLDFGirderSpacingLocation"),&m_LLDFGirderSpacingLocation) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+      if (69 < version)
+      {
+         // added in version 70
+         if (!pLoad->Property(_T("UseRigidMethod"), &m_bUseRigidMethod))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
          }
       }
 
@@ -3754,6 +3811,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
          }
 
+         if (2 < shear_version)
+         {
+            if (!pLoad->Property(_T("UseDeckWeightForPc"), &m_bUseDeckWeightForPc)) // added in version 3 of Shear data block
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+
          if ( !pLoad->Property(_T("ShearCapacityMethod"),&value) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -4169,7 +4234,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    //
    if ( m_DoCheckHoldDown != rOther.m_DoCheckHoldDown || 
         m_DoDesignHoldDown != rOther.m_DoDesignHoldDown ||
-        !::IsEqual(m_HoldDownForce,rOther.m_HoldDownForce) )
+        m_HoldDownForceType != rOther.m_HoldDownForceType ||
+        !::IsEqual(m_HoldDownForce,rOther.m_HoldDownForce) || !::IsEqual(m_HoldDownFriction,rOther.m_HoldDownFriction))
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hold Down Force requirements are different"),_T(""),_T("")));
@@ -4183,6 +4249,12 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Strand Slope requirements are different"),_T(""),_T("")));
+   }
+
+   if (m_bCheckHandlingWeightLimit != rOther.m_bCheckHandlingWeightLimit || !::IsEqual(m_HandlingWeightLimit, rOther.m_HandlingWeightLimit))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Handling Weight Limit requirements are different"), _T(""), _T("")));
    }
 
    if ( m_DoCheckSplitting != rOther.m_DoCheckSplitting ||
@@ -4610,7 +4682,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
         m_LimitDistributionFactorsToLanesBeams != rOther.m_LimitDistributionFactorsToLanesBeams ||
         !::IsEqual(m_MaxAngularDeviationBetweenGirders, rOther.m_MaxAngularDeviationBetweenGirders) ||
         !::IsEqual(m_MinGirderStiffnessRatio,           rOther.m_MinGirderStiffnessRatio) ||
-        !::IsEqual(m_LLDFGirderSpacingLocation,         rOther.m_LLDFGirderSpacingLocation) )
+        !::IsEqual(m_LLDFGirderSpacingLocation,         rOther.m_LLDFGirderSpacingLocation) ||
+        m_bUseRigidMethod != rOther.m_bUseRigidMethod)
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Live Load Distribution Factors are different"),_T(""),_T("")));
@@ -4746,7 +4819,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    }
    
    if ( m_ShearFlowMethod != rOther.m_ShearFlowMethod ||
-        !::IsEqual(m_MaxInterfaceShearConnectorSpacing, rOther.m_MaxInterfaceShearConnectorSpacing) )
+        !::IsEqual(m_MaxInterfaceShearConnectorSpacing, rOther.m_MaxInterfaceShearConnectorSpacing) || 
+        m_bUseDeckWeightForPc != rOther.m_bUseDeckWeightForPc)
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Horizontal Interface Shear requirements are different"),_T(""),_T("")));
@@ -5051,22 +5125,38 @@ void SpecLibraryEntry::SetMaxStrandSlope(bool doCheck, bool doDesign, Float64 sl
    }
 }
 
-void SpecLibraryEntry::GetHoldDownForce(bool* doCheck, bool*doDesign, Float64* force) const
+void SpecLibraryEntry::GetHoldDownForce(bool* doCheck, bool*doDesign, int* holdDownForceType,Float64* force,Float64* friction) const
 {
    *doCheck  = m_DoCheckHoldDown;
    *doDesign = m_DoDesignHoldDown;
+   *holdDownForceType = m_HoldDownForceType;
    *force    = m_HoldDownForce;
+   *friction = m_HoldDownFriction;
 }
 
-void SpecLibraryEntry::SetHoldDownForce(bool doCheck, bool doDesign, Float64 force)
+void SpecLibraryEntry::SetHoldDownForce(bool doCheck, bool doDesign, int holdDownForceType,Float64 force,Float64 friction)
 {
    m_DoCheckHoldDown = doCheck;
    m_DoDesignHoldDown = doCheck ? doDesign : false; // don't allow design without checking
 
    if (m_DoCheckHoldDown)
    {
+      m_HoldDownForceType = holdDownForceType;
       m_HoldDownForce   = force;
+      m_HoldDownFriction = friction;
    }
+}
+
+void SpecLibraryEntry::GetPlantHandlingWeightLimit(bool* pbDoCheck, Float64* pLimit) const
+{
+   *pbDoCheck = m_bCheckHandlingWeightLimit;
+   *pLimit = m_HandlingWeightLimit;
+}
+
+void SpecLibraryEntry::SetPlantHandlingWeightLimit(bool bDoCheck, Float64 limit)
+{
+   m_bCheckHandlingWeightLimit = bDoCheck;
+   m_HandlingWeightLimit = limit;
 }
 
 void SpecLibraryEntry::EnableSplittingCheck(bool enable)
@@ -6720,6 +6810,16 @@ void SpecLibraryEntry::SetMaxInterfaceShearConnectionSpacing(Float64 sMax)
    m_MaxInterfaceShearConnectorSpacing = sMax;
 }
 
+void SpecLibraryEntry::UseDeckWeightForPermanentNetCompressiveForce(bool bUse)
+{
+   m_bUseDeckWeightForPc = bUse;
+}
+
+bool SpecLibraryEntry::UseDeckWeightForPermanentNetCompressiveForce() const
+{
+   return m_bUseDeckWeightForPc;
+}
+
 void SpecLibraryEntry::SetShearCapacityMethod(ShearCapacityMethod method)
 {
    m_ShearCapacityMethod = method;
@@ -6888,6 +6988,16 @@ void SpecLibraryEntry::IncludeDualTandem(bool bInclude)
 bool SpecLibraryEntry::IncludeDualTandem() const
 {
    return m_bIncludeDualTandem;
+}
+
+void SpecLibraryEntry::UseRigidMethod(bool bUseRigidMethod)
+{
+   m_bUseRigidMethod = bUseRigidMethod;
+}
+
+bool SpecLibraryEntry::UseRigidMethod() const
+{
+   return m_bUseRigidMethod;
 }
 
 void SpecLibraryEntry::LimitDistributionFactorsToLanesBeams(bool bLimit)
@@ -7214,7 +7324,11 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_MaxSlope07                 = rOther.m_MaxSlope07;
    m_DoCheckHoldDown            = rOther.m_DoCheckHoldDown;
    m_DoDesignHoldDown           = rOther.m_DoDesignHoldDown;
+   m_HoldDownForceType = rOther.m_HoldDownForceType;
    m_HoldDownForce              = rOther.m_HoldDownForce;
+   m_HoldDownFriction = rOther.m_HoldDownFriction;
+   m_bCheckHandlingWeightLimit = rOther.m_bCheckHandlingWeightLimit;
+   m_HandlingWeightLimit = rOther.m_HandlingWeightLimit;
    m_StirrupSpacingCoefficient[0] = rOther.m_StirrupSpacingCoefficient[0];
    m_MaxStirrupSpacing[0]         = rOther.m_MaxStirrupSpacing[0];
    m_StirrupSpacingCoefficient[1] = rOther.m_StirrupSpacingCoefficient[1];
@@ -7374,6 +7488,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_LiveLoadElasticGain      = rOther.m_LiveLoadElasticGain;
 
    m_LldfMethod                 = rOther.m_LldfMethod;
+   m_bUseRigidMethod = rOther.m_bUseRigidMethod;
    m_LongReinfShearMethod       = rOther.m_LongReinfShearMethod;
 
    m_bCheckStrandStress[CSS_AT_JACKING]       = rOther.m_bCheckStrandStress[CSS_AT_JACKING];
@@ -7444,6 +7559,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_ShearFlowMethod = rOther.m_ShearFlowMethod;
    m_MaxInterfaceShearConnectorSpacing = rOther.m_MaxInterfaceShearConnectorSpacing;
+   m_bUseDeckWeightForPc = rOther.m_bUseDeckWeightForPc;
 
    m_ShearCapacityMethod = rOther.m_ShearCapacityMethod;
 

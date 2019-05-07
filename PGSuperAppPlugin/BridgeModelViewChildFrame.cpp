@@ -132,6 +132,8 @@ BEGIN_MESSAGE_MAP(CBridgeModelViewChildFrame, CSplitChildFrame)
    ON_UPDATE_COMMAND_UI(IDC_SHOW_BRIDGE, &CBridgeModelViewChildFrame::OnUpdateBridge)
    ON_BN_CLICKED(IDC_SCHEMATIC, &CBridgeModelViewChildFrame::OnSchematic)
    ON_UPDATE_COMMAND_UI(IDC_SCHEMATIC, &CBridgeModelViewChildFrame::OnUpdateSchematic)
+   ON_BN_CLICKED(IDC_RW_CS, &CBridgeModelViewChildFrame::OnRwCrossSection)
+   ON_UPDATE_COMMAND_UI(IDC_RW_CS, &CBridgeModelViewChildFrame::OnUpdateRwCrossSection)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -385,6 +387,26 @@ bool CBridgeModelViewChildFrame::Schematic() const
    return m_SettingsBar.IsDlgButtonChecked(IDC_SCHEMATIC) ? true : false;
 }
 
+void CBridgeModelViewChildFrame::ShowRwCrossSection(bool bShow)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   UINT settings = pDoc->GetBridgeEditorSettings();
+   if (bShow)
+   {
+      sysFlags<UINT>::Set(&settings, IDB_PV_DRAW_RW_CS);
+   }
+   else
+   {
+      sysFlags<UINT>::Clear(&settings, IDB_PV_DRAW_RW_CS);
+   }
+   pDoc->SetBridgeEditorSettings(settings);
+}
+
+bool CBridgeModelViewChildFrame::ShowRwCrossSection() const
+{
+   return m_SettingsBar.IsDlgButtonChecked(IDC_RW_CS) ? true : false;
+}
+
 #if defined _DEBUG
 void CBridgeModelViewChildFrame::AssertValid() const
 {
@@ -437,8 +459,11 @@ int CBridgeModelViewChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
       pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SCHEMATIC);
       pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_SCHEMATIC_PROFILE), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
       m_SettingsBar.AddTooltip(pBtn);
-   }
 
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_RW_CS);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_RW_CS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
+   }
 
    return 0;
 }
@@ -1250,6 +1275,33 @@ void CBridgeModelViewChildFrame::OnBridge()
       sysFlags<UINT>::Toggle(&settings, IDA_AP_DRAW_BRIDGE);
       sysFlags<UINT>::Toggle(&settings, IDP_AP_DRAW_BRIDGE);
       pDoc->SetAlignmentEditorSettings(settings);
+   }
+}
+
+void CBridgeModelViewChildFrame::OnRwCrossSection()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+   if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
+   {
+      UINT settings = pDoc->GetBridgeEditorSettings();
+      sysFlags<UINT>::Toggle(&settings, IDB_PV_DRAW_RW_CS);
+      pDoc->SetBridgeEditorSettings(settings);
+   }
+}
+
+void CBridgeModelViewChildFrame::OnUpdateRwCrossSection(CCmdUI* pCmdUI)
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+
+   if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
+   {
+      UINT settings = pDoc->GetBridgeEditorSettings();
+      pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDB_PV_DRAW_RW_CS) ? BST_CHECKED : BST_UNCHECKED);
+      pCmdUI->Enable(TRUE);
+   }
+   else
+   {
+      pCmdUI->Enable(FALSE);
    }
 }
 

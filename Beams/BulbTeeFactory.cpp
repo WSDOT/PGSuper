@@ -38,11 +38,11 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Alignment.h>
-
 #include <IFace\AgeAdjustedMaterial.h>
-#include <Beams\Helper.h>
 
+#include <Beams\Helper.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\GirderLabel.h>
 
 #include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
@@ -57,6 +57,13 @@ static char THIS_FILE[] = __FILE__;
 // CBulbTeeFactory
 HRESULT CBulbTeeFactory::FinalConstruct()
 {
+   StatusGroupIDType m_StatusGroupID = INVALID_ID;
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
+   m_scidInformationalWarning     = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+
    m_bHaveOldTopFlangeThickening = false;
    m_OldTopFlangeThickening = 0; // this is used to hold the old D8 value
 
@@ -137,6 +144,8 @@ HRESULT CBulbTeeFactory::FinalConstruct()
 
 void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
+   m_StatusGroupID = statusID; // catch status group id here so we can use it later
+
    ATLASSERT(overallHeight < 0); // not a variable depth section
    ATLASSERT(bottomFlangeHeight < 0); // not a variable bottom flange section
 
@@ -1354,7 +1363,7 @@ void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSeg
    Float64 n1(0), n2(0), c2(0); // c2 is the distance from the left flange tip to where the top flange slope changes from n1 to n2
    Float64 left(leftStart), right(rightStart);
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
    if ((deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNonstructuralOverlay) && pBridgeDesc->GetGirderOrientation() == pgsTypes::Plumb)
@@ -1368,27 +1377,46 @@ void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSeg
       Float64 station, offset;
       pBridge->GetStationAndOffset(segmentKey, 0.0, &station, &offset);
 
-      GET_IFACE2(pBroker, IRoadway, pAlignment);
-      Float64 CPO = pAlignment->GetCrownPointOffset(station);
-
-      Float64 alignment_offset = pBridge->GetAlignmentOffset();
-
       Float64 left_edge_offset = offset - leftStart;
       Float64 right_edge_offset = offset + rightStart;
 
-      if (IsLT(left_edge_offset, CPO) && IsLT(CPO, right_edge_offset))
+      GET_IFACE2(pBroker, IRoadway, pAlignment);
+      // Loop over crown points to see if one lies within the flange width
+      IndexType numCPs = pAlignment->GetCrownPointIndexCount(station);
+      IndexType numCPsfound(0);
+      // Assumption here that outer-most ridge points are off of the bridge. Done for performance
+      for (IndexType iCP = 1; iCP < numCPs-1; iCP++)
       {
-         // the crown point occurs somewhere in the top flange
-         n1 = pAlignment->GetSlope(station, left_edge_offset);
-         n2 = pAlignment->GetSlope(station, right_edge_offset);
-         c2 = fabs(CPO - left_edge_offset);
+         Float64 CPO = pAlignment->GetCrownPointOffset(iCP, station);
+
+         if (IsLT(left_edge_offset, CPO) && IsLT(CPO, right_edge_offset))
+         {
+            if (numCPsfound == 0)
+            {
+               // Use the first crown point found to define the shape. We can only use one
+               // the crown point occurs somewhere in the top flange
+               n1 = pAlignment->GetSlope(station, left_edge_offset);
+               n2 = pAlignment->GetSlope(station, right_edge_offset);
+               c2 = fabs(CPO - left_edge_offset);
+            }
+
+            numCPsfound++;
+         }
       }
-      else
+
+      if (numCPsfound == 0)
       {
          // the entire top flange is sloped at n2
          n1 = 0;
          n2 = pAlignment->GetSlope(station, offset);
          c2 = 0; // no part of the top flange is sloped at n1
+      }
+      else if (numCPsfound > 1)
+      {
+         GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
+         std::_tstring str(_T("The decked girder at ") + std::_tstring(SEGMENT_LABEL(segmentKey)) + _T("\'s top flange has more than one crown point above it. Only one crown point will be used to model the top of the girder."));
+         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,str.c_str());
+         pStatusCenter->Add(pStatusItem);
       }
 
       if (topWidthType == pgsTypes::twtCenteredCG)

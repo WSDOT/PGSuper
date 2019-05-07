@@ -1898,21 +1898,19 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 56025, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(liveLoadIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<gdrIdx<<std::endl;
 
       // positive moment capacity
-      CRACKINGMOMENTDETAILS cmd;
-      pMomentCapacity->GetCrackingMomentDetails(liveLoadIntervalIdx,poi,true,&cmd);
-      resultsFile<<bridgeId<<", "<<pid<<", 50028, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(cmd.Mcr , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
+      const CRACKINGMOMENTDETAILS* pcmd = pMomentCapacity->GetCrackingMomentDetails(liveLoadIntervalIdx,poi,true);
+      resultsFile<<bridgeId<<", "<<pid<<", 50028, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pcmd->Mcr , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
 
-      MINMOMENTCAPDETAILS mmcd;
-      pMomentCapacity->GetMinMomentCapacityDetails(liveLoadIntervalIdx,poi,true,&mmcd);
-      resultsFile<<bridgeId<<", "<<pid<<", 50029, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(mmcd.Mr , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
+      const MINMOMENTCAPDETAILS* pmmcd = pMomentCapacity->GetMinMomentCapacityDetails(liveLoadIntervalIdx,poi,true);
+      resultsFile<<bridgeId<<", "<<pid<<", 50029, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pmmcd->Mr , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
 
       const MOMENTCAPACITYDETAILS* pmcd = pMomentCapacity->GetMomentCapacityDetails(liveLoadIntervalIdx,poi,true);
       resultsFile<<bridgeId<<", "<<pid<<", 50030, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pmcd->Mn , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50035, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pmcd->c, unitMeasure::Millimeter)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50036, "<<loc<<", "<< QUITE(IsZero(pmcd->de, 0.001) ? 99999 : pmcd->c/pmcd->de) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50039, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pmcd->de, unitMeasure::Millimeter)) <<", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50040, "<<loc<<", "<< QUITE(IsZero(mmcd.Mcr, 0.001) ? 99999 : mmcd.Mr/mmcd.Mcr)<<", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50041, "<<loc<<", "<< QUITE(IsZero(mmcd.Mu, 0.001) ? 99999 : mmcd.Mr/mmcd.Mu)<< ", 15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50040, "<<loc<<", "<< QUITE(IsZero(pmmcd->Mcr, 0.001) ? 99999 : pmmcd->Mr/pmmcd->Mcr)<<", 15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50041, "<<loc<<", "<< QUITE(IsZero(pmmcd->Mu, 0.001) ? 99999 : pmmcd->Mr/pmmcd->Mu)<< ", 15, "<<gdrIdx<<std::endl;
 
       const pgsFlexuralCapacityArtifact* pCompositeCap;
       pCompositeCap = pGdrArtifact->FindPositiveMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,poi);
@@ -1925,19 +1923,19 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       }
 
       // negative moment capacity
-      pMomentCapacity->GetCrackingMomentDetails(liveLoadIntervalIdx,poi,false,&cmd);
-      resultsFile<<bridgeId<<", "<<pid<<", 50128, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(cmd.Mcr , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
+      pcmd = pMomentCapacity->GetCrackingMomentDetails(liveLoadIntervalIdx,poi,false);
+      resultsFile<<bridgeId<<", "<<pid<<", 50128, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pcmd->Mcr , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
 
-      pMomentCapacity->GetMinMomentCapacityDetails(liveLoadIntervalIdx,poi,false,&mmcd);
-      resultsFile<<bridgeId<<", "<<pid<<", 50129, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(mmcd.Mr , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
+      pmmcd = pMomentCapacity->GetMinMomentCapacityDetails(liveLoadIntervalIdx,poi,false);
+      resultsFile<<bridgeId<<", "<<pid<<", 50129, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pmmcd->Mr , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
 
       pmcd = pMomentCapacity->GetMomentCapacityDetails(liveLoadIntervalIdx,poi,false);
       resultsFile<<bridgeId<<", "<<pid<<", 50130, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pmcd->Mn , unitMeasure::NewtonMillimeter)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50135, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pmcd->c, unitMeasure::Millimeter)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50136, "<<loc<<", "<< QUITE(IsZero(pmcd->de, 0.001) ? 99999 : pmcd->c/pmcd->de) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50139, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pmcd->de, unitMeasure::Millimeter)) <<", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50140, "<<loc<<", "<< QUITE(IsZero(mmcd.Mcr, 0.001) ? 99999 : mmcd.Mr/mmcd.Mcr)<<", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50141, "<<loc<<", "<< QUITE(IsZero(mmcd.Mu, 0.001) ? 99999 : mmcd.Mr/mmcd.Mu)<< ", 15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50140, "<<loc<<", "<< QUITE(IsZero(pmmcd->Mcr, 0.001) ? 99999 : pmmcd->Mr/pmmcd->Mcr)<<", 15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50141, "<<loc<<", "<< QUITE(IsZero(pmmcd->Mu, 0.001) ? 99999 : pmmcd->Mr/pmmcd->Mu)<< ", 15, "<<gdrIdx<<std::endl;
 
       pCompositeCap = pGdrArtifact->FindNegativeMomentFlexuralCapacityArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,poi);
       if ( pCompositeCap )

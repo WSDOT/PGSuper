@@ -73,20 +73,19 @@ rptChapter* CLoadRatingDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   GET_IFACE2(pBroker, ITendonGeometry, pTendonGeom);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
-   GroupIndexType lastGroupIdx  = girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx;
-   DuctIndexType nDucts = 0;
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   bool bSplicedGirder = false;
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = min(girderKey.girderIndex,nGirders-1);
-      nDucts += pTendonGeom->GetDuctCount(CGirderKey(grpIdx,gdrIdx));
+      if (0 < pTendonGeom->GetDuctCount(thisGirderKey))
+      {
+         bSplicedGirder = true;
+         break;
+      }
    }
-   bool bSplicedGirder = (0 < nDucts ? true : false);
-
 
    ReportRatingDetails(pChapter, pBroker, girderKey, pgsTypes::lrDesign_Inventory, bSplicedGirder);
    ReportRatingDetails(pChapter, pBroker, girderKey, pgsTypes::lrDesign_Operating, bSplicedGirder);

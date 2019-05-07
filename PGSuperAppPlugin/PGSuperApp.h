@@ -25,7 +25,6 @@
 #include "PGSuperCommandLineInfo.h"
 
 #include <System\Date.h>
-#include <PsgLib\LibraryManager.h>
 
 class CPGSuperAppPluginApp : public CWinApp
 {

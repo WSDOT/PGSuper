@@ -25,6 +25,11 @@
 #include <PgsExt\RatingArtifact.h>
 
 #include <IFace\AnalysisResults.h>
+#include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
+#include <IFace\DistributionFactors.h>
+#include <IFace\RatingSpecification.h>
+#include <IFace\Allowables.h>
 
 class pgsLoadRater
 {
@@ -37,30 +42,122 @@ public:
 
 protected:
    IBroker* m_pBroker; // weak reference
-   mutable std::vector<CRITSECTDETAILS> m_CriticalSections;
 
    struct Moments
    {
-      std::vector<Float64> vDCmin, vDCmax;
-      std::vector<Float64> vDWmin, vDWmax;
-      std::vector<Float64> vCRmin, vCRmax;
-      std::vector<Float64> vSHmin, vSHmax;
-      std::vector<Float64> vREmin, vREmax;
-      std::vector<Float64> vPSmin, vPSmax;
-      std::vector<Float64> vLLIMmin, vLLIMmax;
-      std::vector<Float64> vPLmin, vPLmax;
-      std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex;
+      std::vector<Float64> vDC;
+      std::vector<Float64> vDW;
+      std::vector<Float64> vCR;
+      std::vector<Float64> vSH;
+      std::vector<Float64> vRE;
+      std::vector<Float64> vPS;
+      std::vector<Float64> vLLIM;
+      std::vector<Float64> vPL;
+      std::vector<VehicleIndexType> vTruckIndex;
    };
 
-   void MomentRating(const CGirderKey& girderKey,const PoiList& vPoi,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,const Moments& moments,pgsRatingArtifact& ratingArtifact) const;
-   void ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact) const;
-   void StressRating(const CGirderKey& girderKey,const PoiList& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,pgsRatingArtifact& ratingArtifact) const;
-   void CheckReinforcementYielding(const CGirderKey& girderKey,const PoiList& vPoi, bool bPositiveMoment, pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx,const Moments& moments,pgsRatingArtifact& ratingArtifact) const;
+   // moments at a section
+   struct MomentsAtPoi
+   {
+      Float64 DC, DW, CR, SH, RE, PS, LLIM, PL;
 
-   void GetMoments(const CGirderKey& girderKey,bool bPositiveMoment,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const PoiList& vPoi, Moments* pMoments) const;
+      std::_tstring strVehicleName;
+      VehicleIndexType truck_index;
+      Float64 VehicleWeight;
+   };
 
-   void InitCriticalSectionZones(const CGirderKey& girderKey, pgsTypes::LimitState limitState) const;
-   ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi, bool bIncludeCS = false) const;
+   // parameters common to moment and reinforcement yielding ratings
+   struct RatingParams
+   {
+      IntervalIndexType loadRatingIntervalIdx;
+      Float64 system_factor;
+      bool bIncludePL;
+      bool bTimeStep;
+      pgsTypes::LoadRatingType ratingType;
+
+      pgsTypes::LimitState limitState;
+      Float64 gDC, gDW, gCR, gSH, gRE, gPS, gLL;
+
+      pgsTypes::LiveLoadType llType;
+   };
+
+   // parameters for moment capacity ratings
+   struct MomentRatingParams : public RatingParams
+   {
+      const MOMENTCAPACITYDETAILS* pMnDetails;
+      const MINMOMENTCAPDETAILS* pMminDetails;
+
+      pgsTypes::SupportedDeckType deckType;
+
+      // interfaces used at each POI
+      CComPtr<IRatingSpecification> pRatingSpec;
+      CComPtr<IProductForces> pProductForces;
+   };
+
+   // parameters for reinforcement yielding check
+   struct YieldingRatingParams : public RatingParams
+   {
+      const CRACKINGMOMENTDETAILS* pMcrDetails;
+      const CRACKEDSECTIONDETAILS* pCrackedSectionDetails;
+
+      Float64 YieldStressLimitCoefficient;
+
+      Float64 K_liveload; // live load elastic gain factor
+
+      std::vector<DuctIndexType> vnDucts;
+
+      pgsTypes::AnalysisType analysisType;
+
+      // interfaces used at each POI
+      CComPtr<ISectionProperties> pSectProp;
+      CComPtr<IPointOfInterest> pPoi;
+      CComPtr<IBridge> pBridge;
+      CComPtr<IIntervals> pIntervals;
+      CComPtr<ILongRebarGeometry> pRebarGeom;
+      CComPtr<IMaterials> pMaterials;
+      CComPtr<ILiveLoadDistributionFactors> pLLDF;
+      CComPtr<IStrandGeometry> pStrandGeom;
+      CComPtr<ITendonGeometry> pTendonGeom;
+   };
+
+   // parameters for flexural stress ratings
+   struct StressRatingParams
+   {
+      pgsTypes::LoadRatingType ratingType;
+      Float64 system_factor;
+      bool bIncludePL;
+      IntervalIndexType loadRatingIntervalIdx;
+      bool bTimeStep;
+      pgsTypes::BridgeAnalysisType bat;
+
+      pgsTypes::LimitState limitState;
+      Float64 gDC, gDW, gCR, gSH, gRE, gPS, gLL;
+
+      pgsTypes::LiveLoadType llType;
+      VehicleIndexType vehicleIdx;
+      std::vector<std::_tstring> strLLNames;
+
+      // interfaces used at each POI
+      CComPtr<IPrecompressedTensileZone> pPTZ;
+      CComPtr<ICombinedForces> pCombinedForces;
+      CComPtr<IPretensionStresses> pPrestress;
+      CComPtr<IRatingSpecification> pRatingSpec;
+      CComPtr<IAllowableConcreteStress> pAllowables;
+      CComPtr<IProductForces> pProductForces;
+      CComPtr<IProductLoads> pProductLoads;
+   };
+
+   void FlexureRating(const CGirderKey& girderKey, const PoiList& vPoi, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx, IntervalIndexType loadRatingIntervalIdx, bool bTimeStep,const Moments* pMaxMoments, const Moments* pMinMoments, pgsRatingArtifact& ratingArtifact) const;
+   void ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, IntervalIndexType loadRatingIntervalIdx, bool bTimeStep,pgsRatingArtifact& ratingArtifact) const;
+
+   void MomentRating(const pgsPointOfInterest& poi, bool bPositiveMoment, const MomentsAtPoi& moments,const MomentRatingParams& ratingParams, pgsRatingArtifact& ratingArtifact) const;
+   void StressRating(const pgsPointOfInterest& poi, const StressRatingParams& ratingParams, pgsRatingArtifact& ratingArtifact) const;
+   void CheckReinforcementYielding(const pgsPointOfInterest& poi, bool bPositiveMoment, const MomentsAtPoi& moments, const YieldingRatingParams& ratingParams, pgsRatingArtifact& ratingArtifact) const;
+
+   void GetMoments(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const PoiList& vPoi, bool bTimeStep, Moments* pMaxMoments, Moments* pMinMoments) const;
+
+   void GetCriticalSectionZones(const CGirderKey& girderKey, pgsTypes::LimitState limitState, std::vector<CRITSECTDETAILS>* pvCriticalSections) const;
+   ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi, const std::vector<CRITSECTDETAILS>& criticalSections, bool bIncludeCS = false) const;
 
    DECLARE_LOGFILE;
 };

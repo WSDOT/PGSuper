@@ -1,0 +1,24 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    7   6.67                     1     1    5SB12          36  0.6  270   3.06   2.97  11.00  11.00   2.00   6    2.5   28     6    2   2   2   0   0   5.700  6.000   3.722    -4.726     1433   0.497  0.892   3.714 -2.052  0.000 -0.066 -2.118 130.41  353.56    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    7   6.67                     1     2    5SB12          36  0.6  270   3.06   2.97  11.00  11.00   2.00   6    2.5   28     6    2   2   2   0   0   5.700  6.200   3.789    -4.800     1446   0.497  0.892   3.714 -2.156  0.000 -0.064 -2.220 130.41  351.85    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    7   6.67                     1     4    5SB12          36  0.6  270   3.06   2.97  11.00  11.00   2.00   6    2.5   28     6    2   2   2   0   0   5.700  6.200   3.780    -4.700     1399   0.497  0.892   3.714 -2.156  0.000  0.000 -2.156 130.41  357.99    1.00    1.00    1.00 
+
+
+The Specification Check was Successful
+
+

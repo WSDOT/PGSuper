@@ -108,6 +108,21 @@ pgsHoldDownForceArtifact* pgsSegmentArtifact::GetHoldDownForceArtifact()
    return &m_HoldDownForceArtifact;
 }
 
+void pgsSegmentArtifact::SetPlantHandlingWeightArtifact(const pgsPlantHandlingWeightArtifact& artifact)
+{
+   m_PlantHandlingWeightArtifact = artifact;
+}
+
+const pgsPlantHandlingWeightArtifact* pgsSegmentArtifact::GetPlantHandlingWeightArtifact() const
+{
+   return &m_PlantHandlingWeightArtifact;
+}
+
+pgsPlantHandlingWeightArtifact* pgsSegmentArtifact::GetPlantHandlingWeightArtifact()
+{
+   return &m_PlantHandlingWeightArtifact;
+}
+
 void pgsSegmentArtifact::AddFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,
                                                    const pgsFlexuralStressArtifact& artifact)
 {
@@ -447,6 +462,11 @@ bool pgsSegmentArtifact::Passed() const
    }
 
    if (!m_HoldDownForceArtifact.Passed())
+   {
+      return false;
+   }
+
+   if (!m_PlantHandlingWeightArtifact.Passed())
    {
       return false;
    }
@@ -909,6 +929,7 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
    m_PrecastIGirderDetailingArtifact = rOther.m_PrecastIGirderDetailingArtifact;
    m_StrandSlopeArtifact             = rOther.m_StrandSlopeArtifact;
    m_HoldDownForceArtifact           = rOther.m_HoldDownForceArtifact;
+   m_PlantHandlingWeightArtifact = rOther.m_PlantHandlingWeightArtifact;
    m_StabilityArtifact               = rOther.m_StabilityArtifact;
 
    m_pLiftingCheckArtifact    = rOther.m_pLiftingCheckArtifact;

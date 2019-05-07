@@ -654,19 +654,28 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
    }
 }
 
-Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey, bool bTotal, Float64* pSlope, pgsPointOfInterest* pPoi, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IStrandGeometry, pStrandGeom);
    StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped, pConfig);
    if (0 < Nh)
    {
-      GET_IFACE(IPointOfInterest,pPoi);
+      GET_IFACE(IPointOfInterest,pIPoi);
       PoiList vPoi;
-      pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi);
+      pIPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi);
    
       // no hold down force if there aren't any harped strands
       if ( vPoi.size() == 0 )
       {
+         if (pPoi)
+         {
+            *pPoi = pgsPointOfInterest(segmentKey, 0.0);
+         }
+
+         if (pSlope)
+         {
+            *pSlope = 0;
+         }
          return 0;
       }
 
@@ -677,28 +686,77 @@ Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRC
       // The slope of the strands may be different at each harp point... need to compute the
       // hold down force for each harp point and return the maximum value
 
-      Float64 F = 0;
+      Float64 s = 0; // slope associated with governing hold down force
+      Float64 F = 0; // governing hold down force
       for (const pgsPointOfInterest& poi : vPoi)
       {
-         // NOTE: we may want to increase the force by some percentage to account for friction
-         // in the hold down device. harped *= 1.05 (for a 5% increase)
-         // See PCI BDM Example 9.1a,pg 9.1a-28
-         // Also see LRFD 5.9.3.2.2a (pre2017: 5.9.5.2.2a)
          Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,pConfig);
 
          // Adjust for slope
-         Float64 slope = pStrandGeom->GetAvgStrandSlope( poi, pConfig);
+         Float64 slope;
+         if (bTotal)
+         {
+            slope = pStrandGeom->GetAvgStrandSlope(poi, pConfig);
+         }
+         else
+         {
+            harped /= Nh; // per strand force
+
+            // maximum hold down force is associated with the maximum strand slope
+            slope = pStrandGeom->GetMaxStrandSlope(poi, pConfig);
+         }
+
 
          Float64 Fhd;
          Fhd = harped / sqrt(1 + slope*slope);
 
-         F = Max(F, Fhd);
+         if (F < Fhd)
+         {
+            F = Fhd;
+            s = slope;
+            if (pPoi)
+            {
+               *pPoi = poi;
+            }
+         }
       }
 
+      // NOTE: increase the force by some percentage to account for friction
+      // in the hold down device. harped *= 1.05 (for a 5% increase)
+      // See PCI BDM Example 9.1a,pg 9.1a-28
+      // Also see LRFD 5.9.3.2.2a (pre2017: 5.9.5.2.2a)
+      //
+      // Do this computation outside of the loop for efficiency
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLib);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+      bool bCheck, bDesign;
+      int holdDownForceType;
+      Float64 maxHoldDownForce, friction;
+      pSpecEntry->GetHoldDownForce(&bCheck, &bDesign, &holdDownForceType, &maxHoldDownForce, &friction);
+      ATLASSERT(bTotal == (holdDownForceType == HOLD_DOWN_TOTAL));
+
+      F *= (1 + friction);
+
+      if (pSlope)
+      {
+         *pSlope = s;
+      }
       return F;
    }
    else
    {
+      if (pPoi)
+      {
+         *pPoi = pgsPointOfInterest(segmentKey, 0);
+      }
+
+      if (pSlope)
+      {
+         *pSlope = 0;
+      }
+
       return 0;
    }
 }

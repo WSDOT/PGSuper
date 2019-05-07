@@ -4327,7 +4327,8 @@ void CPGSDocBase::LoadDocumentSettings()
                  IDB_PV_DRAW_ISOTROPIC  |
                  IDB_CS_LABEL_GIRDERS   |
                  IDB_CS_SHOW_DIMENSIONS |
-                 IDB_CS_DRAW_ISOTROPIC;
+                 IDB_CS_DRAW_ISOTROPIC |
+                 IDB_PV_DRAW_RW_CS;
 
    m_BridgeModelEditorSettings = pApp->GetProfileInt(_T("Settings"),_T("BridgeEditor"),def_bm);
 

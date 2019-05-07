@@ -923,8 +923,8 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
          // load is contained on a single member and is all interior
          if (!IsEqual(xStart, xEnd)) // No use creating a load if it's zero length
          {
-         slabDistLoad.Release();
-         slabPadDistLoad.Release();
+            slabDistLoad.Release();
+            slabPadDistLoad.Release();
             slabDistributedLoads->Create(loadID++, mbrIDStart, loadDirFy, xStart, xEnd, wslabStart, wslabEnd, lotMember, &slabDistLoad);
             slabPadDistributedLoads->Create(loadID++, mbrIDStart, loadDirFy, xStart, xEnd, wslabPadStart, wslabPadEnd, lotMember, &slabPadDistLoad);
          }
@@ -985,8 +985,8 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
 
             if (!IsEqual(x1, x2)) // No use creating a load if it's zero length
             {
-            slabDistLoad.Release();
-            slabPadDistLoad.Release();
+               slabDistLoad.Release();
+               slabPadDistLoad.Release();
                slabDistributedLoads->Create(loadID++, mbrID, loadDirFy, x1, x2, wsl1, wsl2, lotMember, &slabDistLoad);
                slabPadDistributedLoads->Create(loadID++, mbrID, loadDirFy, x1, x2, wsp1, wsp2, lotMember, &slabPadDistLoad);
             }

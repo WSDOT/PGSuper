@@ -91,7 +91,8 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_SLAB_FC, m_ctrlFc);
    DDX_Control(pDX, IDC_HAUNCH_SHAPE2, m_cbHaunchShape);
    //}}AFX_DATA_MAP
-   DDX_Control(pDX, IDC_OVERHANG_DEPTH, m_ctrlOverhangEdgeDepth);
+   DDX_Control(pDX, IDC_LEFT_OVERHANG_DEPTH, m_ctrlLeftOverhangEdgeDepth);
+   DDX_Control(pDX, IDC_RIGHT_OVERHANG_DEPTH, m_ctrlRightOverhangEdgeDepth);
    DDX_Control(pDX, IDC_OVERHANG_TAPER, m_ctrlOverhangTaper);
    DDX_Control(pDX, IDC_PANEL_DEPTH, m_ctrlPanelDepth);
    DDX_Control(pDX, IDC_PANEL_SUPPORT, m_ctrlPanelSupportWidth);
@@ -167,27 +168,28 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
       }
 
       // overhang
-      if (!IsOverlayDeck(deckType))
+      if (IsCastDeck(deckType))
       {
-         // overhang
-         DDX_UnitValueAndTag(pDX, IDC_OVERHANG_DEPTH, IDC_OVERHANG_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth, pDisplayUnits->GetComponentDimUnit());
-         DDX_CBItemData(pDX, IDC_OVERHANG_TAPER, pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper);
-
-         // deck panel
-         DDX_UnitValueAndTag(pDX, IDC_PANEL_DEPTH, IDC_PANEL_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit());
-         if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP) // SIP
-         {
-            DDV_UnitValueGreaterThanZero(pDX, IDC_PANEL_DEPTH, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetXSectionDimUnit());
-         }
-
-         DDX_UnitValueAndTag(pDX, IDC_PANEL_SUPPORT, IDC_PANEL_SUPPORT_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->PanelSupport, pDisplayUnits->GetComponentDimUnit());
-         if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP) // SIP
-         {
-            DDV_UnitValueGreaterThanZero(pDX, IDC_PANEL_DEPTH, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetXSectionDimUnit());
-         }
-
-         DDX_UnitValueAndTag(pDX, IDC_PANEL_SUPPORT, IDC_PANEL_SUPPORT_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->PanelSupport, pDisplayUnits->GetComponentDimUnit());
+         DDX_UnitValue(pDX, IDC_LEFT_OVERHANG_DEPTH, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth[pgsTypes::stLeft], pDisplayUnits->GetComponentDimUnit());
+         DDX_UnitValueAndTag(pDX, IDC_RIGHT_OVERHANG_DEPTH, IDC_OVERHANG_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->OverhangEdgeDepth[pgsTypes::stRight], pDisplayUnits->GetComponentDimUnit());
+         DDX_CBItemData(pDX, IDC_OVERHANG_TAPER, pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper[pgsTypes::stLeft]);
+         pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper[pgsTypes::stRight] = pParent->m_BridgeDesc.GetDeckDescription()->OverhangTaper[pgsTypes::stLeft];
       }
+
+      // deck panel
+      DDX_UnitValueAndTag(pDX, IDC_PANEL_DEPTH, IDC_PANEL_DEPTH_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetComponentDimUnit());
+      if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP) // SIP
+      {
+         DDV_UnitValueGreaterThanZero(pDX, IDC_PANEL_DEPTH, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetXSectionDimUnit());
+      }
+
+      DDX_UnitValueAndTag(pDX, IDC_PANEL_SUPPORT, IDC_PANEL_SUPPORT_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->PanelSupport, pDisplayUnits->GetComponentDimUnit());
+      if (pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeSIP) // SIP
+      {
+         DDV_UnitValueGreaterThanZero(pDX, IDC_PANEL_DEPTH, pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, pDisplayUnits->GetXSectionDimUnit());
+      }
+
+      DDX_UnitValueAndTag(pDX, IDC_PANEL_SUPPORT, IDC_PANEL_SUPPORT_UNIT, pParent->m_BridgeDesc.GetDeckDescription()->PanelSupport, pDisplayUnits->GetComponentDimUnit());
 
       // slab material
       ExchangeConcreteData(pDX);
@@ -562,7 +564,8 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
-   m_ctrlOverhangEdgeDepth.ShowDefaultWhenDisabled(FALSE);
+   m_ctrlLeftOverhangEdgeDepth.ShowDefaultWhenDisabled(FALSE);
+   m_ctrlRightOverhangEdgeDepth.ShowDefaultWhenDisabled(FALSE);
    m_ctrlPanelDepth.ShowDefaultWhenDisabled(FALSE);
    m_ctrlPanelSupportWidth.ShowDefaultWhenDisabled(FALSE);
 
@@ -613,10 +616,14 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    GetDlgItem(IDC_GROSS_DEPTH)->EnableWindow(       deckType != pgsTypes::sdtNone);
    GetDlgItem(IDC_GROSS_DEPTH_UNIT)->EnableWindow(  deckType != pgsTypes::sdtNone);
 
-   GetDlgItem(IDC_OVERHANG_DEPTH_LABEL)->EnableWindow( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   m_ctrlOverhangEdgeDepth.EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   GetDlgItem(IDC_OVERHANG_DEPTH_UNIT)->EnableWindow(  deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
-   m_ctrlOverhangTaper.EnableWindow(       deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
+   bool bIsCastDeck = IsCastDeck(deckType);
+   GetDlgItem(IDC_OVERHANG_DEPTH_LABEL)->EnableWindow( bIsCastDeck );
+   GetDlgItem(IDC_LEFT_OVERHANG_DEPTH_LABEL)->EnableWindow(bIsCastDeck);
+   GetDlgItem(IDC_RIGHT_OVERHANG_DEPTH_LABEL)->EnableWindow(bIsCastDeck);
+   m_ctrlLeftOverhangEdgeDepth.EnableWindow(bIsCastDeck);
+   m_ctrlRightOverhangEdgeDepth.EnableWindow(bIsCastDeck);
+   GetDlgItem(IDC_OVERHANG_DEPTH_UNIT)->EnableWindow(bIsCastDeck);
+   m_ctrlOverhangTaper.EnableWindow(bIsCastDeck);
 
 
    UpdateDeckRelatedControls();
@@ -659,7 +666,8 @@ BOOL CBridgeDescDeckDetailsPage::OnSetActive()
    if ( deckType == pgsTypes::sdtNone )
    {
       GetDlgItem(IDC_GROSS_DEPTH)->SetWindowText(_T(""));
-      GetDlgItem(IDC_OVERHANG_DEPTH)->SetWindowText(_T(""));
+      GetDlgItem(IDC_LEFT_OVERHANG_DEPTH)->SetWindowText(_T(""));
+      GetDlgItem(IDC_RIGHT_OVERHANG_DEPTH)->SetWindowText(_T(""));
       GetDlgItem(IDC_FILLET)->SetWindowText(_T(""));
       GetDlgItem(IDC_SLAB_OFFSET)->SetWindowText(_T(""));
       GetDlgItem(IDC_PANEL_DEPTH)->SetWindowText(_T(""));

@@ -114,6 +114,10 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       bComposite = true;
    }
 
+
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
    if (!m_SimplifiedVersion)
    {
       // Write out traffic barrier properties
@@ -125,9 +129,6 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       (*pPara) << _T("Left Traffic Barrier Area = ") << l2.SetValue( pBarriers->GetAtb(pgsTypes::tboLeft) ) << rptNewLine;
       (*pPara) << _T("Left Traffic Barrier ") << Sub2(_T("I"),_T("yy")) << _T(" = ") << ui.SetValue( pBarriers->GetItb(pgsTypes::tboLeft) ) << rptNewLine;
       (*pPara) << _T("Left Traffic Barrier ") << Sub2(_T("Y"),_T("b")) << _T(" = ") << dim.SetValue( pBarriers->GetYbtb(pgsTypes::tboLeft) ) << rptNewLine;
-
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       const CRailingSystem* pLeftRailing = pBridgeDesc->GetLeftRailingSystem();
 
@@ -237,22 +238,16 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       }
    }
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx;
-   GroupIndexType lastGroupIdx;
-   firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
 
    if ( !m_SimplifiedVersion )
    {
       GET_IFACE2(pBroker, IPointOfInterest,   pPoi);
       GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-      for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+      for (const auto& thisGirderKey : vGirderKeys)
       {
-         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
          PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
          PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
 
@@ -278,80 +273,115 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       }
    }
 
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
+   // a little fake out here... if we have a no deck bridge and there is a sacrifical depth to
+   // be worn off the girder themselves, the bridge site stage 3 properties are different from
+   // the rest of the properties. This is the same as if there is a composite deck and the bridge
+   // site stage 3 properties are different because there is a composite deck in the section
+   if (pBridge->GetDeckType() == pgsTypes::sdtNone && 0 < pBridge->GetSacrificalDepth())
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType firstGirderIdx, lastGirderIdx;
-      firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-      
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      bComposite = true;
+   }
+
+   for (const auto& thisGirderKey : vGirderKeys)
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
+      GirderIDType gdrID = pSplicedGirder->GetID();
+
+      SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(gdrIdx);
-         GirderIDType gdrID = pSplicedGirder->GetID();
+         CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
 
-         SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+
+         if (!m_SimplifiedVersion)
          {
-            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
+            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+            *pChapter << pPara;
+            *pPara << SEGMENT_LABEL(thisSegmentKey) << rptNewLine;
+         }
 
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-            IntervalIndexType lastIntervalIdx    = pIntervals->GetIntervalCount()-1;
+         pPara = new rptParagraph();
+         *pChapter << pPara;
 
-            if (!m_SimplifiedVersion)
+         bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(releaseIntervalIdx,thisSegmentKey);
+         bool bIsPrismatic_Final       = pGirder->IsPrismatic(lastIntervalIdx,thisSegmentKey);
+
+         if ( bIsPrismatic_CastingYard && bIsPrismatic_Final )
+         {
+            // simple table
+            rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,thisSegmentKey,bComposite,pDisplayUnits);
+            *pPara << pTable << rptNewLine;
+         }
+         else if ( bIsPrismatic_CastingYard && !bIsPrismatic_Final )
+         {
+            // simple table for bare girder (don't report composite)
+            rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,thisSegmentKey,false,pDisplayUnits);
+            *pPara << pTable << rptNewLine;
+
+            if ( bComposite )
+            {
+               // there is a deck so we have composite, non-prismatic results
+               pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,thisSegmentKey,lastIntervalIdx,pDisplayUnits);
+               *pPara << pTable << rptNewLine;
+            }
+         }
+         else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
+         {
+            GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+            GET_IFACE2(pBroker,ILossParameters,pLossParams);
+            //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+            //{
+            //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+            //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+            //   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+            //   {
+            //      rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptTransformed,thisSegmentKey,intervalIdx,pDisplayUnits);
+            //      *pPara << pTable << rptNewLine;
+            //   }
+            //}
+            //else
+            {
+               std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
+               vIntervals.push_back(pIntervals->GetLiveLoadInterval());
+               std::sort(vIntervals.begin(),vIntervals.end());
+               vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
+               IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+               for (const auto& intervalIdx : vIntervals)
+               {
+                  pgsTypes::SectionPropertyType spType1 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformedNoncomposite);
+                  pgsTypes::SectionPropertyType spType2 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
+
+                  rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType1,thisSegmentKey,intervalIdx,pDisplayUnits);
+                  *pPara << pTable << rptNewLine;
+
+                  if ( compositeDeckIntervalIdx <= intervalIdx && pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed )
+                  {
+                     rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType2,thisSegmentKey,intervalIdx,pDisplayUnits);
+                     *pPara << pTable << rptNewLine;
+                  }
+               }
+            }
+
+            if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
             {
                pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pPara;
-               *pPara << SEGMENT_LABEL(thisSegmentKey) << rptNewLine;
-            }
+               (*pPara) << _T("Net Section Properties") << rptNewLine;
 
-            pPara = new rptParagraph();
-            *pChapter << pPara;
+               pPara = new rptParagraph;
+               *pChapter << pPara;
 
-            bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(releaseIntervalIdx,thisSegmentKey);
-            bool bIsPrismatic_Final       = pGirder->IsPrismatic(lastIntervalIdx,thisSegmentKey);
-
-            // a little fake out here... if we have a no deck bridge and there is a sacrifical depth to
-            // be worn off the girder themselves, the bridge site stage 3 properties are different from
-            // the rest of the properties. This is the same as if there is a composite deck and the bridge
-            // site stage 3 properties are different because there is a composite deck in the section
-            if ( pBridge->GetDeckType() == pgsTypes::sdtNone && 0 < pBridge->GetSacrificalDepth() )
-            {
-               bComposite = true;
-            }
-
-
-            if ( bIsPrismatic_CastingYard && bIsPrismatic_Final )
-            {
-               // simple table
-               rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,thisSegmentKey,bComposite,pDisplayUnits);
-               *pPara << pTable << rptNewLine;
-            }
-            else if ( bIsPrismatic_CastingYard && !bIsPrismatic_Final )
-            {
-               // simple table for bare girder (don't report composite)
-               rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker,thisSegmentKey,false,pDisplayUnits);
-               *pPara << pTable << rptNewLine;
-
-               if ( bComposite )
-               {
-                  // there is a deck so we have composite, non-prismatic results
-                  pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,thisSegmentKey,lastIntervalIdx,pDisplayUnits);
-                  *pPara << pTable << rptNewLine;
-               }
-            }
-            else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
-            {
-               GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-               GET_IFACE2(pBroker,ILossParameters,pLossParams);
                //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
                //{
                //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
                //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
                //   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
                //   {
-               //      rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptTransformed,thisSegmentKey,intervalIdx,pDisplayUnits);
+               //      rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
                //      *pPara << pTable << rptNewLine;
                //   }
                //}
@@ -361,62 +391,19 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                   vIntervals.push_back(pIntervals->GetLiveLoadInterval());
                   std::sort(vIntervals.begin(),vIntervals.end());
                   vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
-                  IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
                   for (const auto& intervalIdx : vIntervals)
                   {
-                     pgsTypes::SectionPropertyType spType1 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformedNoncomposite);
-                     pgsTypes::SectionPropertyType spType2 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-
-                     rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType1,thisSegmentKey,intervalIdx,pDisplayUnits);
+                     rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
                      *pPara << pTable << rptNewLine;
-
-                     if ( compositeDeckIntervalIdx <= intervalIdx && pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed )
-                     {
-                        rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType2,thisSegmentKey,intervalIdx,pDisplayUnits);
-                        *pPara << pTable << rptNewLine;
-                     }
-                  }
-               }
-
-               if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-               {
-                  pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-                  *pChapter << pPara;
-                  (*pPara) << _T("Net Section Properties") << rptNewLine;
-
-                  pPara = new rptParagraph;
-                  *pChapter << pPara;
-
-                  //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-                  //{
-                  //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-                  //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-                  //   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-                  //   {
-                  //      rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
-                  //      *pPara << pTable << rptNewLine;
-                  //   }
-                  //}
-                  //else
-                  {
-                     std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
-                     vIntervals.push_back(pIntervals->GetLiveLoadInterval());
-                     std::sort(vIntervals.begin(),vIntervals.end());
-                     vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
-                     for (const auto& intervalIdx : vIntervals)
-                     {
-                        rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
-                        *pPara << pTable << rptNewLine;
-                     }
                   }
                }
             }
-            else if ( !bIsPrismatic_CastingYard && bIsPrismatic_Final )
-            {
-               ATLASSERT(false); // this is an impossible case
-            }
-         } // segIdx
-      } // gdrIdx
+         }
+         else if ( !bIsPrismatic_CastingYard && bIsPrismatic_Final )
+         {
+            ATLASSERT(false); // this is an impossible case
+         }
+      } // segIdx
    } // grpIdx
 
    pPara = new rptParagraph;

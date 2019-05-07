@@ -194,6 +194,48 @@ void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsYield
    }
 }
 
+const pgsMomentRatingArtifact* pgsRatingArtifact::GetMomentRatingArtifact(const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   auto& ratings = (bPositiveMoment ? m_PositiveMomentRatings : m_NegativeMomentRatings);
+   auto found = std::find_if(ratings.begin(), ratings.end(), [&poi](const auto& pair) {return pair.first == poi;});
+   if (found == ratings.end())
+   {
+      return nullptr;
+   }
+   return &(found->second);
+}
+
+const pgsShearRatingArtifact* pgsRatingArtifact::GetShearRatingArtifact(const pgsPointOfInterest& poi) const
+{
+   auto found = std::find_if(m_ShearRatings.begin(), m_ShearRatings.end(), [&poi](const auto& pair) {return poi == pair.first;});
+   if (found == m_ShearRatings.end())
+   {
+      return nullptr;
+   }
+   return &(found->second);
+}
+
+const pgsStressRatingArtifact* pgsRatingArtifact::GetStressRatingArtifact(const pgsPointOfInterest& poi) const
+{
+   auto found = std::find_if(m_StressRatings.begin(), m_StressRatings.end(), [&poi](const auto& pair) {return poi == pair.first;});
+   if (found == m_StressRatings.end())
+   {
+      return nullptr;
+   }
+   return &(found->second);
+}
+
+const pgsYieldStressRatioArtifact* pgsRatingArtifact::GetYieldStressRatioArtifact(const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   auto& ratings = (bPositiveMoment ? m_PositiveMomentYieldStressRatios : m_NegativeMomentYieldStressRatios);
+   auto found = std::find_if(ratings.begin(), ratings.end(), [&poi](const auto& pair) {return poi == pair.first;});
+   if (found == ratings.end())
+   {
+      return nullptr;
+   }
+   return &(found->second);
+}
+
 const pgsRatingArtifact::MomentRatings& pgsRatingArtifact::GetMomentRatings(bool bPositiveMoment) const
 {
    return (bPositiveMoment ? m_PositiveMomentRatings : m_NegativeMomentRatings);

@@ -1339,9 +1339,9 @@ Float64 CEngAgentImp::GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIn
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotal,Float64* pSlope,pgsPointOfInterest* pPoi,const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetHoldDownForce(segmentKey,pConfig);
+   return m_PsForceEngineer.GetHoldDownForce(segmentKey,bTotal,pSlope,pPoi,pConfig);
 }
 
 Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
@@ -2993,9 +2993,9 @@ Float64 CEngAgentImp::GetCrackingMoment(IntervalIndexType intervalIdx,const pgsP
    return m_pMomentCapacityEngineer->GetCrackingMoment(intervalIdx, poi, bPositiveMoment);
 }
 
-void CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const
+const CRACKINGMOMENTDETAILS* CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment) const
 {
-   m_pMomentCapacityEngineer->GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment, pcmd);
+   return m_pMomentCapacityEngineer->GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment);
 }
 
 void CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const
@@ -3013,9 +3013,9 @@ Float64 CEngAgentImp::GetMinMomentCapacity(IntervalIndexType intervalIdx,const p
    return m_pMomentCapacityEngineer->GetMinMomentCapacity(intervalIdx, poi, bPositiveMoment);
 }
 
-void CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd) const
+const MINMOMENTCAPDETAILS* CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment) const
 {
-   m_pMomentCapacityEngineer->GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, pmmcd);
+   return m_pMomentCapacityEngineer->GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment);
 }
 
 void CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd) const
@@ -3023,12 +3023,12 @@ void CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,con
    m_pMomentCapacityEngineer->GetMinMomentCapacityDetails(intervalIdx, poi, config, bPositiveMoment, pmmcd);
 }
 
-std::vector<MINMOMENTCAPDETAILS> CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const
+std::vector<const MINMOMENTCAPDETAILS*> CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetMinMomentCapacityDetails(intervalIdx, vPoi, bPositiveMoment);
 }
 
-std::vector<CRACKINGMOMENTDETAILS> CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const
+std::vector<const CRACKINGMOMENTDETAILS*> CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetCrackingMomentDetails(intervalIdx, vPoi, bPositiveMoment);
 }
@@ -3889,17 +3889,17 @@ const pgsHaulingAnalysisArtifact* CEngAgentImp::CreateHaulingAnalysisArtifact(co
 
 /////////////////////////////////////////////////////////////////////////////
 // ICrackedSection
-void CEngAgentImp::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKEDSECTIONDETAILS* pCSD) const
-{
-   m_pMomentCapacityEngineer->GetCrackedSectionDetails(poi, bPositiveMoment, pCSD);
-}
-
 Float64 CEngAgentImp::GetIcr(const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetIcr(poi, bPositiveMoment);
 }
 
-std::vector<CRACKEDSECTIONDETAILS> CEngAgentImp::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
+const CRACKEDSECTIONDETAILS* CEngAgentImp::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   return m_pMomentCapacityEngineer->GetCrackedSectionDetails(poi, bPositiveMoment);
+}
+
+std::vector<const CRACKEDSECTIONDETAILS*> CEngAgentImp::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetCrackedSectionDetails(vPoi, bPositiveMoment);
 }

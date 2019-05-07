@@ -921,6 +921,7 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
       pProgress->UpdateMessage(_T("Checking strand slope and hold down force"));
       CheckStrandSlope(   segmentKey, pSegmentArtifact->GetStrandSlopeArtifact()   );
       CheckHoldDownForce( segmentKey, pSegmentArtifact->GetHoldDownForceArtifact() );
+      CheckPlantHandlingWeightLimit(segmentKey, pSegmentArtifact->GetPlantHandlingWeightArtifact());
 
       pProgress->UpdateMessage(_T("Checking handling stability"));
       CheckSegmentStability(segmentKey,pSegmentArtifact->GetSegmentStabilityArtifact());
@@ -3061,7 +3062,7 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
    MINMOMENTCAPDETAILS mmcd;
    pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx, poi, config, bPositiveMoment, &mmcd);
 
-   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,pmcd,mmcd,true/*designing*/,pArtifact);
+   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,pmcd,&mmcd,true/*designing*/,pArtifact);
 }
 
 void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact) const
@@ -3070,13 +3071,12 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
 
    const MOMENTCAPACITYDETAILS* pmcd = pMomentCapacity->GetMomentCapacityDetails( intervalIdx, poi, bPositiveMoment );
 
-   MINMOMENTCAPDETAILS mmcd;
-   pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, &mmcd);
+   const MINMOMENTCAPDETAILS* pmmcd = pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment);
 
-   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,pmcd,mmcd,false/*checking*/,pArtifact);
+   CreateFlexuralCapacityArtifact(poi,intervalIdx,limitState,bPositiveMoment,pmcd,pmmcd,false/*checking*/,pArtifact);
 }
 
-void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const MINMOMENTCAPDETAILS& mmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact) const
+void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const MINMOMENTCAPDETAILS* pmmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact) const
 {
    GET_IFACE(ILimitStateForces, pLimitStateForces);
    GET_IFACE(ILibrary,pLib);
@@ -3144,7 +3144,7 @@ void pgsDesigner2::CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,
 
    pArtifact->SetCapacity( pmcd->Phi * pmcd->Mn );
    pArtifact->SetDemand( Mu );
-   pArtifact->SetMinCapacity( mmcd.MrMin );
+   pArtifact->SetMinCapacity( pmmcd->MrMin );
 
    // When capacity is zero, there is no reinforcing ratio.
    // We need to simulate some numbers so everything works.
@@ -3682,6 +3682,14 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi) cons
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
 
    Float64 wslab = 0; // weight of slab on shear interface
+
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   if (!pSpecEntry->UseDeckWeightForPermanentNetCompressiveForce())
+   {
+      return wslab;
+   }
 
    // slab load
    Float64 slab_unit_weight = pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
@@ -5046,14 +5054,37 @@ void pgsDesigner2::CheckHoldDownForce(const CSegmentKey& segmentKey,pgsHoldDownF
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
    bool bCheck, bDesign;
-   Float64 maxHoldDownForce;
-   pSpecEntry->GetHoldDownForce(&bCheck,&bDesign,&maxHoldDownForce);
+   int holdDownForceType;
+   Float64 maxHoldDownForce, friction;
+   pSpecEntry->GetHoldDownForce(&bCheck,&bDesign,&holdDownForceType,&maxHoldDownForce,&friction);
    pArtifact->IsApplicable( bCheck );
 
-   Float64 demand = pPrestressForce->GetHoldDownForce(segmentKey);
+   Float64 demand = pPrestressForce->GetHoldDownForce(segmentKey,holdDownForceType == HOLD_DOWN_TOTAL);
 
    pArtifact->SetCapacity( maxHoldDownForce );
    pArtifact->SetDemand( demand );
+}
+
+void pgsDesigner2::CheckPlantHandlingWeightLimit(const CSegmentKey& segmentKey, pgsPlantHandlingWeightArtifact* pArtifact) const
+{
+   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(ILibrary, pLib);
+
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+   pProgress->UpdateMessage(_T("Checking plant handling weight requirements"));
+
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   bool bCheck;
+   Float64 limit;
+   pSpecEntry->GetPlantHandlingWeightLimit(&bCheck, &limit);
+
+   GET_IFACE(ISectionProperties, pSectProps);
+   Float64 Wg = pSectProps->GetSegmentWeight(segmentKey);
+
+   pArtifact->IsApplicable(bCheck);
+   pArtifact->SetWeight(Wg);
+   pArtifact->SetWeightLimit(limit);
 }
 
 void pgsDesigner2::CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact) const

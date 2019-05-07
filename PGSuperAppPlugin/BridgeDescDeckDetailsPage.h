@@ -56,7 +56,8 @@ public:
 	CEdit	m_ctrlEc;
 	CButton m_ctrlEcCheck;
 	CEdit	m_ctrlFc;
-   CCacheEdit m_ctrlOverhangEdgeDepth;
+   CCacheEdit m_ctrlLeftOverhangEdgeDepth;
+   CCacheEdit m_ctrlRightOverhangEdgeDepth;
    CCacheComboBox m_ctrlOverhangTaper;
    CCacheEdit m_ctrlPanelDepth;
    CCacheEdit m_ctrlPanelSupportWidth;

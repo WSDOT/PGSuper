@@ -126,6 +126,8 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
 
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
 // NOTE
 // No longer designing/checking for ultimate moment in temporary construction state
 // per e-mail from Bijan Khaleghi, dated 4/28/1999.  See project log.
@@ -134,83 +136,72 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
 //   write_crack_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, pgsTypes::BridgeSite1, "Bridge Site Stage 1");
 //   write_min_moment_data_table(pBroker,pDisplayUnits,span,girder, vPoi,  pChapter, pgsTypes::BridgeSite1, "Bridge Site Stage 1");
 
-
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      CString strLabel;
+      strLabel.Format(_T("Interval %d - %s"),LABEL_INTERVAL(lastIntervalIdx),pIntervals->GetDescription(lastIntervalIdx));
+
+      rptParagraph* pPara;
+
+      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+      *pChapter << pPara;
+
+
+      if (girderKey.groupIndex == ALL_GROUPS)
       {
-         CGirderKey thisGirderKey(grpIdx,gdrIdx);
+         if (pDocType->IsPGSuperDocument())
+         {
+            *pPara << _T("Span ") << LABEL_SPAN(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex) << rptNewLine << rptNewLine;
+         }
+         else
+         {
+            *pPara << _T("Group ") << LABEL_GROUP(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex) << rptNewLine << rptNewLine;
+         }
+      }
 
-         IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
-         CString strLabel;
-         strLabel.Format(_T("Interval %d - %s"),LABEL_INTERVAL(lastIntervalIdx),pIntervals->GetDescription(lastIntervalIdx));
+      *pPara << _T("Positive Moment Capacity Details") << rptNewLine;
 
-         rptParagraph* pPara;
+      PoiList vPoi;
+      pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), &vPoi);
 
+      write_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, true);
+      if ( !m_bCapacityOnly )
+      {
+         write_crack_moment_data_table(          pBroker, pDisplayUnits, thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, true);
+         write_min_moment_data_table(            pBroker, pDisplayUnits, thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, true);
+         write_over_reinforced_moment_data_table(pBroker, pDisplayUnits, thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, true);
+      }
+
+      SpanIndexType startSpanIdx, endSpanIdx;
+      startSpanIdx = pBridge->GetGirderGroupStartSpan(thisGirderKey.groupIndex);
+      endSpanIdx   = pBridge->GetGirderGroupEndSpan(thisGirderKey.groupIndex);
+      bool bProcessNegativeMoments = false;
+      for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+      {
+         if ( pBridge->ProcessNegativeMoments(spanIdx) )
+         {
+            bProcessNegativeMoments = true;
+            break;
+         }
+      }
+
+      if ( bProcessNegativeMoments )
+      {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
+         *pPara << _T("Negative Moment Capacity Details") << rptNewLine;
 
-
-         if (girderKey.groupIndex == ALL_GROUPS)
-         {
-            if (pDocType->IsPGSuperDocument())
-            {
-               *pPara << _T("Span ") << LABEL_SPAN(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex) << rptNewLine << rptNewLine;
-            }
-            else
-            {
-               *pPara << _T("Group ") << LABEL_GROUP(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex) << rptNewLine << rptNewLine;
-            }
-         }
-
-         *pPara << _T("Positive Moment Capacity Details") << rptNewLine;
-
-         PoiList vPoi;
-         pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), &vPoi);
-
-         write_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, true);
+         write_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, false);
          if ( !m_bCapacityOnly )
          {
-            write_crack_moment_data_table(          pBroker, pDisplayUnits, thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, true);
-            write_min_moment_data_table(            pBroker, pDisplayUnits, thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, true);
-            write_over_reinforced_moment_data_table(pBroker, pDisplayUnits, thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, true);
+            write_crack_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, false);
+            write_min_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, false);
+            write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, false);
          }
-
-         SpanIndexType startSpanIdx, endSpanIdx;
-         startSpanIdx = pBridge->GetGirderGroupStartSpan(thisGirderKey.groupIndex);
-         endSpanIdx   = pBridge->GetGirderGroupEndSpan(thisGirderKey.groupIndex);
-         bool bProcessNegativeMoments = false;
-         for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
-         {
-            if ( pBridge->ProcessNegativeMoments(spanIdx) )
-            {
-               bProcessNegativeMoments = true;
-               break;
-            }
-         }
-
-         if ( bProcessNegativeMoments )
-         {
-            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-            *pChapter << pPara;
-            *pPara << _T("Negative Moment Capacity Details") << rptNewLine;
-
-            write_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, false);
-            if ( !m_bCapacityOnly )
-            {
-               write_crack_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, false);
-               write_min_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, false);
-               write_over_reinforced_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, false);
-            }
-         }
-      } // next girder
-   } // next group
+      }
+   } // next girder
 
    return pChapter;
 }
@@ -640,8 +631,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
    bool bFirstPoi = true;
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      CRACKINGMOMENTDETAILS cmd;
-      pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment,&cmd);
+      const CRACKINGMOMENTDETAILS* pcmd = pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment);
 
       if ( bFirstPoi )
       {
@@ -649,24 +639,24 @@ void write_crack_moment_data_table(IBroker* pBroker,
          if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
          {
             *pPara << rptNewLine;
-            *pPara << _T("Flexural cracking variability factor, ") << Sub2(symbol(gamma),_T("1")) << _T(" = ") << scalar.SetValue(cmd.g1) << rptNewLine;
-            *pPara << _T("Prestress variability factor, ") << Sub2(symbol(gamma),_T("2")) << _T(" = ") << scalar.SetValue(cmd.g2) << rptNewLine;
-            *pPara << _T("Ratio of specified minimum yield strength to ultimate tensile strength of the reinforcement," ) << Sub2(symbol(gamma),_T("3")) << _T(" = ") << scalar.SetValue(cmd.g3) << rptNewLine;
+            *pPara << _T("Flexural cracking variability factor, ") << Sub2(symbol(gamma),_T("1")) << _T(" = ") << scalar.SetValue(pcmd->g1) << rptNewLine;
+            *pPara << _T("Prestress variability factor, ") << Sub2(symbol(gamma),_T("2")) << _T(" = ") << scalar.SetValue(pcmd->g2) << rptNewLine;
+            *pPara << _T("Ratio of specified minimum yield strength to ultimate tensile strength of the reinforcement," ) << Sub2(symbol(gamma),_T("3")) << _T(" = ") << scalar.SetValue(pcmd->g3) << rptNewLine;
             *pPara << rptNewLine;
          }
       }
 
       (*table)(row,0) << location.SetValue( POI_SPAN, poi );
-      (*table)(row,1) << stress.SetValue( cmd.fr );
-      (*table)(row,2) << stress.SetValue( cmd.fcpe);
-      (*table)(row,3) << sect_mod.SetValue( cmd.Sb );
-      (*table)(row,4) << sect_mod.SetValue( cmd.Sbc );
-      (*table)(row,5) << moment.SetValue( cmd.Mdnc);
-      (*table)(row,6) << moment.SetValue( cmd.Mcr );
+      (*table)(row,1) << stress.SetValue( pcmd->fr );
+      (*table)(row,2) << stress.SetValue( pcmd->fcpe);
+      (*table)(row,3) << sect_mod.SetValue( pcmd->Sb );
+      (*table)(row,4) << sect_mod.SetValue( pcmd->Sbc );
+      (*table)(row,5) << moment.SetValue( pcmd->Mdnc);
+      (*table)(row,6) << moment.SetValue( pcmd->Mcr );
 
       if ( bAfter2002 && bBefore2012 )
       {
-         (*table)(row,7) << moment.SetValue( cmd.McrLimit );
+         (*table)(row,7) << moment.SetValue( pcmd->McrLimit );
       }
 
       row++;
@@ -802,19 +792,18 @@ void write_min_moment_data_table(IBroker* pBroker,
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
-      MINMOMENTCAPDETAILS mmcd;
-      pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&mmcd);
+      const MINMOMENTCAPDETAILS* pmmcd = pMomentCapacity->GetMinMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       if ( bBefore2012 )
       {
-         (*table)(row,col++) << moment.SetValue( mmcd.Mcr );
+         (*table)(row,col++) << moment.SetValue( pmmcd->Mcr );
       }
-      (*table)(row,col++) << moment.SetValue( mmcd.MrMin1 );
-      (*table)(row,col++) << mmcd.LimitState;
-      (*table)(row,col++) << moment.SetValue( mmcd.Mu );
-      (*table)(row,col++) << moment.SetValue( mmcd.MrMin2 );
-      (*table)(row,col++) << moment.SetValue( mmcd.MrMin );
+      (*table)(row,col++) << moment.SetValue( pmmcd->MrMin1 );
+      (*table)(row,col++) << pmmcd->LimitState;
+      (*table)(row,col++) << moment.SetValue( pmmcd->Mu );
+      (*table)(row,col++) << moment.SetValue( pmmcd->MrMin2 );
+      (*table)(row,col++) << moment.SetValue( pmmcd->MrMin );
 
       row++;
    }

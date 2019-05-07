@@ -73,8 +73,8 @@ public:
    void SelectGraph(LPCTSTR lpszGraphName);
    void SelectGraphs(const std::vector<CString>& vGraphs);
 
-   IntervalIndexType GetInterval();
-   std::vector<IntervalIndexType> GetSelectedIntervals();
+   IntervalIndexType GetInterval() const;
+   std::vector<IntervalIndexType> GetSelectedIntervals() const;
 
    void IncludeElevationAdjustment(bool bInclude);
    bool IncludeElevationAdjustment() const;
@@ -124,6 +124,8 @@ protected:
    IntervalIndexType GetLastInterval();
 
    bool m_bHasStructuralDeck;
+
+   IntervalIndexType m_LoadRatingIntervalIdx;
 
 #ifdef _DEBUG
 public:

@@ -583,11 +583,15 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    int lldf_method = pSpecEntry->GetLiveLoadDistributionMethod();
    if ( lldf_method == LLDF_LRFD )
    {
-      bool bRigidMethod = (0 < nDiaphragms ? true : false);
-      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      bool bRigidMethod = (0 < nDiaphragms ? true : false); // must have diaphragms for rigid method
+      if (lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
       {
-         bRigidMethod = false; // rigid method only used for steel bridges starting with LRFD 7th Edition, 2014
+         // rigid method only used for steel bridges starting with LRFD 7th Edition, 2014
+         // but we can override
+         bRigidMethod &= pSpecEntry->UseRigidMethod();
       }
+
+
       pLLDF = new lrfdLldfTypeAEK(plldf->gdrNum,
                                   plldf->Savg,
                                   plldf->gdrSpacings,
@@ -635,7 +639,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
                                        plldf->eg,
                                        plldf->leftSlabOverhang,
                                        plldf->rightSlabOverhang,
-                                       false,
+                                       false, // rigid method never used by WSDOT or TxDOT methods
                                        plldf->skew1,
                                        plldf->skew2,
                                        bSkewMoment,bSkewShear,

@@ -555,7 +555,7 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
                if (des_options.doDesignForShear)
                {
                   // If stirrup zones are not symmetrical in test file, design using existing layout
-                     GET_IFACE(IStirrupGeometry, pStirrupGeom);
+                  GET_IFACE(IStirrupGeometry, pStirrupGeom);
                   bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey);
                   des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
                }
@@ -570,17 +570,17 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
                pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey, des_options_coll);
                pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
                ATLASSERT(segmentKey.IsEqual(pArtifact->GetSegmentKey()));
-         
+
                if (pArtifact->GetOutcome() != pgsSegmentDesignArtifact::Success)
                {
-                     err_file << _T("Design was unsuccessful") << std::endl;
-                     designSucceeded = false;
+                  err_file << _T("Design was unsuccessful") << std::endl;
+                  designSucceeded = false;
                }
 
                // Copy the design to the bridge
                SaveFlexureDesign(segmentKey, pArtifact);
             }
-               catch (...)
+            catch (...)
             {
                err_file << _T("Design Failed for span") << span << _T(" girder ") << girder << std::endl;
                return false;
@@ -602,10 +602,10 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
                if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile(fp, this->m_pBroker, segmentKey))
                {
                   err_file << _T("Warning: An error occured while writing to File") << std::endl;
-	               return false;
+                  return false;
                }
             }
-               catch (CXUnwind* pExc)
+            catch (CXUnwind* pExc)
             {
                // Probable lldf out of range error
                std::_tstring sCause;
@@ -621,9 +621,9 @@ bool CTxDOTAgentImp::DoTxDotCadReport(const CString& outputFileName, const CStri
             if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, segmentKey, (TxDOTCadExportFormatType)txInfo.m_TxFType, designSucceeded))
             {
                err_file << _T("Warning: An error occured while writing to File") << std::endl;
-	            return false;
+               return false;
             }
-	      }
+         }
       }
    }
 

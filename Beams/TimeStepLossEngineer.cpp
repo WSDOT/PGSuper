@@ -370,17 +370,15 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
 
       // create the loss objects for this girderline
       std::vector<LOSSES*> vpLosses;
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
-      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-      {
-         GirderIndexType nGirders = pIBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
-         GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
-         CGirderKey thisGirderKey(grpIdx,gdrIdx);
+      GET_IFACE(IBridge, pBridge);
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys); // must use girderline index version here (not the girder key version)
+      for(const auto& thisGirderKey : vGirderKeys)
+      {
          LOSSES losses;
          std::pair<std::map<CGirderKey,LOSSES>::iterator,bool> result;
-         result = m_Losses.insert(std::make_pair(thisGirderKey,losses)); // losses is copied when inserted
+         result = m_Losses.emplace(thisGirderKey,losses);
          ATLASSERT(result.second == true);
          LOSSES* pLosses = &(result.first->second);
          vpLosses.push_back(pLosses);

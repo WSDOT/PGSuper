@@ -47,6 +47,7 @@ public:
 	enum { IDD = IDD_BRIDGE_EDITOR_SECTION_PAGE };
 	BOOL	m_LabelGirders;
 	BOOL	m_ShowDimensions;
+	BOOL	m_ShowRwCrossSection;
 	//}}AFX_DATA
 
 

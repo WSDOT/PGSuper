@@ -81,19 +81,11 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pR
    {
       GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-      GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-      GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-      for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey, &vGirderKeys);
+      for(const auto& thisGirderKey : vGirderKeys)
       {
-         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-         GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-         GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-         for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
-         {
-            CGirderKey thisGirderKey(grpIdx,gdrIdx);
-            pSectProp->ReportEffectiveFlangeWidth(thisGirderKey,pChapter,pDisplayUnits);
-         }
+         pSectProp->ReportEffectiveFlangeWidth(thisGirderKey,pChapter,pDisplayUnits);
       }
    }
    else

@@ -242,10 +242,9 @@ std::vector<Float64> pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexT
 
 Float64 pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-   CRACKINGMOMENTDETAILS cmd;
-   GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment, &cmd);
+   const CRACKINGMOMENTDETAILS* pcmd = GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment);
 
-   Float64 Mcr = cmd.Mcr;
+   Float64 Mcr = pcmd->Mcr;
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
@@ -261,17 +260,17 @@ Float64 pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexType intervalI
    bool bBefore2012 = (pSpecEntry->GetSpecificationType() <  lrfdVersionMgr::SixthEdition2012 ? true : false);
    if (bAfter2002 && bBefore2012)
    {
-      Mcr = (bPositiveMoment ? Max(cmd.Mcr, cmd.McrLimit) : Min(cmd.Mcr, cmd.McrLimit));
+      Mcr = (bPositiveMoment ? Max(pcmd->Mcr, pcmd->McrLimit) : Min(pcmd->Mcr, pcmd->McrLimit));
    }
    else
    {
-      Mcr = cmd.Mcr;
+      Mcr = pcmd->Mcr;
    }
 
    return Mcr;
 }
 
-void pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKINGMOMENTDETAILS* pcmd) const
+const CRACKINGMOMENTDETAILS* pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
 #if defined _DEBUG
    // Mu is only considered once live load is applied to the structure
@@ -279,15 +278,9 @@ void pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType inter
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
 #endif
+   ATLASSERT(poi.GetID() != INVALID_ID);
 
-   if (poi.GetID() == INVALID_ID)
-   {
-      ComputeCrackingMoment(intervalIdx, poi, bPositiveMoment, pcmd);
-   }
-   else
-   {
-      *pcmd = *ValidateCrackingMoments(intervalIdx, poi, bPositiveMoment);
-   }
+   return ValidateCrackingMoments(intervalIdx, poi, bPositiveMoment);
 }
 
 void pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG& config, bool bPositiveMoment, CRACKINGMOMENTDETAILS* pcmd) const
@@ -302,7 +295,7 @@ void pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType inter
    GDRCONFIG curr_config = pBridge->GetSegmentConfiguration(segmentKey);
    if (poi.GetID() != INVALID_ID && curr_config.IsFlexuralDataEqual(config))
    {
-      GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment, pcmd);
+      *pcmd = *GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment);
    }
    else
    {
@@ -324,14 +317,12 @@ std::vector<Float64> pgsMomentCapacityEngineer::GetMinMomentCapacity(IntervalInd
 
 Float64 pgsMomentCapacityEngineer::GetMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-   MINMOMENTCAPDETAILS mmcd;
-   GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, &mmcd);
-   return mmcd.MrMin;
+   const MINMOMENTCAPDETAILS* pmmcd = GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment);
+   return pmmcd->MrMin;
 }
 
-void pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, MINMOMENTCAPDETAILS* pmmcd) const
+const MINMOMENTCAPDETAILS* pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-
 #if defined _DEBUG
    // Mu is only considered once live load is applied to the structure
    GET_IFACE(IIntervals, pIntervals);
@@ -339,7 +330,7 @@ void pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType in
    ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
 #endif
 
-   *pmmcd = ValidateMinMomentCapacity(intervalIdx, poi, bPositiveMoment);
+   return ValidateMinMomentCapacity(intervalIdx, poi, bPositiveMoment);
 }
 
 void pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG& config, bool bPositiveMoment, MINMOMENTCAPDETAILS* pmmcd) const
@@ -352,7 +343,7 @@ void pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType in
    GDRCONFIG curr_config = pBridge->GetSegmentConfiguration(segmentKey);
    if (poi.GetID() != INVALID_ID && curr_config.IsFlexuralDataEqual(config))
    {
-      GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, pmmcd);
+      *pmmcd = *GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment);
    }
    else
    {
@@ -360,55 +351,51 @@ void pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType in
    }
 }
 
-std::vector<MINMOMENTCAPDETAILS> pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const
+std::vector<const MINMOMENTCAPDETAILS*> pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const
 {
-   std::vector<MINMOMENTCAPDETAILS> details;
+   std::vector<const MINMOMENTCAPDETAILS*> details;
    details.reserve(vPoi.size());
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      MINMOMENTCAPDETAILS mcd;
-      GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, &mcd);
-      details.push_back(mcd);
+      const MINMOMENTCAPDETAILS* pmmcd = GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment);
+      details.push_back(pmmcd);
    }
 
    return details;
 }
 
-std::vector<CRACKINGMOMENTDETAILS> pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const
+std::vector<const CRACKINGMOMENTDETAILS*> pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const
 {
-   std::vector<CRACKINGMOMENTDETAILS> details;
+   std::vector<const CRACKINGMOMENTDETAILS*> details;
    details.reserve(vPoi.size());
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      CRACKINGMOMENTDETAILS cmd;
-      GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment, &cmd);
-      details.push_back(cmd);
+      const CRACKINGMOMENTDETAILS* pcmd = GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment);
+      details.push_back(pcmd);
    }
 
    return details;
-}
-
-void pgsMomentCapacityEngineer::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKEDSECTIONDETAILS* pCSD) const
-{
-   *pCSD = *ValidateCrackedSectionDetails(poi, bPositiveMoment);
 }
 
 Float64 pgsMomentCapacityEngineer::GetIcr(const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-   CRACKEDSECTIONDETAILS csd;
-   GetCrackedSectionDetails(poi, bPositiveMoment, &csd);
-   return csd.Icr;
+   const CRACKEDSECTIONDETAILS* pCSD = GetCrackedSectionDetails(poi, bPositiveMoment);
+   return pCSD->Icr;
 }
 
-std::vector<CRACKEDSECTIONDETAILS> pgsMomentCapacityEngineer::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
+const CRACKEDSECTIONDETAILS* pgsMomentCapacityEngineer::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-   std::vector<CRACKEDSECTIONDETAILS> details;
+   return ValidateCrackedSectionDetails(poi, bPositiveMoment);
+}
+
+std::vector<const CRACKEDSECTIONDETAILS*> pgsMomentCapacityEngineer::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
+{
+   std::vector<const CRACKEDSECTIONDETAILS*> details;
    details.reserve(vPoi.size());
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      CRACKEDSECTIONDETAILS csd;
-      GetCrackedSectionDetails(poi, bPositiveMoment, &csd);
-      details.push_back(csd);
+      const CRACKEDSECTIONDETAILS* pCSD = GetCrackedSectionDetails(poi, bPositiveMoment);
+      details.push_back(pCSD);
    }
 
    return details;
@@ -1114,10 +1101,9 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
 {
    const MOMENTCAPACITYDETAILS* pmcd = GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
-   CRACKINGMOMENTDETAILS cmd;
-   GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment,&cmd);
+   const CRACKINGMOMENTDETAILS* pcmd = GetCrackingMomentDetails(intervalIdx,poi,bPositiveMoment);
 
-   ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,pmcd,cmd,pmmcd);
+   ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,pmcd,pcmd,pmmcd);
 }
 
 void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd) const
@@ -1125,12 +1111,12 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
    const MOMENTCAPACITYDETAILS* pmcd = GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment,&config);
 
    CRACKINGMOMENTDETAILS cmd;
-   GetCrackingMomentDetails(intervalIdx,poi,config,bPositiveMoment,&cmd);
+   GetCrackingMomentDetails(intervalIdx, poi, config, bPositiveMoment, &cmd);
 
-   ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,pmcd,cmd,pmmcd);
+   ComputeMinMomentCapacity(intervalIdx,poi,bPositiveMoment,pmcd,&cmd,pmmcd);
 }
 
-void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const CRACKINGMOMENTDETAILS& cmd,MINMOMENTCAPDETAILS* pmmcd) const
+void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const CRACKINGMOMENTDETAILS* pcmd,MINMOMENTCAPDETAILS* pmmcd) const
 {
    Float64 Mr;     // Nominal resistance (phi*Mn)
    Float64 MrMin;  // Minimum nominal resistance - Min(MrMin1,MrMin2)
@@ -1157,11 +1143,11 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
 
    if ( bAfter2002 && bBefore2012 )
    {
-      Mcr = (bPositiveMoment ? Max(cmd.Mcr,cmd.McrLimit) : Min(cmd.Mcr,cmd.McrLimit));
+      Mcr = (bPositiveMoment ? Max(pcmd->Mcr,pcmd->McrLimit) : Min(pcmd->Mcr,pcmd->McrLimit));
    }
    else
    {
-      Mcr = cmd.Mcr;
+      Mcr = pcmd->Mcr;
    }
    Mcr = IsZero(Mcr) ? 0 : Mcr;
 
@@ -2386,8 +2372,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 }
 
 //-----------------------------------------------------------------------------
-MINMOMENTCAPDETAILS pgsMomentCapacityEngineer::ValidateMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,  bool bPositiveMoment) const
+const MINMOMENTCAPDETAILS* pgsMomentCapacityEngineer::ValidateMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,  bool bPositiveMoment) const
 {
+   ATLASSERT(poi.GetID() != INVALID_ID);
+
    std::map<PoiIDType, MINMOMENTCAPDETAILS>* pMap;
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -2395,35 +2383,27 @@ MINMOMENTCAPDETAILS pgsMomentCapacityEngineer::ValidateMinMomentCapacity(Interva
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
 
-   if (poi.GetID() != INVALID_ID)
-   {
-      pMap = (intervalIdx < compositeIntervalIdx) ? &m_NonCompositeMinMomentCapacity[bPositiveMoment]
-         : &m_CompositeMinMomentCapacity[bPositiveMoment];
+   pMap = (intervalIdx < compositeIntervalIdx) ? &m_NonCompositeMinMomentCapacity[bPositiveMoment]
+      : &m_CompositeMinMomentCapacity[bPositiveMoment];
 
-      auto found = pMap->find(poi.GetID());
-      if (found != pMap->end())
-      {
-         return ((*found).second); // capacities have already been computed
-      }
+   auto found = pMap->find(poi.GetID());
+   if (found != pMap->end())
+   {
+      return &((*found).second); // capacities have already been computed
    }
 
    MINMOMENTCAPDETAILS mmcd;
    ComputeMinMomentCapacity(intervalIdx, poi, bPositiveMoment, &mmcd);
 
-   if (poi.GetID() == INVALID_ID)
-   {
-      return mmcd;
-   }
-   else
-   {
-      auto retval = pMap->insert(std::make_pair(poi.GetID(), mmcd));
-      return ((*(retval.first)).second);
-   }
+   auto retval = pMap->insert(std::make_pair(poi.GetID(), mmcd));
+   return &((*(retval.first)).second);
 }
 
 //-----------------------------------------------------------------------------
 const CRACKINGMOMENTDETAILS* pgsMomentCapacityEngineer::ValidateCrackingMoments(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
+   ATLASSERT(poi.GetID() != INVALID_ID);
+
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    GET_IFACE(IIntervals, pIntervals);
@@ -2432,21 +2412,16 @@ const CRACKINGMOMENTDETAILS* pgsMomentCapacityEngineer::ValidateCrackingMoments(
    auto pMap = (intervalIdx < compositeIntervalIdx) ? const_cast<CrackingMomentContainer*>(&m_NonCompositeCrackingMoment[bPositiveMoment]) : const_cast<CrackingMomentContainer*>(&m_CompositeCrackingMoment[bPositiveMoment]);
    const CRACKINGMOMENTDETAILS* pMcrDetails = nullptr;
 
-   if (poi.GetID() != INVALID_ID)
+   auto found = pMap->find(poi.GetID());
+   if (found != pMap->end())
    {
-      auto found = pMap->find(poi.GetID());
-      if (found != pMap->end())
-      {
-         pMcrDetails = &((*found).second); // capacities have already been computed
-      }
+      pMcrDetails = &((*found).second); // capacities have already been computed
    }
 
    if (pMcrDetails == nullptr)
    {
       CRACKINGMOMENTDETAILS cmd;
       ComputeCrackingMoment(intervalIdx, poi, bPositiveMoment, &cmd);
-
-      ATLASSERT(poi.GetID() != INVALID_ID); // don't want to store for a non-specified location
 
       auto retval = pMap->insert(std::make_pair(poi.GetID(), cmd));
       pMcrDetails = &((*(retval.first)).second);

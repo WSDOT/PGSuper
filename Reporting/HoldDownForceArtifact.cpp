@@ -25,6 +25,7 @@
 
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
+#include <IFace\Project.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
@@ -94,6 +95,14 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
       return;
    }
 
+   GET_IFACE2(pBroker,ISpecification, pSpec);
+   GET_IFACE2(pBroker,ILibrary, pLib);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   bool bCheck, bDesign;
+   int holdDownForceType;
+   Float64 maxHoldDownForce, friction;
+   pSpecEntry->GetHoldDownForce(&bCheck, &bDesign, &holdDownForceType, &maxHoldDownForce, &friction);
+
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
    *pTitle << _T("Hold Down Force");
@@ -123,8 +132,15 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
          rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,nullptr);
          *pBody << pTable;
 
-         (*pTable)(0,0) << COLHDR(_T("Hold Down Force"),    rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-         (*pTable)(0,1) << COLHDR(_T("Max Hold Down Force"),   rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+         if (holdDownForceType == HOLD_DOWN_TOTAL)
+         {
+            (*pTable)(0, 0) << COLHDR(_T("Total Hold Down Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+         }
+         else
+         {
+            (*pTable)(0, 0) << COLHDR(_T("Hold Down Force per Strand"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+         }
+         (*pTable)(0, 1) << COLHDR(_T("Hold Down Force Limit"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
          (*pTable)(0,2) << _T("Status");
 
          (*pTable)(1,0) << force.SetValue(pArtifact->GetDemand());

@@ -273,7 +273,7 @@ BEGIN
     LTEXT           "NOTE: These are seed values and must be copied into your project",IDC_STATIC,7,267,213,8
 END
 
-IDD_GIRDER_DIMENSIONS DIALOGEX 0, 0, 491, 379
+IDD_GIRDER_DIMENSIONS DIALOGEX 0, 0, 491, 400
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -286,12 +286,14 @@ BEGIN
     GROUPBOX        "Girder Dimensions",IDC_STATIC,7,63,205,217,0,WS_EX_TRANSPARENT
     CONTROL         "Custom1",IDC_DIMENSIONS,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,15,77,189,193
     CONTROL         "",IDC_GIRDER_MF,"Static",SS_ENHMETAFILE | SS_SUNKEN,217,7,267,273
-    GROUPBOX        "Other Parameters",IDC_STATIC,7,282,477,29
+    GROUPBOX        "Other Parameters",IDC_STATIC,7,282,477,43
     LTEXT           "Drag Coefficient (bare girder) - Used for wind analysis during lifting and hauling - Cd",IDC_STATIC,17,294,260,8
     EDITTEXT        IDC_DRAG_COEFFICIENT,282,291,40,14,ES_AUTOHSCROLL
-    GROUPBOX        "Variable Depth Girders",IDC_VARIABLE_DEPTH_GROUP,7,313,477,59
-    CONTROL         "Section depth can vary",IDC_VARIABLE_DEPTH_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,325,89,10
-    LTEXT           "Static",IDC_NOTES,119,325,356,43
+    GROUPBOX        "Variable Depth Girders",IDC_VARIABLE_DEPTH_GROUP,7,334,477,59
+    CONTROL         "Section depth can vary",IDC_VARIABLE_DEPTH_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,346,89,10
+    LTEXT           "Static",IDC_NOTES,119,346,356,43
+    CONTROL         "Report bearing seat elevations at bottom edges of girders",IDC_BEARING_ELEVS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,308,188,10
 END
 
 IDD_EDIT_SHEAR_STEEL DIALOGEX 0, 0, 420, 358
@@ -1049,18 +1051,21 @@ BEGIN
     LTEXT           "Static",IDC_LWC_AGG_SIZE_UNIT,203,248,29,8
 END
 
-IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 484
+IDD_SPEC_DESIGN DIALOGEX 0, 0, 481, 502
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Spec. Checking and Design"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "At Release Check/Design Options",IDC_STATIC,12,6,461,108
+    GROUPBOX        "At Release Check/Design Options",IDC_STATIC,12,6,461,127
     LTEXT           "Harped Strand Hold Down Force",IDC_STATIC,23,23,104,8
     CONTROL         "Check",IDC_CHECK_HD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,21,37,8
     CONTROL         "Design",IDC_DESIGN_HD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,183,21,37,8
-    LTEXT           "Max. Hold Down Force",IDC_STATIC_HD,229,22,79,8
-    EDITTEXT        IDC_HOLD_DOWN_FORCE,307,19,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Kips",IDC_HOLD_DOWN_FORCE_UNITS,351,22,23,8
+    COMBOBOX        IDC_HOLD_DOWN_FORCE_TYPE,220,19,116,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_HOLD_DOWN_FORCE,339,19,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Kips",IDC_HOLD_DOWN_FORCE_UNITS,383,22,23,8
+    LTEXT           "Friction",IDC_FRICTION_LABEL,404,22,24,8
+    EDITTEXT        IDC_FRICTION,429,19,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_FRICTION_UNIT,455,22,8,8
     LTEXT           "Harped Strand Slope Limits",IDC_STATIC,23,35,86,8
     CONTROL         "Check",IDC_CHECK_SLOPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,36,37,8
     CONTROL         "Design",IDC_DESIGN_SLOPE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,183,36,37,8
@@ -1079,68 +1084,72 @@ BEGIN
     LTEXT           "Confinement Reinforcement (5.10.10.2)",IDC_SCONFINEMENT,25,97,124,8
     CONTROL         "Check",IDC_CHECK_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,97,37,8
     CONTROL         "Design",IDC_DESIGN_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,199,97,37,8
-    GROUPBOX        "Lifting Check/Design Options",IDC_STATIC,12,120,462,50
-    CONTROL         "Check",IDC_CHECK_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,135,37,8
-    CONTROL         "Design",IDC_DESIGN_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,135,37,8
-    LTEXT           "Min Lifting Point Location from ends of girder",IDC_MIN_LIFTING_POINT_LABEL,23,150,140,8
-    EDITTEXT        IDC_MIN_LIFTING_POINT,177,147,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "un",IDC_MIN_LIFTING_POINT_UNIT,220,150,9,8
-    LTEXT           "(Enter value or H)",IDC_STATIC_L,234,150,56,8
-    LTEXT           "Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,316,150,31,8
-    EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,351,147,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,395,150,19,8
-    GROUPBOX        "Hauling Check/Design Options",IDC_STATIC,12,176,462,63
-    CONTROL         "Check",IDC_CHECK_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,191,37,8
-    CONTROL         "Design",IDC_DESIGN_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,78,191,37,8
-    LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,23,205,149,8
-    EDITTEXT        IDC_MIN_TRUCK_SUPPORT,177,201,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MIN_TRUCK_SUPPORT_UNIT,220,205,19,8
-    LTEXT           "(Enter value of H)",IDC_STATIC_H,233,205,56,8
-    LTEXT           "Accuracy",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,316,205,31,8
-    EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,351,201,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,395,205,19,8
-    CONTROL         "Not to be less than",IDC_IS_SUPPORT_LESS_THAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,219,73,10
-    EDITTEXT        IDC_SUPPORT_LESS_THAN,101,217,25,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,129,219,44,8
-    LTEXT           "(For Kansas method only)",IDC_STATIC_K,184,219,80,8
-    GROUPBOX        "Final Check/Design Options",IDC_STATIC,12,244,462,87
-    LTEXT           "Haunch Geometry",IDC_STATIC,23,260,94,8
-    CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,260,37,8
-    CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,182,260,37,8
-    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,23,277,100,8
-    CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,276,45,10
-    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,182,277,82,8
-    EDITTEXT        IDC_DEFLECTION_LIMIT,262,274,40,14,ES_AUTOHSCROLL
-    LTEXT           "Bottom Flange Clearance",IDC_STATIC,23,294,80,8
-    CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,294,37,10
-    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,182,294,48,8
-    EDITTEXT        IDC_CLEARANCE,234,291,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_CLEARANCE_UNIT,279,294,19,8
-    LTEXT           "Inclination of Tilted Girder",IDC_STATIC,23,312,81,8
-    CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,312,37,10
-    LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,181,312,51,8
-    EDITTEXT        IDC_INCLINDED_GIRDER_FS,241,309,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Bearing Pad Deduction",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL,294,312,74,8
-    EDITTEXT        IDC_INCLINDED_GIRDER_BRGPADDEDUCT,376,309,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT,418,312,19,8
-    GROUPBOX        "Harped Strand Design",IDC_STATIC,12,336,462,44
+    LTEXT           "Plant Handling Weight",IDC_STATIC,24,114,72,8
+    CONTROL         "Check",IDC_CHECK_HANDLING_WEIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,103,112,34,10
+    EDITTEXT        IDC_HANDLING_WEIGHT,140,111,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HANDLING_WEIGHT_UNIT,185,113,19,8
+    GROUPBOX        "Lifting Check/Design Options",IDC_STATIC,12,140,462,50
+    CONTROL         "Check",IDC_CHECK_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,23,155,37,8
+    CONTROL         "Design",IDC_DESIGN_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,155,37,8
+    LTEXT           "Min Lifting Point Location from ends of girder",IDC_MIN_LIFTING_POINT_LABEL,23,170,140,8
+    EDITTEXT        IDC_MIN_LIFTING_POINT,177,167,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "un",IDC_MIN_LIFTING_POINT_UNIT,220,170,9,8
+    LTEXT           "(Enter value or H)",IDC_STATIC_L,234,170,56,8
+    LTEXT           "Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,316,170,31,8
+    EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,351,167,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,395,170,19,8
+    GROUPBOX        "Hauling Check/Design Options",IDC_STATIC,12,196,462,63
+    CONTROL         "Check",IDC_CHECK_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,211,37,8
+    CONTROL         "Design",IDC_DESIGN_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,78,211,37,8
+    LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,23,225,149,8
+    EDITTEXT        IDC_MIN_TRUCK_SUPPORT,177,221,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MIN_TRUCK_SUPPORT_UNIT,220,225,19,8
+    LTEXT           "(Enter value of H)",IDC_STATIC_H,233,225,56,8
+    LTEXT           "Accuracy",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,316,225,31,8
+    EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,351,221,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,395,225,19,8
+    CONTROL         "Not to be less than",IDC_IS_SUPPORT_LESS_THAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,239,73,10
+    EDITTEXT        IDC_SUPPORT_LESS_THAN,101,237,25,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,129,239,44,8
+    LTEXT           "(For Kansas method only)",IDC_STATIC_K,184,239,80,8
+    GROUPBOX        "Final Check/Design Options",IDC_STATIC,12,264,462,87
+    LTEXT           "Haunch Geometry",IDC_STATIC,23,280,94,8
+    CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,280,37,8
+    CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,182,280,37,8
+    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,23,297,100,8
+    CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,296,45,10
+    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,182,297,82,8
+    EDITTEXT        IDC_DEFLECTION_LIMIT,262,294,40,14,ES_AUTOHSCROLL
+    LTEXT           "Bottom Flange Clearance",IDC_STATIC,23,314,80,8
+    CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,314,37,10
+    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,182,314,48,8
+    EDITTEXT        IDC_CLEARANCE,234,311,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CLEARANCE_UNIT,279,314,19,8
+    LTEXT           "Inclination of Tilted Girder",IDC_STATIC,23,332,81,8
+    CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,332,37,10
+    LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,181,332,51,8
+    EDITTEXT        IDC_INCLINDED_GIRDER_FS,241,329,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Bearing Pad Deduction",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL,294,332,74,8
+    EDITTEXT        IDC_INCLINDED_GIRDER_BRGPADDEDUCT,376,329,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT,418,332,19,8
+    GROUPBOX        "Harped Strand Design",IDC_STATIC,12,356,462,44
     CONTROL         "Add Strands Using the Permanent Strand Fill Order",IDC_RADIO_FILL_PERMANENT,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,352,193,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,372,193,10
     CONTROL         "Minimize Number of Harped Strands (*)",IDC_RADIO2,
-                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,367,137,10
-    LTEXT           "* If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,236,357,220,22
-    GROUPBOX        "Roadway Elevation Checks",IDC_ELEVATION_TOLERANCE_GROUP,12,385,462,40
-    LTEXT           "Minimum difference between finished and design roadway surface elevation",IDC_ELEVATION_TOLERANCE_LABEL,24,398,238,8
-    EDITTEXT        IDC_ELEVATION_TOLERANCE,266,395,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ELEVATION_TOLERANCE_UNIT,309,398,19,8
-    LTEXT           "This setting applies to adjacent girder bridges without a deck. See documentation for additional details",IDC_ELEVATION_TOLERANCE_NOTE,23,411,320,8
-    GROUPBOX        "Concrete Strength for Limit State Evaluations (Time-Step Analysis Only)",IDC_FC_GROUP,12,433,462,44
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,387,137,10
+    LTEXT           "* If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,236,377,220,22
+    GROUPBOX        "Roadway Elevation Checks",IDC_ELEVATION_TOLERANCE_GROUP,12,405,462,40
+    LTEXT           "Minimum difference between finished and design roadway surface elevation",IDC_ELEVATION_TOLERANCE_LABEL,24,418,238,8
+    EDITTEXT        IDC_ELEVATION_TOLERANCE,266,415,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ELEVATION_TOLERANCE_UNIT,309,418,19,8
+    LTEXT           "This setting applies to adjacent girder bridges without a deck. See documentation for additional details",IDC_ELEVATION_TOLERANCE_NOTE,23,431,320,8
+    GROUPBOX        "Concrete Strength for Limit State Evaluations (Time-Step Analysis Only)",IDC_FC_GROUP,12,451,462,44
     CONTROL         "Use f'ci and f'c at the time of loading (5.14.3.2d and 5.14.1.3.3)",IDC_FC1,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,450,214,10
-    CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,463,93,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,465,214,10
+    CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,478,93,10
 END
 
-IDD_SPEC_SHEAR DIALOGEX 0, 0, 441, 410
+IDD_SPEC_SHEAR DIALOGEX 0, 0, 441, 423
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Shear Capacity"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1189,7 +1198,7 @@ BEGIN
     COMBOBOX        IDC_LRSH,15,304,297,55,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Include girder longitudinal mild reinforcement in capacity calculations",IDC_INCLUDE_REBAR_SHEAR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,323,230,10
-    GROUPBOX        "Horizontal Interface Shear",IDC_STATIC,7,342,427,61
+    GROUPBOX        "Horizontal Interface Shear",IDC_STATIC,7,345,427,71
     LTEXT           "Compute shear stress at slab/girder interface",IDC_STATIC,17,357,141,8
     COMBOBOX        IDC_SHEAR_FLOW_METHOD,165,355,212,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "LRFD 5.8.4.2 Spacing of interface shear connectors shall not exceed",IDC_SHIS,17,376,219,8
@@ -1200,6 +1209,8 @@ BEGIN
     EDITTEXT        IDC_NWC_PHI_DEBOND,111,193,23,14,ES_RIGHT | ES_AUTOHSCROLL
     EDITTEXT        IDC_LWC_PHI_DEBOND,164,193,23,14,ES_RIGHT | ES_AUTOHSCROLL
     RTEXT           "Debonded Strands",IDC_STATIC_PHI_DEBOND,27,195,76,8
+    CONTROL         "Use the deck weight for the permanent net compressive force normal to the shear plane, (Pc LRFD 5.7.4.3)",IDC_USE_DECK_FOR_PC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,399,375,10
 END
 
 IDD_SPEC_MOMENT DIALOGEX 0, 0, 456, 350
@@ -1700,7 +1711,7 @@ BEGIN
     LTEXT           "NOTE: The method used to distribute haunch loading is defined on the Creep and Camber tab",IDC_STATIC,25,123,319,13,WS_BORDER
 END
 
-IDD_SPEC_LIVE_LOADS DIALOGEX 0, 0, 351, 259
+IDD_SPEC_LIVE_LOADS DIALOGEX 0, 0, 351, 283
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Live Loads"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -1708,25 +1719,27 @@ BEGIN
     GROUPBOX        "HL93 Live Load",IDC_STATIC,7,7,337,41
     CONTROL         "Include Dual Design Tandem (Low Boy) + Lane Load (C3.6.1.3.1)",IDC_DUAL_TANDEM,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,27,225,10
-    GROUPBOX        "Live Load Distribution Factors",IDC_STATIC,8,55,336,138
+    GROUPBOX        "Live Load Distribution Factors",IDC_STATIC,8,55,336,160
     COMBOBOX        IDC_LLDF,17,68,210,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All Distribution Factors",IDC_LANESBEAMS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,87,318,10
-    LTEXT           "Maximum angular deviation between girders",IDC_STATIC,17,105,138,8
+    LTEXT           "Maximum angular deviation between girders",IDC_STATIC,17,105,151,8
     EDITTEXT        IDC_MAXGIRDERANGLE,172,103,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_MAXGIRDERANGLE_UNIT,215,105,19,8
-    LTEXT           "Minimum Girder Stiffness Ratio (Ix min/Ix max)",IDC_STATIC,16,124,153,8
-    EDITTEXT        IDC_GIRDERSTIFFNESSRATIO,172,119,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Minimum Girder Stiffness Ratio (Ix min/Ix max)",IDC_STATIC,16,122,153,8
+    EDITTEXT        IDC_GIRDERSTIFFNESSRATIO,172,120,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Location to measure Girder Spacing\n(Fraction of girder's span length)",IDC_STATIC,17,137,144,18
     EDITTEXT        IDC_GIRDER_SPACING_LOCATION,172,138,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Girder spacing normal to the alignment will be measured at this fractional distance from both ends of the span. The location with maximum deck width (measured normal to the alignment) will be used for computing distribution factors.",IDC_STATIC,17,157,320,30
-    GROUPBOX        "Pedestrian Live Load (LRFD 3.6.1.6)",IDC_STATIC,7,198,336,54
-    LTEXT           "Magnitude of Pedestrian Live Load",IDC_STATIC,17,214,111,8
-    EDITTEXT        IDC_PED_LIVE_LOAD,135,213,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_PED_LIVE_LOAD_UNIT,177,214,32,8
-    LTEXT           "Minimum Width of Sidewalk to Apply Pedestrian Live Load",IDC_STATIC,17,235,184,8
-    EDITTEXT        IDC_MIN_SIDEWALK_WIDTH,207,233,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MIN_SIDEWALK_WIDTH_UNIT,249,235,32,8
+    CONTROL         "Use rigid method for exterior beam moment distribution factor for Types ""a"", ""e"", and ""k"" from LRFD 4.6.2.2.2d. This requirement was limited to steel beam-slab bridges in LRFD 7th Edition, though some owner/agencies still use the provision",IDC_RIGID_METHOD,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,14,184,306,29
+    GROUPBOX        "Pedestrian Live Load (LRFD 3.6.1.6)",IDC_STATIC,7,222,336,54
+    LTEXT           "Magnitude of Pedestrian Live Load",IDC_STATIC,17,238,111,8
+    EDITTEXT        IDC_PED_LIVE_LOAD,135,237,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_PED_LIVE_LOAD_UNIT,177,238,32,8
+    LTEXT           "Minimum Width of Sidewalk to Apply Pedestrian Live Load",IDC_STATIC,17,259,184,8
+    EDITTEXT        IDC_MIN_SIDEWALK_WIDTH,207,257,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MIN_SIDEWALK_WIDTH_UNIT,249,259,32,8
 END
 
 IDD_SPEC_CLOSURE DIALOGEX 0, 0, 428, 361
@@ -1932,7 +1945,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 484
         TOPMARGIN, 7
-        BOTTOMMARGIN, 372
+        BOTTOMMARGIN, 393
     END
 
     IDD_EDIT_SHEAR_STEEL, DIALOG
@@ -2095,7 +2108,7 @@ BEGIN
         LEFTMARGIN, 12
         RIGHTMARGIN, 474
         TOPMARGIN, 7
-        BOTTOMMARGIN, 477
+        BOTTOMMARGIN, 495
     END
 
     IDD_SPEC_SHEAR, DIALOG
@@ -2103,7 +2116,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 434
         TOPMARGIN, 7
-        BOTTOMMARGIN, 403
+        BOTTOMMARGIN, 416
     END
 
     IDD_SPEC_MOMENT, DIALOG
@@ -2222,7 +2235,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 344
         TOPMARGIN, 7
-        BOTTOMMARGIN, 252
+        BOTTOMMARGIN, 276
     END
 
     IDD_SPEC_CLOSURE, DIALOG
@@ -2572,9 +2585,9 @@ IDI_LIBRARY_MANAGER     ICON                    "res\\LibraryManager.ico"
 
 IDI_DEFAULT_ENTRY       ICON                    "res\\DefaultEntry.ico"
 
-IDI_FOLDER              ICON                    "..\\res\\folder_closed.ico"
+IDI_FOLDER              ICON                    "..\\PGSuperAppPlugin\\res\\folder_closed.ico"
 
-IDI_OPEN_FOLDER         ICON                    "..\\res\\folder_open.ico"
+IDI_OPEN_FOLDER         ICON                    "..\\PGSuperAppPlugin\\res\\folder_open.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////

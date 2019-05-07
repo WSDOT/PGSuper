@@ -31,6 +31,7 @@
 #include <Reporting\InterfaceShearTable.h>
 #include <Reporting\StrandSlopeCheck.h>
 #include <Reporting\HoldDownForceCheck.h>
+#include <Reporting\PlantHandlingCheck.h>
 #include <Reporting\ConstructabilityCheckTable.h>
 #include <Reporting\CamberTable.h>
 #include <Reporting\GirderDetailingCheck.h>
@@ -466,7 +467,10 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CStrandSlopeCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Hold Down Force
-   CHoldDownForceCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+   CHoldDownForceCheck().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
+
+   // Plant Handling Weight
+   CPlantHandlingCheck().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
    // Duct size
    CDuctGeometryCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);

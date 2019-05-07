@@ -160,12 +160,13 @@ CProjectAgentImp::CProjectAgentImp()
    m_ProfileData2.Elevation = 0;
    m_ProfileData2.Grade = 0;
 
-   CrownData2 cd;
+   RoadwaySectionTemplate cd;
    cd.Station = 0.0;
-   cd.Left = -0.02;
-   cd.Right = -0.02;
-   cd.CrownPointOffset = 0;
-   m_RoadwaySectionData.Superelevations.push_back(cd);
+   cd.LeftSlope = -0.02;
+   cd.RightSlope = -0.02;
+   m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
+   m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+   m_RoadwaySectionData.RoadwaySectionTemplates.push_back(cd);
 
    m_DuctilityLevel   = ILoadModifiers::Normal;
    m_ImportanceLevel  = ILoadModifiers::Normal;
@@ -2345,51 +2346,93 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
 
    if ( pSave )
    {
-      hr = pSave->BeginUnit(_T("SuperelevationData"),1.0);
+      hr = pSave->BeginUnit(_T("SuperelevationData"),2.0);
       if ( FAILED(hr) )
       {
          return hr;
       }
 
-      hr = pSave->put_Property(_T("SectionCount"),CComVariant((long)pObj->m_RoadwaySectionData.Superelevations.size()));
+      hr = pSave->put_Property(_T("NumberOfSegmentsPerSection"),CComVariant((long)pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection));
       if ( FAILED(hr) )
       {
          return hr;
       }
 
-      std::vector<CrownData2>::iterator iter;
-      for ( iter = pObj->m_RoadwaySectionData.Superelevations.begin(); iter != pObj->m_RoadwaySectionData.Superelevations.end(); iter++ )
+      hr = pSave->put_Property(_T("ControllingRidgePointIdx"),CComVariant((long)pObj->m_RoadwaySectionData.ControllingRidgePointIdx));
+      if ( FAILED(hr) )
       {
-         CrownData2& super = *iter;
+         return hr;
+      }
 
-         hr = pSave->BeginUnit(_T("CrownSlope"),1.0);
+      hr = pSave->put_Property(_T("TemplateCount"),CComVariant((long)pObj->m_RoadwaySectionData.RoadwaySectionTemplates.size()));
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
+      std::vector<RoadwaySectionTemplate>::iterator iter;
+      for ( iter = pObj->m_RoadwaySectionData.RoadwaySectionTemplates.begin(); iter != pObj->m_RoadwaySectionData.RoadwaySectionTemplates.end(); iter++ )
+      {
+         RoadwaySectionTemplate& rtemplate = *iter;
+
+         hr = pSave->BeginUnit(_T("RoadwaySectionTemplate"),1.0);
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         hr = pSave->put_Property(_T("Station"),CComVariant(super.Station));
+         hr = pSave->put_Property(_T("Station"),CComVariant(rtemplate.Station));
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         hr = pSave->put_Property(_T("Left"),CComVariant(super.Left));
+         hr = pSave->put_Property(_T("LeftSlope"),CComVariant(rtemplate.LeftSlope));
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         hr = pSave->put_Property(_T("Right"),CComVariant(super.Right));
+         hr = pSave->put_Property(_T("RightSlope"),CComVariant(rtemplate.RightSlope));
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         hr = pSave->put_Property(_T("CrownPointOffset"),CComVariant(super.CrownPointOffset));
+         hr = pSave->put_Property(_T("SegmentCount"),CComVariant(rtemplate.SegmentDataVec.size()));
          if ( FAILED(hr) )
          {
             return hr;
+         }
+
+         std::vector<RoadwaySegmentData>::iterator iter2;
+         for (iter2 = rtemplate.SegmentDataVec.begin(); iter2 != rtemplate.SegmentDataVec.end(); iter2++)
+         {
+            RoadwaySegmentData& rsegment = *iter2;
+
+            hr = pSave->BeginUnit(_T("RoadwaySegmentData"),1.0);
+            if ( FAILED(hr) )
+            {
+               return hr;
+            }
+
+            hr = pSave->put_Property(_T("Length"),CComVariant(rsegment.Length));
+            if ( FAILED(hr) )
+            {
+               return hr;
+            }
+
+            hr = pSave->put_Property(_T("Slope"),CComVariant(rsegment.Slope));
+            if ( FAILED(hr) )
+            {
+               return hr;
+            }
+
+            hr = pSave->EndUnit();
+            if ( FAILED(hr) )
+            {
+               return hr;
+            }
          }
 
          hr = pSave->EndUnit();
@@ -2407,61 +2450,68 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
    }
    else
    {
-      CComVariant var;
+      // Load
+      pObj->m_RoadwaySectionData.RoadwaySectionTemplates.clear();
 
-      bool bNewFormat = true;
+      // We have two older versions to contend with
+      bool bNewerFormat = true;
+      Float64 superVersion(0.0);
       hr = pLoad->BeginUnit(_T("SuperelevationData"));
       if ( FAILED(hr) )
       {
-         bNewFormat = false;
-      }
-
-      pObj->m_RoadwaySectionData.Superelevations.clear();
-
-      if ( !bNewFormat )
-      {
-         var.vt = VT_R8;
-         hr = pLoad->get_Property(_T("Left"),&var);
-         if ( FAILED(hr) )
-         {
-            return hr;
-         }
-         Float64 left = var.dblVal;
-
-         var.vt = VT_R8;
-         hr = pLoad->get_Property(_T("Right"),&var);
-         if ( FAILED(hr) )
-         {
-            return hr;
-         }
-         Float64 right = var.dblVal;
-
-         CrownData2 crown;
-         crown.Station = 0;
-         crown.Left = left;
-         crown.Right = right;
-         crown.CrownPointOffset = 0;
-         pObj->m_RoadwaySectionData.Superelevations.push_back(crown);
+         bNewerFormat = false;
       }
       else
       {
+         // two possible versions of SuperelevationData
+         pLoad->get_Version(&superVersion);
+      }
+
+      if (!bNewerFormat || superVersion == 1.0)
+      {  // Legacy data
+         return LoadOldSuperelevationData(bNewerFormat, pLoad, pObj);
+      }
+      else
+      {
+         // Load current data
+         CComVariant var;
+
          var.vt = VT_I4;
-         hr = pLoad->get_Property(_T("SectionCount"),&var);
+         hr = pLoad->get_Property(_T("NumberOfSegmentsPerSection"), &var);
          if ( FAILED(hr) )
          {
             return hr;
          }
-         long nSections = var.lVal;
 
-         for ( long s = 0; s < nSections; s++ )
+         pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = var.lVal;
+
+         var.vt = VT_I4;
+         hr = pLoad->get_Property(_T("ControllingRidgePointIdx"),&var);
+         if ( FAILED(hr) )
          {
-            CrownData2 super;
+            return hr;
+         }
 
-            hr = pLoad->BeginUnit(_T("CrownSlope"));
+         pObj->m_RoadwaySectionData.ControllingRidgePointIdx = var.lVal;
+
+         var.vt = VT_I4;
+         hr = pLoad->get_Property(_T("TemplateCount"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+
+         Uint64 numTempls = var.lVal;
+
+         for ( Uint64 it=0; it<numTempls; it++ )
+         {
+            hr = pLoad->BeginUnit(_T("RoadwaySectionTemplate"));
             if ( FAILED(hr) )
             {
                return hr;
             }
+
+            RoadwaySectionTemplate rtemplate;
 
             var.vt = VT_R8;
             hr = pLoad->get_Property(_T("Station"),&var);
@@ -2469,49 +2519,354 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
             {
                return hr;
             }
-            super.Station = var.dblVal;
+
+            rtemplate.Station = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property(_T("Left"),&var);
+            hr = pLoad->get_Property(_T("LeftSlope"),&var);
             if ( FAILED(hr) )
             {
                return hr;
             }
-            super.Left = var.dblVal;
 
-            var.vt = VT_R8;
-            hr = pLoad->get_Property(_T("Right"),&var);
+            rtemplate.LeftSlope = var.dblVal;
+
+            hr = pLoad->get_Property(_T("RightSlope"),&var);
             if ( FAILED(hr) )
             {
                return hr;
             }
-            super.Right = var.dblVal;
 
-            var.vt = VT_R8;
-            hr = pLoad->get_Property(_T("CrownPointOffset"),&var);
+            rtemplate.RightSlope = var.dblVal;
+
+            var.vt = VT_I4;
+            hr = pLoad->get_Property(_T("SegmentCount"),&var);
             if ( FAILED(hr) )
             {
                return hr;
             }
-            super.CrownPointOffset = var.dblVal;
 
-            pObj->m_RoadwaySectionData.Superelevations.push_back(super);
+            Uint64 segcnt = var.lVal;
+
+            for (Uint64 iseg=0; iseg<segcnt; iseg++)
+            {
+               hr = pLoad->BeginUnit(_T("RoadwaySegmentData"));
+               if ( FAILED(hr) )
+               {
+                  return hr;
+               }
+
+               RoadwaySegmentData rsegment;
+
+               var.vt = VT_R8;
+               hr = pLoad->get_Property(_T("Length"),&var);
+               if ( FAILED(hr) )
+               {
+                  return hr;
+               }
+
+               rsegment.Length = var.dblVal;
+
+               var.vt = VT_R8;
+               hr = pLoad->get_Property(_T("Slope"),&var);
+               if ( FAILED(hr) )
+               {
+                  return hr;
+               }
+
+               rsegment.Slope = var.dblVal;
+
+               hr = pLoad->EndUnit();
+               if ( FAILED(hr) )
+               {
+                  return hr;
+               }
+
+               rtemplate.SegmentDataVec.push_back(rsegment);
+            }
 
             hr = pLoad->EndUnit();
             if ( FAILED(hr) )
             {
                return hr;
             }
-         }
-      }
 
-      if ( bNewFormat )
-      {
+            pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(rtemplate);
+         }
+
          hr = pLoad->EndUnit();
-         if ( FAILED(hr) ) 
+         if ( FAILED(hr) )
          {
             return hr;
          }
+      }
+   }
+
+   return S_OK;
+}
+
+HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructuredLoad* pLoad,CProjectAgentImp* pObj) 
+{
+   // Old data structure used prior to May 2019 used to hold roadway crown data.
+   // We will use old code to load older data and convert into new format here
+   struct CrownData2
+   {
+      Float64 Station;
+      Float64 Left;
+      Float64 Right;
+      Float64 CrownPointOffset;
+
+      bool operator==(const CrownData2& other) const
+      {
+         return (Station == other.Station) &&
+                (Left == other.Left) &&
+                (Right == other.Right) &&
+                (CrownPointOffset == other.CrownPointOffset);
+      }
+   };
+
+   std::vector<CrownData2> CrownDataVec;
+
+   HRESULT hr;
+   CComVariant var;
+
+   if ( !bNewerFormat )
+   {
+      var.vt = VT_R8;
+      hr = pLoad->get_Property(_T("Left"),&var);
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+      Float64 left = var.dblVal;
+
+      var.vt = VT_R8;
+      hr = pLoad->get_Property(_T("Right"),&var);
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+      Float64 right = var.dblVal;
+
+      CrownData2 crown;
+      crown.Station = 0;
+      crown.Left = left;
+      crown.Right = right;
+      crown.CrownPointOffset = 0;
+      CrownDataVec.push_back(crown);
+   }
+   else
+   {
+      var.vt = VT_I4;
+      hr = pLoad->get_Property(_T("SectionCount"),&var);
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+      long nSections = var.lVal;
+
+      for ( long s = 0; s < nSections; s++ )
+      {
+         CrownData2 super;
+
+         hr = pLoad->BeginUnit(_T("CrownSlope"));
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+
+         var.vt = VT_R8;
+         hr = pLoad->get_Property(_T("Station"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+         super.Station = var.dblVal;
+
+         var.vt = VT_R8;
+         hr = pLoad->get_Property(_T("Left"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+         super.Left = var.dblVal;
+
+         var.vt = VT_R8;
+         hr = pLoad->get_Property(_T("Right"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+         super.Right = var.dblVal;
+
+         var.vt = VT_R8;
+         hr = pLoad->get_Property(_T("CrownPointOffset"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+         super.CrownPointOffset = var.dblVal;
+
+         CrownDataVec.push_back(super);
+
+         hr = pLoad->EndUnit();
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+      }
+   }
+
+   if ( bNewerFormat )
+   {
+      hr = pLoad->EndUnit();
+      if ( FAILED(hr) ) 
+      {
+         return hr;
+      }
+   }
+
+   // The number of segments we need depends on whether there are crown point offsets.
+   // Just store one of the offsets if they exist so we have a default segment length in that direction
+   Float64 defaultLeftOffset(0.0), defaultRightOffset(0.0);
+   for (auto& cd : CrownDataVec)
+   {
+      if (IsGT(0.0, cd.CrownPointOffset))
+      {
+         defaultRightOffset = cd.CrownPointOffset;
+      }
+      else if (IsLT(cd.CrownPointOffset, 0.0))
+      {
+         defaultLeftOffset =  abs( cd.CrownPointOffset ); // remove sign
+      }
+   }
+
+   // At this point we have data loaded into old CrownData2 structure. Now just convert into new format
+   // Four possible cases here for dealing with crown point offsets
+   if (defaultLeftOffset == 0.0 && defaultRightOffset == 0.0)
+   {
+      // no crown point offsets
+      pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
+      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      for (auto& cd : CrownDataVec)
+      {
+         RoadwaySectionTemplate templ;
+         templ.Station = cd.Station;
+         templ.LeftSlope = cd.Left;
+         templ.RightSlope = cd.Right;
+
+         pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(templ);
+      }
+   }
+   else if (defaultLeftOffset != 0.0 && defaultRightOffset == 0.0)
+   {
+      // only have a left crown offset in list
+      pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 3;
+      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 2;
+      for (auto& cd : CrownDataVec)
+      {
+         RoadwaySectionTemplate templ;
+         templ.Station = cd.Station;
+         templ.LeftSlope = cd.Left;
+         templ.RightSlope = cd.Right;
+
+         RoadwaySegmentData sd;
+         sd.Slope = -1.0 * cd.Right;
+         if (cd.CrownPointOffset != 0.0)
+         {
+            sd.Length = abs(cd.CrownPointOffset);
+         }
+         else
+         {
+            sd.Length = defaultLeftOffset;
+         }
+
+         templ.SegmentDataVec.push_back(sd);
+
+         pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(templ);
+      }
+   }
+   else if (defaultLeftOffset == 0.0 && defaultRightOffset != 0.0)
+   {
+      // only have a right crown offset in list
+      pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 3;
+      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      for (auto& cd : CrownDataVec)
+      {
+         RoadwaySectionTemplate templ;
+         templ.Station = cd.Station;
+         templ.LeftSlope = cd.Left;
+         templ.RightSlope = cd.Right;
+
+         RoadwaySegmentData sd;
+         sd.Slope = -1.0 * cd.Left;
+         if (cd.CrownPointOffset != 0.0)
+         {
+            sd.Length = abs(cd.CrownPointOffset);
+         }
+         else
+         {
+            sd.Length = defaultRightOffset;
+         }
+         templ.SegmentDataVec.push_back(sd);
+
+         pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(templ);
+      }
+   }
+   else 
+   {
+      // list has both left and right offsets. we need four segments to model this
+      pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 4;
+      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 2;
+      for (auto& cd : CrownDataVec)
+      {
+         RoadwaySectionTemplate templ;
+         templ.Station = cd.Station;
+         templ.LeftSlope = cd.Left;
+         templ.RightSlope = cd.Right;
+
+         RoadwaySegmentData sd;
+         if (IsZero(cd.CrownPointOffset))
+         {
+            // crown at center
+            // left segment
+            sd.Slope = -1.0 * cd.Left;
+            sd.Length = defaultLeftOffset;
+            templ.SegmentDataVec.push_back(sd);
+
+            // right segment
+            sd.Slope = cd.Right;
+            sd.Length = defaultRightOffset;
+            templ.SegmentDataVec.push_back(sd);
+         }
+         else if (cd.CrownPointOffset < 0)
+         {
+            // crown to left
+            // left segment
+            sd.Slope = -1.0 * cd.Right;
+            sd.Length = abs(cd.CrownPointOffset);
+            templ.SegmentDataVec.push_back(sd);
+
+            // right segment
+            sd.Slope = cd.Right;
+            sd.Length = defaultRightOffset;
+            templ.SegmentDataVec.push_back(sd);
+         }
+         else 
+         {
+            // crown to right
+            // left segment
+            sd.Slope = cd.Left;
+            sd.Length = defaultLeftOffset;
+            templ.SegmentDataVec.push_back(sd);
+
+            // right segment
+            sd.Slope = -1.0 * cd.Left;
+            sd.Length = cd.CrownPointOffset;
+            templ.SegmentDataVec.push_back(sd);
+         }
+
+         pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(templ);
       }
    }
 
@@ -2721,8 +3076,10 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pDeck->DeckRebarData          = xSectionData.DeckRebarData;
       pDeck->SetDeckType( xSectionData.DeckType );
       pDeck->GrossDepth             = xSectionData.GrossDepth;
-      pDeck->OverhangEdgeDepth      = xSectionData.OverhangEdgeDepth;
-      pDeck->OverhangTaper          = xSectionData.OverhangTaper;
+      pDeck->OverhangEdgeDepth[pgsTypes::stLeft] = xSectionData.OverhangEdgeDepth;
+      pDeck->OverhangEdgeDepth[pgsTypes::stRight] = xSectionData.OverhangEdgeDepth;
+      pDeck->OverhangTaper[pgsTypes::stLeft] = xSectionData.OverhangTaper;
+      pDeck->OverhangTaper[pgsTypes::stRight] = xSectionData.OverhangTaper;
       pDeck->OverlayWeight          = xSectionData.OverlayWeight;
       pDeck->OverlayDensity         = xSectionData.OverlayDensity;
       pDeck->OverlayDepth           = xSectionData.OverlayDepth;
@@ -8947,8 +9304,9 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       if (option.doDesignForFlexure == dtDesignForHarping)
       {
          bool check, design;
-         Float64 d1, d2, d3;
-         pSpecEntry->GetHoldDownForce(&check, &design, &d1);
+         int holdDownForceType;
+         Float64 d1, d2, d3, friction;
+         pSpecEntry->GetHoldDownForce(&check, &design, &holdDownForceType, &d1, &friction);
          option.doDesignHoldDown = design;
 
          pSpecEntry->GetMaxStrandSlope(&check, &design, &d1, &d2, &d3);

@@ -135,27 +135,6 @@ pgsTypes::AnalysisType CAnalysisResultsGraphViewController::GetAnalysisType() co
    return m_pGraphController->GetAnalysisType();
 }
 
-//void CAnalysisResultsGraphViewController::GetIntervalRange(IntervalIndexType* pMin, IntervalIndexType* pMax) const
-//{
-//   *pMin = m_pGraphController->GetFirstInterval();
-//   *pMax = m_pGraphController->GetLastInterval();
-//}
-//
-//void CAnalysisResultsGraphViewController::SelectInterval(IntervalIndexType intervalIdx)
-//{
-//   m_pGraphController->SelectInterval(intervalIdx);
-//}
-//
-//void CAnalysisResultsGraphViewController::SelectIntervals(const std::vector<IntervalIndexType>& vIntervals)
-//{
-//   m_pGraphController->SelectIntervals(vIntervals);
-//}
-//
-//std::vector<IntervalIndexType> CAnalysisResultsGraphViewController::GetSelectedIntervals() const
-//{
-//   return m_pGraphController->GetSelectedIntervals();
-//}
-
 IndexType CAnalysisResultsGraphViewController::GetGraphTypeCount() const
 {
    return m_pGraphController->GetGraphTypeCount();

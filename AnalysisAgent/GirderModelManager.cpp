@@ -798,6 +798,9 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 
 void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::PierFaceType pierFace,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pTmin,Float64* pTmax,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig,VehicleIndexType* pMaxConfig) const
 {
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+
    // need the POI where the girder intersects the pier
    GET_IFACE(IPointOfInterest,pPoi);
    pgsPointOfInterest poi = pPoi->GetPierPointOfInterest(girderKey,pier);
@@ -1953,6 +1956,9 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
 {
    USES_CONVERSION;
 
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   
    pPmin->clear();
    pPmax->clear();
 
@@ -2054,6 +2060,9 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
 void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<sysSectionValue>* pVmin,std::vector<sysSectionValue>* pVmax,std::vector<VehicleIndexType>* pMminTruck,std::vector<VehicleIndexType>* pMmaxTruck) const
 {
    USES_CONVERSION;
+
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
 
    pVmin->clear();
    pVmax->clear();
@@ -2161,6 +2170,9 @@ void CGirderModelManager::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTyp
 {
    USES_CONVERSION;
 
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+
    pMmin->clear();
    pMmax->clear();
 
@@ -2265,6 +2277,9 @@ void CGirderModelManager::GetLiveLoadDeflection(IntervalIndexType intervalIdx,pg
 {
    USES_CONVERSION;
 
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+
    pDmin->clear();
    pDmax->clear();
 
@@ -2335,6 +2350,9 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 {
    USES_CONVERSION;
 
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+
    pRmin->clear();
    pRmax->clear();
 
@@ -2404,6 +2422,9 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTopMin,std::vector<Float64>* pfTopMax,std::vector<Float64>* pfBotMin,std::vector<Float64>* pfBotMax,std::vector<VehicleIndexType>* pTopMinIndex,std::vector<VehicleIndexType>* pTopMaxIndex,std::vector<VehicleIndexType>* pBotMinIndex,std::vector<VehicleIndexType>* pBotMaxIndex) const
 {
    USES_CONVERSION;
+
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
 
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -6022,6 +6043,9 @@ void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsT
    CGirderModelData* pModelData = nullptr;
    pModelData = GetGirderModel(GetGirderLineIndex(girderKey),bat);
 
+   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
+   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+
    if ( pTmin )
    {
       *pTmin = 0;
@@ -6984,9 +7008,6 @@ void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx,pgsTypes::Bridge
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   GET_IFACE(ISpecification,pSpec);
-   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
    // if the models are already build, leave now
    if ( bat == pgsTypes::SimpleSpan && pModelData->m_Model != nullptr )
    {
@@ -7227,44 +7248,43 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
    CComPtr<ISpans> spans;
    pModel->get_Spans(&spans);
 
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
+   for (const auto& thisGirderKey : vGirderKeys)
    {
-      // deal with girder index when there are different number of girders in each span
-      GroupIndexType grpIdx    = pBridge->GetGirderGroupIndex(spanIdx);
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx   = Min(gdr,nGirders-1);
-
-      CGirderKey girderKey(grpIdx,gdrIdx);
-
-      CSpanKey spanKey(spanIdx,gdrIdx);
-
-      // pier indicies related to this span
-      PierIndexType prevPierIdx = PierIndexType(spanIdx);
-      PierIndexType nextPierIdx = prevPierIdx+1;
-
-      // create LBAM span object
-      CComPtr<ISpan> objSpan;
-      objSpan.CoCreateInstance(CLSID_Span);
-
-      Float64 span_length = pBridge->GetFullSpanLength(spanKey); // span length between CL piers, measured along the centerline of the girder
-      objSpan->put_Length(span_length); 
-      objSpan->SetLoadModifier(lctStrength,loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Min),loadModifier.LoadModifier(lrfdTypes::StrengthI,lrfdTypes::Max));
-      spans->Add(objSpan);
-
-      // support at right end of the span (left side of pier next pier)
-      pPier = pBridgeDesc->GetPier(nextPierIdx);
-
-      objSupport.Release();
-      CreateLBAMSupport(gdr,bContinuousModel,loadModifier,pPier,&objSupport);
-      supports->Add(objSupport);
-      BoundaryConditionType boundaryCondition;
-      objSupport->get_BoundaryCondition(&boundaryCondition);
-      if ( boundaryCondition == bcPinned || boundaryCondition == bcFixed )
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pBridge->GetGirderGroupSpans(thisGirderKey.groupIndex, &startSpanIdx, &endSpanIdx);
+      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
       {
-         bHasXConstraint = true;
-      }
-   } // next span
+         CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
+
+         // pier indicies related to this span
+         PierIndexType prevPierIdx = PierIndexType(spanIdx);
+         PierIndexType nextPierIdx = prevPierIdx + 1;
+
+         // create LBAM span object
+         CComPtr<ISpan> objSpan;
+         objSpan.CoCreateInstance(CLSID_Span);
+
+         Float64 span_length = pBridge->GetFullSpanLength(spanKey); // span length between CL piers, measured along the centerline of the girder
+         objSpan->put_Length(span_length);
+         objSpan->SetLoadModifier(lctStrength, loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Min), loadModifier.LoadModifier(lrfdTypes::StrengthI, lrfdTypes::Max));
+         spans->Add(objSpan);
+
+         // support at right end of the span (left side of pier next pier)
+         pPier = pBridgeDesc->GetPier(nextPierIdx);
+
+         objSupport.Release();
+         CreateLBAMSupport(gdr, bContinuousModel, loadModifier, pPier, &objSupport);
+         supports->Add(objSupport);
+         BoundaryConditionType boundaryCondition;
+         objSupport->get_BoundaryCondition(&boundaryCondition);
+         if (boundaryCondition == bcPinned || boundaryCondition == bcFixed)
+         {
+            bHasXConstraint = true;
+         }
+      } // next span
+   } // next girder in the girderline
 
    if ( !bHasXConstraint )
    {
@@ -7615,9 +7635,9 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
    //    ^               ^                  ^
    //  |-|<---- superstructure member offset = end distance (or cantilever length if applicable)
 
-   GirderIndexType nGirders = pBridgeDesc->GetGirderGroup((GroupIndexType)0)->GetGirderCount();
-   GirderIndexType gdrIdx = Min(gdr,nGirders-1);
-   Float64 end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(0,gdrIdx,0));
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
+   Float64 end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(vGirderKeys.front(),0));
    ssms->put_Offset(end_distance);
 
    //
@@ -7626,23 +7646,17 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   for(const auto& girderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-
-      // deal with girder index when there are different number of girders in each span
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(gdr,nGirders-1);
-
-      CGirderKey girderKey(grpIdx,gdrIdx);
-
       IntervalIndexType startIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
 
       CheckGirderEndGeometry(pBridge,girderKey); // make sure girder is on its bearing - if it isn't an UNWIND exception will throw
 
       // get the girder data
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+
+      GirderIndexType nGirders = pGroup->GetGirderCount();
 
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -7801,7 +7815,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             CComPtr<ISuperstructureMember> ssmbr;
             CreateLBAMSuperstructureMember(L1,vSegmentData,&ssmbr);
             ssms->Add(ssmbr);
-            GetLBAMBoundaryConditions(bContinuousModel,pTimelineMgr,grpIdx,pSegment,pgsTypes::metStart,ssmbr);
+            GetLBAMBoundaryConditions(bContinuousModel,pTimelineMgr,girderKey.groupIndex,pSegment,pgsTypes::metStart,ssmbr);
 
             // Don't load the cantilever if:
             // 1) This is a simple span model and the left cantilever is not modeled
@@ -7817,12 +7831,12 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
          ssms->Add(ssmbr);
          if ( IsZero(L1) || (bContinuousModel && (pStartPier && pStartPier->IsAbutment() && pStartPier->IsContinuousConnection())) )
          {
-            GetLBAMBoundaryConditions(bContinuousModel,pTimelineMgr,grpIdx,pSegment,pgsTypes::metStart,ssmbr);
+            GetLBAMBoundaryConditions(bContinuousModel,pTimelineMgr, girderKey.groupIndex,pSegment,pgsTypes::metStart,ssmbr);
          }
 
          if ( IsZero(L3) || (bContinuousModel && (pEndPier && pEndPier->IsAbutment() && pEndPier->IsContinuousConnection())) )
          {
-            GetLBAMBoundaryConditions(bContinuousModel,pTimelineMgr,grpIdx,pSegment,pgsTypes::metEnd,  ssmbr);
+            GetLBAMBoundaryConditions(bContinuousModel,pTimelineMgr, girderKey.groupIndex,pSegment,pgsTypes::metEnd,  ssmbr);
          }
 
          if ( !IsZero(L3) )
@@ -7831,7 +7845,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             CreateLBAMSuperstructureMember(L3,vSegmentData,&ssmbr);
             ssms->Add(ssmbr);
 
-            GetLBAMBoundaryConditions(bContinuousModel,pTimelineMgr,grpIdx,pSegment,pgsTypes::metEnd,  ssmbr);
+            GetLBAMBoundaryConditions(bContinuousModel,pTimelineMgr, girderKey.groupIndex,pSegment,pgsTypes::metEnd,  ssmbr);
             
             // Don't load the cantilever if:
             // 1) This is a simple span model and the right cantilever is not modeled
@@ -7878,7 +7892,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
 
          // the width of the intermediate piers need to be modeled so the correct overall
          // span length is used when the structure becomes continuous
-         if ( ( segIdx == nSegments-1 && grpIdx != nGroups-1 ) // last segment in all but the last group
+         if ( ( segIdx == nSegments-1 && pGroup->GetNextGirderGroup() != nullptr ) // last segment in all but the last group
                || // -OR-
               ( pPier && pPier->IsInteriorPier() ) // this is an interior pier
             )
@@ -7961,7 +7975,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
 
                   // release the axial force if the span is fully restrained axially
                   if ((startSpanBoundaryCondition == bcFixed || startSpanBoundaryCondition == bcPinned) &&
-                     (endSpanBoundaryCondition == bcFixed || endSpanBoundaryCondition == bcPinned) && grpIdx == 0 && pPier->GetPrevSpan()->GetPrevPier()->GetBoundaryConditionType() != pgsTypes::bctRoller )
+                     (endSpanBoundaryCondition == bcFixed || endSpanBoundaryCondition == bcPinned) && girderKey.groupIndex == 0 && pPier->GetPrevSpan()->GetPrevPier()->GetBoundaryConditionType() != pgsTypes::bctRoller )
                   {
                      // NOTE: it looks like we are setting the relese removal stage twice... above and here
                      // in some cases that is true and there isn't any harm in doing it twice. In other cases,
@@ -8400,7 +8414,7 @@ BoundaryConditionType CGirderModelManager::GetLBAMBoundaryConditions(bool bConti
    return bc;
 }
 
-void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,GirderIndexType gdrIdx) const
+void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx) const
 {
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(IBridge,pBridge);
@@ -8424,13 +8438,14 @@ void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::Analy
    pModel->get_PointLoads(&pointLoads);
 
    MemberIDType mbrID = 0;
-
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdrLineIdx, &vGirderKeys);
+   for(const auto& girderKey : vGirderKeys)
    {
+      GroupIndexType grpIdx = girderKey.groupIndex;
+      GirderIndexType gdrIdx = girderKey.girderIndex;
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      GirderIndexType gdr = Min(gdrIdx,pGroup->GetGirderCount()-1);
-      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(gdr);
+      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(gdrIdx);
 
       if ( grpIdx != 0 )
       {
@@ -8447,7 +8462,7 @@ void CGirderModelManager::ApplySelfWeightLoad(ILBAMModel* pModel,pgsTypes::Analy
       SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(pSplicedGirder->GetGirderKey(),segIdx);
+         CSegmentKey segmentKey(girderKey,segIdx);
 
          // determine which stage to apply the load
          IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -8688,24 +8703,23 @@ void CGirderModelManager::ApplySlabLoad(ILBAMModel* pModel,pgsTypes::AnalysisTyp
    CComBSTR bstrSlabPadLoadGroup( GetLoadGroupName(pgsTypes::pftSlabPad) );
    CComBSTR bstrPanelLoadGroup( GetLoadGroupName(pgsTypes::pftSlabPanel) );
 
+   IntervalIndexType castSlabInterval = pIntervals->GetCastDeckInterval();
+   CComBSTR bstrStage(GetLBAMStageName(castSlabInterval));
+
    MemberIDType mbrID = 0;
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
+   for(const auto& girderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      GirderIndexType nGirdersInGroup = pGroup->GetGirderCount();
-      GirderIndexType gdrIdx = Min(gdr,nGirdersInGroup-1);
-
-      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(gdrIdx);
-      CGirderKey girderKey(pSplicedGirder->GetGirderKey());
-
-      IntervalIndexType castSlabInterval = pIntervals->GetCastDeckInterval();
-      CComBSTR bstrStage( GetLBAMStageName(castSlabInterval) );
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(girderKey.girderIndex);
 
       SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+         CSegmentKey segmentKey(girderKey,segIdx);
 
          // Create equivalent LinearLoad vectors from the SlabLoad information
          std::vector<LinearLoad> vSlabLoads, vHaunchLoads, vPanelLoads;
@@ -8720,13 +8734,13 @@ void CGirderModelManager::ApplySlabLoad(ILBAMModel* pModel,pgsTypes::AnalysisTyp
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier && !pPier->IsAbutment() )
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,segmentKey.girderIndex);
             mbrID += nSSMbrs;
          }
          else if ( pTS )
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS, segmentKey.girderIndex);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -8789,22 +8803,20 @@ void CGirderModelManager::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::Analysis
    CComPtr<IDistributedLoads> distLoads;
    pModel->get_DistributedLoads(&distLoads);
 
-   MemberIDType mbrID = 0;
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-   {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(gdr,nGirders-1);
+   IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
+   CComBSTR bstrStage(GetLBAMStageName(overlayIntervalIdx));
 
+   MemberIDType mbrID = 0;
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
+   for(const auto& girderKey : vGirderKeys)
+   {
+      GroupIndexType grpIdx = girderKey.groupIndex;
+      GirderIndexType gdrIdx = girderKey.girderIndex;
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(gdrIdx);
 
-      CGirderKey girderKey(pSplicedGirder->GetGirderKey());
-      IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
-      CComBSTR bstrStage( GetLBAMStageName(overlayIntervalIdx) );
-
       SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
-
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
@@ -8880,7 +8892,7 @@ void CGirderModelManager::ApplyOverlayLoad(ILBAMModel* pModel,pgsTypes::Analysis
          // then we have to load the two LBAM superstructure members used model the pier connection region
          if ( bContinuousModel && // continuous model (don't load across piers for simple span models)
               segIdx == nSegments-1 && // last segment in the girder
-              grpIdx != nGroups-1 && // not the last group/span in the bridge
+              pGroup->GetNextGirderGroup() != nullptr && // not the last group/span in the bridge
               pGroup->GetPier(pgsTypes::metEnd)->IsContinuousConnection() // continuous boundary condition
             )
          {
@@ -8994,16 +9006,12 @@ void CGirderModelManager::ApplyConstructionLoad(ILBAMModel* pModel,pgsTypes::Ana
    pModel->get_DistributedLoads(&distLoads);
 
    MemberIDType mbrID = 0;
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType gdrIdx = Min(gdr,nGirders-1);
-
-      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(gdrIdx);
-
-      CGirderKey girderKey(pSplicedGirder->GetGirderKey());
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
 
       IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
       CComBSTR bstrStage( GetLBAMStageName(constructionLoadIntervalIdx) );
@@ -9011,7 +9019,7 @@ void CGirderModelManager::ApplyConstructionLoad(ILBAMModel* pModel,pgsTypes::Ana
       SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          // Add the overlay load in the main part of the span
          std::vector<ConstructionLoad> loads;
@@ -9062,7 +9070,7 @@ void CGirderModelManager::ApplyConstructionLoad(ILBAMModel* pModel,pgsTypes::Ana
          // then we have to load the two LBAM superstructure members used to model the pier connection region
          if ( analysisType == pgsTypes::Continuous && // continuous model (don't load across piers for simple span models)
               segIdx == nSegments-1 && // last segment in the girder
-              grpIdx != nGroups-1 && // not the last group/span in the bridge
+              pGroup->GetNextGirderGroup() != nullptr && // not the last group/span in the bridge
               pGroup->GetPier(pgsTypes::metEnd)->IsContinuousConnection() // continuous boundary condition
             )
          {
@@ -9134,13 +9142,13 @@ void CGirderModelManager::ApplyConstructionLoad(ILBAMModel* pModel,pgsTypes::Ana
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier && !pPier->IsAbutment() )
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,thisGirderKey.girderIndex);
             mbrID += nSSMbrs;
          }
          else if ( pTS )
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,thisGirderKey.girderIndex);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -9157,25 +9165,23 @@ void CGirderModelManager::ApplyShearKeyLoad(ILBAMModel* pModel,pgsTypes::Analysi
 
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftShearKey) ); 
 
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
+
+   IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   CComBSTR bstrStage(GetLBAMStageName(castShearKeyIntervalIdx));
+
    MemberIDType mbrID = 0;
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType gdrIdx = Min(gdr,nGirders-1);
-
-      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(gdrIdx);
-
-      CGirderKey girderKey(pSplicedGirder->GetGirderKey());
-
-      IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
-      CComBSTR bstrStage( GetLBAMStageName(castShearKeyIntervalIdx) );
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
 
       SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          const CPrecastSegmentData* pSegment = pSplicedGirder->GetSegment(segIdx);
 
@@ -9207,13 +9213,13 @@ void CGirderModelManager::ApplyShearKeyLoad(ILBAMModel* pModel,pgsTypes::Analysi
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier && !pPier->IsAbutment() )
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,thisGirderKey.girderIndex);
             mbrID += nSSMbrs;
          }
          else if ( pTS )
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,thisGirderKey.girderIndex);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -9230,34 +9236,29 @@ void CGirderModelManager::ApplyLongitudinalJointLoad(ILBAMModel* pModel, pgsType
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GET_IFACE_NOCHECK(IBridge, pBridge);
-
    GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
+   CComBSTR bstrStage(GetLBAMStageName(castLongitudinalJointIntervalIdx));
 
    CComBSTR bstrLoadGroup(GetLoadGroupName(pgsTypes::pftLongitudinalJoint));
 
    CComPtr<IDistributedLoads> distLoads;
    pModel->get_DistributedLoads(&distLoads);
 
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
+
    MemberIDType mbrID = 0;
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType gdrIdx = Min(gdr, nGirders - 1);
-
-      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(gdrIdx);
-
-      CGirderKey girderKey(pSplicedGirder->GetGirderKey());
-
-      IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
-      CComBSTR bstrStage(GetLBAMStageName(castLongitudinalJointIntervalIdx));
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
 
       SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
-         CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
+         CSegmentKey segmentKey(thisGirderKey, segIdx);
 
          // Add the load in the main part of the span
          std::vector<LongitudinalJointLoad> vLinearLoads;
@@ -9303,7 +9304,7 @@ void CGirderModelManager::ApplyLongitudinalJointLoad(ILBAMModel* pModel, pgsType
          // then we have to load the two LBAM superstructure members used to model the pier connection region
          if (analysisType == pgsTypes::Continuous && // continuous model (don't load across piers for simple span models)
             segIdx == nSegments - 1 && // last segment in the girder
-            grpIdx != nGroups - 1 && // not the last group/span in the bridge
+            pGroup->GetNextGirderGroup() != nullptr && // not the last group/span in the bridge
             pGroup->GetPier(pgsTypes::metEnd)->IsContinuousConnection() // continuous boundary condition
             )
          {
@@ -9375,13 +9376,13 @@ void CGirderModelManager::ApplyLongitudinalJointLoad(ILBAMModel* pModel, pgsType
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd, &pPier, &pTS);
          if (pPier && !pPier->IsAbutment())
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier, gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier, thisGirderKey.girderIndex);
             mbrID += nSSMbrs;
          }
          else if (pTS)
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS, gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS, thisGirderKey.girderIndex);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -9451,12 +9452,12 @@ Float64 CGirderModelManager::GetPedestrianLoadPerSidewalk(pgsTypes::TrafficBarri
 
 void CGirderModelManager::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,GirderIndexType gdr,bool bContinuousModel) const
 {
-   GET_IFACE(IBridge,            pBridge);
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
-
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   CComBSTR bstrStage(GetLBAMStageName(railingSystemIntervalIdx));
 
    CComBSTR bstrBarrierLoadGroup( GetLoadGroupName(pgsTypes::pftTrafficBarrier) ); 
    CComBSTR bstrSidewalkLoadGroup( GetLoadGroupName(pgsTypes::pftSidewalk) ); 
@@ -9467,28 +9468,23 @@ void CGirderModelManager::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,
    CComPtr<IPointLoads> pointLoads;
    pModel->get_PointLoads(&pointLoads);
 
-   MemberIDType mbrID = 0;
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-   {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
 
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType gdrIdx = Min(gdr,nGirders-1);
+   MemberIDType mbrID = 0;
+   for(const auto& thisGirderKey : vGirderKeys)
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
 
       PierIndexType prev_pier = pGroup->GetPierIndex(pgsTypes::metStart);
       PierIndexType next_pier = pGroup->GetPierIndex(pgsTypes::metEnd);
 
-      const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(gdrIdx);
-
-      CGirderKey girderKey(pSplicedGirder->GetGirderKey());
-      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-      CComBSTR bstrStage( GetLBAMStageName(railingSystemIntervalIdx) );
-
       SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          const CPrecastSegmentData* pSegment = pSplicedGirder->GetSegment(segIdx);
 
@@ -9566,7 +9562,7 @@ void CGirderModelManager::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,
          Float64 right_end_dist   = pBridge->GetSegmentEndEndDistance( segmentKey );
          if ( bContinuousModel && // continuous model (don't load across piers for simple span models)
               segIdx == nSegments-1 && // last segment in the girder
-              grpIdx != nGroups-1 && // not the last group/span in the bridge
+              pGroup->GetNextGirderGroup() != nullptr && // not the last group/span in the bridge
               pGroup->GetPier(pgsTypes::metEnd)->IsContinuousConnection() && // continuous boundary condition
               !IsZero(right_brg_offset - right_end_dist)
             )
@@ -9631,13 +9627,13 @@ void CGirderModelManager::ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel,
          pSplicedGirder->GetSegment(segIdx)->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
          if ( pPier && !pPier->IsAbutment() )
          {
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pPier,thisGirderKey.girderIndex);
             mbrID += nSSMbrs;
          }
          else if ( pTS )
          {
             ATLASSERT(pTS);
-            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,gdrIdx);
+            IndexType nSSMbrs = GetSuperstructureMemberCount(pTS,thisGirderKey.girderIndex);
             mbrID += nSSMbrs;
          }
       } // next segment
@@ -9695,21 +9691,21 @@ void CGirderModelManager::ComputeSidewalksBarriersLoadFractions() const
    GET_IFACE_NOCHECK( IGirder,      pGdr);
    pgsBarrierSidewalkLoadDistributionTool BSwTool(LOGGER, pIBridgeDesc, pBridge, pGdr, pBarriers);
 
-   // Loop over all girders in bridge and compute load fractions
+   // Loop over all segments in bridge and compute load fractions
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount( CGirderKey(grpIdx,gdrIdx) );
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx, gdrIdx));
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
             // initialize tool to compute loads across all girders in this group
             // for the current segment.
             BSwTool.Initialize(grpIdx, segIdx, distType, nMaxDist);
 
-            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
 
             SidewalkTrafficBarrierLoad stbLoad;
 
@@ -9717,9 +9713,9 @@ void CGirderModelManager::ComputeSidewalksBarriersLoadFractions() const
             Float64 FraExtLeft, FraIntLeft, FraExtRight, FraIntRight;
             BSwTool.GetTrafficBarrierLoadFraction(gdrIdx, &FraExtLeft, &FraIntLeft, &FraExtRight, &FraIntRight);
 
-            stbLoad.m_BarrierLoad = -1.0 *( WtbExtLeft*FraExtLeft + WtbIntLeft*FraIntLeft + WtbExtRight*FraExtRight + WtbIntRight*FraIntRight);
-            stbLoad.m_LeftExtBarrierFraction  = FraExtLeft;
-            stbLoad.m_LeftIntBarrierFraction  = FraIntLeft;
+            stbLoad.m_BarrierLoad = -1.0 *(WtbExtLeft*FraExtLeft + WtbIntLeft*FraIntLeft + WtbExtRight*FraExtRight + WtbIntRight*FraIntRight);
+            stbLoad.m_LeftExtBarrierFraction = FraExtLeft;
+            stbLoad.m_LeftIntBarrierFraction = FraIntLeft;
             stbLoad.m_RightExtBarrierFraction = FraExtRight;
             stbLoad.m_RightIntBarrierFraction = FraIntRight;
 
@@ -9727,11 +9723,11 @@ void CGirderModelManager::ComputeSidewalksBarriersLoadFractions() const
             Float64 FraSwLeft, FraSwRight;
             BSwTool.GetSidewalkLoadFraction(gdrIdx, &FraSwLeft, &FraSwRight);
             stbLoad.m_SidewalkLoad = -1.0 * (WswLeft*FraSwLeft + WswRight*FraSwRight);
-            stbLoad.m_LeftSidewalkFraction  = FraSwLeft;
+            stbLoad.m_LeftSidewalkFraction = FraSwLeft;
             stbLoad.m_RightSidewalkFraction = FraSwRight;
 
             // store loads for this segment for later use
-            m_SidewalkTrafficBarrierLoads.insert( std::make_pair(segmentKey, stbLoad) );
+            m_SidewalkTrafficBarrierLoads.insert(std::make_pair(segmentKey, stbLoad));
          }
       }
    }
@@ -10478,15 +10474,13 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdrLineIdx, &vGirderKeys);
+   for(const auto& girderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-
-      CGirderKey girderKey(grpIdx,Min(gdrLineIdx,nGirders-1));
-
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
       const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
       GirderIDType gdrID = pGirder->GetID();
 
@@ -11687,28 +11681,24 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
 
    GET_IFACE(IIntervals,pIntervals);
 
+   IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
+   CComBSTR bstrDiaphragmStage(GetLBAMStageName(castDiaphragmIntervalIdx));
+
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   CComBSTR bstrDeckStage(GetLBAMStageName(castDeckIntervalIdx));
+
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftDiaphragm) ); 
 
    CComPtr<IPointLoads> pointLoads;
    pModel->get_PointLoads(&pointLoads);
 
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
+   for(const auto& girderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType gdrIdx = Min(gdr,nGirders-1);
-
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
-
-      const CGirderKey& girderKey(pGirder->GetGirderKey());
-
-      IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-      CComBSTR bstrDiaphragmStage(GetLBAMStageName(castDiaphragmIntervalIdx));
-
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-      CComBSTR bstrDeckStage(GetLBAMStageName(castDeckIntervalIdx));
 
       // iterate over all the piers in the group
       const CPierData2* pStartPier = pGroup->GetPier(pgsTypes::metStart);
@@ -11995,28 +11985,26 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
 
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
 
+   CComBSTR bstrLoadGroup = GetLoadGroupName(pgsTypes::pftGirder);
+
    CComPtr<IPointLoads> pointLoads;
    pLBAMModel->get_PointLoads(&pointLoads);
 
-   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(gdr, &vGirderKeys);
+   for(const auto& girderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType gdrIdx = Min(gdr,nGirders-1);
-
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-      CGirderKey girderKey(pGirder->GetGirderKey());
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
 
       // First apply precast diaphragm loads
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+         CSegmentKey segmentKey(girderKey,segIdx);
 
          IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
          CComBSTR bstrStage     = GetLBAMStageName(intervalIdx);
-         CComBSTR bstrLoadGroup = GetLoadGroupName(pgsTypes::pftGirder);
 
          std::vector<DiaphragmLoad> loads;
          GetPrecastDiaphragmLoads(segmentKey, &loads);
@@ -12049,10 +12037,10 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
       // Next apply cast-in-place diaphragm loads
       CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftDiaphragm) ); 
       SpanIndexType startSpanIdx, endSpanIdx;
-      pBridge->GetGirderGroupSpans(grpIdx,&startSpanIdx,&endSpanIdx);
+      pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
       for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
       {
-         CSpanKey spanKey(spanIdx,gdrIdx);
+         CSpanKey spanKey(spanIdx,girderKey.girderIndex);
 
          std::vector<DiaphragmLoad> loads;
          GetIntermediateDiaphragmLoads(spanKey, &loads);
@@ -12989,9 +12977,11 @@ void CGirderModelManager::ApplyLLDF_PinPin(const CSpanKey& spanKey,IDblArray* cf
    for ( SpanIndexType i = 0; i < spanKey.spanIndex; i++ )
    {
       GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(i);
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdr = Min(spanKey.girderIndex,nGirders-1);
-      span_start += pBridge->GetSpanLength(CSpanKey(i,gdr));
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(spanKey.girderIndex, grpIdx, grpIdx, &vGirderKeys);
+      ATLASSERT(vGirderKeys.size() == 1);
+      const auto& thisGirderKey = vGirderKeys.front();
+      span_start += pBridge->GetSpanLength(CSpanKey(i,thisGirderKey.girderIndex));
    }
 
    Float64 span_end = span_start + span_length;
@@ -13169,9 +13159,11 @@ void CGirderModelManager::ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf
    for ( SpanIndexType i = 0; i < spanKey.spanIndex; i++ )
    {
       GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(i);
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdr = Min(spanKey.girderIndex,nGirders-1);
-      span_start += pBridge->GetSpanLength(i,gdr);
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(spanKey.girderIndex, grpIdx, grpIdx, &vGirderKeys);
+      ATLASSERT(vGirderKeys.size() == 1);
+      const auto& thisGirderKey = vGirderKeys.front();
+      span_start += pBridge->GetSpanLength(i,thisGirderKey.girderIndex);
    }
 
    Float64 span_end = span_start + span_length;
@@ -13418,9 +13410,11 @@ void CGirderModelManager::ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf
    for ( SpanIndexType i = 0; i < spanKey.spanIndex; i++ )
    {
       GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(i);
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdr = Min(spanKey.girderIndex,nGirders-1);
-      span_start += pBridge->GetSpanLength(i,gdr);
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(spanKey.girderIndex, grpIdx, grpIdx, &vGirderKeys);
+      ATLASSERT(vGirderKeys.size() == 1);
+      const auto& thisGirderKey = vGirderKeys.front();
+      span_start += pBridge->GetSpanLength(i,thisGirderKey.girderIndex);
    }
 
    Float64 span_end = span_start + span_length;
@@ -13665,9 +13659,11 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
    for ( SpanIndexType i = 0; i < spanKey.spanIndex; i++ )
    {
       GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(i);
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdr = Min(spanKey.girderIndex,nGirders-1);
-      span_start += pBridge->GetSpanLength(CSpanKey(i,gdr));
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(spanKey.girderIndex, grpIdx, grpIdx, &vGirderKeys);
+      ATLASSERT(vGirderKeys.size() == 1);
+      const auto& thisGirderKey = vGirderKeys.front();
+      span_start += pBridge->GetSpanLength(CSpanKey(i,thisGirderKey.girderIndex));
    }
 
    Float64 span_end = span_start + span_length;
@@ -15163,9 +15159,6 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
-   GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
-   GirderIndexType gdrIdx = Min(segmentKey.girderIndex,nGirders-1);
-
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -15188,7 +15181,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    GetLinearPointPointsOfInterest(segmentKey, &vPoi);
    ATLASSERT(vPoi.size() != 0);
 
-   bool bIsInteriorGirder = pBridge->IsInteriorGirder(segmentKey);
+   bool bIsInteriorGirder = pBridge->IsInteriorGirder( segmentKey );
+   pgsTypes::SideType side = (segmentKey.girderIndex == 0 ? pgsTypes::stLeft : pgsTypes::stRight);
 
    // Account for girder camber
    std::unique_ptr<mathFunction2d> camberShape;
@@ -15372,19 +15366,19 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          // on the left and right of the girder instead of using the tributary width and slab depth
 
          // determine depth of the slab at the edge and flange tip
-         Float64 overhang_edge_depth = pDeck->OverhangEdgeDepth;
+         Float64 overhang_edge_depth = pDeck->OverhangEdgeDepth[side];
          Float64 overhang_depth_at_flange_tip;
-         if ( pDeck->OverhangTaper == pgsTypes::dotNone )
+         if ( pDeck->OverhangTaper[side] == pgsTypes::dotNone )
          {
             // overhang is constant depth
             overhang_depth_at_flange_tip = overhang_edge_depth;
          }
-         else if ( pDeck->OverhangTaper == pgsTypes::dotTopTopFlange )
+         else if ( pDeck->OverhangTaper[side] == pgsTypes::dotTopTopFlange )
          {
             // deck overhang tapers to the top of the top flange
             overhang_depth_at_flange_tip = slab_offset;
          }
-         else if ( pDeck->OverhangTaper == pgsTypes::dotBottomTopFlange )
+         else if ( pDeck->OverhangTaper[side] == pgsTypes::dotBottomTopFlange )
          {
             // deck overhang tapers to the bottom of the top flange
             FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
@@ -15395,7 +15389,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
             }
             else
             {
-               if ( gdrIdx == 0 )
+               if ( segmentKey.girderIndex == 0 )
                {
                   flange_thickness = pGirder->GetTopFlangeThickness(poi,0);
                }
@@ -15418,7 +15412,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(station);
 
          // slab overhang from CL of girder (normal to alignment)
-         Float64 slab_overhang = (gdrIdx == 0 ? pBridge->GetLeftSlabOverhang(Xb) : pBridge->GetRightSlabOverhang(Xb));
+         Float64 slab_overhang = (segmentKey.girderIndex == 0 ? pBridge->GetLeftSlabOverhang(Xb) : pBridge->GetRightSlabOverhang(Xb));
 
          if (slab_overhang < 0.0)
          {
@@ -15560,6 +15554,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 void  CGirderModelManager::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssExcessCamber, std::vector<SlabLoad>* pSlabLoads) const
 {
    // Subtract slab pad load due to design values from that due to original model.
+   ASSERT_SEGMENT_KEY(segmentKey);
    Float64 fdummy(0);
    std::vector<SlabLoad> originalSlabLoads;
    GetMainSpanSlabLoadEx(segmentKey, false, false, fdummy, fdummy, fdummy, &originalSlabLoads);
@@ -15721,10 +15716,6 @@ void CGirderModelManager::GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, 
    const CDeckDescription2*   pDeck       = pBridgeDesc->GetDeckDescription();
 
    GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
-   GirderIndexType gdrIdx   = Min(segmentKey.girderIndex,nGirders-1);
-
-   CSegmentKey thisSegmentKey(segmentKey);
-   thisSegmentKey.girderIndex = gdrIdx;
 
    Float64 OverlayWeight = pBridge->GetOverlayWeight();
 
@@ -15733,7 +15724,7 @@ void CGirderModelManager::GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, 
 
    // POIs where overlay loads are laid out
    PoiList vPoi;
-   pPoi->GetPointsOfInterest(thisSegmentKey, POI_ERECTED_SEGMENT, &vPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size()!=0);
 
 
@@ -15901,15 +15892,10 @@ bool CGirderModelManager::HasConstructionLoad(const CGirderKey& girderKey) const
 
 void CGirderModelManager::GetMainConstructionLoad(const CSegmentKey& segmentKey, std::vector<ConstructionLoad>* pConstructionLoads) const
 {
-   GirderIndexType gdr = segmentKey.girderIndex;
-
    ATLASSERT(pConstructionLoads != nullptr);
    pConstructionLoads->clear();
 
    GET_IFACE(IBridge,pBridge);
-
-   GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
-   GirderIndexType gdrIdx   = Min(gdr,nGirders-1);
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -16005,8 +15991,6 @@ void CGirderModelManager::GetMainConstructionLoad(const CSegmentKey& segmentKey,
 
 void CGirderModelManager::GetMainSpanShearKeyLoad(const CSegmentKey& segmentKey, std::vector<ShearKeyLoad>* pLoads) const
 {
-   GirderIndexType gdr = segmentKey.girderIndex;
-
    ATLASSERT(pLoads != nullptr); 
    pLoads->clear();
 
@@ -16024,8 +16008,6 @@ void CGirderModelManager::GetMainSpanShearKeyLoad(const CSegmentKey& segmentKey,
       // no shear key, or there is only one girder in which case there aren't shear key loads either
       return; // leave now
    }
-
-   GirderIndexType gdrIdx = Min(gdr,nGirders-1);
 
    GET_IFACE(IMaterials,pMaterial);
    GET_IFACE(IIntervals,pIntervals);

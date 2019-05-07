@@ -291,8 +291,12 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
+   GET_IFACE2(pBroker, ITendonGeometry, pTendonGeom);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    std::vector<pgsTypes::LimitState> limitStates;
@@ -331,21 +335,12 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
       limitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
    }
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey,&vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-      CGirderKey thisGirderKey(grpIdx,gdrIdx);
-
       DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
-
-      IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
 
       std::vector<pgsTypes::LimitState>::iterator ls_iter;
       for ( ls_iter = limitStates.begin(); ls_iter != limitStates.end(); ls_iter++ )
@@ -401,7 +396,6 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
 
          location.IncludeSpanAndGirder(true);
 
-         GET_IFACE2(pBroker,IArtifact,pIArtifact);
          const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(thisGirderKey,ratingType,INVALID_INDEX/*all vehicles*/);
          pgsRatingArtifact::ShearRatings shearRatings = pRatingArtifact->GetShearRatings();
 

@@ -189,7 +189,9 @@ public:
    virtual CollectionIndexType GetVertCurveCount() const override;
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) const override;
    virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) const override;
-   virtual Float64 GetCrownPointOffset(Float64 station) const override;
+   virtual IndexType GetCrownPointIndexCount(Float64 station) const override;
+   virtual IndexType GetControllingCrownPointIndex(Float64 station) const override;
+   virtual Float64 GetCrownPointOffset(IndexType crownPointIdx, Float64 station) const override;
 
 // IGeometry
 public:
@@ -241,6 +243,9 @@ public:
    virtual GroupIndexType GetGirderGroupCount() const override;
    virtual GirderIndexType GetGirderCount(GroupIndexType grpIdx) const override;
    virtual GirderIndexType GetGirderlineCount() const override;
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, std::vector<CGirderKey>* pvGirderKeys) const override;
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, GroupIndexType startGroupIdx, GroupIndexType endGroupIdx, std::vector<CGirderKey>* pvGirderKeys) const override;
+   virtual void GetGirderline(const CGirderKey& girderKey, std::vector<CGirderKey>* pvGirderKeys) const override;
    virtual GirderIndexType GetGirderCountBySpan(SpanIndexType spanIdx) const override;
    virtual SegmentIndexType GetSegmentCount(const CGirderKey& girderKey) const override;
    virtual SegmentIndexType GetSegmentCount(GroupIndexType grpIdx,GirderIndexType gdrIdx) const override;
@@ -372,7 +377,7 @@ public:
    virtual Float64 GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const override;
    virtual Float64 GetPierStation(PierIndexType pierIdx) const override;
    virtual Float64 GetBearingStation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const override;
-   virtual void GetBearingPoint(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const override;
+   virtual void GetWorkingPointLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const override;
    virtual void GetPierDirection(PierIndexType pierIdx,IDirection** ppDirection) const override;
    virtual void GetPierSkew(PierIndexType pierIdx,IAngle** ppAngle) const override;
    virtual void GetPierPoints(PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right) const override;
@@ -401,6 +406,7 @@ public:
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const override;
    virtual bool HasTemporarySupportElevationAdjustments() const override;
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
 
 // IMaterials
 public:
@@ -1533,7 +1539,7 @@ private:
    Float64 GetGrossSlabDepth() const;
    Float64 GetCastDepth() const;
    Float64 GetPanelDepth() const;
-   Float64 GetSlabOverhangDepth() const;
+   Float64 GetSlabOverhangDepth(pgsTypes::SideType side) const;
 
 
    // Methods that return simple properties without data validation
@@ -1610,7 +1616,7 @@ private:
    const GirderLibraryEntry* GetGirderLibraryEntry(const CGirderKey& girderKey) const;
    GroupIndexType GetGirderGroupAtPier(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const;
 
-   void CreateTendons(const CBridgeDescription2* pBridgeDesc,const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,ITendonCollection** ppTendons) const;
+   bool CreateTendons(const CBridgeDescription2* pBridgeDesc,const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,ITendonCollection** ppTendons) const;
    void CreateParabolicTendon(const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,const CParabolicDuctGeometry& ductGeometry,ITendonCollection** ppTendons) const;
    void CreateLinearTendon(const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,const CLinearDuctGeometry& ductGeometry,ITendonCollection** ppTendons) const;
    void CreateOffsetTendon(const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,const COffsetDuctGeometry& ductGeometry,ITendonCollection* tendons,ITendonCollection** ppTendons) const;
@@ -1659,6 +1665,10 @@ private:
    std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions_Case2(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier) const;
    mathLinFunc2d GetTopGirderChordFunction(const CPrecastSegmentData* pThisSegment, IPoint2d* pControlPnt, const mathLinFunc2d& controlFn) const;
    mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderTopChordElevationFunctions; // linear functions that represent the top girder chord elevations
+
+   // Common function to return bearing elevation details at bearings or at girder edges
+   enum BearingElevLocType { batBearings, batGirderEdges };
+   std::vector<BearingElevationDetails> GetBearingElevationDetails_Generic(PierIndexType pierIdx,pgsTypes::PierFaceType face, BearingElevLocType locType) const;
 };
 
 #endif //__BRIDGEAGENT_H_

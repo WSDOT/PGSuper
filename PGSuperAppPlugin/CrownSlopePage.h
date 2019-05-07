@@ -69,10 +69,23 @@ protected:
 	afx_msg void OnAdd();
 	afx_msg void OnRemove();
 	afx_msg void OnSort();
+	afx_msg void OnPaint();
 	virtual BOOL OnInitDialog();
+   afx_msg void OnCbnSelchangeNumsegmentsCombo();
+   afx_msg void OnCbnSelchangeRidgeptCombo();
+   afx_msg void OnCbnSelchangeViewTemplateCombo();
+   afx_msg void OnUpdateRemove(CCmdUI* pCmdUI);
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
+
 	//}}AFX_MSG
 
    afx_msg void OnHelp();
+
+   void OnChange();
+   void FillNumSegsCtrl();
+   void UpdateNumSegsCtrl();
+   void UpdateRidgeptData();
+   void UpdateViewCombo();
 
    CCrownSlopeGrid m_Grid;
 
@@ -80,6 +93,10 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
+   // tools for drawing section
+   RoadwaySectionTemplate GetSelectedTemplate();
+   gpRect2d GetRidgePointBounds();
+   std::vector<gpPoint2d> m_DrawnRidgePoints;
 };
 
 //{{AFX_INSERT_LOCATION}}

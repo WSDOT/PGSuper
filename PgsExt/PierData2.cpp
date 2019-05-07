@@ -997,15 +997,15 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             try 
             {
-               for (Uint32 ib = 0; ib < cnt; ib++)
-               {
-                  CBearingData2 bd;
-                  hr = bd.Load(pStrLoad, pProgress);
-                  m_BearingData[pgsTypes::Back].push_back(bd);
-               }
-
-               hr = pStrLoad->EndUnit();
+            for (Uint32 ib = 0; ib < cnt; ib++)
+            {
+               CBearingData2 bd;
+               hr = bd.Load(pStrLoad, pProgress);
+               m_BearingData[pgsTypes::Back].push_back(bd);
             }
+
+            hr = pStrLoad->EndUnit();
+         }
             catch (...)
             {
                // This was a bug in pgsuper version 4.0.10. The program could write out a value of cnt==1, but then have no data to read.
@@ -1121,14 +1121,14 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             try
             {
-               for (Uint32 ib = 0; ib < cnt; ib++)
-               {
-                  CBearingData2 bd;
-                  hr = bd.Load(pStrLoad, pProgress);
-                  m_BearingData[pgsTypes::Ahead].push_back(bd);
-               }
+            for (Uint32 ib = 0; ib < cnt; ib++)
+            {
+               CBearingData2 bd;
+               hr = bd.Load(pStrLoad, pProgress);
+               m_BearingData[pgsTypes::Ahead].push_back(bd);
+            }
 
-               hr = pStrLoad->EndUnit();
+            hr = pStrLoad->EndUnit();
             }
             catch (...)
             {

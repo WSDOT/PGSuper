@@ -41,7 +41,7 @@ public:
 
    virtual CGraphBuilder* Clone() const override;
 
-   void UpdateGraphDefinitions();
+   void UpdateGraphDefinitions(const CGirderKey& girderKey);
    std::vector<std::pair<std::_tstring,IDType>> GetLoadings(IntervalIndexType intervalIdx,ActionType actionType);
 
    GraphType GetGraphType(IDType graphID);
@@ -85,6 +85,8 @@ protected:
 
    void CyStressCapacityGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const PoiList& vPoi,const std::vector<Float64>& xVals);
    void DeckShrinkageStressGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const PoiList& vPoi,const std::vector<Float64>& xVals);
+
+   void RatingFactorGraph(IndexType graphIdx, const CAnalysisResultsGraphDefinition& graphDef, IntervalIndexType intervalIdx, const PoiList& vPoi, const std::vector<Float64>& xVals);
 
    virtual void GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx, IntervalIndexType* pLastIntervalIdx) override;
    virtual DWORD GetDrawBeamStyle() const override;

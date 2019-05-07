@@ -55,22 +55,20 @@ HRESULT IBeamFamilyImpl::Init()
    pICatReg->QueryInterface(IID_ICatInformation,(void**)&pICatInfo);
    CComPtr<IEnumCLSID> pIEnumCLSID;
 
-   const int nID = 1;
-   CATID ID[nID];
-   ID[0] = GetCATID();
-
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
+   const CATID catid[1]{ GetCATID() };
+   hr = pICatInfo->EnumClassesOfCategories(1,catid,0,nullptr,&pIEnumCLSID);
 
    m_Names.clear();
 
-   CLSID clsid[1];
-   while ( pIEnumCLSID->Next(1,clsid,nullptr) != S_FALSE )
+   CLSID clsid;
+   ULONG nFetched;
+   while ( pIEnumCLSID->Next(1,&clsid,&nFetched) != S_FALSE )
    {
       LPOLESTR pszUserType;
-      OleRegGetUserType(clsid[0],USERCLASSTYPE_SHORT,&pszUserType);
+      OleRegGetUserType(clsid,USERCLASSTYPE_SHORT,&pszUserType);
       CString str(pszUserType);
 
-      m_Factories.insert( std::make_pair(str,clsid[0]) );
+      m_Factories.insert( std::make_pair(str,clsid) );
       m_Names.push_back(str);
    }
 

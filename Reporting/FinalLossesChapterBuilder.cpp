@@ -67,31 +67,24 @@ rptChapter* CFinalLossesChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILosses,pILosses);
 
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex );
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : Min(girderKey.girderIndex,nGirders-1));
-      GirderIndexType lastGirderIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
+
+         if ( 1 < nSegments )
          {
-            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
+            rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            *pChapter << pPara;
+            *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         }
 
-            if ( 1 < nSegments )
-            {
-               rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-               *pChapter << pPara;
-               *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-            }
-
-            pILosses->ReportFinalLosses(thisSegmentKey,pChapter,pDisplayUnits);
-         } // segment
-      } // girder
+         pILosses->ReportFinalLosses(thisSegmentKey,pChapter,pDisplayUnits);
+      } // segment
    } // group
 
    return pChapter;

@@ -73,6 +73,7 @@ public:
    afx_msg void OnBnClickedCheckInclindedGirder();
    virtual BOOL OnSetActive();
    afx_msg void OnBnClickedLlDeflection();
+   afx_msg void OnBnClickedCheckHandlingWeight();
 };
 
 //{{AFX_INSERT_LOCATION}}

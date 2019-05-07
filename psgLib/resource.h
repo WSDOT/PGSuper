@@ -859,6 +859,7 @@
 #define IDC_SAG_OPTIONS                 1441
 #define IDC_HAUNCH_COMP_CB              1441
 #define IDC_WIND_TYPE                   1441
+#define IDC_HOLD_DOWN_FORCE_TYPE        1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_CF_TYPE                     1442
 #define IDC_HAUNCH_COMP_CB2             1442
@@ -878,6 +879,7 @@
 #define IDC_CHECK_TEMPORARY_STRESSES    1444
 #define IDC_STRAIGHT_DESIGN_CHECK       1444
 #define IDC_DUAL_TANDEM                 1444
+#define IDC_USE_DECK_FOR_PC             1444
 #define IDC_INCLUDE_STRAND_FOR_NEG_MOMENT 1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
@@ -1075,6 +1077,8 @@
 #define IDC_CHECK_SERVICE_I_TENSION     1557
 #define IDC_CHECK_BOTTOM_FLANGE_CLEARANCE 1557
 #define IDC_STRAIGHT_RAISE_CHECK        1557
+#define IDC_RIGID_METHOD                1557
+#define IDC_BEARING_ELEVS               1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
 #define IDC_DEBOND_RAISE_CHECK          1558
@@ -1315,8 +1319,15 @@
 #define IDC_STATIC_PHIDEBOND            1702
 #define IDC_STATIC_PHI_DEBOND           1702
 #define IDC_HAULING_GLOBAL_COMPRESSION  1703
+#define IDC_CHECK_HANDLING_WEIGHT       1703
 #define IDC_HAULING_PEAK_COMPRESSION    1704
 #define IDC_SWEEP_GROWTH_UNIT           1705
+#define IDC_EDIT7                       1704
+#define IDC_HANDLING_WEIGHT             1704
+#define IDC_HANDLING_WEIGHT_UNIT        1705
+#define IDC_FRICTION_LABEL              1706
+#define IDC_EDIT8                       1707
+#define IDC_FRICTION_UNIT               1708
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1348,7 +1359,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1706
+#define _APS_NEXT_CONTROL_VALUE         1709
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

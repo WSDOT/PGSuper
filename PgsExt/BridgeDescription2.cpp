@@ -714,6 +714,16 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
          ATLASSERT(pPier->m_EndDistanceMeasurementType[pgsTypes::Ahead] == pPier->m_EndDistanceMeasurementType[pgsTypes::Back]);
          ATLASSERT(pPier->m_BearingOffsetMeasurementType[pgsTypes::Ahead] == pPier->m_BearingOffsetMeasurementType[pgsTypes::Back]);
+
+         // There is a problem modeling boundary conditions at cantilever piers
+         // The LBAM does not support changing boundary conditions so we can't model a "continuous" beam
+         // which is the girder cantilevered over a support, and then change it to integral. For
+         // this reason, only hinge and roller boundary conditions are supported at cantilever piers.
+         // Force the boundary condition to a supported value.
+         if (pPier->HasCantilever() && IsContinuousBoundaryCondition(pPier->GetBoundaryConditionType()))
+         {
+            pPier->SetBoundaryConditionType(pgsTypes::bctHinge);
+         }
       }
 
       if ( ::IsBridgeSpacing(m_GirderSpacingType) )
@@ -3605,12 +3615,15 @@ std::vector<pgsTypes::BoundaryConditionType> CBridgeDescription2::GetBoundaryCon
    {
       connectionTypes.push_back(pgsTypes::bctHinge);
       connectionTypes.push_back(pgsTypes::bctRoller);
-      if (bHasDeck)
-      {
-         connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
-         connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
-         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
-      }
+
+      // Because of short comings in the LBAM, we can only support hinge and roller boundary conditions
+      // at cantilever piers. Also see comments in CBridgeDescription2::Load()
+      //if (bHasDeck)
+      //{
+         //connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
+         //connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
+         //connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
+      //}
    }
    else
    {

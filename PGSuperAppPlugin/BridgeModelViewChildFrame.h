@@ -119,6 +119,8 @@ public:
    bool ShowBridge() const;
    void Schematic(bool bSchematic);
    bool Schematic() const;
+   void ShowRwCrossSection(bool bShow);
+   bool ShowRwCrossSection() const;
 
 
 #ifdef _DEBUG
@@ -156,6 +158,8 @@ protected:
    afx_msg void OnUpdateDimensions(CCmdUI* pCmdUI);
    afx_msg void OnBridge();
    afx_msg void OnUpdateBridge(CCmdUI* pCmdUI);
+   afx_msg void OnRwCrossSection();
+   afx_msg void OnUpdateRwCrossSection(CCmdUI* pCmdUI);
    afx_msg void OnSchematic();
    afx_msg void OnUpdateSchematic(CCmdUI* pCmdUI);
    afx_msg void OnBoundaryCondition(UINT nIDC);
