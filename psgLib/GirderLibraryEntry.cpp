@@ -102,6 +102,13 @@ std::map<std::_tstring, std::_tstring> GirderLibraryEntry::m_CLSIDMap;
 std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> GirderLibraryEntry::ms_ExternalCLSIDTranslators;
 
 
+
+// Initialize static class members
+bool GirderLibraryEntry::m_bsInitCLSIDMap = true;
+std::map<std::_tstring, std::_tstring> GirderLibraryEntry::m_CLSIDMap;
+std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> GirderLibraryEntry::ms_ExternalCLSIDTranslators;
+
+
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) 
 {
