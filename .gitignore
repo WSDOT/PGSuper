@@ -349,4 +349,3 @@ RegressionTest/Current/**/*.Test
 RegressionTest/SimpleTestResults.txt
 RegressionTest/*.bat
 !RegressionTest/Run*.bat
-!RegressionTest/RegTestMerge.bat

@@ -72,7 +72,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 //#define QUITE(_x_) (IsZero(_x_,0.00005) ? 0 : _x_)
-#define QUITE(_x_) RoundOff(_x_,0.001)
+#define QUITE(_x_) RoundOff(_x_,0.01)
 #define DEFLECTION(_x_) RoundOff(_x_,1.0)
 
 /////////////////////////////////////////////////////////////////////////////
@@ -598,10 +598,19 @@ std::_tstring CTestAgentImp::GetBridgeID()
 
 std::_tstring CTestAgentImp::GetProcessID()
 {
-   // the process ID is going to be the PGSuper version number
-   GET_IFACE(IVersionInfo,pVI);
-   std::_tstring strVersion = pVI->GetVersion(true);
-   return strVersion;
+   //// the process ID is going to be the PGSuper version number
+   //GET_IFACE(IVersionInfo,pVI);
+   //std::_tstring strVersion = pVI->GetVersion(true);
+   //return strVersion;
+
+   // we stopped using the version number as the process ID
+   // because we never compared results from one process to another
+   // as described in the 12-50 process. Since the move to 
+   // GIT VCS, merging files is difficult and it is especially difficult
+   // with reg test results that have the version number incoded in it
+   //
+   // now using a "generic" number for the process id
+   return std::_tstring(_T("0.0.0.0"));
 }
 
 bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey)
