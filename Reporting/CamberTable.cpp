@@ -201,6 +201,8 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -378,8 +380,8 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
       Float64 Dcreep1a = pCamber->GetCreepDeflection(storagePoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddStorage);
       Float64 Dcreep1b = pCamber->GetCreepDeflection(erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected);
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection(erectedPoi);
-      Float64 DshearKey = bShearKey ? pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, erectedPoi, bat, rtCumulative, false) : 0.0;
-      Float64 Dconstruction = bConstruction ? pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftConstruction, erectedPoi, bat, rtCumulative, false) : 0.0;
+      Float64 DshearKey = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx, pgsTypes::pftShearKey, erectedPoi, bat, rtCumulative, false) : 0.0;
+      Float64 Dconstruction = bConstruction ? pProduct->GetDeflection(constructionLoadIntervalIdx, pgsTypes::pftConstruction, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Dpanel = bDeckPanels ? pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPanel, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Ddeck = pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, erectedPoi, bat, rtCumulative, false);
       Float64 DslabPad = pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPad, erectedPoi, bat, rtCumulative, false);
@@ -578,6 +580,8 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
@@ -839,8 +843,8 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
       Float64 Dcreep1b   = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected );
       Float64 DXcreep1b = pCamber->GetXCreepDeflection(erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected);
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
-      Float64 DshearKey  = bShearKey ? pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false) : 0.0;
-      Float64 Dconstruction= bConstruction ? pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftConstruction,erectedPoi,bat, rtCumulative, false) : 0.0;
+      Float64 DshearKey  = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false) : 0.0;
+      Float64 Dconstruction= bConstruction ? pProduct->GetDeflection(constructionLoadIntervalIdx,pgsTypes::pftConstruction,erectedPoi,bat, rtCumulative, false) : 0.0;
       Float64 Dpanel     =  bDeckPanels ? pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPanel,erectedPoi,bat, rtCumulative, false) : 0.0;
       Float64 Ddeck      = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlab,erectedPoi,bat, rtCumulative, false);
       Float64 DslabPad   = pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftSlabPad,erectedPoi,bat, rtCumulative, false);
@@ -1079,6 +1083,8 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
@@ -1266,8 +1272,8 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
       Float64 Dcreep1a = pCamber->GetCreepDeflection(storagePoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddStorage);
       Float64 Dcreep1b = pCamber->GetCreepDeflection(erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected);
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection(erectedPoi);
-      Float64 DshearKey = bShearKey ? pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftShearKey, erectedPoi, bat, rtCumulative, false) : 0.0;
-      Float64 Dconstruction = bConstruction ? pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftConstruction, erectedPoi, bat, rtCumulative, false) : 0.0;
+      Float64 DshearKey = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx, pgsTypes::pftShearKey, erectedPoi, bat, rtCumulative, false) : 0.0;
+      Float64 Dconstruction = bConstruction ? pProduct->GetDeflection(constructionLoadIntervalIdx, pgsTypes::pftConstruction, erectedPoi, bat, rtCumulative, false) : 0.0;
       Float64 Dcreep2 = pCamber->GetCreepDeflection(erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected);
       Float64 Duser1 = pProduct->GetDeflection(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDC, erectedPoi, bat, rtCumulative, false)
          + pProduct->GetDeflection(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDW, erectedPoi, bat, rtCumulative, false);
@@ -1474,6 +1480,8 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    IntervalIndexType storageIntervalIdx           = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx          = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
@@ -1747,8 +1755,8 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
       Float64 Dcreep1b   = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected );
       Float64 DXcreep1b = pCamber->GetXCreepDeflection( erectedPoi, ICamber::cpReleaseToDiaphragm, constructionRate, pgsTypes::pddErected);
       Float64 Ddiaphragm = pCamber->GetDiaphragmDeflection( erectedPoi );
-      Float64 DshearKey  = bShearKey ? pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false) : 0.0;
-      Float64 Dconstruction= bConstruction ? pProduct->GetDeflection(castDeckIntervalIdx,pgsTypes::pftConstruction,erectedPoi,bat, rtCumulative, false) : 0.0;
+      Float64 DshearKey  = bShearKey ? pProduct->GetDeflection(castShearKeyIntervalIdx,pgsTypes::pftShearKey,erectedPoi,bat, rtCumulative, false) : 0.0;
+      Float64 Dconstruction= bConstruction ? pProduct->GetDeflection(constructionLoadIntervalIdx,pgsTypes::pftConstruction,erectedPoi,bat, rtCumulative, false) : 0.0;
       Float64 Dcreep2    = pCamber->GetCreepDeflection( erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected );
       Float64 Duser1     = pProduct->GetDeflection(noncompositeUserLoadIntervalIdx,pgsTypes::pftUserDC,erectedPoi,bat, rtCumulative, false) 
                          + pProduct->GetDeflection(noncompositeUserLoadIntervalIdx,pgsTypes::pftUserDW,erectedPoi,bat, rtCumulative, false);
