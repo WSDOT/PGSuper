@@ -8340,18 +8340,19 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck_TempStrands(const pgsPointOfIn
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey);
-   ATLASSERT(vUserLoadIntervals.size() <= 2);
+   ATLASSERT(vUserLoadIntervals.size() <= 3);
 #endif
 
    IntervalIndexType nonCompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
 
 #if defined _DEBUG
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    std::vector<IntervalIndexType>::iterator iter(vUserLoadIntervals.begin());
    std::vector<IntervalIndexType>::iterator end(vUserLoadIntervals.end());
    for ( ; iter != end; iter++ )
    {
-      ATLASSERT(*iter == nonCompositeUserLoadIntervalIdx || *iter == compositeUserLoadIntervalIdx);
+      ATLASSERT(*iter == nonCompositeUserLoadIntervalIdx || *iter == compositeUserLoadIntervalIdx || *iter == liveLoadIntervalIdx);
    }
 #endif
 
@@ -8507,18 +8508,19 @@ void CAnalysisAgentImp::GetCreepDeflection_NoDeck(const pgsPointOfInterest& poi,
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey);
-   ATLASSERT(vUserLoadIntervals.size() <= 2);
+   ATLASSERT(vUserLoadIntervals.size() <= 3);
 #endif
 
    IntervalIndexType userLoad1IntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType userLoad2IntervalIdx = pIntervals->GetCompositeUserLoadInterval();
 
 #if defined _DEBUG
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    std::vector<IntervalIndexType>::iterator iter(vUserLoadIntervals.begin());
    std::vector<IntervalIndexType>::iterator end(vUserLoadIntervals.end());
    for ( ; iter != end; iter++ )
    {
-      ATLASSERT(*iter == userLoad1IntervalIdx || *iter == userLoad2IntervalIdx);
+      ATLASSERT(*iter == userLoad1IntervalIdx || *iter == userLoad2IntervalIdx || *iter == liveLoadIntervalIdx);
    }
 #endif
 
@@ -8785,18 +8787,19 @@ void CAnalysisAgentImp::GetD_NoDeck_TempStrands(const pgsPointOfInterest& poi,co
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey);
-   ATLASSERT(vUserLoadIntervals.size() <= 2);
+   ATLASSERT(vUserLoadIntervals.size() <= 3);
 #endif
 
    IntervalIndexType nonCompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
 
 #if defined _DEBUG
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    std::vector<IntervalIndexType>::iterator iter(vUserLoadIntervals.begin());
    std::vector<IntervalIndexType>::iterator end(vUserLoadIntervals.end());
    for ( ; iter != end; iter++ )
    {
-      ATLASSERT(*iter == nonCompositeUserLoadIntervalIdx || *iter == compositeUserLoadIntervalIdx);
+      ATLASSERT(*iter == nonCompositeUserLoadIntervalIdx || *iter == compositeUserLoadIntervalIdx || *iter == liveLoadIntervalIdx);
    }
 #endif
 
@@ -8844,18 +8847,19 @@ void CAnalysisAgentImp::GetD_NoDeck(const pgsPointOfInterest& poi,const GDRCONFI
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    std::vector<IntervalIndexType> vUserLoadIntervals = pIntervals->GetUserDefinedLoadIntervals(spanKey);
-   ATLASSERT(vUserLoadIntervals.size() <= 2);
+   ATLASSERT(vUserLoadIntervals.size() <= 3);
 #endif
 
    IntervalIndexType nonCompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
 
 #if defined _DEBUG
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    std::vector<IntervalIndexType>::iterator iter(vUserLoadIntervals.begin());
    std::vector<IntervalIndexType>::iterator end(vUserLoadIntervals.end());
    for ( ; iter != end; iter++ )
    {
-      ATLASSERT(*iter == nonCompositeUserLoadIntervalIdx || *iter == compositeUserLoadIntervalIdx);
+      ATLASSERT(*iter == nonCompositeUserLoadIntervalIdx || *iter == compositeUserLoadIntervalIdx || *iter == liveLoadIntervalIdx);
    }
 #endif
 
