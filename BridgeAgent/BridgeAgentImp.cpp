@@ -26317,8 +26317,17 @@ void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentK
    pGirder->SetPrecamber(pSegment->Precamber);
 
    // get all the cross section changes
-   PoiList xsPOI;
-   GetPointsOfInterest(segmentKey, POI_SECTCHANGE,&xsPOI,POIFIND_OR);
+   PoiList vPoi;
+   GetPointsOfInterest(segmentKey, POI_SECTCHANGE,&vPoi,POIFIND_OR);
+
+   // vPoi is a list of references to POIs. However if the segment has a parabolic variation
+   // we generate intermediate points. Some of these points may not be at a standard poi location
+   // that means, when we are adding things to the container below, we are adding locally scoped
+   // POI. When we go out of the if/elseif blocks, those POI go out of scope. When we try to use
+   // those POI later, they have bogus values and bad things happen
+   // To prevent this problem, copy the POIs from vPOI into a vector that keeps all POI in the
+   // scope of this method
+   std::vector<pgsPointOfInterest> xsPOI(vPoi.begin(), vPoi.end());
    if ( variationType == pgsTypes::svtParabolic )
    {
       // single parabola
@@ -26330,10 +26339,8 @@ void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentK
       for ( IndexType i = 0; i < nSections; i++ )
       {
          Float64 X = Lleft + i*L/nSections;
-         pgsPointOfInterest poi = GetPointOfInterest(segmentKey,X);
-         xsPOI.push_back(poi);
+         xsPOI.emplace_back(GetPointOfInterest(segmentKey,X));
       }
-      m_pPoiMgr->SortPoiList(&xsPOI);
    }
    else if ( variationType == pgsTypes::svtDoubleParabolic )
    {
@@ -26346,8 +26353,7 @@ void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentK
       for ( IndexType i = 0; i < nSections; i++ )
       {
          Float64 X = Lleft + i*Lt/nSections;
-         pgsPointOfInterest poi = GetPointOfInterest(segmentKey,X);
-         xsPOI.push_back(poi);
+         xsPOI.emplace_back(GetPointOfInterest(segmentKey,X));
       }
 
       // right parabola
@@ -26358,15 +26364,21 @@ void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentK
       for ( IndexType i = 0; i < nSections; i++ )
       {
          Float64 X = Lleft + i*Lr/nSections;
-         pgsPointOfInterest poi = GetPointOfInterest(segmentKey,X);
-         xsPOI.push_back(poi);
+         xsPOI.emplace_back(GetPointOfInterest(segmentKey,X));
       }
-      m_pPoiMgr->SortPoiList(&xsPOI);
    }
+
+   if (variationType == pgsTypes::svtParabolic || variationType == pgsTypes::svtDoubleParabolic)
+   {
+      // make sure the POIs are sorted
+      std::sort(std::begin(xsPOI), std::end(xsPOI), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a < b;});
+      xsPOI.erase(std::unique(std::begin(xsPOI), std::end(xsPOI), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a == b; }), std::end(xsPOI));
+   }
+
    ATLASSERT(2 <= xsPOI.size());
 
-   PoiList::iterator poiIter(xsPOI.begin());
-   PoiList::iterator poiIterEnd(xsPOI.end());
+   auto poiIter(xsPOI.begin());
+   auto poiIterEnd(xsPOI.end());
    const pgsPointOfInterest& poi1(*poiIter++);
    Float64 X1 = poi1.GetDistFromStart();
    Float64 Ag1 = GetAg(intervalIdx,poi1);
