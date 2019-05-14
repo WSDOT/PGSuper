@@ -61,8 +61,17 @@ HRESULT CBulbTeeFactory::FinalConstruct()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
-   m_scidInformationalWarning     = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+
+   // It's possible for the library editor to call this code. In that case there is no broker
+   if (pBroker)
+   {
+      GET_IFACE2(pBroker, IEAFStatusCenter, pStatusCenter);
+      m_scidInformationalWarning     = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+   }
+   else
+   {
+      m_scidInformationalWarning = 0;
+   }
 
    m_bHaveOldTopFlangeThickening = false;
    m_OldTopFlangeThickening = 0; // this is used to hold the old D8 value
