@@ -40,7 +40,7 @@ class CCrownSlopeGrid : public CGXGridWnd
 // Construction
 public:
 	CCrownSlopeGrid();
-	CCrownSlopeGrid(RoadwaySectionData* pData);
+	CCrownSlopeGrid(RoadwaySectionData* pData); 
 
 // Attributes
 public:
@@ -53,7 +53,7 @@ public:
 	//{{AFX_VIRTUAL(CCrownSlopeGrid)
 	//}}AFX_VIRTUAL
 
-   bool SortCrossSections();
+   bool SortCrossSections(bool updateGrid);
    void InitRoadwaySectionData(bool updateHeader);
    bool UpdateRoadwaySectionData();
 
@@ -86,14 +86,14 @@ public:
    void SetRowData(ROWCOL nRow,const RoadwaySectionTemplate& data);
 
    // virtual overrides for grid
-   BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
-   virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
+   BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol) override;
+   virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol) override;
+   virtual void OnMovedCurrentCell(ROWCOL nRow, ROWCOL nCol) override;
 
 private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
    void InitRowData(ROWCOL row);
-//   bool EnableItemDelete();
 
    bool m_IsACellInvalid;
    std::set<ROWCOL> m_LengthCols;

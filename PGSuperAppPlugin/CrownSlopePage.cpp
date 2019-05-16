@@ -99,11 +99,12 @@ void CCrownSlopePage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBItemData(pDX, IDC_NUMSEGMENTS_COMBO,  (int&)m_RoadwaySectionData.NumberOfSegmentsPerSection);
    DDX_CBItemData(pDX, IDC_RIDGEPT_COMBO,  (int&)m_RoadwaySectionData.ControllingRidgePointIdx);
+	DDX_Control(pDX, IDC_VIEW_TEMPLATE_SPIN, m_SelTemplateSpinner);
 
    // Grid owns a pointer to our roadway data
    if ( pDX->m_bSaveAndValidate )
    {
-      if (!m_Grid.SortCrossSections() || !m_Grid.UpdateRoadwaySectionData() )
+      if (!m_Grid.SortCrossSections(false) )
       {
          AfxMessageBox(_T("Invalid cross section parameters. Are there duplicate stations?"));
          pDX->Fail();
@@ -127,19 +128,27 @@ BEGIN_MESSAGE_MAP(CCrownSlopePage, CPropertyPage)
 	ON_COMMAND(ID_HELP, OnHelp)
    ON_CBN_SELCHANGE(IDC_NUMSEGMENTS_COMBO, &CCrownSlopePage::OnCbnSelchangeNumsegmentsCombo)
    ON_CBN_SELCHANGE(IDC_RIDGEPT_COMBO, &CCrownSlopePage::OnCbnSelchangeRidgeptCombo)
-   ON_CBN_SELCHANGE(IDC_VIEW_TEMPLATE_COMBO, &CCrownSlopePage::OnCbnSelchangeViewTemplateCombo)
+   ON_NOTIFY(UDN_DELTAPOS, IDC_VIEW_TEMPLATE_SPIN, &CCrownSlopePage::OnDeltaposViewTemplateSpin)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CCrownSlopePage message handlers
 
-void CCrownSlopePage::OnAdd() 
+void CCrownSlopePage::OnGridTemplateClicked(IndexType templIdx)
+{
+   // called by grid from on click event
+   m_SelectedTemplate = templIdx;
+
+   UpdateViewSpinner();
+}
+
+void CCrownSlopePage::OnAdd()
 {
    m_Grid.AppendRow();
 
    UpdateNumSegsCtrl();
    UpdateRidgeptData();
-   UpdateViewCombo();
+   UpdateViewSpinner();
 }
 
 void CCrownSlopePage::OnRemove() 
@@ -153,12 +162,12 @@ void CCrownSlopePage::OnRemove()
       UpdateRidgeptData();
    }
 
-   UpdateViewCombo();
+   UpdateViewSpinner();
 }
 
 void CCrownSlopePage::OnSort() 
 {
-   if (!m_Grid.SortCrossSections())
+   if (!m_Grid.SortCrossSections(true))
    {
       ::AfxMessageBox(_T("Each template must have a unique Station"),MB_OK | MB_ICONWARNING); 
    }
@@ -170,6 +179,8 @@ void CCrownSlopePage::OnSort()
 
 BOOL CCrownSlopePage::OnInitDialog() 
 {
+   m_SelectedTemplate = 0;
+
 	m_Grid.SubclassDlgItem(IDC_VCURVE_GRID, this);
    m_Grid.CustomInit();
 
@@ -178,7 +189,14 @@ BOOL CCrownSlopePage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
-   UpdateViewCombo();
+   UDACCEL accel[2];
+   accel[0].nInc = 1;
+   accel[0].nSec = 5;
+   accel[1].nInc = 5;
+   accel[1].nSec = 5;
+   m_SelTemplateSpinner.SetAccel(2,accel);
+
+   UpdateViewSpinner();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -299,15 +317,13 @@ RoadwaySectionTemplate CCrownSlopePage::GetSelectedTemplate()
    templ.LeftSlope = 0.0;
    templ.RightSlope = 0.0;
 
-   CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_VIEW_TEMPLATE_COMBO);
-   int cursel = pcb->GetCurSel();
-   if (cursel != CB_ERR)
+   if (m_SelectedTemplate != INVALID_INDEX)
    {
       if (m_Grid.UpdateRoadwaySectionData())
       {
-         if (m_RoadwaySectionData.RoadwaySectionTemplates.size() > cursel)
+         if (m_RoadwaySectionData.RoadwaySectionTemplates.size() > m_SelectedTemplate)
          {
-            return m_RoadwaySectionData.RoadwaySectionTemplates[cursel];
+            return m_RoadwaySectionData.RoadwaySectionTemplates[m_SelectedTemplate];
          }
          else
          {
@@ -406,24 +422,27 @@ void CCrownSlopePage::OnPaint()
       m_DrawnRidgePoints.push_back(gpPoint2d(xval, yval));
    }
 
+   // bounds of window
+   CSize csize = redit.Size();
+
+   // bounding rect around model
    gpRect2d ridgeBounds = GetRidgePointBounds();
 
    // zoom out a bit
    gpSize2d rpsize(ridgeBounds.Size());
-   rpsize *= 0.05;
+   rpsize.Dx() *= 0.025;
+   rpsize.Dy() *= 0.1;
    ridgeBounds = ridgeBounds.InflateBy(rpsize);
    rpsize = ridgeBounds.Size();
 
-   gpPoint2d org(ridgeBounds.BottomLeft());
-
-   CSize csize = redit.Size();
+   gpPoint2d org(ridgeBounds.Center());
 
    grlibPointMapper mapper;
    mapper.SetMappingMode(grlibPointMapper::Isotropic);
    mapper.SetWorldExt(rpsize);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(csize.cx,csize.cy);
-   mapper.SetDeviceOrg(0,csize.cy/2);
+   mapper.SetDeviceOrg(csize.cx/2,csize.cy/2);
 
    // Draw primary template lines
    const int LINE_WID = 2;
@@ -542,34 +561,23 @@ void CCrownSlopePage::OnChange()
    UpdateWindow();
 }
 
-void CCrownSlopePage::UpdateViewCombo()
+void CCrownSlopePage::UpdateViewSpinner()
 {
-   CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_VIEW_TEMPLATE_COMBO);
-   int cursel = pcb->GetCurSel();
-
    int size = m_Grid.GetRowCount() - 1;
    size = size == 0 ? 1 : size; //always have flat default
 
-   pcb->ResetContent();
-
-   for (int i = 0; i < size; i++)
+   if (m_SelectedTemplate >= size)
    {
-      CString str;
-      str.Format(_T("Template %d"), i + 1);
-      pcb->AddString(str);
+      m_SelectedTemplate = size - 1;
    }
 
-   cursel = (cursel != CB_ERR && cursel < size) ? cursel : 0;
+   CString str;
+   str.Format(_T("Template %d "), m_SelectedTemplate + 1);
 
-   pcb->SetCurSel(cursel);
+   CStatic* pedit = (CStatic*)GetDlgItem(IDC_VIEW_TEMPLATE_EDIT);
+   pedit->SetWindowText(str);
 
    // redraw image
-   OnChange();
-}
-
-
-void CCrownSlopePage::OnCbnSelchangeViewTemplateCombo()
-{
    OnChange();
 }
 
@@ -584,3 +592,31 @@ LRESULT CCrownSlopePage::OnKickIdle(WPARAM, LPARAM)
 	return 0L;
 }
 
+void CCrownSlopePage::OnDeltaposViewTemplateSpin(NMHDR *pNMHDR, LRESULT *pResult)
+{
+   LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+
+   int size = m_Grid.GetRowCount() - 1;
+
+   // this is what the selection will be
+   int new_sel = (int)m_SelectedTemplate - pNMUpDown->iDelta; // left arrow is positive
+
+   // if it goes over the top
+   if ( size-1 < new_sel )
+   {
+      new_sel = 0; // make it the min value
+   }
+
+   // if it goes under the bottom
+   if ( new_sel < 0 )
+   {
+      new_sel = size-1; // make it the max value
+   }
+
+   m_SelectedTemplate = new_sel;
+
+   UpdateViewSpinner();
+   OnChange();
+
+   *pResult = 0;
+}

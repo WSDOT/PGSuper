@@ -1362,6 +1362,8 @@
 #define IDC_ADJUSTMENT_GROUP            2004
 #define IDC_PROMPT                      2005
 #define IDC_LIST1                       2006
+#define IDC_VIEW_TEMPLATE_SPIN          2006
+#define IDC_VIEW_TEMPLATE_EDIT          2007
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1519,7 +1521,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        396
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         2005
+#define _APS_NEXT_CONTROL_VALUE         2008
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

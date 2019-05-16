@@ -1513,10 +1513,11 @@ BEGIN
     COMBOBOX        IDC_RIDGEPT_COMBO,326,7,21,98,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "",IDC_PICTURE,12,145,397,94,WS_BORDER
     GROUPBOX        "Roadway Cross Section Template View",IDC_STATIC,7,119,409,123
-    LTEXT           "Select a Template to View",IDC_STATIC,14,133,79,8
-    COMBOBOX        IDC_VIEW_TEMPLATE_COMBO,95,131,55,98,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "View:",IDC_STATIC,14,133,17,8
     LTEXT           "Cross Section Templates define the roadway cross section at specified stations. Segment Lengths and Slopes are linearly interpolated between specified stations thus defining the roadway surface. All templates have the same number of linear segments.",IDC_STATIC,12,245,401,18
     LTEXT           "Slope Sign Convention: Slopes upward and away from the Controlling Ridge Point are positive, downward and away are negative. See Help for more details.",IDC_STATIC,12,266,385,19
+    CONTROL         "",IDC_VIEW_TEMPLATE_SPIN,"msctls_updown32",UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_HORZ,76,129,21,14
+    RTEXT           "Static",IDC_VIEW_TEMPLATE_EDIT,35,130,41,14,WS_BORDER,WS_EX_RIGHT
 END
 
 IDD_SPAN_LENGTHS DIALOGEX 0, 0, 143, 171

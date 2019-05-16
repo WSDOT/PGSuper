@@ -38,6 +38,27 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// simple, exception-safe class for blocking events
+class SimpleMutex
+{
+public:
+   SimpleMutex(bool& flag):
+   m_Flag(flag)
+   {
+      m_Flag = true;
+   }
+
+   ~SimpleMutex()
+   {
+      m_Flag = false;
+   }
+private:
+   bool& m_Flag;
+};
+
+static bool stbBlockEvent = false;
+
+
 GRID_IMPLEMENT_REGISTER(CCrownSlopeGrid, CS_DBLCLKS, 0, 0, 0);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -183,13 +204,13 @@ void CCrownSlopeGrid::UpdateGridSizeAndHeaders(const RoadwaySectionData& data)
 
 	this->SetRowCount(num_rows);
 	this->SetColCount(num_cols);
-/*
+
 		// Turn off selecting whole columns when clicking on a column header
 	this->GetParam()->EnableSelection((WORD) (GX_SELFULL & ~GX_SELCOL & ~GX_SELTABLE));
 
    // no row moving
 	this->GetParam()->EnableMoveRows(FALSE);
-*/
+
    // we want to merge cells
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 
@@ -466,6 +487,9 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
 
 void CCrownSlopeGrid::InitRoadwaySectionData(bool updateHeader)
 {
+   // use mutex to keep grid from attempting to reselect current cell. program will crash if we don't do this.
+   SimpleMutex mutex(stbBlockEvent);
+
    // set up our width and headers
    if (updateHeader)
    {
@@ -478,7 +502,7 @@ void CCrownSlopeGrid::InitRoadwaySectionData(bool updateHeader)
    if ( 1 < GetRowCount() )
       CGXGridWnd::RemoveRows(2,GetRowCount());
 
-   for (const auto& templ : m_pRoadwaySectionData->RoadwaySectionTemplates)
+   for(const auto& templ : m_pRoadwaySectionData->RoadwaySectionTemplates)
    {
       AppendRow();
       SetRowData(GetRowCount(), templ);
@@ -511,12 +535,16 @@ bool SortByStation(const RoadwaySectionTemplate& c1,const RoadwaySectionTemplate
    return c1.Station < c2.Station;
 }
 
-bool CCrownSlopeGrid::SortCrossSections()
+bool CCrownSlopeGrid::SortCrossSections(bool doUpdateGrid)
 {
    if (UpdateRoadwaySectionData())
    {
       std::sort(m_pRoadwaySectionData->RoadwaySectionTemplates.begin(),m_pRoadwaySectionData->RoadwaySectionTemplates.end(),SortByStation);
-      InitRoadwaySectionData(false);
+
+      if (doUpdateGrid)
+      {
+         InitRoadwaySectionData(false);
+      }
 
       if (!m_pRoadwaySectionData->RoadwaySectionTemplates.empty())
       {
@@ -617,4 +645,14 @@ void CCrownSlopeGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    }
 
    CGXGridWnd::OnModifyCell(nRow, nCol);
+}
+
+void CCrownSlopeGrid::OnMovedCurrentCell(ROWCOL nRow, ROWCOL nCol)
+{
+   if (!stbBlockEvent && nRow > 1)
+   {
+      // tell parent to update its graphic
+      CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
+      pParent->OnGridTemplateClicked(nRow - 2);
+   }
 }

@@ -63,6 +63,9 @@ public:
 
 
 // Implementation
+public:
+   void OnGridTemplateClicked(IndexType templIdx); 
+
 protected:
 	// Generated message map functions
 	//{{AFX_MSG(CCrownSlopePage)
@@ -73,7 +76,6 @@ protected:
 	virtual BOOL OnInitDialog();
    afx_msg void OnCbnSelchangeNumsegmentsCombo();
    afx_msg void OnCbnSelchangeRidgeptCombo();
-   afx_msg void OnCbnSelchangeViewTemplateCombo();
    afx_msg void OnUpdateRemove(CCmdUI* pCmdUI);
 	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 
@@ -85,11 +87,13 @@ protected:
    void FillNumSegsCtrl();
    void UpdateNumSegsCtrl();
    void UpdateRidgeptData();
-   void UpdateViewCombo();
+   void UpdateViewSpinner();
 
    CCrownSlopeGrid m_Grid;
-
    friend CCrownSlopeGrid;
+
+	CSpinButtonCtrl m_SelTemplateSpinner;
+   IndexType m_SelectedTemplate;
 
 	DECLARE_MESSAGE_MAP()
 
@@ -97,6 +101,8 @@ protected:
    RoadwaySectionTemplate GetSelectedTemplate();
    gpRect2d GetRidgePointBounds();
    std::vector<gpPoint2d> m_DrawnRidgePoints;
+public:
+   afx_msg void OnDeltaposViewTemplateSpin(NMHDR *pNMHDR, LRESULT *pResult);
 };
 
 //{{AFX_INSERT_LOCATION}}
