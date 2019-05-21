@@ -30,6 +30,7 @@
 #include "..\Documentation\PGSuper.hh"
 
 #include <IFace\Project.h>
+#include <IFace\RatingSpecification.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
 
@@ -83,6 +84,24 @@ BOOL CBridgeAnalysisReportDlg::OnInitDialog()
       m_bDesign = pRptSpec->ReportDesignResults();
       m_bRating = pRptSpec->ReportRatingResults();
    }
+
+   // if there aren't any load rating types selected, don't report for rating and disable the UI element
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   if (!pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && 
+       !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
+       !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
+       !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) &&
+       !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency) &&
+       !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) &&
+       !pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special)
+      )
+   {
+      m_bRating = false;
+      GetDlgItem(IDC_RATING)->EnableWindow(FALSE);
+   }
+
 
    CSpanGirderReportDlg::OnInitDialog();
 	
