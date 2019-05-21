@@ -448,6 +448,40 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
    }   
    
 
+   if (IsZero(w4) && (!IsZero(d6) || !IsZero(d7)))
+   {
+      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][11];
+      std::_tostringstream os;
+      os << _T("D6 and D7 must be 0.0 when W4 is 0.0 ") << pUnit->UnitTag() << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if (IsZero(w5) && (!IsZero(d4) || !IsZero(d5)))
+   {
+      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][12];
+      std::_tostringstream os;
+      os << _T("D4 and D5 must be 0.0 when W5 is 0.0 ") << pUnit->UnitTag() << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ((d1 - d2 - d3) < (d6 + d7))
+   {
+      std::_tostringstream os;
+      os << _T("D6+D7 must be less than D1-D2-D3") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if (d1 < (d4 + d5))
+   {
+      std::_tostringstream os;
+      os << _T("D4+D5 must be less than D1") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
    return true;
 }
 
