@@ -23809,15 +23809,13 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
                ATLASSERT(vPois.size() == 1);
                const pgsPointOfInterest& poi = vPois.front();
 
-               Float64 tSlab = GetGrossSlabDepth(poi);
-               Float64 bottom_slab_elevation = finished_elevation - tSlab;
+               Float64 slab_offset = GetSlabOffset(segmentKey, endType);
 
                IntervalIndexType intervalIdx = GetPrestressReleaseInterval(segmentKey);
                Float64 Hg = GetHg(intervalIdx, poi); // this is the basic height of the segment
                Hg *= girder_height_adjustment_factor; // adjust the vertical dimension for orientation and grade slopes
 
                Float64 girder_chord_elevation = GetTopGirderChordElevation(poi);
-               Float64 haunch_depth = bottom_slab_elevation - girder_chord_elevation;
 
                Float64 crossSlope = GetSlope(station, offset);
                crossSlope = IsZero(crossSlope) ? 0 : crossSlope;
@@ -23842,10 +23840,10 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
                elevDetails.GirderGrade = girderSlope;
                elevDetails.GirderOrientation = girderOrientation;
                elevDetails.Hg = Hg;
-               elevDetails.HaunchDepth = haunch_depth;
+               elevDetails.SlabOffset = slab_offset;
                elevDetails.OverlayDepth = overlay_depth / roadwayAngleAdjust;
 
-               elevDetails.Elevation = finished_elevation - elevDetails.OverlayDepth - haunch_depth - Hg;
+               elevDetails.Elevation = finished_elevation - elevDetails.OverlayDepth - elevDetails.SlabOffset - Hg;
 
                vDetails.push_back(elevDetails);
 
