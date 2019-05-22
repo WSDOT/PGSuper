@@ -3946,6 +3946,7 @@ HRESULT CEngAgentImp::OnLiveLoadNameChanged(LPCTSTR strOldName,LPCTSTR strNewNam
 
 HRESULT CEngAgentImp::OnConstructionLoadChanged()
 {
+   InvalidateAll();
    return S_OK;
 }
 
