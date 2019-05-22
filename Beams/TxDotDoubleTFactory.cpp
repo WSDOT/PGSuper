@@ -575,11 +575,6 @@ bool CTxDotDoubleTFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CTxDotDoubleTFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CTxDotDoubleTFactory::GetImage() const
 {
    return std::_tstring(_T("TxDotDoubleT.gif"));

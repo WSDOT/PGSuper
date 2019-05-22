@@ -637,11 +637,6 @@ bool CUBeam2Factory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CUBeam2Factory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CUBeam2Factory::GetImage() const
 {
    return std::_tstring(_T("UBeam2.jpg"));

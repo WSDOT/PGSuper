@@ -394,7 +394,7 @@ private:
    void GetLoadGroupName(pgsTypes::StrandType strandType,CComBSTR& bstrLoadGroupX,CComBSTR& bstrLoadGroupY) const;
 
    CComBSTR GetLBAMStageName(IntervalIndexType intervalIdx) const;
-   IntervalIndexType GetIntervalFromLBAMStageName(BSTR bstrStage) const;
+   IntervalIndexType GetIntervalFromLBAMStageName(const pgsPointOfInterest& poi, BSTR bstrStage) const;
 
 
    struct SidewalkTrafficBarrierLoad

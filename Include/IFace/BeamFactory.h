@@ -199,10 +199,6 @@ interface IBeamFactory : IUnknown
    virtual bool IsSymmetric(const CSegmentKey& segmentKey) const = 0;
 
    //---------------------------------------------------------------------------------
-   // Returns the interal surface area of voids within the member
-   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const = 0;
-
-   //---------------------------------------------------------------------------------
    // Returns the name of an image file that will be used in reports when the
    // cross section dimensions are reported. The image file must be in the same
    // directory as PGSuper.exe

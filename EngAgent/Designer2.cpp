@@ -287,7 +287,7 @@ static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, 
       }
 
       CComPtr<IPoint2dCollection> matingSurfaceProfile;
-      bool bHasMSProfile = (pGdr->GetMatingSurfaceProfile(poi, 0, pgsTypes::scBridge, true, &matingSurfaceProfile) == false || matingSurfaceProfile == nullptr) ? false : true;
+      bool bHasMSProfile = (pGdr->GetMatingSurfaceProfile(poi, 0, true, &matingSurfaceProfile) == false || matingSurfaceProfile == nullptr) ? false : true;
       if (bHasMSProfile)
       {
          CollectionIndexType nPoints;
@@ -2402,9 +2402,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
                   altTensionRequirements.bLimitBarStress = false;
                }
 
-               pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProps->GetHaunchAnalysisSectionPropertiesType();
                CComPtr<IShape> shape;
-               pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, hatype, &shape);
+               pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, &shape);
                CComPtr<IRebarSection> rebarSection;
                pRebarGeom->GetRebars(poi, &rebarSection);
 
@@ -2501,9 +2500,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
                   altTensionRequirements.bLimitBarStress = false;
                }
 
-               pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProps->GetHaunchAnalysisSectionPropertiesType();
                CComPtr<IShape> shape;
-               pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, hatype, &shape);
+               pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, &shape);
                CComPtr<IRebarSection> rebarSection;
                pRebarGeom->GetRebars(poi, &rebarSection);
 
@@ -2905,9 +2903,8 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
       }
       else // tension
       {
-         pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProps->GetHaunchAnalysisSectionPropertiesType();
          CComPtr<IShape> shape;
-         pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, hatype, &shape);
+         pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, &shape);
          CComPtr<IRebarSection> rebarSection;
          pRebarGeom->GetRebars(poi, &rebarSection);
 
@@ -5540,18 +5537,23 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
       {
          artifact.SetBottomFlangeClearanceApplicability(true);
 
+         GET_IFACE(IPointOfInterest, pPoi);
+
          Float64 C = Float64_Max;
          SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             CSegmentKey segmentKey(girderKey,segIdx);
 
+            PoiList vPoi;
+            pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
+            ATLASSERT(vPoi.size() == 2);
+
             Float64 CleftStart, CrightStart;
-            pBridge->GetBottomFlangeClearance(pgsPointOfInterest(segmentKey,0.0),&CleftStart,&CrightStart);
+            pBridge->GetBottomFlangeClearance(vPoi.front(),&CleftStart,&CrightStart);
 
             Float64 CleftEnd, CrightEnd;
-            Float64 L = pBridge->GetSegmentLength(segmentKey);
-            pBridge->GetBottomFlangeClearance(pgsPointOfInterest(segmentKey,L),&CleftEnd,&CrightEnd);
+            pBridge->GetBottomFlangeClearance(vPoi.back(),&CleftEnd,&CrightEnd);
 
             Float64 Cleft  = Min(CleftStart, CleftEnd);
             Float64 Cright = Min(CrightStart,CrightEnd);

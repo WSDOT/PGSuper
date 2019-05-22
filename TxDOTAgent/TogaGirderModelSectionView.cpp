@@ -269,7 +269,7 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,pSectProps->GetHaunchAnalysisSectionPropertiesType(),&shape);
+   pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
    strategy->SetShape(shape);
    strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);

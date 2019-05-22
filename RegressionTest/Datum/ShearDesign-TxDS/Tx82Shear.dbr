@@ -5200,14 +5200,14 @@ Design - Inventory, LRFD Design Truck + Lane
 ear, 0.0.0.0, 881001, 1.95, 0
 ear, 0.0.0.0, 881001a, 25.07, 0
 ear, 0.0.0.0, 881003, 1.36, 0
-ear, 0.0.0.0, 881003a, 2.31, 0
+ear, 0.0.0.0, 881003a, 47.83, 0
 ear, 0.0.0.0, 881006, 1.18, 0
 ear, 0.0.0.0, 881007, 1.18, 0
 Design - Inventory, LRFD Design Tandem + Lane
 ear, 0.0.0.0, 881001, 2.31, 0
 ear, 0.0.0.0, 881001a, 25.07, 0
 ear, 0.0.0.0, 881003, 1.65, 0
-ear, 0.0.0.0, 881003a, 2.31, 0
+ear, 0.0.0.0, 881003a, 47.83, 0
 ear, 0.0.0.0, 881006, 1.4, 0
 ear, 0.0.0.0, 881007, 1.4, 0
 Design - Operating, LRFD Design Truck + Lane

@@ -76,7 +76,6 @@ public:
    virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) const override;
    virtual bool IsPrismatic(const CSegmentKey& segmentKey) const override;
    virtual bool IsSymmetric(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const override;
    virtual std::_tstring GetImage() const override;
    virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const override;
    virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const override;

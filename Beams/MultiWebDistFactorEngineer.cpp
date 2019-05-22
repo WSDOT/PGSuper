@@ -623,7 +623,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
          // Get the top flange shape and subtract it from the total girder shape to get the stem by itself
          GET_IFACE(IShapes, pShapes);
          CComPtr<IShape> segment_shape;
-         pShapes->GetSegmentShape(releaseIntervalIdx, spPoi, false, pgsTypes::scGirder, pSectProp->GetHaunchAnalysisSectionPropertiesType(), &segment_shape);
+         pShapes->GetSegmentShape(releaseIntervalIdx, spPoi, false, pgsTypes::scGirder, &segment_shape);
 
          CComQIPtr<IFlangePoints> flangePoints(segment_shape);
          if (flangePoints)

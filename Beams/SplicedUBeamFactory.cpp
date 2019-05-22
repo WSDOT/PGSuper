@@ -603,11 +603,6 @@ bool CSplicedUBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return false;
 }
 
-Float64 CSplicedUBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CSplicedUBeamFactory::GetImage() const
 {
    return std::_tstring(_T("UBeam.jpg"));

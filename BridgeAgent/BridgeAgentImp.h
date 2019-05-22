@@ -58,7 +58,6 @@
 #include <PgsExt\ThreadManager.h>
 #endif
 
-
 class gmTrafficBarrier;
 class matPsStrand;
 
@@ -959,12 +958,9 @@ public:
    virtual Float64 GetStructuralHaunchDepth(const pgsPointOfInterest& poi,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType) const override;
    virtual void ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const override;
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi) const override;
-   virtual Float64 GetSegmentSurfaceArea(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetSegmentVolume(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetClosureJointSurfaceArea(const CClosureKey& closureKey) const override;
-   virtual Float64 GetClosureJointVolume(const CClosureKey& closureKey) const override;
-   virtual Float64 GetDeckSurfaceArea() const override;
-   virtual Float64 GetDeckVolume() const override;
+   virtual void GetSegmentVolumeAndSurfaceArea(const CSegmentKey& segmentKey, Float64* pVolume, Float64* pSurfaceArea, int surfaceAreaType = INCLUDE_HALF_INTERIOR_SURFACE_AREA) const override;
+   virtual void GetClosureJointVolumeAndSurfaceArea(const CClosureKey& closureKey, Float64* pVolume, Float64* pSurfaceArea) const override;
+   virtual void GetDeckVolumeAndSurfaceArea(Float64* pVolume, Float64* pSurfaceArea) const override;
    virtual void GetBridgeStiffness(Float64 Xb, Float64* pEIxx, Float64* pEIyy, Float64* pEIxy) const override;
    virtual Float64 GetBridgeEIxx(Float64 Xb) const override;
    virtual Float64 GetBridgeEIyy(Float64 Xb) const override;
@@ -977,7 +973,7 @@ public:
 
 // IShapes
 public:
-   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType,IShape** ppShape) const override;
+   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape) const override;
    virtual void GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias,IShape** ppShape) const override;
    virtual void GetSegmentSectionShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, bool bOrient,pgsTypes::SectionCoordinateType csType, IShape** ppShape) const override;
    virtual void GetSlabShape(Float64 station,IDirection* pDirection,bool bIncludeHaunchbool,IShape** ppShape) const override;
@@ -1066,7 +1062,7 @@ public:
    virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey) const override;
    virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly = false) const override;
    virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly = false) const override;
-   virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, pgsTypes::SectionCoordinateType scType, bool bGirderOnly, IPoint2dCollection** ppPoints) const override;
+   virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, bool bGirderOnly, IPoint2dCollection** ppPoints) const override;
    virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey) const override;
    virtual Float64 GetTopFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
    virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
@@ -1313,19 +1309,24 @@ private:
    CComPtr<IEffectiveFlangeWidthTool> m_EffFlangeWidthTool;
    typedef struct SectProp
    {
-      CComPtr<ISection> Section;
-      CComPtr<IElasticProperties> ElasticProps;
-      CComPtr<IShapeProperties> ShapeProps;
+      CComPtr<ISection> Section; // this is going to be a composite section, in girder section coordinates
+      IndexType GirderShapeIndex; // index into the composite for the girder shape
+      IndexType SlabShapeIndex; // index into the composite for the slab shape
 
-      Float64 YtopGirder;
-      Float64 Perimeter;
+      Float64 dx, dy; // these are the offset values to get the section into bridge section coordinates
+
+      CComPtr<IElasticProperties> ElasticProps; // Elastic Properties (EA, EI, etc)
+      CComPtr<IShapeProperties> ShapeProps; // Shape Properties (Area, I, CG, etc)
+
+      Float64 YtopGirder; // distance from centroid to the top of the basic girder
+      Float64 Perimeter; // perimeter of the basic girder
 
       bool bComposite; // If false, Qslab is undefined
-      Float64 Qslab;
+      Float64 Qslab; // first moment of aread
       Float64 AcBottomHalf; // for LRFD Fig 5.7.3.4.2-3 (pre2017: 5.8.3.4.2-3)
       Float64 AcTopHalf;    // for LRFD Fig 5.7.3.4.2-3 (pre2017: 5.8.3.4.2-3)
 
-      SectProp() { YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
+      SectProp() { GirderShapeIndex = INVALID_INDEX; SlabShapeIndex = INVALID_INDEX; dx = -999999;dy = -999999;YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
    } SectProp;
    typedef std::map<PoiIntervalKey,SectProp> SectPropContainer; // Key = PoiIntervalKey object
    std::unique_ptr<SectPropContainer> m_pSectProps[pgsTypes::sptSectionPropertyTypeCount]; // index = one of the pgsTypes::SectionPropertyType constants
@@ -1336,33 +1337,14 @@ private:
    mutable pgsTypes::SectionPropertyType m_LOTFSectionPropertiesType;
    mutable SectProp m_LOTFSectionProperties;
 
-   // Cache to hold the girder section objects.
-   typedef std::map<pgsPointOfInterest,CComPtr<IGirderSection>> GirderSectionCache;
-   mutable std::unique_ptr<GirderSectionCache> m_pGirderSectionCache[2]; // array index is pgsTypes::SectionCoordinateType
-   void InvalidateGirderSections(pgsTypes::SectionCoordinateType scType);
-   static UINT DeleteGirderSectionCache(LPVOID pParam);
-
-   // Caches to hold the segment values
-   typedef std::map<CSegmentKey, Float64> SegmentVolumeCache;
-   std::unique_ptr<SegmentVolumeCache> m_pSegmentVolumeCache;
-   void InvalidateSegmentVolumes();
-   static UINT DeleteSegmentVolumeCache(LPVOID pParam);
-
-   typedef std::map<CSegmentKey, Float64> SegmentSurfaceAreaCache;
-   std::unique_ptr<SegmentSurfaceAreaCache> m_pSegmentSurfaceAreaCache;
-   void InvalidateSegmentSurfaceAreas();
-   static UINT DeleteSegmentSurfaceAreaCache(LPVOID pParam);
-
    void InvalidateSectionProperties(pgsTypes::SectionPropertyType sectPropType);
    static UINT DeleteSectionProperties(LPVOID pParam);
    pgsTypes::SectionPropertyType GetSectionPropertiesType() const; // returns the section properties types for the current section properties mode
    PoiIntervalKey GetSectionPropertiesKey(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType) const;
    const SectProp& GetSectionProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType) const;
-   HRESULT GetSection(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType,IndexType* pGdrIdx,IndexType* pSlabIdx,ISection** ppSection) const;
+   HRESULT CreateSection(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType,pgsTypes::SectionCoordinateType coordinateType,IndexType* pGdrIdx,IndexType* pSlabIdx,ISection** ppSection) const;
    Float64 ComputeY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,IShapeProperties* sprops) const;
    Float64 ComputeYtopGirder(IShapeProperties* compositeProps,IShape* pShape) const;
-
-   mutable std::map<PoiIntervalKey,CComPtr<IShape>> m_Shapes; // shape cache
 
    // Points of interest for precast segments (precast girders/spliced girder segments)
    std::unique_ptr<pgsPoiMgr> m_pPoiMgr;
@@ -1531,7 +1513,7 @@ private:
 
    HRESULT GetSlabOverhangs(Float64 distance,Float64* pLeft,Float64* pRight) const;
    Float64 ConvertSegmentToBridgeLineCoordinate(const CSegmentKey& segmentKey,Float64 Xs) const;
-   HRESULT GetGirderSection(const pgsPointOfInterest& poi,pgsTypes::SectionCoordinateType csType,IGirderSection** gdrSection) const;
+   HRESULT GetGirderSection(const pgsPointOfInterest& poi,IGirderSection** gdrSection) const; // section is in girder section coordiantes
    HRESULT GetSuperstructureMember(const CGirderKey& girderKey,ISuperstructureMember* *ssmbr) const;
    HRESULT GetSegment(const CSegmentKey& segmentKey,ISuperstructureMemberSegment** segment) const;
    HRESULT GetGirder(const CSegmentKey& segmentKey,IPrecastGirder** girder) const;
@@ -1660,15 +1642,14 @@ private:
    const mathLinFunc2d& GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const;
    void ValidateGirderTopChordElevation(const CGirderKey& girderKey) const;
    void ValidateGirderTopChordElevation(const CGirderKey& girderKey,std::map<CSegmentKey, mathLinFunc2d>* pFunctions) const;
-   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier) const;
-   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions_Case1(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier) const;
-   std::map<CSegmentKey, mathLinFunc2d> CreateGirderTopChordFunctions_Case2(const CSplicedGirderData* pGirder, const CPierData2* pStartPier, const CPierData2* pEndPier) const;
-   mathLinFunc2d GetTopGirderChordFunction(const CPrecastSegmentData* pThisSegment, IPoint2d* pControlPnt, const mathLinFunc2d& controlFn) const;
    mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderTopChordElevationFunctions; // linear functions that represent the top girder chord elevations
 
    // Common function to return bearing elevation details at bearings or at girder edges
    enum BearingElevLocType { batBearings, batGirderEdges };
    std::vector<BearingElevationDetails> GetBearingElevationDetails_Generic(PierIndexType pierIdx,pgsTypes::PierFaceType face, BearingElevLocType locType) const;
+
+   std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(const CSpanKey& spanKey, bool bLocationOnly) const;
+   Float64 GetHalfElevation(Float64 gdrHeight, Float64 deckThickness) const;
 };
 
 #endif //__BRIDGEAGENT_H_

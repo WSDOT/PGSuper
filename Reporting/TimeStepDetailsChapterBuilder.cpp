@@ -1943,19 +1943,16 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
       {
          if ( bIsInClosure )
          {
-            V = pSectProps->GetClosureJointVolume(closureKey);
-            S = pSectProps->GetClosureJointSurfaceArea(closureKey);
+            pSectProps->GetClosureJointVolumeAndSurfaceArea(closureKey, &V, &S);
          }
          else
          {
-            V = pSectProps->GetSegmentVolume(segmentKey);
-            S = pSectProps->GetSegmentSurfaceArea(segmentKey);
+            pSectProps->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
          }
       }
       else
       {
-         V = pSectProps->GetDeckVolume();
-         S = pSectProps->GetDeckSurfaceArea();
+         pSectProps->GetDeckVolumeAndSurfaceArea(&V, &S);
       }
       *pPara << _T("V/S = ") << vs.SetValue(V/S) << rptNewLine;
       
@@ -2330,19 +2327,16 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
       {
          if ( bIsInClosure )
          {
-            V = pSectProps->GetClosureJointVolume(closureKey);
-            S = pSectProps->GetClosureJointSurfaceArea(closureKey);
+            pSectProps->GetClosureJointVolumeAndSurfaceArea(closureKey, &V, &S);
          }
          else
          {
-            V = pSectProps->GetSegmentVolume(segmentKey);
-            S = pSectProps->GetSegmentSurfaceArea(segmentKey);
+            pSectProps->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
          }
       }
       else
       {
-         V = pSectProps->GetDeckVolume();
-         S = pSectProps->GetDeckSurfaceArea();
+         pSectProps->GetDeckVolumeAndSurfaceArea(&V, &S);
       }
       *pPara << _T("V/S = ") << vs.SetValue(V/S) << rptNewLine;
       

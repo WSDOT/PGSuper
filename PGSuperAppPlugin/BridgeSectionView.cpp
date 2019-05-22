@@ -899,7 +899,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(thisSegmentKey);
 
       CComPtr<IShape> shape;
-      pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,pgsTypes::hspVariableParabolic,&shape);
+      pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,&shape);
 
       CComPtr<IPoint2d> point;
       pBridge->GetPoint(poi, pgsTypes::pcGlobal, &point);
@@ -1056,6 +1056,12 @@ void CBridgeSectionView::BuildLongitudinalJointDisplayObject()
    IDType jointID = 0;
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
+   if (intervalIdx == INVALID_INDEX)
+   {
+      return; // the longitudinal joints aren't structural (they are just a gap)
+   }
+
    GET_IFACE2(pBroker, IShapes, pShapes);
 
    GroupIndexType grpIdx = GetGroupIndex();
@@ -1083,14 +1089,12 @@ void CBridgeSectionView::BuildLongitudinalJointDisplayObject()
       CComPtr<iPointDisplayObject> dispObj;
       dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
-      IntervalIndexType intervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
-
       CComPtr<IShape> leftJointShape, rightJointShape;
       pShapes->GetJointShapes(intervalIdx, poi, true, pgsTypes::scBridge, &leftJointShape, &rightJointShape);
 
       if (leftJointShape == nullptr && rightJointShape == nullptr)
       {
-         return;
+         return; // there aren't any longitudinal joint
       }
 
       CComPtr<ICompositeShape> compShape;

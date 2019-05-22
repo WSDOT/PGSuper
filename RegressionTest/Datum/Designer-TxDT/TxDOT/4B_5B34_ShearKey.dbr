@@ -6919,7 +6919,7 @@ Design - Operating, LRFD Design Truck + Lane
 Key, 0.0.0.0, 881001, 1.52, 0
 Key, 0.0.0.0, 881001a, 15.16, 0
 Key, 0.0.0.0, 881003, 1.91, 0
-Key, 0.0.0.0, 881003a, 6.3, 0
+Key, 0.0.0.0, 881003a, 24.03, 0
 Key, 0.0.0.0, 881007, 1.52, 0
 Design - Operating, LRFD Design Tandem + Lane
 Key, 0.0.0.0, 881001, 1.79, 0
@@ -6950,21 +6950,21 @@ Legal Load - Routine Commercial Traffic, Type 3S2
 Key, 0.0.0.0, 881001, 2.22, 0
 Key, 0.0.0.0, 881001a, 15.16, 0
 Key, 0.0.0.0, 881003, 2.68, 0
-Key, 0.0.0.0, 881003a, 6.3, 0
+Key, 0.0.0.0, 881003a, 24.03, 0
 Key, 0.0.0.0, 881006, 1.61, 0
 Key, 0.0.0.0, 881007, 1.61, 0
 Legal Load - Routine Commercial Traffic, Type 3-3
 Key, 0.0.0.0, 881001, 2.19, 0
 Key, 0.0.0.0, 881001a, 15.16, 0
 Key, 0.0.0.0, 881003, 2.64, 0
-Key, 0.0.0.0, 881003a, 6.3, 0
+Key, 0.0.0.0, 881003a, 24.03, 0
 Key, 0.0.0.0, 881006, 1.59, 0
 Key, 0.0.0.0, 881007, 1.59, 0
 Legal Load - Specialized Hauling Vehicles, NRL
 Key, 0.0.0.0, 881001, 1.89, 0
 Key, 0.0.0.0, 881001a, 15.16, 0
 Key, 0.0.0.0, 881003, 2.49, 0
-Key, 0.0.0.0, 881003a, 6.3, 0
+Key, 0.0.0.0, 881003a, 24.03, 0
 Key, 0.0.0.0, 881006, 1.22, 0
 Key, 0.0.0.0, 881007, 1.22, 0
 Legal Load - Emergency Vehicles, Type EV2

@@ -674,11 +674,6 @@ bool CSplicedNUBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return false;
 }
 
-Float64 CSplicedNUBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CSplicedNUBeamFactory::GetImage() const
 {
    return std::_tstring(_T("SplicedNUBeam.jpg"));

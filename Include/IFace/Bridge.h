@@ -79,6 +79,11 @@ interface ISegmentHaulingDesignPointsOfInterest;
 // MISCELLANEOUS
 //
 
+// constants for GetSegmentVolumeAndSurfaceArea
+#define EXCLUDE_INTERIOR_SURFACE_AREA          0 // surface area of exterior of segment only
+#define INCLUDE_INTERIOR_SURFACE_AREA          1 // surface area of exterior of segment plus surface area of voids
+#define INCLUDE_HALF_INTERIOR_SURFACE_AREA     2 // surface area of exterior of segment plus half the surface area of voids (LRFD 5.4.2.3.2)
+
 struct IntermedateDiaphragm
 {
    IntermedateDiaphragm() :
@@ -1370,12 +1375,9 @@ interface ISectionProperties : IUnknown
 
    // Volume and surface area
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetSegmentSurfaceArea(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetSegmentVolume(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetClosureJointSurfaceArea(const CClosureKey& closureKey) const = 0;
-   virtual Float64 GetClosureJointVolume(const CClosureKey& closureKey) const = 0;
-   virtual Float64 GetDeckSurfaceArea() const = 0;
-   virtual Float64 GetDeckVolume() const = 0;
+   virtual void GetSegmentVolumeAndSurfaceArea(const CSegmentKey& segmentKey, Float64* pVolume, Float64* pSurfaceArea, int surfaceAreaType = INCLUDE_HALF_INTERIOR_SURFACE_AREA) const = 0;
+   virtual void GetClosureJointVolumeAndSurfaceArea(const CClosureKey& closureKey, Float64* pVolume, Float64* pSurfaceArea) const = 0;
+   virtual void GetDeckVolumeAndSurfaceArea(Float64* pVolume, Float64* pSurfaceArea) const  = 0;
 
    // Bending stiffness of entire bridge section - for deflection calculation
    // Crowns, slopes, and slab haunches are ignored.
@@ -1412,7 +1414,7 @@ DEFINE_GUID(IID_IShapes,
 interface IShapes : public IUnknown
 {
    // returns the raw shape of the segment
-   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType,IShape** ppShape) const = 0;
+   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape) const = 0;
 
    // returns the raw segment shape based on the provided segment data. the shape will be in the girder section coordinate system
    virtual void GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const = 0;
@@ -1590,7 +1592,7 @@ interface IGirder : public IUnknown
 
    // Gets the mating surface profile. Returns true if sucessful. Can return false or a nullptr container if a mating surface profile is not available
    // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
-   virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, pgsTypes::SectionCoordinateType scType, bool bGirderOnly, IPoint2dCollection** ppPoints) const = 0;
+   virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, bool bGirderOnly, IPoint2dCollection** ppPoints) const = 0;
 
    // Returns the number of top flanges
    virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey) const = 0;

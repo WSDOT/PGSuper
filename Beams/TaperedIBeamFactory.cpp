@@ -753,11 +753,6 @@ bool CTaperedIBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return bSymmetric;
 }
 
-Float64 CTaperedIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CTaperedIBeamFactory::GetImage() const
 {
    return std::_tstring(_T("TaperedIBeam.jpg"));

@@ -13224,7 +13224,7 @@ Design - Inventory, LRFD Design Tandem + Lane
 let, 0.0.0.0, 881001, 2.04, 1
 let, 0.0.0.0, 881001a, 12.12, 1
 let, 0.0.0.0, 881003, 2.53, 1
-let, 0.0.0.0, 881003a, 6.14, 1
+let, 0.0.0.0, 881003a, 18.09, 1
 let, 0.0.0.0, 881006, 1.24, 1
 let, 0.0.0.0, 881007, 1.24, 1
 Design - Operating, LRFD Design Truck + Lane
@@ -13237,7 +13237,7 @@ Design - Operating, LRFD Design Tandem + Lane
 let, 0.0.0.0, 881001, 2.64, 1
 let, 0.0.0.0, 881001a, 12.12, 1
 let, 0.0.0.0, 881003, 3.39, 1
-let, 0.0.0.0, 881003a, 6.14, 1
+let, 0.0.0.0, 881003a, 18.09, 1
 let, 0.0.0.0, 881007, 2.64, 1
 Legal Load - Routine Commercial Traffic, Type 3
 let, 0.0.0.0, 881001, 3.76, 1

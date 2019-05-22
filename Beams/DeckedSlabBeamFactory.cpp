@@ -563,31 +563,6 @@ bool CDeckedSlabBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CDeckedSlabBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-   // void perimeter
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 A = GetDimension(dimensions,_T("A"));
-   Float64 B = GetDimension(dimensions,_T("B"));
-   Float64 C = GetDimension(dimensions,_T("C"));
-   Float64 W = GetDimension(dimensions,_T("W"));
-   Float64 Tb = GetDimension(dimensions,_T("Tb"));
-   Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
-
-   Float64 void_perimeter = (A-2*(B+W)) * (C-Tb);
-
-   Float64 void_surface_area = (Lg-2*endBlockLength)*void_perimeter;
-
-   return void_surface_area;
-}
-
 std::_tstring CDeckedSlabBeamFactory::GetImage() const
 {
    return std::_tstring(_T("DeckedSlabBeam.gif"));

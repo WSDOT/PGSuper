@@ -895,8 +895,10 @@ bool CTestAgentImp::RunCrossSectionTest(std::_tofstream& resultsFile, std::_tofs
    // exterior girder
    // bare girder
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25000, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetAg(releaseIntervalIdx,poi),  unitMeasure::Millimeter2)) <<_T(", 4, ")<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25001, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetSegmentVolume(segmentKey), unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;
-   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25002, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetSegmentSurfaceArea(segmentKey), unitMeasure::Millimeter2)) <<_T(", 4, ")<<gdrIdx<<std::endl;
+   Float64 V, S;
+   pSp2->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25001, 0.0, ")<< QUITE(::ConvertFromSysUnits(V, unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;
+   resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25002, 0.0, ")<< QUITE(::ConvertFromSysUnits(S, unitMeasure::Millimeter2)) <<_T(", 4, ")<<gdrIdx<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25004, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetIxx(releaseIntervalIdx,poi), unitMeasure::Millimeter4)) <<_T(", 4, ")<<gdrIdx<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25005, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::Millimeter)) << _T(", 4, ")<<gdrIdx<<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 25006, 0.0, ")<< QUITE(::ConvertFromSysUnits(pSp2->GetS(releaseIntervalIdx,poi,pgsTypes::BottomGirder), unitMeasure::Millimeter3)) <<_T(", 4, ")<<gdrIdx<<std::endl;

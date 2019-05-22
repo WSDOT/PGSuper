@@ -546,11 +546,6 @@ bool CNUBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CNUBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CNUBeamFactory::GetImage() const
 {
    return std::_tstring(_T("NUBeam.jpg"));

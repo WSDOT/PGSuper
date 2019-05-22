@@ -17045,7 +17045,7 @@ Design - Operating, LRFD Design Truck + Lane
 ght, 0.0.0.0, 881001, 2.57, 2
 ght, 0.0.0.0, 881001a, 19.38, 2
 ght, 0.0.0.0, 881003, 2.88, 2
-ght, 0.0.0.0, 881003a, 7.43, 2
+ght, 0.0.0.0, 881003a, 31.33, 2
 ght, 0.0.0.0, 881007, 2.57, 2
 Design - Operating, LRFD Design Tandem + Lane
 ght, 0.0.0.0, 881001, 3.05, 2
@@ -17078,7 +17078,7 @@ Legal Load - Specialized Hauling Vehicles, NRL
 ght, 0.0.0.0, 881001, 3.74, 2
 ght, 0.0.0.0, 881001a, 19.38, 2
 ght, 0.0.0.0, 881003, 4.34, 2
-ght, 0.0.0.0, 881003a, 7.43, 2
+ght, 0.0.0.0, 881003a, 31.33, 2
 ght, 0.0.0.0, 881006, 2.29, 2
 ght, 0.0.0.0, 881007, 2.29, 2
 Legal Load - Emergency Vehicles, Type EV2
@@ -17105,7 +17105,7 @@ Rating Permit - Special/Limited Crossing Permit, OL1
 ght, 0.0.0.0, 881001, 6.62, 2
 ght, 0.0.0.0, 881001a, 19.38, 2
 ght, 0.0.0.0, 881003, 5.72, 2
-ght, 0.0.0.0, 881003a, 7.43, 2
+ght, 0.0.0.0, 881003a, 31.33, 2
 ght, 0.0.0.0, 881007, 1.29, 2
 Rating Permit - Special/Limited Crossing Permit, OL2
 ght, 0.0.0.0, 881001, 3.83, 2

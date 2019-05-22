@@ -803,41 +803,6 @@ bool CVoidedSlab2Factory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CVoidedSlab2Factory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 D1 = GetDimension(dimensions,_T("D1"));
-   Float64 D2 = GetDimension(dimensions,_T("D2"));
-   Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
-   long    N = (long)GetDimension(dimensions,_T("Number_of_Voids"));
-   long nIntVoids, nExtVoids;
-   if ( N == 0 )
-   {
-      nIntVoids = 0;
-      nExtVoids = 0;
-   }
-   else if ( N == 1 )
-   {
-      nExtVoids = 1;
-      nIntVoids = 0;
-   }
-   else
-   {
-      nExtVoids = 2;
-      nIntVoids = N - nExtVoids;
-   }
-
-   Float64 void_surface_area = (Lg-2*endBlockLength)*(nExtVoids*M_PI*D1 + nIntVoids*M_PI*D2);
-   return void_surface_area;
-}
-
 std::_tstring CVoidedSlab2Factory::GetImage() const
 {
    return std::_tstring(_T("VoidedSlab2.jpg"));

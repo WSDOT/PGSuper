@@ -2901,8 +2901,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       *pYbc2 = *pYbc1;
    }
 
-   *pVolume = pSectProp->GetSegmentVolume(segmentKey);
-   *pSurfaceArea = pSectProp->GetSegmentSurfaceArea(segmentKey);
+   pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, pVolume, pSurfaceArea);
 
    if ( spType == pgsTypes::sptTransformed )
    {

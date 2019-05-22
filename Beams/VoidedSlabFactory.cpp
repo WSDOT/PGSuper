@@ -576,23 +576,6 @@ bool CVoidedSlabFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CVoidedSlabFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-
-   Float64 D = GetDimension(dimensions,_T("Void_Diameter"));
-   long    N = (long)GetDimension(dimensions,_T("Number_of_Voids"));
-   Float64 void_surface_area = Lg*N*M_PI*D;
-   return void_surface_area;
-}
-
 std::_tstring CVoidedSlabFactory::GetImage() const
 {
    return std::_tstring(_T("VoidedSlab.jpg"));

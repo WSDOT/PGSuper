@@ -354,14 +354,16 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       pPoiMgr->AddPointOfInterest( poiStart );
 
       xLeft += pSegment->GetVariationLength(pgsTypes::sztLeftTapered);
-      poiStart.SetDistFromStart(xLeft);
+      poiStart.SetDistFromStart(xLeft); // causes the attributes to be reset
+      poiStart.SetNonReferencedAttributes(POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiStart );
 
       pgsPointOfInterest poiEnd( segmentKey, segment_length-xRight, POI_SECTCHANGE_TRANSITION );
       pPoiMgr->AddPointOfInterest( poiEnd );
 
       xRight += pSegment->GetVariationLength(pgsTypes::sztRightTapered);
-      poiEnd.SetDistFromStart(segment_length-xRight);
+      poiEnd.SetDistFromStart(segment_length-xRight); // causes the attributes to be reset
+      poiEnd.SetNonReferencedAttributes(POI_SECTCHANGE_TRANSITION);
       pPoiMgr->AddPointOfInterest( poiEnd );
    }
    else
@@ -689,11 +691,6 @@ bool CSplicedIBeamFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 bool CSplicedIBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return false;
-}
-
-Float64 CSplicedIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
 }
 
 std::_tstring CSplicedIBeamFactory::GetImage() const

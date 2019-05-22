@@ -539,26 +539,6 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
    return dimensions;
 }
 
-Float64 CBoxBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 W3 = GetDimension(dimensions,_T("W3"));
-   Float64 H2 = GetDimension(dimensions,_T("H2"));
-   Float64 F1 = GetDimension(dimensions,_T("F1"));
-   Float64 F2 = GetDimension(dimensions,_T("F2"));
-
-   Float64 void_surface_area = Lg*( 2*(H2 - F1 - F2) + 2*(W3 - F1 - F2) + 2*sqrt(2*F1*F1) + 2*sqrt(2*F2*F2) );
-
-   return void_surface_area;
-}
-
 void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 

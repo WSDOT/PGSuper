@@ -7620,6 +7620,9 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
    GET_IFACE(IPointOfInterest,pPOI);
    GET_IFACE(IMaterials,pMaterial);
 
+   GET_IFACE(ILossParameters, pLossParams);
+   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+
    // Use one LBAM superstructure member for each segment in a girder
    // Use two LBAM superstructure members at intermediate piers between girder groups
    // (one from edge of prev group to CL Pier, one from CL Pier to start of next group)
@@ -7663,7 +7666,9 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
       {
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
-         CSegmentKey segmentKey(pSegment->GetSegmentKey());
+         const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
 #pragma Reminder("UPDATE: Assuming prismatic members")
          // NOTE: segments can be non-prismatic. Refine the model by breaking the segment into step-wise prismatic
@@ -7707,10 +7712,27 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             // Get section properties this interval.
             // GetAg/GetIx will return gross or transformed properties based on the
             // current section properties mode
-            Float64 Ag = pSectProp->GetAg(intervalIdx, segmentPoi);
-            Float64 Ixx = pSectProp->GetIxx(intervalIdx, segmentPoi);
-            Float64 Iyy = pSectProp->GetIyy(intervalIdx, segmentPoi);
-            Float64 Ixy = pSectProp->GetIxy(intervalIdx, segmentPoi);
+            Float64 Ag, Ixx, Iyy, Ixy;
+            if (intervalIdx == startIntervalIdx && !bTimeStepAnalysis)
+            {
+               // we want to use release properties at erection because
+               // girder deflection and self-weight stress are based
+               // on the properties at release.
+               //
+               // Also see GetIntervalFromLBAMStageName() which is used for
+               // setting up the stress points
+               Ag = pSectProp->GetAg(releaseIntervalIdx, segmentPoi);
+               Ixx = pSectProp->GetIxx(releaseIntervalIdx, segmentPoi);
+               Iyy = pSectProp->GetIyy(releaseIntervalIdx, segmentPoi);
+               Ixy = pSectProp->GetIxy(releaseIntervalIdx, segmentPoi);
+            }
+            else
+            {
+               Ag = pSectProp->GetAg(intervalIdx, segmentPoi);
+               Ixx = pSectProp->GetIxx(intervalIdx, segmentPoi);
+               Iyy = pSectProp->GetIyy(intervalIdx, segmentPoi);
+               Ixy = pSectProp->GetIxy(intervalIdx, segmentPoi);
+            }
 
             data.stage = GetLBAMStageName(intervalIdx);
             data.ea = Ec*Ag;
@@ -12436,7 +12458,7 @@ void CGirderModelManager::AddPoiStressPoints(const pgsPointOfInterest& poi,IStag
 
    CComBSTR bstrStage;
    pStage->get_Name(&bstrStage);
-   IntervalIndexType intervalIdx = GetIntervalFromLBAMStageName(bstrStage);
+   IntervalIndexType intervalIdx = GetIntervalFromLBAMStageName(poi,bstrStage);
 
    CComPtr<IStressPoints> leftStressPoints;
    leftStressPoints.CoCreateInstance(CLSID_StressPoints);
@@ -12665,7 +12687,7 @@ CComBSTR CGirderModelManager::GetLBAMStageName(IntervalIndexType intervalIdx) co
    return strStageName;
 }
 
-IntervalIndexType CGirderModelManager::GetIntervalFromLBAMStageName(BSTR bstrStage) const
+IntervalIndexType CGirderModelManager::GetIntervalFromLBAMStageName(const pgsPointOfInterest& poi, BSTR bstrStage) const
 {
    USES_CONVERSION;
    CString strName(OLE2T(bstrStage));
@@ -12673,6 +12695,21 @@ IntervalIndexType CGirderModelManager::GetIntervalFromLBAMStageName(BSTR bstrSta
    int count = strName.GetLength()-strKey.GetLength();
    IntervalIndexType intervalIdx = (IntervalIndexType)_ttol(strName.Right(count));
    intervalIdx--; // need to undo the LABEL_INTERVAL used when creating the stage name
+
+   // Need to match intervals used when setting up the LBAM model
+   // we use section properties for release for the first interval(which is erection)
+   GET_IFACE(ILossParameters, pLossParams);
+   if (pLossParams->GetLossMethod() != pgsTypes::TIME_STEP)
+   {
+      GET_IFACE(IIntervals, pIntervals);
+      const auto& segmentKey(poi.GetSegmentKey());
+      IntervalIndexType startIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(segmentKey);
+      if (intervalIdx == startIntervalIdx)
+      {
+         intervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      }
+   }
+
    return intervalIdx;
 }
 

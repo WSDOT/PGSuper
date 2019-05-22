@@ -6148,8 +6148,10 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
       {
          lrfdCreepCoefficient cc;
          cc.SetRelHumidity( pEnvironment->GetRelHumidity() );
-         cc.SetSurfaceArea( pSectProp->GetSegmentSurfaceArea(segmentKey) );
-         cc.SetVolume( pSectProp->GetSegmentVolume(segmentKey) );
+         Float64 V, S;
+         pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
+         cc.SetVolume(V);
+         cc.SetSurfaceArea( S );
          cc.SetFc(fc);
          cc.SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),unitMeasure::Day));
 
@@ -6231,8 +6233,10 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
       {
          lrfdCreepCoefficient2005 cc;
          cc.SetRelHumidity( pEnvironment->GetRelHumidity() );
-         cc.SetSurfaceArea( pSectProp->GetSegmentSurfaceArea(segmentKey) );
-         cc.SetVolume( pSectProp->GetSegmentVolume(segmentKey) );
+         Float64 V, S;
+         pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
+         cc.SetVolume( V );
+         cc.SetSurfaceArea(S);
          cc.SetFc(fc);
 
          cc.SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day));

@@ -629,8 +629,8 @@ void CConcreteManager::ValidateSegmentConcrete() const
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
-            Float64 S = pSectProp->GetSegmentSurfaceArea(segmentKey);
-            Float64 V = pSectProp->GetSegmentVolume(segmentKey);
+            Float64 V, S;
+            pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
             Float64 vsSegment = IsZero(S) ? DBL_MAX : V/S;
 
             vsSegment = ::RoundOff(vsSegment,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));
@@ -640,8 +640,8 @@ void CConcreteManager::ValidateSegmentConcrete() const
             if ( segIdx < nSegments-1 )
             {
                CClosureKey closureKey(segmentKey);
-               Float64 S = pSectProp->GetClosureJointSurfaceArea(closureKey);
-               Float64 V = pSectProp->GetClosureJointVolume(closureKey);
+               Float64 V, S;
+               pSectProp->GetClosureJointVolumeAndSurfaceArea(closureKey, &V, &S);
                Float64 vsClosure = IsZero(S) ? DBL_MAX : V/S;
 
                vsClosure = ::RoundOff(vsClosure,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));
@@ -683,8 +683,8 @@ void CConcreteManager::ValidateDeckConcrete() const
    if ( m_pDeckConcrete.get() != nullptr )
    {
       GET_IFACE(ISectionProperties,pSectProp);
-      Float64 S = pSectProp->GetDeckSurfaceArea();
-      Float64 V = pSectProp->GetDeckVolume();
+      Float64 V, S;
+      pSectProp->GetDeckVolumeAndSurfaceArea(&V, &S);
       Float64 vsDeck = IsZero(S) ? DBL_MAX : V/S;
 
       vsDeck = ::RoundOff(vsDeck,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));

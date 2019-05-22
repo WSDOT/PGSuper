@@ -280,6 +280,19 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   if (!pPoi->IsOnSegment(poi))
+   {
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+      Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+      Float64 Xs = poi.GetDistFromStart();
+      Xs = ::ForceIntoRange(0.0, Xs, Ls);
+      poi = pPoi->GetPointOfInterest(segmentKey, Xs);
+      ATLASSERT(pPoi->IsOnSegment(poi));
+   }
+
+
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    EventIndexType eventIdx = m_pFrame->GetEvent();
    EventIndexType erectionEventIdx = pIBridgeDesc->GetSegmentErectionEventIndex(poi.GetSegmentKey());
@@ -470,7 +483,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    // Get the shape in Girder Section Coordinates so that it is in the same coordinate system
    // as the items internal to the section (strand, rebar, etc.) (0,0 is at top center of girder)
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(intervalIdx,poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,pSectProps->GetHaunchAnalysisSectionPropertiesType(),&shape);
+   pShapes->GetSegmentShape(intervalIdx, poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,&shape);
    strategy->SetShape(shape);
    strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
    strategy->SetSolidFillColor(segmentKey.girderIndex == m_pFrame->GetSelection().girderIndex ? SEGMENT_FILL_COLOR : SEGMENT_FILL_GHOST_COLOR);

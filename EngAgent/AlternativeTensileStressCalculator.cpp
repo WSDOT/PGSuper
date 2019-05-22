@@ -179,11 +179,9 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
    {
       if (m_bGirderStresses )
       {
-         pgsTypes::HaunchAnalysisSectionPropertiesType hatype = m_pSectProps->GetHaunchAnalysisSectionPropertiesType();
-
          // Clip shape to determine concrete tension area
          CComPtr<IShape> shape;
-         m_pShapes->GetSegmentShape(m_IntervalIdx,poi,false,pgsTypes::scGirder,hatype,&shape);
+         m_pShapes->GetSegmentShape(m_IntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
          CComQIPtr<IXYPosition> position(shape);
          CComPtr<IPoint2d> bc;
