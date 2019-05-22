@@ -104,7 +104,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
       {
          (*pTable)(0, col++) << COLHDR(_T("Overlay Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       }
-      (*pTable)(0, col++) << COLHDR(_T("Haunch") << rptNewLine << _T("Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << COLHDR(_T("Slab") << rptNewLine << _T("Offset"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << COLHDR(_T("Adjusted") << rptNewLine << _T("Girder") << rptNewLine << _T("Height"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << COLHDR(_T("Bottom") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
@@ -132,7 +132,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
          {
             (*pTable)(row, col++) << dim.SetValue(details.OverlayDepth);
          }
-         (*pTable)(row, col++) << dim.SetValue(details.HaunchDepth);
+         (*pTable)(row, col++) << dim.SetValue(details.SlabOffset);
          (*pTable)(row, col++) << dim.SetValue(details.Hg);
          (*pTable)(row, col++) << elev.SetValue(details.Elevation);
 

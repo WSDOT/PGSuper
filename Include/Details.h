@@ -1048,7 +1048,7 @@ struct TEMPORARYSUPPORTELEVATIONDETAILS
    Float64 ProfileGrade;
    Float64 GirderGrade;
    Float64 GirderOrientation;
-   Float64 HaunchDepth;
+   Float64 SlabOffset;
    Float64 Hg;
    Float64 Elevation; // elevation at bottom of girder
 

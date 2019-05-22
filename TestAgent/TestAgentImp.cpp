@@ -736,6 +736,19 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
       }
    }
 
+   // temporary support elevations
+   SupportIndexType nTS = pBridge->GetTemporarySupportCount();
+   GET_IFACE(ITempSupport, pTempSupport);
+   for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
+   {
+      std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx);
+      for (const auto& tsElev : vElevDetails)
+      {
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 88250, ") << _T("-1") << _T(", ") << tsIdx << _T(", ") << tsElev.girderIdx << _T(", ") << QUITE(tsElev.Elevation) << std::endl;
+      }
+   }
+
+
    return true;
 }
 
