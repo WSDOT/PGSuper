@@ -1300,7 +1300,8 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
    CComQIPtr<IShape> shape(poly_shape);
    strategy->SetShape(shape);
 
-   if ( pBridge->IsFutureOverlay() )
+   bool bIsFutureOverlay = pBridge->IsFutureOverlay();
+   if ( bIsFutureOverlay )
    {
       strategy->SetSolidLineColor(FUTURE_OVERLAY_COLOR);
       strategy->SetSolidFillColor(FUTURE_OVERLAY_COLOR);
@@ -1320,7 +1321,7 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
    IndexType nPoints;
    surfacePoints->get_Count(&nPoints);
 
-   // points along the bottom of the overlay (along the top of deck)
+   // points along the finished profile grade surface
    for (IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
    {
       CComPtr<IPoint2d> pnt;
@@ -1328,7 +1329,11 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
       poly_shape->AddPointEx(pnt);
    }
 
-   // now work backwards, offset the points upwards by the depth of the overlay
+   // if it is a future overaly, the overlay is above the finished surface
+   // otherwise it is the finished surface
+   depth *= (bIsFutureOverlay ? 1 : -1);
+
+   // now work backwards, offset the points by the depth of the overlay
    for ( IndexType pntIdx = nPoints-1; pntIdx != INVALID_INDEX; pntIdx-- )
    {
       CComPtr<IPoint2d> pnt;
