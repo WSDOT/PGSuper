@@ -154,7 +154,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
       // AssExcessCamber
       DDX_CBItemData(pDX, IDC_ASSUMED_EXCESS_CAMBER_TYPE, m_AssumedExcessCamberType);
-      if (doAssumedExcessCamber && m_AssumedExcessCamber == pgsTypes::aecBridge)
+      if (doAssumedExcessCamber && m_AssumedExcessCamberType == pgsTypes::aecBridge)
       {
          DDX_UnitValueAndTag( pDX, IDC_ASSUMED_EXCESS_CAMBER, IDC_ASSUMED_EXCESS_CAMBER_UNIT, m_AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit() );
          DDV_UnitValueZeroOrMore( pDX, IDC_ASSUMED_EXCESS_CAMBER, m_AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit() );

@@ -577,6 +577,10 @@ std::_tstring CDeckedSlabBeamFactory::GetSlabDimensionsImage(pgsTypes::Supported
       strImage = _T("DeckedSlabBeam_Composite.gif");
       break;
 
+   case pgsTypes::sdtNonstructuralOverlay:
+      strImage = _T("DeckedSlabBeam_NSoverlay.gif");
+      break;
+
    case pgsTypes::sdtNone:
       strImage = _T("DeckedSlabBeam_Noncomposite.gif");
       break;
@@ -598,6 +602,7 @@ std::_tstring CDeckedSlabBeamFactory::GetPositiveMomentCapacitySchematicImage(pg
       strImage =  _T("+Mn_DeckedSlabBeam_Composite.gif");
       break;
 
+   case pgsTypes::sdtNonstructuralOverlay:
    case pgsTypes::sdtNone:
       strImage =  _T("+Mn_DeckedSlabBeam_Noncomposite.gif");
       break;
@@ -619,6 +624,7 @@ std::_tstring CDeckedSlabBeamFactory::GetNegativeMomentCapacitySchematicImage(pg
       strImage =  _T("-Mn_DeckedSlabBeam_Composite.gif");
       break;
 
+   case pgsTypes::sdtNonstructuralOverlay:
    case pgsTypes::sdtNone:
       strImage =  _T("-Mn_DeckedSlabBeam_Noncomposite.gif");
       break;
@@ -640,6 +646,7 @@ std::_tstring CDeckedSlabBeamFactory::GetShearDimensionsSchematicImage(pgsTypes:
       strImage =  _T("Vn_DeckedSlabBeam_Composite.gif");
       break;
 
+   case pgsTypes::sdtNonstructuralOverlay:
    case pgsTypes::sdtNone:
       strImage =  _T("Vn_DeckedSlabBeam_Noncomposite.gif");
       break;
@@ -771,6 +778,7 @@ pgsTypes::SupportedDeckTypes CDeckedSlabBeamFactory::GetSupportedDeckTypes(pgsTy
    case pgsTypes::sbsUniformAdjacent:
    case pgsTypes::sbsGeneralAdjacent:
       sdt.push_back(pgsTypes::sdtCompositeOverlay);
+      sdt.push_back(pgsTypes::sdtNonstructuralOverlay);
       sdt.push_back(pgsTypes::sdtNone);
       break;
 
@@ -853,7 +861,7 @@ void CDeckedSlabBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimens
 
    Float64 J  = GetDimension(dimensions,_T("Jmax"));
 
-   if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
+   if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone || sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNonstructuralOverlay )
    {
       if(sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
       {
