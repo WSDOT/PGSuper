@@ -348,6 +348,7 @@
 #define IDC_SHOW_DIMENSIONS             1151
 #define IDC_SHOW_DIMENSIONS2            1152
 #define IDC_SHOW_PROPERTIES             1152
+#define IDC_SHOW_RW_CROSSSECTION        1152
 #define IDC_SHOW_SCHEMATIC              1155
 #define IDC_SHOW_STRANDS                1157
 #define IDC_SHOW_LONG_REINF             1158
@@ -1279,6 +1280,7 @@
 #define IDC_SECTION_CG                  1926
 #define IDC_EDIT1                       1926
 #define IDC_BRG_SPACING_STATIC          1926
+#define IDC_VIEW_TEMPLATE_EDIT          1926
 #define IDC_BRG_RECESS_LENGTH_UNIT      1927
 #define IDC_BEARING_GRID                1928
 #define IDC_BRG1_STATIC                 1928
@@ -1363,7 +1365,6 @@
 #define IDC_PROMPT                      2005
 #define IDC_LIST1                       2006
 #define IDC_VIEW_TEMPLATE_SPIN          2006
-#define IDC_VIEW_TEMPLATE_EDIT          2007
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1519,7 +1520,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        396
+#define _APS_NEXT_RESOURCE_VALUE        397
 #define _APS_NEXT_COMMAND_VALUE         37001
 #define _APS_NEXT_CONTROL_VALUE         2008
 #define _APS_NEXT_SYMED_VALUE           113

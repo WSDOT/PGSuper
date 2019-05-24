@@ -393,11 +393,11 @@ void CBridgeModelViewChildFrame::ShowRwCrossSection(bool bShow)
    UINT settings = pDoc->GetBridgeEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDB_PV_DRAW_RW_CS);
+      sysFlags<UINT>::Set(&settings, IDB_CS_DRAW_RW_CS);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDB_PV_DRAW_RW_CS);
+      sysFlags<UINT>::Clear(&settings, IDB_CS_DRAW_RW_CS);
    }
    pDoc->SetBridgeEditorSettings(settings);
 }
@@ -1284,7 +1284,7 @@ void CBridgeModelViewChildFrame::OnRwCrossSection()
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
    {
       UINT settings = pDoc->GetBridgeEditorSettings();
-      sysFlags<UINT>::Toggle(&settings, IDB_PV_DRAW_RW_CS);
+      sysFlags<UINT>::Toggle(&settings, IDB_CS_DRAW_RW_CS);
       pDoc->SetBridgeEditorSettings(settings);
    }
 }
@@ -1296,7 +1296,7 @@ void CBridgeModelViewChildFrame::OnUpdateRwCrossSection(CCmdUI* pCmdUI)
    if (m_SettingsBar.GetCheckedRadioButton(IDC_BRIDGE, IDC_ALIGNMENT) == IDC_BRIDGE)
    {
       UINT settings = pDoc->GetBridgeEditorSettings();
-      pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDB_PV_DRAW_RW_CS) ? BST_CHECKED : BST_UNCHECKED);
+      pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDB_CS_DRAW_RW_CS) ? BST_CHECKED : BST_UNCHECKED);
       pCmdUI->Enable(TRUE);
    }
    else

@@ -2353,7 +2353,7 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
 
    UINT settings = pDoc->GetBridgeEditorSettings();
 
-   if (!(settings & IDB_PV_DRAW_RW_CS))
+   if (!(settings & IDB_CS_DRAW_RW_CS))
    {
       return;
    }

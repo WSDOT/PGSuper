@@ -107,7 +107,7 @@ void CBridgeEditorSettingsSheet::SetBridgeEditorSettings(UINT set)
    // section view
    m_BridgeEditorSectionPage.m_LabelGirders       = (set&IDB_CS_LABEL_GIRDERS)!=0;
    m_BridgeEditorSectionPage.m_ShowDimensions     = (set&IDB_CS_SHOW_DIMENSIONS)!=0;
-   m_BridgeEditorSectionPage.m_ShowRwCrossSection = (set&IDB_PV_DRAW_RW_CS)!=0;
+   m_BridgeEditorSectionPage.m_ShowRwCrossSection = (set&IDB_CS_DRAW_RW_CS)!=0;
 }
 
 UINT CBridgeEditorSettingsSheet::GetBridgeEditorSettings()const 
@@ -141,7 +141,7 @@ UINT CBridgeEditorSettingsSheet::GetBridgeEditorSettings()const
       set |= IDB_CS_SHOW_DIMENSIONS;
 
    if(m_BridgeEditorSectionPage.m_ShowRwCrossSection)
-      set |= IDB_PV_DRAW_RW_CS;
+      set |= IDB_CS_DRAW_RW_CS;
 
    return set;
 }
