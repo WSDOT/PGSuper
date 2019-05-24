@@ -1023,7 +1023,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
       // save the XML to a file
       xml_schema::namespace_infomap map;
       map[_T("")].name = _T("");
-      map[_T("")].schema = _T("KDOTExport.xsd"); // get this from a compiled resource if possible
+      map[_T("")].schema = _T("KDOTExporter.xsd"); // get this from a compiled resource if possible
 
       std::ofstream ofile(strFileName.GetBuffer());
 
