@@ -424,7 +424,8 @@ struct TIME_STEP_CONCRETE
    Float64 Yn;  // Centroid measured in Girder Section Coordinates
    Float64 In;  // Moment of inertia
    Float64 H;   // Height of concrete part
-   Float64 E;   // Modulus of Elasticity used for computing transformed section properties
+   Float64 E;   // Modulus of Elasticity
+   Float64 Ea;  // Age adjusted Modulus of Elasticity (used for computing transformed section properties)
 
    // Creep Strains during this interval due to loads applied in previous intervals
    struct CREEP_STRAIN
@@ -491,26 +492,26 @@ struct TIME_STEP_CONCRETE
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
 
-   Float64 dei[pftTimeStepSize];
+   std::array<Float64,pftTimeStepSize> dei;
    Float64 de;
 
-   Float64 ei[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> ei;
    Float64 e;
 
-   Float64 dri[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> dri;
    Float64 dr;
 
-   Float64 ri[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> ri;
    Float64 r;
 
    // Force on this concrete part due to elastic effects during this interval
-   Float64 dPi[pftTimeStepSize]; // index is one of the pgsTypes::ProductForceType enum values
-   Float64 dMi[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> dPi; // index is one of the pgsTypes::ProductForceType enum values
+   std::array<Float64, pftTimeStepSize> dMi;
    Float64 dP, dM; // summation of dPi and dMi
 
    // Force on this concrete part at the end of this interval
-   Float64 Pi[pftTimeStepSize]; // = (P in previous interval) + dP;
-   Float64 Mi[pftTimeStepSize]; // = (M in previous interval) + dM;
+   std::array<Float64, pftTimeStepSize> Pi; // = (P in previous interval) + dP;
+   std::array<Float64, pftTimeStepSize> Mi; // = (M in previous interval) + dM;
    Float64 P, M; // summation of Pi and Mi
 
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
@@ -606,20 +607,20 @@ struct TIME_STEP_STRAND
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 dei[pftTimeStepSize]; // change in strain in strand due to deformations in this interval
+   std::array<Float64, pftTimeStepSize> dei; // change in strain in strand due to deformations in this interval
    Float64 de; // summation of dei
 
-   Float64 dPi[pftTimeStepSize]; // change in force in strand due to deformations in this interval
+   std::array<Float64, pftTimeStepSize> dPi; // change in force in strand due to deformations in this interval
    Float64 dP; // summation of dPi
 
-   Float64 ei[pftTimeStepSize]; // strain in strand at end of this interval = (e previous interval + de)
+   std::array<Float64, pftTimeStepSize> ei; // strain in strand at end of this interval = (e previous interval + de)
    Float64 e; // summation of ei
    
-   Float64 Pi[pftTimeStepSize]; // force in strand at end of this interval = (P previous interval + dP)
+   std::array<Float64, pftTimeStepSize> Pi; // force in strand at end of this interval = (P previous interval + dP)
    Float64 P; // summation of Pi
 
    // Loss/Gain during this interval (change in effective prestress this interval)
-   Float64 dfpei[pftTimeStepSize]; // = dP/Aps
+   std::array<Float64, pftTimeStepSize> dfpei; // = dP/Aps
    Float64 dfpe; // summation of dfpei
 
    // Effective prestress
@@ -702,16 +703,16 @@ struct TIME_STEP_REBAR
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 dei[pftTimeStepSize]; // change in strain in bar due to deformations in this interval
+   std::array<Float64, pftTimeStepSize> dei; // change in strain in bar due to deformations in this interval
    Float64 de; // summation of dei
 
-   Float64 dPi[pftTimeStepSize]; // change in force in bar during this interval
+   std::array<Float64, pftTimeStepSize> dPi; // change in force in bar during this interval
    Float64 dP; // summation of dPi
 
-   Float64 ei[pftTimeStepSize]; // strain in bar at end of this interval = (e previous interval + de)
+   std::array<Float64, pftTimeStepSize> ei; // strain in bar at end of this interval = (e previous interval + de)
    Float64 e; // summation of ei
 
-   Float64 Pi[pftTimeStepSize]; // force in rebar at end of this interval = (P previous interval + dP)
+   std::array<Float64, pftTimeStepSize> Pi; // force in rebar at end of this interval = (P previous interval + dP)
    Float64 P; // summation of Pi
 
    TIME_STEP_REBAR()
@@ -754,12 +755,12 @@ struct TIME_STEP_DETAILS
    // The centroid, Ytr, is in Girder Section Coordinate (measured from top of girder, up is positive)
    Float64 Atr, Ytr, Itr;
 
-   Float64 E; // modulus used to transform properties into an equivalent material
+   Float64 Ea; // modulus used to transform properties into an equivalent material
 
    // Change in total loading on the section due to externally applied loads during this interval
    // Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   Float64 dPi[pftTimeStepSize], dMi[pftTimeStepSize];
+   std::array<Float64,pftTimeStepSize> dPi, dMi;
 
    // total change in loading on the section (summation of dPi and dMi)
    Float64 dP, dM;
@@ -767,7 +768,7 @@ struct TIME_STEP_DETAILS
    // Total loading on the section due to externally applied loads in all intervals upto
    // and including this interval. Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   Float64 Pi[pftTimeStepSize], Mi[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> Pi, Mi;
 
    // total change in loading on the section (summation of Pi and Mi)
    Float64 P, M;
@@ -778,7 +779,7 @@ struct TIME_STEP_DETAILS
 
    // Time step parameters for strands and tendons
 #if defined LUMP_STRANDS
-   TIME_STEP_STRAND Strands[3]; // pgsTypes::StrandType (Straight, Harped, Temporary)
+   std::array<TIME_STEP_STRAND,3> Strands; // pgsTypes::StrandType (Straight, Harped, Temporary)
 #else
    std::vector<TIME_STEP_STRAND> Strands[3]; // pgsTypes::StrandType (Straight, Harped, Temporary)
 #endif
@@ -794,19 +795,19 @@ struct TIME_STEP_DETAILS
    std::vector<TIME_STEP_REBAR> GirderRebar;
 
    // Forces required to totally restrain the cross section for initial strains occuring during this interval
-   Float64 Pr[3], Mr[3]; // index is one of the TIMESTEP_XXX constants
+   std::array<Float64,3> Pr, Mr; // index is one of the TIMESTEP_XXX constants
 
    // Initial Strains 
-   Float64 e[3]; // index is one of the TIMESTEP_XXX constants
-   Float64 r[3];
+   std::array<Float64,3> e; // index is one of the TIMESTEP_XXX constants
+   std::array<Float64,3> r;
 
    // Deformation due to externally applied loads and restraining forces in this interval
-   Float64 der[pftTimeStepSize]; // axial strain
-   Float64 drr[pftTimeStepSize]; // curvature
+   std::array<Float64, pftTimeStepSize> der; // axial strain
+   std::array<Float64, pftTimeStepSize> drr; // curvature
 
    // Total deformation due to externally applied loads and restraining forces
-   Float64 er[pftTimeStepSize]; // axial strain
-   Float64 rr[pftTimeStepSize]; // curvature
+   std::array<Float64, pftTimeStepSize> er; // axial strain
+   std::array<Float64, pftTimeStepSize> rr; // curvature
 
    // Check equilibrium
    Float64 dPext, dPint; // change in external and internal axial force during this interval (dPext == dPint)
@@ -824,7 +825,7 @@ struct TIME_STEP_DETAILS
       Atr = 0;
       Ytr = 0;
       Itr = 0;
-      E   = 0;
+      Ea  = 0;
 
       int n = sizeof(dPi)/sizeof(dPi[0]);
       for ( int i = 0; i < n ; i++ )
@@ -874,16 +875,11 @@ struct TIME_STEP_DETAILS
 // the parameters for the seating wedge
 struct ANCHORSETDETAILS
 {
-   ANCHORSETDETAILS()
+   ANCHORSETDETAILS() :
+      Lset{ 0,0 }, dfpAT{ 0,0 }, dfpS{ 0,0 }
    { 
       girderKey = CGirderKey(INVALID_INDEX,INVALID_INDEX); 
       ductIdx = INVALID_INDEX;
-      for ( int i = 0; i < 2; i++ )
-      {
-         Lset[i]  = 0;
-         dfpAT[i] = 0;
-         dfpS[i]  = 0;
-      }
    }
 
    // Key
@@ -892,9 +888,9 @@ struct ANCHORSETDETAILS
 
    // Value
    // Array index is pgsTypes::MemberEndType
-   Float64 Lset[2]; // Anchor set zone length
-   Float64 dfpAT[2]; // Loss of effective stress at anchorage due to seating
-   Float64 dfpS[2];  // Loss of effective stress at end of anchor set zone length due to seating
+   std::array<Float64, 2> Lset; // Anchor set zone length
+   std::array<Float64, 2> dfpAT; // Loss of effective stress at anchorage due to seating
+   std::array<Float64, 2> dfpS;  // Loss of effective stress at end of anchor set zone length due to seating
                      // This is typically zero except when the anchor set zone is longer than the tendon
 };
 
@@ -1004,8 +1000,8 @@ struct FABRICATIONOPTIMIZATIONDETAILS
 
    // Required strength and support locations for lifting
    // index is one of the xx_TTS constants above
-   Float64 Fci[4];
-   Float64 L[4];
+   std::array<Float64, 4> Fci;
+   std::array<Float64,4> L;
 
    bool bTempStrandsRequiredForShipping;
 

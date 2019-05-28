@@ -927,27 +927,29 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    bool bIsOnGirder = m_pPoi->IsOnGirder(poi);
 
    // Material Properties
-   Float64 EDeck  = m_pMaterials->GetDeckEc(intervalIdx);
+   Float64 EDeck = m_pMaterials->GetDeckEc(intervalIdx);
    Float64 EaDeck = m_pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
    Float64 EGirder, EaGirder;
-   if ( bIsOnSegment )
+   if (bIsOnSegment)
    {
-      EGirder  = m_pMaterials->GetSegmentEc(segmentKey,intervalIdx);
-      EaGirder = m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey,intervalIdx);
+      EGirder = m_pMaterials->GetSegmentEc(segmentKey, intervalIdx);
+      EaGirder = m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey, intervalIdx);
    }
-   else if ( bIsInClosure )
+   else if (bIsInClosure)
    {
-      EGirder  = m_pMaterials->GetClosureJointEc(closureKey,intervalIdx);
-      EaGirder = m_pMaterials->GetClosureJointAgeAdjustedEc(closureKey,intervalIdx);
+      EGirder = m_pMaterials->GetClosureJointEc(closureKey, intervalIdx);
+      EaGirder = m_pMaterials->GetClosureJointAgeAdjustedEc(closureKey, intervalIdx);
    }
    else
    {
-      EGirder  = EDeck;
+      EGirder = EDeck;
       EaGirder = EaDeck;
    }
-   Float64 EStrand[3] = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
-                          m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetE(),
-                          m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE()};
+
+   std::array<Float64,3> EStrand = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
+                                     m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetE(),
+                                     m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE()};
+
    Float64 ETendon = m_pMaterials->GetTendonMaterial(girderKey)->GetE();
    
    Float64 EDeckRebar, EGirderRebar, Fy, Fu;
@@ -977,7 +979,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    tsDetails.Atr = m_pSectProp->GetAg(pgsTypes::sptTransformed,intervalIdx,poi);
    tsDetails.Itr = m_pSectProp->GetIxx(pgsTypes::sptTransformed,intervalIdx,poi);
    tsDetails.Ytr = -m_pSectProp->GetY(pgsTypes::sptTransformed,intervalIdx,poi,pgsTypes::TopGirder); // Negative because this is measured down from Y=0 at the top of the girder
-   tsDetails.E   = EaGirder;
+   tsDetails.Ea  = EaGirder;
 
    // SEGMENT PARAMETERS
 
@@ -986,7 +988,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    tsDetails.Girder.In  = m_pSectProp->GetNetIxx(intervalIdx,poi);
    tsDetails.Girder.Yn  = -m_pSectProp->GetNetYtg(intervalIdx,poi); // Negative because this is measured down from Y=0 at the top of the girder
    tsDetails.Girder.H   = gdrHeight;
-   tsDetails.Girder.E   = EaGirder;
+   tsDetails.Girder.E   = EGirder;
+   tsDetails.Girder.Ea  = EaGirder;
 
    // DECK PARAMETERS
 
@@ -995,7 +998,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    tsDetails.Deck.In  = m_pSectProp->GetNetId(intervalIdx,poi);
    tsDetails.Deck.Yn  = m_pSectProp->GetNetYbd(intervalIdx,poi);  // Positive because this is measured up from Y=0 at the top of the girder
    tsDetails.Deck.H   = tsDetails.Deck.Yn + m_pSectProp->GetNetYtd(intervalIdx,poi);
-   tsDetails.Deck.E   = EaDeck;
+   tsDetails.Deck.E   = EDeck;
+   tsDetails.Deck.Ea  = EaDeck;
 
    // deck rebar
    if ((bIsInClosure && compositeClosureIntervalIdx <= intervalIdx && compositeDeckIntervalIdx <= intervalIdx) || (!bIsInClosure && compositeDeckIntervalIdx <= intervalIdx) )
@@ -1535,16 +1539,20 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       // piece of the cross section. (Restraining force for relaxation deformations
       // was done above)
 
+      // Use actual modulus of elasticity because the restraining force is assumed to be an instantenous force
+      // The restraining force is assumed to happen in the middle of the interval it occurs. The effects
+      // are then considered as time-dependent and age adjusted modulus is used to compute creep and shrinkage effects
+
       // The concrete shrinkage strain is negative (concrete parts want to get shorter). So, strain < 0.
       // It requires a tension force to restrain this deformation. The force, F = -1*(strain)(E)(A).
       // The -1*strain reverses the deformation and results in a tension force.
-      tsDetails.Girder.PrCreep     = -tsDetails.Girder.eci * tsDetails.Girder.An * EGirder; // Tadros 1977, Eqn 10
-      tsDetails.Girder.MrCreep     = -tsDetails.Girder.rci * tsDetails.Girder.In * EGirder; // Tadros 1977, Eqn 11
-      tsDetails.Girder.PrShrinkage = -tsDetails.Girder.Shrinkage.esi * tsDetails.Girder.An * EGirder; // Tadros 1977, Eqn 10
+      tsDetails.Girder.PrCreep     = -tsDetails.Girder.eci * tsDetails.Girder.An * tsDetails.Girder.E; // Tadros 1977, Eqn 10
+      tsDetails.Girder.MrCreep     = -tsDetails.Girder.rci * tsDetails.Girder.In * tsDetails.Girder.E; // Tadros 1977, Eqn 11
+      tsDetails.Girder.PrShrinkage = -tsDetails.Girder.Shrinkage.esi * tsDetails.Girder.An * tsDetails.Girder.E; // Tadros 1977, Eqn 10
 
-      tsDetails.Deck.PrCreep     = -tsDetails.Deck.eci * tsDetails.Deck.An * EDeck; // Tadros 1977, Eqn 10
-      tsDetails.Deck.MrCreep     = -tsDetails.Deck.rci * tsDetails.Deck.In * EDeck; // Tadros 1977, Eqn 11
-      tsDetails.Deck.PrShrinkage = -tsDetails.Deck.Shrinkage.esi * tsDetails.Deck.An * EDeck; // Tadros 1977, Eqn 10
+      tsDetails.Deck.PrCreep     = -tsDetails.Deck.eci * tsDetails.Deck.An * tsDetails.Deck.E; // Tadros 1977, Eqn 10
+      tsDetails.Deck.MrCreep     = -tsDetails.Deck.rci * tsDetails.Deck.In * tsDetails.Deck.E; // Tadros 1977, Eqn 11
+      tsDetails.Deck.PrShrinkage = -tsDetails.Deck.Shrinkage.esi * tsDetails.Deck.An * tsDetails.Deck.E; // Tadros 1977, Eqn 10
    }
 
    // Total restraining force

@@ -137,11 +137,25 @@ void CStressTendonDlg::FillLists()
          GirderIDType girderID = pGirder->GetID();
          CGirderKey girderKey(pGirder->GetGirderKey());
 
+         const auto* pGirderEntry = pGirder->GetGirderLibraryEntry();
+         CComPtr<IBeamFactory> factory;
+         pGirderEntry->GetBeamFactory(&factory);
+         WebIndexType nWebs = factory->GetWebCount(pGirderEntry->GetDimensions());
+
          DuctIndexType nDucts = pPTData->GetDuctCount();
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
             CString label;
-            label.Format(_T("Group %d, Girder %s, Duct %d"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_DUCT(ductIdx));
+            if (nWebs == 1)
+            {
+               label.Format(_T("Group %d, Girder %s, Duct %d"), LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_DUCT(ductIdx));
+            }
+            else
+            {
+               DuctIndexType firstDuctIdx = nWebs*ductIdx;
+               DuctIndexType lastDuctIdx = firstDuctIdx + nWebs - 1;
+               label.Format(_T("Group %d, Girder %s, Duct %d - %d"), LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_DUCT(firstDuctIdx), LABEL_DUCT(lastDuctIdx));
+            }
 
             bool bIsTendonStressed = m_TimelineMgr.IsTendonStressed(girderID,ductIdx);
             EventIndexType stressingEventIdx = m_TimelineMgr.GetStressTendonEventIndex(girderID,ductIdx);
