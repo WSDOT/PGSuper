@@ -24838,62 +24838,25 @@ Float64 CBridgeAgentImp::GetTransverseTopFlangeSlope(const CSegmentKey& segmentK
 Float64 CBridgeAgentImp::GetProfileChordElevation(const pgsPointOfInterest& poi) const
 {
    // elevation profile chord is a reference chord that connects the
-   // top of deck elevation at the CL Bearings at permanent supports
+   // top of deck elevation at the CL Bearings at each end of the segment
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   // get the span where this poi is located
-   CSpanKey spanKey;
-   Float64 Xspan;
-   ConvertPoiToSpanPoint(poi, &spanKey, &Xspan);
-   ATLASSERT(segmentKey.girderIndex == spanKey.girderIndex);
-
-   // get the CL Bearing points at the start and end of this span
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
-   const CPierData2* pPier1 = pSpan->GetPrevPier();
-   const CPierData2* pPier2 = pSpan->GetNextPier();
-
-   ATLASSERT(segmentKey.groupIndex == pPier1->GetGirderGroup(pgsTypes::Ahead)->GetIndex());
-   ATLASSERT(segmentKey.groupIndex == pPier2->GetGirderGroup(pgsTypes::Back)->GetIndex());
-
-   CSegmentKey pier1SegmentKey = GetSegmentAtPier(pPier1->GetIndex(), segmentKey);
-   CSegmentKey pier2SegmentKey = GetSegmentAtPier(pPier2->GetIndex(), segmentKey);
-
    CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-   if (pPier1->IsInteriorPier() && (pPier1->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment || pPier1->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment))
-   {
-      VERIFY(GetSegmentPierIntersection(pier1SegmentKey, pPier1->GetIndex(), pgsTypes::pcLocal,&pntBrg1));
-   }
-   else
-   {
-      GetSegmentEndPoints(pier1SegmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
-   }
-
-
-   CComPtr<IPoint2d> pntPier3, pntEnd3, pntBrg3, pntBrg4, pntEnd4, pntPier4;
-   if (pPier2->IsInteriorPier() && (pPier2->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment || pPier2->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment))
-   {
-      VERIFY(GetSegmentPierIntersection(pier2SegmentKey, pPier2->GetIndex(), pgsTypes::pcLocal, &pntBrg4));
-   }
-   else
-   {
-      GetSegmentEndPoints(pier2SegmentKey, pgsTypes::pcLocal, &pntPier3, &pntEnd3, &pntBrg3, &pntBrg4, &pntEnd4, &pntPier4);
-   }
+   GetSegmentEndPoints(segmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
 
    // get the elevation at the CL Bearing points
    Float64 startStation, startOffset;
    GetStationAndOffset(pgsTypes::pcLocal, pntBrg1, &startStation, &startOffset);
 
    Float64 endStation, endOffset;
-   GetStationAndOffset(pgsTypes::pcLocal, pntBrg4, &endStation, &endOffset);
+   GetStationAndOffset(pgsTypes::pcLocal, pntBrg2, &endStation, &endOffset);
 
    Float64 startElevation = GetElevation(startStation, startOffset);
    Float64 endElevation = GetElevation(endStation, endOffset);
 
    // distance between two points where elevation is computed
    Float64 distance;
-   pntBrg1->DistanceEx(pntBrg4, &distance);
+   pntBrg1->DistanceEx(pntBrg2, &distance);
 
    // distance from the start elevation point to the poi
    CComPtr<IPoint2d> pntPoi;

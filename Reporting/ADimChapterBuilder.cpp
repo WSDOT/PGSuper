@@ -287,7 +287,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    *pChapter << pPara;
 
    *pPara << _T("Deck Slope (") << Sub2(_T("m"), _T("d")) << _T(") and Girder Top Slope (") << Sub2(_T("m"), _T("g")) << _T(") are positive when the slope is upwards towards the right") << rptNewLine;
-   *pPara << Super(_T("*")) << _T(" required slab offset (equal at both ends) from top of girder to top of deck at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet");
+   *pPara << Super(_T("*")) << _T(" required slab offset (equal at all support locations) from top of girder to top of deck at centerline bearing for geometric effects at this point. (Slab Thickness + Fillet");
    if (bTopFlangeShapeEffect)
    {
       *pPara << _T(" + Top Flange Shape Effect");
