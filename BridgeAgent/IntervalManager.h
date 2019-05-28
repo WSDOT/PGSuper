@@ -176,6 +176,9 @@ public:
    // returns the interval when the last tendon stressing occurs for the specified girder
    IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey) const;
 
+   // returns the intervals when tendons are stressed for the specified girder
+   std::vector<IntervalIndexType> GetTendonStressingIntervals(const CGirderKey& girderKey) const;
+
 protected:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;

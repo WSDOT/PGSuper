@@ -98,45 +98,47 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << _T("Atr = ") << area.SetValue(tsDetails.Atr) << rptNewLine;
    *pPara << _T("Itr = ") << inertia.SetValue(tsDetails.Itr) << rptNewLine;
    *pPara << _T("Ytr = ") << dist.SetValue(tsDetails.Ytr) << rptNewLine;
-   *pPara << _T("E = ")   << modE.SetValue(tsDetails.E) << rptNewLine;
+   *pPara << _T("Ea  = ") << modE.SetValue(tsDetails.Ea) << rptNewLine;
    *pPara << rptNewLine;
 
    *pPara << _T("Girder Properties") << rptNewLine;
    *pPara << _T("An = ") << area.SetValue(tsDetails.Girder.An) << rptNewLine;
    *pPara << _T("In = ") << inertia.SetValue(tsDetails.Girder.In) << rptNewLine;
    *pPara << _T("Ys = ") << dist.SetValue(tsDetails.Girder.Yn) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.Girder.E) << rptNewLine;
+   *pPara << _T("E  = ") << modE.SetValue(tsDetails.Girder.E) << rptNewLine;
+   *pPara << _T("Ea = ") << modE.SetValue(tsDetails.Girder.Ea) << rptNewLine;
    *pPara << rptNewLine;
 
    *pPara << _T("Deck Properties") << rptNewLine;
    *pPara << _T("An = ") << area.SetValue(tsDetails.Deck.An) << rptNewLine;
    *pPara << _T("In = ") << inertia.SetValue(tsDetails.Deck.In) << rptNewLine;
    *pPara << _T("Ys = ") << dist.SetValue(tsDetails.Deck.Yn) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.Deck.E) << rptNewLine;
+   *pPara << _T("E  = ") << modE.SetValue(tsDetails.Deck.E) << rptNewLine;
+   *pPara << _T("Ea = ") << modE.SetValue(tsDetails.Deck.Ea) << rptNewLine;
    *pPara << rptNewLine;
 
    *pPara << _T("Deck Rebar - Top Mat - Individual Bars") << rptNewLine;
    *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].As) << rptNewLine;
    *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].Ys) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].E) << rptNewLine;
+   *pPara << _T("E  = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].E) << rptNewLine;
    *pPara << rptNewLine;
 
    *pPara << _T("Deck Rebar - Top Mat - Lump Sum Bars") << rptNewLine;
    *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].As) << rptNewLine;
    *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].Ys) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].E) << rptNewLine;
+   *pPara << _T("E  = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].E) << rptNewLine;
    *pPara << rptNewLine;
 
    *pPara << _T("Deck Rebar - Bottom Mat - Individual Bars") << rptNewLine;
    *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As) << rptNewLine;
    *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].E) << rptNewLine;
+   *pPara << _T("E  = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].E) << rptNewLine;
    *pPara << rptNewLine;
 
    *pPara << _T("Deck Rebar - Bottom Mat - Lump Sum Bars") << rptNewLine;
    *pPara << _T("An = ") << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].As) << rptNewLine;
    *pPara << _T("Ys = ") << dist.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].Ys) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].E) << rptNewLine;
+   *pPara << _T("E  = ")  << modE.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].E) << rptNewLine;
    *pPara << rptNewLine;
 
    *pPara << _T("Girder Rebar") << rptNewLine;
@@ -148,14 +150,14 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       const TIME_STEP_REBAR& rebar(*iter);
       *pPara << _T("An = ") << area.SetValue(rebar.As) << rptNewLine;
       *pPara << _T("Ys = ") << dist.SetValue(rebar.Ys) << rptNewLine;
-      *pPara << _T("E = ")  << modE.SetValue(rebar.E) << rptNewLine;
+      *pPara << _T("E  = ")  << modE.SetValue(rebar.E) << rptNewLine;
       *pPara << rptNewLine;
    }
 
    *pPara << _T("Straight Strand") << rptNewLine;
    *pPara << _T("An = ") << area.SetValue(tsDetails.Strands[pgsTypes::Straight].As) << rptNewLine;
    *pPara << _T("Ys = ") << dist.SetValue(tsDetails.Strands[pgsTypes::Straight].Ys) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.Strands[pgsTypes::Straight].E) << rptNewLine;
+   *pPara << _T("E  = ")  << modE.SetValue(tsDetails.Strands[pgsTypes::Straight].E) << rptNewLine;
    *pPara << rptNewLine;
 
    *pPara << _T("Harped Strand") << rptNewLine;
@@ -167,7 +169,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << _T("Temporary Strand") << rptNewLine;
    *pPara << _T("An = ") << area.SetValue(tsDetails.Strands[pgsTypes::Temporary].As) << rptNewLine;
    *pPara << _T("Ys = ") << dist.SetValue(tsDetails.Strands[pgsTypes::Temporary].Ys) << rptNewLine;
-   *pPara << _T("E = ")  << modE.SetValue(tsDetails.Strands[pgsTypes::Temporary].E) << rptNewLine;
+   *pPara << _T("E  = ")  << modE.SetValue(tsDetails.Strands[pgsTypes::Temporary].E) << rptNewLine;
    *pPara << rptNewLine;
 
    int N = sizeof(tsDetails.dPi)/sizeof(tsDetails.dPi[0]);

@@ -804,6 +804,24 @@ IntervalIndexType CIntervalManager::GetLastTendonStressingInterval(const CGirder
    return *intervals.rbegin();
 }
 
+std::vector<IntervalIndexType> CIntervalManager::GetTendonStressingIntervals(const CGirderKey& girderKey) const
+{
+   ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
+   std::vector<IntervalIndexType> intervals;
+   for (const auto& iter : m_StressTendonIntervals)
+   {
+      if (girderKey == iter.first.girderKey)
+      {
+         intervals.push_back(iter.second);
+      }
+   }
+
+   std::sort(std::begin(intervals), std::end(intervals));
+   intervals.erase(std::unique(std::begin(intervals), std::end(intervals)), std::end(intervals));
+
+   return intervals;
+}
+
 IntervalIndexType CIntervalManager::GetTemporarySupportErectionInterval(SupportIndexType tsIdx) const
 {
    auto found(m_ErectTemporarySupportIntervals.find(tsIdx) );
@@ -974,15 +992,10 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
          //
          // Here is an alternative method that works
          const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(tendonKey.girderKey.groupIndex)->GetGirder(tendonKey.girderKey.girderIndex);
-         const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
+         const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
          CComPtr<IBeamFactory> factory;
-         pGdrEntry->GetBeamFactory(&factory);
-
-         CComPtr<IGirderSection> gdrSection;
-         factory->CreateGirderSection(nullptr,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
-
-         WebIndexType nWebs;
-         gdrSection->get_WebCount(&nWebs);
+         pGirderEntry->GetBeamFactory(&factory);
+         WebIndexType nWebs = factory->GetWebCount(pGirderEntry->GetDimensions());
 
          for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
          {

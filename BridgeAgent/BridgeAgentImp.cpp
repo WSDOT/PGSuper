@@ -28607,14 +28607,6 @@ IntervalIndexType CBridgeAgentImp::GetStressTendonInterval(const CGirderKey& gir
 {
    VALIDATE(BRIDGE);
    ATLASSERT(ductIdx != INVALID_INDEX);
-
-   // Convert the actual number of ducts to the number of raw input ducts.
-   // There is one duct per web. If there is multiple webs, such as with U-Beams,
-   // ducts 0 and 1, 2 and 3, 4 and 5, etc. are stressed together. The input for
-   // the pairs of ducts is stored as index = 0 for duct 0 and 1, index = 1 for duct 2 and 3, etc.
-   WebIndexType nWebs = GetWebCount(girderKey);
-   ductIdx /= nWebs;
-
    return m_IntervalManager.GetStressTendonInterval(girderKey,ductIdx);
 }
 
@@ -32572,26 +32564,38 @@ void CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
          break;
       }
 
-      // the tendons aren't part of the cross section when then are installed because
-      // they are not yet grouted. assume the tendons are grouted into the section
-      // in the interval that follows the interval when they are installed
-      // that is why there is a +1 
-      IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressTendonInterval(girderKey,ductIdx) + 1;
+      // create tendon material
+      std::vector<IntervalIndexType> vTendonStressingIntervals = m_IntervalManager.GetTendonStressingIntervals(girderKey);
+      std::map<IntervalIndexType,CComPtr<IPrestressingStrand>> tendonMaterials;
+      for (const auto& stressTendonIntervalIdx : vTendonStressingIntervals)
+      {
+         CComPtr<IPrestressingStrand> tendonMaterial;
+         tendonMaterial.CoCreateInstance(CLSID_PrestressingStrand);
+         tendonMaterial->put_Name(CComBSTR(pStrand->GetName().c_str()));
+         tendonMaterial->put_Grade((StrandGrade)pStrand->GetGrade());
+         tendonMaterial->put_Type((StrandMaterialType)pStrand->GetType());
+         tendonMaterial->put_Size((StrandSize)pStrand->GetSize());
 
-      CComPtr<IPrestressingStrand> tendonMaterial;
-      tendonMaterial.CoCreateInstance(CLSID_PrestressingStrand);
-      tendonMaterial->put_Name( CComBSTR(pStrand->GetName().c_str()) );
-      tendonMaterial->put_Grade((StrandGrade)pStrand->GetGrade());
-      tendonMaterial->put_Type((StrandMaterialType)pStrand->GetType());
-      tendonMaterial->put_Size((StrandSize)pStrand->GetSize());
+         // the tendons aren't part of the cross section when then are installed because
+         // they are not yet grouted. assume the tendons are grouted into the section
+         // in the interval that follows the interval when they are installed
+         // that is why there is a +1 
+         tendonMaterial->put_InstallationStage(stressTendonIntervalIdx+1);
 
-      tendonMaterial->put_InstallationStage(stressTendonIntervalIdx);
+         tendonMaterials.emplace_hint(tendonMaterials.end(),stressTendonIntervalIdx, tendonMaterial);
+      }
 
-      DuctIndexType nTendons; 
+      DuctIndexType nTendons;
       webTendons->get_Count(&nTendons);
       ATLASSERT(nTendons != 0); // should equal number of webs
-      for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
+      for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
       {
+         IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressTendonInterval(girderKey,nTendons*ductIdx+tendonIdx);
+         auto found = tendonMaterials.find(stressTendonIntervalIdx);
+         ATLASSERT(found != tendonMaterials.end());
+
+         CComPtr<IPrestressingStrand> tendonMaterial(found->second);
+
          CComPtr<ITendon> tendon;
          webTendons->get_Item(tendonIdx,&tendon);
 
