@@ -15810,7 +15810,7 @@ void CGirderModelManager::GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, 
 
          // Next get distances from left edge of deck to girder's left and right tributary edges
          Float64 DLT, DRT;
-         if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+         if ( IsNonstructuralDeck(pBridge->GetDeckType()) )
          {
             ATLASSERT( ::IsJointSpacing(pBridgeDesc->GetGirderSpacingType()) );
 
@@ -15961,7 +15961,7 @@ void CGirderModelManager::GetMainConstructionLoad(const CSegmentKey& segmentKey,
       Float64 startWidth, endWidth;
       Float64 startW, endW;
 
-      if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+      if (IsNonstructuralDeck( pBridge->GetDeckType() ))
       {
          Float64 left,right;
          pBridge->GetDistanceBetweenGirders(prevPoi,&left,&right);
