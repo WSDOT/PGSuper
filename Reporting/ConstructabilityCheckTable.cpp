@@ -616,10 +616,16 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
       return;
    }
 
+   GET_IFACE2(pBroker,IDocumentType, pDocType);
+   
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
 
    ColumnIndexType nCols = needSpanCols ? 5 : 3; // put span/girder in table if multi girder
+   if (pDocType->IsPGSpliceDocument())
+   {
+      nCols++;
+   }
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
@@ -641,6 +647,11 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
    {
       (*pTable)(0,col++) << _T("Span");
       (*pTable)(0,col++) << _T("Girder");
+   }
+
+   if (pDocType->IsPGSpliceDocument())
+   {
+      (*pTable)(0, col++) << _T("Segment");
    }
 
    (*pTable)(0,col++) << COLHDR(_T("Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -667,6 +678,11 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
             GirderIndexType girder = girderKey.girderIndex;
             (*pTable)(row, col++) << LABEL_SPAN(group);
             (*pTable)(row, col++) << LABEL_GIRDER(girder);
+         }
+
+         if (pDocType->IsPGSpliceDocument())
+         {
+            (*pTable)(row, col++) << LABEL_SEGMENT(segIdx);
          }
 
          (*pTable)(row, col++) << dim.SetValue(artifact.GetProvidedFillet());
