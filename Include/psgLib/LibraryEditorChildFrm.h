@@ -69,7 +69,8 @@ public:
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CLibraryEditorChildFrame)
-	//}}AFX_MSG
+   afx_msg void OnHelpFinder();
+   //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 // Class Extensions

@@ -26,8 +26,8 @@
 #include "stdafx.h"
 #include "resource.h"
 #include <psglib\ISupportLibraryManager.h>
-
 #include <psglib\LibraryEditorChildFrm.h>
+#include <EAF\EAFDocument.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,7 +42,8 @@ IMPLEMENT_DYNCREATE(CLibraryEditorChildFrame, CMDIChildWnd)
 
 BEGIN_MESSAGE_MAP(CLibraryEditorChildFrame, CMDIChildWnd)
 	//{{AFX_MSG_MAP(CLibraryEditorChildFrame)
-	//}}AFX_MSG_MAP
+   ON_COMMAND(ID_HELP_FINDER, OnHelpFinder)
+   //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -318,4 +319,9 @@ void CLibraryEditorChildFrame::DoRenameEntry()
    CLibEditorListView* pList= this->GetListView();
    ASSERT(pList);
    pList->RenameSelectedEntry();
+}
+
+void CLibraryEditorChildFrame::OnHelpFinder()
+{
+   EAFHelp(EAFGetDocument()->GetDocumentationSetName(), IDH_PGSLIBRARY);
 }
