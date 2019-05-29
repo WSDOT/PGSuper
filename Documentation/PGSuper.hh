@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+#define IDH_PGSLIBRARY                           99
 #define IDH_PGSUPER                             100
 
 #define IDH_BRIDGE_VIEW                         101
