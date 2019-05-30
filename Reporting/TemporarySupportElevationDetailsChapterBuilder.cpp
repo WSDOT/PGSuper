@@ -73,6 +73,8 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
       bHasOverlay = true;
    }
 
+   bool bHasElevationAdjustment = pBridge->HasTemporarySupportElevationAdjustments();
+
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
 
    GET_IFACE2(pBroker, ITempSupport, pTempSupport);
@@ -86,6 +88,10 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
       CString strTitle;
       strTitle.Format(_T("Temporary Support %d - %s"), LABEL_TEMPORARY_SUPPORT(tsIdx), CTemporarySupportData::AsString(pBridge->GetTemporarySupportType(tsIdx)));
       ColumnIndexType nColumns = (bHasOverlay ? 13 : 12);
+      if (bHasElevationAdjustment)
+      {
+         nColumns++;
+      }
       rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns, strTitle);
 
       *pPara << pTable << rptNewLine;
@@ -106,6 +112,10 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
       }
       (*pTable)(0, col++) << COLHDR(_T("Slab") << rptNewLine << _T("Offset"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << COLHDR(_T("Adjusted") << rptNewLine << _T("Girder") << rptNewLine << _T("Height"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      if (bHasElevationAdjustment)
+      {
+         (*pTable)(0, col++) << COLHDR(_T("Elevation") << rptNewLine << _T("Adjustment"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      }
       (*pTable)(0, col++) << COLHDR(_T("Bottom") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -134,6 +144,10 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
          }
          (*pTable)(row, col++) << dim.SetValue(details.SlabOffset);
          (*pTable)(row, col++) << dim.SetValue(details.Hg);
+         if (bHasElevationAdjustment)
+         {
+            (*pTable)(row, col++) << dim.SetValue(details.ElevationAdjustment);
+         }
          (*pTable)(row, col++) << elev.SetValue(details.Elevation);
 
          row++;

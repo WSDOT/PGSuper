@@ -1046,6 +1046,7 @@ struct TEMPORARYSUPPORTELEVATIONDETAILS
    Float64 GirderOrientation;
    Float64 SlabOffset;
    Float64 Hg;
+   Float64 ElevationAdjustment; // elevation adjustment from temporary support tower
    Float64 Elevation; // elevation at bottom of girder
 
    bool operator<(const TEMPORARYSUPPORTELEVATIONDETAILS& other) const

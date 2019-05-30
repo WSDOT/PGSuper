@@ -23846,6 +23846,8 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
 
                Float64 roadwayAngleAdjust = crossSlopeAdjust * profileAngleAdjust;
 
+               Float64 elevAdj = pTS->GetElevationAdjustment();
+
                TEMPORARYSUPPORTELEVATIONDETAILS elevDetails;
 
                elevDetails.girderIdx = gdrIdx;
@@ -23861,8 +23863,8 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
                elevDetails.Hg = Hg;
                elevDetails.SlabOffset = slab_offset;
                elevDetails.OverlayDepth = overlay_depth / roadwayAngleAdjust;
-
-               elevDetails.Elevation = finished_elevation - elevDetails.OverlayDepth - elevDetails.SlabOffset - Hg;
+               elevDetails.ElevationAdjustment = elevAdj;
+               elevDetails.Elevation = finished_elevation - elevDetails.OverlayDepth - elevDetails.SlabOffset - Hg + elevAdj;
 
                vDetails.push_back(elevDetails);
 
