@@ -926,7 +926,7 @@ Uint16 CBridgeAgentImp::Validate( Uint16 level )
       {
          VALIDATE_TO_LEVEL( COGO_MODEL,   BuildCogoModel );
          VALIDATE_TO_LEVEL( BRIDGE,       BuildBridgeModel );
-         VALIDATE_AND_CHECK_TO_LEVEL( GIRDER,       BuildGirder,    ValidateGirder );
+         VALIDATE_AND_CHECK_TO_LEVEL( GIRDER,       BuildGirders,    ValidateGirders );
       }
 
   
@@ -2929,8 +2929,6 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             CComQIPtr<IItemData> item_data(segment);
             item_data->AddItemData(CComBSTR(_T("Precast Girder")), girder);
 
-            CreateStrandModel(girder,segment, pSegment, pGirderEntry);
-
             // ALSO SEE LayoutGirdersPass2() for additional configuration steps
          } // segment loop
 
@@ -3995,10 +3993,9 @@ bool CBridgeAgentImp::LayoutTrafficBarrier(const CBridgeDescription2* pBridgeDes
    return true;
 }
 
-bool CBridgeAgentImp::BuildGirder()
+bool CBridgeAgentImp::BuildGirders()
 {
    UpdatePrestressing(ALL_GROUPS, ALL_GIRDERS, ALL_SEGMENTS);
-
    return LayoutGirdersPass2();
 }
 
@@ -4030,11 +4027,11 @@ bool CBridgeAgentImp::LayoutGirdersPass2()
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
-            CComPtr<ISuperstructureMemberSegment> segment;
-            ssmbr->get_Segment(segIdx,&segment);
-
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
             CSegmentKey segmentKey(pSegment->GetSegmentKey());
+
+            CComPtr<ISuperstructureMemberSegment> segment;
+            ssmbr->get_Segment(segIdx, &segment);
 
             Float64 startHaunch = 0;
             Float64 midHaunch = 0;
@@ -4085,9 +4082,10 @@ bool CBridgeAgentImp::LayoutGirdersPass2()
    return true;
 }
 
-void CBridgeAgentImp::ValidateGirder()
+void CBridgeAgentImp::ValidateGirders()
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE_NOCHECK(IEAFStatusCenter, pStatusCenter);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
@@ -4103,8 +4101,40 @@ void CBridgeAgentImp::ValidateGirder()
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            CComPtr<IPrecastGirder> girder;
+            GetGirder(segmentKey, &girder);
 
-            IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+            // Check location of temporary strands... usually in the top half of the girder
+            CComPtr<IStrandModel> strandModel;
+            girder->get_StrandModel(&strandModel);
+
+            const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
+            Float64 h_start = pGirderEntry->GetBeamHeight(pgsTypes::metStart);
+            Float64 h_end = pGirderEntry->GetBeamHeight(pgsTypes::metEnd);
+
+            CComPtr<IPoint2dCollection> strandPoints;
+            strandModel->GetStrandPositions(Temporary, 0.0, &strandPoints);
+
+            CComPtr<IEnumPoint2d> enumPoints;
+            strandPoints->get__Enum(&enumPoints);
+            CComPtr<IPoint2d> point;
+            while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
+            {
+               Float64 Y;
+               point->get_Y(&Y);
+
+               if (Y < -h_start / 2 || Y < -h_end / 2)
+               {
+                  CString strMsg;
+                  strMsg.Format(_T("%s: Temporary strands are not in the top half of the girder"), SEGMENT_LABEL(CSegmentKey(grpIdx, gdrIdx, segIdx)));
+                  pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidInformationalWarning, strMsg);
+                  pStatusCenter->Add(pStatusItem);
+                  break;
+               }
+
+               point.Release();
+            }
+
 
             // check strand drape...
             // can't use POIs at ends of girders because we can model harped strands that are straight along the top
@@ -4135,7 +4165,6 @@ void CBridgeAgentImp::ValidateGirder()
 
                if ((start_slope != Float64_Max && 0.0 < start_slope) || (end_slope != Float64_Max && end_slope < 0.0))
                {
-                  GET_IFACE(IEAFStatusCenter, pStatusCenter);
                   std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Strand drape is upside down");
                   pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
                   pStatusCenter->Add(pStatusItem);
@@ -4146,7 +4175,6 @@ void CBridgeAgentImp::ValidateGirder()
             Float64 framing_length = GetSegmentFramingLength(segmentKey);
             if ( !pSegment->AreSegmentVariationsValid(framing_length) )
             {
-               GET_IFACE(IEAFStatusCenter,pStatusCenter);
                std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Segment variation dimensions are invalid.");
                pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
                pStatusCenter->Add(pStatusItem);
@@ -4160,7 +4188,6 @@ void CBridgeAgentImp::ValidateGirder()
                pSegment->Strands.GetStrandCount(pgsTypes::Harped) > 0 &&
                GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither) > 0)
             {
-               GET_IFACE(IEAFStatusCenter,pStatusCenter);
                std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Has a mix of Harped and Debonded strands. Specification checks for debond constructability may be innacurate.");
                pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
                pStatusCenter->Add(pStatusItem);
@@ -4202,7 +4229,6 @@ void CBridgeAgentImp::ValidateGirder()
                   CString strMsg;
                   strMsg.Format(_T("The bearings on the ahead side of %s %d for Girder %s, are wider than the bottom of the girder."),(pPier->IsAbutment()?_T("Abutment"):_T("Pier")),LABEL_PIER(pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
                   std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Bearings,strMsg);
-                  GET_IFACE(IEAFStatusCenter,pStatusCenter);
                   pStatusCenter->Add(pStatusItem.release());
                }
             }
@@ -4234,7 +4260,6 @@ void CBridgeAgentImp::ValidateGirder()
                   CString strMsg;
                   strMsg.Format(_T("The bearings on the back side of %s %d for Girder %s, are wider than the bottom of the girder."),(pPier->IsAbutment()?_T("Abutment"):_T("Pier")),LABEL_PIER(pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
                   std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Bearings,strMsg);
-                  GET_IFACE(IEAFStatusCenter,pStatusCenter);
                   pStatusCenter->Add(pStatusItem.release());
                }
             }
@@ -4294,14 +4319,23 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
             lastSegmentIdx = firstSegmentIdx;
          }
 
+         CGirderKey girderKey = pGirder->GetGirderKey();
+         const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(girderKey);
+
          for ( SegmentIndexType segIdx = firstSegmentIdx; segIdx <= lastSegmentIdx; segIdx++ )
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
-
-            CComPtr<IPrecastGirder> girder;
-            GetGirder(segmentKey,&girder);
-
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+            CComPtr<ISuperstructureMemberSegment> segment;
+            ::GetSegment(m_Bridge, segmentKey, &segment);
+
+            CComQIPtr<IItemData> itemdata(segment);
+            CComPtr<IUnknown> punk;
+            itemdata->GetItemData(CComBSTR("Precast Girder"), &punk);
+            CComQIPtr<IPrecastGirder> girder(punk);
+
+            CreateStrandModel(girder, segment, pSegment, pGirderEntry);
 
             CComPtr<IStrandModel> strandModel;
             girder->get_StrandModel(&strandModel);
@@ -22794,11 +22828,8 @@ void CBridgeAgentImp::GetJointShapes(IntervalIndexType intervalIdx,const pgsPoin
    }
    jointedSection->GetJointShapes(ppLeftJointShape,ppRightJointShape);
 
-   if (bOrient)
+   if (bOrient || coordinateType == pgsTypes::scBridge)
    {
-      Float64 orientation = GetOrientation(poi.GetSegmentKey());
-
-      Float64 rotation_angle = -orientation;
 
       CComPtr<ICompositeShape> compositeShape;
       compositeShape.CoCreateInstance(CLSID_CompositeShape);
@@ -22813,11 +22844,20 @@ void CBridgeAgentImp::GetJointShapes(IntervalIndexType intervalIdx,const pgsPoin
       }
 
       CComQIPtr<IXYPosition> position(compositeShape);
-      position->Rotate(0, 0, rotation_angle);
 
-      // the joints shapres are in girder section coordinates
+      if (bOrient)
+      {
+         Float64 orientation = GetOrientation(poi.GetSegmentKey());
+         Float64 rotation_angle = -orientation;
+         position->Rotate(0, 0, rotation_angle);
+      }
+
+      if (coordinateType == pgsTypes::scBridge)
+      {
+         // the joints shapes are in girder section coordinates
       // move them to bridge section coordinates
-      position->Offset(sprops.dx, sprops.dy);
+         position->Offset(sprops.dx, sprops.dy);
+      }
    }
 }
 
@@ -29457,6 +29497,28 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
          CComQIPtr<IXYPosition> pos(section); // offset the entire cross section, not just the girder shape
          pos->Offset(-props.dx, -props.dy);
 
+         CComQIPtr<IJointedSection> jointedSection(girderShape);
+         if ( jointedSection )
+         {
+            CComPtr<IShape> leftJointShape, rightJointShape;
+            jointedSection->GetJointShapes(&leftJointShape, &rightJointShape); // this clones the shapes so clients can't mess with the original
+
+            if (leftJointShape)
+            {
+               CComQIPtr<IXYPosition> pos(leftJointShape);
+               pos->Offset(-props.dx, -props.dy);
+            }
+
+            if (rightJointShape)
+            {
+               CComQIPtr<IXYPosition> pos(rightJointShape);
+               pos->Offset(-props.dx, -props.dy);
+            }
+
+            // we've moved the joint shapes. now update the original section with the new joint shapes
+            jointedSection->SetJointShapes(leftJointShape, rightJointShape);
+         }
+
          // get elastic properties of section
          CComPtr<IElasticProperties> eprop;
          section->get_ElasticProperties(&eprop);
@@ -30785,36 +30847,6 @@ void CBridgeAgentImp::CheckBridge()
                pStatusCenter->Add(pStatusItem);
             }
 
-            // Check location of temporary strands... usually in the top half of the girder
-            CComPtr<IStrandModel> strandModel;
-            girder->get_StrandModel(&strandModel);
-
-            const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
-            Float64 h_start = pGirderEntry->GetBeamHeight(pgsTypes::metStart);
-            Float64 h_end   = pGirderEntry->GetBeamHeight(pgsTypes::metEnd);
-
-            CComPtr<IPoint2dCollection> strandPoints;
-            strandModel->GetStrandPositions(Temporary, 0.0, &strandPoints);
-
-            CComPtr<IEnumPoint2d> enumPoints;
-            strandPoints->get__Enum(&enumPoints);
-            CComPtr<IPoint2d> point;
-            while(enumPoints->Next(1,&point,nullptr) != S_FALSE)
-            {
-               Float64 Y;
-               point->get_Y(&Y);
-
-               if ( Y < -h_start/2 || Y < -h_end/2 )
-               {
-                  CString strMsg;
-                  strMsg.Format(_T("%s: Temporary strands are not in the top half of the girder"),SEGMENT_LABEL(CSegmentKey(grpIdx,gdrIdx,segIdx)));
-                  pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,strMsg);
-                  pStatusCenter->Add(pStatusItem);
-                  break;
-               }
-
-               point.Release();
-            }
 
             if ( segIdx < nSegments-1 )
             {

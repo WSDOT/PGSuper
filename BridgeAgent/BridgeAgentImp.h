@@ -1416,8 +1416,8 @@ private:
    Uint16 Validate( Uint16 level );
    bool BuildCogoModel();
    bool BuildBridgeModel();
-   bool BuildGirder();
-   void ValidateGirder();
+   bool BuildGirders();
+   void ValidateGirders();
 
    // helper functions for building the bridge model
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc);
