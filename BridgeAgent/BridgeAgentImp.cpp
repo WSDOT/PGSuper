@@ -22403,6 +22403,9 @@ Float64 CBridgeAgentImp::GetSegmentHeight(const CPrecastSegmentData* pSegment, F
 //
 void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape) const
 {
+   CComPtr<ICompositeShape> compShape;
+   compShape.CoCreateInstance(CLSID_CompositeShape);
+
    pgsTypes::SectionPropertyType spType = GetSectionPropertiesType();
    const auto& sprops = GetSectionProperties(intervalIdx, poi, spType);
 
@@ -22410,9 +22413,25 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
    ATLASSERT(compositeSection != nullptr);
    CComPtr<ICompositeSectionItemEx> sectionItem;
    compositeSection->get_Item(sprops.GirderShapeIndex, &sectionItem);
+
    CComPtr<IShape> shape;
    sectionItem->get_Shape(&shape);
-   shape->Clone(ppShape);
+   CComPtr<IShape> gdrShape;
+   shape->Clone(&gdrShape);
+   compShape->AddShape(gdrShape, VARIANT_FALSE);
+
+   if (sprops.SlabShapeIndex != INVALID_INDEX)
+   {
+      sectionItem.Release();
+      compositeSection->get_Item(sprops.SlabShapeIndex, &sectionItem);
+      shape.Release();
+      sectionItem->get_Shape(&shape);
+      CComPtr<IShape> deckShape;
+      shape->Clone(&deckShape);
+      compShape->AddShape(deckShape, VARIANT_FALSE);
+   }
+
+   compShape.QueryInterface(ppShape);
 
    if (coordinateType == pgsTypes::scBridge)
    {
