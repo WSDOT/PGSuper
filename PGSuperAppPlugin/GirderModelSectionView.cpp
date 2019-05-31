@@ -890,34 +890,6 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
       textBlock->SetBkMode(TRANSPARENT);
       textBlock->SetPointSize(FONT_POINT_SIZE);
 
-
-      // Draw ducts
-      CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject, nullptr, CLSCTX_ALL, IID_iPointDisplayObject, (void**)&doPnt);
-      doPnt->SetID(ductIdx);
-
-      CComPtr<iShapeDrawStrategy> strategy;
-      ::CoCreateInstance(CLSID_ShapeDrawStrategy, nullptr, CLSCTX_ALL, IID_iShapeDrawStrategy, (void**)&strategy);
-      doPnt->SetDrawingStrategy(strategy);
-
-      Float64 ductDiameter = pTendonGeom->GetOutsideDiameter(girderKey, ductIdx);
-
-      CComPtr<ICircle> duct;
-      duct.CoCreateInstance(CLSID_Circle);
-      duct->put_Radius(ductDiameter / 2);
-
-      CComPtr<IPoint2d> center;
-      duct->get_Center(&center);
-      center->MoveEx(pnt);
-
-      CComQIPtr<IShape> duct_shape(duct);
-
-      strategy->SetShape(duct_shape);
-      strategy->SetSolidLineColor(VOID_BORDER_COLOR);
-      strategy->SetSolidFillColor(GetSysColor(COLOR_WINDOW));
-      strategy->DoFill(true);
-
-      pDisplayList->AddDisplayObject(doPnt);
       pDisplayList->AddDisplayObject(textBlock);
    }
 }

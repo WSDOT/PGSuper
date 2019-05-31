@@ -22496,26 +22496,20 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
 
    CComQIPtr<ICompositeSectionEx> compositeSection(sprops.Section);
    ATLASSERT(compositeSection != nullptr);
-   CComPtr<ICompositeSectionItemEx> sectionItem;
-   compositeSection->get_Item(sprops.GirderShapeIndex, &sectionItem);
 
-   CComPtr<IShape> shape;
-   sectionItem->get_Shape(&shape);
-   CComPtr<IShape> gdrShape;
-   shape->Clone(&gdrShape);
-   compShape->AddShape(gdrShape, VARIANT_FALSE);
-
-   if (sprops.SlabShapeIndex != INVALID_INDEX)
+   IndexType nItems;
+   compositeSection->get_Count(&nItems);
+   for (IndexType idx = 0; idx < nItems; idx++)
    {
-      sectionItem.Release();
-      compositeSection->get_Item(sprops.SlabShapeIndex, &sectionItem);
-      shape.Release();
+      CComPtr<ICompositeSectionItemEx> sectionItem;
+      compositeSection->get_Item(idx, &sectionItem);
+      CComPtr<IShape> shape;
       sectionItem->get_Shape(&shape);
-      CComPtr<IShape> deckShape;
-      shape->Clone(&deckShape);
-      compShape->AddShape(deckShape, VARIANT_FALSE);
+      CComPtr<IShape> clone;
+      shape->Clone(&clone);
+      compShape->AddShape(clone, (idx == sprops.GirderShapeIndex || idx == sprops.SlabShapeIndex ? VARIANT_FALSE : VARIANT_TRUE));
    }
-
+   
    compShape.QueryInterface(ppShape);
 
    if (coordinateType == pgsTypes::scBridge)
@@ -22595,6 +22589,17 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
       // if the workpoint isn't available, use the top center
       CComPtr<IPoint2d> pntWorkPoint;
       CComQIPtr<IGirderSection> section(*ppShape);
+      if (!section)
+      {
+         CComQIPtr<ICompositeShape> compShape(*ppShape);
+         CComPtr<ICompositeShapeItem> shapeItem;
+         compShape->get_Item(0, &shapeItem);
+         CComPtr<IShape> gdrShape;
+         shapeItem->get_Shape(&gdrShape);
+         gdrShape.QueryInterface(&section);
+
+      }
+
       CComQIPtr<IXYPosition> position(*ppShape);
       if (section)
       {

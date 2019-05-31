@@ -940,9 +940,9 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
          CComQIPtr<ICompositeShape> compShape(shape);
          CComPtr<ICompositeShapeItem> shapeItem;
          compShape->get_Item(0, &shapeItem);
-         shape.Release();
-         shapeItem->get_Shape(&shape);
-         shape.QueryInterface(&section);
+         CComPtr<IShape> gdrShape;
+         shapeItem->get_Shape(&gdrShape);
+         gdrShape.QueryInterface(&section);
       }
 
       CComQIPtr<IXYPosition> position(shape);
