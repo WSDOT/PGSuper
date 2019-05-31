@@ -84,4 +84,5 @@ protected:
    void SetRowStyle(ROWCOL nRow);
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
    void SetDeleteButtonState();
+   BOOL UpdateLastRow();
 };

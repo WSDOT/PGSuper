@@ -82,10 +82,10 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
          Xg = dXg; // location was measured from start of girder
       }
 
-      if ( Lg < Xg )
+      if ( ::IsLT(Lg,Xg) )
       {
          CString strMsg;
-         strMsg.Format(_T("Duct point %d is beyond the end of the girder. Adjust duct point location."),(pntIdx+1));
+         strMsg.Format(_T("Duct point %d is beyond the end of the girder. Adjust duct geometry."),(pntIdx+1));
          AfxMessageBox(strMsg,MB_ICONEXCLAMATION | MB_OK);
          pDX->Fail();
       }

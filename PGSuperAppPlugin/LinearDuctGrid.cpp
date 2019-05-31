@@ -229,14 +229,24 @@ void CLinearDuctGrid::AddPoint()
 
 void CLinearDuctGrid::DeletePoint()
 {
-#pragma Reminder("UPDATE: can't delete last row")
-
-	CGXRangeList* pSelList = GetParam()->GetRangeList();
-	if (pSelList->IsAnyCellFromCol(0) && pSelList->GetCount() == 1)
+   CRowColArray awRows;
+   ROWCOL nSelRows = GetSelectedRows(awRows);
+   if (0 < nSelRows && (awRows[0] != 1 && awRows[nSelRows - 1] != GetRowCount()))
 	{
-		CGXRange range = pSelList->GetHead();
-		range.ExpandRange(1, 0, GetRowCount(), 0);
-		RemoveRows(range.top, range.bottom);
+      BOOL bUndoState = GetParam()->IsEnableUndo();
+      GetParam()->EnableUndo(TRUE);
+
+      for (int i = nSelRows-1; 0 <= i; i--)
+      {
+         RemoveRows(awRows[i],awRows[i]);
+      }
+
+      if (!UpdateLastRow())
+      {
+         AfxMessageBox(m_sWarningText);
+         Undo();
+      }
+      GetParam()->EnableUndo(bUndoState);
 	}
 
    SetDeleteButtonState();
@@ -411,6 +421,15 @@ BOOL CLinearDuctGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFla
 
 BOOL CLinearDuctGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
 {
+   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
+   if (nCol == 1 && pParent->GetMeasurementType() == CLinearDuctGeometry::FromPrevious)
+   {
+      if (!UpdateLastRow())
+      {
+         return FALSE;
+      }
+   }
+
    if ( m_pCallback )
    {
       m_pCallback->OnDuctChanged();
@@ -444,4 +463,40 @@ void CLinearDuctGrid::SetDeleteButtonState()
          pParent->EnableDeleteBtn(FALSE);
       }
    }
+}
+
+BOOL CLinearDuctGrid::UpdateLastRow()
+{
+   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
+   ATLASSERT(pParent->GetMeasurementType() == CLinearDuctGeometry::FromPrevious);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+
+   const CGirderKey& girderKey = pParent->GetGirderKey();
+   Float64 Lg = pBridge->GetGirderLength(girderKey);
+
+   Float64 X = 0;
+   ROWCOL nRows = GetRowCount();
+   for (ROWCOL row = 1; row < nRows; row++)
+   {
+      Float64 location, offset;
+      CLinearDuctGeometry::OffsetType offsetType;
+      GetPoint(row, &location, &offset, &offsetType);
+      X += location;
+   }
+
+   Float64 lastDistance = Lg - X;
+   if (lastDistance < 0)
+   {
+      m_sWarningText = _T("Duct is longer than girder. Adjust duct geometry.");
+      return FALSE;
+   }
+
+   Float64 location, offset;
+   CLinearDuctGeometry::OffsetType offsetType;
+   GetPoint(nRows, &location, &offset, &offsetType);
+   FillRow(nRows, lastDistance, offset, offsetType);
+   return TRUE;
 }
