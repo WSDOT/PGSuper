@@ -1582,7 +1582,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
       Float64 nEff;
-      Float64 ecc = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi,true,&nEff);
+      Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi,true,&nEff);
       Float64 yps = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
       textBlock.Release();

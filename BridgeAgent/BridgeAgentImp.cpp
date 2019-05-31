@@ -15892,7 +15892,13 @@ void CBridgeAgentImp::GetTemporaryStrandCG(IntervalIndexType intervalIdx, const 
    // if the strands aren't released yet, or if the poi isn't in the girder, then there isn't an eccentricty with respect to the girder cross section
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-   if (intervalIdx < releaseIntervalIdx || IsOffSegment(poi))
+   IntervalIndexType tsIntallationIntervalIdx = GetTemporaryStrandInstallationInterval(segmentKey);
+   IntervalIndexType tsRemovalIntervalIdx = GetTemporaryStrandRemovalInterval(segmentKey);
+   if (IsOffSegment(poi) ||  // poi is not on the segment
+      intervalIdx < releaseIntervalIdx || // interval is before release so strands aren't in the segment yet
+      (tsIntallationIntervalIdx == INVALID_INDEX || intervalIdx < tsIntallationIntervalIdx) || // if installation interval is INVALID_INDEX there aren't any temp strands or this interval is before the temp strands are installed
+      (tsRemovalIntervalIdx == INVALID_INDEX || tsRemovalIntervalIdx <= intervalIdx) // if removal interval is INVALID_INDEX there aren't any temp strnads or this interval is after the temp strands are removed
+      )
    {
       return;
    }

@@ -1384,6 +1384,17 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
             for (int i = 0; i < 3; i++)
             {
                pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+               if (strandType == pgsTypes::Temporary)
+               {
+                  IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+                  IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+                  if ((intervalIdx < tsInstallationIntervalIdx && tsInstallationIntervalIdx!=INVALID_INDEX) || (tsRemovalIntervalIdx <= intervalIdx && tsRemovalIntervalIdx != INVALID_INDEX))
+                  {
+                     // if the current interval is before temporary strand installation or if it is after temporary strand removal
+                     // don't draw the temporary strands
+                     continue;
+                  }
+               }
                StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, strandType);
                for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
                {
@@ -1489,6 +1500,8 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
 
    Float64 group_offset = 0;
 
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
+
    for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
@@ -1502,8 +1515,6 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(thisGirderKey,segIdx);
-
-         IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
          Float64 segment_length        = pBridge->GetSegmentLength(segmentKey);
          Float64 start_brg_offset      = pBridge->GetSegmentStartBearingOffset(segmentKey);
@@ -1521,8 +1532,16 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
          EventIndexType erectSegmentEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(segID);
          if ( erectSegmentEventIdx <= eventIdx )
          {
+            bool bIncludeTempStrands = true;
+            IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+            IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+            if (tsInstallationIntervalIdx == INVALID_INDEX || tsRemovalIntervalIdx == INVALID_INDEX || intervalIdx < tsInstallationIntervalIdx || tsRemovalIntervalIdx <= intervalIdx)
+            {
+               bIncludeTempStrands = false;
+            }
+
             CComPtr<IPoint2dCollection> profilePoints;
-            pStrandGeometry->GetStrandCGProfile(segmentKey, true /*include temp strands*/, &profilePoints);
+            pStrandGeometry->GetStrandCGProfile(segmentKey, bIncludeTempStrands, &profilePoints);
 
             profilePoints->Offset(group_offset + running_segment_length - start_offset, 0);
 
