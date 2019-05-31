@@ -2371,7 +2371,16 @@ int CTimelineManager::Validate() const
       {
          return TLM_RAILING_SYSTEM_ERROR;
       }
+
+      // Make sure intermediate diaphragms are installed before the deck is cast
+      EventIndexType diaphragmEventIdx = GetIntermediateDiaphragmsLoadEventIndex();
+      if (castDeckEventIdx < diaphragmEventIdx)
+      {
+         return TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR;
+      }
    }
+
+  
 
    EventIndexType liveLoadEventIdx = GetLiveLoadEventIndex();
    if (liveLoadEventIdx == INVALID_INDEX)
@@ -2961,6 +2970,14 @@ CString CTimelineManager::GetErrorMessage(int errorCode) const
 
    case TLM_STRESS_TENDON_ERROR:
       strMsg = _T("A tendon has been stressed before the segments and closure joints have been assembled.");
+      break;
+
+   case TLM_LOAD_RATING_ERROR:
+      strMsg = _T("Bridge must be open to traffic before load rating.");
+      break;
+
+   case TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR:
+      strMsg = _T("Intermediate diaphragms are cast after the deck.");
       break;
 
    default:
