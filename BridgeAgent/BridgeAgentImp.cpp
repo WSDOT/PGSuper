@@ -4286,6 +4286,61 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
       lastGroupIdx = firstGroupIdx;
    }
 
+   // must create at the strands models first
+   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+
+      GirderIndexType firstGirderIdx, lastGirderIdx;
+      if (girderIdx == ALL_GIRDERS)
+      {
+         firstGirderIdx = 0;
+         lastGirderIdx = pGroup->GetGirderCount() - 1;
+      }
+      else
+      {
+         firstGirderIdx = girderIdx;
+         lastGirderIdx = firstGirderIdx;
+      }
+
+      for (GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++)
+      {
+         Float64 segmentOffset = 0;
+
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType firstSegmentIdx, lastSegmentIdx;
+         if (segmentIdx == ALL_SEGMENTS)
+         {
+            firstSegmentIdx = 0;
+            lastSegmentIdx = pGirder->GetSegmentCount() - 1;
+         }
+         else
+         {
+            firstSegmentIdx = segmentIdx;
+            lastSegmentIdx = firstSegmentIdx;
+         }
+
+         CGirderKey girderKey = pGirder->GetGirderKey();
+         const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(girderKey);
+
+         for (SegmentIndexType segIdx = firstSegmentIdx; segIdx <= lastSegmentIdx; segIdx++)
+         {
+            CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
+            const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+            CComPtr<ISuperstructureMemberSegment> segment;
+            ::GetSegment(m_Bridge, segmentKey, &segment);
+
+            CComQIPtr<IItemData> itemdata(segment);
+            CComPtr<IUnknown> punk;
+            itemdata->GetItemData(CComBSTR("Precast Girder"), &punk);
+            CComQIPtr<IPrecastGirder> girder(punk);
+
+            CreateStrandModel(girder, segment, pSegment, pGirderEntry);
+         } // segment loop
+      } // girder loop
+   } // group loop
+
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
@@ -4319,23 +4374,13 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
             lastSegmentIdx = firstSegmentIdx;
          }
 
-         CGirderKey girderKey = pGirder->GetGirderKey();
-         const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(girderKey);
-
          for ( SegmentIndexType segIdx = firstSegmentIdx; segIdx <= lastSegmentIdx; segIdx++ )
          {
             CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
-            CComPtr<ISuperstructureMemberSegment> segment;
-            ::GetSegment(m_Bridge, segmentKey, &segment);
-
-            CComQIPtr<IItemData> itemdata(segment);
-            CComPtr<IUnknown> punk;
-            itemdata->GetItemData(CComBSTR("Precast Girder"), &punk);
-            CComQIPtr<IPrecastGirder> girder(punk);
-
-            CreateStrandModel(girder, segment, pSegment, pGirderEntry);
+            CComPtr<IPrecastGirder> girder;
+            GetGirder(segmentKey, &girder);
 
             CComPtr<IStrandModel> strandModel;
             girder->get_StrandModel(&strandModel);
