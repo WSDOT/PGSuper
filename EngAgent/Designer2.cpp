@@ -9351,6 +9351,13 @@ void pgsDesigner2::RefineDesignForAllowableStress(const StressCheckTask& task,IP
    bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
 
    IntervalIndexType intervalIdx = task.intervalIdx;
+   if (intervalIdx == releaseIntervalIdx && 0 < m_StrandDesignTool.GetNt())
+   {
+      // if there are TTS, then use the interval after release, instead of release
+      // to account for TTS PT immediately after release
+      intervalIdx++;
+   }
+
    bool bIncludeLiveLoad = task.bIncludeLiveLoad;
    if ( task.intervalIdx == railingSystemIntervalIdx && !bTimeStepAnalysis )
    {

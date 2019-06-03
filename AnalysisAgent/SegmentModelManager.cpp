@@ -468,7 +468,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
             {
                poiAttribute = POI_STORAGE_SEGMENT;
             }
-            else if ( haulingIntervalIdx <= intervalIdx && intervalIdx < erectionIntervalIdx )
+            else if ( haulingIntervalIdx <= intervalIdx && intervalIdx < erectionIntervalIdx)
             {
                poiAttribute = POI_HAUL_SEGMENT;
             }

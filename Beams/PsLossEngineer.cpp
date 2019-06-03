@@ -2748,6 +2748,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    Float64 nStrandsEffective;
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType erectIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
@@ -2847,7 +2848,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    pepermFinal->Move(ex, ey);
 
    // eccentricity of the temporary strands
-   pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, pConfig, &nStrandsEffective, &ex, &ey);
+   pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poi, pgsTypes::Temporary, pConfig, &nStrandsEffective, &ex, &ey);
    petemp->Move(ex, ey);
 
    pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);

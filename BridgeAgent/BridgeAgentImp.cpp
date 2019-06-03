@@ -26446,6 +26446,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
 {
    IntervalIndexType intervalIdx = m_IntervalManager.GetLiftingInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = m_IntervalManager.GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType tsInstallationIntervalIdx = GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType liftingIntervalIdx = m_IntervalManager.GetLiftingInterval(segmentKey);
 
    matConcreteEx concrete;
@@ -26651,7 +26652,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
          YpsHarped = Ytg - eccy;
          FpeHarped = pPSForce->GetPrestressForce(poi,pgsTypes::Harped, intervalIdx,pgsTypes::Start, &handlingConfig.GdrConfig);
 
-         GetEccentricity(releaseIntervalIdx,poi, pgsTypes::Temporary,&handlingConfig.GdrConfig, &N, &eccx, &eccy);
+         GetEccentricity(tsInstallationIntervalIdx,poi, pgsTypes::Temporary,&handlingConfig.GdrConfig, &N, &eccx, &eccy);
          XpsTemp = Xleft - eccx;
          YpsTemp = Ytg - eccy;
          FpeTemp = pPSForce->GetPrestressForce(poi,pgsTypes::Temporary, intervalIdx,pgsTypes::Start, &handlingConfig.GdrConfig);
@@ -26669,7 +26670,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
          YpsHarped = Ytg - eccy;
          FpeHarped = pPSForce->GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start);
 
-         GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Temporary, &N, &eccx, &eccy);
+         GetEccentricity(tsInstallationIntervalIdx,poi,pgsTypes::Temporary, &N, &eccx, &eccy);
          XpsTemp = Xleft - eccx;
          YpsTemp = Ytg - eccy;
          FpeTemp = pPSForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,pgsTypes::Start);
@@ -26707,6 +26708,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
 {
    IntervalIndexType intervalIdx = m_IntervalManager.GetHaulingInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = m_IntervalManager.GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType tsInstallationIntervalIdx = GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = m_IntervalManager.GetStorageInterval(segmentKey);
    IntervalIndexType haulingIntervalIdx = m_IntervalManager.GetHaulingInterval(segmentKey);
 
@@ -26949,7 +26951,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
          YpsHarped = Ytg - eccy;
          FpeHarped = pPSForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
 
-         GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &handlingConfig.GdrConfig, &N, &eccx, &eccy);
+         GetEccentricity(tsInstallationIntervalIdx, poi, pgsTypes::Temporary, &handlingConfig.GdrConfig, &N, &eccx, &eccy);
          XpsTemp = Xleft - eccx;
          YpsTemp = Ytg - eccy;
          FpeTemp = pPSForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
@@ -26967,7 +26969,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
          YpsHarped = Ytg - eccy;
          FpeHarped = pPSForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, pgsTypes::Start);
 
-         GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &N, &eccx, &eccy);
+         GetEccentricity(tsInstallationIntervalIdx, poi, pgsTypes::Temporary, &N, &eccx, &eccy);
          XpsTemp = Xleft - eccx;
          YpsTemp = Ytg - eccy;
          FpeTemp = pPSForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, pgsTypes::Start);

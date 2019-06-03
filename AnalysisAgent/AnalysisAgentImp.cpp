@@ -612,8 +612,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       }
 
       Float64 nTsEffective;
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_start, &ecc_y_temporary_start);
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_end,   &ecc_y_temporary_end);
+      pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poiStart, pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_start, &ecc_y_temporary_start);
+      pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poiEnd,   pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_end,   &ecc_y_temporary_end);
 
       Pt *= nTsEffective/Nt;
 
@@ -7410,17 +7410,18 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx, const pgs
    // NOTE: since we are doing design, the main bridge model may not have temporary strand removal
    // intervals. Use the deck casting interval as the break point for "before temporary strands are removed"
    // and "after temporary strands are removed"
+   IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   bool bIncludeTemporaryStrands = intervalIdx < tsRemovalIntervalIdx ? true : false;
+   bool bIncludeTemporaryStrands = /*tsInstallationIntervalIdx <= intervalIdx &&*/ intervalIdx < tsRemovalIntervalIdx ? true : false;
    if (bIncludeTemporaryStrands)
    {
-      P += pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType, &config);
+      P += pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, tsInstallationIntervalIdx, timeType, &config);
    }
 
    Float64 nSEffective;
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
    Float64 ex, ey;
-   pStrandGeom->GetEccentricity(spType, intervalIdx, poi, bIncludeTemporaryStrands, &config, &nSEffective, &ex, &ey);
+   pStrandGeom->GetEccentricity(spType, bIncludeTemporaryStrands ? tsInstallationIntervalIdx : intervalIdx, poi, bIncludeTemporaryStrands, &config, &nSEffective, &ex, &ey);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 

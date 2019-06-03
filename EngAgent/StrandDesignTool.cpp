@@ -867,7 +867,7 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    ATLASSERT(castDiaphragmIntervalIdx != INVALID_INDEX);
-   bool bIncTempStrands = (intervalIdx < castDiaphragmIntervalIdx ? true : false); // temporary strands are assumed to be removed just prior to casting intermediate diaphragms
+
    // NOTE: Can't use the following code block. If the original input (before design) does not have
    // temporary strands then the install and remove intervals will be INVALID_INDEX. If the interval
    // in question is before the deck is cast, then include temporary strands. Otherwise, the deck
@@ -875,12 +875,17 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
    //IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(m_SegmentKey);
    //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(m_SegmentKey);
    //bool bIncTempStrands = (tsInstallIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx) ? true : false;
+   bool bIncTempStrands = (intervalIdx < castDiaphragmIntervalIdx ? true : false); // temporary strands are assumed to be removed just prior to casting intermediate diaphragms
+   // NOTE: When temporary strands are post-tensioned they are installed after release. If we are including temporary strands in the computation,
+   // and we don't know when they are installed (see note above), we have to estimate the interval. The earliest PT-TTS can be installed is immediately after
+   // release. For this reason, add one to release interval
+   IntervalIndexType eccIntervalIdx = releaseIntervalIdx + (bIncTempStrands ? 1 : 0);
 
-   const GDRCONFIG& guess = GetSegmentConfiguration();
+   const GDRCONFIG& config = GetSegmentConfiguration();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 neff;
-   return pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, bIncTempStrands, &guess, &neff);
+   return pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &config, &neff);
 }
 
 Float64 pgsStrandDesignTool::GetTransferLength(pgsTypes::StrandType strandType) const
@@ -2600,7 +2605,6 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
       ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
-      bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
       // NOTE: Can't use the following code block. If the original input (before design) does not have
       // temporary strands then the install and remove intervals will be INVALID_INDEX. If the interval
       // in question is before the deck is cast, then include temporary strands. Otherwise, the deck
@@ -2608,22 +2612,28 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
       //IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(m_SegmentKey);
       //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(m_SegmentKey);
       //bool bIncTempStrands = (tsInstallIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx) ? true : false;
+      bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
+      // NOTE: When temporary strands are post-tensioned they are installed after release. If we are including temporary strands in the computation,
+      // and we don't know when they are installed (see note above), we have to estimate the interval. The earliest PT-TTS can be installed is immediately after
+      // release. For this reason, add one to release interval
+      IntervalIndexType eccIntervalIdx = releaseIntervalIdx + (bIncTempStrands ? 1 : 0);
+
       GDRCONFIG guess = GetSegmentConfiguration();
 
       GET_IFACE(IStrandGeometry,pStrandGeom);
       Float64 neff_ss(0.0), neff_ts(0.0), neff_hs(0.0);
 
-      Float64 ecc_ss = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &guess, &neff_ss);
+      Float64 ecc_ss = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Straight, &guess, &neff_ss);
 
-      Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &guess, &neff_ts) : 0.0;
+      Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Temporary, &guess, &neff_ts) : 0.0;
 
       // compute hs eccentricities for hp offsets of +1.0 and -1.0, and extrapolate the required offset
       guess.PrestressConfig.HpOffset[pgsTypes::metStart] = 1.0;
       guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = 1.0;
-      Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
+      Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
       guess.PrestressConfig.HpOffset[pgsTypes::metStart] = -1.0;
       guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = -1.0;
-      Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
+      Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
 
       Float64 neff = neff_ss + neff_hs + neff_ts;
       ATLASSERT(neff>0.0);
@@ -2642,7 +2652,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
 
       guess.PrestressConfig.HpOffset[pgsTypes::metStart] = off;
       guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = off;
-      Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, bIncTempStrands, &guess, &neff);
+      Float64 new_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &guess, &neff);
       ATLASSERT(IsEqual(ecc,new_ecc,0.01));
 
       return off;
@@ -2680,7 +2690,6 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType nonCompoisteIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    ATLASSERT(nonCompoisteIntervalIdx != INVALID_INDEX);
-   bool bIncTempStrands = (intervalIdx < nonCompoisteIntervalIdx ? true : false);
    // NOTE: Can't use the following code block. If the original input (before design) does not have
    // temporary strands then the install and remove intervals will be INVALID_INDEX. If the interval
    // in question is before the deck is cast, then include temporary strands. Otherwise, the deck
@@ -2688,6 +2697,11 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    //IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(m_SegmentKey);
    //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(m_SegmentKey);
    //bool bIncTempStrands = (tsInstallIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx) ? true : false;
+   bool bIncTempStrands = (intervalIdx < nonCompoisteIntervalIdx ? true : false);
+   // NOTE: When temporary strands are post-tensioned they are installed after release. If we are including temporary strands in the computation,
+   // and we don't know when they are installed (see note above), we have to estimate the interval. The earliest PT-TTS can be installed is immediately after
+   // release. For this reason, add one to release interval
+   IntervalIndexType eccIntervalIdx = releaseIntervalIdx + (bIncTempStrands ? 1 : 0);
 
    GDRCONFIG guess = GetSegmentConfiguration();
 
@@ -2761,7 +2775,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
       guess.PrestressConfig.SetStrandFill(pgsTypes::Straight, sfillvec);
       guess.PrestressConfig.SetStrandFill(pgsTypes::Harped,   hfillvec);
 
-      Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, bIncTempStrands, &guess, &neff_ss);
+      Float64 new_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &guess, &neff_ss);
 
       ATLASSERT(0.0 < neff_ss);
 
@@ -2777,7 +2791,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
       
       // we have to guard against causing mid-zone Bottom Service tension to go out of bounds. Odd case, but it happens for WF42G
       Float64 neff;
-      Float64 ms_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, ms_poi, false, &guess, &neff);
+      Float64 ms_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, ms_poi, false, &guess, &neff);
       LOG(_T("New Eccentricity in mid-zone, without temp strands, is ") <<::ConvertFromSysUnits( ms_ecc , unitMeasure::Inch)<< _T(" in"));
       LOG(_T("Minimum ecc for release tension mz = ") <<::ConvertFromSysUnits( GetMinimumFinalMidZoneEccentricity() , unitMeasure::Inch)<< _T(" in"));
 
