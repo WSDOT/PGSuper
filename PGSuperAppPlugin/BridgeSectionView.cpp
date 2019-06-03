@@ -87,6 +87,8 @@ static char THIS_FILE[] = __FILE__;
 #define LEFT_INT_OVERLAY_SOCKET     710
 #define RIGHT_INT_OVERLAY_SOCKET    711
 
+#define ALIGNMENT_ID -200
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionView
 
@@ -259,11 +261,23 @@ void CBridgeSectionView::SelectTrafficBarrier(pgsTypes::TrafficBarrierOrientatio
 
 void CBridgeSectionView::SelectAlignment(bool bSelect)
 {
-   // sort of a dummy function to clear the selection in this view
-   // when the alignment is selected in another view
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
-   dispMgr->ClearSelectedObjects();
+
+   CComPtr<iDisplayList> displayList;
+   dispMgr->FindDisplayList(RW_CROSS_SECTION_DISPLAY_LIST, &displayList);
+
+   CComPtr<iDisplayObject> pDO;
+   dispMgr->FindDisplayObject(ALIGNMENT_ID, RW_CROSS_SECTION_DISPLAY_LIST, atByID, &pDO);
+
+   if (pDO)
+   {
+      dispMgr->SelectObject(pDO, bSelect);
+   }
+   else
+   {
+      dispMgr->ClearSelectedObjects();
+   }
 }
 
 void CBridgeSectionView::SelectTemporarySupport(bool bSelect)
@@ -487,6 +501,12 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          break;
       }
    }
+}
+
+void CBridgeSectionView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
+{
+   CBridgeModelViewChildFrame* pFrame = GetFrame();
+   pFrame->ClearSelection();
 }
 
 void CBridgeSectionView::HandleLButtonDblClk(UINT nFlags, CPoint point) 
@@ -2430,12 +2450,12 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
       Float64 cp_offset = pRoadway->GetCrownPointOffset(icp, cut_station);
       Float64 cp_elev = pRoadway->GetElevation(cut_station, cp_offset);
 
-      if (cp_offset > left_offset && cp_offset < right_offset)
+      if (left_offset < cp_offset && cp_offset < right_offset)
       {
          pnt2.CoCreateInstance(CLSID_Point2d);
          pnt2->Move(cp_offset, cp_elev);
       }
-      else if (cp_offset > right_offset)
+      else if (right_offset < cp_offset)
       {
          bfinished = true;
          cp_offset = right_offset;
@@ -2482,6 +2502,14 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
             slope = (y2-y1)/(x2-x1);
          }
 
+         // change the slope from our analytical model to
+         // the sign convension of the input
+         // slopes down and away from the controlling crown point are < 0
+         if (icp <= contrl_crown_point)
+         {
+            slope *= -1;
+         }
+
          CComPtr<iTextBlock> doText;
          doText.CoCreateInstance(CLSID_TextBlock);
          doText->SetPosition(txtLoc);
@@ -2513,15 +2541,10 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
    doAlignment->put_PointType(plpNone);
    doAlignment->Commit();
 
-   displayList->AddDisplayObject(dispObj);
+   doAlignment->SetSelectionType(stAll);
+   doAlignment->SetID(ALIGNMENT_ID);
 
-   dispObj->SetSelectionType(stAll);
-//   dispObj->SetID(ALIGNMENT_ID);
-
-   // the alignment is going to be the drop site for the section cut object
-   CComQIPtr<iDropSite> drop_site(events);
-   dispObj->RegisterDropSite(drop_site);
-
+   displayList->AddDisplayObject(doAlignment);
 
    ATLASSERT(bfinished); // crown point model is not wide enough for our needs
 }

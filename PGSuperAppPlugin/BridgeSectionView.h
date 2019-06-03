@@ -89,7 +89,8 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-	virtual void HandleLButtonDblClk(UINT nFlags, CPoint logPoint);
+   virtual void HandleLButtonDown(UINT nFlags, CPoint logPoint);
+   virtual void HandleLButtonDblClk(UINT nFlags, CPoint logPoint);
    virtual void HandleContextMenu(CWnd* pWnd,CPoint logPoint);
 
    virtual void BuildDisplayLists();
