@@ -36,10 +36,10 @@ xcopy /Y /d Trucks.pgs				%BINTARGET%\App\
 
 REM - Configuration Files
 xcopy /Y /d Configurations\WSDOT.lbr				%BINTARGET%\Configurations\
-xcopy /Y /d Configurations\PGSuper\WSDOT\Deck_Bulb_Tees\*.ico	%BINTARGET%\Configurations\PGSuper\Deck_Bulb_Tees\
-xcopy /Y /d Configurations\PGSuper\WSDOT\Deck_Bulb_Tees\*.pgt	%BINTARGET%\Configurations\PGSuper\Deck_Bulb_Tees\
 
-xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\*.ico           %BINTARGET%\Configurations\PGSuper\Legacy\
+xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\*.ico                   %BINTARGET%\Configurations\PGSuper\Legacy\
+xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\Deck_Bulb_Tees\*.ico	%BINTARGET%\Configurations\PGSuper\Legacy\Deck_Bulb_Tees\
+xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\Deck_Bulb_Tees\*.pgt	%BINTARGET%\Configurations\PGSuper\Legacy\Deck_Bulb_Tees\
 xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\MultiWeb\*.ico		%BINTARGET%\Configurations\PGSuper\Legacy\MultiWeb\
 xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\MultiWeb\*.pgt		%BINTARGET%\Configurations\PGSuper\Legacy\MultiWeb\
 xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\Slabs\*.ico		%BINTARGET%\Configurations\PGSuper\Legacy\Slabs\
