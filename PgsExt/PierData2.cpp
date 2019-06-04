@@ -1711,6 +1711,11 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
       m_GirderSpacing[pgsTypes::Back].SetGirderCount(nGirders);
       m_GirderSpacing[pgsTypes::Ahead].SetGirderCount(nGirders);
    }
+   else
+   {
+      // type has changed, but no modifications are required
+      m_SegmentConnectionType = newType;
+   }
 }
 
 void CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)
