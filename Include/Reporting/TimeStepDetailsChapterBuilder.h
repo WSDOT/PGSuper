@@ -30,6 +30,7 @@
 
 struct TIME_STEP_DETAILS;
 interface IIntervals;
+interface IMaterials;
 
 
 /*****************************************************************************
@@ -58,6 +59,7 @@ public:
 
 protected:
    rptRcTable* BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,IIntervals* pIntervals,IEAFDisplayUnits* pDisplayUnits) const;
+   rptRcTable* BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey, IMaterials* pMaterials, IEAFDisplayUnits* pDisplayUnits) const;
    rptRcTable* BuildComponentPropertiesTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;
    rptRcTable* BuildSectionPropertiesTable(const TIME_STEP_DETAILS& tsDetails, IEAFDisplayUnits* pDisplayUnits) const;
    rptRcTable* BuildFreeCreepDeformationTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;

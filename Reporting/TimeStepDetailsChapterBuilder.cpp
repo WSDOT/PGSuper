@@ -118,6 +118,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
 
    bool bHasDeck = IsStructuralDeck(pBridge->GetDeckType());
 
@@ -172,6 +173,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       std::vector<pgsTypes::ProductForceType> vLoads;
       for (const pgsPointOfInterest& poi : vPoi)
       {
+         const CSegmentKey& segmentKey(poi.GetSegmentKey());
          if ( pTSDRptSpec->ReportAtAllLocations() )
          {
             pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -203,10 +205,10 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
             pPara->SetName(str);
          }
 
-         if ( !prevGirderKey.IsEqual(CGirderKey(poi.GetSegmentKey())) )
+         if ( !prevGirderKey.IsEqual(segmentKey) )
          {
             // we only want to do this when the girder changes
-            vLoads = GetProductForces(pBroker,poi.GetSegmentKey());
+            vLoads = GetProductForces(pBroker, segmentKey);
          }
 
          const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
@@ -220,6 +222,16 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          *pChapter << pPara;
          rptRcTable* pIntervalTable = BuildIntervalTable(tsDetails,pIntervals,pDisplayUnits);
          *pPara << pIntervalTable << rptNewLine;
+         *pPara << rptNewLine;
+
+         // Concrete Parameters
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+         (*pChapter) << pPara;
+         (*pPara) << _T("Concrete Details") << rptNewLine;
+         pPara = new rptParagraph;
+         *pChapter << pPara;
+         rptRcTable* pConcreteTable = BuildConcreteTable(tsDetails, segmentKey, pMaterials, pDisplayUnits);
+         *pPara << pConcreteTable << rptNewLine;
          *pPara << rptNewLine;
 
          // Properties
@@ -493,6 +505,69 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_D
    (*pTable)(1,1) << middle;
    (*pTable)(1,2) << end;
    (*pTable)(1,3) << duration;
+
+   return pTable;
+}
+
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey,IMaterials* pMaterials, IEAFDisplayUnits* pDisplayUnits) const
+{
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7);
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
+   pTable->SetNumberOfHeaderRows(2);
+
+   pTable->SetRowSpan(0, 0, 2);
+   pTable->SetRowSpan(1, 0, SKIP_CELL);
+   (*pTable)(0, 0) << _T("Component");
+
+   pTable->SetColumnSpan(0, 1, 2);
+   pTable->SetColumnSpan(0, 2, SKIP_CELL);
+   (*pTable)(0, 1) << _T("Start");
+
+   pTable->SetColumnSpan(0, 3, 2);
+   pTable->SetColumnSpan(0, 4, SKIP_CELL);
+   (*pTable)(0, 3) << _T("Middle");
+
+   pTable->SetColumnSpan(0, 5, 2);
+   pTable->SetColumnSpan(0, 6, SKIP_CELL);
+   (*pTable)(0, 5) << _T("End");
+
+   (*pTable)(1, 1) << COLHDR(Sub2(_T("f"), _T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, 2) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+   (*pTable)(1, 3) << COLHDR(Sub2(_T("f"), _T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, 4) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+   (*pTable)(1, 5) << COLHDR(Sub2(_T("f"), _T("c")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, 6) << COLHDR(Sub2(_T("E"), _T("c")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDisplayUnits->GetModEUnit(), false);
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   for (int i = 0; i < 2; i++, row++)
+   {
+      ColumnIndexType col = 0;
+
+      std::_tstring strComponent(i == 0 ? _T("Girder") : _T("Deck"));
+      (*pTable)(row, col++) << strComponent;
+      for (int t = 0; t < 3; t++)
+      {
+         pgsTypes::IntervalTimeType timeType = (pgsTypes::IntervalTimeType)(t);
+         Float64 fc, Ec;
+         if (i == 0)
+         {
+            fc = pMaterials->GetSegmentFc(segmentKey, tsDetails.intervalIdx, timeType);
+            Ec = pMaterials->GetSegmentEc(segmentKey, tsDetails.intervalIdx, timeType);
+         }
+         else
+         {
+            fc = pMaterials->GetDeckFc(tsDetails.intervalIdx, timeType);
+            Ec = pMaterials->GetDeckEc(tsDetails.intervalIdx, timeType);
+         }
+
+         (*pTable)(row, col++) << stress.SetValue(fc);
+         (*pTable)(row, col++) << modE.SetValue(Ec);
+      }
+   }
 
    return pTable;
 }
