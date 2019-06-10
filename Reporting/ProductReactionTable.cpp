@@ -79,6 +79,12 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    PierIndexType nPiers = pBridge->GetPierCount();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
+   IntervalIndexType deckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+   IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
+   IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+   IntervalIndexType constructionIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
@@ -113,9 +119,8 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    }
    else
    {
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
       GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-      pForces =  std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, compositeDeckIntervalIdx, girderKey);
+      pForces =  std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, diaphragmIntervalIdx, girderKey);
    }
 
    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
@@ -140,12 +145,12 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
      }
      else
      {
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftGirder,    analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(erectSegmentIntervalIdx, reactionLocation, pgsTypes::pftGirder,    analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
      }
 
-     if ( reactionDecider.DoReport(lastIntervalIdx) )
+     if ( reactionDecider.DoReport(diaphragmIntervalIdx) )
      {
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastIntervalIdx,     reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(diaphragmIntervalIdx,     reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
      }
      else
      {
@@ -156,10 +161,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
      {
         if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
         {
-           if (reactionDecider.DoReport(lastIntervalIdx))
+           if (reactionDecider.DoReport(shearKeyIntervalIdx))
            {
-              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftShearKey, maxBAT));
-              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftShearKey, minBAT));
+              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(shearKeyIntervalIdx, reactionLocation, pgsTypes::pftShearKey, maxBAT));
+              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(shearKeyIntervalIdx, reactionLocation, pgsTypes::pftShearKey, minBAT));
            }
            else
            {
@@ -169,9 +174,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
         }
         else
         {
-           if (reactionDecider.DoReport(lastIntervalIdx))
+           if (reactionDecider.DoReport(shearKeyIntervalIdx))
            {
-              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftShearKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(shearKeyIntervalIdx, reactionLocation, pgsTypes::pftShearKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
            }
            else
            {
@@ -184,10 +189,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
      {
         if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
         {
-           if (reactionDecider.DoReport(lastIntervalIdx))
+           if (reactionDecider.DoReport(ljIntervalIdx))
            {
-              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftLongitudinalJoint, maxBAT));
-              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftLongitudinalJoint, minBAT));
+              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(ljIntervalIdx, reactionLocation, pgsTypes::pftLongitudinalJoint, maxBAT));
+              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(ljIntervalIdx, reactionLocation, pgsTypes::pftLongitudinalJoint, minBAT));
            }
            else
            {
@@ -197,9 +202,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
         }
         else
         {
-           if (reactionDecider.DoReport(lastIntervalIdx))
+           if (reactionDecider.DoReport(ljIntervalIdx))
            {
-              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftLongitudinalJoint, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+              (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(ljIntervalIdx, reactionLocation, pgsTypes::pftLongitudinalJoint, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
            }
            else
            {
@@ -212,10 +217,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
          {
-            if ( reactionDecider.DoReport(lastIntervalIdx) )
+            if ( reactionDecider.DoReport(constructionIntervalIdx) )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftConstruction,   maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftConstruction, minBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction,   maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, minBAT ) );
             }
             else
             {
@@ -225,9 +230,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
          }
          else
          {
-            if ( reactionDecider.DoReport(lastIntervalIdx) )
+            if ( reactionDecider.DoReport(constructionIntervalIdx) )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftConstruction, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
             }
             else
             {
@@ -240,13 +245,13 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
          {
-            if (reactionDecider.DoReport(lastIntervalIdx))
+            if (reactionDecider.DoReport(deckIntervalIdx))
             {
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT));
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT));
 
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT));
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT));
             }
             else
             {
@@ -258,10 +263,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
          }
          else
          {
-            if (reactionDecider.DoReport(lastIntervalIdx))
+            if (reactionDecider.DoReport(deckIntervalIdx))
             {
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlab, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlab, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
             }
             else
             {
@@ -275,10 +280,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
          {
-            if ( reactionDecider.DoReport(lastIntervalIdx) )
+            if ( reactionDecider.DoReport(deckIntervalIdx) )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT ) );
             }
             else
             {
@@ -288,9 +293,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
          }
          else
          {
-            if ( reactionDecider.DoReport(lastIntervalIdx) )
+            if ( reactionDecider.DoReport(deckIntervalIdx) )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
             }
             else
             {
@@ -303,10 +308,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( bSidewalk )
          {
-            if ( reactionDecider.DoReport(lastIntervalIdx) )
+            if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
             {
-               Float64 R1 = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batSS);
-               Float64 R2 = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batCS);
+               Float64 R1 = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batSS);
+               Float64 R2 = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batCS);
                (*p_table)(row,col++) << reaction.SetValue( Max(R1,R2) );
                (*p_table)(row,col++) << reaction.SetValue( Min(R1,R2) );
             }
@@ -317,10 +322,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
             }
          }
 
-         if ( reactionDecider.DoReport(lastIntervalIdx) )
+         if ( reactionDecider.DoReport(railingSystemIntervalIdx) )
          {
-            Float64 R1 = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, batSS);
-            Float64 R2 = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, batCS);
+            Float64 R1 = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, batSS);
+            Float64 R2 = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, batCS);
             (*p_table)(row,col++) << reaction.SetValue( Max(R1,R2) );
             (*p_table)(row,col++) << reaction.SetValue( Min(R1,R2) );
          }
@@ -332,10 +337,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
          if ( bHasOverlay )
          {
-            if ( reactionDecider.DoReport(lastIntervalIdx) )
+            if ( reactionDecider.DoReport(overlayIntervalIdx) )
             {
-               Float64 R1 = pForces->GetReaction(lastIntervalIdx, reactionLocation, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, batSS);
-               Float64 R2 = pForces->GetReaction(lastIntervalIdx, reactionLocation, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, batCS);
+               Float64 R1 = pForces->GetReaction(overlayIntervalIdx, reactionLocation, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, batSS);
+               Float64 R2 = pForces->GetReaction(overlayIntervalIdx, reactionLocation, bRating && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, batCS);
                (*p_table)(row,col++) << reaction.SetValue( Max(R1,R2) );
                (*p_table)(row,col++) << reaction.SetValue( Min(R1,R2) );
             }
