@@ -7812,6 +7812,13 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                data.ei = Ec*Ixx;
             }
 
+            // in complex timelines some segments may not be constructed before others are erected
+            // for the segments that aren't constructed yet, EA and EI are zero. This causes a problem
+            // with the finite element models. Use dummy values since these elements don't do anything 
+            // in the fem models
+            data.ea = Max(data.ea, 1.0);
+            data.ei = Max(data.ei, 1.0);
+
             if ( intervalIdx < liveLoadIntervalIdx )
             {
                data.ea_defl = data.ea;
