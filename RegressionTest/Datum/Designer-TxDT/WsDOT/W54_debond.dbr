@@ -4674,13 +4674,13 @@ Design - Operating, LRFD Design Truck + Lane
 ond, 0.0.0.0, 881001, 1.96, 0
 ond, 0.0.0.0, 881001a, 15.09, 0
 ond, 0.0.0.0, 881003, 2.48, 0
-ond, 0.0.0.0, 881003a, 9.53, 0
+ond, 0.0.0.0, 881003a, 20.65, 0
 ond, 0.0.0.0, 881007, 1.96, 0
 Design - Operating, LRFD Design Tandem + Lane
 ond, 0.0.0.0, 881001, 2.3, 0
 ond, 0.0.0.0, 881001a, 15.09, 0
 ond, 0.0.0.0, 881003, 2.99, 0
-ond, 0.0.0.0, 881003a, 9.53, 0
+ond, 0.0.0.0, 881003a, 20.65, 0
 ond, 0.0.0.0, 881007, 2.3, 0
 Legal Load - Routine Commercial Traffic, Type 3
 ond, 0.0.0.0, 881001, 3.42, 0
@@ -4700,7 +4700,7 @@ Legal Load - Routine Commercial Traffic, Type 3-3
 ond, 0.0.0.0, 881001, 2.81, 0
 ond, 0.0.0.0, 881001a, 15.09, 0
 ond, 0.0.0.0, 881003, 3.4, 0
-ond, 0.0.0.0, 881003a, 9.53, 0
+ond, 0.0.0.0, 881003a, 20.65, 0
 ond, 0.0.0.0, 881006, 1.74, 0
 ond, 0.0.0.0, 881007, 1.74, 0
 Legal Load - Specialized Hauling Vehicles, NRL

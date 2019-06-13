@@ -1256,6 +1256,10 @@ private:
    std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_HorzCurveKeys; // key is hc index in cogo model. value is (input hc index,cogomodel curve id)... if an input curve has zero radius it is not created in the curve collection in the cogo model
    std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_VertCurveKeys;
 
+   // Cache state of asymmetric prestressing information
+   enum AsymmetricPrestressing  { Unknown, Yes,  No  };
+   mutable AsymmetricPrestressing m_AsymmetricPrestressing{ Unknown };
+
    CConcreteManager m_ConcreteManager;
    CIntervalManager m_IntervalManager;
 

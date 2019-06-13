@@ -848,6 +848,8 @@ void CBridgeAgentImp::Invalidate( Uint16 level )
          level = COGO_MODEL;
       }
 
+      m_AsymmetricPrestressing = Unknown;
+
       m_ConcreteManager.Reset();
 
       m_GirderTopChordElevationFunctions.clear();
@@ -7146,35 +7148,42 @@ bool CBridgeAgentImp::HasAsymmetricGirders() const
 
 bool CBridgeAgentImp::HasAsymmetricPrestressing() const
 {
-   GroupIndexType nGroups = GetGirderGroupCount();
-   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+   if (m_AsymmetricPrestressing == Unknown)
    {
-      GirderIndexType nGirders = GetGirderCount(grpIdx);
-      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+      // presence of asymmetric prestressing hasn't been determined yet.
+      // Figure it out and cache the result
+      GroupIndexType nGroups = GetGirderGroupCount();
+      for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
       {
-         SegmentIndexType nSegments = GetSegmentCount(grpIdx, gdrIdx);
-         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         GirderIndexType nGirders = GetGirderCount(grpIdx);
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
          {
-            CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
-
-            PoiList vPoi;
-            GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
-            ATLASSERT(vPoi.size() == 1);
-            const pgsPointOfInterest& poi = vPoi.front();
-
-            IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-            Float64 nStrands, X, Y;
-            GetStrandCG(releaseIntervalIdx, poi, true /*include temp strands*/, &nStrands, &X, &Y);
-            if (!IsZero(X))
+            SegmentIndexType nSegments = GetSegmentCount(grpIdx, gdrIdx);
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
             {
-               // we found one case of asymmetry so return
-               return true;
+               CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
+
+               PoiList vPoi;
+               GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+               ATLASSERT(vPoi.size() == 1);
+               const pgsPointOfInterest& poi = vPoi.front();
+
+               IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+               Float64 nStrands, X, Y;
+               GetStrandCG(releaseIntervalIdx, poi, true /*include temp strands*/, &nStrands, &X, &Y);
+               if (!IsZero(X))
+               {
+                  // we found one case of asymmetry so return
+                  m_AsymmetricPrestressing = Yes;
+                  return true;
+               }
             }
          }
       }
+      m_AsymmetricPrestressing = No;
    }
 
-   return false;
+   return (m_AsymmetricPrestressing == Yes ? true : false);
 }
 
 bool CBridgeAgentImp::HasTiltedGirders() const
@@ -22582,35 +22591,37 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
    if ( bOrient )
    {
       Float64 orientation = GetOrientation(poi.GetSegmentKey());
-
-      Float64 rotation_angle = -orientation;
-
-      // if possible, rotate the girder around its work point
-      // if the workpoint isn't available, use the top center
-      CComPtr<IPoint2d> pntWorkPoint;
-      CComQIPtr<IGirderSection> section(*ppShape);
-      if (!section)
+      if (!IsZero(orientation))
       {
-         CComQIPtr<ICompositeShape> compShape(*ppShape);
-         CComPtr<ICompositeShapeItem> shapeItem;
-         compShape->get_Item(0, &shapeItem);
-         CComPtr<IShape> gdrShape;
-         shapeItem->get_Shape(&gdrShape);
-         gdrShape.QueryInterface(&section);
+         Float64 rotation_angle = -orientation;
 
-      }
+         // if possible, rotate the girder around its work point
+         // if the workpoint isn't available, use the top center
+         CComPtr<IPoint2d> pntWorkPoint;
+         CComQIPtr<IGirderSection> section(*ppShape);
+         if (!section)
+         {
+            CComQIPtr<ICompositeShape> compShape(*ppShape);
+            CComPtr<ICompositeShapeItem> shapeItem;
+            compShape->get_Item(0, &shapeItem);
+            CComPtr<IShape> gdrShape;
+            shapeItem->get_Shape(&gdrShape);
+            gdrShape.QueryInterface(&section);
 
-      CComQIPtr<IXYPosition> position(*ppShape);
-      if (section)
-      {
-         section->get_WorkPoint(&pntWorkPoint);
-      }
-      else
-      {
-         position->get_LocatorPoint(lpTopCenter, &pntWorkPoint);
-      }
+         }
 
-      position->RotateEx(pntWorkPoint,rotation_angle);
+         CComQIPtr<IXYPosition> position(*ppShape);
+         if (section)
+         {
+            section->get_WorkPoint(&pntWorkPoint);
+         }
+         else
+         {
+            position->get_LocatorPoint(lpTopCenter, &pntWorkPoint);
+         }
+
+         position->RotateEx(pntWorkPoint, rotation_angle);
+      }
    }
 }
 
@@ -29397,7 +29408,7 @@ PoiIntervalKey CBridgeAgentImp::GetSectionPropertiesKey(IntervalIndexType interv
 {
    // The section properties storage is set up for the most general case... time-step analysis. We compute and store
    // section properties at every poi and at every interval. This is very inefficient for non-time-step analysis.
-   // To get around this problem, this method defines a PoiIntervalKey used computing and storing section properties.
+   // To get around this problem, this method defines a PoiIntervalKey used for computing and storing section properties.
    // Section properties are only computed for certain POIs and intervals, reducing the work done.
 
    GET_IFACE(ILossParameters,pLossParams);
@@ -29425,6 +29436,7 @@ PoiIntervalKey CBridgeAgentImp::GetSectionPropertiesKey(IntervalIndexType interv
       }
       else
       {
+         // girder is at final concrete strength and deck is composite
          return PoiIntervalKey(poi, compositeIntervalIdx);
       }
    }

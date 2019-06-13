@@ -5145,7 +5145,7 @@ Design - Inventory, LRFD Design Tandem + Lane
 HTO, 0.0.0.0, 881001, 2.2, 0
 HTO, 0.0.0.0, 881001a, 11.91, 0
 HTO, 0.0.0.0, 881003, 1.38, 0
-HTO, 0.0.0.0, 881003a, 1.16, 0
+HTO, 0.0.0.0, 881003a, 22.67, 0
 HTO, 0.0.0.0, 881006, 2.19, 0
 HTO, 0.0.0.0, 881007, 1.38, 0
 Design - Operating, LRFD Design Truck + Lane
@@ -5164,7 +5164,7 @@ Legal Load - Routine Commercial Traffic, Type 3
 HTO, 0.0.0.0, 881001, 4.05, 0
 HTO, 0.0.0.0, 881001a, 11.91, 0
 HTO, 0.0.0.0, 881003, 2.48, 0
-HTO, 0.0.0.0, 881003a, 1.16, 0
+HTO, 0.0.0.0, 881003a, 22.67, 0
 HTO, 0.0.0.0, 881006, 3.33, 0
 HTO, 0.0.0.0, 881007, 2.48, 0
 Legal Load - Routine Commercial Traffic, Type 3S2

@@ -17031,14 +17031,14 @@ Design - Inventory, LRFD Design Truck + Lane
 ght, 0.0.0.0, 881001, 1.98, 2
 ght, 0.0.0.0, 881001a, 19.38, 2
 ght, 0.0.0.0, 881003, 2.17, 2
-ght, 0.0.0.0, 881003a, 7.43, 2
+ght, 0.0.0.0, 881003a, 31.33, 2
 ght, 0.0.0.0, 881006, 1.85, 2
 ght, 0.0.0.0, 881007, 1.85, 2
 Design - Inventory, LRFD Design Tandem + Lane
 ght, 0.0.0.0, 881001, 2.35, 2
 ght, 0.0.0.0, 881001a, 19.38, 2
 ght, 0.0.0.0, 881003, 2.65, 2
-ght, 0.0.0.0, 881003a, 7.43, 2
+ght, 0.0.0.0, 881003a, 31.33, 2
 ght, 0.0.0.0, 881006, 2.18, 2
 ght, 0.0.0.0, 881007, 2.18, 2
 Design - Operating, LRFD Design Truck + Lane
@@ -17051,13 +17051,13 @@ Design - Operating, LRFD Design Tandem + Lane
 ght, 0.0.0.0, 881001, 3.05, 2
 ght, 0.0.0.0, 881001a, 19.38, 2
 ght, 0.0.0.0, 881003, 3.53, 2
-ght, 0.0.0.0, 881003a, 7.43, 2
+ght, 0.0.0.0, 881003a, 31.33, 2
 ght, 0.0.0.0, 881007, 3.05, 2
 Legal Load - Routine Commercial Traffic, Type 3
 ght, 0.0.0.0, 881001, 5.94, 2
 ght, 0.0.0.0, 881001a, 19.38, 2
 ght, 0.0.0.0, 881003, 6.52, 2
-ght, 0.0.0.0, 881003a, 7.43, 2
+ght, 0.0.0.0, 881003a, 31.33, 2
 ght, 0.0.0.0, 881006, 3.56, 2
 ght, 0.0.0.0, 881007, 3.56, 2
 Legal Load - Routine Commercial Traffic, Type 3S2
@@ -17085,14 +17085,14 @@ Legal Load - Emergency Vehicles, Type EV2
 ght, 0.0.0.0, 881001, 5.77, 2
 ght, 0.0.0.0, 881001a, 19.38, 2
 ght, 0.0.0.0, 881003, 6.18, 2
-ght, 0.0.0.0, 881003a, 7.43, 2
+ght, 0.0.0.0, 881003a, 31.33, 2
 ght, 0.0.0.0, 881006, 3.12, 2
 ght, 0.0.0.0, 881007, 3.12, 2
 Legal Load - Emergency Vehicles, Type EV3
 ght, 0.0.0.0, 881001, 3.81, 2
 ght, 0.0.0.0, 881001a, 19.38, 2
 ght, 0.0.0.0, 881003, 4.16, 2
-ght, 0.0.0.0, 881003a, 7.43, 2
+ght, 0.0.0.0, 881003a, 31.33, 2
 ght, 0.0.0.0, 881006, 2.1, 2
 ght, 0.0.0.0, 881007, 2.1, 2
 Rating Permit - Routine/Annual Permit, No Live Load Defined

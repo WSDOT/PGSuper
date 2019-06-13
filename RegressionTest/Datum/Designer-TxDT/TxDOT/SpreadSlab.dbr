@@ -5953,7 +5953,7 @@ Design - Operating, LRFD Design Tandem + Lane
 lab, 0.0.0.0, 881001, 1.76, 0
 lab, 0.0.0.0, 881001a, 6.32, 0
 lab, 0.0.0.0, 881003, 2.68, 0
-lab, 0.0.0.0, 881003a, 1.12, 0
+lab, 0.0.0.0, 881003a, 11.52, 0
 lab, 0.0.0.0, 881007, 1.76, 0
 Design - Operating, LRFD Truck Train [90%(Truck + Lane)]
 lab, 0.0.0.0, 881001, 1.79769e+308, 0
