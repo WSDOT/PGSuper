@@ -780,7 +780,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
 
             FRICTIONLOSSDETAILS& frDetails(details.FrictionLossDetails[ductIdx]);
 
-            Float64 dfpA[2] = {0,0};
+            std::array<Float64, 2> dfpA = {0,0};
             const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
             if ( frDetails.X <= anchorSetDetails.Lset[pgsTypes::metStart] )
             {
@@ -909,7 +909,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    bool bIgnoreRelaxationEffects = m_pLossParams->IgnoreRelaxationEffects();
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   CGirderKey girderKey(segmentKey);
+   const CGirderKey& girderKey(segmentKey);
 
 
    DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(segmentKey);
@@ -1077,12 +1077,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    {
       // The strands are stressed
       const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-      for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+      for(const auto& strandType : strandTypes)
       {
-         pgsTypes::StrandType strandType = *strandTypeIter;
-
          // time from strand stressing to end of this interval
          Float64 tStressing       = m_pIntervals->GetTime(stressStrandsIntervalIdx,pgsTypes::Start);
          Float64 tEndThisInterval = m_pIntervals->GetTime(intervalIdx,pgsTypes::End);
@@ -1422,11 +1418,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          Float64 dP_Deck = 0;
          Float64 dM_Deck = 0;
          std::vector<pgsTypes::ProductForceType> vProductForces = GetApplicableProductLoads(i, poi);
-         std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
-         std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
-         for (; pfIter != pfIterEnd; pfIter++)
+         for(const auto& pfType : vProductForces)
          {
-            pgsTypes::ProductForceType pfType = *pfIter;
             dP_Girder += iTimeStepDetails.Girder.dPi[pfType];
             dM_Girder += iTimeStepDetails.Girder.dMi[pfType];
 
@@ -1584,11 +1577,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       tsDetails.Pr[TIMESTEP_RE] = 0; // start with 0 and sum contribrution of each strand
       tsDetails.Mr[TIMESTEP_RE] = 0;
       const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-      for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+      for(const auto& strandType : strandTypes)
       {
-         pgsTypes::StrandType strandType = *strandTypeIter;
          StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey,strandType);
          for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
          {
@@ -1740,7 +1730,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    TIME_STEP_DETAILS& tsDetails(details.TimeStepDetails[intervalIdx]);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   CGirderKey girderKey(segmentKey);
+   const CGirderKey& girderKey(segmentKey);
 
    CClosureKey closureKey;
    bool bIsInClosure = m_pPoi->IsInClosureJoint(poi,&closureKey);
@@ -1871,9 +1861,9 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          EaGirder = EaDeck;
       }
 
-      Float64 EStrand[3] = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
-                             m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetE(),
-                             m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE()};
+      std::array<Float64,3> EStrand = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
+                                        m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetE(),
+                                        m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE()};
 
       Float64 ETendon = m_pMaterials->GetTendonMaterial(girderKey)->GetE();
 
@@ -1923,11 +1913,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                          tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As*tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys +
                          tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].As*tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].Ys);
 
-      std::vector<TIME_STEP_REBAR>::iterator rIter(tsDetails.GirderRebar.begin());
-      std::vector<TIME_STEP_REBAR>::iterator rIterEnd(tsDetails.GirderRebar.end());
-      for ( ; rIter != rIterEnd; rIter++ )
+      for(const auto& tsRebar : tsDetails.GirderRebar)
       {
-         TIME_STEP_REBAR& tsRebar(*rIter);
          EA  += EGirderRebar*tsRebar.As;
          EAy += EGirderRebar*tsRebar.As*tsRebar.Ys;
       }
@@ -1935,11 +1922,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       if ( bIsOnSegment )
       {
          const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-         for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+         for(const auto& strandType : strandTypes)
          {
-            pgsTypes::StrandType strandType = *strandTypeIter;
 #if defined LUMP_STRANDS
             EA  += EStrand[strandType]*tsDetails.Strands[strandType].As;
             EAy += EStrand[strandType]*tsDetails.Strands[strandType].As*tsDetails.Strands[strandType].Ys;
@@ -1984,21 +1968,16 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys),2));
       EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].Ys),2));
 
-      rIter = tsDetails.GirderRebar.begin();
-      for ( ; rIter != rIterEnd; rIter++ )
+      for(const auto& tsRebar : tsDetails.GirderRebar)
       {
-         TIME_STEP_REBAR& tsRebar(*rIter);
          EI += EGirderRebar*(tsRebar.As*pow((Ytr - tsRebar.Ys),2));
       }
 
       if ( bIsOnSegment )
       {
          const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-         for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+         for(const auto& strandType : strandTypes)
          {
-            pgsTypes::StrandType strandType = *strandTypeIter;
 #if defined LUMP_STRANDS
             TIME_STEP_STRAND& strand = tsDetails.Strands[strandType];
             EI += EStrand[strandType]*strand.As*pow((Ytr - strand.Ys),2);
@@ -2405,11 +2384,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          if ( bIsOnSegment )
          {
             const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-            std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-            std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-            for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+            for(const auto& strandType : strandTypes)
             {
-               pgsTypes::StrandType strandType = *strandTypeIter;
 #if defined LUMP_STRANDS
 
                // change in strand force
@@ -2879,21 +2855,15 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                        + tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].dPi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].Ys);
 
 
-      std::vector<TIME_STEP_REBAR>::iterator iter(tsDetails.GirderRebar.begin());
-      std::vector<TIME_STEP_REBAR>::iterator end(tsDetails.GirderRebar.end());
-      for ( ; iter != end; iter++ )
+      for(const auto& tsRebar : tsDetails.GirderRebar)
       {
-         TIME_STEP_REBAR& tsRebar(*iter);
          tsDetails.dPint += tsRebar.dPi[pfType];
          tsDetails.dMint += tsRebar.dPi[pfType]*(tsDetails.Ytr - tsRebar.Ys);
       }
 
       const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-      for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+      for(const auto& strandType : strandTypes)
       {
-         pgsTypes::StrandType strandType = *strandTypeIter;
 #if defined LUMP_STRANDS
          tsDetails.dPint += tsDetails.Strands[strandType].dPi[pfType];
          tsDetails.dMint += tsDetails.Strands[strandType].dPi[pfType]*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys);

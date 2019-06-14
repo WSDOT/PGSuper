@@ -5603,12 +5603,10 @@ std::vector<REACTION> CGirderModelManager::GetReaction(const CGirderKey& girderK
    CComBSTR bstrLoadGroup( strLoadingName );
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
-   auto& supportIter(vSupports.cbegin());
-   auto& supportIterEnd(vSupports.cend());
-   for ( ; supportIter != supportIterEnd; supportIter++ )
+   for(const auto& support : vSupports)
    {
-      SupportIndexType supportIdx = supportIter->first;
-      pgsTypes::SupportType supportType = supportIter->second;
+      SupportIndexType supportIdx = support.first;
+      pgsTypes::SupportType supportType = support.second;
       ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType);
 
       CComPtr<IResult3Ds> results;
@@ -5680,12 +5678,10 @@ std::vector<REACTION> CGirderModelManager::GetReaction(const CGirderKey& girderK
    CComBSTR bstrLoadGroup( GetLoadGroupName(pfType) );
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
-   auto& supportIter(vSupports.cbegin());
-   auto& supportIterEnd(vSupports.cend());
-   for ( ; supportIter != supportIterEnd; supportIter++ )
+   for (const auto& support : vSupports)
    {
-      SupportIndexType supportIdx = supportIter->first;
-      pgsTypes::SupportType supportType = supportIter->second;
+      SupportIndexType supportIdx = support.first;
+      pgsTypes::SupportType supportType = support.second;
       ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType);
 
       CComPtr<IResult3Ds> results;
@@ -5782,12 +5778,10 @@ std::vector<REACTION> CGirderModelManager::GetReaction(const CGirderKey& girderK
 
 
 
-   auto& supportIter(vSupports.cbegin());
-   auto& supportIterEnd(vSupports.cend());
-   for ( ; supportIter != supportIterEnd; supportIter++ )
+   for (const auto& support : vSupports)
    {
-      SupportIndexType supportIdx = supportIter->first;
-      pgsTypes::SupportType supportType = supportIter->second;
+      SupportIndexType supportIdx = support.first;
+      pgsTypes::SupportType supportType = support.second;
 
       // Cycle through load cases and sum reactions
       REACTION R;
@@ -5827,12 +5821,11 @@ void CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vec
 
    VARIANT_BOOL bIncludeLiveLoad = (liveLoadIntervalIdx <= intervalIdx ? VARIANT_TRUE : VARIANT_FALSE );
 
-   auto& supportIter(vSupports.cbegin());
-   auto& supportIterEnd(vSupports.cend());
-   for ( ; supportIter != supportIterEnd; supportIter++ )
+   for (const auto& support : vSupports)
    {
-      SupportIndexType supportIdx = supportIter->first;
-      pgsTypes::SupportType supportType = supportIter->second;
+      SupportIndexType supportIdx = support.first;
+      pgsTypes::SupportType supportType = support.second;
+
       ConfigureLBAMPoisForReactions(girderKey,supportIdx,supportType);
 
       IntervalIndexType tsRemovalIntervalIdx = INVALID_INDEX;
@@ -8284,11 +8277,8 @@ void CGirderModelManager::CreateLBAMSuperstructureMember(Float64 length,const st
 
    ssm->put_Length(length);
 
-   std::vector<SuperstructureMemberData>::const_iterator iter;
-   for ( iter = vData.begin(); iter != vData.end(); iter++ )
+   for(const auto& data : vData)
    {
-      const SuperstructureMemberData& data = *iter;
-
       ATLASSERT(!IsZero(data.ea));
       ATLASSERT(!IsZero(data.ei));
       ATLASSERT(!IsZero(data.ea_defl));
@@ -9951,11 +9941,8 @@ void CGirderModelManager::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gd
       AddDeflectionLiveLoad(pModel,pLibrary,truck_impact,lane_impact);
    }
 
-   std::vector<std::_tstring>::iterator iter;
-   for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++)
+   for(const auto& strLLName : strLLNames)
    {
-      const std::_tstring& strLLName = *iter;
-
       if ( strLLName == std::_tstring(_T("HL-93")) )
       {
          AddHL93LiveLoad(pModel,pLibrary,llType,truck_impact,lane_impact);
@@ -11686,21 +11673,15 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel) const
       combos.push_back(lcRE);
       combos.push_back(lcPS);
    }
-   std::vector<LoadingCombinationType>::iterator lcIter(combos.begin());
-   std::vector<LoadingCombinationType>::iterator lcIterEnd(combos.end());
-   for ( ; lcIter != lcIterEnd; lcIter++ )
-   {
-      LoadingCombinationType combo = *lcIter;
 
+   for(const auto& combo : combos)
+   {
       CComPtr<ILoadCase> load_case;
       load_cases->Find(GetLoadCaseName(combo),&load_case);
       std::vector<pgsTypes::ProductForceType> pfTypes(CProductLoadMap::GetProductForces(m_pBroker,combo));
-      std::vector<pgsTypes::ProductForceType>::iterator pfIter = pfTypes.begin();
-      std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd = pfTypes.end();
-      for ( ; pfIter != pfIterEnd; pfIter++ )
-      {
-         pgsTypes::ProductForceType pfType = *pfIter;
 
+      for(const auto& pfType : pfTypes)
+      {
          if ( !bTimeStepAnalysis && (pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation || pfType == pgsTypes::pftSecondaryEffects) )
          {
             continue;
@@ -12132,14 +12113,10 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
          std::vector<DiaphragmLoad> loads;
          GetIntermediateDiaphragmLoads(spanKey, &loads);
 
-         std::vector<DiaphragmLoad>::iterator iter(loads.begin());
-         std::vector<DiaphragmLoad>::iterator end(loads.end());
-         for ( ; iter != end; iter++ )
+         for(const auto& load : loads)
          {
-            DiaphragmLoad& rload = *iter;
-
-            Float64 P   = rload.Load;
-            Float64 loc = rload.Loc;
+            Float64 P   = load.Load;
+            Float64 loc = load.Loc;
 
             pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanKey,loc);
 
@@ -12714,10 +12691,8 @@ void CGirderModelManager::CreateAxleConfig(ILBAMModel* pModel,ILiveLoadConfigura
    Float64 pivot_axle_offset = ((*pAxles)[pivot_axle_index]).Location;
 
    // locate the axles relative to the pivot axle, then move them to the truck location
-   AxleConfiguration::iterator iter;
-   for ( iter = pAxles->begin(); iter != pAxles->end(); iter++ )
+   for(auto& placement : *pAxles)
    {
-      AxlePlacement& placement = *iter;
       placement.Location += pivot_axle_location - pivot_axle_offset;
    }
 }
@@ -14617,12 +14592,8 @@ void CGirderModelManager::GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey
    Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
 
    std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetPrecastDiaphragms(segmentKey);
-   std::vector<IntermedateDiaphragm>::iterator iter(diaphragms.begin());
-   std::vector<IntermedateDiaphragm>::iterator end(diaphragms.end());
-   for ( ; iter != end; iter++ )
+   for(const auto& diaphragm : diaphragms)
    {
-      IntermedateDiaphragm& diaphragm = *iter;
-
       Float64 P;
       if ( diaphragm.m_bCompute )
       {
@@ -14671,12 +14642,8 @@ void CGirderModelManager::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey,
    }
 
    std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey);
-   std::vector<IntermedateDiaphragm>::iterator iter(diaphragms.begin());
-   std::vector<IntermedateDiaphragm>::iterator end(diaphragms.end());
-   for ( ; iter != end; iter++ )
+   for(const auto& diaphragm : diaphragms)
    {
-      IntermedateDiaphragm& diaphragm = *iter;
-
       Float64 P;
       if ( diaphragm.m_bCompute )
       {
@@ -15001,12 +14968,8 @@ MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexTy
    pBridge->ModelCantilevers(segmentKey,&bModelStartCantilever,&bModelEndCantilever);
 
    // apply distributed load items
-   std::vector<LinearLoad>::const_iterator iter(vLoads.begin());
-   std::vector<LinearLoad>::const_iterator iterEnd(vLoads.end());
-   for ( ; iter != iterEnd; iter++ )
+   for(auto load : vLoads)
    {
-      LinearLoad load = *iter;
-
       // force the load to be on the segment
       if ( load.Xstart < 0 )
       {
@@ -15025,8 +14988,8 @@ MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexTy
       // the dead load reactions are correct. 
       Float64 Pstart(0.0), Pend(0.0); // point load
 
-      Float64 start[3],  end[3]; // start and end of load on the 3 superstructure members modeling this segment
-      Float64 wStart[3], wEnd[3]; // the start/end loads
+      std::array<Float64, 3> start,  end; // start and end of load on the 3 superstructure members modeling this segment
+      std::array<Float64, 3> wStart, wEnd; // the start/end loads
 
       // default loads (assuming load is not on the SSMBR)
       for ( int i = 0; i < 3; i++ )
