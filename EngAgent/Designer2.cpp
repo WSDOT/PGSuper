@@ -5221,39 +5221,65 @@ void pgsDesigner2::CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmen
 
       Float64 zo = liftingResults.Zo[stbTypes::NoImpact];
 
-      Float64 brgPadDeduction = pSpecEntry->GetGirderInclinationBrgPadDeduction();
+      GET_IFACE(IPointOfInterest, pPoi);
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_ERECTED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 2);
+
+      GET_IFACE(IIntervals, pIntervals);
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+      GET_IFACE(ISectionProperties, pSectProp);
+      const pgsPointOfInterest& poi1(vPoi.front());
+      Float64 Wbottom1 = pGirder->GetBottomWidth(poi1);
+      Float64 Ybottom1 = pSectProp->GetY(releaseIntervalIdx, poi1, pgsTypes::BottomGirder);
+
+      const pgsPointOfInterest& poi2(vPoi.back());
+      Float64 Wbottom2 = pGirder->GetBottomWidth(poi2);
+      Float64 Ybottom2 = pSectProp->GetY(releaseIntervalIdx, poi2, pgsTypes::BottomGirder);
+
+
+      const CPrecastSegmentData* pSegment = pBridgeDesc->GetSegment(segmentKey);
+      const CPierData2* pStartPier;
+      const CTemporarySupportData* pStartTS;
+      pSegment->GetSupport(pgsTypes::metStart, &pStartPier, &pStartTS);
+      const CPierData2* pEndPier;
+      const CTemporarySupportData* pEndTS;
+      pSegment->GetSupport(pgsTypes::metEnd, &pEndPier, &pEndTS);
+      Float64 startBrgPadWidth = Wbottom1 - ::ConvertToSysUnits(1.0, unitMeasure::Inch); // dummy minimum value
+      Float64 endBrgPadWidth = Wbottom2 - ::ConvertToSysUnits(1.0, unitMeasure::Inch); // dummy minimum value
+      if (pStartPier)
+      {
+         const CBearingData2* pBearingData = pIBridgeDesc->GetBearingData(pStartPier->GetIndex(), pgsTypes::Ahead, segmentKey.girderIndex);
+         ATLASSERT(0 < pBearingData->BearingCount);
+         startBrgPadWidth = (pBearingData->BearingCount - 1)*(pBearingData->Spacing) + pBearingData->Width;
+      }
+
+      if (pEndPier)
+      {
+         const CBearingData2* pBearingData = pIBridgeDesc->GetBearingData(pEndPier->GetIndex(), pgsTypes::Back, segmentKey.girderIndex);
+         ATLASSERT(0 < pBearingData->BearingCount);
+         endBrgPadWidth = (pBearingData->BearingCount - 1)*(pBearingData->Spacing) + pBearingData->Width;
+      }
+
       Float64 FS = pSpecEntry->GetGirderInclinationFactorOfSafety();
 
       Float64 orientation = fabs(pGirder->GetOrientation(segmentKey));
       pArtifact->SetGlobalGirderStabilityApplicability(true);
       pArtifact->SetTargetFactorOfSafety(FS);
 
-      GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
       // check stability at start of girder
-      GET_IFACE(ISectionProperties, pSectProp);
-      pgsPointOfInterest poi1(segmentKey,0.00);
-      Float64 Wbottom1 = pGirder->GetBottomWidth(poi1);
-      Float64 Ybottom1 = pSectProp->GetY(releaseIntervalIdx,poi1,pgsTypes::BottomGirder);
-
-      pArtifact->SetGlobalGirderStabilityParameters(Wbottom1,brgPadDeduction,Ybottom1,orientation,zo);
+      pArtifact->SetGlobalGirderStabilityParameters(startBrgPadWidth,Ybottom1,orientation,zo);
       Float64 FS1 = pArtifact->GetFactorOfSafety();
 
       // check stability at end of girder
-      Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
-      Float64 end_offset = pBridge->GetSegmentEndEndDistance(segmentKey);
-      pgsPointOfInterest poi2(segmentKey,segment_length - end_offset); 
-      Float64 Wbottom2 = pGirder->GetBottomWidth(poi2);
-      Float64 Ybottom2 = pSectProp->GetY(releaseIntervalIdx,poi2,pgsTypes::BottomGirder);
-
-      pArtifact->SetGlobalGirderStabilityParameters(Wbottom2, brgPadDeduction,Ybottom2,orientation,zo);
+      pArtifact->SetGlobalGirderStabilityParameters(endBrgPadWidth,Ybottom2,orientation,zo);
       Float64 FS2 = pArtifact->GetFactorOfSafety();
 
       if ( FS1 < FS2 )
       {
          // start of girder is the worst case
-         pArtifact->SetGlobalGirderStabilityParameters(Wbottom1, brgPadDeduction,Ybottom1,orientation,zo);
+         pArtifact->SetGlobalGirderStabilityParameters(startBrgPadWidth,Ybottom1,orientation,zo);
       }
    }
 }

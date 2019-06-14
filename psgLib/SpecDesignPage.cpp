@@ -241,9 +241,6 @@ void CSpecDesignPage::OnBnClickedCheckInclindedGirder()
    BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_INCLINDED_GIRDER);
    GetDlgItem(IDC_INCLINDED_GIRDER_FS_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_INCLINDED_GIRDER_FS)->EnableWindow(bEnable);
-   GetDlgItem(IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_INCLINDED_GIRDER_BRGPADDEDUCT)->EnableWindow(bEnable);
-   GetDlgItem(IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT)->EnableWindow(bEnable);
 }
 
 BOOL CSpecDesignPage::OnSetActive()

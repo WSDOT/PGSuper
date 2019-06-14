@@ -888,7 +888,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GlobalGirderStability.gif")) << rptNewLine;
+   *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GlobalGirderStability.png")) << rptNewLine;
 
    rptRcScalar slope;
    slope.SetFormat(pDisplayUnits->GetScalarFormat().Format);
@@ -915,12 +915,11 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
          strTitle = _T("");
       }
 
-      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(8,strTitle);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7,strTitle);
       std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
       ColumnIndexType col = 0;
-      (*pTable)(0, col++) << COLHDR(Sub2(_T("W"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0, col++) << COLHDR(_T("Brg Pad Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << COLHDR(_T("Brg Width"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << COLHDR(Sub2(_T("z"), _T("o")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << _T("Inclination (") << symbol(theta) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
@@ -928,14 +927,13 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
       (*pTable)(0, col++) << _T("FS");
       (*pTable)(0, col++) << _T("Status");
 
-      Float64 Wb, BrgPadDeduct, Yb, Orientation, zo;
-      pArtifact->GetGlobalGirderStabilityParameters(&Wb,&BrgPadDeduct,&Yb,&Orientation,&zo);
+      Float64 BrgPadWidth, Yb, Orientation, zo;
+      pArtifact->GetGlobalGirderStabilityParameters(&BrgPadWidth,&Yb,&Orientation,&zo);
       Float64 ThetaMax = pArtifact->GetMaxGirderIncline();
       Float64 FS = pArtifact->GetFactorOfSafety();
 
       col = 0;
-      (*pTable)(1, col++) << dim.SetValue(Wb);
-      (*pTable)(1, col++) << dim.SetValue(BrgPadDeduct);
+      (*pTable)(1, col++) << dim.SetValue(BrgPadWidth);
       (*pTable)(1, col++) << dim.SetValue(Yb);
       (*pTable)(1, col++) << dim.SetValue(zo);
       (*pTable)(1, col++) << slope.SetValue(Orientation);

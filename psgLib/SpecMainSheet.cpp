@@ -1302,7 +1302,6 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    // Girder Inclination
    DDX_Check_Bool(pDX, IDC_CHECK_INCLINDED_GIRDER, m_Entry.m_bCheckGirderInclination);
    DDX_Text(pDX, IDC_INCLINDED_GIRDER_FS, m_Entry.m_InclinedGirder_FSmax);
-   DDX_UnitValueAndTag(pDX, IDC_INCLINDED_GIRDER_BRGPADDEDUCT, IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT, m_Entry.m_InclinedGirder_BrgPadDeduction, pDisplayUnits->ComponentDim);
 
    // Strand Fill
    int value = (int)m_Entry.m_DesignStrandFillType;

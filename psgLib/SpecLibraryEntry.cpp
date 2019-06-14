@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 70.0 
+#define CURRENT_VERSION 71.0 
 
 /****************************************************************************
 CLASS
@@ -257,7 +257,6 @@ m_CentrifugalForceType(pgsTypes::Favorable),
 m_HaulingSpeed(0),
 m_TurningRadius(::ConvertToSysUnits(1000,unitMeasure::Feet)),
 m_bCheckGirderInclination(true),
-m_InclinedGirder_BrgPadDeduction(::ConvertToSysUnits(1.0,unitMeasure::Inch)),
 m_InclinedGirder_FSmax(1.2),
 m_LiftingCamberMultiplier(1.0),
 m_HaulingCamberMultiplier(1.0),
@@ -975,7 +974,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    // added in version 57
    pSave->Property(_T("CheckGirderInclination"), m_bCheckGirderInclination);
-   pSave->Property(_T("InclindedGirder_BrgPadDeduction"), m_InclinedGirder_BrgPadDeduction);
+   //pSave->Property(_T("InclindedGirder_BrgPadDeduction"), m_InclinedGirder_BrgPadDeduction); // removed in version 71
    pSave->Property(_T("InclindedGirder_FSmax"), m_InclinedGirder_FSmax);
 
    // added in version 62
@@ -4156,9 +4155,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat, pLoad);
          }
 
-         if (!pLoad->Property(_T("InclindedGirder_BrgPadDeduction"), &m_InclinedGirder_BrgPadDeduction))
+         if (version < 71)
          {
-            THROW_LOAD(InvalidFileFormat, pLoad);
+            // removed in version 71
+            Float64 value; // waste the value
+            if (!pLoad->Property(_T("InclindedGirder_BrgPadDeduction"), &value))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
          }
 
          if (!pLoad->Property(_T("InclindedGirder_FSmax"), &m_InclinedGirder_FSmax))
@@ -4313,7 +4317,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    }
 
    if (m_bCheckGirderInclination != rOther.m_bCheckGirderInclination || 
-      (m_bCheckGirderInclination == true && (!::IsEqual(m_InclinedGirder_BrgPadDeduction, rOther.m_InclinedGirder_BrgPadDeduction) || !::IsEqual(m_InclinedGirder_FSmax, rOther.m_InclinedGirder_FSmax)))
+      (m_bCheckGirderInclination == true && !::IsEqual(m_InclinedGirder_FSmax, rOther.m_InclinedGirder_FSmax))
       )
    {
       RETURN_ON_DIFFERENCE;
@@ -7273,16 +7277,6 @@ bool SpecLibraryEntry::CheckGirderInclination() const
    return m_bCheckGirderInclination;
 }
 
-void SpecLibraryEntry::SetGirderInclinationBrgPadDeduction(Float64 brgPadDeduct)
-{
-   m_InclinedGirder_BrgPadDeduction = brgPadDeduct;
-}
-
-Float64 SpecLibraryEntry::GetGirderInclinationBrgPadDeduction() const
-{
-   return m_InclinedGirder_BrgPadDeduction;
-}
-
 void SpecLibraryEntry::SetGirderInclinationFactorOfSafety(Float64 fs)
 {
    m_InclinedGirder_FSmax = fs;
@@ -7630,7 +7624,6 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_Cmin = rOther.m_Cmin;
 
    m_bCheckGirderInclination = rOther.m_bCheckGirderInclination;
-   m_InclinedGirder_BrgPadDeduction = rOther.m_InclinedGirder_BrgPadDeduction;
    m_InclinedGirder_FSmax = rOther.m_InclinedGirder_FSmax;
 
    m_FinishedElevationTolerance = rOther.m_FinishedElevationTolerance;

@@ -324,8 +324,6 @@ public:
    // Set/Get parameters for checking maximum inclinations of tilted girders
    void CheckGirderInclination(bool bCheck);
    bool CheckGirderInclination() const;
-   void SetGirderInclinationBrgPadDeduction(Float64 brgPadDeduct);
-   Float64 GetGirderInclinationBrgPadDeduction() const;
    void SetGirderInclinationFactorOfSafety(Float64 fs);
    Float64 GetGirderInclinationFactorOfSafety() const;
 
@@ -1545,7 +1543,6 @@ private:
    Float64 m_Cmin;
 
    bool m_bCheckGirderInclination;
-   Float64 m_InclinedGirder_BrgPadDeduction;
    Float64 m_InclinedGirder_FSmax;
 
 
