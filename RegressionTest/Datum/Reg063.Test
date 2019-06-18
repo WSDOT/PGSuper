@@ -8,9 +8,9 @@ Strand slope exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -30,9 +30,9 @@ Strand slope exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

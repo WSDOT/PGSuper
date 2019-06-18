@@ -11675,7 +11675,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    }
 
    EventIndexType eventIdx;
-   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
 
    // Erect girders. It is assumed that girders are transported, erected, and temporary strands 
    // are removed all on the same day. Assuming max construction sequence (D120). The actual
@@ -11689,7 +11689,9 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDescription(_T("Erect Girders"));
    pTimelineEvent->GetErectSegmentsActivity().Enable();
    pTimelineEvent->GetErectSegmentsActivity().AddSegments(segmentIDs);
-   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+   pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+   maxDay = pTimelineEvent->GetDay();
+   pTimelineEvent.release();
 
    pgsTypes::SupportedDeckType deckType = m_BridgeDescription.GetDeckDescription()->GetDeckType();
 
@@ -11707,23 +11709,25 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       pTimelineEvent = std::make_unique<CTimelineEvent>();
       day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
       day = Max(day, maxDay);
-      maxDay += 1.0;
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
       pTimelineEvent->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad();
-      pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+      pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
 
       pTimelineEvent = std::make_unique<CTimelineEvent>();
       day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 1.0;
       day = Max(day, maxDay);
-      maxDay += 1.0;
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Longitudinal Joints"));
 
       pTimelineEvent->GetCastLongitudinalJointActivity().Enable();
       pTimelineEvent->GetCastLongitudinalJointActivity().SetConcreteAgeAtContinuity(1.0); // day
       pTimelineEvent->GetCastLongitudinalJointActivity().SetCuringDuration(1.0); // day
-      pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+      pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
       oldBridgeSite1EventIndex = eventIdx;
 
       if ( deckType != pgsTypes::sdtNone)
@@ -11731,7 +11735,6 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
          pTimelineEvent = std::make_unique<CTimelineEvent>();
          day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 2.0;
          day = Max(day, maxDay);
-         maxDay += 1.0;
          pTimelineEvent->SetDay(day);
 
 
@@ -11739,7 +11742,9 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
          pTimelineEvent->GetCastDeckActivity().Enable();
          pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(deck_diaphragm_curing_duration); // day
          pTimelineEvent->GetCastDeckActivity().SetCuringDuration(deck_diaphragm_curing_duration); // day
-         pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+         pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+         maxDay = pTimelineEvent->GetDay() + 1;
+         pTimelineEvent.release();
          oldBridgeSite1EventIndex = eventIdx;
       }
    }
@@ -11749,27 +11754,28 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       pTimelineEvent = std::make_unique<CTimelineEvent>();
       day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
       day = Max(day, maxDay);
-      maxDay += 1.0;
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
 
       pTimelineEvent->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad();
-      pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+      pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
       oldBridgeSite1EventIndex = eventIdx;
-
 
       if (deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
          day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
          day = Max(day, maxDay);
-         maxDay += 1.0;
          pTimelineEvent->SetDay(day);
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
          pTimelineEvent->GetCastDeckActivity().Enable();
          pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(deck_diaphragm_curing_duration); // day
          pTimelineEvent->GetCastDeckActivity().SetCuringDuration(deck_diaphragm_curing_duration); // day
-         pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+         pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+         maxDay = pTimelineEvent->GetDay() + 1;
+         pTimelineEvent.release();
          oldBridgeSite1EventIndex = eventIdx;
       }
    }
@@ -11778,7 +11784,6 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent = std::make_unique<CTimelineEvent>();
    day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + deck_diaphragm_curing_duration;
    day = Max(day,maxDay);
-   maxDay += 1.0;
    pTimelineEvent->SetDay( day ); // deck is continuous
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad();
 
@@ -11795,31 +11800,35 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    {
       pTimelineEvent->SetDescription(_T("Install Railing System"));
    }
-   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+   pTimelineManager->AddTimelineEvent(pTimelineEvent.get(),true,&eventIdx);
+   maxDay = pTimelineEvent->GetDay() + 1;
+   pTimelineEvent.release();
    oldBridgeSite2EventIndex = eventIdx; // "bridge site 2 loads are always applied with the railing system
 
    if ( wearingSurface == pgsTypes::wstFutureOverlay )
    {
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetTotalCreepDuration(), unitMeasure::Day) + 1.0;
+      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
       day = Max(day, maxDay);
-      maxDay += 1.0;
       pTimelineEvent->SetDay( day ); 
       pTimelineEvent->SetDescription(_T("Final without Live Load"));
       pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad();
-      pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+      pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
    }
 
    // live load
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day) + 1.0;
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
    day = Max(day, maxDay);
-   maxDay += 1.0;
    pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Final with Live Load"));
    pTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad();
    pTimelineEvent->GetApplyLoadActivity().ApplyRatingLiveLoad();
-   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+   pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+   maxDay = pTimelineEvent->GetDay() + 1;
+   pTimelineEvent.release();
    oldBridgeSite3EventIndex = eventIdx;
 
    // user defined loads

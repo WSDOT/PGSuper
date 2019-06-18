@@ -1699,11 +1699,11 @@ pgsEccEnvelope pgsDesigner2::GetEccentricityEnvelope(const pgsPointOfInterest& p
       Float64 fcgdr;
       if ( task.intervalIdx == releaseIntervalIdx )
       {
-         fcgdr = config.Fci;
+         fcgdr = config.fci;
       }
       else
       {
-         fcgdr = config.Fc;
+         fcgdr = config.fc;
       }
 
       // get allowable stress
@@ -2775,7 +2775,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
    }
    else
    {
-      fci = pConfig->Fci;
+      fci = pConfig->fci;
    }
    altTensionRequirements.fc = fci;
 
@@ -3443,8 +3443,8 @@ void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi,
       }
       else
       {
-         Qslab = pSectProp->GetQSlab(intervalIdx, poi, pConfig->Fc);
-         Ic  = pSectProp->GetIxx(intervalIdx,poi,pConfig->Fc);
+         Qslab = pSectProp->GetQSlab(intervalIdx, poi, pConfig->fc28);
+         Ic  = pSectProp->GetIxx(intervalIdx,poi,pConfig->fc28);
       }
 
       ATLASSERT(0 < Qslab);
@@ -4663,11 +4663,11 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    Float64 fc_girder;
    if ( pConfig == nullptr )
    {
-      fc_girder = pMaterials->GetSegmentDesignFc(segmentKey,intervalIdx);
+      fc_girder = pMaterials->GetSegmentFc28(segmentKey);
    }
    else
    {
-      fc_girder = pConfig->Fc;
+      fc_girder = pConfig->fc28;
    }
 
    Float64 Es, fy, fu;
@@ -8898,7 +8898,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
       lift_config.bIgnoreGirderConfig = false;
       lift_config.GdrConfig = m_StrandDesignTool.GetSegmentConfiguration();
 
-      lift_config.GdrConfig.Fci = fci_reqd;
+      lift_config.GdrConfig.fci = fci_reqd;
       lift_config.LeftOverhang = m_StrandDesignTool.GetLeftLiftingLocation();
       lift_config.RightOverhang = m_StrandDesignTool.GetRightLiftingLocation();
 
@@ -8928,8 +8928,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
    {
       const CSegmentKey& segmentKey = m_StrandDesignTool.GetSegmentKey();
 
-      Float64 fc  = liftConfig.GdrConfig.Fc;
-      Float64 fci = liftConfig.GdrConfig.Fci;
+      Float64 fc  = liftConfig.GdrConfig.fc;
+      Float64 fci = liftConfig.GdrConfig.fci;
       LOG(_T("current f'c  = ") << ::ConvertFromSysUnits(fc,unitMeasure::KSI) << _T(" KSI "));
       LOG(_T("current f'ci = ") << ::ConvertFromSysUnits(fci,unitMeasure::KSI) << _T(" KSI") );
 
@@ -9400,11 +9400,11 @@ void pgsDesigner2::RefineDesignForAllowableStress(const StressCheckTask& task,IP
    const GDRCONFIG& config = m_StrandDesignTool.GetSegmentConfiguration();
    if ( task.intervalIdx == releaseIntervalIdx )
    {
-      fcgdr = config.Fci;
+      fcgdr = config.fci;
    }
    else
    {
-      fcgdr = config.Fc;
+      fcgdr = config.fc;
    }
 
    GET_IFACE(IAllowableConcreteStress,pAllowable);

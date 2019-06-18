@@ -9477,8 +9477,9 @@ GDRCONFIG CBridgeAgentImp::GetSegmentConfiguration(const CSegmentKey& segmentKey
    // model is LRFD and that is a "stepped" model (f'ci then steps up to f'c)
    IntervalIndexType releaseIntervalIdx = m_IntervalManager.GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType haulingIntervalIdx = m_IntervalManager.GetHaulingInterval(segmentKey); // steps up to f'c at hauling (see Concrete Manager)
-   config.Fc       = GetSegmentFc(segmentKey,haulingIntervalIdx);
-   config.Fci      = GetSegmentFc(segmentKey,releaseIntervalIdx);
+   config.fc28     = GetSegmentFc28(segmentKey);
+   config.fc       = GetSegmentFc(segmentKey,haulingIntervalIdx);
+   config.fci      = GetSegmentFc(segmentKey,releaseIntervalIdx);
    config.ConcType = GetSegmentConcreteType(segmentKey);
    config.bHasFct  = DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
    config.Fct      = GetSegmentConcreteAggSplittingStrength(segmentKey);
@@ -12327,7 +12328,21 @@ Float64 CBridgeAgentImp::GetSegmentDesignFc(const CSegmentKey& segmentKey,Interv
          else
          {
             // return the specified 28 day strength
-            return pSegment->Material.Concrete.Fc;
+            GET_IFACE(ILibrary, pLib);
+            GET_IFACE(ISpecification, pSpec);
+            const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+            bool bUse90DayStrength;
+            Float64 factor;
+            pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+            Float64 age = GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::Middle);
+            auto type = GetSegmentConcreteType(segmentKey);
+            Float64 f = 1.0;
+            if (type == pgsTypes::Normal && bUse90DayStrength && factor != 1.0 && 90 < age)
+            {
+               f = factor;
+            }
+               
+            return f*pSegment->Material.Concrete.Fc;
          }
       }
    }
@@ -12454,7 +12469,7 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
          }
          else
          {
-            E = GetEconc(pConfig->Fci, GetSegmentStrengthDensity(segmentKey), GetSegmentEccK1(segmentKey), GetSegmentEccK2(segmentKey));
+            E = GetEconc(pConfig->fci, GetSegmentStrengthDensity(segmentKey), GetSegmentEccK1(segmentKey), GetSegmentEccK2(segmentKey));
          }
       }
       else
@@ -12465,7 +12480,7 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
          }
          else
          {
-            E = GetEconc(pConfig->Fc, GetSegmentStrengthDensity(segmentKey), GetSegmentEccK1(segmentKey), GetSegmentEccK2(segmentKey));
+            E = GetEconc(pConfig->fc, GetSegmentStrengthDensity(segmentKey), GetSegmentEccK1(segmentKey), GetSegmentEccK2(segmentKey));
          }
       }
    }
@@ -21166,7 +21181,7 @@ std::vector<gpPoint2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType interv
    if (pConfig)
    {
       bool bEcChanged;
-      E = GetSegmentEc(segmentKey, intervalIdx, pConfig->Fc, &bEcChanged);
+      E = GetSegmentEc(segmentKey, intervalIdx, pConfig->fc, &bEcChanged);
 
       // if the "trial" girder strength is the same as the real girder strength
       // don't do a bunch of extra work. Return the properties for the real girder
@@ -21245,7 +21260,7 @@ std::vector<gpPoint2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType interv
    else
    {
       Float64 x = 0;
-      Float64 y = (pConfig ? GetY(intervalIdx, poi, location, pConfig->Fc) : GetY(intervalIdx, poi, location));
+      Float64 y = (pConfig ? GetY(intervalIdx, poi, location, pConfig->fc) : GetY(intervalIdx, poi, location));
       if (location == pgsTypes::BottomGirder)
       {
          y *= -1;
@@ -21285,7 +21300,7 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
    if (pConfig)
    {
       bool bEcChanged;
-      E = GetSegmentEc(segmentKey, intervalIdx, pConfig->Fc, &bEcChanged);
+      E = GetSegmentEc(segmentKey, intervalIdx, pConfig->fc, &bEcChanged);
 
       // if the "trial" girder strength is the same as the real girder strength
       // don't do a bunch of extra work. Return the properties for the real girder
@@ -21431,7 +21446,7 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
    else
    {
       Float64 x = 0;
-      Float64 y = (pConfig ? GetY(intervalIdx,poi,location,pConfig->Fc) : GetY(intervalIdx, poi, location));
+      Float64 y = (pConfig ? GetY(intervalIdx,poi,location,pConfig->fc) : GetY(intervalIdx, poi, location));
       if (location == pgsTypes::BottomGirder)
       {
          y *= -1;
@@ -21454,7 +21469,7 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
       if (pConfig)
       {
          bool bEcChanged;
-         Eg = GetSegmentEc(segmentKey, intervalIdx, pConfig->Fc, &bEcChanged);
+         Eg = GetSegmentEc(segmentKey, intervalIdx, pConfig->fc, &bEcChanged);
       }
       else
       {
@@ -26464,14 +26479,14 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
       concrete.SetType((matConcrete::Type)handlingConfig.GdrConfig.ConcType);
-      concrete.SetFc(handlingConfig.GdrConfig.Fci);
+      concrete.SetFc(handlingConfig.GdrConfig.fci);
       if (handlingConfig.GdrConfig.bUserEci )
       {
          concrete.SetE(handlingConfig.GdrConfig.Eci);
       }
       else
       {
-         Float64 Eci = GetEconc(handlingConfig.GdrConfig.Fci, GetSegmentStrengthDensity(segmentKey),
+         Float64 Eci = GetEconc(handlingConfig.GdrConfig.fci, GetSegmentStrengthDensity(segmentKey),
                                                           GetSegmentEccK1(segmentKey),
                                                           GetSegmentEccK2(segmentKey));
          concrete.SetE(Eci);
@@ -26490,7 +26505,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    GET_IFACE(ISegmentLiftingSpecCriteria,pLiftingCriteria);
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
-      concrete.SetFlexureFr(pLiftingCriteria->GetLiftingModulusOfRupture(segmentKey, handlingConfig.GdrConfig.Fci, handlingConfig.GdrConfig.ConcType));
+      concrete.SetFlexureFr(pLiftingCriteria->GetLiftingModulusOfRupture(segmentKey, handlingConfig.GdrConfig.fci, handlingConfig.GdrConfig.ConcType));
    }
    else
    {
@@ -26727,14 +26742,14 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
       concrete.SetType((matConcrete::Type)handlingConfig.GdrConfig.ConcType);
-      concrete.SetFc(handlingConfig.GdrConfig.Fc);
+      concrete.SetFc(handlingConfig.GdrConfig.fc);
       if (handlingConfig.GdrConfig.bUserEci )
       {
          concrete.SetE(handlingConfig.GdrConfig.Ec);
       }
       else
       {
-         Float64 Ec = GetEconc(handlingConfig.GdrConfig.Fc, GetSegmentStrengthDensity(segmentKey),
+         Float64 Ec = GetEconc(handlingConfig.GdrConfig.fc, GetSegmentStrengthDensity(segmentKey),
                                                         GetSegmentEccK1(segmentKey),
                                                         GetSegmentEccK2(segmentKey));
          concrete.SetE(Ec);
@@ -26753,7 +26768,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    GET_IFACE(ISegmentHaulingSpecCriteria,pHaulingCriteria);
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
-      concrete.SetFlexureFr(pHaulingCriteria->GetHaulingModulusOfRupture(segmentKey, handlingConfig.GdrConfig.Fc, handlingConfig.GdrConfig.ConcType));
+      concrete.SetFlexureFr(pHaulingCriteria->GetHaulingModulusOfRupture(segmentKey, handlingConfig.GdrConfig.fc, handlingConfig.GdrConfig.ConcType));
    }
    else
    {
@@ -29420,13 +29435,14 @@ PoiIntervalKey CBridgeAgentImp::GetSectionPropertiesKey(IntervalIndexType interv
    else
    {
       // not doing time-step analysis... 
+      const auto& segmentKey(poi.GetSegmentKey());
 
       // storage interval is the last interval for release strength
-      IntervalIndexType storageIntervalIdx = GetStorageInterval(poi.GetSegmentKey());
+      IntervalIndexType storageIntervalIdx = GetStorageInterval(segmentKey);
       IntervalIndexType compositeIntervalIdx = GetLastCompositeInterval();
       if ( intervalIdx <= storageIntervalIdx)
       {
-         IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(poi.GetSegmentKey());
+         IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
          return PoiIntervalKey(poi,releaseIntervalIdx);
       }
       else if (storageIntervalIdx < intervalIdx &&  intervalIdx < compositeIntervalIdx)
@@ -29437,7 +29453,23 @@ PoiIntervalKey CBridgeAgentImp::GetSectionPropertiesKey(IntervalIndexType interv
       else
       {
          // girder is at final concrete strength and deck is composite
-         return PoiIntervalKey(poi, compositeIntervalIdx);
+         GET_IFACE(ILibrary, pLib);
+         GET_IFACE(ISpecification, pSpec);
+         const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+         bool bUse90DayStrength;
+         Float64 factor;
+         pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+         Float64 age = GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::Middle);
+         auto type = GetSegmentConcreteType(segmentKey);
+         if (type == pgsTypes::Normal && bUse90DayStrength && factor != 1.0 && 90 < age)
+         {
+            IntervalIndexType nIntervals = GetIntervalCount();
+            return PoiIntervalKey(poi, nIntervals-1); // use last interval for properties since they will be the same from day 90 to the end
+         }
+         else
+         {
+            return PoiIntervalKey(poi, compositeIntervalIdx);
+         }
       }
    }
 

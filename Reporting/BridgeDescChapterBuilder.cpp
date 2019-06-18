@@ -69,7 +69,8 @@ static void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,
 static void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
 static void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
-static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fci,Float64 fc,Float64 Eci,Float64 Ec,Float64 lambda,const CConcreteMaterial& concrete,RowIndexType row);
+static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row);
+static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, bool bUse90dayStrength, Float64 fc90, Float64 Ec90, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row);
 static void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level,bool bAASHTOParameters);
 static void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row,bool bAASHTOParameters);
 static void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
@@ -1308,6 +1309,20 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       nColumns++;
    }
 
+   GET_IFACE2(pBroker,ILibrary, pLib);
+   GET_IFACE2(pBroker,ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   bool bUse90dayStrength;
+   Float64 factor;
+   pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90dayStrength, &factor);
+
+   if (bUse90dayStrength)
+   {
+      nColumns += 2;
+   }
+
+
+
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns,_T("Concrete Properties"));
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
@@ -1324,6 +1339,11 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    (*pTable)(row,col++) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(row,col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(row,col++) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   if (bUse90dayStrength)
+   {
+      (*pTable)(row, col++) << COLHDR(RPT_FC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(row, col++) << COLHDR(RPT_EC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   }
    (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
    (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("s")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
    (*pTable)(row,col++) << COLHDR(Sub2(_T("D"),_T("agg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -1392,13 +1412,20 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
          EventIndexType erectEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(pSegment->GetID());
 
          IntervalIndexType initialIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-         IntervalIndexType finalIntervalIdx   = pIntervals->GetInterval(erectEventIdx);
 
          Float64 fci = pMaterials->GetSegmentFc(thisSegmentKey,initialIntervalIdx);
-         Float64 fc  = pMaterials->GetSegmentFc(thisSegmentKey,finalIntervalIdx);
+         Float64 fc  = pMaterials->GetSegmentFc28(thisSegmentKey);
 
          Float64 Eci = pMaterials->GetSegmentEc(thisSegmentKey,initialIntervalIdx);
-         Float64 Ec  = pMaterials->GetSegmentEc(thisSegmentKey,finalIntervalIdx);
+         Float64 Ec  = pMaterials->GetSegmentEc28(thisSegmentKey);
+
+         Float64 fc90(-99999), Ec90(-99999);
+         if (bUse90dayStrength)
+         {
+            IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
+            fc90 = pMaterials->GetSegmentFc(thisSegmentKey, finalIntervalIdx);
+            Ec90 = pMaterials->GetSegmentEc(thisSegmentKey, finalIntervalIdx);
+         }
 
          Float64 lambda = pMaterials->GetSegmentLambda(thisSegmentKey);
 
@@ -1411,7 +1438,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
             (*pTable)(row,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
          }
 
-         write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,lambda,pSegment->Material.Concrete,row);
+         write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,bUse90dayStrength,bUse90dayStrength,fc90,Ec90,lambda,pSegment->Material.Concrete,row);
          row++;
 
          const CClosureJointData* pClosure = pSegment->GetEndClosure();
@@ -1426,32 +1453,33 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    if ( pDeck->GetDeckType() != pgsTypes::sdtNone )
    {
-      IntervalIndexType intervalIdx = pIntervals->GetCompositeDeckInterval();
-
-      Float64 fc = pMaterials->GetDeckFc(intervalIdx);
-      Float64 Ec = pMaterials->GetDeckEc(intervalIdx);
+      Float64 fc = pMaterials->GetDeckFc28();
+      Float64 Ec = pMaterials->GetDeckEc28();
       Float64 lambda = pMaterials->GetDeckLambda();
 
       (*pTable)(row,0) << _T("Deck");
-      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,lambda,pDeck->Concrete,row);
+      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec, bUse90dayStrength,lambda,pDeck->Concrete,row);
       row++;
    }
 
    if (pBridgeDesc->HasStructuralLongitudinalJoints())
    {
-      IntervalIndexType intervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
-
-      Float64 fc = pMaterials->GetLongitudinalJointFc(intervalIdx);
-      Float64 Ec = pMaterials->GetLongitudinalJointEc(intervalIdx);
+      Float64 fc = pMaterials->GetLongitudinalJointFc28();
+      Float64 Ec = pMaterials->GetLongitudinalJointEc28();
       Float64 lambda = pMaterials->GetLongitudinalJointLambda();
 
       (*pTable)(row, 0) << _T("Longitudinal Joint");
-      write_lrfd_concrete_row(pDisplayUnits, pTable, -1.0, fc, -1.0, Ec, lambda, pBridgeDesc->GetLongitudinalJointMaterial(), row);
+      write_lrfd_concrete_row(pDisplayUnits, pTable, -1.0, fc, -1.0, Ec, bUse90dayStrength, lambda, pBridgeDesc->GetLongitudinalJointMaterial(), row);
       row++;
    }
 }
 
-void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fci,Float64 fc,Float64 Eci,Float64 Ec,Float64 lambda,const CConcreteMaterial& concrete,RowIndexType row)
+void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row)
+{
+   write_lrfd_concrete_row(pDisplayUnits, pTable, fci, fc, Eci, Ec, bHas90dayStrengthColumns, false, -1, -1, lambda, concrete, row);
+}
+
+void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, bool bUse90dayStrength, Float64 fc90, Float64 Ec90, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       false );
@@ -1484,6 +1512,22 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,
 
    (*pTable)(row,col++) << stress.SetValue( fc );
    (*pTable)(row,col++) << modE.SetValue( Ec );
+
+   if (bHas90dayStrengthColumns)
+   {
+      if (bUse90dayStrength && concrete.Type == pgsTypes::Normal)
+      {
+         (*pTable)(row, col++) << stress.SetValue(fc90);
+         (*pTable)(row, col++) << modE.SetValue(Ec90);
+      }
+      else
+      {
+         (*pTable)(row, col++) << _T("-");
+         (*pTable)(row, col++) << _T("-");
+      }
+   }
+
+
    (*pTable)(row,col++) << density.SetValue( concrete.WeightDensity );
 
    if ( concrete.bUserEc )

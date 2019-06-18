@@ -785,7 +785,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
             SHEARCAPACITYDETAILS scd;
             pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthI, liveLoadIntervalIdx, poi, &config, &scd );
 
-            Float64 fcreq = fabs(scd.vufc * config.Fc / 0.18); // LRFD 5.7.3.2 (pre2017: 5.8.3.2)
+            Float64 fcreq = fabs(scd.vufc * config.fc28 / 0.18); // LRFD 5.7.3.2 (pre2017: 5.8.3.2)
 
             // FUDGE: Give concrete strength a small bump up. Found some regression tests that were missing
             //        by just a smidge...
@@ -812,7 +812,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
             SHEARCAPACITYDETAILS scd;
             pShearCapacity->GetShearCapacityDetails( pgsTypes::StrengthII, liveLoadIntervalIdx, poi, &config, &scd );
 
-            Float64 fcreq = fabs(scd.vufc * config.Fc / 0.18); // LRFD 5.7.3.2 (pre2017: 5.8.3.2)
+            Float64 fcreq = fabs(scd.vufc * config.fc28 / 0.18); // LRFD 5.7.3.2 (pre2017: 5.8.3.2)
 
             FcRequiredForStrutTieStress = Max(FcRequiredForStrutTieStress, fcreq);
 

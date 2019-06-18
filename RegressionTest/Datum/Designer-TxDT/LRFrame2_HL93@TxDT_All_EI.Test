@@ -15,9 +15,9 @@ Splitting zone check failed.
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Tensile stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 14 Composite deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Tensile stress check failed for Service III Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -30,8 +30,8 @@ Confinement zone check failed.
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
-Tensile stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
+Tensile stress check failed for Service III Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
@@ -109,11 +109,11 @@ Confinement zone check failed.
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 14 Composite deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
 Splitting zone check failed.
 
 
@@ -135,10 +135,10 @@ Confinement zone check failed.
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 14 Composite deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -175,10 +175,10 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -215,10 +215,10 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -255,9 +255,9 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -295,9 +295,9 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.

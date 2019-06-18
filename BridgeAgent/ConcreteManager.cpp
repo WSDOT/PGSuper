@@ -2220,6 +2220,24 @@ lrfdLRFDConcrete* CConcreteManager::CreateLRFDConcreteModel(const CConcreteMater
    Float64 lambda = lrfdConcreteUtil::ComputeConcreteDensityModificationFactor((matConcrete::Type)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
    pLRFDConcrete->SetLambda(lambda);
 
+   if (concrete.Type == pgsTypes::Normal && (stepTime-startTime) < 90)
+   {
+      GET_IFACE(ILibrary, pLib);
+      GET_IFACE(ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      bool bUse;
+      Float64 factor;
+      pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse, &factor);
+      if (bUse && factor != 1.0)
+      {
+         CConcreteMaterial concrete90(concrete);
+         concrete90.Fc *= factor;
+         matConcreteEx initialConcrete, finalConcrete90;
+         CreateConcrete(concrete90, _T(""), &initialConcrete, &finalConcrete90);
+         pLRFDConcrete->Use90DayStrength(finalConcrete90);
+      }
+   }
+
    return pLRFDConcrete;
 }
 

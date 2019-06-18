@@ -314,6 +314,8 @@ public:
    // Set/Get concrete strength type
    void SetLimitStateConcreteStrength(pgsTypes::LimitStateConcreteStrength lsFc);
    pgsTypes::LimitStateConcreteStrength GetLimitStateConcreteStrength() const;
+   void Use90DayStrengthForSlowCuringConcrete(bool bUse, Float64 factor);
+   void Use90DayStrengthForSlowCuringConcrete(bool* pbUse, Float64* pfactor) const;
 
    // Set/Get parameters for checking clear space between adjacent bottom flanges
    void CheckBottomFlangeClearance(bool bCheck);
@@ -1547,6 +1549,8 @@ private:
 
 
    pgsTypes::LimitStateConcreteStrength m_LimitStateConcreteStrength;
+   bool m_bUse90DayConcreteStrength;
+   Float64 m_90DayConcreteStrengthFactor;
 
    Float64 m_FinishedElevationTolerance; // tolerance between finished and design roadway surface elevation for no-deck bridges
 };

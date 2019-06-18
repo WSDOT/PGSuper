@@ -7746,6 +7746,14 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(segmentKey);
          }
 
+         GET_IFACE(ILibrary, pLib);
+         GET_IFACE(ISpecification, pSpec);
+         const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+         bool bUse90DayStrengthFactor;
+         Float64 concrete_strength_factor;
+         pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrengthFactor, &concrete_strength_factor);
+
+
          // The vector of superstructure member data contains stiffness properties by stage.
          // This should be segment data between section changes, for each stage.
          // For now, assume segments are prismatic
@@ -7759,7 +7767,25 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             // Segment Data
 
             // young's modulus in this interval
-            Float64 Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+            Float64 Ec;
+            if (bUse90DayStrengthFactor && !IsEqual(concrete_strength_factor,1.0))
+            {
+               // the 115% increase in concrete strength (LRFD 5.12.3.2.5) only applies to stresses
+               // if the increase is enabled, use the 28 day modulus for all time after 90 days
+               Float64 age = pMaterial->GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::Start);
+               if (age < 90)
+               {
+                  Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+               }
+               else
+               {
+                  Ec = pMaterial->GetSegmentEc28(segmentKey);
+               }
+            }
+            else
+            {
+               Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+            }
 
             // Get section properties this interval.
             // GetAg/GetIx will return gross or transformed properties based on the

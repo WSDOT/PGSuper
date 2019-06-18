@@ -1206,8 +1206,11 @@ struct GDRCONFIG
 
    PRESTRESSCONFIG PrestressConfig; // all prestressing information
 
-   Float64 Fc;        // 28 day concrete strength
-   Float64 Fci;       // Concrete release strength
+   // fc/fc28 - The 115% f'c allowance per LRFD 5.12.3.2.5 is only applicable
+   // to stresses. Use Fc28 for strenght analysis
+   Float64 fc28;      // 28 day concrete strength (used for strength)
+   Float64 fc;        // 28 or 90 day compressive strength (used for stresses)
+   Float64 fci;       // Concrete release strength
    pgsTypes::ConcreteType ConcType;
    bool bHasFct;
    Float64 Fct;
@@ -1244,8 +1247,9 @@ struct GDRCONFIG
    {
       if (PrestressConfig != other.PrestressConfig) return false;
 
-      if ( !IsEqual(Fci, other.Fci) ) return false;
-      if ( !IsEqual(Fc,  other.Fc) ) return false;
+      if (!IsEqual(fci, other.fci)) return false;
+      if (!IsEqual(fc, other.fc)) return false;
+      if (!IsEqual(fc28, other.fc28)) return false;
 
       if (bUserEci != other.bUserEci) return false;
       if (bUserEc  != other.bUserEc)  return false;
@@ -1287,8 +1291,9 @@ void MakeCopy( const GDRCONFIG& rOther )
 
    PrestressConfig = rOther.PrestressConfig;
 
-   Fc = rOther.Fc;
-   Fci = rOther.Fci;
+   fc = rOther.fc;
+   fc28 = rOther.fc28;
+   fci = rOther.fci;
    ConcType = rOther.ConcType;
    bHasFct = rOther.bHasFct;
    Fct = rOther.Fct;

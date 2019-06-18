@@ -1318,6 +1318,18 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
       m_Entry.m_LimitStateConcreteStrength = (pgsTypes::LimitStateConcreteStrength)value;
    }
 
+   DDX_Check_Bool(pDX, IDC_USE_90_DAY_STRENGTH, m_Entry.m_bUse90DayConcreteStrength);
+   DDX_Percentage(pDX, IDC_90_DAY_STRENGTH_FACTOR, m_Entry.m_90DayConcreteStrengthFactor);
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (m_Entry.m_90DayConcreteStrengthFactor < 1.0)
+      {
+         pDX->PrepareEditCtrl(IDC_90_DAY_STRENGTH_FACTOR);
+         AfxMessageBox(_T("Factor for 90 day concrete strength must be at least 100%"));
+         pDX->Fail();
+      }
+   }
+
    // Roadway elevations
    DDX_UnitValueAndTag(pDX, IDC_ELEVATION_TOLERANCE, IDC_ELEVATION_TOLERANCE_UNIT, m_Entry.m_FinishedElevationTolerance, pDisplayUnits->ComponentDim);
    DDV_UnitValueZeroOrMore(pDX, IDC_ELEVATION_TOLERANCE, m_Entry.m_FinishedElevationTolerance, pDisplayUnits->ComponentDim);

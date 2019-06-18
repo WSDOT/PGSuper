@@ -476,8 +476,9 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    
    config.PrestressConfig.Debond[pgsTypes::Straight] = m_SsDebondInfo; // we only design debond for straight strands
 
-   config.Fci       = GetReleaseStrength();
-   config.Fc        = GetConcreteStrength();
+   config.fci       = GetReleaseStrength();
+   config.fc        = GetConcreteStrength();
+   config.fc28      = GetConcreteStrength();
    config.ConcType  = (pgsTypes::ConcreteType)m_Concrete.GetType();
    config.bHasFct   = m_Concrete.HasAggSplittingStrength();
    config.Fct       = m_Concrete.GetAggSplittingStrength();
@@ -492,7 +493,7 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    }
    else
    {
-      config.Eci = lrfdConcreteUtil::ModE( config.Fci, m_Concrete.GetDensity(), false);
+      config.Eci = lrfdConcreteUtil::ModE( config.fci, m_Concrete.GetDensity(), false);
    }
 
    config.bUserEc  = m_IsUserEc;
@@ -502,7 +503,7 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    }
    else
    {
-      config.Ec = lrfdConcreteUtil::ModE( config.Fc, m_Concrete.GetDensity(), false);
+      config.Ec = lrfdConcreteUtil::ModE( config.fc, m_Concrete.GetDensity(), false);
    }
 
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);

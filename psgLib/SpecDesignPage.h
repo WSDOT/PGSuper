@@ -67,7 +67,8 @@ protected:
    afx_msg void OnBnClickedIsSupportLessThan();
 	//}}AFX_MSG
    afx_msg void OnHelp();
-	DECLARE_MESSAGE_MAP()
+   afx_msg void OnFcTypeChanged();
+   DECLARE_MESSAGE_MAP()
 public:
    afx_msg void OnBnClickedCheckBottomFlangeClearance();
    afx_msg void OnBnClickedCheckInclindedGirder();

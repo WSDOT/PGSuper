@@ -9,8 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1118,13 +1117,13 @@ BEGIN
     CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,182,280,37,8
     LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,23,297,100,8
     CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,296,45,10
-    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,182,297,82,8
-    EDITTEXT        IDC_DEFLECTION_LIMIT,262,294,40,14,ES_AUTOHSCROLL
+    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,182,296,82,8
+    EDITTEXT        IDC_DEFLECTION_LIMIT,262,293,40,14,ES_AUTOHSCROLL
     LTEXT           "Bottom Flange Clearance",IDC_STATIC,23,314,80,8
     CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,314,37,10
-    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,182,314,48,8
-    EDITTEXT        IDC_CLEARANCE,234,311,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_CLEARANCE_UNIT,279,314,19,8
+    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,182,313,48,8
+    EDITTEXT        IDC_CLEARANCE,241,310,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CLEARANCE_UNIT,286,313,19,8
     LTEXT           "Inclination of Tilted Girder",IDC_STATIC,23,332,81,8
     CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,126,332,37,10
     LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,181,332,51,8
@@ -1140,10 +1139,13 @@ BEGIN
     EDITTEXT        IDC_ELEVATION_TOLERANCE,266,415,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_ELEVATION_TOLERANCE_UNIT,309,418,19,8
     LTEXT           "This setting applies to adjacent girder bridges without a deck. See documentation for additional details",IDC_ELEVATION_TOLERANCE_NOTE,23,431,320,8
-    GROUPBOX        "Concrete Strength for Limit State Evaluations (Time-Step Analysis Only)",IDC_FC_GROUP,12,451,462,44
-    CONTROL         "Use f'ci and f'c at the time of loading (5.14.3.2d and 5.14.1.3.3)",IDC_FC1,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,465,214,10
+    GROUPBOX        "Concrete Strength for Limit State Evaluations",IDC_FC_GROUP,12,451,462,44
+    CONTROL         "Use fc at the time of loading (5.14.3.2d and 5.14.1.3.3)",IDC_FC1,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,23,465,188,10
     CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,23,478,93,10
+    CONTROL         "Use",IDC_USE_90_DAY_STRENGTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,478,25,10
+    EDITTEXT        IDC_90_DAY_STRENGTH_FACTOR,150,476,36,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "% of f'c for stress combiations after 90 days for slow curing concretes (5.12.3.2.5)",IDC_90_DAY_STRENGTH_LABEL,188,479,278,8
 END
 
 IDD_SPEC_SHEAR DIALOGEX 0, 0, 441, 423
@@ -2826,8 +2828,7 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
-
+#include "grid\gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

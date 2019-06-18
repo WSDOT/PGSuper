@@ -210,12 +210,12 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
       }
       else
       {
-         Ec = pMaterial->GetEconc(haulConfig.GdrConfig.Fc, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Ec = pMaterial->GetEconc(haulConfig.GdrConfig.fc, pMaterial->GetSegmentStrengthDensity(segmentKey),
                                                            pMaterial->GetSegmentEccK1(segmentKey),
                                                            pMaterial->GetSegmentEccK2(segmentKey));
       }
 
-      Fc = haulConfig.GdrConfig.Fc;
+      Fc = haulConfig.GdrConfig.fc;
       concType = haulConfig.GdrConfig.ConcType;
    }
 
@@ -514,7 +514,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
    }
    else
    {
-      Float64 fc = haulConfig.GdrConfig.Fc;
+      Float64 fc = haulConfig.GdrConfig.fc;
 
       fLowTensAllowable  = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(segmentKey, fc, false);
       fHighTensAllowable = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(segmentKey, fc, true);

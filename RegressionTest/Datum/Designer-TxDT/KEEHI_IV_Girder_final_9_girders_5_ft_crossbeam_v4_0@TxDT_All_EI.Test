@@ -17,10 +17,10 @@ Minimum fillet value exceeded for bridge check failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 14 Composite deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Splitting zone check failed.
@@ -46,11 +46,11 @@ Minimum fillet value exceeded for bridge check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 14 Composite deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Minimum fillet value exceeded for bridge check failed
 
@@ -64,10 +64,10 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 14 Composite deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Minimum fillet value exceeded for bridge check failed
@@ -109,9 +109,9 @@ Minimum fillet value exceeded for bridge check failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 16 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Minimum fillet value exceeded for bridge check failed
 
