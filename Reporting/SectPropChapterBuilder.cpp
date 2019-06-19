@@ -301,7 +301,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
-            *pPara << SEGMENT_LABEL(thisSegmentKey) << rptNewLine;
+            pPara->SetName(SEGMENT_LABEL(thisSegmentKey));
+            *pPara << pPara->GetName() << rptNewLine;
          }
 
          pPara = new rptParagraph();
