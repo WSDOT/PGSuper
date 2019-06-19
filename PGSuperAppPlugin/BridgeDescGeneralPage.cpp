@@ -439,6 +439,11 @@ void CBridgeDescGeneralPage::Init()
       m_strCacheLeftTopWidth.Format(_T("%s"), FormatDimension(m_LeftTopWidth, pDisplayUnits->GetXSectionDimUnit(), false));
       m_strCacheRightTopWidth.Format(_T("%s"), FormatDimension(m_RightTopWidth, pDisplayUnits->GetXSectionDimUnit(), false));
    }
+   else
+   {
+      m_strCacheLeftTopWidth.Format(_T("%s"), FormatDimension(0, pDisplayUnits->GetXSectionDimUnit(), false));
+      m_strCacheRightTopWidth.Format(_T("%s"), FormatDimension(0, pDisplayUnits->GetXSectionDimUnit(), false));
+   }
 
    int sign = ::Sign(m_RefGirderOffset);
    LPTSTR strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
@@ -450,6 +455,11 @@ void CBridgeDescGeneralPage::Init()
    m_JointConcrete = pParent->m_BridgeDesc.GetLongitudinalJointMaterial();
 
    UpdateMinimumGirderCount();
+
+   // there are a couple controls that we don't want to be empty so put some dummy text in them
+   GetDlgItem(IDC_LEFT_TOP_WIDTH)->SetWindowText(_T("0"));
+   GetDlgItem(IDC_RIGHT_TOP_WIDTH)->SetWindowText(_T("0"));
+   GetDlgItem(IDC_SPACING)->SetWindowText(_T("0"));
 }
 
 void CBridgeDescGeneralPage::UpdateBridgeDescription()
@@ -1163,6 +1173,8 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
 
    UpdateBridgeDescription();
 
+   pgsTypes::SupportedBeamSpacing oldSpacingType = m_GirderSpacingType;
+
    if ( !UpdateGirderSpacingLimits() || m_NumGdrSpinner.GetPos() == 1)
    {
       EnableGirderSpacing(FALSE,FALSE);
@@ -1175,9 +1187,23 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
    EnableTopWidth(IsTopWidthSpacing(m_GirderSpacingType));
    UpdateGirderTopWidthSpacingLimits();
 
-   EnableLongitudinalJointMaterial();
-
    UpdateSuperstructureDescription();
+   FillDeckTypeComboBox();
+   FillGirderSpacingTypeComboBox();
+   FillTopWidthComboBox();
+
+   UpdateData(FALSE);
+
+
+   //if (oldSpacingType != m_GirderSpacingType)
+   {
+      OnGirderSpacingTypeChanged();
+   }
+
+   EnableTopWidth(IsTopWidthSpacing(m_GirderSpacingType));
+   OnTopWidthTypeChanged();
+
+   EnableLongitudinalJointMaterial();
 }
 
 void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
@@ -1196,11 +1222,11 @@ void CBridgeDescGeneralPage::OnBeforeChangeGirderName()
    m_GirderNameIdx = pCB->GetCurSel();
 }
 
-void CBridgeDescGeneralPage::OnGirderNameChanged() 
+void CBridgeDescGeneralPage::OnGirderNameChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GDR_TYPE);
-   int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"),MB_YESNO);
-   if ( result == IDNO )
+   int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"), MB_YESNO);
+   if (result == IDNO)
    {
       pCB->SetCurSel((int)m_GirderNameIdx);
       return;
@@ -1922,7 +1948,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    int cursel = box->GetCurSel();
    pgsTypes::SupportedDeckType deckType = (pgsTypes::SupportedDeckType)box->GetItemData(cursel);
 
-   description += _T(", ") + CString(GetDeckTypeName(deckType));
+   description += _T(", Deck: ") + CString(GetDeckTypeName(deckType));
 
    pgsTypes::AdjacentTransverseConnectivity connect = pgsTypes::atcConnectedAsUnit;
 
