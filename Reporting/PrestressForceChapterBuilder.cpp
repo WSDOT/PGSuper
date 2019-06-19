@@ -92,6 +92,10 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
+   GET_IFACE2(pBroker, ISectionProperties, pSectProps);
+   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
+
+
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
@@ -189,13 +193,20 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
          // Write out strand forces and stresses at the various stages of prestress loss
          pPara = new rptParagraph;
          *pChapter << pPara;
-         *pPara << CPrestressLossTable(bIsSplicedGirder).Build(pBroker,thisSegmentKey,m_bRating,pDisplayUnits) << rptNewLine;
+         *pPara << CPrestressLossTable(bIsSplicedGirder).Build(pBroker,thisSegmentKey,bIncludeElasticEffects,m_bRating,pDisplayUnits) << rptNewLine;
 
          pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
          *pChapter << pPara;
          *pPara << _T("Time-Dependent Effects = change in strand stress due to creep, shrinkage, and relaxation") << rptNewLine;
-         *pPara << _T("Instantaneous Effects = change in strand stress due to elastic shortening and externally applied loads") << rptNewLine;
-         *pPara << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects - Instantaneous Effects") << rptNewLine;
+         if (bIncludeElasticEffects)
+         {
+            *pPara << _T("Instantaneous Effects = change in strand stress due to elastic shortening and externally applied loads") << rptNewLine;
+            *pPara << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects - Instantaneous Effects") << rptNewLine;
+         }
+         else
+         {
+            *pPara << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects") << rptNewLine;
+         }
       } // segIdx
    } // gdrIdx
 

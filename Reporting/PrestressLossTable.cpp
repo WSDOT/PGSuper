@@ -75,9 +75,7 @@ CPrestressLossTable& CPrestressLossTable::operator= (const CPrestressLossTable& 
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segmentKey,
-   bool bRating,
-   IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segmentKey, bool bIncludeElasticEffects, bool bRating, IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
@@ -110,15 +108,24 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
       bTempStrands = false;
    }
 
-   ColumnIndexType nCol = 5;
+   ColumnIndexType nCols = 4;
+   if (bIncludeElasticEffects)
+   {
+      nCols++;
+   }
+
    if (bTempStrands)
    {
-      nCol += 4;
+      nCols += 3;
+      if (bIncludeElasticEffects)
+      {
+         nCols++;
+      }
    }
 
 
    std::_tstring strTitle(m_bSplicedGirder ? _T("Effective Prestress at Mid-Segment") : _T("Effective Prestress at Mid-Span"));
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCol, strTitle);
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, strTitle);
    p_table->SetNumberOfHeaderRows(2);
 
    p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -131,20 +138,26 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    p_table->SetRowSpan(0, col, 2);
    (*p_table)(0, col++) << _T("Loss Stage");
 
-   p_table->SetColumnSpan(0, col, 4);
+   p_table->SetColumnSpan(0, col, bIncludeElasticEffects ? 4 : 3);
    (*p_table)(0, col) << _T("Permanent Strand");
    (*p_table)(1, col++) << COLHDR(_T("Effective") << rptNewLine << _T("Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
    (*p_table)(1, col++) << COLHDR(_T("Time-Dependent") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*p_table)(1, col++) << COLHDR(_T("Instantaneous") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   if (bIncludeElasticEffects)
+   {
+      (*p_table)(1, col++) << COLHDR(_T("Instantaneous") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   }
    (*p_table)(1, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
    if (bTempStrands)
    {
-      p_table->SetColumnSpan(0, col, 4);
+      p_table->SetColumnSpan(0, col, bIncludeElasticEffects ? 4 : 3);
       (*p_table)(0, col) << _T("Temporary Strand");
       (*p_table)(1, col++) << COLHDR(_T("Effective") << rptNewLine << _T("Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
       (*p_table)(1, col++) << COLHDR(_T("Time-Dependent") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*p_table)(1, col++) << COLHDR(_T("Instantaneous") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      if (bIncludeElasticEffects)
+      {
+         (*p_table)(1, col++) << COLHDR(_T("Instantaneous") << rptNewLine << _T("Effects"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      }
       (*p_table)(1, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
 
@@ -279,43 +292,43 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    // Permanent Strand Force Column
    row = p_table->GetNumberOfHeaderRows();
    col = 1;
-   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, stressStrandsIntervalIdx, pgsTypes::Start/*pgsTypes::Jacking*/));
-   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::Start/*pgsTypes::BeforeXfer*/));
-   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End/*pgsTypes::AfterXfer*/));
+   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, stressStrandsIntervalIdx, pgsTypes::Start/*pgsTypes::Jacking*/, bIncludeElasticEffects));
+   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::Start/*pgsTypes::BeforeXfer*/, bIncludeElasticEffects));
+   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End/*pgsTypes::AfterXfer*/, bIncludeElasticEffects));
 
    if (bTempStrands && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting)
    {
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End/*pgsTypes::AfterTemporaryStrandInstallation*/));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End/*pgsTypes::AfterTemporaryStrandInstallation*/, bIncludeElasticEffects));
    }
 
-   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, liftSegmentIntervalIdx, pgsTypes::End/*pgsTypes::AtLifting*/));
+   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, liftSegmentIntervalIdx, pgsTypes::End/*pgsTypes::AtLifting*/, bIncludeElasticEffects));
 
    if (bTempStrands && (pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping))
    {
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End/*pgsTypes::AfterTemporaryStrandInstallation*/));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End/*pgsTypes::AfterTemporaryStrandInstallation*/, bIncludeElasticEffects));
    }
 
-   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, haulSegmentIntervalIdx, pgsTypes::End/*pgsTypes::AtShipping*/));
+   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, haulSegmentIntervalIdx, pgsTypes::End/*pgsTypes::AtShipping*/, bIncludeElasticEffects));
 
-   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, erectSegmentIntervalIdx, pgsTypes::End/*pgsTypes::Erection*/));
+   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, erectSegmentIntervalIdx, pgsTypes::End/*pgsTypes::Erection*/, bIncludeElasticEffects));
    if (bTempStrands)
    {
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::Start/*pgsTypes::BeforeTemporaryStrandRemoval*/));
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::End/*pgsTypes::AfterTemporaryStrandRemoval*/));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::Start/*pgsTypes::BeforeTemporaryStrandRemoval*/, bIncludeElasticEffects));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::End/*pgsTypes::AfterTemporaryStrandRemoval*/, bIncludeElasticEffects));
    }
 
    if (bHasJoint)
    {
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, castJointIntervalIdx, pgsTypes::End));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, castJointIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
    }
 
    if (bHasDeck)
    {
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, castDeckIntervalIdx, pgsTypes::End/*pgsTypes::AfterDeckPlacement*/));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, castDeckIntervalIdx, pgsTypes::End/*pgsTypes::AfterDeckPlacement*/, bIncludeElasticEffects));
    }
 
-   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End/*pgsTypes::AfterSIDL*/));
-   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End/*pgsTypes::AfterLosses*/));
+   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End/*pgsTypes::AfterSIDL*/, bIncludeElasticEffects));
+   (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End/*pgsTypes::AfterLosses*/, bIncludeElasticEffects)); // final (permanent loads only)
 
    if (bRating)
    {
@@ -337,7 +350,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
                if (IsDesignRatingType(ratingType))
                {
-                  (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, limitState));
+                  (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, limitState, bIncludeElasticEffects));
                }
                else
                {
@@ -354,7 +367,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                      {
                         continue;
                      }
-                     (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, limitState,vehicleIdx));
+                     (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent, limitState, bIncludeElasticEffects,vehicleIdx));
                   }
                }
             }
@@ -363,15 +376,15 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    }
    else
    {
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI));
-      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI, bIncludeElasticEffects));
+      (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII, bIncludeElasticEffects));
       if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
       {
-         (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA));
+         (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA, bIncludeElasticEffects));
       }
       else
       {
-         (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI));
+         (*p_table)(row++, col) << force.SetValue(pPrestressForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI, bIncludeElasticEffects));
       }
    }
 
@@ -470,100 +483,103 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    ///////////////////////////////////
    // Permanent Strand Gain Column
    // Use a negative of the elastic effects so it will be a gain
-   row = p_table->GetNumberOfHeaderRows();
-   col++;
-   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, stressStrandsIntervalIdx, pgsTypes::Start)); // at jacking
-   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::Start)/*pLosses->GetBeforeXferLosses(poi,pgsTypes::Permanent)*/);
-   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End)/*pLosses->GetAfterXferLosses(poi,pgsTypes::Permanent)*/);
-   if (bTempStrands && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting)
+   if (bIncludeElasticEffects)
    {
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End)/*pLosses->GetAfterTemporaryStrandInstallationLosses(poi,pgsTypes::Permanent)*/);
-   }
-
-   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, liftSegmentIntervalIdx, pgsTypes::End)/*pLosses->GetLiftingLosses(poi,pgsTypes::Permanent)*/);
-
-   if (bTempStrands && (pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping))
-   {
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End)/*pLosses->GetAfterTemporaryStrandInstallationLosses(poi,pgsTypes::Permanent)*/);
-   }
-
-   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, haulSegmentIntervalIdx, pgsTypes::End)/*pLosses->GetShippingLosses(poi,pgsTypes::Permanent)*/);
-
-   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, erectSegmentIntervalIdx, pgsTypes::End));
-   if (bTempStrands)
-   {
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::Start)/*pLosses->GetBeforeTemporaryStrandRemovalLosses(poi,pgsTypes::Permanent)*/);
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::End)/*pLosses->GetAfterTemporaryStrandRemovalLosses(poi,pgsTypes::Permanent)*/);
-   }
-
-   if (bHasDeck)
-   {
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, castDeckIntervalIdx, pgsTypes::End)/*pLosses->GetDeckPlacementLosses(poi,pgsTypes::Permanent)*/);
-   }
-
-   if (bHasJoint)
-   {
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, castJointIntervalIdx, pgsTypes::End)/*pLosses->GetDeckPlacementLosses(poi,pgsTypes::Permanent)*/);
-   }
-
-   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End)/*pLosses->GetSIDLLosses(poi,pgsTypes::Permanent)*/);
-   (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/);
-
-   if (bRating)
-   {
-      for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+      row = p_table->GetNumberOfHeaderRows();
+      col++;
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, stressStrandsIntervalIdx, pgsTypes::Start)); // at jacking
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::Start)/*pLosses->GetBeforeXferLosses(poi,pgsTypes::Permanent)*/);
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End)/*pLosses->GetAfterXferLosses(poi,pgsTypes::Permanent)*/);
+      if (bTempStrands && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting)
       {
-         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End)/*pLosses->GetAfterTemporaryStrandInstallationLosses(poi,pgsTypes::Permanent)*/);
+      }
 
-         if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, liftSegmentIntervalIdx, pgsTypes::End)/*pLosses->GetLiftingLosses(poi,pgsTypes::Permanent)*/);
+
+      if (bTempStrands && (pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping))
+      {
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End)/*pLosses->GetAfterTemporaryStrandInstallationLosses(poi,pgsTypes::Permanent)*/);
+      }
+
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, haulSegmentIntervalIdx, pgsTypes::End)/*pLosses->GetShippingLosses(poi,pgsTypes::Permanent)*/);
+
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, erectSegmentIntervalIdx, pgsTypes::End));
+      if (bTempStrands)
+      {
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::Start)/*pLosses->GetBeforeTemporaryStrandRemovalLosses(poi,pgsTypes::Permanent)*/);
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::End)/*pLosses->GetAfterTemporaryStrandRemovalLosses(poi,pgsTypes::Permanent)*/);
+      }
+
+      if (bHasDeck)
+      {
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, castDeckIntervalIdx, pgsTypes::End)/*pLosses->GetDeckPlacementLosses(poi,pgsTypes::Permanent)*/);
+      }
+
+      if (bHasJoint)
+      {
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, castJointIntervalIdx, pgsTypes::End)/*pLosses->GetDeckPlacementLosses(poi,pgsTypes::Permanent)*/);
+      }
+
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End)/*pLosses->GetSIDLLosses(poi,pgsTypes::Permanent)*/);
+      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End)/*pLosses->GetFinal(poi,pgsTypes::Permanent)*/);
+
+      if (bRating)
+      {
+         for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
          {
-            std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
-            for (const auto& limitState : vLimitStates)
-            {
-               if (IsStrengthLimitState(limitState))
-               {
-                  // we only care about service limit states here
-                  continue;
-               }
+            pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
 
-               pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
-               if (IsDesignRatingType(ratingType))
+            if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+            {
+               std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+               for (const auto& limitState : vLimitStates)
                {
-                  (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, limitState));
-               }
-               else
-               {
-                  VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-                  for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                  if (IsStrengthLimitState(limitState))
                   {
-                     pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
-                     if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                     // we only care about service limit states here
+                     continue;
+                  }
+
+                  pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+                  if (IsDesignRatingType(ratingType))
+                  {
+                     (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, limitState));
+                  }
+                  else
+                  {
+                     VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                     for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
                      {
-                        continue;
+                        pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                        if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                        {
+                           continue;
+                        }
+                        std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                        if (name == NO_LIVE_LOAD_DEFINED)
+                        {
+                           continue;
+                        }
+                        (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, limitState, vehicleIdx));
                      }
-                     std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
-                     if (name == NO_LIVE_LOAD_DEFINED)
-                     {
-                        continue;
-                     }
-                     (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, limitState, vehicleIdx));
                   }
                }
             }
          }
       }
-   }
-   else
-   {
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
-      (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
-      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
-      {
-         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIA)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
-      }
       else
       {
-         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::FatigueI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+         if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+         {
+            (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIA)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+         }
+         else
+         {
+            (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffectsWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::FatigueI)/*pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Permanent)*/);
+         }
       }
    }
 
@@ -571,43 +587,43 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    // Permanent Strand Stress Column
    row = p_table->GetNumberOfHeaderRows();
    col++;
-   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, stressStrandsIntervalIdx, pgsTypes::Start));
-   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::Start));
-   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End));
+   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, stressStrandsIntervalIdx, pgsTypes::Start, bIncludeElasticEffects));
+   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::Start, bIncludeElasticEffects));
+   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, releaseIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
 
    if (bTempStrands && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting)
    {
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
    }
 
-   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, liftSegmentIntervalIdx, pgsTypes::End));
+   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, liftSegmentIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
 
    if (bTempStrands && (pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping))
    {
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, tsInstallIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
    }
 
-   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, haulSegmentIntervalIdx, pgsTypes::End));
+   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, haulSegmentIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
 
-   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, erectSegmentIntervalIdx, pgsTypes::End));
+   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, erectSegmentIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
    if (bTempStrands)
    {
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::Start/*pgsTypes::BeforeTemporaryStrandRemoval*/));
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::End/*pgsTypes::AfterTemporaryStrandRemoval*/));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::Start/*pgsTypes::BeforeTemporaryStrandRemoval*/, bIncludeElasticEffects));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, tsRemovalIntervalIdx, pgsTypes::End/*pgsTypes::AfterTemporaryStrandRemoval*/, bIncludeElasticEffects));
    }
 
    if (bHasDeck)
    {
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, castDeckIntervalIdx, pgsTypes::End));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, castDeckIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
    }
 
    if (bHasJoint)
    {
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, castJointIntervalIdx, pgsTypes::End));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, castJointIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
    }
 
-   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End));
-   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End/*pgsTypes::AfterLosses*/));
+   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, railingSystemIntervalIdx, pgsTypes::End, bIncludeElasticEffects));
+   (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, liveLoadIntervalIdx, pgsTypes::End/*pgsTypes::AfterLosses*/, bIncludeElasticEffects));
 
    if (bRating)
    {
@@ -629,7 +645,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
                if (IsDesignRatingType(ratingType))
                {
-                  (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent, limitState));
+                  (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent, limitState, bIncludeElasticEffects));
                }
                else
                {
@@ -646,7 +662,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                      {
                         continue;
                      }
-                     (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent,limitState,vehicleIdx));
+                     (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent,limitState, bIncludeElasticEffects,vehicleIdx));
                   }
                }
             }
@@ -655,15 +671,15 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    }
    else
    {
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI));
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI, bIncludeElasticEffects));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII, bIncludeElasticEffects));
       if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
       {
-         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA));
+         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA, bIncludeElasticEffects));
       }
       else
       {
-         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI));
+         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI, bIncludeElasticEffects));
       }
    }
 
@@ -675,9 +691,9 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
       col++;
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
       {
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/) );
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::Start/*pgsTypes::BeforeXfer*/) );
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::End/*pgsTypes::AfterXfer*/) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/, bIncludeElasticEffects) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::Start/*pgsTypes::BeforeXfer*/, bIncludeElasticEffects) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::End/*pgsTypes::AfterXfer*/, bIncludeElasticEffects) );
       }
       else
       {
@@ -688,7 +704,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
       
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting )
       {
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End/*pgsTypes::AfterTemporaryStrandInstallation*/) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End/*pgsTypes::AfterTemporaryStrandInstallation*/, bIncludeElasticEffects) );
       }
 
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping )
@@ -697,17 +713,17 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
       }
       else
       {
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::End/*pgsTypes::AtLifting*/) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::End/*pgsTypes::AtLifting*/, bIncludeElasticEffects) );
       }
 
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping )
       {
-         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End/*pgsTypes::AfterTemporaryStrandInstallation*/) );
+         (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End/*pgsTypes::AfterTemporaryStrandInstallation*/, bIncludeElasticEffects) );
       }
    
-      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::End/*pgsTypes::AtShipping*/) );
-      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End) );
-      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,tsRemovalIntervalIdx,pgsTypes::Start/*pgsTypes::BeforeTemporaryStrandRemoval*/) );
+      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::End/*pgsTypes::AtShipping*/, bIncludeElasticEffects) );
+      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End, bIncludeElasticEffects) );
+      (*p_table)(row++,col) << force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,tsRemovalIntervalIdx,pgsTypes::Start/*pgsTypes::BeforeTemporaryStrandRemoval*/, bIncludeElasticEffects) );
       (*p_table)(row++,col) << _T("");//force.SetValue( pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandRemoval) );
 
       if (bHasDeck)
@@ -882,108 +898,111 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
 
       ///////////////////////////////////
       // Temporary Strand Gain Column
-      row = p_table->GetNumberOfHeaderRows();
-      col++;
+      if (bIncludeElasticEffects)
+      {
+         row = p_table->GetNumberOfHeaderRows();
+         col++;
 
-      if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
-      {
-         (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Temporary,stressStrandsIntervalIdx,pgsTypes::Start) );
-         (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::Start)/*pLosses->GetBeforeXferLosses(poi,pgsTypes::Temporary)*/ );
-         (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::End)/*pLosses->GetAfterXferLosses(poi,pgsTypes::Temporary)*/ );
-      }
-      else
-      {
-         (*p_table)(row++,col) << _T(""); //stress.SetValue( 0.0 );
-         (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetBeforeXferLosses(poi,pgsTypes::Temporary) );
-         (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetAfterXferLosses(poi,pgsTypes::Temporary) );
-      }
-
-      if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting )
-      {
-         (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End)/*pLosses->GetAfterTemporaryStrandInstallationLosses(poi,pgsTypes::Temporary)*/ );
-      }
-   
-      if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping )
-      {
-         (*p_table)(row++,col) << _T("");
-      }
-      else
-      {
-         (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::End)/*pLosses->GetLiftingLosses(poi,pgsTypes::Temporary)*/ );
-      }
-
-      if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping )
-      {
-         (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End)/*pLosses->GetAfterTemporaryStrandInstallationLosses(poi,pgsTypes::Temporary)*/ );
-      }
-   
-      (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::End)/*pLosses->GetShippingLosses(poi,pgsTypes::Temporary)*/ );
-      (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End) );
-      (*p_table)(row++,col) << stress.SetValue( -pLosses->GetInstantaneousEffects(poi,pgsTypes::Temporary,tsRemovalIntervalIdx,pgsTypes::Start)/*pLosses->GetBeforeTemporaryStrandRemovalLosses(poi,pgsTypes::Temporary)*/ );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue(  pLosses->GetAfterTemporaryStrandRemovalLosses(poi,pgsTypes::Temporary) );
-
-      if (bHasDeck)
-      {
-         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetDeckPlacementLosses(poi,pgsTypes::Temporary) );
-      }
-
-      if (bHasJoint)
-      {
-         (*p_table)(row++, col) << _T("");
-      }
-
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetSIDLLosses(poi,pgsTypes::Temporary) );
-      (*p_table)(row++,col) << _T(""); //stress.SetValue( pLosses->GetFinal(poi,pgsTypes::Temporary) );
-      
-      if (bRating)
-      {
-         for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
+         if (pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned)
          {
-            pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+            (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Temporary, stressStrandsIntervalIdx, pgsTypes::Start));
+            (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Temporary, releaseIntervalIdx, pgsTypes::Start)/*pLosses->GetBeforeXferLosses(poi,pgsTypes::Temporary)*/);
+            (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Temporary, releaseIntervalIdx, pgsTypes::End)/*pLosses->GetAfterXferLosses(poi,pgsTypes::Temporary)*/);
+         }
+         else
+         {
+            (*p_table)(row++, col) << _T(""); //stress.SetValue( 0.0 );
+            (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetBeforeXferLosses(poi,pgsTypes::Temporary) );
+            (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetAfterXferLosses(poi,pgsTypes::Temporary) );
+         }
 
-            if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+         if (pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting)
+         {
+            (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Temporary, tsInstallIntervalIdx, pgsTypes::End)/*pLosses->GetAfterTemporaryStrandInstallationLosses(poi,pgsTypes::Temporary)*/);
+         }
+
+         if (pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping)
+         {
+            (*p_table)(row++, col) << _T("");
+         }
+         else
+         {
+            (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Temporary, liftSegmentIntervalIdx, pgsTypes::End)/*pLosses->GetLiftingLosses(poi,pgsTypes::Temporary)*/);
+         }
+
+         if (pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping)
+         {
+            (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Temporary, tsInstallIntervalIdx, pgsTypes::End)/*pLosses->GetAfterTemporaryStrandInstallationLosses(poi,pgsTypes::Temporary)*/);
+         }
+
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Temporary, haulSegmentIntervalIdx, pgsTypes::End)/*pLosses->GetShippingLosses(poi,pgsTypes::Temporary)*/);
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Temporary, erectSegmentIntervalIdx, pgsTypes::End));
+         (*p_table)(row++, col) << stress.SetValue(-pLosses->GetInstantaneousEffects(poi, pgsTypes::Temporary, tsRemovalIntervalIdx, pgsTypes::Start)/*pLosses->GetBeforeTemporaryStrandRemovalLosses(poi,pgsTypes::Temporary)*/);
+         (*p_table)(row++, col) << _T(""); //stress.SetValue(  pLosses->GetAfterTemporaryStrandRemovalLosses(poi,pgsTypes::Temporary) );
+
+         if (bHasDeck)
+         {
+            (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetDeckPlacementLosses(poi,pgsTypes::Temporary) );
+         }
+
+         if (bHasJoint)
+         {
+            (*p_table)(row++, col) << _T("");
+         }
+
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetSIDLLosses(poi,pgsTypes::Temporary) );
+         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinal(poi,pgsTypes::Temporary) );
+
+         if (bRating)
+         {
+            for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
             {
-               std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
-               for (const auto& limitState : vLimitStates)
-               {
-                  if (IsStrengthLimitState(limitState))
-                  {
-                     // we only care about service limit states here
-                     continue;
-                  }
+               pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
 
-                  pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
-                  if (IsDesignRatingType(ratingType))
+               if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+               {
+                  std::vector<pgsTypes::LimitState> vLimitStates = GetRatingLimitStates(ratingType);
+                  for (const auto& limitState : vLimitStates)
                   {
-                     (*p_table)(row++, col) << _T("");
-                  }
-                  else
-                  {
-                     VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-                     for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                     if (IsStrengthLimitState(limitState))
                      {
-                        pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
-                        if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
-                        {
-                           continue;
-                        }
-                        std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
-                        if (name == NO_LIVE_LOAD_DEFINED)
-                        {
-                           continue;
-                        }
+                        // we only care about service limit states here
+                        continue;
+                     }
+
+                     pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+                     if (IsDesignRatingType(ratingType))
+                     {
                         (*p_table)(row++, col) << _T("");
+                     }
+                     else
+                     {
+                        VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+                        for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+                        {
+                           pgsTypes::LiveLoadApplicabilityType applicability = pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx);
+                           if (applicability == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                           {
+                              continue;
+                           }
+                           std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                           if (name == NO_LIVE_LOAD_DEFINED)
+                           {
+                              continue;
+                           }
+                           (*p_table)(row++, col) << _T("");
+                        }
                      }
                   }
                }
             }
          }
-      }
-      else
-      {
-         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service I
-         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service III
-         (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service IA/Fatigue I
+         else
+         {
+            (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service I
+            (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service III
+            (*p_table)(row++, col) << _T(""); //stress.SetValue( pLosses->GetFinalWithLiveLoad(poi,pgsTypes::Temporary) ); // Service IA/Fatigue I
+         }
       }
 
       ///////////////////////////////////
@@ -992,9 +1011,9 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
       col++;
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned )
       {
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/) );
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::Start/*pgsTypes::BeforeXfer*/) );
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::End/*pgsTypes::AfterXfer*/) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/, bIncludeElasticEffects) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::Start/*pgsTypes::BeforeXfer*/, bIncludeElasticEffects) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,releaseIntervalIdx,pgsTypes::End/*pgsTypes::AfterXfer*/, bIncludeElasticEffects) );
       }
       else
       {
@@ -1005,7 +1024,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
 
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting )
       {
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End, bIncludeElasticEffects) );
       }
    
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping )
@@ -1014,17 +1033,17 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
       }
       else
       {
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::End) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,liftSegmentIntervalIdx,pgsTypes::End, bIncludeElasticEffects) );
       }
 
       if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTAfterLifting || pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeShipping )
       {
-         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End) );
+         (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,tsInstallIntervalIdx,pgsTypes::End, bIncludeElasticEffects) );
       }
 
-      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::End) );
-      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End/*pgsTypes::BeforeTemporaryStrandRemoval*/) );
-      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,tsRemovalIntervalIdx,pgsTypes::Start/*pgsTypes::BeforeTemporaryStrandRemoval*/) );
+      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::End, bIncludeElasticEffects) );
+      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End/*pgsTypes::BeforeTemporaryStrandRemoval*/, bIncludeElasticEffects) );
+      (*p_table)(row++,col) << stress.SetValue( pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Temporary,tsRemovalIntervalIdx,pgsTypes::Start/*pgsTypes::BeforeTemporaryStrandRemoval*/, bIncludeElasticEffects) );
       (*p_table)(row++,col) << _T(""); //stress.SetValue( pPrestressForce->GetStrandStress(poi,pgsTypes::Temporary,pgsTypes::AfterTemporaryStrandRemoval) );
 
       if (bHasDeck)
