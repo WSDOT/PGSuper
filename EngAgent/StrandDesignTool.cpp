@@ -945,7 +945,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    }
    else
    {
-      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->limit_state,INVALID_INDEX/*controlling live load*/,&guess);
+      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->limit_state,INVALID_INDEX/*controlling live load*/,&guess,true/*include elastic effects*/);
    }
 
 #if defined _DEBUG
@@ -957,7 +957,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    }
    else
    {
-      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->limit_state, INVALID_INDEX/*controlling live load*/,&guess);
+      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->limit_state, INVALID_INDEX/*controlling live load*/,&guess, true/*include elastic effects*/);
       ATLASSERT(IsEqual(loss,check_loss));
    }
 #endif // _DEBUG
@@ -2532,7 +2532,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
    }
    else
    {
-      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII,INVALID_INDEX/*controlling live load*/,&guess);
+      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII,INVALID_INDEX/*controlling live load*/,&guess, true/*include elastic effects*/);
    }
 
    if (intervalIdx == releaseIntervalIdx)

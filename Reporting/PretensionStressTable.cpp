@@ -97,6 +97,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    // for gross section analysis, stresses are computed with prestress force P at the end of the interval because the elastic effects during the interval must be included in the prestress force
    GET_IFACE2(pBroker,ISectionProperties,pSectProps);
    pgsTypes::IntervalTimeType intervalTime = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed ? pgsTypes::Start : pgsTypes::End);
+   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
@@ -242,8 +243,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
             }
             else
             {
-               Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI);
-               Float64 Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceI);
+               Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI, bIncludeElasticEffects);
+               Float64 Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceI, bIncludeElasticEffects);
                (*p_table)(row, col) << _T("Service I") << rptNewLine;
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");
                if (bIsAsymmetric)
@@ -276,8 +277,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
 
                (*p_table)(row, col) << rptNewLine;
 
-               Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII);
-               Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceIII);
+               Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII, bIncludeElasticEffects);
+               Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceIII, bIncludeElasticEffects);
                (*p_table)(row, col) << _T("Service III") << rptNewLine;
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");
                if (bIsAsymmetric)
@@ -312,8 +313,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                pgsTypes::LimitState ls = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
                std::_tstring strLS(ls == pgsTypes::ServiceIA ? _T(" (Service IA)") : _T(" (Fatigue I)"));
 
-               Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, ls);
-               Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, ls);
+               Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, ls, bIncludeElasticEffects);
+               Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, ls, bIncludeElasticEffects);
                (*p_table)(row, col) << strLS << rptNewLine;
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");
                if (bIsAsymmetric)
@@ -392,7 +393,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                      {
                         continue;
                      }
-                     Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState, vehicleIdx);
+                     Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState, bIncludeElasticEffects, vehicleIdx);
                      std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
                      (*p_table)(row, col) << GetLimitStateString(limitState) << _T(", ") << name << rptNewLine;
                      (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");

@@ -7353,8 +7353,8 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(IntervalIndexType intervalIdx,cons
    // If gross properties analysis, we want the prestress force at the end of the interval. It will include
    // elastic effects. If transformed properties analysis, we want the force at the start of the interval.
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
-
-   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType);
+   bool bIncludeElasticEffects = (spMode == pgsTypes::spmGross ? true : false);
+   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType,bIncludeElasticEffects);
    Float64 nSEffective;
    Float64 ex, ey;
    pStrandGeom->GetEccentricity(intervalIdx, poi, strandType, &nSEffective, &ex, &ey);
