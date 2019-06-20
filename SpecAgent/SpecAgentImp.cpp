@@ -1993,10 +1993,10 @@ stbLiftingCriteria CSpecAgentImp::GetLiftingStabilityCriteria(const CSegmentKey&
    criteria.CompressionCoefficient_PeakStress = -GetLiftingAllowablePeakCompressionFactor();
    GetLiftingAllowableTensileConcreteStressParameters(&criteria.TensionCoefficient,&criteria.bMaxTension,&criteria.MaxTension);
    criteria.TensionCoefficientWithRebar = GetLiftingWithMildRebarAllowableStressFactor();
-   criteria.AllowableCompression_GlobalStress = GetLiftingAllowableGlobalCompressiveConcreteStressEx(segmentKey, liftConfig.GdrConfig.Fci);
-   criteria.AllowableCompression_PeakStress = GetLiftingAllowablePeakCompressiveConcreteStressEx(segmentKey, liftConfig.GdrConfig.Fci);
-   criteria.AllowableTension = GetLiftingAllowableTensileConcreteStressEx(segmentKey,liftConfig.GdrConfig.Fci,false);
-   criteria.AllowableTensionWithRebar = GetLiftingAllowableTensileConcreteStressEx(segmentKey,liftConfig.GdrConfig.Fci,true);
+   criteria.AllowableCompression_GlobalStress = GetLiftingAllowableGlobalCompressiveConcreteStressEx(segmentKey, liftConfig.GdrConfig.fci);
+   criteria.AllowableCompression_PeakStress = GetLiftingAllowablePeakCompressiveConcreteStressEx(segmentKey, liftConfig.GdrConfig.fci);
+   criteria.AllowableTension = GetLiftingAllowableTensileConcreteStressEx(segmentKey,liftConfig.GdrConfig.fci,false);
+   criteria.AllowableTensionWithRebar = GetLiftingAllowableTensileConcreteStressEx(segmentKey,liftConfig.GdrConfig.fci,true);
    criteria.MinFScr = GetLiftingCrackingFs();
    criteria.MinFSf = GetLiftingFailureFs();
 
@@ -2463,8 +2463,8 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
 
    criteria.CompressionCoefficient_GlobalStress = -GetHaulingAllowableGlobalCompressionFactor();
    criteria.CompressionCoefficient_PeakStress = -GetHaulingAllowablePeakCompressionFactor();
-   criteria.AllowableCompression_GlobalStress = GetHaulingAllowableGlobalCompressiveConcreteStressEx(segmentKey, haulConfig.GdrConfig.Fc);
-   criteria.AllowableCompression_PeakStress = GetHaulingAllowablePeakCompressiveConcreteStressEx(segmentKey, haulConfig.GdrConfig.Fc);
+   criteria.AllowableCompression_GlobalStress = GetHaulingAllowableGlobalCompressiveConcreteStressEx(segmentKey, haulConfig.GdrConfig.fc);
+   criteria.AllowableCompression_PeakStress = GetHaulingAllowablePeakCompressiveConcreteStressEx(segmentKey, haulConfig.GdrConfig.fc);
 
    GetHaulingAllowableTensileConcreteStressParametersNormalCrown(&criteria.TensionCoefficient[stbTypes::CrownSlope],&criteria.bMaxTension[stbTypes::CrownSlope],&criteria.MaxTension[stbTypes::CrownSlope]);
    criteria.TensionCoefficientWithRebar[stbTypes::CrownSlope] = GetHaulingWithMildRebarAllowableStressFactorNormalCrown();
@@ -2475,8 +2475,8 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
    }
    else
    {
-      criteria.AllowableTension[stbTypes::CrownSlope] = GetHaulingAllowableTensileConcreteStressExNormalCrown(segmentKey,haulConfig.GdrConfig.Fc,false);
-      criteria.AllowableTensionWithRebar[stbTypes::CrownSlope] = GetHaulingAllowableTensileConcreteStressExNormalCrown(segmentKey,haulConfig.GdrConfig.Fc,true);
+      criteria.AllowableTension[stbTypes::CrownSlope] = GetHaulingAllowableTensileConcreteStressExNormalCrown(segmentKey,haulConfig.GdrConfig.fc,false);
+      criteria.AllowableTensionWithRebar[stbTypes::CrownSlope] = GetHaulingAllowableTensileConcreteStressExNormalCrown(segmentKey,haulConfig.GdrConfig.fc,true);
    }
 
    GetHaulingAllowableTensileConcreteStressParametersMaxSuper(&criteria.TensionCoefficient[stbTypes::MaxSuper],&criteria.bMaxTension[stbTypes::MaxSuper],&criteria.MaxTension[stbTypes::MaxSuper]);
@@ -2489,8 +2489,8 @@ stbHaulingCriteria CSpecAgentImp::GetHaulingStabilityCriteria(const CSegmentKey&
    }
    else
    {
-      criteria.AllowableTension[stbTypes::MaxSuper]          = GetHaulingAllowableTensileConcreteStressExMaxSuper(segmentKey,haulConfig.GdrConfig.Fc,false);
-      criteria.AllowableTensionWithRebar[stbTypes::MaxSuper] = GetHaulingAllowableTensileConcreteStressExMaxSuper(segmentKey,haulConfig.GdrConfig.Fc,true);
+      criteria.AllowableTension[stbTypes::MaxSuper]          = GetHaulingAllowableTensileConcreteStressExMaxSuper(segmentKey,haulConfig.GdrConfig.fc,false);
+      criteria.AllowableTensionWithRebar[stbTypes::MaxSuper] = GetHaulingAllowableTensileConcreteStressExMaxSuper(segmentKey,haulConfig.GdrConfig.fc,true);
    }
 
    criteria.MinFScr = GetHaulingCrackingFs();

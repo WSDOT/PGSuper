@@ -520,12 +520,29 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // material props
    if ( pConfig == nullptr )
    {
-      pscd->fc = pMaterial->GetSegmentDesignFc(segmentKey,intervalIdx);
-      pscd->Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
+      GET_IFACE(ILibrary, pLib);
+      GET_IFACE(ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      bool bUse90DayStrength;
+      Float64 factor;
+      pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+
+      if (bUse90DayStrength)
+      {
+         // 90 day strength isn't applicable to strength limit states (only stress limit states, LRFD 5.12.3.2.4)
+         // so use 28day properties
+         pscd->fc = pMaterial->GetSegmentFc28(segmentKey);
+         pscd->Ec = pMaterial->GetSegmentEc28(segmentKey);
+      }
+      else
+      {
+         pscd->fc = pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx);
+         pscd->Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+      }
    }
    else
    {
-      pscd->fc = pConfig->Fc;
+      pscd->fc = pConfig->fc28;
 
       if ( pConfig->bUserEc )
       {
@@ -533,7 +550,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       }
       else
       {
-         pscd->Ec = pMaterial->GetEconc(pConfig->Fc,
+         pscd->Ec = pMaterial->GetEconc(pscd->fc,
                                         pMaterial->GetSegmentStrengthDensity(segmentKey),
                                         pMaterial->GetSegmentEccK1(segmentKey),
                                         pMaterial->GetSegmentEccK2(segmentKey));

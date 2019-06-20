@@ -1462,7 +1462,7 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
    {
       if (pConfig)
       {
-         fr = pMaterial->GetFlexureModRupture(pConfig->Fc, pConfig->ConcType);
+         fr = pMaterial->GetFlexureModRupture(pConfig->fc28, pConfig->ConcType);
       }
       else
       {
@@ -1489,7 +1489,7 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       {
          if (pConfig)
          {
-            fr = pMaterial->GetFlexureModRupture(pConfig->Fc, pConfig->ConcType);
+            fr = pMaterial->GetFlexureModRupture(pConfig->fc28, pConfig->ConcType);
          }
          else
          {
@@ -1551,20 +1551,29 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    Float64 Sb;   // Bottom section modulus of non-composite girder
    Float64 Sbc;  // Bottom section modulus of composite girder
 
+   // 90 day strength isn't applicable to strength limit states (only stress limit states, LRFD 5.12.3.2.4)
+   // so use 28day properties
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   bool bUse90DayStrength;
+   Float64 factor;
+   pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+
    // Get the section moduli
    if ( bPositiveMoment )
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType idx = pIntervals->GetLastNoncompositeInterval();
-      Sb  = pSectProp->GetS(idx,poi,pgsTypes::BottomGirder,config.Fc);
-      Sbc = pSectProp->GetS(intervalIdx, poi,pgsTypes::BottomGirder,config.Fc);
+      Sb = pSectProp->GetS(idx, poi, pgsTypes::BottomGirder, bUse90DayStrength ? config.fc28 : config.fc);
+      Sbc = pSectProp->GetS(intervalIdx, poi, pgsTypes::BottomGirder, bUse90DayStrength ? config.fc28 : config.fc);
    }
    else
    {
       GET_IFACE(IBridge, pBridge);
       pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
       pgsTypes::StressLocation stressLocation = (IsStructuralDeck(deckType) ? pgsTypes::TopDeck : pgsTypes::TopGirder);
-      Sbc = pSectProp->GetS(intervalIdx, poi, stressLocation, config.Fc);
+      Sbc = pSectProp->GetS(intervalIdx, poi, stressLocation, bUse90DayStrength ? config.fc28 : config.fc);
       Sb  = Sbc;
    }
 
@@ -1760,6 +1769,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    //
    // Create Materials
    //
+   // 90 day strength isn't applicable to strength limit states (only stress limit states, LRFD 5.12.3.2.4)
+   // so use 28day properties
+   bool bUse90DayStrength;
+   Float64 factor;
+   pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
 
    // strand
    CComPtr<IStressStrain> ssStrand;
@@ -1774,18 +1788,32 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    matGirder.CoCreateInstance(CLSID_UnconfinedConcrete);
    if ( pConfig )
    {
-      matGirder->put_fc( pConfig->Fc );
+      matGirder->put_fc(bUse90DayStrength ? pConfig->fc28 : pConfig->fc );
    }
    else
    {
       if ( bIsInClosure )
       {
          // poi is in a closure joint
-         matGirder->put_fc( pMaterial->GetClosureJointDesignFc(closureKey,intervalIdx) );
+         if (bUse90DayStrength)
+         {
+            matGirder->put_fc(pMaterial->GetClosureJointFc28(closureKey));
+         }
+         else
+         {
+            matGirder->put_fc(pMaterial->GetClosureJointDesignFc(closureKey, intervalIdx));
+         }
       }
       else if ( bIsOnSegment )
       {
-         matGirder->put_fc( pMaterial->GetSegmentDesignFc(segmentKey,intervalIdx) );
+         if (bUse90DayStrength)
+         {
+            matGirder->put_fc(pMaterial->GetSegmentFc28(segmentKey));
+         }
+         else
+         {
+            matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
+         }
       }
       else
       {
@@ -1795,12 +1823,26 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          // LRFD 5.12.3.3.10 (5.14.1.4.10) says if the diaphragm is confined by the girders, the girder strength can be used.
          if (IsDiaphragmConfined(poi))
          {
-            matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
+            if (bUse90DayStrength)
+            {
+               matGirder->put_fc(pMaterial->GetSegmentFc28(segmentKey));
+            }
+            else
+            {
+               matGirder->put_fc(pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx));
+            }
          }
          else
          {
             // assume deck concrete is used for the diaphragm.
-            matGirder->put_fc(pMaterial->GetDeckDesignFc(intervalIdx));
+            if (bUse90DayStrength)
+            {
+               matGirder->put_fc(pMaterial->GetDeckFc28());
+            }
+            else
+            {
+               matGirder->put_fc(pMaterial->GetDeckDesignFc(intervalIdx));
+            }
          }
       }
    }

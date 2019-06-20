@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 71.0 
+#define CURRENT_VERSION 72.0 
 
 /****************************************************************************
 CLASS
@@ -245,6 +245,8 @@ m_DuctAreaPushRatio(2),
 m_DuctAreaPullRatio(2.5),
 m_DuctDiameterRatio(0.4),
 m_LimitStateConcreteStrength(pgsTypes::lscStrengthAtTimeOfLoading),
+m_bUse90DayConcreteStrength(false),
+m_90DayConcreteStrengthFactor(1.15),
 m_HaunchLoadComputationType(pgsTypes::hlcZeroCamber),
 m_HaunchLoadCamberTolerance(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
 m_HaunchLoadCamberFactor(1.0),
@@ -586,6 +588,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    // Added at version 53
    pSave->Property(_T("LimitStateConcreteStrength"),m_LimitStateConcreteStrength);
+
+   // Added in version 72
+   pSave->Property(_T("Use90DayConcreteStrength"), m_bUse90DayConcreteStrength);
+   pSave->Property(_T("SlowCuringConcreteStrengthFactor"), m_90DayConcreteStrengthFactor);
 
    // modified in version 37 (see below)
    //pSave->Property(_T("HaulingModulusOfRuptureCoefficient"),m_HaulingModulusOfRuptureCoefficient); // added for version 12.0
@@ -1830,6 +1836,20 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("LimitStateConcreteStrength"),(long*)&m_LimitStateConcreteStrength) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+      if (71 < version)
+      {
+         // added in version 72
+         if (!pLoad->Property(_T("Use90DayConcreteStrength"), &m_bUse90DayConcreteStrength))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("SlowCuringConcreteStrengthFactor"), &m_90DayConcreteStrengthFactor))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
          }
       }
 
@@ -4185,11 +4205,20 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
       }
+
+      if (version < 72)
+      {
+         if (m_LossMethod != LOSSES_TIME_STEP && m_LimitStateConcreteStrength == pgsTypes::lscStrengthAtTimeOfLoading)
+         {
+            // m_LimitStateConcreteStrength was only used for time step losses before version 72
+            // now it is always used
+            // strength at time of loading only a valid option for time step analysis... change it to a valid value
+            m_LimitStateConcreteStrength = pgsTypes::lscSpecifiedStrength;
+         }
+      }
    }
 
-
    return true;
-
 }
 
 bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther,bool bConsiderName) const
@@ -4331,7 +4360,9 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped Strand Design Strategies are different"),_T(""),_T("")));
    }
 
-   if ( m_LossMethod == LOSSES_TIME_STEP && m_LimitStateConcreteStrength != rOther.m_LimitStateConcreteStrength )
+   if ( m_LimitStateConcreteStrength != rOther.m_LimitStateConcreteStrength ||
+        m_bUse90DayConcreteStrength != rOther.m_bUse90DayConcreteStrength || 
+      !::IsEqual(m_90DayConcreteStrengthFactor,rOther.m_90DayConcreteStrengthFactor))
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Concrete Strength for Limit State Evaluations are different"),_T(""),_T("")));
@@ -6874,6 +6905,18 @@ pgsTypes::LimitStateConcreteStrength SpecLibraryEntry::GetLimitStateConcreteStre
    return m_LimitStateConcreteStrength;
 }
 
+void SpecLibraryEntry::Use90DayStrengthForSlowCuringConcrete(bool bUse, Float64 factor)
+{
+   m_bUse90DayConcreteStrength = bUse;
+   m_90DayConcreteStrengthFactor = factor;
+}
+
+void SpecLibraryEntry::Use90DayStrengthForSlowCuringConcrete(bool* pbUse, Float64* pfactor) const
+{
+   *pbUse = m_bUse90DayConcreteStrength;
+   *pfactor = m_90DayConcreteStrengthFactor;
+}
+
 void SpecLibraryEntry::SetUseMinTruckSupportLocationFactor(bool factor)
 {
    m_UseMinTruckSupportLocationFactor = factor;
@@ -7400,6 +7443,8 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_RoadwaySuperelevation      = rOther.m_RoadwaySuperelevation;
 
    m_LimitStateConcreteStrength = rOther.m_LimitStateConcreteStrength;
+   m_bUse90DayConcreteStrength = rOther.m_bUse90DayConcreteStrength;
+   m_90DayConcreteStrengthFactor = rOther.m_90DayConcreteStrengthFactor;
 
    m_TempStrandRemovalCompStress              = rOther.m_TempStrandRemovalCompStress;
    m_TempStrandRemovalTensStress              = rOther.m_TempStrandRemovalTensStress;

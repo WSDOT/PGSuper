@@ -64,3 +64,13 @@ For bridges with adjacent girders and no deck, the top of the girder is the fini
 The Bridge Geometry Report, Roadway Elevations chapter, lists the design and finished elevations along the left edge, centerline, and right edge of the girder. 
 
 When the difference in the design and finished elevations exceed the value given in this setting, the finished elevations are reported in red text. This will alert you to any unacceptable discrepancies between the finished and design elevations.
+
+Concrete Strength for Limit State Evaluations
+----------------------------------------------
+These options specify the concrete strength used for limit state evaluations
+
+Item | Description
+----|----------
+Use fc at the time of loading (LRFD 5.12.3.4.2d and 5.12.3.4.3, pre-2017: 5.14.3.2d and 5.14.1.3.3) | When selected the concrete strength at the time of loading, computed from the time-dependent material model, is used. This option is only avalable for time-step analysis
+Use specified f'ci and f'c | When selected, the initial and 28 day concrete strengths are used. If selected, the 90 day concrete strength can be used for normal weight, slow curing concrete as permitted by LRFD 5.12.3.2.5 (pre-2017 5.14.1.2.5).
+

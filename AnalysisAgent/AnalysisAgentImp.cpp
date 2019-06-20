@@ -1724,7 +1724,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
       }
       else
       {
-         Eci_config = pMaterial->GetEconc(pConfig->Fci, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Eci_config = pMaterial->GetEconc(pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey),
             pMaterial->GetSegmentEccK1(segmentKey),
             pMaterial->GetSegmentEccK2(segmentKey));
       }
@@ -1748,7 +1748,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
       }
       else
       {
-         Ec_config = pMaterial->GetEconc(pConfig->Fc, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Ec_config = pMaterial->GetEconc(pConfig->fc28, pMaterial->GetSegmentStrengthDensity(segmentKey),
             pMaterial->GetSegmentEccK1(segmentKey),
             pMaterial->GetSegmentEccK2(segmentKey));
       }
@@ -5913,7 +5913,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    {
       // slab shrinkage stresses
       Float64 ft_ss, fb_ss;
-      GetDeckShrinkageStresses(poi, pConfig->Fc, &ft_ss, &fb_ss);
+      GetDeckShrinkageStresses(poi, pConfig->fc28, &ft_ss, &fb_ss);
       ftop2 += dc*ft_ss;
       fbot2 += dc*fb_ss;
    }
@@ -5940,7 +5940,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pGirderMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
 
-      Float64 fc_lldf = pConfig->Fc ;
+      Float64 fc_lldf = pConfig->fc ;
       if ( pGirderMaterial->Concrete.bUserEc )
       {
          fc_lldf = lrfdConcreteUtil::FcFromEc( pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
@@ -7357,8 +7357,8 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(IntervalIndexType intervalIdx,cons
    // If gross properties analysis, we want the prestress force at the end of the interval. It will include
    // elastic effects. If transformed properties analysis, we want the force at the start of the interval.
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
-
-   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType);
+   bool bIncludeElasticEffects = (spMode == pgsTypes::spmGross ? true : false);
+   Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType,bIncludeElasticEffects);
    Float64 nSEffective;
    Float64 ex, ey;
    pStrandGeom->GetEccentricity(intervalIdx, poi, strandType, &nSEffective, &ex, &ey);
@@ -8913,12 +8913,12 @@ Float64 CAnalysisAgentImp::GetConcreteStrengthAtTimeOfLoading(const CSegmentKey&
       switch (le)
       {
       case ICamber::leRelease:
-         Fc = pConfig->Fci;
+         Fc = pConfig->fci;
          break;
 
       case ICamber::leDiaphragm:
       case ICamber::leDeck:
-         Fc = pConfig->Fc;
+         Fc = pConfig->fc;
          break;
 
       default:
@@ -9862,7 +9862,7 @@ Float64 CAnalysisAgentImp::GetDeflectionAdjustmentFactor(const pgsPointOfInteres
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
-   Float64 fc = (intervalIdx < erectionIntervalIdx ? pConfig->Fci : pConfig->Fc);
+   Float64 fc = (intervalIdx < erectionIntervalIdx ? pConfig->fci : pConfig->fc28);
 
    GET_IFACE(ISectionProperties,pSectProp);
 

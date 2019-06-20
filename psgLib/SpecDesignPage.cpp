@@ -81,6 +81,8 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
    ON_BN_CLICKED(IDC_CHECK_INCLINDED_GIRDER, &CSpecDesignPage::OnBnClickedCheckInclindedGirder)
    ON_BN_CLICKED(IDC_LL_DEFLECTION, &CSpecDesignPage::OnBnClickedLlDeflection)
    ON_BN_CLICKED(IDC_CHECK_HANDLING_WEIGHT, &CSpecDesignPage::OnBnClickedCheckHandlingWeight)
+   ON_BN_CLICKED(IDC_FC1, &CSpecDesignPage::OnFcTypeChanged)
+   ON_BN_CLICKED(IDC_FC2, &CSpecDesignPage::OnFcTypeChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -246,10 +248,6 @@ void CSpecDesignPage::OnBnClickedCheckInclindedGirder()
 BOOL CSpecDesignPage::OnSetActive()
 {
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   int show = ( pDad->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_FC_GROUP)->ShowWindow(show);
-   GetDlgItem(IDC_FC1)->ShowWindow(show);
-   GetDlgItem(IDC_FC2)->ShowWindow(show);
 
    // deal with 2017 crosswalk
    CWnd* pWnd = GetDlgItem(IDC_SSPLITTING);
@@ -259,7 +257,12 @@ BOOL CSpecDesignPage::OnSetActive()
    pWnd->SetWindowText(CString(_T("Confinement Reinforcement (")) + pDad->LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) + _T(")"));
 
    pWnd = GetDlgItem(IDC_FC1);
-   pWnd->SetWindowText(CString(_T("Use f'ci and f'c at the time of loading (")) + pDad->LrfdCw8th(_T("5.14.1.3.2d and 5.14.1.3.3"),_T("5.12.3.4.2d and 5.12.3.4.3")) + _T(")"));
+   pWnd->SetWindowText(CString(_T("Use fc at the time of loading (")) + pDad->LrfdCw8th(_T("5.14.1.3.2d and 5.14.1.3.3"),_T("5.12.3.4.2d and 5.12.3.4.3")) + _T(")"));
+   pWnd->EnableWindow(pDad->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? TRUE : FALSE); // only an option for time-step analysis
+
+   pWnd = GetDlgItem(IDC_90_DAY_STRENGTH_LABEL);
+   pWnd->SetWindowText(CString(_T("% of f'c for stress combinations after 90 days for slow curing concretes (")) + pDad->LrfdCw8th(_T("5.14.1.2.5"), _T("5.12.3.2.5")) + _T(")"));
+
 
    return CPropertyPage::OnSetActive();
 }
@@ -276,4 +279,12 @@ void CSpecDesignPage::OnBnClickedCheckHandlingWeight()
    BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_HANDLING_WEIGHT);
    GetDlgItem(IDC_HANDLING_WEIGHT)->EnableWindow(bEnable);
    GetDlgItem(IDC_HANDLING_WEIGHT_UNIT)->EnableWindow(bEnable);
+}
+
+void CSpecDesignPage::OnFcTypeChanged()
+{
+   BOOL bEnable = IsDlgButtonChecked(IDC_FC2);
+   GetDlgItem(IDC_USE_90_DAY_STRENGTH)->EnableWindow(bEnable);
+   GetDlgItem(IDC_90_DAY_STRENGTH_FACTOR)->EnableWindow(bEnable);
+   GetDlgItem(IDC_90_DAY_STRENGTH_LABEL)->EnableWindow(bEnable);
 }

@@ -7746,6 +7746,14 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             compositeClosureIntervalIdx = pIntervals->GetCompositeClosureJointInterval(segmentKey);
          }
 
+         GET_IFACE(ILibrary, pLib);
+         GET_IFACE(ISpecification, pSpec);
+         const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+         bool bUse90DayStrengthFactor;
+         Float64 concrete_strength_factor;
+         pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrengthFactor, &concrete_strength_factor);
+
+
          // The vector of superstructure member data contains stiffness properties by stage.
          // This should be segment data between section changes, for each stage.
          // For now, assume segments are prismatic
@@ -7759,7 +7767,25 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             // Segment Data
 
             // young's modulus in this interval
-            Float64 Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+            Float64 Ec;
+            if (bUse90DayStrengthFactor && !IsEqual(concrete_strength_factor,1.0))
+            {
+               // the 115% increase in concrete strength (LRFD 5.12.3.2.5) only applies to stresses
+               // if the increase is enabled, use the 28 day modulus for all time after 90 days
+               Float64 age = pMaterial->GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::Start);
+               if (age < 90)
+               {
+                  Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+               }
+               else
+               {
+                  Ec = pMaterial->GetSegmentEc28(segmentKey);
+               }
+            }
+            else
+            {
+               Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+            }
 
             // Get section properties this interval.
             // GetAg/GetIx will return gross or transformed properties based on the
@@ -17626,6 +17652,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    // If gross properties analysis, we want the prestress force at the end of the interval. It will include
    // elastic effects. If transformed properties analysis, we want the force at the start of the interval.
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
+   bool bIncludeElasticEffects(spMode == pgsTypes::spmGross ? true : false);
 
    bool bIncTempStrands = (intervalIdx < tsRemovalIntervalIdx) ? true : false;
 
@@ -17635,30 +17662,30 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    std::array<Float64, 3> P{ 0,0,0 };
    if ( intervalIdx < liveLoadIntervalIdx )
    {
-      P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType);
-      P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType);
+      P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects);
+      P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects);
 
       if ( bIncTempStrands )
       {
-         P[pgsTypes::Temporary] = pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType);
+         P[pgsTypes::Temporary] = pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType, bIncludeElasticEffects);
       }
    }
    else
    {
       if ( bIncludeLiveLoad )
       {
-         P[pgsTypes::Straight] = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Straight, myLimitState, vehicleIdx);
-         P[pgsTypes::Harped]   = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Harped,   myLimitState, vehicleIdx);
+         P[pgsTypes::Straight] = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Straight, myLimitState, bIncludeElasticEffects, vehicleIdx);
+         P[pgsTypes::Harped]   = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Harped,   myLimitState, bIncludeElasticEffects, vehicleIdx);
       }
       else
       {
-         P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType);
-         P[pgsTypes::Harped]   = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType);
+         P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects);
+         P[pgsTypes::Harped]   = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects);
       }
 
       if ( bIncTempStrands )
       {
-         P[pgsTypes::Temporary] += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary, myLimitState);
+         P[pgsTypes::Temporary] += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary, myLimitState, bIncludeElasticEffects, vehicleIdx);
       }
    }
 

@@ -4,8 +4,8 @@
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Install composite overlay
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tensile stress check failed for Service I Limit State in Interval 11 Install composite overlay
+Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -25,8 +25,8 @@ The Specification Check was Successful
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Install composite overlay
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tensile stress check failed for Service I Limit State in Interval 11 Install composite overlay
+Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

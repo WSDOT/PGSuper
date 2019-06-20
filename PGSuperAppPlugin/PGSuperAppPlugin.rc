@@ -5422,7 +5422,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ALIGNMENTOFFSET_FMT "The Bridge Line is an arbritrary reference line that can be used to locate elements of the bridge. Use a signed value (+/-xxx.xx) or a left/right indicator (xxx.xxx L|R) to locate the bridge line. Positive signed values indicate the Bridge Line is located to the right of the alignment.\nExample: -2.25 and 2.25 L locate the Bridge Line left of the alignment."
+    IDS_ALIGNMENTOFFSET_FMT "The Bridge Line is an arbritrary reference line that can be used to locate elements of the bridge. Use a signed value (+/-xxx.xx) or a left/right indicator (xxx.xxx L|R) to locate the bridge line. Positive signed values indicate the Bridge Line is located to the right of the alignment.  Example: -2.25 and 2.25 L locate the Bridge Line left of the alignment."
 END
 
 STRINGTABLE

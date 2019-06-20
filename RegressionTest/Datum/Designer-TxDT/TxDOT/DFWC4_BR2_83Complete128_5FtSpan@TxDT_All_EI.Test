@@ -38,8 +38,8 @@ The Specification Check was Successful
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Apply User Defined Loads, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Apply User Defined Loads, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr  Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

@@ -295,7 +295,7 @@ Float64 pgsAlternativeTensileStressCalculator::ComputeAlternativeStressRequireme
          }
          else
          {
-            fci       = pConfig->Fci;
+            fci       = pConfig->fci;
             conc_type = pConfig->ConcType;
             isfct     = pConfig->bHasFct;
             fct       = pConfig->Fct;

@@ -2775,8 +2775,8 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
    if (pConfig)
    {
-      *pFci = pConfig->Fci;
-      *pFc = pConfig->Fc;
+      *pFci = pConfig->fci;
+      *pFc = pConfig->fc;
 
       if (pConfig->bUserEci)
       {
@@ -2784,7 +2784,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
       else
       {
-         *pEci = pMaterial->GetEconc(pConfig->Fci, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
+         *pEci = pMaterial->GetEconc(pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
       }
 
       if (pConfig->bUserEc)
@@ -2793,7 +2793,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
       else
       {
-         *pEc = pMaterial->GetEconc(pConfig->Fc, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
+         *pEc = pMaterial->GetEconc(pConfig->fc, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
       }
    }
    else
@@ -2864,13 +2864,13 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    {
       if (pConfig)
       {
-         *pAc1 = pSectProp->GetAg(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->Fc);
-         *pIc1 = pSectProp->GetIxx(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->Fc);
-         *pYbc1 = pSectProp->GetY(spType, compositeLongitudinalJointIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->Fc);
+         *pAc1 = pSectProp->GetAg(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->fc);
+         *pIc1 = pSectProp->GetIxx(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->fc);
+         *pYbc1 = pSectProp->GetY(spType, compositeLongitudinalJointIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->fc);
 
-         *pAc2 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
-         *pIc2 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
-         *pYbc2 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->Fc);
+         *pAc2 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->fc);
+         *pIc2 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->fc);
+         *pYbc2 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->fc);
       }
       else
       {
@@ -2887,9 +2887,9 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    {
       if (pConfig)
       {
-         *pAc1 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
-         *pIc1 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
-         *pYbc1 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->Fc);
+         *pAc1 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->fc);
+         *pIc1 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->fc);
+         *pYbc1 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->fc);
       }
       else
       {
@@ -2959,7 +2959,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       // eccentricity of deck... use gross slab depth because sacrifical wearing surface hasn't worn off while early age shrinkage is occuring
       if (pConfig)
       {
-         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig->Fc) + pBridge->GetGrossSlabDepth(poi) / 2;
+         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig->fc) + pBridge->GetGrossSlabDepth(poi) / 2;
       }
       else
       {

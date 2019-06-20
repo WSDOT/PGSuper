@@ -47,7 +47,7 @@ Minimum fillet value exceeded for bridge check failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Splitting zone check failed.
@@ -63,9 +63,9 @@ Minimum fillet value exceeded for bridge check failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Install Railing System
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Install Railing System
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Splitting zone check failed.
@@ -81,9 +81,9 @@ Minimum fillet value exceeded for bridge check failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Install Railing System
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 13 Composite deck, Install Railing System
+Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Splitting zone check failed.

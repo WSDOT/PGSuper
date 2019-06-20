@@ -4,9 +4,9 @@
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Compression stress check failed for Fatigue I Limit State in Interval 16 Open to Traffic
@@ -21,9 +21,9 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
@@ -37,9 +37,9 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 10 Cast Deck
+Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
 Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
 Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Compression stress check failed for Fatigue I Limit State in Interval 16 Open to Traffic

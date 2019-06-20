@@ -7,10 +7,10 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Install composite overlay
-Compression stress check failed for Service I Limit State in Interval 13 Composite overlay, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Install composite overlay
+Compression stress check failed for Service I Limit State in Interval 14 Composite overlay, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone check failed.
 Lifting checks failed
@@ -26,10 +26,10 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 11 Install composite overlay
-Compression stress check failed for Service I Limit State in Interval 13 Composite overlay, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Install composite overlay
+Compression stress check failed for Service I Limit State in Interval 14 Composite overlay, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone check failed.
 Lifting checks failed

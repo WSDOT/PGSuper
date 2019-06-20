@@ -1318,13 +1318,17 @@
 #define IDC_HAULING_GLOBAL_COMPRESSION  1703
 #define IDC_CHECK_HANDLING_WEIGHT       1703
 #define IDC_HAULING_PEAK_COMPRESSION    1704
-#define IDC_SWEEP_GROWTH_UNIT           1705
 #define IDC_EDIT7                       1704
 #define IDC_HANDLING_WEIGHT             1704
+#define IDC_SWEEP_GROWTH_UNIT           1705
 #define IDC_HANDLING_WEIGHT_UNIT        1705
 #define IDC_FRICTION_LABEL              1706
 #define IDC_EDIT8                       1707
+#define IDC_90_DAY_STRENGTH_FACTOR      1707
 #define IDC_FRICTION_UNIT               1708
+#define IDC_CHECK3                      1710
+#define IDC_USE_90_DAY_STRENGTH         1710
+#define IDC_90_DAY_STRENGTH_LABEL       1711
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1356,7 +1360,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1709
+#define _APS_NEXT_CONTROL_VALUE         1712
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
