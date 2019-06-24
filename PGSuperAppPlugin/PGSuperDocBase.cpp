@@ -60,7 +60,6 @@
 #include <IFace\Test1250.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\Artifact.h>
-#include <IFace\TxDOTCadExport.h>
 #include <IFace\Transactions.h>
 #include <IFace\EditByUI.h>
 #include <IFace\VersionInfo.h>

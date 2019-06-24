@@ -26,7 +26,7 @@
 // PROJECT INCLUDES
 //
 #include <IFace\Bridge.h>
-#include <IFace\TxDOTCadExport.h>
+#include <IFace\TestFileExport.h>
 
 // Utility class for structuring debond data
 #include <PgsExt\DebondUtil.h>
@@ -56,6 +56,8 @@ LOG
    rdp : 04.09.2009 : Created file
 *****************************************************************************/
 static const int BF_SIZ=1024; // buffer size
+
+enum TxDOTCadExportFormatType {tcxNormal, tcxExtended, tcxTest};
 
 // Main External functions that write the file
 int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, TxDOTCadExportFormatType format, bool designSucceeded);

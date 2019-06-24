@@ -27,9 +27,11 @@
 #include "TxDOTCadWriter.h"
 #include "ExportCadData.h" 
 
+#include "TxExcelDataExporter.h"
+
 #include <EAF\EAFAutoProgress.h>
 #include <IFace\Selection.h>
-#include <IFace\TxDOTCadExport.h>
+#include <IFace\TestFileExport.h>
 #include <MfcTools\XUnwind.h>
 
 #ifdef _DEBUG
@@ -84,17 +86,20 @@ STDMETHODIMP CTxDOTCadExporter::GetCommandHintText(BSTR*  bstrText) const
 
 STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 {
-	//Create CAD data text file using name specified by user.			   
-	//																   
-	//jam.15aug2005  -  Created.								    	   
-	//																   
-	//User is first presented with a modal dialog for entry of span	   
-	//number and girder number. If a valid span/girder id pair is        
-	//entered, the the user is prompted for a filename.  When a valid    
-	//filename is entered, data is gathered from various agents of the   
-	//the application.  Once the data has been successfully gathered,    
-	//a new file is created, and the data is written to the file		   
-	//according to a strict predefined format.             		
+/*
+   CString templateName("C:\\arp\\CADExport-Straight.xltx");
+   if (!DoesFileExist(templateName))
+   {
+      ::AfxMessageBox(_T("Template file does not exist"));
+      return E_FAIL;
+   } 
+
+	CString default_name("CADexport.xlsx");
+   CString initial_filespec;
+   CString initial_dir;
+	INT_PTR	stf = IDOK;
+	TCHAR	strFilter[] = {_T("CAD Export Excel Worksheet (*.xlsx)|*.xlsx||")};
+*/
 
 	CString default_name("CADexport.txt");
    CString initial_filespec;
@@ -150,6 +155,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
    }
 
 	/* Create SAVEAS file dialog box object */
+//	CFileDialog  fildlg(FALSE,_T("xlsx"),default_name,OFN_HIDEREADONLY, strFilter);
 	CFileDialog  fildlg(FALSE,_T("txt"),default_name,OFN_HIDEREADONLY, strFilter);
 
 	/* Open the SAVEAS dialog box */
@@ -159,24 +165,29 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 		/* Get full pathname of selected file */
 		CString file_path = fildlg.GetPathName();
 
-		/* See if the file currently exists */
+		// See if the file currently exists 
 		if (DoesFileExist(file_path))
 		{
-			/* See if the user wants to overwrite file */
+			// See if the user wants to overwrite file 
 			CString msg(_T(" The file: "));
 			msg += file_path + _T(" exists. Overwrite it?");
 			int stm = AfxMessageBox(msg,MB_YESNOCANCEL|MB_ICONQUESTION);
-			if (stm != IDYES) 
+         if (stm != IDYES)
+         {
             return S_OK;
+         }
+         else
+         {
+            ::DeleteFile( file_path );         
+         }
 		}
 
+// -- old
       bool did_throw=false;
 
       // Create progress window in own scope
       try
       {
-	      /* Create progress bar (before needing one) to remain alive during this task */
-	      /* (otherwise, progress bars will be repeatedly created & destroyed on the fly) */
          GET_IFACE2(pBroker,IProgress,pProgress);
 
          bool multi = girderKeys.size()>1;
@@ -186,7 +197,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          if (multi)
             pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
 
-		   /* Open/create the specified text file */
+		   // Open/create the specified text file
       	FILE	*fp = nullptr;
          if (_tfopen_s(&fp,LPCTSTR(file_path), _T("w+")) != 0 || fp == nullptr)
          {
@@ -197,7 +208,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          // dialog can only ask for normal or extended format
          TxDOTCadExportFormatType format = bIsExtended ? tcxTest : tcxNormal;
 
-	      /* Write CAD data to text file */
+	      // Write CAD data to text file
          for (std::vector<CGirderKey>::iterator it = girderKeys.begin(); it!= girderKeys.end(); it++)
          {
             CGirderKey& girderKey(*it);
@@ -211,12 +222,8 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
             pProgress->Increment();
          }
 
-		   /* Close the open text file */
+		   // Close the open text file
 		   fclose (fp);
-
-//         pProgress->UpdateMessage(_T("Writing Top Strand Research Data"));
-//         raised_strand_research(pBroker, girderKeys);
-
 
       } // autoprogress scope
       catch(...)
@@ -226,11 +233,39 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          throw; 
       }
 
+
 		/* Notify completion */
 	   CString msg(_T("File: "));
 	   msg += file_path + _T(" creation complete.");
       AfxMessageBox(msg,MB_ICONINFORMATION|MB_OK);
 
+/*
+      CTxExcelDataExporter exporter;
+      exporter.InitializeExporter(templateName);
+
+      CString strv[] = { _T("Bridge Name"),_T("9.123456789"),_T("9.43"),_T("9.43"),_T("7.86"),_T("7.86"),_T("6.43"),_T("6.57"),_T("9.29"),_T("9.29"),_T(""),_T("5"),_T("9.29"),_T("8"),_T("7.86"),_T("5.14"),_T("5"),_T("5"),_T("5"),_T("5"),_T(""),_T("9.29"),_T("9.29"),_T(""),_T("12.14"),_T("13.71"),_T("12.29"),_T("9.29"),_T("9.29"),_T("\n") };
+
+      IndexType col = 0;
+      // do stuff
+      while(strv[col] != _T("\n"))
+      {
+         exporter.WriteStringToCell(1, 5, col, strv[col]);
+         col++;
+      }
+
+      exporter.WriteStringToCell(1, _T("StructureName"), 1, _T("Test Value"));
+
+      if (exporter.Commit(file_path))
+      {
+         CString msg(_T("File: "));
+         msg += file_path + _T(" creation complete.");
+         AfxMessageBox(msg, MB_ICONINFORMATION | MB_OK);
+      }
+      else
+      {
+         AfxMessageBox(_T("Aborted"), MB_ICONINFORMATION | MB_OK);
+      }
+*/
 	}
    return S_OK;
 }

@@ -46,7 +46,9 @@
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>
 #include <IFace\Intervals.h>
-#include <IFace\TxDOTCadExport.h>
+#include <IFace\TestFileExport.h>
+#include <IFace\GirderHandling.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

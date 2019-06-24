@@ -54,14 +54,17 @@
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\RatingArtifact.h>
 #include <EAF\EAFAutoProgress.h>
+#include <EAF\EAFApp.h>
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\Helpers.h>
 
 #include <Units\Units.h>
 
-#include <IFace\TxDOTCadExport.h>
+#include <IFace\TestFileExport.h>
+#include "TestFileWriter.h"
 
 #include <algorithm>
+#include <MfcTools\XUnwind.h>
 
 #include <System\AutoVariable.h>
 
@@ -111,6 +114,7 @@ STDMETHODIMP CTestAgentImp::RegInterfaces()
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
    pBrokerInit->RegInterface( IID_ITest1250,     this );
+   pBrokerInit->RegInterface( IID_ITestFileExport, this );
 
    return S_OK;
 };
@@ -343,11 +347,11 @@ bool CTestAgentImp::RunTest(long type,
 			      return S_OK;
 		      }
 
-            GET_IFACE(ITxDOTCadExport,pTxDOTExport);
+            GET_IFACE(ITestFileExport,pTxDOTExport);
             if ( pTxDOTExport )
             {
-               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, extSegmentKey, tcxTest, true);
-               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, intSegmentKey, tcxTest, true);
+               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, extSegmentKey, true);
+               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, intSegmentKey, true);
             }
 		      fclose (fp);
 
@@ -563,6 +567,42 @@ bool CTestAgentImp::IsTesting() const
    return m_bIsTesting;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// IEAFProcessCommandLine
+BOOL CTestAgentImp::ProcessCommandLineOptions(CEAFCommandLineInfo & cmdInfo)
+{
+   // cmdInfo is the command line information from the application. The application
+   // doesn't know about this plug-in at the time the command line parameters are parsed
+   //
+   // Re-parse the parameters with our own command line information object
+   CTestCommandLineInfo txCmdInfo;
+
+   EAFGetApp()->ParseCommandLine(txCmdInfo);
+   cmdInfo = txCmdInfo;
+
+   if (txCmdInfo.m_DoTxCadReport && !txCmdInfo.m_bError)
+   {
+      ProcessTestReport(txCmdInfo);
+      return TRUE;
+   }
+
+   return (txCmdInfo.m_bError ? TRUE : FALSE);
+}
+   
+
+/////////////////////////////////////////////////////////////////////////////
+// ITestFileExport
+int CTestAgentImp::WriteCADDataToFile(FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey, bool designSucceeded)
+{
+   return Test_WriteCADDataToFile(fp,pBroker,segmentKey, designSucceeded);
+}
+
+int CTestAgentImp::WriteDistributionFactorsToFile(FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey)
+{
+   return Test_WriteDistributionFactorsToFile(fp,pBroker,segmentKey);
+}
+
+
 std::_tstring CTestAgentImp::GetBridgeID()
 {
    static std::_tstring strID;
@@ -747,7 +787,7 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
 
    // temporary support elevations
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
-   GET_IFACE(ITempSupport, pTempSupport);
+   GET_IFACE_NOCHECK(ITempSupport, pTempSupport);
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
       std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx);
@@ -2904,4 +2944,447 @@ bool CTestAgentImp::RunAlignmentTest(std::_tofstream& resultsFile)
    }
 
    return true;
+}
+
+
+void CTestAgentImp::ProcessTestReport(const CTestCommandLineInfo& rCmdInfo)
+{
+   USES_CONVERSION;
+
+   ASSERT(rCmdInfo.m_DoTxCadReport);
+
+   pgsAutoLabel auto_label;
+
+
+   if (rCmdInfo.m_TxGirder != TXALLGIRDERS && 
+       rCmdInfo.m_TxGirder != TXEIGIRDERS && 
+       (rCmdInfo.m_TxGirder == INVALID_INDEX || 27 < rCmdInfo.m_TxGirder))
+   {
+      ::AfxMessageBox(_T("Invalid girder specified on command line for test report"));
+      return;
+   }
+/*
+   if (rCmdInfo.m_TxSpan != ALL_SPANS && rCmdInfo.m_TxSpan < 0)
+   {
+      ::AfxMessageBox(_T("Invalid span specified on command line for test report"));
+      return;
+   }
+*/
+   CString errfile;
+   if (CreateTestFileNames(rCmdInfo.m_TxOutputFile, &errfile))
+   {
+      try
+      {
+         if ( !DoTestReport(rCmdInfo.m_TxOutputFile, errfile, rCmdInfo) )
+         {
+            CString msg = CString(_T("Error - Running test on file"))+rCmdInfo.m_strFileName;
+            ::AfxMessageBox(msg);
+         }
+      }
+      catch(const sysXBase& e)
+      {
+         std::_tstring msg;
+         e.GetErrorMessage(&msg);
+         std::_tofstream os;
+         os.open(errfile);
+         os <<_T("Error running Test report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< msg;
+      }
+      catch(CException* pex)
+      {
+         TCHAR   szCause[255];
+         CString strFormatted;
+         pex->GetErrorMessage(szCause, 255);
+         std::_tofstream os;
+         os.open(errfile);
+         os <<_T("Error running Test report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+         delete pex;
+      }
+      catch(CException& ex)
+      {
+         TCHAR   szCause[255];
+         CString strFormatted;
+         ex.GetErrorMessage(szCause, 255);
+         std::_tofstream os;
+         os.open(errfile);
+         os <<_T("Error running Test report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< szCause;
+      }
+      catch(const std::exception* pex)
+      {
+         std::_tstring strMsg(CA2T(pex->what()));
+         std::_tofstream os;
+         os.open(errfile);
+         os <<_T("Error running test report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+         delete pex;
+      }
+      catch(const std::exception& ex)
+      {
+         std::_tstring strMsg(CA2T(ex.what()));
+         std::_tofstream os;
+         os.open(errfile);
+         os <<_T("Error running Test report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<<strMsg<< std::endl;
+      }
+      catch(...)
+      {
+         std::_tofstream os;
+         os.open(errfile);
+         os <<_T("Unknown Error running Test report for input file: ")<<rCmdInfo.m_strFileName;
+      }
+   }
+}
+
+bool CTestAgentImp::CreateTestFileNames(const CString& output, CString* pErrFileName)
+{
+   CString tmp(output);
+   tmp.MakeLower();
+   int loc = tmp.Find(_T("."),0);
+   if (loc>0)
+   {
+      CString basename = output.Left(loc);
+      *pErrFileName = basename + _T(".err");
+      return true;
+   }
+   else
+   {
+      *pErrFileName = output + _T(".err");
+
+      return false;
+   }
+}
+
+bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& errorFileName, const CTestCommandLineInfo& txInfo)
+{
+   // Called from the command line processing in the Application object
+
+   // open the error file
+   std::_tofstream err_file(errorFileName);
+   if ( !err_file )
+   {
+	   AfxMessageBox (_T("Could not Create error file"));
+	   return false;
+   }
+
+   // Open/create the specified output file 
+   FILE	*fp;
+   errno_t result;
+   if (txInfo.m_DoAppendToFile)
+   {
+      result = _tfopen_s(&fp, LPCTSTR (outputFileName), _T("a+"));
+   }
+   else
+   {
+      result = _tfopen_s(&fp, LPCTSTR (outputFileName), _T("w+"));
+   }
+
+   if (result != 0 || fp == nullptr)
+   {
+      err_file<<_T("Error: Output file could not be Created.")<<std::endl;
+	   return false;
+   }
+
+   // Get starting and ending spans
+   GET_IFACE(IBridge,pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+
+   SpanIndexType start_span, end_span;
+   if (txInfo.m_TxSpan==ALL_SPANS)
+   {
+      // looping over all spans
+      start_span = 0;
+      end_span = nSpans-1;
+   }
+   else
+   {
+      if (txInfo.m_TxSpan>=nSpans)
+      {
+         err_file<<_T("Span value is out of range for this bridge")<<std::endl;
+	      return false;
+      }
+      else
+      {
+         start_span = txInfo.m_TxSpan;
+         end_span   = txInfo.m_TxSpan;
+      }
+   }
+
+   // Build list of span/girders to operate on (error out before we do anything of there are problems)
+   std::vector<SpanGirderHashType> spn_grd_list;
+
+   for (SpanIndexType is=start_span; is<=end_span; is++)
+   {
+      // we can have a different number of girders per span
+      GirderIndexType nGirders = pBridge->GetGirderCount(is);
+
+      if (txInfo.m_TxGirder==TXALLGIRDERS)
+      {
+         for (GirderIndexType ig=0; ig<nGirders; ig++)
+         {
+            SpanGirderHashType key = HashSpanGirder(is,ig);
+            spn_grd_list.push_back(key);
+         }
+      }
+      else if (txInfo.m_TxGirder==TXEIGIRDERS)
+      {
+         // Exterior/Interior option
+         SpanGirderHashType key = HashSpanGirder(is,0); // left exterior
+         spn_grd_list.push_back(key);
+
+         if (nGirders>2)
+         {
+            SpanGirderHashType key = HashSpanGirder(is,1); // exterior-most interior
+            spn_grd_list.push_back(key);
+
+            if (nGirders>4)
+            {
+               SpanGirderHashType key = HashSpanGirder(is,nGirders/2); // middle-most interior
+               spn_grd_list.push_back(key);
+            }
+         }
+
+//         key = HashSpanGirder(is,nGirders-1); // right exterior
+//         spn_grd_list.push_back(key);
+      }
+
+      else if (txInfo.m_TxGirder<nGirders)
+      {
+         SpanGirderHashType key = HashSpanGirder(is,txInfo.m_TxGirder);
+         spn_grd_list.push_back(key);
+      }
+      else
+      {
+         err_file<<_T("Girder value is out of range for this bridge")<<std::endl;
+	      return false;
+      }
+   }
+
+   GET_IFACE(IProgress,pProgress);
+   CEAFAutoProgress ap(pProgress);
+
+   if (txInfo.m_TxRunType == CTestCommandLineInfo::txrGeometry)
+   {
+      // Geometry test only - save some text to .test file to placate comparisons
+      _ftprintf(fp, _T("Bridge Geometry Test. See .dbr file for results."));
+
+      // file names
+      CString resultsfile, poifile, errfile;
+      CString strExt(_T(".pgs"));
+      if (create_test_file_names(strExt, txInfo.m_strFileName, &resultsfile, &poifile, &errfile))
+      {
+         GET_IFACE(ITest1250, ptst);
+
+         try
+         {
+            if (!ptst->RunTestEx(RUN_GEOMTEST, spn_grd_list, std::_tstring(resultsfile), std::_tstring(poifile)))
+            {
+               CString msg = CString(_T("Error - Running geometry test on file")) + txInfo.m_strFileName;
+               ::AfxMessageBox(msg);
+            }
+         }
+         catch (...)
+         {
+            CString msg = CString(_T("Error - running geometry test for input file:")) + txInfo.m_strFileName;
+            ::AfxMessageBox(msg);
+            return false;
+         }
+      }
+      else
+      {
+         CString msg = CString(_T("Error - Determining 1250 test file names for")) + txInfo.m_strFileName;
+         ::AfxMessageBox(msg);
+         return false;
+      }
+   }
+   else
+   {
+      // Loop over all span/girder combos and create results
+      std::vector<SpanGirderHashType>::iterator it(spn_grd_list.begin());
+      std::vector<SpanGirderHashType>::iterator end(spn_grd_list.end());
+      for (; it != end; it++)
+      {
+         SpanGirderHashType key = *it;
+         SpanIndexType span;
+         GirderIndexType girder;
+         UnhashSpanGirder(key, &span, &girder);
+
+         CSegmentKey segmentKey(span, girder, 0);
+
+         CString strMessage;
+         strMessage.Format(_T("Creating Test report for Span %d, Girder %s"), LABEL_SPAN(span), LABEL_GIRDER(girder));
+         pProgress->UpdateMessage(strMessage);
+
+         // See if we need to run a design
+         bool designSucceeded = true;
+         if (txInfo.m_TxRunType == CTestCommandLineInfo::txrDesign || txInfo.m_TxRunType == CTestCommandLineInfo::txrDesignShear)
+         {
+            // get design options from library entry. 
+            GET_IFACE(ISpecification, pSpecification);
+
+            std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(segmentKey);
+            IndexType do_cnt = des_options_coll.size();
+            IndexType do_idx = 1;
+
+            // Add command line settings to options
+            for (std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it != des_options_coll.end(); it++)
+            {
+               arDesignOptions& des_options = *it;
+
+               // Set up for shear design. 
+               des_options.doDesignForShear = txInfo.m_TxRunType == CTestCommandLineInfo::txrDesignShear;
+               if (des_options.doDesignForShear)
+               {
+                  // If stirrup zones are not symmetrical in test file, design using existing layout
+                  GET_IFACE(IStirrupGeometry, pStirrupGeom);
+                  bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey);
+                  des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
+               }
+            }
+
+            GET_IFACE(IArtifact, pIArtifact);
+            const pgsGirderDesignArtifact* pGirderDesignArtifact;
+            const pgsSegmentDesignArtifact* pArtifact;
+            try
+            {
+               // Design the girder
+               pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey, des_options_coll);
+               pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
+               ATLASSERT(segmentKey.IsEqual(pArtifact->GetSegmentKey()));
+
+               if (pArtifact->GetOutcome() != pgsSegmentDesignArtifact::Success)
+               {
+                  err_file << _T("Design was unsuccessful") << std::endl;
+                  designSucceeded = false;
+               }
+
+               // Copy the design to the bridge
+               SaveFlexureDesign(segmentKey, pArtifact);
+            }
+            catch (...)
+            {
+               err_file << _T("Design Failed for span") << span << _T(" girder ") << girder << std::endl;
+               return false;
+            }
+         }
+
+         GET_IFACE(ITestFileExport, pTxDOTCadExport);
+         if (!pTxDOTCadExport)
+         {
+            AfxMessageBox(_T("The Test File Exporter is not currently installed"));
+            return false;
+         }
+
+         if (txInfo.m_TxRunType == CTestCommandLineInfo::TxrDistributionFactors)
+         {
+            // Write distribution factor data to file
+            try
+            {
+               if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile(fp, this->m_pBroker, segmentKey))
+               {
+                  err_file << _T("Warning: An error occured while writing to File") << std::endl;
+                  return false;
+               }
+            }
+            catch (CXUnwind* pExc)
+            {
+               // Probable lldf out of range error
+               std::_tstring sCause;
+               pExc->GetErrorMessage(&sCause);
+               _ftprintf(fp, sCause.c_str());
+               _ftprintf(fp, _T("\n"));
+               pExc->Delete();
+            }
+         }
+         else
+         {
+            /* Write CAD data to text file */
+            if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, segmentKey, designSucceeded))
+            {
+               err_file << _T("Warning: An error occured while writing to File") << std::endl;
+               return false;
+            }
+         }
+      }
+   }
+
+   /* Close the open text file */
+   fclose (fp);
+
+   // ---------------------------------------------
+   // Run a 12-50 output if this is a test file
+   if (txInfo.m_TxFType == CTestCommandLineInfo::txfTest)
+   {
+      // file names
+      CString resultsfile, poifile, errfile;
+      CString strExt(_T(".pgs"));
+      if (create_test_file_names(strExt,txInfo.m_strFileName,&resultsfile,&poifile,&errfile))
+      {
+         GET_IFACE(ITest1250, ptst );
+
+         try
+         {
+            if (!ptst->RunTestEx(RUN_CADTEST, spn_grd_list, std::_tstring(resultsfile), std::_tstring(poifile)))
+            {
+               CString msg = CString(_T("Error - Running test on file"))+txInfo.m_strFileName;
+               ::AfxMessageBox(msg);
+            }
+         }
+         catch(...)
+         {
+            CString msg = CString(_T("Error - running test for input file:"))+txInfo.m_strFileName;
+            ::AfxMessageBox(msg);
+            return false;
+         }
+      }
+      else
+      {
+         CString msg = CString(_T("Error - Determining 1250 test file names for"))+txInfo.m_strFileName;
+         ::AfxMessageBox(msg);
+         return false;
+      }
+   }
+
+
+   return true;
+}
+
+void CTestAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSegmentDesignArtifact* pArtifact)
+{
+   // Artifact does hard work of converting to girder data
+   CPrecastSegmentData segmentData = pArtifact->GetSegmentData();
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE_NOCHECK(ISpecification,pSpec);
+   pIBridgeDesc->SetPrecastSegmentData(segmentKey,segmentData);
+
+   const arDesignOptions& design_options = pArtifact->GetDesignOptions();
+
+   if (design_options.doDesignForFlexure != dtNoDesign && design_options.doDesignSlabOffset != sodNoSlabOffsetDesign)
+   {
+      pgsTypes::SlabOffsetType slabOffsetType = pIBridgeDesc->GetSlabOffsetType();
+
+      if ( slabOffsetType == pgsTypes::sotBridge )
+      {
+         pIBridgeDesc->SetSlabOffset( pArtifact->GetSlabOffset(pgsTypes::metStart) );
+      }
+      else
+      {
+         const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+         PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+         PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
+         Float64 startOffset = pArtifact->GetSlabOffset(pgsTypes::metStart);
+         Float64 endOffset   = pArtifact->GetSlabOffset(pgsTypes::metEnd);
+
+         pIBridgeDesc->SetSlabOffset( segmentKey, startOffset, endOffset  );
+      }
+
+      if (pSpec->IsAssumedExcessCamberForLoad())
+      {
+         pgsTypes::AssumedExcessCamberType camberType = pIBridgeDesc->GetAssumedExcessCamberType();
+         if (camberType == pgsTypes::aecBridge)
+         {
+            pIBridgeDesc->SetAssumedExcessCamber(pArtifact->GetAssumedExcessCamber());
+         }
+         else
+         {
+            pIBridgeDesc->SetAssumedExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex, pArtifact->GetAssumedExcessCamber());
+         }
+      }
+   }
 }

@@ -212,11 +212,6 @@ BOOL CTxDOTAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
       ProcessLibrarySetUp(txCmdInfo);
       return TRUE;
    }
-   // could handle processing here, but allow app class to do it
-//   if (txCmdInfo.m_DoTogaTest)
-//   {
-//      return TRUE; // command line parameters handled
-//   }
 
    BOOL bHandled = FALSE;
    CEAFMainFrame* pFrame = EAFGetMainFrame();

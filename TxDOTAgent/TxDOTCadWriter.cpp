@@ -152,7 +152,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
    IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount()-1;
 
    // Use workerbee class to do actual writing of data
-   bool is_test_output = (format== tcxTest) ? true : false;
+   bool is_test_output = (format == tcxTest) ? true : false;
    CadWriterWorkerBee workerB(is_test_output);//
 
 	/* Create pois at the start of girder and mid-span */
@@ -191,7 +191,7 @@ int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& gird
       are_harped_bent = !IsEqual(hs_ecc_end, hs_ecc_mid);
    }
 
-   bool isExtendedVersion = (format==tcxExtended || format==tcxTest);
+   bool isExtendedVersion = (format == tcxExtended || format == tcxTest);
 
    // Determine if a straight-raised design
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);

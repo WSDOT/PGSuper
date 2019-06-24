@@ -62,7 +62,7 @@
 #include <IReportManager.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Selection.h>
-#include <IFace\TxDOTCadExport.h>
+#include <IFace\TestFileExport.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>

@@ -184,6 +184,18 @@
     <ClCompile Include="TxDOTAgentApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TxExcelDataExporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxExcel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxCSVDataExporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxDataExporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dllmain.h">
@@ -382,6 +394,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxExcel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxExcelDataExporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxCSVDataExporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxDataExporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

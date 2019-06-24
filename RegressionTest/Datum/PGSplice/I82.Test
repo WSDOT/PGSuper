@@ -1,0 +1,140 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.00    7   9.00   River bridge      1     1    Bridg    *     34  0.6  270  54.86  68.87  12.00  12.00                                              5.000 10.099  10.099    10.099    11864   0.785  0.884   0.211 -0.152 -0.033 -0.022 -0.207 116.80  479.77   10.00   10.00   10.00 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 1
+Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 1
+Compression stress check failed for Service I Limit State in Interval 24, Apply User Defined Loads, Install Overlay for Segment 1
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 1
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 2
+Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 2
+Compression stress check failed for Service I Limit State in Interval 24, Apply User Defined Loads, Install Overlay for Segment 2
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 2
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 2
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 3
+Tension stress check failed for Service I Limit State in Interval 19, Stress Tendons, Remove Temporary Support for Segment 3
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 3
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 3
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 4
+Tension stress check failed for Service I Limit State in Interval 19, Stress Tendons, Remove Temporary Support for Segment 4
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 4
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 4
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 5
+Tension stress check failed for Service I Limit State in Interval 19, Stress Tendons, Remove Temporary Support for Segment 5
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 5
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 5
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 6
+Tension stress check failed for Service I Limit State in Interval 19, Stress Tendons, Remove Temporary Support for Segment 6
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 6
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 6
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 7
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 7
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 7
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 8
+Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 8
+Compression stress check failed for Service I Limit State in Interval 24, Apply User Defined Loads, Install Overlay for Segment 8
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 8
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 8
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 9
+Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 9
+Compression stress check failed for Service I Limit State in Interval 24, Apply User Defined Loads, Install Overlay for Segment 9
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 9
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Confinement zone check failed for Segment 1.
+Confinement zone check failed for Segment 9.
+Lifting checks failed for Segment 1.
+Hauling checks failed for Segment 1.
+Lifting checks failed for Segment 2.
+Hauling checks failed for Segment 2.
+Lifting checks failed for Segment 3.
+Hauling checks failed for Segment 3.
+Lifting checks failed for Segment 4.
+Hauling checks failed for Segment 4.
+Lifting checks failed for Segment 5.
+Hauling checks failed for Segment 5.
+Lifting checks failed for Segment 6.
+Hauling checks failed for Segment 6.
+Lifting checks failed for Segment 7.
+Hauling checks failed for Segment 7.
+Lifting checks failed for Segment 8.
+Hauling checks failed for Segment 8.
+Lifting checks failed for Segment 9.
+Hauling checks failed for Segment 9.
+Duct Size check failed for Duct 1.
+Duct Size check failed for Duct 2.
+Duct Size check failed for Duct 3.
+Duct Size check failed for Duct 4.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.00    7   9.00   River bridge      1     2    Bridg    *     34  0.6  270  54.86  68.87  12.00  12.00                                              5.000 10.099  10.099    10.099    12118   0.785  0.884   0.210 -0.165 -0.032 -0.021 -0.218 116.80  478.53   10.00   10.00   10.00 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 1
+Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 1
+Compression stress check failed for Service I Limit State in Interval 24, Apply User Defined Loads, Install Overlay for Segment 1
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 1
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 2
+Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 2
+Compression stress check failed for Service I Limit State in Interval 24, Apply User Defined Loads, Install Overlay for Segment 2
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 2
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 2
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 3
+Tension stress check failed for Service I Limit State in Interval 19, Stress Tendons, Remove Temporary Support for Segment 3
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 3
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 3
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 4
+Tension stress check failed for Service I Limit State in Interval 19, Stress Tendons, Remove Temporary Support for Segment 4
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 4
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 4
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 5
+Tension stress check failed for Service I Limit State in Interval 19, Stress Tendons, Remove Temporary Support for Segment 5
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 5
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 5
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 6
+Tension stress check failed for Service I Limit State in Interval 19, Stress Tendons, Remove Temporary Support for Segment 6
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 6
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 6
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 7
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 7
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 7
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 8
+Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 8
+Compression stress check failed for Service I Limit State in Interval 24, Apply User Defined Loads, Install Overlay for Segment 8
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 8
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 8
+Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 9
+Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 9
+Compression stress check failed for Service I Limit State in Interval 24, Apply User Defined Loads, Install Overlay for Segment 9
+Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 9
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Confinement zone check failed for Segment 1.
+Confinement zone check failed for Segment 9.
+Lifting checks failed for Segment 1.
+Hauling checks failed for Segment 1.
+Lifting checks failed for Segment 2.
+Hauling checks failed for Segment 2.
+Lifting checks failed for Segment 3.
+Hauling checks failed for Segment 3.
+Lifting checks failed for Segment 4.
+Hauling checks failed for Segment 4.
+Lifting checks failed for Segment 5.
+Hauling checks failed for Segment 5.
+Lifting checks failed for Segment 6.
+Hauling checks failed for Segment 6.
+Lifting checks failed for Segment 7.
+Hauling checks failed for Segment 7.
+Lifting checks failed for Segment 8.
+Hauling checks failed for Segment 8.
+Lifting checks failed for Segment 9.
+Hauling checks failed for Segment 9.
+Duct Size check failed for Duct 1.
+Duct Size check failed for Duct 2.
+Duct Size check failed for Duct 3.
+Duct Size check failed for Duct 4.
+
+
