@@ -657,7 +657,7 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
          }
       }
    }
-   else if ( lHint == HINT_BRIDGECHANGED || lHint == HINT_GIRDERCHANGED || lHint == HINT_UNITSCHANGED )
+   else if (lHint == 0 || lHint == HINT_BRIDGECHANGED || lHint == HINT_GIRDERCHANGED || lHint == HINT_UNITSCHANGED )
    {
       UpdateCutRange();
       m_cutPoi = GetCutPointOfInterest(m_cutPoi.GetDistFromStart());
