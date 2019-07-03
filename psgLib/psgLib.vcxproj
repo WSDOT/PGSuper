@@ -236,9 +236,9 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <CustomBuildStep>
-      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)</Command>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(OutDir)</Command>
       <Message>Installing WBFL for BridgeLink</Message>
-      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+      <Outputs>$(OutDir)WBFL*.dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -291,9 +291,9 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <CustomBuildStep>
-      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)</Command>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(OutDir)</Command>
       <Message>Installing WBFL for BridgeLink</Message>
-      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+      <Outputs>$(OutDir)WBFL*.dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -344,9 +344,9 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <CustomBuildStep>
-      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)</Command>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(OutDir)</Command>
       <Message>Installing WBFL for BridgeLink</Message>
-      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+      <Outputs>$(OutDir)WBFL*.dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -397,9 +397,9 @@
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
     </Manifest>
     <CustomBuildStep>
-      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)</Command>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(OutDir)</Command>
       <Message>Installing WBFL for BridgeLink</Message>
-      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+      <Outputs>$(OutDir)WBFL*.dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
@@ -454,9 +454,9 @@
       <OutputFile>.\..\Lib/psgLib.bsc</OutputFile>
     </Bscmake>
     <CustomBuildStep>
-      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)</Command>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(OutDir)</Command>
       <Message>Installing WBFL for BridgeLink</Message>
-      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+      <Outputs>$(OutDir)WBFL*.dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
@@ -513,9 +513,9 @@
       <OutputFile>.\..\Lib/psgLib.bsc</OutputFile>
     </Bscmake>
     <CustomBuildStep>
-      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)</Command>
+      <Command>$(WBFLDIR)\InstallWBFL.bat $(PlatformName) $(ConfigurationName) $(OutDir)</Command>
       <Message>Installing WBFL for BridgeLink</Message>
-      <Outputs>$(BRIDGELINKDIR)\RegFreeCOM\$(PlatformName)\$(ConfigurationName)\WBFL*.dll</Outputs>
+      <Outputs>$(OutDir)WBFL*.dll</Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
