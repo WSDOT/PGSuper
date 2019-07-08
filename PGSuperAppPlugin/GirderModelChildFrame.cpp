@@ -235,6 +235,7 @@ void CGirderModelChildFrame::SelectGirder(const CGirderKey& girderKey,bool bDoUp
    if ( girderKey.groupIndex != INVALID_INDEX && girderKey.girderIndex != INVALID_INDEX )
    {
       m_GirderKey = girderKey;
+      UpdateCutRange();
       UpdateBar();
 
       if ( bDoUpdate )
@@ -754,12 +755,11 @@ void CGirderModelChildFrame::UpdateCutRange()
    }
    else
    {
-      CSegmentKey segmentKey = m_cutPoi.GetSegmentKey();
-      if (segmentKey.girderIndex != m_GirderKey.girderIndex)
+      CGirderKey girderKey = m_cutPoi.GetSegmentKey();
+      if (m_GirderKey.groupIndex != ALL_GROUPS && !m_GirderKey.IsEqual(girderKey))
       {
          // if the cut poi is no longer on the selected girder, update it
-         segmentKey.girderIndex = m_GirderKey.girderIndex;
-         m_cutPoi = pPoi->GetNearestPointOfInterest(segmentKey, m_cutPoi.GetDistFromStart());
+         m_cutPoi = pPoi->GetNearestPointOfInterest(CSegmentKey(m_GirderKey,0), m_cutPoi.GetDistFromStart());
       }
 
       Float64 Xmin, Xmax, X;
