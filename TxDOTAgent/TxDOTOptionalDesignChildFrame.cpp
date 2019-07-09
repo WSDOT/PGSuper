@@ -119,7 +119,7 @@ void CTxDOTOptionalDesignChildFrame::OnLicenseAgreement()
 
 BOOL CTxDOTOptionalDesignChildFrame::OnHelpInfo(HELPINFO* pHelpInfo)
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_GIRDER_INPUT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_WELCOME );
    return TRUE;
 }
 

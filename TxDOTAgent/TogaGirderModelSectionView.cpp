@@ -252,7 +252,6 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
 
    GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
 
    Float64 top_width = pGirder->GetTopWidth(poi);
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
