@@ -95,6 +95,8 @@ protected:
 	CSpinButtonCtrl m_SelTemplateSpinner;
    IndexType m_SelectedTemplate;
 
+   int GetTemplateCount();
+
 	DECLARE_MESSAGE_MAP()
 
    // tools for drawing section
