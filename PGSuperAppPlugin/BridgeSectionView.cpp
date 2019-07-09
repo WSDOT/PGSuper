@@ -2549,6 +2549,13 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
 
    displayList->AddDisplayObject(doAlignment);
 
+   // links the display object to the event handler
+   // the display object isn't really a drop site, however the drop
+   // site interface has the method we need. contrast this with the
+   // bridge plan view where the alignment display object is really a drop site
+   CComQIPtr<iDropSite> drop_site(events);
+   drop_site->SetDisplayObject(dispObj);
+
    ATLASSERT(bfinished); // crown point model is not wide enough for our needs
 }
 
