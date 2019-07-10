@@ -232,7 +232,6 @@ void CCrownSlopeGrid::UpdateGridSizeAndHeaders(const RoadwaySectionData& data)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
       .SetValue(_T("Temp-\nlate"))
-      .SetWrapText(FALSE)
    );
    col++;
 
@@ -599,10 +598,8 @@ void CCrownSlopeGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    // set up styles
    CGXStyle valid_style;
    CGXStyle error_style;
-   valid_style.SetEnabled(TRUE)
-         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
-   error_style.SetEnabled(FALSE)
-         .SetTextColor(RGB(255,0,0));
+   valid_style.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+   error_style.SetTextColor(RGB(255,0,0));
 
    bool is_valid(true);
    if (nCol == 1)
