@@ -2429,7 +2429,7 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
 
    // Register an event sink with the alignment object so that we can handle Float64 clicks
    // on the alignment differently then a general dbl-click
-   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::Bridge);
+   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::BridgeSection);
    CComPtr<iDisplayObjectEvents> events;
    events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
 

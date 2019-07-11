@@ -28,8 +28,9 @@
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
 
-#define EBD_ROADWAY        0
-#define EBD_PROFILE        1
+#define EAD_ROADWAY        0
+#define EAD_PROFILE        1
+#define EAD_SECTION        2
 
 #define EBD_GENERAL        0
 #define EBD_FRAMING        1
