@@ -412,8 +412,6 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
    // the profile chord reference line passes through the deck at this station and offset
    Float64 Y_girder_ref_line_left_bearing = pAlignment->GetElevation(station,offset);
 
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
-
    MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
 
    Float64 girder_top_slope = pGdr->GetTransverseTopFlangeSlope(segmentKey);
