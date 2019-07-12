@@ -2945,7 +2945,7 @@ void CGirderDescPrestressPage::EditDirectSelect()
    GET_IFACE2( pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    // Get current offset input values - dialog will force in bounds if needed

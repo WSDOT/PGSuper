@@ -1,3 +1,24 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2019  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
 #include "TxCSVDataExporter.h"
 #include <fstream>
@@ -8,46 +29,91 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CTxCSVDataExporter::CTxCSVDataExporter(void)
+CTxCSVDataExporter::CTxCSVDataExporter(void):
+   m_Separator(_T(","))
 {
+   for(IndexType nt=0; nt<nTables; nt++)
+   {
+      m_MaxRows[nt] = 0;
+   }
 }
 
 CTxCSVDataExporter::~CTxCSVDataExporter(void)
 {
 }
 
-BOOL CTxCSVDataExporter::InitializeExporter()
+BOOL CTxCSVDataExporter::InitializeTable(IndexType hTable, const std::vector<std::_tstring>& columnNames)
 {
-   // no special initialization required
+   ATLASSERT(hTable > 0 && hTable <= nTables);
+
+   hTable -= 1; // zero-based access
+
+   m_MaxRows[hTable] = 0;
+
+   if (!m_Tables[hTable].m_Columns.empty())
+   {
+      ATLASSERT(0); //probably should only be initializing once, but this might be Ok?
+      m_Tables[hTable].m_Columns.clear();
+      m_Tables[hTable].m_ColumnNameMap.clear();
+   }
+
+   IndexType colno = 0;
+   for (auto column : columnNames)
+   {
+      m_Tables[hTable].m_ColumnNameMap.insert(std::make_pair(column, colno));
+
+      m_Tables[hTable].m_Columns.push_back(std::vector<std::_tstring>());
+      m_Tables[hTable].m_Columns.back().reserve(40); // 100 rows is about as many as expected normally
+
+      colno++;
+   }
+
    return TRUE;
 }
 
-IndexType CTxCSVDataExporter::CreateTable(LPCTSTR strName)
+void CTxCSVDataExporter::SetSeparator(LPCTSTR strSeparator)
 {
-   IndexType hTable = m_Tables.size();
-   CTable table;
-   table.m_strName = strName;
-   m_Tables.insert(std::make_pair(hTable,table));
-   return hTable;
+   m_Separator = strSeparator;
 }
 
-void CTxCSVDataExporter::SetColumnData(IndexType hTable,LPCTSTR strColumnHeading,ColumnIndexType colIdx,const std::vector<Float64>& values)
+void CTxCSVDataExporter::WriteStringToCell(IndexType hTable, LPCTSTR strRangeName, IndexType rowIdx, LPCTSTR strString)
 {
-   Tables::iterator found = m_Tables.find(hTable);
-   ATLASSERT( found != m_Tables.end() );
+   ATLASSERT(hTable > 0 && hTable <= nTables);
+   hTable -= 1; // zero-based access
 
-   CTable& table = found->second;
+   CCsvTable::ColumnMapNameType::iterator it = m_Tables[hTable].m_ColumnNameMap.find(strRangeName);
+   if (it == m_Tables[hTable].m_ColumnNameMap.end())
+   {
+      CString msg;
+      msg.Format(_T("Error - The range \'%s\' was not found on sheet %d of the template spreadsheet."), strRangeName, hTable);
+      ::AfxMessageBox(msg);
+      ATLASSERT(0);
+      return;
+   }
+   else
+   {
+      IndexType idx = it->second;
+      std::vector<std::_tstring>& rColumn = m_Tables[hTable].m_Columns.at(idx);
 
-   // must added column data left to right
-   ATLASSERT(table.m_ColumnHeadings.size() == colIdx);
-   ATLASSERT(table.m_Values.size() == colIdx);
+      // We can have blank rows in columns. make sure we have room for our string
+      // This will put a blank string at our target location
+      size_t ncols = rColumn.size();
+      if (rowIdx + 1 > ncols)
+      {
+         rColumn.resize(rowIdx + 1);
+      }
 
-   // Need to replace any commas in heading with :'s
-   std::_tstring header(strColumnHeading);
-   std::replace(header.begin(), header.end(), _T(','), _T(':'));
+      // Finally assign our string
+      rColumn.at(rowIdx) = strString;
 
-   table.m_ColumnHeadings.push_back(std::_tstring(header));
-   table.m_Values.push_back(values);
+      // Keep track of the maximum row used thusfar
+      m_MaxRows[hTable] = max(m_MaxRows[hTable], rowIdx + 1);
+   }
+}
+
+void CTxCSVDataExporter::WriteWarningToCell(IndexType hTable, LPCTSTR strRangeName, IndexType rowIdx, LPCTSTR strString)
+{
+   WriteStringToCell(hTable, strRangeName, rowIdx, strString);
 }
 
 BOOL CTxCSVDataExporter::Commit(LPCTSTR strFilename)
@@ -58,43 +124,40 @@ BOOL CTxCSVDataExporter::Commit(LPCTSTR strFilename)
    if ( !ofile )
       return FALSE;
 
-   Tables::iterator iter;
-   for ( iter = m_Tables.begin(); iter != m_Tables.end(); iter++ )
+   // Write out tables
+   for (IndexType table = 0; table < nTables; table++)
    {
-      CTable& table = iter->second;
-      ofile << table.m_strName << std::endl;
+      size_t ncols = m_Tables[table].m_Columns.size();
 
-      // write column headings
-      std::vector<std::_tstring>::iterator colIter;
-      for ( colIter = table.m_ColumnHeadings.begin(); colIter != table.m_ColumnHeadings.end(); colIter++ )
+      for (IndexType row = 0; row < m_MaxRows[table]; row++)
       {
-         const std::_tstring& str = *colIter;
-
-         if ( colIter != table.m_ColumnHeadings.begin() )
-            ofile << ",";
-
-         ofile << str.c_str();
-      }
-      ofile << std::endl;
-
-      // write values
-      RowIndexType nRows = table.m_Values[0].size(); // assume all vectors are same length
-      for ( RowIndexType row = 0; row < nRows; row++ )
-      {
-         std::vector< std::vector<Float64> >::iterator valIter;
-         for ( valIter = table.m_Values.begin(); valIter != table.m_Values.end(); valIter++ )
+         size_t icol = 0;
+         for (auto& column : m_Tables[table].m_Columns)
          {
-            const std::vector<Float64>& values = *valIter;
+            size_t nrows = column.size();
+            if (row < nrows)
+            {
+               const std::_tstring& rstr = column[row];
+               ofile << rstr.c_str();
+            }
 
-            if ( valIter != table.m_Values.begin() )
-               ofile << ",";
+            // Don't put comma after last row
+            if (icol+1 < ncols)
+            {
+               ofile << m_Separator;
+            }
 
-            ofile << values[row];
+            icol++;
          }
+
          ofile << std::endl;
       }
 
-      ofile << std::endl;
+      // Write four blank lines between each table
+      if (table+1 < nTables)
+      {
+         ofile << std::endl << std::endl << std::endl << std::endl;
+      }
    }
 
    ofile.close();

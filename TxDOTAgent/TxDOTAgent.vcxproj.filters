@@ -196,6 +196,12 @@
     <ClCompile Include="TxDataExporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TOGATestFileWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TxDOTLegacyCadWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dllmain.h">
@@ -406,6 +412,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TxDataExporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TOGATestFileWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TxDOTLegacyCadWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

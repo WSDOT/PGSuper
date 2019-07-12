@@ -57,7 +57,8 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFHelp.h>
 
-#include "Documentation\Toga.hh"
+#include "Documentation\TOGA\Toga.hh"
+#include "Documentation\TxCADExport\TxCADExport.hh"
 
 #include <PgsExt\GirderLabel.h>
 #include <afxdlgs.h>

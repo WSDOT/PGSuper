@@ -1,3 +1,24 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2019  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
 #include "TxExcelDataExporter.h"
 
@@ -80,11 +101,24 @@ void CTxExcelDataExporter::WriteStringToCell(IndexType hTable, IndexType rowIdx,
    range.SetValue2(COleVariant(strString));
 }
 
-void CTxExcelDataExporter::WriteStringToCell(IndexType hTable, LPCTSTR strRangeName, IndexType rowIdx, LPCTSTR strString)
+Range CTxExcelDataExporter::GetRangeAtLocation(IndexType hTable, LPCTSTR strRangeName, IndexType rowIdx)
 {
    _Worksheet ws = m_Worksheets.GetItem(COleVariant((long)hTable));
 
-   Range range = ws.GetRange(COleVariant(strRangeName),COleVariant(strRangeName));
+   Range range;
+   try
+   {
+      range = ws.GetRange(COleVariant(strRangeName), COleVariant(strRangeName));
+   }
+//   catch(CException* e) 
+   catch(...) 
+   {
+      CString msg;
+      msg.Format(_T("Error - The range \'%s\' was not found on sheet %d of the template spreadsheet."), strRangeName, hTable);
+      ::AfxMessageBox(msg);
+      ATLASSERT(0);
+      throw;
+   }  
 
    // Get the address of the range in absolute excel format. will look something like: "'[CADExport-Straight]StandardPattern'!$A$5"
    CString address = range.GetAddressLocal(CComVariant(TRUE), CComVariant(TRUE), 1, CComVariant(TRUE), CComVariant());
@@ -113,14 +147,61 @@ void CTxExcelDataExporter::WriteStringToCell(IndexType hTable, LPCTSTR strRangeN
       // Build range name using new row number
       CString strNewRow = trunc_address.Left(pn+1) + strrow;
 
-      Range rangenew = ws.GetRange(COleVariant(strNewRow),COleVariant(strNewRow));
+      try
+      {
+         Range rangenew = ws.GetRange(COleVariant(strNewRow), COleVariant(strNewRow));
 
-      rangenew.SetValue2(COleVariant(strString));
+         return rangenew;
+      }
+      catch(...) 
+      {
+         CString msg;
+         msg.Format(_T("Error - The range \'%s\' at row %d was not found on sheet %d of the template spreadsheet."), strRangeName, rownum, hTable);
+         ::AfxMessageBox(msg);
+         ATLASSERT(0);
+         throw;
+      }  
    }
    else
    {
       ATLASSERT(0);
+      throw;
    }
+}
+
+
+void CTxExcelDataExporter::WriteStringToCell(IndexType hTable, LPCTSTR strRangeName, IndexType rowIdx, LPCTSTR strString)
+{
+   try
+   {
+      Range range = CTxExcelDataExporter::GetRangeAtLocation(hTable, strRangeName, rowIdx);
+      range.SetValue2(COleVariant(strString));
+   }
+   catch(...) 
+   {
+      return;
+   }  
+}
+
+void CTxExcelDataExporter::WriteWarningToCell(IndexType hTable, LPCTSTR strRangeName, IndexType rowIdx, LPCTSTR strString)
+{
+   try
+   {
+      Range range = CTxExcelDataExporter::GetRangeAtLocation(hTable, strRangeName, rowIdx);
+
+      range.SetValue2(COleVariant(strString));
+
+      // warnings are red
+      _Font font = range.GetFont();
+      font.SetColor(COleVariant((long)RGB(200, 0, 0)));
+      
+      range.SetWrapText(COleVariant(VARIANT_FALSE));
+      range.SetHorizontalAlignment(COleVariant((LONGLONG)-4131)); // align left
+   }
+   catch(...) 
+   {
+      return;
+   }  
 }
 
 void CTxExcelDataExporter::SetColumnData(IndexType hTable,LPCTSTR strColumnHeading,ColumnIndexType colIdx,const std::vector<Float64>& values)

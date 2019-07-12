@@ -67,6 +67,7 @@
 #include "TexasHaunchChapterBuilder.h"
 
 #include "TxDOTCadWriter.h"
+#include "TOGATestFileWriter.h"
 
 static bool CreateTxDOTFileNames(const CString& output, CString* pErrFileName)
 {

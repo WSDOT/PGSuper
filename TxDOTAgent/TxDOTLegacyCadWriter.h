@@ -19,36 +19,42 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
-#include "StdAfx.h"
-#include "TxDataExporter.h"
+#pragma once
+// SYSTEM INCLUDES
+//
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+// PROJECT INCLUDES
+//
+#include <IFace\Bridge.h>
 
-CTxDataExporter::CTxDataExporter(void)
-{
-}
+// Utility class for structuring debond data
+#include <PgsExt\DebondUtil.h>
 
-CTxDataExporter::~CTxDataExporter(void)
-{
-}
+// LOCAL INCLUDES
+//
 
-void CTxDataExporter::WriteIntToCell(IndexType hTable, LPCTSTR strRangeName, IndexType rowIdx, Int64 intVal)
-{
-   CString intstring;
-   intstring.Format(_T("%d"), intVal);
+// FORWARD DECLARATIONS
+//
+// Utility constants, stuff for TxDOT CAD export
+#define CAD_DELIM	_T(" ")
+#define CAD_SPACE	_T(" ")
 
-   WriteStringToCell(hTable, strRangeName, rowIdx, intstring);
-}
+// MISCELLANEOUS
+//
 
-void CTxDataExporter::WriteFloatToCell(IndexType hTable, LPCTSTR strRangeName, IndexType rowIdx, Float64 fltVal)
-{
-   // Write full precision
-   CString fltstring;
-   fltstring.Format(_T("%f"), fltVal);
+/*****************************************************************************
+CLASS 
+   TxDOTCadWriter
 
-   WriteStringToCell(hTable, strRangeName, rowIdx, fltstring);
-}
+   Utility class for writing TxDOT CAD file
+
+DESCRIPTION
+   Utility class for writing TxDOT CAD file
+
+LOG
+   rdp : 04.09.2009 : Created file
+*****************************************************************************/
+
+// Main External function that write the file
+int TxDOT_WriteLegacyCADDataToFile(CString& filePath, IBroker* pBroker, const std::vector<CGirderKey>& girderKeys);
+

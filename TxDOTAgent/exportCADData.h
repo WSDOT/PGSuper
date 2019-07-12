@@ -45,7 +45,9 @@ public:
 // Dialog Data
 	//{{AFX_DATA(exportCADData)
 	enum { IDD = IDD_EXPORT_TXDOTCADDATA };
-	BOOL	m_IsExtended;
+
+   enum ctxFileFormatType { ctxExcel, ctxCSV, ctxLegacy };
+   ctxFileFormatType	m_FileFormatType;
 	//}}AFX_DATA
 
    std::vector<CGirderKey> m_GirderKeys;
