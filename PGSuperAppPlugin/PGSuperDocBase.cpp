@@ -3559,7 +3559,7 @@ void CPGSDocBase::OnConstructionLoads()
 
 void CPGSDocBase::OnProjectAlignment() 
 {
-   EditAlignmentDescription(EBD_ROADWAY);
+   EditAlignmentDescription(EAD_ROADWAY);
 }
 
 void CPGSDocBase::OnProjectBarriers()
@@ -3569,7 +3569,7 @@ void CPGSDocBase::OnProjectBarriers()
 
 void CPGSDocBase::OnProjectProfile()
 {
-   EditAlignmentDescription(EBD_PROFILE);
+   EditAlignmentDescription(EAD_PROFILE);
 }
 
 void CPGSDocBase::OnLiveLoads() 

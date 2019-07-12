@@ -226,29 +226,32 @@ void CCrownSlopeGrid::UpdateGridSizeAndHeaders(const RoadwaySectionData& data)
 		);
 
    // set text along top row
-	SetStyleRange(CGXRange(0,col,1,col++), CGXStyle()
+	SetStyleRange(CGXRange(0,col,1,col), CGXStyle()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_TOP)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
-			.SetValue(_T("Temp-\nlate"))
-		);
+      .SetValue(_T("Temp-\nlate"))
+   );
+   col++;
 
-	SetStyleRange(CGXRange(0,col,1,col++), CGXStyle()
+	SetStyleRange(CGXRange(0,col,1,col), CGXStyle()
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_TOP)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
-			.SetValue(_T("\n Station "))
-		);
+			.SetValue(_T("Station"))
+      .SetWrapText(FALSE)
+   );
+   col++;
 
 	this->SetStyleRange(CGXRange(0,col), CGXStyle()
-         .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
+         .SetVerticalAlignment(DT_TOP)
 			.SetValue(_T("Segment 1"))
-		);
+      .SetWrapText(FALSE)
+   );
 
    CString strUnitTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag().c_str();
 
@@ -259,12 +262,12 @@ void CCrownSlopeGrid::UpdateGridSizeAndHeaders(const RoadwaySectionData& data)
    strLength.Format(_T("Length\n(%s)"),strUnitTag);
 
 	this->SetStyleRange(CGXRange(1,col++), CGXStyle()
-         .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(strSlope)
-		);
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetValue(strSlope)
+      .SetWrapText(TRUE)
+   );
    
    IndexType ns = 2;
    for (; ns < data.NumberOfSegmentsPerSection; ns++)
@@ -278,43 +281,44 @@ void CCrownSlopeGrid::UpdateGridSizeAndHeaders(const RoadwaySectionData& data)
          .SetEnabled(FALSE)
          .SetValue(strSegment)
          .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
+         .SetWrapText(TRUE)
       );
 
 	   this->SetStyleRange(CGXRange(1,col++), CGXStyle()
-            .SetWrapText(TRUE)
 			   .SetEnabled(FALSE)          // disables usage as current cell
-            .SetHorizontalAlignment(DT_CENTER)
-            .SetVerticalAlignment(DT_VCENTER)
-			   .SetValue(strLength)
-		   );
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_TOP)
+         .SetValue(strLength)
+         .SetWrapText(TRUE)
+      );
 
 	   this->SetStyleRange(CGXRange(1,col++), CGXStyle()
-            .SetWrapText(TRUE)
 			   .SetEnabled(FALSE)          // disables usage as current cell
-            .SetHorizontalAlignment(DT_CENTER)
-            .SetVerticalAlignment(DT_VCENTER)
-			   .SetValue(strSlope)
-		   );
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_TOP)
+         .SetValue(strSlope)
+         .SetWrapText(TRUE)
+      );
    }
 
    CString strSegment;
    strSegment.Format(_T("Segment %d"), ns);
 
 	this->SetStyleRange(CGXRange(0,col), CGXStyle()
-         .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(strSegment)
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetValue(strSegment)
+      .SetWrapText(FALSE)
 		);
 
 	this->SetStyleRange(CGXRange(1,col), CGXStyle()
-         .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(strSlope)
-		);
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetValue(strSlope)
+      .SetWrapText(TRUE)
+   );
 
    // make it so that text fits correctly in header row
 	this->ResizeRowHeightsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
@@ -331,6 +335,10 @@ void CCrownSlopeGrid::UpdateGridSizeAndHeaders(const RoadwaySectionData& data)
 void CCrownSlopeGrid::SetRowStyle(ROWCOL nRow)
 {
 	GetParam()->EnableUndo(FALSE);
+
+   this->SetStyleRange(CGXRange(nRow, 0), CGXStyle()
+      .SetHorizontalAlignment(DT_CENTER)
+   );
 
    ROWCOL ncols = GetColCount();
    this->SetStyleRange(CGXRange(nRow,1,nRow,ncols), CGXStyle()
@@ -590,10 +598,8 @@ void CCrownSlopeGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    // set up styles
    CGXStyle valid_style;
    CGXStyle error_style;
-   valid_style.SetEnabled(TRUE)
-         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
-   error_style.SetEnabled(FALSE)
-         .SetTextColor(RGB(255,0,0));
+   valid_style.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+   error_style.SetTextColor(RGB(255,0,0));
 
    bool is_valid(true);
    if (nCol == 1)

@@ -42,7 +42,8 @@ class CAlignmentDisplayObjectEvents : public CCmdTarget
 public:
    typedef enum ViewType
    {
-      Bridge,
+      BridgePlan,
+      BridgeSection,
       Alignment
    } ViewType;
 

@@ -139,6 +139,8 @@ void CCrownSlopePage::OnGridTemplateClicked(IndexType templIdx)
    // called by grid from on click event
    m_SelectedTemplate = templIdx;
 
+   m_SelTemplateSpinner.SetPos((int)templIdx);
+
    UpdateViewSpinner();
 }
 
@@ -148,7 +150,11 @@ void CCrownSlopePage::OnAdd()
 
    UpdateNumSegsCtrl();
    UpdateRidgeptData();
-   UpdateViewSpinner();
+
+   int nTemplates = GetTemplateCount();
+   m_SelTemplateSpinner.SetRange(0, nTemplates-1);
+
+   OnGridTemplateClicked(nTemplates - 1);
 }
 
 void CCrownSlopePage::OnRemove() 
@@ -162,7 +168,10 @@ void CCrownSlopePage::OnRemove()
       UpdateRidgeptData();
    }
 
-   UpdateViewSpinner();
+   int nTemplates = GetTemplateCount();
+   m_SelTemplateSpinner.SetRange(0, nTemplates-1);
+
+   OnGridTemplateClicked(nTemplates - 1);
 }
 
 void CCrownSlopePage::OnSort() 
@@ -195,6 +204,10 @@ BOOL CCrownSlopePage::OnInitDialog()
    accel[1].nInc = 5;
    accel[1].nSec = 5;
    m_SelTemplateSpinner.SetAccel(2,accel);
+
+   int nTemplates = GetTemplateCount();
+   m_SelTemplateSpinner.SetRange(0, nTemplates);
+   m_SelTemplateSpinner.SetPos(0);
 
    UpdateViewSpinner();
 	
@@ -308,6 +321,11 @@ void CCrownSlopePage::OnCbnSelchangeRidgeptCombo()
    }
 
    OnChange(); // redraw schematic
+}
+
+int CCrownSlopePage::GetTemplateCount()
+{
+   return m_Grid.GetRowCount() - 1;
 }
 
 RoadwaySectionTemplate CCrownSlopePage::GetSelectedTemplate()
@@ -563,12 +581,12 @@ void CCrownSlopePage::OnChange()
 
 void CCrownSlopePage::UpdateViewSpinner()
 {
-   int size = m_Grid.GetRowCount() - 1;
-   size = size == 0 ? 1 : size; //always have flat default
+   int nTemplates = GetTemplateCount();
+   nTemplates = nTemplates == 0 ? 1 : nTemplates; //always have flat default
 
-   if (m_SelectedTemplate >= size)
+   if (nTemplates <= m_SelectedTemplate)
    {
-      m_SelectedTemplate = size - 1;
+      m_SelectedTemplate = nTemplates - 1;
    }
 
    CString str;
@@ -595,28 +613,23 @@ LRESULT CCrownSlopePage::OnKickIdle(WPARAM, LPARAM)
 void CCrownSlopePage::OnDeltaposViewTemplateSpin(NMHDR *pNMHDR, LRESULT *pResult)
 {
    LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+   *pResult = 0;
 
-   int size = m_Grid.GetRowCount() - 1;
+   int nTemplates = GetTemplateCount();
 
    // this is what the selection will be
-   int new_sel = (int)m_SelectedTemplate - pNMUpDown->iDelta; // left arrow is positive
+   //int new_sel = (int)m_SelectedTemplate - pNMUpDown->iDelta; // left arrow is positive
+   int new_sel = pNMUpDown->iPos + pNMUpDown->iDelta;
 
-   // if it goes over the top
-   if ( size-1 < new_sel )
+   if (new_sel < 0 || nTemplates <= new_sel)
    {
-      new_sel = 0; // make it the min value
-   }
-
-   // if it goes under the bottom
-   if ( new_sel < 0 )
-   {
-      new_sel = size-1; // make it the max value
+      // we are going to scroll over the top or under the bottom
+      // return with pResult being non-zero to prevent change
+      *pResult = 1;
+      return;
    }
 
    m_SelectedTemplate = new_sel;
 
    UpdateViewSpinner();
-   OnChange();
-
-   *pResult = 0;
 }
