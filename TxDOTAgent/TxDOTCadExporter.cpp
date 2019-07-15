@@ -65,6 +65,40 @@ bool DoesFileExist(const CString& filename)
 
 // CTxDOTCadExporter
 
+HRESULT CTxDOTCadExporter::FinalConstruct()
+{
+   CEAFApp* pApp = EAFGetApp();
+   CString str = pApp->GetAppLocation();
+
+   CString strDefaultLocation;
+   if (-1 != str.Find(_T("RegFreeCOM")))
+   {
+      // application is on a development box
+      strDefaultLocation = (_T("\\ARP\\PGSuper\\TxDOTAgent\\TxCADExport\\"));
+   }
+   else
+   {
+      strDefaultLocation = str + CString(_T("\\TxCadExport\\"));
+   }
+
+   // Get the user's setting, using the local machine setting as the default if not present
+   m_strTemplateLocation = pApp->GetProfileString(_T("Settings"),_T("TxCADExportTemplateFolder"),strDefaultLocation);
+
+   // make sure we have a trailing backslash
+   if (_T('\\') != m_strTemplateLocation.GetAt(m_strTemplateLocation.GetLength() - 1))
+   {
+      m_strTemplateLocation += _T("\\");
+   }
+
+   return S_OK;
+}
+
+void CTxDOTCadExporter::FinalRelease()
+{
+   CEAFApp* pApp = EAFGetApp();
+   VERIFY(pApp->WriteProfileString(_T("Settings"), _T("TxCADExportTemplateFolder"), m_strTemplateLocation));
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // IPGSuperExporter
 STDMETHODIMP CTxDOTCadExporter::Init(UINT nCmdID)
@@ -421,23 +455,7 @@ CString CTxDOTCadExporter::GetDocumentationURL() const
 
 CString CTxDOTCadExporter::GetExcelTemplateFolderLocation() const
 {
-   CEAFApp* pApp = EAFGetApp();
-   CString str = pApp->GetAppLocation();
-
-   CString strDefaultLocation;
-   if (-1 != str.Find(_T("RegFreeCOM")))
-   {
-      // application is on a development box
-      strDefaultLocation = (_T("\\ARP\\PGSuper\\TxDOTAgent\\TxCADExport\\"));
-   }
-   else
-   {
-      strDefaultLocation = str + CString(_T("\\TxCadExport\\"));
-   }
-
-   // Get the user's setting, using the local machine setting as the default if not present
-   CString strTemplateLocation = pApp->GetProfileString(_T("Settings"),_T("TxCADExportTemplateFolder"),strDefaultLocation);
-   return strTemplateLocation;
+   return m_strTemplateLocation;
 }
 
 

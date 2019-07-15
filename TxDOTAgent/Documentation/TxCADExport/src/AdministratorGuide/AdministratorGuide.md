@@ -92,4 +92,16 @@ There are no user options to modify the data written to this format. All options
 
 Other Information
 -----------------------
+-----------------------
 The TxDOT CAD Data Export feature is installed with the main BridgeLink installation when the TxDOT Extensions are selected . The exporter itself is part of the TxDOTAgent.dll which is installed in the same folder with BridgeLink's files. The default installation folder for BridgeLink is "C:\Program Files\WSDOT\BridgeLink". However, this location may be changed by the user at installation time.
+
+Registry Values for Testing Excel Template Files
+----------------------
+ If desired, end users can modify the location for the Excel template files used during CAD export. It is expected that this feature will only be used for testing and development template file modification purposes.
+ 
+ The CAD exporter looks for the Excel template files in the folder identified by the string value pair **TxCADExportTemplateFolder** located at following registry location:
+ 
+     Computer\HKEY_CURRENT_USER\Software\Washington State Department of Transportation\BridgeLink\Settings
+  
+  > Tip: Use the Windows RegEdit application to delete the string value "TxCADExportTemplateFolder" and return PGSuper back to its default (factory) behavior.
+

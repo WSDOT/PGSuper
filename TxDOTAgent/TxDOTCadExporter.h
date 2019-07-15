@@ -59,14 +59,8 @@ END_COM_MAP()
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-	HRESULT FinalConstruct()
-	{
-		return S_OK;
-	}
-
-	void FinalRelease()
-	{
-	}
+   HRESULT FinalConstruct();
+   void FinalRelease();
 
 // IPGSDataExporter
 public:
@@ -88,6 +82,7 @@ private:
 
    CString GetExcelTemplateFolderLocation() const;
 
+   CString m_strTemplateLocation;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(TxDOTCadExporter), CTxDOTCadExporter)
