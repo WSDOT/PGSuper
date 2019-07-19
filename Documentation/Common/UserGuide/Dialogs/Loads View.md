@@ -8,9 +8,9 @@ Item | Description
 -----|--------------
 [Edit Load] | Opens editing window for the currently selected load.
 [Delete Load] | Delete the currently selected load.
-[Add New Point Load...] | Add a new Point Load to the model.
-[Add New Distributed Load...] | Add a new Distributed Load to the model.
-[Add New Moment Load...] | Add a new Moment Load to the model.
+[Add Point Load...] | Add a Point Load to the model.
+[Add Distributed Load...] | Add a Distributed Load to the model.
+[Add Moment Load...] | Add a Moment Load to the model.
 [Help] | Opens this documentation
 
  
