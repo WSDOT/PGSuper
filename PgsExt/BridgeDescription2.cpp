@@ -1366,6 +1366,8 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
          pRefPier->SetDiaphragmLoadType(pgsTypes::Ahead,pRefPier->GetDiaphragmLoadType(pgsTypes::Back));
          pRefPier->SetDiaphragmLoadLocation(pgsTypes::Ahead,pRefPier->GetDiaphragmLoadLocation(pgsTypes::Back));
+
+         pRefPier->SetSlabOffset(pgsTypes::Ahead, pRefPier->GetSlabOffset(pgsTypes::Back, true));
       }
       else if ( pierFace == pgsTypes::Back && m_Piers[refPierIdx]->GetPrevSpan() == nullptr )
       {
@@ -1406,6 +1408,8 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
          pRefPier->SetDiaphragmLoadType(pgsTypes::Back,pRefPier->GetDiaphragmLoadType(pgsTypes::Ahead));
          pRefPier->SetDiaphragmLoadLocation(pgsTypes::Back,pRefPier->GetDiaphragmLoadLocation(pgsTypes::Ahead));
+
+         pRefPier->SetSlabOffset(pgsTypes::Back, pRefPier->GetSlabOffset(pgsTypes::Ahead, true));
       }
       else
       {
