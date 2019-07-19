@@ -546,6 +546,7 @@ interface IBridge : IUnknown
 
    virtual void GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const = 0;
    virtual void GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const = 0;
+   virtual void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** points) const = 0;
    virtual void GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const = 0;
 
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const = 0;
@@ -583,7 +584,6 @@ interface IBridge : IUnknown
 
    virtual bool IsAbutment(PierIndexType pierIdx) const = 0; // returns true if pier is an end abutment
    virtual bool IsPier(PierIndexType pierIdx) const = 0; // returns true if pier is an intermediate pier
-   virtual bool HasCantilever(PierIndexType pierIdx) const = 0; // returns true if the span is cantilevered at this pier
 
    virtual bool IsInteriorPier(PierIndexType pierIdx) const = 0; // returns true if the pier is interior to a girder group
    virtual bool IsBoundaryPier(PierIndexType pierIdx) const = 0; // returns true if the pier is at a boundary of a girder group

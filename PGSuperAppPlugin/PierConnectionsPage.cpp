@@ -238,12 +238,13 @@ BOOL CPierConnectionsPage::OnInitDialog()
    GetDlgItem(IDC_AHEAD_DIAPHRAGM_OFFSET_LABEL)->SetWindowText(_T("Distance from CL Brg Line to C.G. of Diaphragm"));
 
 
-   if ( m_pPier->IsPier() || m_pPier->HasCantilever() )
+   if (m_pPier->IsPier() /* not an abutment */)
    {
       m_cbBoundaryCondition.SetPierType(PIERTYPE_INTERMEDIATE);
    }
    else
    {
+      ATLASSERT(m_pPier->IsAbutment());
       if ( m_pPier->GetIndex() == 0 )
       {
          m_cbBoundaryCondition.SetPierType(PIERTYPE_START);
@@ -344,36 +345,6 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
    m_DiaphragmWidthEdit[pgsTypes::Ahead].EnableWindow(bEnable);
    GetDlgItem(IDC_AHEAD_DIAPHRAGM_WIDTH_T)->EnableWindow(bEnable);
    GetDlgItem(IDC_AHEAD_DIAPHRAGM_LOAD)->EnableWindow(bEnable);
-
-   if ( m_pPier->HasCantilever() )
-   {
-      GetDlgItem(IDC_COPY)->EnableWindow(FALSE);
-      GetDlgItem(IDC_BEARING_OFFSET_MEASURE)->EnableWindow(FALSE);
-      GetDlgItem(IDC_END_DISTANCE_MEASURE)->EnableWindow(FALSE);
-
-      GetDlgItem(IDC_LEFT_LABEL)->EnableWindow(FALSE);
-      GetDlgItem(IDC_RIGHT_LABEL)->EnableWindow(FALSE);
-
-      if ( m_pPier->GetPrevSpan() )
-      {
-         m_BearingOffsetEdit[pgsTypes::Back].EnableWindow(FALSE);
-         GetDlgItem(IDC_LEFT_BEARING_OFFSET_T)->EnableWindow(FALSE);
-         m_EndDistanceEdit[pgsTypes::Back].EnableWindow(FALSE);
-         GetDlgItem(IDC_LEFT_END_DISTANCE_T)->EnableWindow(FALSE);
-         ((CComboBox*)GetDlgItem(IDC_BACK_DIAPHRAGM_LOAD))->SetCurSel(0);
-         GetDlgItem(IDC_BACK_DIAPHRAGM_LOAD)->EnableWindow(FALSE);
-      }
-
-      if ( m_pPier->GetNextSpan() )
-      {
-         m_BearingOffsetEdit[pgsTypes::Ahead].EnableWindow(FALSE);
-         GetDlgItem(IDC_RIGHT_BEARING_OFFSET_T)->EnableWindow(FALSE);
-         m_EndDistanceEdit[pgsTypes::Ahead].EnableWindow(FALSE);
-         GetDlgItem(IDC_RIGHT_END_DISTANCE_T)->EnableWindow(FALSE);
-         ((CComboBox*)GetDlgItem(IDC_AHEAD_DIAPHRAGM_LOAD))->SetCurSel(0);
-         GetDlgItem(IDC_AHEAD_DIAPHRAGM_LOAD)->EnableWindow(FALSE);
-      }
-   }
 
    OnBackDiaphragmLoadTypeChanged();
    OnAheadDiaphragmLoadTypeChanged();

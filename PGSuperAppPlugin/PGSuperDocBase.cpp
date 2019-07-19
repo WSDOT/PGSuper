@@ -4036,12 +4036,13 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
       dlg.m_Connections = connections;
       dlg.m_bIsBoundaryPier = pPier->IsBoundaryPier();
       dlg.m_bIsNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
-      if (pDeletePier->IsPier() || pDeletePier->HasCantilever())
+      if (pDeletePier->IsPier()/*the pier being deleted is not an abutment*/ )
       {
          dlg.m_PierType = PIERTYPE_INTERMEDIATE;
       }
       else
       {
+         ATLASSERT(pDeletePier->IsAbutment());
          if (pDeletePier->GetIndex() == 0)
          {
             dlg.m_PierType = PIERTYPE_START;
@@ -4082,23 +4083,7 @@ void CPGSDocBase::OnInsert()
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   PierIndexType nPiers = pBridgeDesc->GetPierCount();
-   IndexType n = 0; 
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
-   {
-      const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-      if ( !pPier->HasCantilever() )
-      {
-         n++;
-      }
-   }
-   if ( n == 0 )
-   {
-      AfxMessageBox(_T("A span cannot be inserted into the bridge.\r\nRemove one of the cantilevers and try again."),MB_OK | MB_ICONINFORMATION);
-      return;
-   }
-
-   CInsertSpanDlg dlg(pIBridgeDesc->GetBridgeDescription());
+   CInsertSpanDlg dlg(pBridgeDesc);
    if ( dlg.DoModal() == IDOK )
    {
       Float64 span_length         = dlg.m_SpanLength;

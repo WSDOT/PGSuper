@@ -9081,36 +9081,19 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
 #if defined _DEBUG
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
-   if ( pPier->HasCantilever() )
+   if ( pPier->GetIndex() == 0 )
    {
-      if ( pPier->GetIndex() == 0 )
-      {
-         ATLASSERT(backGroupIdx == INVALID_INDEX);
-         ATLASSERT(aheadGroupIdx == 0);
-      }
-      else
-      {
-         ATLASSERT(pPier->GetIndex() == pIBridgeDesc->GetPierCount()-1);
-         ATLASSERT(backGroupIdx == pIBridgeDesc->GetGirderGroupCount()-1);
-         ATLASSERT(aheadGroupIdx == INVALID_INDEX);
-      }
+      ATLASSERT(backGroupIdx == INVALID_INDEX);
+      ATLASSERT(aheadGroupIdx == 0);
+   }
+   else if ( pPier->GetIndex() == pIBridgeDesc->GetPierCount()-1 )
+   {
+      ATLASSERT(backGroupIdx == pIBridgeDesc->GetGirderGroupCount()-1);
+      ATLASSERT(aheadGroupIdx == INVALID_INDEX);
    }
    else
    {
-      if ( pPier->GetIndex() == 0 )
-      {
-         ATLASSERT(backGroupIdx == INVALID_INDEX);
-         ATLASSERT(aheadGroupIdx == 0);
-      }
-      else if ( pPier->GetIndex() == pIBridgeDesc->GetPierCount()-1 )
-      {
-         ATLASSERT(backGroupIdx == pIBridgeDesc->GetGirderGroupCount()-1);
-         ATLASSERT(aheadGroupIdx == INVALID_INDEX);
-      }
-      else
-      {
-         ATLASSERT(backGroupIdx == aheadGroupIdx-1);
-      }
+      ATLASSERT(backGroupIdx == aheadGroupIdx-1);
    }
 #endif
 
@@ -9754,7 +9737,6 @@ std::vector<PierIndexType> CAnalysisAgentImp::GetBearingReactionPiers(IntervalIn
       {
          pgsTypes::BoundaryConditionType bcType = pBridge->GetBoundaryConditionType(pierIdx);
          if ( analysisType == pgsTypes::Simple ||
-              pBridge->HasCantilever(pierIdx) || 
               bcType == pgsTypes::bctHinge || bcType == pgsTypes::bctRoller ||
               (bcType == pgsTypes::bctIntegralAfterDeckHingeAhead && pierIdx == startPierIdx) ||
               (bcType == pgsTypes::bctIntegralBeforeDeckHingeAhead && pierIdx == startPierIdx) ||
@@ -9958,6 +9940,8 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    // This case isn't that special, however, we know that the bottom of the girder is in the PTZ and the top is not. There
    // is no need to do all the analytical work to figure this out.
    GET_IFACE(IBridge,pBridge);
+   bool bModelLeftCantilever, bModelRightCantilever;
+   pBridge->ModelCantilevers(segmentKey, &bModelLeftCantilever, &bModelRightCantilever);
    PierIndexType startPierIdx, endPierIdx;
    pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
    bool bDummy;
@@ -9970,8 +9954,8 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    bool bNegMoment = (bContinuousStart || bIntegralStart || bContinuousEnd || bIntegralEnd);
    if ( startPierIdx == endPierIdx-1 && // the group is only one span long
         pBridge->GetSegmentCount(segmentKey) == 1 && // there one segment in the group
-        !pBridge->HasCantilever(startPierIdx) && // start is not cantilever
-        !pBridge->HasCantilever(endPierIdx) && // end is not cantilever
+        !bModelLeftCantilever && // start is not cantilever
+        !bModelRightCantilever && // end is not cantilever
         !bNegMoment) // no contiuous or integral boundary conditions to cause negative moments
    {
       // we know the answer

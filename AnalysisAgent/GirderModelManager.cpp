@@ -8413,7 +8413,7 @@ void CGirderModelManager::GetLBAMBoundaryConditions(bool bContinuous,const CTime
       else
       {
          ATLASSERT(pPier->IsBoundaryPier());
-         if ( bContinuous && pPier->IsContinuousConnection() && !pPier->HasCantilever() )
+         if ( bContinuous && pPier->IsContinuousConnection() )
          {
             // continuous at pier
             GET_IFACE(IIntervals,pIntervals);
@@ -8428,7 +8428,7 @@ void CGirderModelManager::GetLBAMBoundaryConditions(bool bContinuous,const CTime
          }
          else
          {
-            // not continuous at pier or pier at cantilever
+            // not continuous at pier
             if ( 
                  (pPier->GetNextSpan() != nullptr && endType == pgsTypes::metEnd)   // not the last segment and setting boundary condition at end
                  ||                                                              // -OR-

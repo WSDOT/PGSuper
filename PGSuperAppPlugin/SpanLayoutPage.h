@@ -74,7 +74,6 @@ protected:
    PierIndexType m_PrevPierIdx;
    PierIndexType m_NextPierIdx;
 
-   bool m_bHasCantilevers; // keeps track if we are showing the cantilever input
    Float64 m_SpanLength;
 
    CCacheEdit m_ctrlStartSlabOffset;
@@ -94,11 +93,7 @@ protected:
    pgsTypes::AssumedExcessCamberType m_InitialAssumedExcessCamberType;
    void UpdateAssumedExcessCamberWindowState();
 
-   void ShowCantilevers(BOOL bShowStart,BOOL bShowEnd);
-
 public:
-   afx_msg void OnBnClickedStartCantilever();
-   afx_msg void OnBnClickedEndCantilever();
    afx_msg void OnCbnSelchangeAssumedExcessCamberCombo();
 };
 

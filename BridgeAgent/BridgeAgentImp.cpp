@@ -1188,30 +1188,22 @@ void CBridgeAgentImp::ValidatePointLoads()
             Float64 end_cantilever_length = GetCantileverLength(thisSpanKey,pgsTypes::metEnd);
             Float64 span_length = GetSpanLength(thisSpanKey);
 
-            if ( upl.m_bLoadOnStartCantilever )
+            if ( upl.m_bLoadOnStartCantilever && IsZero(start_cantilever_length))
             {
-               const CPierData2* pPier = pBridgeDesc->GetPier(thisSpanKey.spanIndex);
-               if ( !pPier->HasCantilever() )
-               {
-                  CString strMsg;
-                  strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored. - %s"), strLabel);
-                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
-                  pStatusCenter->Add(pStatusItem);
-                  continue;
-               }
+               CString strMsg;
+               strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored. - %s"), strLabel);
+               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
+               pStatusCenter->Add(pStatusItem);
+               continue;
             }
 
-            if ( upl.m_bLoadOnEndCantilever )
+            if ( upl.m_bLoadOnEndCantilever && IsZero(end_cantilever_length))
             {
-               const CPierData2* pPier = pBridgeDesc->GetPier(thisSpanKey.spanIndex+1);
-               if ( !pPier->HasCantilever() )
-               {
-                  CString strMsg;
-                  strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored. - %s"),strLabel);
-                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
-                  pStatusCenter->Add(pStatusItem);
-                  continue;
-               }
+               CString strMsg;
+               strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored. - %s"),strLabel);
+               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
+               pStatusCenter->Add(pStatusItem);
+               continue;
             }
 
             if (pPointLoad->m_Fractional)
@@ -4858,31 +4850,6 @@ void CBridgeAgentImp::ModelCantilevers(const CSegmentKey& segmentKey,bool* pbSta
    *pbStartCantilever = false;
    *pbEndCantilever   = false;
 
-   if ( segmentKey.groupIndex == 0 && segmentKey.segmentIndex == 0 )
-   {
-      // the first segment in the first group will be supported by the first pier in the bridge
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      const CPierData2* pPier = pIBridgeDesc->GetPier(0);
-      if ( pPier->HasCantilever() )
-      {
-         *pbStartCantilever = true;
-      }
-   }
-
-   GroupIndexType nGroups = GetGirderGroupCount();
-   SegmentIndexType nSegments = GetSegmentCount(nGroups-1,0);
-   if ( segmentKey.groupIndex == nGroups-1 && segmentKey.segmentIndex == nSegments-1 )
-   {
-      // the last segment in the last group will be supported by the last pier in the bridge
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      PierIndexType nPiers = pIBridgeDesc->GetPierCount();
-      const CPierData2* pPier = pIBridgeDesc->GetPier(nPiers-1);
-      if ( pPier->HasCantilever() )
-      {
-         *pbEndCantilever = true;
-      }
-   }
-
    // Overhangs are modeled as cantilevers if they are longer than the height of the segment at the CL Bearing
    Float64 segment_length       = GetSegmentLength(segmentKey);
    Float64 start_offset         = GetSegmentStartEndDistance(segmentKey);
@@ -8409,14 +8376,7 @@ Float64 CBridgeAgentImp::GetCantileverLength(SpanIndexType spanIdx,GirderIndexTy
    ModelCantilevers(segmentKey, &bStartCantilever, &bEndCantilever);
    bool bCantilever = (endType == pgsTypes::metStart ? bStartCantilever : bEndCantilever);
 
-   PierIndexType pierIdx = (PierIndexType)spanIdx;
-   if ( endType == pgsTypes::metEnd )
-   {
-      pierIdx++;
-   }
-
-   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
-   if ( !pPier->HasCantilever() && !bCantilever)
+   if ( !bCantilever)
    {
       return 0;
    }
@@ -10554,12 +10514,19 @@ void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::Pla
    }
 }
 
-void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** ppPoints) const
 {
-   VALIDATE( BRIDGE );
+   VALIDATE(BRIDGE);
 
-   PierIndexType startPierIdx = spanIdx;
-   PierIndexType endPierIdx   = startPierIdx + 1;
+   if (startPierIdx == INVALID_INDEX)
+   {
+      startPierIdx = 0;
+   }
+
+   if (endPierIdx == INVALID_INDEX)
+   {
+      endPierIdx = GetPierCount() - 1;
+   }
 
    CComPtr<IBridgeGeometry> geometry;
    m_Bridge->get_BridgeGeometry(&geometry);
@@ -10576,15 +10543,52 @@ void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType
    }
 
    PierIDType startPierID = ::GetPierLineID(startPierIdx);
-   PierIDType endPierID   = ::GetPierLineID(endPierIdx);
-   
-   deckBoundary->get_PerimeterEx(nPoints,startPierID,endPierID, ppPoints);
+   PierIDType endPierID = ::GetPierLineID(endPierIdx);
 
-   if ( pcType == pgsTypes::pcGlobal )
+   deckBoundary->get_PerimeterEx(nPoints, startPierID, Xstart, endPierID, Xend, ppPoints);
+
+   if (pcType == pgsTypes::pcGlobal)
    {
-      (*ppPoints)->Offset(m_DeltaX,m_DeltaY);
+      (*ppPoints)->Offset(m_DeltaX, m_DeltaY);
    }
 }
+
+void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** ppPoints) const
+{
+   VALIDATE(BRIDGE);
+
+   PierIndexType startPierIdx = spanIdx;
+   PierIndexType endPierIdx = startPierIdx + 1;
+
+   Float64 Xstart = 0;
+   if (IsBoundaryPier(startPierIdx))
+   {
+      GroupIndexType backGroupIdx, aheadGroupIdx;
+      GetGirderGroupIndex(startPierIdx, &backGroupIdx, &aheadGroupIdx);
+      CSegmentKey segmentKey = GetSegmentAtPier(startPierIdx, CGirderKey(aheadGroupIdx, 0));
+
+      Float64 end_dist = GetSegmentStartEndDistance(segmentKey);
+      Float64 brg_offset = GetSegmentStartBearingOffset(segmentKey);
+
+      Xstart = brg_offset - end_dist;
+   }
+   
+   Float64 Xend = 0;
+   if (IsBoundaryPier(endPierIdx))
+   {
+      GroupIndexType backGroupIdx, aheadGroupIdx;
+      GetGirderGroupIndex(endPierIdx, &backGroupIdx, &aheadGroupIdx);
+      CSegmentKey segmentKey = GetSegmentAtPier(endPierIdx, CGirderKey(backGroupIdx, 0));
+
+      Float64 end_dist = GetSegmentEndEndDistance(segmentKey);
+      Float64 brg_offset = GetSegmentEndBearingOffset(segmentKey);
+
+      Xend = end_dist - brg_offset;
+   }
+
+   GetSlabPerimeter(startPierIdx, Xstart, endPierIdx, Xend, nPoints, pcType, ppPoints);
+}
+
 
 void CBridgeAgentImp::GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const
 {
@@ -10892,7 +10896,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
       PierIDType startPierID = ::GetPierLineID(startPierIdx);
       PierIDType endPierID = ::GetPierLineID(endPierIdx);
 
-      deckBoundary->get_PerimeterEx(nPoints, startPierID, endPierID, points);
+      deckBoundary->get_PerimeterEx(nPoints, startPierID, 0, endPierID, 0, points);
    }
 
    if (pcType == pgsTypes::pcGlobal)
@@ -11418,13 +11422,6 @@ bool CBridgeAgentImp::IsPier(PierIndexType pierIdx) const
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
    return pPier->IsPier();
-}
-
-bool CBridgeAgentImp::HasCantilever(PierIndexType pierIdx) const
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
-   return pPier->HasCantilever();
 }
 
 bool CBridgeAgentImp::IsInteriorPier(PierIndexType pierIdx) const
@@ -32147,94 +32144,86 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
             if ( (bTopMat    && (nmRebarData.Mat == CDeckRebarData::TopMat)) ||
                  (bBottomMat && (nmRebarData.Mat == CDeckRebarData::BottomMat) && pDeck->GetDeckType() != pgsTypes::sdtCompositeSIP) )
             {
-               const CPierData2* pPier = pBridgeDesc->GetPier(nmRebarData.PierIdx);
-               bool bIsContinuous = pPier->IsContinuous();
-               bool bIsIntegralLeft, bIsIntegralRight;
-               pPier->IsIntegral(&bIsIntegralLeft,&bIsIntegralRight);
-
-               if ( bIsContinuous || (bIsIntegralLeft || bIsIntegralRight) )
+               if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && nmRebarData.RebarSize != matRebar::bsNone )
                {
-                  if ( (barType == pgsTypes::drbIndividual || barType == pgsTypes::drbAll) && nmRebarData.RebarSize != matRebar::bsNone )
+                  // Explicit rebar. Reduce area for development if needed.
+                  pBar = lrfdRebarPool::GetInstance()->GetRebar( nmRebarData.RebarType, nmRebarData.RebarGrade, nmRebarData.RebarSize);
+
+                  IndexType nBars = 0;
+                  if (0 < nmRebarData.Spacing)
                   {
-                     // Explicit rebar. Reduce area for development if needed.
-                     pBar = lrfdRebarPool::GetInstance()->GetRebar( nmRebarData.RebarType, nmRebarData.RebarGrade, nmRebarData.RebarSize);
+                     Float64 fnBars = rebarSectionWidth / nmRebarData.Spacing;
+                     Float64 cnBars = ceil(fnBars);
+                     // we want the number of bars computed based on spacing, rounded down... however, the
+                     // number of bars (fnBars) can be approximately equal to the ceiling of (fnBars). For example
+                     // rebarSectionWidth/rebarData.Spacing can be 3.99999. The rounded down value would be 3, but
+                     // what we really has is 4 bars.
+                     nBars = (IsEqual(cnBars, fnBars) ? IndexType(cnBars) : IndexType(fnBars)) + 1;
+                  }
 
-                     IndexType nBars = 0;
-                     if (0 < nmRebarData.Spacing)
+                  Float64 As = nBars*pBar->GetNominalArea()/rebarSectionWidth;
+                  Float64 db = pBar->GetNominalDimension();
+
+                  if ( bAdjForDevLength )
+                  {
+                     // Get development length of bar
+
+                     // remove metric from bar name
+                     std::_tstring barst(pBar->GetName());
+                     std::size_t sit = barst.find(_T(" "));
+                     if (sit != std::_tstring::npos)
                      {
-                        Float64 fnBars = rebarSectionWidth / nmRebarData.Spacing;
-                        Float64 cnBars = ceil(fnBars);
-                        // we want the number of bars computed based on spacing, rounded down... however, the
-                        // number of bars (fnBars) can be approximately equal to the ceiling of (fnBars). For example
-                        // rebarSectionWidth/rebarData.Spacing can be 3.99999. The rounded down value would be 3, but
-                        // what we really has is 4 bars.
-                        nBars = (IsEqual(cnBars, fnBars) ? IndexType(cnBars) : IndexType(fnBars)) + 1;
+                        barst.erase(sit, barst.size()-1);
                      }
 
-                     Float64 As = nBars*pBar->GetNominalArea()/rebarSectionWidth;
-                     Float64 db = pBar->GetNominalDimension();
+                     matRebar::Size size = lrfdRebarPool::GetBarSize(barst.c_str());
+                     REBARDEVLENGTHDETAILS devdet = lrfdRebar::GetRebarDevelopmentLengthDetails(size, pBar->GetNominalArea(), 
+                                                                                       pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
+                                                                                       (matConcrete::Type)pDeck->Concrete.Type, pDeck->Concrete.Fc, 
+                                                                                       pDeck->Concrete.bHasFct, pDeck->Concrete.Fct,pDeck->Concrete.StrengthDensity);
+                     Float64 ld = devdet.ldb;
 
-                     if ( bAdjForDevLength )
+                     Float64 left_bar_length = station - start; // distance from left end of bar to poi
+                     Float64 right_bar_length = end - station; // distance from right end of bar to poi
+                     Float64 bar_cutoff = Min(left_bar_length,right_bar_length); // cutoff length from POI
+
+                     bar_cutoff = IsZero(bar_cutoff) ? 0 : bar_cutoff;
+
+                     // Reduce As for development if needed
+                     if (bar_cutoff < ld)
                      {
-                        // Get development length of bar
-
-                        // remove metric from bar name
-                        std::_tstring barst(pBar->GetName());
-                        std::size_t sit = barst.find(_T(" "));
-                        if (sit != std::_tstring::npos)
-                        {
-                           barst.erase(sit, barst.size()-1);
-                        }
-
-                        matRebar::Size size = lrfdRebarPool::GetBarSize(barst.c_str());
-                        REBARDEVLENGTHDETAILS devdet = lrfdRebar::GetRebarDevelopmentLengthDetails(size, pBar->GetNominalArea(), 
-                                                                                        pBar->GetNominalDimension(), pBar->GetYieldStrength(), 
-                                                                                        (matConcrete::Type)pDeck->Concrete.Type, pDeck->Concrete.Fc, 
-                                                                                        pDeck->Concrete.bHasFct, pDeck->Concrete.Fct,pDeck->Concrete.StrengthDensity);
-                        Float64 ld = devdet.ldb;
-
-                        Float64 left_bar_length = station - start; // distance from left end of bar to poi
-                        Float64 right_bar_length = end - station; // distance from right end of bar to poi
-                        Float64 bar_cutoff = Min(left_bar_length,right_bar_length); // cutoff length from POI
-
-                        bar_cutoff = IsZero(bar_cutoff) ? 0 : bar_cutoff;
-
-                        // Reduce As for development if needed
-                        if (bar_cutoff < ld)
-                        {
-                           ATLASSERT(0 < ld);
-                           As *= bar_cutoff / ld;
-                        }
-                     }
-
-                     if (nmRebarData.Mat == CDeckRebarData::TopMat)
-                     {
-                        Float64 Yb = tSlab - topCover - db/2;
-                        YbAs_Top += Yb*As;
-                        As_Top += As;
-                     }
-                     else if ( nmRebarData.Mat == CDeckRebarData::BottomMat && pDeck->GetDeckType() != pgsTypes::sdtCompositeSIP)
-                     {
-                        Float64 Yb = bottomCover + db/2;
-                        YbAs_Bottom += Yb*As;
-                        As_Bottom += As;
+                        ATLASSERT(0 < ld);
+                        As *= bar_cutoff / ld;
                      }
                   }
 
-                  // Lump sum bars are not adjusted for development
-                  if ( (barType == pgsTypes::drbLumpSum || barType == pgsTypes::drbAll) )
+                  if (nmRebarData.Mat == CDeckRebarData::TopMat)
                   {
-                     if (nmRebarData.Mat == CDeckRebarData::TopMat)
-                     {
-                        Float64 Yb = tSlab - topCover;
-                        YbAs_Top += Yb*nmRebarData.LumpSum;
-                        As_Top   += nmRebarData.LumpSum;
-                     }
-                     else if ( nmRebarData.Mat == CDeckRebarData::BottomMat && pDeck->GetDeckType() != pgsTypes::sdtCompositeSIP)
-                     {
-                        YbAs_Bottom += bottomCover*nmRebarData.LumpSum;
-                        As_Bottom   += nmRebarData.LumpSum;
-                     }
+                     Float64 Yb = tSlab - topCover - db/2;
+                     YbAs_Top += Yb*As;
+                     As_Top += As;
+                  }
+                  else if ( nmRebarData.Mat == CDeckRebarData::BottomMat && pDeck->GetDeckType() != pgsTypes::sdtCompositeSIP)
+                  {
+                     Float64 Yb = bottomCover + db/2;
+                     YbAs_Bottom += Yb*As;
+                     As_Bottom += As;
+                  }
+               }
+
+               // Lump sum bars are not adjusted for development
+               if ( (barType == pgsTypes::drbLumpSum || barType == pgsTypes::drbAll) )
+               {
+                  if (nmRebarData.Mat == CDeckRebarData::TopMat)
+                  {
+                     Float64 Yb = tSlab - topCover;
+                     YbAs_Top += Yb*nmRebarData.LumpSum;
+                     As_Top   += nmRebarData.LumpSum;
+                  }
+                  else if ( nmRebarData.Mat == CDeckRebarData::BottomMat && pDeck->GetDeckType() != pgsTypes::sdtCompositeSIP)
+                  {
+                     YbAs_Bottom += bottomCover*nmRebarData.LumpSum;
+                     As_Bottom   += nmRebarData.LumpSum;
                   }
                }
             }

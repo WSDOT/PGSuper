@@ -392,7 +392,7 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
          bIsSimple = true;
       }
 
-      if (bIsSimple || pBridge->HasCantilever(location.PierIdx) )
+      if (bIsSimple)
       {
          m_bAlwaysReport = true;
       }

@@ -363,6 +363,7 @@ public:
    virtual Float64 GetRightOverlayToeOffset(const pgsPointOfInterest& poi) const override;
    virtual void GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const override;
    virtual void GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const override;
+   virtual void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** points) const override;
    virtual void GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const override;
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const override;
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const override;
@@ -393,7 +394,6 @@ public:
    virtual pgsTypes::PierSegmentConnectionType GetPierSegmentConnectionType(PierIndexType pierIdx) const override;
    virtual bool IsAbutment(PierIndexType pierIdx) const override;
    virtual bool IsPier(PierIndexType pierIdx) const override;
-   virtual bool HasCantilever(PierIndexType pierIdx) const override;
    virtual bool IsInteriorPier(PierIndexType pierIdx) const override;
    virtual bool IsBoundaryPier(PierIndexType pierIdx) const override;
    virtual void GetTemporarySupportLocation(SupportIndexType tsIdx,GirderIndexType gdrIdx,SpanIndexType* pSpanIdx,Float64* pXspan) const override;

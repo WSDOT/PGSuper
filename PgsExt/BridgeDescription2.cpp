@@ -720,7 +720,7 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          // which is the girder cantilevered over a support, and then change it to integral. For
          // this reason, only hinge and roller boundary conditions are supported at cantilever piers.
          // Force the boundary condition to a supported value.
-         if (pPier->HasCantilever() && IsContinuousBoundaryCondition(pPier->GetBoundaryConditionType()))
+         if (pPier->IsAbutment() && IsContinuousBoundaryCondition(pPier->GetBoundaryConditionType()))
          {
             pPier->SetBoundaryConditionType(pgsTypes::bctHinge);
          }
@@ -1221,12 +1221,6 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    }
 
    CPierData2* pRefPier = m_Piers[refPierIdx];
-
-   if ( pRefPier->HasCantilever() )
-   {
-      ATLASSERT(false); // can't add a span at a cantilever
-      return;
-   }
 
    // Negative span length means that we take stationing from piers - better have pier data
    if ( newSpanLength <= 0 )
@@ -3615,55 +3609,38 @@ std::vector<pgsTypes::BoundaryConditionType> CBridgeDescription2::GetBoundaryCon
    // "before deck" connections are only applicable if the bridge has a deck
    bool bHasDeck = IsStructuralDeck(m_Deck.DeckType) ? true : false;
 
-   if ( pPier->HasCantilever() )
+   // This pier is on a group boundary (two groups frame into this pier).
+   // All connection types are valid
+   connectionTypes.push_back(pgsTypes::bctHinge);
+   connectionTypes.push_back(pgsTypes::bctRoller);
+   connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
+   if (bHasDeck)
    {
-      connectionTypes.push_back(pgsTypes::bctHinge);
-      connectionTypes.push_back(pgsTypes::bctRoller);
-
-      // Because of short comings in the LBAM, we can only support hinge and roller boundary conditions
-      // at cantilever piers. Also see comments in CBridgeDescription2::Load()
-      //if (bHasDeck)
-      //{
-         //connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
-         //connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
-         //connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
-      //}
+      connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
    }
-   else
+
+   if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
    {
-      // This pier is on a group boundary (two groups frame into this pier).
-      // All connection types are valid
-      connectionTypes.push_back(pgsTypes::bctHinge);
-      connectionTypes.push_back(pgsTypes::bctRoller);
-      connectionTypes.push_back(pgsTypes::bctIntegralAfterDeck);
+      // all these connection types require that there is a span on 
+      // both sides of this pier
+      connectionTypes.push_back(pgsTypes::bctContinuousAfterDeck);
       if (bHasDeck)
       {
-         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeck);
+         connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
       }
 
-      if ( pPier->GetPrevSpan() && pPier->GetNextSpan() )
+      connectionTypes.push_back(pgsTypes::bctIntegralAfterDeckHingeBack);
+
+      if (bHasDeck)
       {
-         // all these connection types require that there is a span on 
-         // both sides of this pier
-         connectionTypes.push_back(pgsTypes::bctContinuousAfterDeck);
-         if (bHasDeck)
-         {
-            connectionTypes.push_back(pgsTypes::bctContinuousBeforeDeck);
-         }
+         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeBack);
+      }
 
-         connectionTypes.push_back(pgsTypes::bctIntegralAfterDeckHingeBack);
-
-         if (bHasDeck)
-         {
-            connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeBack);
-         }
-
-         connectionTypes.push_back(pgsTypes::bctIntegralAfterDeckHingeAhead);
+      connectionTypes.push_back(pgsTypes::bctIntegralAfterDeckHingeAhead);
          
-         if (bHasDeck)
-         {
-            connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeAhead);
-         }
+      if (bHasDeck)
+      {
+         connectionTypes.push_back(pgsTypes::bctIntegralBeforeDeckHingeAhead);
       }
    }
 
