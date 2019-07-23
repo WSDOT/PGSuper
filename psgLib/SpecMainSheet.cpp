@@ -1288,6 +1288,9 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    // Slab Offset
 	DDX_Check_Bool(pDX, IDC_CHECK_A, m_Entry.m_EnableSlabOffsetCheck);
 	DDX_Check_Bool(pDX, IDC_DESIGN_A, m_Entry.m_EnableSlabOffsetDesign);
+   DDX_CBEnum(pDX,IDC_A_ROUNDING_CB,m_Entry.m_SlabOffsetRoundingMethod);
+   DDX_UnitValueAndTag(pDX, IDC_A_ROUNDING_EDIT,IDC_A_ROUNDING_UNIT,m_Entry.m_SlabOffsetRoundingTolerance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_A_ROUNDING_EDIT,m_Entry.m_SlabOffsetRoundingTolerance, pDisplayUnits->ComponentDim );
 
    // Live Load Deflections
    DDX_Check_Bool(pDX, IDC_LL_DEFLECTION, m_Entry.m_bDoEvaluateDeflection );

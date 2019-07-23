@@ -890,6 +890,25 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    {
       *pPara << straction << rptNewLine;
    }
+
+   if (pSpecEntry->IsSlabOffsetCheckEnabled())
+   {
+      pgsTypes::SlabOffsetRoundingMethod Method;
+      Float64 Tolerance;
+      pSpecEntry->GetRequiredSlabOffsetRoundingParameters(&Method, &Tolerance);
+      if (pgsTypes::sormRoundNearest == Method)
+      {
+         *pPara << _T("Haunch Geometry check is enabled and the Required Slab Offset is rounded to the nearest ") << dim.SetValue(Tolerance) << rptNewLine;
+      }
+      else
+      {
+         *pPara << _T("Haunch Geometry check is enabled and the Required Slab Offset is rounded UP to the nearest ") << dim.SetValue(Tolerance) << rptNewLine;
+      }
+   }
+   else
+   {
+      *pPara << _T("Haunch Geometry check is disabled.") << rptNewLine;
+   }
 }
 
 void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)

@@ -421,6 +421,7 @@ public:
    virtual bool IsAssumedExcessCamberInputEnabled(bool considerDeckType=true) const override;
    virtual bool IsAssumedExcessCamberForLoad() const override; 
    virtual bool IsAssumedExcessCamberForSectProps() const override; 
+   virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const override;
 
 // IRatingSpecification
 public:

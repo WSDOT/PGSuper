@@ -29,9 +29,6 @@
 #include <Lrfd\Lrfd.h>
 #include <WBFLRCCapacity.h>
 
-#define SLAB_OFFSET_TOLERANCE_US ::ConvertToSysUnits(0.25,unitMeasure::Inch)
-#define SLAB_OFFSET_TOLERANCE_SI ::ConvertToSysUnits(5.0,unitMeasure::Millimeter)
-
 struct SLAB_OFFSET_AT_SECTION
 {
    pgsPointOfInterest PointOfInterest;
@@ -53,13 +50,14 @@ struct SLAB_OFFSET_AT_SECTION
    Float64 ElevTopGirder; // elevation of top of girder, including camber, precamber, elevation adjustment, and top flange thickening effects
    Float64 TopSlabToTopGirder;
    Float64 ElevAdjustment; // elevation adjustment at temporary supports
-   Float64 RequiredSlabOffset;
+   Float64 RequiredSlabOffsetRaw;  // raw full precision value
 };
 
 struct SLABOFFSETDETAILS
 {
    std::vector<SLAB_OFFSET_AT_SECTION> SlabOffset;
-   Float64 RequiredSlabOffset; // "A" Dimension
+   Float64 RequiredMaxSlabOffsetRaw; // "A" Dimension - max of raw values
+   Float64 RequiredMaxSlabOffsetRounded; // "A" Dimension - max of rounded values
    Float64 HaunchDiff; // maximum difference in haunch thickness
 };
 

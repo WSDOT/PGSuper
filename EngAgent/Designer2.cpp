@@ -50,6 +50,7 @@
 #include "GirderLiftingChecker.h"
 #include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\StabilityAnalysisPoint.h>
+#include <PgsExt\EngUtil.h>
 
 #include <WBFLGenericBridgeTools\AlternativeTensileStressCalculator.h>
 
@@ -515,14 +516,14 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
       slab_offset.TopSlabToTopGirder = slab_offset.ElevAlignment - slab_offset.ElevTopGirder;
       slab_offset.ElevAdjustment = elev_adj;
 
-      slab_offset.RequiredSlabOffset = tSlab + fillet + section_profile_effect + section_girder_orientation_effect + camber_effect + top_flange_shape_effect;
+      slab_offset.RequiredSlabOffsetRaw = tSlab + fillet + section_profile_effect + section_girder_orientation_effect + camber_effect + top_flange_shape_effect;
       // the required slab offset at this section is measured relative to a horizontal line at the start of the segment
       // it should be measured relative to a line that is basically parallel to the girder
       // for this reason, we subtrack off the elevation adjustment
-      slab_offset.RequiredSlabOffset -= elev_adj;
+      slab_offset.RequiredSlabOffsetRaw -= elev_adj;
 
-      max_reqd_slab_offset = Max(max_reqd_slab_offset, slab_offset.RequiredSlabOffset);
-      min_reqd_slab_offset = Min(min_reqd_slab_offset, slab_offset.RequiredSlabOffset);
+      max_reqd_slab_offset = Max(max_reqd_slab_offset, slab_offset.RequiredSlabOffsetRaw);
+      min_reqd_slab_offset = Min(min_reqd_slab_offset, slab_offset.RequiredSlabOffsetRaw);
 
       pSlabOffsetDetails->SlabOffset.push_back(slab_offset);
 
@@ -553,7 +554,9 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
    }
 
    // record controlling values
-   pSlabOffsetDetails->RequiredSlabOffset = max_reqd_slab_offset;
+   pSlabOffsetDetails->RequiredMaxSlabOffsetRaw = max_reqd_slab_offset;
+
+   pSlabOffsetDetails->RequiredMaxSlabOffsetRounded  = RoundSlabOffsetValue(pSpec, max_reqd_slab_offset);
 
    // this is the maximum difference in the haunch depth along the girder...
    // if this too big, stirrups may need to be adjusted
@@ -1216,11 +1219,12 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
    GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress,0,PW_ALL | PW_NOGAUGE); // progress window has a cancel button
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE_NOCHECK(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup      = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(girderKey.girderIndex);
 
+   GET_IFACE(ISpecification,pSpec);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IGirder,pGdr);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -1496,8 +1500,8 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
                   Float64 new_offset_start = m_StrandDesignTool.GetSlabOffset(pgsTypes::metStart);
                   Float64 new_offset_end   = m_StrandDesignTool.GetSlabOffset(pgsTypes::metEnd);
 
-                  new_offset_start = RoundSlabOffset(new_offset_start);
-                  new_offset_end   = RoundSlabOffset(new_offset_end);
+                  new_offset_start = RoundSlabOffsetValue(pSpec, new_offset_start);
+                  new_offset_end   = RoundSlabOffsetValue(pSpec, new_offset_end);
 
                   LOG(_T("Slab Offset changed in outer loop. Set a new minimum of (Start) ") << ::ConvertFromSysUnits(new_offset_start,unitMeasure::Inch)<< _T(" in and (End) ") << ::ConvertFromSysUnits(new_offset_end,unitMeasure::Inch) << _T(" in - restart design"));
                   LOG(_T("========================================================================="));
@@ -1518,7 +1522,6 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
             {
                LOG(_T("Skipping Outer Slab Offset Design due to user input"));
             }
-
          }
          else
          {
@@ -1571,8 +1574,8 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       if (artifact.GetDesignOptions().doDesignSlabOffset != sodNoSlabOffsetDesign)
       {
          LOG(_T("Final Slab Offset before rounding (Start) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metStart),unitMeasure::Inch) << _T(" in and (End) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in"));
-         Float64 start_offset = RoundSlabOffset(artifact.GetSlabOffset(pgsTypes::metStart));
-         Float64 end_offset   = RoundSlabOffset(artifact.GetSlabOffset(pgsTypes::metEnd));
+         Float64 start_offset = RoundSlabOffsetValue(pSpec, artifact.GetSlabOffset(pgsTypes::metStart));
+         Float64 end_offset   = RoundSlabOffsetValue(pSpec, artifact.GetSlabOffset(pgsTypes::metEnd));
          artifact.SetSlabOffset(pgsTypes::metStart,start_offset);
          artifact.SetSlabOffset(pgsTypes::metEnd, end_offset);
          LOG(_T("After rounding (Start) ") << ::ConvertFromSysUnits(start_offset,unitMeasure::Inch) << _T(" in and (End) ") << ::ConvertFromSysUnits(end_offset,unitMeasure::Inch) << _T(" in"));
@@ -6813,6 +6816,7 @@ void pgsDesigner2::DesignMidZoneAtRelease(const arDesignOptions& options, IProgr
 
 void pgsDesigner2::DesignSlabOffset(IProgress* pProgress) const
 {
+   GET_IFACE_NOCHECK(ISpecification,pSpec);
    GET_IFACE(IBridge,pBridge);
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
    {
@@ -6879,9 +6883,9 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress) const
       LOG(_T("D = ") << ::ConvertFromSysUnits(slab_offset_details.SlabOffset[idx].D, unitMeasure::Inch) << _T(" in"));
       LOG(_T("C = ") << ::ConvertFromSysUnits(slab_offset_details.SlabOffset[idx].C, unitMeasure::Inch) << _T(" in"));
       LOG(_T("Camber Effect = ") << ::ConvertFromSysUnits(slab_offset_details.SlabOffset[idx].CamberEffect, unitMeasure::Inch) << _T(" in"));
-      LOG(_T("A-dim Calculated         = ") << ::ConvertFromSysUnits(slab_offset_details.RequiredSlabOffset, unitMeasure::Inch) << _T(" in"));
+      LOG(_T("A-dim Calculated (raw) = ") << ::ConvertFromSysUnits(slab_offset_details.RequiredMaxSlabOffsetRaw, unitMeasure::Inch) << _T(" in"));
 
-      Float64 Anew = slab_offset_details.RequiredSlabOffset;
+      Float64 Anew = slab_offset_details.RequiredMaxSlabOffsetRaw;
 
       Float64 Amin = m_StrandDesignTool.GetMinimumSlabOffset();
       if (Anew < Amin)
@@ -6893,7 +6897,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress) const
       if ( IsZero( AoldStart - Anew, tolerance ) && IsZero( AoldEnd - Anew, tolerance ))
       {
          Float64 a;
-         a = RoundSlabOffset(Max(AoldStart, AoldEnd, Anew));
+         a = RoundSlabOffsetValue(pSpec, Max(AoldStart, AoldEnd, Anew) );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metStart, a );
          m_StrandDesignTool.SetSlabOffset( pgsTypes::metEnd,   a );
          LOG(_T("A-dim camber converged."));
@@ -10132,25 +10136,6 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
       bIter = false;
    }
 }
-
-
-Float64 pgsDesigner2::RoundSlabOffset(Float64 offset) const
-{
-   Float64 newoff;
-   // Round to nearest 1/4" (5 mm) per WSDOT BDM
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   if ( IS_SI_UNITS(pDisplayUnits) )
-   {
-      newoff = RoundOff(offset, SLAB_OFFSET_TOLERANCE_SI);
-   }
-   else
-   {
-      newoff = RoundOff(offset, SLAB_OFFSET_TOLERANCE_US);
-   }
-
-   return newoff;
-}
-
 
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================

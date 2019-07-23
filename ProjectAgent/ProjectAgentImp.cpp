@@ -9246,6 +9246,11 @@ bool CProjectAgentImp::IsAssumedExcessCamberForSectProps() const
    return m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic;
 }
 
+void CProjectAgentImp::GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod * pMethod, Float64 * pTolerance) const
+{
+   m_pSpecEntry->GetRequiredSlabOffsetRoundingParameters(pMethod, pTolerance);
+}
+
 Uint16 CProjectAgentImp::GetMomentCapacityMethod() const
 {
    return m_pSpecEntry->GetLRFDOverreinforcedMomentCapacity() == true ? LRFD_METHOD : WSDOT_METHOD;

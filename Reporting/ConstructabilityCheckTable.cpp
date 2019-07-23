@@ -333,7 +333,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
       *pTitle << _T("Slab Offset (\"A\" Dimension)");
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
-      *pBody << _T("This table compares the input slab offset to the computed slab offset required to have the least haunch depth be equal to the Fillet dimension. A failed status indicates that the top of the girder will encroach into the deck slab and the Slab Offset dimension should be refined.") << rptNewLine;
+      *pBody << _T("This table compares the input slab offset to the rounded computed slab offset required to have the least haunch depth be equal to the Fillet dimension. A failed status indicates that the top of the girder will encroach into the deck slab and the Slab Offset dimension should be refined.") << rptNewLine;
       *pBody << pTable << rptNewLine;
    }
    else

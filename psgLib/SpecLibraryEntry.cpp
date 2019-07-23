@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 72.0 
+#define CURRENT_VERSION 73.0 
 
 /****************************************************************************
 CLASS
@@ -262,7 +262,9 @@ m_bCheckGirderInclination(true),
 m_InclinedGirder_FSmax(1.2),
 m_LiftingCamberMultiplier(1.0),
 m_HaulingCamberMultiplier(1.0),
-m_FinishedElevationTolerance(::ConvertToSysUnits(1.00,unitMeasure::Inch))
+m_FinishedElevationTolerance(::ConvertToSysUnits(1.00,unitMeasure::Inch)),
+m_SlabOffsetRoundingMethod(pgsTypes::sormRoundNearest),
+m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch))
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -985,6 +987,10 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    // added in version 62
    pSave->Property(_T("FinishedElevationTolerance"), m_FinishedElevationTolerance);
+
+   // added in version 73
+   pSave->Property(_T("SlabOffsetRoundingMethod"), (long)m_SlabOffsetRoundingMethod);
+   pSave->Property(_T("SlabOffsetRoundingTolerance"), m_SlabOffsetRoundingTolerance);
 
    pSave->EndUnit();
 
@@ -4201,6 +4207,26 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      // slab offset rounding option added in version 73
+      if (72 < version)
+      {
+         if (!pLoad->Property(_T("SlabOffsetRoundingMethod"), (long*)&m_SlabOffsetRoundingMethod))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("SlabOffsetRoundingTolerance"), &m_SlabOffsetRoundingTolerance))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+      else
+      {
+         // This was the hard-coded default for versions before 5.x
+         m_SlabOffsetRoundingMethod = pgsTypes::sormRoundNearest;
+         m_SlabOffsetRoundingTolerance = m_SpecificationUnits == lrfdVersionMgr::US ? ::ConvertToSysUnits(0.25, unitMeasure::Inch) : ::ConvertToSysUnits(5.0,unitMeasure::Millimeter);
+      }
+
       if(!pLoad->EndUnit())
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -5053,6 +5079,18 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Finished/Design Elevation Tolerances are different"), _T(""), _T("")));
+   }
+
+   if (m_SlabOffsetRoundingMethod != rOther.m_SlabOffsetRoundingMethod)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Required slab offset rounding methods are different"), _T(""), _T("")));
+   }
+
+   if (!::IsEqual(m_SlabOffsetRoundingTolerance, rOther.m_SlabOffsetRoundingTolerance))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Required slab offset rounding tolerance values are different"), _T(""), _T("")));
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
@@ -7330,6 +7368,18 @@ Float64 SpecLibraryEntry::GetGirderInclinationFactorOfSafety() const
    return m_InclinedGirder_FSmax;
 }
 
+void SpecLibraryEntry::SetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod method, Float64 tolerance)
+{
+   m_SlabOffsetRoundingMethod = method;
+   m_SlabOffsetRoundingTolerance = tolerance;
+}
+
+void SpecLibraryEntry::GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod * pMethod, Float64 * pTolerance) const
+{
+   *pMethod = m_SlabOffsetRoundingMethod;
+   *pTolerance = m_SlabOffsetRoundingTolerance;
+}
+
 void SpecLibraryEntry::SetFinishedElevationTolerance(Float64 tol)
 {
    m_FinishedElevationTolerance = tol;
@@ -7672,6 +7722,9 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_InclinedGirder_FSmax = rOther.m_InclinedGirder_FSmax;
 
    m_FinishedElevationTolerance = rOther.m_FinishedElevationTolerance;
+
+   m_SlabOffsetRoundingMethod = rOther.m_SlabOffsetRoundingMethod;
+   m_SlabOffsetRoundingTolerance = rOther.m_SlabOffsetRoundingTolerance;
 }
 
 void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)

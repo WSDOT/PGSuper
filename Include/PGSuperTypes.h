@@ -777,6 +777,12 @@ typedef struct pgsTypes
       sbRight
    } SectionBias;
 
+   typedef enum SlabOffsetRoundingMethod
+   {
+      sormRoundUp,
+      sormRoundNearest
+   } SlabOffsetRoundingMethod;
+
 } pgsTypes;
 
 //-----------------------------------------------------------------------------

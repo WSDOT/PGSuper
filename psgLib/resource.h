@@ -236,6 +236,7 @@
 #define IDC_LWC_GIRDER_FCI              1018
 #define IDC_MAX_SHEARCAP_CHG            1018
 #define IDC_MAX_SPACING_2               1018
+#define IDC_A_ROUNDING_EDIT             1018
 #define IDC_HE_ROADWAY_SUPERELEVATION   1019
 #define IDC_RELEASE_TENSION_MAX         1019
 #define IDC_APPEND_HARPED_STRAND        1019
@@ -344,6 +345,8 @@
 #define IDC_HOLD_DOWN_FORCE_UNITS       1062
 #define IDC_AFTER_DECK_COMPRESSION_UNIT 1062
 #define IDC_MAX_STIRRUP_SPACING_UNITS   1063
+#define IDC_HOLD_DOWN_FORCE_UNITS2      1063
+#define IDC_A_ROUNDING_UNIT             1063
 #define IDC_PICK_POINT_HEIGHT_UNITS     1064
 #define IDC_SERVICE_III_TENSION_MAX_UNIT 1064
 #define IDC_CHECK_HOLD_DOWN             1065
@@ -864,6 +867,7 @@
 #define IDC_CF_TYPE                     1442
 #define IDC_HAUNCH_COMP_CB2             1442
 #define IDC_HAUNCH_COMP_PROPS_CB        1442
+#define IDC_A_ROUNDING_CB               1442
 #define IDC_NWC_NOTE                    1443
 #define IDC_HAUNCH_FACTOR               1443
 #define IDC_CHECK1                      1444
@@ -1358,7 +1362,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        323
+#define _APS_NEXT_RESOURCE_VALUE        324
 #define _APS_NEXT_COMMAND_VALUE         36881
 #define _APS_NEXT_CONTROL_VALUE         1712
 #define _APS_NEXT_SYMED_VALUE           101

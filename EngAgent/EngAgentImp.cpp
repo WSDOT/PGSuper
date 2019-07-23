@@ -40,6 +40,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\LoadFactors.h>
+#include <PgsExt\EngUtil.h>
 
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
@@ -3288,22 +3289,9 @@ void CEngAgentImp::ClearDesignCriticalSections() const
 Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey) const
 {
    const auto& details = GetSlabOffsetDetails(segmentKey);
+   Float64 slab_offset_round = details.RequiredMaxSlabOffsetRounded;
 
-   Float64 slab_offset = details.RequiredSlabOffset;
-
-   // Round to nearest 1/4" (5 mm) per WSDOT BDM
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   if ( IS_SI_UNITS(pDisplayUnits) )
-   {
-      slab_offset = RoundOff(slab_offset,::ConvertToSysUnits(5.0,unitMeasure::Millimeter) );
-   }
-   else
-   {
-      slab_offset = RoundOff(slab_offset,::ConvertToSysUnits(0.25, unitMeasure::Inch) );
-   }
-
-   return slab_offset;
+   return slab_offset_round;
 }
 
 const SLABOFFSETDETAILS& CEngAgentImp::GetSlabOffsetDetails(const CSegmentKey& segmentKey) const

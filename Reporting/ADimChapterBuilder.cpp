@@ -104,21 +104,12 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, comp, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, compdim, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, defl, pDisplayUnits->GetDeflectionUnit(), false );
 
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    GET_IFACE2(pBroker, IGirder, pGdr);
-
-   Float64 slab_offset_tolerance;
-   if (IS_SI_UNITS(pDisplayUnits))
-   {
-      slab_offset_tolerance = SLAB_OFFSET_TOLERANCE_SI;
-   }
-   else
-   {
-      slab_offset_tolerance = SLAB_OFFSET_TOLERANCE_US;
-   }
 
    bool bTopFlangeShapeEffect = false;
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -253,12 +244,12 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          {
             (*pTable2)(row2, col++) << comp.SetValue(slab_offset.ElevAdjustment);
          }
-         (*pTable2)(row2,col++) << comp.SetValue(slab_offset.RequiredSlabOffset);
+         (*pTable2)(row2,col++) << comp.SetValue(slab_offset.RequiredSlabOffsetRaw);
          (*pTable2)(row2,col++) << dim.SetValue(slab_offset.ElevTopGirder);
          (*pTable2)(row2,col++) << comp.SetValue(slab_offset.TopSlabToTopGirder );
 
          Float64 dHaunch = slab_offset.TopSlabToTopGirder - slab_offset.tSlab;
-         if ( dHaunch < -slab_offset_tolerance )
+         if ( dHaunch < slab_offset.Fillet )
          {
             (*pTable2)(row2,col++) << color(Red) << comp.SetValue( dHaunch ) << color(Black);
          }
@@ -277,7 +268,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
             dHaunchMin = slab_offset.TopSlabToTopGirder - slab_offset.tSlab - slab_offset.GirderOrientationEffect;
          }
 
-         if ( dHaunchMin < -slab_offset_tolerance )
+         if ( dHaunchMin < slab_offset.Fillet )
          {
             (*pTable2)(row2,col++) << color(Red) << comp.SetValue( dHaunchMin ) << color(Black);
          }
@@ -288,7 +279,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
          row2++;
       }
-      vRequiredSlabOffset[segIdx] = slab_offset_details.RequiredSlabOffset;
+      vRequiredSlabOffset[segIdx] = slab_offset_details.RequiredMaxSlabOffsetRounded;
       vMaxHaunchDiff[segIdx] = slab_offset_details.HaunchDiff;
    } // next segment
 
@@ -355,11 +346,24 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    *pChapter << pPara;
    *pPara << rptNewLine;
 
+   CString strRounding;
+   pgsTypes::SlabOffsetRoundingMethod Method;
+   Float64 Tolerance;
+   pSpecEntry->GetRequiredSlabOffsetRoundingParameters(&Method, &Tolerance);
+   if (pgsTypes::sormRoundNearest == Method)
+   {
+      strRounding = _T(", rounded to the nearest ");
+   }
+   else
+   {
+      strRounding = _T(", rounded upward to the nearest ");
+   }
+
    comp.ShowUnitTag(true);
    if (nSegments == 1)
    {
       *pPara << _T("Required Slab Offset at intersection of centerline bearings and centerline girder: ") << comp.SetValue(vRequiredSlabOffset.front());
-      *pPara << _T(" (") << comp.SetValue(RoundOff(vRequiredSlabOffset.front(), slab_offset_tolerance)) << _T(", rounded)") << rptNewLine;
+      *pPara << _T(" (") << comp.SetValue(vRequiredSlabOffset.front()) << strRounding << compdim.SetValue(Tolerance) << _T(")") << rptNewLine;
       *pPara << _T("Maximum Change in CL Haunch Depth along girder: ") << comp.SetValue(vMaxHaunchDiff.front()) << rptNewLine;
    }
    else
@@ -368,7 +372,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       {
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
          *pPara << _T("Required Slab Offset at intersection of centerline bearings and centerline segment: ") << comp.SetValue(vRequiredSlabOffset[segIdx]);
-         *pPara << _T(" (") << comp.SetValue(RoundOff(vRequiredSlabOffset[segIdx], slab_offset_tolerance)) << _T(", rounded)") << rptNewLine;
+         *pPara << _T(" (") << comp.SetValue(vRequiredSlabOffset[segIdx]) << strRounding << compdim.SetValue(Tolerance) << _T(")") << rptNewLine;
          *pPara << _T("Maximum Change in CL Haunch Depth along segment: ") << comp.SetValue(vMaxHaunchDiff[segIdx]) << rptNewLine << rptNewLine;
       }
    }

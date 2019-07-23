@@ -690,7 +690,7 @@ bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream&
       Float64 camber = ::ConvertFromSysUnits(slab_offset.CamberEffect, unitMeasure::Millimeter);
       Float64 orientation = ::ConvertFromSysUnits(slab_offset.GirderOrientationEffect, unitMeasure::Millimeter);
       Float64 profile = ::ConvertFromSysUnits(slab_offset.ProfileEffect, unitMeasure::Millimeter);
-      Float64 required = ::ConvertFromSysUnits(slab_offset.RequiredSlabOffset, unitMeasure::Millimeter);
+      Float64 required = ::ConvertFromSysUnits(slab_offset.RequiredSlabOffsetRaw, unitMeasure::Millimeter);
       Float64 actual = ::ConvertFromSysUnits(slab_offset.TopSlabToTopGirder, unitMeasure::Millimeter);
 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 89000, ")<<loc<<_T(", ")<< QUITE(camber) <<_T(", 7, ")<<gdr<<std::endl;

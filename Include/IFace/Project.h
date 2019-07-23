@@ -537,6 +537,9 @@ interface ISpecification : IUnknown
    virtual bool IsAssumedExcessCamberInputEnabled(bool considerDeckType=true) const = 0; // Depends on library and deck type
    virtual bool IsAssumedExcessCamberForLoad() const = 0; 
    virtual bool IsAssumedExcessCamberForSectProps() const = 0; 
+
+   // Rounding method for required slab offset value
+   virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const = 0;
 };
 
 /*****************************************************************************

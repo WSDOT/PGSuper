@@ -58,6 +58,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSpecDesignPage)
 	afx_msg void OnCheckA();
+   afx_msg void OnDesignA();
 	afx_msg void OnCheckHauling();
 	afx_msg void OnCheckHd();
 	afx_msg void OnCheckLifting();

@@ -83,6 +83,7 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
    ON_BN_CLICKED(IDC_CHECK_HANDLING_WEIGHT, &CSpecDesignPage::OnBnClickedCheckHandlingWeight)
    ON_BN_CLICKED(IDC_FC1, &CSpecDesignPage::OnFcTypeChanged)
    ON_BN_CLICKED(IDC_FC2, &CSpecDesignPage::OnFcTypeChanged)
+   ON_BN_CLICKED(IDC_DESIGN_A, &CSpecDesignPage::OnDesignA)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -163,7 +164,16 @@ void CSpecDesignPage::OnCheckA()
    int list[]={-1};
 
    CheckDesignCtrl(IDC_CHECK_A, IDC_DESIGN_A, list, this);
+
+   OnDesignA();
 }
+
+void CSpecDesignPage::OnDesignA()
+{
+   int list[] = { IDC_A_ROUNDING_EDIT, IDC_A_ROUNDING_UNIT, -1 };
+   CheckDesignCtrl(IDC_DESIGN_A, IDC_A_ROUNDING_CB, list, this);
+}
+
 
 void CSpecDesignPage::OnCheckHauling() 
 {

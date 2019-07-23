@@ -329,6 +329,10 @@ public:
    void SetGirderInclinationFactorOfSafety(Float64 fs);
    Float64 GetGirderInclinationFactorOfSafety() const;
 
+   // Set/Get rounding parameters for required slab offset
+   void SetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod method, Float64 tolerance);
+   void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const;
+
    //////////////////////////////////////
    //
    // Precast Elements
@@ -1547,6 +1551,8 @@ private:
    bool m_bCheckGirderInclination;
    Float64 m_InclinedGirder_FSmax;
 
+   pgsTypes::SlabOffsetRoundingMethod m_SlabOffsetRoundingMethod;
+   Float64 m_SlabOffsetRoundingTolerance;
 
    pgsTypes::LimitStateConcreteStrength m_LimitStateConcreteStrength;
    bool m_bUse90DayConcreteStrength;

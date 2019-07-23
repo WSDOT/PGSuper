@@ -9,8 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1147,6 +1146,9 @@ BEGIN
     CONTROL         "Use",IDC_USE_90_DAY_STRENGTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,478,25,10
     EDITTEXT        IDC_90_DAY_STRENGTH_FACTOR,150,476,36,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "% of f'c for stress combiations after 90 days for slow curing concretes (5.12.3.2.5)",IDC_90_DAY_STRENGTH_LABEL,188,479,278,8
+    COMBOBOX        IDC_A_ROUNDING_CB,220,277,153,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_A_ROUNDING_EDIT,375,277,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "in",IDC_A_ROUNDING_UNIT,419,280,23,8
 END
 
 IDD_SPEC_SHEAR DIALOGEX 0, 0, 441, 423
@@ -2426,6 +2428,19 @@ BEGIN
     0
 END
 
+IDD_SPEC_DESIGN DLGINIT
+BEGIN
+    IDC_A_ROUNDING_CB, 0x403, 37, 0
+0x6f52, 0x6e75, 0x2064, 0x6874, 0x2065, 0x6552, 0x7571, 0x7269, 0x6465, 
+0x5320, 0x616c, 0x2062, 0x664f, 0x7366, 0x7465, 0x5520, 0x2070, 0x7962, 
+"\000" 
+    IDC_A_ROUNDING_CB, 0x403, 46, 0
+0x6f52, 0x6e75, 0x2064, 0x6874, 0x2065, 0x6552, 0x7571, 0x7269, 0x6465, 
+0x5320, 0x616c, 0x2062, 0x664f, 0x7366, 0x7465, 0x7420, 0x206f, 0x6874, 
+0x2065, 0x654e, 0x7261, 0x7365, 0x0074, 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2829,8 +2844,7 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
-
+#include "grid\gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
