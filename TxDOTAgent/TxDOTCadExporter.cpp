@@ -192,13 +192,14 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 
    // Factory the specific file format exporter and its associated information
    std::unique_ptr<CTxDataExporter> pExporter;
+   TxDOTCadWriter::txcwNsTableLayout table_layout;
    CString default_name;
    CString strFilter;
    CString strSuffix;
 
    if (exportCADData::ctxLegacy == fileFormat)
    {
-#pragma Reminder("Legacy TxDOT CAD Export is a hack. Consider removing this option at Version 6.0")
+#pragma Reminder("Legacy TxDOT CAD Export is a hack an may no longer be useful. Remove this option at Version 6.0 if confirmed.")
       // This doesn't fit with our factory pattern, but the plan is to delete this functionality in the near future
       // Use the File and girder selection UI from this function and then jump to our old legacy version
       default_name = _T("CADexport.txt");
@@ -207,6 +208,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
    }
    else if (exportCADData::ctxExcel == fileFormat)
    {
+      table_layout = TxDOTCadWriter::ttlnTwoTables;
       default_name = _T("CADexport.xlsx");
       strFilter = _T("CAD Export Excel Worksheet (*.xlsx)|*.xlsx||");
       strSuffix = _T("xlsx");
@@ -239,9 +241,10 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
    }
    else if (exportCADData::ctxCSV == fileFormat)
    {
-      default_name = _T("CADexport.csv");
-      strFilter = _T("Comma Separated Value text File (*.csv)|*.csv||");
-      strSuffix = _T("csv");
+      table_layout = TxDOTCadWriter::ttlnSingleTable;
+      default_name = _T("CADexport.txt");
+      strFilter = _T("Semicolon Separated Value text File (*.txt)|*.txt||");
+      strSuffix = _T("txt");
 
       // Make CSV exporter and give it the list of columns in its table
       auto pCSVDataExporter = std::make_unique<CTxCSVDataExporter>();
@@ -253,22 +256,16 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
       if (strand_layout == TxDOTCadWriter::tslHarped)
       {
          cols = std::vector<std::_tstring>({ _T("StructureName"),_T("SpanNum"),_T("GdrNum"),_T("GdrType"),_T("NonStd"),_T("NStot"),_T("Size"),_T("Strength"),_T("eCL"),_T("eEnd"),_T("B_1"),
-                                            _T("NH"),_T("ToEnd"),_T("B_2"),_T("FCI"),_T("FC"),_T("B_3"),_T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear") });
+                                            _T("NH"),_T("ToEnd"),_T("B_2"),_T("FCI"),_T("FC"),_T("B_3"),_T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear"),_T("NSArrangement") });
       }
       else
       {
          cols = std::vector<std::_tstring>({ _T("StructureName"),_T("SpanNum"),_T("GdrNum"),_T("GdrType"),_T("NonStd"),_T("NStot"),_T("Size"),_T("Strength"),_T("eCL"),_T("eEnd"),
                                              _T("NDBtot"),_T("DBBotDist"),_T("NSRow"),_T("NDBRow"),_T("DB_3"),_T("DB_6"),_T("DB_9"),_T("DB_12"),_T("DB_15"),_T("FCI"),_T("FC"),_T("B_3"),
-                                             _T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear") });
+                                             _T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear"),_T("NSArrangement") });
       }
 
       pCSVDataExporter->InitializeTable(1, cols);
-
-      // Non-std table
-      std::vector<std::_tstring> nscols;
-      nscols = std::vector<std::_tstring>({ _T("NSPattern"),_T("NSArrangement") });
-
-      pCSVDataExporter->InitializeTable(2, nscols);
 
       // move to base class ptr
       pExporter = std::move(pCSVDataExporter);
@@ -339,7 +336,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          {
             CGirderKey& girderKey(*it);
 
-	         if (CAD_SUCCESS != cadWriter.WriteCADDataToFile(*pExporter, pBroker, girderKey, strand_layout) )
+	         if (CAD_SUCCESS != cadWriter.WriteCADDataToFile(*pExporter, pBroker, girderKey, strand_layout, table_layout) )
             {
 		         AfxMessageBox (_T("Warning: An error occured while writing to File"));
                pExporter->Fail();

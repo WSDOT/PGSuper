@@ -143,6 +143,7 @@ Float64		value 			   /*  => Value to convert                   */
 ////////////////// Main function for writing legacy cad file ///////////////////////////
 int TxDOT_WriteLegacyCADDataToFile(CString& filePath, IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
 {
+#pragma Reminder("Legacy TxDOT CAD Export is a hack. Consider removing this option at Version 6.0")
 
    bool did_throw=false;
 

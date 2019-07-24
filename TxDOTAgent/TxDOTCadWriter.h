@@ -64,10 +64,13 @@ public:
    // Determine what type of strand layout we have
    enum txcwStrandLayout { tslStraight, tslHarped, tslDebondedIBeam, tslMixed };
 
+   // Non-standard string can either be put into a separate table (excel) or integrated into the main table (txt)
+   enum txcwNsTableLayout { ttlnTwoTables, ttlnSingleTable };
+
    txcwStrandLayout GetStrandLayoutType(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys);
 
    // Main External function to write the file
-   int WriteCADDataToFile(CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, txcwStrandLayout strandLayout);
+   int WriteCADDataToFile(CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, txcwStrandLayout strandLayout, txcwNsTableLayout tableLayout);
 
 private:
    Uint32 m_RowNum;

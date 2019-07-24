@@ -160,7 +160,7 @@ TxDOTCadWriter::txcwStrandLayout GetSingleStrandLayoutType(IBroker* pBroker, con
    }
 }
 
-int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, TxDOTCadWriter::txcwStrandLayout strandLayout)
+int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, TxDOTCadWriter::txcwStrandLayout strandLayout, txcwNsTableLayout tableLayout)
 {
 #if defined _DEBUG
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -257,7 +257,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
 
    std::_tstring ns_strand_pattern;
    bool do_write_ns_data = !IsTxDOTStandardStrands(strandLayout==TxDOTCadWriter::tslHarped, pStrands->GetStrandDefinitionType(), segmentKey, pBroker );
-   if (do_write_ns_data)
+   if (do_write_ns_data && TxDOTCadWriter::ttlnTwoTables == tableLayout)
    {
       ns_strand_pattern = std::_tstring((std::size_t)++m_NonStandardCnt, _T('*')); // write *, **, ***,... depending on number of non-standard beams
       rDataExporter.WriteStringToCell(1, _T("NonStd"), m_RowNum, ns_strand_pattern.c_str());
@@ -396,13 +396,19 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
 
    if (do_write_ns_data)
    {
-      // Non-Standard Design Data on worksheet #2 if applicable
-      rDataExporter.WriteStringToCell(2, _T("NSPattern"), m_NonStandardCnt-1, ns_strand_pattern.c_str());
-
       std::_tstring ns_strand_str;
       ns_strand_str = MakeNonStandardStrandString(pBroker,pmid, isIBeam, pmid);
 
-      rDataExporter.WriteStringToCell(2, _T("NSArrangement"), m_NonStandardCnt-1, ns_strand_str.c_str());
+      if (tableLayout == TxDOTCadWriter::ttlnTwoTables)
+      {
+         // Non-Standard Design Data on worksheet #2
+         rDataExporter.WriteStringToCell(2, _T("NSPattern"), m_NonStandardCnt - 1, ns_strand_pattern.c_str());
+         rDataExporter.WriteStringToCell(2, _T("NSArrangement"), m_NonStandardCnt - 1, ns_strand_str.c_str());
+      }
+      else
+      {
+         rDataExporter.WriteStringToCell(1, _T("NSArrangement"), m_RowNum, ns_strand_str.c_str());
+      }
    }
 
    if (writer.GetTotalNumDebonds() > 0 && are_harped_bent)
@@ -583,7 +589,7 @@ std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInte
       for (auto srow : strandrows)
       {
          if (!first)
-            os << _T(" "); // os << _T(", ");  This does not work well with CSV formatting
+            os << _T(", "); //  This does not work well with CSV formatting
          else
             first = false;
 
