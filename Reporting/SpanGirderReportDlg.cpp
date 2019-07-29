@@ -183,6 +183,11 @@ void CSpanGirderReportDlg::UpdateChapterList()
 
 BOOL CSpanGirderReportDlg::OnInitDialog()
 {
+   if (m_Group == ALL_GROUPS)
+   {
+      m_Group = 0;
+   }
+
    if ( m_Girder == ALL_GIRDERS )
    {
       m_Girder = 0;
@@ -201,7 +206,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       // fill up the group list box
       CComboBox* pGroupBox = (CComboBox*)GetDlgItem( IDC_SPAN );
       GET_IFACE( IBridge, pBridge );
-         GroupIndexType cGroups = pBridge->GetGirderGroupCount();
+      GroupIndexType cGroups = pBridge->GetGirderGroupCount();
       for ( GroupIndexType i = 0; i < cGroups; i++ )
       {
          CString strGroup;
