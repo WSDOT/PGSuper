@@ -91,7 +91,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNCREATE(CGirderModelSectionView, CDisplayView)
 
 CGirderModelSectionView::CGirderModelSectionView() :
-m_GirderKey(0, 0),
+m_GirderKey(ALL_GROUPS, 0),
 m_bOnIntialUpdateComplete(false),
 m_pFrame(nullptr)
 {
