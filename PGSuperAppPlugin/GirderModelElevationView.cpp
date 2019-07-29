@@ -2445,6 +2445,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(thisGirderKey,segIdx);
+
          CComPtr<IShape> shape;
          pIGirder->GetSegmentProfile(segmentKey, false, &shape);
 
@@ -2498,6 +2499,8 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(thisGirderKey,segIdx);
+
+         const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
 
          Float64 segment_length = pBridge->GetSegmentLength(segmentKey);       // end to end length of segment
 
@@ -2602,7 +2605,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
          Float64 lft_harp, rgt_harp;
          pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
 
-         if ( 0 < Nh )
+         if ( 0 < Nh && pSegment->Strands.GetAdjustableStrandType() != pgsTypes::asStraight)
          {
             // harp locations from end of segment (along top)
             PoiList vPoi;
