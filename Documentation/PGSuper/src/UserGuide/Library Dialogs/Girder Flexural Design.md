@@ -19,7 +19,7 @@ These parameters guide the automated designer in selecting the location of secti
 Item | Description
 ------|------------
 Maximum Debond Length | The maximum distance from the end of a precast element to any given debonded section cannot exceed lesser of: <ul><li>half the length of the precast element minus the strand development length computed per LRFD 5.9.4.3.3 (*pre-2017: 5.11.4.3*)</li><li>a specified percentage of the overall length of the precast element</li><li>a specified length</li></ul>
-Minimum Debond Length | The minimum distance between adjacent debond sections. Note that this value should always be less than the prestress transfer length for the currently selected strand material, otherwise the debond design algorithm may create designs that do not pass the specification check.
+Minimum distance between debond sections | The minimum distance between adjacent debond sections.
 Default Debond Length | This value is used for design, and as an initial value in the debonding grid. This value cannot be less than the minimum length specified above.
 
 Prestressing Optimization Strategies for the Automated Girder Designer
