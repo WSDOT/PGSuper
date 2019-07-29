@@ -107,8 +107,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    pBridge->GetGirderline(girderKey.girderIndex, startGroup, endGroup, &vGirderKeys);
    for (const auto& thisGirderKey : vGirderKeys)
    {
-      PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(girderKey.groupIndex);
-      PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(girderKey.groupIndex);
+      PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
+      PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
       for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
       {
          if ( pierIdx == startPierIdx )
