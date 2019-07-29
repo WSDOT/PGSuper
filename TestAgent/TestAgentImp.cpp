@@ -2368,14 +2368,20 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    // get location of first harped strand
    if (0 < nh)
    {
-      StrandIndexType nns = pStrandGeometry->GetNextNumStrands(segmentKey,pgsTypes::Harped,0);
-      ConfigStrandFillVector fillvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, nns);
-      GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
-      config.PrestressConfig.SetStrandFill(pgsTypes::Harped, fillvec);
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+      auto strandDefType = pSegment->Strands.GetStrandDefinitionType();
+      if (strandDefType != CStrandData::sdtDirectRowInput && strandDefType != CStrandData::sdtDirectStrandInput) // GetNextNumStrands and ComputeStrandFill don't work with these strand def types
+      {
+         StrandIndexType nns = pStrandGeometry->GetNextNumStrands(segmentKey, pgsTypes::Harped, 0);
+         ConfigStrandFillVector fillvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, nns);
+         GDRCONFIG config = pBridge->GetSegmentConfiguration(segmentKey);
+         config.PrestressConfig.SetStrandFill(pgsTypes::Harped, fillvec);
 
-      Float64 eh2 = pStrandGeometry->GetEccentricity( releaseIntervalIdx,pmid, pgsTypes::Harped, &config, &nEff );
-      Float64 Fb  = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::BottomGirder) - eh2;
-      resultsFile<<bridgeId<<", "<<pid<<", 123018, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(Fb, unitMeasure::Millimeter)) <<   ", 101, "<<gdrIdx<<std::endl;
+         Float64 eh2 = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid, pgsTypes::Harped, &config, &nEff);
+         Float64 Fb = pSectProp->GetY(releaseIntervalIdx, pois, pgsTypes::BottomGirder) - eh2;
+         resultsFile << bridgeId << ", " << pid << ", 123018, " << loc << ", " << QUITE(::ConvertFromSysUnits(Fb, unitMeasure::Millimeter)) << ", 101, " << gdrIdx << std::endl;
+      }
    }
 
    Float64 ytg = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::TopGirder);
