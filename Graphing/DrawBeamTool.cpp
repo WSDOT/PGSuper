@@ -616,10 +616,11 @@ CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType interval
 #if defined _DEBUG
    bool bIsInteriorPier = false;
 #endif
+
    if (aheadSegmentKey.segmentIndex == INVALID_INDEX)
    {
       // there isn't an ahead side segment. this could be for one of two reasons
-      // 1) a segment is continuous over this pier (expect backSegmentKey.segmentIndex == INVALID_INDEX
+      // 1) a segment is continuous over this pier (expect backSegmentKey.segmentIndex == INVALID_INDEX)
       // 2) pierIdx is at the end of the bridge
       if (backSegmentKey.segmentIndex == INVALID_INDEX)
       {
@@ -641,11 +642,21 @@ CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType interval
    GET_IFACE(ISectionProperties, pSectProp);
    Float64 sectionHeight = pSectProp->GetSegmentHeightAtPier(aheadSegmentKey, pierIdx);
 
-   Float64 Xs; // location of pier in segment coordinates
-   bool bResult = pBridge->GetPierLocation(pierIdx, aheadSegmentKey, &Xs);
-   ATLASSERT(bResult == true);
-
    GET_IFACE(IPointOfInterest, pPoi);
+   Float64 Xs; // location of pier in segment coordinates
+   if (pBridge->IsAbutment(pierIdx))
+   {
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(aheadSegmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L, &vPoi);
+      ATLASSERT(vPoi.size() == 2);
+      Xs = (pierIdx == 0 ? vPoi.front().get().GetDistFromStart() : vPoi.back().get().GetDistFromStart());
+   }
+   else
+   {
+      bool bResult = pBridge->GetPierLocation(pierIdx, aheadSegmentKey, &Xs);
+      ATLASSERT(bResult == true);
+   }
+
    Float64 Xgl = pPoi->ConvertSegmentCoordinateToGirderlineCoordinate(aheadSegmentKey, Xs);
 
    CPoint p;
