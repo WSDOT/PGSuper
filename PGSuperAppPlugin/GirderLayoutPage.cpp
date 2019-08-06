@@ -306,7 +306,7 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    m_MinGirderCount = GetMinGirderCount();
    m_NumGdrSpinner.SetRange(short(m_MinGirderCount),MAX_GIRDERS_PER_SPAN);
 
-   // restrict the spinner to only go one girder at a time.
+   // restrict the spinner to only go one girder at a timeToggle
    UDACCEL accel;
    accel.nInc = 1;
    accel.nSec = 0;
@@ -316,14 +316,14 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
 
    if ( spacingType == pgsTypes::sbsUniform )
    {
-      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge"));
-      m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span"));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge")), (DWORD_PTR)(pgsTypes::sbsUniform));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span")), (DWORD_PTR)(pgsTypes::sbsConstantAdjacent));
       m_cbGirderSpacingType.SetCurSel(0);
    }
    else if ( spacingType == pgsTypes::sbsUniformAdjacent )
    {
-      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge"));
-      m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge")), (DWORD_PTR)(pgsTypes::sbsUniformAdjacent));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span")), (DWORD_PTR)(pgsTypes::sbsGeneralAdjacent));
       m_cbGirderSpacingType.SetCurSel(0);
    }
    else if ( spacingType == pgsTypes::sbsConstantAdjacent )
@@ -336,20 +336,20 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    }
    else if ( spacingType == pgsTypes::sbsGeneral )
    {
-      m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge"));
-      m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span"));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("The same girder spacing is used for the entire bridge")), (DWORD_PTR)(pgsTypes::sbsUniform));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("Girder spacing is defined span by span")), (DWORD_PTR)(pgsTypes::sbsGeneral));
       m_cbGirderSpacingType.SetCurSel(1);
    }
    else if ( spacingType == pgsTypes::sbsGeneralAdjacent )
    {
-      m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge"));
-      m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span"));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("The same joint spacing is used for the entire bridge")), (DWORD_PTR)(pgsTypes::sbsConstantAdjacent));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("Joint spacing is defined span by span")), (DWORD_PTR)(pgsTypes::sbsConstantAdjacent));
       m_cbGirderSpacingType.SetCurSel(1);
    }
    else if (spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth || spacingType == pgsTypes::sbsGeneralAdjacentWithTopWidth)
    {
-      m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used for the entire bridge"));
-      m_cbGirderSpacingType.AddString(_T("Top flange width and joint spacing is defined span by span"));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used for the entire bridge")), (DWORD_PTR)(pgsTypes::sbsGeneralAdjacentWithTopWidth));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("Top flange width and joint spacing is defined span by span")), (DWORD_PTR)(pgsTypes::sbsUniformAdjacentWithTopWidth));
       m_cbGirderSpacingType.SetCurSel(spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth ? 0 : 1);
    }
    else
@@ -555,11 +555,22 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
 
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
-   if ( pParent->m_BridgeDesc.GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent )
+   if (pParent->m_BridgeDesc.GetGirderSpacingType() == pgsTypes::sbsConstantAdjacent)
+   {
       return;
+   }
 
    // changing from uniform to general, or general to uniform spacing
    pgsTypes::SupportedBeamSpacing oldSpacingType = pParent->m_BridgeDesc.GetGirderSpacingType();
+
+   int curSel = m_cbGirderSpacingType.GetCurSel();
+   pgsTypes::SupportedBeamSpacing curSpacingType = (pgsTypes::SupportedBeamSpacing)(m_cbGirderSpacingType.GetItemData(curSel));
+   if (oldSpacingType == curSpacingType)
+   {
+      // spacing type didn't really chagne
+      return;
+   }
+
    pgsTypes::SupportedBeamSpacing spacingType = ToggleGirderSpacingType(oldSpacingType);
 
    if ( IsBridgeSpacing(spacingType) && spacingType != pgsTypes::sbsConstantAdjacent )
