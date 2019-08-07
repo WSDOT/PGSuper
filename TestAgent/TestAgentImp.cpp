@@ -855,8 +855,8 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
    pIPoi->RemovePointsOfInterest(vPoi,POI_15H);
    PoiList vPoi2;
    pIPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi2);
-   pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
-   pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
+   pIPoi->RemovePointsOfInterest(vPoi2, POI_RELEASED_SEGMENT | POI_0L);
+   pIPoi->RemovePointsOfInterest(vPoi2, POI_RELEASED_SEGMENT | POI_10L);
    PoiList vPoi3;
    pIPoi->GetPointsOfInterest(segmentKey, POI_PSXFER | POI_HARPINGPOINT | POI_BARDEVELOP, &vPoi3);
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
@@ -1008,8 +1008,8 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    pIPoi->RemovePointsOfInterest(vPoi,POI_15H);
    PoiList vPoi2;
    pIPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi2);
-   pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
-   pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
+   pIPoi->RemovePointsOfInterest(vPoi2, POI_RELEASED_SEGMENT | POI_0L);
+   pIPoi->RemovePointsOfInterest(vPoi2, POI_RELEASED_SEGMENT | POI_10L);
    PoiList vPoi3;
    pIPoi->GetPointsOfInterest(segmentKey, POI_PSXFER | POI_HARPINGPOINT | POI_BARDEVELOP, &vPoi3);
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
@@ -1037,7 +1037,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30000, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      if ( poi.HasAttribute(POI_0L) )
+      if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30001, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, bat, rtIncremental ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       }
@@ -1055,7 +1055,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // diaphragm
       resultsFile << bridgeId << _T(", ") << pid << _T(", 30009, ") << loc << _T(", ") << QUITE(::ConvertFromSysUnits(pForce->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtIncremental), unitMeasure::NewtonMillimeter)) << _T(", 1, ") << gdrIdx << std::endl;
-      if (poi.HasAttribute(POI_0L))
+      if (poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L))
       {
          resultsFile << bridgeId << _T(", ") << pid << _T(", 30010, ") << loc << _T(", ") << QUITE(::ConvertFromSysUnits(pForce->GetShear(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtIncremental).Right(), unitMeasure::Newton)) << _T(", 1, ") << gdrIdx << std::endl;
       }
@@ -1072,7 +1072,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // ShearKey
       resultsFile << bridgeId << _T(", ") << pid << _T(", 30070, ") << loc << _T(", ") << QUITE(::ConvertFromSysUnits(pForce->GetMoment(noncompositeIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtIncremental), unitMeasure::NewtonMillimeter)) << _T(", 1, ") << gdrIdx << std::endl;
-      if (poi.HasAttribute(POI_0L))
+      if (poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L))
       {
          resultsFile << bridgeId << _T(", ") << pid << _T(", 30071, ") << loc << _T(", ") << QUITE(::ConvertFromSysUnits(pForce->GetShear(noncompositeIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtIncremental).Right(), unitMeasure::Newton)) << _T(", 1, ") << gdrIdx << std::endl;
       }
@@ -1090,7 +1090,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       if (castDeckIntervalIdx == INVALID_INDEX)
       {
          resultsFile << bridgeId << _T(", ") << pid << _T(", 30012, ") << loc << _T(", 0, 1, ") << gdrIdx << std::endl;
-         if (poi.HasAttribute(POI_0L))
+         if (poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L))
          {
             resultsFile << bridgeId << _T(", ") << pid << _T(", 30013, ") << loc << _T(", 0, 1, ") << gdrIdx << std::endl;
          }
@@ -1107,7 +1107,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       else
       {
          resultsFile << bridgeId << _T(", ") << pid << _T(", 30012, ") << loc << _T(", ") << QUITE(::ConvertFromSysUnits(pForce->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtIncremental) + pForce->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtIncremental), unitMeasure::NewtonMillimeter)) << _T(", 1, ") << gdrIdx << std::endl;
-         if (poi.HasAttribute(POI_0L))
+         if (poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L))
          {
             resultsFile << bridgeId << _T(", ") << pid << _T(", 30013, ") << loc << _T(", ") << QUITE(::ConvertFromSysUnits(pForce->GetShear(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtIncremental).Right() + pForce->GetShear(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtIncremental).Right(), unitMeasure::Newton)) << _T(", 1, ") << gdrIdx << std::endl;
          }
@@ -1124,7 +1124,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // DC - BSS1
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30036, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetMoment( noncompositeIntervalIdx, lcDC, poi, bat, rtCumulative ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      if ( poi.HasAttribute(POI_0L) )
+      if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30037, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear(noncompositeIntervalIdx, lcDC, poi, bat, rtCumulative ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       }
@@ -1141,7 +1141,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // DW - BSS1
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30039, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetMoment(noncompositeIntervalIdx, lcDW, poi, bat, rtCumulative ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      if ( poi.HasAttribute(POI_0L) )
+      if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30040, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear(noncompositeIntervalIdx, lcDW, poi, bat, rtCumulative ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       }
@@ -1160,7 +1160,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       if ( overlayIntervalIdx == INVALID_INDEX )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30042, ")<<loc<<_T(", ")<< 0.0 << _T(", 1, ")<<gdrIdx<<std::endl;
-         if ( poi.HasAttribute(POI_0L) )
+         if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
          {
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< 0.0 <<    _T(", 1, ")<<gdrIdx<<std::endl;
          }
@@ -1178,7 +1178,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       else
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30042, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay,poi, bat, rtIncremental ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdrIdx<<std::endl;
-         if ( poi.HasAttribute(POI_0L) )
+         if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
          {
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30043, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
          }
@@ -1196,7 +1196,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // barrier
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30045, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier,poi, bat, rtIncremental ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdrIdx<<std::endl;
-      if ( poi.HasAttribute(POI_0L) )
+      if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30046, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       }
@@ -1212,7 +1212,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // sidewalk
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30048, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment( railingSystemIntervalIdx, pgsTypes::pftSidewalk,poi, bat, rtIncremental ), unitMeasure::NewtonMillimeter)) << _T(", 1, ")<<gdrIdx<<std::endl;
-      if ( poi.HasAttribute(POI_0L) )
+      if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30049, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear( railingSystemIntervalIdx, pgsTypes::pftSidewalk, poi, bat, rtIncremental ).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       }
@@ -1228,7 +1228,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // DC - BSS3
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30057, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetMoment( liveLoadIntervalIdx, lcDC, poi, bat, rtCumulative), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      if ( poi.HasAttribute(POI_0L) )
+      if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30058, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( liveLoadIntervalIdx, lcDC, poi, bat, rtCumulative).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       }
@@ -1244,7 +1244,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // DW - BSS3
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30060, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetMoment( liveLoadIntervalIdx, lcDW, poi, bat, rtCumulative), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      if ( poi.HasAttribute(POI_0L) )
+      if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 30061, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForces->GetShear( liveLoadIntervalIdx, lcDW, poi, bat, rtCumulative).Right(), unitMeasure::Newton)) <<    _T(", 1, ")<<gdrIdx<<std::endl;
       }
@@ -1265,7 +1265,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122103, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment(compositeUserLoadIntervalIdx, pgsTypes::pftUserDC, poi, bat, rtIncremental ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
 
       // user loads - Shear
-      if ( poi.HasAttribute(POI_0L) )
+      if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122104, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDW, poi, bat, rtIncremental ).Right(), unitMeasure::Newton)) <<_T(", 1, ")<<gdrIdx<<std::endl;
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122105, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDC, poi, bat, rtIncremental ).Right(), unitMeasure::Newton)) <<_T(", 1, ")<<gdrIdx<<std::endl;
@@ -1297,7 +1297,7 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
       // user live load
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122116, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetMoment(liveLoadIntervalIdx, pgsTypes::pftUserLLIM, poi, bat, rtIncremental ), unitMeasure::NewtonMillimeter)) <<_T(", 1, ")<<gdrIdx<<std::endl;
-      if ( poi.HasAttribute(POI_0L) )
+      if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
       {
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122117, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(pForce->GetShear(liveLoadIntervalIdx, pgsTypes::pftUserLLIM, poi, bat, rtIncremental ).Right(), unitMeasure::Newton)) <<_T(", 1, ")<<gdrIdx<<std::endl;
       }
@@ -1413,8 +1413,8 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
    pIPoi->RemovePointsOfInterest(vPoi,POI_15H);
    PoiList vPoi2;
    pIPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi2);
-   pIPoi->RemovePointsOfInterest(vPoi2,POI_0L);
-   pIPoi->RemovePointsOfInterest(vPoi2,POI_10L);
+   pIPoi->RemovePointsOfInterest(vPoi2, POI_RELEASED_SEGMENT | POI_0L);
+   pIPoi->RemovePointsOfInterest(vPoi2, POI_RELEASED_SEGMENT | POI_10L);
    PoiList vPoi3;
    pIPoi->GetPointsOfInterest(segmentKey, POI_PSXFER | POI_HARPINGPOINT | POI_BARDEVELOP, &vPoi3);
    vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
@@ -1449,7 +1449,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          sysSectionValue smin, smax, svDummy;
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, pgsTypes::MaxSimpleContinuousEnvelope, &svDummy, &smax );
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, pgsTypes::MinSimpleContinuousEnvelope, &smin, &svDummy );
-         if ( poi.HasAttribute(POI_0L) )
+         if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
          {
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smax.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34003, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smin.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
@@ -1473,7 +1473,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::ServiceI, poi, pgsTypes::MaxSimpleContinuousEnvelope, &svDummy, &smax );
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::ServiceI, poi, pgsTypes::MinSimpleContinuousEnvelope, &smin, &svDummy );
-         if ( poi.HasAttribute(POI_0L) )
+         if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
          {
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34022, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smax.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34023, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smin.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
@@ -1497,7 +1497,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, pgsTypes::MaxSimpleContinuousEnvelope, &svDummy, &smax );
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, pgsTypes::MinSimpleContinuousEnvelope, &smin, &svDummy );
-         if ( poi.HasAttribute(POI_0L) )
+         if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
          {
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34034, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smax.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34035, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smin.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
@@ -1522,7 +1522,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
          sysSectionValue smin, smax;
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::StrengthI, poi, bat, &smin, &smax );
-         if ( poi.HasAttribute(POI_0L) )
+         if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
          {
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34002, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smax.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34003, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smin.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
@@ -1543,7 +1543,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34021, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::NewtonMillimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
 
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::ServiceI, poi, bat, &smin, &smax );
-         if ( poi.HasAttribute(POI_0L) )
+         if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
          {
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34022, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smax.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34023, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smin.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
@@ -1564,7 +1564,7 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34033, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::NewtonMillimeter)) <<_T(", 8, ")<<gdrIdx<<std::endl;
 
          pLsForces->GetShear( liveLoadIntervalIdx, pgsTypes::ServiceIII, poi, bat, &smin, &smax );
-         if ( poi.HasAttribute(POI_0L) )
+         if ( poi.HasAttribute(POI_ERECTED_SEGMENT | POI_0L) )
          {
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34034, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smax.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
             resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34035, ")<<loc<<_T(", ")<< QUITE(::ConvertFromSysUnits(smin.Right(), unitMeasure::Newton)) <<_T(", 8, ")<<gdrIdx<<std::endl;
