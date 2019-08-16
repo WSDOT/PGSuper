@@ -159,7 +159,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    if (bTimeStepAnalysis)
    {
       GET_IFACE2(pBroker, IIntervals, pIntervals);
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
       Float64 start_time = pIntervals->GetTime(0, pgsTypes::Start);
       Float64 deck_casting = pIntervals->GetTime(castDeckIntervalIdx, pgsTypes::Start);
       days = deck_casting - start_time + 1;

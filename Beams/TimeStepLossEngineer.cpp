@@ -914,9 +914,12 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
    DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(segmentKey);
 
+   IndexType deckCastingRegionIdx = m_pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    IntervalIndexType stressStrandsIntervalIdx = m_pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx       = m_pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType liveLoadIntervalIdx      = m_pIntervals->GetLiveLoadInterval();
 
    CClosureKey closureKey;
@@ -927,8 +930,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    bool bIsOnGirder = m_pPoi->IsOnGirder(poi);
 
    // Material Properties
-   Float64 EDeck = m_pMaterials->GetDeckEc(intervalIdx);
-   Float64 EaDeck = m_pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
+   Float64 EDeck = m_pMaterials->GetDeckEc(deckCastingRegionIdx,intervalIdx);
+   Float64 EaDeck = m_pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx, intervalIdx);
    Float64 EGirder, EaGirder;
    if (bIsOnSegment)
    {
@@ -1462,13 +1465,13 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          INCREMENTALCREEPDETAILS deckCreepDetails;
          if (m_pBridge->IsCompositeDeck() && !bIgnoreCreepEffects)
          {
-            deckCreepDetails.pStartDetails = m_pMaterials->GetDeckCreepCoefficientDetails(i, pgsTypes::Middle, intervalIdx, pgsTypes::Start);
-            deckCreepDetails.pEndDetails = m_pMaterials->GetDeckCreepCoefficientDetails(i, pgsTypes::Middle, intervalIdx, pgsTypes::End);
+            deckCreepDetails.pStartDetails = m_pMaterials->GetDeckCreepCoefficientDetails(deckCastingRegionIdx, i, pgsTypes::Middle, intervalIdx, pgsTypes::Start);
+            deckCreepDetails.pEndDetails = m_pMaterials->GetDeckCreepCoefficientDetails(deckCastingRegionIdx, i, pgsTypes::Middle, intervalIdx, pgsTypes::End);
             Cs = deckCreepDetails.pStartDetails->Ct;
             Ce = deckCreepDetails.pEndDetails->Ct;
 
-            Xs = m_pMaterials->GetDeckAgingCoefficient(intervalIdx);
-            Xe = m_pMaterials->GetDeckAgingCoefficient(intervalIdx);
+            Xs = m_pMaterials->GetDeckAgingCoefficient(deckCastingRegionIdx, intervalIdx);
+            Xe = m_pMaterials->GetDeckAgingCoefficient(deckCastingRegionIdx, intervalIdx);
          }
          else
          {
@@ -1479,8 +1482,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          }
          tsDetails.Deck.Creep.push_back(deckCreepDetails);
 
-         // Modulus in interval i (not age adjusteded because we apply the creep coefficients Ce and Cs)
-         Float64 EiDeck = m_pMaterials->GetDeckEc(i);
+         // Modulus in interval i (not age adjusted because we apply the creep coefficients Ce and Cs)
+         Float64 EiDeck = m_pMaterials->GetDeckEc(deckCastingRegionIdx, i);
          Float64 EiADeck = EiDeck*iTimeStepDetails.Deck.An;
          Float64 EiIDeck = EiDeck*iTimeStepDetails.Deck.In;
 
@@ -1523,8 +1526,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
       if ( m_pBridge->IsCompositeDeck() && !bIgnoreShrinkageEffects )
       {
-         tsDetails.Deck.Shrinkage.pStartDetails = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(intervalIdx,pgsTypes::Start);
-         tsDetails.Deck.Shrinkage.pEndDetails   = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(intervalIdx,pgsTypes::End);
+         tsDetails.Deck.Shrinkage.pStartDetails = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(deckCastingRegionIdx, intervalIdx,pgsTypes::Start);
+         tsDetails.Deck.Shrinkage.pEndDetails   = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(deckCastingRegionIdx, intervalIdx,pgsTypes::End);
          tsDetails.Deck.Shrinkage.esi = tsDetails.Deck.Shrinkage.pEndDetails->esh - tsDetails.Deck.Shrinkage.pStartDetails->esh;
       }
 
@@ -1736,13 +1739,16 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    bool bIsInClosure = m_pPoi->IsInClosureJoint(poi,&closureKey);
    bool bIsOnSegment = m_pPoi->IsOnSegment(poi);
 
+   IndexType deckCastingRegionIdx = m_pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    bool bIsOnGirder = m_pPoi->IsOnGirder(poi);
 
    IntervalIndexType stressStrandsIntervalIdx = m_pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx       = m_pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx       = m_pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx      = m_pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType liveLoadIntervalIdx      = m_pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < releaseIntervalIdx )
@@ -1843,7 +1849,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx-1]);
 
       // get some material properties that we are going to need for the analysis
-      Float64 EaDeck  = m_pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
+      Float64 EaDeck  = m_pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx);
 
       Float64 EaGirder;
       if ( bIsOnSegment )
@@ -3697,7 +3703,9 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
    // Force effects due to dead loads that are applied along with the slab self-weight occur
    // at the deck casting interval and any interval when a temporary support is removed after
    // the slab (and related) dead load is applied
-   IntervalIndexType castDeckIntervalIdx = m_pIntervals->GetCastDeckInterval();
+   IndexType deckCastingRegionIdx = m_pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+   IntervalIndexType castDeckIntervalIdx = m_pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
    bool bTSRemovedAfterDeckCasting = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),
       [&castDeckIntervalIdx](const auto& intervalIdx) {return castDeckIntervalIdx < intervalIdx;}));
 

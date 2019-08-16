@@ -337,8 +337,8 @@ void write_moment_data_table(IBroker* pBroker,
    ColumnIndexType col = 0;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   if ( intervalIdx < compositeDeckIntervalIdx )
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
       (*table)(0,col++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
@@ -587,8 +587,8 @@ void write_crack_moment_data_table(IBroker* pBroker,
    *pParagraph << table << rptNewLine;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   if ( intervalIdx < compositeDeckIntervalIdx )
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
@@ -752,8 +752,8 @@ void write_min_moment_data_table(IBroker* pBroker,
 
    ColumnIndexType col = 0;
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   if ( intervalIdx < compositeDeckIntervalIdx )
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
       (*table)(0,col++)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
@@ -780,7 +780,7 @@ void write_min_moment_data_table(IBroker* pBroker,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-   if ( intervalIdx < compositeDeckIntervalIdx )
+   if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
       end_size = 0; // don't adjust if CY stage
    }
@@ -880,8 +880,8 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    *pParagraph << table << rptNewLine;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   if ( intervalIdx < compositeDeckIntervalIdx )
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
       (*table)(0,0)  << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
@@ -911,7 +911,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
-   if ( intervalIdx < compositeDeckIntervalIdx )
+   if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
       end_size = 0; // don't adjust if CY stage
    }

@@ -279,10 +279,8 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter,
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
    IntervalIndexType storageIntervalIdx       = pIntervals->GetStorageInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
    IntervalIndexType erectionIntervalIdx      = pIntervals->GetErectSegmentInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::WearingSurfaceType wearingSurfaceType = pBridge->GetWearingSurfaceType();

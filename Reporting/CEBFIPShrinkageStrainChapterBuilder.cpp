@@ -25,8 +25,11 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace\Project.h>
 #include <Material\ConcreteBase.h>
 #include <Material\CEBFIPConcrete.h>
+#include <PgsExt\TimelineEvent.h>
+#include <PgsExt\CastDeckActivity.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -135,27 +138,63 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       }
    }
 
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+   if (IsStructuralDeck(pBridge->GetDeckType()))
    {
-      const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-      const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+      const auto& castDeckActivity = pIBridgeDesc->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity();
+      IndexType nCastings = castDeckActivity.GetCastingCount();
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
+      {
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
 
-      ColumnIndexType colIdx = 0;
+         ColumnIndexType colIdx = 0;
 
-      (*pTable)(rowIdx,colIdx++) << _T("Deck");
-      (*pTable)(rowIdx,colIdx++) << stress.SetValue(pCEBFIPConcrete->GetFc28());
-      (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
-      (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaRH();
-      (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaSc();
-      (*pTable)(rowIdx,colIdx++) << hDim.SetValue(pCEBFIPConcrete->GetH());
-      (*pTable)(rowIdx,colIdx++) << 1E6*pCEBFIPConcrete->GetEpsilonS();
-      (*pTable)(rowIdx,colIdx++) << 1E6*pCEBFIPConcrete->GetNotionalShrinkageCoefficient();
+         CString strTitle(_T("Deck"));
+         if (1 < nCastings)
+         {
+            strTitle += _T(" Regions ");
+            auto begin = std::begin(vRegions);
+            auto iter = begin;
+            auto end = std::end(vRegions);
+            for (; iter != end; iter++)
+            {
+               if (iter != begin)
+               {
+                  strTitle += _T(", ");
+               }
+               CString strRegion;
+               strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+               strTitle += strRegion;
+            }
+         }
 
-      rowIdx++;
+
+         (*pTable)(rowIdx, colIdx++) << strTitle;
+         (*pTable)(rowIdx, colIdx++) << stress.SetValue(pCEBFIPConcrete->GetFc28());
+         (*pTable)(rowIdx, colIdx++) << pConcrete->GetRelativeHumidity();
+         (*pTable)(rowIdx, colIdx++) << pCEBFIPConcrete->GetBetaRH();
+         (*pTable)(rowIdx, colIdx++) << pCEBFIPConcrete->GetBetaSc();
+         (*pTable)(rowIdx, colIdx++) << hDim.SetValue(pCEBFIPConcrete->GetH());
+         (*pTable)(rowIdx, colIdx++) << 1E6*pCEBFIPConcrete->GetEpsilonS();
+         (*pTable)(rowIdx, colIdx++) << 1E6*pCEBFIPConcrete->GetNotionalShrinkageCoefficient();
+
+         rowIdx++;
+      } // next casting stage
    }
 
 #if defined _DEBUG || defined _BETA_VERSION
-   pTable = rptStyleManager::CreateDefaultTable(8*nSegments+1);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckIndex = pIBridgeDesc->GetCastDeckEventIndex();
+   const auto* pEvent = pIBridgeDesc->GetEventByIndex(castDeckIndex);
+   const auto& castDeckActivity = pEvent->GetCastDeckActivity();
+   IndexType nCastings = castDeckActivity.GetCastingCount();
+   IndexType nClosures = nSegments - 1;
+
+   pTable = rptStyleManager::CreateDefaultTable(4 * (nSegments + nClosures + nCastings) + 1, _T("Debugging Table"));
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
@@ -185,12 +224,39 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
       }
    }
-   pTable->SetColumnSpan(rowIdx,colIdx,4);
-   (*pTable)(rowIdx,colIdx) << _T("Deck");
-   (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
-   (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("t"),_T("s")) << rptNewLine << _T("(days)");
-   (*pTable)(rowIdx+1,colIdx++) << symbol(DELTA) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
-   (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
+
+
+   for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
+   {
+      pTable->SetColumnSpan(rowIdx, colIdx, 4);
+
+      CString strTitle(_T("Deck"));
+      if (1 < nCastings)
+      {
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+
+         strTitle += _T(" Regions ");
+         auto begin = std::begin(vRegions);
+         auto iter = begin;
+         auto end = std::end(vRegions);
+         for (; iter != end; iter++)
+         {
+            if (iter != begin)
+            {
+               strTitle += _T(", ");
+            }
+            CString strRegion;
+            strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+            strTitle += strRegion;
+         }
+      }
+
+      (*pTable)(rowIdx, colIdx) << strTitle;
+      (*pTable)(rowIdx + 1, colIdx++) << _T("t") << rptNewLine << _T("(days)");
+      (*pTable)(rowIdx + 1, colIdx++) << Sub2(_T("t"), _T("s")) << rptNewLine << _T("(days)");
+      (*pTable)(rowIdx + 1, colIdx++) << symbol(DELTA) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+      (*pTable)(rowIdx + 1, colIdx++) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+   }
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -249,24 +315,29 @@ rptChapter* CCEBFIPShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          }
       }
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      if ( compositeDeckIntervalIdx <= intervalIdx )
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
       {
-         Float64 t  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
-         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-         const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
-         Float64 cure = pCEBFIPConcrete->GetCureTime();
-         (*pTable)(rowIdx,colIdx++) << t;
-         (*pTable)(rowIdx,colIdx++) << cure;
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(intervalIdx);
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
-      }
-      else
-      {
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+         if ( compositeDeckIntervalIdx <= intervalIdx )
+         {
+            Float64 t  = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
+            const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+            const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
+            Float64 cure = pCEBFIPConcrete->GetCureTime();
+            (*pTable)(rowIdx,colIdx++) << t;
+            (*pTable)(rowIdx,colIdx++) << cure;
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(deckCastingRegionIdx,intervalIdx);
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
+         }
+         else
+         {
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+         }
       }
    }
 #endif //#if defined _DEBUG || defined _BETA_VERSION

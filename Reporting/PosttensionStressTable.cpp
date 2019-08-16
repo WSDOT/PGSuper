@@ -85,7 +85,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
-   IntervalIndexType compositeDeckIntervalIdx        = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    IntervalIndexType loadRatingIntervalIdx           = pIntervals->GetLoadRatingInterval();
    IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
 
@@ -99,7 +99,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
    {
       // if we are reporting stresses in the deck, don't report any intervals before
       // the deck is composite
-      minIntervalIdx = Max(minIntervalIdx,compositeDeckIntervalIdx);
+      minIntervalIdx = Max(minIntervalIdx,lastCompositeDeckIntervalIdx);
    }
 
    // remove the intervals

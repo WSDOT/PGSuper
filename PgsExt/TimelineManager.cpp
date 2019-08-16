@@ -1767,34 +1767,18 @@ EventIDType CTimelineManager::GetCastDeckEventID() const
 
 int CTimelineManager::SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdjustTimeline)
 {
-   bool bUpdateAge = false;
-   Float64 age_at_continuity = 7.0;
-   CTimelineEvent* pOldCastDeckEvent = nullptr;
+   EventIndexType currentCastDeckEventIdx = GetCastDeckEventIndex();
 
-   // search for the event where the deck is cast
-   for (auto* pTimelineEvent : m_TimelineEvents)
-   {
-      if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
-      {
-         bUpdateAge = true;
-         age_at_continuity = pTimelineEvent->GetCastDeckActivity().GetConcreteAgeAtContinuity();
-         pTimelineEvent->GetCastDeckActivity().Enable(false);
-         pOldCastDeckEvent = pTimelineEvent; // hang onto the event in case the edit needs to be rolled back
-         break;
-      }
-   }
+   CTimelineEvent* pOldCastDeckEvent = m_TimelineEvents[currentCastDeckEventIdx];
+   pOldCastDeckEvent->GetCastDeckActivity().Enable(false);
 
    if ( eventIdx != INVALID_INDEX )
    {
-      CTimelineEvent cast_deck_event = *m_TimelineEvents[eventIdx];
-      cast_deck_event.GetCastDeckActivity().Enable(true);
+      CTimelineEvent new_cast_deck_event = *m_TimelineEvents[eventIdx];
+      new_cast_deck_event.SetCastDeckActivity(pOldCastDeckEvent->GetCastDeckActivity()); // copy the cast deck activity details from the old event to the new event
+      new_cast_deck_event.GetCastDeckActivity().Enable(true);
 
-      if ( bUpdateAge )
-      {
-         cast_deck_event.GetCastDeckActivity().SetConcreteAgeAtContinuity(age_at_continuity);
-      }
-
-      int result = SetEventByIndex(eventIdx,cast_deck_event,bAdjustTimeline);
+      int result = SetEventByIndex(eventIdx, new_cast_deck_event, bAdjustTimeline);
       if ( result != TLM_SUCCESS )
       {
          // there was a problem... roll back the edit
@@ -2900,6 +2884,18 @@ CString CTimelineManager::GetErrorMessage(int errorCode) const
    CString strMsg;
    switch(errorCode)
    {
+   case TLM_OVERLAPS_PREVIOUS_EVENT:
+      strMsg = _T("This event begins before the activities in the previous event have completed.");
+      break;
+
+   case TLM_OVERRUNS_NEXT_EVENT:
+      strMsg = _T("The activities in this event end after the next event begins.");
+      break;
+
+   case TLM_EVENT_NOT_FOUND:
+      strMsg = _T("Event not found");
+      break;
+
    case TLM_CAST_DECK_ACTIVITY_REQUIRED:
       strMsg = _T("The timeline does not include an activity for casting the deck.");
       break;

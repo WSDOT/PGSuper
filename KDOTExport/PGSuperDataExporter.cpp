@@ -202,10 +202,10 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
       GET_IFACE2(pBroker,IMaterials,pMaterials);
       GET_IFACE2(pBroker,IIntervals,pIntervals);
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
       IntervalIndexType finalIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-      Float64 dval = pMaterials->GetDeckFc(compositeDeckIntervalIdx);
+      Float64 dval = pMaterials->GetDeckFc(0,compositeDeckIntervalIdx);
       dval = ::ConvertFromSysUnits(dval, unitMeasure::KSI);
       brdata.SlabFc(dval);
 
@@ -1011,7 +1011,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
       brdata.HaunchVolumeForAllSelectedGirders(dval);
 
       // Now can compute haunch weight for entire bridge
-      Float64 haunchWDensity = pMaterials->GetDeckWeightDensity(compositeDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+      Float64 haunchWDensity = pMaterials->GetDeckWeightDensity(0,compositeDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
       Float64 bridgeHaunchWeight = bridgeHaunchVolume * haunchWDensity;
 
       dval = ::ConvertFromSysUnits(bridgeHaunchWeight, unitMeasure::Kip);

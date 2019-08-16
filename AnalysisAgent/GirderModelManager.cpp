@@ -1358,8 +1358,12 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
 
    VERIFY_ANALYSIS_TYPE;
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
@@ -1407,8 +1411,11 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
    GET_IFACE(IPointOfInterest,pPoi);
    if (pPoi->IsOnSegment(poi) )
    {
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
       GET_IFACE(IIntervals,pIntervals);
-      IntervalIndexType compositeIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType compositeIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
       GET_IFACE(ILosses,pLosses);
       const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
@@ -4846,9 +4853,10 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
    IntervalIndexType constructionIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType firstCompositeDeckIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
+
+   GET_IFACE(IPointOfInterest, pPoi);
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
 
@@ -4864,6 +4872,10 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
    for(const pgsPointOfInterest& poi : vPoi)
    {
       ATLASSERT(CGirderKey(segmentKey) == CGirderKey(poi.GetSegmentKey()));
+
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
       Float64 MzMinLeft, MzMinRight;
       CComPtr<ILoadCombinationResultConfiguration> leftConfig,rightConfig;
@@ -4988,11 +5000,11 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
       if ( bExcludeNoncompositeMoments )
       {
          // we've added in all the CR/SH/RE moments... now remove the Cumulative CR/SH/RE moments
-         // that occur from the start to the time the deck is components... what will remain is the
+         // that occur from the start to the time the deck is composite... what will remain is the
          // moments from composite deck to final
-         std::vector<Float64> vMcr = pForces->GetMoment(compositeDeckIntervalIdx,lcCR,vPoi,bat,rtCumulative);
-         std::vector<Float64> vMsh = pForces->GetMoment(compositeDeckIntervalIdx,lcSH,vPoi,bat,rtCumulative);
-         std::vector<Float64> vMre = pForces->GetMoment(compositeDeckIntervalIdx,lcRE,vPoi,bat,rtCumulative);
+         std::vector<Float64> vMcr = pForces->GetMoment(firstCompositeDeckIntervalIdx,lcCR,vPoi,bat,rtCumulative);
+         std::vector<Float64> vMsh = pForces->GetMoment(firstCompositeDeckIntervalIdx,lcSH,vPoi,bat,rtCumulative);
+         std::vector<Float64> vMre = pForces->GetMoment(firstCompositeDeckIntervalIdx,lcRE,vPoi,bat,rtCumulative);
 
          if ( !IsEqual(gCRMax,1.0) )
          {
@@ -8806,12 +8818,14 @@ void CGirderModelManager::ApplySlabLoad(ILBAMModel* pModel,pgsTypes::AnalysisTyp
    CComBSTR bstrPanelLoadGroup( GetLoadGroupName(pgsTypes::pftSlabPanel) );
 
    GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType castSlabInterval = pIntervals->GetCastDeckInterval();
-   CComBSTR bstrStage(GetLBAMStageName(castSlabInterval));
+   GET_IFACE(IBridge, pBridge);
+
+   IndexType nRegions = pBridge->GetDeckCastingRegionCount();
+   ATLASSERT(0 < nRegions);
+
 
    MemberIDType mbrID = 0;
 
-   GET_IFACE(IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(gdr, &vGirderKeys);
    for(const auto& girderKey : vGirderKeys)
@@ -8824,13 +8838,24 @@ void CGirderModelManager::ApplySlabLoad(ILBAMModel* pModel,pgsTypes::AnalysisTyp
       {
          CSegmentKey segmentKey(girderKey,segIdx);
 
-         // Create equivalent LinearLoad vectors from the SlabLoad information
-         std::vector<LinearLoad> vSlabLoads, vHaunchLoads, vPanelLoads;
-         GetSlabLoad(segmentKey,vSlabLoads,vHaunchLoads,vPanelLoads);
+         std::vector<SlabLoad> slabLoads;
+         GetMainSpanSlabLoad(segmentKey, &slabLoads);
 
-         ApplyDistributedLoadsToSegment(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vSlabLoads,bstrStage,bstrSlabLoadGroup);
-         ApplyDistributedLoadsToSegment(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vHaunchLoads,bstrStage,bstrSlabPadLoadGroup);
-         mbrID = ApplyDistributedLoadsToSegment(castSlabInterval,pModel,analysisType,mbrID,segmentKey,vPanelLoads,bstrStage,bstrPanelLoadGroup);
+         MemberIDType nextMemberID;
+         for (IndexType castingRegionIdx = 0; castingRegionIdx < nRegions; castingRegionIdx++)
+         {
+            // Create equivalent LinearLoad vectors from the SlabLoad information
+            std::vector<LinearLoad> vSlabLoads, vHaunchLoads, vPanelLoads;
+            GetSlabLoad(slabLoads, castingRegionIdx, vSlabLoads, vHaunchLoads, vPanelLoads);
+
+            IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(castingRegionIdx);
+            CComBSTR bstrStage(GetLBAMStageName(castDeckIntervalIdx));
+            ApplyDistributedLoadsToSegment(castDeckIntervalIdx, pModel, analysisType, mbrID, segmentKey, vSlabLoads, bstrStage, bstrSlabLoadGroup);
+            ApplyDistributedLoadsToSegment(castDeckIntervalIdx, pModel, analysisType, mbrID, segmentKey, vHaunchLoads, bstrStage, bstrSlabPadLoadGroup);
+            nextMemberID = ApplyDistributedLoadsToSegment(castDeckIntervalIdx, pModel, analysisType, mbrID, segmentKey, vPanelLoads, bstrStage, bstrPanelLoadGroup);
+         }
+
+         mbrID = nextMemberID;
 
          const CPierData2* pPier;
          const CTemporarySupportData* pTS;
@@ -11778,8 +11803,8 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    CComBSTR bstrDiaphragmStage(GetLBAMStageName(castDiaphragmIntervalIdx));
 
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   CComBSTR bstrDeckStage(GetLBAMStageName(castDeckIntervalIdx));
+   IntervalIndexType firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
+   CComBSTR bstrDeckStage(GetLBAMStageName(firstCastDeckIntervalIdx));
 
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftDiaphragm) ); 
 
@@ -14611,7 +14636,6 @@ void CGirderModelManager::GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey
    GET_IFACE( IIntervals, pIntervals );
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
 
    Float64 density = pMaterial->GetSegmentWeightDensity(segmentKey,releaseIntervalIdx); // cast with girder, using girder concrete
 
@@ -14653,7 +14677,7 @@ void CGirderModelManager::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey,
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
 
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-   Float64 density = pMaterial->GetDeckWeightDensity(castDiaphragmIntervalIdx);
+   Float64 density = pMaterial->GetDiaphragmWeightDensity(castDiaphragmIntervalIdx);
 
    Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
 
@@ -14724,7 +14748,7 @@ void CGirderModelManager::GetPierDiaphragmLoads( PierIndexType pierIdx, GirderIn
 
    IntervalIndexType castDiaphragmsIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
 
-   Float64 density = (pBridge->GetDeckType() == pgsTypes::sdtNone ? pMaterial->GetSegmentWeightDensity(segmentKey, castDiaphragmsIntervalIdx) : pMaterial->GetDeckWeightDensity(castDiaphragmsIntervalIdx));
+   Float64 density = (pBridge->GetDeckType() == pgsTypes::sdtNone ? pMaterial->GetSegmentWeightDensity(segmentKey, castDiaphragmsIntervalIdx) : pMaterial->GetDeckWeightDensity(0/*assume region 0*/,castDiaphragmsIntervalIdx));
    Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
 
    bool bApplyLoadToBackSide  = pBridge->DoesPierDiaphragmLoadGirder(pierIdx,pgsTypes::Back);
@@ -14950,8 +14974,8 @@ MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexTy
 #endif
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType continuityIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   bool bIsContinuous = (continuityIntervalIdx <= intervalIdx);
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   bool bIsDeckComposite = (lastCompositeDeckIntervalIdx <= intervalIdx);
 
    CComPtr<IDistributedLoads> distLoads;
    pModel->get_DistributedLoads(&distLoads);
@@ -15039,7 +15063,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexTy
             || // OR
             ( !(segmentKey.segmentIndex == 0 && segmentKey.groupIndex == 0) // this is not the first segment in the first group
             && // AND
-            bIsContinuous // the deck is composite
+            bIsDeckComposite // the deck is composite
             && // AND
             analysisType == pgsTypes::Continuous // we are doing a continuous analysis
             && // AND
@@ -15083,7 +15107,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexTy
             || // OR
             ( !(segmentKey.segmentIndex == nSegments-1 && segmentKey.groupIndex == nGroups-1) // this is not the last segment in the last group
             && // AND
-            bIsContinuous // the deck is composite 
+            bIsDeckComposite // the deck is composite 
             && // AND 
             analysisType == pgsTypes::Continuous // we are doing continuous analysis
             && // AND
@@ -15178,18 +15202,22 @@ MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexTy
    return ssmbrID + mbrIDInc;
 }
 
-void CGirderModelManager::GetSlabLoad(const CSegmentKey& segmentKey, std::vector<LinearLoad>& vSlabLoads, std::vector<LinearLoad>& vHaunchLoads, std::vector<LinearLoad>& vPanelLoads) const
+void CGirderModelManager::GetSlabLoad(const std::vector<SlabLoad>& vBasicSlabLoads,IndexType castingRegionIdx, std::vector<LinearLoad>& vSlabLoads, std::vector<LinearLoad>& vHaunchLoads, std::vector<LinearLoad>& vPanelLoads) const
 {
    // Create equivalent LinearLoad vectors from the SlabLoad information
-   std::vector<SlabLoad> slabLoads;
-   GetMainSpanSlabLoad(segmentKey,&slabLoads);
-   std::vector<SlabLoad>::iterator iter1(slabLoads.begin());
-   std::vector<SlabLoad>::iterator iter2(iter1+1);
-   std::vector<SlabLoad>::iterator end(slabLoads.end());
+   auto iter1(vBasicSlabLoads.begin());
+   auto iter2(iter1+1);
+   const auto end(vBasicSlabLoads.end());
    for ( ; iter2 != end; iter1++, iter2++ )
    {
-      SlabLoad& prevLoad = *iter1;
-      SlabLoad& nextLoad = *iter2;
+      const SlabLoad& prevLoad = *iter1;
+      const SlabLoad& nextLoad = *iter2;
+
+      if (prevLoad.DeckCastingRegionIdx != castingRegionIdx || nextLoad.DeckCastingRegionIdx != castingRegionIdx)
+      {
+         // the load segments aren't in the target casting regino
+         continue;
+      }
 
       Float64 Xstart = prevLoad.Loc;
       Float64 Xend   = nextLoad.Loc;
@@ -15211,7 +15239,7 @@ void CGirderModelManager::GetSlabLoad(const CSegmentKey& segmentKey, std::vector
    } // next load
 }
 
-void CGirderModelManager::GetLinearPointPointsOfInterest(const CSegmentKey& segmentKey, PoiList* pvPoi) const
+void CGirderModelManager::GetLinearLoadPointsOfInterest(const CSegmentKey& segmentKey, PoiList* pvPoi) const
 {
    // a consistent way to get POI's for linear loading situations
    GET_IFACE(IPointOfInterest, pPoi);
@@ -15221,8 +15249,8 @@ void CGirderModelManager::GetLinearPointPointsOfInterest(const CSegmentKey& segm
    // The slab pad will be wider over the end block then in the middle of the girder
    PoiList vPoi2;
    pPoi->GetPointsOfInterest(segmentKey, POI_SECTCHANGE, &vPoi2, POIFIND_OR);
-
    pPoi->MergePoiLists(*pvPoi, vPoi2, pvPoi);
+
    ATLASSERT(pvPoi->size() != 0);
 }
 
@@ -15233,11 +15261,11 @@ void CGirderModelManager::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std
    GetMainSpanSlabLoadEx(segmentKey, true, false, dummyAs, dummyAe, dummyF, pSlabLoads);
 }
 
-void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, bool doCondense, bool useDesignValues , Float64 dsnAstart, Float64 dsnAend, Float64 dsnAssExcessCamber,  std::vector<SlabLoad>* pSlabLoads) const
+void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, bool doCondense, bool useDesignValues , Float64 dsnAstart, Float64 dsnAend, Float64 dsnAssumedExcessCamber,  std::vector<SlabLoad>* pSlabLoads) const
 {
    ASSERT_SEGMENT_KEY(segmentKey);
 
-   ATLASSERT(pSlabLoads!=0);
+   ATLASSERT(pSlabLoads != nullptr);
    pSlabLoads->clear();
 
    GET_IFACE(IBridge,pBridge);
@@ -15247,19 +15275,23 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    GET_IFACE(ISpecification, pSpec );
    GET_IFACE(IRoadway, pAlignment);
 
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
    // if there is no deck, there is no load
    pgsTypes::SupportedDeckType deckType = pDeck->GetDeckType();
-   if (deckType == pgsTypes::sdtNone )
+   if (deckType == pgsTypes::sdtNone)
    {
       return;
    }
+
+   IndexType deckCastingRegionIdx = 0; // assume region zero to get properties that are common to all castings
+   GET_IFACE(IIntervals,pIntervals);
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+   Float64 deck_density = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx, castDeckIntervalIdx);
+   Float64 deck_unit_weight = deck_density * unitSysUnitsMgr::GetGravitationalAcceleration();
+
 
    Float64 panel_support_width = 0;
    if (deckType == pgsTypes::sdtCompositeSIP )
@@ -15269,13 +15301,18 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
    // Get the POIs for getting the deck load.
    PoiList vPoi;
-   GetLinearPointPointsOfInterest(segmentKey, &vPoi);
+   GetLinearLoadPointsOfInterest(segmentKey, &vPoi);
    ATLASSERT(vPoi.size() != 0);
 
+   // add the deck casting boundary POIs
+   PoiList vPoi2;
+   pPoi->GetPointsOfInterest(segmentKey, POI_CASTING_BOUNDARY, &vPoi2);
+   pPoi->MergePoiLists(vPoi, vPoi2, &vPoi);
+
+   // Account for girder camber
    bool bIsInteriorGirder = pBridge->IsInteriorGirder( segmentKey );
    pgsTypes::SideType side = (segmentKey.girderIndex == 0 ? pgsTypes::stLeft : pgsTypes::stRight);
 
-   // Account for girder camber
    std::unique_ptr<mathFunction2d> camberShape;
 
    // estimated girder excess camber (user input excess camber) is measured using the bearings as the datum
@@ -15288,7 +15325,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
    std::unique_ptr<mathFunction2d> imposedShape;
    // precamber and top flange thickening is measured using the ends of the girder as the datum
-   PoiList vPoi2;
+   vPoi2.clear();
    pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi2);
    ATLASSERT(vPoi2.size() == 2);
    const pgsPointOfInterest& poi_left(vPoi2.front());
@@ -15308,7 +15345,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
       if (useDesignValues)
       {
-         assumed_excess_camber = dsnAssExcessCamber * camberFactor;
+         assumed_excess_camber = dsnAssumedExcessCamber * camberFactor;
       }
       else
       {
@@ -15435,7 +15472,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       if ( bIsInteriorGirder )
       {
          // Apply the load of the main slab
-         wslab = trib_slab_width * cast_depth  * pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+         wslab = trib_slab_width * cast_depth  * deck_unit_weight;
 
          // compute the width of the deck panels
          Float64 panel_width = trib_slab_width; // start with tributary width
@@ -15449,7 +15486,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
          // add panel support widths
          panel_width += 2*nMatingSurfaces*panel_support_width;
-         wslab_panel = panel_width * panel_depth * pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+         wslab_panel = panel_width * panel_depth * deck_unit_weight;
       }
       else
       {
@@ -15524,7 +15561,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          // Determine area of slab from exterior flange tip to 1/2 distance to interior girder
          Float64 w = trib_slab_width - slab_overhang;
          Float64 slab_area = w*cast_depth;
-         wslab       = (slab_area + slab_overhang_area) * pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+         wslab       = (slab_area + slab_overhang_area) * deck_unit_weight;
 
          Float64 panel_width = w;
 
@@ -15547,7 +15584,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
             panel_width = 0.0; // negative overhangs can cause this condition
          }
 
-         wslab_panel = panel_width * panel_depth * pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+         wslab_panel = panel_width * panel_depth * deck_unit_weight;
       }
 
       ASSERT( 0 <= wslab );
@@ -15557,8 +15594,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       Float64 Xs = poi.GetDistFromStart();
       Float64 camber = camberShape->Evaluate(Xs) + imposedShape->Evaluate(Xs);
 
-      // imposed shape is measured from end faces of the girder... we need to make and adjustment so the zero datum
-      // is at the CL Brg.
+      // imposed shape is measured from end faces of the girder... 
+      // we need to make an adjustment so the zero datum is at the CL Brg.
       Float64 imposed_shape_adj = -::LinInterp(Xs, imposed_at_left_brg, imposed_at_right_brg, Ls);
       camber += imposed_shape_adj;
 
@@ -15566,7 +15603,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       Float64 real_pad_hgt = top_girder_to_top_slab - cast_depth - camber;
 
       // Don't use negative haunch depth for loading
-      Float64 pad_hgt = real_pad_hgt > 0.0 ? real_pad_hgt : 0.0;
+      Float64 pad_hgt = 0.0 < real_pad_hgt ? real_pad_hgt : 0.0;
 
       // mating surface
       Float64 mating_surface_width = 0;
@@ -15589,11 +15626,11 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       Float64 wpad = 0;
       if (IsNonstructuralDeck(deckType))
       {
-         wpad = trib_slab_width * pad_hgt *  pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+         wpad = trib_slab_width * pad_hgt *  deck_unit_weight;
       }
       else
       {
-         wpad = (pad_hgt*mating_surface_width + (pad_hgt - panel_depth)*(bIsInteriorGirder ? 2 : 1)*nMatingSurfaces*panel_support_width)*  pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+         wpad = (pad_hgt*mating_surface_width + (pad_hgt - panel_depth)*(bIsInteriorGirder ? 2 : 1)*nMatingSurfaces*panel_support_width)*  deck_unit_weight;
       }
       ASSERT( 0 <= wpad );
 
@@ -15602,11 +15639,12 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       LOG("Slab Pad Load        = " << wpad);
 
       SlabLoad sload;
+      sload.DeckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
       sload.Loc          = poi.GetDistFromStart();
       sload.MainSlabLoad = -wslab;  // + is upward
       sload.PanelLoad    = -wslab_panel;
       sload.PadLoad      = -wpad;
-      sload.AssExcessCamber = camber;
+      sload.AssumedExcessCamber = camber;
       sload.HaunchDepth  = real_pad_hgt;
       sload.SlabDepth = cast_depth;
       sload.GirderChordElevation = girder_chord_elevation;
@@ -15623,7 +15661,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       else
       {
          SlabLoad lastLoad = pSlabLoads->back();
-         if ( IsEqual(lastLoad.MainSlabLoad,sload.MainSlabLoad) && IsEqual(lastLoad.PanelLoad,sload.PanelLoad) && IsEqual(lastLoad.PadLoad,sload.PadLoad) )
+         if ( IsEqual(lastLoad.MainSlabLoad,sload.MainSlabLoad) && IsEqual(lastLoad.PanelLoad,sload.PanelLoad) && IsEqual(lastLoad.PadLoad,sload.PadLoad) && lastLoad.DeckCastingRegionIdx == sload.DeckCastingRegionIdx)
          {
             if ( !bKeepLast )
             {
@@ -15642,14 +15680,14 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    }
 }
 
-void  CGirderModelManager::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssExcessCamber, std::vector<SlabLoad>* pSlabLoads) const
+void  CGirderModelManager::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssumedExcessCamber, std::vector<SlabLoad>* pSlabLoads) const
 {
    // Subtract slab pad load due to design values from that due to original model.
    ASSERT_SEGMENT_KEY(segmentKey);
    Float64 fdummy(0);
    std::vector<SlabLoad> originalSlabLoads;
    GetMainSpanSlabLoadEx(segmentKey, false, false, fdummy, fdummy, fdummy, &originalSlabLoads);
-   GetMainSpanSlabLoadEx(segmentKey, false, true, Astart, Aend, AssExcessCamber, pSlabLoads);
+   GetMainSpanSlabLoadEx(segmentKey, false, true, Astart, Aend, AssumedExcessCamber, pSlabLoads);
 
    ATLASSERT(originalSlabLoads.size() == pSlabLoads->size());
 
@@ -16115,7 +16153,7 @@ void CGirderModelManager::GetMainSpanShearKeyLoad(const CSegmentKey& segmentKey,
    }
    else
    {
-      unit_weight = pMaterial->GetDeckWeightDensity(castShearKeyIntervalIdx)*unitSysUnitsMgr::GetGravitationalAcceleration();
+      unit_weight = pMaterial->GetDeckWeightDensity(0/*assume casting region 0*/,castShearKeyIntervalIdx)*unitSysUnitsMgr::GetGravitationalAcceleration();
    }
 
    Float64 unif_wt      = unif_area  * unit_weight;
@@ -16227,7 +16265,7 @@ void CGirderModelManager::GetMainSpanLongitudinalJointLoad(const CSegmentKey& se
    Float64 unit_weight = density * unitSysUnitsMgr::GetGravitationalAcceleration();
 
    PoiList vPoi;
-   GetLinearPointPointsOfInterest(segmentKey, &vPoi);
+   GetLinearLoadPointsOfInterest(segmentKey, &vPoi);
 
    auto iter = vPoi.begin();
 
@@ -17708,8 +17746,11 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
 
 Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 ex,Float64 ey) const
 {
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
    GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    if ( ::IsDeckStressLocation(stressLocation) && intervalIdx < compositeDeckIntervalIdx )
    {
       return 0.0; // asking for stress in the deck but the deck is not composite yet. there can't be stress
@@ -17740,7 +17781,10 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
 
    GET_IFACE(IPosttensionForce,  pPTForce);
    GET_IFACE(IIntervals,         pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
    Float64 stress = 0;
    for ( DuctIndexType idx = firstDuctIdx; idx <= lastDuctIdx; idx++ )

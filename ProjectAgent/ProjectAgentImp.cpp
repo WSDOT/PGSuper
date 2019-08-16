@@ -7058,7 +7058,7 @@ void CProjectAgentImp::SetAssumedExcessCamber( Float64 assumedExcessCamber)
    if ( m_BridgeDescription.GetAssumedExcessCamberType() != pgsTypes::aecBridge ||
         !IsEqual(assumedExcessCamber,m_BridgeDescription.GetAssumedExcessCamber()) )
    {
-      // AssExcessCamber type and/or value is changing
+      // AssumedExcessCamber type and/or value is changing
       m_BridgeDescription.SetAssumedExcessCamberType(pgsTypes::aecBridge);
       m_BridgeDescription.SetAssumedExcessCamber(assumedExcessCamber);
       Fire_BridgeChanged();
@@ -11745,6 +11745,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
          pTimelineEvent->GetCastDeckActivity().Enable();
+         pTimelineEvent->GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous); // this is the only option supported for PGSuper models
          pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(deck_diaphragm_curing_duration); // day
          pTimelineEvent->GetCastDeckActivity().SetCuringDuration(deck_diaphragm_curing_duration); // day
          pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
@@ -11776,6 +11777,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
          pTimelineEvent->SetDay(day);
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
          pTimelineEvent->GetCastDeckActivity().Enable();
+         pTimelineEvent->GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous); // this is the only option supported for PGSuper models
          pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(deck_diaphragm_curing_duration); // day
          pTimelineEvent->GetCastDeckActivity().SetCuringDuration(deck_diaphragm_curing_duration); // day
          pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);

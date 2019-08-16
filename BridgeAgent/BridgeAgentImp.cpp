@@ -116,6 +116,10 @@ CogoObjectID g_AlignmentID = 999;
 
 #define DECK_REBAR_OFFSET 0.0015 // distance from the deck rebar cutoff point to the adjacent POI that is offset just a little so we capture jumps
 
+inline SectionBias GetSectionBias(const pgsPointOfInterest& poi)
+{
+   return (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) || poi.HasAttribute(POI_CASTING_BOUNDARY_END) ? sbLeft : sbRight);
+}
 
 //-----------------------------------------------------------------------------
 CollectionIndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
@@ -3353,7 +3357,6 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription2* pBridgeDesc)
    IntervalIndexType overlayIntervalIdx = m_IntervalManager.GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx = m_IntervalManager.GetLiveLoadInterval();
 
-
    // put the wearing surface into the generic bridge model
    if ( pDeck->WearingSurface == pgsTypes::wstSacrificialDepth || 
         pDeck->WearingSurface == pgsTypes::wstFutureOverlay ||
@@ -3410,7 +3413,7 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription2* pBridgeDesc)
    }
    else
    {
-      LayoutNoDeck(pBridgeDesc,&deck);
+      LayoutOverlayDeck(pBridgeDesc,&deck);
    }
 
    if ( deck )
@@ -3418,24 +3421,55 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription2* pBridgeDesc)
       LayoutDeckRebar(pDeck,deck);
 
       // put the deck in the bridge model before creating the deck material
-      // for time-step analysis we need age adjusted concrete it it depends on 
+      // for time-step analysis we need age adjusted concrete and it depends on 
       // deck geometry parameters (V/S). The bridge model needs the deck to compute
       // these parameters.
       m_Bridge->putref_Deck(deck);
 
+      if (!AssignDeckMaterial(pBridgeDesc, deck))
+         return false;
+   }
+
+
+   return true;
+}
+
+bool CBridgeAgentImp::AssignDeckMaterial(const CBridgeDescription2* pBridgeDesc, IBridgeDeck* pDeck)
+{
+   GET_IFACE(ILossParameters, pLossParams);
+   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+
+   CComQIPtr<ICastSlab> castSlab(pDeck);
+   CComQIPtr<IPrecastSlab> precastSlab(pDeck);
+   CComQIPtr<IOverlaySlab> overlaySlab(pDeck);
+
+   const auto* pTimelineMgr = pBridgeDesc->GetTimelineManager();
+   EventIndexType castDeckEventIdx = pTimelineMgr->GetCastDeckEventIndex();
+   ATLASSERT(castDeckEventIdx != INVALID_INDEX);
+   const auto* pTimelineEvent = pTimelineMgr->GetEventByIndex(castDeckEventIdx);
+   ATLASSERT(pTimelineEvent && pTimelineEvent->GetCastDeckActivity().IsEnabled());
+   const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
+   const auto& regions = castDeckActivity.GetCastingRegions();
+   IndexType nRegions = castDeckActivity.GetCastingRegionCount();
+#if defined _DEBUG
+   if (overlaySlab)
+   {
+      ATLASSERT(nRegions == 1); // there can only be one region for overlay slabs (casting regions not available for this type)
+   }
+#endif
+   for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
+   {
+      const auto& region(regions[regionIdx]);
+
       CComPtr<IMaterial> deck_material;
-
-      GET_IFACE(ILossParameters,pLossParams);
-      bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
-
-      if ( bTimeStepAnalysis )
+      if (bTimeStepAnalysis)
       {
-         GET_IFACE(IMaterials,pMaterials);
+         GET_IFACE(IMaterials, pMaterials);
          CComPtr<IAgeAdjustedMaterial> age_adjusted_material;
          HRESULT hr = age_adjusted_material.CoCreateInstance(CLSID_AgeAdjustedMaterial);
          ATLASSERT(SUCCEEDED(hr));
 
-         age_adjusted_material->InitDeck(girderKey,pMaterials);
+         age_adjusted_material->InitDeck(regionIdx,pMaterials);
 
          age_adjusted_material.QueryInterface(&deck_material);
       }
@@ -3443,19 +3477,37 @@ bool CBridgeAgentImp::LayoutDeck(const CBridgeDescription2* pBridgeDesc)
       {
          deck_material.CoCreateInstance(CLSID_Material);
          IntervalIndexType nIntervals = m_IntervalManager.GetIntervalCount();
-         for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+         for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
          {
-            Float64 E = GetDeckEc(intervalIdx);
-            Float64 D = GetDeckWeightDensity(intervalIdx);
+            Float64 E = GetDeckEc(regionIdx,intervalIdx);
+            Float64 D = GetDeckWeightDensity(regionIdx,intervalIdx);
 
-            deck_material->put_E(intervalIdx,E);
-            deck_material->put_Density(intervalIdx,D);
+            deck_material->put_E(intervalIdx, E);
+            deck_material->put_Density(intervalIdx, D);
          }
       }
- 
-      deck->putref_Material(deck_material);
-   }
 
+      if (castSlab)
+      {
+         CComPtr<ICastingRegions> regions;
+         castSlab->get_CastingRegions(&regions);
+         CComPtr<ICastingRegion> region;
+         regions->get_Item(regionIdx, &region);
+         region->putref_Material(deck_material);
+      }
+      else if (precastSlab)
+      {
+         CComPtr<ICastingRegions> regions;
+         precastSlab->get_CastingRegions(&regions);
+         CComPtr<ICastingRegion> region;
+         regions->get_Item(regionIdx, &region);
+         region->putref_Material(deck_material);
+      }
+      else
+      {
+         overlaySlab->putref_Material(deck_material);
+      }
+   }
 
    return true;
 }
@@ -3538,7 +3590,7 @@ void CBridgeAgentImp::NoDeckEdgePoint(GroupIndexType grpIdx,SegmentIndexType seg
    (*ppPoint)->AddRef();
 }
 
-bool CBridgeAgentImp::LayoutNoDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck)
+bool CBridgeAgentImp::LayoutOverlayDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck)
 {
    // There isn't an explicit deck in this case, so layout of the slab must be done
    // based on the girder geometry. Update the bridge model now so that the girder geometry is correct
@@ -3772,6 +3824,13 @@ bool CBridgeAgentImp::LayoutCompositeCIPDeck(const CBridgeDescription2* pBridgeD
    slab->put_GrossDepth(pDeck->GrossDepth);
    slab->SetOverhang(pDeck->OverhangEdgeDepth[pgsTypes::stLeft], (DeckOverhangTaper)pDeck->OverhangTaper[pgsTypes::stLeft], pDeck->OverhangEdgeDepth[pgsTypes::stRight], (DeckOverhangTaper)pDeck->OverhangTaper[pgsTypes::stRight]);
 
+   CComPtr<ICastingRegions> castingRegions;
+   slab->get_CastingRegions(&castingRegions);
+   if (!LayoutDeckCastingRegions(pBridgeDesc, castingRegions))
+   {
+      return false;
+   }
+
    slab.QueryInterface(ppDeck);
 
    (*ppDeck)->put_Composite( VARIANT_TRUE );
@@ -3791,10 +3850,48 @@ bool CBridgeAgentImp::LayoutCompositeSIPDeck(const CBridgeDescription2* pBridgeD
    slab->put_CastDepth(pDeck->GrossDepth); // interpreted as cast depth
    slab->SetOverhang(pDeck->OverhangEdgeDepth[pgsTypes::stLeft], (DeckOverhangTaper)pDeck->OverhangTaper[pgsTypes::stLeft], pDeck->OverhangEdgeDepth[pgsTypes::stRight], (DeckOverhangTaper)pDeck->OverhangTaper[pgsTypes::stRight]);
 
+   CComPtr<ICastingRegions> castingRegions;
+   slab->get_CastingRegions(&castingRegions);
+   if (!LayoutDeckCastingRegions(pBridgeDesc, castingRegions))
+   {
+      return false;
+   }
+
    slab.QueryInterface(ppDeck);
 
    (*ppDeck)->put_Composite( VARIANT_TRUE );
    (*ppDeck)->putref_DeckBoundary(pBoundary);
+
+   return true;
+}
+
+bool CBridgeAgentImp::LayoutDeckCastingRegions(const CBridgeDescription2* pBridgeDesc, ICastingRegions* pCastingRegions)
+{
+   EventIndexType castDeckEventIdx = pBridgeDesc->GetTimelineManager()->GetCastDeckEventIndex();
+   ATLASSERT(castDeckEventIdx != INVALID_INDEX);
+   const CTimelineEvent* pEvent = pBridgeDesc->GetTimelineManager()->GetEventByIndex(castDeckEventIdx);
+   ATLASSERT(pEvent && pEvent->GetCastDeckActivity().IsEnabled());
+   const CCastDeckActivity& castDeckActivity = pEvent->GetCastDeckActivity();
+
+   pCastingRegions->put_Boundary((CastingRegionBoundary)castDeckActivity.GetDeckCastingRegionBoundary());
+
+   const auto& vRegions = castDeckActivity.GetCastingRegions();
+   IndexType nRegions = vRegions.size();
+   for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
+   {
+      const auto& region = vRegions[regionIdx];
+      PierIndexType startPierIdx, endPierIdx;
+      Float64 Xstart, Xend;
+      IndexType sequenceIdx;
+      CCastingRegion::RegionType type;
+      GetDeckCastingRegionLimits(regionIdx, &startPierIdx, &Xstart, &endPierIdx, &Xend, &type, &sequenceIdx, nullptr);
+
+      PierIDType startPierID = ::GetPierLineID(startPierIdx);
+      PierIDType endPierID = ::GetPierLineID(endPierIdx);
+      
+      CComPtr<ICastingRegion> objRegion;
+      pCastingRegions->CreateRegion(startPierID, Xstart, endPierID, Xend, nullptr/*material will be assigned later*/, &objRegion);
+   }
 
    return true;
 }
@@ -4624,6 +4721,7 @@ void CBridgeAgentImp::LayoutPointsOfInterest(const CGirderKey& girderKey)
       segment_offset += segment_layout_length;
    }
 
+   LayoutPoiForSlabCastingRegions(girderKey);
    LayoutPoiForSlabBarCutoffs(girderKey);
 
    LayoutPoiForTendons(girderKey);
@@ -5509,6 +5607,194 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
          }
       }
    }
+}
+
+void CBridgeAgentImp::LayoutPoiForSlabCastingRegions(const CGirderKey& girderKey)
+{
+   ASSERT_GIRDER_KEY(girderKey);
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+   if (castDeckEventIdx == INVALID_INDEX)
+   {
+      // no deck, no deck casting boundaries
+      ATLASSERT(pIBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone);
+      return;
+   }
+
+   const CTimelineEvent* pEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
+   const CCastDeckActivity& castDeckActivity = pEvent->GetCastDeckActivity();
+   ATLASSERT(castDeckActivity.IsEnabled());
+
+   // create a geometry utility object... we'll need it for geometric calculations
+   CComPtr<IGeomUtil2d> geomUtil;
+   geomUtil.CoCreateInstance(CLSID_GeomUtil);
+
+   GroupIndexType nGroups = GetGirderGroupCount();
+
+   // loop over all the casting regions
+   const auto& vRegions = castDeckActivity.GetCastingRegions();
+   IndexType nRegions = vRegions.size();
+   for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
+   {
+      const auto& region = vRegions[regionIdx];
+
+      // get the location of the region limits
+      std::array<PierIndexType, 2> pierIdx; // pier the region is keyed to
+      std::array<Float64, 2> Xb; // location of the region boundary in bridge coordinates
+      IndexType sequenceIdx;
+      CCastingRegion::RegionType type;
+      GetDeckCastingRegionLimits(regionIdx, &pierIdx[pgsTypes::metStart], &Xb[pgsTypes::metStart], &pierIdx[pgsTypes::metEnd], &Xb[pgsTypes::metEnd], &type, &sequenceIdx, nullptr);
+
+      std::array<PoiAttributeType, 2> attrib{ POI_CASTING_BOUNDARY_START, POI_CASTING_BOUNDARY_END};
+
+      // search for left and right face boundary POI
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+
+         // get the reference line of the pier
+         CComPtr<IPierLine> pierLine;
+         GetPierLine(pierIdx[endType], &pierLine);
+
+         // get the centerline of the pier, we'll call it the deck casting boundary line
+         // however its location will get moved to position it at the actual boundary
+         CComPtr<ILine2d> boundary_line;
+         pierLine->get_Centerline(&boundary_line);
+
+         CComPtr<IStation> objStation;
+         pierLine->get_Station(&objStation);
+
+         CComPtr<IPoint2d> alignment_point;
+         if (IsZero(Xb[endType]))
+         {
+            // pier line is the boundary line
+            pierLine->get_AlignmentPoint(&alignment_point);
+         }
+         else
+         {
+            // boundary line is offset from the pier line
+            // get the location of the boundary line
+            objStation->Offset(Xb[endType]);
+
+            CComPtr<IAlignment> alignment;
+            m_Bridge->get_Alignment(&alignment);
+
+            alignment->LocatePoint(CComVariant(objStation), OffsetMeasureType::omtNormal, 0.0, CComVariant(0), &alignment_point);
+         }
+
+         // orient the boundary line
+         CComPtr<IPoint2d> pnt;
+         CComPtr<IVector2d> vDir;
+         boundary_line->GetExplicit(&pnt, &vDir); // these parameters are for parallel pier
+
+         if (castDeckActivity.GetDeckCastingRegionBoundary() == pgsTypes::dcrbNormalToAlignment)
+         {
+            // we want the boundary line to be normal to the alignment
+            CComPtr<IAlignment> alignment;
+            m_Bridge->get_Alignment(&alignment);
+
+            CComPtr<IDirection> normal;
+            alignment->Normal(CComVariant(objStation), &normal);
+
+            Float64 value;
+            normal->get_Value(&value);
+
+            vDir->put_Direction(value);
+         }
+
+         // move and orient the boundary line
+         boundary_line->SetExplicit(alignment_point, vDir);
+
+         // for each segment in the girder line, see if the segment centerline
+         // intesects the boundary line. If it does, we've found the boundary
+         // poi location.
+         SegmentIndexType nSegments = GetSegmentCount(girderKey);
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            CSegmentKey segmentKey(girderKey, segIdx);
+            
+            // get the centerline of the segment
+            CComPtr<IGirderLine> segment_line;
+            GetGirderLine(segmentKey, &segment_line);
+            
+            // model segment centerline as a line segment between the ends of the segment
+            CComPtr<ILineSegment2d> seg_centerline;
+            seg_centerline.CoCreateInstance(CLSID_LineSegment2d);
+            
+            CComPtr<IPoint2d> pntStart, pntEnd;
+            if (segIdx == 0)
+            {
+               // use the point where the segment centerline projected
+               // intersects its support line
+               segment_line->get_PierPoint(etStart, &pntStart);
+            }
+            else
+            {
+               // segment, use the actual segment end
+               segment_line->get_EndPoint(etStart, &pntStart);
+            }
+
+            if (segIdx == nSegments - 1)
+            {
+               segment_line->get_PierPoint(etEnd, &pntEnd);
+            }
+            else
+            {
+               segment_line->get_EndPoint(etEnd, &pntEnd);
+            }
+            seg_centerline->ThroughPoints(pntStart, pntEnd);
+
+            // intersect the segment line with the boundary line
+            CComPtr<IPoint2d> pntIntersect;
+            geomUtil->IntersectLineWithLineSegment(boundary_line, seg_centerline, &pntIntersect);
+            if (pntIntersect != nullptr)
+            {
+               // the intersection was found
+               // make sure we have the real segment end point so Xpoi is in segment coordinates
+               pntStart.Release();
+               segment_line->get_EndPoint(etStart, &pntStart);
+
+               // Compute distace from start to intersection point
+               // distance is always a positive value since it is just a magnitude
+               // Use the inverse method so we get the direction from start to intersectin point
+               // as well
+               CComQIPtr<IMeasure2> measure(m_CogoEngine);
+               Float64 Xpoi;
+               CComPtr<IDirection> dir;
+               measure->Inverse(pntStart, pntIntersect, &Xpoi, &dir);
+
+               // get the direction of the segment
+               CComPtr<IDirection> seg_direction;
+               GetSegmentDirection(segmentKey, &seg_direction);
+
+               // if the directions are not equal, intersection point is before start so change
+               // the sign of Xpoi
+               if (seg_direction->IsEqual(dir) == S_FALSE)
+               {
+                  Xpoi *= -1;
+               }
+
+               // If this is the first segment, move deck casting boundary to the start of the segment
+               if (girderKey.groupIndex == 0 && segIdx == 0 && Xpoi < 0)
+               {
+                  Xpoi = 0;
+               }
+
+               // If this is the last segment, move the deck casting boundary to the end of the segment
+               Float64 Ls = GetSegmentLength(segmentKey);
+               if (girderKey.groupIndex == nGroups-1 && segIdx == nSegments-1 && Ls < Xpoi)
+               {
+                  Xpoi = Ls;
+               }
+
+               pgsPointOfInterest poi(segmentKey, Xpoi, attrib[endType]);
+               m_pPoiMgr->AddPointOfInterest(poi);
+               break; // we found the POI, so no need to continue search through the segments
+            }
+         } // next segment
+      } // next end
+   } // next region
 }
 
 void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKey,Float64 segmentOffset)
@@ -10516,17 +10802,13 @@ void CBridgeAgentImp::GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::Pla
 
 void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** ppPoints) const
 {
+   GetSlabPerimeter(startPierIdx, Xstart, endPierIdx, Xend, nPoints, pcType, nullptr, ppPoints);
+}
+
+void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, const CCastDeckActivity* pCastDeckActivity, IPoint2dCollection** ppPoints) const
+{
    VALIDATE(BRIDGE);
-
-   if (startPierIdx == INVALID_INDEX)
-   {
-      startPierIdx = 0;
-   }
-
-   if (endPierIdx == INVALID_INDEX)
-   {
-      endPierIdx = GetPierCount() - 1;
-   }
+   ATLASSERT(startPierIdx != INVALID_INDEX && endPierIdx != INVALID_INDEX);
 
    CComPtr<IBridgeGeometry> geometry;
    m_Bridge->get_BridgeGeometry(&geometry);
@@ -10545,7 +10827,19 @@ void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstar
    PierIDType startPierID = ::GetPierLineID(startPierIdx);
    PierIDType endPierID = ::GetPierLineID(endPierIdx);
 
-   deckBoundary->get_PerimeterEx(nPoints, startPierID, Xstart, endPierID, Xend, ppPoints);
+   if (pCastDeckActivity == nullptr)
+   {
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+      ATLASSERT(castDeckEventIdx != INVALID_INDEX);
+      const CTimelineEvent* pEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
+      ATLASSERT(pEvent && pEvent->GetCastDeckActivity().IsEnabled());
+      const CCastDeckActivity& castDeckActivity = pEvent->GetCastDeckActivity();
+      pCastDeckActivity = &castDeckActivity;
+   }
+   VARIANT_BOOL vbRegionBounariesParallelToPier = (pCastDeckActivity->GetDeckCastingRegionBoundary() == pgsTypes::dcrbParallelToPier ? VARIANT_TRUE : VARIANT_FALSE);
+
+   deckBoundary->get_PerimeterEx(nPoints, startPierID, Xstart, endPierID, Xend, vbRegionBounariesParallelToPier, ppPoints);
 
    if (pcType == pgsTypes::pcGlobal)
    {
@@ -10555,40 +10849,8 @@ void CBridgeAgentImp::GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstar
 
 void CBridgeAgentImp::GetSpanPerimeter(SpanIndexType spanIdx, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** ppPoints) const
 {
-   VALIDATE(BRIDGE);
-
-   PierIndexType startPierIdx = spanIdx;
-   PierIndexType endPierIdx = startPierIdx + 1;
-
-   Float64 Xstart = 0;
-   if (IsBoundaryPier(startPierIdx))
-   {
-      GroupIndexType backGroupIdx, aheadGroupIdx;
-      GetGirderGroupIndex(startPierIdx, &backGroupIdx, &aheadGroupIdx);
-      CSegmentKey segmentKey = GetSegmentAtPier(startPierIdx, CGirderKey(aheadGroupIdx, 0));
-
-      Float64 end_dist = GetSegmentStartEndDistance(segmentKey);
-      Float64 brg_offset = GetSegmentStartBearingOffset(segmentKey);
-
-      Xstart = brg_offset - end_dist;
-   }
-   
-   Float64 Xend = 0;
-   if (IsBoundaryPier(endPierIdx))
-   {
-      GroupIndexType backGroupIdx, aheadGroupIdx;
-      GetGirderGroupIndex(endPierIdx, &backGroupIdx, &aheadGroupIdx);
-      CSegmentKey segmentKey = GetSegmentAtPier(endPierIdx, CGirderKey(backGroupIdx, 0));
-
-      Float64 end_dist = GetSegmentEndEndDistance(segmentKey);
-      Float64 brg_offset = GetSegmentEndBearingOffset(segmentKey);
-
-      Xend = end_dist - brg_offset;
-   }
-
-   GetSlabPerimeter(startPierIdx, Xstart, endPierIdx, Xend, nPoints, pcType, ppPoints);
+   GetSlabPerimeter(spanIdx, spanIdx, nPoints, pcType, ppPoints);
 }
-
 
 void CBridgeAgentImp::GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const
 {
@@ -10896,7 +11158,7 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
       PierIDType startPierID = ::GetPierLineID(startPierIdx);
       PierIDType endPierID = ::GetPierLineID(endPierIdx);
 
-      deckBoundary->get_PerimeterEx(nPoints, startPierID, 0, endPierID, 0, points);
+      deckBoundary->get_PerimeterEx(nPoints, startPierID, 0.0, endPierID, 0.0, VARIANT_TRUE, points);
    }
 
    if (pcType == pgsTypes::pcGlobal)
@@ -12020,10 +12282,12 @@ Float64 CBridgeAgentImp::GetClosureJointFc28(const CSegmentKey& closureKey) cons
 
 Float64 CBridgeAgentImp::GetDeckFc28() const
 {
-   Float64 time_at_casting = m_ConcreteManager.GetDeckCastingTime();
+   // Fc28 is the same for all deck casting regions so use region 0
+   IndexType deckCastingRegionIdx = 0;
+   Float64 time_at_casting = m_ConcreteManager.GetDeckCastingTime(deckCastingRegionIdx);
    Float64 age = 28.0; // days
    Float64 t = time_at_casting + age;
-   return m_ConcreteManager.GetDeckFc(t);
+   return m_ConcreteManager.GetDeckFc(deckCastingRegionIdx,t);
 }
 
 Float64 CBridgeAgentImp::GetRailingSystemFc28(pgsTypes::TrafficBarrierOrientation orientation) const
@@ -12065,10 +12329,12 @@ Float64 CBridgeAgentImp::GetClosureJointEc28(const CSegmentKey& closureKey) cons
 
 Float64 CBridgeAgentImp::GetDeckEc28() const
 {
-   Float64 time_at_casting = m_ConcreteManager.GetDeckCastingTime();
+   // Ec28 is the same for all deck casting regions so use region 0
+   IndexType deckCastingRegionIdx = 0;
+   Float64 time_at_casting = m_ConcreteManager.GetDeckCastingTime(deckCastingRegionIdx);
    Float64 age = 28.0; // days
    Float64 t = time_at_casting + age;
-   return m_ConcreteManager.GetDeckEc(t);
+   return m_ConcreteManager.GetDeckEc(deckCastingRegionIdx,t);
 }
 
 Float64 CBridgeAgentImp::GetRailingSystemEc28(pgsTypes::TrafficBarrierOrientation orientation) const
@@ -12118,9 +12384,9 @@ Float64 CBridgeAgentImp::GetClosureJointWeightDensity(const CClosureKey& closure
    return pClosure->GetConcrete().WeightDensity;
 }
 
-Float64 CBridgeAgentImp::GetDeckWeightDensity(IntervalIndexType intervalIdx) const
+Float64 CBridgeAgentImp::GetDeckWeightDensity(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const
 {
-   Float64 age = GetDeckConcreteAge(intervalIdx,pgsTypes::Middle);
+   Float64 age = GetDeckConcreteAge(castingRegionIdx, intervalIdx,pgsTypes::Middle);
    if ( age < 0 )
    {
       return 0;
@@ -12130,6 +12396,13 @@ Float64 CBridgeAgentImp::GetDeckWeightDensity(IntervalIndexType intervalIdx) con
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
    return pDeck->Concrete.WeightDensity;
+}
+
+Float64 CBridgeAgentImp::GetDiaphragmWeightDensity(IntervalIndexType intervalIdx) const
+{
+   // assumes diaphragm concrete is the same as the deck concrete and all diaphragms
+   // are cast at the same time as the first deck region is cast
+   return GetDeckWeightDensity(0, intervalIdx);
 }
 
 Float64 CBridgeAgentImp::GetRailingSystemWeightDensity(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const
@@ -12202,9 +12475,9 @@ Float64 CBridgeAgentImp::GetClosureJointConcreteAge(const CSegmentKey& closureKe
    return age;
 }
 
-Float64 CBridgeAgentImp::GetDeckConcreteAge(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+Float64 CBridgeAgentImp::GetDeckConcreteAge(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
-   IntervalIndexType castDeckIntervalIdx = m_IntervalManager.GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = m_IntervalManager.GetCastDeckInterval(castingRegionIdx);
    if ( intervalIdx < castDeckIntervalIdx )
    {
       return 0; // deck hasn't been cast yet
@@ -12269,10 +12542,10 @@ Float64 CBridgeAgentImp::GetClosureJointFc(const CClosureKey& closureKey,Interva
    return m_ConcreteManager.GetClosureJointFc(closureKey,time);
 }
 
-Float64 CBridgeAgentImp::GetDeckFc(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+Float64 CBridgeAgentImp::GetDeckFc(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
-   return m_ConcreteManager.GetDeckFc(time);
+   return m_ConcreteManager.GetDeckFc(castingRegionIdx,time);
 }
 
 Float64 CBridgeAgentImp::GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
@@ -12400,6 +12673,7 @@ Float64 CBridgeAgentImp::GetClosureJointDesignFc(const CSegmentKey& closureKey,I
 
 Float64 CBridgeAgentImp::GetDeckDesignFc(IntervalIndexType intervalIdx) const
 {
+   IndexType castingRegionIdx = 0; // assumes models that support design only support continuous deck placement so the one and only region index is 0
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -12407,15 +12681,17 @@ Float64 CBridgeAgentImp::GetDeckDesignFc(IntervalIndexType intervalIdx) const
    {
       if ( pSpecEntry->GetLimitStateConcreteStrength() == pgsTypes::lscStrengthAtTimeOfLoading )
       {
-         return GetDeckFc(intervalIdx);
+         return GetDeckFc(castingRegionIdx, intervalIdx);
       }
       else
       {
          // basing allowable stresses and nominatl strength on specified values
          GET_IFACE(IBridgeDescription,pIBridgeDesc);
          const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
-         IntervalIndexType castIntervalIdx      = GetCastDeckInterval();
-         IntervalIndexType compositeIntervalIdx = GetCompositeDeckInterval();
+         // NOTE: this method is only used for Design and design is limited to PGSuper
+         // There is only one deck casting region in PGSuper so just use the first deck intervals for simplicity
+         IntervalIndexType castIntervalIdx      = GetFirstCastDeckInterval();
+         IntervalIndexType compositeIntervalIdx = GetFirstCompositeDeckInterval();
          if ( intervalIdx <= castIntervalIdx )
          {
             return 0;
@@ -12431,7 +12707,7 @@ Float64 CBridgeAgentImp::GetDeckDesignFc(IntervalIndexType intervalIdx) const
             else
             {
                // initial strength was not specified, just compute it
-               return GetDeckFc(compositeIntervalIdx);
+               return GetDeckFc(castingRegionIdx,compositeIntervalIdx);
             }
          }
          else
@@ -12443,7 +12719,7 @@ Float64 CBridgeAgentImp::GetDeckDesignFc(IntervalIndexType intervalIdx) const
    }
    else
    {
-      return GetDeckFc(intervalIdx);
+      return GetDeckFc(castingRegionIdx,intervalIdx);
    }
 }
 
@@ -12571,10 +12847,10 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
    return E;
 }
 
-Float64 CBridgeAgentImp::GetDeckEc(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+Float64 CBridgeAgentImp::GetDeckEc(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
-   return m_ConcreteManager.GetDeckEc(time);
+   return m_ConcreteManager.GetDeckEc(castingRegionIdx,time);
 }
 
 Float64 CBridgeAgentImp::GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
@@ -12638,16 +12914,16 @@ Float64 CBridgeAgentImp::GetClosureJointShearFr(const CClosureKey& closureKey,In
    return m_ConcreteManager.GetClosureJointShearFr(closureKey,time);
 }
 
-Float64 CBridgeAgentImp::GetDeckFlexureFr(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+Float64 CBridgeAgentImp::GetDeckFlexureFr(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
-   return m_ConcreteManager.GetDeckFlexureFr(time);
+   return m_ConcreteManager.GetDeckFlexureFr(castingRegionIdx,time);
 }
 
-Float64 CBridgeAgentImp::GetDeckShearFr(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+Float64 CBridgeAgentImp::GetDeckShearFr(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
-   return m_ConcreteManager.GetDeckShearFr(time);
+   return m_ConcreteManager.GetDeckShearFr(castingRegionIdx,time);
 }
 
 Float64 CBridgeAgentImp::GetLongitudinalJointFlexureFr(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const
@@ -12675,10 +12951,10 @@ Float64 CBridgeAgentImp::GetClosureJointAgingCoefficient(const CClosureKey& clos
    return m_ConcreteManager.GetClosureJointAgingCoefficient(closureKey,middle);
 }
 
-Float64 CBridgeAgentImp::GetDeckAgingCoefficient(IntervalIndexType intervalIdx) const
+Float64 CBridgeAgentImp::GetDeckAgingCoefficient(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const
 {
    Float64 middle = m_IntervalManager.GetTime(intervalIdx,pgsTypes::Middle);
-   return m_ConcreteManager.GetDeckAgingCoefficient(middle);
+   return m_ConcreteManager.GetDeckAgingCoefficient(castingRegionIdx,middle);
 }
 
 Float64 CBridgeAgentImp::GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const
@@ -12725,15 +13001,15 @@ Float64 CBridgeAgentImp::GetClosureJointAgeAdjustedEc(const CClosureKey& closure
    return Ea;
 }
 
-Float64 CBridgeAgentImp::GetDeckAgeAdjustedEc(IntervalIndexType intervalIdx) const
+Float64 CBridgeAgentImp::GetDeckAgeAdjustedEc(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const
 {
-   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval(castingRegionIdx);
    if ( intervalIdx < compositeDeckIntervalIdx )
    {
       return 0; // deck isn't composite yet
    }
 
-   Float64 Ec = GetDeckEc(intervalIdx);
+   Float64 Ec = GetDeckEc(castingRegionIdx,intervalIdx);
 
    GET_IFACE(ILossParameters,pLossParams);
    if ( pLossParams->IgnoreCreepEffects() )
@@ -12741,8 +13017,8 @@ Float64 CBridgeAgentImp::GetDeckAgeAdjustedEc(IntervalIndexType intervalIdx) con
       return Ec;
    }
 
-   Float64 Y  = GetDeckCreepCoefficient(intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-   Float64 X  = GetDeckAgingCoefficient(intervalIdx);
+   Float64 Y  = GetDeckCreepCoefficient(castingRegionIdx,intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+   Float64 X  = GetDeckAgingCoefficient(castingRegionIdx,intervalIdx);
    Float64 Ea = Ec/(1+X*Y);
    return Ea;
 }
@@ -12791,9 +13067,9 @@ Float64 CBridgeAgentImp::GetTotalClosureJointFreeShrinkageStrain(const CClosureK
    return pDetails->esh;
 }
 
-Float64 CBridgeAgentImp::GetTotalDeckFreeShrinkageStrain(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+Float64 CBridgeAgentImp::GetTotalDeckFreeShrinkageStrain(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetTotalDeckFreeShrinkageStrainDetails(intervalIdx,timeType);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetTotalDeckFreeShrinkageStrainDetails(castingRegionIdx,intervalIdx,timeType);
    return pDetails->esh;
 }
 
@@ -12821,10 +13097,10 @@ std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalClosur
    return m_ConcreteManager.GetClosureJointFreeShrinkageStrainDetails(closureKey,time);
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalDeckFreeShrinkageStrainDetails(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
-   return m_ConcreteManager.GetDeckFreeShrinkageStrainDetails(time);
+   return m_ConcreteManager.GetDeckFreeShrinkageStrainDetails(castingRegionIdx,time);
 }
 
 std::shared_ptr<matConcreteBaseShrinkageDetails> CBridgeAgentImp::GetTotalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
@@ -12849,9 +13125,9 @@ Float64 CBridgeAgentImp::GetIncrementalClosureJointFreeShrinkageStrain(const CCl
    return GetTotalClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::End) - GetTotalClosureJointFreeShrinkageStrain(closureKey,intervalIdx,pgsTypes::Start);
 }
 
-Float64 CBridgeAgentImp::GetIncrementalDeckFreeShrinkageStrain(IntervalIndexType intervalIdx) const
+Float64 CBridgeAgentImp::GetIncrementalDeckFreeShrinkageStrain(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const
 {
-   return GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End) - GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Start);
+   return GetTotalDeckFreeShrinkageStrain(castingRegionIdx,intervalIdx,pgsTypes::End) - GetTotalDeckFreeShrinkageStrain(castingRegionIdx,intervalIdx,pgsTypes::Start);
 }
 
 Float64 CBridgeAgentImp::GetIncrementalRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const
@@ -12880,11 +13156,11 @@ INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalClosureJointFreeShrin
    return details;
 }
 
-INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalDeckFreeShrinkageStrainDetails(IntervalIndexType intervalIdx) const
+INCREMENTALSHRINKAGEDETAILS CBridgeAgentImp::GetIncrementalDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const
 {
    INCREMENTALSHRINKAGEDETAILS details;
-   details.pStartDetails = GetTotalDeckFreeShrinkageStrainDetails(intervalIdx,pgsTypes::Start);
-   details.pEndDetails   = GetTotalDeckFreeShrinkageStrainDetails(intervalIdx,pgsTypes::End);
+   details.pStartDetails = GetTotalDeckFreeShrinkageStrainDetails(castingRegionIdx,intervalIdx,pgsTypes::Start);
+   details.pEndDetails   = GetTotalDeckFreeShrinkageStrainDetails(castingRegionIdx,intervalIdx,pgsTypes::End);
    return details;
 }
 
@@ -12914,9 +13190,9 @@ Float64 CBridgeAgentImp::GetClosureJointCreepCoefficient(const CClosureKey& clos
    return GetClosureJointCreepCoefficientDetails(closureKey,loadingIntervalIdx,loadingTimeType,intervalIdx,timeType)->Ct;
 }
 
-Float64 CBridgeAgentImp::GetDeckCreepCoefficient(IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+Float64 CBridgeAgentImp::GetDeckCreepCoefficient(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
-   return GetDeckCreepCoefficientDetails(loadingIntervalIdx,loadingTimeType,intervalIdx,timeType)->Ct;
+   return GetDeckCreepCoefficientDetails(castingRegionIdx,loadingIntervalIdx,loadingTimeType,intervalIdx,timeType)->Ct;
 }
 
 Float64 CBridgeAgentImp::GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType) const
@@ -12943,11 +13219,11 @@ std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetClosureJointCre
    return m_ConcreteManager.GetClosureJointCreepCoefficientDetails(closureKey,time,loading_time);
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetDeckCreepCoefficientDetails(IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
+std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
    Float64 loading_time = m_IntervalManager.GetTime(loadingIntervalIdx,loadingTimeType);
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
-   return m_ConcreteManager.GetDeckCreepCoefficientDetails(time,loading_time);
+   return m_ConcreteManager.GetDeckCreepCoefficientDetails(castingRegionIdx,time,loading_time);
 }
 
 std::shared_ptr<matConcreteBaseCreepDetails> CBridgeAgentImp::GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
@@ -13139,9 +13415,9 @@ Float64 CBridgeAgentImp::GetDeckShrinkageK2() const
    return m_ConcreteManager.GetDeckShrinkageK2();
 }
 
-const matConcreteBase* CBridgeAgentImp::GetDeckConcrete() const
+const matConcreteBase* CBridgeAgentImp::GetDeckConcrete(IndexType castingRegionIdx) const
 {
-   return m_ConcreteManager.GetDeckConcrete();
+   return m_ConcreteManager.GetDeckConcrete(castingRegionIdx);
 }
 
 pgsTypes::ConcreteType CBridgeAgentImp::GetLongitudinalJointConcreteType() const
@@ -21138,6 +21414,66 @@ bool CBridgeAgentImp::IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsT
    return true;
 }
 
+template <class T>
+IndexType PoiToDeckCastingRegion(T* pSlab, const pgsPointOfInterest& poi)
+{
+   CComPtr<ICastingRegions> regions;
+   pSlab->get_CastingRegions(&regions);
+
+   const auto& segmentKey(poi.GetSegmentKey());
+   GirderIDType ssmbrID = ::GetSuperstructureMemberID(segmentKey);
+   SegmentIndexType segIdx = segmentKey.segmentIndex;
+   Float64 Xs = poi.GetDistFromStart();
+   SectionBias sectionBias = GetSectionBias(poi);
+   IndexType regionIdx;
+   CComPtr<ICastingRegion> region;
+   HRESULT hr = regions->FindRegionEx(ssmbrID, segIdx, Xs, sectionBias, &regionIdx, &region);
+   if (FAILED(hr))
+      return INVALID_INDEX;
+
+   return regionIdx;
+}
+
+IndexType CBridgeAgentImp::GetDeckCastingRegion(const pgsPointOfInterest& poi) const
+{
+   if (poi.HasDeckCastingRegion())
+   {
+      return poi.GetDeckCastingRegion();
+   }
+
+   VALIDATE(BRIDGE);
+   CComPtr<IBridgeDeck> deck;
+   m_Bridge->get_Deck(&deck);
+   CComQIPtr<ICastSlab> castSlab(deck);
+   CComQIPtr<IPrecastSlab> precastSlab(deck);
+   CComQIPtr<IOverlaySlab> overlaySlab(deck);
+   IndexType deckCastingRegionIdx;
+   if (castSlab)
+   {
+      deckCastingRegionIdx = PoiToDeckCastingRegion<ICastSlab>(castSlab, poi);
+   }
+   else if (precastSlab)
+   {
+      deckCastingRegionIdx = PoiToDeckCastingRegion<IPrecastSlab>(precastSlab, poi);
+   }
+   else if (overlaySlab)
+   {
+      deckCastingRegionIdx = 0;
+   }
+   else
+   {
+      deckCastingRegionIdx = INVALID_INDEX;
+   }
+
+   if (poi.GetID() != INVALID_ID)
+   {
+      pgsPointOfInterest* pPoi = const_cast<pgsPointOfInterest*>(&poi);
+      pPoi->SetDeckCastingRegion(deckCastingRegionIdx);
+   }
+
+   return deckCastingRegionIdx;
+}
+
 /////////////////////////////////////////////////////////////////////////
 // ISectionProperties
 //
@@ -21162,10 +21498,11 @@ std::vector<gpPoint2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType interv
 {
    std::vector<gpPoint2d> vPoints;
 
-   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
    bool bIsCompositeDeck = IsCompositeDeck();
    if (IsDeckStressLocation(location))
    {
+      IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+      IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval(deckCastingRegionIdx);
       if (!bIsCompositeDeck || intervalIdx < compositeDeckIntervalIdx)
       {
          return vPoints;
@@ -21270,10 +21607,11 @@ std::vector<gpPoint2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType interv
 
 void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx,Float64* pCby, IndexType* pControllingStressPointIndex) const
 {
-   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
    bool bIsCompositeDeck = IsCompositeDeck();
    if (IsDeckStressLocation(location))
    {
+      IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+      IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval(deckCastingRegionIdx);
       if (!bIsCompositeDeck || intervalIdx < compositeDeckIntervalIdx)
       {
          // if the deck is not composite or this is an interval before 
@@ -21473,7 +21811,9 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
          Eg = GetSegmentEc(segmentKey, intervalIdx);
       }
 
-      Float64 Ed = GetDeckEc(intervalIdx);
+      IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+
+      Float64 Ed = GetDeckEc(deckCastingRegionIdx,intervalIdx);
 
       Float64 n = Ed / Eg; // NOTE: this is opposite the modular ratio used with S because stress is M/S or Cb*M... this is sort of like Cb = 1/S 
       *pCa *= n;
@@ -21599,7 +21939,10 @@ Float64 CBridgeAgentImp::GetHg(pgsTypes::SectionPropertyType sectPropType, Inter
    props.ShapeProps->get_Ybottom(&Yb);
 
    Float64 Yt;
-   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+
+   IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+
+   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval(deckCastingRegionIdx);
    if (intervalIdx < compositeDeckIntervalIdx)
    {
       // use YtopGirder instead of get_Ytop because we want the nominal/analytical height of the girder that is used for
@@ -21727,7 +22070,8 @@ Float64 CBridgeAgentImp::GetY(pgsTypes::SectionPropertyType spType,IntervalIndex
 
    case pgsTypes::TopDeck:
       {
-         IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+         IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval(deckCastingRegionIdx);
          if (IsStructuralDeck(GetDeckType()) && compositeDeckIntervalIdx <= intervalIdx && IsCompositeDeck() )
          {
             props.ShapeProps->get_Ytop(&Y);
@@ -21761,7 +22105,8 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
    if ( IsDeckStressLocation(location) )
    {
       // make S in terms of the deck material
-      IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval();
+      IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+      IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval(deckCastingRegionIdx);
       if (  IsStructuralDeck(GetDeckType()) && compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section
          )
       {
@@ -21784,10 +22129,10 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
          }
          else if (bIsInBoundaryPierDiaphragm)
          {
-            Eg = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(intervalIdx) : GetDeckEc(intervalIdx));
+            Eg = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx) : GetDeckEc(deckCastingRegionIdx,intervalIdx));
          }
 
-         Float64 Es = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(intervalIdx) : GetDeckEc(intervalIdx));
+         Float64 Es = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx) : GetDeckEc(deckCastingRegionIdx,intervalIdx));
 
          Float64 n = Eg / Es;
          S *= n;
@@ -21813,7 +22158,8 @@ Float64 CBridgeAgentImp::GetKt(pgsTypes::SectionPropertyType spType,IntervalInde
 Float64 CBridgeAgentImp::GetKb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
 {
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
-   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+   IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval(deckCastingRegionIdx);
    if ( IsStructuralDeck(GetDeckType()) && compositeDeckIntervalIdx <= intervalIdx && IsCompositeDeck() )
    {
       pgsTypes::TopDeck;
@@ -21984,7 +22330,9 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
       S *= -1;
    }
 
-   IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval();
+   IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+
+   IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval(deckCastingRegionIdx);
    if ( IsDeckStressLocation(location) && // want S for deck
          IsStructuralDeck(GetDeckType()) && // this is a structural deck
          compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section at this interval
@@ -21994,7 +22342,7 @@ Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndex
 
       // make S be in terms of deck material
       Float64 Eg = E;
-      Float64 Es = GetDeckEc(intervalIdx);
+      Float64 Es = GetDeckEc(deckCastingRegionIdx,intervalIdx);
 
       Float64 n = Eg/Es;
       S *= n;
@@ -22314,6 +22662,157 @@ Float64 CBridgeAgentImp::GetTopSlabToTopGirderChordDistance(const pgsPointOfInte
    return ya - yc;
 }
 
+IndexType CBridgeAgentImp::GetDeckCastingRegionCount() const
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckEventIdx = pIBridgeDesc->GetTimelineManager()->GetCastDeckEventIndex();
+   if (castDeckEventIdx == INVALID_INDEX)
+   {
+      // there is no deck to cast
+      ATLASSERT(pIBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone);
+      return 0;
+   }
+   const auto& activity = pIBridgeDesc->GetTimelineManager()->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity();
+   return activity.GetCastingRegionCount();
+}
+
+void CBridgeAgentImp::GetDeckCastingRegionLimits(IndexType regionIdx, PierIndexType* pStartPierIdx, Float64* pXstart, PierIndexType* pEndPierIdx, Float64* pXend, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity) const
+{
+   if (pActivity == nullptr)
+   {
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      EventIndexType castDeckEventIdx = pIBridgeDesc->GetTimelineManager()->GetCastDeckEventIndex();
+      const auto& activity = pIBridgeDesc->GetTimelineManager()->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity();
+      pActivity = &activity;
+   }
+
+   const auto& vRegions = pActivity->GetCastingRegions();
+   const auto& region = vRegions[regionIdx];
+   if (region.m_Type == CCastingRegion::Span)
+   {
+      if (regionIdx == 0)
+      {
+         *pStartPierIdx = 0;
+         *pXstart = 0;
+      }
+      else
+      {
+         const auto& prev_region = vRegions[regionIdx - 1];
+         if (prev_region.m_Type == CCastingRegion::Pier)
+         {
+            *pStartPierIdx = prev_region.m_Index;
+            if (prev_region.m_End < 0)
+            {
+               // fractional measure
+               SpanIndexType next_span_idx = (SpanIndexType)(*pStartPierIdx);
+               Float64 L = GetSpanLength(next_span_idx);
+               *pXstart = -1 * prev_region.m_End * L;
+            }
+            else
+            {
+               *pXstart = prev_region.m_End;
+            }
+         }
+         else
+         {
+            *pStartPierIdx = (PierIndexType)(prev_region.m_Index + 1);
+            *pXstart = 0;
+         }
+      }
+
+      if (regionIdx == vRegions.size() - 1)
+      {
+         *pEndPierIdx = GetPierCount() - 1;
+         *pXend = 0;
+      }
+      else
+      {
+         const auto& next_region = vRegions[regionIdx + 1];
+         if (next_region.m_Type == CCastingRegion::Pier)
+         {
+            *pEndPierIdx = next_region.m_Index;
+            if (next_region.m_Start < 0)
+            {
+               // fractional measure
+               SpanIndexType prev_span_idx = (SpanIndexType)(*pEndPierIdx - 1);
+               Float64 L = GetSpanLength(prev_span_idx);
+               *pXend = -1 * next_region.m_Start * L;
+            }
+            else
+            {
+               *pXend = next_region.m_Start;
+            }
+            *pXend *= -1; // make this negative because the region ends before the pier
+         }
+         else
+         {
+            *pEndPierIdx = (PierIndexType)next_region.m_Index;
+            *pXend = 0;
+         }
+      }
+   }
+   else
+   {
+      // Pier region
+      *pStartPierIdx = region.m_Index;
+      if (region.m_Start < 0)
+      {
+         SpanIndexType prev_span_idx = (SpanIndexType)(*pStartPierIdx - 1);
+         Float64 L;
+         if (prev_span_idx == INVALID_INDEX)
+         {
+            // this is the first span and it is a cantilever
+            CSpanKey spanKey(0, 0); // NOTE: using a dummy girder
+            L = GetCantileverLength(spanKey,pgsTypes::metStart);
+         }
+         else
+         {
+            L = GetSpanLength(prev_span_idx);
+         }
+         *pXstart = -1 * region.m_Start * L;
+      }
+      else
+      {
+         *pXstart = region.m_Start;
+      }
+      *pXstart *= -1; // make this negative because the region starts before the pier
+
+      *pEndPierIdx = region.m_Index;
+      if (region.m_End < 0)
+      {
+         SpanIndexType next_span_idx = (SpanIndexType)(*pEndPierIdx);
+         Float64 L;
+         SpanIndexType nSpans = GetSpanCount();
+         if (next_span_idx == nSpans)
+         {
+            // this is the last span and it is a cantilever
+            CSpanKey spanKey(nSpans - 1, 0); // NOTE: using a dummy girder
+            L = GetCantileverLength(spanKey, pgsTypes::metEnd);
+         }
+         else
+         {
+            L = GetSpanLength(next_span_idx);
+         }
+         *pXend = -1 * region.m_End * L;
+      }
+      else
+      {
+         *pXend = region.m_End;
+      }
+   }
+
+   *pRegionType = region.m_Type;
+   *pSequenceIdx = region.m_SequenceIndex;
+}
+
+void CBridgeAgentImp::GetDeckCastingRegionPerimeter(IndexType regionIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity, IPoint2dCollection** ppPoints) const
+{
+   PierIndexType startPierIdx, endPierIdx;
+   Float64 Xstart, Xend;
+   GetDeckCastingRegionLimits(regionIdx, &startPierIdx, &Xstart, &endPierIdx, &Xend, pRegionType, pSequenceIdx, pActivity);
+   GetSlabPerimeter(startPierIdx, Xstart, endPierIdx, Xend, nPoints, pcType, pActivity, ppPoints);
+}
+
 void CBridgeAgentImp::ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const
 {
    VALIDATE(BRIDGE);
@@ -22402,7 +22901,7 @@ void CBridgeAgentImp::GetBridgeStiffness(Float64 Xb, Float64* pEIxx, Float64* pE
    IntervalIndexType lastIntervalIdx = m_IntervalManager.GetIntervalCount() - 1;
 
    CComPtr<ISection> section;
-   m_SectCutTool->CreateBridgeSection(m_Bridge, Xb, lastIntervalIdx, bscStructurallyContinuousOnly, &section);
+   m_SectCutTool->CreateBridgeSection(m_Bridge, Xb, sbRight, lastIntervalIdx, bscStructurallyContinuousOnly, &section);
 
    CComPtr<IElasticProperties> eprops;
    section->get_ElasticProperties(&eprops);
@@ -22748,8 +23247,9 @@ void CBridgeAgentImp::GetSlabAnalysisShape(IntervalIndexType intervalIdx, const 
    ATLASSERT(SUCCEEDED(hr));
 
    // use tool to cut shape
+   SectionBias sectionBias = GetSectionBias(poi);
    CComPtr<IShape> shape;
-   hr = m_SectCutTool->CreateDeckAnalysisShape(m_Bridge,gdrsection,gdrID,segmentKey.segmentIndex,Xs,haunchDepth,bFollowMatingSurfaceProfile, intervalIdx,&shape);
+   hr = m_SectCutTool->CreateDeckAnalysisShape(m_Bridge,gdrsection,gdrID,segmentKey.segmentIndex,Xs,sectionBias,haunchDepth,bFollowMatingSurfaceProfile, intervalIdx,&shape);
    ATLASSERT(SUCCEEDED(hr));
 
    // move deck to match up with girder coordinates
@@ -24038,7 +24538,7 @@ bool CBridgeAgentImp::IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKe
 
       // if the event we are evaluating is before the composite event then
       // we just have a bare girder... return its prismatic-ness
-      if ( intervalIdx < m_IntervalManager.GetCompositeDeckInterval() )
+      if ( intervalIdx < m_IntervalManager.GetFirstCompositeDeckInterval() )
       {
          return bPrismaticGirder;
       }
@@ -28418,16 +28918,40 @@ IntervalIndexType CBridgeAgentImp::GetCompositeLongitudinalJointInterval() const
    return m_IntervalManager.GetCompositeLongitudinalJointInterval();
 }
 
-IntervalIndexType CBridgeAgentImp::GetCastDeckInterval() const
+IntervalIndexType CBridgeAgentImp::GetCastDeckInterval(IndexType castingRegionIdx) const
 {
    VALIDATE(BRIDGE);
-   return m_IntervalManager.GetCastDeckInterval();
+   return m_IntervalManager.GetCastDeckInterval(castingRegionIdx);
 }
 
-IntervalIndexType CBridgeAgentImp::GetCompositeDeckInterval() const
+IntervalIndexType CBridgeAgentImp::GetFirstCastDeckInterval() const
 {
    VALIDATE(BRIDGE);
-   return m_IntervalManager.GetCompositeDeckInterval();
+   return m_IntervalManager.GetFirstCastDeckInterval();
+}
+
+IntervalIndexType CBridgeAgentImp::GetLastCastDeckInterval() const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetLastCastDeckInterval();
+}
+
+IntervalIndexType CBridgeAgentImp::GetCompositeDeckInterval(IndexType castingRegionIdx) const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetCompositeDeckInterval(castingRegionIdx);
+}
+
+IntervalIndexType CBridgeAgentImp::GetFirstCompositeDeckInterval() const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetFirstCompositeDeckInterval();
+}
+
+IntervalIndexType CBridgeAgentImp::GetLastCompositeDeckInterval() const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetLastCompositeDeckInterval();
 }
 
 IntervalIndexType CBridgeAgentImp::GetCastShearKeyInterval() const
@@ -29005,16 +29529,14 @@ std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGir
       // this is the worst case loading (typically wet deck on bare girder)
       IntervalIndexType noncompositeIntervalIdx = GetLastNoncompositeInterval();
       vIntervals.push_back(noncompositeIntervalIdx);
+   }
 
-      //if (HasStructuralLongitudinalJoints() && GetDeckType() != pgsTypes::sdtNone )
-      //{
-      //   // if the bridge has structural longitudinal joints and there is some sort of deck
-      //   // check stresses when the deck is cast
-      //   IntervalIndexType castDeckIntervalIdx = GetCastDeckInterval();
-      //   vIntervals.push_back(castDeckIntervalIdx);
-
-      //   ATLASSERT(noncompositeIntervalIdx < castDeckIntervalIdx); // longitudinal joints should be composite when the deck is cast
-      //}
+   // check each time a deck region is cast
+   IndexType nCastingRegions = GetDeckCastingRegionCount();
+   for (IndexType regionIdx = 0; regionIdx < nCastingRegions; regionIdx++)
+   {
+      IntervalIndexType deckRegionCastingIntervalIdx = GetCastDeckInterval(regionIdx);
+      vIntervals.push_back(deckRegionCastingIntervalIdx);
    }
 
    IntervalIndexType overlayIntervalIdx = GetOverlayInterval();
@@ -29052,7 +29574,7 @@ IntervalIndexType CBridgeAgentImp::GetLastNoncompositeInterval() const
    IntervalIndexType castDiaphragmsIntervalIdx = GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castLongitudinalJointsIntervalIdx = GetCastLongitudinalJointInterval();
    IntervalIndexType compositeLongitudinalJointsIntervalIdx = GetCompositeLongitudinalJointInterval();
-   IntervalIndexType castDeckIntervalIdx = IsNonstructuralDeck(GetDeckType()) ? INVALID_INDEX : GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = IsNonstructuralDeck(GetDeckType()) ? INVALID_INDEX : GetFirstCastDeckInterval();
 
    if (castLongitudinalJointsIntervalIdx == INVALID_INDEX)
    {
@@ -29080,7 +29602,7 @@ IntervalIndexType CBridgeAgentImp::GetLastNoncompositeInterval() const
 IntervalIndexType CBridgeAgentImp::GetLastCompositeInterval() const
 {
    IntervalIndexType compositeLongitudinalJointsIntervalIdx = GetCompositeLongitudinalJointInterval();
-   IntervalIndexType compositeDeckIntervalIdx = IsNonstructuralDeck(GetDeckType()) ? INVALID_INDEX : GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = IsNonstructuralDeck(GetDeckType()) ? INVALID_INDEX : GetLastCompositeDeckInterval();
    IntervalIndexType trafficBarrierIntervalIdx = GetInstallRailingSystemInterval();
 
    if (compositeDeckIntervalIdx != INVALID_INDEX)
@@ -29505,8 +30027,10 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
+   IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+
    IntervalIndexType releaseIntervalIdx       = GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType compositeIntervalIdx     = GetLastCompositeInterval();
 
    GET_IFACE(ILossParameters,pLossParams);
@@ -29630,7 +30154,7 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
          }
          else if (bIsInBoundaryPierDiaphragm)
          {
-            Egdr = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(intervalIdx) : GetDeckEc(intervalIdx));
+            Egdr = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx) : GetDeckEc(deckCastingRegionIdx,intervalIdx));
          }
 
          CComPtr<IShapeProperties> shapeprops;
@@ -29764,11 +30288,11 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
          Float64 Edeck;
          if ( bIsTimeStepAnalysis )
          {
-            Edeck = GetDeckAgeAdjustedEc(intervalIdx);
+            Edeck = GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx);
          }
          else
          {
-            Edeck = GetDeckEc(intervalIdx);
+            Edeck = GetDeckEc(deckCastingRegionIdx,intervalIdx);
          }
          CComPtr<IShapeProperties> shapeprops;
          eprop->TransformProperties(Edeck,&shapeprops);
@@ -29830,6 +30354,7 @@ HRESULT CBridgeAgentImp::CreateSection(IntervalIndexType intervalIdx,const pgsPo
    Float64 Xs = poi.GetDistFromStart();
    GirderIDType gdrID = GetSuperstructureMemberID(segmentKey);
 
+   SectionBias sectionBias = GetSectionBias(poi);
    if ( sectPropType == pgsTypes::sptGrossNoncomposite       ||
         sectPropType == pgsTypes::sptGross                   || 
         sectPropType == pgsTypes::sptTransformedNoncomposite || 
@@ -29838,7 +30363,6 @@ HRESULT CBridgeAgentImp::CreateSection(IntervalIndexType intervalIdx,const pgsPo
    {
       // use tool to create section
       CComPtr<ISection> section;
-      SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
       HRESULT hr = m_SectCutTool->CreateGirderSectionBySegment(m_Bridge,gdrID,segmentKey.segmentIndex,Xs,sectionBias,(SectionCoordinateSystemType)coordinateType,intervalIdx,(SectionPropertyMethod)sectPropType,(HaunchDepthMethod)haunchAnalysisType, bFollowMatingSurface && IsZero(GetOrientation(segmentKey)),pGdrIdx,pSlabIdx,&section);
       ATLASSERT(SUCCEEDED(hr));
 
@@ -29847,7 +30371,7 @@ HRESULT CBridgeAgentImp::CreateSection(IntervalIndexType intervalIdx,const pgsPo
    else if ( sectPropType == pgsTypes::sptNetDeck )
    {
       CComPtr<ISection> deckSection;
-      HRESULT hr = m_SectCutTool->CreateNetDeckSection(m_Bridge,gdrID,segmentKey.segmentIndex,Xs, (SectionCoordinateSystemType)coordinateType,intervalIdx,(HaunchDepthMethod)haunchAnalysisType, bFollowMatingSurface, &deckSection);
+      HRESULT hr = m_SectCutTool->CreateNetDeckSection(m_Bridge,gdrID,segmentKey.segmentIndex,Xs, sectionBias, (SectionCoordinateSystemType)coordinateType,intervalIdx,(HaunchDepthMethod)haunchAnalysisType, bFollowMatingSurface, &deckSection);
       ATLASSERT(SUCCEEDED(hr));
 
       *pGdrIdx = INVALID_INDEX;
@@ -29867,7 +30391,7 @@ Float64 CBridgeAgentImp::ComputeY(IntervalIndexType intervalIdx,const pgsPointOf
    CComPtr<ISuperstructureMemberSegment> segment;
    GetSegment(segmentKey,&segment);
 
-   SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
+   SectionBias sectionBias = GetSectionBias(poi);
 
    CComPtr<IShape> shape;
    segment->get_PrimaryShape(Xpoi,sectionBias, cstGirder, &shape);
@@ -29879,7 +30403,8 @@ Float64 CBridgeAgentImp::ComputeY(IntervalIndexType intervalIdx,const pgsPointOf
    case pgsTypes::TopDeck:
    case pgsTypes::BottomDeck:
       {
-         IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+         IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( location == pgsTypes::TopDeck && compositeDeckIntervalIdx <= intervalIdx && IsCompositeDeck() )
          {
             // top of composite deck that has been installed
@@ -29990,7 +30515,7 @@ HRESULT CBridgeAgentImp::GetGirderSection(const pgsPointOfInterest& poi,IGirderS
       CComPtr<ISuperstructureMemberSegment> segment;
       GetSegment(segmentKey, &segment);
 
-      SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
+      SectionBias sectionBias = GetSectionBias(poi);
 
       Float64 Xs = poi.GetDistFromStart();
       Float64 Ls = GetSegmentLength(segmentKey);
@@ -30215,10 +30740,10 @@ void CBridgeAgentImp::LayoutDeckRebar(const CDeckDescription2* pDeck,IBridgeDeck
    deck->get_GrossDepth(&deck_height);
 
    // Get the stage where the rebar is first introducted into the system.
-   // Technically, the rebar is first introduced to the system when the deck
+   // Technically, the rebar is first introduced to the system after girder erection and before the deck
    // concrete is cast, however the rebar isn't performing any structural function
    // until the concrete is cured
-   IntervalIndexType compositeDeckIntervalIdx = m_IntervalManager.GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = m_IntervalManager.GetFirstCompositeDeckInterval();
 
    // Create a rebar factory. This does the work of creating rebar objects
    CComPtr<IRebarFactory> rebar_factory;
@@ -30966,7 +31491,7 @@ void CBridgeAgentImp::CheckBridge()
    // this can happen with really short, wide bridges with high skew angles
    CComPtr<IBridgeGeometry> bridgeGeometry;
    m_Bridge->get_BridgeGeometry(&bridgeGeometry);
-   PierIndexType nPierLines; // these are "generic piers"... piers and temporayr supports
+   PierIndexType nPierLines; // these are "generic piers"... piers and temporary supports
    bridgeGeometry->get_PierLineCount(&nPierLines);
    CComPtr<IPierLine> prevPierLine;
    bridgeGeometry->GetPierLine(0, &prevPierLine);
@@ -31010,6 +31535,57 @@ void CBridgeAgentImp::CheckBridge()
       line1->ThroughPoints(pntLeft1, pntRight1);
       prevPierLine = pierLine;
    }
+
+   // Make sure casting regions don't overlap
+   Float64 first_station = GetPierStation(0);
+   IndexType nRegions = GetDeckCastingRegionCount();
+   Float64 XbLast = 0;
+   for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
+   {
+      PierIndexType startPierIdx, endPierIdx;
+      Float64 Xstart, Xend;
+      CCastingRegion::RegionType regionType;
+      IndexType sequenceIdx;
+      GetDeckCastingRegionLimits(regionIdx, &startPierIdx, &Xstart, &endPierIdx, &Xend, &regionType, &sequenceIdx);
+      Float64 start_pier_station = GetPierStation(startPierIdx);
+      Float64 XbStart = start_pier_station - first_station + Xstart;
+      Float64 end_pier_station = GetPierStation(endPierIdx);
+      Float64 XbEnd = end_pier_station - first_station + Xend;
+
+      if (IsLE(XbEnd - XbStart, 0.0))
+      {
+         // this region has no or negative length
+         std::_tostringstream os;
+         os << _T("Deck Casting region ") << LABEL_INDEX(regionIdx) << _T(" has a length of zero. Revise deck casting regions.") << std::endl;
+
+         pgsBridgeDescriptionStatusItem* pStatusItem =
+            new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::DeckCasting, os.str().c_str());
+
+         pStatusCenter->Add(pStatusItem);
+      }
+
+      if (regionIdx == 0)
+      {
+         XbLast = XbEnd;
+      }
+      else
+      {
+         if (!IsEqual(XbLast, XbStart))
+         {
+            // there is a gap between region i and i-1
+            std::_tostringstream os;
+            os << _T("Deck Casting regions ") << LABEL_INDEX(regionIdx-1) << _T(" and ") << LABEL_INDEX(regionIdx) << _T(" do not share a common boundary. Revise deck casting regions.") << std::endl;
+
+            pgsBridgeDescriptionStatusItem* pStatusItem =
+               new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::DeckCasting, os.str().c_str());
+
+            pStatusCenter->Add(pStatusItem);
+         }
+
+         XbLast = XbEnd;
+      }
+   }
+
    
 
    // COGO model doesn't save correctly... fix this later
@@ -31645,7 +32221,7 @@ void CBridgeAgentImp::GetSegmentShapeDirect(const pgsPointOfInterest& poi,IShape
    CComPtr<ISuperstructureMemberSegment> segment;
    GetSegment(segmentKey,&segment);
 
-   SectionBias sectionBias = (poi.HasAttribute(POI_SECTCHANGE_LEFTFACE) ? sbLeft : sbRight);
+   SectionBias sectionBias = GetSectionBias(poi);
    Float64 Xs = poi.GetDistFromStart();
    segment->get_PrimaryShape(Xs,sectionBias,cstGirder,ppShape);
 }
@@ -33993,3 +34569,4 @@ void CBridgeAgentImp::ValidateGirderTopChordElevation(const CGirderKey& girderKe
       pFunctions->insert(std::make_pair(segmentKey, fnBasic));
    }
 }
+

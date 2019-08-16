@@ -89,6 +89,7 @@ protected:
    afx_msg void OnConditionFactorTypeChanged();
    afx_msg void OnDeckEventChanged();
    afx_msg void OnDeckEventChanging();
+   afx_msg void OnDeckEventDetails();
    afx_msg void OnOverlayEventChanged();
    afx_msg void OnOverlayEventChanging();
 	//}}AFX_MSG

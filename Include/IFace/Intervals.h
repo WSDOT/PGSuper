@@ -85,7 +85,6 @@ interface IIntervals : IUnknown
 
    // returns the index of the interval when the prestressing is release
    // to the girder (girder has reached release strength).
-   // this is the replacement for pgsTypes::CastingYard
    virtual IntervalIndexType GetPrestressReleaseInterval(const CSegmentKey& segmentKey) const = 0;
 
    // returns the index of the interval when a segment is lifted from the casting bed
@@ -159,12 +158,22 @@ interface IIntervals : IUnknown
    virtual IntervalIndexType GetCompositeLongitudinalJointInterval() const = 0;
 
    // returns the index of the interval when the deck and diaphragms are cast
-   // this is the replacement for pgsTypes::BridgeSite1
-   virtual IntervalIndexType GetCastDeckInterval() const = 0;
+   virtual IntervalIndexType GetCastDeckInterval(IndexType castingRegionIdx) const = 0;
+
+   // returns the index of the interval when the first deck casting region is cast
+   virtual IntervalIndexType GetFirstCastDeckInterval() const = 0;
+
+   // returns the index of the interval when the last deck casting region is cast
+   virtual IntervalIndexType GetLastCastDeckInterval() const = 0;
 
    // returns the index of the interval when the deck becomes composite
-   // this is the replacement for pgsTypes::BridgeSite2 (also see GetOverlayInterval and GetInstallRailingSystemInterval)
-   virtual IntervalIndexType GetCompositeDeckInterval() const = 0;
+   virtual IntervalIndexType GetCompositeDeckInterval(IndexType castingRegionIdx) const = 0;
+
+   // returns the index of the interval when the first deck casting region becomes composite
+   virtual IntervalIndexType GetFirstCompositeDeckInterval() const = 0;
+
+   // returns the index of the interval when the last deck casting region becomes composite
+   virtual IntervalIndexType GetLastCompositeDeckInterval() const = 0;
 
    // returns the interval when shear keys are cast
    virtual IntervalIndexType GetCastShearKeyInterval() const = 0;
@@ -176,7 +185,6 @@ interface IIntervals : IUnknown
    // applied to the structure. it is assumed that live
    // load can be applied to the structure at this interval and all
    // intervals thereafter
-   // this is the replacement for pgsTypes::BridgeSite3
    virtual IntervalIndexType GetLiveLoadInterval() const = 0;
 
    // returns the index of the interval when load rating calculations are performed
@@ -184,12 +192,9 @@ interface IIntervals : IUnknown
 
    // returns the index of the interval when the overlay is
    // installed. 
-   // this is a replacement for pgsTypes::BridgeSite2 or pgsTypes::BridgeSite3,
-   // depending on when the overlay is installed (normal or future)
    virtual IntervalIndexType GetOverlayInterval() const = 0;
 
    // returns the index of the interval when the railing system is constructed
-   // this is the same as pgsTypes::BridgeSite2 for pre version 3.0 PGSuper projects
    virtual IntervalIndexType GetInstallRailingSystemInterval() const = 0;
 
    // returns the index of the first interval when tendon stressing occurs

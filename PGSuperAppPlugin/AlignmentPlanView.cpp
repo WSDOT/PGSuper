@@ -444,7 +444,7 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
 
    display_list->AddDisplayObject(doBridge);
 
-   // Register an event sink with the alignment object so that we can handle Float64 clicks
+   // Register an event sink with the alignment object so that we can handle double clicks
    // on the alignment differently then a general dbl-click
    CComPtr<iDisplayObject> dispObj;
    doBridge->QueryInterface(IID_iDisplayObject,(void**)&dispObj);

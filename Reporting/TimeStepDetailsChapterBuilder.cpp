@@ -33,6 +33,8 @@
 
 #include <WBFLGenericBridgeTools.h>
 
+#include <PgsExt\TimelineEvent.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -543,30 +545,42 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_D
    INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDisplayUnits->GetModEUnit(), false);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-   for (int i = 0; i < 2; i++, row++)
-   {
-      ColumnIndexType col = 0;
+   ColumnIndexType col = 0;
 
-      std::_tstring strComponent(i == 0 ? _T("Girder") : _T("Deck"));
-      (*pTable)(row, col++) << strComponent;
+   (*pTable)(row, col++) << _T("Girder");
+   for (int t = 0; t < 3; t++)
+   {
+      pgsTypes::IntervalTimeType timeType = (pgsTypes::IntervalTimeType)(t);
+      Float64 fc = pMaterials->GetSegmentFc(segmentKey, tsDetails.intervalIdx, timeType);
+      Float64 Ec = pMaterials->GetSegmentEc(segmentKey, tsDetails.intervalIdx, timeType);
+
+      (*pTable)(row, col++) << stress.SetValue(fc);
+      (*pTable)(row, col++) << modE.SetValue(Ec);
+   }
+   row++;
+
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+   const auto* pEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
+   const auto& castDeckActivity = pEvent->GetCastDeckActivity();
+   IndexType nRegions = castDeckActivity.GetCastingRegionCount();
+   for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
+   {
+      col = 0;
+      (*pTable)(row, col++) << _T("Deck Region ") << LABEL_INDEX(regionIdx);
       for (int t = 0; t < 3; t++)
       {
          pgsTypes::IntervalTimeType timeType = (pgsTypes::IntervalTimeType)(t);
-         Float64 fc, Ec;
-         if (i == 0)
-         {
-            fc = pMaterials->GetSegmentFc(segmentKey, tsDetails.intervalIdx, timeType);
-            Ec = pMaterials->GetSegmentEc(segmentKey, tsDetails.intervalIdx, timeType);
-         }
-         else
-         {
-            fc = pMaterials->GetDeckFc(tsDetails.intervalIdx, timeType);
-            Ec = pMaterials->GetDeckEc(tsDetails.intervalIdx, timeType);
-         }
+         Float64 fc = pMaterials->GetDeckFc(regionIdx, tsDetails.intervalIdx, timeType);
+         Float64 Ec = pMaterials->GetDeckEc(regionIdx, tsDetails.intervalIdx, timeType);
 
          (*pTable)(row, col++) << stress.SetValue(fc);
          (*pTable)(row, col++) << modE.SetValue(Ec);
       }
+      row++;
    }
 
    return pTable;
@@ -1832,7 +1846,10 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
 
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType firstIntervalIdx = (bGirder ? 0 : compositeDeckIntervalIdx);
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx < nIntervals; intervalIdx++, rowIdx += 2 )
@@ -1940,8 +1957,11 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
    CClosureKey closureKey;
    bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
 
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
    std::_tstring strCuring[] = {_T("Moist"),_T("Steam") };
 
@@ -2052,7 +2072,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          }
          else
          {
-            *pPara << _T("Curing: ") << strCuring[pMaterials->GetDeckConcrete()->GetCureMethod()] << rptNewLine;
+            *pPara << _T("Curing: ") << strCuring[pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCureMethod()] << rptNewLine;
          }
       }
 
@@ -2200,8 +2220,8 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
          }
          else
          {
-            startAge = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::Start);
-            endAge   = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
+            startAge = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::Start);
+            endAge   = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
          }
 
          for ( IntervalIndexType prevIntervalIdx = firstIntervalIdx; prevIntervalIdx < intervalIdx; prevIntervalIdx++ )
@@ -2327,8 +2347,11 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
    CClosureKey closureKey;
    bool bIsInClosure = pPoi->IsInClosureJoint(poi,&closureKey);
 
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
    ColumnIndexType nColumns = 6; // Interval, tb, te, ..... , esh(tb), esh(te), Desh
 
@@ -2436,7 +2459,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          }
          else
          {
-            *pPara << _T("Curing: ") << strCuring[pMaterials->GetDeckConcrete()->GetCureMethod()] << rptNewLine;
+            *pPara << _T("Curing: ") << strCuring[pMaterials->GetDeckConcrete(deckCastingRegionIdx)->GetCureMethod()] << rptNewLine;
          }
       }
 
@@ -2459,8 +2482,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
          }
          else
          {
-            IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-            Float64 fci = pMaterials->GetDeckFc(compositeDeckIntervalIdx,pgsTypes::Start);
+            Float64 fci = pMaterials->GetDeckFc(deckCastingRegionIdx,compositeDeckIntervalIdx,pgsTypes::Start);
             (*pPara) << RPT_FCI << _T(" = ") << stress.SetValue(fci) << rptNewLine;
          }
       }

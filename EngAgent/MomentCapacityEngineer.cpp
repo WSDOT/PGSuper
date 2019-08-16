@@ -1478,7 +1478,9 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
          }
          else
          {
-            fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+            IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+            ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+            fr = pMaterial->GetDeckFlexureFr(deckCastingRegionIdx,intervalIdx);
          }
       }
    }
@@ -1498,7 +1500,10 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       }
       else
       {
-         fr = pMaterial->GetDeckFlexureFr(intervalIdx);
+         GET_IFACE(IPointOfInterest, pPoi);
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+         fr = pMaterial->GetDeckFlexureFr(deckCastingRegionIdx,intervalIdx);
       }
    }
 
@@ -1894,8 +1899,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    CComPtr<IGeneralSection> section;
    section.CoCreateInstance(CLSID_GeneralSection);
 
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
    GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
    // beam shape
    CComPtr<IShape> shapeBeam;

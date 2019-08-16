@@ -820,7 +820,9 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    }
    else
    {
-      pscd->McrDetails.fr = pMaterial->GetDeckShearFr(intervalIdx);
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+      pscd->McrDetails.fr = pMaterial->GetDeckShearFr(deckCastingRegionIdx,intervalIdx);
    }
 
    pscd->McrDetails.Mcr = pscd->McrDetails.Sbc*(pscd->McrDetails.fr + pscd->McrDetails.fcpe - pscd->McrDetails.Mdnc/pscd->McrDetails.Sb);

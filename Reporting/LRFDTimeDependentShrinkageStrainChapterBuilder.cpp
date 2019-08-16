@@ -25,8 +25,11 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace\Project.h>
 #include <Material\ConcreteBase.h>
 #include <Lrfd\LRFDTimeDependentConcrete.h>
+#include <PgsExt\TimelineEvent.h>
+#include <PgsExt\CastDeckActivity.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -213,55 +216,92 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
       }
    }
 
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+   if (IsStructuralDeck(pBridge->GetDeckType()))
    {
-      const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-      const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
-
-      ColumnIndexType colIdx = 0;
-
-      (*pTable)(rowIdx,colIdx++) << _T("Deck");
-      (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
-
-      Float64 t = pLRFDConcrete->GetTimeAtCasting() + pLRFDConcrete->GetCureTime();
-
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+      const auto& castDeckActivity = pIBridgeDesc->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity();
+      IndexType nCastings = castDeckActivity.GetCastingCount();
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
       {
-         Float64 K1, K2;
-         pLRFDConcrete->GetShrinkageCorrectionFactors(&K1,&K2);
-         (*pTable)(rowIdx,colIdx++) << K1;
-         (*pTable)(rowIdx,colIdx++) << K2;
-      }
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
 
-      (*pTable)(rowIdx,colIdx++) << vsRatio.SetValue(pConcrete->GetVSRatio());
+         ColumnIndexType colIdx = 0;
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorShrinkage(-99999); // not a function of time so use any bogus value
-      }
+         CString strTitle(_T("Deck"));
+         if (1 < nCastings)
+         {
+            strTitle += _T(" Regions ");
+            auto begin = std::begin(vRegions);
+            auto iter = begin;
+            auto end = std::end(vRegions);
+            for (; iter != end; iter++)
+            {
+               if (iter != begin)
+               {
+                  strTitle += _T(", ");
+               }
+               CString strRegion;
+               strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+               strTitle += strRegion;
+            }
+         }
 
-      (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
-      (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetRelativeHumidityFactorShrinkage();
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         Float64 fci = pLRFDConcrete->GetFc(t);
-         (*pTable)(rowIdx,colIdx++) << stress.SetValue(fci);
-         (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetConcreteStrengthFactor();
-      }
+         (*pTable)(rowIdx, colIdx++) << strTitle;
+         (*pTable)(rowIdx, colIdx++) << strCuring[pConcrete->GetCureMethod()];
 
-      rowIdx++;
+         Float64 t = pLRFDConcrete->GetTimeAtCasting() + pLRFDConcrete->GetCureTime();
+
+         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         {
+            Float64 K1, K2;
+            pLRFDConcrete->GetShrinkageCorrectionFactors(&K1, &K2);
+            (*pTable)(rowIdx, colIdx++) << K1;
+            (*pTable)(rowIdx, colIdx++) << K2;
+         }
+
+         (*pTable)(rowIdx, colIdx++) << vsRatio.SetValue(pConcrete->GetVSRatio());
+
+         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         {
+            (*pTable)(rowIdx, colIdx++) << pLRFDConcrete->GetSizeFactorShrinkage(-99999); // not a function of time so use any bogus value
+         }
+
+         (*pTable)(rowIdx, colIdx++) << pConcrete->GetRelativeHumidity();
+         (*pTable)(rowIdx, colIdx++) << pLRFDConcrete->GetRelativeHumidityFactorShrinkage();
+
+         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         {
+            Float64 fci = pLRFDConcrete->GetFc(t);
+            (*pTable)(rowIdx, colIdx++) << stress.SetValue(fci);
+            (*pTable)(rowIdx, colIdx++) << pLRFDConcrete->GetConcreteStrengthFactor();
+         }
+
+         rowIdx++;
+      } // next casting stage
    }
 
 #if defined _DEBUG || defined _BETA_VERSION
-   nColumns = 6*nSegments+1;
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckIndex = pIBridgeDesc->GetCastDeckEventIndex();
+   const auto* pEvent = pIBridgeDesc->GetEventByIndex(castDeckIndex);
+   const auto& castDeckActivity = pEvent->GetCastDeckActivity();
+   IndexType nCastings = castDeckActivity.GetCastingCount();
+   IndexType nClosures = nSegments - 1;
 
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+   nColumns = 3 * (nSegments + nClosures + nCastings) + 1; 
+
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
    {
-      nColumns += 2*nSegments + 1;
+      // one for for the ks column
+      nColumns += nSegments + nClosures + nCastings;
    }
 
-   pTable = rptStyleManager::CreateDefaultTable(nColumns);
+   pTable = rptStyleManager::CreateDefaultTable(nColumns, _T("Debugging Table"));
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
@@ -307,17 +347,41 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
          (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
       }
    }
-   pTable->SetColumnSpan(rowIdx,colIdx,colSpan);
-   (*pTable)(rowIdx,colIdx) << _T("Deck");
-   (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
 
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+   for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
    {
-      (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("k"),_T("s"));
-   }
+      pTable->SetColumnSpan(rowIdx, colIdx, colSpan);
+      CString strTitle(_T("Deck"));
+      if (1 < nCastings)
+      {
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
 
-   (*pTable)(rowIdx+1,colIdx++) << symbol(DELTA) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
-   (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
+         strTitle += _T(" Regions ");
+         auto begin = std::begin(vRegions);
+         auto iter = begin;
+         auto end = std::end(vRegions);
+         for (; iter != end; iter++)
+         {
+            if (iter != begin)
+            {
+               strTitle += _T(", ");
+            }
+            CString strRegion;
+            strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+            strTitle += strRegion;
+         }
+      }
+      (*pTable)(rowIdx, colIdx) << strTitle;
+      (*pTable)(rowIdx + 1, colIdx++) << _T("t") << rptNewLine << _T("(days)");
+
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+      {
+         (*pTable)(rowIdx + 1, colIdx++) << Sub2(_T("k"), _T("s"));
+      }
+
+      (*pTable)(rowIdx + 1, colIdx++) << symbol(DELTA) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+      (*pTable)(rowIdx + 1, colIdx++) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+   }
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -396,34 +460,39 @@ rptChapter* CLRFDTimeDependentShrinkageStrainChapterBuilder::Build(CReportSpecif
          }
       }
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      if ( compositeDeckIntervalIdx <= intervalIdx )
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
       {
-         Float64 t  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
-         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
-         Float64 cure = pLRFDConcrete->GetCureTime();
-         (*pTable)(rowIdx,colIdx++) << t - cure;
-
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+         if ( compositeDeckIntervalIdx <= intervalIdx )
          {
-            (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorShrinkage(t);
-         }
+            Float64 t  = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
+            const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+            Float64 cure = pLRFDConcrete->GetCureTime();
+            (*pTable)(rowIdx,colIdx++) << t - cure;
 
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(intervalIdx);
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
-      }
-      else
-      {
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+            {
+               (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorShrinkage(t);
+            }
+
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(deckCastingRegionIdx,intervalIdx);
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
+         }
+         else
          {
             (*pTable)(rowIdx,colIdx++) << _T("");
-         }
          
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
+            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+            {
+               (*pTable)(rowIdx,colIdx++) << _T("");
+            }
+         
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+         }
       }
    }
 #endif //#if defined _DEBUG || defined _BETA_VERSION

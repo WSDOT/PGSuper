@@ -76,16 +76,7 @@ bool CTimelineEventDlg::UpdateTimelineManager(const CTimelineManager& timelineMg
    if ( result != TLM_SUCCESS )
    {
       // The event that was changed doesn't fit... as the user what to do about it
-      CString strProblem;
-      if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
-      {
-         strProblem = _T("This event begins before the activities in the previous event have completed.");
-      }
-      else
-      {
-         strProblem = _T("The activities in this event end after the next event begins.");
-      }
-
+      CString strProblem = timelineMgr.GetErrorMessage(result);
       CString strRemedy(_T("The timeline will be adjusted to accomodate this event."));
 
       CString strMsg;

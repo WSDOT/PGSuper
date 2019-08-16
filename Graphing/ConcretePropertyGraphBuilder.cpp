@@ -211,6 +211,7 @@ int CConcretePropertyGraphBuilder::InitializeGraphController(CWnd* pParent,UINT 
    m_GraphType    = GRAPH_TYPE_FC;
    m_SegmentKey = CSegmentKey(0,0,0);
    m_ClosureKey = CClosureKey(0,0,0);
+   m_DeckCastingRegionIdx = 0;
 
    // Show the grid by default... set the control to checked
    m_pGraphController->CheckDlgButton(IDC_GRID,BST_CHECKED);
@@ -253,6 +254,7 @@ bool CConcretePropertyGraphBuilder::UpdateNow()
    m_GraphType    = m_pGraphController->GetGraphType();
    m_SegmentKey   = m_pGraphController->GetSegment();
    m_ClosureKey   = m_pGraphController->GetClosureJoint();
+   m_DeckCastingRegionIdx = m_pGraphController->GetDeckCastingRegion();
    m_XAxisType    = m_pGraphController->GetXAxisType();
 
    // Update graph properties
@@ -399,7 +401,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphTitle()
    else
    {
       ATLASSERT(m_GraphElement == GRAPH_ELEMENT_DECK);
-      strElement = _T("Bridge Deck");
+      strElement.Format(_T("Bridge Deck, Region %d"), LABEL_INDEX(m_DeckCastingRegionIdx));
    }
 
    m_Graph.SetTitle(strType);
@@ -417,7 +419,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    CString strLabel;
    if ( m_GraphType == GRAPH_TYPE_FC )
    {
-      strLabel = _T("f'c");
+      strLabel = _T("fc");
    }
    else if ( m_GraphType == GRAPH_TYPE_EC )
    {
@@ -453,7 +455,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    }
    else
    {
-      startIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      startIntervalIdx = pIntervals->GetCompositeDeckInterval(m_DeckCastingRegionIdx);
    }
 
    std::vector<IntervalIndexType> vIntervals;
@@ -519,9 +521,9 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
             }
             else
             {
-               xStart  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::Start);
-               xMiddle = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::Middle);
-               xEnd    = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
+               xStart  = pMaterials->GetDeckConcreteAge(m_DeckCastingRegionIdx,intervalIdx,pgsTypes::Start);
+               xMiddle = pMaterials->GetDeckConcreteAge(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::Middle);
+               xEnd    = pMaterials->GetDeckConcreteAge(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::End);
             }
          }
          else
@@ -627,35 +629,35 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
          {
             if ( m_GraphType == GRAPH_TYPE_FC )
             {
-               startValue  = pMaterials->GetDeckFc(intervalIdx,pgsTypes::Start);
-               middleValue = pMaterials->GetDeckFc(intervalIdx,pgsTypes::Middle);
-               endValue    = pMaterials->GetDeckFc(intervalIdx,pgsTypes::End);
+               startValue  = pMaterials->GetDeckFc(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::Start);
+               middleValue = pMaterials->GetDeckFc(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetDeckFc(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_EC )
             {
-               startValue  = pMaterials->GetDeckEc(intervalIdx,pgsTypes::Start);
-               middleValue = pMaterials->GetDeckEc(intervalIdx,pgsTypes::Middle);
-               endValue    = pMaterials->GetDeckEc(intervalIdx,pgsTypes::End);
+               startValue  = pMaterials->GetDeckEc(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::Start);
+               middleValue = pMaterials->GetDeckEc(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetDeckEc(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_SH )
             {
-               startValue  = -1e6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Start);
-               middleValue = -1e6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::Middle);
-               endValue    = -1e6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
+               startValue  = -1e6*pMaterials->GetTotalDeckFreeShrinkageStrain(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::Start);
+               middleValue = -1e6*pMaterials->GetTotalDeckFreeShrinkageStrain(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::Middle);
+               endValue    = -1e6*pMaterials->GetTotalDeckFreeShrinkageStrain(m_DeckCastingRegionIdx, intervalIdx,pgsTypes::End);
             }
             else if ( m_GraphType == GRAPH_TYPE_CR )
             {
                if ( iIdx == intervalIdx )
                {
-                  startValue  = pMaterials->GetDeckCreepCoefficient(iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+                  startValue  = pMaterials->GetDeckCreepCoefficient(m_DeckCastingRegionIdx, iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
                   xStart = xMiddle;
                }
                else
                {
-                  startValue  = pMaterials->GetDeckCreepCoefficient(iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
+                  startValue  = pMaterials->GetDeckCreepCoefficient(m_DeckCastingRegionIdx, iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
                }
-               middleValue = pMaterials->GetDeckCreepCoefficient(iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
-               endValue    = pMaterials->GetDeckCreepCoefficient(iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+               middleValue = pMaterials->GetDeckCreepCoefficient(m_DeckCastingRegionIdx, iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Middle);
+               endValue    = pMaterials->GetDeckCreepCoefficient(m_DeckCastingRegionIdx, iIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
             }
          }
          AddGraphPoint(dataSeries,xStart, startValue);

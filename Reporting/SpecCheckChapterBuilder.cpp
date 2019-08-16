@@ -128,7 +128,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(CSegmentKey(girderKey,0));
    IntervalIndexType liftingIntervalIdx       = pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,0));
    IntervalIndexType haulingIntervalIdx       = pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,0));
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
@@ -242,7 +242,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
 
    if ( lastTendonStressingIntervalIdx != INVALID_INDEX &&         // if there are tendons AND
-        compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx // if they are stressed after the deck is composite
+        lastCompositeDeckIntervalIdx <= lastTendonStressingIntervalIdx // if they are stressed after the deck is composite
       )
    {
       rptParagraph* p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
@@ -272,7 +272,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
          IntervalIndexType intervalIdx = *iter;
 
          // skipping everything before the deck is composite
-         if ( intervalIdx < compositeDeckIntervalIdx )
+         if ( intervalIdx < lastCompositeDeckIntervalIdx)
          {
             continue;
          }

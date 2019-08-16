@@ -29,8 +29,12 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\Project.h>
 
 #include <WBFLGenericBridgeTools.h>
+
+#include <PgsExt\TimelineEvent.h>
+#include <PgsExt\CastDeckActivity.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -279,72 +283,100 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    *pChapter << pPara;
    (*pPara) << _T("Deck") << rptNewLine;
 
-   pPara = new rptParagraph;
-   *pChapter << pPara;
 
-   ColumnIndexType col = 0;
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9,_T("Concrete Parameters"));
-   (*pPara) << pTable << rptNewLine;
-
-   (*pTable)(0,col++) << _T("Interval");
-   (*pTable)(0,col++) << COLHDR(_T("Age"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
-   (*pTable)(0,col++) << COLHDR(_T("f'c"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   (*pTable)(0,col++) << COLHDR(_T("Ec"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   (*pTable)(0,col++) << symbol(psi);
-   (*pTable)(0,col++) << symbol(chi);
-   (*pTable)(0,col++) << COLHDR(_T("E'c = Ec/(") << _T("1+") << symbol(chi) << symbol(psi) << _T(")"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   (*pTable)(0,col++) << symbol(DELTA) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
-   (*pTable)(0,col++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
-
-
-   RowIndexType row = pTable->GetNumberOfHeaderRows();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+   const auto* pTimelineEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
+   const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
+   ATLASSERT(castDeckActivity.IsEnabled());
+   IndexType nCastings = castDeckActivity.GetCastingCount();
+   for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
    {
-      col = 0;
-      (*pTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-      (*pTable)(row,col++) << pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::Middle);
-      (*pTable)(row,col++) << stress.SetValue(pMaterials->GetDeckFc(intervalIdx));
-      (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckEc(intervalIdx));
-      (*pTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-      (*pTable)(row,col++) << pMaterials->GetDeckAgingCoefficient(intervalIdx);
-      (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckAgeAdjustedEc(intervalIdx));
-      (*pTable)(row,col++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(intervalIdx);
-      (*pTable)(row,col++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
-   }
+      pPara = new rptParagraph;
+      *pChapter << pPara;
 
-   rptRcTable* pCreepTable = rptStyleManager::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
-   *pPara << pCreepTable << rptNewLine;
-   pCreepTable->SetNumberOfHeaderRows(2);
-
-   col = 0;
-   pCreepTable->SetRowSpan(0,col,2);
-   (*pCreepTable)(0,col++) << _T("Interval") << rptNewLine << _T("i");
-
-   for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals-1; intervalIdx++ )
-   {
-      pCreepTable->SetColumnSpan(1, col, 2);
-      (*pCreepTable)(0,col)   << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ie")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
-      (*pCreepTable)(0,col+1) << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ib")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
-      (*pCreepTable)(1,col) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
-      col += 2;
-   }
-
-   row = pCreepTable->GetNumberOfHeaderRows();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
-   {
-      col = 0;
-      (*pCreepTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-      for ( IntervalIndexType loadIntIdx = 0; loadIntIdx < intervalIdx && loadIntIdx < nIntervals-1; loadIntIdx++ )
+      IndexType sequenceIdx = castDeckActivity.GetSequenceNumber(castingIdx);
+      (*pPara) << _T("Sequence ") << LABEL_INDEX(sequenceIdx) << _T(" for regions ");
+      std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+      auto begin = std::begin(vRegions);
+      auto iter = begin;
+      auto end = std::end(vRegions);
+      for (; iter != end; iter++)
       {
-         (*pCreepTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-         (*pCreepTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
+         if (iter != begin)
+         {
+            (*pPara) << _T(",");
+         }
+         (*pPara) << _T(" ") << LABEL_INDEX(*iter);
       }
-      for ( IntervalIndexType i = intervalIdx; i < nIntervals-1; i++ )
+      (*pPara) << rptNewLine;
+
+      IndexType deckCastingRegionIdx = vRegions.front();
+
+      ColumnIndexType col = 0;
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9, _T("Concrete Parameters"));
+      (*pPara) << pTable << rptNewLine;
+
+      (*pTable)(0, col++) << _T("Interval");
+      (*pTable)(0, col++) << COLHDR(_T("Age"), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
+      (*pTable)(0, col++) << COLHDR(_T("f'c"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0, col++) << COLHDR(_T("Ec"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0, col++) << symbol(psi);
+      (*pTable)(0, col++) << symbol(chi);
+      (*pTable)(0, col++) << COLHDR(_T("E'c = Ec/(") << _T("1+") << symbol(chi) << symbol(psi) << _T(")"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0, col++) << symbol(DELTA) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+      (*pTable)(0, col++) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+
+
+      RowIndexType row = pTable->GetNumberOfHeaderRows();
+      for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++)
       {
-         (*pCreepTable)(row,col++) << _T("");
-         (*pCreepTable)(row,col++) << _T("");
+         col = 0;
+         (*pTable)(row, col++) << LABEL_INTERVAL(intervalIdx);
+         (*pTable)(row, col++) << pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx, pgsTypes::Middle);
+         (*pTable)(row, col++) << stress.SetValue(pMaterials->GetDeckFc(deckCastingRegionIdx, intervalIdx));
+         (*pTable)(row, col++) << modE.SetValue(pMaterials->GetDeckEc(deckCastingRegionIdx, intervalIdx));
+         (*pTable)(row, col++) << pMaterials->GetDeckCreepCoefficient(deckCastingRegionIdx, intervalIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
+         (*pTable)(row, col++) << pMaterials->GetDeckAgingCoefficient(deckCastingRegionIdx, intervalIdx);
+         (*pTable)(row, col++) << modE.SetValue(pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx, intervalIdx));
+         (*pTable)(row, col++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(deckCastingRegionIdx, intervalIdx);
+         (*pTable)(row, col++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(deckCastingRegionIdx, intervalIdx, pgsTypes::End);
       }
-   }
+
+      rptRcTable* pCreepTable = rptStyleManager::CreateDefaultTable(1 + 2 * (nIntervals - 1), _T("Creep Coefficients"));
+      *pPara << pCreepTable << rptNewLine;
+      pCreepTable->SetNumberOfHeaderRows(2);
+
+      col = 0;
+      pCreepTable->SetRowSpan(0, col, 2);
+      (*pCreepTable)(0, col++) << _T("Interval") << rptNewLine << _T("i");
+
+      for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals - 1; intervalIdx++)
+      {
+         pCreepTable->SetColumnSpan(1, col, 2);
+         (*pCreepTable)(0, col) << symbol(psi) << _T("(") << Sub2(_T("t"), _T("ie")) << _T(",") << Sub2(_T("t"), _T("jm")) << _T(")");
+         (*pCreepTable)(0, col + 1) << symbol(psi) << _T("(") << Sub2(_T("t"), _T("ib")) << _T(",") << Sub2(_T("t"), _T("jm")) << _T(")");
+         (*pCreepTable)(1, col) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
+         col += 2;
+      }
+
+      row = pCreepTable->GetNumberOfHeaderRows();
+      for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++)
+      {
+         col = 0;
+         (*pCreepTable)(row, col++) << LABEL_INTERVAL(intervalIdx);
+         for (IntervalIndexType loadIntIdx = 0; loadIntIdx < intervalIdx && loadIntIdx < nIntervals - 1; loadIntIdx++)
+         {
+            (*pCreepTable)(row, col++) << pMaterials->GetDeckCreepCoefficient(deckCastingRegionIdx, loadIntIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
+            (*pCreepTable)(row, col++) << pMaterials->GetDeckCreepCoefficient(deckCastingRegionIdx, loadIntIdx, pgsTypes::Middle, intervalIdx, pgsTypes::Start);
+         }
+         for (IntervalIndexType i = intervalIdx; i < nIntervals - 1; i++)
+         {
+            (*pCreepTable)(row, col++) << _T("");
+            (*pCreepTable)(row, col++) << _T("");
+         }
+      }
+   } // next deck casting
 
 
    ///////////////////////////////////////////////////////////////////////////////////

@@ -561,10 +561,32 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
       {
          if (is_uniform)
          {
+            std::set<IndexType> castingRegions;
+            for (const auto& slabLoad : slab_loads)
+            {
+               castingRegions.insert(slabLoad.DeckCastingRegionIdx);
+            }
+            *pPara << _T("Casting Regions ");
+            auto begin = std::begin(castingRegions);
+            auto iter = begin;
+            auto end = std::end(castingRegions);
+            for (; iter != end; iter++)
+            {
+               IndexType castingRegionIdx = *iter;
+               if (iter != begin)
+               {
+                  *pPara << _T(", ");
+               }
+               *pPara << LABEL_INDEX(castingRegionIdx);
+            }
+            *pPara << rptNewLine;
+
+
             rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2,_T(""));
             *pPara << p_table << rptNewLine;
             p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
             p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+
             (*p_table)(0,0) << _T("Load Type");
             (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -586,26 +608,30 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          }
          else
          {
-            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
+            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(6,_T(""));
             *pPara << p_table;
 
-            (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,1) << COLHDR(_T("Main ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,2) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-            (*p_table)(0,3) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,4) << COLHDR(_T("Total ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            ColumnIndexType col = 0;
+            (*p_table)(0, col++) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0, col++) << _T("Casting") << rptNewLine << _T("Region");
+            (*p_table)(0, col++) << COLHDR(_T("Main ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0, col++) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+            (*p_table)(0, col++) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0, col++) << COLHDR(_T("Total ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
             RowIndexType row = p_table->GetNumberOfHeaderRows();
             for( const auto& slab_load : slab_loads)
             {
+               col = 0;
                Float64 location = slab_load.Loc-end_size;
                Float64 main_load = slab_load.MainSlabLoad;
                Float64 pad_load  = slab_load.PadLoad;
-               (*p_table)(row,0) << loc.SetValue(location);
-               (*p_table)(row,1) << fpl.SetValue(-main_load);
-               (*p_table)(row,2) << comp.SetValue(slab_load.HaunchDepth);
-               (*p_table)(row,3) << fpl.SetValue(-pad_load);
-               (*p_table)(row,4) << fpl.SetValue(-(main_load+pad_load));
+               (*p_table)(row, col++) << loc.SetValue(location);
+               (*p_table)(row, col++) << LABEL_INDEX(slab_load.DeckCastingRegionIdx);
+               (*p_table)(row, col++) << fpl.SetValue(-main_load);
+               (*p_table)(row, col++) << comp.SetValue(slab_load.HaunchDepth);
+               (*p_table)(row, col++) << fpl.SetValue(-pad_load);
+               (*p_table)(row, col++) << fpl.SetValue(-(main_load+pad_load));
                row++;
             }
          }
@@ -622,7 +648,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          }
          else
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry,  and is measured along the centerline of the girder, but does not include a reduction for camber.");
+            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry, and is measured along the centerline of the girder, but does not include a reduction for camber.");
          }
       }
 
@@ -688,17 +714,18 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          *pChapter << pPara;
          *pPara << strDeckName << _T(" Haunch Load Details") << rptNewLine;
 
-         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(report_camber ? 10:9,_T(""));
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(report_camber ? 11:10,_T(""));
          *pPara << p_table;
 
          ColumnIndexType col = 0;
-         (*p_table)(0,col++) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0, col++) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          (*p_table)(0, col++) << _T("Station");
          (*p_table)(0, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         (*p_table)(0,col++) << COLHDR(_T("Top") << rptNewLine << _T("Slab") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         (*p_table)(0,col++) << COLHDR(_T("Girder") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         (*p_table)(0,col++) << COLHDR(_T("Top") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         (*p_table)(0,col++) << COLHDR(strDeckName<<rptNewLine<<_T("Thickness"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0, col++) << _T("Casting") << rptNewLine << _T("Region");
+         (*p_table)(0, col++) << COLHDR(_T("Top") << rptNewLine << _T("Slab") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0, col++) << COLHDR(_T("Girder") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0, col++) << COLHDR(_T("Top") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0, col++) << COLHDR(strDeckName<<rptNewLine<<_T("Thickness"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          if (report_camber)
          {
             (*p_table)(0, col++) << COLHDR(_T("*Assumed") << rptNewLine << _T("Excess") << rptNewLine << _T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -715,13 +742,14 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
             (*p_table)(row, col++) << loc.SetValue(location);
             (*p_table)(row, col++) << rptRcStation(slab_load.Station, &pDisplayUnits->GetStationFormat());
             (*p_table)(row, col++) << RPT_OFFSET(slab_load.Offset, loc);
+            (*p_table)(row, col++) << LABEL_INDEX(slab_load.DeckCastingRegionIdx);
             (*p_table)(row, col++) << loc.SetValue(slab_load.TopSlabElevation);
             (*p_table)(row, col++) << loc.SetValue(slab_load.GirderChordElevation);
             (*p_table)(row, col++) << loc.SetValue(slab_load.TopGirderElevation);
             (*p_table)(row, col++) << comp.SetValue(slab_load.SlabDepth);
             if (report_camber)
             {
-               (*p_table)(row, col++) << comp.SetValue(slab_load.AssExcessCamber);
+               (*p_table)(row, col++) << comp.SetValue(slab_load.AssumedExcessCamber);
             }
             (*p_table)(row, col++) << comp.SetValue(slab_load.HaunchDepth);
             (*p_table)(row, col++) << fpl.SetValue(-slab_load.PadLoad);

@@ -224,14 +224,12 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    {
       const ReactionLocation& reactionLocation( iter.CurrentItem() );
 
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
       IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
      (*p_table)(row,0) << reactionLocation.PierLabel;
 
       ColumnIndexType col = 1;
-      if ( analysisType == pgsTypes::Envelope /*&& continuityIntervalIdx == castDeckIntervalIdx*/ )
+      if ( analysisType == pgsTypes::Envelope )
       {
          (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcDC, reactionLocation, maxBAT, rtIncremental ) );
          (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcDC, reactionLocation, minBAT, rtIncremental ) );

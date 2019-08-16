@@ -113,6 +113,7 @@ typedef LinearLoad LongitudinalJointLoad;
 
 typedef struct SlabLoad
 {
+   IndexType DeckCastingRegionIdx; // index of the deck casting region
    Float64 Loc;          // measured from left girder end. Location where this load is defined
    Float64 MainSlabLoad; // if used with SIP, only the cast portion of the slab
    Float64 PanelLoad;    // Weight of SIP deck panels
@@ -124,7 +125,7 @@ typedef struct SlabLoad
    Float64 GirderChordElevation;
    Float64 TopSlabElevation;
    Float64 TopGirderElevation; // includes factored camber
-   Float64 AssExcessCamber;    // factored by % factor in project criteria
+   Float64 AssumedExcessCamber;    // factored by % factor in project criteria
 } SlabLoad;
 
 typedef struct ShearKeyLoad

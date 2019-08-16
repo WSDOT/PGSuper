@@ -118,6 +118,8 @@ m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
+m_DeckCastingRegionIdx(INVALID_INDEX),
+m_bHasDeckCastingRegion(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
@@ -140,6 +142,8 @@ m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
+m_DeckCastingRegionIdx(INVALID_INDEX),
+m_bHasDeckCastingRegion(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
@@ -174,6 +178,8 @@ m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
+m_DeckCastingRegionIdx(INVALID_INDEX),
+m_bHasDeckCastingRegion(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
@@ -207,6 +213,8 @@ m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
+m_DeckCastingRegionIdx(INVALID_INDEX),
+m_bHasDeckCastingRegion(false),
 m_bCanMerge(true),
 m_Attributes(0)
 {
@@ -250,6 +258,15 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
          // At abrupt section changes there will be 2 poi (if the factory modeled them correctly)
          // this typically occurs at the terminus of end blocks
          // The poi with POI_SECTCHANGE_LEFTFACE comes before the poi with POI_SECTCHANGE_RIGHTFACE
+         return true;
+      }
+
+      if (HasAttribute(POI_CASTING_BOUNDARY_END) && rOther.HasAttribute(POI_CASTING_BOUNDARY_START))
+      {
+         // At abrupt changes in deck casting sections there will be 2 poi
+         // The poi with POI_CASTING_BOUNDARY_END comes before the poi with POI_CASTING_BOUNDARY_START
+         // e.g. the poi on the left is the one where the region to the left is ending and the poi on 
+         // the right is the one where the next region is starting
          return true;
       }
 
@@ -377,6 +394,9 @@ void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi,
    m_bHasSpanPoint = false;
    m_SpanIdx = INVALID_INDEX;
    m_Xspan = -1;
+
+   m_bHasDeckCastingRegion = false;
+   m_DeckCastingRegionIdx = INVALID_INDEX;
 }
 
 void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi)
@@ -399,6 +419,9 @@ void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi)
    m_bHasSpanPoint = false;
    m_SpanIdx = INVALID_INDEX;
    m_Xspan = -1;
+
+   m_bHasDeckCastingRegion = false;
+   m_DeckCastingRegionIdx = INVALID_INDEX;
 }
 
 void pgsPointOfInterest::Offset(Float64 delta)
@@ -429,6 +452,8 @@ void pgsPointOfInterest::Offset(Float64 delta)
    m_SpanIdx = INVALID_INDEX;
    m_Xspan = -1;
 
+   m_bHasDeckCastingRegion = false;
+   m_DeckCastingRegionIdx = INVALID_INDEX;
 }
 
 void pgsPointOfInterest::SetDistFromStart(Float64 Xpoi,bool bRetainAttributes)
@@ -452,6 +477,9 @@ void pgsPointOfInterest::SetDistFromStart(Float64 Xpoi,bool bRetainAttributes)
    m_bHasSpanPoint = false;
    m_SpanIdx = INVALID_INDEX;
    m_Xspan = -1;
+
+   m_bHasDeckCastingRegion = false;
+   m_DeckCastingRegionIdx = INVALID_INDEX;
 
    if (!bRetainAttributes)
    {
@@ -555,6 +583,23 @@ void pgsPointOfInterest::GetSpanPoint(SpanIndexType* pSpanIdx,Float64* pXspan) c
 bool pgsPointOfInterest::HasSpanPoint() const
 {
    return m_bHasSpanPoint;
+}
+
+void pgsPointOfInterest::SetDeckCastingRegion(IndexType deckCastingRegionIdx)
+{
+   m_DeckCastingRegionIdx = deckCastingRegionIdx;
+   m_bHasDeckCastingRegion = true;
+}
+
+IndexType pgsPointOfInterest::GetDeckCastingRegion() const
+{
+   ATLASSERT(m_bHasDeckCastingRegion);
+   return m_DeckCastingRegionIdx;
+}
+
+bool pgsPointOfInterest::HasDeckCastingRegion() const
+{
+   return m_bHasDeckCastingRegion;
 }
 
 void pgsPointOfInterest::ClearAttributes()
@@ -686,12 +731,21 @@ bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
       return false;
    }
 
-   if ( (HasAttribute(POI_SECTCHANGE_LEFTFACE) && rOther.HasAttribute(POI_SECTCHANGE_RIGHTFACE)) 
-        || 
-        (HasAttribute(POI_SECTCHANGE_RIGHTFACE) && rOther.HasAttribute(POI_SECTCHANGE_LEFTFACE))
+   if ((HasAttribute(POI_SECTCHANGE_LEFTFACE) && rOther.HasAttribute(POI_SECTCHANGE_RIGHTFACE))
+      ||
+      (HasAttribute(POI_SECTCHANGE_RIGHTFACE) && rOther.HasAttribute(POI_SECTCHANGE_LEFTFACE))
       )
    {
       // can't merge left and right faces together
+      return false;
+   }
+
+   if ((HasAttribute(POI_CASTING_BOUNDARY_START) && rOther.HasAttribute(POI_CASTING_BOUNDARY_END))
+      ||
+      (HasAttribute(POI_CASTING_BOUNDARY_END) && rOther.HasAttribute(POI_CASTING_BOUNDARY_START))
+      )
+   {
+      // can't merge casting boundaries together
       return false;
    }
 
@@ -712,7 +766,6 @@ bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
    UPDATE_ATTRIBUTES;
    return true;
 }
-
 
 bool pgsPointOfInterest::HasAttribute(PoiAttributeType attribute) const
 {
@@ -866,6 +919,8 @@ void pgsPointOfInterest::MakeCopy(const pgsPointOfInterest& rOther)
    m_bHasSpanPoint             = rOther.m_bHasSpanPoint;
    m_SpanIdx                   = rOther.m_SpanIdx;
    m_Xspan                     = rOther.m_Xspan;
+   m_bHasDeckCastingRegion = rOther.m_bHasDeckCastingRegion;
+   m_DeckCastingRegionIdx = rOther.m_DeckCastingRegionIdx;
    m_bCanMerge                 = rOther.m_bCanMerge;
    m_Attributes                = rOther.m_Attributes;
 
@@ -1170,6 +1225,28 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
       nAttributes++;
    }
 
+   if (HasAttribute(POI_CASTING_BOUNDARY_START))
+   {
+      if (0 < nAttributes)
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("SDCR");
+      nAttributes++;
+   }
+
+   if (HasAttribute(POI_CASTING_BOUNDARY_END))
+   {
+      if (0 < nAttributes)
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("EDCR");
+      nAttributes++;
+   }
+
    if ( HasAttribute(POI_INTERMEDIATE_PIER) )
    {
       if ( 0 < nAttributes )
@@ -1453,6 +1530,16 @@ void pgsPointOfInterest::UpdateAttributeString()
    if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_SECTCHANGE_LEFTFACE))
    {
       os << _T("POI_SECTCHANGE_LEFTFACE | ");
+   }
+
+   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CASTING_BOUNDARY_START))
+   {
+      os << _T("POI_CASTING_BOUNDARY_START | ");
+   }
+
+   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CASTING_BOUNDARY_END))
+   {
+      os << _T("POI_CASTING_BOUNDARY_END | ");
    }
 
    if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_INTERMEDIATE_TEMPSUPPORT))

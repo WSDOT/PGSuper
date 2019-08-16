@@ -432,14 +432,19 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       }
 
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      if (compositeDeckIntervalIdx <= intervalIdx)
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      if (deckCastingRegionIdx != INVALID_INDEX)
       {
-         Float64 Wtrib = pSectProps->GetTributaryFlangeWidth(poi);
-         Float64 Weff = pSectProps->GetEffectiveFlangeWidth(poi);
-         CString strFlange;
-         strFlange.Format(_T("\nTributary Flange Width = %s\nEffective Flange Width = %s"), FormatDimension(Wtrib, pDisplayUnits->GetComponentDimUnit()), FormatDimension(Weff, pDisplayUnits->GetComponentDimUnit()));
-         strProps += strFlange;
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+         if (compositeDeckIntervalIdx <= intervalIdx)
+         {
+            Float64 Wtrib = pSectProps->GetTributaryFlangeWidth(poi);
+            Float64 Weff = pSectProps->GetEffectiveFlangeWidth(poi);
+            CString strFlange;
+            strFlange.Format(_T("\nTributary Flange Width = %s\nEffective Flange Width = %s"), FormatDimension(Wtrib, pDisplayUnits->GetComponentDimUnit()), FormatDimension(Weff, pDisplayUnits->GetComponentDimUnit()));
+            strProps += strFlange;
+         }
       }
 
       CComPtr<iAnchoredTextBlock> textBlock;
@@ -1044,7 +1049,6 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
    EventIndexType eventIdx = m_pFrame->GetEvent();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckintervalIdx = pIntervals->GetCastDeckInterval();
    if (intervalIdx < releaseIntervalIdx)
    {
       intervalIdx = releaseIntervalIdx;

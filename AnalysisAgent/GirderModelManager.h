@@ -87,7 +87,7 @@ public:
    void GetConstructionLoad(const CSegmentKey& segmentKey,std::vector<ConstructionLoad>* pConstructionLoads) const;
    void GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::vector<SlabLoad>* pSlabLoads) const;
 
-   void GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssExcessCamber, std::vector<SlabLoad>* pSlabLoads) const;
+   void GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssumedExcessCamber, std::vector<SlabLoad>* pSlabLoads) const;
 
    void GetCantileverSlabLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2) const;
    void GetCantileverSlabPadLoad(const CSegmentKey& segmentKey, Float64* pP1, Float64* pM1, Float64* pP2, Float64* pM2) const;
@@ -344,7 +344,7 @@ private:
    void ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx) const;
    void ApplyIntermediateDiaphragmLoads(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdrLineIdx) const;
 
-   void GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, bool doCondense, bool useDesignValues , Float64 Astart, Float64 Aend, Float64 AssExcessCamber,  std::vector<SlabLoad>* pSlabLoads) const;
+   void GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, bool doCondense, bool useDesignValues , Float64 Astart, Float64 Aend, Float64 AssumedExcessCamber,  std::vector<SlabLoad>* pSlabLoads) const;
 
    typedef struct PostTensionStrainLoad
    {
@@ -432,7 +432,7 @@ private:
    // vLoads is a vector of loads
    MemberIDType ApplyDistributedLoadsToSegment(IntervalIndexType intervalIdx,ILBAMModel* pModel,pgsTypes::AnalysisType analysisType,MemberIDType ssmbrID,const CSegmentKey& segmentKey,const std::vector<LinearLoad>& vLoads,BSTR bstrStage,BSTR bstrLoadGroup) const;
 
-   void GetSlabLoad(const CSegmentKey& segmentKey, std::vector<LinearLoad>& vSlabLoads, std::vector<LinearLoad>& vHaunchLoads, std::vector<LinearLoad>& vPanelLoads) const;
+   void GetSlabLoad(const std::vector<SlabLoad>& vBasicSlabLoads, IndexType castingRegionIdx, std::vector<LinearLoad>& vSlabLoads, std::vector<LinearLoad>& vHaunchLoads, std::vector<LinearLoad>& vPanelLoads) const;
    void GetMainSpanOverlayLoad(const CSegmentKey& segmentKey, std::vector<OverlayLoad>* pOverlayLoads) const;
    void GetMainSpanShearKeyLoad(const CSegmentKey& segmentKey, std::vector<ShearKeyLoad>* pLoads) const;
    void GetMainSpanLongitudinalJointLoad(const CSegmentKey& segmentKey, std::vector<LongitudinalJointLoad>* pLoads) const;
@@ -495,7 +495,7 @@ private:
    std::vector<std::pair<pgsPointOfInterest,IntervalIndexType>>  GetSegmentErectionSupportLocations(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
 
    // a method to get a consistent list of POIs for linear load applications
-   void GetLinearPointPointsOfInterest(const CSegmentKey& segmentKey, PoiList* pvPoi) const;
+   void GetLinearLoadPointsOfInterest(const CSegmentKey& segmentKey, PoiList* pvPoi) const;
 
    REACTION GetBearingReaction(IntervalIndexType intervalIdx, pgsTypes::ProductForceType pfType, SupportIDType supportID, const CGirderKey& girderKey, pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) const;
 

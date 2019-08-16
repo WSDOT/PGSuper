@@ -783,6 +783,12 @@ typedef struct pgsTypes
       sormRoundNearest
    } SlabOffsetRoundingMethod;
 
+   typedef enum DeckCastingRegionBoundary
+   {
+      dcrbNormalToAlignment, // deck casting region boundaries are normal to the alignment
+      dcrbParallelToPier // deck casting region boundaries are parallel to their reference pier
+   } DeckCastingRegionBoundary;
+
 } pgsTypes;
 
 //-----------------------------------------------------------------------------

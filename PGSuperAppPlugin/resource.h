@@ -1223,6 +1223,7 @@
 #define IDC_NORTH                       1904
 #define IDC_STRANDS                     1904
 #define IDC_EDIT_BEARINGS               1904
+#define IDC_DECK_EVENT_DETAILS          1904
 #define IDC_LABELS                      1905
 #define IDC_BUTTON2                     1905
 #define IDC_LOAD_LOCATION_NOTE          1906
@@ -1281,6 +1282,7 @@
 #define IDC_EDIT1                       1926
 #define IDC_BRG_SPACING_STATIC          1926
 #define IDC_VIEW_TEMPLATE_EDIT          1926
+#define IDC_TIME_BETWEEN_CASTING        1926
 #define IDC_BRG_RECESS_LENGTH_UNIT      1927
 #define IDC_BEARING_GRID                1928
 #define IDC_BRG1_STATIC                 1928
@@ -1319,6 +1321,7 @@
 #define IDC_COMBO1                      1961
 #define IDC_X1_MEASURE                  1961
 #define IDC_NUMSEGMENTS_COMBO           1961
+#define IDC_REGION_BOUNDARY             1961
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_X2_MEASURE                  1962
 #define IDC_RIDGEPT_COMBO               1962
@@ -1365,6 +1368,14 @@
 #define IDC_PROMPT                      2005
 #define IDC_LIST1                       2006
 #define IDC_VIEW_TEMPLATE_SPIN          2006
+#define IDC_CAST_DECK_1                 2008
+#define IDC_CAST_DECK_2                 2009
+#define IDC_DECK_REGION_GRID            2010
+#define IDC_TIME_BETWEEN_CASTING_LABEL  2015
+#define IDC_TIME_BETWEEN_CASTING_UNIT   2016
+#define IDC_DECK_REGIONS                2018
+#define IDC_PLACEMENT_REGION_LABEL      2019
+#define IDC_REGION_BOUNDARY_LABEL       2020
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1520,9 +1531,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        397
+#define _APS_NEXT_RESOURCE_VALUE        398
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         2008
+#define _APS_NEXT_CONTROL_VALUE         2021
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

@@ -94,6 +94,7 @@ interface IEditByUI : IUnknown
    virtual bool EditMomentLoad(CollectionIndexType loadIdx) = 0;
    virtual bool EditMomentLoadByID(LoadIDType loadID) = 0;
    virtual bool EditTimeline() = 0;
+   virtual bool EditCastDeckActivity() = 0;
 
    virtual UINT GetStdToolBarID() = 0;
    virtual UINT GetLibToolBarID() = 0;

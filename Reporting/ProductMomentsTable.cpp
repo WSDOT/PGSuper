@@ -271,10 +271,10 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
       }
    }
 
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    if (*pbDeck)
    {
-      *pbContinuousBeforeDeckCasting = (continuityIntervalIdx <= castDeckIntervalIdx) ? true : false;
+      *pbContinuousBeforeDeckCasting = (continuityIntervalIdx <= firstCastDeckIntervalIdx) ? true : false;
    }
    else
    {

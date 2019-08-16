@@ -542,6 +542,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="BridgeDescFramingGrid.cpp" />
     <ClCompile Include="BridgeDescFramingPage.cpp" />
     <ClCompile Include="BridgeDescGeneralPage.cpp" />
+    <ClCompile Include="DrawDeckRegionControl.cpp" />
     <ClCompile Include="GirderDescGeneralPage.cpp" />
     <ClCompile Include="BridgeDescLiftingPage.cpp" />
     <ClCompile Include="BridgeDescLongitudinalRebar.cpp" />
@@ -641,6 +642,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="MomentLoadDrawStrategyImpl.cpp" />
     <ClCompile Include="MovePierDlg.cpp" />
     <ClCompile Include="MultiGirderSelectDlg.cpp" />
+    <ClCompile Include="DeckRegionGrid.cpp" />
     <ClCompile Include="PermitRatingPage.cpp" />
     <ClCompile Include="PGSImportPluginDocTemplateBase.cpp" />
     <ClCompile Include="PGSpliceAppPlugin.cpp" />
@@ -952,6 +954,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="BridgeDescFramingGrid.h" />
     <ClInclude Include="BridgeDescFramingPage.h" />
     <ClInclude Include="BridgeDescGeneralPage.h" />
+    <ClInclude Include="DrawDeckRegionControl.h" />
     <ClInclude Include="GirderDescGeneralPage.h" />
     <ClInclude Include="BridgeDescLiftingPage.h" />
     <ClInclude Include="BridgeDescLongitudinalRebar.h" />
@@ -1079,6 +1082,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="MomentLoadDrawStrategyImpl.h" />
     <ClInclude Include="MovePierDlg.h" />
     <ClInclude Include="MultiGirderSelectDlg.h" />
+    <ClInclude Include="DeckRegionGrid.h" />
     <ClInclude Include="PermitRatingPage.h" />
     <ClInclude Include="PGSImportPluginDocTemplateBase.h" />
     <ClInclude Include="PGSpliceAppPlugin.h" />

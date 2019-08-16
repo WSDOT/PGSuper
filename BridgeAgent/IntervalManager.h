@@ -139,12 +139,24 @@ public:
    IntervalIndexType GetCompositeLongitudinalJointInterval() const;
 
    // returns the index of the interval when the deck and diaphragms are cast
-   IntervalIndexType GetCastDeckInterval() const;
+   IntervalIndexType GetCastDeckInterval(IndexType castingRegionIdx) const;
+
+   // returns the interval when the first deck region is cast
+   IntervalIndexType GetFirstCastDeckInterval() const;
+
+   // returns the interval with the last deck region is cast
+   IntervalIndexType GetLastCastDeckInterval() const;
 
    // returns the index of the interval when the deck has finished curing
    // curing take place over the duration of an interval and cannot take load.
    // this method returns the index of the first interval when the deck can take load
-   IntervalIndexType GetCompositeDeckInterval() const;
+   IntervalIndexType GetCompositeDeckInterval(IndexType castingRegionIdx) const;
+
+   // returns the interval when the first deck region becomes composite
+   IntervalIndexType GetFirstCompositeDeckInterval() const;
+
+   // returns the interval with the last deck region becomes composite
+   IntervalIndexType GetLastCompositeDeckInterval() const;
 
    // returns the index of the interval when live load is first
    // applied to the structure. it is assumed that live
@@ -196,6 +208,9 @@ protected:
       Float64        End;           // End of interval
       Float64        Duration;      // Interval duration
       std::_tstring  Description;   // Description of activity occuring during this interval
+#if defined _DEBUG
+      void AssertValid() const;
+#endif
    };
    std::vector<CInterval> m_Intervals;
    IntervalIndexType StoreInterval(CInterval& interval);
@@ -230,8 +245,8 @@ protected:
    IntervalIndexType m_CastIntermediateDiaphragmsIntervalIdx;
    IntervalIndexType m_CastLongitudinalJointsIntervalIdx;
    IntervalIndexType m_CompositeLongitudinalJointsIntervalIdx;
-   IntervalIndexType m_CastDeckIntervalIdx;
-   IntervalIndexType m_CompositeDeckIntervalIdx;
+   std::vector<IntervalIndexType> m_vCastDeckIntervalIdx; // use casting region index to access container
+   std::vector<IntervalIndexType> m_vCompositeDeckIntervalIdx; // use casting region index to access container
    IntervalIndexType m_LiveLoadIntervalIdx;
    IntervalIndexType m_OverlayIntervalIdx;
    IntervalIndexType m_RailingSystemIntervalIdx;

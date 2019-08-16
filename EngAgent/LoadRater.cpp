@@ -1419,8 +1419,7 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
    IntervalIndexType constructionLoadIntervalIdx     = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType castDiaphragmIntervalIdx        = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx         = pIntervals->GetCastShearKeyInterval();
-   IntervalIndexType castDeckIntervalIdx             = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx        = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDeckIntervalIdx             = pIntervals->GetLastCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx        = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx              = pIntervals->GetOverlayInterval();
    IntervalIndexType loadRatingIntervalIdx           = pIntervals->GetLoadRatingInterval();
@@ -1671,7 +1670,10 @@ void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pInte
       pIntervals->GetContinuityInterval(prevPierIdx,&dummy,&start);
       pIntervals->GetContinuityInterval(nextPierIdx,&end,&dummy);
 
-      IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval();
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+      IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
       IntervalIndexType startPierContinuityIntervalIdx = start;
       IntervalIndexType endPierContinuityIntervalIdx   = end;
 

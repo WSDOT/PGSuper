@@ -98,6 +98,8 @@
 
 #include "Hints.h"
 
+#include <PgsExt\Helpers.h>
+
 #include "PGSuperException.h"
 #include <System\FileStream.h>
 #include <System\StructuredLoadXmlPrs.h>
@@ -118,6 +120,7 @@
 #include "SpecDlg.h"
 #include "BridgeEditorSettingsSheet.h"
 #include "GirderEditorSettingsSheet.h"
+#include "CastDeckDlg.h"
 #include "CopyGirderDlg.h"
 #include "LiveLoadDistFactorsDlg.h"
 #include "LiveLoadSelectDlg.h"
@@ -1148,6 +1151,28 @@ bool CPGSDocBase::EditTimeline()
    if (dlg.DoModal() == IDOK)
    {
       txnEditTimeline* pTxn = new txnEditTimeline(*pBridgeDesc->GetTimelineManager(), dlg.m_TimelineManager);
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pTxn);
+      return true;
+   }
+
+   return false;
+}
+
+bool CPGSDocBase::EditCastDeckActivity()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
+   CString strName(GetCastDeckEventName(deckType));
+
+   const auto* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   EventIndexType castDeckEventIdx = pTimelineMgr->GetCastDeckEventIndex();
+   CCastDeckDlg dlg(strName, *pTimelineMgr, castDeckEventIdx, FALSE);
+   if (dlg.DoModal() == IDOK)
+   {
+      txnEditTimeline* pTxn = new txnEditTimeline(*pTimelineMgr, dlg.m_TimelineMgr);
       GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(pTxn);
       return true;

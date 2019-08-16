@@ -499,7 +499,11 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    {
       plldf->ts = pBridge->GetStructuralSlabDepth(poi);
 
-      Float64 EcDeck = pMaterials->GetDeckEc(llIntervalIdx);
+      GET_IFACE(IPointOfInterest, pPoi);
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+      Float64 EcDeck = pMaterials->GetDeckEc(deckCastingRegionIdx,llIntervalIdx);
    
       // use release interval for girder properties because we want the non-composite gross properties. we know it is non-composite at release
       if ( fcgdr < 0 )

@@ -731,14 +731,14 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
-   // we want to switch between use POI's for individual segments to using the POI's of the span
+   // we want to switch between using POI's for individual segments to using the POI's of the span
    // once all the segments are connected together
    IntervalIndexType lastCompositeCJIntervalIdx = pIntervals->GetLastCompositeClosureJointInterval(girderKey);
    if ( lastCompositeCJIntervalIdx == INVALID_INDEX )
    {
       // this happens if there aren't any closure joints... we can consider
-      // analysis to be on a span basis once the deck is composite
-      lastCompositeCJIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      // analysis to be on a span basis once the last deck casting is composite
+      lastCompositeCJIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    }
 
    GET_IFACE(IAllowableConcreteStress,pAllowableConcreteStress);
@@ -983,7 +983,6 @@ void pgsDesigner2::ConfigureStressCheckTasks(const CSegmentKey& segmentKey) cons
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType noncompositeIntervalIdx  = pIntervals->GetLastNoncompositeInterval();
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount()-1;
@@ -1045,6 +1044,8 @@ void pgsDesigner2::ConfigureStressCheckTasks(const CSegmentKey& segmentKey) cons
       if (pGirder->HasStructuralLongitudinalJoints() && pBridge->GetDeckType() != pgsTypes::sdtNone)
       {
          // interval when the deck is cast onto the girders, with composite closure joints, but before the deck adds to the composite section
+         IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
+
          task.intervalIdx = castDeckIntervalIdx;
          task.limitState = pgsTypes::ServiceI;
          task.stressType = pgsTypes::Compression;
@@ -1679,7 +1680,6 @@ pgsEccEnvelope pgsDesigner2::GetEccentricityEnvelope(const pgsPointOfInterest& p
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
@@ -2038,9 +2038,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx              = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx             = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx             = pIntervals->GetFirstCastDeckInterval();
    IntervalIndexType tsRemovalIntervalIdx            = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx        = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx        = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx             = pIntervals->GetLiveLoadInterval();
    IntervalIndexType compositeClosureIntervalIdx     = pIntervals->GetCompositeClosureJointInterval(segmentKey);
@@ -2100,6 +2099,9 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
    for(const pgsPointOfInterest& poi : vPoi)
    {
       ATLASSERT(poi.GetSegmentKey() == segmentKey);
+
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
       pgsFlexuralStressArtifact artifact(poi);
       artifact.SetLimitState(task.limitState);
@@ -2382,7 +2384,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               altTensionRequirements.concreteType = (matConcrete::Type)pMaterials->GetDeckConcreteType();
 	               altTensionRequirements.bHasFct = pMaterials->DoesDeckConcreteHaveAggSplittingStrength();
 	               altTensionRequirements.Fct = altTensionRequirements.bHasFct ? pMaterials->GetDeckConcreteAggSplittingStrength() : 0.0;
-	               altTensionRequirements.fc = pMaterials->GetDeckFc(task.intervalIdx);
+	               altTensionRequirements.fc = pMaterials->GetDeckFc(deckCastingRegionIdx,task.intervalIdx);
 	               altTensionRequirements.density = pMaterials->GetDeckStrengthDensity();
 	               pMaterials->GetDeckRebarProperties(&Es, &altTensionRequirements.fy, &fu);
 	            }
@@ -3674,7 +3676,10 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi) cons
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
    // permanent compressive force between slab and girder top
    // If the slab is CIP, use the tributary area.
@@ -3696,7 +3701,7 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi) cons
    }
 
    // slab load
-   Float64 slab_unit_weight = pMaterial->GetDeckWeightDensity(castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 slab_unit_weight = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx,castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
 
    if ( pDeck->GetDeckType() == pgsTypes::sdtCompositeCIP )
    {
@@ -6847,7 +6852,7 @@ void pgsDesigner2::DesignSlabOffset(IProgress* pProgress) const
    LOG(_T("A-dim Current (End)     = ") << ::ConvertFromSysUnits(AorigEnd,   unitMeasure::Inch) << _T(" in") );
    if (m_StrandDesignTool.IsDesignExcessCamber())
    {
-      LOG(_T("AssExcessCamber Current    = ") << ::ConvertFromSysUnits(assumedExcessCamberOrig,   unitMeasure::Inch) << _T(" in") );
+      LOG(_T("AssumedExcessCamber Current    = ") << ::ConvertFromSysUnits(assumedExcessCamberOrig,   unitMeasure::Inch) << _T(" in") );
    }
    
    // to prevent the design from bouncing back and forth over two "A" dimensions that are 1/4" apart, we are going to use the
@@ -6976,8 +6981,6 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands, IProgres
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -6993,6 +6996,11 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands, IProgres
 
    // Get controlling Point of Interest at mid zone
    pgsPointOfInterest poi = GetControllingFinalMidZonePoi(segmentKey);
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
    Float64 fcgdr = m_StrandDesignTool.GetConcreteStrength();
 
@@ -7733,7 +7741,7 @@ void pgsDesigner2::DesignEndZoneHarpingAdjustment(const arDesignOptions& options
          // too far and cause the final concrete strength to be too high
 
          // Get eccentricity requirements for BSS1 if considered
-         IntervalIndexType deckCastingIntervalIdx = pIntervals->GetCastDeckInterval();
+         IntervalIndexType deckCastingIntervalIdx = pIntervals->GetFirstCastDeckInterval();
 
          GET_IFACE(IAllowableConcreteStress,pAllowable);
          if (pAllowable->CheckTemporaryStresses() && deckCastingIntervalIdx != INVALID_INDEX)

@@ -358,6 +358,12 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
       (*pTable)(row, 0) << _T("STRF");
       (*pTable)(row++, 1) << _T("Section Transitions, Right Face");
 
+      (*pTable)(row, 0) << _T("SDCR");
+      (*pTable)(row++, 1) << _T("Start of Deck Casting Region");
+
+      (*pTable)(row, 0) << _T("EDCR");
+      (*pTable)(row++, 1) << _T("End of Deck Casting Region");
+
       (*pTable)(row,0) << _T("Diaphragm");
       (*pTable)(row++,1) << _T("Location of a precast or cast in place diaphragm");
 

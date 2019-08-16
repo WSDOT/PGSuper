@@ -982,8 +982,6 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType noncompositeIntervalIdx  = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType compositeIntervalIdx     = pIntervals->GetLastCompositeInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
@@ -1026,6 +1024,12 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
       Float64 Xspan;
       pIPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
       PierIndexType pierIdx(spanKey.spanIndex);
+
+      IndexType deckCastingRegionIdx = pIPoi->GetDeckCastingRegion(poi);
+
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+
 
       IndexType locn = i+1;
       Float64 loc = ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter);

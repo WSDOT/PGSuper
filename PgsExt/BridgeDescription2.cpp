@@ -1652,20 +1652,25 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       pTimelineEvent->GetErectPiersActivity().AddPier(newPierID);
    }
 
+   IndexType castDeckEventIdx = m_TimelineManager.GetCastDeckEventIndex();
+   if (castDeckEventIdx != INVALID_INDEX)
+   {
+      auto* pEvent = m_TimelineManager.GetEventByIndex(castDeckEventIdx);
+      pEvent->GetCastDeckActivity().InsertSpan(this, newSpanIdx, pNewPier->GetIndex());
+   }
+
    PGS_ASSERT_VALID;
 }
 
-class RemoveNegMomentRebar
-{
-public:
-   RemoveNegMomentRebar(PierIndexType pierIdx) { m_PierIdx = pierIdx; }
-   bool operator()(CDeckRebarData::NegMomentRebarData& rebarData) { return rebarData.PierIdx == m_PierIdx; }
-private:
-   PierIndexType m_PierIdx;
-};
-
 void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
+   IndexType castDeckEventIdx = m_TimelineManager.GetCastDeckEventIndex();
+   if (castDeckEventIdx != INVALID_INDEX)
+   {
+      auto* pEvent = m_TimelineManager.GetEventByIndex(castDeckEventIdx);
+      pEvent->GetCastDeckActivity().RemoveSpan(this, spanIdx, rmPierType);
+   }
+
    // Removes a span and associated pier
    // If this is the last span in a group, the group will be removed as well
    CSpanData2* pPrevSpan = GetSpan(spanIdx-1);
@@ -1764,29 +1769,12 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    }
 
    // Remove negative rebar data at the pier that is being removed
-   PierIndexType rebarRemovePierIdx(removePierIdx);
-   if ( rebarRemovePierIdx == 0 )
-   {
-      // if the first pier is removed, the next pier becomes the first pier and it can't have neg moment
-      // rebar so remove the rebar from that pier;
-      rebarRemovePierIdx++;
-   }
-   else if ( rebarRemovePierIdx == nPiers-1 )
-   {
-      // if the last pier is removed, the next to last pier becomes the last pier and it can't have neg moment
-      // rebar so remove the rebar from that pier
-      rebarRemovePierIdx--;
-   }
-
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(rebarRemovePierIdx));
-   m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
+   RemoveNegMomentRebar(removePierIdx);
 
    // for all neg moment rebar data occuring after the removed pier, decrement the pier index by one
    for (auto& nmRebar : m_Deck.DeckRebarData.NegMomentRebar)
    {
-      if (rebarRemovePierIdx < nmRebar.PierIdx)
+      if (removePierIdx < nmRebar.PierIdx)
       {
          nmRebar.PierIdx--;
       }
@@ -1933,6 +1921,22 @@ GroupIndexType CBridgeDescription2::CreateGirderGroup(GroupIndexType refGroupIdx
    pGirderGroupData->SetID( GetNextGirderGroupID() );
    m_GirderGroups.push_back(pGirderGroupData);
    RenumberGroups();
+
+   // Update the deck casting activity for the new spans/piers in the new group
+   IndexType castDeckEventIdx = m_TimelineManager.GetCastDeckEventIndex();
+   if (castDeckEventIdx != INVALID_INDEX)
+   {
+      auto& castDeckActivity = m_TimelineManager.GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity();
+      CPierData2* pPier = pStartPier;
+      while (pPier != pEndPier)
+      {
+         PierIndexType pierIdx = pPier->GetIndex();
+         SpanIndexType spanIdx = pPier->GetNextSpan()->GetIndex();
+         castDeckActivity.InsertSpan(this, spanIdx, pierIdx);
+         pPier = pPier->GetNextSpan()->GetNextPier();
+      }
+   }
+
    return pGirderGroupData->GetIndex();
 }
 
@@ -2021,6 +2025,13 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
    ATLASSERT(grpIdx != INVALID_INDEX);
    ATLASSERT(grpIdx < m_GirderGroups.size());
 
+   IndexType castDeckEventIdx = m_TimelineManager.GetCastDeckEventIndex();
+   if (castDeckEventIdx != INVALID_INDEX)
+   {
+      auto* pEvent = m_TimelineManager.GetEventByIndex(castDeckEventIdx);
+      pEvent->GetCastDeckActivity().RemoveGirderGroup(this, grpIdx, rmPierType);
+   }
+
    // removes a girder group and removes the spans, piers, and girders within the group
    CGirderGroupData* pGroup = m_GirderGroups[grpIdx];
 
@@ -2076,25 +2087,7 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
 
       // remove deck negative moment rebar at this pier
       PierIndexType removeRebarPierIdx = pPier->GetIndex();
-
-      // If this is the first pier in the bridge, the next pier becomes the first pier
-      // so remove the rebar at the next pier
-      if ( pPier->GetPrevSpan() == nullptr )
-      {
-         removeRebarPierIdx++;
-      }
-
-      // If this is the last pier in the bridge, the next to last pier becomes the last pier
-      // so remove the rebar at the next to last pier
-      if ( pPier->GetNextSpan() == nullptr )
-      {
-         removeRebarPierIdx--;
-      }
-
-      std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
-      std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
-      std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin,end,RemoveNegMomentRebar(removeRebarPierIdx));
-      m_Deck.DeckRebarData.NegMomentRebar.erase(last,end);
+      RemoveNegMomentRebar(removeRebarPierIdx);
 
       delete pPier;
       pPier = nullptr;
@@ -2168,7 +2161,6 @@ SpanIndexType CBridgeDescription2::GetSpanCount() const
 {
    return m_Spans.size();
 }
-
 
 CPierData2* CBridgeDescription2::GetPier(PierIndexType pierIdx)
 {
@@ -2325,7 +2317,6 @@ bool CBridgeDescription2::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
 
    return true;
 }
-
 
 SupportIndexType CBridgeDescription2::AddTemporarySupport(CTemporarySupportData* pTempSupport,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType castClosureEventIdx)
 {
@@ -3400,7 +3391,7 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
    return nullptr;
 }
 
-void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssExcessCamber, bool bBearingData)
+void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssumedExcessCamber, bool bBearingData)
 {
    std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
    std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
@@ -3480,7 +3471,7 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
       }
    }// group loop
 
-   if(bAssExcessCamber)
+   if(bAssumedExcessCamber)
    {
       std::vector<CSpanData2*> m_Spans;
       std::vector<CSpanData2*>::iterator spnIter(m_Spans.begin());
@@ -4339,6 +4330,14 @@ void CBridgeDescription2::UpdateTemporarySupports()
          }
       } while (!bDone );
    }
+}
+
+void CBridgeDescription2::RemoveNegMomentRebar(PierIndexType removeRebarPierIdx)
+{
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
+   std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin, end, [removeRebarPierIdx](auto& item) {return item.PierIdx == removeRebarPierIdx;});
+   m_Deck.DeckRebarData.NegMomentRebar.erase(last, end);
 }
 
 HRESULT CBridgeDescription2::LoadOldBridgeDescription(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress)

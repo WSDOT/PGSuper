@@ -25,8 +25,11 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace\Project.h>
 #include <Material\ConcreteBase.h>
 #include <Material\CEBFIPConcrete.h>
+#include <PgsExt\TimelineEvent.h>
+#include <PgsExt\CastDeckActivity.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -132,26 +135,62 @@ rptChapter* CCEBFIPCreepCoefficientChapterBuilder::Build(CReportSpecification* p
       }
    }
 
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+   if (IsStructuralDeck(pBridge->GetDeckType()))
    {
-      const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-      const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+      const auto& castDeckActivity = pIBridgeDesc->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity();
+      IndexType nCastings = castDeckActivity.GetCastingCount();
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
+      {
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const matCEBFIPConcrete* pCEBFIPConcrete = dynamic_cast<const matCEBFIPConcrete*>(pConcrete);
 
-      ColumnIndexType colIdx = 0;
+         ColumnIndexType colIdx = 0;
 
-      (*pTable)(rowIdx,colIdx++) << _T("Deck");
-      (*pTable)(rowIdx,colIdx++) << stress.SetValue(pCEBFIPConcrete->GetFc28());
-      (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
-      (*pTable)(rowIdx,colIdx++) << hDim.SetValue(pCEBFIPConcrete->GetH());
-      (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetPhiRH();
-      (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaFcm();
-      (*pTable)(rowIdx,colIdx++) << pCEBFIPConcrete->GetBetaH();
+         CString strTitle(_T("Deck"));
+         if (1 < nCastings)
+         {
+            strTitle += _T(" Regions ");
+            auto begin = std::begin(vRegions);
+            auto iter = begin;
+            auto end = std::end(vRegions);
+            for (; iter != end; iter++)
+            {
+               if (iter != begin)
+               {
+                  strTitle += _T(", ");
+               }
+               CString strRegion;
+               strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+               strTitle += strRegion;
+            }
+         }
 
-      rowIdx++;
+
+         (*pTable)(rowIdx, colIdx++) << strTitle;
+         (*pTable)(rowIdx, colIdx++) << stress.SetValue(pCEBFIPConcrete->GetFc28());
+         (*pTable)(rowIdx, colIdx++) << pConcrete->GetRelativeHumidity();
+         (*pTable)(rowIdx, colIdx++) << hDim.SetValue(pCEBFIPConcrete->GetH());
+         (*pTable)(rowIdx, colIdx++) << pCEBFIPConcrete->GetPhiRH();
+         (*pTable)(rowIdx, colIdx++) << pCEBFIPConcrete->GetBetaFcm();
+         (*pTable)(rowIdx, colIdx++) << pCEBFIPConcrete->GetBetaH();
+
+         rowIdx++;
+      } // next casting stage
    }
 
 #if defined _DEBUG || defined _BETA_VERSION
-   pTable = rptStyleManager::CreateDefaultTable(6*nSegments+1);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckIndex = pIBridgeDesc->GetCastDeckEventIndex();
+   const auto* pEvent = pIBridgeDesc->GetEventByIndex(castDeckIndex);
+   const auto& castDeckActivity = pEvent->GetCastDeckActivity();
+   IndexType nCastings = castDeckActivity.GetCastingCount();
+   IndexType nClosures = nSegments - 1;
+
+   pTable = rptStyleManager::CreateDefaultTable(3 * (nSegments + nClosures + nCastings) + 1, _T("Debugging Table"));
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
@@ -179,11 +218,37 @@ rptChapter* CCEBFIPCreepCoefficientChapterBuilder::Build(CReportSpecification* p
          (*pTable)(rowIdx+1,colIdx++) << symbol(phi) << _T("(t,") << Sub2(_T("t"),_T("0")) << _T(")");
       }
    }
-   pTable->SetColumnSpan(rowIdx,colIdx,3);
-   (*pTable)(rowIdx,colIdx) << _T("Deck");
-   (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
-   (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("t"),_T("0")) << rptNewLine << _T("(days)");
-   (*pTable)(rowIdx+1,colIdx++) << symbol(phi) << _T("(t,") << Sub2(_T("t"),_T("0")) << _T(")");
+
+   for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
+   {
+      pTable->SetColumnSpan(rowIdx, colIdx, 3);
+
+      CString strTitle(_T("Deck"));
+      if (1 < nCastings)
+      {
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+
+         strTitle += _T(" Regions ");
+         auto begin = std::begin(vRegions);
+         auto iter = begin;
+         auto end = std::end(vRegions);
+         for (; iter != end; iter++)
+         {
+            if (iter != begin)
+            {
+               strTitle += _T(", ");
+            }
+            CString strRegion;
+            strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+            strTitle += strRegion;
+         }
+      }
+
+      (*pTable)(rowIdx, colIdx) << strTitle;
+      (*pTable)(rowIdx + 1, colIdx++) << _T("t") << rptNewLine << _T("(days)");
+      (*pTable)(rowIdx + 1, colIdx++) << Sub2(_T("t"), _T("0")) << rptNewLine << _T("(days)");
+      (*pTable)(rowIdx + 1, colIdx++) << symbol(phi) << _T("(t,") << Sub2(_T("t"), _T("0")) << _T(")");
+   }
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -234,20 +299,25 @@ rptChapter* CCEBFIPCreepCoefficientChapterBuilder::Build(CReportSpecification* p
          }
       }
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      if ( compositeDeckIntervalIdx <= intervalIdx )
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
       {
-         Float64 ti = pMaterials->GetDeckConcreteAge(compositeDeckIntervalIdx,pgsTypes::Middle);
-         Float64 t  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
-         (*pTable)(rowIdx,colIdx++) << t;
-         (*pTable)(rowIdx,colIdx++) << ti;
-         (*pTable)(rowIdx,colIdx++) << pMaterials->GetDeckCreepCoefficient(compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-      }
-      else
-      {
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+         if ( compositeDeckIntervalIdx <= intervalIdx )
+         {
+            Float64 ti = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,compositeDeckIntervalIdx,pgsTypes::Middle);
+            Float64 t  = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
+            (*pTable)(rowIdx,colIdx++) << t;
+            (*pTable)(rowIdx,colIdx++) << ti;
+            (*pTable)(rowIdx,colIdx++) << pMaterials->GetDeckCreepCoefficient(deckCastingRegionIdx,compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
+         }
+         else
+         {
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+         }
       }
    }
 #endif //#if defined _DEBUG || defined _BETA_VERSION

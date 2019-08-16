@@ -92,6 +92,7 @@ protected:
    int m_GraphElement;
    CSegmentKey m_SegmentKey;
    CClosureKey m_ClosureKey;
+   IndexType m_DeckCastingRegionIdx;
 
    virtual bool UpdateNow() override;
 

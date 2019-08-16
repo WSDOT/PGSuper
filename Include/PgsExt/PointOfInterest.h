@@ -277,7 +277,13 @@ public:
    // returns true if the span key has been set
    bool HasSpanPoint() const;
 
-   
+   // Set/Get the deck casting region of this poi
+   void SetDeckCastingRegion(IndexType deckCastingRegionIdx);
+   IndexType GetDeckCastingRegion() const;
+
+   // returns true if the deck casting region has been set
+   bool HasDeckCastingRegion() const;
+
    // Removes all attributes from this POI
    void ClearAttributes();
 
@@ -387,6 +393,9 @@ protected:
    bool m_bHasSpanPoint; // tracks if m_SpanIdx and m_Xspan has been set
    SpanIndexType m_SpanIdx; // span index in Span coordinate system
    Float64 m_Xspan; // location in Span coordainte system
+
+   bool m_bHasDeckCastingRegion; // tracks if the deck casting region has been set
+   IndexType m_DeckCastingRegionIdx;  // deck casting region this POI is located in
 
    bool m_bCanMerge; // if true, this poi can be merged with other poi
 

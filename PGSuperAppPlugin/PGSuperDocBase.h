@@ -172,6 +172,7 @@ public:
    void DeleteMomentLoadByID(LoadIDType loadID);
 
    bool EditTimeline();
+   bool EditCastDeckActivity();
    bool EditEffectiveFlangeWidth();
    bool SelectProjectCriteria();
 

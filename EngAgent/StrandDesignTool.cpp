@@ -231,7 +231,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
       m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   defaultA);
    }
 
-   // Set initial design for AssExcessCamber here. Design is only for haunch load determination
+   // Set initial design for AssumedExcessCamber here. Design is only for haunch load determination
    GET_IFACE_NOCHECK(ISpecification,pSpec);
    m_bIsDesignExcessCamber = sodSlabOffsetandAssumedExcessCamberDesign == m_DesignOptions.doDesignSlabOffset &&
                                                        pSpec->IsAssumedExcessCamberForLoad();
@@ -2465,7 +2465,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    // NOTE: can't use temp strand removal interval because it is based on the original input which may not have temp strands
    //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(poi.GetSegmentKey());
@@ -2603,7 +2603,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
       ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
       // NOTE: Can't use the following code block. If the original input (before design) does not have
       // temporary strands then the install and remove intervals will be INVALID_INDEX. If the interval

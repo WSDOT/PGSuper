@@ -23,6 +23,10 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\ErectPiersActivity.h>
 
+#include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\PierData2.h>
+#include <PgsExt\ClosureJointData.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -32,10 +36,12 @@ static char THIS_FILE[] = __FILE__;
 CSupportActivityBase::CSupportActivityBase()
 {
    m_bEnabled = false;
+   m_bUpdate = true;
 }
 
 CSupportActivityBase::CSupportActivityBase(const CSupportActivityBase& rOther)
 {
+   m_bUpdate = true;
    MakeCopy(rOther);
 }
 
@@ -92,19 +98,23 @@ void CSupportActivityBase::Clear()
 {
    m_Piers.clear();
    m_TempSupports.clear();
+   m_vClosureKeys.clear();
    m_bEnabled = false;
+   m_bUpdate = true;
 }
 
 void CSupportActivityBase::AddPier(PierIDType pierID)
 {
    m_Piers.insert(pierID);
    m_bEnabled = true;
+   m_bUpdate = true;
 }
 
 void CSupportActivityBase::AddPiers(const std::vector<PierIDType>& piers)
 {
    m_Piers.insert(piers.begin(),piers.end());
    m_bEnabled = true;
+   m_bUpdate = true;
 }
 
 const std::set<PierIDType>& CSupportActivityBase::GetPiers() const
@@ -124,6 +134,7 @@ void CSupportActivityBase::RemovePier(PierIDType pierID)
    if ( found != m_Piers.end() )
    {
       m_Piers.erase(found);
+      m_bUpdate = true;
    }
 
    if ( m_TempSupports.size() == 0 && m_Piers.size() == 0 )
@@ -141,12 +152,14 @@ void CSupportActivityBase::AddTempSupport(SupportIDType tsID)
 {
    m_TempSupports.insert(tsID);
    m_bEnabled = true;
+   m_bUpdate = true;
 }
 
 void CSupportActivityBase::AddTempSupports(const std::vector<SupportIDType>& tempSupports)
 {
    m_TempSupports.insert(tempSupports.begin(),tempSupports.end());
    m_bEnabled = true;
+   m_bUpdate = true;
 }
 
 const std::set<SupportIDType>& CSupportActivityBase::GetTempSupports() const
@@ -166,6 +179,7 @@ void CSupportActivityBase::RemoveTempSupport(SupportIDType tsID)
    if ( found != m_TempSupports.end() )
    {
       m_TempSupports.erase(found);
+      m_bUpdate = true;
    }
 
    if ( m_TempSupports.size() == 0 && m_Piers.size() == 0 )
@@ -177,6 +191,43 @@ void CSupportActivityBase::RemoveTempSupport(SupportIDType tsID)
 IndexType CSupportActivityBase::GetTemporarySupportCount() const
 {
    return m_TempSupports.size();
+}
+
+const std::vector<CClosureKey>& CSupportActivityBase::GetClosureKeys(const CBridgeDescription2* pBridgeDesc) const
+{
+   if (m_bUpdate)
+   {
+      m_vClosureKeys.clear();
+      const std::set<PierIDType>& vPierIDs(GetPiers());
+      for (const auto& pierID : vPierIDs)
+      {
+         const CPierData2* pPier = pBridgeDesc->FindPier(pierID);
+         const CGirderGroupData* pGroup = pPier->GetGirderGroup(pgsTypes::Ahead); // shouldn't matter which side
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            const CClosureJointData* pClosureJoint = pPier->GetClosureJoint(gdrIdx);
+            m_vClosureKeys.emplace_back(pClosureJoint->GetClosureKey());
+         }
+      }
+
+      const std::set<SupportIDType>& vTempSupportIDs(GetTempSupports());
+      for (const auto& tsID : vTempSupportIDs)
+      {
+         const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
+         GirderIndexType nGirders = pTS->GetSpan()->GetGirderCount();
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(gdrIdx);
+            m_vClosureKeys.emplace_back(pClosureJoint->GetClosureKey());
+         }
+      }
+
+      std::sort(std::begin(m_vClosureKeys), std::end(m_vClosureKeys));
+      m_vClosureKeys.erase(std::unique(std::begin(m_vClosureKeys), std::end(m_vClosureKeys)), std::end(m_vClosureKeys));
+      m_bUpdate = false;
+   }
+   return m_vClosureKeys;
 }
 
 HRESULT CSupportActivityBase::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
@@ -291,6 +342,9 @@ void CSupportActivityBase::MakeCopy(const CSupportActivityBase& rOther)
    m_bEnabled     = rOther.m_bEnabled;
    m_Piers        = rOther.m_Piers;
    m_TempSupports = rOther.m_TempSupports;
+
+   m_bUpdate = true;
+   m_vClosureKeys = rOther.m_vClosureKeys;
 }
 
 void CSupportActivityBase::MakeAssignment(const CSupportActivityBase& rOther)

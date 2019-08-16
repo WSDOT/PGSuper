@@ -396,7 +396,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    pgsTypes::PrestressDeflectionDatum datum = pgsTypes::pddErected;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -557,7 +557,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx;
-   auto castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   auto castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
       intervalIdx = pIntervals->GetLiveLoadInterval();
@@ -749,7 +749,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
    }
    else
    {
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
       intervalIdx = castDeckIntervalIdx - 1;
    }
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -828,13 +828,14 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
-   auto castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   auto firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
+   auto lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
    auto firstPTIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
    auto lastPTIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
-   const int CAST_DECK_BEFORE_PT = 1;
-   const int CAST_DECK_AFTER_PT = 2;
-   const int TWO_STAGE_PT = 3;
-   int pt_to_deck = (castDeckIntervalIdx < firstPTIntervalIdx) ? CAST_DECK_BEFORE_PT : (lastPTIntervalIdx < castDeckIntervalIdx) ? CAST_DECK_AFTER_PT : TWO_STAGE_PT;
+   const int CAST_DECK_BEFORE_PT = 1; // All PT after deck
+   const int CAST_DECK_AFTER_PT = 2;  // All PT before deck
+   const int TWO_STAGE_PT = 3;        // Some PT before deck and some PT after deck
+   int pt_to_deck = (lastCastDeckIntervalIdx < firstPTIntervalIdx) ? CAST_DECK_BEFORE_PT : (lastPTIntervalIdx < firstCastDeckIntervalIdx) ? CAST_DECK_AFTER_PT : TWO_STAGE_PT;
 
    auto overlayIntervalIdx = pIntervals->GetOverlayInterval();
    auto liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();

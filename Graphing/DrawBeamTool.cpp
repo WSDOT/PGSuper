@@ -441,7 +441,7 @@ void CDrawBeamTool::DrawPier(Float64 beamShift,IntervalIndexType intervalIdx,con
       pgsTypes::BoundaryConditionType boundaryConditionType = pPier->GetBoundaryConditionType();
       PierIndexType pierIdx = pPier->GetIndex();
 
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
       IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
 
       IntervalIndexType leftContinuityIntervalIdx, rightContinuityIntervalIdx;

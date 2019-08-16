@@ -36,6 +36,7 @@
 
 #include "TimelineEventDlg.h"
 #include "EditHaunchDlg.h"
+#include "CastDeckDlg.h"
 #include "Hints.h"
 #include "Utilities.h"
 
@@ -146,13 +147,13 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_BridgeDesc.SetFillet(m_Fillet);
       }
 
-      // AssExcessCamber
+      // AssumedExcessCamber
       if (!pDX->m_bSaveAndValidate)
       {
          m_AssumedExcessCamber = pParent->m_BridgeDesc.GetAssumedExcessCamber();
       }
 
-      // AssExcessCamber
+      // AssumedExcessCamber
       DDX_CBItemData(pDX, IDC_ASSUMED_EXCESS_CAMBER_TYPE, m_AssumedExcessCamberType);
       if (doAssumedExcessCamber && m_AssumedExcessCamberType == pgsTypes::aecBridge)
       {
@@ -376,7 +377,7 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          }
       }
 
-      // Set AssExcessCamber
+      // Set AssumedExcessCamber
       if ( doAssumedExcessCamber && m_AssumedExcessCamberType==pgsTypes::aecBridge)
       {
          pParent->m_BridgeDesc.SetAssumedExcessCamberType(pgsTypes::aecBridge);
@@ -438,6 +439,7 @@ BEGIN_MESSAGE_MAP(CBridgeDescDeckDetailsPage, CPropertyPage)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
    ON_BN_CLICKED(IDC_ADD,OnAddDeckEdgePoint)
    ON_BN_CLICKED(IDC_REMOVE,OnRemoveDeckEdgePoint)
+   ON_BN_CLICKED(IDC_DECK_EVENT_DETAILS,OnDeckEventDetails)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_OLAY_WEIGHT_LABEL, &CBridgeDescDeckDetailsPage::OnBnClickedOlayWeightLabel)
    ON_BN_CLICKED(IDC_OLAY_DEPTH_LABEL, &CBridgeDescDeckDetailsPage::OnBnClickedOlayDepthLabel)
@@ -451,6 +453,7 @@ BEGIN_MESSAGE_MAP(CBridgeDescDeckDetailsPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE, &CBridgeDescDeckDetailsPage::OnSlabOffsetTypeChanged)
    ON_CBN_SELCHANGE(IDC_HAUNCH_SHAPE2, &CBridgeDescDeckDetailsPage::OnCbnSelchangeHaunchShape2)
    ON_CBN_SELCHANGE(IDC_ASSUMED_EXCESS_CAMBER_TYPE, &CBridgeDescDeckDetailsPage::OnAssumedExcessCamberTypeChanged)
+
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -466,6 +469,22 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    CEAFDocument* pDoc = EAFGetDocument();
 
+   // NOTE: Having a [Details] button next to the deck casting event selection
+   // so the user can edit the casting regions from this dialog is a great idea
+   // and implementation. However, there were unforseen problems with the implementation.
+   // From this dialog (Bridge Description), the bridge can be changed (spans added/deleted,
+   // pier orientations and skews, etc). The control for drawing the bridge deck and
+   // casting regions in the deck casting activity dialog needs to have the current
+   // bridge geometry for accurate drawing. We currently don't have a way to get the
+   // bridge and deck geometry for a set of proposed bridge input parameters. We can
+   // only get the geometry for the current bridge model. As such, the graphics in the
+   // deck casting activity dialog can be incorrect when accessing it from this dialog.
+   // As an interm measure, we simply don't access the deck casting activity dialog
+   // from tis dialog. In the future, when graphs for a "what-if" bridge is available
+   // the [Details] button can be restored and used.
+   GetDlgItem(IDC_DECK_EVENT_DETAILS)->ShowWindow(SW_HIDE);
+   GetDlgItem(IDC_DECK_EVENT_DETAILS)->EnableWindow(FALSE);
+
    FillEventList();
 
    CComPtr<IBroker> pBroker;
@@ -474,6 +493,7 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
    {
       GetDlgItem(IDC_DECK_EVENT)->EnableWindow(FALSE);
+      GetDlgItem(IDC_DECK_EVENT_DETAILS)->EnableWindow(FALSE);
       GetDlgItem(IDC_OVERLAY_EVENT)->EnableWindow(FALSE);
    }
 
@@ -539,7 +559,7 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    GET_IFACE2(pBroker,ISpecification, pSpec );
    m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled(false);
 
-   // AssExcessCamber type combo
+   // AssumedExcessCamber type combo
    pBox = (CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPE);
    sqidx = pBox->AddString( GetAssumedExcessCamberTypeAsString(pgsTypes::aecBridge));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::aecBridge);
@@ -1312,21 +1332,13 @@ void CBridgeDescDeckDetailsPage::OnDeckEventChanged()
          }
          else
          {
-            CString strProblem;
-            if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
-            {
-               strProblem = _T("This event begins before the activities in the previous event have completed.");
-            }
-            else
-            {
-               strProblem = _T("The activities in this event end after the next event begins.");
-            }
+            CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result);
 
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
             CString strMsg;
             strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
-            if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
+            if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
             {
                bAdjustTimeline = true;
             }
@@ -1337,7 +1349,6 @@ void CBridgeDescDeckDetailsPage::OnDeckEventChanged()
                pCB->SetCurSel((int)m_PrevDeckEventIdx);
                return;
             }
-
          }
       }
 
@@ -1348,6 +1359,21 @@ void CBridgeDescDeckDetailsPage::OnDeckEventChanged()
    else
    {
       pCB->SetCurSel((int)m_PrevDeckEventIdx);
+   }
+}
+
+void CBridgeDescDeckDetailsPage::OnDeckEventDetails()
+{
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   EventIndexType castDeckEventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastDeckEventIndex();
+
+   pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
+   CString strName(GetCastDeckEventName(deckType));
+
+   CCastDeckDlg dlg(strName, *(pParent->m_BridgeDesc.GetTimelineManager()), castDeckEventIdx, false);
+   if (dlg.DoModal() == IDOK)
+   {
+      pParent->m_BridgeDesc.SetTimelineManager(&dlg.m_TimelineMgr);
    }
 }
 
@@ -1380,16 +1406,7 @@ void CBridgeDescDeckDetailsPage::OnOverlayEventChanged()
             }
             else
             {
-               CString strProblem;
-               if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
-               {
-                  strProblem = _T("This event begins before the activities in the previous event have completed.");
-               }
-               else
-               {
-                  strProblem = _T("The activities in this event end after the next event begins.");
-               }
-
+               CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result);;
                CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
                CString strMsg;

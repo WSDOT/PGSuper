@@ -227,14 +227,23 @@ STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnSelect(iD
    if ( id == DECK_ID ) // plan view
    {
       // fill when selected
-      CComQIPtr<iPointDisplayObject> pntDO(pDO);
-   
-      CComPtr<iDrawPointStrategy> strategy;
-      pntDO->GetDrawingStrategy(&strategy);
+      CComQIPtr<iCompositeDisplayObject> doComp(pDO);
 
-      CComQIPtr<iShapeDrawStrategy> shape_draw(strategy);
+      IndexType nDO = doComp->GetDisplayObjectCount();
+      for (IndexType i = 0; i < nDO; i++)
+      {
+         CComPtr<iDisplayObject> dispObj;
+         doComp->GetDisplayObject(i, atByIndex, &dispObj);
 
-      shape_draw->DoFill(true);
+         CComQIPtr<iPointDisplayObject> pntDO(dispObj);
+
+         CComPtr<iDrawPointStrategy> strategy;
+         pntDO->GetDrawingStrategy(&strategy);
+
+         CComQIPtr<iShapeDrawStrategy> shape_draw(strategy);
+
+         shape_draw->DoFill(true);
+      }
    }
 
    pThis->m_pFrame->SelectDeck();
@@ -248,14 +257,23 @@ STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnUnselect(
    if ( id == DECK_ID )
    {
       // don't fill when not selected
-      CComQIPtr<iPointDisplayObject> pntDO(pDO);
-   
-      CComPtr<iDrawPointStrategy> strategy;
-      pntDO->GetDrawingStrategy(&strategy);
+      CComQIPtr<iCompositeDisplayObject> doComp(pDO);
 
-      CComQIPtr<iShapeDrawStrategy> shape_draw(strategy);
+      IndexType nDO = doComp->GetDisplayObjectCount();
+      for (IndexType i = 0; i < nDO; i++)
+      {
+         CComPtr<iDisplayObject> dispObj;
+         doComp->GetDisplayObject(i, atByIndex, &dispObj);
 
-      shape_draw->DoFill(pThis->m_bFillIfNotSelected);
+         CComQIPtr<iPointDisplayObject> pntDO(dispObj);
+
+         CComPtr<iDrawPointStrategy> strategy;
+         pntDO->GetDrawingStrategy(&strategy);
+
+         CComQIPtr<iShapeDrawStrategy> shape_draw(strategy);
+
+         shape_draw->DoFill(pThis->m_bFillIfNotSelected);
+      }
    }
 }
 
@@ -442,7 +460,7 @@ STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnSelect
    {
       // fill when selected
       CComQIPtr<iPointDisplayObject> pntDO(pDO);
-   
+
       CComPtr<iDrawPointStrategy> strategy;
       pntDO->GetDrawingStrategy(&strategy);
 
@@ -463,7 +481,7 @@ STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnUnsele
    {
       // don't fill when not selected
       CComQIPtr<iPointDisplayObject> pntDO(pDO);
-   
+
       CComPtr<iDrawPointStrategy> strategy;
       pntDO->GetDrawingStrategy(&strategy);
 

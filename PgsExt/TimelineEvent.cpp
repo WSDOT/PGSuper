@@ -274,7 +274,7 @@ Float64 CTimelineEvent::GetDuration() const
 
    if ( m_CastDeck.IsEnabled() )
    {
-      duration = Max(duration,m_CastDeck.GetCuringDuration());
+      duration = Max(duration,m_CastDeck.GetDuration());
    }
 
    if (m_CastLongitudinalJoints.IsEnabled())
@@ -463,7 +463,7 @@ Float64 CTimelineEvent::GetMinElapsedTime() const
 
    if (m_CastDeck.IsEnabled())
    {
-      elapsedTime = Max(elapsedTime, m_CastDeck.GetConcreteAgeAtContinuity());
+      elapsedTime = Max(elapsedTime, m_CastDeck.GetDuration());
    }
 
    if (m_CastLongitudinalJoints.IsEnabled())

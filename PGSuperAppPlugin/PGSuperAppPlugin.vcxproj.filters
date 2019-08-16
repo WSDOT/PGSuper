@@ -800,6 +800,12 @@
     <ClCompile Include="SelectBoundaryConditionDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DeckRegionGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawDeckRegionControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -1699,6 +1705,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SelectBoundaryConditionDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeckRegionGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawDeckRegionControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

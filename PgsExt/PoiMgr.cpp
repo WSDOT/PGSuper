@@ -225,11 +225,13 @@ bool MergeDuplicatePoi(std::unique_ptr<pgsPointOfInterest>& poi1, std::unique_pt
          bool isP2EF = poi2->HasAttribute(POI_END_FACE) || poi2->HasAttribute(POI_START_FACE);
          bool isP1SC = poi1->HasAttribute(POI_SECTCHANGE);
          bool isP2SC = poi2->HasAttribute(POI_SECTCHANGE);
+         bool isP1CB = poi1->HasAttribute(POI_CASTING_BOUNDARY);
+         bool isP2CB = poi2->HasAttribute(POI_CASTING_BOUNDARY);
 
          if (isP1SC || isP2SC)
          {
             // easier to see logic if merge is true
-            if (isP1EF && isP2SC || isP2EF && isP1SC)
+            if (isP1EF && isP2SC || isP1EF && isP2CB || isP2EF && isP1SC || isP2EF && isP2CB)
             {
                doMerge = true;
             }
@@ -961,7 +963,9 @@ bool pgsPoiMgr::AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribut
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT) ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_START_FACE)               ? poi.HasAttribute(POI_START_FACE)               : true) &&
-          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_END_FACE)                 ? poi.HasAttribute(POI_END_FACE)                 : true)
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_END_FACE)                 ? poi.HasAttribute(POI_END_FACE)                 : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CASTING_BOUNDARY_START)   ? poi.HasAttribute(POI_CASTING_BOUNDARY_START)   : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CASTING_BOUNDARY_END)     ? poi.HasAttribute(POI_CASTING_BOUNDARY_END)     : true)
          )
       {
          // This poi matches the selection criteria.
@@ -1094,9 +1098,11 @@ bool pgsPoiMgr::OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribute
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)             ? poi.HasAttribute(POI_STIRRUP_ZONE)             : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT) ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_START_FACE)               ? poi.HasAttribute(POI_START_FACE)               : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_END_FACE)                 ? poi.HasAttribute(POI_END_FACE)                 : false)
-       )
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_START_FACE)              ? poi.HasAttribute(POI_START_FACE)               : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_END_FACE)                ? poi.HasAttribute(POI_END_FACE)                 : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_CASTING_BOUNDARY_START)  ? poi.HasAttribute(POI_CASTING_BOUNDARY_START)   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_CASTING_BOUNDARY_END)    ? poi.HasAttribute(POI_CASTING_BOUNDARY_END)     : false)
+      )
       {
          // This poi matches the selection criteria.
          return true;

@@ -153,6 +153,10 @@ interface IPointOfInterest : public IUnknown
    // and the critical section for shear
    virtual bool IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState) const = 0;
 
+   // returns the index of the deck casting region at the poi
+   // returns INVALID_INDEX if there is not a deck region defined at that location
+   virtual IndexType GetDeckCastingRegion(const pgsPointOfInterest& poi) const = 0;
+
    //////////////////////////////
    // Conversion Methods
    //////////////////////////////

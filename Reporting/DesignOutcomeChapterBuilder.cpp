@@ -56,7 +56,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
 void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact);
 void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
-                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& didAssExcessCamber, bool& isHarped, bool& isTemporary);
+                       const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& didAssumedExcessCamber, bool& isHarped, bool& isTemporary);
 void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
 void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
 void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
@@ -1141,12 +1141,12 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    bool did_lifting;
    bool did_hauling;
    bool did_slaboffset;
-   bool did_assexcesscamber;
+   bool did_AssumedExcessCamber;
    bool is_harped;
    bool is_temporary;
 
    process_artifacts(pBroker,startIdx, endIdx, girderKeys, pIArtifact,
-                     pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, did_slaboffset, did_assexcesscamber, is_harped, is_temporary);
+                     pArtifacts, did_flexure, did_shear, did_lifting, did_hauling, did_slaboffset, did_AssumedExcessCamber, is_harped, is_temporary);
 
    if (!did_flexure && !did_shear)
    {
@@ -1227,7 +1227,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
       (*pTable)(row++,0) << _T("Slab Offset (A Dimension)");
    }
 
-   if (did_assexcesscamber)
+   if (did_AssumedExcessCamber)
    {
       (*pTable)(row++,0) << _T("Assumed Excess Camber");
    }
@@ -1363,7 +1363,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
          (*pTable)(row++,col) << length.SetValue( pArtifact->GetSlabOffset(pgsTypes::metStart) );
       }
 
-      if (did_assexcesscamber)
+      if (did_AssumedExcessCamber)
       {
          (*pTable)(row++,col) << length.SetValue( pArtifact->GetAssumedExcessCamber() );
       }
@@ -1374,7 +1374,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
 void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, 
-                       bool& didSlabOffset, bool& didAssExcessCamber, bool& isHarped, bool& isTemporary)
+                       bool& didSlabOffset, bool& didAssumedExcessCamber, bool& isHarped, bool& isTemporary)
 {
    // Set all outcomes to false
    didFlexure = false;
@@ -1382,7 +1382,7 @@ void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexTyp
    didLifting = false;
    didHauling = false;
    didSlabOffset = false;
-   didAssExcessCamber = false;
+   didAssumedExcessCamber = false;
    isHarped = false;
    isTemporary = false;
 
@@ -1427,7 +1427,7 @@ void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexTyp
 
          if (options.doDesignSlabOffset == sodSlabOffsetandAssumedExcessCamberDesign && pSpec->IsAssumedExcessCamberInputEnabled())
          {
-            didAssExcessCamber = true;
+            didAssumedExcessCamber = true;
          }
       }
 

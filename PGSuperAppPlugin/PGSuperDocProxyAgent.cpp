@@ -1229,6 +1229,11 @@ bool CPGSuperDocProxyAgent::EditTimeline()
    return m_pMyDocument->EditTimeline();
 }
 
+bool CPGSuperDocProxyAgent::EditCastDeckActivity()
+{
+   return m_pMyDocument->EditCastDeckActivity();
+}
+
 UINT CPGSuperDocProxyAgent::GetStdToolBarID()
 {
    return m_StdToolBarID;

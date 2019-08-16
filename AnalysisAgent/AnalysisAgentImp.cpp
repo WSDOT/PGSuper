@@ -979,7 +979,7 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
    GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
 
    // Create the FEM model
    Float64 E = pConfig->Ec;
@@ -999,7 +999,7 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
    bool bModelLeftCantilever,bModelRightCantilever;
    pBridge->ModelCantilevers(segmentKey,&bModelLeftCantilever,&bModelRightCantilever);
    pgsDesignHaunchLoadGirderModelFactory factory(slabLoads, g_lcidDesignSlab, g_lcidDesignSlabPad);
-   factory.CreateGirderModel(m_pBroker,castDeckIntervalIdx,segmentKey,left_support_loc,right_support_loc,Ls,E,g_lcidGirder,bModelLeftCantilever,bModelRightCantilever,vPOI,&pModelData->Model,&pModelData->PoiMap);
+   factory.CreateGirderModel(m_pBroker, lastCastDeckIntervalIdx,segmentKey,left_support_loc,right_support_loc,Ls,E,g_lcidGirder,bModelLeftCantilever,bModelRightCantilever,vPOI,&pModelData->Model,&pModelData->PoiMap);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1577,9 +1577,9 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::
    m_pGirderModelManager->GetMainSpanSlabLoad(segmentKey,pSlabLoads);
 }
 
-void CAnalysisAgentImp::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssExcessCamber, std::vector<SlabLoad>* pSlabLoads) const
+void CAnalysisAgentImp::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssumedExcessCamber, std::vector<SlabLoad>* pSlabLoads) const
 {
-   m_pGirderModelManager->GetDesignMainSpanSlabLoadAdjustment(segmentKey,Astart,Aend,AssExcessCamber,pSlabLoads);
+   m_pGirderModelManager->GetDesignMainSpanSlabLoadAdjustment(segmentKey,Astart,Aend,AssumedExcessCamber,pSlabLoads);
 }
 
 bool CAnalysisAgentImp::HasShearKeyLoad(const CGirderKey& girderKey) const
@@ -1973,8 +1973,12 @@ void  CAnalysisAgentImp::GetDesignSlabStressAdjustment(const pgsPointOfInterest&
    // and the input value.
    Float64 M = GetDesignSlabMomentAdjustment(poi,pConfig);
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
    GET_IFACE(ISectionProperties, pSectProp);
    Float64 Cat, Cbtx, Cbty;
@@ -2009,8 +2013,12 @@ void CAnalysisAgentImp::GetDesignSlabPadStressAdjustment(const pgsPointOfInteres
    // and the input value.
    Float64 M = GetDesignSlabPadMomentAdjustment(poi,pConfig);
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
    GET_IFACE(ISectionProperties, pSectProp);
    Float64 Cat, Cbtx, Cbty;
@@ -5752,14 +5760,17 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    // figure out which stage the girder loading is applied
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx           = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType erectSegmentIntervalIdx      = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
-   IntervalIndexType castDeckIntervalIdx          = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDeckIntervalIdx          = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType compositeIntervalIdx     = pIntervals->GetLastCompositeInterval();
    IntervalIndexType trafficBarrierIntervalIdx    = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx           = pIntervals->GetOverlayInterval();
@@ -6568,10 +6579,14 @@ Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16
       ATLASSERT(IsEqual(Emin, Emax)); // no live load so these should be the same
       ATLASSERT(IsEqual(Emin, excess));
 
-      Float64 Dmin, Dmax;
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      GET_IFACE(IPointOfInterest, pPoi);
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
       ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
       // use -1 on interval because we want the deflection immedately before deck casting
+      Float64 Dmin, Dmax;
       GetDeflection(castDeckIntervalIdx-1, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true/*include elevation adjustments*/, true /*include precamber*/, &Dmin, &Dmax);
       ATLASSERT(IsEqual(Dmin, Dmax)); // no live load so these should be the same
 
@@ -6646,11 +6661,15 @@ Float64 CAnalysisAgentImp::GetSidlDeflection(const pgsPointOfInterest& poi,const
    GET_IFACE(IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType nIntervals               = pIntervals->GetIntervalCount();
 
@@ -6757,7 +6776,11 @@ Float64 CAnalysisAgentImp::GetDCamberForGirderScheduleEx(const pgsPointOfInteres
          }
          else
          {
-            IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+            GET_IFACE(IPointOfInterest, pPoi);
+            IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+            ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+            IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
             ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
             intervalIdx = castDeckIntervalIdx - 1;
          }
@@ -6813,7 +6836,12 @@ void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 t
       }
       else
       {
-         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+         GET_IFACE(IPointOfInterest, pPoi);
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+         ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
          intervalIdx = castDeckIntervalIdx - 1;
       }
 
@@ -6972,8 +7000,11 @@ void CAnalysisAgentImp::GetDeckDeflection(const pgsPointOfInterest& poi,const GD
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
    GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
    if (castDeckIntervalIdx == INVALID_INDEX)
    {
@@ -7020,7 +7051,7 @@ void CAnalysisAgentImp::GetDeckPanelDeflection(const pgsPointOfInterest& poi,con
    // NOTE: it is assumed that deck panels are placed at the same time the
    // cast-in-place topping is installed.
    GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
 
    *pDy = GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtIncremental);
    *pRz = GetRotation(castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtIncremental);
@@ -9121,7 +9152,6 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
    pgsPointOfInterest vPOI[2];
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
@@ -9163,6 +9193,11 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
    {
       pgsPointOfInterest& poi = vPOI[i];
       ATLASSERT( 0 <= poi.GetID() );
+
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
       pgsTypes::BridgeAnalysisType bat = pgsTypes::ContinuousSpan;
 
@@ -9290,7 +9325,7 @@ void CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& p
 bool CAnalysisAgentImp::IsDeckPrecompressed(const CGirderKey& girderKey) const
 {
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    if ( compositeDeckIntervalIdx == INVALID_INDEX )
    {
       return false; // this happens when there is not a deck

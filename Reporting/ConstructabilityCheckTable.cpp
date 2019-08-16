@@ -1558,8 +1558,8 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   Float64 deckCastingTime = pIntervals->GetTime(castDeckIntervalIdx,pgsTypes::Start);
+   IntervalIndexType firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
+   Float64 deckCastingTime = pIntervals->GetTime(firstCastDeckIntervalIdx,pgsTypes::Start);
 
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
    Float64 lastIntervalTime = pIntervals->GetTime(lastIntervalIdx, pgsTypes::End);
@@ -1616,7 +1616,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
       (*pTable)(row++, 2) << dim.SetValue(C);
 
       Float64 Dmin, Dmax;
-      pLSForces->GetDeflection(castDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+      pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
       ATLASSERT(IsEqual(Dmin, Dmax));
       (*pTable)(row, 1) << _T("Camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
 

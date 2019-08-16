@@ -209,7 +209,7 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
 {
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
-   bool bHasClosure[2] = {
+   std::array<bool, 2> bHasClosure = {
                            pSegment->GetStartClosure()  != nullptr, 
                            pSegment->GetEndClosure() != nullptr
                          };
@@ -218,7 +218,7 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
    // if this is the last segment of a girder and there is next group, 
    // then there is a cast-in-place diaphragm between the groups. Use the deck concrete as the closure joint
    // concrete in this case.
-   bool bPierDiaphragm[2] = { 
+   std::array<bool, 2> bPierDiaphragm = { 
                               (pSegment->GetPrevSegment() == nullptr && pGirder->GetGirderGroup()->GetPrevGirderGroup() != nullptr),
                               (pSegment->GetNextSegment() == nullptr && pGirder->GetGirderGroup()->GetNextGirderGroup() != nullptr)   
                             };
@@ -270,11 +270,16 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
          }
          else if ( bPierDiaphragm[endType] )
          {
+            GET_IFACE2(pBroker,IPointOfInterest, pPoi);
+            PoiList vPoi;
+            pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L, &vPoi);
+            ATLASSERT(vPoi.size() == 2);
+            IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(vPoi[endType]);
             CGirderKey girderKey(segmentKey);
             CComObject<CAgeAdjustedMaterial>* pDiaphragmMaterial;
             CComObject<CAgeAdjustedMaterial>::CreateInstance(&pDiaphragmMaterial);
             CComPtr<IAgeAdjustedMaterial> diaphragmMaterial = pDiaphragmMaterial;
-            diaphragmMaterial->InitDeck(girderKey,pMaterials);
+            diaphragmMaterial->InitDeck(deckCastingRegionIdx,pMaterials);
 
             pSplicedSegment->put_ClosureJointForegroundMaterial(endType,diaphragmMaterial);
             pSplicedSegment->put_ClosureJointBackgroundMaterial(endType,nullptr);

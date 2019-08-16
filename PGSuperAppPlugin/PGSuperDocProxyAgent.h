@@ -256,6 +256,7 @@ public:
    virtual bool EditMomentLoad(CollectionIndexType loadIdx) override;
    virtual bool EditMomentLoadByID(LoadIDType loadID) override;
    virtual bool EditTimeline() override;
+   virtual bool EditCastDeckActivity() override;
    virtual UINT GetStdToolBarID() override;
    virtual UINT GetLibToolBarID() override;
    virtual UINT GetHelpToolBarID() override;

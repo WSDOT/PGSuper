@@ -350,7 +350,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                vIntervals.push_back(pIntervals->GetLiveLoadInterval());
                std::sort(vIntervals.begin(),vIntervals.end());
                vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
-               IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+               IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
                for (const auto& intervalIdx : vIntervals)
                {
                   pgsTypes::SectionPropertyType spType1 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformedNoncomposite);
@@ -359,7 +359,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                   rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType1,thisSegmentKey,intervalIdx,pDisplayUnits);
                   *pPara << pTable << rptNewLine;
 
-                  if ( compositeDeckIntervalIdx <= intervalIdx && pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed )
+                  if (lastCompositeDeckIntervalIdx <= intervalIdx && pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed )
                   {
                      rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType2,thisSegmentKey,intervalIdx,pDisplayUnits);
                      *pPara << pTable << rptNewLine;
@@ -376,27 +376,14 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                pPara = new rptParagraph;
                *pChapter << pPara;
 
-               //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
-               //{
-               //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-               //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-               //   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-               //   {
-               //      rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
-               //      *pPara << pTable << rptNewLine;
-               //   }
-               //}
-               //else
+               std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
+               vIntervals.push_back(pIntervals->GetLiveLoadInterval());
+               std::sort(vIntervals.begin(),vIntervals.end());
+               vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
+               for (const auto& intervalIdx : vIntervals)
                {
-                  std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
-                  vIntervals.push_back(pIntervals->GetLiveLoadInterval());
-                  std::sort(vIntervals.begin(),vIntervals.end());
-                  vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
-                  for (const auto& intervalIdx : vIntervals)
-                  {
-                     rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
-                     *pPara << pTable << rptNewLine;
-                  }
+                  rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits);
+                  *pPara << pTable << rptNewLine;
                }
             }
          }

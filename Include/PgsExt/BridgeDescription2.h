@@ -136,12 +136,12 @@ public:
    // returns the minimum permissible value for slab offset
    Float64 GetMinSlabOffset() const;
 
-   // set/get the Assumed Excess Camber type. This parameter indicates where the AssExcessCamber is measured
+   // set/get the Assumed Excess Camber type. This parameter indicates where the AssumedExcessCamber is measured
    void SetAssumedExcessCamberType(pgsTypes::AssumedExcessCamberType AssumedExcessCamberType);
    pgsTypes::AssumedExcessCamberType GetAssumedExcessCamberType() const;
 
-   // Set/get the Assumed Excess Camber. Has no net effect if AssExcessCamber type is not sotBridge
-   // Get method returns invalid data if AssExcessCamber type is not sotBridge
+   // Set/get the Assumed Excess Camber. Has no net effect if AssumedExcessCamber type is not sotBridge
+   // Get method returns invalid data if AssumedExcessCamber type is not sotBridge
    void SetAssumedExcessCamber(Float64 assumedExcessCamber);
    Float64 GetAssumedExcessCamber(bool bGetRawValue = false) const;
 
@@ -378,7 +378,7 @@ public:
    CClosureJointData* FindClosureJoint(ClosureIDType closureID);
    const CClosureJointData* FindClosureJoint(ClosureIDType closureID) const;
 
-   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssExcessCamber, bool bBearingData); 
+   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssumedExcessCamber, bool bBearingData); 
                     // takes all the data defined at the bridge level and copies
                     // it down to the spans and girders (only for this parameters set to true)
 
@@ -515,6 +515,8 @@ private:
    void UpdateTemporarySupports();
 
    void ClearGirderGroups();
+
+   void RemoveNegMomentRebar(PierIndexType removeRebarPierIdx);
 
    HRESULT LoadOldBridgeDescription(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress);
 

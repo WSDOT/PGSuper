@@ -1025,21 +1025,12 @@ void CBridgeDescRailingSystemPage::OnEventChanged()
          }
          else
          {
-            CString strProblem;
-            if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
-            {
-               strProblem = _T("This event begins before the activities in the previous event have completed.");
-            }
-            else
-            {
-               strProblem = _T("The activities in this event end after the next event begins.");
-            }
-
+            CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result);
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
             CString strMsg;
             strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
-            if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
+            if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
             {
                bAdjustTimeline = true;
             }

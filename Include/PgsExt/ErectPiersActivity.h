@@ -23,6 +23,8 @@
 
 #include <PgsExt\PgsExtExp.h>
 
+class CBridgeDescription2;
+
 /*****************************************************************************
 CLASS 
    CErectPiersActivity
@@ -62,6 +64,8 @@ public:
    void RemoveTempSupport(SupportIDType tsID);
    IndexType GetTemporarySupportCount() const;
 
+   const std::vector<CClosureKey>& GetClosureKeys(const CBridgeDescription2* pBridgeDesc) const;
+
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
@@ -79,6 +83,9 @@ protected:
    bool m_bEnabled;
    std::set<PierIDType> m_Piers;
    std::set<SupportIDType> m_TempSupports;
+
+   mutable bool m_bUpdate;
+   mutable std::vector<CClosureKey> m_vClosureKeys;
 };
 
 class PGSEXTCLASS CErectPiersActivity : public CSupportActivityBase

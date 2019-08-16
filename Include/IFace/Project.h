@@ -1091,7 +1091,7 @@ interface IBridgeDescription : IUnknown
    virtual void SetAssumedExcessCamber( Float64 assumedExcessCamber) = 0;
    // changes AssumedExcessCamber type to fttPier
    virtual void SetAssumedExcessCamber(SpanIndexType spanIdx, Float64 assumedExcessCamber) = 0;
-   // sets AssExcessCamber per girder ... sets the AssumedExcessCamber type to aecGirder
+   // sets AssumedExcessCamber per girder ... sets the AssumedExcessCamber type to aecGirder
    virtual void SetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 assumedExcessCamber) = 0;
    virtual Float64 GetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx) const = 0;
 

@@ -350,10 +350,15 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentEx(IGeneric
    // should only get here if the effective flange width is computed
    ATLASSERT( m_bUseTribWidth == VARIANT_FALSE );
 
-   CSegmentKey segmentKey = GetSegmentKey(gdrID);
+   CSegmentKey segmentKey = GetSegmentKey(gdrID); // always regions with segmentKey.segmentIndex = 0, so this is more like getting a girder key
+   segmentKey.segmentIndex = segIdx;
+   pgsPointOfInterest poi(segmentKey, Xs);
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
    SSMbrIntervalKey key(compositeDeckIntervalIdx,gdrID,segIdx,Xs);
    FWContainer::iterator found = m_EFW.find(key);

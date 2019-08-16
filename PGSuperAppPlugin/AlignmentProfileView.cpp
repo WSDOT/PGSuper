@@ -274,7 +274,7 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
    doRightCurb->put_Color(GREEN);
    doRightCurb->put_PointType(plpNone);
 
-   // Register an event sink with the alignment object so that we can handle Float64 clicks
+   // Register an event sink with the alignment object so that we can handle double clicks
    // on the alignment differently then a general dbl-click
    CComPtr<iDisplayObject> dispObj;
    doProfile->QueryInterface(IID_iDisplayObject,(void**)&dispObj);

@@ -573,7 +573,11 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    {
       GET_IFACE(IMaterials, pMaterials);
 
-      Float64 EcDeck = pMaterials->GetDeckEc(llIntervalIdx);
+      GET_IFACE(IPointOfInterest, pPoi);
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(spPoi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+      Float64 EcDeck = pMaterials->GetDeckEc(deckCastingRegionIdx,llIntervalIdx);
       if ( fcgdr < 0 )
       {
          // fcgdr < 0 means use the current bridge model

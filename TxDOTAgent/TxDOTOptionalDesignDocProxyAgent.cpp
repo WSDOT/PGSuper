@@ -392,8 +392,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(origSegmentKey);
-      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(0); // assume deck casting region 0
       IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
     
       // Get responses from design based on original data

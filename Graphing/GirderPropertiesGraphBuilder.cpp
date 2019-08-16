@@ -255,7 +255,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("f'c (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("fc (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
@@ -321,7 +321,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
          pPoi->RemovePointsOfInterest(vSegmentPoi, POI_BOUNDARY_PIER);
       }
 
-      vPoi.insert(vPoi.end(),vSegmentPoi.begin(),vSegmentPoi.end());
+      vPoi.insert(std::end(vPoi),std::begin(vSegmentPoi),std::end(vSegmentPoi));
    }
 
    // Map POI coordinates to X-values for the graph
@@ -355,7 +355,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
    auto& xIter(xVals.cbegin());
    for ( ; iter != end; iter++, xIter++ )
    {
-      const pgsPointOfInterest& poi = *iter;
+      const pgsPointOfInterest& poi(*iter);
       Float64 value1,value2,value3,value4;
 
       switch(propertyType)
@@ -382,7 +382,9 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
       case Centroid:
          {
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
             value1 = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::TopGirder);
@@ -402,7 +404,9 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
       case SectionModulus:
          {
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
             value1 = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopGirder);
@@ -443,8 +447,9 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
       case EffectiveFlangeWidth:
          {
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
             value1 = 0;
@@ -471,11 +476,16 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
             value1 = pMaterials->GetSegmentFc(poi.GetSegmentKey(),intervalIdx);
          }
 
-         GET_IFACE(IIntervals, pIntervals);
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if (deckType != pgsTypes::sdtNone && compositeDeckIntervalIdx <= intervalIdx)
          {
-            value2 = pMaterials->GetDeckFc(intervalIdx);
+            value2 = pMaterials->GetDeckFc(deckCastingRegionIdx,intervalIdx);
+         }
+         else
+         {
+            value2 = 0;
          }
          break;
          }
@@ -494,11 +504,16 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
             value1 = pMaterials->GetSegmentEc(poi.GetSegmentKey(),intervalIdx);
          }
 
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if (deckType != pgsTypes::sdtNone && compositeDeckIntervalIdx <= intervalIdx )
          {
-            value2 = pMaterials->GetDeckEc(intervalIdx);
+            value2 = pMaterials->GetDeckEc(deckCastingRegionIdx,intervalIdx);
+         }
+         else
+         {
+            value2 = 0;
          }
          break;
          }
@@ -633,7 +648,7 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
       break;
 
    case Fc:
-      return _T("f'c");
+      return _T("fc");
       break;
 
    case Ec:
@@ -698,7 +713,7 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    case Fc:
       strPropertyLabel1 += _T(" Girder");
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
-      if (deckType != pgsTypes::sdtNone && pIntervals->GetCompositeDeckInterval() <= intervalIdx )
+      if (deckType != pgsTypes::sdtNone && pIntervals->GetFirstCompositeDeckInterval() <= intervalIdx )
       {
          strPropertyLabel2 += _T(" Deck");
          *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);
@@ -708,7 +723,7 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    case Ec:
       strPropertyLabel1 += _T(" Girder");
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
-      if (deckType != pgsTypes::sdtNone &&  pIntervals->GetCompositeDeckInterval() <= intervalIdx )
+      if (deckType != pgsTypes::sdtNone &&  pIntervals->GetFirstCompositeDeckInterval() <= intervalIdx )
       {
          strPropertyLabel2 += _T(" Deck");
          *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);

@@ -554,7 +554,7 @@ void CSpanData2::ProtectAssumedExcessCamber() const
     }
    else if (nGirders < nFlts)
    {
-      // more AssExcessCambers than girders - truncate
+      // more AssumedExcessCambers than girders - truncate
       m_vAssumedExcessCambers.resize(nGirders);
    }
 }

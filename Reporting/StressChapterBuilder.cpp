@@ -205,7 +205,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    // Bridge Site Results
    for(const auto& thisGirderKey : vGirderKeys)
    {
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       // product stresses in girder
@@ -263,9 +263,6 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
       for (const auto& intervalIdx : vIntervals)
       {
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-         IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-
          p = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << p;
          CString strName;

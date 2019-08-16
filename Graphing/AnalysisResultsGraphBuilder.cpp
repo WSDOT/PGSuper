@@ -250,7 +250,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
    IntervalIndexType storageIntervalIdx       = pIntervals->GetFirstStorageInterval(girderKey);
    IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetFirstSegmentErectionInterval(girderKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
 
@@ -259,8 +259,18 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    vInitialIntervals.push_back(storageIntervalIdx);
    vInitialIntervals.push_back(erectSegmentIntervalIdx);
 
+   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+   const CTimelineEvent* pEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
+   const auto& castDeckActivity = pEvent->GetCastDeckActivity();
+   ATLASSERT(castDeckActivity.IsEnabled());
+   IndexType nDeckCastings = castDeckActivity.GetCastingCount(); // number of times deck casting happens (not the same as number of deck casting regions)
    std::vector<IntervalIndexType> vDeckAndDiaphragmIntervals;
-   vDeckAndDiaphragmIntervals.push_back(castDeckIntervalIdx);
+   for (IndexType castingIdx = 0; castingIdx < nDeckCastings; castingIdx++)
+   {
+      std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx); // regions casted during this casting
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(vRegions.front()); // casting interval is the same for all regions during this casting, so just get interval for first region in the list
+      vDeckAndDiaphragmIntervals.push_back(castDeckIntervalIdx);
+   }
 
    std::vector<IntervalIndexType> vRailingSystemIntervals;
    for ( IntervalIndexType rintervalIdx = railingSystemIntervalIdx; rintervalIdx < nIntervals; rintervalIdx++ )
@@ -340,7 +350,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPretension), pgsTypes::pftPretension, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY));
 
    intervals.clear();
-   intervals = AddTSRemovalIntervals(castDeckIntervalIdx,vDeckAndDiaphragmIntervals,vTempSupportRemovalIntervals);
+   intervals = AddTSRemovalIntervals(firstCastDeckIntervalIdx,vDeckAndDiaphragmIntervals,vTempSupportRemovalIntervals);
    GET_IFACE(IUserDefinedLoadData,pUserLoads);
    if ( !IsZero(pUserLoads->GetConstructionLoad()) )
    {
@@ -1267,7 +1277,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       // deck is composite with the girders (in which case we can assume continuity has occured)
       if (bSimpleSpanSegments)
       {
-         if (pIntervals->GetCompositeDeckInterval() <= intervalIdx && girderKey.groupIndex == ALL_GROUPS)
+         if (pIntervals->GetLastCompositeDeckInterval() <= intervalIdx && girderKey.groupIndex == ALL_GROUPS)
          {
             bSimpleSpanSegments = false;
          }
@@ -1815,7 +1825,6 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
 
@@ -3492,7 +3501,7 @@ void CAnalysisResultsGraphBuilder::DeckShrinkageStressGraph(IndexType graphIdx,c
 
    // Deck shrinkage call is not stage dependent - assume deck shrinks after railing in installed
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType dsIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType dsIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
    // data series top/bot
    IndexType top_data_series(0), bot_data_series(0);

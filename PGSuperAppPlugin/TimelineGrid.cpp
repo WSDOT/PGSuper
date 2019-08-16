@@ -331,16 +331,7 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
          }
          else
          {
-            CString strProblem;
-            if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
-            {
-               strProblem = _T("This event begins before the activities in the previous event have completed.");
-            }
-            else
-            {
-               strProblem = _T("The activities in this event end after the next event begins.");
-            }
-
+            CString strProblem = pParent->m_TimelineManager.GetErrorMessage(result);
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
             CString strMsg;

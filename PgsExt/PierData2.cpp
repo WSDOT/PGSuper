@@ -1604,9 +1604,42 @@ pgsTypes::BoundaryConditionType CPierData2::GetBoundaryConditionType() const
    return m_BoundaryConditionType;
 }
 
-void CPierData2::SetBoundaryConditionType(pgsTypes::BoundaryConditionType type)
+void CPierData2::SetBoundaryConditionType(pgsTypes::BoundaryConditionType newType)
 {
-   m_BoundaryConditionType = type;
+   pgsTypes::BoundaryConditionType oldType = m_BoundaryConditionType;
+   if (oldType == newType)
+   {
+      return; // nothing is changing
+   }
+
+   m_BoundaryConditionType = newType;
+
+   if (!m_pBridgeDesc)
+   {
+      return; // can't do anything else if this pier isn't attached to a bridge
+   }
+
+   // fix up the deck casting model
+   EventIndexType castDeckEventIdx = m_pBridgeDesc->GetTimelineManager()->GetCastDeckEventIndex();
+   if (castDeckEventIdx != INVALID_INDEX)
+   {
+      CTimelineEvent* pEvent = m_pBridgeDesc->GetTimelineManager()->GetEventByIndex(castDeckEventIdx);
+      CCastDeckActivity& castDeckActivity = pEvent->GetCastDeckActivity();
+      PierIndexType pierIdx = GetIndex();
+
+      bool bIsOldBCContinuous = IsContinuousBoundaryCondition(oldType);
+      bool bIsNewBCContinuous = IsContinuousBoundaryCondition(newType);
+      if (bIsOldBCContinuous && !bIsNewBCContinuous)
+      {
+         // remove neg moment casting region for this pier
+         castDeckActivity.RemoveNegMomentRegion(pierIdx);
+      }
+      else if (!bIsOldBCContinuous && bIsNewBCContinuous)
+      {
+         // add neg moment casting region for this pier
+         castDeckActivity.AddNegMomentRegion(pierIdx);
+      }
+   }
 }
 
 pgsTypes::PierSegmentConnectionType CPierData2::GetSegmentConnectionType() const
@@ -1626,6 +1659,7 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
 
    if ( !m_pBridgeDesc )
    {
+      m_SegmentConnectionType = newType;
       return; // can't do anything else if this pier isn't attached to a bridge
    }
 

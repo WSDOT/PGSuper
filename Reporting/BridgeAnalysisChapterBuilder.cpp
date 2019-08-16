@@ -101,7 +101,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    // must use a specific girder key to get interval information
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType lastIntervalIdx     = pIntervals->GetIntervalCount()-1;
 
@@ -506,7 +506,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
 
       CCombinedMomentsTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
       CCombinedShearTable().Build(  pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx, analysisType, bDesign, bRating);
-      if ( castDeckIntervalIdx <= intervalIdx )
+      if (lastCastDeckIntervalIdx <= intervalIdx )
       {
          CCombinedReactionTable().Build(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,analysisType,PierReactionsTable, bDesign, bRating);
          if( 0 < vPiers.size() )

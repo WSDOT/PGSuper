@@ -69,7 +69,7 @@ void CConcreteManager::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
 void CConcreteManager::Reset()
 {
    m_pLongitudinalJointConcrete = std::unique_ptr<matConcreteBase>(nullptr);
-   m_pDeckConcrete = std::unique_ptr<matConcreteBase>(nullptr);
+   m_pvDeckConcrete.clear();
    m_pClosureConcrete.clear();
    m_pSegmentConcrete.clear();
    m_pRailingConcrete[pgsTypes::tboLeft]  = std::unique_ptr<matConcreteBase>(nullptr);
@@ -97,42 +97,61 @@ void CConcreteManager::ValidateConcrete() const
    //
    //////////////////////////////////////////////////////////////////////////////
    const CDeckDescription2* pDeck = m_pBridgeDesc->GetDeckDescription();
-   if ( pDeck->GetDeckType() != pgsTypes::sdtNone )
+   if (pDeck->GetDeckType() != pgsTypes::sdtNone)
    {
       Float64 modE;
-      if ( pDeck->Concrete.bUserEc )
+      if (pDeck->Concrete.bUserEc)
       {
          modE = pDeck->Concrete.Ec;
       }
       else
       {
-         modE = lrfdConcreteUtil::ModE(pDeck->Concrete.Fc, 
-                                       pDeck->Concrete.StrengthDensity, 
-                                       false /* ignore LRFD range checks */ );
+         modE = lrfdConcreteUtil::ModE(pDeck->Concrete.Fc,
+            pDeck->Concrete.StrengthDensity,
+            false /* ignore LRFD range checks */);
 
-         if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
          {
             modE *= (pDeck->Concrete.EcK1*pDeck->Concrete.EcK2);
          }
       }
 
       // save these parameters for later so we don't have to look them up every time they are needed
-      m_DeckEcK1        = pDeck->Concrete.EcK1;
-      m_DeckEcK2        = pDeck->Concrete.EcK2;
-      m_DeckCreepK1     = pDeck->Concrete.CreepK1;
-      m_DeckCreepK2     = pDeck->Concrete.CreepK2;
+      m_DeckEcK1 = pDeck->Concrete.EcK1;
+      m_DeckEcK2 = pDeck->Concrete.EcK2;
+      m_DeckCreepK1 = pDeck->Concrete.CreepK1;
+      m_DeckCreepK2 = pDeck->Concrete.CreepK2;
       m_DeckShrinkageK1 = pDeck->Concrete.ShrinkageK1;
       m_DeckShrinkageK2 = pDeck->Concrete.ShrinkageK2;
 
       // Time dependent model
-      EventIndexType castDeckEventIdx  = pTimelineMgr->GetCastDeckEventIndex();
-      Float64   time_at_casting        = pTimelineMgr->GetStart(castDeckEventIdx);
-      Float64   age_at_initial_loading = pTimelineMgr->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
-      Float64   cure_time              = pTimelineMgr->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity().GetCuringDuration();
+      EventIndexType castDeckEventIdx = pTimelineMgr->GetCastDeckEventIndex();
+      Float64   initial_time_at_casting = pTimelineMgr->GetStart(castDeckEventIdx);
+      const auto* pTimelineEvent = pTimelineMgr->GetEventByIndex(castDeckEventIdx);
+      ATLASSERT(pTimelineEvent && pTimelineEvent->GetCastDeckActivity().IsEnabled());
+      const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
 
-      // modulus of rupture coefficients
-      Float64 time_step = time_at_casting + cure_time;
-      m_pDeckConcrete.reset( CreateConcreteModel(_T("Deck Concrete"),pDeck->Concrete,time_at_casting,cure_time,age_at_initial_loading,time_step) );
+      Float64   age_at_initial_loading = castDeckActivity.GetConcreteAgeAtContinuity();
+      Float64   cure_time = castDeckActivity.GetCuringDuration();
+      Float64   time_between_casting = castDeckActivity.GetTimeBetweenCasting();
+
+      IndexType nRegions = castDeckActivity.GetCastingRegionCount();
+      m_pvDeckConcrete.resize(nRegions);
+
+      IndexType nCastings = castDeckActivity.GetCastingCount();
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
+      {
+         Float64 time_at_casting = initial_time_at_casting + castingIdx*time_between_casting;
+         Float64 time_step = time_at_casting + cure_time;
+
+         auto vRegions = castDeckActivity.GetRegions(castingIdx);
+         for (auto regionIdx : vRegions)
+         {
+            CString strName;
+            strName.Format(_T("Deck Concrete: Region %d, Sequence %d"), LABEL_INDEX(regionIdx), LABEL_INDEX(castingIdx));
+            m_pvDeckConcrete[regionIdx].reset(CreateConcreteModel(strName, pDeck->Concrete, time_at_casting, cure_time, age_at_initial_loading, time_step));
+         }
+      }
    }
 
    //////////////////////////////////////////////////////////////////////////////
@@ -383,97 +402,109 @@ void CConcreteManager::ValidateConcrete() const
       GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       GET_IFACE(ILimits,pLimits);
 
-      Float64 time = m_pDeckConcrete->GetTimeAtCasting() + m_pDeckConcrete->GetCureTime() + 28.0;
-      Float64 fc28 = m_pDeckConcrete->GetFc(time);
-      if ( fc28 < fcMin && !IsEqual(fc28,fcMin) )
+      IndexType regionIdx = 0;
+      for (auto& pDeckConcrete : m_pvDeckConcrete)
       {
-         std::_tstring strMsg;
-         strMsg = bSI ? _T("Deck concrete cannot be less than 28 MPa per LRFD 5.4.2.1") 
-                      : _T("Deck concrete cannot be less than 4 KSI per LRFD 5.4.2.1");
-         CSegmentKey dummyKey;
-         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-         pStatusCenter->Add(pStatusItem);
-         //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
-         //THROW_UNWIND(strMsg.c_str(),-1);
-      }
-
-      pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)m_pDeckConcrete->GetType();
-      Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
-      if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) )
-      {
-         std::_tostringstream os;
-         os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc,pDisplayUnits->GetStressUnit());
-
-         std::_tstring strMsg = os.str();
-
-         CSegmentKey dummyKey;
-         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-         pStatusCenter->Add(pStatusItem);
-      }
-
-      Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(slabConcreteType);
-      Float64 MaxWc = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
-
-      Float64 strength_density = m_pDeckConcrete->GetStrengthDensity();
-      if ( max_wc < strength_density && !IsEqual(max_wc,strength_density,0.0001) )
-      {
-         std::_tostringstream os;
-         os << _T("Deck concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
-
-         std::_tstring strMsg = os.str();
-
-         CSegmentKey dummyKey;
-         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-         pStatusCenter->Add(pStatusItem);
-      }
-
-      Float64 weight_density = m_pDeckConcrete->GetWeightDensity();
-      if ( max_wc < weight_density && !IsEqual(max_wc,weight_density,0.0001) )
-      {
-         std::_tostringstream os;
-         os << _T("Deck concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
-
-         std::_tstring strMsg = os.str();
-
-         CSegmentKey dummyKey;
-         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::DensityForWeight,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-         pStatusCenter->Add(pStatusItem);
-      }
-
-      if ( !IsConcreteDensityInRange(strength_density, (pgsTypes::ConcreteType)m_pDeckConcrete->GetType()) )
-      {
-         std::_tostringstream os;
-         if ( m_pDeckConcrete->GetType() == pgsTypes::Normal )
+         Float64 time = pDeckConcrete->GetTimeAtCasting() + pDeckConcrete->GetCureTime() + 28.0;
+         Float64 fc28 = pDeckConcrete->GetFc(time);
+         if (fc28 < fcMin && !IsEqual(fc28, fcMin))
          {
-            os << _T("Deck concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
-         }
-         else
-         {
-            os << _T("Deck concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+            CString strNote;
+            strNote = bSI ? _T("Deck concrete cannot be less than 28 MPa per LRFD 5.4.2.1")
+                          : _T("Deck concrete cannot be less than 4 KSI per LRFD 5.4.2.1");
+            CString strMsg;
+            strMsg.Format(_T("Casting Region %d: %s"), LABEL_INDEX(regionIdx), strNote);
+            CSegmentKey dummyKey;
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab, pgsConcreteStrengthStatusItem::FinalStrength, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg);
+            pStatusCenter->Add(pStatusItem);
+            //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
+            //THROW_UNWIND(strMsg.c_str(),-1);
          }
 
-         std::_tstring strMsg = os.str();
+         pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)pDeckConcrete->GetType();
+         Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
+         if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) )
+         {
+            std::_tostringstream os;
+            os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc,pDisplayUnits->GetStressUnit());
 
-         CSegmentKey dummyKey;
-         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-         pStatusCenter->Add(pStatusItem);
+#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
+            std::_tstring strMsg = os.str();
+
+            CSegmentKey dummyKey;
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::FinalStrength,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pStatusCenter->Add(pStatusItem);
+         }
+
+         Float64 max_wc = pLimits->GetMaxConcreteUnitWeight(slabConcreteType);
+         Float64 MaxWc = ::ConvertFromSysUnits(max_wc,pDisplayUnits->GetDensityUnit().UnitOfMeasure);
+
+         Float64 strength_density = pDeckConcrete->GetStrengthDensity();
+         if ( max_wc < strength_density && !IsEqual(max_wc,strength_density,0.0001) )
+         {
+#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
+            std::_tostringstream os;
+            os << _T("Deck concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+
+            std::_tstring strMsg = os.str();
+
+            CSegmentKey dummyKey;
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pStatusCenter->Add(pStatusItem);
+         }
+
+         Float64 weight_density = pDeckConcrete->GetWeightDensity();
+         if ( max_wc < weight_density && !IsEqual(max_wc,weight_density,0.0001) )
+         {
+#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
+            std::_tostringstream os;
+            os << _T("Deck concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
+
+            std::_tstring strMsg = os.str();
+
+            CSegmentKey dummyKey;
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::DensityForWeight,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pStatusCenter->Add(pStatusItem);
+         }
+
+         if ( !IsConcreteDensityInRange(strength_density, slabConcreteType) )
+         {
+            std::_tostringstream os;
+            if (m_pvDeckConcrete[regionIdx]->GetType() == pgsTypes::Normal )
+            {
+               os << _T("Deck concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
+            }
+            else
+            {
+               os << _T("Deck concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
+            }
+
+#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
+            std::_tstring strMsg = os.str();
+
+            CSegmentKey dummyKey;
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::Density,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pStatusCenter->Add(pStatusItem);
+         }
+
+         Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(slabConcreteType);
+         Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+
+         Float64 agg_size = pDeckConcrete->GetMaxAggregateSize();
+         if ( max_agg_size < agg_size && !IsEqual(max_agg_size,agg_size))
+         {
+#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
+            std::_tostringstream os;
+            os << _T("Deck concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
+
+            std::_tstring strMsg = os.str();
+
+            CSegmentKey dummyKey;
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::AggSize,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+            pStatusCenter->Add(pStatusItem);
+         }
       }
-
-      Float64 max_agg_size = pLimits->GetMaxConcreteAggSize(slabConcreteType);
-      Float64 MaxAggSize = ::ConvertFromSysUnits(max_agg_size,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-
-      Float64 agg_size = m_pDeckConcrete->GetMaxAggregateSize();
-      if ( max_agg_size < agg_size && !IsEqual(max_agg_size,agg_size))
-      {
-         std::_tostringstream os;
-         os << _T("Deck concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
-
-         std::_tstring strMsg = os.str();
-
-         CSegmentKey dummyKey;
-         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab,pgsConcreteStrengthStatusItem::AggSize,dummyKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
-         pStatusCenter->Add(pStatusItem);
-      }
+      regionIdx++;
    }
 
    // Check longitudinal joint concrete
@@ -680,16 +711,19 @@ void CConcreteManager::ValidateDeckConcrete() const
       return;
    }
 
-   if ( m_pDeckConcrete.get() != nullptr )
+   for (auto& pDeckConcrete : m_pvDeckConcrete)
    {
-      GET_IFACE(ISectionProperties,pSectProp);
-      Float64 V, S;
-      pSectProp->GetDeckVolumeAndSurfaceArea(&V, &S);
-      Float64 vsDeck = IsZero(S) ? DBL_MAX : V/S;
+      if (pDeckConcrete.get() != nullptr)
+      {
+         GET_IFACE(ISectionProperties, pSectProp);
+         Float64 V, S;
+         pSectProp->GetDeckVolumeAndSurfaceArea(&V, &S);
+         Float64 vsDeck = IsZero(S) ? DBL_MAX : V / S;
 
-      vsDeck = ::RoundOff(vsDeck,::ConvertToSysUnits(0.5,unitMeasure::Millimeter));
+         vsDeck = ::RoundOff(vsDeck, ::ConvertToSysUnits(0.5, unitMeasure::Millimeter));
 
-      m_pDeckConcrete->SetVSRatio(vsDeck);
+         pDeckConcrete->SetVSRatio(vsDeck);
+      }
    }
 
    m_bIsDeckValidated = true;
@@ -1222,9 +1256,10 @@ Float64 CConcreteManager::GetClosureJointShrinkageK2(const CSegmentKey& closureK
 pgsTypes::ConcreteType CConcreteManager::GetDeckConcreteType() const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[0].get(); // use region 0 because the deck material in all casting regions is the same
+   if ( pDeckConcrete != nullptr )
    {
-      return (pgsTypes::ConcreteType)m_pDeckConcrete->GetType();
+      return (pgsTypes::ConcreteType)pDeckConcrete->GetType();
    }
    else
    {
@@ -1235,9 +1270,10 @@ pgsTypes::ConcreteType CConcreteManager::GetDeckConcreteType() const
 bool CConcreteManager::DoesDeckConcreteHaveAggSplittingStrength() const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[0].get(); // use region 0 because the deck material in all casting regions is the same
+   if ( pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->HasAggSplittingStrength();
+      return pDeckConcrete->HasAggSplittingStrength();
    }
    else
    {
@@ -1248,9 +1284,10 @@ bool CConcreteManager::DoesDeckConcreteHaveAggSplittingStrength() const
 Float64 CConcreteManager::GetDeckConcreteAggSplittingStrength() const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[0].get(); // use region 0 because the deck material in all casting regions is the same
+   if ( pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetAggSplittingStrength();
+      return pDeckConcrete->GetAggSplittingStrength();
    }
    else
    {
@@ -1261,9 +1298,11 @@ Float64 CConcreteManager::GetDeckConcreteAggSplittingStrength() const
 Float64 CConcreteManager::GetDeckStrengthDensity() const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[0].get(); // use region 0 because the deck material in all casting regions is the same
+
+   if ( pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetStrengthDensity();
+      return pDeckConcrete->GetStrengthDensity();
    }
    else
    {
@@ -1274,9 +1313,12 @@ Float64 CConcreteManager::GetDeckStrengthDensity() const
 Float64 CConcreteManager::GetDeckWeightDensity() const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[0].get(); // use region 0 because the deck material in all casting regions is the same
+
+   if ( pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetWeightDensity();
+      return pDeckConcrete->GetWeightDensity();
    }
    else
    {
@@ -1287,9 +1329,11 @@ Float64 CConcreteManager::GetDeckWeightDensity() const
 Float64 CConcreteManager::GetDeckMaxAggrSize() const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[0].get(); // use region 0 because the deck material in all casting regions is the same
+
+   if ( pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetMaxAggregateSize();
+      return pDeckConcrete->GetMaxAggregateSize();
    }
    else
    {
@@ -1626,10 +1670,11 @@ Float64 CConcreteManager::GetClosureJointLambda(const CClosureKey& closureKey) c
 
 Float64 CConcreteManager::GetDeckLambda() const
 {
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete[0].get(); // use region 0 because the deck material in all casting regions is the same
+   if ( pDeckConcrete != nullptr )
    {
-      const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(m_pDeckConcrete.get());
-      const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(m_pDeckConcrete.get());
+      const lrfdLRFDConcrete* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pDeckConcrete);
+      const lrfdLRFDTimeDependentConcrete* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pDeckConcrete);
       if ( pConcrete1 )
       {
          return pConcrete1->GetLambda();
@@ -1762,12 +1807,13 @@ Float64 CConcreteManager::GetClosureJointShearFrCoefficient(const CClosureKey& c
    return GetShearFrCoefficient(type);
 }
 
-Float64 CConcreteManager::GetDeckCastingTime() const
+Float64 CConcreteManager::GetDeckCastingTime(IndexType castingRegionIdx) const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if ( pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetTimeAtCasting();
+      return pDeckConcrete->GetTimeAtCasting();
    }
    else
    {
@@ -1775,12 +1821,14 @@ Float64 CConcreteManager::GetDeckCastingTime() const
    }
 }
 
-Float64 CConcreteManager::GetDeckFc(Float64 t) const
+Float64 CConcreteManager::GetDeckFc(IndexType castingRegionIdx,Float64 t) const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+
+   if (pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetFc(t);
+      return pDeckConcrete->GetFc(t);
    }
    else
    {
@@ -1788,12 +1836,13 @@ Float64 CConcreteManager::GetDeckFc(Float64 t) const
    }
 }
 
-Float64 CConcreteManager::GetDeckEc(Float64 t) const
+Float64 CConcreteManager::GetDeckEc(IndexType castingRegionIdx,Float64 t) const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if (pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetEc(t);
+      return pDeckConcrete->GetEc(t);
    }
    else
    {
@@ -1801,12 +1850,13 @@ Float64 CConcreteManager::GetDeckEc(Float64 t) const
    }
 }
 
-Float64 CConcreteManager::GetDeckFlexureFr(Float64 t) const
+Float64 CConcreteManager::GetDeckFlexureFr(IndexType castingRegionIdx,Float64 t) const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if (pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetFlexureFr(t);
+      return pDeckConcrete->GetFlexureFr(t);
    }
    else
    {
@@ -1814,12 +1864,13 @@ Float64 CConcreteManager::GetDeckFlexureFr(Float64 t) const
    }
 }
 
-Float64 CConcreteManager::GetDeckShearFr(Float64 t) const
+Float64 CConcreteManager::GetDeckShearFr(IndexType castingRegionIdx,Float64 t) const
 {
    ValidateConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if (pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetShearFr(t);
+      return pDeckConcrete->GetShearFr(t);
    }
    else
    {
@@ -1827,9 +1878,9 @@ Float64 CConcreteManager::GetDeckShearFr(Float64 t) const
    }
 }
 
-Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t) const
+Float64 CConcreteManager::GetDeckFreeShrinkageStrain(IndexType castingRegionIdx,Float64 t) const
 {
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetDeckFreeShrinkageStrainDetails(t);
+   std::shared_ptr<matConcreteBaseShrinkageDetails> pDetails = GetDeckFreeShrinkageStrainDetails(castingRegionIdx,t);
    if ( pDetails )
    {
       return pDetails->esh;
@@ -1840,13 +1891,14 @@ Float64 CConcreteManager::GetDeckFreeShrinkageStrain(Float64 t) const
    }
 }
 
-std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetDeckFreeShrinkageStrainDetails(Float64 t) const
+std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx,Float64 t) const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if (pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetFreeShrinkageStrainDetails(t);
+      return pDeckConcrete->GetFreeShrinkageStrainDetails(t);
    }
    else
    {
@@ -1854,13 +1906,14 @@ std::shared_ptr<matConcreteBaseShrinkageDetails> CConcreteManager::GetDeckFreeSh
    }
 }
 
-Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla) const
+Float64 CConcreteManager::GetDeckCreepCoefficient(IndexType castingRegionIdx,Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if (pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetCreepCoefficient(t,tla);
+      return pDeckConcrete->GetCreepCoefficient(t,tla);
    }
    else
    {
@@ -1868,13 +1921,14 @@ Float64 CConcreteManager::GetDeckCreepCoefficient(Float64 t,Float64 tla) const
    }
 }
 
-std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetDeckCreepCoefficientDetails(Float64 t,Float64 tla) const
+std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetDeckCreepCoefficientDetails(IndexType castingRegionIdx,Float64 t,Float64 tla) const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if (pDeckConcrete != nullptr )
    {
-      return m_pDeckConcrete->GetCreepCoefficientDetails(t,tla);
+      return pDeckConcrete->GetCreepCoefficientDetails(t,tla);
    }
    else
    {
@@ -1882,13 +1936,14 @@ std::shared_ptr<matConcreteBaseCreepDetails> CConcreteManager::GetDeckCreepCoeff
    }
 }
 
-Float64 CConcreteManager::GetDeckAgingCoefficient(Float64 timeOfLoading) const
+Float64 CConcreteManager::GetDeckAgingCoefficient(IndexType castingRegionIdx,Float64 timeOfLoading) const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   if ( m_pDeckConcrete.get() != nullptr )
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   if (pDeckConcrete != nullptr )
    {
-      return GetConcreteAgingCoefficient(m_pDeckConcrete.get(),timeOfLoading);
+      return GetConcreteAgingCoefficient(pDeckConcrete,timeOfLoading);
    }
    else
    {
@@ -1896,11 +1951,12 @@ Float64 CConcreteManager::GetDeckAgingCoefficient(Float64 timeOfLoading) const
    }
 }
 
-const matConcreteBase* CConcreteManager::GetDeckConcrete() const
+const matConcreteBase* CConcreteManager::GetDeckConcrete(IndexType castingRegionIdx) const
 {
    ValidateConcrete();
    ValidateDeckConcrete();
-   return m_pDeckConcrete.get();
+   auto* pDeckConcrete = m_pvDeckConcrete.empty() ? nullptr : m_pvDeckConcrete[castingRegionIdx].get(); // use region 0 because the deck material in all casting regions is the same
+   return pDeckConcrete;
 }
 
 Float64 CConcreteManager::GetSegmentCastingTime(const CSegmentKey& segmentKey) const

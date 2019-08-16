@@ -381,10 +381,12 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,const CSegmentK
    Float64 delta_oll;  // due to optoinal live load
    Float64 temp;
 
+   IndexType deckCastingRegionIdx = pIPOI->GetDeckCastingRegion(poi);
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx  = pIntervals->GetCastShearKeyInterval();
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount()-1;

@@ -1177,7 +1177,7 @@ void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,Interval
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetFirstStorageInterval(girderKey);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
    PoiAttributeType poiRefAttribute;
    if ( girderKey.groupIndex == ALL_GROUPS )
@@ -1194,7 +1194,7 @@ void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,Interval
       {
          poiRefAttribute = POI_STORAGE_SEGMENT;
       }
-      else if ( storageIntervalIdx < intervalIdx && intervalIdx < compositeDeckIntervalIdx )
+      else if ( storageIntervalIdx < intervalIdx && intervalIdx < lastCompositeDeckIntervalIdx )
       {
          poiRefAttribute = POI_ERECTED_SEGMENT;
       }

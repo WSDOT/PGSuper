@@ -207,7 +207,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType lastIntervalIdx = nIntervals-1;
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
@@ -492,7 +492,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          *pChapter << p;
       }
 
-      if ( castDeckIntervalIdx <= intervalIdx )
+      if ( lastCastDeckIntervalIdx <= intervalIdx )
       {
          CCombinedReactionTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx,analysisType,PierReactionsTable, bDesign, bRating);
          if( 0 < vPiers.size() )

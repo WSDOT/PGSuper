@@ -2690,6 +2690,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    GET_IFACE_NOCHECK(ILoadFactors, pILoadFactors);
    GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IGirder, pGirder);
+   GET_IFACE(IPointOfInterest, pPoi);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -2745,7 +2746,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-   Float64 nStrandsEffective;
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
@@ -2754,8 +2755,8 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType compositeLongitudinalJointIntervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -2825,7 +2826,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       *pDeckShrinkageK1 = pMaterial->GetDeckShrinkageK1();
       *pDeckShrinkageK2 = pMaterial->GetDeckShrinkageK2();
 
-      *pFcSlab = pMaterial->GetDeckFc(compositeDeckIntervalIdx);
+      *pFcSlab = pMaterial->GetDeckFc(deckCastingRegionIdx,compositeDeckIntervalIdx);
 
       if (pDeck->Concrete.bUserEc)
       {
@@ -2833,12 +2834,13 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
       else
       {
-         *pEcSlab = pMaterial->GetDeckEc(compositeDeckIntervalIdx);
+         *pEcSlab = pMaterial->GetDeckEc(deckCastingRegionIdx,compositeDeckIntervalIdx);
       }
    }
 
 
    // eccentricity of the permanent strands at release
+   Float64 nStrandsEffective;
    Float64 ex, ey;
    pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, pConfig, &nStrandsEffective, &ex, &ey);
    pepermRelease->Move(ex, ey);
@@ -3104,7 +3106,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
    }
 
-   GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);

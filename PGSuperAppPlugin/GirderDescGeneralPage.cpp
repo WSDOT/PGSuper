@@ -1357,18 +1357,18 @@ void CGirderDescGeneralPage::OnChangeAssumedExcessCamberType()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   CWnd* pwndAssExcessCamber = GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER);
+   CWnd* pwndAssumedExcessCamber = GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER);
    if ( m_AssumedExcessCamberType == pgsTypes::aecGirder )
    {
       // going into girder by girder slab offset mode
       CString strTemp = m_strAssumedExcessCamberCache;
 
-      pwndAssExcessCamber->GetWindowText(m_strAssumedExcessCamberCache);
-      pwndAssExcessCamber->SetWindowText(strTemp);
+      pwndAssumedExcessCamber->GetWindowText(m_strAssumedExcessCamberCache);
+      pwndAssumedExcessCamber->SetWindowText(strTemp);
    }
    else if ( m_AssumedExcessCamberType == pgsTypes::aecSpan )
    {
-      //pwndAssExcessCamber->SetWindowText(m_strAssExcessCamberCache);
+      //pwndAssumedExcessCamber->SetWindowText(m_strAssumedExcessCamberCache);
    }
    else
    {

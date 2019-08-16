@@ -828,20 +828,23 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
 
    for ( const auto& item : m_FlexuralStressArtifacts)
    {
       const StressKey& key = item.first;
 
-      if ( key.intervalIdx < compositeDeckIntervalIdx )
-      {
-         continue; // don't check if this is before the deck is composite.
-      }
-
       for ( const auto& artifact : item.second)
       {
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(artifact.GetPointOfInterest());
+         IntervalIndexType compositeDeckIntervalIdx = (deckCastingRegionIdx == INVALID_INDEX ? INVALID_INDEX : pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx));
+
+         if (key.intervalIdx < compositeDeckIntervalIdx)
+         {
+            continue; // don't check if this is before the deck is composite.
+         }
+
          for ( int i = 0; i < 2; i++ )
          {
             pgsTypes::StressLocation stressLocation = (i == 0 ? pgsTypes::TopDeck : pgsTypes::BottomDeck);
