@@ -155,6 +155,11 @@ void CTogaGirderModelSectionView::CreateDisplayLists()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
+   dispMgr->EnableLBtnSelect(TRUE);
+   dispMgr->EnableRBtnSelect(TRUE);
+   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+
    // Create display lists
    CComPtr<iDisplayList> straight_strand_list;
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&straight_strand_list);
