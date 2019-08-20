@@ -1584,6 +1584,13 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
             SegmentDisplayObjectInfo* pInfo = new SegmentDisplayObjectInfo(segmentKey,SEGMENT_DISPLAY_LIST);
             doSegment->SetItemData((void*)pInfo,true);
             doSegment->SetSelectionType(stAll);
+            
+            if (1 < nSegments)
+            {
+               // for spliced girder bridges, if a segment is selected, clicking a second time on the segments should move the selection
+               // to the next DO which is the entire girder.
+               doSegment->RetainSelection(FALSE);
+            }
 
             CComPtr<iShapeDrawStrategy> shapeDrawStrategy;
             shapeDrawStrategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
