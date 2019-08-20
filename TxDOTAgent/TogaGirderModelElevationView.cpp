@@ -148,6 +148,8 @@ void CTogaGirderModelElevationView::OnInitialUpdate()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
+   dispMgr->EnableLBtnSelect(TRUE);
+   dispMgr->EnableRBtnSelect(TRUE);
    dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
    dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
