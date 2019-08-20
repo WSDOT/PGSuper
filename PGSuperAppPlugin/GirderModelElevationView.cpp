@@ -435,6 +435,12 @@ void CGirderModelElevationView::UpdateDisplayObjects()
    // clean out all the display objects
    dispMgr->ClearDisplayObjects();
 
+   dispMgr->EnableLBtnSelect(TRUE);
+   dispMgr->EnableRBtnSelect(TRUE);
+   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+
+
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
