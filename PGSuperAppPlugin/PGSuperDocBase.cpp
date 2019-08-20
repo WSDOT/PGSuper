@@ -963,7 +963,7 @@ bool CPGSDocBase::EditPointLoadByID(LoadIDType loadID)
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
-      if (*pLoadData != dlg.m_Load)
+      if (*pLoadData != dlg.m_Load || eventID != dlg.m_EventID)
       {
          txnEditPointLoad* pTxn = new txnEditPointLoad(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
          GET_IFACE(IEAFTransactions, pTransactions);
@@ -1028,7 +1028,7 @@ bool CPGSDocBase::EditDistributedLoadByID(LoadIDType loadID)
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
-      if (*pLoadData != dlg.m_Load)
+      if (*pLoadData != dlg.m_Load || eventID != dlg.m_EventID)
       {
          txnEditDistributedLoad* pTxn = new txnEditDistributedLoad(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
          GET_IFACE(IEAFTransactions, pTransactions);
@@ -1094,7 +1094,7 @@ bool CPGSDocBase::EditMomentLoadByID(LoadIDType loadID)
    if (dlg.DoModal() == IDOK)
    {
       // only update if changed
-      if (*pLoadData != dlg.m_Load)
+      if (*pLoadData != dlg.m_Load || eventID != dlg.m_EventID)
       {
          txnEditMomentLoad* pTxn = new txnEditMomentLoad(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr);
          GET_IFACE(IEAFTransactions, pTransactions);
