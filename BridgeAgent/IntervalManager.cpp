@@ -1538,10 +1538,21 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
                      IntervalIndexType cureClosureJointIntervalIdx = m_CastClosureIntervals[closureKey] + 1; // curing is in the interval after casting
                      curingIntervalIdx = cureClosureJointIntervalIdx;
 
-                     auto& interval = m_Intervals[curingIntervalIdx]; // get the interval
-                     interval.Description += _T(", ") + cureDeckRegionInterval.Description; // append the deck curing description
-
-                     cureDeckRegionInterval = interval;
+                     if (m_Intervals.size() <= curingIntervalIdx)
+                     {
+                        // there is an overlap of the deck curing and closure curing intervals and the closure joint
+                        // curing interval hasn't been created yet.
+                        // add the new cure deck interval now
+                        ATLASSERT(m_Intervals.size() == curingIntervalIdx);
+                        cureDeckRegionInterval.Description += _T(", Closure Joints curing");
+                        curingIntervalIdx = StoreInterval(cureDeckRegionInterval);
+                     }
+                     else
+                     {
+                        auto& interval = m_Intervals[curingIntervalIdx]; // get the interval
+                        interval.Description += _T(", ") + cureDeckRegionInterval.Description; // append the deck curing description
+                        cureDeckRegionInterval = interval;
+                     }
                   }
                }
                else
