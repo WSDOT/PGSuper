@@ -8,25 +8,57 @@ Plane frame line models are used for structural analysis. The length of the span
 
 ![](AnalysisModel.png)
 
-### Supporting Elements ###
-Abutments are always considered to be supported by idealized elements such as pins or rollers. The mapping between the abutment boundary condition and the analysis model are:
+### Boundary Conditions ###
+Boundary conditions are defined with the connection defintion for abutments, piers, and temporary supports. Abutments and piers can be modeled as idealized supports or with substructure elements described by their physical attributes. When modeled with physical attributes, a fixed based column is included in the analysis model. The top of the column is either fixed or pinned to the superstructure elements, for integral or continuous connection types, respectively.
+
+In the figure below, the first analysis model shows an intermediate pier modeled with an integral connection. The intermediate pier is modeled by fully restraining rotation thereby transferring all moments directly into the support. The second analysis model shows the intermediate pier modeled as an integral pier. The base of the column is fixed and the top of the column has a moment connection with the superstructure. The column stiffness and sidesway effects are taking into account in this model.
+
+![](PhysicalPierModel.png)
+
+The modeled column height is the average clear span height of all the columns in the pier plus one-half the superstructure depth. The cross sectional area and moment of inertia of the column is the total area and moment of inertia for the pier divided by the average number of girders framing into the pier.
+
+> NOTE: Integral connection types for idealized supports are modeled with a fully fixed boundary condition. Vertical and horizontal translation is restrained. Rotation is restrained.
+
+#### Abutments ####
+Abutments are located at either end of the bridge.
 
 Boundary Condition | Analysis Model
 -------------------|---------------
 Hinge | Modeled as an idealized knife-edge support. Supported in the global X and Y direction with no rotational restraint
 Roller | Modeled as an idealized roller support. Supported in the global X direction with no transverse (Y) or rotational restraints.
-Integral before deck placement | Modeled as a fully fixed connection. Supported in the X and Y transitaional directions and fully restrained against rotation.
-Integral after deck placement | Modeled as a fully fixed connection. Supported in the X and Y transitaional directions and fully restrained against rotation.
+Integral before deck placement | Modeled as a fully fixed connection or integral with a fixed base column.
+Integral after deck placement | Modeled as a fully fixed connection or integral with a fixed base column.
 
-Interior piers can be modeled with idealized supports or with substructure elements described by their physical attributes. The mapping of boundary condtion to analysis model is the same as for abutments. When a pier is modeled by its physical attriubutes, a column is modeled in the analysis model with either a fixed or pinned boundary condition. The connection boundary condition defines the connectivity between the superstruture and the substructure.
+#### Boundary Piers ####
+Interior piers located at the boundary of girder groups are known as boundary piers. For PGSuper models, all piers are boundary piers.
 
-![](PhysicalPierModel.png)
+Boundary Condition | Analysis Model
+-------------------|---------------
+Hinge | Modeled as an idealized knife-edge support. Supported in the global X and Y direction with no rotational restraint
+Roller | Modeled as an idealized roller support. Supported in the global X direction with no transverse (Y) or rotational restraints.
+Integral before deck placement | Modeled as a fully fixed connection or integral with a fixed base column.
+Integral after deck placement | Modeled as a fully fixed connection or integral with a fixed base column.
+Continuous before deck placement | Modeled as a continuous member over the support. No rotational restraint by the support.
+Continuous after deck placement | Modeled as a continuous member over the support. No rotational restraint by the support.
+Hinged on back side; Integral on ahead side after deck placement | Similar to Integral after deck placement, except there is a hinge (no moment transfer) on the back side of the pier
+Hinged on back side; Integral on ahead side before deck placement |  Similar to Integral before deck placement, except there is a hinge (no moment transfer) on the back side of the pier
+Integral on back side after deck placement; Hinged on ahead side |  Similar to Integral after deck placement, except there is a hinge (no moment transfer) on the ahead side of the pier
+Integral on back side before deck placement; Hinged on ahead side |  Similar to Integral before deck placement, except there is a hinge (no moment transfer) on the ahead side of the pier
 
-In the figure above, the first analysis model shows the intermediate pier modeled with an integral connection. The intermediate pier is modeled by fully restraining rotation thereby transferring all moments directly into the support. The second analysis model shows the intermediate pier modeled as an integral pier. The base of the column is fixed and the top of the column has a moment connection with the superstructure. The column stiffness and sidesway effects are taking into account in this model.
+#### Interior Piers ####
+Interior piers are intermediate piers located within a girder group. Interior piers are only found in spliced girder models.
 
+Boundary Condition | Analysis Model
+-------------------|---------------
+Continous Closure Joint | Segments are joined at the pier with a cast-in-place closure joint. The girder is continuous over the pier.
+Integral Closure Joint | Segments are joined at the pier with a cast-in-place closure joint. The girder is integral with the pier.
+Continuous Segment | A single segment spanning over the pier. The girder is continuous over the pier after the pier diaphragm is cast.
+Integral Segment | A single segment spanning over the pier. The girder is integral with the pier after the pier diaphragm is cast.
 
-The modeled column height is the average clear span height of all the columns in the pier plus one-half the superstructure depth. The cross sectional area and moment of inertia of the column is the total area and moment of inertia for the pier divided by the average number of girders framing into the pier.
+#### Temporary Supports ####
+Temporary supports are erection towers and strongbacks and are only found in spliced girder models.
 
+Idealized roller supports are used for erection tower temporary supports.
 
 Girderlines
 --------------

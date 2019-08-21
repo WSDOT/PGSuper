@@ -12,7 +12,8 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
+#include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -4660,25 +4661,42 @@ END
 
 HAULINGOVERHANGS        METAFILE                "res\\HaulingOverhangs.emf"
 
-CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\Closure_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+PIER_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\PierClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf"
 
-CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\Closure_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+PIER_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\PierClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf"
 
-CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\Closure_BrgAlongGdr_EndAlongGdrFromPier.emf"
+PIER_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\PierClosure_BrgAlongGdr_EndAlongGdrFromPier.emf"
 
-CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\Closure_BrgAlongGdr_EndAlongNormalFromPier.emf"
+PIER_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\PierClosure_BrgAlongGdr_EndAlongNormalFromPier.emf"
 
-CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\Closure_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+PIER_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\PierClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf"
 
-CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\Closure_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+PIER_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\PierClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf"
 
-CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\Closure_BrgAlongNormal_EndAlongGdrFromPier.emf"
+PIER_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\PierClosure_BrgAlongNormal_EndAlongGdrFromPier.emf"
 
-CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\Closure_BrgAlongNormal_EndAlongNormalFromPier.emf"
+PIER_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\PierClosure_BrgAlongNormal_EndAlongNormalFromPier.emf"
+
+PIER_CONTINUOUS_SEGMENT METAFILE                "res\\PierContinuousSegment.emf"
+
+TS_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf"
+
+TS_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG METAFILE                "res\\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf"
+
+TS_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER METAFILE                "res\\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromPier.emf"
+
+TS_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER METAFILE                "res\\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromPier.emf"
+
+TS_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG METAFILE                "res\\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf"
+
+TS_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG METAFILE                "res\\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf"
+
+TS_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER METAFILE                "res\\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromPier.emf"
+
+TS_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER METAFILE                "res\\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromPier.emf"
 
 TS_CONTINUOUS_SEGMENT   METAFILE                "res\\TempSupportContinuousSegment.emf"
 
-PIER_CONTINUOUS_SEGMENT METAFILE                "res\\PierContinuousSegment.emf"
 
 CLPIER_BRGALONGGDR_ENDALONGGDRFROMBRG METAFILE                "res\\CLPier_BrgAlongGdr_EndAlongGdrFromBrg.emf"
 

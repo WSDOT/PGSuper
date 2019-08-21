@@ -452,19 +452,19 @@ CString CClosureJointGeometryPage::GetImageName(pgsTypes::TempSupportSegmentConn
          switch( endType )
          {
          case ConnectionLibraryEntry::FromBearingAlongGirder:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
+            strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromBearingNormalToPier:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
+            strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromPierAlongGirder:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
+            strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
             break;
 
          case ConnectionLibraryEntry::FromPierNormalToPier:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
+            strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
             break;
          }
       }
@@ -473,19 +473,19 @@ CString CClosureJointGeometryPage::GetImageName(pgsTypes::TempSupportSegmentConn
          switch( endType )
          {
          case ConnectionLibraryEntry::FromBearingAlongGirder:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
+            strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromBearingNormalToPier:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
+            strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromPierAlongGirder:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
+            strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
             break;
 
          case ConnectionLibraryEntry::FromPierNormalToPier:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
+            strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
             break;
          }
       }
@@ -509,19 +509,19 @@ CString CClosureJointGeometryPage::GetImageName(pgsTypes::PierSegmentConnectionT
          switch( endType )
          {
          case ConnectionLibraryEntry::FromBearingAlongGirder:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
+            strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromBearingNormalToPier:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
+            strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromPierAlongGirder:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
+            strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
             break;
 
          case ConnectionLibraryEntry::FromPierNormalToPier:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
+            strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
             break;
          }
       }
@@ -530,26 +530,26 @@ CString CClosureJointGeometryPage::GetImageName(pgsTypes::PierSegmentConnectionT
          switch( endType )
          {
          case ConnectionLibraryEntry::FromBearingAlongGirder:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
+            strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromBearingNormalToPier:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
+            strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromPierAlongGirder:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
+            strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
             break;
 
          case ConnectionLibraryEntry::FromPierNormalToPier:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
+            strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
             break;
          }
       }
    }
    else
    {
-      strName = _T("TS_CONTINUOUS_SEGMENT");
+      strName = _T("PIER_CONTINUOUS_SEGMENT");
    }
 
    return strName;
