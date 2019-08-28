@@ -21488,10 +21488,19 @@ pgsTypes::SectionPropertyMode CBridgeAgentImp::GetSectionPropertiesMode() const
 
 pgsTypes::HaunchAnalysisSectionPropertiesType CBridgeAgentImp::GetHaunchAnalysisSectionPropertiesType()const 
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   return pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
+   GET_IFACE(IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+   if (bIsSplicedGirder)
+   {
+      return pgsTypes::hspZeroHaunch; // spliced girders don't do haunch props
+   }
+   else
+   {
+      GET_IFACE(ILibrary, pLib);
+      GET_IFACE(ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      return pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
+   }
 }
 
 std::vector<gpPoint2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig) const
@@ -32565,11 +32574,11 @@ Float64 CBridgeAgentImp::GetLocationDeckMats(const pgsPointOfInterest& poi,pgsTy
 void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory,bool bTopMat,bool bBottomMat,bool bAdjForDevLength,Float64* pAs,Float64* pYb) const
 {
 #pragma Reminder("UPDATE: this information should come from the generic bridge model")
-   // The location of deck bars are avaiable in the generic bridge model. They should be retreived
+   // The location of deck bars are available in the generic bridge model. They should be retreived
    // from that model instead of re-computed here.
 
 
-   // computes the area of the deck rebar mats and their location (cg) measured from the bottom of the deck.
+   // Computes the area of the deck rebar mats and their location (cg) measured from the top of girder
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -32618,7 +32627,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
    // must exactly match the method used in WBFL::GenericBridge::CBridgeDeckRebarLayout::CreateRebarSection() or
    // the section properties used in time-step analysis will be messed up.
    //
-   // It might be a good idea ot use the generic bridge model to get the rebar instead of doing it here
+   // It might be a good idea to use the generic bridge model to get the rebar instead of doing it here
 
    if ( barCategory == pgsTypes::drcPrimary || barCategory == pgsTypes::drcAll )
    {
@@ -32809,7 +32818,20 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
 
    Float64 As = As_Bottom + As_Top;
    *pAs = As*rebarSectionWidth;
-   *pYb = (IsZero(As) ? 0 : (YbAs_Bottom + YbAs_Top)/As);
+   if (IsZero(As))
+   {
+      *pYb = 0;
+   }
+   else
+   {
+      // So far, we have measured the mat location (cg) from the bottom of the slab. Add in 
+      // the haunch depth to get to the top of the girder
+      GET_IFACE(ISectionProperties,pSectProps);
+      pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProps->GetHaunchAnalysisSectionPropertiesType();
+      Float64 haunch_depth = pSectProps->GetStructuralHaunchDepth(poi, hatype);
+
+      *pYb = haunch_depth + (YbAs_Bottom + YbAs_Top) / As;
+   }
 }
 
 void CBridgeAgentImp::GetShapeProperties(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 Ecgdr,IShapeProperties** ppShapeProps) const

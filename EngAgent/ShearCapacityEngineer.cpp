@@ -693,7 +693,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    Float64 struct_slab_h = pBridge->GetStructuralSlabDepth(poi);
 
-   pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
+   pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProps->GetHaunchAnalysisSectionPropertiesType();
    Float64 haunch_depth = pSectProps->GetStructuralHaunchDepth(poi, hatype);
 
    pscd->h = pGdr->GetHeight(poi) + struct_slab_h + haunch_depth;

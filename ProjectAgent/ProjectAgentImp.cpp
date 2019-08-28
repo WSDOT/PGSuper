@@ -9192,7 +9192,7 @@ pgsTypes::OverlayLoadDistributionType CProjectAgentImp::GetOverlayLoadDistributi
 
 pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationType() const
 {
-   if(m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP)
+   if(!IsAssumedExcessCamberForLoad())
    {
       // Practically impossible to compute excess camber on the fly for spliced girders. Don't even try
       return pgsTypes::hlcZeroCamber;
@@ -9205,14 +9205,12 @@ pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationTy
 
 Float64 CProjectAgentImp::GetCamberTolerance() const
 {
-   ATLASSERT(m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP);
    ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcAccountForCamber);
    return m_pSpecEntry->GetHaunchLoadCamberTolerance();
 }
 
 Float64 CProjectAgentImp::GetHaunchLoadCamberFactor() const
 {
-   ATLASSERT(m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP);
    ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcAccountForCamber);
    return m_pSpecEntry->GetHaunchLoadCamberFactor();
 }
@@ -9238,12 +9236,18 @@ bool CProjectAgentImp::IsAssumedExcessCamberInputEnabled(bool considerDeckType) 
 
 bool CProjectAgentImp::IsAssumedExcessCamberForLoad() const
 {
-   return m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
+   GET_IFACE(IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+
+   return !bIsSplicedGirder && m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
 }
 
 bool CProjectAgentImp::IsAssumedExcessCamberForSectProps() const
 {
-   return m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic;
+   GET_IFACE(IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+
+   return !bIsSplicedGirder && m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic;
 }
 
 void CProjectAgentImp::GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod * pMethod, Float64 * pTolerance) const

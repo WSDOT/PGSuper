@@ -303,6 +303,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       (*pChapter) << pPara;
 
       (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction1_lldf.skew1 + reaction1_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Girder Spacing Used: S = ") << xdim.SetValue(reaction1_lldf.Savg) << rptNewLine << rptNewLine;
       (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction1_lldf.L) << rptNewLine << rptNewLine;
 
       ReportShear(pPara,
@@ -321,6 +322,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       (*pChapter) << pPara;
 
       (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction2_lldf.skew1 + reaction2_lldf.skew2)/2)) << rptNewLine;
+      (*pPara) << _T("Girder Spacing Used: S = ") << xdim.SetValue(reaction2_lldf.Savg) << rptNewLine << rptNewLine;
       (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction2_lldf.L) << rptNewLine << rptNewLine;
 
       ReportShear(pPara,

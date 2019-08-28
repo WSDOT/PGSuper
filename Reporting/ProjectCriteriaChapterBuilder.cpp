@@ -1093,7 +1093,8 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
    *pChapter << pPara;
 
    // Loading first
-   pgsTypes::HaunchLoadComputationType hlctype = pSpecEntry->GetHaunchLoadComputationType();
+   GET_IFACE2( pBroker, ISpecification, pSpec );
+   pgsTypes::HaunchLoadComputationType hlctype = pSpec->GetHaunchLoadComputationType();
    if (pgsTypes::hlcZeroCamber==hlctype)
    {
       *pPara<<_T("Haunch dead load is computed assuming that the top of the girder is flat (Zero assumed excess camber)")<<rptNewLine;
@@ -1108,10 +1109,11 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
       ATLASSERT(false); // new method?
    }
 
-   pgsTypes::HaunchAnalysisSectionPropertiesType hpctype = pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   pgsTypes::HaunchAnalysisSectionPropertiesType hpctype = pSectProp->GetHaunchAnalysisSectionPropertiesType();
    if (pgsTypes::hspZeroHaunch == hpctype)
    {
-      *pPara << _T("Composite section properties and capacities are computed ignore the haunch depth)") << rptNewLine;
+      *pPara << _T("Composite section properties and capacities are computed ignoring the haunch depth)") << rptNewLine;
    }
    else if (pgsTypes::hspConstFilletDepth == hpctype)
    {
@@ -1126,7 +1128,6 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
       ATLASSERT(false); // new method?
    }
 
-   GET_IFACE2( pBroker, ISpecification, pSpec );
    bool doCamber = pSpec->IsAssumedExcessCamberInputEnabled();
    if (doCamber)
    {
