@@ -470,8 +470,8 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    DDX_Text(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
    DDV_GreaterThanZero(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
 
-   DDX_Text(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
-   DDV_GreaterThanZero(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
+   DDX_Text(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_PeakCompStressHauling);
+   DDV_GreaterThanZero(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_PeakCompStressHauling);
 
    CString tag;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
