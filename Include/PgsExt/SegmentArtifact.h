@@ -96,12 +96,11 @@ public:
    const pgsPlantHandlingWeightArtifact* GetPlantHandlingWeightArtifact() const;
    pgsPlantHandlingWeightArtifact* GetPlantHandlingWeightArtifact();
 
-   void AddFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,
-                                  const pgsFlexuralStressArtifact& artifact);
-   CollectionIndexType GetFlexuralStressArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const;
-   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx) const;
-   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx);
-   const pgsFlexuralStressArtifact* GetFlexuralStressArtifactAtPoi(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,PoiIDType poiID) const;
+   void AddFlexuralStressArtifact(const pgsFlexuralStressArtifact& artifact);
+   CollectionIndexType GetFlexuralStressArtifactCount(const StressCheckTask& task) const;
+   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx) const;
+   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx);
+   const pgsFlexuralStressArtifact* GetFlexuralStressArtifactAtPoi(const StressCheckTask& task,PoiIDType poiID) const;
 
    pgsStirrupCheckArtifact* GetStirrupCheckArtifact();
    const pgsStirrupCheckArtifact* GetStirrupCheckArtifact() const;
@@ -119,33 +118,30 @@ public:
    void SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact*  artifact);
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
 
-   // Returns true if flexural stress checks are applicable anywhere along the segment
-   bool IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const;
-
    // returns true if the allowable tension capacity with adequate reinforcement
    // was used at any POI in this segment. If attribute = 0, only segments are checked
    // if attribute is POI_CLOSURE, only closure joints are checked
-   bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
+   bool WasWithRebarAllowableStressUsed(const StressCheckTask& task,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
 
-   bool WasSegmentWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
-   bool WasClosureJointWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const;
+   bool WasSegmentWithRebarAllowableStressUsed(const StressCheckTask& task) const;
+   bool WasClosureJointWithRebarAllowableStressUsed(const StressCheckTask& task,bool bIsInPTZ) const;
 
    // returns true if the allowable tension capacity with adequate reinforcement was used
    // anywhere along this segment for the deck
-   bool WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   bool WasDeckWithRebarAllowableStressUsed(const StressCheckTask& task) const;
 
 
    // returns true if the allowable tension capacity with adequate reinforcement
    // is applicable at any POI in this segment. If attribute = 0, only segments are checked
    // if attribute is POI_CLOSURE, only closure joints are checked
-   bool IsWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
+   bool IsWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
 
-   bool IsSegmentWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
-   bool IsClosureJointWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const;
+   bool IsSegmentWithRebarAllowableStressApplicable(const StressCheckTask& task) const;
+   bool IsClosureJointWithRebarAllowableStressApplicable(const StressCheckTask& task,bool bIsInPTZ) const;
 
    // returns true if the allowable tension capacity with adequate reinforcement is applicable
    // anywhere along this segment for the deck
-   bool IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   bool IsDeckWithRebarAllowableStressApplicable(const StressCheckTask& task) const;
 
    pgsDebondArtifact* GetDebondArtifact();
    const pgsDebondArtifact* GetDebondArtifact() const;
@@ -192,36 +188,8 @@ private:
    pgsPlantHandlingWeightArtifact m_PlantHandlingWeightArtifact;
    pgsSegmentStabilityArtifact m_StabilityArtifact;
 
-   struct StressKey
-   {
-      IntervalIndexType intervalIdx;
-      pgsTypes::LimitState ls;
-      pgsTypes::StressType stress;
-      bool operator<(const StressKey& key) const
-      {
-         if ( intervalIdx < key.intervalIdx )
-            return true;
-
-         if ( key.intervalIdx < intervalIdx )
-            return false;
-
-         if ( ls < key.ls )
-            return true;
-
-         if ( key.ls < ls )
-            return false;
-
-         if ( stress < key.stress )
-            return true;
-
-         if ( key.stress < stress )
-            return false;
-
-         return false;
-      }
-   };
-   mutable std::map<StressKey,std::vector<pgsFlexuralStressArtifact>> m_FlexuralStressArtifacts;
-   std::vector<pgsFlexuralStressArtifact>& GetFlexuralStressArtifacts(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const;
+   mutable std::map<StressCheckTask,std::vector<pgsFlexuralStressArtifact>> m_FlexuralStressArtifacts;
+   std::vector<pgsFlexuralStressArtifact>& GetFlexuralStressArtifacts(const StressCheckTask& task) const;
    bool DidFlexuralStressPass() const;
 
    pgsStirrupCheckArtifact m_StirrupCheckArtifact;

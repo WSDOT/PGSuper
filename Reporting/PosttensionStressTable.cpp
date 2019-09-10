@@ -31,6 +31,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace\Allowables.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -83,8 +84,10 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
 
    location.IncludeSpanAndGirder(true);
 
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(girderKey));
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    IntervalIndexType loadRatingIntervalIdx           = pIntervals->GetLoadRatingInterval();
    IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);

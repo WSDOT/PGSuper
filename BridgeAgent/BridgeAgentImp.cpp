@@ -75,6 +75,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\AgeAdjustedMaterial.h>
 #include <IFace\DocumentType.h>
+#include <IFace\Allowables.h>
 
 #include <PgsExt\DesignConfigUtil.h>
 
@@ -24230,6 +24231,21 @@ const std::vector<IUserDefinedLoads::UserMomentLoad>* CBridgeAgentImp::GetMoment
    return &(found->second);
 }
 
+const std::vector<IntervalIndexType> CBridgeAgentImp::GetUserDefinedLoadIntervals(const CGirderKey& girderKey) const
+{
+   std::vector<IntervalIndexType> vUserLoadIntervals;
+   IntervalIndexType nIntervals = m_IntervalManager.GetIntervalCount();
+   for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
+   {
+      if (DoUserLoadsExist(girderKey, intervalIdx))
+      {
+         vUserLoadIntervals.push_back(intervalIdx);
+      }
+   }
+
+   return vUserLoadIntervals;
+}
+
 /////////////////////////////////////////////////////
 // ITempSupport
 void CBridgeAgentImp::GetControlPoints(SupportIndexType tsIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppLeft,IPoint2d** ppAlignment,IPoint2d** ppBridge,IPoint2d** ppRight) const
@@ -29392,190 +29408,6 @@ IntervalIndexType CBridgeAgentImp::GetNoncompositeUserLoadInterval() const
 IntervalIndexType CBridgeAgentImp::GetCompositeUserLoadInterval() const
 {
    return GetLastCompositeInterval();
-}
-
-std::vector<IntervalIndexType> CBridgeAgentImp::GetSpecCheckIntervals(const CGirderKey& girderKey) const
-{
-   std::vector<IntervalIndexType> vIntervals;
-
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GET_IFACE(ILibrary,       pLib);
-   GET_IFACE(ISpecification, pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   GET_IFACE(ILossParameters,pLossParams);
-   bool bTimeStepAnalysis = pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false;
-
-   // Segment erection intervals only need to be spec checked if there are piers or temporary supports
-   // that cause negative moments in the segment. This occurs when the segment is continuous over
-   // these support types. Erecting the segment causes a change in loading condition compared to the
-   // simple span loading condition before erection.
-
-   // first check  piers
-   GroupIndexType nGroups = GetGirderGroupCount();
-   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
-   bool bIsContinuousOverSupport = false;
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
-   {
-      PierIndexType startPierIdx, endPierIdx;
-      GetGirderGroupPiers(grpIdx,&startPierIdx,&endPierIdx);
-      for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
-      {
-         if ( IsInteriorPier(pierIdx) )
-         {
-            const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
-            pgsTypes::PierSegmentConnectionType cType = pPier->GetSegmentConnectionType();
-            if ( cType == pgsTypes::psctContinuousSegment || cType == pgsTypes::psctIntegralSegment )
-            {
-               bIsContinuousOverSupport = true;
-               break;
-            }
-         }
-
-         if ( bIsContinuousOverSupport )
-         {
-            break;
-         }
-      }
-
-      // if not continuous over piers, check temporary supports
-      if ( !bIsContinuousOverSupport )
-      {
-         SpanIndexType startSpanIdx, endSpanIdx;
-         GetGirderGroupSpans(grpIdx,&startSpanIdx,&endSpanIdx);
-         for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
-         {
-            const CSpanData2* pSpan = pIBridgeDesc->GetSpan(spanIdx);
-            std::vector<const CTemporarySupportData*> vTS(pSpan->GetTemporarySupports());
-            std::vector<const CTemporarySupportData*>::iterator tsIter(vTS.begin());
-            std::vector<const CTemporarySupportData*>::iterator tsIterEnd(vTS.end());
-            for ( ; tsIter != tsIterEnd; tsIter++ )
-            {
-               const CTemporarySupportData* pTS = *tsIter;
-               if ( pTS->GetConnectionType() == pgsTypes::tsctContinuousSegment )
-               {
-                  bIsContinuousOverSupport = true;
-                  break;
-               }
-            }
-
-            if ( bIsContinuousOverSupport )
-            {
-               break;
-            }
-         }
-      }
-
-      // Spec check intervals for basic segment events
-      GirderIndexType nGirders = GetGirderCount(grpIdx);
-      GirderIndexType startGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : Min(nGirders-1,girderKey.girderIndex));
-      GirderIndexType endGirderIdx   = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : startGirderIdx);
-      for ( GirderIndexType gdrIdx = startGirderIdx; gdrIdx <= endGirderIdx; gdrIdx++ )
-      {
-         CGirderKey thisGirderKey(grpIdx,gdrIdx);
-
-         DuctIndexType nDucts = GetDuctCount(thisGirderKey);
-         bool bSplicedGirder = (bTimeStepAnalysis && 0 < nDucts);
-
-         SegmentIndexType nSegments = GetSegmentCount(thisGirderKey);
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-         {
-            CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
-
-            vIntervals.push_back(GetPrestressReleaseInterval(thisSegmentKey));
-
-            // Lifting is a different animal. Don't include it here
-            //vIntervals.push_back(GetLiftSegmentInterval(thisSegmentKey));
-
-            // only need to check stresses during storage if spliced girder
-            // only need to check if support conditions are different than release support conditions
-            // because this would consititute a change in loading
-            if ( bSplicedGirder )
-            {
-               Float64 LeftReleasePoint, RightReleasePoint;
-               GetSegmentReleaseSupportLocations(thisSegmentKey,&LeftReleasePoint,&RightReleasePoint);
-
-               Float64 LeftStoragePoint, RightStoragePoint;
-               GetSegmentStorageSupportLocations(thisSegmentKey,&LeftStoragePoint,&RightStoragePoint);
-
-               if ( !IsEqual(LeftReleasePoint,LeftStoragePoint) || 
-                    !IsEqual(RightReleasePoint,RightStoragePoint) )
-               {
-                  vIntervals.push_back(GetStorageInterval(thisSegmentKey));
-               }
-            }
-
-            // Hauling is a different animal. Don't include it here
-            //vIntervals.push_back(GetHaulSegmentInterval(thisSegmentKey));
-
-            // Only spec check at segment erection if there is a support mid-segment that causes negative moments in the segment
-            if ( bIsContinuousOverSupport )
-            {
-               vIntervals.push_back(GetErectSegmentInterval(thisSegmentKey));
-            }
-
-            // Only check temporary strand interval if there are temporary strands
-            if (pSpecEntry->CheckTemporaryStresses() && 0 < GetStrandCount(thisSegmentKey,pgsTypes::Temporary) )
-            {
-               vIntervals.push_back(GetTemporaryStrandRemovalInterval(thisSegmentKey));
-            }
-         } // next segment
-
-
-         // Spec check whenever a tendon is stressed
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-         {
-            vIntervals.push_back(GetStressTendonInterval(thisGirderKey,ductIdx));
-         }
-      } // next girder
-   } // next group
-
-   // Important loading intervals for the full bridge
-   if ( pSpecEntry->CheckTemporaryStresses() )
-   {
-      // after erection, check the last interval when the segment is non-composite
-      // this is the worst case loading (typically wet deck on bare girder)
-      IntervalIndexType noncompositeIntervalIdx = GetLastNoncompositeInterval();
-      vIntervals.push_back(noncompositeIntervalIdx);
-   }
-
-   // check each time a deck region is cast
-   IndexType nCastingRegions = GetDeckCastingRegionCount();
-   for (IndexType regionIdx = 0; regionIdx < nCastingRegions; regionIdx++)
-   {
-      IntervalIndexType deckRegionCastingIntervalIdx = GetCastDeckInterval(regionIdx);
-      vIntervals.push_back(deckRegionCastingIntervalIdx);
-   }
-
-   IntervalIndexType overlayIntervalIdx = GetOverlayInterval();
-   if (overlayIntervalIdx != INVALID_INDEX)
-   {
-      vIntervals.push_back(overlayIntervalIdx);
-   }
-   else
-   {
-      vIntervals.push_back(GetInstallRailingSystemInterval());
-   }
-
-   // Need to spec check whenever a user defined load is applied
-   SpanIndexType startSpanIdx, endSpanIdx;
-   GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
-   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
-   {
-      CSpanKey spanKey(spanIdx,girderKey.girderIndex);
-      std::vector<IntervalIndexType> vUserLoadIntervals(GetUserDefinedLoadIntervals(spanKey));
-      vIntervals.insert(vIntervals.end(),vUserLoadIntervals.begin(),vUserLoadIntervals.end());
-   }
-
-   // Always spec check the last interval (this will cover live load)
-   vIntervals.push_back(GetIntervalCount()-1); // last interval
-
-   // sort and remove any duplicates
-   std::sort(vIntervals.begin(),vIntervals.end());
-   vIntervals.erase( std::unique(vIntervals.begin(),vIntervals.end()), vIntervals.end() );
-
-   return vIntervals;
 }
 
 IntervalIndexType CBridgeAgentImp::GetLastNoncompositeInterval() const

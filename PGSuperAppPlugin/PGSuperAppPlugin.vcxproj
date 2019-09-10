@@ -922,6 +922,14 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <None Include="res\PGSuperAppPluginImpl.rgs" />
     <None Include="res\PGSuperComponentInfo.rgs" />
     <None Include="res\PGSuperProjectImporterAppPlugin.rgs" />
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromPier.emf" />
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromPier.emf" />
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromPier.emf" />
     <None Include="res\PierContinuousSegment.emf" />
     <None Include="res\PierLayout.emf" />
     <None Include="res\SA_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
@@ -933,6 +941,14 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <None Include="res\SA_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
     <None Include="res\SA_BrgAlongNormal_EndAlongNormalFromPier.emf" />
     <None Include="res\StrandSpacing.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromPier.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromPier.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromPier.emf" />
     <None Include="res\TempSupportContinuousSegment.emf" />
   </ItemGroup>
   <ItemGroup>

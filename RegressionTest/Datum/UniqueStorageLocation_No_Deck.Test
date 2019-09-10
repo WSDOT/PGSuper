@@ -4,8 +4,8 @@
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Lifting checks failed
 Hauling checks failed
 Finished elevation check failed
@@ -17,9 +17,9 @@ Finished elevation check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Lifting checks failed
 Hauling checks failed
 Finished elevation check failed

@@ -90,23 +90,21 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                     4     2    Strai          56  1/2  270   6.91   4.41   8.50   8.50                                              14  24.5 14.5  4.000  6.700   3.526    -4.346     3256   0.648  0.849   4.317 -1.957  0.000 -0.079 -2.036 237.07  588.11    1.00    1.00    1.00 
+ 38.00    5   8.50                     4     2    Strai          64  1/2  270   5.23   4.54   8.50   8.50                                              22  24.5 22.5  6.000  8.000   3.526    -4.346     3256   0.648  0.849   2.929 -1.957  0.000 -0.079 -2.036 233.22  668.41    1.00    1.00    1.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Ultimate vertical shear capacity check failed for Strength I Limit State
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                     4     3    Strai          56  1/2  270   6.91   4.41   8.50   8.50                                              14  24.5 14.5  4.000  6.700   3.526    -4.346     3256   0.648  0.849   4.317 -1.957  0.000 -0.079 -2.036 237.07  588.11    1.00    1.00    1.00 
+ 38.00    5   8.50                     4     3    Strai          64  1/2  270   5.23   4.54   8.50   8.50                                              22  24.5 22.5  6.000  8.000   3.526    -4.346     3256   0.648  0.849   2.929 -1.957  0.000 -0.079 -2.036 233.22  668.41    1.00    1.00    1.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Ultimate vertical shear capacity check failed for Strength I Limit State
 
 

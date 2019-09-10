@@ -5,11 +5,11 @@
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 14 Composite deck, Install Railing System and Overlay
+Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
 Compression stress check failed for Service IA Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
@@ -32,14 +32,14 @@ Minimum fillet value exceeded for bridge check failed
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 14 Composite deck, Install Railing System and Overlay
+Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
 Compression stress check failed for Service IA Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

@@ -8,14 +8,10 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 107.2   12   9.33 SR 5/205 NE 139t    1     2    FDiap    *     40  0.6  270  32.46  20.26  10.25  10.25                                               8  68.0  4.0  5.100  6.100   3.697    -3.787    11279   0.944  0.944   3.863 -1.176 -0.101 -0.080 -1.357 174.75  337.61    3.00    6.17    6.17 
+ 107.2   12   9.33 SR 5/205 NE 139t    1     2    FDiap    *     41  0.6  270  32.34  21.51  10.25  10.25                                               7  70.0  4.0  5.300  6.600   3.739    -3.799    11577   0.944  0.944   3.920 -1.131 -0.098 -0.078 -1.306 180.44  346.71    3.00    6.17    6.17 
 
 
-Girder design was Not Successful
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
-Tensile stress check failed for Service III Limit State in Interval 18 Open to Traffic
-Stirrup detailing checks failed for the Strength I Limit State.
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

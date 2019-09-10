@@ -6,26 +6,26 @@
 The Specification Check was Not Successful
 Tendon 1 is overstressed
 Tendon 2 is overstressed
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 1
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 1
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 1
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 1
-Tension stress check failed for Service I Limit State in Interval 21, Stress Tendons, Remove Temporary Support for Segment 1
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 1
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 2
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 2
-Tension stress check failed for Service I Limit State in Interval 21, Stress Tendons, Remove Temporary Support for Segment 2
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 2
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 2
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 2
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 3
-Tension stress check failed for Service I Limit State in Interval 4, Place segments into storage for Segment 3
-Tension stress check failed for Service I Limit State in Interval 14, Cast Closure Joint, Cast deck regions 1, 3 for Segment 3
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 3
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 3
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 3
-Tension stress check failed for Service I Limit State in Interval 21, Stress Tendons, Remove Temporary Support for Segment 3
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 3
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 1
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 1
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 2
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 2
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 3
+Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 3
+Tension stress check failed for Service I Limit State in Interval 14 Cast Closure Joint, Cast deck regions 1, 3 for Segment 3
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 3
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 3
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
@@ -54,26 +54,26 @@ Duct Size check failed for Duct 2.
 The Specification Check was Not Successful
 Tendon 1 is overstressed
 Tendon 2 is overstressed
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 1
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 1
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 1
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 1
-Tension stress check failed for Service I Limit State in Interval 21, Stress Tendons, Remove Temporary Support for Segment 1
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 1
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 2
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 2
-Tension stress check failed for Service I Limit State in Interval 21, Stress Tendons, Remove Temporary Support for Segment 2
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 2
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 2
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 2
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 3
-Tension stress check failed for Service I Limit State in Interval 4, Place segments into storage for Segment 3
-Tension stress check failed for Service I Limit State in Interval 14, Cast Closure Joint, Cast deck regions 1, 3 for Segment 3
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 3
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 3
-Tension stress check failed for Service I Limit State in Interval 18, Cast deck regions 2 for Segment 3
-Tension stress check failed for Service I Limit State in Interval 21, Stress Tendons, Remove Temporary Support for Segment 3
-Tension stress check failed for Service III Limit State in Interval 31, Load Rating for Segment 3
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 1
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 1
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 2
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 2
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 3
+Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 3
+Tension stress check failed for Service I Limit State in Interval 14 Cast Closure Joint, Cast deck regions 1, 3 for Segment 3
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 3
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 3
+Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
+Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
+Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].

@@ -8,10 +8,10 @@ The Specification Check was Not Successful
 Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tendon 3 is overstressed
-Tension stress check failed for Service III Limit State in Interval 27, Load Rating for Segment 1
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 2
-Tension stress check failed for Service III Limit State in Interval 27, Load Rating for Segment 2
-Tension stress check failed for Service III Limit State in Interval 27, Load Rating for Segment 3
+Tension stress check failed for Service III Limit State in Interval 27 Load Rating for Segment 1
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service III Limit State in Interval 27 Load Rating for Segment 2
+Tension stress check failed for Service III Limit State in Interval 27 Load Rating for Segment 3
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Debond arrangement checks failed for Segment 2.
 Girder Dimension Detailing check failed for Segment 1.
@@ -35,8 +35,8 @@ The Specification Check was Not Successful
 Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tendon 3 is overstressed
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 2
-Compression stress check failed for Service I Limit State in Interval 17, Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Compression stress check failed for Service I Limit State in Interval 17 Stress Tendons, Remove Temporary Support for Segment 2
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Debond arrangement checks failed for Segment 2.
 Girder Dimension Detailing check failed for Segment 1.

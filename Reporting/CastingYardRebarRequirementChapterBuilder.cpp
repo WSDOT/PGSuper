@@ -122,7 +122,9 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    // need to report for all spec-check intervals after a closure joint
    // is composite with the girder
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there is more than one segment in the girder
-   std::vector<IntervalIndexType> vSpecCheckIntervals = pIntervals->GetSpecCheckIntervals(girderKey);
+
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   std::vector<IntervalIndexType> vSpecCheckIntervals = pStressCheck->GetStressCheckIntervals(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
    {
       CClosureKey closureKey(girderKey,segIdx);
@@ -150,7 +152,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
             // Service III limit state after live load is applied
             pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
-            bool bIsApplicable = pAllowStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension);
+            bool bIsApplicable = pAllowStress->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension));
             if ( bIsApplicable )
             {
                pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
@@ -400,6 +402,8 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    SegmentIndexType firstSegIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
    SegmentIndexType lastSegIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegIdx );
 
+   StressCheckTask task(intervalIdx, limitState, pgsTypes::Tension);
+
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    for ( SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++ )
    {
@@ -410,7 +414,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
       if ( poi.GetID() == INVALID_ID )
       {
          // reporting for all vPoi
-         nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension);
+         nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(task);
       }
       else
       {
@@ -423,11 +427,11 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
          const pgsFlexuralStressArtifact* pArtifact;
          if ( poi.GetID() == INVALID_ID )
          {
-            pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,artifactIdx );
+            pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( task,artifactIdx );
          }
          else
          {
-            pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,limitState,pgsTypes::Tension,poi.GetID());
+            pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(task,poi.GetID());
          }
 
          ATLASSERT(pArtifact != nullptr);

@@ -233,9 +233,6 @@ interface IIntervals : IUnknown
    // Returns the interval when user defined loads are applied to the compostie section
    virtual IntervalIndexType GetCompositeUserLoadInterval() const = 0;
 
-   // returns a vector of intervals that should be spec checked
-   virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey) const = 0;
-
    // returns the last interval when the girder is a non-composite section
    // If the girder is never made composite with other concrete elements, the 
    // interval of diaphragm casting is returned;

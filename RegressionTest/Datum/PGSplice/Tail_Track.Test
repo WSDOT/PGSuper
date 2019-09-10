@@ -4,17 +4,23 @@
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service I Limit State in Interval 16, Cast Deck, Apply User Defined Loads for Segment 1
-Tension stress check failed for Service I Limit State in Interval 20, Stress Tendons for Segment 1
-Tension stress check failed for Service III Limit State in Interval 29, Load Rating for Segment 1
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 2
-Tension stress check failed for Service I Limit State in Interval 16, Cast Deck, Apply User Defined Loads for Segment 2
-Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 2
-Tension stress check failed for Service III Limit State in Interval 29, Load Rating for Segment 2
-Compression stress check failed for Service I Limit State in Interval 29, Load Rating for Segment 2
-Tension stress check failed for Service III Limit State in Interval 29, Load Rating for Segment 2
-Tension stress check failed for Service I Limit State in Interval 20, Stress Tendons for Segment 3
-Tension stress check failed for Service III Limit State in Interval 29, Load Rating for Segment 3
+Tension stress check failed for Service I Limit State in Interval 16 Cast Deck, Apply User Defined Loads for Segment 1
+Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 1
+Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 16 Cast Deck, Apply User Defined Loads for Segment 2
+Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 2
+Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 2
+Compression stress check failed for Service I Limit State in Interval 29 Load Rating for Segment 2
+Compression stress check failed for Service I Limit State in Interval 29 Load Rating for Segment 2
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 2
+Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 3
+Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons for Deck
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Lifting checks failed for Segment 1.
@@ -30,17 +36,23 @@ Hauling checks failed for Segment 3.
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service I Limit State in Interval 16, Cast Deck, Apply User Defined Loads for Segment 1
-Tension stress check failed for Service I Limit State in Interval 20, Stress Tendons for Segment 1
-Tension stress check failed for Service III Limit State in Interval 29, Load Rating for Segment 1
-Tension stress check failed for Service I Limit State in Interval 2, Prestress Release for Segment 2
-Tension stress check failed for Service I Limit State in Interval 16, Cast Deck, Apply User Defined Loads for Segment 2
-Compression stress check failed for Service I Limit State in Interval 22, Apply User Defined Loads, Install Railing System for Segment 2
-Tension stress check failed for Service III Limit State in Interval 29, Load Rating for Segment 2
-Compression stress check failed for Service I Limit State in Interval 29, Load Rating for Segment 2
-Tension stress check failed for Service III Limit State in Interval 29, Load Rating for Segment 2
-Tension stress check failed for Service I Limit State in Interval 20, Stress Tendons for Segment 3
-Tension stress check failed for Service III Limit State in Interval 29, Load Rating for Segment 3
+Tension stress check failed for Service I Limit State in Interval 16 Cast Deck, Apply User Defined Loads for Segment 1
+Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 1
+Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 16 Cast Deck, Apply User Defined Loads for Segment 2
+Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 2
+Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 2
+Compression stress check failed for Service I Limit State in Interval 29 Load Rating for Segment 2
+Compression stress check failed for Service I Limit State in Interval 29 Load Rating for Segment 2
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 2
+Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 3
+Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons for Deck
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Lifting checks failed for Segment 1.

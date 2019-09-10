@@ -5,12 +5,12 @@
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 9 Install Intermediate Diaphragms
-Compression stress check failed for Service I Limit State in Interval 11 Install Railing System
+Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
 Compression stress check failed for Service IA Limit State in Interval 13 Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 13 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -29,12 +29,12 @@ Live Load Deflection check failed
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 9 Install Intermediate Diaphragms
-Compression stress check failed for Service I Limit State in Interval 11 Install Railing System
+Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 13 Open to Traffic
 Compression stress check failed for Service IA Limit State in Interval 13 Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 13 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

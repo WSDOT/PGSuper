@@ -427,8 +427,6 @@ void CConcreteManager::ValidateConcrete() const
          {
             std::_tostringstream os;
             os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc,pDisplayUnits->GetStressUnit());
-
-#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
             std::_tstring strMsg = os.str();
 
             CSegmentKey dummyKey;
@@ -442,7 +440,6 @@ void CConcreteManager::ValidateConcrete() const
          Float64 strength_density = pDeckConcrete->GetStrengthDensity();
          if ( max_wc < strength_density && !IsEqual(max_wc,strength_density,0.0001) )
          {
-#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
             std::_tostringstream os;
             os << _T("Deck concrete density for strength calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
 
@@ -456,7 +453,6 @@ void CConcreteManager::ValidateConcrete() const
          Float64 weight_density = pDeckConcrete->GetWeightDensity();
          if ( max_wc < weight_density && !IsEqual(max_wc,weight_density,0.0001) )
          {
-#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
             std::_tostringstream os;
             os << _T("Deck concrete density for weight calculations exceeds the normal value of ") << MaxWc << _T(" ") << pDisplayUnits->GetDensityUnit().UnitOfMeasure.UnitTag();
 
@@ -479,7 +475,6 @@ void CConcreteManager::ValidateConcrete() const
                os << _T("Deck concrete density is out of range for Lightweight Concrete per LRFD 5.2.");
             }
 
-#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
             std::_tstring strMsg = os.str();
 
             CSegmentKey dummyKey;
@@ -493,7 +488,6 @@ void CConcreteManager::ValidateConcrete() const
          Float64 agg_size = pDeckConcrete->GetMaxAggregateSize();
          if ( max_agg_size < agg_size && !IsEqual(max_agg_size,agg_size))
          {
-#pragma Reminder("WORKING HERE - Mants 873 - need to add casting region to status message")
             std::_tostringstream os;
             os << _T("Deck concrete aggregate size exceeds the normal value of ") << MaxAggSize << _T(" ") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag();
 

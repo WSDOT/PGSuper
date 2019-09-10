@@ -33,6 +33,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\Allowables.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -99,8 +100,10 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    pgsTypes::IntervalTimeType intervalTime = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed ? pgsTypes::Start : pgsTypes::End);
    bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
 
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(segmentKey));
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(segmentKey));
    IntervalIndexType nIntervals = vIntervals.size();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();

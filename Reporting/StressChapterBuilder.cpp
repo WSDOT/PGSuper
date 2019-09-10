@@ -32,12 +32,12 @@
 #include <Reporting\LiveLoadDistributionFactorTable.h>
 
 #include <IFace\Bridge.h>
-
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace\Allowables.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 
@@ -225,29 +225,19 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
       // stresses in girder
       GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-      bool bAreThereUserLoads = pUDL->DoUserLoadsExist(thisGirderKey);
-      if (bAreThereUserLoads)
+      std::vector<IntervalIndexType> vUserLoadIntervals = pUDL->GetUserDefinedLoadIntervals(girderKey);
+      for (auto intervalIdx : vUserLoadIntervals)
       {
-         std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
-         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-         for ( ; iter != end; iter++ )
+         *p << CUserStressTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits, true/*girder stresses*/) << rptNewLine;
+         if (compositeDeckIntervalIdx <= intervalIdx)
          {
-            IntervalIndexType intervalIdx = *iter;
-            if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx))
-            {
-               *p << CUserStressTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits,true/*girder stresses*/) << rptNewLine;
-               if ( compositeDeckIntervalIdx <= intervalIdx )
-               {
-                  *p << CUserStressTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits,false/*deck stresses*/) << rptNewLine;
-               }
-            }
+            *p << CUserStressTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits, false/*deck stresses*/) << rptNewLine;
          }
       }
 
       // Load Combinations (DC, DW, etc) & Limit States
-
-      std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
+      GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+      std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(thisGirderKey));
       // if we are doing a time-step analysis, we need to report for all intervals from
       // the first prestress release to the end to report all time-dependent effects
       bool bTimeDependentNote = false;

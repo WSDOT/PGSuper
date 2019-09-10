@@ -424,9 +424,9 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    // can use TopGirder or BottomGirder to get allowable stress... 
    // we just need to designate that we want the allowable stress for the girder and
    // not the deck
-   Float64 fccy = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, releaseIntervalIdx, pgsTypes::ServiceI);
-   Float64 ftcy = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, false);
-   Float64 ft = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, true /*with bonded rebar*/);
+   Float64 fccy = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(releaseIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression));
+   Float64 ftcy = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(releaseIntervalIdx, pgsTypes::ServiceI,pgsTypes::Tension), false);
+   Float64 ft = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), true /*with bonded rebar*/);
    *pPara << _T("Concrete Stress Limits - Service I (") << LrfdCw8th(_T("5.9.4.1.1"), _T("5.9.2.3.1")) << _T(")") << rptNewLine;
    *pPara << _T("- Compressive Stress = ") << stress.SetValue(fccy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
@@ -711,12 +711,12 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
       INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
       pgsPointOfInterest poi(segmentKey,0.0);
-      Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI);
+      Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
       *pPara<<_T("Compression Stress Limits")<<rptNewLine;
       *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
-      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, false);
-      Float64 ft  = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, true);
+      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension), false);
+      Float64 ft  = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension), true);
       *pPara<<_T("Tension Stress Limits")<<rptNewLine;
       *pPara<<_T("- Service I (w/o mild rebar) = ")<<stress.SetValue(fts) << rptNewLine;
       *pPara<<_T("- Service I (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
@@ -739,7 +739,7 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Deck and Diaphragm Placement Stage (Bridge Site 1) Criteria")<<rptNewLine;
+   *pPara<<_T("Deck and Diaphragm Placement Stage Criteria")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -747,11 +747,11 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, noncompositeIntervalIdx, pgsTypes::ServiceI);
+   Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(noncompositeIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression));
    *pPara << _T("Compression Stress Limits") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fcsp) << rptNewLine;
 
-   Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, noncompositeIntervalIdx, pgsTypes::ServiceI, false);
+   Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(noncompositeIntervalIdx, pgsTypes::ServiceI,pgsTypes::Tension), false);
    *pPara << _T("Tension Stress Limits") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fts) << rptNewLine;
 }
@@ -761,7 +761,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    ASSERT_SEGMENT_KEY(segmentKey);
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Final without Live Load (Bridge Site 2) Criteria")<<rptNewLine;
+   *pPara<<_T("Final without Live Load Criteria")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -789,16 +789,16 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, compositeIntervalIdx,pgsTypes::ServiceI);
+   Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression, false/*exclude liveload*/));
    *pPara<<_T("Compression Stress Limits (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(")")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
    if ( pAllowableConcreteStress->CheckFinalDeadLoadTensionStress() )
    {
-      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, compositeIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
+      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(lastIntervalIdx, pgsTypes::ServiceI,pgsTypes::Tension,false/*exclude liveload*/),false);
       *pPara<<_T("Tension Stress Limits")<<rptNewLine;
       *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
    }
@@ -832,7 +832,7 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Final with Live Load Stage (Bridge Site 3) Criteria")<<rptNewLine;
+   *pPara<<_T("Final with Live Load Stage Criteria")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -845,23 +845,23 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    pgsPointOfInterest poi(segmentKey,0.0);
 
-   Float64 fcsl = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceI);
+   Float64 fcsl = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
    *pPara<<_T("Compression Stress Limits (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(")")<<rptNewLine;
    *pPara<<_T("- Service I (permanent + live load) = ")<<stress.SetValue(fcsl)<<rptNewLine;
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
-      Float64 fcsa = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIA);
+      Float64 fcsa = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression));
       *pPara<<_T("- Service IA (one-half of permanent + live load) = ")<<stress.SetValue(fcsa)<<rptNewLine;
    }
 
-   Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIII, false,false);
+   Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension), false,false);
    *pPara<<_T("Tension Stress Limits (") << LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b")) << _T(")")<<rptNewLine;
    *pPara<<_T("- Service III = ")<<stress.SetValue(fts)<<rptNewLine;
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      Float64 ftf = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, liveLoadIntervalIdx,pgsTypes::FatigueI);
+      Float64 ftf = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression));
       *pPara<<_T("Allowable Compressive Concrete Stresses (5.5.3.1)")<<rptNewLine;
       *pPara<<_T("- Fatigue I = ")<<stress.SetValue(ftf)<<rptNewLine;
    }

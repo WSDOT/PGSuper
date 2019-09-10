@@ -5950,33 +5950,33 @@ void SpecLibraryEntry::SetFinalWithoutLiveLoadCompressionStressFactor(Float64 st
    m_Bs2CompStress = stress;
 }
 
-void SpecLibraryEntry::CheckBs2Tension(bool bCheck)
+void SpecLibraryEntry::CheckFinalTensionPermanentLoadStresses(bool bCheck)
 {
    m_bCheckBs2Tension = bCheck;
 }
 
-bool SpecLibraryEntry::CheckBs2Tension() const
+bool SpecLibraryEntry::CheckFinalTensionPermanentLoadStresses() const
 {
    return m_bCheckBs2Tension;
 }
 
-Float64 SpecLibraryEntry::GetBs2MaxConcreteTens() const
+Float64 SpecLibraryEntry::GetFinalTensionPermanentLoadsStressFactor() const
 {
    return m_Bs2TensStress;
 }
 
-void SpecLibraryEntry::SetBs2MaxConcreteTens(Float64 stress)
+void SpecLibraryEntry::SetFinalTensionPermanentLoadsStressFactor(Float64 stress)
 {
    m_Bs2TensStress = stress;
 }
 
-void SpecLibraryEntry::GetBs2AbsMaxConcreteTens(bool* doCheck, Float64* stress) const
+void SpecLibraryEntry::GetFinalTensionPermanentLoadStressFactor(bool* doCheck, Float64* stress) const
 {
    *doCheck = m_Bs2DoTensStressMax;
    *stress = m_Bs2TensStressMax;
 }
 
-void SpecLibraryEntry::SetBs2AbsMaxConcreteTens(bool doCheck, Float64 stress)
+void SpecLibraryEntry::SetFinalTensionPermanentLoadStressFactor(bool doCheck, Float64 stress)
 {
    m_Bs2DoTensStressMax = doCheck;
    m_Bs2TensStressMax = stress;

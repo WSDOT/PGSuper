@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate vertical shear capacity check failed for Strength II Limit State
 
 
@@ -14,6 +14,6 @@ Ultimate vertical shear capacity check failed for Strength II Limit State
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 
 

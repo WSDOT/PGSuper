@@ -250,7 +250,7 @@ typedef struct pgsTypes
       twtAsymmetric // input defines the left and right overhangs explicitly
    } TopWidthType;
 
-   typedef enum StressType { Tension, Compression } StressType;
+   typedef enum StressType { Compression, Tension } StressType;
    
    typedef enum LimitState { 
                      ServiceI   = 0,   // Full dead load and live load
@@ -1378,6 +1378,73 @@ struct arDesignOptions
 };
 
 
+struct StressCheckTask
+{
+   IntervalIndexType intervalIdx;
+   pgsTypes::LimitState limitState;
+   pgsTypes::StressType stressType;
+   bool bIncludeLiveLoad; // if intervalIdx is a live load interval, live load is include in the prestressing if this parameter is true
+                          // bIncludeLiveLoad should always be set to true unless you explicitly want to exclude live load in the stress check
+                          // bIncludeLiveLoad is used when comparing tasks, show you must match this parameters in queries.
+
+   StressCheckTask()
+   {
+      intervalIdx = INVALID_INDEX;
+      limitState = pgsTypes::ServiceI;
+      stressType = pgsTypes::Compression;
+      bIncludeLiveLoad = true;
+   }
+
+   StressCheckTask(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, pgsTypes::StressType stressType, bool bIncludeLiveLoad = true) :
+      intervalIdx(intervalIdx), limitState(limitState), stressType(stressType), bIncludeLiveLoad(bIncludeLiveLoad)
+   {
+   }
+
+   bool operator==(const StressCheckTask& other) const
+   {
+      return intervalIdx == other.intervalIdx && limitState == other.limitState && stressType == other.stressType && bIncludeLiveLoad == other.bIncludeLiveLoad;
+   }
+
+   bool operator<(const StressCheckTask& other) const
+   {
+      if (intervalIdx < other.intervalIdx)
+         return true;
+
+      if (other.intervalIdx < intervalIdx)
+         return false;
+
+      ATLASSERT(intervalIdx == other.intervalIdx);
+
+      if (limitState < other.limitState)
+         return true;
+
+      if (other.limitState < limitState)
+         return false;
+
+      ATLASSERT(limitState == other.limitState);
+
+      if (stressType < other.stressType)
+         return true;
+
+      if (other.stressType < stressType)
+         return false;
+
+      ATLASSERT(stressType == other.stressType);
+
+      if ((int)bIncludeLiveLoad < (int)other.bIncludeLiveLoad)
+         return true;
+
+      if ((int)other.bIncludeLiveLoad < (int)bIncludeLiveLoad)
+         return false;
+
+      ATLASSERT(bIncludeLiveLoad == other.bIncludeLiveLoad);
+
+      return false;
+
+   }
+};
+
+
 // measurement methods of harped strand offsets
 typedef enum HarpedStrandOffsetType
 {
@@ -1674,7 +1741,7 @@ inline bool IsStrengthLimitState(pgsTypes::LimitState ls)
 
 inline bool IsFatigueLimitState(pgsTypes::LimitState ls)
 {
-   return (ls == pgsTypes::FatigueI);
+   return (ls == pgsTypes::FatigueI || ls == pgsTypes::ServiceIA);
 }
 
 inline bool IsServiceLimitState(pgsTypes::LimitState ls)

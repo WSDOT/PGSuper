@@ -753,8 +753,14 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       const pgsFlexuralStressArtifact* pArtifact;
       Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
+      StressCheckTask task;
+      task.intervalIdx = lastIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Compression;
+      task.bIncludeLiveLoad = true;
+
       const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,pmidere.GetID() );
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( task,pmidere.GetID() );
       fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
       fcBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
@@ -763,7 +769,12 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       (*p_table)(row++,col) << stress.SetValue(-fcTop);
 
-      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmidere.GetID() );
+      task.intervalIdx = lastIntervalIdx;
+      task.limitState = pgsTypes::ServiceIII;
+      task.stressType = pgsTypes::Tension;
+      task.bIncludeLiveLoad = true;
+
+      pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi( task,pmidere.GetID() );
       ftTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
       ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 

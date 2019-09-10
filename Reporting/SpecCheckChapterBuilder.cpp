@@ -123,8 +123,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
 
-   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
-   IntervalIndexType lastIntervalIdx          = vIntervals.back();
+   IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount() - 1;
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(CSegmentKey(girderKey,0));
    IntervalIndexType liftingIntervalIdx       = pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,0));
    IntervalIndexType haulingIntervalIdx       = pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,0));
@@ -132,8 +131,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
-
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Stress Limitations on Prestressing Tendons [") << LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) << _T("]");
@@ -212,33 +209,20 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CContinuityCheck().Build(pChapter,pBroker,girderKey,pDisplayUnits);
 
    // report flexural stresses at various intervals
-   std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-   std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-   for ( ; iter != end; iter++ )
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   std::vector<StressCheckTask> vTasks(pStressCheck->GetStressCheckTasks(girderKey));
+   for (const auto& task : vTasks)
    {
-      IntervalIndexType intervalIdx = *iter;
+      IntervalIndexType intervalIdx = task.intervalIdx;
 
       // skip lifting and hauling... the reporting is different. See below
-      if ( intervalIdx == liftingIntervalIdx || intervalIdx == haulingIntervalIdx )
+      if (intervalIdx == liftingIntervalIdx || intervalIdx == haulingIntervalIdx)
       {
          continue;
       }
 
-      std::vector<pgsTypes::LimitState> vLimitStates(pAllowableConcreteStress->GetStressCheckLimitStates(intervalIdx));
-
-      std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
-      std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());
-      for ( ; lsIter != lsIterEnd; lsIter++ )
-      {
-         pgsTypes::LimitState limitState = *lsIter;
-         if ( pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression) ||
-              pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension)
-            )
-         {
-            CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState,true/*girder stresses*/);
-         }
-      } // next limit state
-   } // next interval
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,task,true/*girder stresses*/);
+   } // next task
 
 
    if ( lastTendonStressingIntervalIdx != INVALID_INDEX &&         // if there are tendons AND
@@ -266,32 +250,18 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       }
 
       // report flexural stresses at various intervals
-      std::vector<IntervalIndexType>::iterator iter = vIntervals.begin();
-      for ( ; iter != end; iter++ )
+      for (const auto& task : vTasks)
       {
-         IntervalIndexType intervalIdx = *iter;
+         IntervalIndexType intervalIdx = task.intervalIdx;
 
          // skipping everything before the deck is composite
-         if ( intervalIdx < lastCompositeDeckIntervalIdx)
+         if (intervalIdx < lastCompositeDeckIntervalIdx)
          {
             continue;
          }
 
-         std::vector<pgsTypes::LimitState> vLimitStates(pAllowableConcreteStress->GetStressCheckLimitStates(intervalIdx));
-
-         std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
-         std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());
-         for ( ; lsIter != lsIterEnd; lsIter++ )
-         {
-            pgsTypes::LimitState limitState = *lsIter;
-            if ( pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression) ||
-                 pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension)
-               )
-            {
-               CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState,false/*deck stresses*/);
-            }
-         } // next limit state
-      } // next interval
+         CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,task,false/*deck stresses*/);
+      } // next task
    }
 
    // Flexural Capacity

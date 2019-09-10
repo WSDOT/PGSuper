@@ -4,12 +4,12 @@
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     2     Tx82          90  1/2  270  26.18   9.38   8.00   8.00                                              36  78.5 36.5  4.900  7.000   4.229    -4.339    15972   0.636  0.814   4.167 -2.587 -0.289 -0.197 -3.073 287.83  756.46    1.00    1.00    1.00 
+ 44.00    6   8.00                     1     2     Tx82          80  1/2  270  28.80  26.85   8.00   8.00                                              26  32.5 26.5 10.000 10.000   4.229    -4.339    15972   0.636  0.814   3.916 -2.587 -0.289 -0.197 -3.073 179.74  582.20    1.00    1.00    1.00 
 
 
 The Specification Check was Successful
@@ -17,7 +17,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     1     4     Tx82          90  1/2  270  26.18   9.38   8.00   8.00                                              36  78.5 36.5  4.900  7.000   4.229    -4.339    15972   0.636  0.814   4.167 -2.587 -0.289 -0.197 -3.073 287.83  756.46    1.00    1.00    1.00 
+ 44.00    6   8.00                     1     4     Tx82          80  1/2  270  28.80  26.85   8.00   8.00                                              26  32.5 26.5 10.000 10.000   4.229    -4.339    15972   0.636  0.814   3.916 -2.587 -0.289 -0.197 -3.073 179.74  582.20    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

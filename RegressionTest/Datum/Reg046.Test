@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 13 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 13 Open to Traffic
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.

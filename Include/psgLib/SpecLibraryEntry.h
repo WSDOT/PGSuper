@@ -400,31 +400,31 @@ public:
    bool CheckTemporaryStresses() const;
 
    //------------------------------------------------------------------------
-   void CheckBs2Tension(bool bCheck);
-   bool CheckBs2Tension() const;
+   void CheckFinalTensionPermanentLoadStresses(bool bCheck);
+   bool CheckFinalTensionPermanentLoadStresses() const;
 
    //------------------------------------------------------------------------
    // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
    // at the bridge site stage 2
-   Float64 GetBs2MaxConcreteTens() const;
+   Float64 GetFinalTensionPermanentLoadsStressFactor() const;
 
    //------------------------------------------------------------------------
    // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
    // concrete at the bridge site stage 2
-   void SetBs2MaxConcreteTens(Float64 stress);
+   void SetFinalTensionPermanentLoadsStressFactor(Float64 stress);
 
    //------------------------------------------------------------------------
    // Get the absolute maximum allowable tensile stress in concrete
    // at the bridge site stage 2
    // If the bool is false, this check is not made and the stress value is 
    // undefined.
-   void GetBs2AbsMaxConcreteTens(bool* doCheck, Float64* stress) const;
+   void GetFinalTensionPermanentLoadStressFactor(bool* doCheck, Float64* stress) const;
 
    //------------------------------------------------------------------------
    // Set the absolute maximum allowable tensile stress in 
    // concrete at the bridge site stage 2
    // If the bool is false, this check is not made and the stress value is undefined.
-   void SetBs2AbsMaxConcreteTens(bool doCheck, Float64 stress);
+   void SetFinalTensionPermanentLoadStressFactor(bool doCheck, Float64 stress);
 
    // Set/Get the maximum allowable concrete compressive stress at the serivce limit state,
    // without live load, as a factor times f'c
@@ -1324,8 +1324,8 @@ private:
    bool    m_DoTensStressHaulingMaxMaxSuper;
    Float64 m_TensStressHaulingMaxMaxSuper;
 
-   Float64  m_HaulingModulusOfRuptureCoefficient[3];
-   Float64  m_LiftingModulusOfRuptureCoefficient[3];
+   std::array<Float64, 3> m_HaulingModulusOfRuptureCoefficient;
+   std::array<Float64, 3> m_LiftingModulusOfRuptureCoefficient;
 
    Float64 m_MinLiftPoint;
    Float64 m_LiftPointAccuracy;

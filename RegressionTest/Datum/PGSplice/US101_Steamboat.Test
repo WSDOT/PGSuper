@@ -5,8 +5,8 @@
 
 The Specification Check was Not Successful
 Tendon 4 is overstressed
-Tension stress check failed for Service I Limit State in Interval 19, Apply User Defined Loads for Segment 1
-Tension stress check failed for Service I Limit State in Interval 19, Apply User Defined Loads for Segment 3
+Tension stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads for Deck
+Tension stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads for Deck
 Hauling checks failed for Segment 2.
 Slab Offset ("A" Dimension) check failed
 
@@ -18,8 +18,8 @@ Slab Offset ("A" Dimension) check failed
 
 The Specification Check was Not Successful
 Tendon 4 is overstressed
-Tension stress check failed for Service I Limit State in Interval 19, Apply User Defined Loads for Segment 1
-Tension stress check failed for Service I Limit State in Interval 19, Apply User Defined Loads for Segment 3
+Tension stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads for Deck
+Tension stress check failed for Service I Limit State in Interval 19 Apply User Defined Loads for Deck
 Hauling checks failed for Segment 2.
 
 

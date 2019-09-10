@@ -3488,10 +3488,10 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
 
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
    pgsPointOfInterest dummyPOI(segmentKey,0.0);
-   Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI);
+   Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
    Float64 t, fmax;
    bool bfMax;
-   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI,false/*without rebar*/,false,&t,&bfMax,&fmax);
+   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false,&t,&bfMax,&fmax);
 
    Float64 fc_reqd_compression = min_stress_WithoutTTS/c;
    Float64 fc_reqd_tension = 0;
@@ -3508,7 +3508,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
             bool bCheckMaxAlt;
             Float64 fMaxAlt;
             Float64 talt;
-            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
+            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
             fc_reqd_tension = pow(max_stress_WithoutTTS/talt,2);
          }
       }

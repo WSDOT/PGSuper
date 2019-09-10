@@ -243,7 +243,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    GET_IFACE(IIntervals,pIntervals);
 
    // spec check intervals
-   std::vector<IntervalIndexType> vSpecCheckIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
+   GET_IFACE(IStressCheck, pStressCheck);
+   std::vector<IntervalIndexType> vSpecCheckIntervals(pStressCheck->GetStressCheckIntervals(girderKey));
 
    // initial intervals
    IntervalIndexType nIntervals               = pIntervals->GetIntervalCount();
@@ -2054,16 +2055,16 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
             if ( ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::TopGirder) ||
                  ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::BottomGirder) )
             {
-               if ( pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension) )
+               if ( pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)) )
                {
-                  std::vector<Float64> t(pAllowable->GetGirderAllowableTensionStress(vPoi,intervalIdx,limitState,false/*without rebar*/,false/*not in PTZ*/));
+                  std::vector<Float64> t(pAllowable->GetGirderAllowableTensionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),false/*without rebar*/,false/*not in PTZ*/));
                   AddGraphPoints(min_girder_capacity_series, xVals, t);
                   m_Graph.SetDataLabel(min_girder_capacity_series,strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Girder")));
                }
 
-               if ( pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression) )
+               if ( pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) )
                {
-                  std::vector<Float64> c( pAllowable->GetGirderAllowableCompressionStress(vPoi,intervalIdx,limitState) );
+                  std::vector<Float64> c( pAllowable->GetGirderAllowableCompressionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) );
                   AddGraphPoints(max_girder_capacity_series, xVals, c);
                }
             }
@@ -2071,16 +2072,16 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
             if ( ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::TopDeck) ||
                  ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::BottomDeck) )
             {
-               if ( pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension) )
+               if ( pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension)) )
                {
-                  std::vector<Float64> t(pAllowable->GetDeckAllowableTensionStress(vPoi,intervalIdx,limitState,false/*without rebar*/));
+                  std::vector<Float64> t(pAllowable->GetDeckAllowableTensionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),false/*without rebar*/));
                   AddGraphPoints(min_deck_capacity_series, xVals, t);
                   m_Graph.SetDataLabel(min_deck_capacity_series,strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Deck")));
                }
 
-               if ( pAllowable->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression) )
+               if ( pAllowable->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) )
                {
-                  std::vector<Float64> c( pAllowable->GetDeckAllowableCompressionStress(vPoi,intervalIdx,limitState) );
+                  std::vector<Float64> c( pAllowable->GetDeckAllowableCompressionStress(vPoi,StressCheckTask(intervalIdx,limitState,pgsTypes::Compression)) );
                   AddGraphPoints(max_deck_capacity_series, xVals, c);
                }
             }
@@ -3431,9 +3432,9 @@ void CAnalysisResultsGraphBuilder::CyStressCapacityGraph(IndexType graphIdx,cons
       Float64 x = *xIter;
 
       const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(poi.GetSegmentKey());
+      const pgsFlexuralStressArtifact* pMaxArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(StressCheckTask(intervalIdx,limitState,pgsTypes::Tension),poi.GetID());
+      const pgsFlexuralStressArtifact* pMinArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(StressCheckTask(intervalIdx, limitState, pgsTypes::Compression),poi.GetID());
 
-      const pgsFlexuralStressArtifact* pMaxArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,limitState,pgsTypes::Tension,    poi.GetID());
-      const pgsFlexuralStressArtifact* pMinArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,limitState,pgsTypes::Compression,poi.GetID());
       Float64 maxcap, mincap;
       if (pMaxArtifact != nullptr)
       {

@@ -52,6 +52,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\Allowables.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\RatingLibraryEntry.h>
@@ -210,7 +211,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(girderKey));
 
    p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *p << _T("Responses from Externally Applied Loads at the Bridge Site")<<rptNewLine;

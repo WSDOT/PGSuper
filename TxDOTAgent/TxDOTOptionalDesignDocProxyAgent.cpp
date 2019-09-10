@@ -410,9 +410,15 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       ATLASSERT( vPOI.size() == 1 );
       const pgsPointOfInterest& orig_ms_poi = vPOI.front();
 
+      StressCheckTask task;
+
       // Find max compressive stress and compute stress factor from original model
+      task.intervalIdx = liveLoadIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Compression;
+      task.bIncludeLiveLoad = true;
       const pgsFlexuralStressArtifact* pOriginalStressArtifact;
-      pOriginalStressArtifact = pOriginalSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,orig_ms_poi.GetID());
+      pOriginalStressArtifact = pOriginalSegmentArtifact->GetFlexuralStressArtifactAtPoi( task,orig_ms_poi.GetID());
 
       Float64 fTop = pOriginalStressArtifact->GetExternalEffects(pgsTypes::TopGirder);
 
@@ -423,7 +429,11 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       m_CtrlCompressiveStressFactor = ft_des/m_CtrlCompressiveStress;
 
       // Tensile stress factor
-      pOriginalStressArtifact = pOriginalSegmentArtifact->GetFlexuralStressArtifactAtPoi( liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,orig_ms_poi.GetID());
+      task.intervalIdx = liveLoadIntervalIdx;
+      task.limitState = pgsTypes::ServiceIII;
+      task.stressType = pgsTypes::Tension;
+      task.bIncludeLiveLoad = true;
+      pOriginalStressArtifact = pOriginalSegmentArtifact->GetFlexuralStressArtifactAtPoi( task,orig_ms_poi.GetID());
       Float64 fBot = pOriginalStressArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 
       m_CtrlTensileStress = fBot;
@@ -487,10 +497,14 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
          else
             k = 1.0;
 
-         CollectionIndexType nArtifacts = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifactCount( intervals[icase],lstates[icase],ststype[icase]);
+         task.intervalIdx = intervals[icase];
+         task.limitState = lstates[icase];
+         task.stressType = ststype[icase];
+         task.bIncludeLiveLoad = true;
+         CollectionIndexType nArtifacts = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifactCount( task);
          for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++) 
          {
-            pFabrStressArtifact = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifact( intervals[icase],lstates[icase],ststype[icase],idx );
+            pFabrStressArtifact = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifact( task,idx );
             const pgsPointOfInterest& poi(pFabrStressArtifact->GetPointOfInterest());
 
             // factor external stresses
@@ -516,7 +530,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             // Compute and store required concrete strength
             if ( ststype[icase] == pgsTypes::Compression )
             {
-               Float64 c = pAllowable->GetSegmentAllowableCompressionStressCoefficient(poi,intervals[icase],lstates[icase]);
+               Float64 c = pAllowable->GetSegmentAllowableCompressionStressCoefficient(poi,StressCheckTask(intervals[icase],lstates[icase],pgsTypes::Compression));
                Float64 fc_reqd = (IsZero(c) ? 0 : Min(fTop,fBot)/-c);
                
                if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
@@ -537,7 +551,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
                bool bCheckMax;
                Float64 fmax;
 
-               pAllowable->GetAllowableTensionStressCoefficient(poi,pgsTypes::TopGirder,intervals[icase],lstates[icase],false/*without rebar*/,false,&t,&bCheckMax,&fmax);
+               pAllowable->GetAllowableTensionStressCoefficient(poi,pgsTypes::TopGirder,StressCheckTask(intervals[icase],lstates[icase],pgsTypes::Tension),false/*without rebar*/,false,&t,&bCheckMax,&fmax);
 
                // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
                // otherwise, take the controlling tension

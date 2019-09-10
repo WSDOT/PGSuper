@@ -466,7 +466,12 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
    const pgsFlexuralStressArtifact* pArtifact;
    Float64 fcTop = 0.0, fcBot = 0.0, ftTop = 0.0, ftBot = 0.0;
 
-   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression,pmid.GetID() );
+   StressCheckTask task;
+   task.intervalIdx = lastIntervalIdx;
+   task.limitState = pgsTypes::ServiceI;
+   task.stressType = pgsTypes::Compression;
+   task.bIncludeLiveLoad = true;
+   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( task,pmid.GetID() );
    if (pArtifact)
    {
       fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
@@ -476,7 +481,11 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
 	Float64 designLoadCompStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
 
 	/* 15. DESIGN LOAD TENSILE STRESS (BOT CL) */
-   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( lastIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,pmid.GetID() );
+   task.intervalIdx = lastIntervalIdx;
+   task.limitState = pgsTypes::ServiceIII;
+   task.stressType = pgsTypes::Tension;
+   task.bIncludeLiveLoad = true;
+   pArtifact = pGdrArtifact->GetFlexuralStressArtifactAtPoi( task,pmid.GetID() );
    if (pArtifact)
    {
       ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);

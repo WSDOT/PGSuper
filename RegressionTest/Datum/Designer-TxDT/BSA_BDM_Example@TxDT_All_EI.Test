@@ -1,9 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    6   6.50                     1     1    WF74G    *     42  0.6  270  32.42  14.99  11.75  11.75                                              12  70.0  4.0  5.000  6.400   4.165    -3.974    11328   0.629  0.755   4.744 -1.662 -0.151 -0.160 -1.973 184.79  342.33    3.00    6.17    6.17 
+ 38.00    6   6.50                     1     1    WF74G    *     42  0.6  270  32.42  14.99  12.00  12.00                                              12  70.0  4.0  5.000  6.700   4.206    -3.999    11352   0.629  0.755   4.738 -1.651 -0.149 -0.158 -1.957 184.79  343.57    3.00    6.17    6.17 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Confinement zone check failed.
 
 
@@ -14,7 +16,7 @@ Confinement zone check failed.
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Confinement zone check failed.
 
 
@@ -25,7 +27,7 @@ Confinement zone check failed.
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Confinement zone check failed.
 
 

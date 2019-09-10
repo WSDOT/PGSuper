@@ -92,12 +92,6 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(0); // assume deck casting region 0
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptParagraph* pPara = new rptParagraph;
@@ -112,28 +106,13 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,releaseIntervalIdx,      pgsTypes::ServiceI, true /*girder stress*/);
-
-   if (castDeckIntervalIdx != INVALID_INDEX)
+   // report for the actual stress checks that were done
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   std::vector<StressCheckTask> vStressCheckTasks = pStressCheck->GetStressCheckTasks(girderKey);
+   for (const auto& task : vStressCheckTasks)
    {
-      CFlexuralStressCheckTable().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits, castDeckIntervalIdx, pgsTypes::ServiceI, true /*girder stress*/);
+      CFlexuralStressCheckTable().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits, task, true /*girder stress*/);
    }
-
-   if (compositeDeckIntervalIdx != INVALID_INDEX)
-   {
-      CFlexuralStressCheckTable().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits, compositeDeckIntervalIdx, pgsTypes::ServiceI, true /*girder stress*/);
-   }
-
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,     pgsTypes::ServiceI, true /*girder stress*/);
-
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIA, true /*girder stress*/);
-
-   CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::ServiceIII, true /*girder stress*/);
-
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,liveLoadIntervalIdx,pgsTypes::FatigueI, true /*girder stress*/);
-
 
     return pChapter;
 }

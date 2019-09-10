@@ -58,7 +58,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     3     2     1)            76  1/2  270  23.89  23.23   8.50   8.50   12    2.5   14     4    0   0   0   0   0                 5.700  6.800   4.228    -4.298    12118   0.619  0.814   4.973 -2.919  0.000 -0.193 -3.112 238.56  650.11    1.00    1.00    1.00 
+ 44.00    6   8.00                     3     2     1)            76  1/2  270  23.89  23.23   8.50   8.50   12    2.5   14     4    0   0   0   0   0                 5.700  6.900   4.228    -4.298    12118   0.619  0.814   4.973 -2.919  0.000 -0.193 -3.112 238.56  650.11    1.00    1.00    1.00 
                                                                                                                   4.5   14     4    0   0   0   2   2 
                                                                                                                   6.5   14     4    2   0   2   0   0 
 
@@ -68,7 +68,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     3     4     1)            76  1/2  270  23.89  23.23   8.50   8.50   12    2.5   14     4    0   0   0   0   0                 5.700  6.800   4.228    -4.298    12118   0.619  0.814   4.973 -2.919  0.000 -0.193 -3.112 238.56  650.11    1.00    1.00    1.00 
+ 44.00    6   8.00                     3     4     1)            76  1/2  270  23.89  23.23   8.50   8.50   12    2.5   14     4    0   0   0   0   0                 5.700  6.900   4.228    -4.298    12118   0.619  0.814   4.973 -2.919  0.000 -0.193 -3.112 238.56  650.11    1.00    1.00    1.00 
                                                                                                                   4.5   14     4    0   0   0   2   2 
                                                                                                                   6.5   14     4    2   0   2   0   0 
 
@@ -88,7 +88,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     4     2     1)            80  1/2  270  23.01  22.24   8.50   8.50   12    2.5   14     4    0   0   0   0   0                 6.000  7.200   4.338    -4.403    12387   0.616  0.814   4.952 -3.080  0.000 -0.203 -3.283 251.88  697.33    1.00    1.00    1.00 
+ 44.00    6   8.00                     4     2     1)            78  1/2  270  23.47  22.75   8.50   8.50   12    2.5   14     4    0   0   0   0   0                 5.900  7.300   4.338    -4.403    12387   0.616  0.814   4.951 -3.080  0.000 -0.203 -3.283 243.40  669.15    1.00    1.00    1.00 
                                                                                                                   4.5   14     4    0   0   2   0   2 
                                                                                                                   6.5   14     4    2   2   0   0   0 
 
@@ -98,7 +98,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     4     4     1)            80  1/2  270  23.01  22.24   8.50   8.50   12    2.5   14     4    0   0   0   0   0                 6.000  7.200   4.338    -4.403    12387   0.616  0.814   4.952 -3.080  0.000 -0.203 -3.283 251.88  697.33    1.00    1.00    1.00 
+ 44.00    6   8.00                     4     4     1)            78  1/2  270  23.47  22.75   8.50   8.50   12    2.5   14     4    0   0   0   0   0                 5.900  7.300   4.338    -4.403    12387   0.616  0.814   4.951 -3.080  0.000 -0.203 -3.283 243.40  669.15    1.00    1.00    1.00 
                                                                                                                   4.5   14     4    0   0   2   0   2 
                                                                                                                   6.5   14     4    2   2   0   0   0 
 
@@ -108,23 +108,14 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     5     1     1)            84  1/2  270  22.03   9.18   8.50   8.50                                              30  66.5 30.5  5.400  7.600   4.454    -4.494    12673   0.611  0.814   3.260 -3.072  0.000 -0.242 -3.314 276.95  751.24    1.00    1.00    1.00 
-
-
-The Specification Check was Successful
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     5     2     1)             4  1/2  270  29.41  -2.59   8.50   8.50                                               2  66.5  2.5  5.000  8.500   4.618    -4.670    13072   0.611  0.814  -7.254 -3.511  0.000 -0.232 -3.743  -4.86    4.14    1.00    1.00    1.00 
+ 44.00    6   8.00                     5     1     1)             4  1/2  270  29.41  -2.59   8.50   8.50                                               2  66.5  2.5  6.000  8.500   4.454    -4.494    12673   0.611  0.814  -6.427 -3.072  0.000 -0.242 -3.314  -4.34    4.60    1.00    1.00    1.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 10 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -132,15 +123,15 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     5     4     1)             4  1/2  270  29.41  -2.59   8.50   8.50                                               2  66.5  2.5  5.000  8.500   4.618    -4.670    13072   0.611  0.814  -7.254 -3.511  0.000 -0.232 -3.743  -4.86    4.14    1.00    1.00    1.00 
+ 44.00    6   8.00                     5     2     1)             4  1/2  270  29.41  -2.59   8.50   8.50                                               2  66.5  2.5  6.000  8.500   4.618    -4.670    13072   0.611  0.814  -6.427 -3.511  0.000 -0.232 -3.743  -4.34    4.60    1.00    1.00    1.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -148,15 +139,31 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     6     1     1)             4  1/2  270  29.41  -2.59   8.50   8.50                                               2  66.5  2.5  5.000  8.500   4.619    -4.651    13076   0.608  0.814  -7.859 -3.317  0.000 -0.261 -3.578  -5.15    3.89    1.00    1.00    1.00 
+ 44.00    6   8.00                     5     4     1)             4  1/2  270  29.41  -2.59   8.50   8.50                                               2  66.5  2.5  6.000  8.500   4.618    -4.670    13072   0.611  0.814  -6.427 -3.511  0.000 -0.232 -3.743  -4.34    4.60    1.00    1.00    1.00 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   8.00                     6     1     1)             4  1/2  270  29.41  -2.59   8.50   8.50                                               2  66.5  2.5  6.000  8.500   4.619    -4.651    13076   0.608  0.814  -6.964 -3.317  0.000 -0.261 -3.578  -4.60    4.37    1.00    1.00    1.00 
+
+
+Girder design was Not Successful
+The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
+Tension stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -170,9 +177,9 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 Girder design was Not Successful
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -186,9 +193,9 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 Girder design was Not Successful
 The Specification Check was Not Successful
 Stresses in the prestressing strands are too high.
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

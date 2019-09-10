@@ -38,13 +38,12 @@ The Specification Check was Successful
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Apply User Defined Loads, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 14 Install Overlay
+Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr  Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 121.3   13  10.00       2-83          2     7     Tx62          44  0.6  270  21.32  20.72   8.50   8.50   0.00    6    2.5   14     4    0   0   2   0   2   2  58.5 58.5  5.500  5.800   3.647    -3.985     9899   0.758  0.952   3.820 -1.744 -0.163  0.000 -1.907 170.01  440.68    1.00    1.00    1.00 
+ 121.3   13  10.00       2-83          2     7     Tx62          44  0.6  270  21.32  20.72   8.50   8.50   0.00    6    2.5   14     4    0   0   2   0   2   2  58.5 58.5  5.500  5.900   3.647    -3.985     9899   0.758  0.952   3.820 -1.744 -0.163  0.000 -1.907 170.01  440.68    1.00    1.00    1.00 
                                                                                                                          4.5   14     2    2   0   0   0   0 
 
 
@@ -62,7 +61,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 121.3   15   8.00       2-83          3     2     Tx62          50  0.6  270  23.14  16.10   8.50   8.50   0.00                                               8  52.5  8.5  6.200  7.200   4.236    -4.599    10994   0.629  0.814   4.567 -2.082 -0.191 -0.306 -2.579 230.26  545.22    1.00    1.00    1.00 
+ 121.3   15   8.00       2-83          3     2     Tx62          50  0.6  270  23.14  15.14   8.50   8.50   0.00                                               8  58.5  8.5  6.000  7.100   4.236    -4.599    10994   0.629  0.814   4.528 -2.082 -0.191 -0.306 -2.579 232.76  555.03    1.00    1.00    1.00 
 
 
 The Specification Check was Successful

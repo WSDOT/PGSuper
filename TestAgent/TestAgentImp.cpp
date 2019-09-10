@@ -1746,8 +1746,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    IntervalIndexType trafficBarrierIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-
-   IntervalIndexType finalDLIntervalIdx = (overlayIntervalIdx == INVALID_INDEX ? trafficBarrierIntervalIdx : overlayIntervalIdx);
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
    pgsTypes::BridgeAnalysisType bat = pProdForce->GetBridgeAnalysisType(pgsTypes::Maximize);
 
@@ -2093,59 +2092,74 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       if (pAHsrtifact)
          resultsFile<<bridgeId<<", "<<pid<<", 100204, "<<loc<<", "<<(int)(pAHsrtifact->Passed()?1:0)<<", 15, "<<gdrIdx<<std::endl;
 
+#pragma Reminder("Update reg tests to use actual tasks done, rather than a guess at the tasks")
+      // MUST DO THIS AFTER ALL OTHER CHANGES ARE DONE AND THE REG TESTS ARE CLEAN. CAN'T CHANGE REG TEST OUTPUT FORMAT
+      // UNLESS TEST RESULTS ARE CLEAN FIRST, OTHERWISE YOU'LL NEVER KNOW IF CHANGES ARE BUGS OR A RESULT OF THE FORMAT CHANGE
+      StressCheckTask task;
+      task.intervalIdx = noncompositeIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Tension;
       const pgsFlexuralStressArtifact* pStressArtifact;
-      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension,poi.GetID());
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(task,poi.GetID());
       if ( pStressArtifact )
       {
          ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122019, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
       }
 
-      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension,poi.GetID());
+      task.intervalIdx = lastIntervalIdx;
+      task.limitState = pgsTypes::ServiceIII;
+      task.stressType = pgsTypes::Tension;
+      task.bIncludeLiveLoad = true;
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(task,poi.GetID());
       if ( pStressArtifact )
       {
          ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122023, ")<<loc<<_T(", ")<<(int)(pStressArtifact->Passed(pgsTypes::TopGirder)?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
       }
 
-      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(noncompositeIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+      task.intervalIdx = noncompositeIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Compression;
+      task.bIncludeLiveLoad = true;
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(task,poi.GetID());
       if ( pStressArtifact )
       {
          ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122024, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
       }
 
-      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(finalDLIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+      task.intervalIdx = lastIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Compression;
+      task.bIncludeLiveLoad = false;
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(task,poi.GetID());
       if ( pStressArtifact )
       {
          ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122025, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
       }
 
-      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression,poi.GetID());
+      task.intervalIdx = lastIntervalIdx;
+      task.limitState = pgsTypes::ServiceI;
+      task.stressType = pgsTypes::Compression;
+      task.bIncludeLiveLoad = true;
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(task,poi.GetID());
       if ( pStressArtifact )
       {
          ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
          resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122026, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
       }
 
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      task.intervalIdx = lastIntervalIdx;
+      task.limitState = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+      task.stressType = pgsTypes::Compression;
+      task.bIncludeLiveLoad = true;
+      pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(task, poi.GetID());
+      if (pStressArtifact)
       {
-         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression,poi.GetID());
-         if ( pStressArtifact )
-         {
-            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-         }
-      }
-      else
-      {
-         pStressArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression,poi.GetID());
-         if ( pStressArtifact )
-         {
-            ATLASSERT(IsEqual(loc,::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
-            resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 122027, ")<<loc<<_T(", ")<<(int)(pStressArtifact->BeamPassed()?1:0)<<_T(", 15, ")<<gdrIdx<<std::endl;
-         }
+         ATLASSERT(IsEqual(loc, ::ConvertFromSysUnits(poi.GetDistFromStart(), unitMeasure::Millimeter)));
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 122027, ") << loc << _T(", ") << (int)(pStressArtifact->BeamPassed() ? 1 : 0) << _T(", 15, ") << gdrIdx << std::endl;
       }
       idx++;
    } // next POI

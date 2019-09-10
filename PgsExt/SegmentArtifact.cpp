@@ -123,26 +123,25 @@ pgsPlantHandlingWeightArtifact* pgsSegmentArtifact::GetPlantHandlingWeightArtifa
    return &m_PlantHandlingWeightArtifact;
 }
 
-void pgsSegmentArtifact::AddFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,
-                                                   const pgsFlexuralStressArtifact& artifact)
+void pgsSegmentArtifact::AddFlexuralStressArtifact(const pgsFlexuralStressArtifact& artifact)
 {
    // Need to be using a valid ID in the artifact
    ATLASSERT(artifact.GetPointOfInterest().GetID() != INVALID_ID);
 
-   auto& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   auto& artifacts( GetFlexuralStressArtifacts(artifact.GetTask()) );
    artifacts.push_back(artifact);
-   std::sort(artifacts.begin(),artifacts.end());
+   std::sort(std::begin(artifacts),std::end(artifacts));
 }
 
-CollectionIndexType pgsSegmentArtifact::GetFlexuralStressArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const
+CollectionIndexType pgsSegmentArtifact::GetFlexuralStressArtifactCount(const StressCheckTask& task) const
 {
-   const auto& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   const auto& artifacts( GetFlexuralStressArtifacts(task) );
    return artifacts.size();
 }
 
-const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx) const
+const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx) const
 {
-   const auto& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   const auto& artifacts( GetFlexuralStressArtifacts(task) );
    if ( idx < artifacts.size() )
    {
       return &artifacts[idx];
@@ -153,9 +152,9 @@ const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(I
    }
 }
 
-pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx)
+pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx)
 {
-   auto& artifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   auto& artifacts( GetFlexuralStressArtifacts(task) );
    if ( idx < artifacts.size() )
    {
       return &artifacts[idx];
@@ -166,9 +165,9 @@ pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(Interva
    }
 }
 
-const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifactAtPoi(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,PoiIDType poiID) const
+const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifactAtPoi(const StressCheckTask& task,PoiIDType poiID) const
 {
-   const auto& vArtifacts( GetFlexuralStressArtifacts(intervalIdx,ls,stress) );
+   const auto& vArtifacts( GetFlexuralStressArtifacts(task) );
    for ( const auto& artifact : vArtifacts)
    {
       if ( artifact.GetPointOfInterest().GetID() == poiID )
@@ -235,28 +234,21 @@ const pgsHaulingAnalysisArtifact* pgsSegmentArtifact::GetHaulingAnalysisArtifact
    return m_pHaulingAnalysisArtifact;
 }
 
-bool pgsSegmentArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const
-{
-   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,stressType));
-   for ( const auto& artifact : vArtifacts)
-   {
-      if ( artifact.IsApplicable(stressLocation) )
-      {
-         return true;
-      }
-   }
-
-   return false;
-}
-
-bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute) const
+bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(const StressCheckTask& task,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute) const
 {
    ATLASSERT(attribute == 0 || attribute == POI_CLOSURE);
+   
+   if (task.stressType == pgsTypes::Compression)
+   {
+      ATLASSERT(false); // why are you asking for this for compression? it doesn't apply
+      return false;
+   }
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
 
-   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for ( const auto& artifact : vArtifacts)
    {
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
@@ -276,13 +268,19 @@ bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType inter
    return false;
 }
 
-bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(const StressCheckTask& task) const
 {
+   if (task.stressType == pgsTypes::Compression)
+   {
+      ATLASSERT(false); // why are you asking for this for compression? it doesn't apply
+      return false;
+   }
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for ( const auto& artifact : vArtifacts)
    {
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
@@ -301,13 +299,19 @@ bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(IntervalIndexTyp
    return false;
 }
 
-bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const
+bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(const StressCheckTask& task,bool bIsInPTZ) const
 {
+   if (task.stressType == pgsTypes::Compression)
+   {
+      ATLASSERT(false); // why are you asking for this for compression? it doesn't apply
+      return false;
+   }
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for ( const auto& artifact : vArtifacts)
    {
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
@@ -330,9 +334,15 @@ bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(IntervalInd
    return false;
 }
 
-bool pgsSegmentArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+bool pgsSegmentArtifact::WasDeckWithRebarAllowableStressUsed(const StressCheckTask& task) const
 {
-   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   if (task.stressType == pgsTypes::Compression)
+   {
+      ATLASSERT(false); // why are you asking for this for compression? it doesn't apply
+      return false;
+   }
+
+   const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for ( const auto& artifact : vArtifacts)
    {
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
@@ -346,14 +356,19 @@ bool pgsSegmentArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType i
    return false;
 }
 
-bool pgsSegmentArtifact::IsWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute) const
+bool pgsSegmentArtifact::IsWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute) const
 {
+   if (task.stressType == pgsTypes::Compression)
+   {
+      return false;
+   }
+
    ATLASSERT(attribute == 0 || attribute == POI_CLOSURE);
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for( const auto& artifact : vArtifacts)
    {
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
@@ -373,13 +388,19 @@ bool pgsSegmentArtifact::IsWithRebarAllowableStressApplicable(IntervalIndexType 
    return false;
 }
 
-bool pgsSegmentArtifact::IsSegmentWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+bool pgsSegmentArtifact::IsSegmentWithRebarAllowableStressApplicable(const StressCheckTask& task) const
 {
+   if (task.stressType == pgsTypes::Compression)
+   {
+      ATLASSERT(false); // why are you asking for this for compression? it doesn't apply
+      return false;
+   }
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for( const auto& artifact : vArtifacts)
    {
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
@@ -398,13 +419,19 @@ bool pgsSegmentArtifact::IsSegmentWithRebarAllowableStressApplicable(IntervalInd
    return false;
 }
 
-bool pgsSegmentArtifact::IsClosureJointWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const
+bool pgsSegmentArtifact::IsClosureJointWithRebarAllowableStressApplicable(const StressCheckTask& task,bool bIsInPTZ) const
 {
+   if (task.stressType == pgsTypes::Compression)
+   {
+      ATLASSERT(false); // why are you asking for this for compression? it doesn't apply
+      return false;
+   }
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for( const auto& artifact : vArtifacts)
    {
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
@@ -427,9 +454,15 @@ bool pgsSegmentArtifact::IsClosureJointWithRebarAllowableStressApplicable(Interv
    return false;
 }
 
-bool pgsSegmentArtifact::IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+bool pgsSegmentArtifact::IsDeckWithRebarAllowableStressApplicable(const StressCheckTask& task) const
 {
-   const auto& vArtifacts(GetFlexuralStressArtifacts(intervalIdx,ls,pgsTypes::Tension));
+   if (task.stressType == pgsTypes::Compression)
+   {
+      ATLASSERT(false); // why are you asking for this for compression? it doesn't apply
+      return false;
+   }
+
+   const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for( const auto& artifact : vArtifacts)
    {
       const pgsPointOfInterest& poi(artifact.GetPointOfInterest());
@@ -577,9 +610,9 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType
 
    for( const auto& item : m_FlexuralStressArtifacts)
    {
-      const StressKey& key(item.first);
+      const auto& key(item.first);
 
-      if ( key.intervalIdx == intervalIdx && key.ls == ls )
+      if ( key.intervalIdx == intervalIdx && key.limitState == ls )
       {
          for( const auto& artifact : item.second)
          {
@@ -625,9 +658,9 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(IntervalInde
 
    for (const auto& item : m_FlexuralStressArtifacts)
    {
-      const StressKey& key(item.first);
+      const auto& key(item.first);
 
-      if (key.intervalIdx == intervalIdx && key.ls == ls)
+      if (key.intervalIdx == intervalIdx && key.limitState == ls)
       {
          for (const auto& artifact : item.second)
          {
@@ -669,9 +702,9 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(IntervalIndexType in
 
    for (const auto& item : m_FlexuralStressArtifacts)
    {
-      const StressKey& key(item.first);
+      const auto& key(item.first);
 
-      if (key.intervalIdx == intervalIdx && key.ls == ls)
+      if (key.intervalIdx == intervalIdx && key.limitState == ls)
       {
          for (const auto& artifact : item.second)
          {
@@ -713,7 +746,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
 
    for(const auto& item : m_FlexuralStressArtifacts)
    {
-      const StressKey& key = item.first;
+      const auto& key = item.first;
 
       if ( key.intervalIdx < haulingIntervalIdx )
       {
@@ -784,7 +817,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
 
    for ( const auto& item : m_FlexuralStressArtifacts)
    {
-      const StressKey& key = item.first;
+      const auto& key = item.first;
 
       if ( key.intervalIdx < haulingIntervalIdx )
       {
@@ -833,7 +866,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
 
    for ( const auto& item : m_FlexuralStressArtifacts)
    {
-      const StressKey& key = item.first;
+      const auto& key = item.first;
 
       for ( const auto& artifact : item.second)
       {
@@ -880,7 +913,7 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
 
    for ( const auto& item : m_FlexuralStressArtifacts)
    {
-      const StressKey& key = item.first;
+      const auto& key = item.first;
 
       if ( haulingIntervalIdx <= key.intervalIdx )
       {
@@ -946,17 +979,12 @@ void pgsSegmentArtifact::MakeAssignment(const pgsSegmentArtifact& rOther)
    MakeCopy( rOther );
 }
 
-std::vector<pgsFlexuralStressArtifact>& pgsSegmentArtifact::GetFlexuralStressArtifacts(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const
+std::vector<pgsFlexuralStressArtifact>& pgsSegmentArtifact::GetFlexuralStressArtifacts(const StressCheckTask& task) const
 {
-   StressKey key;
-   key.intervalIdx = intervalIdx;
-   key.ls = ls;
-   key.stress = stress;
-
-   auto found(m_FlexuralStressArtifacts.find(key));
+   auto found(m_FlexuralStressArtifacts.find(task));
    if ( found == m_FlexuralStressArtifacts.end() )
    {
-      auto result(m_FlexuralStressArtifacts.insert(std::make_pair(key,std::vector<pgsFlexuralStressArtifact>())));
+      auto result(m_FlexuralStressArtifacts.insert(std::make_pair(task,std::vector<pgsFlexuralStressArtifact>())));
       found = result.first;
    }
 

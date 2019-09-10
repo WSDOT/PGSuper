@@ -7,8 +7,8 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -34,7 +34,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
@@ -58,8 +58,8 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -85,8 +85,8 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -112,8 +112,8 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
@@ -138,8 +138,8 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -167,7 +167,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -191,7 +191,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -217,8 +217,8 @@ Minimum fillet value exceeded for bridge check failed
 Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -246,7 +246,7 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -271,8 +271,8 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -296,8 +296,8 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Hold down force exceeds maximum
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -322,8 +322,8 @@ Minimum fillet value exceeded for bridge check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
@@ -348,8 +348,8 @@ Minimum fillet value exceeded for bridge check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -372,7 +372,7 @@ Minimum fillet value exceeded for bridge check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

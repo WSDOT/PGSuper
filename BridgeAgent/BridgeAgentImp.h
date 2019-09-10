@@ -1050,6 +1050,7 @@ public:
    virtual const std::vector<UserPointLoad>* GetPointLoads(IntervalIndexType intervalIdx,const CSpanKey& spanKey) const override;
    virtual const std::vector<UserDistributedLoad>* GetDistributedLoads(IntervalIndexType intervalIdx,const CSpanKey& spanKey) const override;
    virtual const std::vector<UserMomentLoad>* GetMomentLoads(IntervalIndexType intervalIdx,const CSpanKey& spanKey) const override;
+   virtual const std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CGirderKey& girderKey) const override;
 
 // ITempSupport
 public:
@@ -1237,7 +1238,6 @@ public:
    virtual std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CSpanKey& spanKey,pgsTypes::ProductForceType pfType) const override;
    virtual IntervalIndexType GetNoncompositeUserLoadInterval() const override;
    virtual IntervalIndexType GetCompositeUserLoadInterval() const override;
-   virtual std::vector<IntervalIndexType> GetSpecCheckIntervals(const CGirderKey& girderKey) const override;
    virtual IntervalIndexType GetLastNoncompositeInterval() const override;
    virtual IntervalIndexType GetLastCompositeInterval() const override;
 

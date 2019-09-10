@@ -34,6 +34,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace\Allowables.h>
 
 
 #ifdef _DEBUG
@@ -346,7 +347,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             //}
             //else
             {
-               std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
+               GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+               std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(thisSegmentKey);
                vIntervals.push_back(pIntervals->GetLiveLoadInterval());
                std::sort(vIntervals.begin(),vIntervals.end());
                vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
@@ -376,7 +378,8 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                pPara = new rptParagraph;
                *pChapter << pPara;
 
-               std::vector<IntervalIndexType> vIntervals = pIntervals->GetSpecCheckIntervals(thisSegmentKey);
+               GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+               std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(thisSegmentKey);
                vIntervals.push_back(pIntervals->GetLiveLoadInterval());
                std::sort(vIntervals.begin(),vIntervals.end());
                vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());

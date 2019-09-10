@@ -946,25 +946,25 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    Float64 loss;
-   if ( pDesignParams->intervalIdx < liveLoadIntervalIdx )
+   if ( pDesignParams->task.intervalIdx < liveLoadIntervalIdx )
    {
-      loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->intervalIdx,pgsTypes::End,&guess);
+      loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->task.intervalIdx,pgsTypes::End,&guess);
    }
    else
    {
-      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->limit_state,INVALID_INDEX/*controlling live load*/,&guess,true/*include elastic effects*/);
+      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState,INVALID_INDEX/*controlling live load*/,&guess,true/*include elastic effects*/);
    }
 
 #if defined _DEBUG
    GET_IFACE(ILosses,pILosses);
-   if ( pDesignParams->intervalIdx < liveLoadIntervalIdx )
+   if ( pDesignParams->task.intervalIdx < liveLoadIntervalIdx )
    {
-      Float64 check_loss = pILosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->intervalIdx,pgsTypes::End,&guess);
+      Float64 check_loss = pILosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->task.intervalIdx,pgsTypes::End,&guess);
       ATLASSERT(IsEqual(loss,check_loss));
    }
    else
    {
-      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->limit_state, INVALID_INDEX/*controlling live load*/,&guess, true/*include elastic effects*/);
+      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState, INVALID_INDEX/*controlling live load*/,&guess, true/*include elastic effects*/);
       ATLASSERT(IsEqual(loss,check_loss));
    }
 #endif // _DEBUG
@@ -1755,7 +1755,7 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    m_bConfigDirty = true; // cache is dirty
 }
 
-bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation)
+bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired, const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
    Float64 fc_current = m_pArtifact->GetConcreteStrength();
    LOG(_T("Update Final Concrete Strength if needed. f'c required = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI f'c current = ")<< ::ConvertFromSysUnits(fc_current,unitMeasure::KSI) << _T(" KSI"));;
@@ -1791,7 +1791,7 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired,IntervalInde
    }
 
    Float64 newfc;
-   if ( m_FcControl.DoUpdate(fcRequired, intervalIdx, stressType,limitState,stressLocation,&newfc) )
+   if ( m_FcControl.DoUpdate(fcRequired, task,stressLocation,&newfc) )
    {
       m_pArtifact->SetConcreteStrength(newfc);
       m_bConfigDirty = true; // cache is dirty
@@ -1831,7 +1831,7 @@ bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,Inte
    return true;
 }
 
-bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation)
+bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
    LOG(_T("Update Concrete Strength if needed. f'ci required = ")<< ::ConvertFromSysUnits(fciRequired,unitMeasure::KSI) << _T(" KSI"));;
 
@@ -1854,7 +1854,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    LOG(_T("Required fully adjusted f'ci now = ")<< ::ConvertFromSysUnits(fciRequired,unitMeasure::KSI) << _T(" KSI, Current = ")<< ::ConvertFromSysUnits(m_pArtifact->GetReleaseStrength(), unitMeasure::KSI) << _T(" KSI"));
 
    Float64 fci;
-   if ( m_FciControl.DoUpdate(fciRequired,intervalIdx,stressType,limitState,stressLocation,&fci) )
+   if ( m_FciControl.DoUpdate(fciRequired,task,stressLocation,&fci) )
    {
       LOG(_T("** Setting new release strength to  = ")<< ::ConvertFromSysUnits(fci, unitMeasure::KSI) << _T(" KSI"));;
       m_pArtifact->SetReleaseStrength(fci);
@@ -1863,7 +1863,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
       ATLASSERT(strengthResult != ConcFailed); // this should always be blocked
 
       // new compression controlled values cannot override the need for minimum rebar
-      if (stressType == pgsTypes::Tension)
+      if (task.stressType == pgsTypes::Tension)
       {
          m_ReleaseStrengthResult = strengthResult;
       }
@@ -1871,7 +1871,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    else
    {
       // allow tension to override the need to use min rebar even if concrete strenth doesn't need change
-      if (stressType == pgsTypes::Tension && strengthResult == ConcSuccessWithRebar)
+      if (task.stressType == pgsTypes::Tension && strengthResult == ConcSuccessWithRebar)
       {
          if (m_ReleaseStrengthResult != ConcSuccessWithRebar)
          {
@@ -1888,7 +1888,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    }
 
    // Release strength can drive final.
-   if (UpdateConcreteStrength(fci,intervalIdx,limitState,stressType,stressLocation))
+   if (UpdateConcreteStrength(fci,task,stressLocation))
    {
       LOG(_T("** Concrete strength changed by change in release strength"));
    }
@@ -1896,7 +1896,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    return true;
 }
 
-ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc) const
+ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,const StressCheckTask& task,Float64* pfc) const
 {
    LOG(_T("Entering ComputeRequiredConcreteStrength"));
    Float64 fc_reqd;
@@ -1907,10 +1907,10 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    ConcStrengthResultType result = ConcSuccess;
 
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
-   if ( stressType == pgsTypes::Compression )
+   if ( task.stressType == pgsTypes::Compression )
    {
       GET_IFACE(IAllowableConcreteStress,pAllowStress);
-      Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,ls);
+      Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,task);
       fc_reqd = fControl/c;
       LOG(c << _T("F demand (compression) = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << ::ConvertFromSysUnits(fc_reqd,unitMeasure::KSI) << _T(" KSI"));
    }
@@ -1926,7 +1926,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
          bool bfMax;
 
          GET_IFACE(IAllowableConcreteStress,pAllowStress);
-         pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,ls,false/*without rebar*/,false,&t,&bfMax,&fmax);
+         pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,task,false/*without rebar*/,false,&t,&bfMax,&fmax);
          if (0 < t)
          {
             LOG(_T("f allow coeff = ") << ::ConvertFromSysUnits(t,unitMeasure::SqrtKSI) << _T("_/f'c = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI));
@@ -1935,13 +1935,16 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
             if ( bfMax && fmax < fControl) 
             {
                // allowable stress is limited to value lower than needed
-               if ( intervalIdx == releaseIntervalIdx )
+               if ( task.intervalIdx == releaseIntervalIdx )
                {
                   // try getting the alternative allowable if rebar is used
                   bool bCheckMaxAlt;
                   Float64 fMaxAlt;
                   Float64 talt;
-                  pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
+
+                  ATLASSERT(task.limitState == pgsTypes::ServiceI && task.stressType == pgsTypes::Tension);
+
+                  pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,task,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
                   fc_reqd = pow(fControl/(lambda*talt),2);
                   result = ConcSuccessWithRebar;
                   LOG(_T("Min rebar is required to acheive required strength"));
@@ -1974,9 +1977,9 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
       }
    }
 
-   Float64 fc_min = (intervalIdx == releaseIntervalIdx) ? GetMinimumReleaseStrength() : GetMinimumConcreteStrength();
+   Float64 fc_min = (task.intervalIdx == releaseIntervalIdx) ? GetMinimumReleaseStrength() : GetMinimumConcreteStrength();
 
-   Float64 fc_max = (intervalIdx == releaseIntervalIdx) ? GetMaximumReleaseStrength() : GetMaximumConcreteStrength();
+   Float64 fc_max = (task.intervalIdx == releaseIntervalIdx) ? GetMaximumReleaseStrength() : GetMaximumConcreteStrength();
    if ( fc_reqd < fc_min )
    {
       fc_reqd = fc_min;
@@ -2004,7 +2007,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    return result;
 }
 
-bool pgsStrandDesignTool::Bump500(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation)
+bool pgsStrandDesignTool::Bump500(const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
@@ -2026,13 +2029,13 @@ bool pgsStrandDesignTool::Bump500(IntervalIndexType intervalIdx,pgsTypes::LimitS
       return false;
    }
 
-   if (!UpdateConcreteStrength(fc,intervalIdx,limitState,stressType,stressLocation))
+   if (!UpdateConcreteStrength(fc,task,stressLocation))
    {
       LOG(_T("Failed increasing concrete strength"));
       return false;
    }
 
-   if (intervalIdx == releaseIntervalIdx || intervalIdx == liftSegmentIntervalIdx)
+   if (task.intervalIdx == releaseIntervalIdx || task.intervalIdx == liftSegmentIntervalIdx)
    {
       fci += five_ksi;
       LOG(_T("target f'ci = ") << ::ConvertFromSysUnits(fci,unitMeasure::KSI) << _T(" KSI") );
@@ -2043,7 +2046,7 @@ bool pgsStrandDesignTool::Bump500(IntervalIndexType intervalIdx,pgsTypes::LimitS
          LOG(_T("Release Strength Exceeds Maximum of ")<<::ConvertFromSysUnits(fci_max,unitMeasure::KSI) << _T(" KSI - Bump 500 failed") );
          return false;
       }
-      else if (!UpdateReleaseStrength(fci,m_ReleaseStrengthResult,intervalIdx,limitState,stressType,stressLocation))
+      else if (!UpdateReleaseStrength(fci,m_ReleaseStrengthResult,task,stressLocation))
       {
          LOG(_T("Failed increasing concrete release strength"));
          return false;
