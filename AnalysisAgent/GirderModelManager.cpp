@@ -4875,6 +4875,7 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
 
       IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
       IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
       Float64 MzMinLeft, MzMinRight;
@@ -4907,41 +4908,17 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
             }
          }
 
-         // remove girder moment
-         Float64 Mg = GetMoment(castDeckIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative);
-         MzMin -= gDC*Mg;
-
-         // if not continuous when deck is cast, 
-         // remove slab, slab panels, diaphragms, and shear key moment
-         // they don't contribute to the negative moment for deck design
-         GET_IFACE(IBridge,pBridge);
-         SpanIndexType startSpanIdx, endSpanIdx;
-         pBridge->GetSpansForSegment(segmentKey,&startSpanIdx,&endSpanIdx);
-
-         PierIndexType prevPierIdx = startSpanIdx;
-         PierIndexType nextPierIdx = endSpanIdx + 1;
-
-         IntervalIndexType dummy, startPierContinuityIntervalIdx, endPierContinuityIntervalIdx;
-         pIntervals->GetContinuityInterval(prevPierIdx,&dummy,&startPierContinuityIntervalIdx);
-         pIntervals->GetContinuityInterval(nextPierIdx,&endPierContinuityIntervalIdx,&dummy);
-
-
-         if ( startPierContinuityIntervalIdx == compositeDeckIntervalIdx && 
-              endPierContinuityIntervalIdx   == compositeDeckIntervalIdx )
-         {
-            Float64 Mconstruction = constructionIntervalIdx == INVALID_INDEX ? 0 : GetMoment(constructionIntervalIdx, pgsTypes::pftConstruction, poi, bat, rtCumulative);
-            Float64 Mslab         = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab,         poi, bat, rtCumulative);
-            Float64 Mslab_pad     = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad,      poi, bat, rtCumulative);
-            Float64 Mslab_panel   = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPanel,    poi, bat, rtCumulative);
-            Float64 Mdiaphragm    = castDiaphragmIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm,    poi, bat, rtCumulative);
-            Float64 Mshear_key    = castShearKeyIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castShearKeyIntervalIdx, pgsTypes::pftShearKey,     poi, bat, rtCumulative);
-
-            MzMin -= gDC*(Mconstruction + Mslab + Mslab_pad + Mslab_panel + Mdiaphragm + Mshear_key);
-         }
-
-         // remove user dc moments
-         Float64 Muser_dc = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftUserDC, poi, bat, rtCumulative);
-         MzMin -= gDC*Muser_dc;
+         // remove moments for all dead loads before and including deck casting
+         // it doesn't matter when continuity is made (before or after deck casting), none of these loads put direct tension into the deck rebar
+         Float64 Mg = GetMoment(erectionIntervalIdx,pgsTypes::pftGirder,poi,bat,rtCumulative);
+         Float64 Mconstruction = constructionIntervalIdx == INVALID_INDEX ? 0 : GetMoment(constructionIntervalIdx, pgsTypes::pftConstruction, poi, bat, rtCumulative);
+         Float64 Mslab         = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab,         poi, bat, rtCumulative);
+         Float64 Mslab_pad     = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad,      poi, bat, rtCumulative);
+         Float64 Mslab_panel   = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPanel,    poi, bat, rtCumulative);
+         Float64 Mdiaphragm    = castDiaphragmIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm,    poi, bat, rtCumulative);
+         Float64 Mshear_key    = castShearKeyIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castShearKeyIntervalIdx, pgsTypes::pftShearKey,     poi, bat, rtCumulative);
+         Float64 Muser_dc      = castDeckIntervalIdx == INVALID_INDEX ? 0 : GetMoment(castDeckIntervalIdx, pgsTypes::pftUserDC, poi, bat, rtCumulative);
+         MzMin -= gDC*(Mg + Mconstruction + Mslab + Mslab_pad + Mslab_panel + Mdiaphragm + Mshear_key + Muser_dc);
       }
 
       vMoment.push_back( MzMin );

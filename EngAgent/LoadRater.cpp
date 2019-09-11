@@ -1518,11 +1518,44 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
       // Get all the product load responces
       GET_IFACE(IProductForces2,pProductForces);
 
-      vConstruction   = pProductForces->GetMoment(constructionLoadIntervalIdx,     pgsTypes::pftConstruction,   vPoi, batMin, rtIncremental);
-      vSlab           = pProductForces->GetMoment(castDeckIntervalIdx,             pgsTypes::pftSlab,           vPoi, batMin, rtIncremental);
-      vSlabPanel      = pProductForces->GetMoment(castDeckIntervalIdx,             pgsTypes::pftSlabPanel,      vPoi, batMin, rtIncremental);
-      vDiaphragm      = pProductForces->GetMoment(castDiaphragmIntervalIdx,        pgsTypes::pftDiaphragm,      vPoi, batMin, rtIncremental);
-      vShearKey       = pProductForces->GetMoment(castShearKeyIntervalIdx,         pgsTypes::pftShearKey,       vPoi, batMin, rtIncremental);
+      if (constructionLoadIntervalIdx == INVALID_INDEX)
+      {
+         vConstruction.resize(vPoi.size(), 0);
+      }
+      else
+      {
+         vConstruction = pProductForces->GetMoment(constructionLoadIntervalIdx, pgsTypes::pftConstruction, vPoi, batMin, rtIncremental);
+      }
+
+      if (castDeckIntervalIdx == INVALID_INDEX)
+      {
+         vSlab.resize(vPoi.size(), 0);
+         vSlabPanel.resize(vPoi.size(), 0);
+      }
+      else
+      {
+         vSlab = pProductForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, vPoi, batMin, rtIncremental);
+         vSlabPanel = pProductForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPanel, vPoi, batMin, rtIncremental);
+      }
+
+      if (castDiaphragmIntervalIdx == INVALID_INDEX)
+      {
+         vDiaphragm.resize(vPoi.size(), 0);
+      }
+      else
+      {
+         vDiaphragm = pProductForces->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, vPoi, batMin, rtIncremental);
+      }
+
+      if (castShearKeyIntervalIdx == INVALID_INDEX)
+      {
+         vShearKey.resize(vPoi.size(), 0);
+      }
+      else
+      {
+         vShearKey = pProductForces->GetMoment(castShearKeyIntervalIdx, pgsTypes::pftShearKey, vPoi, batMin, rtIncremental);
+      }
+
       vUserDC1        = pProductForces->GetMoment(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDC,         vPoi, batMin, rtIncremental);
       vUserDW1        = pProductForces->GetMoment(noncompositeUserLoadIntervalIdx, pgsTypes::pftUserDW,         vPoi, batMin, rtIncremental);
       vUserDC2        = pProductForces->GetMoment(compositeUserLoadIntervalIdx,    pgsTypes::pftUserDC,         vPoi, batMin, rtIncremental);
