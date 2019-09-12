@@ -120,6 +120,7 @@ public:
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
 	//}}AFX_VIRTUAL
 
+   void UpdateProjectCriteriaIndicator();
    void UpdateAnalysisTypeStatusIndicator();
    void OnLoadsLldf();
    void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);

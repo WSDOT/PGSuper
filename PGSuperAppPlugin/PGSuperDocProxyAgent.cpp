@@ -112,6 +112,7 @@ void CPGSuperDocProxyAgent::CreateStatusBar()
    pFrame->SetStatusBar(pStatusBar);
 
    m_pMyDocument->UpdateAnalysisTypeStatusIndicator();
+   m_pMyDocument->UpdateProjectCriteriaIndicator();
    m_pMyDocument->SetModifiedFlag(m_pMyDocument->IsModified());
    m_pMyDocument->EnableAutoCalc(m_pMyDocument->IsAutoCalcEnabled());
 }

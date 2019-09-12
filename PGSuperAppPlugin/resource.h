@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by PGSuperAppPlugin.rc
 //
+#define ID_INDICATOR_CRITERIA           4
 #define ID_INDICATOR_ANALYSIS           5
 #define IDS_LWC_MESSAGE                 6
 #define IDS_GIRDER_SHEAR                7

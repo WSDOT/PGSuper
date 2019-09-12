@@ -3004,10 +3004,25 @@ void CPGSDocBase::OnLoadsLoadFactors()
 
 void CPGSDocBase::UpdateAnalysisTypeStatusIndicator()
 {
-   CPGSuperStatusBar* pStatusBar = (CPGSuperStatusBar*)(EAFGetMainFrame()->GetStatusBar());
+   CEAFStatusBar* pStatusBar = EAFGetMainFrame()->GetStatusBar();
 
-   GET_IFACE(ISpecification,pSpec);
-   pStatusBar->SetAnalysisTypeStatusIndicator(pSpec->GetAnalysisType());
+   if (pStatusBar->IsKindOf(RUNTIME_CLASS(CPGSuperStatusBar)) && pStatusBar->GetSafeHwnd())
+   {
+      CPGSuperStatusBar* pPGSStatusBar = (CPGSuperStatusBar*)pStatusBar;
+      GET_IFACE(ISpecification, pSpec);
+      pPGSStatusBar->SetAnalysisTypeStatusIndicator(pSpec->GetAnalysisType());
+   }
+}
+
+void CPGSDocBase::UpdateProjectCriteriaIndicator()
+{
+   CEAFStatusBar* pStatusBar = EAFGetMainFrame()->GetStatusBar();
+   if (pStatusBar->IsKindOf(RUNTIME_CLASS(CPGSuperStatusBar)) && pStatusBar->GetSafeHwnd())
+   {
+      CPGSuperStatusBar* pPGSStatusBar = (CPGSuperStatusBar*)pStatusBar;
+      GET_IFACE(ISpecification, pSpec);
+      pPGSStatusBar->SetProjectCriteria(pSpec->GetSpecification().c_str());
+   }
 }
 
 bool CPGSDocBase::LoadMasterLibrary()

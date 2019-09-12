@@ -12,7 +12,8 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
+#include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -5484,6 +5485,7 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_INDICATOR_CRITERIA "PROJECT_CRITERIA"
     ID_INDICATOR_ANALYSIS   "CONTINUOUS"
     IDS_LWC_MESSAGE         "The concrete density is greater than the maximum value for Lightweight Concrete (See LRFD 5.2).\nThe concrete will be treated as Lightweight."
     IDS_GIRDER_SHEAR        "Trans. Reinforcement"
