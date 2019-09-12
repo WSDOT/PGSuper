@@ -115,6 +115,16 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingPage message handlers
 
+void CBridgeDescFramingPage::EnableInsertSpanBtn(BOOL bEnable)
+{
+   GetDlgItem(IDC_ADD_PIER)->EnableWindow(bEnable);
+}
+
+void CBridgeDescFramingPage::EnableInsertTempSupportBtn(BOOL bEnable)
+{
+   GetDlgItem(IDC_ADD_TEMP_SUPPORT)->EnableWindow(bEnable);
+}
+
 void CBridgeDescFramingPage::EnableRemovePierBtn(BOOL bEnable)
 {
    GetDlgItem(IDC_REMOVE_PIER)->EnableWindow(bEnable);

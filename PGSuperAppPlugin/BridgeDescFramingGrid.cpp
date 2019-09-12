@@ -1055,6 +1055,10 @@ void CBridgeDescFramingGrid::FillSpanColumn()
    CBridgeDescDlg* pDlg = (CBridgeDescDlg*)(pParent->GetParent());
    ASSERT( pDlg->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg) ) );
 
+   bool bIsValidBridge = true;
+   pParent->EnableInsertSpanBtn(TRUE);
+   pParent->EnableInsertTempSupportBtn(TRUE);
+
    SpanIndexType nSpans = pDlg->m_BridgeDesc.GetSpanCount();
    for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
@@ -1113,6 +1117,10 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 
       // fill in all rows between prev and next pier with span length
       Float64 spanLength = pNextPier->GetStation() - pPrevPier->GetStation();
+      if (spanLength <= 0)
+      {
+         bIsValidBridge = false;
+      }
       CString strSpanLength;
       strSpanLength.Format(_T("%s"),FormatDimension(spanLength,pDisplayUnits->GetSpanLengthUnit()));
       for (ROWCOL row = prevPierRow + 1; row < nextPierRow; row++)
@@ -1131,15 +1139,81 @@ void CBridgeDescFramingGrid::FillSpanColumn()
          );
       }
 
+      // enable edit button for pier
+      SetStyleRange(CGXRange(prevPierRow, col + 1), CGXStyle()
+         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+         .SetEnabled(TRUE)
+      );
+
       SetStyleRange(CGXRange(prevPierRow+1,col+1,nextPierRow-1,col+1), CGXStyle()
          .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
          .SetControl(GX_IDS_CTRL_PUSHBTN)
 			.SetChoiceList(_T("Edit"))
+         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
          .SetHorizontalAlignment(DT_LEFT)
          .SetEnabled(TRUE)
          .SetValue(0L)
          .SetUserAttribute(0, CRowType(CRowType::Span, pPrevPier->GetNextSpan()->GetIndex()))
       );
+
+      // enable edit button for pier
+      SetStyleRange(CGXRange(nextPierRow, col + 1), CGXStyle()
+         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+         .SetEnabled(TRUE)
+      );
+   }
+
+   SupportIndexType nTS = pDlg->m_BridgeDesc.GetTemporarySupportCount();
+   for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
+   {
+      ROWCOL tsRow = GetTemporarySupportRow(tsIdx);
+      SetStyleRange(CGXRange(tsRow, col + 2), CGXStyle()
+         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+         .SetEnabled(TRUE)
+      );
+   }
+
+   if (!bIsValidBridge)
+   {
+      // disable edit buttons because bridge is not valid
+      pParent->EnableInsertSpanBtn(FALSE);
+      pParent->EnableInsertTempSupportBtn(FALSE);
+
+      SupportIndexType nTS = pDlg->m_BridgeDesc.GetTemporarySupportCount();
+      for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
+      {
+         ROWCOL tsRow = GetTemporarySupportRow(tsIdx);
+         SetStyleRange(CGXRange(tsRow, col + 2), CGXStyle()
+            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+            .SetEnabled(FALSE)
+         );
+      }
+
+      for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
+      {
+         const CSpanData2* pSpan = pDlg->m_BridgeDesc.GetSpan(spanIdx);
+         const CPierData2* pPrevPier = pSpan->GetPrevPier();
+         const CPierData2* pNextPier = pSpan->GetNextPier();
+
+         // Get row values for prev and next pier
+         ROWCOL prevPierRow = GetPierRow(pPrevPier->GetIndex());
+         ROWCOL nextPierRow = GetPierRow(pNextPier->GetIndex());
+
+         SetStyleRange(CGXRange(prevPierRow, col + 1), CGXStyle()
+            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+            .SetEnabled(FALSE)
+         );
+
+         SetStyleRange(CGXRange(prevPierRow+1, col + 1), CGXStyle()
+            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+            .SetEnabled(FALSE)
+         );
+
+         SetStyleRange(CGXRange(nextPierRow, col + 1), CGXStyle()
+            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+            .SetEnabled(FALSE)
+         );
+      }
    }
 
    GetParam()->SetLockReadOnly(TRUE);

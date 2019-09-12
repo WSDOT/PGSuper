@@ -2080,22 +2080,54 @@
     <None Include="res\HaulingOverhangs.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
-    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
-    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
-    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromPier.emf" />
-    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
-    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
-    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromPier.emf" />
-    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromPier.emf" />
-    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
-    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
-    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
-    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromPier.emf" />
-    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
-    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
-    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromPier.emf" />
-    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromPier.emf" />
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
