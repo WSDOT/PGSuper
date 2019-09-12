@@ -299,6 +299,42 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
       }
    }
 
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pTitlePage << p;
+   *p << _T("Analysis Controls") << rptNewLine;
+
+   GET_IFACE(ISpecification, pSpec);
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+   p = new rptParagraph();
+   *pTitlePage << p;
+   *p << _T("Structural Analysis Method: ");
+   switch (analysisType)
+   {
+   case pgsTypes::Simple:
+      *p << _T("Simple Span");
+      break;
+
+   case pgsTypes::Continuous:
+      *p << _T("Simple Spans made Continuous");
+      break;
+
+   case pgsTypes::Envelope:
+      *p << _T("Envelope of Simple Span and Simple Spans made Continuous");
+      break;
+   }
+   *p << rptNewLine;
+
+   GET_IFACE(ISectionProperties, pSectProps);
+   if (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross)
+   {
+      *p << _T("Section Properties: Gross") << rptNewLine;
+   }
+   else
+   {
+      *p << _T("Section Properties: Transformed") << rptNewLine;
+   }
+
    rptRcTable* pTable;
    int row = 0;
 
