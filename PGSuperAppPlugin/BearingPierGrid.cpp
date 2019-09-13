@@ -743,7 +743,7 @@ BOOL CBearingPierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       else
       {
          Float64 val = _tstof(strVal);
-         if (IsLE(val, 0.0))
+         if (IsLT(val, 0.0))
          {
             SetWarningText(_T("Bearing length must be greater than zero"));
             return false;
@@ -764,7 +764,7 @@ BOOL CBearingPierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          else
          {
             Float64 val = _tstof(strVal);
-            if (IsLE(val, 0.0))
+            if (IsLT(val, 0.0))
             {
                SetWarningText(_T("Bearing width must be greater than zero"));
                return false;

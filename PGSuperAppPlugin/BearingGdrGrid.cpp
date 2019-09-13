@@ -598,7 +598,7 @@ BOOL CBearingGdrGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
             Float64 spacing = _tstof(strSpacing);
             if (IsLE(spacing, 0.0))
             {
-               SetWarningText(_T("Bearing spacing must be greater than zero"));
+               SetWarningText(_T("Bearing spacing must be zero or greater"));
                return false;
             }
          }
@@ -615,9 +615,9 @@ BOOL CBearingGdrGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       else
       {
          Float64 val = _tstof(strVal);
-         if (IsLE(val, 0.0))
+         if (IsLT(val, 0.0))
          {
-            SetWarningText(_T("Bearing length must be greater than zero"));
+            SetWarningText(_T("Bearing length must be zero or greater"));
             return false;
          }
       }
@@ -636,9 +636,9 @@ BOOL CBearingGdrGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          else
          {
             Float64 val = _tstof(strVal);
-            if (IsLE(val, 0.0))
+            if (IsLT(val, 0.0))
             {
-               SetWarningText(_T("Bearing width must be greater than zero"));
+               SetWarningText(_T("Bearing width must be zero or greater"));
                return false;
             }
          }
