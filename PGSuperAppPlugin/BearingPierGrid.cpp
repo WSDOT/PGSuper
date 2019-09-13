@@ -130,6 +130,8 @@ void BearingInputData::CopyFromBridgeDescription(const CBridgeDescription2* pBri
    ///////////////////////////////////
    m_BearingType = pBridgeDescr->GetBearingType();
 
+   m_SingleBearing = *(pBridgeDescr->GetBearingData());
+
    // Pier and girder based A data are treated the same for all types
    PierIndexType npiers = pBridgeDescr->GetPierCount();
 
@@ -139,7 +141,7 @@ void BearingInputData::CopyFromBridgeDescription(const CBridgeDescription2* pBri
       const CPierData2* pPier = pBridgeDescr->GetPier(ipier);
 
       // We want to iterate over bearing lines. Determine how many
-      pgsTypes::PierFaceType pierFaces[2];
+      std::array<pgsTypes::PierFaceType, 2> pierFaces;
       PierIndexType nbrglines = 1; 
       if (ipier==0)
       {
@@ -193,12 +195,6 @@ void BearingInputData::CopyFromBridgeDescription(const CBridgeDescription2* pBri
          {
             const CBearingData2* pBr = pPier->GetBearingData(ig, pierFaces[ibrg]);
             brgData.m_BearingsForGirders.push_back(*pBr);
-
-            // Fill data for case when single Bearing is used for entire bridge. Use bearingline 1, girder 1
-            if (ipier==0 && ig==0)
-            {
-               m_SingleBearing  = *pBr;
-            }
          }
 
          m_Bearings.push_back( brgData );

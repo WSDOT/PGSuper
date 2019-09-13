@@ -1632,9 +1632,9 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    CComPtr<iSocket> firstSocket, lastSocket;
    long witness_length;
 
-   // find the top of the "lowest" girder so all the dimension lines can be at
+   // find the top of the "highest" girder so all the dimension lines can be at
    // the same elevation
-   Float64 yLowest = DBL_MAX;
+   Float64 yHighest = -DBL_MAX;
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       CComPtr<iDisplayObject> doGirder;
@@ -1680,7 +1680,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       Float64 y;
       p->get_Y(&y);
-      yLowest = Min(y, yLowest);
+      yHighest = Max(y, yHighest);
    }
 
    // make a dimension line for each spacing group
@@ -1819,9 +1819,9 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
                position2->get_LocatorPoint(lpTopCenter, &p2);
             }
 
-            // adjust points so both are at the same, and lowest, elevation
-            p1->put_Y(yLowest);
-            p2->put_Y(yLowest);
+            // adjust points so both are at the same, and highest, elevation
+            p1->put_Y(yHighest);
+            p2->put_Y(yHighest);
 
             // Add sockets to the display objects at these points
             CComQIPtr<iConnectable> c1(do1);
@@ -1929,7 +1929,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
          // get bottom left of slab
          CComPtr<IPoint2d> left_overhang_point;
          slabPosition->get_LocatorPoint(lpBottomLeft,&left_overhang_point);
-         left_overhang_point->put_Y(yLowest);
+         left_overhang_point->put_Y(yHighest);
 
          // Add sockets to the display objects at these points
          CComQIPtr<iConnectable> leftOverhangConnectable(doSlab);
@@ -1982,7 +1982,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
          // get bottom right of slab
          CComPtr<IPoint2d> right_overhang_point;
          slabPosition->get_LocatorPoint(lpBottomRight,&right_overhang_point);
-         right_overhang_point->put_Y(yLowest);
+         right_overhang_point->put_Y(yHighest);
 
          // Add sockets to the display objects at these points
          CComQIPtr<iConnectable> rightOverhangConnectable(doSlab);

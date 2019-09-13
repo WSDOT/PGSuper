@@ -232,8 +232,16 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       newGirderData.m_Girder.SetConditionFactor(dlg.GetConditionFactor());
 
       newGirderData.m_BearingType = dlg.m_SpanGdrDetailsBearingsPage.m_BearingInputData.m_BearingType;
-      newGirderData.m_BearingData[pgsTypes::metStart] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[0];
-      newGirderData.m_BearingData[pgsTypes::metEnd] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[1];
+      if (newGirderData.m_BearingType == pgsTypes::brtBridge)
+      {
+         newGirderData.m_BearingData[pgsTypes::metStart] = dlg.m_SpanGdrDetailsBearingsPage.m_BearingInputData.m_SingleBearing;
+         newGirderData.m_BearingData[pgsTypes::metEnd] = dlg.m_SpanGdrDetailsBearingsPage.m_BearingInputData.m_SingleBearing;
+      }
+      else
+      {
+         newGirderData.m_BearingData[pgsTypes::metStart] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[pgsTypes::metStart];
+         newGirderData.m_BearingData[pgsTypes::metEnd] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[pgsTypes::metEnd];
+      }
 
       txnTransaction* pTxn = new txnEditGirder(girderKey,newGirderData);
 
