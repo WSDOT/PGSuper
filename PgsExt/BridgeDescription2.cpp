@@ -4045,17 +4045,17 @@ pgsTypes::BearingType CBridgeDescription2::GetBearingType() const
    return m_BearingType;
 }
 
-void CBridgeDescription2::SetBearingData(const CBearingData2 & Bearing)
+void CBridgeDescription2::SetBearingData(const CBearingData2& bearing)
 {
-   m_BearingData = Bearing;
+   m_BearingData = bearing;
 }
 
-const CBearingData2* CBridgeDescription2::GetBearingData(bool bGetRawValue) const
+const CBearingData2* CBridgeDescription2::GetBearingData() const
 {
    return &m_BearingData;
 }
 
-CBearingData2* CBridgeDescription2::GetBearingData(bool bGetRawValue)
+CBearingData2* CBridgeDescription2::GetBearingData()
 {
    return &m_BearingData;
 }

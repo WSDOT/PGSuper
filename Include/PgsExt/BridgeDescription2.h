@@ -415,8 +415,8 @@ public:
    // Set/get the Bearing. Has no net effect if Bearing type is not sotBridge
    // Get method returns invalid data if Bearing type is not sotBridge
    void SetBearingData(const CBearingData2& Bearing);
-   const CBearingData2* GetBearingData(bool bGetRawValue = false) const;
-   CBearingData2* GetBearingData(bool bGetRawValue = false);
+   const CBearingData2* GetBearingData() const;
+   CBearingData2* GetBearingData();
 
 
    // Longitudinal joints (note, joint spacing is in the GirderSpacing data above)
