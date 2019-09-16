@@ -389,42 +389,56 @@ void CBearingGdrGrid::WriteBearingRow(ROWCOL row, const CBearingData2& bearingDa
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingSpacingCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.Spacing,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingLengthCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.Length,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingWidthCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.Width,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingHeightCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.Height,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingRecessHeightCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.RecessHeight,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingRecessLengthCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.RecessLength,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingSolePlateCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.SolePlateHeight,*m_pCompUnit, false))
       );
 

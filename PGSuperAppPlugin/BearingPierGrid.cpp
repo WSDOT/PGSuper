@@ -540,42 +540,56 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Spacing,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Length,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Width,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Height,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].RecessHeight,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].RecessLength,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].SolePlateHeight,*m_pCompUnit, false))
          );
 

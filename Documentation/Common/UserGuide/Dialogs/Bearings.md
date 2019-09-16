@@ -25,3 +25,5 @@ Sole Plate | Enter the vertical height of the sole plate attached to the bottom 
 > NOTE: The bearing length is used to compute the critical section for shear, which is located at one-half of the bearing length from the C.L. bearing.
 
 > TIP: Use the bearing dimensions to define the temporary supports (often oak blocks) during construction for continuous and integral piers. The girder setting elevation will be computed and reported as the bearing seat elevation.
+
+> TIP: AASHTO LRFD BDS Article 14.8.2 requires a tapered plate when the inclination of teh underside of the girder to the horizontal exceeds 0.01 radian. Enter the sum of average depth of the tapered plate and the sole plate height in the Sole Plate Height field.
