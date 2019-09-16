@@ -39,6 +39,93 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+void CPierBearingOffsetMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+   ASSERT(lpDrawItemStruct->CtlType == ODT_COMBOBOX);
+
+   CDC dc;
+   dc.Attach(lpDrawItemStruct->hDC);
+
+   COLORREF oldTextColor = dc.GetTextColor();
+   COLORREF oldBkColor = dc.GetBkColor();
+
+   CString lpszText;
+   GetLBText(lpDrawItemStruct->itemID, lpszText);
+
+   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+      (lpDrawItemStruct->itemState & ODS_SELECTED))
+   {
+      dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+      dc.SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_HIGHLIGHT));
+
+      // Tell the parent page to update the girder image
+      CPierConnectionsPage* pParent = (CPierConnectionsPage*)GetParent();
+      ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType = (ConnectionLibraryEntry::BearingOffsetMeasurementType)GetItemData(lpDrawItemStruct->itemID);
+      pParent->UpdateConnectionPicture(brgOffsetType);
+   }
+   else
+   {
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_WINDOW));
+   }
+
+   dc.DrawText(lpszText, &lpDrawItemStruct->rcItem, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+   if (lpDrawItemStruct->itemState & ODS_FOCUS)
+   {
+      dc.DrawFocusRect(&lpDrawItemStruct->rcItem);
+   }
+
+   dc.SetTextColor(oldTextColor);
+   dc.SetBkColor(oldBkColor);
+
+   dc.Detach();
+}
+
+void CPierEndDistanceMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+   ASSERT(lpDrawItemStruct->CtlType == ODT_COMBOBOX);
+
+   CDC dc;
+   dc.Attach(lpDrawItemStruct->hDC);
+
+   COLORREF oldTextColor = dc.GetTextColor();
+   COLORREF oldBkColor = dc.GetBkColor();
+
+   CString lpszText;
+   GetLBText(lpDrawItemStruct->itemID, lpszText);
+
+   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+      (lpDrawItemStruct->itemState & ODS_SELECTED))
+   {
+      dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+      dc.SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_HIGHLIGHT));
+
+      // Tell the parent page to update the girder image
+      CPierConnectionsPage* pParent = (CPierConnectionsPage*)GetParent();
+      ConnectionLibraryEntry::EndDistanceMeasurementType endType = (ConnectionLibraryEntry::EndDistanceMeasurementType)GetItemData(lpDrawItemStruct->itemID);
+      pParent->UpdateConnectionPicture(endType);
+   }
+   else
+   {
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_WINDOW));
+   }
+
+   dc.DrawText(lpszText, &lpDrawItemStruct->rcItem, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+   if (lpDrawItemStruct->itemState & ODS_FOCUS)
+   {
+      dc.DrawFocusRect(&lpDrawItemStruct->rcItem);
+   }
+
+   dc.SetTextColor(oldTextColor);
+   dc.SetBkColor(oldBkColor);
+
+   dc.Detach();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CPierConnectionsPage property page
 
@@ -80,14 +167,15 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX,IDC_RIGHT_BEARING_OFFSET,m_BearingOffsetEdit[pgsTypes::Ahead]);
    DDX_Control(pDX,IDC_LEFT_END_DISTANCE,m_EndDistanceEdit[pgsTypes::Back]);
    DDX_Control(pDX,IDC_RIGHT_END_DISTANCE,m_EndDistanceEdit[pgsTypes::Ahead]);
-   DDX_Control(pDX,IDC_BEARING_OFFSET_MEASURE,m_cbBearingOffsetMeasurementType);
-   DDX_Control(pDX,IDC_END_DISTANCE_MEASURE,m_cbEndDistanceMeasurementType);
+   DDX_Control(pDX,IDC_BEARING_OFFSET_MEASURE,m_cbBearingOffsetMeasure);
+   DDX_Control(pDX,IDC_END_DISTANCE_MEASURE,m_cbEndDistanceMeasure);
    DDX_Control(pDX,IDC_BACK_DIAPHRAGM_OFFSET,m_DiaphragmLoadLocationEdit[pgsTypes::Back]);
    DDX_Control(pDX,IDC_AHEAD_DIAPHRAGM_OFFSET,m_DiaphragmLoadLocationEdit[pgsTypes::Ahead]);
    DDX_Control(pDX,IDC_BACK_DIAPHRAGM_HEIGHT,m_DiaphragmHeightEdit[pgsTypes::Back]);
    DDX_Control(pDX,IDC_BACK_DIAPHRAGM_WIDTH,m_DiaphragmWidthEdit[pgsTypes::Back]);
    DDX_Control(pDX,IDC_AHEAD_DIAPHRAGM_HEIGHT,m_DiaphragmHeightEdit[pgsTypes::Ahead]);
    DDX_Control(pDX,IDC_AHEAD_DIAPHRAGM_WIDTH,m_DiaphragmWidthEdit[pgsTypes::Ahead]);
+
 
    // Set the schematic connection image
    CString image_name = GetImageName(m_BoundaryConditionType,m_BearingOffsetMeasurementType,m_EndDistanceMeasurementType);
@@ -356,19 +444,49 @@ void CPierConnectionsPage::UpdateConnectionPicture()
 {
    CComboBox* pcbEnd   = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
    int curSel = pcbEnd->GetCurSel();
-   ConnectionLibraryEntry::EndDistanceMeasurementType ems = (ConnectionLibraryEntry::EndDistanceMeasurementType)pcbEnd->GetItemData(curSel);
+   ConnectionLibraryEntry::EndDistanceMeasurementType endType = (ConnectionLibraryEntry::EndDistanceMeasurementType)pcbEnd->GetItemData(curSel);
 
    CComboBox* pcbBrg   = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
    curSel = pcbBrg->GetCurSel();
-   ConnectionLibraryEntry::BearingOffsetMeasurementType bms = (ConnectionLibraryEntry::BearingOffsetMeasurementType)pcbBrg->GetItemData(curSel);
+   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType = (ConnectionLibraryEntry::BearingOffsetMeasurementType)pcbBrg->GetItemData(curSel);
 
    CComboBox* pcbConnectionType = (CComboBox*)GetDlgItem(IDC_BOUNDARY_CONDITIONS);
    curSel = pcbConnectionType->GetCurSel();
    pgsTypes::BoundaryConditionType connectionType = (pgsTypes::BoundaryConditionType)pcbConnectionType->GetItemData(curSel);
 
-   CString image_name = GetImageName(connectionType,bms,ems);
+   CString image_name = GetImageName(connectionType,brgOffsetType,endType);
 
 	m_ConnectionPicture.SetImage(image_name, _T("Metafile") );
+}
+
+void CPierConnectionsPage::UpdateConnectionPicture(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType)
+{
+   CComboBox* pcbEnd = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
+   int curSel = pcbEnd->GetCurSel();
+   ConnectionLibraryEntry::EndDistanceMeasurementType endType = (ConnectionLibraryEntry::EndDistanceMeasurementType)pcbEnd->GetItemData(curSel);
+
+   CComboBox* pcbConnectionType = (CComboBox*)GetDlgItem(IDC_BOUNDARY_CONDITIONS);
+   curSel = pcbConnectionType->GetCurSel();
+   pgsTypes::BoundaryConditionType connectionType = (pgsTypes::BoundaryConditionType)pcbConnectionType->GetItemData(curSel);
+
+   CString image_name = GetImageName(connectionType, brgOffsetType, endType);
+
+   m_ConnectionPicture.SetImage(image_name, _T("Metafile"));
+}
+
+void CPierConnectionsPage::UpdateConnectionPicture(ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+{
+   CComboBox* pcbBrg = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
+   int curSel = pcbBrg->GetCurSel();
+   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType = (ConnectionLibraryEntry::BearingOffsetMeasurementType)pcbBrg->GetItemData(curSel);
+
+   CComboBox* pcbConnectionType = (CComboBox*)GetDlgItem(IDC_BOUNDARY_CONDITIONS);
+   curSel = pcbConnectionType->GetCurSel();
+   pgsTypes::BoundaryConditionType connectionType = (pgsTypes::BoundaryConditionType)pcbConnectionType->GetItemData(curSel);
+
+   CString image_name = GetImageName(connectionType, brgOffsetType, endType);
+
+   m_ConnectionPicture.SetImage(image_name, _T("Metafile"));
 }
 
 void CPierConnectionsPage::FillBearingOffsetComboBox()

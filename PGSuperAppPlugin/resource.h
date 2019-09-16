@@ -186,7 +186,6 @@
 #define IDD_EDIT_BRNG_GENERIC_PAGE      387
 #define IDD_PIER_BEARINGS_PAGE          387
 #define IDD_GIRDER_SELECT_STRANDS       390
-#define IDD_PIERCONNECTIONS2            391
 #define IDD_SELECT_BOUNDARY_CONDITION   392
 #define IDI_ICON1                       395
 #define IDI_RW_CS                       395
