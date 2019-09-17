@@ -123,6 +123,16 @@ txnDeleteSpan::txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pie
    m_RefPierIdx = refPierIdx;
    m_PierFace   = pierFace;
    m_BoundaryCondition = boundaryCondition;
+   m_bIsBoundaryPier = true;
+}
+
+txnDeleteSpan::txnDeleteSpan(PierIndexType refPierIdx, pgsTypes::PierFaceType pierFace, pgsTypes::PierSegmentConnectionType segmentConnection,EventIndexType castClosureEventIdx)
+{
+   m_RefPierIdx = refPierIdx;
+   m_PierFace = pierFace;
+   m_SegmentConnection = segmentConnection;
+   m_CastClosureEventIdx = castClosureEventIdx;
+   m_bIsBoundaryPier = false;
 }
 
 txnDeleteSpan::txnDeleteSpan(const txnDeleteSpan& other)
@@ -130,6 +140,9 @@ txnDeleteSpan::txnDeleteSpan(const txnDeleteSpan& other)
    m_RefPierIdx = other.m_RefPierIdx;
    m_PierFace = other.m_PierFace;
    m_BoundaryCondition = other.m_BoundaryCondition;
+   m_SegmentConnection = other.m_SegmentConnection;
+   m_CastClosureEventIdx = other.m_CastClosureEventIdx;
+   m_bIsBoundaryPier = other.m_bIsBoundaryPier;
 
    m_BridgeDescription = other.m_BridgeDescription;
    m_StartSpanIdx = other.m_StartSpanIdx;
@@ -219,7 +232,14 @@ bool txnDeleteSpan::Execute()
    }
 
    PierIndexType pierIdx = (m_PierFace == pgsTypes::Back ? m_RefPierIdx - 1 : m_RefPierIdx + 1); // index of the pier that is not deleted
-   pIBridgeDesc->SetBoundaryCondition(pierIdx, m_BoundaryCondition);
+   if (m_bIsBoundaryPier)
+   {
+      pIBridgeDesc->SetBoundaryCondition(pierIdx, m_BoundaryCondition);
+   }
+   else
+   {
+      pIBridgeDesc->SetBoundaryCondition(pierIdx, m_SegmentConnection, m_CastClosureEventIdx);
+   }
 
    pIBridgeDesc->DeletePier(m_RefPierIdx, m_PierFace);
 
