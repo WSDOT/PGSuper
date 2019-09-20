@@ -223,14 +223,14 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
 
    if (m_TableType == ttBearingDeduct)
    {
-      (*pTable)(0, 2) << COLHDR(_T("Bearing Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, 2) << COLHDR(_T("Bearing") << rptNewLine << _T("Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    }
    else
    {
-      (*pTable)(0, 2) << COLHDR(_T("Top Brg Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*pTable)(0, 2) << COLHDR(_T("Top") << rptNewLine << _T("Bearing") << rptNewLine << _T("Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
 
-   (*pTable)(0,3) << COLHDR(_T("Brg Seat Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0, 3) << COLHDR(_T("Bearing") << rptNewLine << _T("Seat") << rptNewLine << _T("Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    // first columns
    RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -306,14 +306,14 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const
 
    if (m_TableType == ttBearingDeduct)
    {
-      (*pTable)(0, 2) << COLHDR(_T("Bearing Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, 2) << COLHDR(_T("Bearing") << rptNewLine << _T("Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    }
    else
    {
-      (*pTable)(0, 2) << COLHDR(_T("Top Brg Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      (*pTable)(0, 2) << COLHDR(_T("Top") << rptNewLine << _T("Bearing") << rptNewLine << _T("Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
 
-   (*pTable)(0,3) << COLHDR(_T("Brg Seat Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable)(0,3) << COLHDR(_T("Bearing") << rptNewLine << _T("Seat") << rptNewLine << _T("Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    // first columns
    RowIndexType row = pTable->GetNumberOfHeaderRows();
