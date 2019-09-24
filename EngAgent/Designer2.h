@@ -518,10 +518,6 @@ private:
                               Float64 fcSlab,Float64 fcGdr, Float64 fy,
                               const GDRCONFIG* pConfig,
                               pgsHorizontalShearArtifact* pArtifact ) const;
-   void CheckHorizontalShearMidZone( const pgsPointOfInterest& poi, Float64 vu,
-                                     Float64 fcSlab,Float64 fcGdr, Float64 fy,
-                                     const GDRCONFIG* pConfig,
-                                     pgsHorizontalShearArtifact* pArtifact ) const;
 
    void ComputeHorizAvs(const pgsPointOfInterest& poi, bool* pIsRoughened, bool* pDoAllStirrupsEngageDeck, const GDRCONFIG* pConfig, pgsHorizontalShearArtifact* pArtifact ) const;
 

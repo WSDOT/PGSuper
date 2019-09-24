@@ -3081,8 +3081,10 @@ void pgsDesigner2::CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& po
 
    // horizontal shear
    pgsHorizontalShearArtifact h_artifact;
+   h_artifact.SetApplicability(false);
    if ( pBridge->IsCompositeDeck() )
    {
+      h_artifact.SetApplicability(true);
       CheckHorizontalShear(poi,vu,fcSlab,fcGdr,fy, pConfig,&h_artifact);
    }
 
@@ -3253,43 +3255,9 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
                                        const GDRCONFIG* pConfig,
                                        pgsHorizontalShearArtifact* pArtifact ) const
 {
-   ZoneIndexType csZoneIdx = GetCriticalSectionZone(poi);
-   if ( csZoneIdx == INVALID_INDEX )
-   {
-      // Poi is out in the main shear region. Do full check
-      pArtifact->SetApplicability(true);
-
-      CheckHorizontalShearMidZone(poi, vu, fcSlab, fcGdr,  fy, pConfig, pArtifact );
-   }
-   else
-   {
-      // poi is in a critical section zone (ie, near a support)
-      pArtifact->SetApplicability(false);
-      
-      // only need to compare Av/S at our location with that of left CSS
-      bool is_roughened;
-      bool do_all_stirrups_engage_deck;
-      ComputeHorizAvs(poi, &is_roughened, &do_all_stirrups_engage_deck, pConfig,  pArtifact);
-
-      Float64 avs = pArtifact->GetAvOverS();
-
-      // get avs at css
-      const pgsPointOfInterest& csPoi(m_CriticalSections[csZoneIdx].first.GetPointOfInterest());
-      pgsHorizontalShearArtifact css_Artifact;
-      ComputeHorizAvs(csPoi, &is_roughened, &do_all_stirrups_engage_deck, pConfig,  &css_Artifact);
-
-      Float64 avs_css = css_Artifact.GetAvOverSReqd();
-
-      pArtifact->SetEndSpacing(avs, avs_css);
-   }
-}
-
-void pgsDesigner2::CheckHorizontalShearMidZone(const pgsPointOfInterest& poi, 
-                                       Float64 vu, 
-                                       Float64 fcSlab,Float64 fcGdr, Float64 fy,
-                                       const GDRCONFIG* pConfig,
-                                       pgsHorizontalShearArtifact* pArtifact ) const
-{
+   // NOTE: At one time (before BridgeLink:PGSuper version 5.0) horizontal interface shear was only check in regions
+   // outside of the critical sections for shear. This was not correct. Horizontal interface shear checks are applicable
+   // at all sections. 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IGirder,pGdr);
@@ -3653,7 +3621,7 @@ void pgsDesigner2::CheckFullStirrupDetailing(const pgsPointOfInterest& poi,
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
+   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    pArtifact->SetAfter1999(bAfter1999);
 
