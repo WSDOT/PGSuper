@@ -12201,104 +12201,110 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
    // methods on the ITendonGeometry interface account for the offset of the tendon within the duct.
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup      = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
-   const CSplicedGirderData*  pGirder     = pGroup->GetGirder(girderKey.girderIndex);
+	const CSplicedGirderData*  pGirder = pGroup->GetGirder(girderKey.girderIndex);
 
-   SegmentIndexType nSegments = pGirder->GetSegmentCount();
+	SegmentIndexType nSegments = pGirder->GetSegmentCount();
 
-   // Equivalent load for tendon path composed of compounded second-degree parabolas.
-   // See "Modern Prestress Concrete", Libby, page 472-473, Eqn (10-7).
-   SpanIndexType startSpanIdx = pGroup->GetPierIndex(pgsTypes::metStart);
-   SpanIndexType endSpanIdx   = pGroup->GetPierIndex(pgsTypes::metEnd)-1;
+	// Equivalent load for tendon path composed of compounded second-degree parabolas.
+	// See "Modern Prestress Concrete", Libby, page 472-473, Eqn (10-7).
+	SpanIndexType startSpanIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+	SpanIndexType endSpanIdx = pGroup->GetPierIndex(pgsTypes::metEnd) - 1;
 
-   Float64 L = pBridge->GetSpanLength(startSpanIdx,girderKey.girderIndex);
-   if ( pGroup->GetPrevGirderGroup() == nullptr )
-   {
-      // For the first group, span length is measured from the CL Bearing at the start abutment.
-      // Add the end distance at the start of the first segment so that "L" is measured from the
-      // start face of the girder
-      //
-      //  +---------------------------------------------/
-      //  |                                             \
-      //  +---------------------------------------------/
-      //  |  ^                                  ^
-      //  |  |<-------------------------------->|
-      //  |     L from GetSpanLength            |
-      //  |                                     |
-      //  |<----------------------------------->|
-      //     We want this L
-      ATLASSERT(pGroup->GetIndex() == 0);
-      ATLASSERT(startSpanIdx == 0);
-      Float64 endDist = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
-      L += endDist;
-   }
-   else
-   {
-      //  \------+.....+---------------------------------------------/
-      //  /      |     |                                             \
-      //  \------+.....+---------------------------------------------/
-      //            ^                                      ^
-      //            |  L measured from CL Pier             |
-      //            |<------------------------------------>|
-      //               |<--------------------------------->| we want this L
-      Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
-      Float64 endDist   = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
-      Float64 offset = brgOffset - endDist;
-      L -= offset;
-   }
+	Float64 L = pBridge->GetSpanLength(startSpanIdx, girderKey.girderIndex);
+	if (pGroup->GetPrevGirderGroup() == nullptr)
+	{
+	   // For the first group, span length is measured from the CL Bearing at the start abutment.
+	   // Add the end distance at the start of the first segment so that "L" is measured from the
+	   // start face of the girder
+	   //
+	   //  +---------------------------------------------/
+	   //  |                                             \
+		  //  +---------------------------------------------/
+		  //  |  ^                                  ^
+		  //  |  |<-------------------------------->|
+		  //  |     L from GetSpanLength            |
+		  //  |                                     |
+		  //  |<----------------------------------->|
+		  //     We want this L
+	   ATLASSERT(pGroup->GetIndex() == 0);
+	   ATLASSERT(startSpanIdx == 0);
+	   Float64 endDist = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, 0));
+	   L += endDist;
+	}
+	else
+	{
+	   //  \------+.....+---------------------------------------------/
+	   //  /      |     |                                             \
+		//  \------+.....+---------------------------------------------/
+		//            ^                                      ^
+		//            |  L measured from CL Pier             |
+		//            |<------------------------------------>|
+		//               |<--------------------------------->| we want this L
+	   Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, 0));
+	   Float64 endDist = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, 0));
+	   Float64 offset = brgOffset - endDist;
+	   L -= offset;
+	}
 
-   if ( startSpanIdx == endSpanIdx )
-   {
-      // This is a single span girder
+	if (startSpanIdx == endSpanIdx)
+	{
+	   // This is a single span girder
 
-      if ( pGroup->GetNextGirderGroup() == nullptr )
-      {
-         //  +-----------------------------------------+
-         //  |                                         |
-         //  +-----------------------------------------+
-         //  |  ^                                  ^   |
-         //  |  |<-------------------------------->|   |
-         //  |     L from GetSpanLength                |
-         //  |                                         |
-         //  |<--------------------------------------->|
-         //     We want this L
-         Float64 endDist = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-         L += endDist;
-      }
-      else
-      {
-         //  \---------------------------------------------+.....+-------/
-         //  /                                             |     |       \
-         //  \---------------------------------------------+.....+-------/
-         //            ^                                      ^
-         //            |  L measured from CL Pier             |
-         //            |<------------------------------------>|
-         //            |<--------------------------------->| we want this L
-         Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-         Float64 endDist   = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
-         Float64 offset = brgOffset - endDist;
-         L -= offset;
-      }
-   }
+	   if (pGroup->GetNextGirderGroup() == nullptr)
+	   {
+		  //  +-----------------------------------------+
+		  //  |                                         |
+		  //  +-----------------------------------------+
+		  //  |  ^                                  ^   |
+		  //  |  |<-------------------------------->|   |
+		  //  |     L from GetSpanLength                |
+		  //  |                                         |
+		  //  |<--------------------------------------->|
+		  //     We want this L
+		  Float64 endDist = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, nSegments - 1));
+		  L += endDist;
+	   }
+	   else
+	   {
+		  //  \---------------------------------------------+.....+-------/
+		  //  /                                             |     |       \
+        //  \---------------------------------------------+.....+-------/
+        //            ^                                      ^
+        //            |  L measured from CL Pier             |
+        //            |<------------------------------------>|
+        //            |<--------------------------------->| we want this L
+        Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, nSegments - 1));
+		  Float64 endDist = pBridge->GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, nSegments - 1));
+		  Float64 offset = brgOffset - endDist;
+		  L -= offset;
+	   }
+	}
 
-   GET_IFACE(IMaterials,pMaterials);
-   GET_IFACE(ISectionProperties,pSectProps);
+	GET_IFACE(IMaterials, pMaterials);
+	GET_IFACE(ISectionProperties, pSectProps);
 
-   PoiList vPoi;
-   pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
-   auto iter1(vPoi.begin());
-   auto iter2(iter1 + 1);
-   auto end(vPoi.end());
-   for ( ; iter2 != end; iter1++, iter2++ )
-   {
-      const pgsPointOfInterest& poi1 = *iter1;
-      const pgsPointOfInterest& poi2 = *iter2;
+	PoiList vPoi;
+	pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
+	auto iter1(vPoi.begin());
+	auto iter2(iter1 + 1);
+	auto end(vPoi.end());
+	for (; iter2 != end; iter1++, iter2++)
+	{
+	   const pgsPointOfInterest& poi1 = *iter1;
+	   const pgsPointOfInterest& poi2 = *iter2;
 
-      if (poi1.AtSamePlace(poi2))
-      {
-         // don't continue if the POIs are at the same location... the loading will be applied over a distance
-         // of zero so the effect is zero
-         continue;
-      }
+	   if (poi1.AtSamePlace(poi2))
+	   {
+		  // don't continue if the POIs are at the same location... the loading will be applied over a distance
+		  // of zero so the effect is zero
+		  continue;
+	   }
+
+	   if (!pTendonGeometry->IsOnDuct(poi1, ductIdx) || !pTendonGeometry->IsOnDuct(poi2,ductIdx))
+	   {
+		  // if POIs aren't on the duct, there isn't a loading
+		  continue;
+	   }
 
 #if !defined USE_AVERAGE_TENDON_FORCE
       Float64 dfpF1 = pLosses->GetFrictionLoss(poi1,ductIdx);
@@ -12342,11 +12348,17 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       Float64 A1 = pSectProps->GetAg(stressTendonIntervalIdx,poi1);
       Float64 A2 = pSectProps->GetAg(stressTendonIntervalIdx,poi2);
 
+      ATLASSERT(!IsZero(E1*A1));
+      ATLASSERT(!IsZero(E2*A2));
+
       Float64 e1 = -P1/(E1*A1);
       Float64 e2 = -P2/(E2*A2);
 
       Float64 I1 = pSectProps->GetIxx(stressTendonIntervalIdx,poi1);
       Float64 I2 = pSectProps->GetIxx(stressTendonIntervalIdx,poi2);
+
+      ATLASSERT(!IsZero(E1*I1));
+      ATLASSERT(!IsZero(E2*I2));
 
       Float64 r1 = M1/(E1*I1);
       Float64 r2 = M2/(E2*I2);
@@ -14978,7 +14990,7 @@ MemberIDType CGirderModelManager::ApplyDistributedLoadsToSegment(IntervalIndexTy
    Float64 start_offset     = pBridge->GetSegmentStartEndDistance(segmentKey);
    Float64 end_offset       = pBridge->GetSegmentEndEndDistance(segmentKey);
    Float64 segment_length   = pBridge->GetSegmentLength(segmentKey);
-   Float64 L[3] = {start_offset, segment_length - start_offset - end_offset, end_offset};
+   std::array<Float64, 3> L = {start_offset, segment_length - start_offset - end_offset, end_offset};
 
    GET_IFACE(IPointOfInterest,pPOI);
    PoiList vPoi;

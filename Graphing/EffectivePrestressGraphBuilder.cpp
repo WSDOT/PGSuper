@@ -229,6 +229,8 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
 
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // going to need this in the loop... get it once
 
+   GET_IFACE_NOCHECK(ITendonGeometry, pTendonGeom);
+
 
    bool bStresses = ((CEffectivePrestressGraphController*)m_pGraphController)->IsStressGraph();
 
@@ -270,42 +272,45 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
       {
          const pgsPointOfInterest& poi = *iter;
 
-         Float64 X = *xIter;
-
-         if ( stressTendonIntervalIdx == intervalIdx )
+         if (pTendonGeom->IsOnDuct(poi, ductIdx))
          {
-            if ( bStresses )
-            {
-               Float64 fpbt = pPTForce->GetInitialTendonStress(poi,ductIdx,false/*exclude anchor set*/);
-               Float64 fpat = pPTForce->GetInitialTendonStress(poi,ductIdx,true/*include anchor set*/);
-               Float64 fpe  = pPTForce->GetAverageInitialTendonStress(poi.GetSegmentKey(),ductIdx);
+            Float64 X = *xIter;
 
-               AddGraphPoint(dataSeries1,X,fpbt);
-               AddGraphPoint(dataSeries2,X,fpat);
-               AddGraphPoint(dataSeries3,X,fpe);
+            if (stressTendonIntervalIdx == intervalIdx)
+            {
+               if (bStresses)
+               {
+                  Float64 fpbt = pPTForce->GetInitialTendonStress(poi, ductIdx, false/*exclude anchor set*/);
+                  Float64 fpat = pPTForce->GetInitialTendonStress(poi, ductIdx, true/*include anchor set*/);
+                  Float64 fpe = pPTForce->GetAverageInitialTendonStress(poi.GetSegmentKey(), ductIdx);
+
+                  AddGraphPoint(dataSeries1, X, fpbt);
+                  AddGraphPoint(dataSeries2, X, fpat);
+                  AddGraphPoint(dataSeries3, X, fpe);
+               }
+               else
+               {
+                  Float64 Fpbt = pPTForce->GetInitialTendonForce(poi, ductIdx, false/*exclude anchor set*/);
+                  Float64 Fpat = pPTForce->GetInitialTendonForce(poi, ductIdx, true/*include anchor set*/);
+                  Float64 Fpe = pPTForce->GetAverageInitialTendonForce(poi.GetSegmentKey(), ductIdx);
+
+                  AddGraphPoint(dataSeries1, X, Fpbt);
+                  AddGraphPoint(dataSeries2, X, Fpat);
+                  AddGraphPoint(dataSeries3, X, Fpe);
+               }
             }
             else
             {
-               Float64 Fpbt = pPTForce->GetInitialTendonForce(poi,ductIdx,false/*exclude anchor set*/);
-               Float64 Fpat = pPTForce->GetInitialTendonForce(poi,ductIdx,true/*include anchor set*/);
-               Float64 Fpe  = pPTForce->GetAverageInitialTendonForce(poi.GetSegmentKey(),ductIdx);
-
-               AddGraphPoint(dataSeries1,X,Fpbt);
-               AddGraphPoint(dataSeries2,X,Fpat);
-               AddGraphPoint(dataSeries3,X,Fpe);
-            }
-         }
-         else
-         {
-            if ( bStresses )
-            {
-               Float64 fpe  = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,  ductIdx);
-               AddGraphPoint(dataSeries1,X,fpe);
-            }
-            else
-            {
-               Float64 Fpe  = pPTForce->GetTendonForce(poi,intervalIdx,pgsTypes::End,  ductIdx);
-               AddGraphPoint(dataSeries1,X,Fpe);
+               if (bStresses)
+               {
+                  Float64 fpe = pPTForce->GetTendonStress(poi, intervalIdx, pgsTypes::End, ductIdx);
+                  AddGraphPoint(dataSeries1, X, fpe);
+               }
+               else
+               {
+                  Float64 Fpe = pPTForce->GetTendonForce(poi, intervalIdx, pgsTypes::End, ductIdx);
+                  AddGraphPoint(dataSeries1, X, Fpe);
+               }
             }
          }
       }

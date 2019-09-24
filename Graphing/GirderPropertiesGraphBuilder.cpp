@@ -585,19 +585,22 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
          for ( ; iter != end; iter++, xIter++ )
          {
             const pgsPointOfInterest& poi = *iter;
-            Float64 value;
-            if ( propertyType == TendonEccentricity )
+            if (pTendonGeom->IsOnDuct(poi, ductIdx))
             {
-               value = pTendonGeom->GetEccentricity(intervalIdx,poi,ductIdx);
-            }
-            else
-            {
-               value = pTendonGeom->GetDuctOffset(intervalIdx,poi,ductIdx);
-            }
+               Float64 value;
+               if (propertyType == TendonEccentricity)
+               {
+                  value = pTendonGeom->GetEccentricity(intervalIdx, poi, ductIdx);
+               }
+               else
+               {
+                  value = pTendonGeom->GetDuctOffset(intervalIdx, poi, ductIdx);
+               }
 
-            Float64 X = *xIter;
+               Float64 X = *xIter;
 
-            AddGraphPoint(dataSeries,X,value);
+               AddGraphPoint(dataSeries, X, value);
+            }
          }
       }
    }

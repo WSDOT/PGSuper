@@ -294,13 +294,16 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       // only include tendons that are stress prior to the section becoming composite
-      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
-      if ( stressTendonIntervalIdx < compositeIntervalIdx )
+      if (pTendonGeometry->IsOnDuct(poi, ductIdx))
       {
-         Float64 e = pTendonGeometry->GetEccentricity(finalIntervalIdx,poi,ductIdx);
-         Float64 F = pPTForce->GetTendonForce(poi,finalIntervalIdx,pgsTypes::End,ductIdx,true,true);
-         Ppt += F;
-         Pe  += F*e;
+         IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey, ductIdx);
+         if (stressTendonIntervalIdx < compositeIntervalIdx)
+         {
+            Float64 e = pTendonGeometry->GetEccentricity(finalIntervalIdx, poi, ductIdx);
+            Float64 F = pPTForce->GetTendonForce(poi, finalIntervalIdx, pgsTypes::End, ductIdx, true, true);
+            Ppt += F;
+            Pe += F*e;
+         }
       }
    }
    Float64 ept = (IsZero(Ppt) ? 0 : Pe/Ppt);
@@ -1268,8 +1271,10 @@ void pgsShearCapacityEngineer::ComputeVsReqd(const pgsPointOfInterest& poi, SHEA
 //      ATLASSERT( 0.5*Phi*(Vc+Vp) < Vu ); // this assert is information only
 //                                         // this is a case when stirrups are required by code, but not by strength
 
-      if ( Vs < 0 ) 
+      if (Vs < 0)
+      {
          Vs = 0;
+      }
 
       Float64 cot = 1/tan(Theta);
       AvOverS = Vs/(fy*dv*cot);

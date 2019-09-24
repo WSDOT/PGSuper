@@ -1188,28 +1188,31 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
 
       for (DuctIndexType theDuctIdx = 0; theDuctIdx < nDucts; theDuctIdx++)
       {
-         CComPtr<IPoint2d> pnt;
-         ratingParams.pTendonGeom->GetDuctPoint(poi, theDuctIdx, &pnt);
-         Float64 y;
-         pnt->get_Y(&y);
-         ATLASSERT(y < 0);
-         if (bPositiveMoment)
+         if (ratingParams.pTendonGeom->IsOnDuct(poi, theDuctIdx))
          {
-            if (MinIndex(Y, y) == 1)
+            CComPtr<IPoint2d> pnt;
+            ratingParams.pTendonGeom->GetDuctPoint(poi, theDuctIdx, &pnt);
+            Float64 y;
+            pnt->get_Y(&y);
+            ATLASSERT(y < 0);
+            if (bPositiveMoment)
             {
-               ductIdx = theDuctIdx;
-            }
+               if (MinIndex(Y, y) == 1)
+               {
+                  ductIdx = theDuctIdx;
+               }
 
-            Y = Min(Y, y); // want furthest from top
-         }
-         else
-         {
-            if (MaxIndex(Y, y) == 1)
+               Y = Min(Y, y); // want furthest from top
+            }
+            else
             {
-               ductIdx = theDuctIdx;
-            }
+               if (MaxIndex(Y, y) == 1)
+               {
+                  ductIdx = theDuctIdx;
+               }
 
-            Y = Max(Y, y); // want closest to top
+               Y = Max(Y, y); // want closest to top
+            }
          }
       }
    }

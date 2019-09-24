@@ -12,8 +12,7 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -2088,7 +2087,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Superstructure Description",IDC_STATIC,7,2,485,358
+    GROUPBOX        "Superstructure Description",IDC_STATIC,7,2,485,364
     LTEXT           "Bridge Line Offset",IDC_STATIC,15,19,57,8
     EDITTEXT        IDC_ALIGNMENTOFFSET,88,17,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_ALIGNMENTOFFSET_UNIT,132,20,19,8
@@ -2142,7 +2141,7 @@ BEGIN
     COMBOBOX        IDC_GIRDER_ORIENTATION,81,261,180,128,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Deck Type",IDC_DECK_TYPE_LABEL,13,279,51,10
     COMBOBOX        IDC_DECK_TYPE,81,277,180,119,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_SUPERSTRUCTURE_DESCRIPTION,13,296,467,66,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER
+    EDITTEXT        IDC_SUPERSTRUCTURE_DESCRIPTION,13,296,467,63,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER
 END
 
 IDD_BRIDGEDESC_FRAMING DIALOGEX 0, 0, 434, 283
@@ -2540,7 +2539,7 @@ BEGIN
     LTEXT           "Type",IDC_STATIC,20,36,17,8
     COMBOBOX        IDC_GIRDER_NAME,47,34,97,94,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Custom1",IDC_GIRDER_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,14,55,130,214
-    GROUPBOX        "Ducts/Tendons",IDC_STATIC,158,7,443,153
+    GROUPBOX        "Field Installed Tendons",IDC_STATIC,158,7,443,153
     CONTROL         "Custom1",IDC_DUCT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,167,23,367,103
     PUSHBUTTON      "Add",IDC_ADD,543,24,50,14
     PUSHBUTTON      "Delete",IDC_DELETE,543,41,50,14,WS_DISABLED
@@ -2555,6 +2554,8 @@ BEGIN
     COMBOBOX        IDC_CONDITION_FACTOR_TYPE,7,358,243,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_CONDITION_FACTOR,255,356,40,14,ES_RIGHT | ES_AUTOHSCROLL
     COMBOBOX        IDC_CB_SAMEGIRDER,10,17,140,125,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Schematic",IDC_SCHEMATIC,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,158,258,16,16
+    LTEXT           "Toggle schematic view",IDC_STATIC,177,262,72,8
 END
 
 IDD_MULTI_GIRDER_SELECT DIALOGEX 0, 0, 364, 239
@@ -2624,22 +2625,25 @@ BEGIN
     CONTROL         "Roadway Cross Section",IDC_RW_CS,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,320,2,16,16
 END
 
-IDD_LINEAR_DUCT DIALOGEX 0, 0, 316, 305
+IDD_LINEAR_DUCT DIALOGEX 0, 0, 607, 304
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Linear Duct"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "The duct is defined by a series of linear segments connect by the points described in the grid below.",IDC_STATIC,7,7,309,19
-    LTEXT           "Location is the horizontal position of the points defined as is either a distance measured from the left end of the girder or the distance from the previously defined point.",IDC_STATIC,7,27,302,18
-    LTEXT           "Offset is the offset distance from the specified datum.",IDC_STATIC,7,50,175,8
-    LTEXT           "Locate points as distance from",IDC_STATIC,7,68,98,8
-    COMBOBOX        IDC_LOCATION,111,67,169,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Custom1",IDC_POINT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,88,244,188
-    PUSHBUTTON      "Add",IDC_ADD,259,88,50,14
-    PUSHBUTTON      "Delete",IDC_DELETE,259,106,50,14
-    DEFPUSHBUTTON   "OK",IDOK,153,284,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,206,284,50,14
-    PUSHBUTTON      "Help",ID_HELP,259,284,50,14
+    CONTROL         "Custom1",IDC_POINT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,7,244,188
+    PUSHBUTTON      "+",IDC_ADD,258,7,16,14
+    PUSHBUTTON      "-",IDC_DELETE,258,25,16,14
+    LTEXT           "The duct is defined by a series of linear segments connect by the points described in the grid.",IDC_STATIC,294,7,281,19
+    LTEXT           "Location is the horizontal position of the points defined as is either a distance measured from the left end of the girder or the distance from the previously defined point.",IDC_STATIC,294,27,281,18
+    LTEXT           "Offset is the offset distance from the specified datum.",IDC_STATIC,294,50,175,8
+    LTEXT           "Locate points as distance from",IDC_STATIC,294,68,98,8
+    COMBOBOX        IDC_LOCATION,398,67,169,66,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Schematic",IDC_SCHEMATIC,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,6,202,16,16
+    LTEXT           "Toggle schematic view",IDC_STATIC,25,206,72,8
+    LTEXT           "Custom1",IDC_TENDONS,7,218,594,58,NOT WS_GROUP | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,445,283,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,498,283,50,14
+    PUSHBUTTON      "Help",ID_HELP,550,283,50,14
 END
 
 IDD_LOAD_FACTORS DIALOGEX 0, 0, 432, 203
@@ -2798,19 +2802,26 @@ BEGIN
     LTEXT           "Extended Right",IDC_EXTENDED_RIGHT,399,368,64,8
 END
 
-IDD_PARABOLIC_DUCT DIALOGEX 0, 0, 316, 270
+IDD_PARABOLIC_DUCT DIALOGEX 0, 0, 609, 288
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Parabolic Duct"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Custom1",IDC_POINT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,7,302,161
-    LTEXT           "Start/End: Location start and end face of girder.",IDC_STATIC,7,172,156,8
-    LTEXT           "Low: Distance from Start point or previous high point. Measured as distance or percentage of the distance between high points. Distance from End in last span.",IDC_STATIC,7,189,302,22
-    LTEXT           "IP: Location of inflection point measured from high point. Measured as distance or percentage of distance between high and low points.",IDC_STATIC,7,212,302,21
-    LTEXT           "High: High point located at centerline pier",IDC_STATIC,7,236,133,8
-    DEFPUSHBUTTON   "OK",IDOK,153,249,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,206,249,50,14
-    PUSHBUTTON      "Help",ID_HELP,259,249,50,14
+    LTEXT           "Duct starts at ",IDC_STATIC,7,9,47,8
+    COMBOBOX        IDC_START_PIER,55,7,58,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "and ends at",IDC_STATIC,118,9,39,8
+    COMBOBOX        IDC_END_PIER,160,7,58,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Custom1",IDC_POINT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,24,302,161
+    LTEXT           "Start/End: Location from start or end of the tendon.",IDC_STATIC,318,26,280,8
+    LTEXT           "Low: Distance from Start point or previous high point. Measured as distance or percentage of the distance between high points. Distance from End in last span.",IDC_STATIC,318,39,280,17
+    LTEXT           "IP: Location of inflection point measured from high point. Measured as distance or percentage of distance between high and low points.",IDC_STATIC,318,61,280,17
+    LTEXT           "High: High point at centerline pier",IDC_STATIC,318,83,280,8
+    CONTROL         "Schematic",IDC_SCHEMATIC,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,6,188,16,16
+    LTEXT           "Toggle schematic view",IDC_STATIC,25,192,72,8
+    LTEXT           "Custom1",IDC_TENDONS,7,204,594,58,NOT WS_GROUP | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,442,267,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,495,267,50,14
+    PUSHBUTTON      "Help",ID_HELP,552,267,50,14
 END
 
 IDD_OFFSET_DUCT DIALOGEX 0, 0, 316, 180
@@ -3773,534 +3784,36 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
-    IDD_ABOUTBOX, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_PROJECTPROPERTIES, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_ENVIRONMENT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDERDESC_PRESTRESS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SPECIFICATION, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGE_EDITOR_PLAN_PAGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGE_EDITOR_ALIGNMENT_PAGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGE_EDITOR_PROFILE_PAGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGE_EDITOR_SECTION_PAGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDER_EDITOR_SECTION_PAGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDER_EDITOR_ELEVATION_PAGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDER_EDITOR_BAR, DIALOG
-    BEGIN
-    END
-
-    IDD_SECTION_CUT_DIALOG_EX, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_DESIGN_GIRDER, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDERDESC_LIFTING_PAGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_COPY_GIRDER_PROPERTIES, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SECTION_CUT_DIALOG, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_DESIGN_OUTCOME, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_STABILITY_BAR, DIALOG
-    BEGIN
-    END
-
-    IDD_LLDF, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGEDESC_ENVIRONMENTAL, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_EDIT_POINTLOAD, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_EDIT_DISTRIBUTEDLOAD, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_EDIT_LOADS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDERDESC_DEBOND, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_ALIGNMENT_HORIZONTAL, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_PROFILE_PAGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SUPERELEVATIONS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SPAN_LENGTHS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_STATION_CUT_DIALOG, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SELECT_GIRDER, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDERDESC_GENERAL, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGEDESC_DECKREINFORCEMENT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDERDESC_LONGITUDINAL_REBAR, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGEDESC_DECKDETAILS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_EDIT_MOMENTLOAD, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SELECT_LIVE_LOAD, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_MOVEPIER, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_STRUCTURAL_ANALYSIS_METHOD, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDERLAYOUT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SPANLAYOUT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_PIER_LOCATION, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_PIERCONNECTIONS, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 651
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 348
-    END
-
-    IDD_ABUTMENTCONNECTIONS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDERSPACING, DIALOG
-    BEGIN
-        , 50
-    END
-
     IDD_BRIDGEDESC_GENERAL, DIALOG
     BEGIN
-        , 50
-    END
-
-    IDD_BRIDGEDESC_FRAMING, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGEDESC_RAILINGSYSTEM, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SELECT_ITEM, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_RESOLVE_GIRDER_SPACING, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDERLABELFORMAT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_RATING_OPTIONS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_DESIGN_RATING, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_LEGAL_RATING, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_PERMIT_RATING, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_MANAGE_PLUGINS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_CONSTRUCTION_LOADS, DIALOG
-    BEGIN
-        , 50
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 492
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 366
     END
 
     IDD_SPLICEDGIRDER, DIALOG
     BEGIN
-        , 50
-    END
-
-    IDD_MULTI_GIRDER_SELECT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_LLDF_FILL, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGEVIEW_CONTROLS, DIALOG
-    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 601
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 372
     END
 
     IDD_LINEAR_DUCT, DIALOG
     BEGIN
-        , 50
-    END
-
-    IDD_LOAD_FACTORS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_GIRDER_SELECT_STRANDS, DIALOG
-    BEGIN
-        , 50
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 600
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 297
     END
 
     IDD_PARABOLIC_DUCT, DIALOG
     BEGIN
-        , 50
-    END
-
-    IDD_OFFSET_DUCT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_TS_GENERAL, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_CLOSURE_CONNECTION, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_CLOSURE_GENERAL, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_CLOSURE_LONGITUDINAL, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SELECT_GIRDERSEGMENT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SEGMENT_GENERAL, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SEGMENT_LONGITUDINAL_REBAR, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SEGMENT_STRANDS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SEGMENT_SPACING, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_TIMELINE_MANAGER, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_TIMELINE_EVENT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_ERECT_PIERS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_REMOVE_TS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_CAST_CLOSURE_JOINT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_APPLYLOADS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_CONSTRUCT_SEGMENT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_STRESS_TENDON, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_ERECT_SEGMENTS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_INSERT_SPAN, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SELECT_CLOSURE_JOINT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_CAST_DECK, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_POSTTENSION_PARAMETERS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_PRETENSION_PARAMETERS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_TIMESTEP_PARAMETERS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_PIER_LAYOUT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_EDIT_HAUNCH, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_HAUNCH_BY_BRIDGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_HAUNCH_BY_BEARING, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_HAUNCH_BY_SEGMENT, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_ASSUMED_EXCESS_CAMBER_BY_BRIDGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_ASSUMED_EXCESS_CAMBER_BY_SPAN, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_ASSUMED_EXCESS_CAMBER_BY_GIRDER, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_EDIT_BEARINGS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BEARINGSAME4_BRIDGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BEARING_PIER_BY_PIER, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BEARING_GDR_BY_GDR, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_CAST_LONGITUDINAL_JOINTS, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_BRIDGEDESC_BEARING, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_PIER_BEARINGS_PAGE, DIALOG
-    BEGIN
-        , 50
-    END
-
-    IDD_SELECT_BOUNDARY_CONDITION, DIALOG
-    BEGIN
-        , 50
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 602
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 281
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -4801,6 +4314,16 @@ BEGIN
 END
 
 IDD_HAUNCH_BY_BRIDGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PARABOLIC_DUCT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_LINEAR_DUCT AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

@@ -50,8 +50,9 @@ public:
    void AddPoint();
    void DeletePoint();
    void SetMeasurementType(CLinearDuctGeometry::MeasurementType mt);
-   
-   void GetData(CLinearDuctGeometry& ductGeometry);
+   CLinearDuctGeometry::MeasurementType GetMeasurementType() const;
+
+   CLinearDuctGeometry GetData();
    void SetData(const CLinearDuctGeometry& ductGeometry);
 
 // Overrides
@@ -59,10 +60,11 @@ public:
 	//{{AFX_VIRTUAL(CLinearDuctGrid)
 	//}}AFX_VIRTUAL
    
-   virtual int GetColWidth(ROWCOL nCol);
-   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
-   virtual BOOL OnEndEditing(ROWCOL nRow,ROWCOL nCol);
-   virtual void OnChangedSelection(const CGXRange* pRange,BOOL bIsDragging,BOOL bKey);
+   virtual int GetColWidth(ROWCOL nCol) override;
+   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt) override;
+   virtual BOOL OnEndEditing(ROWCOL nRow,ROWCOL nCol) override;
+   virtual void OnModifyCell(ROWCOL nRow, ROWCOL nCol) override;
+   virtual void OnChangedSelection(const CGXRange* pRange,BOOL bIsDragging,BOOL bKey) override;
 
 
 // Implementation
@@ -77,6 +79,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    CLinearDuctGridCallback* m_pCallback;
+
+   CLinearDuctGeometry m_DuctGeometry;
 
    void FillRow(ROWCOL row,Float64 location,Float64 offset,CLinearDuctGeometry::OffsetType offsetType);
    void GetPoint(ROWCOL row,Float64* pLocation,Float64* pOffset,CLinearDuctGeometry::OffsetType* pOffsetType);

@@ -2580,7 +2580,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
 
       for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
       {
-         if ( firstIntervalIdx != lastIntervalIdx && (intervalIdx < releaseIntervalIdx || ::IsZero(pIntervals->GetDuration(intervalIdx))) )
+         if ( intervalIdx < releaseIntervalIdx || ::IsZero(pIntervals->GetDuration(intervalIdx)) )
          {
             continue;
          }

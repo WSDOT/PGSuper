@@ -6140,74 +6140,50 @@ void CBridgeAgentImp::LayoutPoiForTemporarySupports(const CSegmentKey& segmentKe
 
 void CBridgeAgentImp::LayoutPoiForTendons(const CGirderKey& girderKey)
 {
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
-   const CPTData* pPTData = pBridgeDesc->GetPostTensioning(girderKey);
-   DuctIndexType nDucts = pPTData->GetDuctCount();
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   CComPtr<ISuperstructureMember> ssMbr;
+   GetSuperstructureMember(girderKey, &ssMbr);
+
+   CComQIPtr<IItemData> itemData(ssMbr);
+
+   CComPtr<IUnknown> unk;
+   itemData->GetItemData(CComBSTR(_T("Tendons")), &unk);
+   if (unk)
    {
-      const CDuctData* pDuct = pPTData->GetDuct(ductIdx);
-      switch(pDuct->DuctGeometryType)
+      CComQIPtr<ITendonCollection> tendons(unk);
+
+      IndexType nDucts;
+      tendons->get_Count(&nDucts);
+
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
       {
-      case CDuctGeometry::Linear:
-         LayoutPoiForTendon(girderKey,pDuct->LinearDuctGeometry);
-         break;
-      case CDuctGeometry::Parabolic:
-         LayoutPoiForTendon(girderKey,pDuct->ParabolicDuctGeometry);
-         break;
-      case CDuctGeometry::Offset:
-         LayoutPoiForTendon(girderKey,pDuct->OffsetDuctGeometry);
-         break;
-      default:
-         ATLASSERT(false); // is there a new one?
-         break;
+         CComPtr<ITendon> tendon;
+         tendons->get_Item(ductIdx, &tendon);
+
+         // start and end of tendon in girder coordinates
+         CComPtr<IPoint3d> pntStart, pntEnd;
+         tendon->get_Start(&pntStart);
+         tendon->get_End(&pntEnd);
+         Float64 Xgs, Xge;
+         pntStart->get_Z(&Xgs);
+         pntEnd->get_Z(&Xge);
+
+         pgsPointOfInterest startPoi = ConvertGirderCoordinateToPoi(girderKey, Xgs);
+         startPoi.SetID(INVALID_ID);
+         startPoi.SetReferencedAttributes(0);
+         startPoi.SetNonReferencedAttributes(POI_DUCT_START);
+         PoiIDType startPoiID = m_pPoiMgr->AddPointOfInterest(startPoi);
+         ATLASSERT(startPoiID != INVALID_ID);
+
+         pgsPointOfInterest endPoi = ConvertGirderCoordinateToPoi(girderKey, Xge);
+         endPoi.SetID(INVALID_ID);
+         endPoi.SetReferencedAttributes(0);
+         endPoi.SetNonReferencedAttributes(POI_DUCT_END);
+         PoiIDType endPoiID = m_pPoiMgr->AddPointOfInterest(endPoi);
+         ATLASSERT(endPoiID != INVALID_ID);
+
+         m_pPoiMgr->AddDuctBoundary(girderKey, ductIdx, startPoiID, endPoiID);
       }
    }
-}
-
-void CBridgeAgentImp::LayoutPoiForTendon(const CGirderKey& girderKey,const CLinearDuctGeometry& ductGeometry)
-{
-   Float64 Lg = GetGirderLength(girderKey);
-   CLinearDuctGeometry::MeasurementType measurementType = ductGeometry.GetMeasurementType();
-   Float64 Xg = 0;
-   IndexType nPoints = ductGeometry.GetPointCount();
-   for  ( IndexType ptIdx = 0; ptIdx < nPoints; ptIdx++ )
-   {
-      Float64 location,offset;
-      CDuctGeometry::OffsetType offsetType;
-      ductGeometry.GetPoint(ptIdx,&location,&offset,&offsetType);
-      if ( measurementType == CLinearDuctGeometry::AlongGirder )
-      {
-         if ( location < 0 )
-         {
-            Xg = -location*Lg;
-         }
-         else
-         {
-            Xg = location;
-         }
-      }
-      else
-      {
-         Xg += location;
-      }
-
-      pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(girderKey,Xg);
-      poi.SetID(INVALID_ID);
-      poi.SetReferencedAttributes(0);
-      poi.SetNonReferencedAttributes(0);
-      m_pPoiMgr->AddPointOfInterest(poi);
-   }
-}
-
-void CBridgeAgentImp::LayoutPoiForTendon(const CGirderKey& girderKey,const CParabolicDuctGeometry& ductGeometry)
-{
-   // Do we need POI at key points along a parabolic tendon?
-}
-
-void CBridgeAgentImp::LayoutPoiForTendon(const CGirderKey& girderKey,const COffsetDuctGeometry& ductGeometry)
-{
-   // offset ducts not supported yet
-   ATLASSERT(false); // not supported yet
 }
 
 //-----------------------------------------------------------------------------
@@ -20554,6 +20530,15 @@ PierIndexType CBridgeAgentImp::GetPier(const pgsPointOfInterest& poi) const
    }
 }
 
+void CBridgeAgentImp::GetDuctRange(const CGirderKey& girderKey, DuctIndexType ductIdx, const pgsPointOfInterest** ppStartPoi, const pgsPointOfInterest** ppEndPoi) const
+{
+	VALIDATE_POINTS_OF_INTEREST(girderKey);
+	PoiIDType startPoiID, endPoiID;
+	m_pPoiMgr->GetDuctBoundary(girderKey, ductIdx, &startPoiID, &endPoiID);
+	*ppStartPoi = &GetPointOfInterest(startPoiID);
+	*ppEndPoi = &GetPointOfInterest(endPoiID);
+}
+
 void CBridgeAgentImp::GroupBySegment(const PoiList& vPoi, std::list<PoiList>* pList) const
 {
    if ( vPoi.size() == 0 )
@@ -25206,7 +25191,6 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    // Limits of deduction for ducts is between the tensile and compression resultant
    // (limit is within dv for LRFD before 2003... see below)
 
-
    // get moment capacity details
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    const MOMENTCAPACITYDETAILS* pCapDet = pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, tensionSide == pgsTypes::BottomFace ? true : false);
@@ -25254,44 +25238,48 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    Float64 duct_deduction = 0;
    if ( IsOnGirder(poi) )
    {
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      GET_IFACE(ITendonGeometry, pTendonGeom);
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
       {
-         // assumed ducts are grouted and cured in the interval following their installation and stressing
-         IntervalIndexType groutDuctIntervalIdx = GetStressTendonInterval(girderKey,ductIdx)+1;
-
-         CComPtr<IPoint2d> point;
-         GetDuctPoint(poi,ductIdx,&point); // in Girder Section Coordinates
-         Float64 y;
-         point->get_Y(&y);
-
-         if ( ::InRange(Ybot,y,Ytop) )
+         if (pTendonGeom->IsOnDuct(poi, ductIdx))
          {
-            Float64 deduct_factor;
-            if ( bAfter2002 )
-            {
-               if ( intervalIdx < groutDuctIntervalIdx )
-               {
-                  deduct_factor =  0.50;
-               }
-               else
-               {
-                  deduct_factor =  0.25;
-               }
-            }
-            else
-            {
-               if ( intervalIdx < groutDuctIntervalIdx )
-               {
-                  deduct_factor =  1.00;
-               }
-               else
-               {
-                  deduct_factor =  0.50;
-               }
-            }
+            // assumed ducts are grouted and cured in the interval following their installation and stressing
+            IntervalIndexType groutDuctIntervalIdx = GetStressTendonInterval(girderKey, ductIdx) + 1;
 
-            Float64 dia = GetOutsideDiameter(girderKey,ductIdx);
-            duct_deduction = Max(duct_deduction,deduct_factor*dia);
+            CComPtr<IPoint2d> point;
+            GetDuctPoint(poi, ductIdx, &point); // in Girder Section Coordinates
+            Float64 y;
+            point->get_Y(&y);
+
+            if (::InRange(Ybot, y, Ytop))
+            {
+               Float64 deduct_factor;
+               if (bAfter2002)
+               {
+                  if (intervalIdx < groutDuctIntervalIdx)
+                  {
+                     deduct_factor = 0.50;
+                  }
+                  else
+                  {
+                     deduct_factor = 0.25;
+                  }
+               }
+               else
+               {
+                  if (intervalIdx < groutDuctIntervalIdx)
+                  {
+                     deduct_factor = 1.00;
+                  }
+                  else
+                  {
+                     deduct_factor = 0.50;
+                  }
+               }
+
+               Float64 dia = GetOutsideDiameter(girderKey, ductIdx);
+               duct_deduction = Max(duct_deduction, deduct_factor*dia);
+            }
          }
       }
    }
@@ -28201,11 +28189,86 @@ DuctIndexType CBridgeAgentImp::GetDuctCount(const CGirderKey& girderKey) const
    }
 }
 
-void CBridgeAgentImp::GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,const CSplicedGirderData* pGirder,IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::GetDuctRange(const CGirderKey& girderKey, DuctIndexType ductIdx, Float64* pXgs, Float64* pXge) const
 {
-   // Get the duct centerline based on the spliced girder input data
-   const CDuctData* pDuctData = pGirder->GetPostTensioning()->GetDuct(ductIdx);
+   CComPtr<ISuperstructureMember> ssMbr;
+   GetSuperstructureMember(girderKey, &ssMbr);
 
+   CComQIPtr<IItemData> itemData(ssMbr);
+
+   CComPtr<IUnknown> unk;
+   itemData->GetItemData(CComBSTR(_T("Tendons")), &unk);
+   if (unk)
+   {
+      CComQIPtr<ITendonCollection> tendons(unk);
+
+      CComPtr<ITendon> tendon;
+      tendons->get_Item(ductIdx, &tendon);
+
+      CComPtr<IPoint3d> pntStart, pntEnd;
+      tendon->get_Start(&pntStart);
+      tendon->get_End(&pntEnd);
+
+      pntStart->get_Z(pXgs);
+      pntEnd->get_Z(pXge);
+   }
+   else
+   {
+      *pXgs = 0;
+      *pXge = GetGirderLength(girderKey);
+   }
+}
+
+bool CBridgeAgentImp::IsOnDuct(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const
+{
+   CComPtr<ISuperstructureMember> ssMbr;
+   GetSuperstructureMember(poi.GetSegmentKey(), &ssMbr);
+
+   CComQIPtr<IItemData> itemData(ssMbr);
+
+   CComPtr<IUnknown> unk;
+   itemData->GetItemData(CComBSTR(_T("Tendons")), &unk);
+   if (unk)
+   {
+      CComQIPtr<ITendonCollection> tendons(unk);
+
+      CComPtr<ITendon> tendon;
+      tendons->get_Item(ductIdx, &tendon);
+
+      CComPtr<IPoint3d> pntStart, pntEnd;
+      tendon->get_Start(&pntStart);
+      tendon->get_End(&pntEnd);
+
+      Float64 Xgs, Xge;
+      pntStart->get_Z(&Xgs);
+      pntEnd->get_Z(&Xge);
+
+      Float64 Xg = ConvertPoiToGirderCoordinate(poi);
+      if (InRange(Xgs, Xg, Xge))
+      {
+         // maybe on the duct... check the end points
+         if (IsEqual(Xgs, Xg))
+         {
+            return poi.HasAttribute(POI_DUCT_START);
+         }
+         else if (IsEqual(Xg, Xge))
+         {
+            return poi.HasAttribute(POI_DUCT_END);
+         }
+         else
+         {
+            // Xg is somewhere in the middle of the duct
+            return true;
+         }
+      }
+   }
+
+   // if we got this far, the POI is out of range, or in range and at the end, but doesn't have the correct attribute
+   return false;
+}
+
+void CBridgeAgentImp::GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx, const CDuctData* pDuctData,IPoint2dCollection** ppPoints) const
+{
    switch ( pDuctData->DuctGeometryType )
    {
    case CDuctGeometry::Linear:
@@ -28217,8 +28280,9 @@ void CBridgeAgentImp::GetDuctCenterline(const CGirderKey& girderKey,DuctIndexTyp
       break;
 
    case CDuctGeometry::Offset:
-      GetDuctCenterline(girderKey,pDuctData->OffsetDuctGeometry.RefDuctIdx,pGirder,ppPoints);
-      CreateDuctCenterline(girderKey,pDuctData->OffsetDuctGeometry,ppPoints);
+      ATLASSERT(false); // this isn't supported
+      //GetDuctCenterline(girderKey,pDuctData->OffsetDuctGeometry.RefDuctIdx,pGirder,ppPoints); // instead of pGirder, we need pDuct for the source of the offset
+      //CreateDuctCenterline(girderKey,pDuctData->OffsetDuctGeometry,ppPoints);
       break;
    }
 }
@@ -28324,18 +28388,28 @@ void CBridgeAgentImp::GetDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIn
    CComPtr<ITendon> tendon;
    tendons->get_Item(ductIdx,&tendon);
 
-   CComPtr<IPoint3d> cg;
-   tendon->get_CG(Xg,tmPath,&cg);
+   Float64 Xgs, Xge;
+   GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
+   if (InRange(Xgs, Xg, Xge))
+   {
+      CComPtr<IPoint3d> cg;
+      tendon->get_CG(Xg, tmPath, &cg);
 
-   Float64 x,y,z;
-   cg->Location(&x,&y,&z);
-   ATLASSERT(IsEqual(z,Xg));
+      Float64 x, y, z;
+      cg->Location(&x, &y, &z);
+      ATLASSERT(IsEqual(z, Xg));
 
-   CComPtr<IPoint2d> pnt;
-   pnt.CoCreateInstance(CLSID_Point2d);
-   pnt->Move(x,y);
+      CComPtr<IPoint2d> pnt;
+      pnt.CoCreateInstance(CLSID_Point2d);
+      pnt->Move(x, y);
 
-   pnt.CopyTo(ppPoint);
+      pnt.CopyTo(ppPoint);
+   }
+   else
+   {
+      ATLASSERT(false); // this point isn't on the duct... why are you asking for it?
+      *ppPoint = nullptr;
+   }
 }
 
 Float64 CBridgeAgentImp::GetOutsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx) const
@@ -28572,18 +28646,27 @@ void CBridgeAgentImp::GetTendonSlope(const pgsPointOfInterest& poi,DuctIndexType
 
 void CBridgeAgentImp::GetTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope) const
 {
-   CComPtr<ISuperstructureMember> ssMbr;
-   GetSuperstructureMember(girderKey,&ssMbr);
+   Float64 Xgs, Xge;
+   GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
+   if (InRange(Xgs, Xg, Xge))
+   {
+      CComPtr<ISuperstructureMember> ssMbr;
+      GetSuperstructureMember(girderKey, &ssMbr);
 
-   CComQIPtr<IItemData> itemData(ssMbr);
+      CComQIPtr<IItemData> itemData(ssMbr);
 
-   CComPtr<IUnknown> unk;
-   itemData->GetItemData(CComBSTR(_T("Tendons")),&unk);
+      CComPtr<IUnknown> unk;
+      itemData->GetItemData(CComBSTR(_T("Tendons")), &unk);
 
-   CComQIPtr<ITendonCollection> tendons(unk);
-   CComPtr<ITendon> tendon;
-   tendons->get_Item(ductIdx,&tendon);
-   tendon->get_Slope(Xg,tmTendon,ppSlope);
+      CComQIPtr<ITendonCollection> tendons(unk);
+      CComPtr<ITendon> tendon;
+      tendons->get_Item(ductIdx, &tendon);
+      tendon->get_Slope(Xg, tmTendon, ppSlope);
+   }
+   else
+   {
+      *ppSlope = nullptr;
+   }
 }
 
 Float64 CBridgeAgentImp::GetMinimumRadiusOfCurvature(const CGirderKey& girderKey,DuctIndexType ductIdx) const
@@ -28607,42 +28690,25 @@ Float64 CBridgeAgentImp::GetMinimumRadiusOfCurvature(const CGirderKey& girderKey
 
 Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const
 {
-   if ( !IsOnGirder(poi) )
+   if ( !IsOnDuct(poi,ductIdx) )
    {
       return 0;
    }
 
-   // get the poi at the start of this girder
-   CSegmentKey segmentKey(poi.GetSegmentKey());
+#pragma Reminder("WORKING HERE - Mantis 703 - need to get start and end of tendon to measure angular change - assuming start and end of girder")
+   PoiIDType startPoiID, endPoiID;
+   m_pPoiMgr->GetDuctBoundary(poi.GetSegmentKey(), ductIdx, &startPoiID, &endPoiID);
 
-   const pgsPointOfInterest* poiStart;
-   if ( endType == pgsTypes::metStart )
-   {
-      // angular changes are measured from the start of the girder (i.e. jacking at the left end)
-      segmentKey.segmentIndex = 0; // always occurs in segment 0
-      PoiList vPoi;
-      GetPointsOfInterest(segmentKey, POI_START_FACE,&vPoi);
-      ATLASSERT(vPoi.size() == 1);
-      poiStart = &(vPoi.front().get());
-   }
-   else
-   {
-      // angular changes are measured from the end of the girder (i.e. jacking at the right end)
-      SegmentIndexType nSegments = GetSegmentCount(segmentKey);
-      segmentKey.segmentIndex = nSegments-1;
-      PoiList vPoi;
-      GetPointsOfInterest(segmentKey, POI_END_FACE,&vPoi);
-      ATLASSERT(vPoi.size() == 1);
-      poiStart = &(vPoi.front().get());
-   }
-
-   return GetAngularChange(*poiStart,poi,ductIdx);
+   const pgsPointOfInterest& poiStart = GetPointOfInterest(endType == pgsTypes::metStart ? startPoiID : endPoiID);
+   ATLASSERT(poiStart.HasAttribute(endType == pgsTypes::metStart ? POI_DUCT_START : POI_DUCT_END));
+   
+   return GetAngularChange(poiStart, poi, ductIdx);
 }
 
 Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx) const
 {
-   ATLASSERT(IsOnGirder(poi1));
-   ATLASSERT(IsOnGirder(poi2));
+   ATLASSERT(IsOnDuct(poi1,ductIdx));
+   ATLASSERT(IsOnDuct(poi2,ductIdx));
 
    // POIs must be on the same girder
    ATLASSERT(CGirderKey(poi1.GetSegmentKey()) == CGirderKey(poi2.GetSegmentKey()));
@@ -28664,9 +28730,9 @@ Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi1,const p
       bLeftToRight = false;
       std::reverse(vPoi.begin(),vPoi.end());
    }
+
    PoiList::iterator iter(vPoi.begin());
    pgsPointOfInterest prevPoi = *iter++;
-
    PoiList::iterator end(vPoi.end());
    for ( ; iter != end; iter++ )
    {
@@ -28675,6 +28741,7 @@ Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi1,const p
       {
          if ( prevPoi < poi1 )
          {
+            prevPoi = poi;
             continue; // before the start poi... continue with next poi
          }
          
@@ -28687,6 +28754,7 @@ Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi1,const p
       {
          if ( poi1 < prevPoi )
          {
+            prevPoi = poi;
             continue; // prev poi is before the first poi (going right to left)
          }
 
@@ -28699,6 +28767,10 @@ Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi1,const p
       CComPtr<IVector3d> slope1, slope2;
       GetTendonSlope(prevPoi,ductIdx,&slope1);
       GetTendonSlope(poi,    ductIdx,&slope2);
+
+      // if these assert, then prevPoi and/or poi is not on the duct... 
+      ATLASSERT(slope1);
+      ATLASSERT(slope2);
 
       Float64 delta_alpha;
       slope2->AngleBetween(slope1,&delta_alpha);
@@ -29477,34 +29549,46 @@ Float64 CBridgeAgentImp::ConvertDuctOffsetToDuctElevation(const CGirderKey& gird
    }
 }
 
-mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CParabolicDuctGeometry& geometry) const
+mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CParabolicDuctGeometry& ductGeometry) const
 {
    mathCompositeFunction2d fnCenterline;
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
-   PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
-   PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
+   PierIndexType startPierIdx, endPierIdx;
+   ductGeometry.GetRange(&startPierIdx, &endPierIdx);
    SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
+   SpanIndexType endSpanIdx = (SpanIndexType)(endPierIdx - 1);
 
-   Float64 x1 = 0; // x is measured from the start face of the girder
+   SpanIndexType startGroupSpanIdx, endGroupSpanIdx;
+   GetGirderGroupSpans(girderKey.groupIndex, &startGroupSpanIdx, &endGroupSpanIdx);
+
+   Float64 Ls_offset = 0;
+   for (SpanIndexType spanIdx = startGroupSpanIdx; spanIdx < startSpanIdx; spanIdx++)
+   {
+      Float64 L = GetSpanLength(spanIdx, girderKey.girderIndex);
+      Ls_offset += L;
+   }
+   Float64 x1 = Ls_offset; // x is measured from the start face of the girder. x1 is where the tendon starts
 
    //
    // Start to first low point
    //
-   SpanIndexType nSpans = geometry.GetSpanCount();
+   SpanIndexType nSpans = ductGeometry.GetSpanCount();
 
    // start point
+   PierIndexType pierIdx;
    Float64 dist,offset;
    CDuctGeometry::OffsetType offsetType;
-   geometry.GetStartPoint(&dist,&offset,&offsetType);
+   ductGeometry.GetStartPoint(&pierIdx,&dist,&offset,&offsetType);
+   if (dist < 0) // fraction of the span length
+   {
+      dist *= -GetSpanLength(startSpanIdx, girderKey.girderIndex);
+   }
 
    x1 += dist;
    Float64 y1 = ConvertDuctOffsetToDuctElevation(girderKey,x1,offset,offsetType);
 
    // low point
-   geometry.GetLowPoint(startSpanIdx,&dist,&offset,&offsetType);
+   ductGeometry.GetLowPoint(startSpanIdx,&dist,&offset,&offsetType);
    if ( dist < 0 ) // fraction of the span length
    {
       dist *= -GetSpanLength(startSpanIdx,girderKey.girderIndex);
@@ -29525,7 +29609,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    Float64 x3,y3;
    mathPolynomial2d rightParabola;
    Float64 startStation = GetPierStation(startPierIdx);
-   Float64 Ls = 0;
+   Float64 Ls = Ls_offset;
    for ( PierIndexType pierIdx = startPierIdx+1; pierIdx < endPierIdx; pierIdx++ )
    {
       SpanIndexType prevSpanIdx = SpanIndexType(pierIdx-1);
@@ -29533,7 +29617,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
 
       Float64 distLeftIP, highOffset, distRightIP;
       CDuctGeometry::OffsetType highOffsetType;
-      geometry.GetHighPoint(pierIdx,&distLeftIP,&highOffset,&highOffsetType,&distRightIP);
+      ductGeometry.GetHighPoint(pierIdx,&distLeftIP,&highOffset,&highOffsetType,&distRightIP);
 
       // low to high point
       Ls += GetSpanLength(prevSpanIdx,girderKey.girderIndex);
@@ -29552,7 +29636,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
       fnCenterline.AddFunction(x2,x3,rightParabola);
 
       // high to low point
-      geometry.GetLowPoint(pierIdx,&dist,&offset,&offsetType);
+      ductGeometry.GetLowPoint(pierIdx,&dist,&offset,&offsetType);
       x1 = x3; 
       y1 = y3;
 
@@ -29589,14 +29673,20 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    //
    // last low point to end
    //
-   geometry.GetEndPoint(&dist,&offset,&offsetType);
+   ductGeometry.GetEndPoint(&pierIdx,&dist,&offset,&offsetType);
    if ( dist < 0 ) // fraction of last span length
    {
       dist *= -GetSpanLength(startSpanIdx + nSpans-1,girderKey.girderIndex);
    }
 
-   Float64 girderLength = GetGirderLength(girderKey);
-   x2 = girderLength;
+   Float64 Lg = GetGirderLength(girderKey);
+   for (SpanIndexType spanIdx = endSpanIdx + 1; spanIdx <= endGroupSpanIdx; spanIdx++)
+   {
+      Float64 L = GetSpanLength(spanIdx, girderKey.girderIndex);
+      Lg -= L;
+   }
+
+   x2 = Lg - dist;
    y2 = ConvertDuctOffsetToDuctElevation(girderKey,x1,offset,offsetType);
    rightParabola = GenerateParabola1(x1,y1,x2,y2,0.0);
    fnCenterline.AddFunction(x1,x2,rightParabola);
@@ -32372,17 +32462,20 @@ Float64 CBridgeAgentImp::GetAptTensionSide(const pgsPointOfInterest& poi,bool bT
    DuctIndexType nDucts = GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      CComPtr<IPoint2d> point;
-      GetDuctPoint(poi,ductIdx,&point);
-
-      IndexType nStrands = GetTendonStrandCount(girderKey,ductIdx);
-
-      Float64 y;
-      point->get_Y(&y);
-
-      if ( (bTensionTop && half_depth_elevation < y) || (!bTensionTop && y <= half_depth_elevation) ) 
+      if (IsOnDuct(poi, ductIdx))
       {
-         Apt += nStrands*apt;
+         CComPtr<IPoint2d> point;
+         GetDuctPoint(poi, ductIdx, &point);
+
+         IndexType nStrands = GetTendonStrandCount(girderKey, ductIdx);
+
+         Float64 y;
+         point->get_Y(&y);
+
+         if ((bTensionTop && half_depth_elevation < y) || (!bTensionTop && y <= half_depth_elevation))
+         {
+            Apt += nStrands*apt;
+         }
       }
    }
 
@@ -33143,10 +33236,13 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
    CComPtr<ITendonCollection> tendons;
    tendons.CoCreateInstance(CLSID_TendonCollection);
 
-   PierIndexType startPierIdx = ductGeometry.GetGirder()->GetPierIndex(pgsTypes::metStart);
-   PierIndexType endPierIdx   = ductGeometry.GetGirder()->GetPierIndex(pgsTypes::metEnd);
+   PierIndexType startPierIdx, endPierIdx;
+   ductGeometry.GetRange(&startPierIdx, &endPierIdx);
    SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
    SpanIndexType endSpanIdx   = (SpanIndexType)(endPierIdx-1);
+
+   SpanIndexType startGroupSpanIdx, endGroupSpanIdx;
+   GetGirderGroupSpans(girderKey.groupIndex, &startGroupSpanIdx, &endGroupSpanIdx);
 
    // x = left/right position in the girder cross section
    // y = elevation in the girder cross section (0 is at the top of the girder, positive is up so expect all values to be negative)
@@ -33158,6 +33254,8 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
    CComPtr<ISuperstructureMemberSegment> segment;
    pSSMbr->get_Segment(0,&segment);
 
+   // since we are in the process of validating the bridge model, we have to
+   // dig into the segment object to get the number of webs
    Float64 Xs = 0.0;
    CComPtr<IShape> shape;
    segment->get_PrimaryShape(Xs,sbRight,cstGirder,&shape);
@@ -33178,39 +33276,105 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
       Float64 x1 = 0;
       Float64 z1 = 0;
 
+      // if the tendon begins in a span other than the first span in the group,
+      // advance the z to the actual start of the tendon in girder coordinates
+      for (SpanIndexType spanIdx = startGroupSpanIdx; spanIdx < startSpanIdx; spanIdx++)
+      {
+         Float64 L = GetSpanLength(spanIdx, girderKey.girderIndex); // advance by span length
+
+         if (spanIdx == 0)
+         {
+	         // if this is the first span, span length is measured from CL Brg
+            // we need to adjust for the end distance at the start of the girder
+	         Float64 end_dist = GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, 0));
+	         L += end_dist;
+         }
+
+         Ls += L;
+         z1 += L;
+	  }
+
+      if (startSpanIdx != startGroupSpanIdx && startPierIdx != 0)
+      {
+         // the tendon is starting relative to an interior pier. the tendon starts at the
+         // face of the precast segment, not the CL Pier.
+         // adjust the start location of the segment
+         //
+         // --------------------+       +--------------------------
+         //                     |       |
+         //                     |       |
+         // --------------------+       +--------------------------
+         //                         |<->|--- brg_offset - end_dist
+         //                             |<-- tendon starts here
+         CSegmentKey backSegmentKey, aheadSegmentKey;
+         GetSegmentsAtPier(startPierIdx, girderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
+         Float64 brg_offset = GetSegmentStartBearingOffset(aheadSegmentKey);
+         Float64 end_dist = GetSegmentStartEndDistance(aheadSegmentKey);
+         Ls += (brg_offset - end_dist);
+         z1 += (brg_offset - end_dist);
+      }
 
       //
-      // Start to first low point
+      // Start point to first low point
       //
 
       // start point
+      PierIndexType pierIdx;
       Float64 dist,offset;
       CDuctGeometry::OffsetType offsetType;
-      ductGeometry.GetStartPoint(&dist,&offset,&offsetType);
+      ductGeometry.GetStartPoint(&pierIdx,&dist,&offset,&offsetType);
+
+      if (dist < 0)
+      {
+         // fractional measure
+         Float64 L = GetSpanLength(startSpanIdx, girderKey.girderIndex);
+
+         // adjust for the end distance at the start of the girder
+         if (startSpanIdx == 0)
+         {
+	         Float64 end_dist = GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, 0));
+	         L += end_dist;
+         }
+
+         if (startSpanIdx == endSpanIdx && endSpanIdx == endGroupSpanIdx)
+         {
+            // there is only one span for this tendon and the tendon ends at the end of the group
+            // adjust for the end distance at the end of the girder
+            Float64 end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, nSegments - 1));
+            L += end_dist;
+         }
+
+         // get the start of the girder to low point distance
+         dist *= -L;
+      }
 
       z1 += dist;
       Float64 y1 = ConvertDuctOffsetToDuctElevation(girderKey,z1,offset,offsetType);
 
-      // low point
+      // Low Point
       ductGeometry.GetLowPoint(startSpanIdx,&dist,&offset,&offsetType);
-      // distance is measured from the left end of the girder
 
+      // dist is measured from the left end of the girder
       if ( dist < 0 ) // fraction of the distance between start and high point at first interior pier
       {
          Float64 L = GetSpanLength(startSpanIdx,girderKey.girderIndex);
 
          // adjust for the end distance at the start of the girder
-         Float64 end_dist = GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
-         L += end_dist;
-
-         if ( startSpanIdx == endSpanIdx )
+         if (startSpanIdx == 0)
          {
-            // there is only one span for this tendon... adjust for the end distance at the end of the girder
-            end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
+	         Float64 end_dist = GetSegmentStartEndDistance(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, 0));
+	         L += end_dist;
+         }
+
+         if (startSpanIdx == endSpanIdx && endSpanIdx == endGroupSpanIdx)
+         {
+            // there is only one span for this tendon and the tendon ends at the end of the group
+            // adjust for the end distance at the end of the girder
+            Float64 end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
             L += end_dist;
          }
 
-         // get the end of girder to low point distance
+         // get the start of girder to low point distance
          dist *= -L;
       }
 
@@ -33404,8 +33568,8 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
       // last low point to end
       //
 
-      // distance is measured from the previous high point
-      ductGeometry.GetEndPoint(&dist,&offset,&offsetType);
+      // distance is measured from the right end of the girder
+      ductGeometry.GetEndPoint(&pierIdx,&dist,&offset,&offsetType);
       if ( dist < 0 ) // fraction of last span length
       {
          // get the cl-brg to cl-brg length for this girder in the end span
@@ -33415,9 +33579,10 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
          Float64 end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,nSegments-1));
          L += end_dist;
 
-         if ( startSpanIdx == endSpanIdx )
+         if (startSpanIdx == endSpanIdx && endSpanIdx == endGroupSpanIdx)
          {
-            // this is only one span for this tendon... adjust for end distance at the start of the girder
+            // there is only one span for this tendon and the tendon ends at the end of the group
+            // adjust for the end distance at the end of the girder
             end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
             L += end_dist;
          }
@@ -33425,7 +33590,43 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
          dist *= -L;
       }
 
+      // work backwards from the right end of the girder to the previous low point
       Float64 Lg = GetGirderLength(girderKey); // End-to-end length of full girder
+
+      if (endSpanIdx < endGroupSpanIdx)
+      {
+         // if the tendon ends before the end of the girder, adjust for the end distance at the right end of the girder
+	      Float64 end_dist = GetSegmentEndEndDistance(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, nSegments - 1));
+	      Lg -= end_dist;
+      }
+
+      // remove the span length of all the spans at the right end of the girder that are after the end of the tendon
+      for (SpanIndexType spanIdx = endSpanIdx+1; spanIdx <= endGroupSpanIdx; spanIdx++)
+      {
+         Float64 L = GetSpanLength(spanIdx, girderKey.girderIndex);
+         Lg -= L;
+      }
+
+      PierIndexType endGroupPierIdx = (PierIndexType)(endGroupSpanIdx - 1);
+      if (endSpanIdx != endGroupSpanIdx && endPierIdx != endGroupPierIdx)
+      {
+         // the tendon is ending relative to an interior pier. the tendon ends at the
+         // face of the precast segment, not the CL Pier.
+         // adjust the end location of the segment
+         //
+         // --------------------+       +--------------------------
+         //                     |       |
+         //                     |       |
+         // --------------------+       +--------------------------
+         //                     |<->|--- brg_offset - end_dist
+         //                     |<-- tendon ends here
+
+         CSegmentKey backSegmentKey, aheadSegmentKey;
+         GetSegmentsAtPier(endPierIdx, girderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
+         Float64 brg_offset = GetSegmentEndBearingOffset(backSegmentKey);
+         Float64 end_dist = GetSegmentEndEndDistance(backSegmentKey);
+         Lg -= (brg_offset - end_dist);
+      }
 
       x2 = x1; // dummy
       z2 = Lg - dist; // dist is measured from the end of the bridge
@@ -33451,7 +33652,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
       parabolicTendonSegment->put_Slope(0.0);
       parabolicTendonSegment->put_SlopeEnd(qcbLeft);
       tendon->AddSegment(parabolicTendonSegment);
-   }
+   } // next web
 
    tendons.CopyTo(ppTendons);
 }
@@ -33485,7 +33686,12 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstruc
       Float64 offset;
       CDuctGeometry::OffsetType offsetType;
       ductGeometry.GetPoint(0,&zStart,&offset,&offsetType);
-      ATLASSERT(IsZero(zStart)); // must always be zero!
+
+      if (zStart < 0 )
+      {
+         // fractional measure
+         zStart *= -Lg;
+      }
 
       // vertical position in Girder Section Coordinates (distance from top of girder)
       Float64 yStart = ConvertDuctOffsetToDuctElevation(girderKey,zStart,offset,offsetType);

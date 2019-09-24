@@ -126,20 +126,31 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
             const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,stressTendonIntervalIdx);
             const FRICTIONLOSSDETAILS& frDetails(pDetails->FrictionLossDetails[ductIdx]);
 
+			ATLASSERT(IsEqual(frDetails.X, pPoi->ConvertPoiToGirderCoordinate(poi)));
+
+			Float64 ductOffset(0), ductEcc(0), slopeX(0), slopeY(0), angle_start(0), angle_end(0);
+			if (pTendonGeom->IsOnDuct(poi, ductIdx))
+			{
+				ductOffset = pTendonGeom->GetDuctOffset(stressTendonIntervalIdx, poi, ductIdx);
+
+				CComPtr<IVector3d> slope;
+				pTendonGeom->GetTendonSlope(poi, ductIdx, &slope);
+				slope->get_X(&slopeX);
+				slope->get_Y(&slopeY);
+
+				ductEcc = pTendonGeom->GetEccentricity(stressTendonIntervalIdx, poi, ductIdx);
+
+				angle_start = pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metStart);
+				angle_end   = pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metEnd);
+			}
+
             (*pTable)(row,col++) << dist.SetValue( frDetails.X );
-            (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetDuctOffset(stressTendonIntervalIdx,poi,ductIdx));
-
-            CComPtr<IVector3d> slope;
-            pTendonGeom->GetTendonSlope(poi,ductIdx,&slope);
-            Float64 X, Y;
-            slope->get_X(&X);
-            slope->get_Y(&Y);
-            (*pTable)(row,col++) << X;
-            (*pTable)(row,col++) << Y;
-
-            (*pTable)(row,col++) << ecc.SetValue(pTendonGeom->GetEccentricity(stressTendonIntervalIdx,poi,ductIdx));
-            (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metStart);
-            (*pTable)(row,col++) << pTendonGeom->GetAngularChange(poi,ductIdx,pgsTypes::metEnd);
+            (*pTable)(row,col++) << ecc.SetValue(ductOffset);
+            (*pTable)(row,col++) << slopeX;
+            (*pTable)(row,col++) << slopeY;
+            (*pTable)(row,col++) << ecc.SetValue(ductEcc);
+            (*pTable)(row,col++) << angle_start;
+            (*pTable)(row,col++) << angle_end;
             (*pTable)(row,col++) << stress.SetValue( frDetails.dfpF ); // friction
             (*pTable)(row,col++) << stress.SetValue( frDetails.dfpA ); // anchor set
          }

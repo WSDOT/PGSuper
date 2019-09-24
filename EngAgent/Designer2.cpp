@@ -4541,7 +4541,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    // loop over pois
    for ( const pgsPointOfInterest& poi : vPoi)
    {
-      if ( poi.HasAttribute(POI_BOUNDARY_PIER) )
+      if ( poi.HasAttribute(POI_BOUNDARY_PIER) && !poi.HasAttribute(POI_CLOSURE))
       {
          //pgsStirrupCheckAtPoisArtifact artifact;
          //pStirrupArtifact->AddStirrupCheckAtPoisArtifact(intervalIdx,limitState,artifact);

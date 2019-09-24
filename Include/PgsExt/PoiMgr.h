@@ -82,6 +82,12 @@ public:
    // Removes all points of interest.
    void RemoveAll();
 
+   //------------------------------------------------------------------------
+   // caches the ID of the start and end poi of a post-tensioning duct
+   void AddDuctBoundary(const CGirderKey& girderKey, DuctIndexType ductIdx, PoiIDType startPoiID, PoiIDType endPoiID);
+   void GetDuctBoundary(const CGirderKey& girderKey, DuctIndexType ductIdx, PoiIDType* pStartPoiID, PoiIDType* pEndPoiID) const;
+
+   //------------------------------------------------------------------------
    pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey, Float64 Xs) const;
 
    //------------------------------------------------------------------------
@@ -173,4 +179,32 @@ private:
    void OrFind(const CSegmentKey& segmentKey,PoiAttributeType attrib,PoiList* pPois) const;
    bool OrFind(const pgsPointOfInterest& poi,const CSegmentKey& segmentKey,PoiAttributeType attrib) const;
    bool OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttributeType attrib) const;
+
+   struct DuctBoundaryRecord
+   {
+      CGirderKey girderKey;
+      DuctIndexType ductIdx;
+      PoiIDType startID;
+      PoiIDType endID;
+
+      DuctBoundaryRecord(const CGirderKey& girderKey, DuctIndexType ductIdx, PoiIDType startID, PoiIDType endID) :
+         girderKey(girderKey), ductIdx(ductIdx), startID(startID), endID(endID)
+      {
+      };
+
+      bool operator<(const DuctBoundaryRecord& other) const
+      {
+         if (girderKey < other.girderKey)
+            return true;
+
+         if (other.girderKey < girderKey)
+            return false;
+
+         if (ductIdx < other.ductIdx)
+            return true;
+
+         return false;
+      }
+   };
+   std::set<DuctBoundaryRecord> m_DuctBoundaries;
 };

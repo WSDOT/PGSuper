@@ -1225,6 +1225,28 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
       nAttributes++;
    }
 
+   if (HasAttribute(POI_DUCT_START))
+   {
+      if (0 < nAttributes)
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("DS");
+      nAttributes++;
+   }
+
+   if (HasAttribute(POI_DUCT_END))
+   {
+      if (0 < nAttributes)
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("DE");
+      nAttributes++;
+   }
+
    if (HasAttribute(POI_CASTING_BOUNDARY_START))
    {
       if (0 < nAttributes)
@@ -1530,6 +1552,16 @@ void pgsPointOfInterest::UpdateAttributeString()
    if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_SECTCHANGE_LEFTFACE))
    {
       os << _T("POI_SECTCHANGE_LEFTFACE | ");
+   }
+
+   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_DUCT_START))
+   {
+      os << _T("POI_DUCT_START | ");
+   }
+
+   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_DUCT_END))
+   {
+      os << _T("POI_DUCT_END | ");
    }
 
    if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CASTING_BOUNDARY_START))

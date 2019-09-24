@@ -119,6 +119,13 @@ void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)pParentPage->GetParent();
+
+   const CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
+   m_LastSegmentErectionEventIdx  = pTimelineMgr->GetLastSegmentErectionEventIndex();
+
+
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
    // in OnInitialUpdate.
@@ -373,11 +380,11 @@ void CDuctGrid::UpdateEventList(ROWCOL row)
 
    CString events;
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
-   for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+   for ( EventIndexType eventIdx = m_LastSegmentErectionEventIdx; eventIdx < nEvents; eventIdx++ )
    {
       const CTimelineEvent* pTimelineEvent = pTimelineMgr->GetEventByIndex(eventIdx);
       CString label;
-      if ( eventIdx == 0 )
+      if ( eventIdx == m_LastSegmentErectionEventIdx)
       {
          label.Format(_T("Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEvent->GetDescription());
       }
@@ -390,7 +397,7 @@ void CDuctGrid::UpdateEventList(ROWCOL row)
    }
 
    events += _T("\n") + CString((LPCSTR)IDS_CREATE_NEW_EVENT);
-   m_CreateEventIndex = nEvents;
+   m_CreateEventIndex = nEvents - m_LastSegmentErectionEventIdx;
 
    SetStyleRange(CGXRange(row,nEventCol), CGXStyle()
       .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
@@ -468,22 +475,22 @@ void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
    DuctIndexType ductIdx = DuctIndexType(nRow-1);
    if ( geomType == CDuctGeometry::Linear )
    {
-      CLinearDuctDlg dlg(pParent);
-      dlg.m_DuctGeometry = m_pPTData->GetDuct(ductIdx)->LinearDuctGeometry;
+      CLinearDuctDlg dlg(pParent,m_pPTData,ductIdx);
       if ( dlg.DoModal() == IDOK )
       {
-         m_pPTData->GetDuct(ductIdx)->LinearDuctGeometry = dlg.m_DuctGeometry;
+         m_pPTData->GetDuct(ductIdx)->LinearDuctGeometry = dlg.GetDuctGeometry();
+         pParent->m_DrawTendons.SetMapMode(dlg.GetTendonControlMapMode());
          pParent->Invalidate();
          pParent->UpdateWindow();
       }
    }
    else if ( geomType == CDuctGeometry::Parabolic )
    {
-      CParabolicDuctDlg dlg(pParent);
-      dlg.m_DuctGeometry = m_pPTData->GetDuct(ductIdx)->ParabolicDuctGeometry;
+      CParabolicDuctDlg dlg(pParent,m_pPTData,ductIdx);
       if ( dlg.DoModal() == IDOK )
       {
-         m_pPTData->GetDuct(ductIdx)->ParabolicDuctGeometry = dlg.m_DuctGeometry;
+         m_pPTData->GetDuct(ductIdx)->ParabolicDuctGeometry = dlg.GetDuctGeometry();
+         pParent->m_DrawTendons.SetMapMode(dlg.GetTendonControlMapMode());
          pParent->Invalidate();
          pParent->UpdateWindow();
       }
@@ -491,7 +498,7 @@ void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
    else if ( geomType == CDuctGeometry::Offset )
    {
       ATLASSERT(false);// not supported yet
-      COffsetDuctDlg dlg(pParent);
+      COffsetDuctDlg dlg(pParent,ductIdx);
       dlg.m_DuctGeometry = m_pPTData->GetDuct(ductIdx)->OffsetDuctGeometry;
       if ( dlg.DoModal() == IDOK )
       {
@@ -499,6 +506,10 @@ void CDuctGrid::OnEditDuctGeometry(ROWCOL nRow)
          pParent->Invalidate();
          pParent->UpdateWindow();
       }
+   }
+   else
+   {
+      ATLASSERT(false); // is there a new type?
    }
 }
 
@@ -568,7 +579,7 @@ BOOL CDuctGrid::OnLButtonHitRowCol(ROWCOL nHitRow,ROWCOL nHitCol,ROWCOL nDragRow
 {
    if ( nHitCol == nEventCol )
    {
-      m_PrevStressTendonEventIdx = (EventIndexType)_tstoi(GetCellValue(nHitRow,nHitCol).GetString());
+      m_PrevStressTendonEventIdx = (EventIndexType)_tstoi(GetCellValue(nHitRow,nHitCol).GetString()) + m_LastSegmentErectionEventIdx;
    }
    return CGXGridWnd::OnLButtonHitRowCol(nHitRow,nHitCol,nDragRow,nDragCol,point,flags,nHitState);
 }
@@ -610,7 +621,7 @@ void CDuctGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
          else
          {
              // revert to previous value
-            SetStyleRange(CGXRange(nRow,nEventCol), CGXStyle().SetValue((LONG)m_PrevStressTendonEventIdx) );            
+            SetStyleRange(CGXRange(nRow,nEventCol), CGXStyle().SetValue((LONG)(m_PrevStressTendonEventIdx-m_LastSegmentErectionEventIdx)) );
          }
       }
    }
@@ -737,7 +748,7 @@ void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressing
    duct.LastUserPj       = ::ConvertToSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    duct.DuctGeometryType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(row,nDuctGeomTypeCol));
 
-   stressingEvent = (EventIndexType)_tstoi(GetCellValue(row,nEventCol));
+   stressingEvent = (EventIndexType)_tstoi(GetCellValue(row,nEventCol)) + m_LastSegmentErectionEventIdx;
 }
 
 void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stressingEvent)
@@ -769,7 +780,7 @@ void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stre
    SetValueRange(CGXRange(row,nPjackCol),       ::ConvertFromSysUnits(duct.Pj,        pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
    SetValueRange(CGXRange(row,nPjackUserCol),   ::ConvertFromSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
    SetValueRange(CGXRange(row,nDuctGeomTypeCol),(LONG)duct.DuctGeometryType);
-   SetValueRange(CGXRange(row,nEventCol),       (LONG)stressingEvent);
+   SetValueRange(CGXRange(row,nEventCol),       (LONG)(stressingEvent- m_LastSegmentErectionEventIdx));
    
    OnCalcPjack(row);
 
@@ -851,7 +862,7 @@ void CDuctGrid::OnChangedSelection(const CGXRange* changedRect,BOOL bIsDragging,
 EventIndexType CDuctGrid::CreateEvent()
 {
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(GetParent()->GetParent());
-   CTimelineEventDlg dlg(*(pParent->m_BridgeDescription.GetTimelineManager()),INVALID_INDEX,FALSE);
+   CTimelineEventDlg dlg(*(pParent->m_BridgeDescription.GetTimelineManager()),INVALID_INDEX,FALSE, m_LastSegmentErectionEventIdx);
    if ( dlg.DoModal() == IDOK )
    {
       EventIndexType eventIdx;

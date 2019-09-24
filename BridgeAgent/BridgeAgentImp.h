@@ -864,6 +864,7 @@ public:
    virtual void ConvertSegmentPathCoordinateToSpanPoint(const CSegmentKey& sSegmentKey,Float64 Xsp,CSpanKey* pSpanKey,Float64* pXspan) const override;
    virtual void GetPointsOfInterestInRange(Float64 xLeft,const pgsPointOfInterest& poi,Float64 xRight,PoiList* pPoiList) const override;
    virtual PierIndexType GetPier(const pgsPointOfInterest& poi) const override;
+   virtual void GetDuctRange(const CGirderKey& girderKey, DuctIndexType ductIdx, const pgsPointOfInterest** ppEtartPoi, const pgsPointOfInterest** ppEndPoi) const override;
    virtual void GroupBySegment(const PoiList& vPoi, std::list<PoiList>* pList) const override;
    virtual void GroupByGirder(const PoiList& vPoi, std::list<PoiList>* pList) const override;
    virtual void GetSegmentKeys(const PoiList& vPoi, std::vector<CSegmentKey>* pvSegments) const override;
@@ -1148,9 +1149,11 @@ public:
 // ITendonGeometry
 public:
    virtual DuctIndexType GetDuctCount(const CGirderKey& girderKey) const override;
+   virtual void GetDuctRange(const CGirderKey& girderKey, DuctIndexType ductIdx, Float64* pXgs, Float64* pXge) const override;
+   virtual bool IsOnDuct(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const override;
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint2dCollection** ppPoints) const override;
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint3dCollection** ppPoints) const override;
-   virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,const CSplicedGirderData* pGirder,IPoint2dCollection** ppPoints) const override;
+   virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx, const CDuctData* pDuctData,IPoint2dCollection** ppPoints) const override;
    virtual void GetDuctPoint(const pgsPointOfInterest& poit,DuctIndexType ductIdx,IPoint2d** ppPoint) const override;
    virtual void GetDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint) const override;
    virtual Float64 GetOutsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx) const override;
@@ -1477,9 +1480,6 @@ private:
    void LayoutPoiForTemporarySupports(const CSegmentKey& segmentKey);
    void LayoutPoiForPiers(const CSegmentKey& segmentKey);
    void LayoutPoiForTendons(const CGirderKey& girderKey);
-   void LayoutPoiForTendon(const CGirderKey& girderKey,const CLinearDuctGeometry& ductGeometry);
-   void LayoutPoiForTendon(const CGirderKey& girderKey,const CParabolicDuctGeometry& ductGeometry);
-   void LayoutPoiForTendon(const CGirderKey& girderKey,const COffsetDuctGeometry& ductGeometry);
 
    void ValidateSegmentOrientation(const CSegmentKey& segmentKey) const;
 

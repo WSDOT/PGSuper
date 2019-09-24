@@ -28,10 +28,11 @@ void DDX_DuctGeometry(CDataExchange* pDX,COffsetDuctGrid& grid,COffsetDuctGeomet
 
 IMPLEMENT_DYNAMIC(COffsetDuctDlg, CDialog)
 
-COffsetDuctDlg::COffsetDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent /*=nullptr*/)
+COffsetDuctDlg::COffsetDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,DuctIndexType ductIdx,CWnd* pParent /*=nullptr*/)
 	: CDialog(COffsetDuctDlg::IDD, pParent)
 {
    m_pGirderlineDlg = pGdrDlg;
+   m_DuctIdx = ductIdx;
 }
 
 COffsetDuctDlg::~COffsetDuctDlg()
@@ -65,6 +66,10 @@ END_MESSAGE_MAP()
 
 BOOL COffsetDuctDlg::OnInitDialog()
 {
+   CString strTitle;
+   strTitle.Format(_T("Offset Duct - Duct %d"), LABEL_DUCT(m_DuctIdx));
+   SetWindowText(strTitle);
+
    m_Grid.SubclassDlgItem(IDC_GRID,this);
    m_Grid.CustomInit(this);
 

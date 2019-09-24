@@ -11,9 +11,9 @@ When the segment type is defined for each girder individually, select the segmen
 The segment grid lists the segments and closure joints that make up the girder. Press [Edit] to edit the details of these components.
 
 
-Ducts/Tendons
+Field Installed Tendons
 --------------
-Define the geometry of the post-tensioning ducts and the tendons
+Define the geometry of the post-tensioning ducts for field installed tendons
 
 Item | Description
 -----|-------------

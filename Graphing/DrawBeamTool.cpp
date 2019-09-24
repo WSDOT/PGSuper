@@ -606,10 +606,6 @@ CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType interval
    CSegmentKey backSegmentKey, aheadSegmentKey;
    pBridge->GetSegmentsAtPier(pierIdx, girderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
 
-#if defined _DEBUG
-   bool bIsInteriorPier = false;
-#endif
-
    if (aheadSegmentKey.segmentIndex == INVALID_INDEX)
    {
       // there isn't an ahead side segment. this could be for one of two reasons
@@ -619,9 +615,6 @@ CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType interval
       {
          // get the straddling segment
          aheadSegmentKey = pBridge->GetSegmentAtPier(pierIdx, girderKey);
-#if defined _DEBUG
-         bIsInteriorPier = true;
-#endif
       }
       else
       {
@@ -656,20 +649,6 @@ CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType interval
    Float64 X = m_pUnitConverter->Convert(Xgl + beamShift);
    Float64 H = m_pUnitConverter->Convert(sectionHeight);
    mapper.WPtoDP(X, -H, &p.x, &p.y);
-
-#if defined _DEBUG
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-   if (bIsInteriorPier)
-   {
-      ATLASSERT(pPier->IsInteriorPier());
-   }
-   else
-   {
-      ATLASSERT(pPier->IsBoundaryPier());
-   }
-#endif
 
    return p;
 }

@@ -444,6 +444,37 @@ void pgsPoiMgr::RemovePointsOfInterest(PoiAttributeType targetAttribute,PoiAttri
 void pgsPoiMgr::RemoveAll()
 {
    m_PoiData.clear();
+   m_DuctBoundaries.clear();
+}
+
+void pgsPoiMgr::AddDuctBoundary(const CGirderKey& girderKey, DuctIndexType ductIdx, PoiIDType startPoiID, PoiIDType endPoiID)
+{
+   auto result = m_DuctBoundaries.emplace(girderKey, ductIdx, startPoiID, endPoiID);
+   ATLASSERT(result.second == true);
+
+#if defined _DEBUG
+   const pgsPointOfInterest& startPoi = GetPointOfInterest(startPoiID);
+   ATLASSERT(startPoi.HasAttribute(POI_DUCT_START));
+
+   const pgsPointOfInterest& endPoi = GetPointOfInterest(endPoiID);
+   ATLASSERT(endPoi.HasAttribute(POI_DUCT_END));
+#endif
+}
+
+void pgsPoiMgr::GetDuctBoundary(const CGirderKey& girderKey, DuctIndexType ductIdx, PoiIDType* pStartPoiID, PoiIDType* pEndPoiID) const
+{
+   auto found = m_DuctBoundaries.find(DuctBoundaryRecord(girderKey, ductIdx, INVALID_ID, INVALID_ID));
+   ATLASSERT(found != m_DuctBoundaries.end());
+   *pStartPoiID = found->startID;
+   *pEndPoiID = found->endID;
+
+#if defined _DEBUG
+   const pgsPointOfInterest& startPoi = GetPointOfInterest(*pStartPoiID);
+   ATLASSERT(startPoi.HasAttribute(POI_DUCT_START));
+
+   const pgsPointOfInterest& endPoi = GetPointOfInterest(*pEndPoiID);
+   ATLASSERT(endPoi.HasAttribute(POI_DUCT_END));
+#endif
 }
 
 pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) const
@@ -964,6 +995,8 @@ bool pgsPoiMgr::AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribut
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_START_FACE)               ? poi.HasAttribute(POI_START_FACE)               : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_END_FACE)                 ? poi.HasAttribute(POI_END_FACE)                 : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib, POI_DUCT_START)              ? poi.HasAttribute(POI_DUCT_START)               : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib, POI_DUCT_END)                ? poi.HasAttribute(POI_DUCT_END)                 : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CASTING_BOUNDARY_START)   ? poi.HasAttribute(POI_CASTING_BOUNDARY_START)   : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CASTING_BOUNDARY_END)     ? poi.HasAttribute(POI_CASTING_BOUNDARY_END)     : true)
          )
@@ -1100,6 +1133,8 @@ bool pgsPoiMgr::OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribute
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib, POI_START_FACE)              ? poi.HasAttribute(POI_START_FACE)               : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib, POI_END_FACE)                ? poi.HasAttribute(POI_END_FACE)                 : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_DUCT_START)              ? poi.HasAttribute(POI_DUCT_START)               : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_DUCT_END)                ? poi.HasAttribute(POI_DUCT_END)                 : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib, POI_CASTING_BOUNDARY_START)  ? poi.HasAttribute(POI_CASTING_BOUNDARY_START)   : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib, POI_CASTING_BOUNDARY_END)    ? poi.HasAttribute(POI_CASTING_BOUNDARY_END)     : false)
       )

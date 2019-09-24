@@ -831,24 +831,25 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
             for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
             {
-               CComPtr<IPoint2d> point;
-               pTendonGeom->GetDuctPoint(poi,ductIdx,&point);
+               if (pTendonGeom->IsOnDuct(poi, ductIdx))
+               {
+                  CComPtr<IPoint2d> point;
+                  pTendonGeom->GetDuctPoint(poi, ductIdx, &point);
 
-               Float64 apt = pTendonGeom->GetTendonArea(segmentKey,intervalIdx,ductIdx);
-               Apt += apt;
+                  Float64 apt = pTendonGeom->GetTendonArea(segmentKey, intervalIdx, ductIdx);
+                  Apt += apt;
 
-               point->get_X(&x);
-               point->get_Y(&y);
+                  point->get_X(&x);
+                  point->get_Y(&y);
 
-               strainPlane->GetZ(x-dx,y-dy,&z);
-               Float64 stress;
-               ssTendon->ComputeStress(z+ept_initial[ductIdx],&stress);
+                  strainPlane->GetZ(x - dx, y - dy, &z);
+                  Float64 stress;
+                  ssTendon->ComputeStress(z + ept_initial[ductIdx], &stress);
 
-               //stress *= bond_factor;
+                  fpt_avg += apt*stress;
 
-               fpt_avg += apt*stress;
-
-               point.Release();
+                  point.Release();
+               }
             }
          }
 
@@ -2097,34 +2098,37 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    {
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
-         CComPtr<IPoint2d> point;
-         pTendonGeom->GetDuctPoint(poi,ductIdx,&point);
+         if (pTendonGeom->IsOnDuct(poi, ductIdx))
+         {
+            CComPtr<IPoint2d> point;
+            pTendonGeom->GetDuctPoint(poi, ductIdx, &point);
 
-         Float64 area = pTendonGeom->GetTendonArea(segmentKey,intervalIdx,ductIdx);
+            Float64 area = pTendonGeom->GetTendonArea(segmentKey, intervalIdx, ductIdx);
 
-         Float64 s = sqrt(area); // side of equivalent square (area = s*s)
+            Float64 s = sqrt(area); // side of equivalent square (area = s*s)
 
-         CComPtr<IRectangle> tendon_shape;
-         tendon_shape.CoCreateInstance(CLSID_Rect);
-         tendon_shape->put_Width(s);
-         tendon_shape->put_Height(s);
+            CComPtr<IRectangle> tendon_shape;
+            tendon_shape.CoCreateInstance(CLSID_Rect);
+            tendon_shape->put_Width(s);
+            tendon_shape->put_Height(s);
 
-         CComQIPtr<IXYPosition> position(tendon_shape);
-         CComPtr<IPoint2d> hp;
-         position->get_LocatorPoint(lpHookPoint,&hp);
-         hp->MoveEx(point);
-         hp->Offset(-dx,-dy);
+            CComQIPtr<IXYPosition> position(tendon_shape);
+            CComPtr<IPoint2d> hp;
+            position->get_LocatorPoint(lpHookPoint, &hp);
+            hp->MoveEx(point);
+            hp->Offset(-dx, -dy);
 
-         // determine depth to lowest layer of strand
-         Float64 cy;
-         hp->get_Y(&cy);
-         dt = Max(dt,fabs(Yc-cy));
+            // determine depth to lowest layer of strand
+            Float64 cy;
+            hp->get_Y(&cy);
+            dt = Max(dt, fabs(Yc - cy));
 
-         Float64 epti = ept_initial[ductIdx];
-         Float64 Le = 1.0; // elongation length (unity)
+            Float64 epti = ept_initial[ductIdx];
+            Float64 Le = 1.0; // elongation length (unity)
 
-         CComQIPtr<IShape> shape(tendon_shape);
-         AddShape2Section(section,shape,ssTendon,ssGirder,epti,Le);
+            CComQIPtr<IShape> shape(tendon_shape);
+            AddShape2Section(section, shape, ssTendon, ssGirder, epti, Le);
+         }
       }
    }
 

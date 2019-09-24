@@ -109,6 +109,9 @@ interface IPointOfInterest : public IUnknown
    // If this POI is not associated with a pier, INVALID_INDEX is returned.
    virtual PierIndexType GetPier(const pgsPointOfInterest& poi) const = 0;
 
+   // Gets the POI at the start and end of the specified PT duct
+   virtual void GetDuctRange(const CGirderKey& girderKey, DuctIndexType ductIdx, const pgsPointOfInterest** ppStartPoi, const pgsPointOfInterest** ppEndPoi) const = 0;
+
    // takes a vector of poi that span multiple segments and breaks it up into a list of
    // vectors with each vector having poi that belong to a single segment
    virtual void GroupBySegment(const PoiList& vPoi,std::list<PoiList>* pList) const = 0;

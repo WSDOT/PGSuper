@@ -98,12 +98,14 @@ typedef Uint64 PoiAttributeType;
 //#define POI_NONREF9                0x8000000000000000
 //#define POI_NONREF8                0x4000000000000000
 //#define POI_NONREF7                0x2000000000000000
-//#define POI_NONREF6                0x1000000000000000
-//#define POI_NONREF5                0x0800000000000000
 
 // Special Points
-#define POI_CASTING_BOUNDARY_START  0x0400000000000000 // Start of a deck casting region
-#define POI_CASTING_BOUNDARY_END    0x0200000000000000 // End of a deck casting region
+#define POI_DUCT_START               0x1000000000000000 // Start of a duct/tendon
+#define POI_DUCT_END                 0x0800000000000000 // End of a duct/tendon
+#define POI_DUCT_BOUNDARY            POI_DUCT_START | POI_DUCT_END
+
+#define POI_CASTING_BOUNDARY_START   0x0400000000000000 // Start of a deck casting region
+#define POI_CASTING_BOUNDARY_END     0x0200000000000000 // End of a deck casting region
 #define POI_CASTING_BOUNDARY POI_CASTING_BOUNDARY_START | POI_CASTING_BOUNDARY_END
 
 #define POI_START_FACE               0x0100000000000000 // Start face of a segment (left end)

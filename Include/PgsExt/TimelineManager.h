@@ -60,6 +60,7 @@
 class CBridgeDescription2;
 class CLoadManager;
 class CClosureJointData;
+class CSplicedGirderData;
 
 /*****************************************************************************
 CLASS 
@@ -273,6 +274,9 @@ protected:
    void MakeCopy(const CTimelineManager& rOther);
    void MakeAssignment(const CTimelineManager& rOther);
    void Sort();
+
+   int ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexType ductIdx) const;
+
 
    std::vector<CTimelineEvent*> m_TimelineEvents; // owns the timeline events... will be deleted in the destructor
    const CBridgeDescription2* m_pBridgeDesc;

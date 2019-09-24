@@ -1322,9 +1322,12 @@
 #define IDC_X1_MEASURE                  1961
 #define IDC_NUMSEGMENTS_COMBO           1961
 #define IDC_REGION_BOUNDARY             1961
+#define IDC_START_PIER                  1961
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_X2_MEASURE                  1962
 #define IDC_RIDGEPT_COMBO               1962
+#define IDC_START_PIER2                 1962
+#define IDC_END_PIER                    1962
 #define IDI_STRANDS                     1963
 #define IDC_X3_MEASURE                  1963
 #define IDC_VIEW_TEMPLATE_COMBO         1963
@@ -1531,7 +1534,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        398
+#define _APS_NEXT_RESOURCE_VALUE        399
 #define _APS_NEXT_COMMAND_VALUE         37001
 #define _APS_NEXT_CONTROL_VALUE         2021
 #define _APS_NEXT_SYMED_VALUE           113

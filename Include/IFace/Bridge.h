@@ -59,6 +59,7 @@ class CPrecastSegmentData;
 class CSplicedGirderData;
 class CStrandData;
 class CStrandRow;
+class CDuctData;
 
 interface IRCBeam2Ex;
 interface IEAFDisplayUnits;
@@ -1845,14 +1846,19 @@ interface ITendonGeometry : public IUnknown
    // returns the number of ducts in a girder
    virtual DuctIndexType GetDuctCount(const CGirderKey& girderKey) const = 0;
 
+   // returns the start and end location of the duct in girder coordinates
+   virtual void GetDuctRange(const CGirderKey& girderKey, DuctIndexType ductIdx, Float64* pXgs, Float64* pXge) const = 0;
+
+   // returns true if the poi is within the bounds of the duct
+   virtual bool IsOnDuct(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const = 0;
+
    // returns the geometric centerline of a duct as a series of points. 
    // use this to plot ducts in the UI
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint2dCollection** ppPoints) const = 0;
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint3dCollection** ppPoints) const = 0;
 
-   // returns the geometric centerline of a duct for the duct configuration given in the girder object.
-   // use this to plot ducts in the UI
-   virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,const CSplicedGirderData* pSplicedGirder,IPoint2dCollection** ppPoints) const = 0;
+   // returns the geometric centerline of a duct for the duct configuration given. use this to plot ducts in the UI
+   virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx, const CDuctData* pDuctData,IPoint2dCollection** ppPoints) const = 0;
 
    // returns the location of the centerline of the duct in girder section coordiantes given a location in girder coordinates
    virtual void GetDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;

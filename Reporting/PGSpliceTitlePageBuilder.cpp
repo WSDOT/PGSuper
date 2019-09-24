@@ -303,6 +303,12 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
       (*pTable)(row, 0) << _T("STRF");
       (*pTable)(row++, 1) << _T("Section Transitions, Right Face");
 
+	  (*pTable)(row, 0) << _T("DS");
+	  (*pTable)(row++, 1) << _T("Start of Post-Tensioning Duct");
+
+	  (*pTable)(row, 0) << _T("DE");
+	  (*pTable)(row++, 1) << _T("End of Post-Tensioning Duct");
+
       (*pTable)(row, 0) << _T("SDCR");
       (*pTable)(row++, 1) << _T("Start of Deck Casting Region");
 

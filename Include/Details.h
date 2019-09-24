@@ -896,6 +896,10 @@ struct ANCHORSETDETAILS
 // losses at a POI
 struct FRICTIONLOSSDETAILS
 {
+   FRICTIONLOSSDETAILS()
+   { 
+      memset((void*)this, 0, sizeof(FRICTIONLOSSDETAILS));
+   };
    Float64 alpha; // total angular change from jacking end to this POI
    Float64 X;     // distance from start of tendon to this POI
    Float64 dfpF;  // friction loss at this POI

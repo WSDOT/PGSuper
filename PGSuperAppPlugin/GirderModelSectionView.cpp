@@ -872,18 +872,15 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
 
-#pragma Reminder("REVIEW: assuming tendon starts/ends at start/end face of girder")
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(girderKey);
-   if ( Xg < 0 || Lg < Xg )
-   {
-      return; // poi is not within the extent of the tendon
-   }
-
    GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
+      if (!pTendonGeom->IsOnDuct(poi,ductIdx))
+      {
+         continue; // point is not within the extend of the tendon
+      }
+
       StrandIndexType nStrands = pTendonGeom->GetTendonStrandCount(girderKey,ductIdx);
       CString strStrands;
       strStrands.Format(_T("%d"),nStrands);

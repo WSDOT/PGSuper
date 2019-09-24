@@ -2435,7 +2435,6 @@ int CTimelineManager::Validate() const
          GirderIDType girderID = pGirder->GetID();
 
          // find out when the first tendon is stressed in this girder
-         EventIndexType firstPTEventIdx = GetEventCount();
          const CPTData* pPTData = pGirder->GetPostTensioning();
          DuctIndexType nDucts = pPTData->GetDuctCount();
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -2446,7 +2445,11 @@ int CTimelineManager::Validate() const
                return TLM_STRESS_TENDONS_ACTIVITY_REQUIRED;
             }
 
-            firstPTEventIdx = Min(firstPTEventIdx,GetStressTendonEventIndex(girderID,ductIdx));
+			int result = ValidateDuct(pGirder,ductIdx);
+			if (result != TLM_SUCCESS)
+			{
+				return result;
+			}
          }
 
 
@@ -2504,14 +2507,8 @@ int CTimelineManager::Validate() const
                return TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED;
             }
 
-            // and its supports must be erected prior to the segment being erected...
+            // and its supports must be erected prior to the segment being erected
             EventIndexType erectSegmentEventIdx = GetSegmentErectionEventIndex(segID);
-
-            // and it must be erected before the first tendon is stressed
-            if ( firstPTEventIdx <= erectSegmentEventIdx )
-            {
-               return TLM_STRESS_TENDON_ERROR;
-            }
 
             std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
             for (const auto& pPier : vPiers)
@@ -2558,18 +2555,71 @@ int CTimelineManager::Validate() const
                {
                   return TLM_CLOSURE_JOINT_ERROR;
                }
-
-               // must be cast before the first tendon is stressed
-               if ( firstPTEventIdx <= castClosureEventIdx )
-               {
-                  return TLM_STRESS_TENDON_ERROR;
-               }
             }
          } // next segment
       } // next girder
    } // next group
 
    return TLM_SUCCESS;
+}
+
+int CTimelineManager::ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexType ductIdx) const
+{
+	EventIndexType ptEventIdx = GetStressTendonEventIndex(pGirder->GetID(), ductIdx);
+	const CPTData* pPTData = pGirder->GetPostTensioning();
+	const CDuctData* pDuctData = pPTData->GetDuct(ductIdx);
+	SegmentIndexType startSegIdx, endSegIdx;
+	switch (pDuctData->DuctGeometryType)
+	{
+	case CDuctGeometry::Linear:
+		startSegIdx = 0;
+		endSegIdx = pGirder->GetSegmentCount() - 1;
+		break;
+	case CDuctGeometry::Parabolic:
+	{
+		PierIndexType startPierIdx, endPierIdx;
+		pDuctData->ParabolicDuctGeometry.GetRange(&startPierIdx, &endPierIdx);
+		SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
+		SpanIndexType endSpanIdx = (SpanIndexType)(endPierIdx - 1);
+		auto vStartSegments = pGirder->GetSegmentsForSpan(startSpanIdx);
+		auto vEndSegments = pGirder->GetSegmentsForSpan(endSpanIdx);
+		startSegIdx = vStartSegments.front()->GetSegmentKey().segmentIndex;
+		endSegIdx = vEndSegments.back()->GetSegmentKey().segmentIndex;
+        break;
+	}
+	case CDuctGeometry::Offset:
+		ATLASSERT(false); // not fully implemented yet
+		break;
+	default:
+		ATLASSERT(false); // is there a new type
+	}
+
+	for (SegmentIndexType segIdx = startSegIdx; segIdx <= endSegIdx; segIdx++)
+	{
+		SegmentIDType segID = pGirder->GetSegment(segIdx)->GetID();
+		EventIndexType erectSegmentEventIdx = GetSegmentErectionEventIndex(segID);
+		// segment must be erected before its field installed tendon is stressed
+		if (ptEventIdx <= erectSegmentEventIdx)
+		{
+			return TLM_STRESS_TENDON_ERROR;
+		}
+
+		const auto* pClosureJoint = pGirder->GetSegment(segIdx)->GetEndClosure();
+		if (pClosureJoint && segIdx != endSegIdx)
+		{
+			// if there is a closure at the end of the segment, and this is not the last segment, 
+			// the closure joint must be cast before the tendon crossing it is stressed.
+			// the tendon ends in the last segment, so the tendon doesn't cross the closure joint
+			// at end of the last segment
+			EventIndexType castClosureEventIdx = GetCastClosureJointEventIndex(pClosureJoint);
+			if (ptEventIdx <= castClosureEventIdx)
+			{
+				return TLM_STRESS_TENDON_ERROR;
+			}
+		}
+	}
+
+	return TLM_SUCCESS;
 }
 
 HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)

@@ -6,12 +6,16 @@ The segments are defined by a sequence of duct points. The duct points are defin
 
 ![](LinearDuct.png)
 
+*Duct control point grid*
+
 Item | Description
 -----|-----------
 Locate points... | Select the method for locating the segment poitns
 Location | Enter the horizontal location of the duct point. Use the drop down list to select the unit of measure. Use "%" to locate the duct point as a percentage of the girder length.
 Offset | Enter the offset of the duct point. Use the drop down list to select the offset datum.
-[Add] | Press to add a new duct point
-[Delete] | Press to delete the selected duct point.
+[+] | Add a new duct point
+[-] | Delete the selected duct point.
 
-> NOTE: The duct must run the full length of the girder. The location of the first and last duct point cannot be changed.
+The duct layout, relative to the precast segments, is displayed and updated as the duct control points are changed. The vertical drawing scale can be toggled with the schematic view button.
+
+> NOTE: The duct does not have to run the full length of the girder.

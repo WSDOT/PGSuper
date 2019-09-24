@@ -1858,24 +1858,27 @@ Float64 CEngAgentImp::GetVerticalTendonForce(const pgsPointOfInterest& poi,Inter
    Float64 Vp = 0;
    for ( DuctIndexType tendonIdx = firstTendonIdx; tendonIdx <= lastTendonIdx; tendonIdx++ )
    {
-      Float64 Fpt = GetTendonForce(poi,intervalIdx,intervalTime,tendonIdx,true,true,pgsTypes::StrengthI,INVALID_INDEX);
-
-      CComPtr<IVector3d> slope;
-      pTendonGeom->GetTendonSlope(poi,tendonIdx,&slope);
-
-      Float64 Y, Z;
-      slope->get_Y(&Y);
-      slope->get_Z(&Z);
-
-      // for the case of zero shear due to external loads,
-      // we want Vp to always be positive. 
-      if ( IsZero(sign) )
+      if (pTendonGeom->IsOnDuct(poi, tendonIdx))
       {
-         Y = fabs(Y);
-         sign = 1;
-      }
+         Float64 Fpt = GetTendonForce(poi, intervalIdx, intervalTime, tendonIdx, true, true, pgsTypes::StrengthI, INVALID_INDEX);
 
-      Vp += sign*Fpt*Y/sqrt(Y*Y + Z*Z);
+         CComPtr<IVector3d> slope;
+         pTendonGeom->GetTendonSlope(poi, tendonIdx, &slope);
+
+         Float64 Y, Z;
+         slope->get_Y(&Y);
+         slope->get_Z(&Z);
+
+         // for the case of zero shear due to external loads,
+         // we want Vp to always be positive. 
+         if (IsZero(sign))
+         {
+            Y = fabs(Y);
+            sign = 1;
+         }
+
+         Vp += sign*Fpt*Y / sqrt(Y*Y + Z*Z);
+      }
    }
 
    return Vp;
