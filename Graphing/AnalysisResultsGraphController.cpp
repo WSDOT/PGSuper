@@ -579,7 +579,7 @@ LPCTSTR CAnalysisResultsGraphController::GetActionName(ActionType action) const
       _T("Deflection X"),
       _T("Rotation"),
       _T("Stress"),
-      _T("Load Rating")
+      _T("Rating Factor")
    };
 
 #if defined _DEBUG

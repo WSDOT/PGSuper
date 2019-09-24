@@ -551,16 +551,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
 
    std::vector<pgsTypes::LoadRatingType> vLoadRatingTypes;
    GET_IFACE(IRatingSpecification,pRatingSpec);
-   // Don't include these or we'll get a bunch of duplicates with the design live loads
-   //if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory))
-   //{
-   //   vLoadRatingTypes.push_back(pgsTypes::lrDesign_Inventory);
-   //}
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory))
+   {
+      vLoadRatingTypes.push_back(pgsTypes::lrDesign_Inventory);
+   }
 
-   //if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
-   //{
-   //   vLoadRatingTypes.push_back(pgsTypes::lrDesign_Operating);
-   //}
+   if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
+   {
+      vLoadRatingTypes.push_back(pgsTypes::lrDesign_Operating);
+   }
 
    if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine))
    {
@@ -684,35 +683,26 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
       VehicleIndexType vehicleIdx = 0;
       std::vector<std::_tstring>::iterator iter(strLLNames.begin());
       std::vector<std::_tstring>::iterator end(strLLNames.end());
-      for ( ; iter != end; iter++, vehicleIdx++ )
+      for (; iter != end; iter++, vehicleIdx++)
       {
-         std::_tstring& strName( *iter );
+         std::_tstring& strName(*iter);
 
          // skip the dummy live load
-         if ( strName == NO_LIVE_LOAD_DEFINED )
+         if (strName == NO_LIVE_LOAD_DEFINED)
          {
             continue;
          }
 
-         std::_tstring strLLName( strRating + _T(" - ") + strName );
+         std::_tstring strLLName(strRating + _T(" - ") + strName);
 
          CAnalysisResultsGraphDefinition def(graphID++,
-                                             strLLName,
-                                             llType,
-                                             vehicleIdx,
-                                             vLoadRatingIntervals,
-                                             action);
+            strLLName,
+            llType,
+            vehicleIdx,
+            vLoadRatingIntervals,
+            action);
 
          m_pGraphDefinitions->AddGraphDefinition(def);
-
-         if (ratingType == pgsTypes::lrDesign_Inventory)
-         {
-            strLLName = _T("Inventory - ") + strName;
-         }
-         else if (ratingType == pgsTypes::lrDesign_Operating)
-         {
-            strLLName = _T("Operating - ") + strName;
-         }
 
          m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, strLLName + _T(", Moment"), limitState, graphLoadRating, actionMoment, vehicleIdx, vLoadRatingIntervals));
 
@@ -727,8 +717,11 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
          }
       }
 
-      std::_tstring strLLName( strBase + _T(" - LL+IM") );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, strLLName, llType,  INVALID_INDEX, vLoadRatingIntervals,  ACTIONS_ALL) );
+      if (ratingType != pgsTypes::lrDesign_Inventory && ratingType != pgsTypes::lrDesign_Operating)
+      {
+         std::_tstring strLLName( strBase + _T(" - LL+IM") );
+         m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, strLLName, llType,  INVALID_INDEX, vLoadRatingIntervals,  ACTIONS_ALL) );
+      }
    }
 
    // Combined Results
