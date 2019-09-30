@@ -12306,6 +12306,20 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
 		  continue;
 	   }
 
+      CSpanKey spanKey1;
+      Float64 Xspan1;
+      pPoi->ConvertPoiToSpanPoint(poi1, &spanKey1, &Xspan1);
+
+      CSpanKey spanKey2;
+      Float64 Xspan2;
+      pPoi->ConvertPoiToSpanPoint(poi2, &spanKey2, &Xspan2);
+
+      if (spanKey1.spanIndex == spanKey2.spanIndex && IsEqual(Xspan1, Xspan2))
+      {
+         // the POI are at the same place
+         continue;
+      }
+
 #if !defined USE_AVERAGE_TENDON_FORCE
       Float64 dfpF1 = pLosses->GetFrictionLoss(poi1,ductIdx);
       Float64 dfpA1 = pLosses->GetAnchorSetLoss(poi1,ductIdx);
@@ -12318,14 +12332,6 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
 
       const CSegmentKey& segmentKey1(poi1.GetSegmentKey());
       const CSegmentKey& segmentKey2(poi2.GetSegmentKey());
-
-      CSpanKey spanKey1;
-      Float64 Xspan1;
-      pPoi->ConvertPoiToSpanPoint(poi1,&spanKey1,&Xspan1);
-
-      CSpanKey spanKey2;
-      Float64 Xspan2;
-      pPoi->ConvertPoiToSpanPoint(poi2,&spanKey2,&Xspan2);
 
       // make sure span location 1 comes before location 2
       ATLASSERT((spanKey1.spanIndex == spanKey2.spanIndex && Xspan1 <= Xspan2) || spanKey1.spanIndex < spanKey2.spanIndex);
@@ -12363,7 +12369,11 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       Float64 r1 = M1/(E1*I1);
       Float64 r2 = M2/(E2*I2);
 
+#if defined _DEBUG
+      strainLoads.push_back(PostTensionStrainLoad(spanKey1.spanIndex, spanKey2.spanIndex, Xspan1, Xspan2, e1, e2, r1, r2));
+#else
       strainLoads.emplace_back(spanKey1.spanIndex, spanKey2.spanIndex, Xspan1, Xspan2, e1, e2, r1, r2);
+#endif
    }
 
 }
