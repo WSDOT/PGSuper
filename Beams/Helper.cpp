@@ -24,6 +24,7 @@
 #include <Beams\Helper.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
+#include <PgsExt\BridgeDescription2.h>
 #include "AgeAdjustedMaterial.h"
 
 
@@ -270,12 +271,38 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
          }
          else if ( bPierDiaphragm[endType] )
          {
-            GET_IFACE2(pBroker,IPointOfInterest, pPoi);
-            PoiList vPoi;
-            pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L, &vPoi);
-            ATLASSERT(vPoi.size() == 2);
-            IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(vPoi[endType]);
-            CGirderKey girderKey(segmentKey);
+            // need to get deck casting region index
+            std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
+            const CPierData2* pPier = (endType == etStart ? vPiers.front() : vPiers.back());
+            PierIndexType pierIdx = pPier->GetIndex();
+
+            const auto* pTimelineMgr = pSegment->GetGirder()->GetGirderGroup()->GetBridgeDescription()->GetTimelineManager();
+            EventIndexType castDeckEventIdx = pTimelineMgr->GetCastDeckEventIndex();
+            ATLASSERT(castDeckEventIdx != INVALID_INDEX);
+            const auto* pTimelineEvent = pTimelineMgr->GetEventByIndex(castDeckEventIdx);
+            ATLASSERT(pTimelineEvent && pTimelineEvent->GetCastDeckActivity().IsEnabled());
+            const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
+            IndexType deckCastingRegionIdx = INVALID_INDEX;
+            if (castDeckActivity.GetCastingType() == CCastDeckActivity::Staged)
+            {
+               const auto& regions = castDeckActivity.GetCastingRegions();
+               IndexType nRegions = castDeckActivity.GetCastingRegionCount();
+               for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
+               {
+                  if (regions[regionIdx].m_Type == CCastingRegion::Pier && regions[regionIdx].m_Index == pierIdx)
+                  {
+                     deckCastingRegionIdx = regionIdx;
+                     break;
+                  }
+               }
+
+               ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+            }
+            else
+            {
+               deckCastingRegionIdx = 0;
+            }
+
             CComObject<CAgeAdjustedMaterial>* pDiaphragmMaterial;
             CComObject<CAgeAdjustedMaterial>::CreateInstance(&pDiaphragmMaterial);
             CComPtr<IAgeAdjustedMaterial> diaphragmMaterial = pDiaphragmMaterial;
