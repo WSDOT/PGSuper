@@ -389,7 +389,7 @@ private:
    void ApplyLLDF_PinFix(const CSpanKey& spanKey,IDblArray* cf_locs,IDistributionFactors* distFactors) const;
    void ApplyLLDF_FixPin(const CSpanKey& spanKey,IDblArray* cf_locs,IDistributionFactors* distFactors) const;
    void ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf_locs,IDistributionFactors* distFactors) const;
-   void ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::MemberEndType endType,ISupports* supports) const;
+   void ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::MemberEndType endType,ISupports* supports,ITemporarySupports* tempSupports) const;
 
    void GetLoadGroupName(pgsTypes::StrandType strandType,CComBSTR& bstrLoadGroupX,CComBSTR& bstrLoadGroupY) const;
 

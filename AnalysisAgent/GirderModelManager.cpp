@@ -10743,6 +10743,9 @@ void CGirderModelManager::ApplyLiveLoadDistributionFactors(GirderIndexType gdr,b
    CComPtr<ISupports> supports;
    pModel->get_Supports(&supports);
 
+   CComPtr<ITemporarySupports> temp_supports;
+   pModel->get_TemporarySupports(&temp_supports);
+
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -10790,9 +10793,8 @@ void CGirderModelManager::ApplyLiveLoadDistributionFactors(GirderIndexType gdr,b
       }
 
       // layout distribution factors at piers
-
-      ApplyLLDF_Support(spanKey,pgsTypes::metStart,supports);
-      ApplyLLDF_Support(spanKey,pgsTypes::metEnd,  supports);
+      ApplyLLDF_Support(spanKey,pgsTypes::metStart,supports, temp_supports);
+      ApplyLLDF_Support(spanKey,pgsTypes::metEnd,  supports, temp_supports);
    } // span loop
 }
 
@@ -14344,7 +14346,7 @@ void CGirderModelManager::ApplyLLDF_FixFix(const CSpanKey& spanKey,IDblArray* cf
    }
 }
 
-void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::MemberEndType endType,ISupports* supports) const
+void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::MemberEndType endType,ISupports* supports,ITemporarySupports* tempSupports) const
 {
    PierIndexType pierIdx = (endType == pgsTypes::metStart ? spanKey.spanIndex : spanKey.spanIndex+1);
 
@@ -14396,6 +14398,44 @@ void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::Me
             gF,  gF,  // fatigue
             gPedes    // pedestrian
             );
+
+
+   // For simple span connections at piers, temporary supports
+   // are used to model the bearing reactions. Add LLDF to the
+   // temporary supports so load combinations work correctly
+   SupportIDType backID, aheadID;
+   GetPierTemporarySupportIDs(pierIdx, &backID, &aheadID);
+   CComPtr<ITemporarySupport> tempSupport;
+   if (SUCCEEDED(tempSupports->Find(backID, &tempSupport)))
+   {
+      df.Release();
+      tempSupport->get_DistributionFactor(&df);
+      df->SetG(gpM, gpM, // positive moment
+         gnM, gnM, // negative moment
+         gV, gV,  // shear
+         gD, gD,  // deflections
+         gR, gR,  // reaction
+         gD, gD,  // rotation
+         gF, gF,  // fatigue
+         gPedes    // pedestrian
+      );
+   }
+
+   tempSupport.Release();
+   if (SUCCEEDED(tempSupports->Find(aheadID, &tempSupport)))
+   {
+      df.Release();
+      tempSupport->get_DistributionFactor(&df);
+      df->SetG(gpM, gpM, // positive moment
+         gnM, gnM, // negative moment
+         gV, gV,  // shear
+         gD, gD,  // deflections
+         gR, gR,  // reaction
+         gD, gD,  // rotation
+         gF, gF,  // fatigue
+         gPedes    // pedestrian
+      );
+   }
 }
 
 /////////////
