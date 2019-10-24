@@ -2888,10 +2888,7 @@ void CAnalysisResultsGraphBuilder::ProductReactionGraph(IndexType graphIdx,const
 
       // Get locations of piers and temporary supports. 
       GetSupportXValues(girderKey,true,&leftXVals,&vSupports);
-      if (segIdx == ALL_SEGMENTS)
-      {
-         std::transform(leftXVals.cbegin(),leftXVals.cend(),leftXVals.begin(),[&](const auto& value) {return value + m_GroupOffset;});
-      }
+      std::transform(leftXVals.cbegin(),leftXVals.cend(),leftXVals.begin(),[&](const auto& value) {return value + m_GroupOffset;});
    }
 
    GET_IFACE(IReactions,pReactions);
