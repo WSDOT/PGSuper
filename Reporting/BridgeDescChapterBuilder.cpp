@@ -1331,6 +1331,26 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
    *pPara << pTable << rptNewLine;
 
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+   {
+      // Ec with square root, no K values
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? _T("Ec_2004_SI.png") : _T("Ec_2004_US.png"))) << rptNewLine;
+   }
+   else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() && lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2015Interims)
+   {
+      // Ec with square root, with K values
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? _T("Ec_2005_SI.png") : _T("Ec_2005_US.png"))) << rptNewLine;
+   }
+   else
+   {
+      // Ec with 0.33 exponent and K values
+      ATLASSERT(lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US);
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_2016.png")) << rptNewLine;
+   }
+
+   *pPara << _T("* = Modulus of elasticity was input") << rptNewLine;
+
+
    ColumnIndexType col = 0;
    RowIndexType row = 0;
    (*pTable)(row,col++) << _T("Element");
@@ -1344,8 +1364,8 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       (*pTable)(row, col++) << COLHDR(RPT_FC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*pTable)(row, col++) << COLHDR(RPT_EC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
-   (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
-   (*pTable)(row,col++) << COLHDR(Sub2(symbol(gamma),_T("s")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row,col++) << COLHDR(Sub2(_T("w"),_T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row,col++) << COLHDR(Sub2(_T("w"),_T("c")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
    (*pTable)(row,col++) << COLHDR(Sub2(_T("D"),_T("agg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(row,col++) << COLHDR(RPT_STRESS(_T("ct")),  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( bK1 )
@@ -1458,7 +1478,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       Float64 lambda = pMaterials->GetDeckLambda();
 
       (*pTable)(row,0) << _T("Deck");
-      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec, bUse90dayStrength,lambda,pDeck->Concrete,row);
+      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,bUse90dayStrength,lambda,pDeck->Concrete,row);
       row++;
    }
 
@@ -1507,11 +1527,22 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable
    }
    else
    {
-      (*pTable)(row,col++) << modE.SetValue( Eci );
+      (*pTable)(row,col) << modE.SetValue( Eci );
+      if (concrete.bUserEci)
+      {
+         (*pTable)(row, col) << _T(" *");
+      }
+      col++;
    }
 
    (*pTable)(row,col++) << stress.SetValue( fc );
-   (*pTable)(row,col++) << modE.SetValue( Ec );
+   
+   (*pTable)(row,col) << modE.SetValue( Ec );
+   if (concrete.bUserEc)
+   {
+      (*pTable)(row, col) << _T(" *");
+   }
+   col++;
 
    if (bHas90dayStrengthColumns)
    {
