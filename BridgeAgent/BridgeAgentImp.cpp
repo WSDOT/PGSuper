@@ -27379,10 +27379,10 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    }
    else
    {
-      DpsMS = pProduct->GetDeflection(storageIntervalIdx, pgsTypes::pftPretension, poiMS, bat, rtCumulative, false);
-      DXpsMS = pProduct->GetXDeflection(storageIntervalIdx, pgsTypes::pftPretension, poiMS, bat, rtCumulative);
-      DpsEnd = pProduct->GetDeflection(storageIntervalIdx, pgsTypes::pftPretension, poiEnd, bat, rtCumulative, false);
-      DXpsEnd = pProduct->GetXDeflection(storageIntervalIdx, pgsTypes::pftPretension, poiEnd, bat, rtCumulative);
+      DpsMS = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiMS, bat, rtCumulative, false);
+      DXpsMS = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiMS, bat, rtCumulative);
+      DpsEnd = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiEnd, bat, rtCumulative, false);
+      DXpsEnd = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiEnd, bat, rtCumulative);
    }
 
    Float64 DXgdrMS, DgdrMS, DXgdrEnd, DgdrEnd;
@@ -27428,11 +27428,37 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
       DXgdrEnd = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftGirder, poiEnd, bat, rtCumulative);
    }
 
-   Float64 DcreepMS = pCamber->GetCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
-   Float64 DXcreepMS = pCamber->GetXCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+   Float64 DcreepMS, DXcreepMS, DcreepEnd, DXcreepEnd;
+   GET_IFACE(ILossParameters, pLossParams);
+   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   {
+      DcreepMS = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiMS, bat, rtCumulative, false);
+      DcreepEnd = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiEnd, bat, rtCumulative, false);
 
-   Float64 DcreepEnd = pCamber->GetCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
-   Float64 DXcreepEnd = pCamber->GetXCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DcreepMS += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiMS, bat, rtCumulative, false);
+      DcreepEnd += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiEnd, bat, rtCumulative, false);
+
+      DcreepMS += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiMS, bat, rtCumulative, false);
+      DcreepEnd += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiEnd, bat, rtCumulative, false);
+
+
+      DXcreepMS = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiMS, bat, rtCumulative);
+      DXcreepEnd = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiEnd, bat, rtCumulative);
+
+      DXcreepMS += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiMS, bat, rtCumulative);
+      DXcreepEnd += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiEnd, bat, rtCumulative);
+
+      DXcreepMS += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiMS, bat, rtCumulative);
+      DXcreepEnd += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiEnd, bat, rtCumulative);
+   }
+   else
+   {
+      DcreepMS = pCamber->GetCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DXcreepMS = pCamber->GetXCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+
+      DcreepEnd = pCamber->GetCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DXcreepEnd = pCamber->GetXCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+   }
 
    Float64 camber = (DgdrMS + DpsMS + DcreepMS) - (DgdrEnd + DpsEnd + DcreepEnd);
    pProblem->SetCamber(camber);
