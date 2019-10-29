@@ -261,16 +261,19 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    vInitialIntervals.push_back(erectSegmentIntervalIdx);
 
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
-   const CTimelineEvent* pEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
-   const auto& castDeckActivity = pEvent->GetCastDeckActivity();
-   ATLASSERT(castDeckActivity.IsEnabled());
-   IndexType nDeckCastings = castDeckActivity.GetCastingCount(); // number of times deck casting happens (not the same as number of deck casting regions)
    std::vector<IntervalIndexType> vDeckAndDiaphragmIntervals;
-   for (IndexType castingIdx = 0; castingIdx < nDeckCastings; castingIdx++)
+   if (castDeckEventIdx != INVALID_INDEX)
    {
-      std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx); // regions casted during this casting
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(vRegions.front()); // casting interval is the same for all regions during this casting, so just get interval for first region in the list
-      vDeckAndDiaphragmIntervals.push_back(castDeckIntervalIdx);
+      const CTimelineEvent* pEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
+      const auto& castDeckActivity = pEvent->GetCastDeckActivity();
+      ATLASSERT(castDeckActivity.IsEnabled());
+      IndexType nDeckCastings = castDeckActivity.GetCastingCount(); // number of times deck casting happens (not the same as number of deck casting regions)
+      for (IndexType castingIdx = 0; castingIdx < nDeckCastings; castingIdx++)
+      {
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx); // regions casted during this casting
+         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(vRegions.front()); // casting interval is the same for all regions during this casting, so just get interval for first region in the list
+         vDeckAndDiaphragmIntervals.push_back(castDeckIntervalIdx);
+      }
    }
 
    std::vector<IntervalIndexType> vRailingSystemIntervals;
