@@ -18,18 +18,22 @@ Tension stress check failed for Service I Limit State in Interval 22 Cast Closur
 Compression stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Segment 1
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Segment 1
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Segment 1
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 2
 Tension stress check failed for Service I Limit State in Interval 15 Stress Tendons, Remove Temporary Support for Segment 2
 Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons, Remove Temporary Support for Segment 2
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Segment 2
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Segment 2
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Segment 2
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 2
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 3
 Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons, Remove Temporary Support for Segment 3
@@ -39,13 +43,16 @@ Compression stress check failed for Service I Limit State in Interval 26 Cast de
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Segment 3
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 4
 Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons, Remove Temporary Support for Segment 4
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Segment 4
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Segment 4
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 4
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -86,18 +93,22 @@ Tension stress check failed for Service I Limit State in Interval 22 Cast Closur
 Compression stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Segment 1
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Segment 1
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Segment 1
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 2
 Tension stress check failed for Service I Limit State in Interval 15 Stress Tendons, Remove Temporary Support for Segment 2
 Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons, Remove Temporary Support for Segment 2
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Segment 2
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Segment 2
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Segment 2
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 2
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 3
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 3
@@ -108,13 +119,16 @@ Compression stress check failed for Service I Limit State in Interval 26 Cast de
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Segment 3
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 4
 Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons, Remove Temporary Support for Segment 4
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Segment 4
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Segment 4
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Segment 4
 Tension stress check failed for Service I Limit State in Interval 26 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
+Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

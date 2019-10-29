@@ -325,7 +325,7 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
       DuctIndexType nDucts = pTendonGeometry->GetDuctCount(segmentKey);
       for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
       {
-         IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(segmentKey,ductIdx);
+         IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(segmentKey, ductIdx);
          vStressCheckTasks.emplace_back(stressTendonIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
          vStressCheckTasks.emplace_back(stressTendonIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
       }
@@ -351,6 +351,19 @@ std::vector<StressCheckTask> CSpecAgentImp::GetStressCheckTasks(const CSegmentKe
             vStressCheckTasks.emplace_back(intervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
             vStressCheckTasks.emplace_back(intervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
          }
+      }
+
+      // Spec check when the railing system is installed
+      IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+      vStressCheckTasks.emplace_back(railingSystemIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
+      vStressCheckTasks.emplace_back(railingSystemIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
+
+      // Spec check when the overlay is installed
+      IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
+      if (overlayIntervalIdx != INVALID_INDEX)
+      {
+         vStressCheckTasks.emplace_back(overlayIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression);
+         vStressCheckTasks.emplace_back(overlayIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
       }
    }
 
@@ -1223,6 +1236,11 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
                ATLASSERT( task.limitState == pgsTypes::ServiceI );
                x = pSpec->GetErectionCompressionStressFactor();
             }
+            else
+            {
+               ATLASSERT(task.limitState == pgsTypes::ServiceI);
+               x = pSpec->GetFinalWithoutLiveLoadCompressionStressFactor();
+            }
          }
          else
          {
@@ -1242,6 +1260,7 @@ Float64 CSpecAgentImp::GetSegmentAllowableCompressionStressCoefficient(const pgs
       }
    }
 
+   ATLASSERT(x != -99999);
    return x;
 }
 

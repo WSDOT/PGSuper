@@ -8,13 +8,16 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 1
+Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
+Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 2
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 2
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 2
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
@@ -25,6 +28,7 @@ Tension stress check failed for Service I Limit State in Interval 18 Cast deck r
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 3
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
+Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -56,13 +60,16 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 1
+Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 1
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
+Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Segment 2
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Segment 2
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 2
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
@@ -73,6 +80,7 @@ Tension stress check failed for Service I Limit State in Interval 18 Cast deck r
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Segment 3
 Tension stress check failed for Service I Limit State in Interval 18 Cast deck regions 2 for Deck
 Tension stress check failed for Service I Limit State in Interval 21 Stress Tendons, Remove Temporary Support for Deck
+Tension stress check failed for Service I Limit State in Interval 24 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
