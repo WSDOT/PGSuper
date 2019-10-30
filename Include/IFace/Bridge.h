@@ -59,7 +59,10 @@ class CPrecastSegmentData;
 class CSplicedGirderData;
 class CStrandData;
 class CStrandRow;
+class CPTData;
 class CDuctData;
+class CSegmentPTData;
+class CSegmentDuctData;
 
 interface IRCBeam2Ex;
 interface IEAFDisplayUnits;
@@ -864,10 +867,15 @@ interface IMaterials : IUnknown
    virtual Float64 GetIncrementalStrandRelaxation(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 fpso,pgsTypes::StrandType strandType) const = 0;
    virtual INCREMENTALRELAXATIONDETAILS GetIncrementalStrandRelaxationDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 fpso,pgsTypes::StrandType strandType) const = 0;
 
-   // PT Tendon
-   virtual const matPsStrand* GetTendonMaterial(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetIncrementalTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const = 0;
-   virtual INCREMENTALRELAXATIONDETAILS GetIncrementalTendonRelaxationDetails(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const = 0;
+   // PT Tendon - field installed
+   virtual const matPsStrand* GetGirderTendonMaterial(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonIncrementalRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const = 0;
+   virtual INCREMENTALRELAXATIONDETAILS GetGirderTendonIncrementalRelaxationDetails(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const = 0;
+
+   // PT Tendon - plant installed
+   virtual const matPsStrand* GetSegmentTendonMaterial(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonIncrementalRelaxation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx, Float64 fpso) const = 0;
+   virtual INCREMENTALRELAXATIONDETAILS GetSegmentTendonIncrementalRelaxationDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx, Float64 fpso) const = 0;
 
    // Properties of Precast Segment Longitudinal Rebar
    virtual void GetSegmentLongitudinalRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu) const = 0;
@@ -1832,16 +1840,15 @@ interface IGirder : public IUnknown
 
 /*****************************************************************************
 INTERFACE
-   ITendonGeometry
+   IGirderTendonGeometry
 
 DESCRIPTION
-   Interface for obtaining information about the geometry of spliced girder
-   ducts and tendons
+   Interface for obtaining information about spliced girder ducts and tendons
 *****************************************************************************/
 // {209DA239-91BD-464c-895F-D1398A48125C}
-DEFINE_GUID(IID_ITendonGeometry, 
+DEFINE_GUID(IID_IGirderTendonGeometry, 
 0x209da239, 0x91bd, 0x464c, 0x89, 0x5f, 0xd1, 0x39, 0x8a, 0x48, 0x12, 0x5c);
-interface ITendonGeometry : public IUnknown
+interface IGirderTendonGeometry : public IUnknown
 {
    // returns the number of ducts in a girder
    virtual DuctIndexType GetDuctCount(const CGirderKey& girderKey) const = 0;
@@ -1858,13 +1865,15 @@ interface ITendonGeometry : public IUnknown
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint3dCollection** ppPoints) const = 0;
 
    // returns the geometric centerline of a duct for the duct configuration given. use this to plot ducts in the UI
-   virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx, const CDuctData* pDuctData,IPoint2dCollection** ppPoints) const = 0;
+   // if pGirder is nullptr, the current bridge model is used, otherwise the provided girder is used to get height values
+   virtual void GetDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, DuctIndexType ductIdx, const CPTData* pPTData, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CDuctData* pDuctData, IPoint2dCollection** ppPoints) const = 0;
 
    // returns the location of the centerline of the duct in girder section coordiantes given a location in girder coordinates
-   virtual void GetDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
+   virtual void GetGirderDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
 
    // returns the location of the centerline of the duct in girder section coordiantes given a POI
-   virtual void GetDuctPoint(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
+   virtual void GetGirderDuctPoint(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
 
    // returns the diameter of the duct
    virtual Float64 GetOutsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
@@ -1876,16 +1885,16 @@ interface ITendonGeometry : public IUnknown
    virtual StrandIndexType GetTendonStrandCount(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
 
    // returns the area of the tendon
-   virtual Float64 GetTendonArea(const CGirderKey& girderKey,IntervalIndexType intervalIdx,DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetGirderTendonArea(const CGirderKey& girderKey,IntervalIndexType intervalIdx,DuctIndexType ductIdx) const = 0;
 
    // get the slope of a tendon. Slope is in the form of a 3D vector. Z (along the length of the girder) 
    // is always 1.0. X is the slope in the plane of girder cross section. Y is the slope along
    // the length of the girder. Slope is rise over run so it is computed as X/Z and Y/Z, however, Z is
    // always 1.0 so X and Y give the direct value for slope
-   virtual void GetTendonSlope(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IVector3d** ppSlope) const = 0;
+   virtual void GetGirderTendonSlope(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IVector3d** ppSlope) const = 0;
 
    // get the slope of a tendon
-   virtual void GetTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope) const = 0;
+   virtual void GetGirderTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope) const = 0;
 
    // returns the minimum radius of curvature of the tendon
    virtual Float64 GetMinimumRadiusOfCurvature(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
@@ -1896,7 +1905,7 @@ interface ITendonGeometry : public IUnknown
 
    // returns the distance from the top of the non-composite girder to the CG of the tendon
    // adjustments are made for the tendon being shifted within the duct
-   virtual Float64 GetDuctOffset(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetGirderDuctOffset(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
 
    // returns the centerline length of the duct curve
    virtual Float64 GetDuctLength(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
@@ -1904,28 +1913,134 @@ interface ITendonGeometry : public IUnknown
    // returns the distance from the CG of the girder to the tendon in the specified duct
    // at the specified interval. eccentricity is based on the current section properties mode.
    // adjustments are made for the tendon being shifted within the duct
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
+   virtual void GetGirderTendonEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
 
    // returns the distance from the CG of the girder to the tendon in the specified duct
    // at the specified interval. eccentricity is based on the specified section properties type.
    // adjustments are made for the tendon being shifted within the duct
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
+   virtual void GetGirderTendonEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
 
    // returns the cumulative angular change of the tendon path between one end of the tendon and a poi
-   virtual Float64 GetAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const = 0;
+   virtual Float64 GetGirderTendonAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const = 0;
 
    // returns the angular change of the tendon path between two POIs
    // if poi1 is to the left of poi2, it is assumed that jacking is from the left end otherwise it is from the right end
-   virtual Float64 GetAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetGirderTendonAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx) const = 0;
 
    // returns the end from which the PT tendon is jacked
    virtual pgsTypes::JackingEndType GetJackingEnd(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
 
    // returns the area of tendon on the top half of the girder. See Figure C5.7.3.4.2-3
-   virtual Float64 GetAptTopHalf(const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetGirderAptTopHalf(const pgsPointOfInterest& poi) const = 0;
 
    // returns the area of tendon on the bottom half of the girder. See Figure C5.7.3.4.2-3
-   virtual Float64 GetAptBottomHalf(const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetGirderAptBottomHalf(const pgsPointOfInterest& poi) const = 0;
+};
+
+
+/*****************************************************************************
+INTERFACE
+ISegmentTendonGeometry
+
+DESCRIPTION
+Interface for obtaining information about precast segment ducts and tendons
+*****************************************************************************/
+// {F0A93444-F4D5-402E-A8E4-E6A82050B4B7}
+DEFINE_GUID(IID_ISegmentTendonGeometry,
+   0xf0a93444, 0xf4d5, 0x402e, 0xa8, 0xe4, 0xe6, 0xa8, 0x20, 0x50, 0xb4, 0xb7);
+
+interface ISegmentTendonGeometry : public IUnknown
+{
+   // returns the number of ducts in a segment
+   virtual DuctIndexType GetDuctCount(const CSegmentKey& segmentKey) const = 0;
+
+   // returns the maximum number of ducts in all of the segments in the girder
+   virtual DuctIndexType GetMaxDuctCount(const CGirderKey& girderKey) const = 0;
+
+   // returns true if the poi is within the bounds of the duct
+   virtual bool IsOnDuct(const pgsPointOfInterest& poi) const = 0;
+
+   // returns the geometric centerline of a duct as a series of points. 
+   // use this to plot ducts in the UI
+   virtual void GetDuctCenterline(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetDuctCenterline(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IPoint3dCollection** ppPoints) const = 0;
+
+   // returns the geometric centerline of a duct for the duct configuration given. use this to plot ducts in the UI
+   // if pSegment is nullptr, the current bridge model is used, otherwise the provided segment is used to  get height values
+   virtual void GetDuctCenterline(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, DuctIndexType ductIdx, const CSegmentPTData* pPTData, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetDuctCenterline(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, const CSegmentDuctData* pDuctData, IPoint2dCollection** ppPoints) const = 0;
+
+   // returns the location of the centerline of the duct in girder section coordiantes given a location in segment coordinates
+   virtual void GetSegmentDuctPoint(const CSegmentKey& segmentKey, Float64 Xs, DuctIndexType ductIdx, IPoint2d** ppPoint) const = 0;
+
+   // returns the location of the centerline of the duct in girder section coordiantes given a POI
+   virtual void GetSegmentDuctPoint(const pgsPointOfInterest& poi, DuctIndexType ductIdx, IPoint2d** ppPoint) const = 0;
+
+   // returns the location of the center of the specified duct for the duct configuration given. use this to plot ducts in the UI for girder cross sections
+   // if pSegment is nullptr, the current bridge model is used, otherwise the provided pSegment is used
+   virtual void GetSegmentDuctPoint(const pgsPointOfInterest& poi, const CPrecastSegmentData* pSegment, DuctIndexType ductIdx, IPoint3d** ppPoint) const = 0;
+   virtual void GetSegmentDuctPoint(const pgsPointOfInterest& poi, const CPrecastSegmentData* pSegment, const CSegmentDuctData* pDuctData, IPoint3d** ppPoint) const = 0;
+
+   // returns the diameter of the duct
+   virtual Float64 GetOutsideDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetInsideDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   virtual Float64 GetInsideDuctArea(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns number of strands in a duct
+   virtual StrandIndexType GetTendonStrandCount(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the area of the tendon
+   virtual Float64 GetSegmentTendonArea(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, DuctIndexType ductIdx) const = 0;
+
+   // get the slope of a tendon. Slope is in the form of a 3D vector. Z (along the length of the girder) 
+   // is always 1.0. X is the slope in the plane of girder cross section. Y is the slope along
+   // the length of the girder. Slope is rise over run so it is computed as X/Z and Y/Z, however, Z is
+   // always 1.0 so X and Y give the direct value for slope
+   virtual void GetSegmentTendonSlope(const pgsPointOfInterest& poi, DuctIndexType ductIdx, IVector3d** ppSlope) const = 0;
+
+   // get the slope of a tendon
+   virtual void GetSegmentTendonSlope(const CSegmentKey& segmentKey, Float64 Xs, DuctIndexType ductIdx, IVector3d** ppSlope) const = 0;
+
+   // returns the minimum radius of curvature of the tendon
+   virtual Float64 GetMinimumRadiusOfCurvature(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the jacking force
+   virtual Float64 GetPjack(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetFpj(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the distance from the top of the non-composite girder to the CG of the tendon
+   // adjustments are made for the tendon being shifted within the duct
+   virtual Float64 GetSegmentDuctOffset(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx) const = 0;
+
+   // returns the centerline length of the duct curve
+   virtual Float64 GetDuctLength(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the distance from the CG of the girder to the tendon in the specified duct
+   // at the specified interval. eccentricity is based on the current section properties mode.
+   // adjustments are made for the tendon being shifted within the duct
+   virtual void GetSegmentTendonEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
+
+   // returns the distance from the CG of the girder to the tendon in the specified duct
+   // at the specified interval. eccentricity is based on the specified section properties type.
+   // adjustments are made for the tendon being shifted within the duct
+   virtual void GetSegmentTendonEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
+
+   // returns the cumulative angular change of the tendon path between one end of the tendon and a poi
+   virtual Float64 GetSegmentTendonAngularChange(const pgsPointOfInterest& poi, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const = 0;
+
+   // returns the angular change of the tendon path between two POIs
+   // if poi1 is to the left of poi2, it is assumed that jacking is from the left end otherwise it is from the right end
+   virtual Float64 GetSegmentTendonAngularChange(const pgsPointOfInterest& poi1, const pgsPointOfInterest& poi2, DuctIndexType ductIdx) const = 0;
+
+   // returns the end from which the PT tendon is jacked
+   virtual pgsTypes::JackingEndType GetJackingEnd(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the area of tendon on the top half of the girder. See Figure C5.7.3.4.2-3
+   virtual Float64 GetSegmentAptTopHalf(const pgsPointOfInterest& poi) const = 0;
+
+   // returns the area of tendon on the bottom half of the girder. See Figure C5.7.3.4.2-3
+   virtual Float64 GetSegmentAptBottomHalf(const pgsPointOfInterest& poi) const = 0;
 };
 
 #endif // INCLUDED_IFACE_BRIDGE_H_

@@ -675,6 +675,110 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
    return equivLoads;
 }
 
+std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivSegmentPostTensionLoads(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
+{
+   std::vector<EquivPretensionLoad> equivLoads;
+
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   if (nDucts == 0)
+   {
+      return equivLoads;
+   }
+
+   equivLoads.reserve(3 * nDucts);
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType stressingIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   if (intervalIdx == INVALID_INDEX)
+   {
+      intervalIdx = stressingIntervalIdx;
+   }
+
+   GET_IFACE(IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+
+   GET_IFACE(IPosttensionForce, pPTForce);
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 3);
+   const pgsPointOfInterest& poiStart(vPoi[0]);
+   const pgsPointOfInterest& poiMiddle(vPoi[1]);
+   const pgsPointOfInterest& poiEnd(vPoi[2]);
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CSegmentPTData* pPTData = &(pIBridgeDesc->GetPrecastSegmentData(segmentKey)->Tendons);
+   
+
+   // The end points of the parabolic duct can be at different elevations so
+   // create to loads; one for the left half and one for the right half of
+   // the segment. 
+
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      const auto*pDuct = pPTData->GetDuct(ductIdx);
+
+      Float64 Pt = pPTForce->GetSegmentTendonAverageInitialForce(segmentKey, ductIdx);
+
+      Float64 eStart, eMiddle, eEnd;
+      Float64 eccX, eccY;
+      pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poiStart, ductIdx, &eccX, &eccY);
+      eStart = eccY;
+
+      pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poiMiddle, ductIdx, &eccX, &eccY);
+      eMiddle = eccY;
+
+      pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poiEnd, ductIdx, &eccX, &eccY);
+      eEnd = eccY;
+
+      Float64 e = eMiddle - eStart;
+      Float64 wy = (pDuct->DuctGeometryType == CSegmentDuctData::Parabolic) ? 8 * Pt*e / (Ls*Ls) : 0;
+      Float64 Mx = Pt*eStart;
+
+      EquivPretensionLoad leftLoading; // and moment at start
+      leftLoading.Xs = 0;
+      leftLoading.Xe = Ls/2;
+      leftLoading.P = Pt;
+      leftLoading.eye = eStart;
+      leftLoading.eyh = eMiddle;
+      leftLoading.Ls = Ls;
+      leftLoading.Mx = Mx;
+      leftLoading.wy = wy;
+      equivLoads.push_back(leftLoading);
+
+      if (pDuct->DuctGeometryType == CSegmentDuctData::Parabolic)
+      {
+         e = eMiddle - eEnd;
+         wy = 8 * Pt*e / (Ls*Ls);
+         EquivPretensionLoad rightLoading;
+         rightLoading.Xs = Ls / 2;
+         rightLoading.Xe = Ls;
+         rightLoading.P = Pt;
+         rightLoading.eyh = eMiddle;
+         rightLoading.eye = eEnd;
+         rightLoading.Ls = Ls;
+         rightLoading.wy = wy;
+
+         equivLoads.push_back(rightLoading);
+      }
+
+      Mx = Pt*eEnd;
+
+      EquivPretensionLoad endMoment;
+      endMoment.Xs = Ls;
+      endMoment.P = -Pt;
+      endMoment.eye = eEnd;
+      endMoment.Ls = Ls;
+      endMoment.Mx = -Mx;
+
+      equivLoads.push_back(endMoment);
+   }
+
+   return equivLoads;
+}
 
 CAnalysisAgentImp::CamberModelData CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig) const
 {
@@ -2805,11 +2909,22 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
       {
          IntervalIndexType erectionIntervalIdx = GetErectionInterval(vPoi);
 
-         if ( intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension )
+         if ( intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning)
          {
             // before erection - results are in the segment models
-            // also... pretension erections are always computed from the segment models
+            // also... pretension deflections and segment PT deflections are always computed from the segment models
             deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
+
+            if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftPostTensioning)
+            {
+               // if this is after erection and the loading is PT, we need to get the girder PT
+               // deflection as well... the else block below isn't accessable from here so
+               // we'll just get the values directly
+               std::vector<Float64> girder_pt_deflections;
+               girder_pt_deflections.reserve(vPoi.size());
+               girder_pt_deflections = m_pGirderModelManager->GetDeflection(intervalIdx, pfType, vPoi, bat, resultsType);
+               std::transform(girder_pt_deflections.cbegin(), girder_pt_deflections.cend(), deflections.cbegin(), deflections.begin(), [](const auto& a, const auto& b) {return a + b; });
+            }
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
          {
@@ -3067,10 +3182,21 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
       {
          IntervalIndexType erectionIntervalIdx = GetErectionInterval(vPoi);
 
-         if ( intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension )
+         if (intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning )
          {
             // before erection - results are in the segment models
             rotations = m_pSegmentModelManager->GetRotation(intervalIdx,pfType,vPoi,resultsType);
+
+            if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftPostTensioning)
+            {
+               // if this is after erection and the loading is PT, we need to get the girder PT
+               // deflection as well... the else block below isn't accessable from here so
+               // we'll just get the values directly
+               std::vector<Float64> girder_pt_rotations;
+               girder_pt_rotations.reserve(vPoi.size());
+               girder_pt_rotations = m_pGirderModelManager->GetRotation(intervalIdx, pfType, vPoi, bat, resultsType);
+               std::transform(girder_pt_rotations.cbegin(), girder_pt_rotations.cend(), rotations.cbegin(), rotations.begin(), [](const auto& a, const auto& b) {return a + b; });
+            }
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
          {
@@ -7590,6 +7716,8 @@ IntervalIndexType GetInterval(const CSegmentKey& segmentKey, pgsTypes::Prestress
 
 void CAnalysisAgentImp::GetPermanentPrestressDeflection(const pgsPointOfInterest& poi, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig, Float64* pDx, Float64* pDy, Float64* pRz) const
 {
+   // NOTE: this function is not used for time-step analysis, however it that changes in the future
+   // the deflection due to plant installed segment tendons needs to be taken into account
    if (pConfig == nullptr)
    {
       CamberModelData camber_model_data = GetPrestressDeflectionModel(poi.GetSegmentKey(), m_PrestressDeflectionModels);
@@ -9325,11 +9453,11 @@ bool CAnalysisAgentImp::IsDeckPrecompressed(const CGirderKey& girderKey) const
       return false; // this happens when there is not a deck
    }
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
       if ( compositeDeckIntervalIdx <= stressTendonIntervalIdx )
       {
          // this tendon is stressed after the deck is composite so the deck is considered precompressed
@@ -10068,7 +10196,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       Pjack = pStrandGeom->GetPjack(segmentKey,true/*include temp strands*/);
    }
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
    if ( IsZero(Pjack) && nDucts == 0 )
    {

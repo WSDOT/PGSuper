@@ -115,6 +115,8 @@ void CPrecastSegmentData::Init()
    TopFlangeThickening = 0.0;
 
    Precamber = 0.0;
+
+   Tendons.SetSegment(this);
 }
 
 void CPrecastSegmentData::SetGirder(CSplicedGirderData* pGirder)
@@ -734,6 +736,7 @@ void CPrecastSegmentData::CopyMaterialFrom(const CPrecastSegmentData& rOther)
 void CPrecastSegmentData::CopyPrestressingFrom(const CPrecastSegmentData& rOther)
 {
    Strands = rOther.Strands;
+   Tendons = rOther.Tendons;
 }
 
 void CPrecastSegmentData::CopyLongitudinalReinforcementFrom(const CPrecastSegmentData& rOther)
@@ -834,6 +837,11 @@ bool CPrecastSegmentData::operator==(const CPrecastSegmentData& rOther) const
    {
       return false;
    }
+
+   if (Tendons != rOther.Tendons)
+   {
+      return false;
+   }
    
    if ( Material != rOther.Material )
    {
@@ -888,8 +896,8 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
    try
    {
       hr = pStrLoad->BeginUnit(_T("PrecastSegment"));
-      Float64 parent_version;
-      pStrLoad->get_Version(&parent_version);
+      Float64 version;
+      pStrLoad->get_Version(&version);
 
       var.vt = VT_ID;
       hr = pStrLoad->get_Property(_T("ID"), &var);
@@ -904,7 +912,7 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       hr = pStrLoad->get_Property(_T("EndSpan"), &var);
       SpanIndexType endSpanIdx = VARIANT2INDEX(var);
 
-      if (2 < parent_version)
+      if (2 < version)
       {
          // added in version 3
          var.vt = VT_R8;
@@ -1042,8 +1050,13 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       EndBlockWidth[pgsTypes::metEnd] = var.dblVal;
 
 
-      Float64 version;
-      hr = Strands.Load(pStrLoad,pProgress,&version);
+      Float64 strand_version;
+      hr = Strands.Load(pStrLoad,pProgress,&strand_version);
+      if (3 < version)
+      {
+         // added in version 4
+         hr = Tendons.Load(pStrLoad, pProgress);
+      }
       hr = Material.Load(pStrLoad,pProgress);
 
       CStructuredLoad load(pStrLoad);
@@ -1052,7 +1065,7 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
       hr = LongitudinalRebarData.Load(pStrLoad,pProgress);
       hr = HandlingData.Load(pStrLoad,pProgress);
 
-      if (1 < parent_version)
+      if (1 < version)
       {
          // added in version 2
          var.vt = VT_R8;
@@ -1086,7 +1099,7 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
 
 HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave, IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("PrecastSegment"), 3.0);
+   pStrSave->BeginUnit(_T("PrecastSegment"), 4.0);
 
    pStrSave->put_Property(_T("ID"), CComVariant(m_SegmentID));
 
@@ -1185,6 +1198,7 @@ HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave, IProgress* pProgres
    pStrSave->put_Property(_T("RightEndBlockWidth"),CComVariant(EndBlockWidth[pgsTypes::metEnd]));
 
    Strands.Save(pStrSave,pProgress);
+   Tendons.Save(pStrSave, pProgress); // added in version 4
    Material.Save(pStrSave,pProgress);
 
    CStructuredSave save(pStrSave);
@@ -1428,8 +1442,8 @@ void CPrecastSegmentData::AssertValid()
    GetStations(&startStation,&endStation);
    ATLASSERT( startStation < endStation );
 
-
    Strands.AssertValid();
+   Tendons.AssertValid();
    Material.AssertValid();
    ShearData.AssertValid();
    LongitudinalRebarData.AssertValid();

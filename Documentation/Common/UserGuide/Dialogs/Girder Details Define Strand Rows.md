@@ -2,6 +2,8 @@ Define Strand Rows {#ug_dialogs_girder_define_strand_rows}
 ==============================================
 Define strands in horizontal rows, ignoring the strand locations defined in the Girder Library.
 
+> NOTE: Be careful to ensure longitindal reinforcement, pretension strands, and post-tensioning ducts do not conflict. Geometric conflicts are not automatically detected.
+
 Item | Description
 -----|----------------
 Strand Grid | Strand rows are defined in this grid. See below for details.

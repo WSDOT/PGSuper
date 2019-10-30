@@ -689,6 +689,14 @@ typedef struct pgsTypes
       sitPull
    } StrandInstallationType;
 
+   typedef enum SegmentPTEventType
+   {
+      // Defines when plant installed segment PT tendons are installed
+      sptetRelease, // immediately after release
+      sptetStorage, // immediately after beginning of storage
+      sptetHauling // immediately prior to hauling
+   } SegmentPTEventType;
+
    typedef enum ProductForceType 
    { 
       // externaly applied loads

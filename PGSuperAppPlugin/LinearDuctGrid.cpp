@@ -262,7 +262,7 @@ void CLinearDuctGrid::DeletePoint()
 {
    CRowColArray awRows;
    ROWCOL nSelRows = GetSelectedRows(awRows);
-   if (0 < nSelRows && (awRows[0] != 1 && awRows[nSelRows - 1] != GetRowCount()))
+   if (0 < nSelRows)
 	{
       BOOL bUndoState = GetParam()->IsEnableUndo();
       GetParam()->EnableUndo(TRUE);
@@ -272,7 +272,8 @@ void CLinearDuctGrid::DeletePoint()
          RemoveRows(awRows[i],awRows[i]);
       }
 
-      if (!UpdateLastRow())
+      CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
+      if (pParent->GetMeasurementType() == CLinearDuctGeometry::FromPrevious && !UpdateLastRow())
       {
          AfxMessageBox(m_sWarningText);
          Undo();
@@ -445,10 +446,8 @@ void CLinearDuctGrid::SetDeleteButtonState()
       // which rows are selected
       CRowColArray awRows;
       ROWCOL nSelRows = GetSelectedRows(awRows);
-      if ( 0 < nSelRows && (awRows[0] != 1 && awRows[nSelRows-1] != GetRowCount()) )
+      if ( 0 < nSelRows )
       {
-         // rows can be deleted if the first and last rows are not selected
-         // (first and last row can never be deleted)
          pParent->EnableDeleteBtn(TRUE);
       }
       else

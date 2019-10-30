@@ -100,7 +100,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
    lrfdVersionMgr::Version vers = lrfdVersionMgr::GetVersion();

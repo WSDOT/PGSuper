@@ -4997,6 +4997,24 @@ void CProjectAgentImp::UseBridgeLibraryEntries()
    }
 }
 
+void CProjectAgentImp::UseSegmentLibraryEntries(CPrecastSegmentData* pSegment)
+{
+   const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
+   const HaulTruckLibraryEntry* pHaulTruckEntry;
+   use_library_entry(&m_LibObserver, pSegment->HandlingData.HaulTruckName, &pHaulTruckEntry, *pHaulTruckLibrary);
+   pSegment->HandlingData.pHaulTruckLibraryEntry = pHaulTruckEntry;
+
+   UseDuctLibraryEntries(pSegment);
+}
+
+void CProjectAgentImp::ReleaseSegmentLibraryEntries(CPrecastSegmentData* pSegment)
+{
+   const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
+   release_library_entry(&m_LibObserver, pSegment->HandlingData.pHaulTruckLibraryEntry, *pHaulTruckLibrary);
+
+   ReleaseDuctLibraryEntries(pSegment);
+}
+
 void CProjectAgentImp::UseGirderLibraryEntries()
 {
    UseDuctLibraryEntries();
@@ -5088,6 +5106,8 @@ void CProjectAgentImp::UseDuctLibraryEntries()
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
             CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+
+            // Field installed tendons
             CPTData* pPTData = pGirder->GetPostTensioning();
             DuctIndexType nDucts = pPTData->GetDuctCount();
             for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -5099,8 +5119,34 @@ void CProjectAgentImp::UseDuctLibraryEntries()
                                  *pDuctLibrary);
                pDuct->pDuctLibEntry = pEntry;
             } // duct loop
+
+            // plant installed tendons
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               UseDuctLibraryEntries(pSegment);
+            } // segment loop
          }// girder loop
       }// group loop
+   }
+}
+
+void CProjectAgentImp::UseDuctLibraryEntries(CPrecastSegmentData* pSegment)
+{
+   if (m_pLibMgr)
+   {
+      // Ducts
+      const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
+      const DuctLibraryEntry* pEntry;
+
+      DuctIndexType nDucts = pSegment->Tendons.GetDuctCount();
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+      {
+         CSegmentDuctData* pDuct = pSegment->Tendons.GetDuct(ductIdx);
+         use_library_entry(&m_LibObserver, pDuct->Name, &pEntry, *pDuctLibrary);
+         pDuct->pDuctLibEntry = pEntry;
+      } // duct loop
    }
 }
 
@@ -5204,6 +5250,8 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries()
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
             CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+
+            // field installed tendons
             CPTData* pPTData = pGirder->GetPostTensioning();
             DuctIndexType nDucts = pPTData->GetDuctCount();
             for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -5212,7 +5260,32 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries()
                release_library_entry(&m_LibObserver,pDuctData->pDuctLibEntry,*pDuctLibrary);
                pDuctData->pDuctLibEntry = nullptr;
             }
+
+            // plant installed tendons
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               ReleaseDuctLibraryEntries(pSegment);
+            }
          }
+      }
+   }
+}
+
+void CProjectAgentImp::ReleaseDuctLibraryEntries(CPrecastSegmentData* pSegment)
+{
+   if (m_pLibMgr)
+   {
+      // duct entry
+      const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
+
+      DuctIndexType nDucts = pSegment->Tendons.GetDuctCount();
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+      {
+         CSegmentDuctData* pDuctData = pSegment->Tendons.GetDuct(ductIdx);
+         release_library_entry(&m_LibObserver, pDuctData->pDuctLibEntry, *pDuctLibrary);
+         pDuctData->pDuctLibEntry = nullptr;
       }
    }
 }
@@ -5357,6 +5430,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
    std::map<CSegmentKey,Int32> strandKeys[3]; // map value is strand pool key, array index is strand type
+   std::map<CSegmentKey, Int32> segmentTendonKeys;
    std::map<CGirderKey,Int32> tendonKeys; // map value of strand pool key for ducts
 
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
@@ -5386,6 +5460,9 @@ void CProjectAgentImp::UpdateStrandMaterial()
                strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
                strandKeys[type].insert(std::make_pair(segmentKey,strand_pool_key));
             }
+
+            strand_pool_key = pPool->GetStrandKey(pSegment->Tendons.m_pStrand);
+            segmentTendonKeys.insert(std::make_pair(segmentKey, strand_pool_key));
          }
       }
    }
@@ -5419,6 +5496,9 @@ void CProjectAgentImp::UpdateStrandMaterial()
                strand_pool_key = strandKeys[i][segmentKey];
                pSegment->Strands.SetStrandMaterial((pgsTypes::StrandType)i,pPool->GetStrand(strand_pool_key));
             }
+
+            strand_pool_key = segmentTendonKeys[segmentKey];
+            pSegment->Tendons.m_pStrand = pPool->GetStrand(strand_pool_key);
          }
       }
    }
@@ -6790,14 +6870,12 @@ void CProjectAgentImp::SetPrecastSegmentData(const CSegmentKey& segmentKey,const
    if ( *pSegment != segment )
    {
       // copy only data. don't alter ID or Index
-      const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
-      release_library_entry(&m_LibObserver,pSegment->HandlingData.pHaulTruckLibraryEntry,*pHaulTruckLibrary);
+      ReleaseSegmentLibraryEntries(pSegment);
 
       pSegment->CopySegmentData(&segment,true);
 
-      const HaulTruckLibraryEntry* pHaulTruckEntry;
-      use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pHaulTruckEntry,*pHaulTruckLibrary);
-      pSegment->HandlingData.pHaulTruckLibraryEntry = pHaulTruckEntry;
+      UseSegmentLibraryEntries(pSegment);
+
 
       Fire_GirderChanged(segmentKey,0/*no hint*/);
    }

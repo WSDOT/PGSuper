@@ -79,7 +79,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
    IntervalIndexType lastIntervalIdx      = pIntervals->GetIntervalCount()-1;
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
@@ -589,7 +589,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       }
    }
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {

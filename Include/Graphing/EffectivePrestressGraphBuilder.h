@@ -25,11 +25,11 @@
 #include <Graphing\GraphingExp.h>
 #include <Graphing\GirderGraphBuilderBase.h>
 
-class CEffectivePrestressGraphController;
-
 class GRAPHINGCLASS CEffectivePrestressGraphBuilder : public CGirderGraphBuilderBase
 {
 public:
+   enum DuctType { Segment, Girder };
+
    CEffectivePrestressGraphBuilder();
    CEffectivePrestressGraphBuilder(const CEffectivePrestressGraphBuilder& other);
    virtual ~CEffectivePrestressGraphBuilder();
@@ -48,9 +48,9 @@ protected:
 
    DECLARE_MESSAGE_MAP()
 
-   void UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx);
-   void UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx);
-   void UpdatePosttensionGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx,DuctIndexType ductIdx);
+   void UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx, DuctType ductType,DuctIndexType ductIdx);
+   void UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx, DuctType ductType, DuctIndexType ductIdx);
+   void UpdatePosttensionGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx, DuctType ductType, DuctIndexType ductIdx);
    void UpdatePretensionGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx);
 
    virtual void GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx, IntervalIndexType* pLastIntervalIdx) override;

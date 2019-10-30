@@ -155,6 +155,7 @@
 #define IDD_SEGMENT_GENERAL             331
 #define IDD_SEGMENT_LONGITUDINAL_REBAR  332
 #define IDD_SEGMENT_STRANDS             336
+#define IDD_SEGMENT_TENDONS             337
 #define IDD_SEGMENT_SPACING             338
 #define IDD_TIMELINE_MANAGER            339
 #define IDD_TIMELINE_EVENT              340
@@ -1379,6 +1380,10 @@
 #define IDC_DECK_REGIONS                2018
 #define IDC_PLACEMENT_REGION_LABEL      2019
 #define IDC_REGION_BOUNDARY_LABEL       2020
+#define IDC_HG_START                    2021
+#define IDC_HG_MIDDLE                   2022
+#define IDC_HG_END                      2023
+#define IDC_INSTALLATION_TIME           2025
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1534,9 +1539,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        399
+#define _APS_NEXT_RESOURCE_VALUE        400
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         2021
+#define _APS_NEXT_CONTROL_VALUE         2026
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

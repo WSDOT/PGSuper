@@ -104,8 +104,6 @@ protected:
 
       Float64 K_liveload; // live load elastic gain factor
 
-      std::vector<DuctIndexType> vnDucts;
-
       pgsTypes::AnalysisType analysisType;
 
       // interfaces used at each POI
@@ -116,8 +114,9 @@ protected:
       CComPtr<ILongRebarGeometry> pRebarGeom;
       CComPtr<IMaterials> pMaterials;
       CComPtr<ILiveLoadDistributionFactors> pLLDF;
-      CComPtr<IStrandGeometry> pStrandGeom;
-      CComPtr<ITendonGeometry> pTendonGeom;
+      CComPtr<IStrandGeometry> pStrandGeometry;
+      CComPtr<ISegmentTendonGeometry> pSegmentTendonGeometry;
+      CComPtr<IGirderTendonGeometry> pGirderTendonGeometry;
    };
 
    // parameters for flexural stress ratings

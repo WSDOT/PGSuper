@@ -134,31 +134,59 @@ void pgsPsForceEng::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pC
    m_LossEngineer->ReportFinalLosses(girderKey,pChapter,pDisplayUnits);
 }
 
-const ANCHORSETDETAILS* pgsPsForceEng::GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+const ANCHORSETDETAILS* pgsPsForceEng::GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
    CreateLossEngineer(girderKey);
-   return m_LossEngineer->GetAnchorSetDetails(girderKey,ductIdx);
+   return m_LossEngineer->GetGirderTendonAnchorSetDetails(girderKey,ductIdx);
 }
 
-Float64 pgsPsForceEng::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const
+const ANCHORSETDETAILS* pgsPsForceEng::GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CreateLossEngineer(segmentKey);
+   return m_LossEngineer->GetSegmentTendonAnchorSetDetails(segmentKey, ductIdx);
+}
+
+Float64 pgsPsForceEng::GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const
 {
    CreateLossEngineer(girderKey);
-   return m_LossEngineer->GetElongation(girderKey,ductIdx,endType);
+   return m_LossEngineer->GetGirderTendonElongation(girderKey,ductIdx,endType);
 }
 
-Float64 pgsPsForceEng::GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+Float64 pgsPsForceEng::GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const
+{
+   CreateLossEngineer(segmentKey);
+   return m_LossEngineer->GetSegmentTendonElongation(segmentKey, ductIdx, endType);
+}
+
+Float64 pgsPsForceEng::GetGirderTendonAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
    CreateLossEngineer(girderKey);
    Float64 dfpF, dfpA;
-   m_LossEngineer->GetAverageFrictionAndAnchorSetLoss(girderKey,ductIdx,&dfpF,&dfpA);
+   m_LossEngineer->GetGirderTendonAverageFrictionAndAnchorSetLoss(girderKey,ductIdx,&dfpF,&dfpA);
    return dfpF;
 }
 
-Float64 pgsPsForceEng::GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+Float64 pgsPsForceEng::GetSegmentTendonAverageFrictionLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CreateLossEngineer(segmentKey);
+   Float64 dfpF, dfpA;
+   m_LossEngineer->GetSegmentTendonAverageFrictionAndAnchorSetLoss(segmentKey, ductIdx, &dfpF, &dfpA);
+   return dfpF;
+}
+
+Float64 pgsPsForceEng::GetGirderTendonAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
    CreateLossEngineer(girderKey);
    Float64 dfpF, dfpA;
-   m_LossEngineer->GetAverageFrictionAndAnchorSetLoss(girderKey,ductIdx,&dfpF,&dfpA);
+   m_LossEngineer->GetGirderTendonAverageFrictionAndAnchorSetLoss(girderKey,ductIdx,&dfpF,&dfpA);
+   return dfpA;
+}
+
+Float64 pgsPsForceEng::GetSegmentTendonAverageAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CreateLossEngineer(segmentKey);
+   Float64 dfpF, dfpA;
+   m_LossEngineer->GetSegmentTendonAverageFrictionAndAnchorSetLoss(segmentKey, ductIdx, &dfpF, &dfpA);
    return dfpA;
 }
 

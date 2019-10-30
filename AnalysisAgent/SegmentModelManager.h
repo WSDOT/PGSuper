@@ -166,6 +166,7 @@ private:
    PoiIDType AddPointOfInterest(SegmentModels& models,const pgsPointOfInterest& poi) const;
 
    void ApplyPretensionLoad(CSegmentModelData* pModelData,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
+   void ApplyPostTensionLoad(CSegmentModelData* pModelData, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const;
 
    CSegmentModelData* GetModelData(SegmentModels& models,const CSegmentKey& segmentKey) const;
 

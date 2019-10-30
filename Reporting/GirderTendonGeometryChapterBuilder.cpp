@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <Reporting\TendonGeometryChapterBuilder.h>
+#include <Reporting\GirderTendonGeometryChapterBuilder.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
@@ -36,26 +36,26 @@ static char THIS_FILE[] = __FILE__;
 
 /****************************************************************************
 CLASS
-   CTendonGeometryChapterBuilder
+   CGirderTendonGeometryChapterBuilder
 ****************************************************************************/
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CTendonGeometryChapterBuilder::CTendonGeometryChapterBuilder(bool bSelect) :
+CGirderTendonGeometryChapterBuilder::CGirderTendonGeometryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-LPCTSTR CTendonGeometryChapterBuilder::GetName() const
+LPCTSTR CGirderTendonGeometryChapterBuilder::GetName() const
 {
-   return TEXT("Tendon Geometry");
+   return TEXT("Girder Tendon Geometry");
 }
 
-rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CGirderTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
 
@@ -64,7 +64,7 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    CGirderKey girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -96,11 +96,11 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       CString strTitle;
-      strTitle.Format(_T("Tendon Geometry - Tendon %d"),LABEL_DUCT(ductIdx));
+      strTitle.Format(_T("Tendon %d"),LABEL_DUCT(ductIdx));
       rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10,strTitle);
       *pPara << pTable << rptNewLine;
 
-      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
 
       ColumnIndexType col = 0;
       (*pTable)(0,col++) << _T("POI");
@@ -124,31 +124,32 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
             (*pTable)(row,col++) << location.SetValue(POI_SPAN,poi);
 
             const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,stressTendonIntervalIdx);
-            const FRICTIONLOSSDETAILS& frDetails(pDetails->FrictionLossDetails[ductIdx]);
+            const FRICTIONLOSSDETAILS& frDetails(pDetails->GirderFrictionLossDetails[ductIdx]);
 
-			ATLASSERT(IsEqual(frDetails.X, pPoi->ConvertPoiToGirderCoordinate(poi)));
+			   ATLASSERT(IsEqual(frDetails.X, pPoi->ConvertPoiToGirderCoordinate(poi)));
 
-			Float64 ductOffset(0), ductEcc(0), slopeX(0), slopeY(0), angle_start(0), angle_end(0);
-			if (pTendonGeom->IsOnDuct(poi, ductIdx))
-			{
-				ductOffset = pTendonGeom->GetDuctOffset(stressTendonIntervalIdx, poi, ductIdx);
+			   Float64 ductOffset(0), eccY(0), slopeX(0), slopeY(0), angle_start(0), angle_end(0);
+			   if (pTendonGeom->IsOnDuct(poi, ductIdx))
+			   {
+				   ductOffset = pTendonGeom->GetGirderDuctOffset(stressTendonIntervalIdx, poi, ductIdx);
 
-				CComPtr<IVector3d> slope;
-				pTendonGeom->GetTendonSlope(poi, ductIdx, &slope);
-				slope->get_X(&slopeX);
-				slope->get_Y(&slopeY);
+				   CComPtr<IVector3d> slope;
+				   pTendonGeom->GetGirderTendonSlope(poi, ductIdx, &slope);
+				   slope->get_X(&slopeX);
+				   slope->get_Y(&slopeY);
 
-				ductEcc = pTendonGeom->GetEccentricity(stressTendonIntervalIdx, poi, ductIdx);
+               Float64 eccX;
+				   pTendonGeom->GetGirderTendonEccentricity(stressTendonIntervalIdx, poi, ductIdx,&eccX,&eccY);
 
-				angle_start = pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metStart);
-				angle_end   = pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metEnd);
-			}
+				   angle_start = pTendonGeom->GetGirderTendonAngularChange(poi, ductIdx, pgsTypes::metStart);
+				   angle_end   = pTendonGeom->GetGirderTendonAngularChange(poi, ductIdx, pgsTypes::metEnd);
+			   }
 
             (*pTable)(row,col++) << dist.SetValue( frDetails.X );
             (*pTable)(row,col++) << ecc.SetValue(ductOffset);
             (*pTable)(row,col++) << slopeX;
             (*pTable)(row,col++) << slopeY;
-            (*pTable)(row,col++) << ecc.SetValue(ductEcc);
+            (*pTable)(row,col++) << ecc.SetValue(eccY);
             (*pTable)(row,col++) << angle_start;
             (*pTable)(row,col++) << angle_end;
             (*pTable)(row,col++) << stress.SetValue( frDetails.dfpF ); // friction
@@ -165,25 +166,25 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
       *pPara << _T("Duct Length = ") << dist.SetValue(Lduct) << rptNewLine;
       *pPara << rptNewLine;
 
-      Float64 pfpF = pLosses->GetAverageFrictionLoss(girderKey,ductIdx);
+      Float64 pfpF = pLosses->GetGirderTendonAverageFrictionLoss(girderKey,ductIdx);
       *pPara << _T("Avg. Friction Loss = ") << stress.SetValue(pfpF) << rptNewLine;
 
-      Float64 pfpA = pLosses->GetAverageAnchorSetLoss(girderKey,ductIdx);
+      Float64 pfpA = pLosses->GetGirderTendonAverageAnchorSetLoss(girderKey,ductIdx);
       *pPara << _T("Avg. Anchor Set Loss = ") << stress.SetValue(pfpA) << rptNewLine;
       *pPara << rptNewLine;
 
-      Float64 Lset = pLosses->GetAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metStart);
+      Float64 Lset = pLosses->GetGirderTendonAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metStart);
       *pPara << _T("Left End, ") << Sub2(_T("L"),_T("set")) << _T(" = ") << dist.SetValue(Lset) << rptNewLine;
 
-      Lset = pLosses->GetAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metEnd);
+      Lset = pLosses->GetGirderTendonAnchorSetZoneLength(girderKey,ductIdx,pgsTypes::metEnd);
       *pPara << _T("Right End, ") << Sub2(_T("L"),_T("set")) << _T(" = ") << dist.SetValue(Lset) << rptNewLine;
 
       *pPara << rptNewLine;
 
-      Float64 elongation = pLosses->GetElongation(girderKey,ductIdx,pgsTypes::metStart);
+      Float64 elongation = pLosses->GetGirderTendonElongation(girderKey,ductIdx,pgsTypes::metStart);
       *pPara << _T("Left End, Elongation = ") << ecc.SetValue(elongation) << rptNewLine;
 
-      elongation = pLosses->GetElongation(girderKey,ductIdx,pgsTypes::metEnd);
+      elongation = pLosses->GetGirderTendonElongation(girderKey,ductIdx,pgsTypes::metEnd);
       *pPara << _T("Right End, Elongation = ") << ecc.SetValue(elongation) << rptNewLine;
 
       *pPara << rptNewLine;
@@ -198,7 +199,7 @@ rptChapter* CTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CTendonGeometryChapterBuilder::Clone() const
+CChapterBuilder* CGirderTendonGeometryChapterBuilder::Clone() const
 {
-   return new CTendonGeometryChapterBuilder;
+   return new CGirderTendonGeometryChapterBuilder;
 }

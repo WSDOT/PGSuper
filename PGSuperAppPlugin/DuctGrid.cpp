@@ -558,17 +558,17 @@ void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
 
    for ( ROWCOL row = rFrom; row <= rTo; row++ )
    {
-      DuctIndexType first_duct_in_row = nWebs*(row - 1) + 1;
+      DuctIndexType first_duct_in_row = nWebs*(row - 1);
       DuctIndexType last_duct_in_row  = first_duct_in_row + nWebs - 1;
       CString strLabel;
 
-      if ( nWebs == 1 )
+      if (nWebs == 1)
       {
-         strLabel.Format(_T("%d"), first_duct_in_row);
+         strLabel.Format(_T("%d"), LABEL_DUCT(first_duct_in_row));
       }
       else
       {
-         strLabel.Format(_T("%d - %d"), first_duct_in_row,last_duct_in_row);
+         strLabel.Format(_T("%d - %d"), LABEL_DUCT(first_duct_in_row), LABEL_DUCT(last_duct_in_row));
       }
 
       SetValueRange(CGXRange(row,0),strLabel);
@@ -594,8 +594,7 @@ void CDuctGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    else if ( nCol == nNumStrandCol )
    {
       // #of strand changed
-      CString strCheck = GetCellValue(nRow,nPjackCheckCol);
-      if ( strCheck == _T("0") ) // check box for Calc Pjack is unchecked
+      if ( ComputePjackMax(nRow) ) // check box for Calc Pjack is unchecked
       {
          UpdateMaxPjack(nRow);
       }
@@ -665,8 +664,7 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
 
    // LRFD 5.4.6.2 Area of duct must be at least K times net area of prestressing steel
    GET_IFACE2(pBroker,IDuctLimits,pDuctLimits);
-   CGirderKey girderKey = m_pPTData->GetGirder()->GetGirderKey();
-   Float64 K = pDuctLimits->GetTendonAreaLimit(girderKey);
+   Float64 K = pDuctLimits->GetTendonAreaLimit(pParent->GetInstallationType());
 
    StrandIndexType maxStrands = (StrandIndexType)fabs(A/(K*aps));
 
@@ -676,6 +674,7 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
       .SetUserAttribute(GX_IDS_UA_SPINBOUND_WRAP,1L)
       );
 
+   nStrands = Min(nStrands, maxStrands);
    SetValueRange(CGXRange(nRow,nNumStrandCol),(LONG)nStrands);
 
    // If the Calc Pjack box is unchecked, update the jacking force

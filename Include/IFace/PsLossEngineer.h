@@ -66,17 +66,19 @@ interface IPsLossEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Returns the anchor set details for a particular tendon (this is basically the seating wedge parameters)
-   virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) = 0;
+   virtual const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey, DuctIndexType ductIdx) = 0;
+   virtual const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) = 0;
 
    //---------------------------------------------------------------------
-   // Returns the tendon elongation duration jacking at the specified end of the
-   // girder.
-   virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) = 0;
+   // Returns the tendon elongation duration jacking at the specified end of the girder.
+   virtual Float64 GetGirderTendonElongation(const CGirderKey& girderKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) = 0;
+   virtual Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) = 0;
 
    //---------------------------------------------------------------------
    // Returns the average friction and anchor set losses. The average values are
    // typically used to adjust Pjack so that a constant uniform post-tension force
    // is used for equivalent post-tensioning force analysis
-   virtual void GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) = 0;
+   virtual void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) = 0;
+   virtual void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) = 0;
 };
 

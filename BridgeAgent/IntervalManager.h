@@ -179,17 +179,26 @@ public:
    // returns the interval index when a temporary support is removed
    IntervalIndexType GetTemporarySupportRemovalInterval(SupportIndexType tsIdx) const;
 
+   // returns the interval when plant installed tendons are stressed for a given segment
+   IntervalIndexType GetStressSegmentTendonInterval(const CSegmentKey& segmentKey) const;
+
+   // returns the interval when the first segment tendon stressing occurs for the specified girder
+   IntervalIndexType GetFirstSegmentTendonStressingInterval(const CGirderKey& girderKey) const;
+
+   // returns the interval when the last segment tendon stressing occurs for the specified girder
+   IntervalIndexType GetLastSegmentTendonStressingInterval(const CGirderKey& girderKey) const;
+
    // returns the interval index when a tendon is stressed
-   IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+   IntervalIndexType GetStressGirderTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
 
    // returns the interval when the first tendon stressing occurs for the specified girder
-   IntervalIndexType GetFirstTendonStressingInterval(const CGirderKey& girderKey) const;
+   IntervalIndexType GetFirstGirderTendonStressingInterval(const CGirderKey& girderKey) const;
 
    // returns the interval when the last tendon stressing occurs for the specified girder
-   IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey) const;
+   IntervalIndexType GetLastGirderTendonStressingInterval(const CGirderKey& girderKey) const;
 
    // returns the intervals when tendons are stressed for the specified girder
-   std::vector<IntervalIndexType> GetTendonStressingIntervals(const CGirderKey& girderKey) const;
+   std::vector<IntervalIndexType> GetGirderTendonStressingIntervals(const CGirderKey& girderKey) const;
 
 protected:
    IBroker* m_pBroker;
@@ -223,7 +232,8 @@ protected:
    // returns a list of closure joints that are casting during the timeline event
    std::vector<CClosureKey> GetClosureJoints(const CTimelineEvent* pTimelineEvent);
 
-   std::map<CTendonKey,IntervalIndexType> m_StressTendonIntervals;
+   std::map<CSegmentKey, IntervalIndexType> m_SegmentTendonStressingIntervals;
+   std::map<CGirderTendonKey,IntervalIndexType> m_GirderTendonStressingIntervals;
 
    // keeps track of when piers are erected
    std::map<PierIndexType,IntervalIndexType> m_ErectPierIntervals;
@@ -236,7 +246,9 @@ protected:
    // keep trakc of the interval when key activities occur for each segment
    std::map<CSegmentKey,IntervalIndexType> m_StressStrandIntervals;
    std::map<CSegmentKey,IntervalIndexType> m_ReleaseIntervals;
-   std::map<CSegmentKey,IntervalIndexType> m_SegmentHaulingIntervals;
+   std::map<CSegmentKey, IntervalIndexType> m_SegmentLiftingIntervals;
+   std::map<CSegmentKey, IntervalIndexType> m_SegmentStorageIntervals;
+   std::map<CSegmentKey, IntervalIndexType> m_SegmentHaulingIntervals;
    std::map<CSegmentKey,IntervalIndexType> m_SegmentErectionIntervals;
    std::map<CSegmentKey,IntervalIndexType> m_RemoveTemporaryStrandsIntervals;
    std::map<CClosureKey,IntervalIndexType> m_CastClosureIntervals;
@@ -257,8 +269,15 @@ protected:
    // map of when the strands are release for the first and last segment constructed for a girder
    std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>> m_ReleaseSequenceIntervalLimits;
 
+   std::map<CGirderKey, std::pair<IntervalIndexType, IntervalIndexType>> m_LiftingSequenceIntervalLimits;
+   std::map<CGirderKey, std::pair<IntervalIndexType, IntervalIndexType>> m_StorageSequenceIntervalLimits;
+
    // map of when the first and last segment is erected for a girder
    std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>> m_SegmentErectionSequenceIntervalLimits;
+
+   IntervalIndexType GetFirstInterval(const CGirderKey& girderKey, const std::map<CGirderKey, std::pair<IntervalIndexType, IntervalIndexType>>& intervalLimits) const;
+   IntervalIndexType GetLastInterval(const CGirderKey& girderKey, const std::map<CGirderKey, std::pair<IntervalIndexType, IntervalIndexType>>& intervalLimits) const;
+
 
    class CUserLoadKey
    {

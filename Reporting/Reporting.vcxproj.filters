@@ -430,9 +430,6 @@
     <ClCompile Include="TemporarySupportReactionChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TendonGeometryChapterBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="TendonStressCheckTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -506,6 +503,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PlantHandlingCheck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GirderTendonGeometryChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SegmentTendonGeometryChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -954,9 +957,6 @@
     <ClInclude Include="..\Include\Reporting\TemporarySupportReactionChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Reporting\TendonGeometryChapterBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\Reporting\TendonStressCheckTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1027,6 +1027,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\PlantHandlingCheck.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\GirderTendonGeometryChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SegmentTendonGeometryChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

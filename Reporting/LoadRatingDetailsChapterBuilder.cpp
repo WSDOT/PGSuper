@@ -73,7 +73,7 @@ rptChapter* CLoadRatingDetailsChapterBuilder::Build(CReportSpecification* pRptSp
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker, ITendonGeometry, pTendonGeom);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
    GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
@@ -734,16 +734,17 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
 
       Float64 rebarSR = artifact.GetRebarStressRatio();
       Float64 strandSR = artifact.GetStrandStressRatio();
-      Float64 tendonSR = artifact.GetTendonStressRatio();
+      Float64 segmentTendonSR = artifact.GetSegmentTendonStressRatio();
+      Float64 girderTendonSR = artifact.GetGirderTendonStressRatio();
 
-      Float64 SR = Min(rebarSR,strandSR,tendonSR);
+      Float64 SR = Min(rebarSR,strandSR,segmentTendonSR,girderTendonSR);
 
       if ( 1.0 <= SR && !ReportAtThisPoi(poi,controllingPoi) )
       {
          continue;
       }
 
-      IndexType srIdx = MinIndex(rebarSR,strandSR,tendonSR);
+      IndexType srIdx = MinIndex(rebarSR,strandSR,segmentTendonSR,girderTendonSR);
 
       Float64 d;
       Float64 E;
@@ -766,12 +767,19 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
          fs = artifact.GetStrandStress();
          fallow = artifact.GetStrandAllowableStress();
       }
+      else if (srIdx == 2)
+      {
+         artifact.GetSegmentTendon(&d,&f,&fy,&E);
+         fcr = artifact.GetSegmentTendonCrackingStressIncrement();
+         fs = artifact.GetSegmentTendonStress();
+         fallow = artifact.GetSegmentTendonAllowableStress();
+      }
       else
       {
-         artifact.GetTendon(&d,&f,&fy,&E);
-         fcr = artifact.GetTendonCrackingStressIncrement();
-         fs = artifact.GetTendonStress();
-         fallow = artifact.GetTendonAllowableStress();
+         artifact.GetGirderTendon(&d, &f, &fy, &E);
+         fcr = artifact.GetGirderTendonCrackingStressIncrement();
+         fs = artifact.GetGirderTendonStress();
+         fallow = artifact.GetGirderTendonAllowableStress();
       }
 
 
@@ -817,9 +825,13 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
       {
          (*table)(row,col++) << _T("Strand");
       }
+      else if (srIdx == 2)
+      {
+         (*table)(row, col++) << _T("Segment Tendon");
+      }
       else
       {
-         (*table)(row,col++) << _T("Tendon");
+         (*table)(row,col++) << _T("Girder Tendon");
       }
 
       row++;

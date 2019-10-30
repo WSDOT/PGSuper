@@ -100,19 +100,23 @@ public:
    //------------------------------------------------------------------------
    // Computes the basic anchor set loss details (basically the anchor set length and
    // anchor set loss a seating end)
-   const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+   const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey, DuctIndexType ductIdx) const;
+   const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const;
 
    //------------------------------------------------------------------------
    // Computes the tendon elongation during jacking
-   Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const;
+   Float64 GetGirderTendonElongation(const CGirderKey& girderKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const;
+   Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const;
 
    //------------------------------------------------------------------------
    // Returns the average friction loss
-   Float64 GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+   Float64 GetGirderTendonAverageFrictionLoss(const CGirderKey& girderKey, DuctIndexType ductIdx) const;
+   Float64 GetSegmentTendonAverageFrictionLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const;
 
    //------------------------------------------------------------------------
    // Returns the average anchor set loss
-   Float64 GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+   Float64 GetGirderTendonAverageAnchorSetLoss(const CGirderKey& girderKey, DuctIndexType ductIdx) const;
+   Float64 GetSegmentTendonAverageAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const;
 
    //------------------------------------------------------------------------
    // Returns the maximum jacking force

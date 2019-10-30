@@ -100,7 +100,8 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    }
 
    const pgsPointOfInterest& rptPoi(pTSDRptSpec->GetPointOfInterest());
-   const CGirderKey& girderKey(rptPoi.GetSegmentKey());
+   const CSegmentKey& segmentKey(rptPoi.GetSegmentKey());
+   const CGirderKey& girderKey(segmentKey);
    PoiList vPoi;
    if ( pTSDRptSpec->ReportAtAllLocations() )
    {
@@ -118,13 +119,15 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IMaterials, pMaterials);
 
    bool bHasDeck = IsStructuralDeck(pBridge->GetDeckType());
 
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
 
@@ -297,15 +300,28 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          (*pPara) << rptNewLine;
 
          // Unrestrained tendon relaxation
-         if ( 0 < nDucts )
+         if (0 < nSegmentDucts)
          {
             pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             (*pChapter) << pPara;
-            (*pPara) << _T("Apparent unrestrained deformation of tendons due to relaxation") << rptNewLine;
+            (*pPara) << _T("Apparent unrestrained deformation of segment tendons due to relaxation") << rptNewLine;
             pPara = new rptParagraph;
             (*pChapter) << pPara;
             (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
-            rptRcTable* pTendonRelaxationTable = BuildTendonRelaxationTable(tsDetails,pDisplayUnits);
+            rptRcTable* pTendonRelaxationTable = BuildSegmentTendonRelaxationTable(tsDetails, pDisplayUnits);
+            (*pPara) << pTendonRelaxationTable << rptNewLine;
+            (*pPara) << rptNewLine;
+         }
+
+         if ( 0 < nGirderDucts )
+         {
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            (*pChapter) << pPara;
+            (*pPara) << _T("Apparent unrestrained deformation of girder tendons due to relaxation") << rptNewLine;
+            pPara = new rptParagraph;
+            (*pChapter) << pPara;
+            (*pPara) << rptRcImage(strImagePath + _T("ApparentRelaxationStrain.png")) << rptNewLine;
+            rptRcTable* pTendonRelaxationTable = BuildGirderTendonRelaxationTable(tsDetails,pDisplayUnits);
             (*pPara) << pTendonRelaxationTable << rptNewLine;
             (*pPara) << rptNewLine;
          }
@@ -475,10 +491,15 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       *pPara << pPara->GetName() << rptNewLine;
 
       ReportStrandRelaxationDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
-
-      if ( 0 < nDucts )
+      
+      if (0 < nSegmentDucts)
       {
-         ReportTendonRelaxationDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
+         ReportSegmentTendonRelaxationDetails(pChapter, pBroker, vPoi.front(), firstIntervalIdx, lastIntervalIdx, pDisplayUnits);
+      }
+
+      if ( 0 < nGirderDucts )
+      {
+         ReportGirderTendonRelaxationDetails(pChapter,pBroker,vPoi.front(),firstIntervalIdx,lastIntervalIdx,pDisplayUnits);
       }
    }
 
@@ -707,14 +728,29 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentPropertiesTable(const 
       }
    }
 
-   DuctIndexType nTendons = tsDetails.Tendons.size();
-   for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
+   DuctIndexType nTendons = tsDetails.SegmentTendons.size();
+   for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
    {
-      const TIME_STEP_STRAND& tsTendon = tsDetails.Tendons[tendonIdx];
+      const TIME_STEP_STRAND& tsTendon = tsDetails.SegmentTendons[tendonIdx];
 
       rowIdx++;
       colIdx = 0;
-      (*pTable)(rowIdx,colIdx++) << _T("Tendon ") << LABEL_DUCT(tendonIdx);
+      (*pTable)(rowIdx, colIdx++) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx);
+      (*pTable)(rowIdx, colIdx++) << modE.SetValue(tsTendon.E);
+      (*pTable)(rowIdx, colIdx++) << area.SetValue(tsTendon.As);
+      (*pTable)(rowIdx, colIdx++) << _T("-");
+      (*pTable)(rowIdx, colIdx++) << ecc.SetValue(tsTendon.Ys);
+      (*pTable)(rowIdx, colIdx++) << _T("-");
+   }
+
+   nTendons = tsDetails.GirderTendons.size();
+   for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
+   {
+      const TIME_STEP_STRAND& tsTendon = tsDetails.GirderTendons[tendonIdx];
+
+      rowIdx++;
+      colIdx = 0;
+      (*pTable)(rowIdx,colIdx++) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx);
       (*pTable)(rowIdx,colIdx++) << modE.SetValue(tsTendon.E);
       (*pTable)(rowIdx,colIdx++) << area.SetValue(tsTendon.As);
       (*pTable)(rowIdx,colIdx++) << _T("-");
@@ -886,7 +922,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildStrandRelaxationTable(const TIM
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildSegmentTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
 
@@ -894,18 +930,43 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildTendonRelaxationTable(const TIM
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
 
-   (*pTable)(rowIdx,colIdx++) << _T("Tendon");
+   (*pTable)(rowIdx,colIdx++) << _T("Segment Tendon");
    (*pTable)(rowIdx,colIdx++) << COLHDR(DELTA_FR,rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*pTable)(rowIdx,colIdx++) << DELTA_ER << Super2(_T("x10"), _T("6"));
 
    rowIdx = pTable->GetNumberOfHeaderRows();
-   DuctIndexType nTendons = tsDetails.Tendons.size();
+   DuctIndexType nTendons = tsDetails.SegmentTendons.size();
    for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++, rowIdx++ )
    {
       colIdx = 0;
       (*pTable)(rowIdx,colIdx++) << LABEL_DUCT(tendonIdx);
-      (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.Tendons[tendonIdx].Relaxation.fr);
-      (*pTable)(rowIdx,colIdx++) << tsDetails.Tendons[tendonIdx].er*1E6;
+      (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.SegmentTendons[tendonIdx].Relaxation.fr);
+      (*pTable)(rowIdx,colIdx++) << tsDetails.SegmentTendons[tendonIdx].er*1E6;
+   }
+
+   return pTable;
+}
+
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildGirderTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails, IEAFDisplayUnits* pDisplayUnits) const
+{
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3);
+   RowIndexType rowIdx = 0;
+   ColumnIndexType colIdx = 0;
+
+   (*pTable)(rowIdx, colIdx++) << _T("Girder Tendon");
+   (*pTable)(rowIdx, colIdx++) << COLHDR(DELTA_FR, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(rowIdx, colIdx++) << DELTA_ER << Super2(_T("x10"), _T("6"));
+
+   rowIdx = pTable->GetNumberOfHeaderRows();
+   DuctIndexType nTendons = tsDetails.GirderTendons.size();
+   for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++, rowIdx++)
+   {
+      colIdx = 0;
+      (*pTable)(rowIdx, colIdx++) << LABEL_DUCT(tendonIdx);
+      (*pTable)(rowIdx, colIdx++) << stress.SetValue(tsDetails.GirderTendons[tendonIdx].Relaxation.fr);
+      (*pTable)(rowIdx, colIdx++) << tsDetails.GirderTendons[tendonIdx].er*1E6;
    }
 
    return pTable;
@@ -999,17 +1060,31 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
       (*pTable)(rowIdx,colIdx++) << _T("");
    }
 
-   DuctIndexType nTendons = tsDetails.Tendons.size();
+   DuctIndexType nTendons = tsDetails.SegmentTendons.size();
+   for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+   {
+      rowIdx++;
+      colIdx = 0;
+      (*pTable)(rowIdx, colIdx++) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx);
+      (*pTable)(rowIdx, colIdx++) << _T("");
+      (*pTable)(rowIdx, colIdx++) << _T("");
+      (*pTable)(rowIdx, colIdx++) << _T("");
+      (*pTable)(rowIdx, colIdx++) << _T("");
+      (*pTable)(rowIdx, colIdx++) << _T("-(") << tsDetails.SegmentTendons[tendonIdx].er << _T(")(") << modE.SetValue(tsDetails.SegmentTendons[tendonIdx].E) << _T(")(") << area.SetValue(tsDetails.SegmentTendons[tendonIdx].As) << _T(") = ") << force.SetValue(tsDetails.SegmentTendons[tendonIdx].PrRelaxation);
+      (*pTable)(rowIdx, colIdx++) << _T("");
+   }
+
+   nTendons = tsDetails.GirderTendons.size();
    for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
    {
       rowIdx++;
       colIdx = 0;
-      (*pTable)(rowIdx,colIdx++) << _T("Tendon ") << LABEL_DUCT(tendonIdx);
+      (*pTable)(rowIdx,colIdx++) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx);
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
-      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Tendons[tendonIdx].er << _T(")(") << modE.SetValue(tsDetails.Tendons[tendonIdx].E) << _T(")(") << area.SetValue(tsDetails.Tendons[tendonIdx].As) << _T(") = ") << force.SetValue(tsDetails.Tendons[tendonIdx].PrRelaxation);
+      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.GirderTendons[tendonIdx].er << _T(")(") << modE.SetValue(tsDetails.GirderTendons[tendonIdx].E) << _T(")(") << area.SetValue(tsDetails.GirderTendons[tendonIdx].As) << _T(") = ") << force.SetValue(tsDetails.GirderTendons[tendonIdx].PrRelaxation);
       (*pTable)(rowIdx,colIdx++) << _T("");
    }
 
@@ -1297,17 +1372,31 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedComponentForceTable(c
       }
    }
 
-   DuctIndexType nTendons = tsDetails.Tendons.size();
+   DuctIndexType nTendons = tsDetails.SegmentTendons.size();
+   for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+   {
+      rowIdx++;
+      colIdx = 0;
+      (*pTable)(rowIdx, colIdx++) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx);
+      (*pTable)(rowIdx, colIdx++) << force.SetValue(tsDetails.SegmentTendons[tendonIdx].dPi[pgsTypes::pftCreep]);
+      (*pTable)(rowIdx, colIdx++) << _T("");
+      (*pTable)(rowIdx, colIdx++) << force.SetValue(tsDetails.SegmentTendons[tendonIdx].dPi[pgsTypes::pftShrinkage]);
+      (*pTable)(rowIdx, colIdx++) << _T("");
+      (*pTable)(rowIdx, colIdx++) << force.SetValue(tsDetails.SegmentTendons[tendonIdx].dPi[pgsTypes::pftRelaxation]);
+      (*pTable)(rowIdx, colIdx++) << _T("");
+   }
+
+   nTendons = tsDetails.GirderTendons.size();
    for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
    {
       rowIdx++;
       colIdx = 0;
-      (*pTable)(rowIdx,colIdx++) << _T("Tendon ") << LABEL_DUCT(tendonIdx);
-      (*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.Tendons[tendonIdx].dPi[pgsTypes::pftCreep]);
+      (*pTable)(rowIdx,colIdx++) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx);
+      (*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.GirderTendons[tendonIdx].dPi[pgsTypes::pftCreep]);
       (*pTable)(rowIdx,colIdx++) << _T("");
-      (*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.Tendons[tendonIdx].dPi[pgsTypes::pftShrinkage]);
+      (*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.GirderTendons[tendonIdx].dPi[pgsTypes::pftShrinkage]);
       (*pTable)(rowIdx,colIdx++) << _T("");
-      (*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.Tendons[tendonIdx].dPi[pgsTypes::pftRelaxation]);
+      (*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.GirderTendons[tendonIdx].dPi[pgsTypes::pftRelaxation]);
       (*pTable)(rowIdx,colIdx++) << _T("");
    }
 
@@ -1444,14 +1533,25 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
       }
    }
 
-   DuctIndexType nTendons = tsDetails.Tendons.size();
+   DuctIndexType nTendons = tsDetails.SegmentTendons.size();
    for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
    {
-      const TIME_STEP_STRAND& tsTendon = tsDetails.Tendons[tendonIdx];
+      const TIME_STEP_STRAND& tsTendon = tsDetails.SegmentTendons[tendonIdx];
 
       rowIdx++;
       colIdx = 0;
-      (*pTable)(rowIdx, colIdx++) << _T("Tendon ") << LABEL_DUCT(tendonIdx);
+      (*pTable)(rowIdx, colIdx++) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx);
+      (*pTable)(rowIdx, colIdx++) << DELTA_Pk << _T("(") << rptForceUnitTag(&pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure) << _T(")");
+   }
+
+   nTendons = tsDetails.GirderTendons.size();
+   for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+   {
+      const TIME_STEP_STRAND& tsTendon = tsDetails.GirderTendons[tendonIdx];
+
+      rowIdx++;
+      colIdx = 0;
+      (*pTable)(rowIdx, colIdx++) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx);
       (*pTable)(rowIdx, colIdx++) << DELTA_Pk << _T("(") << rptForceUnitTag(&pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure) << _T(")");
    }
 
@@ -1505,8 +1605,14 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
          }
       }
 
-      // Tendons
-      for (const auto& tsTendon : tsDetails.Tendons)
+      // Segment Tendons
+      for (const auto& tsTendon : tsDetails.SegmentTendons)
+      {
+         (*pTable)(rowIdx++, colIdx) << force.SetValue(tsTendon.dPi[pfType]);
+      }
+
+      // Girder Tendons
+      for (const auto& tsTendon : tsDetails.GirderTendons)
       {
          (*pTable)(rowIdx++, colIdx) << force.SetValue(tsTendon.dPi[pfType]);
       }
@@ -1557,8 +1663,14 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
       }
    }
 
-   // Tendons
-   for (const auto& tsTendon : tsDetails.Tendons)
+   // Segment Tendons
+   for (const auto& tsTendon : tsDetails.SegmentTendons)
+   {
+      (*pTable)(rowIdx++, colIdx) << force.SetValue(tsTendon.dP);
+   }
+
+   // Girder Tendons
+   for (const auto& tsTendon : tsDetails.GirderTendons)
    {
       (*pTable)(rowIdx++, colIdx) << force.SetValue(tsTendon.dP);
    }
@@ -1610,10 +1722,16 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
       }
    }
 
-   // Tendons
-   for (const auto& tsTendon : tsDetails.Tendons)
+   // Segment Tendons
+   for (const auto& tsTendon : tsDetails.SegmentTendons)
    {
-      (*pTable)(rowIdx++,colIdx) << force.SetValue(tsTendon.P);
+      (*pTable)(rowIdx++, colIdx) << force.SetValue(tsTendon.P);
+   }
+
+   // Girder Tendons
+   for (const auto& tsTendon : tsDetails.GirderTendons)
+   {
+      (*pTable)(rowIdx++, colIdx) << force.SetValue(tsTendon.P);
    }
 
    return pTable;
@@ -1685,11 +1803,18 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       (*pTable)(rowIdx++, colIdx) << _T("Bottom Deck");
    }
 
-   DuctIndexType nTendons = tsDetails.Tendons.size();
+   DuctIndexType nTendons = tsDetails.SegmentTendons.size();
+   for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+   {
+      const TIME_STEP_STRAND& tsTendon = tsDetails.SegmentTendons[tendonIdx];
+      (*pTable)(rowIdx++, colIdx) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx);
+   }
+
+   nTendons = tsDetails.GirderTendons.size();
    for ( DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++ )
    {
-      const TIME_STEP_STRAND& tsTendon = tsDetails.Tendons[tendonIdx];
-      (*pTable)(rowIdx++,colIdx) << _T("Tendon ") << LABEL_DUCT(tendonIdx);
+      const TIME_STEP_STRAND& tsTendon = tsDetails.GirderTendons[tendonIdx];
+      (*pTable)(rowIdx++,colIdx) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx);
    }
 
    // fill the table
@@ -1730,10 +1855,16 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
          (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtIncremental]);
       }
 
-      // Tendons
-      for (const auto& tsTendon : tsDetails.Tendons)
+      // Segment Tendons
+      for (const auto& tsTendon : tsDetails.SegmentTendons)
       {
-         (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
+         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
+      }
+
+      // Girder Tendons
+      for (const auto& tsTendon : tsDetails.GirderTendons)
+      {
+         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
       }
    } // next loading
 
@@ -1758,10 +1889,16 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_bot_deck[rtIncremental]);
    }
 
-   // Tendons
-   for (const auto& tsTendon : tsDetails.Tendons)
+   // Segment Tendons
+   for (const auto& tsTendon : tsDetails.SegmentTendons)
    {
-      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsTendon.dfpe);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpe);
+   }
+
+   // Girder Tendons
+   for (const auto& tsTendon : tsDetails.GirderTendons)
+   {
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpe);
    }
 
    // Cumulative Totals
@@ -1786,10 +1923,16 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_bot_deck[rtCumulative]);
    }
 
-   // Tendons
-   for (const auto& tsTendon : tsDetails.Tendons)
+   // Segment Tendons
+   for (const auto& tsTendon : tsDetails.SegmentTendons)
    {
-      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsTendon.fpe);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
+   }
+
+   // Girder Tendons
+   for (const auto& tsTendon : tsDetails.GirderTendons)
+   {
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
    }
 
    return pTable;
@@ -2876,17 +3019,155 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    }
 }
 
-void CTimeStepDetailsChapterBuilder::ReportTendonRelaxationDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const
+void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptChapter* pChapter, IBroker* pBroker, const pgsPointOfInterest& poi, IntervalIndexType firstIntervalIdx, IntervalIndexType lastIntervalIdx, IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, ILosses, pLosses);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pTendonGeom);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+
+   std::_tstring strImagePath(rptStyleManager::GetImagePath());
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   (*pChapter) << pPara;
+   (*pPara) << _T("Segment Tendon relaxation details") << rptNewLine;
+   pPara = new rptParagraph;
+   (*pChapter) << pPara;
+
+   pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
+   const matPsStrand* pTendon = pMaterials->GetSegmentTendonMaterial(segmentKey);
+   if (model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209)
+   {
+      if (pTendon->GetType() == matPsStrand::StressRelieved)
+      {
+         (*pPara) << rptRcImage(strImagePath + _T("ACI209RelaxationSR.png")) << rptNewLine;
+      }
+      else
+      {
+         (*pPara) << rptRcImage(strImagePath + _T("ACI209RelaxationLR.png")) << rptNewLine;
+      }
+   }
+   else
+   {
+      if (pTendon->GetType() == matPsStrand::StressRelieved)
+      {
+         (*pPara) << rptRcImage(strImagePath + _T("CEBFIPRelaxationSR.png")) << rptNewLine;
+      }
+      else
+      {
+         (*pPara) << rptRcImage(strImagePath + _T("CEBFIPRelaxationLR.png")) << rptNewLine;
+      }
+   }
+
+   (*pPara) << Sub2(_T("t"), _T("b")) << _T(" = time from stressing to the beginning of the interval") << rptNewLine;
+   (*pPara) << Sub2(_T("t"), _T("e")) << _T(" = time from stressing to the end of the interval") << rptNewLine;
+
+   ColumnIndexType nColumns = 2;
+   if (model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209)
+   {
+      nColumns += 6;
+   }
+   else
+   {
+      ATLASSERT(model == pgsTypes::tdmCEBFIP);
+      nColumns += 8;
+   }
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns);
+   *pPara << pTable << rptNewLine;
+
+   RowIndexType rowIdx = 0;
+   ColumnIndexType colIdx = 0;
+
+   (*pTable)(rowIdx, colIdx++) << _T("Interval");
+   (*pTable)(rowIdx, colIdx++) << _T("Tendon");
+   if (model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209)
+   {
+      (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FPY, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("b")) << rptNewLine << _T("(day)");
+      (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("e")) << rptNewLine << _T("(day)");
+      (*pTable)(rowIdx, colIdx++) << _T("Epoxy") << rptNewLine << _T("Factor");
+   }
+   else
+   {
+      ATLASSERT(model == pgsTypes::tdmCEBFIP);
+      (*pTable)(rowIdx, colIdx++) << symbol(rho);
+      (*pTable)(rowIdx, colIdx++) << _T("k");
+      (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(rowIdx, colIdx++) << COLHDR(RPT_FPU, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("b")) << rptNewLine << _T("(day)");
+      (*pTable)(rowIdx, colIdx++) << Sub2(_T("t"), _T("e")) << rptNewLine << _T("(day)");
+      (*pTable)(rowIdx, colIdx++) << _T("Epoxy") << rptNewLine << _T("Factor");
+   }
+   (*pTable)(rowIdx, colIdx++) << COLHDR(DELTA_FR, rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
+   DuctIndexType nTendons = pTendonGeom->GetDuctCount(segmentKey);
+
+   rowIdx = pTable->GetNumberOfHeaderRows();
+   for (IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
+   {
+      if (firstIntervalIdx != lastIntervalIdx && (intervalIdx < stressTendonIntervalIdx || ::IsZero(pIntervals->GetDuration(intervalIdx))))
+      {
+         continue;
+      }
+
+      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi, intervalIdx);
+      const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
+
+      colIdx = 0;
+      pTable->SetRowSpan(rowIdx, colIdx, nTendons);
+      (*pTable)(rowIdx, colIdx++) << LABEL_INTERVAL(intervalIdx);
+
+      for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+      {
+         colIdx = 1;
+         (*pTable)(rowIdx, colIdx++) << LABEL_DUCT(tendonIdx);
+
+         if (model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209)
+         {
+            (*pTable)(rowIdx, colIdx++) << stress.SetValue(tsDetails.SegmentTendons[tendonIdx].Relaxation.fpi);
+            (*pTable)(rowIdx, colIdx++) << stress.SetValue(tsDetails.SegmentTendons[tendonIdx].Relaxation.fpy);
+            (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.tStart;
+            (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.tEnd;
+            (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.epoxyFactor;
+         }
+         else
+         {
+            ATLASSERT(model == pgsTypes::tdmCEBFIP);
+            (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.p;
+            (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.k;
+            (*pTable)(rowIdx, colIdx++) << stress.SetValue(tsDetails.SegmentTendons[tendonIdx].Relaxation.fpi);
+            (*pTable)(rowIdx, colIdx++) << stress.SetValue(tsDetails.SegmentTendons[tendonIdx].Relaxation.fpu);
+            (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.tStart;
+            (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.tEnd;
+            (*pTable)(rowIdx, colIdx++) << tsDetails.SegmentTendons[tendonIdx].Relaxation.epoxyFactor;
+         }
+
+         (*pTable)(rowIdx, colIdx++) << stress.SetValue(tsDetails.SegmentTendons[tendonIdx].Relaxation.fr);
+
+         rowIdx++;
+      }
+   }
+}
+
+void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
    GET_IFACE2(pBroker,ILosses,pLosses);
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   IntervalIndexType stressFirstTendonIntervalIdx = pIntervals->GetFirstTendonStressingInterval(segmentKey);
+   IntervalIndexType stressFirstTendonIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(segmentKey);
 
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
 
@@ -2894,12 +3175,12 @@ void CTimeStepDetailsChapterBuilder::ReportTendonRelaxationDetails(rptChapter* p
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << _T("Tendon relaxation details") << rptNewLine;
+   (*pPara) << _T("Girder Tendon relaxation details") << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
-   const matPsStrand* pTendon = pMaterials->GetTendonMaterial(segmentKey);
+   const matPsStrand* pTendon = pMaterials->GetGirderTendonMaterial(segmentKey);
    if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
    {
       if (pTendon->GetType() == matPsStrand::StressRelieved )
@@ -2989,25 +3270,25 @@ void CTimeStepDetailsChapterBuilder::ReportTendonRelaxationDetails(rptChapter* p
 
          if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )
          {
-            (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.Tendons[tendonIdx].Relaxation.fpi);
-            (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.Tendons[tendonIdx].Relaxation.fpy);
-            (*pTable)(rowIdx,colIdx++) << tsDetails.Tendons[tendonIdx].Relaxation.tStart;
-            (*pTable)(rowIdx,colIdx++) << tsDetails.Tendons[tendonIdx].Relaxation.tEnd;
-            (*pTable)(rowIdx,colIdx++) << tsDetails.Tendons[tendonIdx].Relaxation.epoxyFactor;
+            (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.GirderTendons[tendonIdx].Relaxation.fpi);
+            (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.GirderTendons[tendonIdx].Relaxation.fpy);
+            (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.tStart;
+            (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.tEnd;
+            (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.epoxyFactor;
          }
          else
          {
             ATLASSERT(model == pgsTypes::tdmCEBFIP);
-            (*pTable)(rowIdx,colIdx++) << tsDetails.Tendons[tendonIdx].Relaxation.p;
-            (*pTable)(rowIdx,colIdx++) << tsDetails.Tendons[tendonIdx].Relaxation.k;
-            (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.Tendons[tendonIdx].Relaxation.fpi);
-            (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.Tendons[tendonIdx].Relaxation.fpu);
-            (*pTable)(rowIdx,colIdx++) << tsDetails.Tendons[tendonIdx].Relaxation.tStart;
-            (*pTable)(rowIdx,colIdx++) << tsDetails.Tendons[tendonIdx].Relaxation.tEnd;
-            (*pTable)(rowIdx,colIdx++) << tsDetails.Tendons[tendonIdx].Relaxation.epoxyFactor;
+            (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.p;
+            (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.k;
+            (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.GirderTendons[tendonIdx].Relaxation.fpi);
+            (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.GirderTendons[tendonIdx].Relaxation.fpu);
+            (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.tStart;
+            (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.tEnd;
+            (*pTable)(rowIdx,colIdx++) << tsDetails.GirderTendons[tendonIdx].Relaxation.epoxyFactor;
          }
 
-         (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.Tendons[tendonIdx].Relaxation.fr);
+         (*pTable)(rowIdx,colIdx++) << stress.SetValue(tsDetails.GirderTendons[tendonIdx].Relaxation.fr);
 
          rowIdx++;
       }
@@ -3088,7 +3369,7 @@ std::vector<pgsTypes::ProductForceType> CTimeStepDetailsChapterBuilder::GetProdu
       }
    }
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    if ( 0 < nDucts )
    {

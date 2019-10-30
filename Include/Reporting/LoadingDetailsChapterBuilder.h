@@ -86,6 +86,7 @@ protected:
    void ReportLiveLoad(rptChapter* pChapter,bool bDesign,bool bRating,IRatingSpecification* pRatingSpec,bool& bPermit) const;
    void ReportLimitStates(rptChapter* pChapter,bool bDesign,bool bRating,bool bPermit,bool one_girder_has_shear_key,IRatingSpecification* pRatingSpec) const;
    void ReportEquivPretensionLoads(rptChapter* pChatper,bool bRating,IBridge* pBridge,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const;
+   void ReportEquivSegmentPostTensioningLoads(rptChapter* pChapter, bool bRating, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey) const;
 
    rptParagraph* CreatePointLoadTable(IBroker* pBroker, const CSpanKey& spanKey,IEAFDisplayUnits* pDisplayUnits, Uint16 level) const;
    rptParagraph* CreateDistributedLoadTable(IBroker* pBroker, const CSpanKey& spanKey, IEAFDisplayUnits* pDisplayUnits, Uint16 level) const;

@@ -68,8 +68,16 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       return pChapter;
    }
 
+   *pPara << _T("This is a debugging report used to check equilibrium between internal and external forces.") << rptNewLine;
+   *pPara << _T("At each interval, there is a change in internal and external forces. In a loading interval, external forces are applied and the change in internal component forces must equal the external forces.") << rptNewLine;
+   *pPara << _T("Similarly, in a time step interval when no loads are applied, creep, shrinkage, and relaxation deformations are restrained causing internal forces in the section components. These internal forces must be in equilibrium.") << rptNewLine;
+   *pPara << _T("This report lists the forces occuring during an interval and the change in force in each section component. Verify that the Total Internal and Total External change in each component force are equal.") << rptNewLine;
+   *pPara << _T("If the analysis is correct, this report isn't very interesting. If, however, the analysis is firing asserts (DEBUG and BETA builds), this report is helpful in diagosing the problem") << rptNewLine;
+
+   *pPara << rptNewLine << rptNewLine;
+
    CGirderKey girderKey(poi.GetSegmentKey());
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeometry);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeometry);
    DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -172,10 +180,34 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << _T("E  = ")  << modE.SetValue(tsDetails.Strands[pgsTypes::Temporary].E) << rptNewLine;
    *pPara << rptNewLine;
 
+   *pPara << _T("Segment Tendons") << rptNewLine;
+   nDucts = tsDetails.SegmentTendons.size();
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      *pPara << _T("Tendon ") << LABEL_DUCT(ductIdx) << rptNewLine;
+      *pPara << _T("An = ") << area.SetValue(tsDetails.SegmentTendons[ductIdx].As) << rptNewLine;
+      *pPara << _T("Ys = ") << dist.SetValue(tsDetails.SegmentTendons[ductIdx].Ys) << rptNewLine;
+      *pPara << _T("E  = ") << modE.SetValue(tsDetails.SegmentTendons[ductIdx].E) << rptNewLine;
+      *pPara << rptNewLine;
+   }
+
+   *pPara << _T("Girder Tendons") << rptNewLine;
+   nDucts = tsDetails.GirderTendons.size();
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      *pPara << _T("Tendon ") << LABEL_DUCT(ductIdx) << rptNewLine;
+      *pPara << _T("An = ") << area.SetValue(tsDetails.GirderTendons[ductIdx].As) << rptNewLine;
+      *pPara << _T("Ys = ") << dist.SetValue(tsDetails.GirderTendons[ductIdx].Ys) << rptNewLine;
+      *pPara << _T("E  = ") << modE.SetValue(tsDetails.GirderTendons[ductIdx].E) << rptNewLine;
+      *pPara << rptNewLine;
+   }
+
    int N = sizeof(tsDetails.dPi)/sizeof(tsDetails.dPi[0]);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    *pPara << rptNewLine;
+   *pPara << rptNewLine;
+   *pPara << _T("Component restraining force") << rptNewLine;
    *pPara << rptNewLine;
    *pPara << _T("Girder.PrCreep = ") << force.SetValue(tsDetails.Girder.PrCreep) << rptNewLine;
    *pPara << _T("Girder.PrShrinkage = ") << force.SetValue(tsDetails.Girder.PrShrinkage) << rptNewLine;
@@ -208,20 +240,46 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << dist.SetValue(tsDetails.Deck.Yn) << _T(")) = ");
    *pPara << moment.SetValue(tsDetails.Mr[TIMESTEP_SH]) << rptNewLine;
    *pPara << rptNewLine;
-   *pPara << _T("Pr Relaxation = (") << force.SetValue(tsDetails.Strands[pgsTypes::Straight].PrRelaxation) << _T(" + ");
+   *pPara << _T("Pr Relaxation = (Straight.PrRelaxation + Harped.PrRelaxation + Temporary.PrRelaxation + Sum(SegmentTendon.PrRelaxation) + Sum(GirderTendon.PrRelaxation) = (");
+   *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Straight].PrRelaxation) << _T(" + ");
    *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Harped].PrRelaxation) << _T(" + ");
-   *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Temporary].PrRelaxation) << _T(") = ");
+   *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Temporary].PrRelaxation);
+   for (const auto& tsTendon : tsDetails.SegmentTendons)
+   {
+      *pPara << _T(" + ") << force.SetValue(tsTendon.PrRelaxation);
+   }
+   for (const auto& tsTendon : tsDetails.GirderTendons)
+   {
+      *pPara << _T(" + ") << force.SetValue(tsTendon.PrRelaxation);
+   }
+   *pPara << _T(") = ");
    *pPara << force.SetValue(tsDetails.Pr[TIMESTEP_RE]) << rptNewLine;
-   *pPara << _T("Mr Relaxation = (Straight.PrRelaxation(Ytr - Ys) + Harped.PrRelaxation(Ytr - Ys) + Temporary.PrRelaxation(Ytr - Ys)");
-   *pPara << _T(" = (") << force.SetValue(tsDetails.Strands[pgsTypes::Straight].PrRelaxation) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
+   *pPara << _T("Mr Relaxation = (Straight.PrRelaxation(Ytr - Ys) + Harped.PrRelaxation(Ytr - Ys) + Temporary.PrRelaxation(Ytr - Ys) + Sum(SegmentTendon.PrRelaxation(Ytr - Ys)) + Sum(GirderTendon.PrRelaxation(Ytr-Ys)) = ");
+   *pPara << _T("(") << force.SetValue(tsDetails.Strands[pgsTypes::Straight].PrRelaxation) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
    *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Straight].Ys) << _T(") + ");
    *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Harped].PrRelaxation) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
    *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Harped].Ys) << _T(") + ");
    *pPara << force.SetValue(tsDetails.Strands[pgsTypes::Temporary].PrRelaxation) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
-   *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Temporary].Ys) << _T(") = ");
+   *pPara << dist.SetValue(tsDetails.Strands[pgsTypes::Temporary].Ys) << _T(")");
+   for (const auto& tsTendon : tsDetails.SegmentTendons)
+   {
+      *pPara << _T(" + ");
+      *pPara << force.SetValue(tsTendon.PrRelaxation) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
+      *pPara << dist.SetValue(tsTendon.Ys) << _T(")");
+   }
+   for (const auto& tsTendon : tsDetails.GirderTendons)
+   {
+      *pPara << _T(" + ");
+      *pPara << force.SetValue(tsTendon.PrRelaxation) << _T("(") << dist.SetValue(tsDetails.Ytr) << _T(" - ");
+      *pPara << dist.SetValue(tsTendon.Ys) << _T(")");
+   }
+   *pPara << _T(" = ");
    *pPara << moment.SetValue(tsDetails.Mr[TIMESTEP_RE]) << rptNewLine;
    *pPara << rptNewLine;
 
+   *pPara << rptNewLine;
+   *pPara << _T("Response to restraining force") << rptNewLine;
+   *pPara << rptNewLine;
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    *pPara << _T("Pre Creep = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pgsTypes::pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
    *pPara << _T("Pre Shrinkage = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pgsTypes::pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
@@ -232,6 +290,8 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pPara << _T("Mre Relaxation = ") << moment.SetValue(pProductForces->GetMoment(intervalIdx,pgsTypes::pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
 
    *pPara << rptNewLine;
+   *pPara << rptNewLine;
+   *pPara << _T("Change in internal component forces") << rptNewLine;
    *pPara << rptNewLine;
    *pPara << _T("Axial") << rptNewLine;
    for ( int i = 0; i < N; i++ )
@@ -287,12 +347,23 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       sum_dP += dP;
       *pPara << _T("Temporary Strand dP = ") << force.SetValue(dP) << rptNewLine;
 
+
       DuctIndexType ductIdx = 0;
-      for(const auto& tendon : tsDetails.Tendons)
+      for (const auto& tendon : tsDetails.SegmentTendons)
       {
          dP = tendon.dPi[pfType];
          sum_dP += dP;
-         *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" dP = ") << force.SetValue(dP) << rptNewLine;
+         *pPara << _T("Segment Duct ") << LABEL_DUCT(ductIdx) << _T(" dP = ") << force.SetValue(dP) << rptNewLine;
+
+         ductIdx++;
+      }
+
+      ductIdx = 0;
+      for(const auto& tendon : tsDetails.GirderTendons)
+      {
+         dP = tendon.dPi[pfType];
+         sum_dP += dP;
+         *pPara << _T("Girder Duct ") << LABEL_DUCT(ductIdx) << _T(" dP = ") << force.SetValue(dP) << rptNewLine;
 
          ductIdx++;
       }
@@ -370,12 +441,22 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
       *pPara << _T("Temporary Strand dM = ") << moment.SetValue(dM) << rptNewLine;
 
       DuctIndexType ductIdx = 0;
-      for (const auto& tendon : tsDetails.Tendons)
+      for (const auto& tendon : tsDetails.SegmentTendons)
       {
          dP = tendon.dPi[pfType];
          dM = dP*(tsDetails.Ytr - tendon.Ys);
          sum_dM += dM;
-         *pPara << _T("Duct ") << LABEL_DUCT(ductIdx) << _T(" dM = ") << moment.SetValue(dM) << rptNewLine;
+         *pPara << _T("Segment Duct ") << LABEL_DUCT(ductIdx) << _T(" dM = ") << moment.SetValue(dM) << rptNewLine;
+         ductIdx++;
+      }
+
+      ductIdx = 0;
+      for (const auto& tendon : tsDetails.GirderTendons)
+      {
+         dP = tendon.dPi[pfType];
+         dM = dP*(tsDetails.Ytr - tendon.Ys);
+         sum_dM += dM;
+         *pPara << _T("Girder Duct ") << LABEL_DUCT(ductIdx) << _T(" dM = ") << moment.SetValue(dM) << rptNewLine;
          ductIdx++;
       }
 

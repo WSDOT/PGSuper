@@ -29,6 +29,7 @@
 #include <PgsExt\PierData2.h>
 #include <PgsExt\GirderMaterial.h>
 #include <PgsExt\StrandData.h>
+#include <PgsExt\SegmentPTData.h>
 #include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <PgsExt\HandlingData.h>
@@ -63,6 +64,7 @@ public:
 
 
    CStrandData Strands;      // number of strands, debonding and strand data
+   CSegmentPTData Tendons; // plant installed post-tensioning
    CGirderMaterial Material; // concrete
    CShearData2 ShearData;    // stirrups
    CLongitudinalRebarData LongitudinalRebarData;  // mild reinforcing

@@ -2035,8 +2035,10 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50056, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.Theta, unitMeasure::Degree)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50057, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpops, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50058, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpeps, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50059, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpopt, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 50060, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpept, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
+#pragma Reminder("WORKING HERE - Mantis 846 - need to add segment values to reg test") // do this after we get clean results
+      // use 50059s and 50060s for segments and g for girder
+      resultsFile<<bridgeId<<", "<<pid<<", 50059, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpoptGirder, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50060, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(scd.fpeptGirder, unitMeasure::MPa)) <<", 15, "<<gdrIdx<<std::endl;
 
       psArtifact = pstirrup_artifact->GetStirrupCheckAtPoisArtifactAtPOI( liveLoadIntervalIdx, pgsTypes::StrengthI, poi.GetID() );
       if ( psArtifact )

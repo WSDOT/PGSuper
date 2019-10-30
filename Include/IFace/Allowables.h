@@ -105,17 +105,28 @@ interface IAllowableTendonStress : IUnknown
 {
    virtual bool CheckTendonStressAtJacking() const = 0;
    virtual bool CheckTendonStressPriorToSeating() const = 0;
-   virtual Float64 GetAllowableAtJacking(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetAllowablePriorToSeating(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetAllowableAfterLosses(const CGirderKey& girderKey) const = 0;
 
-   virtual Float64 GetAllowableCoefficientAtJacking(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableAtJacking(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowablePriorToSeating(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableAfterAnchorSet(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableAfterLosses(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAtJacking(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientPriorToSeating(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterAnchorSet(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterLosses(const CSegmentKey& segmentKey) const = 0;
+
+   virtual Float64 GetGirderTendonAllowableAtJacking(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowablePriorToSeating(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableAfterAnchorSet(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableAfterLosses(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientAtJacking(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const = 0;
 };
 
 /*****************************************************************************
@@ -249,8 +260,14 @@ DEFINE_GUID(IID_IDuctLimits,
 0xc99249a5, 0x87c6, 0x4fdf, 0xac, 0x1a, 0x50, 0x2e, 0x50, 0xfa, 0xea, 0xbc);
 interface IDuctLimits : IUnknown
 {
-   virtual Float64 GetRadiusOfCurvatureLimit(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetTendonAreaLimit(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetDuctSizeLimit(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetSegmentTendonRadiusOfCurvatureLimit(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAreaLimit(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonDuctSizeLimit(const CSegmentKey& segmentKey) const = 0;
+
+   virtual Float64 GetGirderTendonRadiusOfCurvatureLimit(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAreaLimit(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonDuctSizeLimit(const CGirderKey& girderKey) const = 0;
+
+   virtual Float64 GetTendonAreaLimit(pgsTypes::StrandInstallationType installationType) const = 0;
 };
 

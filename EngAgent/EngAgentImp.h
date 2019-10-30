@@ -205,12 +205,18 @@ public:
    virtual Float64 GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx = INVALID_INDEX,const GDRCONFIG* pConfig = nullptr) const override;
 
-   virtual Float64 GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) const override;
-   virtual Float64 GetAnchorSetZoneLength(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const override;
-   virtual Float64 GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) const override;
-   virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const override;
-   virtual Float64 GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const override;
-   virtual Float64 GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const override;
+   virtual Float64 GetGirderTendonFrictionLoss(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const override;
+   virtual Float64 GetSegmentTendonFrictionLoss(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const override;
+   virtual Float64 GetGirderTendonAnchorSetZoneLength(const CGirderKey& girderKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const override;
+   virtual Float64 GetSegmentTendonAnchorSetZoneLength(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const override;
+   virtual Float64 GetGirderTendonAnchorSetLoss(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const override;
+   virtual Float64 GetSegmentTendonAnchorSetLoss(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const override;
+   virtual Float64 GetGirderTendonElongation(const CGirderKey& girderKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const override;
+   virtual Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const override;
+   virtual Float64 GetGirderTendonAverageFrictionLoss(const CGirderKey& girderKey, DuctIndexType ductIdx) const override;
+   virtual Float64 GetGirderTendonAverageAnchorSetLoss(const CGirderKey& girderKey, DuctIndexType ductIdx) const override;
+   virtual Float64 GetSegmentTendonAverageFrictionLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const override;
+   virtual Float64 GetSegmentTendonAverageAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const override;
 
    virtual bool AreElasticGainsApplicable() const override;
    virtual bool IsDeckShrinkageApplicable() const override;
@@ -254,15 +260,28 @@ public:
 
 // IPosttensionForce
 public:
-   virtual Float64 GetPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) const override;
-   virtual Float64 GetPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) const override;
-   virtual Float64 GetInitialTendonForce(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const override;
-   virtual Float64 GetInitialTendonStress(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const override;
-   virtual Float64 GetAverageInitialTendonForce(const CGirderKey& girderKey,DuctIndexType ductIdx) const override;
-   virtual Float64 GetAverageInitialTendonStress(const CGirderKey& girderKey,DuctIndexType ductIdx) const override;
-   virtual Float64 GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const override;
-   virtual Float64 GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const override;
-   virtual Float64 GetVerticalTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,DuctIndexType ductIdx) const override;
+   virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) const override;
+   virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) const override;
+   virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, StrandIndexType nStrands) const override;
+   virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const matPsStrand& strand, StrandIndexType nStrands) const override;
+
+   virtual Float64 GetGirderTendonInitialForce(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const override;
+   virtual Float64 GetGirderTendonInitialStress(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const override;
+   virtual Float64 GetGirderTendonAverageInitialForce(const CGirderKey& girderKey,DuctIndexType ductIdx) const override;
+   virtual Float64 GetGirderTendonAverageInitialStress(const CGirderKey& girderKey,DuctIndexType ductIdx) const override;
+
+   virtual Float64 GetSegmentTendonInitialForce(const pgsPointOfInterest& poi, DuctIndexType ductIdx, bool bIncludeAnchorSet) const override;
+   virtual Float64 GetSegmentTendonInitialStress(const pgsPointOfInterest& poi, DuctIndexType ductIdx, bool bIncludeAnchorSet) const override;
+   virtual Float64 GetSegmentTendonAverageInitialForce(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const override;
+   virtual Float64 GetSegmentTendonAverageInitialStress(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const override;
+
+   virtual Float64 GetGirderTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const override;
+   virtual Float64 GetGirderTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const override;
+   virtual Float64 GetGirderTendonVerticalForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,DuctIndexType ductIdx) const override;
+
+   virtual Float64 GetSegmentTendonForce(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time, DuctIndexType ductIdx, bool bIncludeMinLiveLoad, bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const override;
+   virtual Float64 GetSegmentTendonStress(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time, DuctIndexType ductIdx, bool bIncludeMinLiveLoad, bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const override;
+   virtual Float64 GetSegmentTendonVerticalForce(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, DuctIndexType ductIdx) const override;
 
 
 // ILiveLoadDistributionFactors

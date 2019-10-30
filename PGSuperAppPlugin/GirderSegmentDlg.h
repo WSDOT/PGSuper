@@ -24,6 +24,7 @@
 
 #include "GirderSegmentGeneralPage.h"
 #include "GirderSegmentStrandsPage.h"
+#include "GirderSegmentTendonsPage.h"
 #include "GirderSegmentLongitudinalRebarPage.h"
 #include "GirderSegmentStirrupsPage.h"
 #include "BridgeDescLiftingPage.h"
@@ -88,6 +89,7 @@ protected:
    ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 
    CGirderSegmentStrandsPage m_StrandsPage;
+   CGirderSegmentTendonsPage m_TendonsPage;
    CGirderSegmentLongitudinalRebarPage m_RebarPage;
    CGirderDescLiftingPage m_LiftingPage;
 
@@ -97,6 +99,7 @@ protected:
    CButton m_CheckBox;
 
    friend CGirderSegmentStrandsPage;
+   friend CGirderSegmentTendonsPage;
 
 public:
    virtual BOOL OnInitDialog();

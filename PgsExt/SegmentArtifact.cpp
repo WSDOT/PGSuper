@@ -234,6 +234,40 @@ const pgsHaulingAnalysisArtifact* pgsSegmentArtifact::GetHaulingAnalysisArtifact
    return m_pHaulingAnalysisArtifact;
 }
 
+void pgsSegmentArtifact::SetTendonStressArtifact(DuctIndexType ductIdx, const pgsTendonStressArtifact& artifact)
+{
+   m_TendonStressArtifacts.insert(std::make_pair(ductIdx, artifact));
+}
+
+const pgsTendonStressArtifact* pgsSegmentArtifact::GetTendonStressArtifact(DuctIndexType ductIdx) const
+{
+   std::map<DuctIndexType, pgsTendonStressArtifact>::const_iterator found(m_TendonStressArtifacts.find(ductIdx));
+   ATLASSERT(found != m_TendonStressArtifacts.end());
+   return &(found->second);
+}
+
+pgsTendonStressArtifact* pgsSegmentArtifact::GetTendonStressArtifact(DuctIndexType ductIdx)
+{
+   return &m_TendonStressArtifacts[ductIdx];
+}
+
+void pgsSegmentArtifact::SetDuctSizeArtifact(DuctIndexType ductIdx, const pgsDuctSizeArtifact& artifact)
+{
+   m_DuctSizeArtifacts.insert(std::make_pair(ductIdx, artifact));
+}
+
+const pgsDuctSizeArtifact* pgsSegmentArtifact::GetDuctSizeArtifact(DuctIndexType ductIdx) const
+{
+   std::map<DuctIndexType, pgsDuctSizeArtifact>::const_iterator found(m_DuctSizeArtifacts.find(ductIdx));
+   ATLASSERT(found != m_DuctSizeArtifacts.end());
+   return &(found->second);
+}
+
+pgsDuctSizeArtifact* pgsSegmentArtifact::GetDuctSizeArtifact(DuctIndexType ductIdx)
+{
+   return &m_DuctSizeArtifacts[ductIdx];
+}
+
 bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(const StressCheckTask& task,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute) const
 {
    ATLASSERT(attribute == 0 || attribute == POI_CLOSURE);
@@ -550,6 +584,24 @@ bool pgsSegmentArtifact::Passed() const
    if (!m_DebondArtifact.Passed())
    {
       return false;
+   }
+
+   for (const auto& item : m_TendonStressArtifacts)
+   {
+      const auto& artifact(item.second);
+      if (!artifact.Passed())
+      {
+         return false;
+      }
+   }
+
+   for (const auto& item : m_DuctSizeArtifacts)
+   {
+      const auto& artifact(item.second);
+      if (!artifact.Passed())
+      {
+         return false;
+      }
    }
 
    return true;
@@ -972,6 +1024,9 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
    m_pHaulingAnalysisArtifact = rOther.m_pHaulingAnalysisArtifact;
 
    m_DebondArtifact = rOther.m_DebondArtifact;
+
+   m_TendonStressArtifacts = rOther.m_TendonStressArtifacts;
+   m_DuctSizeArtifacts = rOther.m_DuctSizeArtifacts;
 }
 
 void pgsSegmentArtifact::MakeAssignment(const pgsSegmentArtifact& rOther)

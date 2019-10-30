@@ -558,6 +558,7 @@
     <ClCompile Include="SectPropChapterBuilder.cpp" />
     <ClCompile Include="SectPropTable.cpp" />
     <ClCompile Include="SectPropTable2.cpp" />
+    <ClCompile Include="SegmentTendonGeometryChapterBuilder.cpp" />
     <ClCompile Include="SelectPointOfInterestDlg.cpp" />
     <ClCompile Include="ShearCapacityDetailsChapterBuilder.cpp" />
     <ClCompile Include="ShearCheckTable.cpp" />
@@ -588,7 +589,7 @@
     <ClCompile Include="TemporarySupportElevationDetailsChapterBuilder.cpp" />
     <ClCompile Include="TemporarySupportElevationsChapterBuilder.cpp" />
     <ClCompile Include="TemporarySupportReactionChapterBuilder.cpp" />
-    <ClCompile Include="TendonGeometryChapterBuilder.cpp" />
+    <ClCompile Include="GirderTendonGeometryChapterBuilder.cpp" />
     <ClCompile Include="TendonStressCheckTable.cpp" />
     <ClCompile Include="TimeStepCamberChapterBuilder.cpp" />
     <ClCompile Include="TimeStepDetailsChapterBuilder.cpp" />
@@ -738,6 +739,7 @@
     <ClInclude Include="..\Include\Reporting\SectPropChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SectPropTable.h" />
     <ClInclude Include="..\Include\Reporting\SectPropTable2.h" />
+    <ClInclude Include="..\Include\Reporting\SegmentTendonGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ShearCapacityDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ShearCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\ShrinkageStrainChapterBuilder.h" />
@@ -759,7 +761,7 @@
     <ClInclude Include="..\Include\Reporting\TemporarySupportElevationDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TemporarySupportElevationsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TemporarySupportReactionChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\TendonGeometryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\GirderTendonGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TendonStressCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepCamberChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepDetailsChapterBuilder.h" />

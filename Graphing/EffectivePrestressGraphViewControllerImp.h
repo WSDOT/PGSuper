@@ -79,7 +79,8 @@ public:
    virtual void SetStrandType(IEffectivePrestressGraphViewController::StrandType strandType) override;
    virtual IEffectivePrestressGraphViewController::StrandType GetStrandType() const override;
 
-   virtual void SetDuct(DuctIndexType ductIdx) override;
+   virtual void SetDuct(IEffectivePrestressGraphViewController::DuctType ductType,DuctIndexType ductIdx) override;
+   virtual IEffectivePrestressGraphViewController::DuctType GetDuctType() const override;
    virtual DuctIndexType GetDuct() const override;
 
    virtual void ShowGrid(bool bShow) override;

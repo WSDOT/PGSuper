@@ -67,6 +67,14 @@ void CDrawDeckRegionControl::OnPaint()
    // TODO: Add your message handler code here
    // Do not call CWnd::OnPaint() for painting messages
 
+   // setup a clipping region so we don't draw outside of the control boundaries
+   CRect rClient;
+   GetClientRect(&rClient);
+   CRgn rgn;
+   rgn.CreateRectRgnIndirect(&rClient);
+   dc.SelectClipRgn(&rgn);
+
+
    CCastDeckDlg* pParent = (CCastDeckDlg*)GetParent();
    CCastDeckActivity castDeckActivity = pParent->GetCastDeckActivity();
    IndexType nRegions = castDeckActivity.GetCastingRegionCount();
@@ -137,12 +145,6 @@ void CDrawDeckRegionControl::OnPaint()
    gpRect2d box(left, bottom, right, top);
    gpSize2d size = box.Size();
    gpPoint2d org = box.Center();
-
-   CRect rClient;
-   GetClientRect(&rClient);
-   CRgn rgn;
-   rgn.CreateRectRgnIndirect(&rClient);
-   dc.SelectClipRgn(&rgn);
 
    rClient.DeflateRect(1, 1, 1, 1);
    CSize sClient = rClient.Size();

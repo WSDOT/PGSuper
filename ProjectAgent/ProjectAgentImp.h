@@ -918,10 +918,14 @@ private:
 
    void UseBridgeLibraryEntries();
    void UseGirderLibraryEntries();
+   void UseSegmentLibraryEntries(CPrecastSegmentData* pSegment);
    void UseDuctLibraryEntries();
+   void UseDuctLibraryEntries(CPrecastSegmentData* pSegment);
    void ReleaseBridgeLibraryEntries();
    void ReleaseGirderLibraryEntries();
+   void ReleaseSegmentLibraryEntries(CPrecastSegmentData* pSegment);
    void ReleaseDuctLibraryEntries();
+   void ReleaseDuctLibraryEntries(CPrecastSegmentData* pSegment);
 
    void UpdateConcreteMaterial();
    void UpdateTimeDependentMaterials();

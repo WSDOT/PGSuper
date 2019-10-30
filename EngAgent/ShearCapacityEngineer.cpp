@@ -41,6 +41,10 @@
 #include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\GirderLabel.h>
 
+#if defined _DEBUG
+#include <IFace\DocumentType.h>
+#endif
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -157,23 +161,36 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    // Tendons
    if ( bAfter1999 )
    {
-      const matPsStrand* pTendon = pMaterial->GetTendonMaterial(girderKey);
+      const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+      const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(girderKey);
 
-      if (0 < pscd->Apt)
+      if (0 < pscd->AptSegment)
       {
-         Float64 fpu = pTendon ->GetUltimateStrength();
+         Float64 fpu = pSegmentTendon->GetUltimateStrength();
          Float64 K = 0.70;
-         pscd->fpopt = K*fpu;
+         pscd->fpoptSegment = K*fpu;
       }
       else
       {
-         pscd->fpopt = 0; // no prestressing on this side
+         pscd->fpoptSegment = 0; // no prestressing on this side
+      }
+
+      if (0 < pscd->AptGirder)
+      {
+         Float64 fpu = pGirderTendon ->GetUltimateStrength();
+         Float64 K = 0.70;
+         pscd->fpoptGirder = K*fpu;
+      }
+      else
+      {
+         pscd->fpoptGirder = 0; // no prestressing on this side
       }
    }
    else
    {
       // C5.7.3.4.2-1 (pre2017: C5.8.3.4.2-1)
-      pscd->fpopt = pscd->fpept + pscd->fpc*pscd->Ept/pscd->Ec;
+      pscd->fpoptSegment = pscd->fpeptSegment + pscd->fpc*pscd->EptSegment / pscd->Ec;
+      pscd->fpoptGirder = pscd->fpeptGirder + pscd->fpc*pscd->EptGirder / pscd->Ec;
    }
 
    // concrete shear capacity
@@ -271,10 +288,11 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
 
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
-   CGirderKey girderKey(poi.GetSegmentKey());
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   CGirderKey girderKey(segmentKey);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType noncompsiteIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
@@ -287,26 +305,50 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
       + pPsForce->GetPrestressForce(poi, pgsTypes::Straight, finalIntervalIdx, pgsTypes::End, pConfig);
 
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if there are tendons
-   GET_IFACE_NOCHECK(ITendonGeometry,pTendonGeometry); // only used if there are tendons
-   Float64 Pe  = 0;
-   Float64 Ppt = 0;
-   DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   Float64 PeSegment = 0;
+   Float64 PptSegment = 0;
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
    {
-      // only include tendons that are stress prior to the section becoming composite
-      if (pTendonGeometry->IsOnDuct(poi, ductIdx))
+      // only include tendons that are stressed prior to the section becoming composite
+      if (pSegmentTendonGeometry->IsOnDuct(poi))
       {
-         IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey, ductIdx);
          if (stressTendonIntervalIdx < compositeIntervalIdx)
          {
-            Float64 e = pTendonGeometry->GetEccentricity(finalIntervalIdx, poi, ductIdx);
-            Float64 F = pPTForce->GetTendonForce(poi, finalIntervalIdx, pgsTypes::End, ductIdx, true, true);
-            Ppt += F;
-            Pe += F*e;
+            Float64 eccX, eccY;
+            pSegmentTendonGeometry->GetSegmentTendonEccentricity(finalIntervalIdx, poi, ductIdx, &eccX, &eccY);
+            Float64 F = pPTForce->GetSegmentTendonForce(poi, finalIntervalIdx, pgsTypes::End, ductIdx, true, true);
+            PptSegment += F;
+            PeSegment += F*eccY;
          }
       }
    }
-   Float64 ept = (IsZero(Ppt) ? 0 : Pe/Ppt);
+   Float64 eptSegment = (IsZero(PptSegment) ? 0 : PeSegment / PptSegment);
+
+   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
+   Float64 PeGirder  = 0;
+   Float64 PptGirder = 0;
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+   {
+      // only include tendons that are stressed prior to the section becoming composite
+      if (pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
+      {
+         IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx);
+         if (stressTendonIntervalIdx < compositeIntervalIdx)
+         {
+            Float64 eccX, eccY;
+            pGirderTendonGeometry->GetGirderTendonEccentricity(finalIntervalIdx, poi, ductIdx, &eccX, &eccY);
+            Float64 F = pPTForce->GetGirderTendonForce(poi, finalIntervalIdx, pgsTypes::End, ductIdx, true, true);
+            PptGirder += F;
+            PeGirder += F*eccY;
+         }
+      }
+   }
+   Float64 eptGirder = (IsZero(PptGirder) ? 0 : PeGirder/PptGirder);
 
    // girder only props
    Float64 Ybg = pSectProp->GetY(noncompsiteIntervalIdx,poi,pgsTypes::BottomGirder);
@@ -323,13 +365,15 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    Float64 Mg = pCombinedForces->GetMoment(noncompsiteIntervalIdx, lcDC, poi, bat, rtCumulative);
    Mg        += pCombinedForces->GetMoment(noncompsiteIntervalIdx, lcDW, poi, bat, rtCumulative);
 
-   Float64 fpc = -(Pps+Ppt)/A - (Pps*eps+Ppt*ept)*c/I + Mg*c/I;
+   Float64 fpc = -(Pps+PptSegment + PptGirder)/A - (Pps*eps + PptSegment*eptSegment + PptGirder*eptGirder)*c/I + Mg*c/I;
    fpc *= -1.0; // Need to make the compressive stress a positive value
 
    pd->eps = eps;
    pd->Pps = Pps;
-   pd->ept = ept;
-   pd->Ppt = Ppt;
+   pd->eptSegment = eptSegment;
+   pd->PptSegment = PptSegment;
+   pd->eptGirder = eptGirder;
+   pd->PptGirder = PptGirder;
    pd->Ag  = A;
    pd->Ig  = I;
    pd->Ybg = Ybg;
@@ -561,12 +605,16 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    }
 
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-   ATLASSERT(pStrand != 0);
+   ATLASSERT(pStrand != nullptr);
    pscd->Eps = pStrand->GetE();
 
-   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
-   ATLASSERT(pTendon != 0);
-   pscd->Ept = pTendon->GetE();
+   const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   ATLASSERT(pSegmentTendon != nullptr);
+   pscd->EptSegment = pSegmentTendon->GetE();
+
+   const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
+   ATLASSERT(pGirderTendon != nullptr);
+   pscd->EptGirder = pGirderTendon->GetE();
 
    // stirrup properties
    GET_IFACE(IStirrupGeometry,pStirrups);
@@ -663,7 +711,8 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // not used when design
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    GET_IFACE(IStrandGeometry,pStrandGeometry);
-   GET_IFACE(ITendonGeometry,pTendonGeometry);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IGirder,pGdr);
    GET_IFACE(ISectionProperties,pSectProps);
@@ -672,14 +721,20 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi, intervalIdx, pgsTypes::End, pConfig);
    if (pConfig == nullptr)
    {
-      pscd->Vpt = pPTForce->GetVerticalTendonForce(poi,intervalIdx,pgsTypes::End,ALL_DUCTS);
+      pscd->VptSegment = pPTForce->GetSegmentTendonVerticalForce(poi, intervalIdx, pgsTypes::End, ALL_DUCTS);
+      pscd->VptGirder = pPTForce->GetGirderTendonVerticalForce(poi, intervalIdx, pgsTypes::End, ALL_DUCTS);
    }
    else
    {
       // if there is a config, this is a pretensioned bridge so no tendons.
-      pscd->Vpt = 0;
+      pscd->VptSegment = 0;
+      pscd->VptGirder = 0;
+#if defined _DEBUG
+      GET_IFACE(IDocumentType, pDocType);
+      ATLASSERT(pDocType->IsPGSuperDocument());
+#endif
    }
-   pscd->Vp = pscd->Vps + pscd->Vpt;
+   pscd->Vp = pscd->Vps + pscd->VptSegment + pscd->VptGirder;
 
    const MOMENTCAPACITYDETAILS* pCapdet = pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, (pscd->bTensionBottom ? true : false), pConfig);
 
@@ -735,22 +790,36 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    if ( bAfter1999 )
    {
-      pscd->fpept = -999999; // not used so set parameter to a dummy value
+      pscd->fpeptSegment = -999999; // not used so set parameter to a dummy value
+      pscd->fpeptGirder = -999999; // not used so set parameter to a dummy value
    }
    else
    {
-      // compute average stress in tendons
-      DuctIndexType nDucts = pTendonGeometry->GetDuctCount(segmentKey);
-      Float64 fpeApt = 0;
-      Float64 Apt = 0;
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      // compute average stress in segment tendons
+      DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      Float64 fpeAptSegment = 0;
+      Float64 AptSegment = 0;
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
       {
-         Float64 fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx,true,true);
-         Float64 apt = pTendonGeometry->GetTendonArea(segmentKey,intervalIdx,ductIdx);
-         fpeApt += fpe*apt;
-         Apt += apt;
+         Float64 fpe = pPTForce->GetSegmentTendonStress(poi, intervalIdx, pgsTypes::End, ductIdx, true, true);
+         Float64 apt = pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, intervalIdx, ductIdx);
+         fpeAptSegment += fpe*apt;
+         AptSegment += apt;
       }
-      pscd->fpept = (IsZero(Apt) ? 0 : fpeApt/Apt);
+      pscd->fpeptSegment = (IsZero(AptSegment) ? 0 : fpeAptSegment / AptSegment);
+
+      // compute average stress in girder tendons
+      DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
+      Float64 fpeAptGirder = 0;
+      Float64 AptGirder = 0;
+      for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+      {
+         Float64 fpe = pPTForce->GetGirderTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx,true,true);
+         Float64 apt = pGirderTendonGeometry->GetGirderTendonArea(segmentKey,intervalIdx,ductIdx);
+         fpeAptGirder += fpe*apt;
+         AptGirder += apt;
+      }
+      pscd->fpeptGirder = (IsZero(AptGirder) ? 0 : fpeAptGirder/AptGirder);
    }
 
    // prestress area - factor for development length
@@ -785,17 +854,19 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    if ( pscd->bTensionBottom )
    {
-      pscd->Apt = pTendonGeometry->GetAptBottomHalf(poi);
+      pscd->AptSegment = pSegmentTendonGeometry->GetSegmentAptBottomHalf(poi);
+      pscd->AptGirder = pGirderTendonGeometry->GetGirderAptBottomHalf(poi);
    }
    else
    {
-      pscd->Apt = pTendonGeometry->GetAptTopHalf(poi);
+      pscd->AptSegment = pSegmentTendonGeometry->GetSegmentAptTopHalf(poi);
+      pscd->AptGirder = pGirderTendonGeometry->GetGirderAptTopHalf(poi);
    }
 
 #if defined _DEBUG
    if ( pConfig != nullptr )
    {
-      ATLASSERT(IsZero(pscd->Apt)); // if we have a config, we better not have a tendon
+      ATLASSERT(IsZero(pscd->AptSegment + pscd->AptGirder)); // if we have a config, we better not have a tendon
    }
 #endif
 
@@ -932,12 +1003,15 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
    data.As           = pscd->As;
    data.Eps          = pscd->Eps;
    data.Aps          = pscd->Aps;
-   data.Ept          = pscd->Ept;
-   data.Apt          = pscd->Apt;
+   data.EptSegment   = pscd->EptSegment;
+   data.AptSegment   = pscd->AptSegment;
+   data.EptGirder    = pscd->EptGirder;
+   data.AptGirder    = pscd->AptGirder;
    data.Ec           = pscd->Ec;
    data.Ac           = pscd->Ac;
    data.fpops        = pscd->fpops;
-   data.fpopt        = pscd->fpopt;
+   data.fpoptSegment = pscd->fpoptSegment;
+   data.fpoptGirder  = pscd->fpoptGirder;
    data.fc           = pscd->fc;
    data.fy           = pscd->fy;
    data.AvS          = IsZero(pscd->S) ? 0 : pscd->Av/pscd->S;

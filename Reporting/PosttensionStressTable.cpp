@@ -90,7 +90,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    IntervalIndexType loadRatingIntervalIdx           = pIntervals->GetLoadRatingInterval();
-   IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
+   IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
 
    ATLASSERT(firstTendonStressingIntervalIdx != INVALID_INDEX);
 

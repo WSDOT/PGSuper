@@ -67,7 +67,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    IntervalIndexType erectionIntervalIdx            = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType firstCompositeDeckIntervalIdx  = pIntervals->GetFirstCompositeDeckInterval();
    IntervalIndexType lastCompositeDeckIntervalIdx   = pIntervals->GetLastCompositeDeckInterval();
-   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(segmentKey);
+   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastGirderTendonStressingInterval(segmentKey);
 
    std::_tostringstream os;
    os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(intervalIdx);

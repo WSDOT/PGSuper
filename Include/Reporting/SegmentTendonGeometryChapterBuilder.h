@@ -29,7 +29,7 @@
 
 /*****************************************************************************
 CLASS 
-   CTendonGeometryChapterBuilder
+   CSegmentTendonGeometryChapterBuilder
 
    Chapter builder for reporting PT tendon geometry
 
@@ -38,10 +38,10 @@ DESCRIPTION
    Chapter builder for reporting PT tendon geometry
 *****************************************************************************/
 
-class REPORTINGCLASS CTendonGeometryChapterBuilder : public CPGSuperChapterBuilder
+class REPORTINGCLASS CSegmentTendonGeometryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CTendonGeometryChapterBuilder(bool bSelect = true);
+   CSegmentTendonGeometryChapterBuilder(bool bSelect = true);
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;
@@ -57,6 +57,6 @@ protected:
 
 private:
    // Prevent accidental copying and assignment
-   CTendonGeometryChapterBuilder(const CTendonGeometryChapterBuilder&) = delete;
-   CTendonGeometryChapterBuilder& operator=(const CTendonGeometryChapterBuilder&) = delete;
+   CSegmentTendonGeometryChapterBuilder(const CSegmentTendonGeometryChapterBuilder&) = delete;
+   CSegmentTendonGeometryChapterBuilder& operator=(const CSegmentTendonGeometryChapterBuilder&) = delete;
 };

@@ -128,7 +128,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    IntervalIndexType liftingIntervalIdx       = pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,0));
    IntervalIndexType haulingIntervalIdx       = pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,0));
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
+   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastGirderTendonStressingInterval(girderKey);
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 

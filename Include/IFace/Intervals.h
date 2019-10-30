@@ -197,17 +197,29 @@ interface IIntervals : IUnknown
    // returns the index of the interval when the railing system is constructed
    virtual IntervalIndexType GetInstallRailingSystemInterval() const = 0;
 
+   // returns the index of the interval when plant installed segment tendons are tensioned for the specified segment
+   virtual IntervalIndexType GetStressSegmentTendonInterval(const CSegmentKey& segmentKey) const = 0;
+
+   // returns the index of the first interval when segment tendon stressing occurs
+   virtual IntervalIndexType GetFirstSegmentTendonStressingInterval(const CGirderKey& girderKey) const = 0;
+
+   // returns the index of the last interval when segment tendon stressing occurs
+   virtual IntervalIndexType GetLastSegmentTendonStressingInterval(const CGirderKey& girderKey) const = 0;
+
    // returns the index of the first interval when tendon stressing occurs
-   virtual IntervalIndexType GetFirstTendonStressingInterval(const CGirderKey& girderKey) const = 0;
+   virtual IntervalIndexType GetFirstGirderTendonStressingInterval(const CGirderKey& girderKey) const = 0;
 
    // returns the index of the last interval when tendon stressing occurs
-   virtual IntervalIndexType GetLastTendonStressingInterval(const CGirderKey& girderKey) const = 0;
+   virtual IntervalIndexType GetLastGirderTendonStressingInterval(const CGirderKey& girderKey) const = 0;
 
-   // returns the index of the interval when the specified tendon is stressed
-   virtual IntervalIndexType GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
+   // returns the index of the interval when the specified field installed girder tendon is stressed
+   virtual IntervalIndexType GetStressGirderTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
 
-   // returns true if a tendon is stressed during the specified interval
-   virtual bool IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const = 0;
+   // returns true if a girder tendon is stressed during the specified interval
+   virtual bool IsGirderTendonStressingInterval(const CGirderKey& girderKey, IntervalIndexType intervalIdx) const = 0;
+
+   // returns true if a segment tendon is stressed during the specified interval
+   virtual bool IsSegmentTendonStressingInterval(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const = 0;
 
    // returns true if there is a change in prestressing during the specified interval
    virtual bool IsStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const = 0;

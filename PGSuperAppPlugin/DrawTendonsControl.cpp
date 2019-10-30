@@ -142,6 +142,13 @@ void CDrawTendonsControl::OnPaint()
    // TODO: Add your message handler code here
    // Do not call CWnd::OnPaint() for painting messages
 
+   // setup a clipping region so we don't draw outside of the control boundaries
+   CRect rClient;
+   GetClientRect(&rClient);
+   CRgn rgn;
+   rgn.CreateRectRgnIndirect(&rClient);
+   dc.SelectClipRgn(&rgn);
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IGirder,pIGirder);
@@ -173,7 +180,7 @@ void CDrawTendonsControl::OnPaint()
 
    // Create a poly line for each tendon. 
    std::vector<CComPtr<IPoint2dCollection>> ducts;
-   GET_IFACE2_NOCHECK(pBroker,ITendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
+   GET_IFACE2_NOCHECK(pBroker,IGirderTendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there are ducts/tendons
    DuctIndexType nDucts = m_pPTData->GetDuctCount();
    DuctIndexType startDuctIdx = (m_DuctIdx == ALL_DUCTS ? 0 : m_DuctIdx);
@@ -182,7 +189,7 @@ void CDrawTendonsControl::OnPaint()
    {
       CComPtr<IPoint2dCollection> ductPoints;
       const CDuctData* pDuct = m_pPTData->GetDuct(ductIdx);
-      pTendonGeometry->GetDuctCenterline(m_GirderKey,ductIdx,pDuct,&ductPoints);
+      pTendonGeometry->GetDuctCenterline(m_GirderKey,m_pGirder,pDuct,&ductPoints);
 
       IndexType nPoints;
       ductPoints->get_Count(&nPoints);
@@ -213,8 +220,6 @@ void CDrawTendonsControl::OnPaint()
    gpSize2d size = box.Size();
    gpPoint2d org = box.Center();
 
-   CRect rClient;
-   GetClientRect(&rClient);
    CSize sClient = rClient.Size();
 
    grlibPointMapper mapper;
@@ -244,7 +249,6 @@ void CDrawTendonsControl::OnPaint()
       CComPtr<IShape> shape = *shapeIter;
       DrawShape(&dc,mapper,shape);
 
-
       CComPtr<IShapeProperties> props;
       shape->get_ShapeProperties(&props);
 
@@ -259,7 +263,7 @@ void CDrawTendonsControl::OnPaint()
    }
 
    // Draw the tendons
-   CPen tendonColor(PS_SOLID,1,TENDON_LINE_COLOR);
+   CPen tendonColor(PS_SOLID,1,GIRDER_TENDON_LINE_COLOR);
    dc.SelectObject(&tendonColor);
    std::vector<CComPtr<IPoint2dCollection>>::iterator ductIter(ducts.begin());
    std::vector<CComPtr<IPoint2dCollection>>::iterator ductIterEnd(ducts.end());

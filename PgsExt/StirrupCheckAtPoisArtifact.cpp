@@ -42,8 +42,10 @@ m_Fy(0),
 m_As(0),
 m_Aps(0),
 m_Fps(0),
-m_Apt(0),
-m_Fpt(0),
+m_AptSegment(0),
+m_FptSegment(0),
+m_AptGirder(0),
+m_FptGirder(0),
 m_Mu(0),
 m_Mr(0),
 m_Dv(0),
@@ -125,24 +127,44 @@ void pgsLongReinfShearArtifact::SetFps(Float64 fps)
    m_Fps = fps;
 }
 
-Float64 pgsLongReinfShearArtifact::GetApt() const
+Float64 pgsLongReinfShearArtifact::GetAptSegment() const
 {
-   return m_Apt;
+   return m_AptSegment;
 }
 
-void pgsLongReinfShearArtifact::SetApt(Float64 apt)
+void pgsLongReinfShearArtifact::SetAptSegment(Float64 apt)
 {
-   m_Apt = apt;
+   m_AptSegment = apt;
 }
 
-Float64 pgsLongReinfShearArtifact::GetFpt() const
+Float64 pgsLongReinfShearArtifact::GetFptSegment() const
 {
-   return m_Fpt;
+   return m_FptSegment;
 }
 
-void pgsLongReinfShearArtifact::SetFpt(Float64 fpt)
+void pgsLongReinfShearArtifact::SetFptSegment(Float64 fpt)
 {
-   m_Fpt = fpt;
+   m_FptSegment = fpt;
+}
+
+Float64 pgsLongReinfShearArtifact::GetAptGirder() const
+{
+   return m_AptGirder;
+}
+
+void pgsLongReinfShearArtifact::SetAptGirder(Float64 apt)
+{
+   m_AptGirder = apt;
+}
+
+Float64 pgsLongReinfShearArtifact::GetFptGirder() const
+{
+   return m_FptGirder;
+}
+
+void pgsLongReinfShearArtifact::SetFptGirder(Float64 fpt)
+{
+   m_FptGirder = fpt;
 }
 
 Float64 pgsLongReinfShearArtifact::GetMu() const
@@ -333,8 +355,10 @@ void pgsLongReinfShearArtifact::MakeCopy(const pgsLongReinfShearArtifact& rOther
    m_As = rOther.m_As;
    m_Aps = rOther.m_Aps;
    m_Fps = rOther.m_Fps;
-   m_Apt = rOther.m_Apt;
-   m_Fpt = rOther.m_Fpt;
+   m_AptSegment = rOther.m_AptSegment;
+   m_FptSegment = rOther.m_FptSegment;
+   m_AptGirder = rOther.m_AptGirder;
+   m_FptGirder = rOther.m_FptGirder;
    m_Mu = rOther.m_Mu;
    m_Mr = rOther.m_Mr;
    m_Dv = rOther.m_Dv;

@@ -338,7 +338,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
    if ( bIsSplicedGirder )
    {
-      GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+      GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       p->SetName(_T("Stresses due to Post-tensioning"));

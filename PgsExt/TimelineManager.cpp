@@ -2635,7 +2635,7 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       Float64 version;
       hr = pStrLoad->get_Version(&version);
 
-      std::vector<CTendonKey> vStressedTendons; // keeps track of the tendons that are stressed (see bug issue below)
+      std::vector<CGirderTendonKey> vStressedTendons; // keeps track of the tendons that are stressed (see bug issue below)
 
       CComVariant var;
       var.vt = VT_INDEX;
@@ -2661,7 +2661,7 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          CStressTendonActivity& stressTendonActivity = pTimelineEvent->GetStressTendonActivity();
          if (stressTendonActivity.IsEnabled())
          {
-            std::vector<CTendonKey> vTendonKeys = stressTendonActivity.GetTendons();
+            std::vector<CGirderTendonKey> vTendonKeys = stressTendonActivity.GetTendons();
             for (const auto& tendonKey : vTendonKeys)
             {
                if (std::find(vStressedTendons.cbegin(), vStressedTendons.cend(), tendonKey) == vStressedTendons.cend())
@@ -3048,7 +3048,7 @@ void CTimelineManager::AssertValid() const
    std::set<SegmentIDType> erectedSegments;
    std::set<SupportIDType> removedTempSupports;
    std::set<SupportIDType> castClosureJoints;
-   std::set<CTendonKey> stressTendons;
+   std::set<CGirderTendonKey> stressTendons;
 
    auto& iter(m_TimelineEvents.cbegin());
    const auto& end(m_TimelineEvents.cend());

@@ -617,6 +617,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="GirderModelSectionView.cpp" />
     <ClCompile Include="GirderModelViewControllerImp.cpp" />
     <ClCompile Include="GirderNameGrid.cpp" />
+    <ClCompile Include="GirderSegmentTendonsPage.cpp" />
     <ClCompile Include="GirderSelectStrandsDlg.cpp" />
     <ClCompile Include="GirderSelectStrandsPage.cpp" />
     <ClCompile Include="GirderSpacingGrid.cpp" />
@@ -721,6 +722,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="StrandFillGrid.cpp" />
     <ClCompile Include="StructuralAnalysisMethodDlg.cpp" />
     <ClCompile Include="SupportDrawStrategyImpl.cpp" />
+    <ClCompile Include="SegmentTendonGrid.cpp" />
     <ClCompile Include="TrafficBarrierDisplayObjectEvents.cpp" />
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="ActivityGrid.cpp" />
@@ -1048,6 +1050,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="GirderModelSectionView.h" />
     <ClInclude Include="GirderModelViewControllerImp.h" />
     <ClInclude Include="GirderNameGrid.h" />
+    <ClInclude Include="GirderSegmentTendonsPage.h" />
     <ClInclude Include="GirderSelectStrandsDlg.h" />
     <ClInclude Include="GirderSelectStrandsPage.h" />
     <ClInclude Include="GirderSpacingGrid.h" />
@@ -1166,6 +1169,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="StructuralAnalysisMethodDlg.h" />
     <ClInclude Include="SupportDrawStrategy.h" />
     <ClInclude Include="SupportDrawStrategyImpl.h" />
+    <ClInclude Include="SegmentTendonGrid.h" />
     <ClInclude Include="TrafficBarrierDisplayObjectEvents.h" />
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="ActivityGrid.h" />

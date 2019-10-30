@@ -315,26 +315,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
       vLoadRatingIntervals.push_back(intervalIdx);
    }
 
-   std::vector<IntervalIndexType> vPTIntervals, vAllPTIntervals;
-   GET_IFACE(ITendonGeometry,pTendonGeometry);
-   IntervalIndexType firstPTIntervalIdx = nIntervals;
-   for(const auto& thisGirderKey : vGirderKeys)
-   {
-      DuctIndexType nDucts = pTendonGeometry->GetDuctCount(thisGirderKey);
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-      {
-         IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(thisGirderKey,ductIdx);
-         vPTIntervals.push_back(ptIntervalIdx);
-         firstPTIntervalIdx = Min(firstPTIntervalIdx,ptIntervalIdx);
-      }
-   }
-
-   std::sort(vPTIntervals.begin(),vPTIntervals.end());
-   for ( IntervalIndexType intervalIdx = firstPTIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-   {
-      vAllPTIntervals.push_back(intervalIdx);
-   }
-
    std::vector<IntervalIndexType> vTempSupportRemovalIntervals;
    SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )

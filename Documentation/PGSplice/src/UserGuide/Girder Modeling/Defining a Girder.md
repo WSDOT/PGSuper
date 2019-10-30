@@ -23,7 +23,7 @@ Press [Edit], for a segment row, in the Segments grid to open the Segment Detail
 
 To define your segment:
 1. Define general information on the General tab including the shape of the segment. See discussion below.
-2. Define the prestressing configuration on the Strands tab
+2. Define the prestressing configuration on the Strands tab for pretensioned strands and the Tendons tab for plant installed post-tensioned tendons.
 3. Define the longitudinal reinforcement on the Long. Reinforcement tab
 4. Define the stirrups on the Trans. Reinforcement tab
 5. Define the temporary support conditions on the Temporary Conditions tab
@@ -69,12 +69,12 @@ To define your closure joint:
 2. Define the longitudinal reinforcement on the Long. Reinforcement tab
 3. Define the stirrups on the Trans. Reinforcement tab
 
-Defining Ducts/Tendons
+Defining Field Installed Tendons
 -----------------------
-The post-tensioning ducts and tendons are defined in the Ducts/Tendons grid. Use [Add] and [Delete] to manage the ducts.
+The field installed post-tensioning tendons are defined in the Duct grid. Use [Add] and [Delete] to manage the tendon ducts.
 
-To define a duct and tendon:
-1. Press [Add] to add a duct to the Ducts/Tendons grid.
+To define a tendon duct:
+1. Press [Add] to add a duct to the Duct grid.
 2. Select the Duct Type. The available duct types are defined in the Duct library.
 3. Enter the number of strands in the tendon
 4. Select the live end for jacking and define the jacking force
@@ -83,4 +83,4 @@ To define a duct and tendon:
 
 > TIP: The sketch of the girder shows the overall girder profile and the duct geoemtry. This example shows a 4 span girder made up of 7 variable depth segments with parabolic ducts. ![](GirderShape.png)
 
-> NOTE: Ducts must run the full length of the girder. Partial length ducts are not supported at this time.
+> NOTE: Be careful to ensure longitindal reinforcement, pretension strands, and post-tensioning ducts do not conflict. Geometric conflicts are not automatically detected.

@@ -59,7 +59,8 @@ rptChapter* CTimeStepCamberChapterBuilder::Build(CReportSpecification* pRptSpec,
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   *pPara << CreateStorageDeflectionTable(pBroker,girderKey)           << rptNewLine;
+   *pPara << CreateStorageDeflectionTable(pBroker, girderKey) << rptNewLine;
+   *pPara << CreateHandlingDeflectionTable(pBroker, girderKey) << rptNewLine;
    *pPara << CreateAfterErectionDeflectionTable(pBroker,girderKey)     << rptNewLine;
 
    GET_IFACE2(pBroker, IBridge, pBridge);
@@ -110,9 +111,11 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker*
 
    ColumnIndexType nCols = 3;
    rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(nCols,_T("Deflections during Storage"));
-   (*pLayoutTable)(0,0) << _T("Prestress Release");
-   (*pLayoutTable)(0,1) << _T("Begin Storage");
-   (*pLayoutTable)(0,2) << _T("End Storage");
+   
+   ColumnIndexType colIdx = 0;
+   (*pLayoutTable)(0, colIdx++) << _T("Prestress Release");
+   (*pLayoutTable)(0, colIdx++) << _T("Begin Storage");
+   (*pLayoutTable)(0, colIdx++) << _T("End Storage");
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
@@ -120,29 +123,91 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker*
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++, rowIdx++ )
    {
       CSegmentKey segmentKey(girderKey,segIdx);
+      
 
       IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(segmentKey);
       IntervalIndexType storageIntervalIdx  = pIntervals->GetStorageInterval(segmentKey);
       IntervalIndexType haulingIntervalIdx  = pIntervals->GetHaulSegmentInterval(segmentKey);
+      IntervalIndexType stressingIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
 
       if ( 1 < nSegments )
       {
-         (*pLayoutTable)(rowIdx, 0) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
-         (*pLayoutTable)(rowIdx, 1) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
-         (*pLayoutTable)(rowIdx, 2) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+         colIdx = 0;
+         (*pLayoutTable)(rowIdx, colIdx++).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+         (*pLayoutTable)(rowIdx, colIdx++).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+         (*pLayoutTable)(rowIdx, colIdx++).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+
+
+         colIdx = 0;
+         (*pLayoutTable)(rowIdx, colIdx++) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+         (*pLayoutTable)(rowIdx, colIdx++) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+         (*pLayoutTable)(rowIdx, colIdx++) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
          rowIdx++;
       }
 
-      ColumnIndexType colIdx = 0;
+      colIdx = 0;
 
-      rptRcTable* pTable = CreateTable(pBroker,segmentKey,releaseIntervalIdx);
+      rptRcTable* pTable = CreateTable(pBroker,segmentKey, stressingIntervalIdx == INVALID_INDEX ? releaseIntervalIdx : stressingIntervalIdx);
+      (*pLayoutTable)(rowIdx,colIdx).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
       (*pLayoutTable)(rowIdx,colIdx++) << pTable;
 
       pTable = CreateTable(pBroker,segmentKey,storageIntervalIdx);
+      (*pLayoutTable)(rowIdx, colIdx).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
       (*pLayoutTable)(rowIdx,colIdx++) << pTable;
 
       pTable = CreateTable(pBroker,segmentKey,haulingIntervalIdx-1); // storage ends the interval before hauling
+      (*pLayoutTable)(rowIdx, colIdx).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
       (*pLayoutTable)(rowIdx,colIdx++) << pTable;
+   }
+
+   return pLayoutTable;
+}
+
+rptRcTable* CTimeStepCamberChapterBuilder::CreateHandlingDeflectionTable(IBroker* pBroker, const CGirderKey& girderKey) const
+{
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+
+   ColumnIndexType nCols = 2;
+   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(nCols, _T("Deflections during Handling"));
+
+   ColumnIndexType colIdx = 0;
+   (*pLayoutTable)(0, colIdx++) << _T("Initial Lifting");
+   (*pLayoutTable)(0, colIdx++) << _T("Hauling");
+
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   RowIndexType rowIdx = 1;
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++, rowIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+
+
+      IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+      IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+
+      if (1 < nSegments)
+      {
+         colIdx = 0;
+         (*pLayoutTable)(rowIdx, colIdx++).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+         (*pLayoutTable)(rowIdx, colIdx++).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+
+
+         colIdx = 0;
+         (*pLayoutTable)(rowIdx, colIdx++) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+         (*pLayoutTable)(rowIdx, colIdx++) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+         rowIdx++;
+      }
+
+      colIdx = 0;
+
+      rptRcTable* pTable = CreateTable(pBroker, segmentKey, liftingIntervalIdx);
+      (*pLayoutTable)(rowIdx, colIdx).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      (*pLayoutTable)(rowIdx, colIdx++) << pTable;
+
+      pTable = CreateTable(pBroker, segmentKey, haulingIntervalIdx);
+      (*pLayoutTable)(rowIdx, colIdx).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      (*pLayoutTable)(rowIdx, colIdx++) << pTable;
    }
 
    return pLayoutTable;
@@ -188,17 +253,21 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IB
 
          if ( 1 < nSegments )
          {
-            (*pLayoutTable)(rowIdx++, layoutTableColIdx) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+            (*pLayoutTable)(rowIdx, layoutTableColIdx).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+            (*pLayoutTable)(rowIdx, layoutTableColIdx) << bold(ON) << _T("Segment ") << LABEL_SEGMENT(segIdx) << bold(OFF);
+            rowIdx++;
          }
 
          IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
          if ( erectionIntervalIdx <= intervalIdx )
          {
             rptRcTable* pTable = CreateTable(pBroker,segmentKey,intervalIdx);
+            (*pLayoutTable)(rowIdx, layoutTableColIdx).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
             (*pLayoutTable)(rowIdx,layoutTableColIdx) << pTable;
          }
          else
          {
+            (*pLayoutTable)(rowIdx, layoutTableColIdx).SetStyleName(rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
             (*pLayoutTable)(rowIdx,layoutTableColIdx) << _T("Not erected");
          }
       }
@@ -220,21 +289,35 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
 
    GET_IFACE2(pBroker, ICamber, pCamber);
    bool bHasPrecamber = pCamber->HasPrecamber(segmentKey);
-   pgsTypes::PrestressDeflectionDatum datum;
-
+   
    GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+   IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType stressingIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   pgsTypes::PrestressDeflectionDatum datum;
    PoiAttributeType poiReference = 0;
-   if (intervalIdx < storageIntervalIdx)
+   if (intervalIdx < liftingIntervalIdx)
    {
       poiReference = POI_RELEASED_SEGMENT;
       datum = pgsTypes::pddRelease;
    }
-   else if (intervalIdx < erectionIntervalIdx)
+   else if (intervalIdx < storageIntervalIdx)
+   {
+      poiReference = POI_LIFT_SEGMENT;
+      datum = pgsTypes::pddLifting;
+   }
+   else if (intervalIdx < haulingIntervalIdx)
    {
       poiReference = POI_STORAGE_SEGMENT;
       datum = pgsTypes::pddStorage;
+   }
+   else if (intervalIdx < erectionIntervalIdx)
+   {
+      poiReference = POI_HAUL_SEGMENT;
+      datum = pgsTypes::pddHauling;
    }
    else
    {
@@ -246,6 +329,14 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
    GET_IFACE2(pBroker, IPointOfInterest, pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, poiReference, &vPoi);
+
+   if (poiReference != POI_RELEASED_SEGMENT)
+   {
+      PoiList vPoiEnds;
+      pIPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoiEnds);
+      ATLASSERT(vPoiEnds.size() == 2);
+      pIPoi->MergePoiLists(vPoi, vPoiEnds, &vPoi);
+   }
 
    GET_IFACE2(pBroker, IUserDefinedLoads, pUserLoads);
 
@@ -279,7 +370,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
    }
    //vProductForces.push_back(pgsTypes::pftShearKey);
    //vProductForces.push_back(pgsTypes::pftSecondaryEffects);
-   //vProductForces.push_back(pgsTypes::pftPostTensioning);
+   if (stressingIntervalIdx != INVALID_INDEX)
+   {
+      vProductForces.push_back(pgsTypes::pftPostTensioning);
+   }
 
    if (storageIntervalIdx < intervalIdx)
    {
@@ -395,9 +489,12 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    bool bHasPrecamber = pCamber->HasPrecamber(girderKey);
    pgsTypes::PrestressDeflectionDatum datum = pgsTypes::pddErected;
 
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
-   IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
+   IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
@@ -444,15 +541,20 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
       vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
+   // LLIM is not applicable.... that's why it is commented out
    //if ( pUserLoads->DoUserLoadsExist(girderKey,0,castDeckIntervalIdx-1,IUserDefinedLoads::userLL_IM) )
    //{
    //   vProductForces.push_back(pgsTypes::pftUserLLIM);
    //}
 
-   if ( firstTendonStressingIntervalIdx < castDeckIntervalIdx )
+   if ( firstTendonStressingIntervalIdx < castDeckIntervalIdx || 0 < nMaxSegmentDucts)
    {
       vProductForces.push_back(pgsTypes::pftPostTensioning);
-      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+      
+      if (firstTendonStressingIntervalIdx < castDeckIntervalIdx)
+      {
+         vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+      }
    }
 
    vProductForces.push_back(pgsTypes::pftCreep);
@@ -528,6 +630,16 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
       Float64 elev_adj = pBridge->GetElevationAdjustment(castDeckIntervalIdx - 1, poi);
       (*pTable)(row, col++) << deflection.SetValue(elev_adj);
       D += elev_adj;
+
+#if defined _DEBUG
+      Float64 Dmin, Dmax;
+      GET_IFACE2(pBroker, ILimitStateForces, pLSF);
+      pLSF->GetDeflection(castDeckIntervalIdx - 1, pgsTypes::ServiceI, poi, bat, true, false, true, true, &Dmin, &Dmax);
+      ATLASSERT(IsEqual(vDmin[i], Dmin));
+      ATLASSERT(IsEqual(vDmax[i], Dmax));
+      ATLASSERT(IsEqual(Dmin,D));
+      ATLASSERT(IsEqual(Dmax,D));
+#endif
       
       ATLASSERT(IsEqual(vDmin[i],D));
       ATLASSERT(IsEqual(vDmax[i],D));
@@ -568,14 +680,14 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    }
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   auto firstPTIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
-   auto lastPTIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
+   auto firstPTIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
+   auto lastPTIntervalIdx = pIntervals->GetLastGirderTendonStressingInterval(girderKey);
    const int CAST_DECK_BEFORE_PT = 1;
    const int CAST_DECK_AFTER_PT = 2;
    const int TWO_STAGE_PT = 3;
    int pt_to_deck = (castDeckIntervalIdx < firstPTIntervalIdx) ? CAST_DECK_BEFORE_PT : (lastPTIntervalIdx < castDeckIntervalIdx) ? CAST_DECK_AFTER_PT : TWO_STAGE_PT;
 
-   GET_IFACE2(pBroker, ITendonGeometry, pTendonGeom);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
@@ -628,7 +740,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    if ((pt_to_deck == CAST_DECK_BEFORE_PT || pt_to_deck == TWO_STAGE_PT) && 0 < nDucts)
    {
       vProductForces.push_back(pgsTypes::pftPostTensioning);
-      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+      //vProductForces.push_back(pgsTypes::pftSecondaryEffects); secondary effects don't cause deflections or rotations, only restraining forces
    }
 
    if ( pProductLoads->HasSidewalkLoad(girderKey) )
@@ -825,13 +937,13 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    auto firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    auto lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
-   auto firstPTIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
-   auto lastPTIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
+   auto firstPTIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
+   auto lastPTIntervalIdx = pIntervals->GetLastGirderTendonStressingInterval(girderKey);
    const int CAST_DECK_BEFORE_PT = 1; // All PT after deck
    const int CAST_DECK_AFTER_PT = 2;  // All PT before deck
    const int TWO_STAGE_PT = 3;        // Some PT before deck and some PT after deck

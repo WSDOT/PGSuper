@@ -172,6 +172,7 @@
 #define IDH_GIRDER_DIRECT_STRAND_FILL           3922
 #define IDH_GIRDER_STRAND_ROW_INPUT             3923
 #define IDH_GIRDER_INDIVIDUAL_STRAND_INPUT      3924
+#define IDH_SEGMENT_TENDON_INPUT                3925
 
 #define IDH_CUSTOM_REPORT                       3950
 #define IDH_FAVORITE_REPORT                     3951

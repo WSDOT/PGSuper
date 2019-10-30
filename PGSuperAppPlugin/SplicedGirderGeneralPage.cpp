@@ -31,6 +31,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
+#include <PgsExt\CustomDDX.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ClosureJointData.h>
@@ -44,35 +45,6 @@ static char THIS_FILE[] = __FILE__;
 
 
 // CSplicedGirderGeneralPage dialog
-
-
-void DDX_Strand(CDataExchange* pDX,UINT nIDC,const matPsStrand** ppStrand)
-{
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   CComboBox* pList = (CComboBox*)pDX->m_pDlgWnd->GetDlgItem( nIDC );
-
-   if (pDX->m_bSaveAndValidate)
-   {
-      // strand material
-      int curSel = pList->GetCurSel();
-      Int32 key = (Int32)pList->GetItemData( curSel );
-      *ppStrand = pPool->GetStrand( key );
-   }
-   else
-   {
-      Int32 target_key = pPool->GetStrandKey(*ppStrand );
-      int cStrands = pList->GetCount();
-      for ( int i = 0; i < cStrands; i++ )
-      {
-         Int32 key = (Int32)pList->GetItemData( i );
-         if ( key == target_key )
-         {
-            pList->SetCurSel(i);
-            break;
-         }
-      }
-   }
-}
 
 void DDX_PTData(CDataExchange* pDX,INT nIDC,CPTData* ptData)
 {
@@ -144,7 +116,7 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
    DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
    DDX_CBEnum(pDX, IDC_DUCT_TYPE, ductType);
-   DDX_CBEnum(pDX, IDC_INSTALLATION_TYPE, installationType );
+   DDX_CBItemData(pDX, IDC_INSTALLATION_TYPE, installationType );
    if ( pDX->m_bSaveAndValidate )
    {
       pParent->m_pGirder->SetConditionFactor(conditionFactor);

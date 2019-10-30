@@ -86,7 +86,8 @@ struct MOMENTCAPACITYDETAILS
    Float64 ecl;       // Compression Control Strain Limit
 
    Float64 fps_avg;   // Average stress in strands at nominal resistance
-   Float64 fpt_avg;   // Average stress in tendons at nominal resistance
+   Float64 fpt_avg_segment;  // Average stress in segment tendons at nominal resistance
+   Float64 fpt_avg_girder;  // Average stress in girder tendons at nominal resistance
 
    // LRFD_METHOD 
    // For C5.7.3.3.1... Capacity of over reinforced section  (removed from spec 2005)
@@ -102,8 +103,11 @@ struct MOMENTCAPACITYDETAILS
    Float64 fpe_ps; // Effective prestress
    Float64 eps_initial; // Initial strain in strands
 
-   std::vector<Float64> fpe_pt; // Effective prestress
-   std::vector<Float64> ept_initial; // Initial strain in strands
+   std::vector<Float64> fpe_pt_segment; // Effective prestress in segment tendons
+   std::vector<Float64> ept_initial_segment; // Initial strain in segment tendons
+
+   std::vector<Float64> fpe_pt_girder; // Effective prestress in girder tendons
+   std::vector<Float64> ept_initial_girder; // Initial strain in girder  tendons
 
    // solution object provides the full equilibrium state of the moment
    // capacity solution
@@ -153,19 +157,23 @@ struct SHEARCAPACITYDETAILS
    Float64 Vd; // Vdc + Vdw
    Float64 Vp;  // vertical component of prestress Vps + Vpt
    Float64 Vps; // vertical component of prestress due to strands
-   Float64 Vpt; // vertical component of prestress due to tendons
+   Float64 VptSegment; // vertical component of prestress due to segment tendons
+   Float64 VptGirder; // vertical component of prestress due to girder tendons
    Float64 Phi;
    Float64 dv;
    Float64 bv;
    Float64 fpeps;
-   Float64 fpept;
+   Float64 fpeptSegment; // average effective prestress in segment tendons
+   Float64 fpeptGirder; // average effective prestress in girder tendons
    Float64 fpc;
    Float64 Es;
    Float64 As;
    Float64 Eps;
    Float64 Aps;
-   Float64 Ept;
-   Float64 Apt;
+   Float64 EptSegment;
+   Float64 AptSegment;
+   Float64 EptGirder;
+   Float64 AptGirder;
    Float64 Ec;
    Float64 Ac;
    Float64 fc;
@@ -183,7 +191,8 @@ struct SHEARCAPACITYDETAILS
 
    // [OUT]
    Float64 fpops; // fpo for strand
-   Float64 fpopt; // fpo for tendon
+   Float64 fpoptSegment; // fpo for segment tendons
+   Float64 fpoptGirder; // fpo for girder tendons
    bool ShearInRange; // If this is true, the applied shear was in range so
                       // shear capacity could be calculated. Otherwise all
                       // values below to Vn1 are not defined.
@@ -227,8 +236,10 @@ struct FPCDETAILS
 {
    Float64 eps; // Eccentricity of prestress strand
    Float64 Pps; // Prestress force
-   Float64 ept; // Eccentricity of post-tension strand
-   Float64 Ppt; // Post-tension force
+   Float64 eptSegment; // Eccentricity of segment post-tension strand
+   Float64 PptSegment; // Segment Post-tension force
+   Float64 eptGirder; // Eccentricity of girder post-tension strand
+   Float64 PptGirder; // Girder Post-tension force
    Float64 Ag;  // Area of non-composite girder
    Float64 Ig;  // Moment of inertia of non-composite girder
    Float64 Ybg; // Ybottom of girder
@@ -379,6 +390,7 @@ struct INCREMENTALRELAXATIONDETAILS
    INCREMENTALRELAXATIONDETAILS()
    {
       memset((void*)this,0,sizeof(INCREMENTALRELAXATIONDETAILS));
+      epoxyFactor = 1.0;
    }
 
    // common parameters
@@ -387,7 +399,10 @@ struct INCREMENTALRELAXATIONDETAILS
    Float64 fpu;
    Float64 tStart;
    Float64 tEnd;
-   Float64 epoxyFactor;
+   Float64 epoxyFactor; // this factor is multiplied to the relaxation.
+                        // see PCI "Guidelines for the use of Epoxy-Coated Strand", PCI Journal, July-August 1993
+                        // relaxation is doubled, so this factor is 2.0, for expoxy coated strands
+
 
    // These parameters are for AASHTO and ACI209 models
    Float64 K;
@@ -781,7 +796,8 @@ struct TIME_STEP_DETAILS
 #else
    std::vector<TIME_STEP_STRAND> Strands[3]; // pgsTypes::StrandType (Straight, Harped, Temporary)
 #endif
-   std::vector<TIME_STEP_STRAND> Tendons; // one per duct
+   std::vector<TIME_STEP_STRAND> GirderTendons; // one per duct
+   std::vector<TIME_STEP_STRAND> SegmentTendons; // one per duct
 
    // Time step parameters for rebar
    // access first array with pgsTypes::DeckRebarMatType and second with pgsTypes::DeckRebarBarType
@@ -876,12 +892,12 @@ struct ANCHORSETDETAILS
    ANCHORSETDETAILS() :
       Lset{ 0,0 }, dfpAT{ 0,0 }, dfpS{ 0,0 }
    { 
-      girderKey = CGirderKey(INVALID_INDEX,INVALID_INDEX); 
+      segmentKey = CSegmentKey(INVALID_INDEX,INVALID_INDEX,INVALID_INDEX);
       ductIdx = INVALID_INDEX;
    }
 
    // Key
-   CGirderKey girderKey;
+   CSegmentKey segmentKey; // if segmentIndex == ALL_SEGMENTS, then the key represents a girder key
    DuctIndexType ductIdx;
 
    // Value
@@ -923,7 +939,8 @@ struct LOSSDETAILS
       LossMethod = other.LossMethod;
       pLosses = other.pLosses;
 
-      FrictionLossDetails = other.FrictionLossDetails;
+      GirderFrictionLossDetails = other.GirderFrictionLossDetails;
+      SegmentFrictionLossDetails = other.SegmentFrictionLossDetails;
 
       TimeStepDetails = other.TimeStepDetails;
 
@@ -955,7 +972,8 @@ struct LOSSDETAILS
 
    // Friction and Anchor Set Losses
    // vector index is the duct index
-   std::vector<FRICTIONLOSSDETAILS> FrictionLossDetails;
+   std::vector<FRICTIONLOSSDETAILS> GirderFrictionLossDetails;
+   std::vector<FRICTIONLOSSDETAILS> SegmentFrictionLossDetails;
 
    // vector index in an interval index
    std::vector<TIME_STEP_DETAILS> TimeStepDetails;

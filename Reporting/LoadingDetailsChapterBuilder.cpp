@@ -333,6 +333,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    ReportEquivPretensionLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
+   ReportEquivSegmentPostTensioningLoads(pChapter, bRating, pBridge, pDisplayUnits, girderKey);
 
    bool bPermit;
    ReportLiveLoad(pChapter,bDesign,bRating,pRatingSpec,bPermit);
@@ -2253,6 +2254,10 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
 
                *pPara << rptNewLine;
             }
+            else
+            {
+               *pPara << _T("No strands in this segment.") << rptNewLine;
+            }
 
             vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey,pgsTypes::Harped);
             if ( 0 < vEquivLoad.size() )
@@ -2359,6 +2364,128 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                   }
                }
             } // end if
+         } // segmentIdx
+      } // gdrIdx
+   } // groupIdx
+}
+
+void CLoadingDetailsChapterBuilder::ReportEquivSegmentPostTensioningLoads(rptChapter* pChapter, bool bRating, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey) const
+{
+   if (m_bSimplifiedVersion || bRating)
+   {
+      return;
+   }
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), true);
+   INIT_UV_PROTOTYPE(rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), true);
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, ecc, pDisplayUnits->GetComponentDimUnit(), true);
+   INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, distributed, pDisplayUnits->GetForcePerLengthUnit(), true);
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
+
+   // First do a check to see if we are reporting anything
+   bool bReport = false;
+   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType lastGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? nGirders - 1 : firstGirderIdx);
+      for (GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++)
+      {
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx, gdrIdx));
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            CSegmentKey thisSegmentKey(grpIdx, gdrIdx, segIdx);
+            DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(thisSegmentKey);
+            if (0 < nDucts)
+            {
+               bReport = true;
+               break;
+            }
+         }
+      }
+   }
+
+   if (!bReport)
+   {
+      return;
+   }
+
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Equivalent Segment Post-Tension Loading") << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   *pPara << _T("These loads are used to determine girder deflections due to segment post-tension forces") << rptNewLine;
+   *pPara << _T("Loads and eccentricities shown in positive directions") << rptNewLine;
+
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("EquivSegmentPTLoading.png")) << rptNewLine;
+
+   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType lastGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? nGirders - 1 : firstGirderIdx);
+      for (GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++)
+      {
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx, gdrIdx));
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            CSegmentKey thisSegmentKey(grpIdx, gdrIdx, segIdx);
+
+            if (1 < nSegments)
+            {
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+               *pChapter << pPara;
+               *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            }
+
+            pPara = new rptParagraph;
+            *pChapter << pPara;
+
+            const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(thisSegmentKey);
+            if (pSegment->Tendons.GetDuctCount() == 0)
+            {
+               *pPara << _T("No tendons in this segment.") << rptNewLine;
+            }
+            else
+            {
+               std::vector<EquivPretensionLoad> vEquivLoad = pProductLoads->GetEquivSegmentPostTensionLoads(thisSegmentKey);
+               for (const auto& equivLoad : vEquivLoad)
+               {
+                  ATLASSERT(IsZero(equivLoad.N));
+
+                  if (!IsZero(equivLoad.Mx))
+                  {
+                     *pPara << Sub2(_T("M"), _T("x")) << _T(" = ");
+                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
+                     *pPara << _T(" = ") << moment.SetValue(equivLoad.Mx) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                  }
+
+                  if (!IsZero(equivLoad.wy))
+                  {
+                     *pPara << Sub2(_T("w"), _T("y")) << _T(" = 8(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eyh - equivLoad.eye) << _T(")/");
+                     *pPara << _T("(") << loc.SetValue(equivLoad.Ls) << Super2(_T(")"), _T("2")) << _T(" = ");
+                     *pPara << distributed.SetValue(equivLoad.wy) << _T(" from ") << loc.SetValue(equivLoad.Xs);
+                     *pPara << _T(" to ") << loc.SetValue(equivLoad.Xe) << rptNewLine;
+                  }
+               }
+
+               *pPara << rptNewLine;
+            }
          } // segmentIdx
       } // gdrIdx
    } // groupIdx

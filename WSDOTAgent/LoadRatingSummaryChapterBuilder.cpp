@@ -592,9 +592,14 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
          (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked at strand for Service I limit state") << rptNewLine;
       }
 
-      if ( 0 < pYieldStressPositiveMoment->GetTendonCrackingStressIncrement() )
+      if (0 < pYieldStressPositiveMoment->GetSegmentTendonCrackingStressIncrement())
       {
-         (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked at tendon for Service I limit state") << rptNewLine;
+         (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked at segment tendon for Service I limit state") << rptNewLine;
+      }
+
+      if (0 < pYieldStressPositiveMoment->GetGirderTendonCrackingStressIncrement())
+      {
+         (*pRemarks) << pYieldStressPositiveMoment->GetVehicleName() << _T(": Section is cracked at girder tendon for Service I limit state") << rptNewLine;
       }
    }
    else if ( pYieldStressNegativeMoment )
@@ -627,9 +632,14 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
          (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked at strand for Service I limit state") << rptNewLine;
       }
 
-      if ( 0 < pYieldStressNegativeMoment->GetTendonCrackingStressIncrement() )
+      if (0 < pYieldStressNegativeMoment->GetSegmentTendonCrackingStressIncrement())
       {
-         (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked at tendon for Service I limit state") << rptNewLine;
+         (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked at segment tendon for Service I limit state") << rptNewLine;
+      }
+
+      if (0 < pYieldStressNegativeMoment->GetGirderTendonCrackingStressIncrement())
+      {
+         (*pRemarks) << pYieldStressNegativeMoment->GetVehicleName() << _T(": Section is cracked at girder tendon for Service I limit state") << rptNewLine;
       }
    }
 }

@@ -857,6 +857,53 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
    }
 }
 
+void CGirderModelSectionView::GetDuctDisplayObject(IntervalIndexType intervalIdx,IntervalIndexType ptIntervalIdx,IPoint2d* pntDuct,Float64 ductDiameter,StrandIndexType nStrands,COLORREF fillColor,COLORREF borderColor,iDisplayObject** ppDO)
+{
+   CComPtr<iCompositeDisplayObject> compDO;
+   compDO.CoCreateInstance(CLSID_CompositeDisplayObject);
+
+   if (ptIntervalIdx < intervalIdx)
+   {
+      CComPtr<iPointDisplayObject> pntDO;
+      pntDO.CoCreateInstance(CLSID_PointDisplayObject);
+
+      CComPtr<iShapeDrawStrategy> shape_draw_strategy;
+      shape_draw_strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+      pntDO->SetDrawingStrategy(shape_draw_strategy);
+      shape_draw_strategy->SetSolidFillColor(fillColor);
+      shape_draw_strategy->SetSolidLineColor(borderColor);
+
+      CComPtr<ICircle> circle;
+      circle.CoCreateInstance(CLSID_Circle);
+      circle->putref_Center(pntDuct);
+      circle->put_Radius(ductDiameter / 2);
+      CComQIPtr<IShape> shape(circle);
+      shape_draw_strategy->SetShape(shape);
+
+      compDO->AddDisplayObject(pntDO);
+   }
+
+   CString strStrands;
+   strStrands.Format(_T("%d"), nStrands);
+
+   CComPtr<iTextBlock> textBlock;
+   ::CoCreateInstance(CLSID_TextBlock, nullptr, CLSCTX_ALL, IID_iTextBlock, (void**)&textBlock);
+
+   CComPtr<IPoint2d> pntBottomCircle;
+   pntDuct->Clone(&pntBottomCircle);
+   pntBottomCircle->Offset(0, -ductDiameter / 2);
+   textBlock->SetText(strStrands);
+   textBlock->SetPosition(pntBottomCircle);
+   textBlock->SetTextAlign(TA_BASELINE | TA_CENTER);
+   textBlock->SetTextColor(BLACK);
+   textBlock->SetBkMode(TRANSPARENT);
+   textBlock->SetPointSize(FONT_POINT_SIZE);
+   compDO->AddDisplayObject(textBlock);
+
+   CComQIPtr<iDisplayObject> dispObj(compDO);
+   dispObj.CopyTo(ppDO);
+}
+
 void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
 {
    // The outlines of the ducts are drawn as part of the girder cross section
@@ -872,8 +919,28 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EventIndexType eventIdx = m_pFrame->GetEvent();
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
+
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+      CComPtr<IPoint2d> pntDuct;
+      pSegmentTendonGeometry->GetSegmentDuctPoint(poi, ductIdx, &pntDuct);
+      Float64 diameter = pSegmentTendonGeometry->GetOutsideDiameter(segmentKey, ductIdx);
+      StrandIndexType nStrands = pSegmentTendonGeometry->GetTendonStrandCount(segmentKey, ductIdx);
+
+      CComPtr<iDisplayObject> doDuct;
+      GetDuctDisplayObject(intervalIdx, ptIntervalIdx, pntDuct, diameter, nStrands, SEGMENT_TENDON_FILL_COLOR, SEGMENT_TENDON_BORDER_COLOR, &doDuct);
+
+      pDisplayList->AddDisplayObject(doDuct);
+   }
+
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       if (!pTendonGeom->IsOnDuct(poi,ductIdx))
@@ -881,24 +948,18 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
          continue; // point is not within the extend of the tendon
       }
 
-      StrandIndexType nStrands = pTendonGeom->GetTendonStrandCount(girderKey,ductIdx);
-      CString strStrands;
-      strStrands.Format(_T("%d"),nStrands);
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx);
+      CComPtr<IPoint2d> pntDuct;
+      pTendonGeom->GetGirderDuctPoint(girderKey, Xg, ductIdx, &pntDuct);
 
-      CComPtr<IPoint2d> pnt;
-      pTendonGeom->GetDuctPoint(girderKey,Xg,ductIdx,&pnt);
+      Float64 diameter = pTendonGeom->GetOutsideDiameter(girderKey, ductIdx);
 
-      CComPtr<iTextBlock> textBlock;
-      ::CoCreateInstance(CLSID_TextBlock,nullptr,CLSCTX_ALL,IID_iTextBlock,(void**)&textBlock);
+      StrandIndexType nStrands = pTendonGeom->GetTendonStrandCount(girderKey, ductIdx);
 
-      textBlock->SetText(strStrands);
-      textBlock->SetPosition(pnt);
-      textBlock->SetTextAlign(TA_BASELINE | TA_CENTER);
-      textBlock->SetTextColor(BLACK);
-      textBlock->SetBkMode(TRANSPARENT);
-      textBlock->SetPointSize(FONT_POINT_SIZE);
+      CComPtr<iDisplayObject> doDuct;
+      GetDuctDisplayObject(intervalIdx, ptIntervalIdx, pntDuct, diameter, nStrands, GIRDER_TENDON_FILL_COLOR, GIRDER_TENDON_BORDER_COLOR, &doDuct);
 
-      pDisplayList->AddDisplayObject(textBlock);
+      pDisplayList->AddDisplayObject(doDuct);
    }
 }
 

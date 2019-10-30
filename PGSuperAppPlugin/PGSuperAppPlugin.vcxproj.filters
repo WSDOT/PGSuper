@@ -806,6 +806,12 @@
     <ClCompile Include="DrawDeckRegionControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GirderSegmentTendonsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SegmentTendonGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -1711,6 +1717,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DrawDeckRegionControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GirderSegmentTendonsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SegmentTendonGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -280,6 +280,7 @@ interface IProductLoads : IUnknown
    // gets the equivalent pretension forces. If strandType is pgsTypes::Temporary, bTempStrandInstallation is used to determine of the equivalent loads
    // are for the installation or removal interval. intervalIdx can be release or erection interval index (usually release), if INVALID_INDEX, assume release interval
    virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,bool bTempStrandInstallation=true,IntervalIndexType intervalIdx=INVALID_INDEX) const = 0;
+   virtual std::vector<EquivPretensionLoad> GetEquivSegmentPostTensionLoads(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx=INVALID_INDEX) const = 0;
    virtual Float64 GetTrafficBarrierLoad(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSidewalkLoad(const CSegmentKey& segmentKey) const = 0;
    virtual bool HasPedestrianLoad() const = 0;

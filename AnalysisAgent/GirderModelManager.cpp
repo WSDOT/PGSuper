@@ -4629,13 +4629,19 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
       std::transform(deltaPS.cbegin(),deltaPS.cend(),pMin->cbegin(),pMin->begin(),[](const auto& a, const auto& b) {return a + b;});
       std::transform(deltaPS.cbegin(),deltaPS.cend(),pMax->cbegin(),pMax->begin(),[](const auto& a, const auto& b) {return a + b;});
 
-      // PT already included because it is in the pgsTypes::pftSecondaryEffects product load
+      // Girder PT already included because it is in the pgsTypes::pftSecondaryEffects product load, however, segment PT is not because
+      // it is more like prestressing...
+      // we don't want to add girder PT so get the deflection in an interval that's before any girders are erected
+      IntervalIndexType i = Min(pIntervals->GetFirstGirderTendonStressingInterval(girderKey) - 1,intervalIdx);
+      std::vector<Float64> deltaPT = pProductForces->GetDeflection(i, pgsTypes::pftPostTensioning, vPoi, bat, rtCumulative, false);
+      std::transform(deltaPT.cbegin(), deltaPT.cend(), pMin->cbegin(), pMin->begin(), [](const auto& a, const auto& b) {return a + b; });
+      std::transform(deltaPT.cbegin(), deltaPT.cend(), pMax->cbegin(), pMax->begin(), [](const auto& a, const auto& b) {return a + b; });
    }
    else
    {
       // Results are to be without prestress so remove the PT effect
-      GET_IFACE(ITendonGeometry,pTendonGeom);
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(vPoi.front().get().GetSegmentKey());
+      GET_IFACE(IGirderTendonGeometry,pTendonGeom);
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
       if ( 0 < nDucts )
       {
          std::vector<Float64> deltaPT = GetDeflection(intervalIdx,pgsTypes::pftPostTensioning,vPoi,bat,rtCumulative);
@@ -4672,6 +4678,7 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
    // we have to make an adjustment for rotation)
    // this is not the correct rotation... the correct rotation is the rotation at storage plus the incremental
    // rotation due to a change in support locations for the erected girder segment.
+   CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
    std::vector<Float64> badGirderRotation  = GetRotation(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative);
    std::vector<Float64> goodGirderRotation = GetRotation(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
@@ -4711,13 +4718,20 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
       std::transform(deltaPS.cbegin(),deltaPS.cend(),pMin->cbegin(),pMin->begin(),[](const auto& a, const auto& b) {return a + b;});
       std::transform(deltaPS.cbegin(),deltaPS.cend(),pMax->cbegin(),pMax->begin(),[](const auto& a, const auto& b) {return a + b;});
 
-      // PT already included because it is in the pgsTypes::pftSecondaryEffects product load
+
+      // Girder PT already included because it is in the pgsTypes::pftSecondaryEffects product load, however, segment PT is not because
+      // it is more like prestressing...
+      // we don't want to add girder PT so get the deflection in an interval that's before any girders are erected
+      IntervalIndexType i = pIntervals->GetFirstSegmentErectionInterval(girderKey) - 1;
+      std::vector<Float64> deltaPT = pProductForces->GetRotation(i, pgsTypes::pftPostTensioning, vPoi, bat, rtCumulative, false);
+      std::transform(deltaPT.cbegin(), deltaPT.cend(), pMin->cbegin(), pMin->begin(), [](const auto& a, const auto& b) {return a + b; });
+      std::transform(deltaPT.cbegin(), deltaPT.cend(), pMax->cbegin(), pMax->begin(), [](const auto& a, const auto& b) {return a + b; });
    }
    else
    {
       // Results are to be without prestress so remove the PT effect
-      GET_IFACE(ITendonGeometry,pTendonGeom);
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(vPoi.front().get().GetSegmentKey());
+      GET_IFACE(IGirderTendonGeometry,pTendonGeom);
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
       if ( 0 < nDucts )
       {
          std::vector<Float64> deltaPT = GetRotation(intervalIdx,pgsTypes::pftPostTensioning,vPoi,bat,rtCumulative);
@@ -4803,9 +4817,13 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
          fMin += k*ps;
          fMax += k*ps;
 
-         Float64 pt = GetStress(intervalIdx,poi,stressLocation,ALL_DUCTS);
-         fMin += k*pt;
-         fMax += k*pt;
+         Float64 pts = GetStressFromSegmentPT(intervalIdx, poi, stressLocation, ALL_DUCTS);
+         fMin += k*pts;
+         fMax += k*pts;
+
+         Float64 ptg = GetStressFromGirderPT(intervalIdx, poi, stressLocation, ALL_DUCTS);
+         fMin += k*ptg;
+         fMax += k*ptg;
       }
 
       if ( railingSystemIntervalIdx <= intervalIdx && pPoi->IsOnSegment(poi) )
@@ -10558,6 +10576,9 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
    // The results of the structural analysis are the secondary forces and the
    // post-tensioning deformations
 
+   // NOTE: The deformations caused by segment tendons (plant installed) don't cause secondary effects because precast segments are
+   // unrestrained at the time of tendon installation
+
    GET_IFACE_NOCHECK(IIntervals,pIntervals); // only used if there are tendons
 
    CComPtr<IPointLoads> pointLoads;
@@ -10590,7 +10611,7 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
       DuctIndexType nDucts = pPTData->GetDuctCount();
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
-         IntervalIndexType stressTendonInterval = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+         IntervalIndexType stressTendonInterval = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
          CComBSTR bstrStage(GetLBAMStageName(stressTendonInterval));
 
          std::vector<PostTensionStrainLoad> strLoads;
@@ -12169,7 +12190,7 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
 void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girderKey,DuctIndexType ductIdx,std::vector<PostTensionStrainLoad>& strainLoads) const
 {
    GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE(ITendonGeometry,pTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeometry);
    GET_IFACE(ILosses,pLosses);
 
    strainLoads.clear();
@@ -12183,8 +12204,8 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
 
    // NOTE: If something other than Pj - Avg Friction - Avg Anchor Set is used for equivalent tendon forces, 
    // make the corresponding changes in the TimeStepLossEngineer
-   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
-   Float64 Apt = pTendonGeometry->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
+   Float64 Apt = pTendonGeometry->GetGirderTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
    Float64 Pj = pTendonGeometry->GetPjack(girderKey,ductIdx);
 
 #if defined USE_AVERAGE_TENDON_FORCE
@@ -12198,9 +12219,9 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
    GET_IFACE(IPointOfInterest,pPoi);
 
    // Use the raw duct input data to get the location along the girder of the low and high points
-   // since POIs aren't specifically stored at this locations. Use the ITendonGeometry methods
+   // since POIs aren't specifically stored at this locations. Use the IGirderTendonGeometry methods
    // to get the vertical position of the tendon with respect to the CG of the section. The
-   // methods on the ITendonGeometry interface account for the offset of the tendon within the duct.
+   // methods on the IGirderTendonGeometry interface account for the offset of the tendon within the duct.
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup      = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
 	const CSplicedGirderData*  pGirder = pGroup->GetGirder(girderKey.girderIndex);
@@ -12323,12 +12344,12 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       }
 
 #if !defined USE_AVERAGE_TENDON_FORCE
-      Float64 dfpF1 = pLosses->GetFrictionLoss(poi1,ductIdx);
-      Float64 dfpA1 = pLosses->GetAnchorSetLoss(poi1,ductIdx);
+      Float64 dfpF1 = pLosses->GetGirderTendonFrictionLoss(poi1,ductIdx);
+      Float64 dfpA1 = pLosses->GetGirderTendonAnchorSetLoss(poi1,ductIdx);
       Float64 P1 = Pj - Apt*(dfpF1 + dfpA1);
 
-      Float64 dfpF2 = pLosses->GetFrictionLoss(poi2,ductIdx);
-      Float64 dfpA2 = pLosses->GetAnchorSetLoss(poi2,ductIdx);
+      Float64 dfpF2 = pLosses->GetGirderTendonFrictionLoss(poi2,ductIdx);
+      Float64 dfpA2 = pLosses->GetGirderTendonAnchorSetLoss(poi2,ductIdx);
       Float64 P2 = Pj - Apt*(dfpF2 + dfpA2);
 #endif // !USE_AVERAGE_TENDON_FORCE
 
@@ -12338,11 +12359,12 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       // make sure span location 1 comes before location 2
       ATLASSERT((spanKey1.spanIndex == spanKey2.spanIndex && Xspan1 <= Xspan2) || spanKey1.spanIndex < spanKey2.spanIndex);
 
-      Float64 ecc1 = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,poi1,ductIdx);
-      Float64 M1 = -P1*ecc1;
+      Float64 eccX, eccY;
+      pTendonGeometry->GetGirderTendonEccentricity(stressTendonIntervalIdx,poi1,ductIdx, &eccX, &eccY);
+      Float64 M1 = -P1*eccY;
 
-      Float64 ecc2 = pTendonGeometry->GetEccentricity(stressTendonIntervalIdx,poi2,ductIdx);
-      Float64 M2 = -P2*ecc2;
+      pTendonGeometry->GetGirderTendonEccentricity(stressTendonIntervalIdx,poi2,ductIdx, &eccX, &eccY);
+      Float64 M2 = -P2*eccY;
 
       CClosureKey closureKey1;
       bool bIsInClosure1 = pPoi->IsInClosureJoint(poi1,&closureKey1);
@@ -12377,7 +12399,6 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       strainLoads.emplace_back(spanKey1.spanIndex, spanKey2.spanIndex, Xspan1, Xspan2, e1, e2, r1, r2);
 #endif
    }
-
 }
 
 PoiIDType CGirderModelManager::AddPointOfInterest(CGirderModelData* pModelData,const pgsPointOfInterest& poi) const
@@ -17804,11 +17825,71 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
    return f;
 }
 
-Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,DuctIndexType ductIdx) const
+Float64 CGirderModelManager::GetStressFromSegmentPT(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, DuctIndexType ductIdx) const
+{
+   if (::IsDeckStressLocation(stressLocation))
+   {
+      // Segment tendons don't effect stress in the deck
+      return 0.0;
+   }
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   GET_IFACE(ISegmentTendonGeometry, pTendonGeometry);
+   DuctIndexType nDucts = pTendonGeometry->GetDuctCount(segmentKey);
+   if (nDucts == 0)
+   {
+      return 0;
+   }
+
+   DuctIndexType firstDuctIdx = (ductIdx == ALL_DUCTS ? 0 : ductIdx);
+   DuctIndexType lastDuctIdx = (ductIdx == ALL_DUCTS ? nDucts - 1 : firstDuctIdx);
+
+   GET_IFACE(IPosttensionForce, pPTForce);
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IPointOfInterest, pPoi);
+
+   IntervalIndexType ptIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   Float64 stress = 0;
+   for (DuctIndexType idx = firstDuctIdx; idx <= lastDuctIdx; idx++)
+   {
+      // stress in girder or deck due to PT is computed based on the post-tension force and
+      // the eccentricity when the force is applied plus all the incremental change in PT force
+      // times the eccentricty when the change occured.
+      Float64 Pprev = 0; // total PT force at the end of the previous interval... start with 0
+                         // so that the first "change" is the full PT force
+      for (IntervalIndexType intIdx = ptIntervalIdx; intIdx <= intervalIdx; intIdx++)
+      {
+         // PT force at the end of this interval
+         Float64 P = pPTForce->GetSegmentTendonForce(poi, intIdx, pgsTypes::End, idx);
+
+         // change in PT force during this interval
+         Float64 dP = P - Pprev;
+
+         // eccentricity this interval
+         Float64 eccX, eccY;
+         pTendonGeometry->GetSegmentTendonEccentricity(intIdx, poi, idx, &eccX, &eccY);
+
+         // change in stress during this interval
+         Float64 f = GetStress(intIdx, poi, stressLocation, dP, eccX, eccY);
+
+         stress += f;
+
+         // update for next loop
+         Pprev = P;
+      } // next interval
+   } // next duct
+
+   return stress;
+}
+
+
+Float64 CGirderModelManager::GetStressFromGirderPT(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,DuctIndexType ductIdx) const
 {
    const CGirderKey& girderKey(poi.GetSegmentKey());
    
-   GET_IFACE(ITendonGeometry,    pTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry,    pTendonGeometry);
    DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
    if ( nDucts == 0 )
    {
@@ -17828,7 +17909,7 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
    Float64 stress = 0;
    for ( DuctIndexType idx = firstDuctIdx; idx <= lastDuctIdx; idx++ )
    {
-      IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,idx);
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,idx);
 
       // stress in girder or deck due to PT is computed based on the post-tension force and
       // the eccentricity when the force is applied plus all the incremental change in PT force
@@ -17837,31 +17918,31 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
       // so that the first "change" is the full PT force
       for ( IntervalIndexType intIdx = ptIntervalIdx; intIdx <= intervalIdx; intIdx++ )
       {
-         // PT force at the end of this interval
-         Float64 P = pPTForce->GetTendonForce(poi,intIdx,pgsTypes::End,idx);
-
-         // change in PT force during this interval
-         Float64 dP = P - Pprev;
-
-         // eccentricity this interval
-         Float64 ex = 0;
-         Float64 ey = pTendonGeometry->GetEccentricity(intIdx,poi,idx);
-
-         // change in stress during this interval
          Float64 f = 0;
-         if ( ::IsDeckStressLocation(stressLocation) && intIdx < compositeDeckIntervalIdx )
+         if (::IsDeckStressLocation(stressLocation) && intIdx < compositeDeckIntervalIdx)
          {
-            f = 0;
+            //f = 0;
          }
          else
          {
-            f = GetStress(intIdx,poi,stressLocation,dP,ex,ey);
+            // PT force at the end of this interval
+            Float64 P = pPTForce->GetGirderTendonForce(poi,intIdx,pgsTypes::End,idx);
+
+            // change in PT force during this interval
+            Float64 dP = P - Pprev;
+
+            // eccentricity this interval
+            Float64 eccX, eccY;
+            pTendonGeometry->GetGirderTendonEccentricity(intIdx,poi,idx,&eccX,&eccY);
+
+            // change in stress during this interval
+            f = GetStress(intIdx,poi,stressLocation,dP,eccX,eccY);
+
+            // update for next interval
+            Pprev = P;
          }
 
          stress += f;
-
-         // update for next loop
-         Pprev = P;
       } // next interval
    } // next duct
 

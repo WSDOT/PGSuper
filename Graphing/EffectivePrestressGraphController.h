@@ -40,7 +40,9 @@ public:
    void SetStrandType(StrandType strandType);
    StrandType GetStrandType() const;
 
-   void SetDuct(DuctIndexType ductIdx);
+   CEffectivePrestressGraphBuilder::DuctType GetDuctType() const;
+
+   void SetDuct(CEffectivePrestressGraphBuilder::DuctType ductType,DuctIndexType ductIdx);
    DuctIndexType GetDuct() const;
 
    bool IsStressGraph();
@@ -70,6 +72,7 @@ protected:
 
    // control variables
    DuctIndexType          m_DuctIdx;
+   CEffectivePrestressGraphBuilder::DuctType m_DuctType;
 
 #ifdef _DEBUG
 public:

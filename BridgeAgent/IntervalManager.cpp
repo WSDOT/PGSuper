@@ -136,11 +136,15 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
    m_ReleaseIntervals.clear();
 
    m_Intervals.clear();
+   m_SegmentLiftingIntervals.clear();
+   m_SegmentStorageIntervals.clear();
    m_SegmentHaulingIntervals.clear();
    m_SegmentErectionIntervals.clear();
    m_CastClosureIntervals.clear();
    m_StrandStressingSequenceIntervalLimits.clear();
    m_ReleaseSequenceIntervalLimits.clear();
+   m_LiftingSequenceIntervalLimits.clear();
+   m_StorageSequenceIntervalLimits.clear();
    m_SegmentErectionSequenceIntervalLimits.clear();
    m_RemoveTemporaryStrandsIntervals.clear();
 
@@ -148,7 +152,9 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
    m_ErectTemporarySupportIntervals.clear();
    m_RemoveTemporarySupportIntervals.clear();
 
-   m_StressTendonIntervals.clear();
+   m_SegmentTendonStressingIntervals.clear();
+
+   m_GirderTendonStressingIntervals.clear();
 
    const CBridgeDescription2* pBridgeDesc = pTimelineMgr->GetBridgeDescription();
 
@@ -446,76 +452,12 @@ IntervalIndexType CIntervalManager::GetStressStrandInterval(const CSegmentKey& s
 
 IntervalIndexType CIntervalManager::GetFirstPrestressReleaseInterval(const CGirderKey& girderKey) const
 {
-   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
-   {
-      IntervalIndexType intervalIdx = MAX_INDEX;
-      for ( const auto& iter : m_ReleaseSequenceIntervalLimits)
-      {
-         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
-              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
-            )
-         {
-            intervalIdx = Min(intervalIdx,iter.second.first);
-         }
-      }
-      return intervalIdx;
-   }
-   else
-   {
-      auto found(m_ReleaseSequenceIntervalLimits.find(girderKey));
-      if(found != m_ReleaseSequenceIntervalLimits.end())
-      {
-         return found->second.first;
-      }
-      else
-      {
-         // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
-
-         found = m_ReleaseSequenceIntervalLimits.find(newKey);
-         return found->second.second; // this will crash if not found, so no bother with assert
-      }
-   }
+   return GetFirstInterval(girderKey, m_ReleaseSequenceIntervalLimits);
 }
 
 IntervalIndexType CIntervalManager::GetLastPrestressReleaseInterval(const CGirderKey& girderKey) const
 {
-   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
-   {
-      IntervalIndexType intervalIdx = MAX_INDEX;
-      for ( const auto& iter : m_ReleaseSequenceIntervalLimits)
-      {
-         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
-              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
-            )
-         {
-            if ( intervalIdx == MAX_INDEX )
-            {
-               intervalIdx = 0;
-            }
-            intervalIdx = Max(intervalIdx,iter.second.second);
-         }
-      }
-      return intervalIdx;
-   }
-   else
-   {
-      auto found(m_ReleaseSequenceIntervalLimits.find(girderKey));
-      if(found != m_ReleaseSequenceIntervalLimits.end())
-      {
-      return found->second.second;
-   }
-      else
-      {
-         // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
-
-         found = m_ReleaseSequenceIntervalLimits.find(newKey);
-         return found->second.second; // this will crash if not found, so no bother with assert
-      }
-   }
+   return GetLastInterval(girderKey, m_ReleaseSequenceIntervalLimits);
 }
 
 IntervalIndexType CIntervalManager::GetPrestressReleaseInterval(const CSegmentKey& segmentKey) const
@@ -539,32 +481,58 @@ IntervalIndexType CIntervalManager::GetPrestressReleaseInterval(const CSegmentKe
 
 IntervalIndexType CIntervalManager::GetLiftingInterval(const CSegmentKey& segmentKey) const
 {
-   return GetPrestressReleaseInterval(segmentKey) + 1;
+   ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
+   auto found(m_SegmentLiftingIntervals.find(segmentKey));
+   if (found != m_SegmentLiftingIntervals.end())
+   {
+      return found->second;
+   }
+   else
+   {
+      // probably an unequal number of girders per group, and this one has less.
+      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker, segmentKey);
+
+      found = m_SegmentLiftingIntervals.find(newKey);
+      return found->second; // this will crash if not found, so no bother with assert
+   }
 }
 
 IntervalIndexType CIntervalManager::GetFirstLiftingInterval(const CGirderKey& girderKey) const
 {
-   return GetFirstPrestressReleaseInterval(girderKey)+1;
+   return GetFirstInterval(girderKey, m_LiftingSequenceIntervalLimits);
 }
 
 IntervalIndexType CIntervalManager::GetLastLiftingInterval(const CGirderKey& girderKey) const
 {
-   return GetLastPrestressReleaseInterval(girderKey)+1;
+   return GetLastInterval(girderKey, m_LiftingSequenceIntervalLimits);
 }
 
 IntervalIndexType CIntervalManager::GetStorageInterval(const CSegmentKey& segmentKey) const
 {
-   return GetPrestressReleaseInterval(segmentKey) + 2;
+   ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
+   auto found(m_SegmentStorageIntervals.find(segmentKey));
+   if (found != m_SegmentStorageIntervals.end())
+   {
+      return found->second;
+   }
+   else
+   {
+      // probably an unequal number of girders per group, and this one has less.
+      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker, segmentKey);
+
+      found = m_SegmentStorageIntervals.find(newKey);
+      return found->second; // this will crash if not found, so no bother with assert
+   }
 }
 
 IntervalIndexType CIntervalManager::GetFirstStorageInterval(const CGirderKey& girderKey) const
 {
-   return GetFirstPrestressReleaseInterval(girderKey)+2;
+   return GetFirstInterval(girderKey, m_StorageSequenceIntervalLimits);
 }
 
 IntervalIndexType CIntervalManager::GetLastStorageInterval(const CGirderKey& girderKey) const
 {
-   return GetLastPrestressReleaseInterval(girderKey)+2;
+   return GetLastInterval(girderKey, m_StorageSequenceIntervalLimits);
 }
 
 IntervalIndexType CIntervalManager::GetHaulingInterval(const CSegmentKey& segmentKey) const
@@ -721,76 +689,12 @@ IntervalIndexType CIntervalManager::GetLastCastClosureJointInterval(const CGirde
 
 IntervalIndexType CIntervalManager::GetFirstSegmentErectionInterval(const CGirderKey& girderKey) const
 {
-   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
-   {
-      IntervalIndexType intervalIdx = MAX_INDEX;
-      for ( const auto& iter : m_SegmentErectionIntervals)
-      {
-         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
-              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
-            )
-         {
-            intervalIdx = Min(intervalIdx,iter.second);
-         }
-      }
-      return intervalIdx;
-   }
-   else
-   {
-      auto found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
-      if(found != m_SegmentErectionSequenceIntervalLimits.end())
-      {
-         return found->second.first;
-      }
-      else
-      {
-         // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
-
-         found = m_SegmentErectionSequenceIntervalLimits.find(newKey);
-         return found->second.second; // this will crash if not found, so no bother with assert
-      }
-   }
+   return GetFirstInterval(girderKey, m_SegmentErectionSequenceIntervalLimits);
 }
 
 IntervalIndexType CIntervalManager::GetLastSegmentErectionInterval(const CGirderKey& girderKey) const
 {
-   if ( girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS )
-   {
-      IntervalIndexType intervalIdx = MAX_INDEX;
-      for ( const auto& iter : m_SegmentErectionSequenceIntervalLimits)
-      {
-         if ( (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
-              (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
-              (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS) 
-            )
-         {
-            if ( intervalIdx == MAX_INDEX )
-            {
-               intervalIdx = 0;
-            }
-            intervalIdx = Max(intervalIdx,iter.second.second);
-         }
-      }
-      return intervalIdx;
-   }
-   else
-   {
-      auto found(m_SegmentErectionSequenceIntervalLimits.find(girderKey));
-      if(found != m_SegmentErectionSequenceIntervalLimits.end())
-      {
-          return found->second.second;
-      }
-      else
-      {
-         // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
-
-         found = m_SegmentErectionSequenceIntervalLimits.find(newKey);
-         return found->second.second; // this will crash if not found, so no bother with assert
-      }
-   }
+   return GetLastInterval(girderKey, m_SegmentErectionSequenceIntervalLimits);
 }
 
 IntervalIndexType CIntervalManager::GetLiveLoadInterval() const
@@ -824,26 +728,77 @@ IntervalIndexType CIntervalManager::GetUserLoadInterval(const CSpanKey& spanKey,
    return found->second;
 }
 
-IntervalIndexType CIntervalManager::GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+IntervalIndexType CIntervalManager::GetStressSegmentTendonInterval(const CSegmentKey& segmentKey) const
 {
-   ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
-   auto found(m_StressTendonIntervals.find(CTendonKey(girderKey,ductIdx)));
-   if ( found == m_StressTendonIntervals.end() )
+   ASSERT_SEGMENT_KEY(segmentKey);
+   auto found(m_SegmentTendonStressingIntervals.find(segmentKey));
+   if (found == m_SegmentTendonStressingIntervals.end())
    {
-      ATLASSERT(false);
       return INVALID_INDEX;
    }
 
    return found->second;
 }
 
-IntervalIndexType CIntervalManager::GetFirstTendonStressingInterval(const CGirderKey& girderKey) const
+IntervalIndexType CIntervalManager::GetFirstSegmentTendonStressingInterval(const CGirderKey& girderKey) const
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
    std::set<IntervalIndexType> intervals;
-   for ( const auto& iter : m_StressTendonIntervals)
+   for (const auto& iter : m_SegmentTendonStressingIntervals)
    {
-      if ( girderKey == iter.first.girderKey )
+      if (girderKey.IsEqual(iter.first))
+      {
+         intervals.insert(iter.second);
+      }
+   }
+
+   if (intervals.size() == 0)
+   {
+      return INVALID_INDEX;
+   }
+
+   return *intervals.begin();
+}
+
+IntervalIndexType CIntervalManager::GetLastSegmentTendonStressingInterval(const CGirderKey& girderKey) const
+{
+   ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
+   std::set<IntervalIndexType> intervals;
+   for (const auto& iter : m_SegmentTendonStressingIntervals)
+   {
+      if (girderKey.IsEqual(iter.first))
+      {
+         intervals.insert(iter.second);
+      }
+   }
+
+   if (intervals.size() == 0)
+   {
+      return INVALID_INDEX;
+   }
+
+   return *intervals.rbegin();
+}
+
+IntervalIndexType CIntervalManager::GetStressGirderTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+{
+   ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
+   auto found(m_GirderTendonStressingIntervals.find(CGirderTendonKey(girderKey,ductIdx)));
+   if ( found == m_GirderTendonStressingIntervals.end() )
+   {
+      return INVALID_INDEX;
+   }
+
+   return found->second;
+}
+
+IntervalIndexType CIntervalManager::GetFirstGirderTendonStressingInterval(const CGirderKey& girderKey) const
+{
+   ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
+   std::set<IntervalIndexType> intervals;
+   for ( const auto& iter : m_GirderTendonStressingIntervals)
+   {
+      if ( girderKey.IsEqual(iter.first.girderKey) )
       {
          intervals.insert(iter.second);
       }
@@ -857,13 +812,13 @@ IntervalIndexType CIntervalManager::GetFirstTendonStressingInterval(const CGirde
    return *intervals.begin();
 }
 
-IntervalIndexType CIntervalManager::GetLastTendonStressingInterval(const CGirderKey& girderKey) const
+IntervalIndexType CIntervalManager::GetLastGirderTendonStressingInterval(const CGirderKey& girderKey) const
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
    std::set<IntervalIndexType> intervals;
-   for ( const auto& iter : m_StressTendonIntervals)
+   for ( const auto& iter : m_GirderTendonStressingIntervals)
    {
-      if ( girderKey == iter.first.girderKey )
+      if (girderKey.IsEqual(iter.first.girderKey))
       {
          intervals.insert(iter.second);
       }
@@ -877,11 +832,11 @@ IntervalIndexType CIntervalManager::GetLastTendonStressingInterval(const CGirder
    return *intervals.rbegin();
 }
 
-std::vector<IntervalIndexType> CIntervalManager::GetTendonStressingIntervals(const CGirderKey& girderKey) const
+std::vector<IntervalIndexType> CIntervalManager::GetGirderTendonStressingIntervals(const CGirderKey& girderKey) const
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
    std::vector<IntervalIndexType> intervals;
-   for (const auto& iter : m_StressTendonIntervals)
+   for (const auto& iter : m_GirderTendonStressingIntervals)
    {
       if (girderKey == iter.first.girderKey)
       {
@@ -987,18 +942,46 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
    const CErectSegmentActivity& erectSegmentsActivity = pTimelineEvent->GetErectSegmentsActivity();
    if ( erectSegmentsActivity.IsEnabled() )
    {
+      std::set<SegmentIDType> erectedSegments(erectSegmentsActivity.GetSegments());
+
+      // first check if plant installed segment PT occurs immedately before hauling, if so, we need to create an analysis interval
+      bool bSegmentPT = false;
+      for (const auto& segmentID : erectedSegments)
+      {
+         const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
+         CSegmentKey segmentKey(pSegment->GetSegmentKey());
+         if (0 < pSegment->Tendons.GetDuctCount() && pSegment->Tendons.InstallationEvent == pgsTypes::SegmentPTEventType::sptetHauling)
+         {
+            bSegmentPT = true;
+            m_SegmentTendonStressingIntervals.insert(std::make_pair(segmentKey, intervalIdx));
+         }
+      } // next segment ID
+
+      CInterval segmentPTInterval;
+      if (bSegmentPT)
+      {
+         segmentPTInterval.StartEventIdx = eventIdx;
+         segmentPTInterval.EndEventIdx = eventIdx;
+         segmentPTInterval.Start = pTimelineEvent->GetDay();
+         segmentPTInterval.End = segmentPTInterval.Start;
+         segmentPTInterval.Middle = segmentPTInterval.Start;
+         segmentPTInterval.Duration = 0;
+         segmentPTInterval.Description = _T("Stress Segment Tendons");
+         IntervalIndexType ptIntervalIdx = StoreInterval(segmentPTInterval);
+         ATLASSERT(ptIntervalIdx == intervalIdx);
+      }
+
       // Segments must be hauled to the bridge site before they are erected
       CInterval haulSegmentInterval;
       haulSegmentInterval.StartEventIdx = eventIdx;
       haulSegmentInterval.EndEventIdx   = eventIdx;
-      haulSegmentInterval.Start         = pTimelineEvent->GetDay();
+      haulSegmentInterval.Start         = (bSegmentPT ? segmentPTInterval.End : pTimelineEvent->GetDay());
       haulSegmentInterval.End           = haulSegmentInterval.Start;
       haulSegmentInterval.Middle        = haulSegmentInterval.Start;
       haulSegmentInterval.Duration      = 0;
       haulSegmentInterval.Description   = (m_bIsPGSuper ? _T("Haul Girders") : _T("Haul Segments"));
       IntervalIndexType haulIntervalIdx = StoreInterval(haulSegmentInterval);
 
-      std::set<SegmentIDType> erectedSegments(erectSegmentsActivity.GetSegments());
       for( const auto& segmentID : erectedSegments)
       {
          const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
@@ -1047,7 +1030,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       strDescriptions.push_back(CString(_T("Stress Tendons")));
       IntervalIndexType stressTendonIntervalIdx = intervalIdx;
 
-      const std::vector<CTendonKey>& tendons( stressTendonActivity.GetTendons() );
+      const std::vector<CGirderTendonKey>& tendons( stressTendonActivity.GetTendons() );
       for(auto tendonKey : tendons)
       {
          if ( tendonKey.girderKey.groupIndex == ALL_GROUPS )
@@ -1073,8 +1056,8 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
          for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
          {
             DuctIndexType thisDuctIdx = nWebs*tendonKey.ductIdx + webIdx;
-            CTendonKey thisTendonKey(tendonKey.girderKey,thisDuctIdx);
-            m_StressTendonIntervals.insert(std::make_pair(thisTendonKey,stressTendonIntervalIdx));
+            CGirderTendonKey thisTendonKey(tendonKey.girderKey,thisDuctIdx);
+            m_GirderTendonStressingIntervals.insert(std::make_pair(thisTendonKey,stressTendonIntervalIdx));
          }
       }
    }
@@ -1276,13 +1259,75 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
          releaseInterval.Description = _T("Prestress Release");
          IntervalIndexType releaseIntervalIdx = StoreInterval(releaseInterval);
 
+         IntervalIndexType intervalIdx = m_Intervals.size();
+
+         bool bPTAfterRelease = false;
+         bool bPTAfterStorage = false;
+         const std::set<SegmentIDType>& segments = constructSegmentActivity.GetSegments();
+         for (const auto& segmentID : segments)
+         {
+            const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
+            CSegmentKey segmentKey(pSegment->GetSegmentKey());
+            ASSERT_SEGMENT_KEY(segmentKey);
+
+            if (0 < pSegment->Tendons.GetDuctCount())
+            {
+               if (pSegment->Tendons.InstallationEvent == pgsTypes::sptetRelease)
+               {
+                  bPTAfterRelease = true;
+                  m_SegmentTendonStressingIntervals.insert(std::make_pair(segmentKey, intervalIdx));
+               }
+               else if (pSegment->Tendons.InstallationEvent == pgsTypes::sptetStorage)
+               {
+                  bPTAfterStorage = true;
+                  m_SegmentTendonStressingIntervals.insert(std::make_pair(segmentKey, intervalIdx));
+               }
+            }
+         }
+
+         CInterval segmentPTInterval;
+         if (bPTAfterRelease)
+         {
+            segmentPTInterval.StartEventIdx = eventIdx;
+            segmentPTInterval.EndEventIdx = eventIdx;
+            segmentPTInterval.Start = releaseInterval.End;
+            segmentPTInterval.End = segmentPTInterval.Start;
+            segmentPTInterval.Middle = segmentPTInterval.Start;
+            segmentPTInterval.Duration = 0;
+            segmentPTInterval.Description = _T("Stress Segment Tendons");
+            IntervalIndexType ptIntervalIdx = StoreInterval(segmentPTInterval);
+            ATLASSERT(ptIntervalIdx == intervalIdx);
+         }
+
          // lift segment
          CInterval liftSegmentInterval(releaseInterval);
-         liftSegmentInterval.Start = releaseInterval.End;
+         liftSegmentInterval.Start = (bPTAfterRelease ? segmentPTInterval.End : releaseInterval.End);
          liftSegmentInterval.Duration = 0;
          liftSegmentInterval.Middle = liftSegmentInterval.Start;
          liftSegmentInterval.Description = m_bIsPGSuper ? _T("Lift girders") : _T("Lift segments");
          IntervalIndexType liftIntervalIdx = StoreInterval(liftSegmentInterval);
+         for (const auto& segmentID : segments)
+         {
+            const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
+            CSegmentKey segmentKey(pSegment->GetSegmentKey());
+            ASSERT_SEGMENT_KEY(segmentKey);
+            m_SegmentLiftingIntervals.insert(std::make_pair(segmentKey, liftIntervalIdx));
+
+            // this is for keeping track of when the segments are lifted for the first and last segments constructed for this girder
+            auto liftingFound(m_LiftingSequenceIntervalLimits.find(segmentKey));
+            if (liftingFound == m_LiftingSequenceIntervalLimits.end())
+            {
+               // this is the first segment from the girder to have its strands released
+               m_LiftingSequenceIntervalLimits.insert(std::make_pair(segmentKey, std::make_pair(liftIntervalIdx, liftIntervalIdx)));
+            }
+            else
+            {
+               // a segment from this girder has already had its strands released.. update the record
+               liftingFound->second.first = Min(liftingFound->second.first, liftIntervalIdx);
+               liftingFound->second.second = Max(liftingFound->second.second, liftIntervalIdx);
+            }
+         }
+
 
          // placing into storage changes boundary conditions... treat as sudden change in loading
          CInterval storageInterval(liftSegmentInterval);
@@ -1290,11 +1335,45 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
          storageInterval.Duration = 0;
          storageInterval.Middle = storageInterval.Start;
          storageInterval.Description = m_bIsPGSuper ? _T("Place girders into storage") : _T("Place segments into storage");
-         IntervalIndexType storateIntervalIdx = StoreInterval(storageInterval);
+         IntervalIndexType storageIntervalIdx = StoreInterval(storageInterval);
+         for (const auto& segmentID : segments)
+         {
+            const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
+            CSegmentKey segmentKey(pSegment->GetSegmentKey());
+            ASSERT_SEGMENT_KEY(segmentKey);
+            m_SegmentStorageIntervals.insert(std::make_pair(segmentKey, storageIntervalIdx));
 
+            // this is for keeping track of when the segments are lifted for the first and last segments constructed for this girder
+            auto storageFound(m_StorageSequenceIntervalLimits.find(segmentKey));
+            if (storageFound == m_StorageSequenceIntervalLimits.end())
+            {
+               // this is the first segment from the girder to have its strands released
+               m_StorageSequenceIntervalLimits.insert(std::make_pair(segmentKey, std::make_pair(storageIntervalIdx, storageIntervalIdx)));
+            }
+            else
+            {
+               // a segment from this girder has already had its strands released.. update the record
+               storageFound->second.first = Min(storageFound->second.first, storageIntervalIdx);
+               storageFound->second.second = Max(storageFound->second.second, storageIntervalIdx);
+            }
+         }
+
+         if (bPTAfterStorage)
+         {
+            IntervalIndexType intervalIdx = m_Intervals.size();
+            CInterval segmentPTInterval;
+            segmentPTInterval.StartEventIdx = eventIdx;
+            segmentPTInterval.EndEventIdx = eventIdx;
+            segmentPTInterval.Start = storageInterval.End;
+            segmentPTInterval.End = segmentPTInterval.Start;
+            segmentPTInterval.Middle = segmentPTInterval.Start;
+            segmentPTInterval.Duration = 0;
+            segmentPTInterval.Description = _T("Stress Segment Tendons");
+            IntervalIndexType ptIntervalIdx = StoreInterval(segmentPTInterval);
+            ATLASSERT(ptIntervalIdx == intervalIdx);
+         }
 
          // record the segments that are constructed during this activity
-         const std::set<SegmentIDType>& segments = constructSegmentActivity.GetSegments();
          for(const auto& segmentID : segments)
          {
             const CPrecastSegmentData* pSegment = pBridgeDesc->FindSegment(segmentID);
@@ -2015,6 +2094,80 @@ std::vector<CClosureKey> CIntervalManager::GetClosureJoints(const CTimelineEvent
    }
 
    return vClosureKeys;
+}
+
+IntervalIndexType CIntervalManager::GetFirstInterval(const CGirderKey& girderKey,const std::map<CGirderKey, std::pair<IntervalIndexType, IntervalIndexType>>& intervalLimits) const
+{
+   if (girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS)
+   {
+      IntervalIndexType intervalIdx = MAX_INDEX;
+      for (const auto& iter : intervalLimits)
+      {
+         if ((girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
+            (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
+            (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS)
+            )
+         {
+            intervalIdx = Min(intervalIdx, iter.second.first);
+         }
+      }
+      return intervalIdx;
+   }
+   else
+   {
+      auto found(intervalLimits.find(girderKey));
+      if (found != intervalLimits.end())
+      {
+         return found->second.first;
+      }
+      else
+      {
+         // probably an unequal number of girders per group, and this one has less.
+         CGirderKey newKey = GetSafeGirderKey(m_pBroker, girderKey);
+
+         found = intervalLimits.find(newKey);
+         return found->second.second; // this will crash if not found, so no bother with assert
+      }
+   }
+}
+
+IntervalIndexType CIntervalManager::GetLastInterval(const CGirderKey& girderKey, const std::map<CGirderKey, std::pair<IntervalIndexType, IntervalIndexType>>& intervalLimits) const
+{
+   if (girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS)
+   {
+      IntervalIndexType intervalIdx = MAX_INDEX;
+      for (const auto& iter : intervalLimits)
+      {
+         if ((girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == ALL_GIRDERS) ||
+            (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex == iter.first.girderIndex) ||
+            (girderKey.groupIndex == iter.first.groupIndex && girderKey.girderIndex == ALL_GIRDERS)
+            )
+         {
+            if (intervalIdx == MAX_INDEX)
+            {
+               intervalIdx = 0;
+            }
+            intervalIdx = Max(intervalIdx, iter.second.second);
+         }
+      }
+      return intervalIdx;
+   }
+   else
+   {
+      auto found(intervalLimits.find(girderKey));
+      if (found != intervalLimits.end())
+      {
+         return found->second.second;
+      }
+      else
+      {
+         // probably an unequal number of girders per group, and this one has less.
+         CGirderKey newKey = GetSafeGirderKey(m_pBroker, girderKey);
+
+         found = intervalLimits.find(newKey);
+         return found->second.second; // this will crash if not found, so no bother with assert
+      }
+   }
 }
 
 #if defined _DEBUG

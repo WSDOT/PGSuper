@@ -77,7 +77,8 @@
 #include <Reporting\BridgeAnalysisChapterBuilder.h>
 
 #include <Reporting\IntervalChapterBuilder.h>
-#include <Reporting\TendonGeometryChapterBuilder.h>
+#include <Reporting\GirderTendonGeometryChapterBuilder.h>
+#include <Reporting\SegmentTendonGeometryChapterBuilder.h>
 #include <Reporting\TimeStepParametersChapterBuilder.h>
 
 #include <Reporting\BearingDesignParametersChapterBuilder.h>
@@ -394,7 +395,8 @@ void CReporterBase::CreateStageByStageDetailsReport()
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CSegmentTendonGeometryChapterBuilder));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CGirderTendonGeometryChapterBuilder));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTimeStepParametersChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 }

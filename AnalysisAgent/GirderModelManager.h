@@ -273,7 +273,8 @@ public:
    Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx) const;
    void GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx,Float64* pfTop,Float64* pfBot) const;
    Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 ex,Float64 ey) const;
-   Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,DuctIndexType ductIdx) const;
+   Float64 GetStressFromSegmentPT(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, DuctIndexType ductIdx) const;
+   Float64 GetStressFromGirderPT(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, DuctIndexType ductIdx) const;
 
    // this methods need to be public so the PGSuperLoadCombinationResponse object use them
    void GetVehicularLoad(ILBAMModel* pModel,LiveLoadModelType llType,VehicleIndexType vehicleIdx,IVehicularLoad** pVehicle) const;

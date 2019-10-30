@@ -65,19 +65,27 @@ CDuctGeometryCheckTable& CDuctGeometryCheckTable::operator= (const CDuctGeometry
 }
 
 //======================== OPERATIONS =======================================
-void CDuctGeometryCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const
+void CDuctGeometryCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const
 {
    const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeometry);
-   DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
-   if ( nDucts == 0 )
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+
+   if (nMaxSegmentDucts + nGirderDucts == 0)
    {
+      // no ducts
       return;
    }
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, size, pDisplayUnits->GetSpanLengthUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, radius, pDisplayUnits->GetSpanLengthUnit(), false );
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, size, pDisplayUnits->GetSpanLengthUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, radius, pDisplayUnits->GetSpanLengthUnit(), false);
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Duct Geometry [5.4.6.1]");
@@ -87,10 +95,16 @@ void CDuctGeometryCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,IDuctLimits,pDuctLimits);
-   Float64 Rmin = pDuctLimits->GetRadiusOfCurvatureLimit(girderKey);
+   GET_IFACE2(pBroker, IDuctLimits, pDuctLimits);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+      Float64 Rmin = pDuctLimits->GetSegmentTendonRadiusOfCurvatureLimit(segmentKey);
+      (*pPara) << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(": The radius of curvature of segment tendon ducts shall not be less that ") << size.SetValue(Rmin) << rptNewLine;
+   }
 
-   (*pPara) << _T("The radius of curvature of tendon ducts shall not be less that ") << size.SetValue(Rmin) << rptNewLine;
+   Float64 Rmin = pDuctLimits->GetGirderTendonRadiusOfCurvatureLimit(girderKey);
+   (*pPara) << _T("Girder: The radius of curvature of girder tendon ducts shall not be less that ") << size.SetValue(Rmin) << rptNewLine;
    (*pPara) << rptNewLine;
 
 
@@ -102,11 +116,50 @@ void CDuctGeometryCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    (*pTable)(0,2) << _T("Status");
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++, row++ )
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+      
+      const auto* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+
+      DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      for (DuctIndexType ductIdx = 0; ductIdx < nMaxSegmentDucts; ductIdx++, row++)
+      {
+         ColumnIndexType col = 0;
+
+         (*pTable)(row, col++) << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(", Duct ") << LABEL_DUCT(ductIdx);
+
+         if (ductIdx < nDucts)
+         {
+            const pgsDuctSizeArtifact* pDuctSizeArtifact = pSegmentArtifact->GetDuctSizeArtifact(ductIdx);
+
+            Float64 r, rmin;
+            pDuctSizeArtifact->GetRadiusOfCurvature(&r, &rmin);
+
+            (*pTable)(row, col++) << radius.SetValue(r);
+
+            if (pDuctSizeArtifact->PassedRadiusOfCurvature())
+            {
+               (*pTable)(row, col++) << RPT_PASS;
+            }
+            else
+            {
+               (*pTable)(row, col++) << RPT_FAIL;
+            }
+         }
+         else
+         {
+            (*pTable)(row, col++) << _T("-");
+            (*pTable)(row, col++) << _T("-");
+         }
+      } // next duct
+   } // next segment
+
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++, row++ )
    {
       ColumnIndexType col = 0;
       const pgsDuctSizeArtifact* pDuctSizeArtifact = pGirderArtifact->GetDuctSizeArtifact(ductIdx);
-      (*pTable)(row,col++) << LABEL_DUCT(ductIdx);
+      (*pTable)(row,col++) << _T("Girder Duct ") << LABEL_DUCT(ductIdx);
 
       Float64 r, rmin;
       pDuctSizeArtifact->GetRadiusOfCurvature(&r,&rmin);

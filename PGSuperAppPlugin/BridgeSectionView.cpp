@@ -884,6 +884,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
    GET_IFACE2(pBroker, IRoadway, pAlignment);
    GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pTendonGeom);
 
    std::vector<pgsPointOfInterest> vPoi = GetPointsOfInterest();
 
@@ -911,6 +912,9 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
          segment_border_color = SEGMENT_BORDER_COLOR_ADJACENT;
       }
 
+      CComPtr<iCompoundDrawPointStrategy> compound_strategy;
+      compound_strategy.CoCreateInstance(CLSID_CompoundDrawPointStrategy);
+
       // Display object for the girder cross section
       CComPtr<iPointDisplayObject> dispObj;
       dispObj.CoCreateInstance(CLSID_PointDisplayObject);
@@ -929,7 +933,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       {
          GET_IFACE2(pBroker, IGirder, pGirder);
          CComPtr<IDirection> segDirection;
-         pGirder->GetSegmentDirection(poi.GetSegmentKey(), &segDirection);
+         pGirder->GetSegmentDirection(thisSegmentKey, &segDirection);
 
          Float64 dirSegment;
          segDirection->get_Value(&dirSegment);
@@ -969,25 +973,19 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       }
 
       CComQIPtr<IXYPosition> position(shape);
+      CComPtr<IPoint2d> pntTopCenter;
+      position->get_LocatorPoint(lpTopCenter,&pntTopCenter);
       if (section)
       {
          section->get_WorkPoint(&pntWorkPoint);
       }
       else
       {
-         position->get_LocatorPoint(lpTopCenter, &pntWorkPoint);
+         pntWorkPoint = pntTopCenter;
       }
       dispObj->SetPosition(pntWorkPoint,FALSE,FALSE);
 
-      CComPtr<iCompoundDrawPointStrategy> compound_strategy;
-      compound_strategy.CoCreateInstance(CLSID_CompoundDrawPointStrategy);
-
-      CComPtr<iSimpleDrawPointStrategy> draw_work_point_strategy;
-      draw_work_point_strategy.CoCreateInstance(CLSID_SimpleDrawPointStrategy);
-      draw_work_point_strategy->SetColor(RED);
-      draw_work_point_strategy->SetLogicalPointSize(5); // make the "meatballs" 5 pixels
-      draw_work_point_strategy->SetPointType(ptCircle);
-
+      // Drawing objct for girder shape
       CComPtr<iShapeDrawStrategy> shape_draw_strategy;
       shape_draw_strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
       shape_draw_strategy->SetShape(shape);
@@ -998,6 +996,55 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       shape_draw_strategy->DoFill(true);
 
       compound_strategy->AddStrategy(shape_draw_strategy);
+
+      // Drawing object for plant installed ducts.
+      // the bridge section cut is for the erection interval. at that interval, the plant installed tendons
+      // are grouted so the circle shape is no longer part of the girder shape object (unlike the field
+      // installed tendons which are part because they ducts aren't grouted yet). we want to draw the
+      // circles for the plant installed tendons so we will create circle shape objects here
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisSegmentKey);
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+      {
+         CComPtr<iShapeDrawStrategy> duct_draw_strategy;
+         duct_draw_strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+
+         CComPtr<IPoint2d> pntDuct;
+         pTendonGeom->GetSegmentDuctPoint(poi, ductIdx, &pntDuct);
+
+         // pntDuct is in girder section coordinates (measured from top center of girder)
+         // pntTopCenter is in bridge section coordinates
+         // we want pntDuct in bridge section coordinates... duct x,y are relative offsets from
+         // top center.... move the duct point
+         Float64 dx, dy;
+         pntDuct->Location(&dx, &dy);
+         
+         Float64 tx, ty;
+         pntTopCenter->Location(&tx, &ty);
+
+         pntDuct->Move(tx + dx, ty + dy);
+
+         Float64 diameter = pTendonGeom->GetOutsideDiameter(thisSegmentKey, ductIdx);
+
+         duct_draw_strategy->DoFill(true);
+         duct_draw_strategy->SetSolidFillColor(GetSysColor(COLOR_WINDOW)); // draw as a void
+         duct_draw_strategy->SetSolidLineColor(SEGMENT_TENDON_BORDER_COLOR);
+
+         CComPtr<ICircle> circle;
+         circle.CoCreateInstance(CLSID_Circle);
+         circle->putref_Center(pntDuct);
+         circle->put_Radius(diameter / 2);
+         CComQIPtr<IShape> shape(circle);
+         duct_draw_strategy->SetShape(shape);
+
+         compound_strategy->AddStrategy(duct_draw_strategy);
+      }
+
+      // Drawing object for the work point
+      CComPtr<iSimpleDrawPointStrategy> draw_work_point_strategy;
+      draw_work_point_strategy.CoCreateInstance(CLSID_SimpleDrawPointStrategy);
+      draw_work_point_strategy->SetColor(RED);
+      draw_work_point_strategy->SetLogicalPointSize(5); // make the "meatballs" 5 pixels
+      draw_work_point_strategy->SetPointType(ptCircle);
       compound_strategy->AddStrategy(draw_work_point_strategy); // draw second so it goes over the girder shape
 
       dispObj->SetDrawingStrategy(compound_strategy);

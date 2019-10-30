@@ -167,9 +167,11 @@ private:
 
    // GROUP: OPERATIONS
    void CreateStrandMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS) const;
-   void CreateTendonMaterial(const CGirderKey& girderKey,IStressStrain** ppSS) const;
+   void CreateSegmentTendonMaterial(const CSegmentKey& segmentKey, IStressStrain** ppSS) const;
+   void CreateGirderTendonMaterial(const CGirderKey& girderKey, IStressStrain** ppSS) const;
+   void CreateTendonMaterial(const matPsStrand* pTendon, IStressStrain** ppSS) const;
 
-   MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial_strand,const std::vector<Float64>& fpe_pt,const std::vector<Float64>& ept_initial,bool bPositiveMoment) const;
+   MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial_strand, const std::vector<Float64>& fpe_pt_segment, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& fpe_pt_girder,const std::vector<Float64>& ept_initial_girder,bool bPositiveMoment) const;
    void ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const CRACKINGMOMENTDETAILS* pcmd,MINMOMENTCAPDETAILS* pmmcd) const;
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const;
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const;
@@ -181,7 +183,7 @@ private:
    void ComputeCrackingMoment(Float64 g1,Float64 g2,Float64 g3,Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd) const;
    void GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const;
 
-   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64 eps_initial, const std::vector<Float64>& ept_initial, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, ISize2d** szOffset, Float64* pdt, Float64* pH, Float64* pHaunch, std::map<StrandIndexType, Float64>* pBondFactors) const;
+   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64 eps_initial, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& ept_initial_girder, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, ISize2d** szOffset, Float64* pdt, Float64* pH, Float64* pHaunch, std::map<StrandIndexType, Float64>* pBondFactors) const;
 
    // GROUP: INQUIRY
 

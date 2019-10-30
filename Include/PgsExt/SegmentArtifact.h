@@ -38,6 +38,8 @@
 #include <PgsExt\DebondArtifact.h>
 #include <PgsExt\StirrupCheckAtZonesArtifact.h>
 #include <PgsExt\DeflectionCheckArtifact.h>
+#include <PgsExt\TendonStressArtifact.h>
+#include <PgsExt\DuctSizeArtifact.h>
 
 #include <Stability\Stability.h>
 
@@ -118,6 +120,14 @@ public:
    void SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact*  artifact);
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
 
+   void SetTendonStressArtifact(DuctIndexType ductIdx, const pgsTendonStressArtifact& artifact);
+   const pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx) const;
+   pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx);
+
+   void SetDuctSizeArtifact(DuctIndexType ductIdx, const pgsDuctSizeArtifact& artifact);
+   const pgsDuctSizeArtifact* GetDuctSizeArtifact(DuctIndexType ductIdx) const;
+   pgsDuctSizeArtifact* GetDuctSizeArtifact(DuctIndexType ductIdx);
+
    // returns true if the allowable tension capacity with adequate reinforcement
    // was used at any POI in this segment. If attribute = 0, only segments are checked
    // if attribute is POI_CLOSURE, only closure joints are checked
@@ -195,6 +205,9 @@ private:
    pgsStirrupCheckArtifact m_StirrupCheckArtifact;
 
    pgsPrecastIGirderDetailingArtifact m_PrecastIGirderDetailingArtifact;
+
+   std::map<DuctIndexType, pgsTendonStressArtifact> m_TendonStressArtifacts;
+   std::map<DuctIndexType, pgsDuctSizeArtifact> m_DuctSizeArtifacts;
 
    const stbLiftingCheckArtifact* m_pLiftingCheckArtifact; // point is not owned by this object
    const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object

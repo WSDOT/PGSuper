@@ -261,8 +261,9 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
       ASSIGN_IFACE(ILongRebarGeometry, yieldingRatingParams.pRebarGeom);
       ASSIGN_IFACE(IMaterials, yieldingRatingParams.pMaterials);
       ASSIGN_IFACE(ILiveLoadDistributionFactors, yieldingRatingParams.pLLDF);
-      ASSIGN_IFACE(IStrandGeometry, yieldingRatingParams.pStrandGeom);
-      ASSIGN_IFACE(ITendonGeometry, yieldingRatingParams.pTendonGeom);
+      ASSIGN_IFACE(IStrandGeometry, yieldingRatingParams.pStrandGeometry);
+      ASSIGN_IFACE(ISegmentTendonGeometry, yieldingRatingParams.pSegmentTendonGeometry);
+      ASSIGN_IFACE(IGirderTendonGeometry, yieldingRatingParams.pGirderTendonGeometry);
 
 
       yieldingRatingParams.ratingType = ratingType;
@@ -290,18 +291,6 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
       yieldingRatingParams.K_liveload = pSpecEntry->GetLiveLoadElasticGain();
 
       yieldingRatingParams.analysisType = pSpec->GetAnalysisType();
-
-      GET_IFACE(ITendonGeometry, pTendonGeom);
-      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-      yieldingRatingParams.vnDucts.resize(nGroups, 0);
-      GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-      GroupIndexType endGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : startGroupIdx);
-      for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
-      {
-         CGirderKey thisGirderKey(grpIdx, girderKey.girderIndex);
-         DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
-         yieldingRatingParams.vnDucts[grpIdx] = nDucts;
-      }
 
       GET_IFACE(ICrackedSection, pCrackedSection);
       vpMcr[0] = pMomentCapacity->GetCrackingMomentDetails(loadRatingIntervalIdx, vPoi, true); // positive moments
@@ -1022,7 +1011,8 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    // Create artifacts
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   DuctIndexType nDucts = ratingParams.vnDucts[segmentKey.groupIndex];
+   DuctIndexType nSegmentDucts = ratingParams.pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   DuctIndexType nGirderDucts = ratingParams.pGirderTendonGeometry->GetDuctCount(segmentKey);
 
    CClosureKey closureKey;
    bool bIsInClosureJoint = ratingParams.pPoi->IsInClosureJoint(poi, &closureKey);
@@ -1041,8 +1031,8 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    // Get material properties
    Float64 Eg = ratingParams.pMaterials->GetSegmentEc(segmentKey, ratingParams.loadRatingIntervalIdx);
 
-   Float64 Eb, Eps, Ept; // mod E of rebar, strand, tendon
-   Float64 fyb, fyps, fypt; // yield strength of bar, strand, tendon
+   Float64 Eb, Eps, EptSegment, EptGirder; // mod E of rebar, strand, tendon
+   Float64 fyb, fyps, fyptSegment, fyptGirder; // yield strength of bar, strand, tendon
    Float64 fu;
 
    if (bPositiveMoment)
@@ -1066,9 +1056,11 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    Eps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Permanent)->GetE();
    fyps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Permanent)->GetYieldStrength();
 
-   // NOTE: it is important to use segmentKey here
-   Ept = ratingParams.pMaterials->GetTendonMaterial(segmentKey)->GetE();
-   fypt = ratingParams.pMaterials->GetTendonMaterial(segmentKey)->GetYieldStrength();
+   // NOTE: it is ok to use segmentKey here because it promotes to a girder key
+   EptSegment = ratingParams.pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
+   fyptSegment = ratingParams.pMaterials->GetSegmentTendonMaterial(segmentKey)->GetYieldStrength();
+   EptGirder = ratingParams.pMaterials->GetGirderTendonMaterial(segmentKey)->GetE();
+   fyptGirder = ratingParams.pMaterials->GetGirderTendonMaterial(segmentKey)->GetYieldStrength();
 
 
    // Get distance to reinforcement from extreme compression face
@@ -1076,7 +1068,8 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    // keep track of whether or not the type of reinforcement is used
    bool bRebar = false;
    bool bStrands = false;
-   bool bTendons = false;
+   bool bSegmentTendons = false;
+   bool bGirderTendons = false;
 
    // rebar
    Float64 db;
@@ -1140,7 +1133,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
          CComPtr<IPoint2dCollection> strandPoints;
-         ratingParams.pStrandGeom->GetStrandPositions(poi, strandType, &strandPoints);
+         ratingParams.pStrandGeometry->GetStrandPositions(poi, strandType, &strandPoints);
          IndexType nStrands;
          strandPoints->get_Count(&nStrands);
          if (0 < nStrands)
@@ -1175,23 +1168,23 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       dps = Hg + Y;
    }
 
-   // tendon
-   Float64 dpt;
-   DuctIndexType ductIdx = INVALID_INDEX; // index of the duct that is furthest from the compression face
+   // segment tendons
+   Float64 dptSegment;
+   DuctIndexType segmentTendonIdx = INVALID_INDEX; // index of the segment tendon that is furthest from the compression face
    Y = (bPositiveMoment ? DBL_MAX : -DBL_MAX);
-   if (bIsOnGirder)
+   if (bIsOnSegment)
    {
-      if (0 < nDucts)
+      if (0 < nSegmentDucts)
       {
-         bTendons = true;
+         bSegmentTendons = true;
       }
 
-      for (DuctIndexType theDuctIdx = 0; theDuctIdx < nDucts; theDuctIdx++)
+      for (DuctIndexType theDuctIdx = 0; theDuctIdx < nSegmentDucts; theDuctIdx++)
       {
-         if (ratingParams.pTendonGeom->IsOnDuct(poi, theDuctIdx))
+         if (ratingParams.pSegmentTendonGeometry->IsOnDuct(poi))
          {
             CComPtr<IPoint2d> pnt;
-            ratingParams.pTendonGeom->GetDuctPoint(poi, theDuctIdx, &pnt);
+            ratingParams.pSegmentTendonGeometry->GetSegmentDuctPoint(poi, theDuctIdx, &pnt);
             Float64 y;
             pnt->get_Y(&y);
             ATLASSERT(y < 0);
@@ -1199,7 +1192,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
             {
                if (MinIndex(Y, y) == 1)
                {
-                  ductIdx = theDuctIdx;
+                  segmentTendonIdx = theDuctIdx;
                }
 
                Y = Min(Y, y); // want furthest from top
@@ -1208,7 +1201,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
             {
                if (MaxIndex(Y, y) == 1)
                {
-                  ductIdx = theDuctIdx;
+                  segmentTendonIdx = theDuctIdx;
                }
 
                Y = Max(Y, y); // want closest to top
@@ -1219,11 +1212,62 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
 
    if (bPositiveMoment)
    {
-      dpt = ts - Y;
+      dptSegment = ts - Y;
    }
    else
    {
-      dpt = Hg + Y;
+      dptSegment = Hg + Y;
+   }
+
+   // girder tendons
+   Float64 dptGirder;
+   DuctIndexType girderTendonIdx = INVALID_INDEX; // index of the girder tendon that is furthest from the compression face
+   Y = (bPositiveMoment ? DBL_MAX : -DBL_MAX);
+   if (bIsOnGirder)
+   {
+      if (0 < nGirderDucts)
+      {
+         bGirderTendons = true;
+      }
+
+      for (DuctIndexType theDuctIdx = 0; theDuctIdx < nGirderDucts; theDuctIdx++)
+      {
+         if (ratingParams.pGirderTendonGeometry->IsOnDuct(poi, theDuctIdx))
+         {
+            CComPtr<IPoint2d> pnt;
+            ratingParams.pGirderTendonGeometry->GetGirderDuctPoint(poi, theDuctIdx, &pnt);
+            Float64 y;
+            pnt->get_Y(&y);
+            ATLASSERT(y < 0);
+            if (bPositiveMoment)
+            {
+               if (MinIndex(Y, y) == 1)
+               {
+                  girderTendonIdx = theDuctIdx;
+               }
+
+               Y = Min(Y, y); // want furthest from top
+            }
+            else
+            {
+               if (MaxIndex(Y, y) == 1)
+               {
+                  girderTendonIdx = theDuctIdx;
+               }
+
+               Y = Max(Y, y); // want closest to top
+            }
+         }
+      }
+   }
+
+   if (bPositiveMoment)
+   {
+      dptGirder = ts - Y;
+   }
+   else
+   {
+      dptGirder = Hg + Y;
    }
 
    // Get allowable
@@ -1303,7 +1347,8 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    // make sure reinforcement is on the tension side of the crack
    bRebar = (db  < Hg + ts - c ? false : bRebar);
    bStrands = (dps < Hg + ts - c ? false : bStrands);
-   bTendons = (dpt < Hg + ts - c ? false : bTendons);
+   bSegmentTendons = (dptSegment < Hg + ts - c ? false : bSegmentTendons);
+   bGirderTendons = (dptGirder < Hg + ts - c ? false : bGirderTendons);
 
    // Stress in reinforcement before cracking
    Float64 fb = 0;
@@ -1347,7 +1392,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
          else
          {
             Float64 neff;
-            Float64 ep = ratingParams.pStrandGeom->GetEccentricity(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::Permanent, &neff);
+            Float64 ep = ratingParams.pStrandGeometry->GetEccentricity(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::Permanent, &neff);
             Float64 Ixx = ratingParams.pSectProp->GetIxx(ratingParams.loadRatingIntervalIdx, poi);
             llGain = LLIM*ep / Ixx;
          }
@@ -1357,13 +1402,22 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       }
    }
 
-   Float64 fpt = 0;
-   if (bTendons)
+   Float64 fptSegment = 0;
+   if (bSegmentTendons)
    {
       GET_IFACE(IPosttensionForce, pPTForce);
       bool bIncludeMinLiveLoad = !bPositiveMoment;
       bool bIncludeMaxLiveLoad = bPositiveMoment;
-      fpt = pPTForce->GetTendonStress(poi, ratingParams.loadRatingIntervalIdx, pgsTypes::End, ductIdx, bIncludeMinLiveLoad, bIncludeMaxLiveLoad);
+      fptSegment = pPTForce->GetSegmentTendonStress(poi, ratingParams.loadRatingIntervalIdx, pgsTypes::End, segmentTendonIdx, bIncludeMinLiveLoad, bIncludeMaxLiveLoad);
+   }
+
+   Float64 fptGirder = 0;
+   if (bGirderTendons)
+   {
+      GET_IFACE(IPosttensionForce, pPTForce);
+      bool bIncludeMinLiveLoad = !bPositiveMoment;
+      bool bIncludeMaxLiveLoad = bPositiveMoment;
+      fptGirder = pPTForce->GetGirderTendonStress(poi, ratingParams.loadRatingIntervalIdx, pgsTypes::End, girderTendonIdx, bIncludeMinLiveLoad, bIncludeMaxLiveLoad);
    }
 
    pgsYieldStressRatioArtifact stressRatioArtifact;
@@ -1403,9 +1457,14 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       stressRatioArtifact.SetStrand(dps, fps, fyps, Eps);
    }
 
-   if (bTendons)
+   if (bSegmentTendons)
    {
-      stressRatioArtifact.SetTendon(dpt, fpt, fypt, Ept);
+      stressRatioArtifact.SetSegmentTendon(dptSegment, fptSegment, fyptSegment, EptSegment);
+   }
+
+   if (bGirderTendons)
+   {
+      stressRatioArtifact.SetGirderTendon(dptGirder, fptGirder, fyptGirder, EptGirder);
    }
 
    ratingArtifact.AddArtifact(poi, stressRatioArtifact, bPositiveMoment);

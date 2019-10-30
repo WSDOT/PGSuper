@@ -806,24 +806,75 @@ void CDrawBeamTool::DrawIntegralHingeAhead(CPoint p,CDC* pDC)
 
 void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx, const CGirderKey& girderKey, const grlibPointMapper& mapper,CDC* pDC)
 {
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE_NOCHECK(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
    GET_IFACE_NOCHECK(IIntervals,pIntervals); // only gets used if there are tendons
 
    Float64 tendonShift = ComputeShift(girderKey);
 
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   GET_IFACE(IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
-      CComPtr<IPoint2dCollection> points;
-      pTendonGeom->GetDuctCenterline(girderKey,ductIdx,&points);
+      CSegmentKey segmentKey(girderKey, segIdx);
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+      if (intervalIdx < ptIntervalIdx)
+      {
+         continue; // don't draw if not yet installed
+      }
 
-      IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+      {
+         CComPtr<IPoint2dCollection> points;
+         pSegmentTendonGeometry->GetDuctCenterline(segmentKey, ductIdx, &points);
+
+         COLORREF color = SEGMENT_TENDON_LINE_COLOR;
+
+         CPen pen(PS_SOLID, 1, color);
+         CPen* pOldPen = pDC->SelectObject(&pen);
+
+         IndexType nPoints;
+         points->get_Count(&nPoints);
+         CPoint* polyPnts = new CPoint[nPoints];
+         for (IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++)
+         {
+            CComPtr<IPoint2d> point;
+            points->get_Item(pntIdx, &point);
+
+            Float64 x, y;
+            point->Location(&x, &y);
+
+            Float64 WX = m_pUnitConverter->Convert(x + beamShift + tendonShift);
+            Float64 WY = m_pUnitConverter->Convert(y);
+
+            LONG DX, DY;
+            mapper.WPtoDP(WX, WY, &DX, &DY);
+
+            polyPnts[pntIdx].x = DX;
+            polyPnts[pntIdx].y = DY;
+         }
+
+         pDC->Polyline(polyPnts, (int)nPoints);
+         delete[] polyPnts;
+
+         pDC->SelectObject(pOldPen);
+      }
+   }
+
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+   {
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
       if ( intervalIdx < ptIntervalIdx )
       {
          continue; // don't draw if not yet installed
       }
 
-      COLORREF color = TENDON_LINE_COLOR;
+      CComPtr<IPoint2dCollection> points;
+      pGirderTendonGeometry->GetDuctCenterline(girderKey, ductIdx, &points);
+
+      COLORREF color = GIRDER_TENDON_LINE_COLOR;
 
       CPen pen(PS_SOLID,1,color);
       CPen* pOldPen = pDC->SelectObject(&pen);

@@ -43,7 +43,8 @@ private:
    CTimeStepCamberChapterBuilder(const CTimeStepCamberChapterBuilder&) = delete;
    CTimeStepCamberChapterBuilder& operator=(const CTimeStepCamberChapterBuilder&) = delete;
 
-   rptRcTable* CreateStorageDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateStorageDeflectionTable(IBroker* pBroker, const CGirderKey& girderKey) const;
+   rptRcTable* CreateHandlingDeflectionTable(IBroker* pBroker, const CGirderKey& girderKey) const;
    rptRcTable* CreateAfterErectionDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
 
    rptRcTable* CreateTable(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;

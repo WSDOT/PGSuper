@@ -2925,6 +2925,11 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
                THROW_UNWIND(_T("Precast girder object not created"), -1);
             }
             girder->Initialize(segment);
+            CComPtr<ITendonCollection> tendons;
+            if (CreateTendons(pSegment, segment, &tendons))
+            {
+               girder->putref_Tendons(tendons);
+            }
             CComQIPtr<IItemData> item_data(segment);
             item_data->AddItemData(CComBSTR(_T("Precast Girder")), girder);
 
@@ -6351,7 +6356,8 @@ STDMETHODIMP CBridgeAgentImp::RegInterfaces()
    pBrokerInit->RegInterface( IID_IUserDefinedLoads,              this );
    pBrokerInit->RegInterface( IID_ITempSupport,                   this );
    pBrokerInit->RegInterface( IID_IGirder,                        this );
-   pBrokerInit->RegInterface( IID_ITendonGeometry,                this );
+   pBrokerInit->RegInterface(IID_IGirderTendonGeometry,           this );
+   pBrokerInit->RegInterface(IID_ISegmentTendonGeometry,          this );
    pBrokerInit->RegInterface( IID_IIntervals,                     this );
 
    return S_OK;
@@ -13492,26 +13498,26 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalStrandRelaxationDeta
    return GetIncrementalRelaxationDetails(fpi,pStrand,tStart,tEnd,tStress);
 }
 
-const matPsStrand* CBridgeAgentImp::GetTendonMaterial(const CGirderKey& girderKey) const
+const matPsStrand* CBridgeAgentImp::GetGirderTendonMaterial(const CGirderKey& girderKey) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPTData* pPTData = pIBridgeDesc->GetPostTensioning(girderKey);
    return pPTData->pStrand;
 }
 
-Float64 CBridgeAgentImp::GetIncrementalTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpi) const
+Float64 CBridgeAgentImp::GetGirderTendonIncrementalRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpi) const
 {
-   return GetIncrementalTendonRelaxationDetails(girderKey,ductIdx,intervalIdx,fpi).fr;
+   return GetGirderTendonIncrementalRelaxationDetails(girderKey,ductIdx,intervalIdx,fpi).fr;
 }
 
-INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalTendonRelaxationDetails(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpi) const
+INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetGirderTendonIncrementalRelaxationDetails(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpi) const
 {
-   IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressTendonInterval(girderKey,ductIdx);
+   IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressGirderTendonInterval(girderKey,ductIdx);
    Float64 tStress = m_IntervalManager.GetTime(stressTendonIntervalIdx,pgsTypes::Start);
    Float64 tStart  = m_IntervalManager.GetTime(intervalIdx,pgsTypes::Start);
    Float64 tEnd    = m_IntervalManager.GetTime(intervalIdx,pgsTypes::End);
 
-   const matPsStrand* pStrand = GetTendonMaterial(girderKey);
+   const matPsStrand* pStrand = GetGirderTendonMaterial(girderKey);
 
    if ( intervalIdx < stressTendonIntervalIdx || GetTendonStrandCount(girderKey,ductIdx) == 0 )
    {
@@ -13526,6 +13532,42 @@ INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetIncrementalTendonRelaxationDeta
 
    return GetIncrementalRelaxationDetails(fpi,pStrand,tStart,tEnd,tStress);
 }
+
+const matPsStrand* CBridgeAgentImp::GetSegmentTendonMaterial(const CSegmentKey& segmentKey) const
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   return pSegment->Tendons.m_pStrand;
+}
+
+Float64 CBridgeAgentImp::GetSegmentTendonIncrementalRelaxation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx, Float64 fpi) const
+{
+   return GetSegmentTendonIncrementalRelaxationDetails(segmentKey, ductIdx, intervalIdx, fpi).fr;
+}
+
+INCREMENTALRELAXATIONDETAILS CBridgeAgentImp::GetSegmentTendonIncrementalRelaxationDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx, Float64 fpi) const
+{
+   IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressSegmentTendonInterval(segmentKey);
+   Float64 tStress = m_IntervalManager.GetTime(stressTendonIntervalIdx, pgsTypes::Start);
+   Float64 tStart = m_IntervalManager.GetTime(intervalIdx, pgsTypes::Start);
+   Float64 tEnd = m_IntervalManager.GetTime(intervalIdx, pgsTypes::End);
+
+   const matPsStrand* pStrand = GetSegmentTendonMaterial(segmentKey);
+
+   if (intervalIdx < stressTendonIntervalIdx || GetTendonStrandCount(segmentKey, ductIdx) == 0)
+   {
+      // tendon not stressed yet, so no relaxation
+      INCREMENTALRELAXATIONDETAILS details;
+      details.tStart = tStart - tStress;
+      details.tEnd = tEnd = tStress;
+      details.epoxyFactor = 1.0;
+      details.fpy = pStrand->GetYieldStrength();
+      return details;
+   }
+
+   return GetIncrementalRelaxationDetails(fpi, pStrand, tStart, tEnd, tStress);
+}
+
 
 void CBridgeAgentImp::GetSegmentLongitudinalRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu) const
 {
@@ -25164,10 +25206,13 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    Float64 shear_width;
    girder_section->get_ShearWidth(&shear_width);
 
-   CGirderKey girderKey(poi.GetSegmentKey());
-   DuctIndexType nDucts = GetDuctCount(girderKey);
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   CGirderKey girderKey(segmentKey);
 
-   if ( nDucts == 0 )
+   DuctIndexType nGirderDucts = GetDuctCount(girderKey);
+   DuctIndexType nSegmentDucts = GetDuctCount(segmentKey);
+
+   if ( (nGirderDucts + nSegmentDucts) == 0 )
    {
       // No ducts... don't have to make an adjustment.... leave now and
       // skip all work below
@@ -25238,16 +25283,16 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    Float64 duct_deduction = 0;
    if ( IsOnGirder(poi) )
    {
-      GET_IFACE(ITendonGeometry, pTendonGeom);
-      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+      GET_IFACE(IGirderTendonGeometry, pGirderTendonGeom);
+      for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
       {
-         if (pTendonGeom->IsOnDuct(poi, ductIdx))
+         if (pGirderTendonGeom->IsOnDuct(poi, ductIdx))
          {
             // assumed ducts are grouted and cured in the interval following their installation and stressing
-            IntervalIndexType groutDuctIntervalIdx = GetStressTendonInterval(girderKey, ductIdx) + 1;
+            IntervalIndexType groutDuctIntervalIdx = GetStressGirderTendonInterval(girderKey, ductIdx) + 1;
 
             CComPtr<IPoint2d> point;
-            GetDuctPoint(poi, ductIdx, &point); // in Girder Section Coordinates
+            GetGirderDuctPoint(poi, ductIdx, &point); // in Girder Section Coordinates
             Float64 y;
             point->get_Y(&y);
 
@@ -25279,6 +25324,53 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
 
                Float64 dia = GetOutsideDiameter(girderKey, ductIdx);
                duct_deduction = Max(duct_deduction, deduct_factor*dia);
+            }
+         }
+      }
+
+      if (IsOnSegment(poi))
+      {
+         GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+         if (pSegmentTendonGeometry->IsOnDuct(poi))
+         {
+            // assumes ducts are grouted and cured in the interval following their installation and stressing
+            IntervalIndexType groutDuctIntervalIdx = GetStressSegmentTendonInterval(segmentKey);
+            for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+            {
+               CComPtr<IPoint2d> point;
+               GetSegmentDuctPoint(poi, ductIdx, &point); // in Girder Section Coordinates
+               Float64 y;
+               point->get_Y(&y);
+
+               if (::InRange(Ybot, y, Ytop))
+               {
+                  Float64 deduct_factor;
+                  if (bAfter2002)
+                  {
+                     if (intervalIdx < groutDuctIntervalIdx)
+                     {
+                        deduct_factor = 0.50;
+                     }
+                     else
+                     {
+                        deduct_factor = 0.25;
+                     }
+                  }
+                  else
+                  {
+                     if (intervalIdx < groutDuctIntervalIdx)
+                     {
+                        deduct_factor = 1.00;
+                     }
+                     else
+                     {
+                        deduct_factor = 0.50;
+                     }
+                  }
+
+                  Float64 dia = GetOutsideDiameter(segmentKey, ductIdx);
+                  duct_deduction = Max(duct_deduction, deduct_factor*dia);
+               }
             }
          }
       }
@@ -26984,6 +27076,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    IntervalIndexType releaseIntervalIdx = m_IntervalManager.GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType tsInstallationIntervalIdx = GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType liftingIntervalIdx = m_IntervalManager.GetLiftingInterval(segmentKey);
+   IntervalIndexType tendonStressingIntervalIdx = m_IntervalManager.GetStressSegmentTendonInterval(segmentKey);
 
    matConcreteEx concrete;
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
@@ -27075,7 +27168,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    Float64 DtpsEnd = 0.0;
    Float64 DXtpsEnd = 0.0;
 
-   GET_IFACE(ICamber, pCamber);
+   GET_IFACE_NOCHECK(ICamber, pCamber);
    if (bUseConfig && !handlingConfig.bIgnoreGirderConfig)
    {
       pCamber->GetPrestressDeflection(poiMS, pgsTypes::pddRelease, &handlingConfig.GdrConfig, &DXpsMS, &DpsMS);
@@ -27134,7 +27227,15 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
       DXgdrEnd = pProduct->GetXDeflection(liftingIntervalIdx, pgsTypes::pftGirder, poiEnd, bat, rtCumulative);
    }
 
-   Float64 camber = (DgdrMS + DpsMS + DtpsMS) - (DgdrEnd + DpsEnd + DtpsEnd);
+   Float64 ps_camber = (DgdrMS + DpsMS + DtpsMS) - (DgdrEnd + DpsEnd + DtpsEnd);
+
+   GET_IFACE(IProductForces, pProduct);
+   pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
+   Float64 DptMS  = pProduct->GetDeflection(liftingIntervalIdx, pgsTypes::pftPostTensioning, poiMS,  bat, rtCumulative, false);
+   Float64 DptEnd = pProduct->GetDeflection(liftingIntervalIdx, pgsTypes::pftPostTensioning, poiEnd, bat, rtCumulative, false);
+   Float64 pt_camber = DptMS - DptEnd;
+
+   Float64 camber = ps_camber + pt_camber;
    pProblem->SetCamber(camber);
    pProblem->SetCamberMultiplier(pLiftingCriteria->GetLiftingCamberMultiplier());
 
@@ -27147,7 +27248,8 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
 
 
    // Prestress forces
-   GET_IFACE(IPretensionForce,pPSForce);
+   GET_IFACE(IPretensionForce, pPSForce);
+   GET_IFACE_NOCHECK(IPosttensionForce, pPTForce); // not used if there aren't any segment PT
    std::vector<pgsPointOfInterest> vLocalPois; // this is outside of the if block below so that its scope matches that of vPoi
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
@@ -27163,6 +27265,18 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
 
    pProblem->ClearAnalysisPoints();
    pProblem->ClearFpe();
+
+   std::vector<std::_tstring> vNames{ _T("Straight"), _T("Harped"), _T("Temporary") };
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+   {
+      std::_tostringstream os;
+      os << _T("Duct ") << LABEL_DUCT(ductIdx);
+      vNames.emplace_back(os.str());
+   }
+
+   std::vector<IntervalIndexType> vPrestressIntervals{ releaseIntervalIdx,releaseIntervalIdx,tsInstallationIntervalIdx }; // straight, harped, temporary
    for( const pgsPointOfInterest& poi : vPoi)
    {
       stbIAnalysisPoint* pAnalysisPoint = new pgsStabilityAnalysisPoint(poi, POI_LIFT_SEGMENT);
@@ -27171,48 +27285,48 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
       Float64 Ytg = -GetY(releaseIntervalIdx,poi,pgsTypes::TopGirder);
       Float64 Xleft = GetXleft(releaseIntervalIdx, poi);
 
-      Float64 N;
-      Float64 FpeStraight, XpsStraight, YpsStraight;
-      Float64 FpeHarped, XpsHarped, YpsHarped;
-      Float64 FpeTemp, XpsTemp, YpsTemp;
       if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
       {
-         Float64 eccx, eccy;
-         GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &handlingConfig.GdrConfig, &N,&eccx,&eccy);
-         XpsStraight = Xleft - eccx;
-         YpsStraight = Ytg - eccy;
-         FpeStraight = pPSForce->GetPrestressForce(poi,pgsTypes::Straight, intervalIdx,pgsTypes::Start, &handlingConfig.GdrConfig);
-
-         GetEccentricity(releaseIntervalIdx,poi, pgsTypes::Harped,&handlingConfig.GdrConfig, &N, &eccx, &eccy);
-         XpsHarped = Xleft - eccx;
-         YpsHarped = Ytg - eccy;
-         FpeHarped = pPSForce->GetPrestressForce(poi,pgsTypes::Harped, intervalIdx,pgsTypes::Start, &handlingConfig.GdrConfig);
-
-         GetEccentricity(tsInstallationIntervalIdx,poi, pgsTypes::Temporary,&handlingConfig.GdrConfig, &N, &eccx, &eccy);
-         XpsTemp = Xleft - eccx;
-         YpsTemp = Ytg - eccy;
-         FpeTemp = pPSForce->GetPrestressForce(poi,pgsTypes::Temporary, intervalIdx,pgsTypes::Start, &handlingConfig.GdrConfig);
+         ATLASSERT(nSegmentDucts == 0); // if we are using a config, this is design. Only PGSuper has design option. PGSuper doesn't have segment ducts
+         for (int i = 0; i < 3; i++)
+         {
+            pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+            Float64 N;
+            Float64 eccx, eccy;
+            GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig, &N, &eccx, &eccy);
+            Float64 Xps = Xleft - eccx;
+            Float64 Yps = Ytg - eccy;
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
+            pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
+         }
       }
       else
       {
-         Float64 eccx, eccy;
-         GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &N, &eccx, &eccy);
-         XpsStraight = Xleft - eccx;
-         YpsStraight = Ytg - eccy;
-         FpeStraight = pPSForce->GetPrestressForce(poi,pgsTypes::Straight, intervalIdx,pgsTypes::Start);
+         // strands are always stored in first 3 slots
+         for (int i = 0; i < 3; i++)
+         {
+            pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+            Float64 N;
+            Float64 eccx, eccy;
+            GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &N, &eccx, &eccy);
+            Float64 Xps = Xleft - eccx;
+            Float64 Yps = Ytg - eccy;
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start);
+            pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
+         }
 
-         GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Harped, &N, &eccx, &eccy);
-         XpsHarped = Xleft - eccx;
-         YpsHarped = Ytg - eccy;
-         FpeHarped = pPSForce->GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start);
-
-         GetEccentricity(tsInstallationIntervalIdx,poi,pgsTypes::Temporary, &N, &eccx, &eccy);
-         XpsTemp = Xleft - eccx;
-         YpsTemp = Ytg - eccy;
-         FpeTemp = pPSForce->GetPrestressForce(poi,pgsTypes::Temporary,intervalIdx,pgsTypes::Start);
+         // segment tendons, if any,start at index 3
+         for (int i = 3; i < vNames.size(); i++)
+         {
+            DuctIndexType ductIdx = DuctIndexType(i - 3);
+            Float64 eccx, eccy;
+            GetSegmentTendonEccentricity(tendonStressingIntervalIdx, poi, ductIdx,&eccx,&eccy);
+            Float64 Xps = Xleft - eccx;
+            Float64 Yps = Ytg - eccy;
+            Float64 Fpe = pPTForce->GetSegmentTendonForce(poi, tendonStressingIntervalIdx, pgsTypes::Start, ductIdx);
+            pProblem->AddFpe(vNames[i].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
+         }
       }
-
-      pProblem->AddFpe(pAnalysisPoint->GetLocation(),FpeStraight,XpsStraight,YpsStraight,FpeHarped,XpsHarped,YpsHarped,FpeTemp,XpsTemp,YpsTemp);
    }
 }
 
@@ -27247,6 +27361,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    IntervalIndexType tsInstallationIntervalIdx = GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = m_IntervalManager.GetStorageInterval(segmentKey);
    IntervalIndexType haulingIntervalIdx = m_IntervalManager.GetHaulingInterval(segmentKey);
+   IntervalIndexType tendonStressingIntervalIdx = m_IntervalManager.GetStressSegmentTendonInterval(segmentKey);
 
    matConcreteEx concrete;
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
@@ -27363,7 +27478,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
 
    Float64 DXpsMS(0), DpsMS(0), DXpsEnd(0), DpsEnd(0);
 
-   GET_IFACE(ICamber, pCamber);
+   GET_IFACE_NOCHECK(ICamber, pCamber);
    if (bUseConfig && !handlingConfig.bIgnoreGirderConfig)
    {
       Float64 xps, ps, xtps, tps;
@@ -27460,7 +27575,14 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
       DXcreepEnd = pCamber->GetXCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
    }
 
-   Float64 camber = (DgdrMS + DpsMS + DcreepMS) - (DgdrEnd + DpsEnd + DcreepEnd);
+   Float64 ps_camber = (DgdrMS + DpsMS + DcreepMS) - (DgdrEnd + DpsEnd + DcreepEnd);
+
+   Float64 DptMS = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPostTensioning, poiMS, bat, rtCumulative, false);
+   Float64 DptEnd = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPostTensioning, poiEnd, bat, rtCumulative, false);
+   Float64 pt_camber = DptMS - DptEnd;
+
+   Float64 camber = ps_camber + pt_camber;
+
    pProblem->SetCamber(camber);
    pProblem->SetCamberMultiplier(pHaulingCriteria->GetHaulingCamberMultiplier());
 
@@ -27472,7 +27594,8 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    }
 
    // Prestress forces
-   GET_IFACE(IPretensionForce,pPSForce);
+   GET_IFACE(IPretensionForce, pPSForce);
+   GET_IFACE_NOCHECK(IPosttensionForce, pPTForce); // not used if there aren't any segment PT
    std::vector<pgsPointOfInterest> vLocalPois; // this is outside of the if block below so that its scope matches that of vPoi
    if ( bUseConfig && !handlingConfig.bIgnoreGirderConfig )
    {
@@ -27488,6 +27611,18 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
 
    pProblem->ClearAnalysisPoints();
    pProblem->ClearFpe();
+
+   std::vector<std::_tstring> vNames{ _T("Straight"), _T("Harped"), _T("Temporary") };
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+   {
+      std::_tostringstream os;
+      os << _T("Duct ") << LABEL_DUCT(ductIdx);
+      vNames.emplace_back(os.str());
+   }
+
+   std::vector<IntervalIndexType> vPrestressIntervals{ releaseIntervalIdx,releaseIntervalIdx,tsInstallationIntervalIdx }; // straight, harped, temporary
    for( const pgsPointOfInterest& poi : vPoi)
    {
       stbIAnalysisPoint* pAnalysisPoint = new pgsStabilityAnalysisPoint(poi, POI_HAUL_SEGMENT);
@@ -27496,48 +27631,48 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
       Float64 Ytg = -GetY(releaseIntervalIdx, poi, pgsTypes::TopGirder);
       Float64 Xleft = GetXleft(releaseIntervalIdx, poi);
 
-      Float64 N;
-      Float64 FpeStraight, XpsStraight, YpsStraight;
-      Float64 FpeHarped, XpsHarped, YpsHarped;
-      Float64 FpeTemp, XpsTemp, YpsTemp;
       if (bUseConfig && !handlingConfig.bIgnoreGirderConfig)
       {
-         Float64 eccx, eccy;
-         GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &handlingConfig.GdrConfig, &N, &eccx, &eccy);
-         XpsStraight = Xleft - eccx;
-         YpsStraight = Ytg - eccy;
-         FpeStraight = pPSForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
-
-         GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &handlingConfig.GdrConfig, &N, &eccx, &eccy);
-         XpsHarped = Xleft - eccx;
-         YpsHarped = Ytg - eccy;
-         FpeHarped = pPSForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
-
-         GetEccentricity(tsInstallationIntervalIdx, poi, pgsTypes::Temporary, &handlingConfig.GdrConfig, &N, &eccx, &eccy);
-         XpsTemp = Xleft - eccx;
-         YpsTemp = Ytg - eccy;
-         FpeTemp = pPSForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
+         ATLASSERT(nSegmentDucts == 0); // if we are using a config, this is design. Only PGSuper has design option. PGSuper doesn't have segment ducts
+         for (int i = 0; i < 3; i++)
+         {
+            pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+            Float64 N;
+            Float64 eccx, eccy;
+            GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig, &N, &eccx, &eccy);
+            Float64 Xps = Xleft - eccx;
+            Float64 Yps = Ytg - eccy;
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
+            pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
+         }
       }
       else
       {
-         Float64 eccx, eccy;
-         GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &N, &eccx, &eccy);
-         XpsStraight = Xleft - eccx;
-         YpsStraight = Ytg - eccy;
-         FpeStraight = pPSForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, pgsTypes::Start);
+         // strands are always stored in first 3 slots
+         for (int i = 0; i < 3; i++)
+         {
+            pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+            Float64 N;
+            Float64 eccx, eccy;
+            GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &N, &eccx, &eccy);
+            Float64 Xps = Xleft - eccx;
+            Float64 Yps = Ytg - eccy;
+            Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start);
+            pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
+         }
 
-         GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &N, &eccx, &eccy);
-         XpsHarped = Xleft - eccx;
-         YpsHarped = Ytg - eccy;
-         FpeHarped = pPSForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, pgsTypes::Start);
-
-         GetEccentricity(tsInstallationIntervalIdx, poi, pgsTypes::Temporary, &N, &eccx, &eccy);
-         XpsTemp = Xleft - eccx;
-         YpsTemp = Ytg - eccy;
-         FpeTemp = pPSForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, pgsTypes::Start);
+         // segment tendons, if any,start at index 3
+         for (int i = 3; i < vNames.size(); i++)
+         {
+            DuctIndexType ductIdx = DuctIndexType(i - 3);
+            Float64 eccx, eccy;
+            GetSegmentTendonEccentricity(tendonStressingIntervalIdx, poi, ductIdx, &eccx, &eccy);
+            Float64 Xps = Xleft - eccx;
+            Float64 Yps = Ytg - eccy;
+            Float64 Fpe = pPTForce->GetSegmentTendonForce(poi, tendonStressingIntervalIdx, pgsTypes::Start, ductIdx);
+            pProblem->AddFpe(vNames[i].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
+         }
       }
-
-      pProblem->AddFpe(pAnalysisPoint->GetLocation(), FpeStraight, XpsStraight, YpsStraight, FpeHarped, XpsHarped, YpsHarped, FpeTemp, XpsTemp, YpsTemp);
    }
 }
 
@@ -28132,7 +28267,7 @@ void CBridgeAgentImp::GetSegmentDirection(const CSegmentKey& segmentKey,IDirecti
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
-// ITendonGeometry
+// IGirderTendonGeometry
 void CBridgeAgentImp::GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint2dCollection** ppPoints) const
 {
    // Gets the duct centerline from the generic bridge model
@@ -28293,27 +28428,34 @@ bool CBridgeAgentImp::IsOnDuct(const pgsPointOfInterest& poi, DuctIndexType duct
    return false;
 }
 
-void CBridgeAgentImp::GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx, const CDuctData* pDuctData,IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::GetDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, DuctIndexType ductIdx, const CPTData* pPTData, IPoint2dCollection** ppPoints) const
 {
-   switch ( pDuctData->DuctGeometryType )
+   const CDuctData* pDuctData = pPTData->GetDuct(ductIdx);
+   GetDuctCenterline(girderKey, pGirder, pDuctData, ppPoints);
+}
+
+void CBridgeAgentImp::GetDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder,const CDuctData* pDuctData, IPoint2dCollection** ppPoints) const
+{
+   ATLASSERT(pGirder ? girderKey == pGirder->GetGirderKey() : true); // if a girder is supplied, it must be the same girder as girder key
+   switch (pDuctData->DuctGeometryType)
    {
    case CDuctGeometry::Linear:
-      CreateDuctCenterline(girderKey,pDuctData->LinearDuctGeometry,ppPoints);
+      CreateDuctCenterline(girderKey, pGirder, pDuctData->LinearDuctGeometry, ppPoints);
       break;
 
    case CDuctGeometry::Parabolic:
-      CreateDuctCenterline(girderKey,pDuctData->ParabolicDuctGeometry,ppPoints);
+      CreateDuctCenterline(girderKey, pGirder, pDuctData->ParabolicDuctGeometry, ppPoints);
       break;
 
    case CDuctGeometry::Offset:
       ATLASSERT(false); // this isn't supported
-      //GetDuctCenterline(girderKey,pDuctData->OffsetDuctGeometry.RefDuctIdx,pGirder,ppPoints); // instead of pGirder, we need pDuct for the source of the offset
-      //CreateDuctCenterline(girderKey,pDuctData->OffsetDuctGeometry,ppPoints);
+                        //GetDuctCenterline(girderKey,pDuctData->OffsetDuctGeometry.RefDuctIdx,pGirder,ppPoints); // instead of pGirder, we need pDuct for the source of the offset
+                        //CreateDuctCenterline(girderKey,pDuctData->OffsetDuctGeometry,ppPoints);
       break;
    }
 }
 
-mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CLinearDuctGeometry& geometry) const
+mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CSplicedGirderData* pGirder,const CLinearDuctGeometry& geometry) const
 {
    mathCompositeFunction2d fnCenterline;
 
@@ -28328,13 +28470,13 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
       geometry.GetPoint(idx-1,&distFromPrev,&offset,&offsetType);
 
       x1 += distFromPrev;
-      y1 = ConvertDuctOffsetToDuctElevation(girderKey,x1,offset,offsetType);
+      y1 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x1,offset,offsetType);
 
       geometry.GetPoint(idx,&distFromPrev,&offset,&offsetType);
 
       Float64 x2,y2;
       x2 = x1 + distFromPrev;
-      y2 = ConvertDuctOffsetToDuctElevation(girderKey,x2,offset,offsetType);
+      y2 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x2,offset,offsetType);
 
       Float64 m = (y2-y1)/(x2-x1);
       Float64 b = y2 - m*x2;
@@ -28350,7 +28492,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    return fnCenterline;
 }
 
-void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CLinearDuctGeometry& geometry,IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CSplicedGirderData* pGirder,const CLinearDuctGeometry& geometry,IPoint2dCollection** ppPoints) const
 {
    CComPtr<IPoint2dCollection> points;
    points.CoCreateInstance(CLSID_Point2dCollection);
@@ -28383,7 +28525,7 @@ void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CLi
          Xg = location;
       }
 
-      Float64 y = ConvertDuctOffsetToDuctElevation(girderKey,Xg,offset,offsetType);
+      Float64 y = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,Xg,offset,offsetType);
 
       CComPtr<IPoint2d> point;
       point.CoCreateInstance(CLSID_Point2d);
@@ -28392,15 +28534,15 @@ void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CLi
    }
 }
 
-void CBridgeAgentImp::GetDuctPoint(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IPoint2d** ppPoint) const
+void CBridgeAgentImp::GetGirderDuctPoint(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IPoint2d** ppPoint) const
 {
    ATLASSERT(IsOnGirder(poi));
    Float64 Xg = ConvertPoiToGirderCoordinate(poi);
    const CGirderKey& girderKey(poi.GetSegmentKey());
-   GetDuctPoint(girderKey,Xg,ductIdx,ppPoint);
+   GetGirderDuctPoint(girderKey,Xg,ductIdx,ppPoint);
 }
 
-void CBridgeAgentImp::GetDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint) const
+void CBridgeAgentImp::GetGirderDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint) const
 {
    CComPtr<ISuperstructureMember> ssMbr;
    GetSuperstructureMember(girderKey,&ssMbr);
@@ -28518,9 +28660,9 @@ StrandIndexType CBridgeAgentImp::GetTendonStrandCount(const CGirderKey& girderKe
    return nStrands;
 }
 
-Float64 CBridgeAgentImp::GetTendonArea(const CGirderKey& girderKey,IntervalIndexType intervalIdx,DuctIndexType ductIdx) const
+Float64 CBridgeAgentImp::GetGirderTendonArea(const CGirderKey& girderKey,IntervalIndexType intervalIdx,DuctIndexType ductIdx) const
 {
-   if ( intervalIdx < GetStressTendonInterval(girderKey,ductIdx) )
+   if ( intervalIdx < GetStressGirderTendonInterval(girderKey,ductIdx) )
    {
       return 0;
    }
@@ -28554,17 +28696,17 @@ Float64 CBridgeAgentImp::GetPjack(const CGirderKey& girderKey,DuctIndexType duct
 Float64 CBridgeAgentImp::GetFpj(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
    Float64 Pj = GetPjack(girderKey,ductIdx);
-   IntervalIndexType stressTendonIntervalIdx = GetStressTendonInterval(girderKey,ductIdx);
-   Float64 Apt = GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
+   IntervalIndexType stressTendonIntervalIdx = GetStressGirderTendonInterval(girderKey,ductIdx);
+   Float64 Apt = GetGirderTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
    return (IsZero(Apt) ? 0 : Pj/Apt);
 }
 
-Float64 CBridgeAgentImp::GetDuctOffset(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
+Float64 CBridgeAgentImp::GetGirderDuctOffset(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
 {
    // Returns the distance from the top of the non-composite girder to the CG of the tendon
 
    // if interval is before tendon is installed, there isn't an eccentricity with respect to the girder cross section
-   if ( intervalIdx < GetStressTendonInterval(poi.GetSegmentKey(),ductIdx) )
+   if ( intervalIdx < GetStressGirderTendonInterval(poi.GetSegmentKey(),ductIdx) )
    {
       return 0;
    }
@@ -28623,54 +28765,49 @@ Float64 CBridgeAgentImp::GetDuctLength(const CGirderKey& girderKey,DuctIndexType
    return length;
 }
 
-Float64 CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
+void CBridgeAgentImp::GetGirderTendonEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx,Float64* pEccX,Float64* pEccY) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetEccentricity(sectPropType,intervalIdx,poi,ductIdx);
+   GetGirderTendonEccentricity(sectPropType,intervalIdx,poi,ductIdx,pEccX,pEccY);
 }
 
-Float64 CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
+void CBridgeAgentImp::GetGirderTendonEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const
 {
    ATLASSERT(ductIdx != INVALID_INDEX);
 
    // if interval is before tendon is installed, there isn't an eccentricity with respect to the girder cross section
-   IntervalIndexType stressTendonIntervalIdx = GetStressTendonInterval(poi.GetSegmentKey(),ductIdx);
-   if ( intervalIdx < stressTendonIntervalIdx )
+   IntervalIndexType stressTendonIntervalIdx = GetStressGirderTendonInterval(poi.GetSegmentKey(),ductIdx);
+   if ( intervalIdx < stressTendonIntervalIdx || !IsOnGirder(poi))
    {
-      return 0;
+      *pEccX = 0;
+      *pEccY = 0;
+      return;
    }
 
-   if ( !IsOnGirder(poi) )
-   {
-      return 0;
-   }
+   // get location of duct in girder section coordinates
+   CComPtr<IPoint2d> pntDuct;
+   GetGirderDuctPoint(poi, ductIdx, &pntDuct);
 
-   Float64 duct_offset = GetDuctOffset(intervalIdx,poi,ductIdx); 
-   // distance from top of non-composite girder to CG of tendon
-   // negative value indicates the duct is below the top of the girder
+   Float64 Xd, Yd;
+   pntDuct->Location(&Xd, &Yd);
 
-   // Get Ytop
-   Float64 Ytop = GetY(spType,intervalIdx,poi,pgsTypes::TopGirder); 
-   // distance from CG of total cross section in this interval to top of girder
+   Float64 Ytop = GetY(spType, intervalIdx, poi, pgsTypes::TopGirder);
 
-   // Everything is measured from top of girder... compute eccentricity
-   Float64 ecc = -(duct_offset + Ytop);
+   *pEccX = Xd; // less than zero means tendon is to the left of the section cg
+   *pEccY = -(Yd + Ytop); // greater than zero means tendon is below the section cg
 
    ATLASSERT(IsZero(GetPrecamber(poi)));
-
-   // NOTE: ecc is positive if it is below the CG
-   return ecc;
 }
 
-void CBridgeAgentImp::GetTendonSlope(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IVector3d** ppSlope) const
+void CBridgeAgentImp::GetGirderTendonSlope(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IVector3d** ppSlope) const
 {
    ATLASSERT(IsOnGirder(poi));
    Float64 Xg = ConvertPoiToGirderCoordinate(poi);
    CGirderKey girderKey(poi.GetSegmentKey());
-   GetTendonSlope(girderKey,Xg,ductIdx,ppSlope);
+   GetGirderTendonSlope(girderKey,Xg,ductIdx,ppSlope);
 }
 
-void CBridgeAgentImp::GetTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope) const
+void CBridgeAgentImp::GetGirderTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope) const
 {
    Float64 Xgs, Xge;
    GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
@@ -28714,24 +28851,23 @@ Float64 CBridgeAgentImp::GetMinimumRadiusOfCurvature(const CGirderKey& girderKey
    return radiusOfCurvature;
 }
 
-Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const
+Float64 CBridgeAgentImp::GetGirderTendonAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const
 {
    if ( !IsOnDuct(poi,ductIdx) )
    {
       return 0;
    }
 
-#pragma Reminder("WORKING HERE - Mantis 703 - need to get start and end of tendon to measure angular change - assuming start and end of girder")
    PoiIDType startPoiID, endPoiID;
    m_pPoiMgr->GetDuctBoundary(poi.GetSegmentKey(), ductIdx, &startPoiID, &endPoiID);
 
    const pgsPointOfInterest& poiStart = GetPointOfInterest(endType == pgsTypes::metStart ? startPoiID : endPoiID);
    ATLASSERT(poiStart.HasAttribute(endType == pgsTypes::metStart ? POI_DUCT_START : POI_DUCT_END));
    
-   return GetAngularChange(poiStart, poi, ductIdx);
+   return GetGirderTendonAngularChange(poiStart, poi, ductIdx);
 }
 
-Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx) const
+Float64 CBridgeAgentImp::GetGirderTendonAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx) const
 {
    ATLASSERT(IsOnDuct(poi1,ductIdx));
    ATLASSERT(IsOnDuct(poi2,ductIdx));
@@ -28791,8 +28927,8 @@ Float64 CBridgeAgentImp::GetAngularChange(const pgsPointOfInterest& poi1,const p
       }
 
       CComPtr<IVector3d> slope1, slope2;
-      GetTendonSlope(prevPoi,ductIdx,&slope1);
-      GetTendonSlope(poi,    ductIdx,&slope2);
+      GetGirderTendonSlope(prevPoi,ductIdx,&slope1);
+      GetGirderTendonSlope(poi,    ductIdx,&slope2);
 
       // if these assert, then prevPoi and/or poi is not on the duct... 
       ATLASSERT(slope1);
@@ -28829,15 +28965,743 @@ pgsTypes::JackingEndType CBridgeAgentImp::GetJackingEnd(const CGirderKey& girder
    return (pgsTypes::JackingEndType)tj;
 }
 
-Float64 CBridgeAgentImp::GetAptTopHalf(const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetGirderAptTopHalf(const pgsPointOfInterest& poi) const
 {
-   return GetAptTensionSide(poi,true);
+   return GetGirderAptTensionSide(poi,true);
 }
 
-Float64 CBridgeAgentImp::GetAptBottomHalf(const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetGirderAptBottomHalf(const pgsPointOfInterest& poi) const
 {
-   return GetAptTensionSide(poi,false);
+   return GetGirderAptTensionSide(poi,false);
 }
+
+//////////////////////////////////////////////////////////////////////////
+// ISegmentTendonGeometry
+DuctIndexType CBridgeAgentImp::GetDuctCount(const CSegmentKey& segmentKey) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+
+   if (tendons)
+   {
+      DuctIndexType nDucts;
+      tendons->get_Count(&nDucts);
+      return nDucts;
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+DuctIndexType CBridgeAgentImp::GetMaxDuctCount(const CGirderKey& girderKey) const
+{
+   SegmentIndexType nSegments = GetSegmentCount(girderKey);
+   DuctIndexType nMaxSegmentDucts = 0;
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+      nMaxSegmentDucts = Max(nMaxSegmentDucts, GetDuctCount(segmentKey));
+   }
+   return nMaxSegmentDucts;
+}
+
+bool CBridgeAgentImp::IsOnDuct(const pgsPointOfInterest& poi) const
+{
+   // segment ducts run end to end of the segment so poi must be between 0 and Ls
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   return IsOnSegment(poi) && 0 < GetDuctCount(segmentKey);
+}
+
+void CBridgeAgentImp::GetDuctCenterline(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, DuctIndexType ductIdx, const CSegmentPTData* pPTData, IPoint2dCollection** ppPoints) const
+{
+   const CSegmentDuctData* pDuctData = pPTData->GetDuct(ductIdx);
+   GetDuctCenterline(segmentKey, pSegment, pDuctData, ppPoints);
+}
+
+void CBridgeAgentImp::GetDuctCenterline(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, const CSegmentDuctData* pDuctData, IPoint2dCollection** ppPoints) const
+{
+   ATLASSERT(pSegment ? segmentKey == pSegment->GetSegmentKey() : true); // if a segment is supplied, it must be the same segment as segmentKey
+
+   CComPtr<IPoint2dCollection> points;
+   points.CoCreateInstance(CLSID_Point2dCollection);
+   points.CopyTo(ppPoints);
+
+   PoiList vPoi;
+   GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 3);
+
+   std::array<std::pair<Float64, Float64>, 3> control_points;
+   for (int i = 0; i < 3; i++)
+   {
+      Float64 x = vPoi[i].get().GetDistFromStart();
+      Float64 y = -pDuctData->DuctPoint[i].first;
+      if (pDuctData->DuctPoint[i].second == pgsTypes::BottomFace)
+      {
+         Float64 Hg;
+         if (pSegment)
+         {
+            Hg = GetSegmentHeight(pSegment, vPoi[i].get().GetDistFromStart());
+         }
+         else
+         {
+            Hg = GetHeight(vPoi[i].get());
+         }
+         y = -y - Hg;
+      }
+      control_points[i] = std::make_pair(x, y);
+   }
+
+   if (pDuctData->DuctGeometryType == CSegmentDuctData::Parabolic)
+   {
+      // simple parabola using vertix form
+
+      // Left side parabola
+      Float64 x0 = control_points[0].first;
+      Float64 y0 = control_points[0].second;
+      Float64 h = control_points[1].first;
+      Float64 k = control_points[1].second;
+      Float64 a = (y0 - k) / pow(x0 - h, 2);
+      Float64 Ls = GetSegmentLength(segmentKey);
+      for (int i = 0; i <= 10; i++)
+      {
+         Float64 x = i*Ls / 20 + x0;
+         Float64 y = a*(x - h)*(x - h) + k;
+         CComPtr<IPoint2d> point;
+         point.CoCreateInstance(CLSID_Point2d);
+         x = ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey, x);
+         x = ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, x);
+         point->Move(x, y);
+         points->Add(point);
+      }
+
+
+      // Right side parabola
+      x0 = control_points[2].first;
+      y0 = control_points[2].second;
+      h = control_points[1].first;
+      k = control_points[1].second;
+      a = (y0 - k) / pow(x0 - h, 2);
+      for (int i = 0; i <= 10; i++)
+      {
+         Float64 x = x0 - Ls/2 + i*Ls / 20;
+         Float64 y = a*(x - h)*(x - h) + k;
+         CComPtr<IPoint2d> point;
+         point.CoCreateInstance(CLSID_Point2d);
+         x = ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey, x);
+         x = ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, x);
+         point->Move(x, y);
+         points->Add(point);
+      }
+   }
+   else
+   {
+      for (int i = 0; i < 3; i++)
+      {
+         if (i == 1) continue; // this is the center point, it isn't applicable to a linear straight tendon
+
+         CComPtr<IPoint2d> point;
+         point.CoCreateInstance(CLSID_Point2d);
+         Float64 x = control_points[i].first;
+         x = ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey, x);
+         x = ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, x);
+         point->Move(x, control_points[i].second);
+         points->Add(point);
+      }
+   }
+}
+
+void CBridgeAgentImp::GetDuctCenterline(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IPoint2dCollection** ppPoints) const
+{
+   // Gets the duct centerline from the generic bridge model
+   CComPtr<IPoint2dCollection> points;
+   points.CoCreateInstance(CLSID_Point2dCollection);
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   CComPtr<IPoint3dCollection> centerline;
+   tendon->get_Centerline(tmPath, &centerline);
+
+   CComPtr<IEnumPoint3d> enumPoints;
+   centerline->get__Enum(&enumPoints);
+   CComPtr<IPoint3d> point;
+   while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
+   {
+      Float64 x, y, z;
+      point->Location(&x, &y, &z);
+
+      CComPtr<IPoint2d> p;
+      p.CoCreateInstance(CLSID_Point2d);
+      p->Move(z, y);
+
+      points->Add(p);
+
+      point.Release();
+   }
+
+   points.CopyTo(ppPoints);
+}
+
+void CBridgeAgentImp::GetDuctCenterline(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IPoint3dCollection** ppPoints) const
+{
+   // Gets the duct centerline from the generic bridge model
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   tendon->get_Centerline(tmPath, ppPoints);
+}
+
+void CBridgeAgentImp::GetSegmentDuctPoint(const CSegmentKey& segmentKey, Float64 Xs, DuctIndexType ductIdx, IPoint2d** ppPoint) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   CComPtr<IPoint3d> cg;
+   tendon->get_CG(Xs, tmPath, &cg);
+
+   Float64 x, y, z;
+   cg->Location(&x, &y, &z);
+   ATLASSERT(IsEqual(z, Xs));
+
+   CComPtr<IPoint2d> pnt;
+   pnt.CoCreateInstance(CLSID_Point2d);
+   pnt->Move(x, y);
+
+   pnt.CopyTo(ppPoint);
+}
+
+void CBridgeAgentImp::GetSegmentDuctPoint(const pgsPointOfInterest& poi, DuctIndexType ductIdx, IPoint2d** ppPoint) const
+{
+   GetSegmentDuctPoint(poi.GetSegmentKey(), poi.GetDistFromStart(), ductIdx, ppPoint);
+}
+
+void CBridgeAgentImp::GetSegmentDuctPoint(const pgsPointOfInterest& poi, const CPrecastSegmentData* pSegment, DuctIndexType ductIdx, IPoint3d** ppPoint) const
+{
+   const CPrecastSegmentData* pSeg;
+   const CSegmentDuctData* pDuctData;
+   if (pSegment == nullptr)
+   {
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      pSeg = pIBridgeDesc->GetPrecastSegmentData(poi.GetSegmentKey());
+   }
+   else
+   {
+      pSeg = pSegment;
+   }
+   pDuctData = pSeg->Tendons.GetDuct(ductIdx);
+
+   GetSegmentDuctPoint(poi, pSeg, pDuctData, ppPoint);
+}
+
+void CBridgeAgentImp::GetSegmentDuctPoint(const pgsPointOfInterest& poi, const CPrecastSegmentData* pSegment, const CSegmentDuctData* pDuctData, IPoint3d** ppPoint) const
+{
+   // gets the location of a segment duct at the specified poi
+   if (!IsOnSegment(poi))
+   {
+      ATLASSERT(false);
+      *ppPoint = nullptr;
+      return;
+   }
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   Float64 z = poi.GetDistFromStart(); // in 3d coordinate, z is measured along the main axis of the segment
+
+   // Determine the overall height of the segment so it can be used to adjust the duct data if measured from bottom of girder section
+   CComPtr<IShape> shape;
+   if (pSegment)
+   {
+      GET_IFACE(ILibrary, pLib);
+      const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pSegment->GetGirder()->GetGirderName());
+
+      CComPtr<IBeamFactory> factory;
+      pGdrEntry->GetBeamFactory(&factory);
+
+      Float64 height = factory->GetSegmentHeight(m_pBroker, pSegment, z); // this takes into account things like section trasitions
+
+      CComPtr<IGirderSection> gdrSection;
+      factory->CreateGirderSection(m_pBroker, INVALID_ID, pGdrEntry->GetDimensions(), height, -1, &gdrSection); // get the section with the actual same (-1 for bottom flange thickness since we don't care about it in this context)
+
+      gdrSection.QueryInterface(&shape);
+   }
+   else
+   {
+      CComPtr<ISuperstructureMemberSegment> pSSMbrSegment;
+      GetSegment(segmentKey, &pSSMbrSegment);
+      pSSMbrSegment->get_PrimaryShape(z, sbRight, cstGirder, &shape);
+   }
+
+   CComQIPtr<IGirderSection> section(shape);
+   ATLASSERT(section != nullptr);
+
+   Float64 Hg;
+   section->get_OverallHeight(&Hg);
+
+   // get the elevation of the duct point
+   Float64 y;
+   Uint16 tenth_point = poi.IsTenthPoint(POI_RELEASED_SEGMENT);
+   if (tenth_point == 1 || tenth_point == 11)
+   {
+      // poi is at start or end of segment so we can just use the control data from the DuctPoint structure
+      CSegmentDuctData::DuctPointType ductPoint = (tenth_point == 1 ? CSegmentDuctData::Left : CSegmentDuctData::Right);
+      if (pDuctData->DuctPoint[ductPoint].second == pgsTypes::TopFace)
+      {
+         y = -pDuctData->DuctPoint[ductPoint].first;
+      }
+      else
+      {
+         y = pDuctData->DuctPoint[ductPoint].first - Hg;
+      }
+   }
+   else
+   {
+      // poi is in the middle of the segment... need to build a model of the duct geometry along the lenght of the segment
+      Float64 Ls = GetSegmentLength(segmentKey);
+
+      if (pDuctData->DuctGeometryType == CSegmentDuctData::Linear)
+      {
+         // duct is linear so just use interpolation from start to end of segment
+         Float64 z1 = 0;
+         Float64 z2 = Ls;
+
+         Float64 y1 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, pSegment, z1, pDuctData->DuctPoint[CSegmentDuctData::Left].first, pDuctData->DuctPoint[CSegmentDuctData::Left].second);
+         Float64 y2 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, pSegment, z2, pDuctData->DuctPoint[CSegmentDuctData::Right].first, pDuctData->DuctPoint[CSegmentDuctData::Right].second);
+
+         y = ::LinInterp(z, y1, y2, Ls);
+      }
+      else
+      {
+         // duct is parabolic so build a polynomial function to represent the duct and get the elevation from that
+         ATLASSERT(pDuctData->DuctGeometryType == CSegmentDuctData::Parabolic);
+
+         // start, middle, end
+         Float64 z1 = 0;
+         Float64 z2 = Ls / 2;
+         Float64 z3 = Ls;
+
+         // start, middle, end elevation
+         Float64 y1 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, pSegment, z1, pDuctData->DuctPoint[CSegmentDuctData::Left].first, pDuctData->DuctPoint[CSegmentDuctData::Left].second);
+         Float64 y2 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, pSegment, z2, pDuctData->DuctPoint[CSegmentDuctData::Middle].first, pDuctData->DuctPoint[CSegmentDuctData::Middle].second);
+         Float64 y3 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, pSegment, z3, pDuctData->DuctPoint[CSegmentDuctData::Right].first, pDuctData->DuctPoint[CSegmentDuctData::Right].second);
+
+         Float64 A, B, C; // y = Az^2 + Bz + C polynomial coefficients
+         Float64 slope = 0; // slope at mid-segment is zero by definition
+         if (z <= z2)
+         {
+            // parabola on left half of segment (zero slope at right end of parabola)
+            Float64 dy = y2 - y1;
+            Float64 dz = z2 - z1;
+            A = -(dy - dz*slope) / (dz*dz);
+            B = slope - 2 * A*z2;
+            C = y1 - A*z1*z1 - B*z1;
+         }
+         else
+         {
+            // parabola on right half of segment (zero slope at left end of parabola)
+            Float64 dy = y3 - y2;
+            Float64 dz = z3 - z2;
+            A = (dy - dz*slope) / (dz*dz);
+            B = slope - 2 * A*z2;
+            C = y2 - A*z2*z2 - B*z2;
+         }
+
+         std::vector<Float64> coefficients{ A,B,C };
+         mathPolynomial2d parabola(coefficients);
+         y = parabola.Evaluate(z);
+      }
+   }
+
+   // use the plane of the girder web to get the x position of the duct point
+   CComPtr<IPlane3d> webPlane;
+   section->get_WebPlane(0,&webPlane);
+
+   Float64 x;
+   webPlane->GetX(y, z, &x);
+
+   CComPtr<IPoint3d> pnt;
+   pnt.CoCreateInstance(CLSID_Point3d);
+   pnt->Move(x, y, z);
+
+   pnt.CopyTo(ppPoint);
+}
+
+Float64 CBridgeAgentImp::GetOutsideDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   Float64 dia;
+   tendon->get_OutsideDiameter(&dia);
+
+   return dia;
+}
+
+Float64 CBridgeAgentImp::GetInsideDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   Float64 dia;
+   tendon->get_InsideDiameter(&dia);
+
+   return dia;
+}
+
+Float64 CBridgeAgentImp::GetInsideDuctArea(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   Float64 Aduct;
+   tendon->get_InsideDuctArea(&Aduct);
+
+   return Aduct;
+}
+
+StrandIndexType CBridgeAgentImp::GetTendonStrandCount(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   StrandIndexType nStrands;
+   tendon->get_StrandCount(&nStrands);
+
+   return nStrands;
+}
+
+Float64 CBridgeAgentImp::GetSegmentTendonArea(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, DuctIndexType ductIdx) const
+{
+   if (intervalIdx < GetStressSegmentTendonInterval(segmentKey))
+   {
+      return 0;
+   }
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   Float64 Apt;
+   tendon->get_TendonArea(&Apt);
+
+   return Apt;
+}
+
+void CBridgeAgentImp::GetSegmentTendonSlope(const pgsPointOfInterest& poi, DuctIndexType ductIdx, IVector3d** ppSlope) const
+{
+   GetSegmentTendonSlope(poi.GetSegmentKey(), poi.GetDistFromStart(), ductIdx, ppSlope);
+}
+
+void CBridgeAgentImp::GetSegmentTendonSlope(const CSegmentKey& segmentKey, Float64 Xs, DuctIndexType ductIdx, IVector3d** ppSlope) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+   tendon->get_Slope(Xs, tmTendon, ppSlope);
+}
+
+Float64 CBridgeAgentImp::GetMinimumRadiusOfCurvature(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   Float64 radiusOfCurvature;
+   tendon->get_MinimumRadiusOfCurvature(&radiusOfCurvature);
+   return radiusOfCurvature;
+}
+
+Float64 CBridgeAgentImp::GetPjack(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   WebIndexType nWebs = GetWebCount(segmentKey);
+   return pSegment->Tendons.GetPjack(ductIdx / nWebs);
+}
+
+Float64 CBridgeAgentImp::GetFpj(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   Float64 Pj = GetPjack(segmentKey, ductIdx);
+   IntervalIndexType stressTendonIntervalIdx = GetStressSegmentTendonInterval(segmentKey);
+   Float64 Apt = GetSegmentTendonArea(segmentKey, stressTendonIntervalIdx, ductIdx);
+   return (IsZero(Apt) ? 0 : Pj / Apt);
+}
+
+Float64 CBridgeAgentImp::GetSegmentDuctOffset(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx) const
+{
+   // Returns the distance from the top of the non-composite girder to the CG of the tendon
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   // if interval is before tendon is installed, there isn't an eccentricity with respect to the girder cross section
+   if (intervalIdx < GetStressSegmentTendonInterval(segmentKey))
+   {
+      return 0;
+   }
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   StrandIndexType nStrands;
+   tendon->get_StrandCount(&nStrands);
+   if (nStrands == 0)
+   {
+      return 0;
+   }
+
+   Float64 Xs = poi.GetDistFromStart();
+   CComPtr<IPoint3d> cg;
+   tendon->get_CG(Xs, tmTendon /*account for tendon offset from center of duct*/, &cg);
+
+   Float64 ecc;
+   cg->get_Y(&ecc); // this is in Girder Section Coordinates so it should be < 0 if below top of girder
+   ATLASSERT(ecc <= 0);
+
+   return ecc;
+}
+
+Float64 CBridgeAgentImp::GetDuctLength(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   Float64 length;
+   tendon->get_Length(&length);
+   return length;
+}
+
+void CBridgeAgentImp::GetSegmentTendonEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx,Float64* pEccX,Float64* pEccY) const
+{
+   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
+   GetSegmentTendonEccentricity(sectPropType, intervalIdx, poi, ductIdx, pEccX, pEccY);
+}
+
+void CBridgeAgentImp::GetSegmentTendonEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const
+{
+   ATLASSERT(ductIdx != INVALID_INDEX);
+
+   // if interval is before tendon is installed, there isn't an eccentricity with respect to the girder cross section
+   IntervalIndexType stressTendonIntervalIdx = GetStressSegmentTendonInterval(poi.GetSegmentKey());
+   if (intervalIdx < stressTendonIntervalIdx || !IsOnSegment(poi))
+   {
+      *pEccX = 0;
+      *pEccY = 0;
+      return;
+   }
+
+   // get location of duct in girder section coordinates
+   CComPtr<IPoint2d> pntDuct;
+   GetSegmentDuctPoint(poi, ductIdx, &pntDuct);
+
+   Float64 Xd, Yd;
+   pntDuct->Location(&Xd, &Yd);
+
+   Float64 Ytop = GetY(spType, intervalIdx, poi, pgsTypes::TopGirder);
+
+   *pEccX = Xd; // less than zero means tendon is to the left of the section cg
+   *pEccY = -(Yd + Ytop); // greater than zero means tendon is below the section cg
+
+   ATLASSERT(IsZero(GetPrecamber(poi)));
+}
+
+Float64 CBridgeAgentImp::GetSegmentTendonAngularChange(const pgsPointOfInterest& poi, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const
+{
+   if (!IsOnDuct(poi))
+   {
+      return 0;
+   }
+
+   PoiList vPoi;
+   GetPointsOfInterest(poi.GetSegmentKey(), (endType == pgsTypes::metStart ? POI_0L : POI_10L) | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& poiStart(vPoi.front());
+   return GetSegmentTendonAngularChange(poiStart, poi, ductIdx);
+}
+
+Float64 CBridgeAgentImp::GetSegmentTendonAngularChange(const pgsPointOfInterest& poi1, const pgsPointOfInterest& poi2, DuctIndexType ductIdx) const
+{
+   ATLASSERT(IsOnDuct(poi1));
+   ATLASSERT(IsOnDuct(poi2));
+   ATLASSERT(poi1.GetSegmentKey() == poi2.GetSegmentKey()); // must be on same segment
+
+   Float64 alpha = 0.0; // angular change
+
+   // Get all the POI for this segment
+   PoiList vPoi;
+   GetPointsOfInterest(poi1.GetSegmentKey(), &vPoi);
+
+   // vPoi is sorted left to right... if we are measuring angular change from right to left, order of the
+   // elements in the vector have to be reversed
+   bool bLeftToRight = true;
+   if (poi2 < poi1)
+   {
+      bLeftToRight = false;
+      std::reverse(vPoi.begin(), vPoi.end());
+   }
+
+   PoiList::iterator iter(vPoi.begin());
+   pgsPointOfInterest prevPoi = *iter++;
+   PoiList::iterator end(vPoi.end());
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi = *iter;
+      if (bLeftToRight)
+      {
+         if (prevPoi < poi1)
+         {
+            prevPoi = poi;
+            continue; // before the start poi... continue with next poi
+         }
+
+         if (poi2 < poi) // after end poi... just break out of the loop
+         {
+            break;
+         }
+      }
+      else
+      {
+         if (poi1 < prevPoi)
+         {
+            prevPoi = poi;
+            continue; // prev poi is before the first poi (going right to left)
+         }
+
+         if (poi < poi2)
+         {
+            break; // current poi is after the second poi (going right to left)
+         }
+      }
+
+      CComPtr<IVector3d> slope1, slope2;
+      GetSegmentTendonSlope(prevPoi, ductIdx, &slope1);
+      GetSegmentTendonSlope(poi, ductIdx, &slope2);
+
+      // if these assert, then prevPoi and/or poi is not on the duct... 
+      ATLASSERT(slope1);
+      ATLASSERT(slope2);
+
+      Float64 delta_alpha;
+      slope2->AngleBetween(slope1, &delta_alpha);
+
+      alpha += delta_alpha;
+
+      prevPoi = poi;
+   }
+
+   return alpha;
+}
+
+pgsTypes::JackingEndType CBridgeAgentImp::GetJackingEnd(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+   
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   JackingEndType tj;
+   tendon->get_JackingEnd(&tj);
+
+   return (pgsTypes::JackingEndType)tj;
+}
+
+Float64 CBridgeAgentImp::GetSegmentAptTopHalf(const pgsPointOfInterest& poi) const
+{
+   return GetSegmentAptTensionSide(poi, true);
+}
+
+Float64 CBridgeAgentImp::GetSegmentAptBottomHalf(const pgsPointOfInterest& poi) const
+{
+   return GetSegmentAptTensionSide(poi, false);
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 // IIntervals
@@ -29307,28 +30171,45 @@ IntervalIndexType CBridgeAgentImp::GetInstallRailingSystemInterval() const
    return m_IntervalManager.GetInstallRailingSystemInterval();
 }
 
-IntervalIndexType CBridgeAgentImp::GetFirstTendonStressingInterval(const CGirderKey& girderKey) const
+IntervalIndexType CBridgeAgentImp::GetStressSegmentTendonInterval(const CSegmentKey& segmentKey) const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetStressSegmentTendonInterval(segmentKey);
+}
+
+IntervalIndexType CBridgeAgentImp::GetFirstSegmentTendonStressingInterval(const CGirderKey& girderKey) const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetFirstSegmentTendonStressingInterval(girderKey);
+}
+
+IntervalIndexType CBridgeAgentImp::GetLastSegmentTendonStressingInterval(const CGirderKey& girderKey) const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetLastSegmentTendonStressingInterval(girderKey);
+}
+
+IntervalIndexType CBridgeAgentImp::GetFirstGirderTendonStressingInterval(const CGirderKey& girderKey) const
+{
+   VALIDATE(BRIDGE);
+   return m_IntervalManager.GetFirstGirderTendonStressingInterval(girderKey);
+}
+
+IntervalIndexType CBridgeAgentImp::GetLastGirderTendonStressingInterval(const CGirderKey& girderKey) const
 {
    VALIDATE(BRIDGE);
 
-   return m_IntervalManager.GetFirstTendonStressingInterval(girderKey);
+   return m_IntervalManager.GetLastGirderTendonStressingInterval(girderKey);
 }
 
-IntervalIndexType CBridgeAgentImp::GetLastTendonStressingInterval(const CGirderKey& girderKey) const
-{
-   VALIDATE(BRIDGE);
-
-   return m_IntervalManager.GetLastTendonStressingInterval(girderKey);
-}
-
-IntervalIndexType CBridgeAgentImp::GetStressTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+IntervalIndexType CBridgeAgentImp::GetStressGirderTendonInterval(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
    VALIDATE(BRIDGE);
    ATLASSERT(ductIdx != INVALID_INDEX);
-   return m_IntervalManager.GetStressTendonInterval(girderKey,ductIdx);
+   return m_IntervalManager.GetStressGirderTendonInterval(girderKey,ductIdx);
 }
 
-bool CBridgeAgentImp::IsTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const
+bool CBridgeAgentImp::IsGirderTendonStressingInterval(const CGirderKey& girderKey,IntervalIndexType intervalIdx) const
 {
    VALIDATE(BRIDGE);
    ATLASSERT(intervalIdx != INVALID_INDEX);
@@ -29336,8 +30217,26 @@ bool CBridgeAgentImp::IsTendonStressingInterval(const CGirderKey& girderKey,Inte
    DuctIndexType nDucts = GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      IntervalIndexType stressingIntervalIdx = GetStressTendonInterval(girderKey,ductIdx);
+      IntervalIndexType stressingIntervalIdx = GetStressGirderTendonInterval(girderKey,ductIdx);
       if ( stressingIntervalIdx == intervalIdx )
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+bool CBridgeAgentImp::IsSegmentTendonStressingInterval(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
+{
+   VALIDATE(BRIDGE);
+   ATLASSERT(intervalIdx != INVALID_INDEX);
+
+   DuctIndexType nDucts = GetDuctCount(segmentKey);
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      IntervalIndexType stressingIntervalIdx = GetStressSegmentTendonInterval(segmentKey);
+      if (stressingIntervalIdx == intervalIdx)
       {
          return true;
       }
@@ -29373,9 +30272,14 @@ bool CBridgeAgentImp::IsStressingInterval(const CGirderKey& girderKey,IntervalIn
             return true;
          }
       }
+
+      if (IsSegmentTendonStressingInterval(segmentKey, intervalIdx))
+      {
+         return true;
+      }
    }
 
-   return IsTendonStressingInterval(girderKey,intervalIdx);
+   return IsGirderTendonStressingInterval(girderKey, intervalIdx);
 }
 
 IntervalIndexType CBridgeAgentImp::GetTemporarySupportErectionInterval(SupportIndexType tsIdx) const
@@ -29559,7 +30463,30 @@ IntervalIndexType CBridgeAgentImp::GetLastCompositeInterval() const
 }
 
 ////////////////////////////////////
-Float64 CBridgeAgentImp::ConvertDuctOffsetToDuctElevation(const CGirderKey& girderKey,Float64 Xg,Float64 offset,CDuctGeometry::OffsetType offsetType) const
+Float64 CBridgeAgentImp::ConvertSegmentDuctOffsetToDuctElevation(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 Xs, Float64 offset, pgsTypes::FaceType offsetType) const
+{
+   if (offsetType == pgsTypes::TopFace)
+   {
+      return -offset;
+   }
+   else
+   {
+      ATLASSERT(offsetType == pgsTypes::BottomFace);
+      pgsPointOfInterest poi = GetPointOfInterest(segmentKey, Xs);
+      Float64 Hg;
+      if (pSegment)
+      {
+         Hg = GetSegmentHeight(pSegment, Xs);
+      }
+      else
+      {
+         Hg = GetHeight(poi);
+      }
+      return offset - Hg;
+   }
+}
+
+Float64 CBridgeAgentImp::ConvertDuctOffsetToDuctElevation(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, Float64 Xg,Float64 offset,CDuctGeometry::OffsetType offsetType) const
 {
    // Returns the elevation of the duct relative to the top of the girder
    if ( offsetType == CDuctGeometry::TopGirder )
@@ -29569,13 +30496,22 @@ Float64 CBridgeAgentImp::ConvertDuctOffsetToDuctElevation(const CGirderKey& gird
    else
    {
       ATLASSERT(offsetType == pgsTypes::BottomGirder);
-      pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(girderKey,Xg);
-      Float64 Hg = GetHeight(poi);
+      pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(girderKey, Xg);
+      Float64 Hg;
+      if (pGirder)
+      {
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(poi.GetSegmentKey().segmentIndex);
+         Hg = GetSegmentHeight(pSegment, poi.GetDistFromStart());
+      }
+      else
+      {
+         Hg = GetHeight(poi);
+      }
       return offset - Hg;
    }
 }
 
-mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CParabolicDuctGeometry& ductGeometry) const
+mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& ductGeometry) const
 {
    mathCompositeFunction2d fnCenterline;
 
@@ -29611,7 +30547,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    }
 
    x1 += dist;
-   Float64 y1 = ConvertDuctOffsetToDuctElevation(girderKey,x1,offset,offsetType);
+   Float64 y1 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x1,offset,offsetType);
 
    // low point
    ductGeometry.GetLowPoint(startSpanIdx,&dist,&offset,&offsetType);
@@ -29621,7 +30557,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    }
 
    Float64 x2 = x1 + dist;
-   Float64 y2 = ConvertDuctOffsetToDuctElevation(girderKey,x2,offset,offsetType);
+   Float64 y2 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x2,offset,offsetType);
 
    mathPolynomial2d leftParabola = GenerateParabola2(x1,y1,x2,y2,0.0);
    fnCenterline.AddFunction(x1,x2,leftParabola);
@@ -29648,7 +30584,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
       // low to high point
       Ls += GetSpanLength(prevSpanIdx,girderKey.girderIndex);
       x3 = Ls;
-      y3 = ConvertDuctOffsetToDuctElevation(girderKey,x3,highOffset,highOffsetType);
+      y3 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x3,highOffset,highOffsetType);
 
       if ( distLeftIP < 0 ) // fraction of distance between low and high point
       {
@@ -29679,7 +30615,7 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
       }
 
       x3 = x1 + dist; // low point, measured from previous high point
-      y3 = ConvertDuctOffsetToDuctElevation(girderKey,x3,offset,offsetType);
+      y3 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x3,offset,offsetType);
 
       if ( distRightIP < 0 ) // fraction of distance between high and low point
       {
@@ -29713,16 +30649,16 @@ mathCompositeFunction2d CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& 
    }
 
    x2 = Lg - dist;
-   y2 = ConvertDuctOffsetToDuctElevation(girderKey,x1,offset,offsetType);
+   y2 = ConvertDuctOffsetToDuctElevation(girderKey,pGirder,x1,offset,offsetType);
    rightParabola = GenerateParabola1(x1,y1,x2,y2,0.0);
    fnCenterline.AddFunction(x1,x2,rightParabola);
 
    return fnCenterline;
 }
 
-void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CParabolicDuctGeometry& geometry,IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& geometry,IPoint2dCollection** ppPoints) const
 {
-   mathCompositeFunction2d fnCenterline = CreateDuctCenterline(girderKey,geometry);
+   mathCompositeFunction2d fnCenterline = CreateDuctCenterline(girderKey,pGirder,geometry);
    IndexType nFunctions = fnCenterline.GetFunctionCount();
 
    CComPtr<IPoint2dCollection> points;
@@ -29747,7 +30683,7 @@ void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const CPa
    }
 }
 
-void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey,const COffsetDuctGeometry& geometry,IPoint2dCollection** ppPoints) const
+void CBridgeAgentImp::CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const COffsetDuctGeometry& geometry,IPoint2dCollection** ppPoints) const
 {
    ATLASSERT(*ppPoints != nullptr); // should contain the points from the duct that this duct offsets from
 
@@ -32468,7 +33404,7 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,Develop
    return Aps;
 }
 
-Float64 CBridgeAgentImp::GetAptTensionSide(const pgsPointOfInterest& poi,bool bTensionTop) const
+Float64 CBridgeAgentImp::GetGirderAptTensionSide(const pgsPointOfInterest& poi,bool bTensionTop) const
 {
    VALIDATE( GIRDER );
 
@@ -32482,7 +33418,7 @@ Float64 CBridgeAgentImp::GetAptTensionSide(const pgsPointOfInterest& poi,bool bT
 
    CGirderKey girderKey(poi.GetSegmentKey());
 
-   const matPsStrand* pTendon = GetTendonMaterial(girderKey);
+   const matPsStrand* pTendon = GetGirderTendonMaterial(girderKey);
    Float64 apt = pTendon->GetNominalArea();
 
    DuctIndexType nDucts = GetDuctCount(girderKey);
@@ -32491,9 +33427,49 @@ Float64 CBridgeAgentImp::GetAptTensionSide(const pgsPointOfInterest& poi,bool bT
       if (IsOnDuct(poi, ductIdx))
       {
          CComPtr<IPoint2d> point;
-         GetDuctPoint(poi, ductIdx, &point);
+         GetGirderDuctPoint(poi, ductIdx, &point);
 
          IndexType nStrands = GetTendonStrandCount(girderKey, ductIdx);
+
+         Float64 y;
+         point->get_Y(&y);
+
+         if ((bTensionTop && half_depth_elevation < y) || (!bTensionTop && y <= half_depth_elevation))
+         {
+            Apt += nStrands*apt;
+         }
+      }
+   }
+
+   return Apt;
+}
+
+Float64 CBridgeAgentImp::GetSegmentAptTensionSide(const pgsPointOfInterest& poi, bool bTensionTop) const
+{
+   VALIDATE(GIRDER);
+
+   Float64 Apt = 0.0;
+   if (!IsOnSegment(poi))
+   {
+      return Apt;
+   }
+
+   Float64 half_depth_elevation = GetHalfElevation(poi); // y=0 at top of girder... measured in Girder Section Coordinates
+
+   const CSegmentKey segmentKey(poi.GetSegmentKey());
+
+   const matPsStrand* pTendon = GetSegmentTendonMaterial(segmentKey);
+   Float64 apt = pTendon->GetNominalArea();
+
+   DuctIndexType nDucts = GetDuctCount(segmentKey);
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      if (IsOnDuct(poi))
+      {
+         CComPtr<IPoint2d> point;
+         GetSegmentDuctPoint(poi, ductIdx, &point);
+
+         IndexType nStrands = GetTendonStrandCount(segmentKey, ductIdx);
 
          Float64 y;
          point->get_Y(&y);
@@ -33161,6 +34137,227 @@ GroupIndexType CBridgeAgentImp::GetGirderGroupAtPier(PierIndexType pierIdx,pgsTy
    }
 }
 
+bool CBridgeAgentImp::CreateTendons(const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* pSSMbrSegment, ITendonCollection** ppTendons) const
+{
+   const CSegmentPTData* pPTData = &(pSegment->Tendons);
+   DuctIndexType nDucts = pPTData->GetDuctCount();
+   if (nDucts == 0)
+   {
+      return false;
+   }
+
+   const CTimelineManager* pTimelineMgr = pSegment->GetGirder()->GetGirderGroup()->GetBridgeDescription()->GetTimelineManager();
+
+   CComPtr<ITendonCollection> tendons;
+   tendons.CoCreateInstance(CLSID_TendonCollection);
+
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      const auto* pDuctData = pPTData->GetDuct(ductIdx);
+      CComPtr<ITendonCollection> webTendons;
+      if (pDuctData->DuctGeometryType == CSegmentDuctData::Parabolic)
+      {
+         CreateParabolicTendon(segmentKey, pSSMbrSegment, pDuctData, &webTendons);
+      }
+      else
+      {
+         ATLASSERT(pDuctData->DuctGeometryType == CSegmentDuctData::Linear); // fired? is there a new duct type
+         CreateLinearTendon(segmentKey, pSSMbrSegment, pDuctData, &webTendons);
+      }
+
+      // create tendon material
+      IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressSegmentTendonInterval(segmentKey);
+      CComPtr<IPrestressingStrand> tendonMaterial;
+      tendonMaterial.CoCreateInstance(CLSID_PrestressingStrand);
+      tendonMaterial->put_Name(CComBSTR(pPTData->m_pStrand->GetName().c_str()));
+      tendonMaterial->put_Grade((StrandGrade)pPTData->m_pStrand->GetGrade());
+      tendonMaterial->put_Type((StrandMaterialType)pPTData->m_pStrand->GetType());
+      tendonMaterial->put_Size((StrandSize)pPTData->m_pStrand->GetSize());
+
+      // the tendons aren't part of the cross section when then are installed because
+      // they are not yet grouted. assume the tendons are grouted into the section
+      // in the interval that follows the interval when they are installed
+      // that is why there is a +1 
+      tendonMaterial->put_InstallationStage(stressTendonIntervalIdx + 1);
+
+      DuctIndexType nTendons;
+      webTendons->get_Count(&nTendons);
+      ATLASSERT(nTendons != 0); // should equal number of webs
+      for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+      {
+         CComPtr<ITendon> tendon;
+         webTendons->get_Item(tendonIdx, &tendon);
+
+         tendon->put_OutsideDiameter(pDuctData->pDuctLibEntry->GetOD());
+         tendon->put_InsideDiameter(pDuctData->pDuctLibEntry->GetID());
+         tendon->put_StrandCount(pDuctData->nStrands);
+         tendon->putref_Material(tendonMaterial);
+
+         tendon->put_JackingEnd((JackingEndType)pDuctData->JackingEnd);
+
+   #pragma Reminder("UPDATE: need to model duct CG to strand CG offset")
+         // need offset in X and Y direction as ducts can be 3D
+
+         tendon->putref_SuperstructureMemberSegment(pSSMbrSegment);
+
+         tendons->Add(tendon);
+      }
+   }
+
+   tendons.CopyTo(ppTendons);
+
+   return true;
+}
+
+void CBridgeAgentImp::CreateParabolicTendon(const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment, const CSegmentDuctData* pDuctGeometry, ITendonCollection** ppTendons) const
+{
+   ATLASSERT(pDuctGeometry->DuctGeometryType == CSegmentDuctData::Parabolic);
+
+   CComPtr<ITendonCollection> tendons;
+   tendons.CoCreateInstance(CLSID_TendonCollection);
+
+   // since we are in the process of validating the bridge model, we have to
+   // dig into the segment object to get the number of webs
+   Float64 Xs = 0;
+   CComPtr<IShape> shape;
+   pSSMbrSegment->get_PrimaryShape(Xs, sbRight, cstGirder, &shape);
+
+   CComQIPtr<IGirderSection> section(shape);
+   WebIndexType nWebs;
+   section->get_WebCount(&nWebs);
+
+   Float64 Ls;
+   pSSMbrSegment->get_Length(&Ls);
+
+   for (WebIndexType webIdx = 0; webIdx < nWebs; webIdx++)
+   {
+      CComPtr<ITendon> tendon;
+      tendon.CoCreateInstance(CLSID_Tendon);
+      tendons->Add(tendon);
+
+      // distance along segment 
+      Float64 z1 = 0;
+      Float64 z2 = Ls / 2;
+      Float64 z3 = Ls;
+
+      Float64 y1 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, nullptr, z1, pDuctGeometry->DuctPoint[CSegmentDuctData::Left].first, pDuctGeometry->DuctPoint[CSegmentDuctData::Left].second);
+      Float64 y2 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, nullptr, z2, pDuctGeometry->DuctPoint[CSegmentDuctData::Middle].first, pDuctGeometry->DuctPoint[CSegmentDuctData::Middle].second);
+      Float64 y3 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, nullptr, z3, pDuctGeometry->DuctPoint[CSegmentDuctData::Right].first, pDuctGeometry->DuctPoint[CSegmentDuctData::Right].second);
+
+      // locate the tendon horizontally in the girder cross section
+      CComPtr<IPlane3d> webPlane;
+      section->get_WebPlane(webIdx, &webPlane);
+
+      Float64 x1, x2, x3;
+      webPlane->GetX(y1, z1, &x1);
+      webPlane->GetX(y2, z2, &x2);
+      webPlane->GetX(y3, z3, &x3);
+
+      // create a tendon segment for left half of parabola
+      CComPtr<IParabolicTendonSegment> parabolicTendonSegment;
+      parabolicTendonSegment.CoCreateInstance(CLSID_ParabolicTendonSegment);
+
+      CComPtr<IPoint3d> pntStart;
+      CComPtr<IPoint3d> pntEnd;
+
+      pntStart.CoCreateInstance(CLSID_Point3d);
+      pntStart->Move(x1, y1, z1);
+
+      pntEnd.CoCreateInstance(CLSID_Point3d);
+      pntEnd->Move(x2, y2, z2);
+
+      ATLASSERT(z1 < z2);
+      parabolicTendonSegment->put_Start(pntStart);
+      parabolicTendonSegment->put_End(pntEnd);
+      parabolicTendonSegment->put_Slope(0.0);
+      parabolicTendonSegment->put_SlopeEnd(qcbRight);
+      tendon->AddSegment(parabolicTendonSegment);
+
+      // create a tendon segment for right half of parabola
+      parabolicTendonSegment.Release();
+      parabolicTendonSegment.CoCreateInstance(CLSID_ParabolicTendonSegment);
+
+      pntStart = pntEnd;
+      pntEnd.Release();
+      pntEnd.CoCreateInstance(CLSID_Point3d);
+      pntEnd->Move(x3, y3, z3);
+
+      ATLASSERT(z2 < z3);
+      parabolicTendonSegment->put_Start(pntStart);
+      parabolicTendonSegment->put_End(pntEnd);
+      parabolicTendonSegment->put_Slope(0.0);
+      parabolicTendonSegment->put_SlopeEnd(qcbLeft);
+      tendon->AddSegment(parabolicTendonSegment);
+   } // next web
+
+   tendons.CopyTo(ppTendons);
+}
+
+void CBridgeAgentImp::CreateLinearTendon(const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment, const CSegmentDuctData* pDuctGeometry, ITendonCollection** ppTendons) const
+{
+   ATLASSERT(pDuctGeometry->DuctGeometryType == CSegmentDuctData::Linear);
+   CComPtr<ITendonCollection> tendons;
+   tendons.CoCreateInstance(CLSID_TendonCollection);
+
+   // since we are in the process of validating the bridge model, we have to
+   // dig into the segment object to get the number of webs
+   Float64 Xs = 0;
+   CComPtr<IShape> shape;
+   pSSMbrSegment->get_PrimaryShape(Xs, sbRight, cstGirder, &shape);
+
+   CComQIPtr<IGirderSection> section(shape);
+   WebIndexType nWebs;
+   section->get_WebCount(&nWebs);
+
+   Float64 Ls;
+   pSSMbrSegment->get_Length(&Ls);
+
+   for (WebIndexType webIdx = 0; webIdx < nWebs; webIdx++)
+   {
+      CComPtr<ITendon> tendon;
+      tendon.CoCreateInstance(CLSID_Tendon);
+      tendons->Add(tendon);
+
+      // distance along segment 
+      Float64 z1 = 0;
+      Float64 z2 = Ls;
+
+      Float64 y1 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, nullptr, z1, pDuctGeometry->DuctPoint[CSegmentDuctData::Left].first, pDuctGeometry->DuctPoint[CSegmentDuctData::Left].second);
+      Float64 y2 = ConvertSegmentDuctOffsetToDuctElevation(segmentKey, nullptr, z2, pDuctGeometry->DuctPoint[CSegmentDuctData::Right].first, pDuctGeometry->DuctPoint[CSegmentDuctData::Right].second);
+
+      // locate the tendon horizontally in the girder cross section
+      CComPtr<IPlane3d> webPlane;
+      section->get_WebPlane(webIdx, &webPlane);
+
+      Float64 x1, x2;
+      webPlane->GetX(y1, z1, &x1);
+      webPlane->GetX(y2, z2, &x2);
+
+      // create a tendon segment 
+      CComPtr<IPoint3d> pntStart;
+      CComPtr<IPoint3d> pntEnd;
+
+      pntStart.CoCreateInstance(CLSID_Point3d);
+      pntStart->Move(x1, y1, z1);
+
+      pntEnd.CoCreateInstance(CLSID_Point3d);
+      pntEnd->Move(x2, y2, z2);
+
+      ATLASSERT(z1 < z2);
+      CComPtr<ILinearTendonSegment> linearTendonSegment;
+      linearTendonSegment.CoCreateInstance(CLSID_LinearTendonSegment);
+      linearTendonSegment->put_Start(pntStart);
+      linearTendonSegment->put_End(pntEnd);
+
+      CComQIPtr<ITendonSegment> tendonSegment(linearTendonSegment);
+      tendon->AddSegment(tendonSegment);
+   } // next web
+
+   tendons.CopyTo(ppTendons);
+}
+
 bool CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,ITendonCollection** ppTendons) const
 {
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
@@ -33202,7 +34399,7 @@ bool CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
       }
 
       // create tendon material
-      std::vector<IntervalIndexType> vTendonStressingIntervals = m_IntervalManager.GetTendonStressingIntervals(girderKey);
+      std::vector<IntervalIndexType> vTendonStressingIntervals = m_IntervalManager.GetGirderTendonStressingIntervals(girderKey);
       std::map<IntervalIndexType,CComPtr<IPrestressingStrand>> tendonMaterials;
       for (const auto& stressTendonIntervalIdx : vTendonStressingIntervals)
       {
@@ -33227,7 +34424,7 @@ bool CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
       ATLASSERT(nTendons != 0); // should equal number of webs
       for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
       {
-         IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressTendonInterval(girderKey,nTendons*ductIdx+tendonIdx);
+         IntervalIndexType stressTendonIntervalIdx = m_IntervalManager.GetStressGirderTendonInterval(girderKey,nTendons*ductIdx+tendonIdx);
          auto found = tendonMaterials.find(stressTendonIntervalIdx);
          ATLASSERT(found != tendonMaterials.end());
 
@@ -33250,7 +34447,7 @@ bool CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
 
          tendons->Add(tendon);
       }
-   }
+   } // next duct
 
    tendons.CopyTo(ppTendons);
 
@@ -33332,10 +34529,14 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
          // --------------------+       +--------------------------
          //                         |<->|--- brg_offset - end_dist
          //                             |<-- tendon starts here
+         //
+         // Segment index will be INVALID_INDEX if the segment is continuous over the pier.... which which case, 
+         // we don't make the end size adjustment
+
          CSegmentKey backSegmentKey, aheadSegmentKey;
          GetSegmentsAtPier(startPierIdx, girderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
-         Float64 brg_offset = GetSegmentStartBearingOffset(aheadSegmentKey);
-         Float64 end_dist = GetSegmentStartEndDistance(aheadSegmentKey);
+         Float64 brg_offset = (backSegmentKey.segmentIndex == INVALID_INDEX ? 0 : GetSegmentStartBearingOffset(aheadSegmentKey));
+         Float64 end_dist = (aheadSegmentKey.segmentIndex == INVALID_INDEX ? 0 : GetSegmentStartEndDistance(aheadSegmentKey));
          Ls += (brg_offset - end_dist);
          z1 += (brg_offset - end_dist);
       }
@@ -33375,7 +34576,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
       }
 
       z1 += dist;
-      Float64 y1 = ConvertDuctOffsetToDuctElevation(girderKey,z1,offset,offsetType);
+      Float64 y1 = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,z1,offset,offsetType);
 
       // Low Point
       ductGeometry.GetLowPoint(startSpanIdx,&dist,&offset,&offsetType);
@@ -33406,7 +34607,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
 
       Float64 x2 = x1; // dummy (x1 and x2 are computed from the web plane below)
       Float64 z2 = z1 + dist; // this is the location of the low point
-      Float64 y2 = ConvertDuctOffsetToDuctElevation(girderKey,z2,offset,offsetType);
+      Float64 y2 = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,z2,offset,offsetType);
 
       // locate the tendon horizontally in the girder cross section
       CComPtr<IPlane3d> webPlane;
@@ -33465,7 +34666,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
 
          x3 = x2; // dummy
          z3 = Ls;
-         y3 = ConvertDuctOffsetToDuctElevation(girderKey,z3,highOffset,highOffsetType);
+         y3 = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,z3,highOffset,highOffsetType);
 
          if ( distLeftIP < 0 ) // fraction of distance between low and high point
          {
@@ -33540,7 +34741,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
          }
 
          z3 = z1 + dist; // low point, measured from previous high point
-         y3 = ConvertDuctOffsetToDuctElevation(girderKey,z3,offset,offsetType);
+         y3 = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,z3,offset,offsetType);
 
          if ( distRightIP < 0 ) // fraction of distance between high and low point
          {
@@ -33647,16 +34848,19 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
          //                     |<->|--- brg_offset - end_dist
          //                     |<-- tendon ends here
 
+         // Segment index will be INVALID_INDEX if the segment is continuous over the pier.... which which case, 
+         // we don't make the end size adjustment
+
          CSegmentKey backSegmentKey, aheadSegmentKey;
          GetSegmentsAtPier(endPierIdx, girderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
-         Float64 brg_offset = GetSegmentEndBearingOffset(backSegmentKey);
-         Float64 end_dist = GetSegmentEndEndDistance(backSegmentKey);
+         Float64 brg_offset = (backSegmentKey.segmentIndex == INVALID_INDEX ? 0 : GetSegmentEndBearingOffset(backSegmentKey));
+         Float64 end_dist = (aheadSegmentKey.segmentIndex == INVALID_INDEX ? 0 : GetSegmentEndEndDistance(backSegmentKey));
          Lg -= (brg_offset - end_dist);
       }
 
       x2 = x1; // dummy
       z2 = Lg - dist; // dist is measured from the end of the bridge
-      y2 = ConvertDuctOffsetToDuctElevation(girderKey,z2,offset,offsetType);
+      y2 = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,z2,offset,offsetType);
 
       webPlane->GetX(y1,z1,&x1);
       webPlane->GetX(y2,z2,&x2);
@@ -33720,7 +34924,7 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstruc
       }
 
       // vertical position in Girder Section Coordinates (distance from top of girder)
-      Float64 yStart = ConvertDuctOffsetToDuctElevation(girderKey,zStart,offset,offsetType);
+      Float64 yStart = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,zStart,offset,offsetType);
 
       // get the location of the web plane in Girder Section Coordinates
       // this is the horizontal position of the web plane measured from the CL of girder
@@ -33758,7 +34962,7 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstruc
             zEnd = zStart + location;
          }
 
-         Float64 yEnd = ConvertDuctOffsetToDuctElevation(girderKey,zEnd,offset,offsetType);
+         Float64 yEnd = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,zEnd,offset,offsetType);
 
          CComPtr<IPoint3d> pntStart;
          pntStart.CoCreateInstance(CLSID_Point3d);

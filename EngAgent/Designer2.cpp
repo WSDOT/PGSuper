@@ -1668,35 +1668,71 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
    ASSERT_GIRDER_KEY(girderKey);
 
    GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IDuctLimits, pDuctLimits);
+   GET_IFACE(IPointOfInterest, pPoi);
    GET_IFACE_NOCHECK(IGirder,pGirder);
+   GET_IFACE_NOCHECK(IIntervals, pIntervals); // only used if there are tendons
 
-   // Determine maximum duct size
-   GET_IFACE(IPointOfInterest,pPoi);
+   // check segment tendons
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+
+      auto* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+
+      Float64 Kmax = pDuctLimits->GetSegmentTendonAreaLimit(segmentKey);
+      Float64 Tmax = pDuctLimits->GetSegmentTendonDuctSizeLimit(segmentKey);
+      Float64 Rmin = pDuctLimits->GetSegmentTendonRadiusOfCurvatureLimit(segmentKey);
+
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& poi(vPoi.front());
+
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+      DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+      {
+         Float64 Apt = pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, stressTendonIntervalIdx, ductIdx);
+         Float64 Aduct = pSegmentTendonGeometry->GetInsideDuctArea(segmentKey, ductIdx);
+         Float64 OD = pSegmentTendonGeometry->GetOutsideDiameter(segmentKey, ductIdx);
+
+         Float64 r = pSegmentTendonGeometry->GetMinimumRadiusOfCurvature(segmentKey, ductIdx);
+
+         Float64 tWebMin = pGirder->GetWebThicknessAtDuct(poi, ductIdx);
+
+         pgsDuctSizeArtifact artifact;
+         artifact.SetDuctArea(Apt, Aduct, Kmax);
+         artifact.SetDuctSize(OD, tWebMin, Tmax);
+         artifact.SetRadiusOfCurvature(r, Rmin);
+
+         pSegmentArtifact->SetDuctSizeArtifact(ductIdx, artifact);
+      }
+   }
+
+   // check girder tendons
+
    PoiList vPoi;
    pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_5L | POI_ERECTED_SEGMENT, &vPoi);
-
-#if defined _DEBUG
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    ATLASSERT(vPoi.size() == nSegments);
-#endif
 
    // Determine maximum duct area
-   GET_IFACE(IDuctLimits,pDuctLimits);
-   Float64 Kmax = pDuctLimits->GetTendonAreaLimit(girderKey);
-   Float64 Tmax = pDuctLimits->GetDuctSizeLimit(girderKey);
-   Float64 Rmin = pDuctLimits->GetRadiusOfCurvatureLimit(girderKey);
+   Float64 Kmax = pDuctLimits->GetGirderTendonAreaLimit(girderKey);
+   Float64 Tmax = pDuctLimits->GetGirderTendonDuctSizeLimit(girderKey);
+   Float64 Rmin = pDuctLimits->GetGirderTendonRadiusOfCurvatureLimit(girderKey);
 
-   GET_IFACE_NOCHECK(IIntervals,pIntervals); // only used if there are tendons
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
+   DuctIndexType nDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
-      Float64 Apt = pTendonGeom->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
-      Float64 Aduct = pTendonGeom->GetInsideDuctArea(girderKey,ductIdx);
-      Float64 OD = pTendonGeom->GetOutsideDiameter(girderKey,ductIdx);
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
+      Float64 Apt = pGirderTendonGeometry->GetGirderTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
+      Float64 Aduct = pGirderTendonGeometry->GetInsideDuctArea(girderKey,ductIdx);
+      Float64 OD = pGirderTendonGeometry->GetOutsideDiameter(girderKey,ductIdx);
 
-      Float64 r = pTendonGeom->GetMinimumRadiusOfCurvature(girderKey,ductIdx);
+      Float64 r = pGirderTendonGeometry->GetMinimumRadiusOfCurvature(girderKey,ductIdx);
 
       Float64 tWebMin = DBL_MAX;
       for ( const pgsPointOfInterest& poi : vPoi)
@@ -1716,11 +1752,15 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
 
 void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact) const
 {
+   // Check LRFD 5.9.2.2
    ASSERT_GIRDER_KEY(girderKey);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-   if ( nDucts == 0 )
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   SegmentIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+
+   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+   if (nMaxSegmentDucts+nGirderDucts == 0 )
    {
       return;
    }
@@ -1728,13 +1768,88 @@ void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArti
    GET_IFACE(IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
+   GET_IFACE(IPointOfInterest, pPoi);
    GET_IFACE(IPosttensionForce,pPTForce);
    GET_IFACE(IIntervals,pIntervals);
    GET_IFACE(IAllowableTendonStress,pAllowables);
 
    IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount()-1;
 
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   // Check segment tendons
+   GET_IFACE(IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+
+      auto* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+      DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+      {
+         std::_tostringstream os;
+         os << _T("Checking tendon stresses for Group ") << LABEL_GROUP(segmentKey.groupIndex)
+            << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
+            << _T(" Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex)
+            << _T(" Duct ") << LABEL_DUCT(ductIdx)
+            << std::ends;
+         pProgress->UpdateMessage(os.str().c_str());
+
+
+         pgsTypes::JackingEndType jackingEnd = pSegmentTendonGeometry->GetJackingEnd(segmentKey, ductIdx);
+
+         Float64 fpbtMax = -DBL_MAX;
+         Float64 fseatMax = -DBL_MAX;
+         Float64 fanchorMax = -DBL_MAX;
+         Float64 fpeMax = -DBL_MAX;
+         
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, &vPoi);
+         for (const pgsPointOfInterest& poi : vPoi)
+         {
+            Float64 fpbt = pPTForce->GetSegmentTendonStress(poi, stressTendonIntervalIdx, pgsTypes::Start, ductIdx);
+            fpbtMax = Max(fpbtMax, fpbt);
+
+            Float64 fseat = pPTForce->GetSegmentTendonStress(poi, stressTendonIntervalIdx, pgsTypes::End, ductIdx);
+            fseatMax = Max(fseatMax, fseat);
+
+            Float64 fpe = pPTForce->GetSegmentTendonStress(poi, finalIntervalIdx, pgsTypes::End, ductIdx);
+            fpeMax = Max(fpeMax, fpe);
+         }
+
+         if (jackingEnd == pgsTypes::jeStart)
+         {
+            fanchorMax = pPTForce->GetSegmentTendonStress(vPoi.front(), stressTendonIntervalIdx, pgsTypes::End, ductIdx);
+         }
+         else if (jackingEnd == pgsTypes::jeEnd)
+         {
+            fanchorMax = pPTForce->GetSegmentTendonStress(vPoi.back(), stressTendonIntervalIdx, pgsTypes::End, ductIdx);
+         }
+         else
+         {
+            fanchorMax = Max(pPTForce->GetSegmentTendonStress(vPoi.front(), stressTendonIntervalIdx, pgsTypes::End, ductIdx), pPTForce->GetSegmentTendonStress(vPoi.back(), stressTendonIntervalIdx, pgsTypes::End, ductIdx));
+         }
+
+         pgsTendonStressArtifact artifact;
+         if (pAllowables->CheckTendonStressAtJacking())
+         {
+            artifact.SetCheckAtJacking(pAllowables->GetSegmentTendonAllowableAtJacking(segmentKey), pSegmentTendonGeometry->GetFpj(segmentKey, ductIdx));
+         }
+         else
+         {
+            artifact.SetCheckPriorToSeating(pAllowables->GetSegmentTendonAllowablePriorToSeating(segmentKey), fpbtMax);
+         }
+
+         artifact.SetCheckAtAnchoragesAfterSeating(pAllowables->GetSegmentTendonAllowableAfterAnchorSetAtAnchorage(segmentKey), fanchorMax);
+         artifact.SetCheckAfterSeating(pAllowables->GetSegmentTendonAllowableAfterAnchorSet(segmentKey), fseatMax);
+         artifact.SetCheckAfterLosses(pAllowables->GetSegmentTendonAllowableAfterLosses(segmentKey), fpeMax);
+         pSegmentArtifact->SetTendonStressArtifact(ductIdx, artifact);
+      }
+   }
+
+   // Check girder tendons
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
    {
       std::_tostringstream os;
       os << _T("Checking tendon stresses for Group ") << LABEL_GROUP(girderKey.groupIndex) 
@@ -1743,9 +1858,9 @@ void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArti
          << std::ends;
       pProgress->UpdateMessage( os.str().c_str() );
 
-      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
 
-      pgsTypes::JackingEndType jackingEnd = pTendonGeom->GetJackingEnd(girderKey,ductIdx);
+      pgsTypes::JackingEndType jackingEnd = pGirderTendonGeometry->GetJackingEnd(girderKey,ductIdx);
 
       Float64 fpbtMax    = -DBL_MAX;
       Float64 fseatMax   = -DBL_MAX;
@@ -1756,42 +1871,46 @@ void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArti
       pPoi->GetPointsOfInterest(CSegmentKey(girderKey.groupIndex, girderKey.girderIndex, ALL_SEGMENTS), &vPoi);
       for ( const pgsPointOfInterest& poi : vPoi)
       {
-         Float64 fpbt = pPTForce->GetTendonStress(poi,stressTendonIntervalIdx,pgsTypes::Start,ductIdx);
+         Float64 fpbt = pPTForce->GetGirderTendonStress(poi,stressTendonIntervalIdx,pgsTypes::Start,ductIdx);
          fpbtMax = Max(fpbtMax,fpbt);
 
-         Float64 fseat = pPTForce->GetTendonStress(poi,stressTendonIntervalIdx,pgsTypes::End,ductIdx);
+         Float64 fseat = pPTForce->GetGirderTendonStress(poi,stressTendonIntervalIdx,pgsTypes::End,ductIdx);
          fseatMax = Max(fseatMax,fseat);
 
-         Float64 fpe = pPTForce->GetTendonStress(poi,finalIntervalIdx,pgsTypes::End,ductIdx);
+         Float64 fpe = pPTForce->GetGirderTendonStress(poi,finalIntervalIdx,pgsTypes::End,ductIdx);
          fpeMax = Max(fpeMax,fpe);
       }
 
+      const pgsPointOfInterest* ppoiStart;
+      const pgsPointOfInterest* ppoiEnd;
+      pPoi->GetDuctRange(girderKey, ductIdx, &ppoiStart, &ppoiEnd);
+
       if ( jackingEnd == pgsTypes::jeStart )
       {
-         fanchorMax = pPTForce->GetTendonStress(vPoi.front(),stressTendonIntervalIdx,pgsTypes::End,ductIdx);
+         fanchorMax = pPTForce->GetGirderTendonStress(*ppoiStart,stressTendonIntervalIdx,pgsTypes::End,ductIdx);
       }
       else if ( jackingEnd == pgsTypes::jeEnd )
       {
-         fanchorMax = pPTForce->GetTendonStress(vPoi.back(),stressTendonIntervalIdx,pgsTypes::End,ductIdx);
+         fanchorMax = pPTForce->GetGirderTendonStress(*ppoiEnd,stressTendonIntervalIdx,pgsTypes::End,ductIdx);
       }
       else
       {
-         fanchorMax = Max(pPTForce->GetTendonStress(vPoi.front(),stressTendonIntervalIdx,pgsTypes::End,ductIdx),pPTForce->GetTendonStress(vPoi.back(),stressTendonIntervalIdx,pgsTypes::End,ductIdx));
+         fanchorMax = Max(pPTForce->GetGirderTendonStress(*ppoiStart,stressTendonIntervalIdx,pgsTypes::End,ductIdx),pPTForce->GetGirderTendonStress(*ppoiEnd,stressTendonIntervalIdx,pgsTypes::End,ductIdx));
       }
 
       pgsTendonStressArtifact artifact;
       if ( pAllowables->CheckTendonStressAtJacking() )
       {
-         artifact.SetCheckAtJacking(pAllowables->GetAllowableAtJacking(girderKey),pTendonGeom->GetFpj(girderKey,ductIdx));
+         artifact.SetCheckAtJacking(pAllowables->GetGirderTendonAllowableAtJacking(girderKey),pGirderTendonGeometry->GetFpj(girderKey,ductIdx));
       }
       else
       {
-         artifact.SetCheckPriorToSeating(pAllowables->GetAllowablePriorToSeating(girderKey),fpbtMax);
+         artifact.SetCheckPriorToSeating(pAllowables->GetGirderTendonAllowablePriorToSeating(girderKey),fpbtMax);
       }
 
-      artifact.SetCheckAtAnchoragesAfterSeating(pAllowables->GetAllowableAfterAnchorSetAtAnchorage(girderKey),fanchorMax);
-      artifact.SetCheckAfterSeating(pAllowables->GetAllowableAfterAnchorSet(girderKey),fseatMax);
-      artifact.SetCheckAfterLosses(pAllowables->GetAllowableAfterLosses(girderKey),fpeMax);
+      artifact.SetCheckAtAnchoragesAfterSeating(pAllowables->GetGirderTendonAllowableAfterAnchorSetAtAnchorage(girderKey),fanchorMax);
+      artifact.SetCheckAfterSeating(pAllowables->GetGirderTendonAllowableAfterAnchorSet(girderKey),fseatMax);
+      artifact.SetCheckAfterLosses(pAllowables->GetGirderTendonAllowableAfterLosses(girderKey),fpeMax);
       pGirderArtifact->SetTendonStressArtifact(ductIdx,artifact);
    }
 }
@@ -1899,7 +2018,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
    GET_IFACE(IPretensionStresses,       pPretensionStresses);
    GET_IFACE(ILimitStateForces,         pLimitStateForces);
    GET_IFACE(IPrecompressedTensileZone, pPrecompressedTensileZone);
-   GET_IFACE(ITendonGeometry,           pTendonGeometry);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
 
    GET_IFACE(ILoadFactors,              pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
@@ -1928,8 +2048,9 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 
    bool bIsDeckPrecompressed = pPrecompressedTensileZone->IsDeckPrecompressed(segmentKey);
 
-   bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(segmentKey,task.intervalIdx);
-   bool bIsStressingInterval = pIntervals->IsStressingInterval(segmentKey,task.intervalIdx);
+   bool bIsStressingInterval = pIntervals->IsStressingInterval(segmentKey, task.intervalIdx);
+   bool bIsSegmentTendonStressingInterval = pIntervals->IsSegmentTendonStressingInterval(segmentKey, task.intervalIdx); // not used yet... need to look at this method more closely
+   bool bIsGirderTendonStressingInterval = pIntervals->IsGirderTendonStressingInterval(segmentKey, task.intervalIdx);
 
    // for time-step analysis, pretension stresses are taken from the release interval, otherwise the are taken from the task interval
    // we do this because in time-step analysis girder stresses include the effect of creep, shrinkage, and relaxation. we don't
@@ -1944,7 +2065,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
       bCheckTemporaryStresses = false;
    }
 
-   DuctIndexType nDucts = pTendonGeometry->GetDuctCount(segmentKey);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
 
    for(const pgsPointOfInterest& poi : vPoi)
    {
@@ -2010,7 +2132,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               {
 	                  // Tension in the girder segment
 	                  ATLASSERT(task.stressType == pgsTypes::Tension);
-	                  if ( task.intervalIdx == releaseIntervalIdx || bIsTendonStressingInterval )
+	                  if ( task.intervalIdx == releaseIntervalIdx || bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval )
 	                  {
 	                     // During a stressing activity, tension stress checks are only performed in areas
 	                     // other that the precompressed tensile zone
@@ -2080,16 +2202,16 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                     compositeDeckIntervalIdx <= task.intervalIdx && // composite deck
 	                     bIsDeckPrecompressed // deck is precompressed
 	                     && (
-	                           (bIsTendonStressingInterval && !bIsInPTZ[TOP]) || // this is a tendon stressing interval and stress location is NOT in the PTZ -OR-
-	                           (!bIsTendonStressingInterval && bIsInPTZ[TOP]) // this is NOT a tendon stressing interval and the stress location is in the PTZ
+	                           ( (bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) && !bIsInPTZ[TOP]) || // this is a tendon stressing interval and stress location is NOT in the PTZ -OR-
+	                           (!(bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) &&  bIsInPTZ[TOP]) // this is NOT a tendon stressing interval and the stress location is in the PTZ
 	                         ));
 	
 	                  artifact.IsApplicable( botStressLocation, 
 	                     compositeDeckIntervalIdx <= task.intervalIdx && // composite deck
 	                     bIsDeckPrecompressed // deck is precompressed
 	                     && (
-	                           (bIsTendonStressingInterval && !bIsInPTZ[BOT]) || // this is a tendon stressing interval and stress location is NOT in the PTZ -OR-
-	                           (!bIsTendonStressingInterval && bIsInPTZ[BOT]) // this is NOT a tendon stressing interval and the stress location is in the PTZ
+	                           ( (bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) && !bIsInPTZ[BOT]) || // this is a tendon stressing interval and stress location is NOT in the PTZ -OR-
+	                           (!(bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) &&  bIsInPTZ[BOT]) // this is NOT a tendon stressing interval and the stress location is in the PTZ
 	                         ));
 	
 	               }
@@ -2158,8 +2280,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	         f[TOP] = fLimitState[TOP] + k*fPretension[TOP];
 	         f[BOT] = fLimitState[BOT] + k*fPretension[BOT];
 	
-	         // get segment stress due to post-tensioning
-	         if ( 0 < nDucts )
+            // get segment stress due to post-tensioning
+            if ( 0 < nSegmentDucts+nGirderDucts )
 	         {
 	#pragma Reminder("UPDATE: Stress due to PT may need to include live load")
 	            // NOTE: in the call to pProductForces->GetStress for pftPostTensioning, it doesn't matter which bridge analysis type (bat) that we use because
@@ -3915,20 +4037,24 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    // NOTE: fps (see below) from the moment capacity analysis already accounts for a reduction
    //       in strand effectiveness based on lack of development. DO NOT ADJUST THE AREA OF PRESTRESS
    //       HERE TO ACCOUNT FOR THE SAME TIME...
-   Float64 aps,apt;
+   Float64 aps,aptSegment,aptGirder;
    if ( pConfig == nullptr)
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
-      aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi,dlaNone) : pStrandGeom->GetApsTopHalf(poi,dlaNone));
+      GET_IFACE(IStrandGeometry,pStrandGeometry);
+      aps = (scd.bTensionBottom ? pStrandGeometry->GetApsBottomHalf(poi,dlaNone) : pStrandGeometry->GetApsTopHalf(poi,dlaNone));
 
-      GET_IFACE(ITendonGeometry,pTendonGeom);
-      apt = (scd.bTensionBottom ? pTendonGeom->GetAptBottomHalf(poi)         : pTendonGeom->GetAptTopHalf(poi));
+      GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+      aptSegment = (scd.bTensionBottom ? pSegmentTendonGeometry->GetSegmentAptBottomHalf(poi) : pSegmentTendonGeometry->GetSegmentAptTopHalf(poi));
+
+      GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+      aptGirder = (scd.bTensionBottom ? pGirderTendonGeometry->GetGirderAptBottomHalf(poi) : pGirderTendonGeometry->GetGirderAptTopHalf(poi));
    }
    else
    {
       GET_IFACE(IStrandGeometry,pStrandGeom);
       aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi,dlaNone,pConfig) : pStrandGeom->GetApsTopHalf(poi,dlaNone,pConfig));
-      apt = 0;
+      aptSegment = 0; // no pt for design (design is only for PGSuper)
+      aptGirder  = 0; // no pt for design (design is only for PGSuper)
    }
 
    // get prestress level at ultimate
@@ -3939,9 +4065,13 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    pArtifact->SetAps(aps);
    pArtifact->SetFps(fps);
 
-   Float64 fpt = pmcd->fpt_avg;
-   pArtifact->SetApt(apt);
-   pArtifact->SetFpt(fpt);
+   Float64 fptSegment = pmcd->fpt_avg_segment;
+   pArtifact->SetAptSegment(aptSegment);
+   pArtifact->SetFptSegment(fptSegment);
+
+   Float64 fptGirder = pmcd->fpt_avg_girder;
+   pArtifact->SetAptGirder(aptGirder);
+   pArtifact->SetFptGirder(fptGirder);
 
    // set up demands... if this section is in a critical section zone, use the values at the critical section
    // see C5.7.3.5 (pre2017: C5.8.3.5)
@@ -8647,13 +8777,13 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
          {
             // get strand force if we haven't yet
             Float64 FpeStraight, XpsStraight, YpsStraight;
-            pStabilityProblem->GetFpe(stbTypes::Straight, poi_loc ,&FpeStraight,&XpsStraight,&YpsStraight);
+            pStabilityProblem->GetFpe(_T("Straight"), poi_loc ,&FpeStraight,&XpsStraight,&YpsStraight);
             
             Float64 FpeHarped, XpsHarped, YpsHarped;
-            pStabilityProblem->GetFpe(stbTypes::Harped, poi_loc,&FpeHarped,&XpsHarped,&YpsHarped);
+            pStabilityProblem->GetFpe(_T("Harped"), poi_loc,&FpeHarped,&XpsHarped,&YpsHarped);
             
             Float64 FpeTemporary, XpsTemporary, YpsTemporary;
-            pStabilityProblem->GetFpe(stbTypes::Temporary,poi_loc,&FpeTemporary,&XpsTemporary,&YpsTemporary);
+            pStabilityProblem->GetFpe(_T("Temporary"),poi_loc,&FpeTemporary,&XpsTemporary,&YpsTemporary);
             
             Float64 Fpe = FpeStraight + FpeHarped + FpeTemporary;
             force_per_strand = Fpe / (nperm+ntemp);
@@ -9319,7 +9449,8 @@ void pgsDesigner2::RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,p
 
       LOG(_T("fpe = ") << ::ConvertFromSysUnits( pmcd->fpe_ps, unitMeasure::KSI) << _T(" KSI") );
       LOG(_T("fps_avg = ") << ::ConvertFromSysUnits( pmcd->fps_avg, unitMeasure::KSI) << _T(" KSI") );
-      LOG(_T("fpt_avg = ") << ::ConvertFromSysUnits( pmcd->fpt_avg, unitMeasure::KSI) << _T(" KSI") );
+      LOG(_T("fpt_avg_segment = ") << ::ConvertFromSysUnits(pmcd->fpt_avg_segment, unitMeasure::KSI) << _T(" KSI"));
+      LOG(_T("fpt_avg_girder = ") << ::ConvertFromSysUnits(pmcd->fpt_avg_girder, unitMeasure::KSI) << _T(" KSI"));
       LOG(_T("e initial = ") << pmcd->eps_initial );
       LOG(_T("phi = ") << pmcd->Phi );
       LOG(_T("C = ") << ::ConvertFromSysUnits( pmcd->C, unitMeasure::Kip) << _T(" kip"));

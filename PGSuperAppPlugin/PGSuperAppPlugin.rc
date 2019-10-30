@@ -2812,7 +2812,7 @@ BEGIN
     LTEXT           "and ends at",IDC_STATIC,118,9,39,8
     COMBOBOX        IDC_END_PIER,160,7,58,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Custom1",IDC_POINT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,24,302,161
-    LTEXT           "Start/End: Location from start or end of the tendon.",IDC_STATIC,318,26,280,8
+    LTEXT           "Start/End: Location of start/end of tendon from the start/end pier.",IDC_STATIC,318,26,280,8
     LTEXT           "Low: Distance from Start point or previous high point. Measured as distance or percentage of the distance between high points. Distance from End in last span.",IDC_STATIC,318,39,280,17
     LTEXT           "IP: Location of inflection point measured from high point. Measured as distance or percentage of distance between high and low points.",IDC_STATIC,318,61,280,17
     LTEXT           "High: High point at centerline pier",IDC_STATIC,318,83,280,8
@@ -3109,6 +3109,32 @@ BEGIN
     LTEXT           "Static",IDC_HG_X3,525,330,38,8
     LTEXT           "Static",IDC_HG_X4,526,345,38,8
     LTEXT           "Girder Height",IDC_STATIC,523,282,43,8
+END
+
+IDD_SEGMENT_TENDONS DIALOGEX 0, 0, 767, 365
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Tendons"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_DRAW_STRANDS,"Static",SS_BLACKFRAME,7,7,753,115
+    CONTROL         "Custom1",IDC_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,125,753,117
+    PUSHBUTTON      "Add",IDC_ADD,7,245,50,14
+    PUSHBUTTON      "Remove",IDC_REMOVE,61,245,50,14
+    LTEXT           "Strand Size",IDC_STATIC,7,279,37,8
+    COMBOBOX        IDC_STRAND,47,278,165,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Segment Height",IDC_STATIC,295,249,52,8
+    LTEXT           "Static",IDC_HG_START,326,265,38,8
+    LTEXT           "Left",IDC_STATIC,298,265,14,8
+    LTEXT           "Middle",IDC_STATIC,298,281,21,8
+    LTEXT           "Static",IDC_HG_MIDDLE,326,281,38,8
+    LTEXT           "Right",IDC_STATIC,298,295,18,8
+    LTEXT           "Static",IDC_HG_END,326,295,38,8
+    LTEXT           "Duct Material (LRFD 5.4.6.1)",IDC_STATIC,7,263,93,8
+    COMBOBOX        IDC_DUCT_TYPE,101,263,174,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Installation Method (LRFD 5.4.6.2)",IDC_STATIC,7,296,112,8
+    COMBOBOX        IDC_INSTALLATION_TYPE,125,294,52,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Time of Installation",IDC_STATIC,7,314,62,8
+    COMBOBOX        IDC_INSTALLATION_TIME,81,311,98,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SEGMENT_SPACING DIALOGEX 0, 0, 367, 169
@@ -3823,6 +3849,22 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 253
     END
+
+    IDD_SEGMENT_STRANDS, DIALOG
+    BEGIN
+    END
+
+    IDD_SEGMENT_TENDONS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 760
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 358
+    END
+
+    IDD_STRESS_TENDON, DIALOG
+    BEGIN
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -4332,6 +4374,11 @@ BEGIN
 END
 
 IDD_LINEAR_DUCT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SEGMENT_TENDONS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

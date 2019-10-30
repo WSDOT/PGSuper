@@ -93,10 +93,28 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, co
 
    if ( !bAreSegmentsJoined )
    {
+      CGirderKey girderKey = pGirderArtifact->GetGirderKey();
+
+      bool bIsSegmentStressingInterval = false; // for this interval, are segment tendons in any segment of this girder stressed?
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         CSegmentKey segmentKey(girderKey, segIdx);
+         if (pIntervals->IsSegmentTendonStressingInterval(segmentKey, task.intervalIdx))
+         {
+            bIsSegmentStressingInterval = true;
+            break;
+         }
+      }
+
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       // segments are not yet connected and act independently...
       // report segments individually
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
+         CSegmentKey segmentKey(girderKey, segIdx);
+
+         const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+
          if ( 1 < nSegments )
          {
             // Write out one section header for all segments
@@ -108,8 +126,15 @@ void CFlexuralStressCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, co
             rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
             *pChapter << pPara;
             *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-            BuildAllowStressInformation(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
-            BuildTable(                 pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
+            if (bIsSegmentStressingInterval && pSegment->Tendons.GetDuctCount() == 0)
+            {
+               *pPara << _T("This segment does not have tendons that are stressed during this interval. Stress limits are not applicable to this segment during this interval.") << rptNewLine;
+            }
+            else
+            {
+               BuildAllowStressInformation(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
+               BuildTable(pChapter, pBroker, pGirderArtifact, segIdx, pDisplayUnits, task, bGirderStresses);
+            }
          }
          else
          {
@@ -221,10 +246,30 @@ void CFlexuralStressCheckTable::BuildAllowStressInformation(rptChapter* pChapter
 
 void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task,bool bGirderStresses) const
 {
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   SegmentIndexType firstSegIdx = (segIdx == ALL_SEGMENTS ? 0 : segIdx);
+   SegmentIndexType lastSegIdx = (segIdx == ALL_SEGMENTS ? nSegments - 1 : firstSegIdx);
+
+   IndexType nArtifacts = 0;
+   for (SegmentIndexType sIdx = firstSegIdx; sIdx <= lastSegIdx; sIdx++)
+   {
+      const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(sIdx);
+      nArtifacts += pSegmentArtifact->GetFlexuralStressArtifactCount(task);
+   }
+
+   if (nArtifacts == 0)
+   {
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+      *p << _T("Stress limits are not applicable to this segment during this interval.") << rptNewLine;
+      return;
+   }
+
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
 
-   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx  = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,segIdx == ALL_SEGMENTS ? 0 : segIdx));
@@ -233,7 +278,6 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroke
    IntervalIndexType overlayIntervalIdx  = pIntervals->GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::WearingSurfaceType wearingSurfaceType = pBridge->GetWearingSurfaceType();
 
    PoiAttributeType refAttribute = POI_SPAN;
@@ -263,16 +307,39 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroke
    bool bIncludePrestress = (bGirderStresses ? true : false);
 
    bool bIncludeTendons = false;
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
+   DuctIndexType nDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      if ( pIntervals->GetStressTendonInterval(girderKey,ductIdx) <= task.intervalIdx )
+      if ( pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx) <= task.intervalIdx )
       {
          bIncludeTendons = true;
          break;
       }
    }
+
+   if (!bIncludeTendons)
+   {
+      GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      SegmentIndexType firstSegIdx = (segIdx == ALL_SEGMENTS ? 0 : segIdx);
+      SegmentIndexType lastSegIdx = (segIdx == ALL_SEGMENTS ? nSegments - 1 : firstSegIdx);
+      for (SegmentIndexType si = firstSegIdx; si <= lastSegIdx && !bIncludeTendons; si++)
+      {
+         CSegmentKey segmentKey(girderKey, si);
+         DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+         IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+         {
+            if (stressTendonIntervalIdx <= task.intervalIdx)
+            {
+               bIncludeTendons = true;
+               break;
+            }
+         }
+      }
+   }
+
 
 
    rptParagraph* p = new rptParagraph;
@@ -420,10 +487,6 @@ void CFlexuralStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroke
   (*p_table)(0,col++) << _T("Status") << rptNewLine << _T("(C/D)");
 
    p_table->SetNumberOfHeaderRows(2);
-
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   SegmentIndexType firstSegIdx = (segIdx == ALL_SEGMENTS ? 0 : segIdx);
-   SegmentIndexType lastSegIdx  = (segIdx == ALL_SEGMENTS ? nSegments-1 : firstSegIdx);
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -620,7 +683,7 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
    *pChapter << pPara;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterials); // doesn't get used in nArtifacts is 0
 
 
    rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(2);
@@ -634,6 +697,13 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
    for ( SegmentIndexType sIdx = firstSegIdx; sIdx <= lastSegIdx; sIdx++, rowIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(sIdx);
+
+      IndexType nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(task);
+      if (nArtifacts == 0)
+      {
+         continue;
+      }
+
 
       rptParagraph* p = &(*pLayoutTable)(rowIdx,0);
 
@@ -655,8 +725,6 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
       {
          *p << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
       }
-
-      IndexType nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(task);
 
       for ( IndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
       {
@@ -755,7 +823,9 @@ void CFlexuralStressCheckTable::BuildAllowDeckStressInformation(rptChapter* pCha
       const pgsPointOfInterest& poi(pArtifact->GetPointOfInterest());
 
       GET_IFACE2(pBroker,IIntervals,pIntervals);
-      bool bIsTendonStressingInterval = pIntervals->IsTendonStressingInterval(girderKey,task.intervalIdx);
+      bool bIsTendonStressingInterval = pIntervals->IsGirderTendonStressingInterval(girderKey,task.intervalIdx);
+      // NOTE: don't need to worry about segment tendons here... we are checking deck stresses and segment tendons are stress
+      // at the fabrication plant so they don't effect the deck
 
       Float64 t;            // tension coefficient
       Float64 t_max;        // maximum allowable tension

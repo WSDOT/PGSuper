@@ -1102,7 +1102,7 @@ CDuctData::CDuctData()
    pLibNames->EnumDuctNames(&vNames);
    Name = vNames.front();
 
-   pDuctLibEntry = 0;
+   pDuctLibEntry = nullptr;
 
    nStrands = 0;
    bPjCalc = true;
@@ -1124,7 +1124,7 @@ CDuctData::CDuctData(const CSplicedGirderData* pGirder)
    pLibNames->EnumDuctNames(&vNames);
    Name = vNames.front();
 
-   pDuctLibEntry = 0;
+   pDuctLibEntry = nullptr;
 
    nStrands = 0;
    bPjCalc = true;

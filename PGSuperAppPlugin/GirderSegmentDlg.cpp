@@ -102,12 +102,14 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
 
    m_GeneralPage.m_psp.dwFlags        |= PSP_HASHELP;
    m_StrandsPage.m_psp.dwFlags        |= PSP_HASHELP;
+   m_TendonsPage.m_psp.dwFlags        |= PSP_HASHELP;
    m_RebarPage.m_psp.dwFlags          |= PSP_HASHELP;
    m_StirrupsPage.m_psp.dwFlags       |= PSP_HASHELP;
    m_LiftingPage.m_psp.dwFlags        |= PSP_HASHELP;
 
    AddPage(&m_GeneralPage);
    AddPage(&m_StrandsPage);
+   AddPage(&m_TendonsPage);
    AddPage(&m_RebarPage);
    AddPage(&m_StirrupsPage);
 
@@ -128,6 +130,7 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
    m_StrandsPage.Init(m_Girder.GetSegment(segmentKey.segmentIndex));
+   m_TendonsPage.Init(m_Girder.GetSegment(segmentKey.segmentIndex));
 
    AddPage( &m_LiftingPage );
 }

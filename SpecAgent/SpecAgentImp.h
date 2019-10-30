@@ -129,17 +129,27 @@ public:
 public:
    virtual bool CheckTendonStressAtJacking() const override;;
    virtual bool CheckTendonStressPriorToSeating() const override;;
-   virtual Float64 GetAllowableAtJacking(const CGirderKey& girderKey) const override;;
-   virtual Float64 GetAllowablePriorToSeating(const CGirderKey& girderKey) const override;;
-   virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const override;;
-   virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey) const override;;
-   virtual Float64 GetAllowableAfterLosses(const CGirderKey& girderKey) const override;;
-   virtual Float64 GetAllowableCoefficientAtJacking(const CGirderKey& girderKey) const override;;
-   virtual Float64 GetAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) const override;;
-   virtual Float64 GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const override;;
-   virtual Float64 GetAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const override;;
-   virtual Float64 GetAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const override;;
+   virtual Float64 GetSegmentTendonAllowableAtJacking(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowablePriorToSeating(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableAfterAnchorSet(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableAfterLosses(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAtJacking(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientPriorToSeating(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterAnchorSet(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterLosses(const CSegmentKey& segmentKey) const override;
 
+   virtual Float64 GetGirderTendonAllowableAtJacking(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowablePriorToSeating(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableAfterAnchorSet(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableAfterLosses(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientAtJacking(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const override;
 // IAllowableConcreteStress
 public:
    virtual Float64 GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const override;
@@ -329,9 +339,13 @@ public:
 
 // IDuctLimits
 public:
-   virtual Float64 GetRadiusOfCurvatureLimit(const CGirderKey& girderKey) const override;
-   virtual Float64 GetTendonAreaLimit(const CGirderKey& girderKey) const override;
-   virtual Float64 GetDuctSizeLimit(const CGirderKey& girderKey) const override;
+   virtual Float64 GetSegmentTendonRadiusOfCurvatureLimit(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAreaLimit(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonDuctSizeLimit(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetGirderTendonRadiusOfCurvatureLimit(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAreaLimit(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonDuctSizeLimit(const CGirderKey& girderKey) const override;
+   virtual Float64 GetTendonAreaLimit(pgsTypes::StrandInstallationType installationType) const override;
 
 private:
    DECLARE_EAF_AGENT_DATA;
@@ -343,6 +357,8 @@ private:
 
    const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey) const;
    const SpecLibraryEntry* GetSpec() const;
+
+   Float64 GetRadiusOfCurvatureLimit(pgsTypes::DuctType ductType) const;
 
    bool IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls) const;
    void ValidateHaulTruck(const CPrecastSegmentData* pSegment) const;

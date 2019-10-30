@@ -172,12 +172,12 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    // need to report for all intervals when post-tensioning occurs after the
    // deck is composite
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    std::set<IntervalIndexType> vIntervals;
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      IntervalIndexType intervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      IntervalIndexType intervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
       if (lastCompositeDeckIntervalIdx <= intervalIdx )
       {
          vIntervals.insert(intervalIdx);

@@ -90,6 +90,18 @@ void CHaulingCheck::Build(rptChapter* pChapter,
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(girderKey,segIdx);
+
+         if (1 < nSegments)
+         {
+            rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+            *pChapter << pTitle;
+            *pTitle << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
+
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
+
+         }
+
          const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
          pHaulArtifact->BuildHaulingCheckReport(segmentKey, pChapter, pBroker, pDisplayUnits);
       }

@@ -127,6 +127,7 @@ public:
    virtual bool ReportAxialResults() const override;
    virtual void GetSegmentSelfWeightLoad(const CSegmentKey& segmentKey,std::vector<SegmentLoad>* pSegmentLoads,std::vector<DiaphragmLoad>* pDiaphragmLoads,std::vector<ClosureJointLoad>* pClosureJointLoads) const override;
    virtual std::vector<EquivPretensionLoad> GetEquivPretensionLoads(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,bool bTempStrandInstallation=true,IntervalIndexType intervalIdx=INVALID_INDEX) const override;
+   virtual std::vector<EquivPretensionLoad> GetEquivSegmentPostTensionLoads(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx = INVALID_INDEX) const override;
    virtual Float64 GetTrafficBarrierLoad(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSidewalkLoad(const CSegmentKey& segmentKey) const override;
    virtual bool HasPedestrianLoad() const override;

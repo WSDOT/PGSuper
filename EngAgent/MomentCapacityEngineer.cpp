@@ -414,15 +414,19 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    bool bIsOnSegment = pPoi->IsOnSegment(poi);
    bool bIsOnGirder = pPoi->IsOnGirder(poi);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+
+   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
 
    Float64 Eps = pStrand->GetE();
    Float64 fpe_ps = 0.0; // effective prestress after all losses
    Float64 eps_initial = 0.0; // initial strain in the prestressing strands (strain at effect prestress)
-   if ( bPositiveMoment || 0 < nDucts )
+   if ( bPositiveMoment || 0 < nSegmentDucts || 0 < nGirderDucts )
    {
-      // only for positive moment... strands are ignored for negative moment analysis
+      // only consider strands in positive moment analysis or if there are ducts
+      // otherwise, strands are ignored for negative moment analysis
       if (bIsOnSegment)
       {
          GET_IFACE(IPretensionForce, pPrestressForce);
@@ -431,32 +435,54 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       }
    }
 
-   std::vector<Float64> fpe_pt;
-   std::vector<Float64> ept_initial;
-   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
-   Float64 Ept = pTendon->GetE();
-   GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // not used if there aren't any tendons
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   GET_IFACE_NOCHECK(IPosttensionForce, pPTForce); // not used if there aren't any tendons
+
+   std::vector<Float64> fpe_pt_segment;
+   std::vector<Float64> ept_initial_segment;
+   const matPsStrand* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   Float64 EptSegment = pTendon->GetE();
+   for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+   {
+      Float64 fpe = 0;
+      Float64 e = 0;
+      if (bIsOnSegment)
+      {
+         fpe = pPTForce->GetSegmentTendonStress(poi, intervalIdx, pgsTypes::End, ductIdx);
+         if (fpe < 0)
+         {
+            fpe = 0;
+         }
+         e = fpe / EptSegment;
+      }
+      fpe_pt_segment.push_back(fpe);
+      ept_initial_segment.push_back(e);
+   }
+
+   std::vector<Float64> fpe_pt_girder;
+   std::vector<Float64> ept_initial_girder;
+   pTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
+   Float64 EptGirder = pTendon->GetE();
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
    {
       Float64 fpe = 0;
       Float64 e = 0;
       if ( bIsOnGirder )
       {
-         fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
+         fpe = pPTForce->GetGirderTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx);
          if ( fpe < 0 )
          {
             fpe = 0;
          }
-         e = fpe/Ept;
+         e = fpe/ EptGirder;
       }
-      fpe_pt.push_back(fpe);
-      ept_initial.push_back(e);
+      fpe_pt_girder.push_back(fpe);
+      ept_initial_girder.push_back(e);
    }
 
-   return ComputeMomentCapacity(intervalIdx,poi,pConfig,fpe_ps,eps_initial,fpe_pt,ept_initial,bPositiveMoment);
+   return ComputeMomentCapacity(intervalIdx,poi,pConfig,fpe_ps,eps_initial,fpe_pt_segment,ept_initial_segment, fpe_pt_girder, ept_initial_girder,bPositiveMoment);
 }
 
-MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial,const std::vector<Float64>& fpe_pt,const std::vector<Float64>& ept_initial,bool bPositiveMoment) const
+MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial, const std::vector<Float64>& fpe_pt_segment, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& fpe_pt_girder,const std::vector<Float64>& ept_initial_girder,bool bPositiveMoment) const
 {
    MOMENTCAPACITYDETAILS mcd;
 
@@ -464,29 +490,39 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
    pgsBondTool bondTool(m_pBroker, poi, pConfig);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+   GET_IFACE(ISegmentTendonGeometry,pSegmentTendonGeometry);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
 
    GET_IFACE_NOCHECK(IStrandGeometry,pStrandGeom); // only used for positive moment
 
    StrandIndexType Ns = 0;
    StrandIndexType Nh = 0;
-   if ( bPositiveMoment || 0 < nDucts )
+   if ( bPositiveMoment || 0 < nSegmentDucts || 0 < nGirderDucts )
    {
       // Strands only modeled for positive moment calculations or all calculations when ducts are present
       Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight,pConfig);
       Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped,pConfig);
    }
 
-   DuctIndexType Npt = 0;
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   DuctIndexType NptSegment = 0;
+   for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
    {
-      Npt += pTendonGeom->GetTendonStrandCount(segmentKey,ductIdx);
+      NptSegment += pSegmentTendonGeometry->GetTendonStrandCount(segmentKey, ductIdx);
    }
 
-   bool bIsSplicedGirder = (0 < nDucts ? true : false);
+   DuctIndexType NptGirder = 0;
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+   {
+      NptGirder += pGirderTendonGeometry->GetTendonStrandCount(segmentKey,ductIdx);
+   }
+
+   bool bIsSplicedGirder = (0 < (nSegmentDucts+nGirderDucts) ? true : false);
 
    GET_IFACE(IPointOfInterest,pPoi);
+   bool bIsOnSegment = pPoi->IsOnSegment(poi);
    bool bIsOnGirder = pPoi->IsOnGirder(poi);
 
    // create a problem to solve
@@ -497,7 +533,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
    Float64 H; // overall height of section
    Float64 Haunch; // haunch build up that is modeled
-   BuildCapacityProblem(intervalIdx,poi,pConfig,eps_initial,ept_initial,bondTool,bPositiveMoment,&section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
+   BuildCapacityProblem(intervalIdx,poi,pConfig,eps_initial,ept_initial_segment,ept_initial_girder,bondTool,bPositiveMoment,&section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
 
 #if defined _DEBUG_SECTION_DUMP
    DumpSection(poi,section,bond_factors[0],bond_factors[1],bPositiveMoment);
@@ -720,10 +756,12 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    solution->get_TensionResultantLocation(&cgT);
 
    Float64 fps_avg = 0;
-   Float64 fpt_avg = 0;
+   Float64 fpt_avg_segment = 0;
+   Float64 fpt_avg_girder = 0;
 
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
+   const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
 
    if ( IsZero(Mn) )
    {
@@ -734,8 +772,9 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       mcd.de         = 0.0;
       mcd.de_shear   = 0.0;
       
-      fps_avg          = 0.0;
-      fpt_avg          = 0.0;
+      fps_avg         = 0.0;
+      fpt_avg_segment = 0.0;
+      fpt_avg_girder  = 0.0;
    }
    else
    {
@@ -773,12 +812,12 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       if ( 0 < Ns+Nh )
       {
          Float64 aps = pStrand->GetNominalArea();
-         Float64 Aps[2] = {0,0}; // total area of straight/harped
+         std::array<Float64, 2> Aps = {0,0}; // total area of straight/harped
 
          CComPtr<IStressStrain> ssStrand;
          CreateStrandMaterial(segmentKey,&ssStrand);
 
-         if ( bPositiveMoment || 0 < nDucts )
+         if ( bPositiveMoment || 0 < nSegmentDucts || 0 < nGirderDucts )
          {
             for ( int i = 0; i < 2; i++ ) // straight and harped strands
             {
@@ -821,22 +860,22 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          fps_avg /= (Aps[pgsTypes::Straight]+Aps[pgsTypes::Harped]);
       }
 
-      if ( 0 < Npt )
+      if (0 < NptSegment)
       {
          Float64 Apt = 0; // total area of tendon
-         if ( bIsOnGirder )
+         if (bIsOnSegment)
          {
             CComPtr<IStressStrain> ssTendon;
-            CreateTendonMaterial(segmentKey,&ssTendon);
+            CreateSegmentTendonMaterial(segmentKey, &ssTendon);
 
-            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+            for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
             {
-               if (pTendonGeom->IsOnDuct(poi, ductIdx))
+               if (pSegmentTendonGeometry->IsOnDuct(poi))
                {
                   CComPtr<IPoint2d> point;
-                  pTendonGeom->GetDuctPoint(poi, ductIdx, &point);
+                  pSegmentTendonGeometry->GetSegmentDuctPoint(poi, ductIdx, &point);
 
-                  Float64 apt = pTendonGeom->GetTendonArea(segmentKey, intervalIdx, ductIdx);
+                  Float64 apt = pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, intervalIdx, ductIdx);
                   Apt += apt;
 
                   point->get_X(&x);
@@ -844,16 +883,57 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
                   strainPlane->GetZ(x - dx, y - dy, &z);
                   Float64 stress;
-                  ssTendon->ComputeStress(z + ept_initial[ductIdx], &stress);
+                  ssTendon->ComputeStress(z + ept_initial_segment[ductIdx], &stress);
 
-                  fpt_avg += apt*stress;
+                  fpt_avg_segment += apt*stress;
 
                   point.Release();
                }
             }
          }
 
-         fpt_avg /= Apt;
+         if (0 < Apt)
+         {
+            fpt_avg_segment /= Apt;
+         }
+      }
+
+      if ( 0 < NptGirder )
+      {
+         Float64 Apt = 0; // total area of tendon
+         if ( bIsOnGirder )
+         {
+            CComPtr<IStressStrain> ssTendon;
+            CreateGirderTendonMaterial(segmentKey,&ssTendon);
+
+            for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+            {
+               if (pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
+               {
+                  CComPtr<IPoint2d> point;
+                  pGirderTendonGeometry->GetGirderDuctPoint(poi, ductIdx, &point);
+
+                  Float64 apt = pGirderTendonGeometry->GetGirderTendonArea(segmentKey, intervalIdx, ductIdx);
+                  Apt += apt;
+
+                  point->get_X(&x);
+                  point->get_Y(&y);
+
+                  strainPlane->GetZ(x - dx, y - dy, &z);
+                  Float64 stress;
+                  ssTendon->ComputeStress(z + ept_initial_girder[ductIdx], &stress);
+
+                  fpt_avg_girder += apt*stress;
+
+                  point.Release();
+               }
+            }
+         }
+
+         if (0 < Apt)
+         {
+            fpt_avg_girder /= Apt;
+         }
       }
 
       // determine de (see PCI BDM 8.4.1.2).
@@ -915,7 +995,8 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    WATCHX(MomCap,0, _T("X = ") << ::ConvertFromSysUnits(poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft") << _T("   Mn = ") << ::ConvertFromSysUnits(Mn,unitMeasure::KipFeet) << _T(" kip-ft") << _T(" My/Mx = ") << My/Mn << _T(" fps_avg = ") << ::ConvertFromSysUnits(fps_avg,unitMeasure::KSI) << _T(" KSI"));
 
    mcd.fps_avg = fps_avg;
-   mcd.fpt_avg = fpt_avg;
+   mcd.fpt_avg_segment = fpt_avg_segment;
+   mcd.fpt_avg_girder = fpt_avg_girder;
    mcd.dt  = dt;
    mcd.bOverReinforced = false;
 
@@ -1013,7 +1094,16 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       Float64 ecl, etl;
       if ( bIsSplicedGirder )
       {
-         pResistanceFactors->GetFlexuralStrainLimits(pTendon->GetGrade(),pTendon->GetType(),&ecl,&etl);
+         // girder tendons are the primary reinforcement so use the girder tendon properties to get the flexure strain limit
+         if (NptGirder == 0)
+         {
+            // no girder tendon... then use segment tendon
+            pResistanceFactors->GetFlexuralStrainLimits(pSegmentTendon->GetGrade(), pSegmentTendon->GetType(), &ecl, &etl);
+         }
+         else
+         {
+            pResistanceFactors->GetFlexuralStrainLimits(pGirderTendon->GetGrade(), pGirderTendon->GetType(), &ecl, &etl);
+         }
       }
       else
       {
@@ -1056,7 +1146,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             }
             else
             {
-               if ( bPositiveMoment && (0 < Ns+Nh+Npt) )
+               if ( bPositiveMoment && (0 < Ns+Nh+NptSegment+NptGirder) )
                {
                   // Prestressed case
                   mcd.Phi = PhiC + (PhiPS - PhiC)*(mcd.et - ecl)/(etl-ecl);
@@ -1083,8 +1173,11 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    mcd.fpe_ps      = fpe_ps;
    mcd.eps_initial = eps_initial;
 
-   mcd.fpe_pt      = fpe_pt;
-   mcd.ept_initial = ept_initial;
+   mcd.fpe_pt_segment = fpe_pt_segment;
+   mcd.ept_initial_segment = ept_initial_segment;
+
+   mcd.fpe_pt_girder      = fpe_pt_girder;
+   mcd.ept_initial_girder = ept_initial_girder;
 
    mcd.Mr = mcd.Phi*mcd.Mn;
 
@@ -1289,7 +1382,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
 
 #if defined _DEBUG
    // version of this method with GDRCONFIG does not apply to spliced girder bridges
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    ATLASSERT(pTendonGeom->GetDuctCount(poi.GetSegmentKey()) == 0);
 #endif
 
@@ -1635,14 +1728,20 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    Float64 Haunch; // haunch build up that is modeled
 
    Float64 e_initial_strands = 0;
-   std::vector<Float64> e_initial_tendons;
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
-   e_initial_tendons.insert(e_initial_tendons.begin(),nDucts,0);
+
+   std::vector<Float64> e_initial_segment_tendons;
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeomemtry);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeomemtry->GetDuctCount(segmentKey);
+   e_initial_segment_tendons.insert(e_initial_segment_tendons.begin(), nSegmentDucts, 0);
+
+   std::vector<Float64> e_initial_girder_tendons;
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeomemtry);
+   DuctIndexType nGirderDucts = pGirderTendonGeomemtry->GetDuctCount(segmentKey);
+   e_initial_girder_tendons.insert(e_initial_girder_tendons.begin(), nGirderDucts, 0);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   BuildCapacityProblem(liveLoadIntervalIdx,poi,nullptr,e_initial_strands,e_initial_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
+   BuildCapacityProblem(liveLoadIntervalIdx,poi,nullptr,e_initial_strands,e_initial_segment_tendons,e_initial_girder_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
 
    // determine neutral axis angle
    // compression is on the left side of the neutral axis
@@ -1718,11 +1817,24 @@ void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentK
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::CreateTendonMaterial(const CGirderKey& girderKey,IStressStrain** ppSS) const
+void pgsMomentCapacityEngineer::CreateSegmentTendonMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS) const
 {
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(girderKey);
+   const matPsStrand* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
 
+   CreateTendonMaterial(pTendon, ppSS);
+}
+
+void pgsMomentCapacityEngineer::CreateGirderTendonMaterial(const CGirderKey& girderKey, IStressStrain** ppSS) const
+{
+   GET_IFACE(IMaterials, pMaterial);
+   const matPsStrand* pTendon = pMaterial->GetGirderTendonMaterial(girderKey);
+
+   CreateTendonMaterial(pTendon, ppSS);
+}
+
+void pgsMomentCapacityEngineer::CreateTendonMaterial(const matPsStrand* pTendon, IStressStrain** ppSS) const
+{
    StrandGradeType grade = pTendon->GetGrade() == matPsStrand::Gr1725 ? sgtGrade250 : sgtGrade270;
    ProductionMethodType type = pTendon->GetType() == matPsStrand::LowRelaxation ? pmtLowRelaxation : pmtStressRelieved;
 
@@ -1736,7 +1848,7 @@ void pgsMomentCapacityEngineer::CreateTendonMaterial(const CGirderKey& girderKey
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 eps_initial,const std::vector<Float64>& ept_initial,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,Float64* pHaunch,std::map<StrandIndexType,Float64>* pBondFactors) const
+void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 eps_initial,const std::vector<Float64>& ept_initial_segment,const std::vector<Float64>& ept_initial_girder,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,Float64* pHaunch,std::map<StrandIndexType,Float64>* pBondFactors) const
 {
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IMaterials,pMaterial);
@@ -1755,8 +1867,11 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    bool bIsOnGirder    = pPoi->IsOnGirder(poi);
    bool bIsInBoundaryPierDiaphragm = pPoi->IsInBoundaryPierDiaphragm(poi);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
 
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
@@ -1785,9 +1900,13 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    CComPtr<IStressStrain> ssStrand;
    CreateStrandMaterial(segmentKey,&ssStrand);
 
-   // tendon
-   CComPtr<IStressStrain> ssTendon;
-   CreateTendonMaterial(segmentKey,&ssTendon);
+   // segment tendon
+   CComPtr<IStressStrain> ssSegmentTendon;
+   CreateSegmentTendonMaterial(segmentKey, &ssSegmentTendon);
+
+   // girder tendon
+   CComPtr<IStressStrain> ssGirderTendon;
+   CreateGirderTendonMaterial(segmentKey, &ssGirderTendon);
 
    // girder concrete
    CComPtr<IUnconfinedConcrete> matGirder;
@@ -1955,7 +2074,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       sacDepth = pBridge->GetSacrificalDepth();
    }
 
-   if ( bPositiveMoment || bIncludeStrandsWithNegativeMoment || 0 < nDucts ) // only model strands for positive moment, the spec says to use them, or if there are tendons in the model
+   if ( bPositiveMoment || bIncludeStrandsWithNegativeMoment || 0 < nSegmentDucts || 0 < nGirderDucts) // only model strands for positive moment, the spec says to use them, or if there are tendons in the model
    {
       // strands
       if ( bIsOnSegment || bIsInBoundaryPierDiaphragm )
@@ -2093,17 +2212,18 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       } // bIsOnSegment
    } // bPositiveMoment
 
-   // PT Tendons
-   if ( bIsOnGirder )
+
+     // Segment PT Tendons
+   if (bIsOnSegment)
    {
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
       {
-         if (pTendonGeom->IsOnDuct(poi, ductIdx))
+         if (pSegmentTendonGeometry->IsOnDuct(poi))
          {
             CComPtr<IPoint2d> point;
-            pTendonGeom->GetDuctPoint(poi, ductIdx, &point);
+            pSegmentTendonGeometry->GetSegmentDuctPoint(poi, ductIdx, &point);
 
-            Float64 area = pTendonGeom->GetTendonArea(segmentKey, intervalIdx, ductIdx);
+            Float64 area = pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, intervalIdx, ductIdx);
 
             Float64 s = sqrt(area); // side of equivalent square (area = s*s)
 
@@ -2123,11 +2243,50 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             hp->get_Y(&cy);
             dt = Max(dt, fabs(Yc - cy));
 
-            Float64 epti = ept_initial[ductIdx];
+            Float64 epti = ept_initial_segment[ductIdx];
             Float64 Le = 1.0; // elongation length (unity)
 
             CComQIPtr<IShape> shape(tendon_shape);
-            AddShape2Section(section, shape, ssTendon, ssGirder, epti, Le);
+            AddShape2Section(section, shape, ssSegmentTendon, ssGirder, epti, Le);
+         }
+      }
+   }
+
+   // Girder PT Tendons
+   if ( bIsOnGirder )
+   {
+      for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+      {
+         if (pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
+         {
+            CComPtr<IPoint2d> point;
+            pGirderTendonGeometry->GetGirderDuctPoint(poi, ductIdx, &point);
+
+            Float64 area = pGirderTendonGeometry->GetGirderTendonArea(segmentKey, intervalIdx, ductIdx);
+
+            Float64 s = sqrt(area); // side of equivalent square (area = s*s)
+
+            CComPtr<IRectangle> tendon_shape;
+            tendon_shape.CoCreateInstance(CLSID_Rect);
+            tendon_shape->put_Width(s);
+            tendon_shape->put_Height(s);
+
+            CComQIPtr<IXYPosition> position(tendon_shape);
+            CComPtr<IPoint2d> hp;
+            position->get_LocatorPoint(lpHookPoint, &hp);
+            hp->MoveEx(point);
+            hp->Offset(-dx, -dy);
+
+            // determine depth to lowest layer of strand
+            Float64 cy;
+            hp->get_Y(&cy);
+            dt = Max(dt, fabs(Yc - cy));
+
+            Float64 epti = ept_initial_girder[ductIdx];
+            Float64 Le = 1.0; // elongation length (unity)
+
+            CComQIPtr<IShape> shape(tendon_shape);
+            AddShape2Section(section, shape, ssGirderTendon, ssGirder, epti, Le);
          }
       }
    }

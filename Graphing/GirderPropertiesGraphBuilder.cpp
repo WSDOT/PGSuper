@@ -556,13 +556,18 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
+   // Get max number of ducts per girder for the color range
    DuctIndexType nMaxDucts = 0;
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
-      nMaxDucts = Max(nMaxDucts,nDucts);
+      DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(thisGirderKey);
+
+      DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(thisGirderKey);;
+      nGirderDucts += nMaxSegmentDucts; // max number of ducts this girder
+      nMaxDucts = Max(nMaxDucts, nGirderDucts); // overall max number of ducts
    }
    
    grGraphColor graphColor(nMaxDucts);
@@ -570,13 +575,13 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(thisGirderKey);
+      for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
       {
          COLORREF color = graphColor.GetColor(ductIdx);
 
          CString strLabel;
-         strLabel.Format(_T("Tendon %d"),LABEL_DUCT(ductIdx));
+         strLabel.Format(_T("Girder Tendon %d"),LABEL_DUCT(ductIdx));
          IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,GRAPH_PEN_WEIGHT,color);
 
          auto iter(vPoi.begin());
@@ -585,25 +590,70 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
          for ( ; iter != end; iter++, xIter++ )
          {
             const pgsPointOfInterest& poi = *iter;
-            if (pTendonGeom->IsOnDuct(poi, ductIdx))
+            if (pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
             {
                Float64 value;
                if (propertyType == TendonEccentricity)
                {
-                  value = pTendonGeom->GetEccentricity(intervalIdx, poi, ductIdx);
+                  Float64 eccX, eccY;
+                  pGirderTendonGeometry->GetGirderTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
+                  value = eccY;
                }
                else
                {
-                  value = pTendonGeom->GetDuctOffset(intervalIdx, poi, ductIdx);
+                  value = pGirderTendonGeometry->GetGirderDuctOffset(intervalIdx, poi, ductIdx);
                }
 
                Float64 X = *xIter;
 
                AddGraphPoint(dataSeries, X, value);
-            }
-         }
-      }
-   }
+            } // point on duct
+         } // next point
+      } // next girder duct
+
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         CSegmentKey thisSegmentKey(thisGirderKey, segIdx);
+         DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(thisSegmentKey);
+         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+         {
+            COLORREF color = graphColor.GetColor(nGirderDucts + ductIdx);
+
+            CString strLabel;
+            strLabel.Format(_T("Segment %d Tendon %d"), LABEL_SEGMENT(segIdx), LABEL_DUCT(ductIdx));
+            IndexType dataSeries = m_Graph.CreateDataSeries(strLabel, PS_SOLID, GRAPH_PEN_WEIGHT, color);
+
+            auto iter(vPoi.begin());
+            auto end(vPoi.end());
+            auto xIter(xVals.begin());
+            for (; iter != end; iter++, xIter++)
+            {
+               const pgsPointOfInterest& poi = *iter;
+
+               if (pSegmentTendonGeometry->IsOnDuct(poi))
+               {
+                  Float64 value;
+                  if (propertyType == TendonEccentricity)
+                  {
+                     Float64 eccX, eccY;
+                     pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
+                     value = eccY;
+                  }
+                  else
+                  {
+                     value = pSegmentTendonGeometry->GetSegmentDuctOffset(intervalIdx, poi, ductIdx);
+                  }
+
+                  Float64 X = *xIter;
+
+                  AddGraphPoint(dataSeries, X, value);
+               } // if segment
+            } // point on duct
+         } // next segment duct
+      } // next segment
+
+   } // next group
 }
 
 LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyType)

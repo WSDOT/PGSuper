@@ -85,11 +85,17 @@ public:
    Float64 GetFps() const;
    void SetFps(Float64 fps);
 
-   Float64 GetApt() const;
-   void SetApt(Float64 apt);
+   Float64 GetAptSegment() const;
+   void SetAptSegment(Float64 apt);
 
-   Float64 GetFpt() const;
-   void SetFpt(Float64 fpt);
+   Float64 GetFptSegment() const;
+   void SetFptSegment(Float64 fpt);
+
+   Float64 GetAptGirder() const;
+   void SetAptGirder(Float64 apt);
+
+   Float64 GetFptGirder() const;
+   void SetFptGirder(Float64 fpt);
 
    Float64 GetMu() const;
    void SetMu(Float64 mu);
@@ -193,8 +199,10 @@ private:
    Float64 m_As;
    Float64 m_Aps;
    Float64 m_Fps;
-   Float64 m_Apt;
-   Float64 m_Fpt;
+   Float64 m_AptSegment;
+   Float64 m_FptSegment;
+   Float64 m_AptGirder;
+   Float64 m_FptGirder;
    Float64 m_Mu;
    Float64 m_Mr;
    Float64 m_Dv;
