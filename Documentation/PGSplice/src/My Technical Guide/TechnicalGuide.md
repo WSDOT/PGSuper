@@ -6,13 +6,13 @@ The purpose of this Technical Guide is to detail the algorithms and computationa
 Topics
 * @subpage tg_anchor_set
 * @subpage tg_bearing_seat_geometry
-* @subpage tg_elongation
 * @subpage tg_capacity_demand_ratios
 * @subpage tg_computing_pier_diaphragm_dimensions
 * @subpage tg_concrete_properties
 * @subpage tg_critical_section_for_shear
 * @subpage tg_curved_spliced_girder_bridges
 * @subpage tg_deflections
+* @subpage tg_elongation
 * @subpage tg_epoxy_coated_strands
 * @subpage tg_limit_states
 * @subpage tg_fatigue

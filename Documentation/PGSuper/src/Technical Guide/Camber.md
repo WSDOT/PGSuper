@@ -72,5 +72,5 @@ WSDOT does not allow contractors to cast the deck prior to the minimum timing an
 
 References
 -----------
-1. [A Probabilistic Comparison of Prestress Loss Methods in Prestressed Concrete Beams, PCI Journal, September-October, 2004, Volume: 49, Issue: 5 Page number: 52-69 Author(s): Christopher G. Gilbertson, Theresa M. (Tess) Ahlborn] (http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/2004/DOI_Articles/JL-04-SEPTEMBER-OCTOBER-6.pdf)
+1. [A Probabilistic Comparison of Prestress Loss Methods in Prestressed Concrete Beams, PCI Journal, September-October, 2004, Volume: 49, Issue: 5 Page number: 52-69 Author(s): Christopher G. Gilbertson, Theresa M. (Tess) Ahlborn] (https://www.pci.org/PCI/Publications/PCI_Journal/Issues/2004/September-October/A_Probabilistic_Comparison_of_Prestress_Loss_Methods_in_Prestressed_Concrete_Beams.aspx)
 
