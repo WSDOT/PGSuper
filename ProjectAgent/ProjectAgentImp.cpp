@@ -5715,28 +5715,6 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    pgsTypes::SupportedBeamSpacing spacingType = m_BridgeDescription.GetGirderSpacingType();
    if (!beamFactory->IsSupportedBeamSpacing(spacingType))
    {
-      if (spacingType == pgsTypes::sbsConstantAdjacent && !m_BridgeDescription.UseSameGirderForEntireBridge())
-      {
-         // an error in the previous version allowed inconsistent girder types to be modeled
-         // if girders have a constant adjacent spacing, and different girders are used throughout
-         // the bridge, the spacing isn't going to be consistent... force the bridge model into something
-         // we can handle
-
-         ReleaseGirderLibraryEntries();
-
-         m_BridgeDescription.SetGirderName(pGirder->GetGirderName());
-         m_BridgeDescription.UseSameGirderForEntireBridge(true);
-         m_BridgeDescription.CopyDown(false, true, false, false, false, false);
-
-         UseGirderLibraryEntries();
-      
-         GET_IFACE(IEAFStatusCenter, pStatusCenter);
-         CString strMsg(_T("Your bridge model contained incompatible girder types. The model has been changed to use the same girder for the entire bridge."));
-         AfxMessageBox(strMsg);
-         pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::General,strMsg);
-         pStatusCenter->Add(pStatusItem);
-      }
-
       // we don't have a valid spacing type, convert it
       if (m_BridgeDescription.UseSameGirderForEntireBridge())
       {
@@ -5769,6 +5747,8 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
                if (grpIdx == 0 && gdrIdx == 0)
                {
                   m_BridgeDescription.SetGirderSpacingType(newSpacingType);
+                  m_BridgeDescription.SetGirderSpacing(newSpacing);
+                  m_BridgeDescription.SetGirderTopWidth(pgsTypes::twtSymmetric, topWidth, 0.0);
                }
 
                if (gdrIdx != nGirders - 1)
