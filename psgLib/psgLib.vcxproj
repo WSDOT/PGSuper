@@ -521,6 +521,7 @@
   <ItemGroup>
     <ClCompile Include="AASHTOConcretePage.cpp" />
     <ClCompile Include="ACIConcretePage.cpp" />
+    <ClCompile Include="AdditionalInterfaceShearBarDlg.cpp" />
     <ClCompile Include="BeamDimensionGrid.cpp" />
     <ClCompile Include="BeamFamilyManager.cpp" />
     <ClCompile Include="CEBFIPConcretePage.cpp" />
@@ -682,6 +683,7 @@
     <ClInclude Include="..\Include\psgLib\UnitServer.h" />
     <ClInclude Include="AASHTOConcretePage.h" />
     <ClInclude Include="ACIConcretePage.h" />
+    <ClInclude Include="AdditionalInterfaceShearBarDlg.h" />
     <ClInclude Include="BeamDimensionGrid.h" />
     <ClInclude Include="CEBFIPConcretePage.h" />
     <ClInclude Include="CLSID.h" />

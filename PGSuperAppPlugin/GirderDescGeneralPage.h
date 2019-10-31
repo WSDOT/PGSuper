@@ -150,6 +150,8 @@ protected:
 
    int m_GirderNameIdx; // combo box index of current girder name just before it is changed
                         // (needed to revert the combobox if user doesn't want to change)
+public:
+   afx_msg void OnStnClickedPrecamberLabel();
 };
 
 //{{AFX_INSERT_LOCATION}}

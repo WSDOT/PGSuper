@@ -169,7 +169,7 @@ BOOL CGirderDescDebondPage::OnSetActive()
 
    if (pParent->m_pSegment->Strands.GetAdjustableStrandType() != pgsTypes::asStraight)
    {
-      note += _T(" Harped strands are not shown.");
+      note += _T("\n  Harped strands are not shown.");
    }
 
    if (bCanDebond)

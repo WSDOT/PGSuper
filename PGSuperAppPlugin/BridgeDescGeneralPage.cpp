@@ -105,7 +105,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	DDX_Control(pDX, IDC_NUMGDR_SPIN, m_NumGdrSpinner);
    DDX_Control(pDX, IDC_ALIGNMENTOFFSET_FMT, m_AlignmentOffsetFormat);
-	//}}AFX_DATA_MAP
+   //}}AFX_DATA_MAP
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -352,7 +352,7 @@ BOOL CBridgeDescGeneralPage::OnInitDialog()
    }
 
    CString fmt;
-   fmt.LoadString( IDS_ALIGNMENTOFFSET_FMT);
+   fmt.LoadString(IDS_ALIGNMENTOFFSET_FMT);
    m_AlignmentOffsetFormat.SetWindowText(fmt);
 
    UpdateConcreteTypeLabel();
@@ -2076,7 +2076,7 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
          break;
 
       case IDC_REF_GIRDER_OFFSET:
-         m_strToolTipText.LoadString(IDS_ALIGNMENTOFFSET_FMT);
+         m_strToolTipText = _T("Locates the girders, in plan view, relative to the Aligment or Bridge Line");
          bShowTip = TRUE;
          break;
 

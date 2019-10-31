@@ -111,6 +111,7 @@
 #define IDD_CEBFIP_CONCRETE             310
 #define IDD_GIRDER_HAUNCH_CAMBER        311
 #define IDD_HAUL_TRUCK                  312
+#define IDD_EDIT_ADDITIONAL_INTERFACE_STEEL 324
 #define IDC_IMPACT_USAGE                411
 #define IDC_D1                          1001
 #define IDC_W1                          1002
@@ -953,6 +954,7 @@
 #define IDC_Y_LABEL2                    1488
 #define IDC_BUTTON2                     1489
 #define IDC_REMOVE                      1489
+#define IDC_ADDITIONAL_INTERFACE_SHEAR_BARS 1489
 #define IDC_HEIGHT_LABEL                1491
 #define IDC_THICKNESS_LABEL             1492
 #define IDC_AGG_STRENGTH                1493
@@ -1362,7 +1364,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        324
+#define _APS_NEXT_RESOURCE_VALUE        326
 #define _APS_NEXT_COMMAND_VALUE         36881
 #define _APS_NEXT_CONTROL_VALUE         1712
 #define _APS_NEXT_SYMED_VALUE           101
