@@ -412,14 +412,14 @@ public:
    void SetApplicability(bool isApplicable);
 
    // additional stirrups in top flange
-   Float64 GetAvfAdditional() const {return m_AvfAdditional;}
-   void SetAvfAdditional(Float64 avf) {m_AvfAdditional = avf;}
+   Float64 GetAvfAdditional() const { return m_AvfAdditional; }
+   void SetAvfAdditional(Float64 avf) { m_AvfAdditional = avf; }
    Float64 GetSAdditional() const;
    void SetSAdditional(Float64 s);
 
    // stirrups in girder
-   Float64 GetAvfGirder() const {return m_AvfGirder;}
-   void SetAvfGirder(Float64 avf) {m_AvfGirder = avf;}
+   Float64 GetAvfGirder() const { return m_AvfGirder; }
+   void SetAvfGirder(Float64 avf) { m_AvfGirder = avf; }
    Float64 GetSGirder() const;
    void SetSGirder(Float64 s);
 
@@ -428,8 +428,10 @@ public:
    // max stirrup spacing for min spacing check
    Float64 GetSpacing() const;
 
-   Float64 GetNormalCompressionForce() const {return m_NormalCompressionForce;}
-   void SetNormalCompressionForce(Float64 force) {m_NormalCompressionForce = force;}
+   Float64 GetNormalCompressionForce() const { return m_NormalCompressionForce; }
+   void SetNormalCompressionForce(Float64 force) { m_NormalCompressionForce = force; }
+   Float64 GetNormalCompressionForceLoadFactor() const { return m_gamma_Pc; }
+   void SetNormalCompressionForceLoadFactor(Float64 gamma) { m_gamma_Pc = gamma; }
    Float64 GetAcv() const {return m_Acv;}
    void SetAcv(Float64 Acv) {m_Acv = Acv;}
    Float64 GetCohesionFactor() const {return m_CohesionFactor;}
@@ -548,6 +550,7 @@ private:
    Float64 m_SGirder;
    Float64 m_UltimateHorizontalShear;
    Float64 m_NormalCompressionForce;
+   Float64 m_gamma_Pc;
    Float64 m_Acv;
    Float64 m_CohesionFactor;
    Float64 m_FrictionFactor;

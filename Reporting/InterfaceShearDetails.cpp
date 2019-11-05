@@ -204,8 +204,9 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
       CSegmentKey segmentKey(girderKey,segIdx);
 
-      *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << p_first_artifact[segIdx]->GetFrictionFactor() << _T(", ")
-             << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetCohesionFactor()) << _T(", ");
+      *pPara << _T("Coeff. of Friction, ") << symbol(mu)<<_T(" = ") << p_first_artifact[segIdx]->GetFrictionFactor() << _T(", ")
+             << _T("Cohesion Factor, c = ") << stress_with_tag.SetValue(p_first_artifact[segIdx]->GetCohesionFactor()) << _T(", ")
+             << _T("Net Compression Force Load Factor, ") << Sub2(symbol(gamma),_T("DC")) << _T(" = ") << p_first_artifact[segIdx]->GetNormalCompressionForceLoadFactor() << _T(", ");
 
       if ( spec2007OrOlder )
       {
@@ -235,8 +236,9 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          const pgsHorizontalShearArtifact* pHorizShearArtifact = pStirrupAtPoiArtifact->GetHorizontalShearArtifact();
          ATLASSERT(pHorizShearArtifact->IsApplicable());
 
-         *pPara << _T("Coeff. of Friction (")   << symbol(mu)<<_T(") = ") << pHorizShearArtifact->GetFrictionFactor() << _T(", ")
-                << _T("Cohesion Factor (c) = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetCohesionFactor()) << _T(", ");
+         *pPara << _T("Coeff. of Friction, ")   << symbol(mu)<<_T(" = ") << pHorizShearArtifact->GetFrictionFactor() << _T(", ")
+                << _T("Cohesion Factor, c = ") << stress_with_tag.SetValue(pHorizShearArtifact->GetCohesionFactor()) << _T(", ")
+                << _T("Net Compression Force Load Factor, ") << Sub2(symbol(gamma), _T("DC")) << _T(" = ") << p_first_artifact[segIdx]->GetNormalCompressionForceLoadFactor() << _T(", ");
 
          if ( spec2007OrOlder )
          {
@@ -259,12 +261,12 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
 
    if ( spec2007OrOlder )
    {
-      *pPara << Sub2(_T("v"),_T("ni"))<<_T(" = min( c") << Sub2(_T("a"),_T("cv"))<<_T(" + ")<<symbol(mu)<<_T("[ ") << Sub2(_T("a"),_T("vf"))<< RPT_FY <<_T(" + ") << Sub2(_T("p"),_T("c"))<<_T("], ")
+      *pPara << Sub2(_T("v"),_T("ni"))<<_T(" = min( c") << Sub2(_T("a"),_T("cv"))<<_T(" + ")<<symbol(mu)<<_T("[ ") << Sub2(_T("a"),_T("vf"))<< RPT_FY <<_T(" + ") << Sub2(symbol(gamma),_T("DC")) << Sub2(_T("p"),_T("c"))<<_T("], ")
                                        << Sub2(_T("K"),_T("1")) << RPT_FC << Sub2(_T("a"),_T("cv"))<<_T(", ") << Sub2(_T("K"),_T("2")) << Sub2(_T("a"),_T("cv"))<<_T(" )")<<rptNewLine;
    }
    else
    {
-      *pPara << Sub2(_T("v"),_T("ni"))<<_T(" = min( ca")<<Sub(_T("cv"))<<_T(" + ")<<symbol(mu)<<_T("[ a")<<Sub(_T("vf "))<<RPT_FY<<_T(" + p")<<Sub(_T("c"))<<_T("], ")
+      *pPara << Sub2(_T("v"),_T("ni"))<<_T(" = min( ca")<<Sub(_T("cv"))<<_T(" + ")<<symbol(mu)<<_T("[ a")<<Sub(_T("vf "))<<RPT_FY<<_T(" + ") << Sub2(symbol(gamma), _T("DC")) << Sub2(_T("p"),_T("c")) << _T("], ")
                                        <<_T("0.2 ") << RPT_FC <<_T("a")<<Sub(_T("cv"))<<_T(", ");
 
       if ( IS_SI_UNITS(pDisplayUnits) )
@@ -290,8 +292,8 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
    (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0,1)  << COLHDR(Sub2(_T("a"),_T("cv")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
    (*table)(0,2)  << COLHDR(Sub2(_T("a"),_T("vf")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(0,3)  << COLHDR(Sub2(_T("p"),_T("c")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-   (*table)(0,4)  << COLHDR(_T("c a")<<Sub(_T("cv"))<<_T(" + ")<<rptNewLine<<symbol(mu)<<_T("[a")<<Sub(_T("vf "))<<_T("f")<<Sub(_T("y"))<<_T(" + p")<<Sub(_T("c"))<<_T("]"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(0,3)  << COLHDR(Sub2(symbol(gamma),_T("DC")) << Sub2(_T("p"),_T("c")), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+   (*table)(0,4)  << COLHDR(_T("c a")<<Sub(_T("cv"))<<_T(" + ")<<rptNewLine<<symbol(mu)<<_T("[a")<<Sub(_T("vf "))<<_T("f")<<Sub(_T("y"))<<_T(" + ") << Sub2(symbol(gamma),_T("DC")) << Sub2(_T("p"),_T("c"))<<_T("]"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
    if ( spec2007OrOlder )
    {
@@ -388,10 +390,14 @@ void CInterfaceShearDetails::Build( IBroker* pBroker, rptChapter* pChapter,
          (*av_table)(av_row,3)  <<  area.SetValue(pArtifact->GetAvfAdditional());
 
          sv = pArtifact->GetSAdditional();
-         if (sv>0.0)
-            (*av_table)(av_row,4)  <<  dim.SetValue(sv);
+         if (0.0 < sv)
+         {
+            (*av_table)(av_row, 4) << dim.SetValue(sv);
+         }
          else
-            (*av_table)(av_row,4)  <<  symbol(infinity);
+         {
+            (*av_table)(av_row, 4) << symbol(infinity);
+         }
 
          (*av_table)(av_row,5)  <<  AvS.SetValue(pArtifact->GetAvOverS());
 

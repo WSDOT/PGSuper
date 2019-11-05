@@ -514,10 +514,7 @@ private:
    ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi,bool bIncludeCS=false) const;
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact ) const;
    void CheckUltimateShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact ) const;
-   void CheckHorizontalShear(const pgsPointOfInterest& poi, Float64 vu,
-                              Float64 fcSlab,Float64 fcGdr, Float64 fy,
-                              const GDRCONFIG* pConfig,
-                              pgsHorizontalShearArtifact* pArtifact ) const;
+   void CheckHorizontalShear(pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, Float64 vu, Float64 fcSlab,Float64 fcGdr, Float64 fy, const GDRCONFIG* pConfig, pgsHorizontalShearArtifact* pArtifact ) const;
 
    void ComputeHorizAvs(const pgsPointOfInterest& poi, bool* pIsRoughened, bool* pDoAllStirrupsEngageDeck, const GDRCONFIG* pConfig, pgsHorizontalShearArtifact* pArtifact ) const;
 

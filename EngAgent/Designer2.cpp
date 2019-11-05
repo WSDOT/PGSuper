@@ -3207,7 +3207,7 @@ void pgsDesigner2::CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& po
    if ( pBridge->IsCompositeDeck() )
    {
       h_artifact.SetApplicability(true);
-      CheckHorizontalShear(poi,vu,fcSlab,fcGdr,fy, pConfig,&h_artifact);
+      CheckHorizontalShear(limitState, poi,vu,fcSlab,fcGdr,fy, pConfig,&h_artifact);
    }
 
    // stirrup detail check
@@ -3371,7 +3371,7 @@ void pgsDesigner2::CheckUltimateShearCapacity( pgsTypes::LimitState limitState,I
    pArtifact->SetAvOverSReqd( scd.AvOverS_Reqd ); // leave a nugget for shear design algorithm
 }
 
-void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
+void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const pgsPointOfInterest& poi,
                                        Float64 vu, 
                                        Float64 fcSlab,Float64 fcGdr, Float64 fy,
                                        const GDRCONFIG* pConfig,
@@ -3441,6 +3441,12 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
    Float64 Pc = GetNormalFrictionForce(poi);
    pArtifact->SetNormalCompressionForce(Pc);
 
+   GET_IFACE(ILoadFactors, pILoadFactors);
+   const auto* pLoadFactors = pILoadFactors->GetLoadFactors();
+   Float64 gamma_dc = pLoadFactors->GetDCMin(limitState);
+   pArtifact->SetNormalCompressionForceLoadFactor(gamma_dc);
+
+
    // Area of shear transfer
    Float64 Acv = pGdr->GetShearInterfaceWidth( poi );
    pArtifact->SetAcv(Acv);
@@ -3483,7 +3489,7 @@ void pgsDesigner2::CheckHorizontalShear(const pgsPointOfInterest& poi,
    pArtifact->SetFy(fy);
 
    Float64 Vn1, Vn2, Vn3;
-   lrfdConcreteUtil::HorizontalShearResistances(c, u, K1, K2, Acv, pArtifact->GetAvOverS(), Pc, fc, fy,
+   lrfdConcreteUtil::HorizontalShearResistances(c, u, K1, K2, Acv, pArtifact->GetAvOverS(), gamma_dc*Pc, fc, fy,
                                                 &Vn1, &Vn2, &Vn3);
    pArtifact->SetVn(Vn1, Vn2, Vn3);
 
@@ -3643,17 +3649,16 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi) cons
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
 
-   Float64 wslab = 0; // weight of slab on shear interface
-
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    if (!pSpecEntry->UseDeckWeightForPermanentNetCompressiveForce())
    {
-      return wslab;
+      return 0;
    }
 
    // slab load
+   Float64 wslab = 0; // weight of slab on shear interface
    Float64 slab_unit_weight = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx,castDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
 
    if ( pDeck->GetDeckType() == pgsTypes::sdtCompositeCIP )

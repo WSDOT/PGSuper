@@ -314,6 +314,13 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
          PoiList vPoi;
          pPoi->MergePoiLists(vBasicPoi, vCSPoi,&vPoi); // merge, sort, and remove duplicates
 
+         if (1 < vLimitStates.size())
+         {
+            rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
+            *pChapter << pParagraph;
+            pParagraph->SetName(GetLimitStateString(ls));
+         }
+
          write_shear_dimensions_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
 
          if ( shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001 )
@@ -360,26 +367,6 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
             }
          }
       }
-
-      /////////////////////////////////////////////
-      // Horizontal interface shear - only reported for design
-      /////////////////////////////////////////////
-      if ( bDesign )
-      {
-         if ( pBridge->IsCompositeDeck() )
-         {
-            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-            pPara->SetName(_T("Horizontal Interface Shear"));
-            *pPara << pPara->GetName() << rptNewLine;
-            *pChapter << pPara;
-            CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthI);
-
-            if ( bPermit )
-            {
-               CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthII);
-            }
-         }
-      }
    } // next group
 
    return pChapter;
@@ -422,11 +409,9 @@ void write_shear_dimensions_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   pParagraph->SetName(GetLimitStateString(ls));
    *pParagraph << _T("Effective Shear Dimensions for ") << GetLimitStateString(ls) << _T(" [From Article ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("]") << rptNewLine;
    
    CGirderKey girderKey = vPoi.front().get().GetSegmentKey();
-
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

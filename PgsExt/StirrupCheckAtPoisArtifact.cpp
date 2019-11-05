@@ -1111,6 +1111,7 @@ void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOth
    m_IsApplicable            = rOther.m_IsApplicable;
    m_UltimateHorizontalShear = rOther.m_UltimateHorizontalShear;
    m_NormalCompressionForce  = rOther.m_NormalCompressionForce;
+   m_gamma_Pc = rOther.m_gamma_Pc;
    m_Acv                     = rOther.m_Acv;
    m_CohesionFactor          = rOther.m_CohesionFactor;
    m_FrictionFactor          = rOther.m_FrictionFactor;
