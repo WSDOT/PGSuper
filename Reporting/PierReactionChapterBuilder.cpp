@@ -399,8 +399,8 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
 
    std::vector<REACTION> vGirderReactions, vDiaphragmReactions, vShearKeyMaxReactions, vShearKeyMinReactions, vLongitudinalJointMaxReactions, vLongitudinalJointMinReactions, vConstructionMaxReactions, vConstructionMinReactions, vSlabMaxReactions, vSlabMinReactions, vSlabPadMaxReactions, vSlabPadMinReactions, vDeckPanelMaxReactions, vDeckPanelMinReactions, vSidewalkMaxReactions, vSidewalkMinReactions, vTrafficBarrierMaxReactions, vTrafficBarrierMinReactions, vOverlayMaxReactions, vOverlayMinReactions;
 
-   vGirderReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftGirder, pgsTypes::SimpleSpan, rtCumulative);
-   vDiaphragmReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftDiaphragm, pgsTypes::SimpleSpan, rtCumulative);
+   vGirderReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtCumulative);
+   vDiaphragmReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, rtCumulative);
 
    if (bShearKey)
    {
