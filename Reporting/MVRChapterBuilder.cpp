@@ -142,7 +142,6 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    bool bIndicateControllingLoad = true;
 
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-   GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2( pBroker, ILibrary, pLib );
    std::_tstring spec_name = pSpec->GetSpecification();
@@ -152,6 +151,8 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    std::vector<CGirderKey> vGirderKeys;
    if ( bDesign )
    {
+      GET_IFACE2(pBroker, IBridge, pBridge);
+
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *p << _T("Load Responses - Casting Yard")<<rptNewLine;
       p->SetName(_T("Casting Yard Results"));
