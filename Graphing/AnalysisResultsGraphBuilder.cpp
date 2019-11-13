@@ -762,7 +762,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    }
 
    // Limit States and Capacities
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I (Design)"), pgsTypes::ServiceI, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I (Design)"), pgsTypes::ServiceI, vAllIntervals, ACTIONS_ALL_NO_REACTION | ACTIONS_X_DEFLECTION_ONLY) );
    
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
@@ -1396,7 +1396,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             case graphMinCapacity:
                if ( actionType == actionReaction )
                {
-                  LimitStateReactionGraph(selectedGraphIdx,graphDef,intervalIdx,thisGirderKey,bSimpleSpanSegments ? segIdx : ALL_SEGMENTS);
+                  ATLASSERT(0); //   LimitStateReactionGraph(selectedGraphIdx,graphDef,intervalIdx,thisGirderKey,bSimpleSpanSegments ? segIdx : ALL_SEGMENTS);
                }
                else
                {
@@ -3034,146 +3034,6 @@ void CAnalysisResultsGraphBuilder::CombinedReactionGraph(IndexType graphIdx,cons
    } // next analysis type
 }
 
-void CAnalysisResultsGraphBuilder::LimitStateReactionGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const CGirderKey& girderKey,SegmentIndexType segIdx)
-{
-   pgsTypes::LimitState limitState(graphDef.m_LoadType.LimitStateType);
-
-   ActionType actionType  = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
-   ResultsType resultsType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetResultsType();
-   ATLASSERT(actionType == actionReaction);
-   GraphType graphType(graphDef.m_GraphType);
-
-   pgsTypes::AnalysisType analysisType = GetAnalysisType();
-
-   GET_IFACE(IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
-   
-   // get global X values of the reactions
-   std::vector<Float64> leftXVals,rightXVals;
-   std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>> vSupports;
-   std::vector<CSegmentKey> segmentKeys;
-
-   if ( intervalIdx < firstSegmentErectionIntervalIdx )
-   {
-      // reactions are begin requested before any of the segments are erected
-      // so we are going to use IReaction::GetSegmentReaction. We need the
-      // segments to get reactions for and the location of the support points
-      GetSegmentXValues(girderKey,segIdx,intervalIdx,&segmentKeys,&leftXVals,&rightXVals);
-      std::transform(leftXVals.cbegin(),leftXVals.cend(),leftXVals.begin(),[&](const auto& value) {return value + m_GroupOffset;});
-      std::transform(rightXVals.cbegin(),rightXVals.cend(),rightXVals.begin(),[&](const auto& value) {return value + m_GroupOffset;});
-   }
-   else
-   {
-      // segments have been erected so we are getting reactions from the bridge model
-      // IReactions::GetReactions
-
-      // Get locations of piers and temporary supports. 
-      GetSupportXValues(girderKey,true,&leftXVals,&vSupports);
-      std::transform(leftXVals.cbegin(),leftXVals.cend(),leftXVals.begin(),[&](const auto& value) {return value + m_GroupOffset;});
-   }
-
-   GET_IFACE(IReactions,pReactions);
-
-   CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
-
-   COLORREF c(GetGraphColor(graphIdx,intervalIdx));
-   int penWeight = (graphType == graphAllowable || graphType == graphCapacity ? 3 : 2);
-
-   // data series for moment, shears and deflections
-   IndexType max_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,penWeight,c);
-   IndexType min_data_series = m_Graph.CreateDataSeries(_T(""),      PS_SOLID,penWeight,c);
-
-   bool bIncludeImpact = true;
-
-   if ( intervalIdx < firstSegmentErectionIntervalIdx )
-   {
-      std::vector<Float64> RleftMin, RleftMax, RrightMin, RrightMax;
-      if ( analysisType == pgsTypes::Envelope )
-      {
-         std::vector<Float64> RdummyLeft,RdummyRight;
-         pReactions->GetSegmentReactions(segmentKeys,intervalIdx,limitState,pgsTypes::MaxSimpleContinuousEnvelope,&RdummyLeft,&RleftMax,&RdummyRight,&RrightMax);
-         pReactions->GetSegmentReactions(segmentKeys,intervalIdx,limitState,pgsTypes::MinSimpleContinuousEnvelope,&RleftMin,&RdummyLeft,&RrightMin,&RdummyRight);
-      }
-      else
-      {
-         pReactions->GetSegmentReactions(segmentKeys,intervalIdx,limitState,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,&RleftMin,&RleftMax,&RrightMin,&RrightMax);
-      }
-
-      // put values of 0.0 at the locations that correspond to the face of the member locations 
-      // in leftXVals and rightXVals
-      int i = 0;
-      std::vector<CSegmentKey>::iterator segKeyIter(segmentKeys.begin());
-      std::vector<CSegmentKey>::iterator segKeyIterEnd(segmentKeys.end());
-      for ( ; segKeyIter != segKeyIterEnd; segKeyIter++, i+=2 )
-      {
-         RleftMin.insert(RleftMin.begin()+i,0.0);
-         RleftMax.insert(RleftMax.begin()+i,0.0);
-         RrightMin.insert(RrightMin.begin()+i+1,0.0);
-         RrightMax.insert(RrightMax.begin()+i+1,0.0);
-      }
-
-      std::vector<Float64>::iterator leftXValIter(leftXVals.begin());
-      std::vector<Float64>::iterator leftXValIterEnd(leftXVals.end());
-      std::vector<Float64>::iterator rightXValIter(rightXVals.begin());
-      std::vector<Float64>::iterator RleftMinIter(RleftMin.begin());
-      std::vector<Float64>::iterator RleftMaxIter(RleftMax.begin());
-      std::vector<Float64>::iterator RrightMinIter(RrightMin.begin());
-      std::vector<Float64>::iterator RrightMaxIter(RrightMax.begin());
-      for ( ; leftXValIter != leftXValIterEnd; leftXValIter++, rightXValIter++, RleftMinIter++, RleftMaxIter++, RrightMinIter++, RrightMaxIter++ )
-      {
-         AddGraphPoint(max_data_series,*leftXValIter,0.0);
-         AddGraphPoint(max_data_series,*leftXValIter,*RleftMaxIter);
-         AddGraphPoint(max_data_series,*leftXValIter,0.0);
-
-         AddGraphPoint(max_data_series,*rightXValIter,0.0);
-         AddGraphPoint(max_data_series,*rightXValIter,*RrightMaxIter);
-         AddGraphPoint(max_data_series,*rightXValIter,0.0);
-
-         AddGraphPoint(min_data_series,*leftXValIter,0.0);
-         AddGraphPoint(min_data_series,*leftXValIter,*RleftMinIter);
-         AddGraphPoint(min_data_series,*leftXValIter,0.0);
-
-         AddGraphPoint(min_data_series,*rightXValIter,0.0);
-         AddGraphPoint(min_data_series,*rightXValIter,*RrightMinIter);
-         AddGraphPoint(min_data_series,*rightXValIter,0.0);
-      }
-   }
-   else
-   {
-      std::vector<REACTION> Rmin, Rmax, Rdummy;
-      if ( analysisType == pgsTypes::Envelope )
-      {
-         pReactions->GetReaction(girderKey,vSupports,intervalIdx,limitState,pgsTypes::MaxSimpleContinuousEnvelope,bIncludeImpact,&Rdummy,&Rmax);
-         pReactions->GetReaction(girderKey,vSupports,intervalIdx,limitState,pgsTypes::MinSimpleContinuousEnvelope,bIncludeImpact,&Rmin,&Rdummy);
-      }
-      else
-      {
-         pReactions->GetReaction(girderKey,vSupports,intervalIdx,limitState,analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,bIncludeImpact,&Rmin,&Rmax);
-      }
-      Rmin.insert(Rmin.begin(),REACTION()); // matches first point in leftXVals
-      Rmin.push_back(REACTION()); // matches last point in leftXVals
-      Rmax.insert(Rmax.begin(),REACTION()); // matches first point in leftXVals
-      Rmax.push_back(REACTION()); // matches last point in leftXVals
-      std::vector<Float64>::iterator leftXValIter(leftXVals.begin());
-      std::vector<Float64>::iterator leftXValIterEnd(leftXVals.end());
-      std::vector<REACTION>::iterator RminIter(Rmin.begin());
-      std::vector<REACTION>::iterator RmaxIter(Rmax.begin());
-      for ( ; leftXValIter != leftXValIterEnd; leftXValIter++, RminIter++, RmaxIter++ )
-      {
-         AddGraphPoint(max_data_series,*leftXValIter,0.0);
-         AddGraphPoint(max_data_series,*leftXValIter,(*RmaxIter).Fy);
-         AddGraphPoint(max_data_series,*leftXValIter,0.0);
-
-         AddGraphPoint(min_data_series,*leftXValIter,0.0);
-         AddGraphPoint(min_data_series,*leftXValIter,(*RminIter).Fy);
-         AddGraphPoint(min_data_series,*leftXValIter,0.0);
-      }
-   }
-}
-
 void CAnalysisResultsGraphBuilder::LiveLoadReactionGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const CGirderKey& girderKey)
 {
    ActionType actionType  = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
@@ -3321,11 +3181,11 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
    {
       if ( vehicleIdx != INVALID_INDEX )
       {
-         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx, vPiers, girderKey, pgsTypes::MinSimpleContinuousEnvelope, true, false, &Rmin, &Rdummy);
+         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx, vPiers, girderKey, pgsTypes::MinSimpleContinuousEnvelope, true, &Rmin, &Rdummy);
       }
       else
       {
-         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, pgsTypes::MinSimpleContinuousEnvelope, true, false, pgsTypes::fetFy, &Rmin, &Rdummy);
+         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, pgsTypes::MinSimpleContinuousEnvelope, true, pgsTypes::fetFy, &Rmin, &Rdummy);
       }
 
       Rmin.insert(Rmin.begin(),REACTION());
@@ -3333,11 +3193,11 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
 
       if ( vehicleIdx != INVALID_INDEX )
       {
-         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx, vPiers, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &Rdummy, &Rmax);
+         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx, vPiers, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &Rdummy, &Rmax);
       }
       else
       {
-         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, true, false, pgsTypes::fetFy, &Rdummy, &Rmax);
+         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, pgsTypes::MaxSimpleContinuousEnvelope, true, pgsTypes::fetFy, &Rdummy, &Rmax);
       }
 
       Rmax.insert(Rmax.begin(),REACTION());
@@ -3347,11 +3207,11 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
    {
       if ( vehicleIdx != INVALID_INDEX )
       {
-         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx, vPiers, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, &Rmin, &Rmax);
+         pReactions->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx, vPiers, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, &Rmin, &Rmax);
       }
       else
       {
-         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, false, pgsTypes::fetFy, &Rmin, &Rmax);
+         pReactions->GetLiveLoadReaction(intervalIdx,llType,vPiers, girderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan, true, pgsTypes::fetFy, &Rmin, &Rmax);
       }
 
       Rmin.insert(Rmin.begin(),REACTION());

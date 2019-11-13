@@ -1023,6 +1023,7 @@
 #define IDC_HEIGHT_MEASURE              1731
 #define IDC_TO_GIRDER                   1732
 #define IDC_LLDF_GIRDERS_TABW           1734
+#define IDC_LLDF_TABW                   1734
 #define IDC_LLDF_PIERS_TABW             1735
 #define IDS_E_UPDATE                    1740
 #define IDC_LEFT_FC_LABEL               1743
@@ -1539,7 +1540,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        400
+#define _APS_NEXT_RESOURCE_VALUE        401
 #define _APS_NEXT_COMMAND_VALUE         37001
 #define _APS_NEXT_CONTROL_VALUE         2026
 #define _APS_NEXT_SYMED_VALUE           113

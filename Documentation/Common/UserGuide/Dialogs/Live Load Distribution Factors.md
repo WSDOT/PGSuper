@@ -32,9 +32,9 @@ In the Strength/Service columns enter the controlling distribution factor of one
 
 > NOTE: For load ratings of Special (Limited-Crossing) Permits, the one-lane distribution factor, without the multiple presence factor, is used to distribute the live load. See MBE 6A.4.5.4.2b. When using this method of defining distribution factors, enter the appropriate distribution factor in the Fatigue column.
 
-Two input grids are provided to accommodate the required input; one for inputting factors in the main span; and another for inputting factors near interior supports. Toggle between the two grids by selecting the "Span Factors" and "Abutment/Pier Factors" options.
+Two input grid types are provided to accommodate the required input; one for inputting factors in span; and another for inputting factors near interior supports. Note that the negative moment pier factors can only be input at piers and abutments with continuous our fixed boundary conditions.
 
-> NOTE: **You must enter distribution factors in both the Span Factors and Abutment/Pier Factors grids.**.
+> NOTE: **You must enter all distribution factor values in both the Span and Abutment/Pier Factors grids.**.
 
 ### Using the User-Input Grid ###
 The following symbols are used in the input grids
@@ -44,7 +44,6 @@ Item | Description
 +M | Positive Moment
 -M | Negative Moment
 V | Shear
-R | Reactions
  
 
 The tab control at the bottom of the input grid is used to select which span(s) (or pier(s)) are to be edited. In the same manner as Microsoft Excel, multiple tabs can be selected using Ctrl-Click and Shift-Click. When multiple tabs are selected, grid input operations are performed on all selected spans or piers.

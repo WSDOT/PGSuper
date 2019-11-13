@@ -532,7 +532,8 @@ BOOL CLLDFGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
                CLLDFGrid* pGrid = (CLLDFGrid*)rti.pExtra;
 
                ROWCOL nrows = pGrid->GetRowCount();
-               if (nRow<=nrows)  // don't allow overflow
+               ROWCOL ncols = pGrid->GetColCount();
+               if (nRow<=nrows && nCol<ncols)  // don't allow overflow
                {
                   CGXStyle cellStyle;
                   pGrid->GetStyleRowCol(nRow,nCol,cellStyle);

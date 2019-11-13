@@ -507,7 +507,6 @@
     <ClCompile Include="LiftingCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="LiveLoadDetailsChapterBuilder.cpp" />
     <ClCompile Include="LiveLoadDistributionFactorTable.cpp" />
-    <ClCompile Include="LiveLoadReactionTable.cpp" />
     <ClCompile Include="LoadingDetailsChapterBuilder.cpp" />
     <ClCompile Include="LoadRatingChapterBuilder.cpp" />
     <ClCompile Include="LoadRatingDetailsChapterBuilder.cpp" />
@@ -690,7 +689,6 @@
     <ClInclude Include="..\Include\Reporting\LiftingCheckDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LiveLoadDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LiveLoadDistributionFactorTable.h" />
-    <ClInclude Include="..\Include\Reporting\LiveLoadReactionTable.h" />
     <ClInclude Include="..\Include\Reporting\LoadingDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingDetailsChapterBuilder.h" />

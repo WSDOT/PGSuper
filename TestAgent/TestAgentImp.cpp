@@ -1598,24 +1598,24 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
       GET_IFACE( IReactions, pReactions);
 
       // left end
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, startPierIdx, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &max );
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, startPierIdx, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true,  &min, &dummy );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, startPierIdx, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &max );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, startPierIdx, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true,  &min, &dummy );
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34040, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34041, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
       // right end
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, endPierIdx, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &max );
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, endPierIdx, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true,  &min, &dummy );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, endPierIdx, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &max );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, endPierIdx, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true,  &min, &dummy );
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34040, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34041, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, startPierIdx, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &max );
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, startPierIdx, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true,  &min, &dummy );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, startPierIdx, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &max );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, startPierIdx, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true,  &min, &dummy );
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34042, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34043, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, endPierIdx, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &max );
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, endPierIdx, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true,  &min, &dummy );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, endPierIdx, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &max );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, endPierIdx, segmentKey, pgsTypes::MinSimpleContinuousEnvelope, true,  &min, &dummy );
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34042, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34043, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
@@ -1668,21 +1668,22 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
    else
    {
       bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+
       // left end
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, startPierIdx, segmentKey, bat, true, &min, &max );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, startPierIdx, segmentKey, bat, true, &min, &max );
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34040, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34041, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
       // right end
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, endPierIdx, segmentKey, bat, true, &min, &max );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, endPierIdx, segmentKey, bat, true, &min, &max );
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34040, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34041, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, startPierIdx, segmentKey, bat, true, &min, &max );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, startPierIdx, segmentKey, bat, true, &min, &max );
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34042, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34043, ")<<lftloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 
-      pLsForces->GetReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, endPierIdx, segmentKey, bat, true, &min, &max );
+      pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::ServiceI, endPierIdx, segmentKey, bat, true, &min, &max );
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34042, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(max, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
       resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 34043, ")<<rgtloc<<_T(", ")<< QUITE(::ConvertFromSysUnits(min, unitMeasure::Newton)) <<_T(", 8, ")<<segmentKey.girderIndex<<std::endl;
 

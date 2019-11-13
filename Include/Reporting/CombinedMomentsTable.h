@@ -641,13 +641,10 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
 }
 
 template <class M,class T>
-RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker* pBroker,LPCTSTR strLabel,bool bPierTable, bool bRating,IntervalIndexType intervalIdx,
+RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker* pBroker,LPCTSTR strLabel,bool bPierTable, bool bRating,bool doLimitState,
                                                pgsTypes::AnalysisType analysisType,
                                                IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
-
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -671,7 +668,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
       nCols += 5;
    }
 
-   if ( liveLoadIntervalIdx <= intervalIdx )
+   if ( !doLimitState )
    {
       if ( analysisType == pgsTypes::Envelope )
       {
@@ -762,7 +759,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
          (*pTable)(1,col++) << COLHDR(_T("Min"), M, unitT );
       }
 
-      if ( intervalIdx < liveLoadIntervalIdx )
+      if ( doLimitState )
       {
          pTable->SetColumnSpan(0,col,2);
          (*pTable)(0,col) << _T("Service I");
@@ -814,7 +811,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
          (*pTable)(0,col++) << COLHDR(symbol(SUM) << _T("PS"),          M, unitT );
       }
 
-      if ( intervalIdx < liveLoadIntervalIdx )
+      if ( doLimitState )
       {
          (*pTable)(0,col++) << COLHDR(_T("Service I"), M, unitT );
       }

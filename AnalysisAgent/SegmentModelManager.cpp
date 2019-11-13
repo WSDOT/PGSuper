@@ -230,23 +230,6 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
    }
 }
 
-void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,Float64* pRleftMin,Float64* pRleftMax,Float64* pRrightMin,Float64* pRrightMax) const
-{
-   Float64 Rleft, Rright;
-   GetReaction(segmentKey,intervalIdx,lcDC,rtCumulative,&Rleft,&Rright);
-
-   GET_IFACE(ILoadFactors,pILoadFactors);
-   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-   Float64 gDCMin, gDCMax;
-   pLoadFactors->GetDC(limitState, &gDCMin, &gDCMax);
-
-   *pRleftMin = gDCMin*Rleft;
-   *pRleftMax = gDCMax*Rleft;
-
-   *pRrightMin = gDCMin*Rright;
-   *pRrightMax = gDCMax*Rright;
-}
-
 Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType) const
 {
    if ( pfType != pgsTypes::pftGirder )

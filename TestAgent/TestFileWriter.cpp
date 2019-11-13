@@ -1240,13 +1240,11 @@ int Test_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGird
    Float64 gpM, gpM1, gpM2;  // pos moment
    Float64 gnM, gnM1, gnM2;  // neg moment, ahead face
    Float64 gV,  gV1,  gV2;   // shear
-   Float64 gR,  gR1,  gR2;   // reaction
 
    pDfEng->GetDFResultsEx(spanKey,pgsTypes::StrengthI,
                           &gpM, &gpM1, &gpM2,
                           &gnM, &gnM1, &gnM2,
-                          &gV,  &gV1,  &gV2,
-                          &gR,  &gR1,  &gR2 );
+                          &gV,  &gV1,  &gV2);
 
 	TCHAR	spanNumber[5+1];
 	_stprintf_s(spanNumber, sizeof(spanNumber)/sizeof(TCHAR), _T("%d"), (int)LABEL_SPAN(spanIdx));
@@ -1271,10 +1269,6 @@ int Test_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGird
    workerB.WriteFloat64(gV, _T("  gV  "),8,6,_T("%6.2f"));
    workerB.WriteFloat64(gV1,_T(" gV1  "),8,6,_T("%6.2f"));
    workerB.WriteFloat64(gV2,_T(" gV2  "),8,6,_T("%6.2f"));
-
-   workerB.WriteFloat64(gR, _T("  gR  "),8,6,_T("%6.2f"));
-   workerB.WriteFloat64(gR1,_T(" gR1  "),8,6,_T("%6.2f"));
-   workerB.WriteFloat64(gR2,_T(" gR2  "),8,6,_T("%6.2f"));
 
    workerB.WriteToFile(fp);
 

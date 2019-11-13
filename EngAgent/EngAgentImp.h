@@ -292,12 +292,10 @@ public:
    virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const override;
    virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,pgsTypes::PierFaceType pierFace) const override;
    virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const override;
-   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState) const override;
    virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr) const override;
    virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr) const override;
    virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState lsr,pgsTypes::PierFaceType pierFace,Float64 fcgdr) const override;
    virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr) const override;
-   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr) const override;
    virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) const override;
    virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) const override;
    virtual void GetNegMomentDistFactorPoints(const CSpanKey& spanKey,Float64* dfPoints,IndexType* nPoints) const override;
@@ -310,8 +308,7 @@ public:
    virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState limitState,
                        Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                        Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
-                       Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
-                       Float64* gR,  Float64* gR1,  Float64* gR2 ) const; // reaction
+                       Float64* gV,  Float64* gV1,  Float64* gV2) const;   // shear
    virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey) const override;
 
 // IMomentCapacity

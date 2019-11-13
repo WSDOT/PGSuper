@@ -83,6 +83,20 @@ bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, CollectionIndexType nI
    return false;
 }
 
+inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
+{
+   GroupIndexType ngrps = pBridge->GetGirderGroupCount();
+   GirderIndexType ngdrs = pBridge->GetGirderCount(0);
+   for (GroupIndexType igrp = 1; igrp < ngrps; igrp++)
+   {
+      if (pBridge->GetGirderCount(igrp) != ngdrs)
+         return true;
+   }
+
+   return false;
+}
+
+
 CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion, bool bPageBreakAfter) :
 CTitlePageBuilder(strTitle),
 m_pBroker(pBroker),
@@ -334,6 +348,36 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
    {
       *p << _T("Section Properties: Transformed") << rptNewLine;
    }
+
+   GET_IFACE_NOCHECK(IBridge, pBridge);
+   if (girderKey.girderIndex != INVALID_INDEX && IsDifferentNumberOfGirdersPerSpan(pBridge) )
+   {
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pTitlePage << p;
+      *p << _T("Beams Used in Girderline Analysis Models") << rptNewLine;
+
+      p = new rptParagraph();
+      *pTitlePage << p;
+      *p << italic(ON) << _T("This bridge is described with a different number of girders in each span.") <<  italic(OFF) << _T(" Plane frame analysis is performed in accordance with LRFD 4.6.2. ");
+      *p << _T("The structural analysis model for Girderline ") << LABEL_GIRDER(girderKey.girderIndex) << _T(" consists of ");
+
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys);
+      size_t cnt = vGirderKeys.size();
+      size_t ic = 0;
+      for (const auto& thisGirderKey : vGirderKeys)
+      {
+         *p << _T("Span ") << LABEL_SPAN(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex); 
+
+         if (++ic < cnt)
+         {
+            *p << _T(", ");
+         }
+      }
+
+      *p << _T(". Note that the pier cap is assumed to be torsionally rigid for transfer of continuous moment. Refer to the Structural Analysis Models section in the Help Technical Guide for more guidance.") << rptNewLine;
+   }
+
 
    rptRcTable* pTable;
    int row = 0;

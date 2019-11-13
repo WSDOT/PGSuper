@@ -484,7 +484,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    // Make sure outside changes to the bridge haven't made our data out of sync
    ProtectBearingData();
-   pStrSave->BeginUnit(_T("PierDataDetails"),20.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),21.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -680,7 +680,8 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // added in version 5
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pStrSave->BeginUnit(_T("LLDF"),3.0); // Version 3 went from interior/exterior to girder by girder
+      pStrSave->BeginUnit(_T("LLDF"),4.0); // Version 3 went from interior/exterior to girder by girder
+                                           // Version 4 got rid of gR's
 
       GirderIndexType ngs = GetLldfGirderCount();
       pStrSave->put_Property(_T("nLLDFGirders"),CComVariant(ngs));
@@ -691,9 +692,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
          LLDF& lldf = GetLLDF(igs);
 
          pStrSave->put_Property(_T("gM_Strength"), CComVariant(lldf.gM[0]));
-         pStrSave->put_Property(_T("gR_Strength"), CComVariant(lldf.gR[0]));
          pStrSave->put_Property(_T("gM_Fatigue"),  CComVariant(lldf.gM[1]));
-         pStrSave->put_Property(_T("gR_Fatigue"),  CComVariant(lldf.gR[1]));
          pStrSave->EndUnit(); // LLDF_Girder
       }
 
@@ -1205,7 +1204,6 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             // Prior to version 3, factors were for interior and exterior only
             Float64 gM[2][2];
-            Float64 gR[2][2];
 
             if ( lldf_version < 2 )
             {
@@ -1227,23 +1225,18 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                gM[pgsTypes::Exterior][0] = var.dblVal;
                gM[pgsTypes::Exterior][1] = var.dblVal;
 
+               // Reaction lldf's were removed in version 4 (pierdata version 21). Load them, but don't use them
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Interior"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
 
-               gR[pgsTypes::Interior][0] = var.dblVal;
-               gR[pgsTypes::Interior][1] = var.dblVal;
-
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
-
-               gR[pgsTypes::Exterior][0] = var.dblVal;
-               gR[pgsTypes::Exterior][1] = var.dblVal;
             }
             else
             {
@@ -1263,21 +1256,18 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
                gM[pgsTypes::Exterior][0] = var.dblVal;
 
+               // Reaction lldf's were removed in pierdata version 21. Load them, but don't use them
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Strength"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
 
-               gR[pgsTypes::Interior][0] = var.dblVal;
-
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Strength"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
-
-               gR[pgsTypes::Exterior][0] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Fatigue"),&var)) )
@@ -1296,20 +1286,16 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                gM[pgsTypes::Exterior][1] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Fatigue"),&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Fatigue"),&var)) ) // no longer used
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
-
-               gR[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Fatigue"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
-
-               gR[pgsTypes::Exterior][1] = var.dblVal;
             }
 
             // Move interior and exterior factors into first two slots in df vector. We will 
@@ -1319,15 +1305,11 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             LLDF df;
             df.gM[0] = gM[pgsTypes::Exterior][0];
             df.gM[1] = gM[pgsTypes::Exterior][1];
-            df.gR[0] = gR[pgsTypes::Exterior][0];
-            df.gR[1] = gR[pgsTypes::Exterior][1];
 
             m_LLDFs.push_back(df); // First in list is exterior
 
             df.gM[0] = gM[pgsTypes::Interior][0];
             df.gM[1] = gM[pgsTypes::Interior][1];
-            df.gR[0] = gR[pgsTypes::Interior][0];
-            df.gR[1] = gR[pgsTypes::Interior][1];
 
             m_LLDFs.push_back(df); // Second is interior
          }
@@ -1349,14 +1331,18 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                hr = pStrLoad->get_Property(_T("gM_Strength"),&var);
                lldf.gM[0] = var.dblVal;
 
-               hr = pStrLoad->get_Property(_T("gR_Strength"),&var);
-               lldf.gR[0] = var.dblVal;
+               if (lldf_version < 4)
+               {
+                  hr = pStrLoad->get_Property(_T("gR_Strength"), &var); // no longer used in version 4
+               }
 
                hr = pStrLoad->get_Property(_T("gM_Fatigue"),&var);
                lldf.gM[1] = var.dblVal;
 
-               hr = pStrLoad->get_Property(_T("gR_Fatigue"),&var);
-               lldf.gR[1] = var.dblVal;
+               if (lldf_version < 4)
+               {
+                  hr = pStrLoad->get_Property(_T("gR_Fatigue"), &var);
+               }
 
                pStrLoad->EndUnit(); // LLDF
 
@@ -2287,37 +2273,6 @@ void CPierData2::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Lim
    }
 }
 
-Float64 CPierData2::GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
-{
-   LLDF& rlldf = GetLLDF(gdrIdx);
-
-   return rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0];
-}
-
-void CPierData2::SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gR)
-{
-   LLDF& rlldf = GetLLDF(gdrIdx);
-
-   rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0] = gR;
-}
-
-void CPierData2::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM)
-{
-   GirderIndexType ngdrs = GetLldfGirderCount();
-   if (ngdrs>2 && gdrloc==pgsTypes::Interior)
-   {
-      for (GirderIndexType ig=1; ig<ngdrs-1; ig++)
-      {
-         SetLLDFReaction(ig,ls,gM);
-      }
-   }
-   else if (gdrloc==pgsTypes::Exterior)
-   {
-      SetLLDFReaction(0,ls,gM);
-      SetLLDFReaction(ngdrs-1,ls,gM);
-   }
-}
-
 bool CPierData2::IsContinuousConnection() const
 {
    if ( IsInteriorPier() )
@@ -2634,9 +2589,6 @@ void CPierData2::SetPierData(CPierData* pPier)
       lldf2.gM[0] = lldf.gM[0];
       lldf2.gM[1] = lldf.gM[1];
 
-      lldf2.gR[0] = lldf.gR[0];
-      lldf2.gR[1] = lldf.gR[1];
-      
       m_LLDFs.push_back(lldf2);
    }
 

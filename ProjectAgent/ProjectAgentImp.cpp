@@ -4119,13 +4119,11 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
          Float64 M = var.dblVal;
 
-         hr = pLoad->get_Property(_T("ReactionDistFactor"), &var );
+         hr = pLoad->get_Property(_T("ReactionDistFactor"), &var ); // no longer used 11/4/2019
          if ( FAILED(hr) )
          {
             return hr;
          }
-
-         Float64 R = var.dblVal;
 
          // Fill up the data structures
          CPierData2* pPier = pObj->m_BridgeDescription.GetPier(0);
@@ -4136,11 +4134,6 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
             pPier->SetLLDFNegMoment(pgsTypes::Exterior,pgsTypes::StrengthI,M);
             pPier->SetLLDFNegMoment(pgsTypes::Interior,pgsTypes::FatigueI,M);
             pPier->SetLLDFNegMoment(pgsTypes::Exterior,pgsTypes::FatigueI,M);
-
-            pPier->SetLLDFReaction(pgsTypes::Interior,pgsTypes::StrengthI,R);
-            pPier->SetLLDFReaction(pgsTypes::Exterior,pgsTypes::StrengthI,R);
-            pPier->SetLLDFReaction(pgsTypes::Interior,pgsTypes::FatigueI,R);
-            pPier->SetLLDFReaction(pgsTypes::Exterior,pgsTypes::FatigueI,R);
 
             pSpan = pPier->GetNextSpan();
             if ( pSpan )
@@ -4167,7 +4160,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
       {
          // Load data from 1.1 to pre-version 2.0 format into temporary variables
 
-         Float64 M[2], V[2], R[2];
+         Float64 M[2], V[2];
 
          var.vt = VT_R8 ;
          hr = pLoad->get_Property(_T("IntShearDistFactor"), &var );
@@ -4186,15 +4179,12 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
          M[pgsTypes::Interior] = var.dblVal;
 
-         hr = pLoad->get_Property(_T("IntReactionDistFactor"), &var );
+         hr = pLoad->get_Property(_T("IntReactionDistFactor"), &var ); // no longer used
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         R[pgsTypes::Interior] = var.dblVal;
-
-      
          hr = pLoad->get_Property(_T("ExtShearDistFactor"), &var );
          if ( FAILED(hr) )
          {
@@ -4211,14 +4201,11 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
          M[pgsTypes::Exterior] = var.dblVal;
 
-         hr = pLoad->get_Property(_T("ExtReactionDistFactor"), &var );
+         hr = pLoad->get_Property(_T("ExtReactionDistFactor"), &var ); // no longer used
          if ( FAILED(hr) )
          {
             return hr;
          }
-
-         R[pgsTypes::Exterior] = var.dblVal;
-
 
          // Fill up the data structures
          CPierData2* pPier = pObj->m_BridgeDescription.GetPier(0);
@@ -4240,8 +4227,6 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
                      pgsTypes::GirderLocation type = (ig==0 || ig==ngdrs-1)? pgsTypes::Exterior : pgsTypes::Interior;
                      
                      pPier->SetLLDFNegMoment(type, limitState,M[type]);
-
-                     pPier->SetLLDFReaction(type, limitState,R[type]);
 
                      if ( pSpan )
                      {
@@ -4273,7 +4258,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
             do
             {
-               Float64 pM, nM, V, R;
+               Float64 pM, nM, V;
 
                var.vt = VT_R8;
                hr = pLoad->BeginUnit(_T("Pier"));
@@ -4294,7 +4279,6 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
                   return hr;
                }
 
-
                pPier->SetLLDFNegMoment(type,pgsTypes::StrengthI,var.dblVal);
                pPier->SetLLDFNegMoment(type,pgsTypes::FatigueI, var.dblVal);
 
@@ -4304,14 +4288,11 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
                   return hr;
                }
 
-               hr = pLoad->get_Property(_T("R"), &var);
+               hr = pLoad->get_Property(_T("R"), &var); // no longer used
                if ( FAILED(hr) )
                {
                   return hr;
                }
-
-               pPier->SetLLDFReaction(type,pgsTypes::StrengthI,var.dblVal);
-               pPier->SetLLDFReaction(type,pgsTypes::FatigueI, var.dblVal);
 
                pLoad->EndUnit();
 
@@ -4351,13 +4332,11 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
                   V = var.dblVal;
 
-                  hr = pLoad->get_Property(_T("R"), &var);
+                  hr = pLoad->get_Property(_T("R"), &var); // no longer used
                   if ( FAILED(hr) )
                   {
                      return hr;
                   }
-
-                  R = var.dblVal;
 
                   // Set for all girders
                   CGirderGroupData* pGroup = pObj->m_BridgeDescription.GetGirderGroup(pSpan);
@@ -9193,15 +9172,15 @@ Float64 CProjectAgentImp::GetReactionServiceLiveLoadFactor(PierIndexType pierIdx
       if ( vehicleIdx == INVALID_INDEX )
       {
          IndexType minVehicleIdx, maxVehicleIdx;
-         pReactions->GetLiveLoadReaction(liveLoadIntervalIdx,llType,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,pgsTypes::fetFy, &Rmin,&Rmax,&minVehicleIdx,&maxVehicleIdx);
+         pReactions->GetLiveLoadReaction(liveLoadIntervalIdx,llType,pierIdx,girderKey,bat,true/*include impact*/,pgsTypes::fetFy, &Rmin,&Rmax,&minVehicleIdx,&maxVehicleIdx);
          
          REACTION rmin,rmax;
-         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,maxVehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,&rmin,&rmax,nullptr,&maxAxleConfig);
+         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,maxVehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,&rmin,&rmax,nullptr,&maxAxleConfig);
          ATLASSERT(Rmax == rmax);
       }
       else
       {
-         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,vehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,&Rmin,&Rmax,&minAxleConfig,&maxAxleConfig);
+         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,vehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,&Rmin,&Rmax,&minAxleConfig,&maxAxleConfig);
       }
 
       gLL = GetStrengthLiveLoadFactor(ratingType,maxAxleConfig);

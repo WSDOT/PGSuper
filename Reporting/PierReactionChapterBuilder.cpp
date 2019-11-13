@@ -38,6 +38,19 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
+{
+   GroupIndexType ngrps = pBridge->GetGirderGroupCount();
+   GirderIndexType ngdrs = pBridge->GetGirderCount(0);
+   for (GroupIndexType igrp = 1; igrp < ngrps; igrp++)
+   {
+      if (pBridge->GetGirderCount(igrp) != ngdrs)
+         return true;
+   }
+
+   return false;
+}
+
 /****************************************************************************
 CLASS
    CPierReactionChapterBuilder
@@ -71,12 +84,11 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    GET_IFACE2(pBroker, IIntervals, pIntervals);
-   GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IReactions, pReactions);
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-
    GET_IFACE2(pBroker, ISpecification, pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -98,6 +110,11 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
+
+   if (IsDifferentNumberOfGirdersPerSpan(pBridge))
+   {
+      (*pPara) <<  italic(ON) << _T("This bridge is described with a different number of girders in each span. Plane frame analysis performed in accordance with LRFD 4.6.2. Careful consideration should be taken when applying pier reactions below to substructure models. Refer to the Technical Guide Structural Analysis Models documentation for more information.") <<  italic(OFF) << rptNewLine << rptNewLine;
+   }
 
    bool bDesign = true;
    bool bRating = false;
@@ -521,50 +538,50 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
 
       if (analysisType == pgsTypes::Envelope)
       {
-         pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batSS, true, false, fetPrimary, &vMinLLReactionsSimpleSpan[fetPrimary], &vMaxLLReactionsSimpleSpan[fetPrimary], &vMinLLVehicleSimpleSpan[fetPrimary], &vMaxLLVehicleSimpleSpan[fetPrimary]);
-         pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batCS, true, false, fetPrimary, &vMinLLReactionsContinuousSpan[fetPrimary], &vMaxLLReactionsContinuousSpan[fetPrimary], &vMinLLVehicleContinuousSpan[fetPrimary], &vMaxLLVehicleContinuousSpan[fetPrimary]);
+         pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batSS, true, fetPrimary, &vMinLLReactionsSimpleSpan[fetPrimary], &vMaxLLReactionsSimpleSpan[fetPrimary], &vMinLLVehicleSimpleSpan[fetPrimary], &vMaxLLVehicleSimpleSpan[fetPrimary]);
+         pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batCS, true, fetPrimary, &vMinLLReactionsContinuousSpan[fetPrimary], &vMaxLLReactionsContinuousSpan[fetPrimary], &vMinLLVehicleContinuousSpan[fetPrimary], &vMaxLLVehicleContinuousSpan[fetPrimary]);
 
          if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
          {
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batSS, true, false, fetPrimary, &vMinFatigueReactionsSimpleSpan[fetPrimary], &vMaxFatigueReactionsSimpleSpan[fetPrimary], &vMinFatigueVehicleSimpleSpan[fetPrimary], &vMaxFatigueVehicleSimpleSpan[fetPrimary]);
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batCS, true, false, fetPrimary, &vMinFatigueReactionsContinuousSpan[fetPrimary], &vMaxFatigueReactionsContinuousSpan[fetPrimary], &vMinFatigueVehicleContinuousSpan[fetPrimary], &vMaxFatigueVehicleContinuousSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batSS, true, fetPrimary, &vMinFatigueReactionsSimpleSpan[fetPrimary], &vMaxFatigueReactionsSimpleSpan[fetPrimary], &vMinFatigueVehicleSimpleSpan[fetPrimary], &vMaxFatigueVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batCS, true, fetPrimary, &vMinFatigueReactionsContinuousSpan[fetPrimary], &vMaxFatigueReactionsContinuousSpan[fetPrimary], &vMinFatigueVehicleContinuousSpan[fetPrimary], &vMaxFatigueVehicleContinuousSpan[fetPrimary]);
          }
 
          if (bPermit)
          {
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batSS, true, false, fetPrimary, &vMinPermitReactionsSimpleSpan[fetPrimary], &vMaxPermitReactionsSimpleSpan[fetPrimary], &vMinPermitVehicleSimpleSpan[fetPrimary], &vMaxPermitVehicleSimpleSpan[fetPrimary]);
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batCS, true, false, fetPrimary, &vMinPermitReactionsContinuousSpan[fetPrimary], &vMaxPermitReactionsContinuousSpan[fetPrimary], &vMinPermitVehicleContinuousSpan[fetPrimary], &vMaxPermitVehicleContinuousSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batSS, true, fetPrimary, &vMinPermitReactionsSimpleSpan[fetPrimary], &vMaxPermitReactionsSimpleSpan[fetPrimary], &vMinPermitVehicleSimpleSpan[fetPrimary], &vMaxPermitVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batCS, true, fetPrimary, &vMinPermitReactionsContinuousSpan[fetPrimary], &vMaxPermitReactionsContinuousSpan[fetPrimary], &vMinPermitVehicleContinuousSpan[fetPrimary], &vMaxPermitVehicleContinuousSpan[fetPrimary]);
          }
 
          if (bPedLoading)
          {
             // ped loads are funny. the LLDF is the loading so include it
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batSS, true, true, fetPrimary, &vMinPedLLReactionsSimpleSpan[fetPrimary], &vMaxPedLLReactionsSimpleSpan[fetPrimary], &vMinPedLLVehicleSimpleSpan[fetPrimary], &vMaxPedLLVehicleSimpleSpan[fetPrimary]);
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batCS, true, true, fetPrimary, &vMinPedLLReactionsContinuousSpan[fetPrimary], &vMaxPedLLReactionsContinuousSpan[fetPrimary], &vMinPedLLVehicleContinuousSpan[fetPrimary], &vMaxPedLLVehicleContinuousSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batSS, true, fetPrimary, &vMinPedLLReactionsSimpleSpan[fetPrimary], &vMaxPedLLReactionsSimpleSpan[fetPrimary], &vMinPedLLVehicleSimpleSpan[fetPrimary], &vMaxPedLLVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batCS, true, fetPrimary, &vMinPedLLReactionsContinuousSpan[fetPrimary], &vMaxPedLLReactionsContinuousSpan[fetPrimary], &vMinPedLLVehicleContinuousSpan[fetPrimary], &vMaxPedLLVehicleContinuousSpan[fetPrimary]);
          }
       }
       else
       {
-         pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batMax, true, false, fetPrimary, &vMinLLReactionsSimpleSpan[fetPrimary], &vMaxLLReactionsSimpleSpan[fetPrimary], &vMinLLVehicleSimpleSpan[fetPrimary], &vMaxLLVehicleSimpleSpan[fetPrimary]);
-         pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batMin, true, false, fetPrimary, &vMinLLReactionsContinuousSpan[fetPrimary], &vMaxLLReactionsContinuousSpan[fetPrimary], &vMinLLVehicleContinuousSpan[fetPrimary], &vMaxLLVehicleContinuousSpan[fetPrimary]);
+         pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batMax, true, fetPrimary, &vMinLLReactionsSimpleSpan[fetPrimary], &vMaxLLReactionsSimpleSpan[fetPrimary], &vMinLLVehicleSimpleSpan[fetPrimary], &vMaxLLVehicleSimpleSpan[fetPrimary]);
+         pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltDesign, vPiers, girderKey, batMin, true, fetPrimary, &vMinLLReactionsContinuousSpan[fetPrimary], &vMaxLLReactionsContinuousSpan[fetPrimary], &vMinLLVehicleContinuousSpan[fetPrimary], &vMaxLLVehicleContinuousSpan[fetPrimary]);
 
          if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
          {
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batMax, true, false, fetPrimary, &vMinFatigueReactionsSimpleSpan[fetPrimary], &vMaxFatigueReactionsSimpleSpan[fetPrimary], &vMinFatigueVehicleSimpleSpan[fetPrimary], &vMaxFatigueVehicleSimpleSpan[fetPrimary]);
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batMin, true, false, fetPrimary, &vMinFatigueReactionsContinuousSpan[fetPrimary], &vMaxFatigueReactionsContinuousSpan[fetPrimary], &vMinFatigueVehicleContinuousSpan[fetPrimary], &vMaxFatigueVehicleContinuousSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batMax, true, fetPrimary, &vMinFatigueReactionsSimpleSpan[fetPrimary], &vMaxFatigueReactionsSimpleSpan[fetPrimary], &vMinFatigueVehicleSimpleSpan[fetPrimary], &vMaxFatigueVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltFatigue, vPiers, girderKey, batMin, true, fetPrimary, &vMinFatigueReactionsContinuousSpan[fetPrimary], &vMaxFatigueReactionsContinuousSpan[fetPrimary], &vMinFatigueVehicleContinuousSpan[fetPrimary], &vMaxFatigueVehicleContinuousSpan[fetPrimary]);
          }
 
          if (bPermit)
          {
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batMax, true, false, fetPrimary, &vMinPermitReactionsSimpleSpan[fetPrimary], &vMaxPermitReactionsSimpleSpan[fetPrimary], &vMinPermitVehicleSimpleSpan[fetPrimary], &vMaxPermitVehicleSimpleSpan[fetPrimary]);
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batMin, true, false, fetPrimary, &vMinPermitReactionsContinuousSpan[fetPrimary], &vMaxPermitReactionsContinuousSpan[fetPrimary], &vMinPermitVehicleContinuousSpan[fetPrimary], &vMaxPermitVehicleContinuousSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batMax, true, fetPrimary, &vMinPermitReactionsSimpleSpan[fetPrimary], &vMaxPermitReactionsSimpleSpan[fetPrimary], &vMinPermitVehicleSimpleSpan[fetPrimary], &vMaxPermitVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPermit, vPiers, girderKey, batMin, true, fetPrimary, &vMinPermitReactionsContinuousSpan[fetPrimary], &vMaxPermitReactionsContinuousSpan[fetPrimary], &vMinPermitVehicleContinuousSpan[fetPrimary], &vMaxPermitVehicleContinuousSpan[fetPrimary]);
          }
 
          if (bPedLoading)
          {
             // ped loads are funny. the LLDF is the loading so include it
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batMax, true, true, fetPrimary, &vMinPedLLReactionsSimpleSpan[fetPrimary], &vMaxPedLLReactionsSimpleSpan[fetPrimary], &vMinPedLLVehicleSimpleSpan[fetPrimary], &vMaxPedLLVehicleSimpleSpan[fetPrimary]);
-            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batMin, true, true, fetPrimary, &vMinPedLLReactionsContinuousSpan[fetPrimary], &vMaxPedLLReactionsContinuousSpan[fetPrimary], &vMinPedLLVehicleContinuousSpan[fetPrimary], &vMaxPedLLVehicleContinuousSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batMax, true, fetPrimary, &vMinPedLLReactionsSimpleSpan[fetPrimary], &vMaxPedLLReactionsSimpleSpan[fetPrimary], &vMinPedLLVehicleSimpleSpan[fetPrimary], &vMaxPedLLVehicleSimpleSpan[fetPrimary]);
+            pReactions->GetLiveLoadReaction(intervalIdx, pgsTypes::lltPedestrian, vPiers, girderKey, batMin, true, fetPrimary, &vMinPedLLReactionsContinuousSpan[fetPrimary], &vMaxPedLLReactionsContinuousSpan[fetPrimary], &vMinPedLLVehicleContinuousSpan[fetPrimary], &vMaxPedLLVehicleContinuousSpan[fetPrimary]);
          }
       }
    }

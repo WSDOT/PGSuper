@@ -224,7 +224,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       {
          REACTION Rmin, Rmax;
          AxleConfiguration maxConfig, minConfig;
-         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, pgsTypes::MaxSimpleContinuousEnvelope,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, pgsTypes::MaxSimpleContinuousEnvelope,  true, &Rmin, &Rmax, &minConfig, &maxConfig );
          (*p_table)(row,col++) << reaction.SetValue( Rmax.Fy );
 
          if ( bReportTruckConfig )
@@ -232,7 +232,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
             CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
          }
 
-         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, pgsTypes::MinSimpleContinuousEnvelope,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, pgsTypes::MinSimpleContinuousEnvelope,  true, &Rmin, &Rmax, &minConfig, &maxConfig );
          (*p_table)(row,col++) << reaction.SetValue( Rmin.Fy );
 
          if ( bReportTruckConfig )
@@ -266,7 +266,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       {
          REACTION Rmin, Rmax;
          AxleConfiguration maxConfig, minConfig;
-         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,  true, &Rmin, &Rmax, &minConfig, &maxConfig );
          (*p_table)(row,col++) << reaction.SetValue( Rmax.Fy );
 
          if ( bReportTruckConfig )

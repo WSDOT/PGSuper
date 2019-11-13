@@ -90,9 +90,6 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   rptRcTable* pMasterTable = rptStyleManager::CreateLayoutTable(2,_T("Live Load Distribution Factors"));
-   *pBody << pMasterTable;
-
    ColumnIndexType nCols = 4;
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
@@ -100,7 +97,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    }
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T("Moment and Shear"));
-   (*pMasterTable)(0,0) << pTable;
+   (*pBody) << pTable;
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -191,31 +188,6 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
       nCols++;
-   }
-
-   rptRcTable* pTable2 = rptStyleManager::CreateDefaultTable(nCols,_T("Reaction"));
-   (*pMasterTable)(0,1) << pTable2;
-
-   col = 0;
-   (*pTable2)(0, col++) << _T("Pier");
-   (*pTable2)(0, col++) << _T("Strength/Service");
-
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-   {
-      (*pTable2)(0, col++) << _T("Fatigue/Special Permit Rating");
-   }
-
-   row = pTable2->GetNumberOfHeaderRows();
-   PierIndexType nPiers = pBridge->GetPierCount();
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++, row++ )
-   {
-      col = 0;
-      (*pTable2)(row, col++) << LABEL_PIER(pierIdx);
-      (*pTable2)(row, col++) << df.SetValue(pDistFact->GetReactionDistFactor(pierIdx,girderKey.girderIndex,pgsTypes::StrengthI));
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         (*pTable2)(row, col++) << df.SetValue(pDistFact->GetReactionDistFactor(pierIdx,girderKey.girderIndex,pgsTypes::FatigueI));
-      }
    }
 
    GET_IFACE2(pBroker,ILiveLoads, pLiveLoads);

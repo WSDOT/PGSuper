@@ -631,7 +631,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
       // get reactions at the pier
       Float64 Rmin,Rmax;
-      pLSForces->GetReaction(intervalIdx,limitState,pierIdx,girderKey,bat,true,&Rmin, &Rmax);
+      pLSForces->GetLSReaction(intervalIdx,limitState,pierIdx,girderKey,bat,true,&Rmin, &Rmax);
 
       Rmin = IsZero(Rmin,0.001) ? 0 : Rmin;
       Rmax = IsZero(Rmax,0.001) ? 0 : Rmax;
@@ -2720,47 +2720,6 @@ Float64 CEngAgentImp::GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::Limit
    }
 }
 
-Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState) const
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-   const CSpanData2* pSpan = (pierIdx == pBridgeDesc->GetPierCount()-1 ? pPier->GetPrevSpan() : pPier->GetNextSpan());
-
-   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      return pPier->GetLLDFReaction(gdrIdx, limitState);
-   }
-   else
-   {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),Min(gdrIdx,pGroup->GetGirderCount()-1));
-      ValidateLiveLoadDistributionFactors(girderKey);
-
-      return m_pDistFactorEngineer->GetReactionDF(pierIdx,gdrIdx,limitState);
-   }
-}
-
-Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr) const
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-   const CSpanData2* pSpan = (pierIdx == pBridgeDesc->GetPierCount()-1 ? pPier->GetPrevSpan() : pPier->GetNextSpan());
-
-   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      return pPier->GetLLDFReaction(gdrIdx, limitState);
-   }
-   else
-   {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),Min(gdrIdx,pGroup->GetGirderCount()-1));
-      ValidateLiveLoadDistributionFactors(girderKey);
-
-      return m_pDistFactorEngineer->GetReactionDF(pierIdx,gdrIdx,limitState,fcgdr);
-   }
-}
 
 Float64 CEngAgentImp::GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) const
 {
@@ -3120,20 +3079,20 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
       scalar.SetTolerance(1.0e-6);
 
       rptParagraph* pPara;
-      pPara = new rptParagraph;
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << _T("Method of Computation: Directly Input") << rptNewLine;
+      (*pPara) << _T("Live Load Distribution Factors - Method of Computation: Directly Input") << rptNewLine;
 
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
       pgsTypes::GirderLocation gl = pGroup->IsInteriorGirder(girderKey.girderIndex) ? pgsTypes::Interior : pgsTypes::Exterior;
 
-      ColumnIndexType nCols = 5;
+      ColumnIndexType nCols = 4;
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         nCols += 4;
+         nCols += 3;
       }
 
-      rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols,_T("Live Load Distribution Factors"));
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
       (*pPara) << table;
 
@@ -3146,7 +3105,6 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          (*table)(0,1) << _T("+M");
          (*table)(0,2) << _T("-M");
          (*table)(0,3) << _T("V");
-         (*table)(0,4) << _T("R");
       }
       else
       {
@@ -3156,20 +3114,18 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          table->SetRowSpan(1,0,-1);
          (*table)(0,0) << _T("");
 
-         table->SetColumnSpan(0,1,4);
+         table->SetColumnSpan(0,1,3);
          (*table)(0,1) << _T("Strength/Service");
 
-         table->SetColumnSpan(0,5,4);
-         (*table)(0,5) << _T("Fatigue/Special Permit Rating");
+         table->SetColumnSpan(0,4,3);
+         (*table)(0,4) << _T("Fatigue/Special Permit Rating");
 
          (*table)(1,1) << _T("+M");
          (*table)(1,2) << _T("-M");
          (*table)(1,3) << _T("V");
-         (*table)(1,4) << _T("R");
-         (*table)(1,5) << _T("+M");
-         (*table)(1,6) << _T("-M");
-         (*table)(1,7) << _T("V");
-         (*table)(1,8) << _T("R");
+         (*table)(1,4) << _T("+M");
+         (*table)(1,5) << _T("-M");
+         (*table)(1,6) << _T("V");
       }
 
       const CPierData2* pPier = pBridgeDesc->GetPier(0);
@@ -3198,23 +3154,20 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          }
 
          (*table)(row,3) << _T("");
-         (*table)(row,4) << scalar.SetValue( pPier->GetLLDFReaction(girderKey.girderIndex, pgsTypes::StrengthI) );
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            (*table)(row,5) << _T("");
+            (*table)(row,4) << _T("");
 
             if ( bContinuous || bIntegralOnLeft || bIntegralOnRight)
             {
-               (*table)(row,6) << scalar.SetValue( pPier->GetLLDFNegMoment(girderKey.girderIndex, pgsTypes::FatigueI) );
+               (*table)(row,5) << scalar.SetValue( pPier->GetLLDFNegMoment(girderKey.girderIndex, pgsTypes::FatigueI) );
             }
             else
             {
-               (*table)(row,6) << _T("");
+               (*table)(row,5) << _T("");
             }
-
-            (*table)(row,7) << _T("");
-            (*table)(row,8) << scalar.SetValue( pPier->GetLLDFReaction(girderKey.girderIndex, pgsTypes::FatigueI) );
+            (*table)(row,6) << _T("");
          }
 
          row++;
@@ -3246,23 +3199,21 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
             }
 
             (*table)(row,3) << scalar.SetValue( pSpan->GetLLDFShear(girderKey.girderIndex,pgsTypes::StrengthI) );
-            (*table)(row,4) << _T("");
 
             if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               (*table)(row,5) << scalar.SetValue( pSpan->GetLLDFPosMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
+               (*table)(row,4) << scalar.SetValue( pSpan->GetLLDFPosMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
                
                if ( bContinuousStart || bContinuousEnd || bIntegralStart || bIntegralEnd )
                {
-                  (*table)(row,6) << scalar.SetValue( pSpan->GetLLDFNegMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
+                  (*table)(row,5) << scalar.SetValue( pSpan->GetLLDFNegMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
                }
                else
                {
-                  (*table)(row,6) << _T("");
+                  (*table)(row,5) << _T("");
                }
 
-               (*table)(row,7) << scalar.SetValue( pSpan->GetLLDFShear(girderKey.girderIndex,pgsTypes::FatigueI) );
-               (*table)(row,8) << _T("");
+               (*table)(row,6) << scalar.SetValue( pSpan->GetLLDFShear(girderKey.girderIndex,pgsTypes::FatigueI) );
             }
 
             row++;
@@ -3289,8 +3240,7 @@ bool CEngAgentImp::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState lim
 bool CEngAgentImp::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState limitState,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,
                                Float64* gnM, Float64* gnM1, Float64* gnM2,
-                               Float64* gV,  Float64* gV1,  Float64* gV2,
-                               Float64* gR,  Float64* gR1,  Float64* gR2 )  const
+                               Float64* gV,  Float64* gV1,  Float64* gV2 )  const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -3302,7 +3252,7 @@ bool CEngAgentImp::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState l
 
    return m_pDistFactorEngineer->GetDFResultsEx(spanKey, limitState,
                                gpM, gpM1, gpM2, gnM, gnM1, gnM2,
-                               gV,  gV1, gV2, gR, gR1, gR2 ); 
+                               gV,  gV1, gV2 ); 
 }
 
 Float64 CEngAgentImp::GetDeflectionDistFactor(const CSpanKey& spanKey) const

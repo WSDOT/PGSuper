@@ -68,6 +68,8 @@ The structural analysis models use the same girder in each span (e.g. Girder B f
 
 In the illustration above, Spans 1 and 2 have 4 girders and Span 3 has 5 girders. Girder D from spans 1 and 2 are used in the line model for analyzing Girder E.
 
+> NOTE: The accuracy of such girderline models relies on 100 percent transfer of moment through the pier cap (i.e., the pier cap is torsionally rigid, and the beam-cap connection is rigid). If this assumption is questionable, users should construct a 3D finite element model or other means for confirmation. 
+
 Loading
 ---------
 The sections that follow describe loads are developed for the various analysis intervals.

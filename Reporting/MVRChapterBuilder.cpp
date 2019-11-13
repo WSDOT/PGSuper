@@ -310,7 +310,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    // Product Reactions
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker, girderKey,analysisType,PierReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker, girderKey,analysisType,PierReactionsTable,true,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
    if ( bPedestrian )
    {
@@ -327,7 +327,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx, girderKey);
    if( 0 < vPiers.size() )
    {
-      *p << CProductReactionTable().Build(pBroker, girderKey,analysisType,BearingReactionsTable,true,false,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+      *p << CProductReactionTable().Build(pBroker, girderKey,analysisType,BearingReactionsTable,true,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
       if ( bPedestrian )
       {
@@ -518,12 +518,9 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    *pChapter << p;
    *p << _T("Live Load Reactions Without Impact") << rptNewLine;
    p->SetName(_T("Live Load Reactions Without Impact"));
-   //CLiveLoadDistributionFactorTable().Build(pChapter,pBroker,girderKey,pDisplayUnits);
-   CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter, girderKey,pDisplayUnits,analysisType,PierReactionsTable, false, true, false);
-
    if( 0 < vPiers.size() )
    {
-      CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter, girderKey,pDisplayUnits,analysisType,BearingReactionsTable, false, true, false);
+      CCombinedReactionTable().BuildLiveLoad(pBroker,pChapter, girderKey,pDisplayUnits,analysisType, false, true, false);
    }
 
    return pChapter;

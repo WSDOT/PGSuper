@@ -292,15 +292,11 @@ public:
 
 
    // =================================================================================
-   // Live load distribution factors (neg moment and reactions at this pier)
+   // Live load distribution factors (neg moment ) at this pier
    // =================================================================================
    Float64 GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
    void SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gM);
    void SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM);
-
-   Float64 GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
-   void SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gR);
-   void SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gR);
 
 #if defined _DEBUG
    void AssertValid() const;
@@ -383,17 +379,15 @@ private:
    struct LLDF
    {
       std::array<Float64, 2> gM;
-      std::array<Float64, 2> gR;
 
       LLDF()
       {
-         gM[0]=1.0; gM[1]=1.0; gR[0]=1.0; gR[1]=1.0;
+         gM[0]=1.0; gM[1]=1.0;
       }
 
       bool operator==(const LLDF& rOther) const
       {
-         return IsEqual(gM[0], rOther.gM[0]) && IsEqual(gM[1], rOther.gM[1]) &&
-                IsEqual( gR[0], rOther.gR[0])  && IsEqual( gR[1], rOther.gR[1]);
+         return IsEqual(gM[0], rOther.gM[0]) && IsEqual(gM[1], rOther.gM[1]);
       }
    };
 

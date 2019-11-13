@@ -220,9 +220,6 @@
     <ClCompile Include="LiveLoadDistributionFactorTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LiveLoadReactionTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LoadingDetailsChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -736,9 +733,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\LiveLoadDistributionFactorTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reporting\LiveLoadReactionTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\LoadingDetailsChapterBuilder.h">

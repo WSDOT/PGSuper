@@ -5659,7 +5659,7 @@ std::vector<REACTION> CGirderModelManager::GetReaction(const CGirderKey& girderK
 
 ////////////////////////////////////
 // IReactions
-std::vector<REACTION> CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) const
+std::vector<REACTION> CGirderModelManager::GM_GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) const
 {
    ATLASSERT(pfType != pgsTypes::pftPretension);
 
@@ -5747,7 +5747,7 @@ std::vector<REACTION> CGirderModelManager::GetReaction(const CGirderKey& girderK
    return reactions;
 }
 
-std::vector<REACTION> CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,LoadingCombinationType comboType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) const
+std::vector<REACTION> CGirderModelManager::GM_GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,LoadingCombinationType comboType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) const
 {
    ATLASSERT(comboType != lcPS);
 
@@ -5809,7 +5809,7 @@ std::vector<REACTION> CGirderModelManager::GetReaction(const CGirderKey& girderK
    return reactions;
 }
 
-void CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat, bool bIncludeImpact,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax) const
+void CGirderModelManager::GM_GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat, bool bIncludeImpact,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax) const
 {
    // Start by checking if the model exists
    CGirderModelData* pModelData = nullptr;
@@ -5903,7 +5903,7 @@ void CGirderModelManager::GetReaction(const CGirderKey& girderKey,const std::vec
    }
 }
 
-void CGirderModelManager::GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig) const
+void CGirderModelManager::GM_GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig) const
 {
    // Start by checking if the model exists
    CGirderModelData* pModelData = nullptr;
@@ -6000,12 +6000,44 @@ void CGirderModelManager::GetVehicularLiveLoadReaction(IntervalIndexType interva
    } // next pier
 }
 
-void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<VehicleIndexType>* pMinVehIdx,std::vector<VehicleIndexType>* pMaxVehIdx) const
+void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<VehicleIndexType>* pMinVehIdx,std::vector<VehicleIndexType>* pMaxVehIdx) const
 {
-   GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,pgsTypes::fetRz,pRmin,pRmax,nullptr,nullptr,pMinVehIdx,pMaxVehIdx);
+   GM_GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,pgsTypes::fetRz,pRmin,pRmax,nullptr,nullptr,pMinVehIdx,pMaxVehIdx);
 }
 
-void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,pgsTypes::ForceEffectType fetDeflection,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<Float64>* pTmin,std::vector<Float64>* pTmax,std::vector<VehicleIndexType>* pMinVehIdx,std::vector<VehicleIndexType>* pMaxVehIdx) const
+void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,pgsTypes::ForceEffectType fetDeflection,REACTION* pRmin,REACTION* pRmax,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinVehIdx,VehicleIndexType* pMaxVehIdx) const
+{
+   std::vector<PierIndexType> vPiers;
+   vPiers.push_back(pierIdx);
+
+   std::vector<REACTION> Rmin;
+   std::vector<REACTION> Rmax;
+   std::vector<Float64> Tmin;
+   std::vector<Float64> Tmax;
+   std::vector<VehicleIndexType> vMinVehIdx;
+   std::vector<VehicleIndexType> vMaxVehIdx;
+
+   GM_GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,fetDeflection,&Rmin,&Rmax,&Tmin,&Tmax,&vMinVehIdx,&vMaxVehIdx);
+
+   *pRmin = Rmin.front();
+   *pRmax = Rmax.front();
+
+   *pTmin = Tmin.front();
+   *pTmax = Tmax.front();
+
+   if ( pMinVehIdx )
+   {
+      *pMinVehIdx = vMinVehIdx.front();
+   }
+   
+   if ( pMaxVehIdx )
+   {
+      *pMaxVehIdx = vMaxVehIdx.front();
+   }
+}
+
+
+void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,pgsTypes::ForceEffectType fetDeflection,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<Float64>* pTmin,std::vector<Float64>* pTmax,std::vector<VehicleIndexType>* pMinVehIdx,std::vector<VehicleIndexType>* pMaxVehIdx) const
 {
    pRmin->clear();
    pRmax->clear();
@@ -6037,7 +6069,7 @@ void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsT
       REACTION Rmin, Rmax;
       Float64 Tmin, Tmax;
       VehicleIndexType minVehIdx, maxVehIdx;
-      GetLiveLoadReaction(intervalIdx,llType,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,fetDeflection,&Rmin,&Rmax,&Tmin,&Tmax,&minVehIdx,&maxVehIdx);
+      GM_GetLiveLoadReaction(intervalIdx,llType,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,fetDeflection,&Rmin,&Rmax,&Tmin,&Tmax,&minVehIdx,&maxVehIdx);
 
       pRmin->push_back(Rmin);
       pRmax->push_back(Rmax);
@@ -6064,7 +6096,7 @@ void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsT
    }
 }
 
-void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,pgsTypes::ForceEffectType fetDeflection,REACTION* pRmin,REACTION* pRmax,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinVehIdx,VehicleIndexType* pMaxVehIdx) const
+void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,pgsTypes::ForceEffectType fetDeflection,REACTION* pRmin,REACTION* pRmax,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinVehIdx,VehicleIndexType* pMaxVehIdx) const
 {
    // Start by checking if the model exists
    CGirderModelData* pModelData = nullptr;
@@ -6425,21 +6457,21 @@ void CGirderModelManager::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsT
    }
 }
 
-void CGirderModelManager::GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax) const
+void CGirderModelManager::GM_GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax) const
 {
    for( const auto& pierIdx : vPiers)
    {
       ConfigureLBAMPoisForReactions(girderKey,pierIdx,pgsTypes::stPier);
 
       Float64 Rmin, Rmax;
-      GetCombinedLiveLoadReaction(intervalIdx,llType,girderKey,bat,bIncludeImpact,&Rmin,&Rmax);
+      GM_GetCombinedLiveLoadReaction(intervalIdx,llType,girderKey,bat,bIncludeImpact,&Rmin,&Rmax);
 
       pRmin->push_back(Rmin);
       pRmax->push_back(Rmax);
    }
 }
 
-void CGirderModelManager::GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) const
+void CGirderModelManager::GM_GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) const
 {
    USES_CONVERSION;
 
@@ -6602,7 +6634,7 @@ void CGirderModelManager::GetBearingLiveLoadReaction(IntervalIndexType intervalI
       GET_IFACE(IReactions,pReactions);
       REACTION Rmin,Rmax;
       // get maximum vertical (Fy) reaction with corresponding rotation (Mz = Rz)
-      pReactions->GetLiveLoadReaction(intervalIdx,llType,location.PierIdx,location.GirderKey,bat,bIncludeImpact,bIncludeLLDF,pgsTypes::fetFy,pgsTypes::fetRz,&Rmin,&Rmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
+      GM_GetLiveLoadReaction(intervalIdx,llType,location.PierIdx,location.GirderKey,bat,bIncludeImpact,bIncludeLLDF,pgsTypes::fetFy,pgsTypes::fetRz,&Rmin,&Rmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
       *pRmin = Rmin.Fy;
       *pRmax = Rmax.Fy;
    }
@@ -6625,7 +6657,7 @@ void CGirderModelManager::GetBearingLiveLoadReaction(IntervalIndexType intervalI
       m_LBAMPoi->Add(supportID);
 
       REACTION Rmin,Rmax;
-      GetLiveLoadReaction(intervalIdx,llType,location.GirderKey,bat,bIncludeImpact,bIncludeLLDF,pgsTypes::fetFy,pgsTypes::fetRz,&Rmin,&Rmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
+      GM_GetLiveLoadReaction(intervalIdx,llType,location.GirderKey,bat,bIncludeImpact,bIncludeLLDF,pgsTypes::fetFy,pgsTypes::fetRz,&Rmin,&Rmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
       *pRmin = Rmin.Fy;
       *pRmax = Rmax.Fy;
    }
@@ -6904,7 +6936,7 @@ void CGirderModelManager::GetBearingCombinedLiveLoadReaction(IntervalIndexType i
       m_LBAMPoi->Clear();
       m_LBAMPoi->Add(supportID);
 
-      GetCombinedLiveLoadReaction(intervalIdx,llType,location.GirderKey,bat,bIncludeImpact,pRmin,pRmax);
+      GM_GetCombinedLiveLoadReaction(intervalIdx,llType,location.GirderKey,bat,bIncludeImpact,pRmin,pRmax);
    }
 }
 
@@ -6914,8 +6946,7 @@ void CGirderModelManager::GetBearingLimitStateReaction(IntervalIndexType interva
 {
    if ( location.Face == rftMid )
    {
-      GET_IFACE(ILimitStateForces,pLsForces);
-      pLsForces->GetReaction(intervalIdx,limitState,location.PierIdx,location.GirderKey,bat,bIncludeImpact,pRmin,pRmax);
+      GetReaction(intervalIdx,limitState,location.PierIdx,location.GirderKey,bat,bIncludeImpact,pRmin,pRmax);
    }
    else
    {
@@ -14377,11 +14408,23 @@ void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::Me
    support->get_DistributionFactor(&df);
 
    GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+   GET_IFACE(IPointOfInterest, pPoi);
+
+   // Reaction DF's are shear df's
+   // shear factors can vary at each end of girder
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(spanKey, endType == pgsTypes::metEnd ? (POI_10L  | POI_SPAN) : (POI_0L | POI_SPAN), &vPoi);
+
+   Float64 gpmstr, gnmstr, gvstr;
+   Float64 gpmfat, gnmfat, gvfat;
+   pLLDF->GetDistributionFactors(vPoi.front(), pgsTypes::StrengthI, &gpmstr, &gnmstr, &gvstr);
+   pLLDF->GetDistributionFactors(vPoi.front(), pgsTypes::FatigueI, &gpmfat, &gnmfat, &gvfat);
+
    Float64 gpM = 99999999;
    Float64 gnM = 99999999;
    Float64 gV  = 99999999;
-   Float64 gR  = pLLDF->GetReactionDistFactor(pierIdx,spanKey.girderIndex,pgsTypes::StrengthI);
-   Float64 gF  = pLLDF->GetReactionDistFactor(pierIdx,spanKey.girderIndex,pgsTypes::FatigueI);
+   Float64 gR  = gvstr; 
+   Float64 gF  = gvfat;
    Float64 gD  = pLLDF->GetDeflectionDistFactor(spanKey);
 
    GET_IFACE(IBridge,pBridge);
@@ -14427,7 +14470,7 @@ void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::Me
    SupportIDType backID, aheadID;
    GetPierTemporarySupportIDs(pierIdx, &backID, &aheadID);
    CComPtr<ITemporarySupport> tempSupport;
-   if (SUCCEEDED(tempSupports->Find(backID, &tempSupport)))
+   if (endType == pgsTypes::metEnd && SUCCEEDED(tempSupports->Find(backID, &tempSupport)))
    {
       df.Release();
       tempSupport->get_DistributionFactor(&df);
@@ -14443,7 +14486,7 @@ void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::Me
    }
 
    tempSupport.Release();
-   if (SUCCEEDED(tempSupports->Find(aheadID, &tempSupport)))
+   if (endType == pgsTypes::metStart && SUCCEEDED(tempSupports->Find(aheadID, &tempSupport)))
    {
       df.Release();
       tempSupport->get_DistributionFactor(&df);

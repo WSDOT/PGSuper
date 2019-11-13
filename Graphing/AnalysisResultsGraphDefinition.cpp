@@ -273,8 +273,11 @@ std::vector< std::pair<std::_tstring,IDType> > CAnalysisResultsGraphDefinitions:
             break;
 
          case actionShear:
-         case actionReaction:
             bApplicableAction = def.m_ApplicableActions & ACTIONS_SHEAR_ONLY ? true : false;
+            break;
+
+         case actionReaction:
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_REACTION_ONLY ? true : false;
             break;
 
          case actionMoment:
