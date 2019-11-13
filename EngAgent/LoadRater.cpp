@@ -613,6 +613,8 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    std::vector<CRITSECTDETAILS> criticalSections;
    GetCriticalSectionZones(girderKey, limitState, &criticalSections);
 
+   GET_IFACE(IMaterials, pMaterials);
+
    GET_IFACE(IPointOfInterest, pPoi);
    PoiList vMyPoi(vPoi);
 
@@ -868,6 +870,32 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
       designer.InitShearCheck(poi.GetSegmentKey(),loadRatingIntervalIdx, limitState,nullptr);
       designer.CheckLongReinfShear(poi,loadRatingIntervalIdx, limitState,scd,nullptr,&l_artifact);
       shearArtifact.SetLongReinfShearArtifact(l_artifact);
+
+      pgsHorizontalShearArtifact h_artifact;
+      h_artifact.SetApplicability(false);
+      if (pBridge->IsCompositeDeck())
+      {
+         h_artifact.SetApplicability(true);
+         Float64 Vu = gDC*DC + gDW*DW + gCR*CR + gSH*SH + gRE*RE + gPS*PS + gLL*(LLIM + PL);
+
+         IndexType castingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         Float64 fcSlab = pMaterials->GetDeckFc(castingRegionIdx, loadRatingIntervalIdx);
+         Float64 fcGirder;
+         Float64 E, fy, fu;
+         CClosureKey closureKey;
+         if (pPoi->IsInClosureJoint(poi, &closureKey))
+         {
+            fcGirder = pMaterials->GetClosureJointFc(closureKey, loadRatingIntervalIdx);
+            pMaterials->GetClosureJointTransverseRebarProperties(closureKey, &E, &fy, &fu);
+         }
+         else
+         {
+            fcGirder = pMaterials->GetSegmentFc(poi.GetSegmentKey(), loadRatingIntervalIdx);
+            pMaterials->GetSegmentTransverseRebarProperties(poi.GetSegmentKey(), &E, &fy, &fu);
+         }
+         designer.CheckHorizontalShear(limitState, poi, Vu, fcSlab, fcGirder, fy, nullptr, &h_artifact);
+      }
+      shearArtifact.SetHorizontalInterfaceShearArtifact(h_artifact);
 
       ratingArtifact.AddArtifact(poi,shearArtifact);
    }

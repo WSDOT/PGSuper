@@ -3441,9 +3441,23 @@ void pgsDesigner2::CheckHorizontalShear(pgsTypes::LimitState limitState, const p
    Float64 Pc = GetNormalFrictionForce(poi);
    pArtifact->SetNormalCompressionForce(Pc);
 
+   Float64 gamma_dc;
    GET_IFACE(ILoadFactors, pILoadFactors);
    const auto* pLoadFactors = pILoadFactors->GetLoadFactors();
-   Float64 gamma_dc = pLoadFactors->GetDCMin(limitState);
+   if (IsRatingLimitState(limitState))
+   {
+      // MBE Table 6A.4.2.2-1 lists gamma_dc as 1.25 while the LRFD BDS
+      // give a min and max value (1.25 and 0.90). The load rating
+      // load factors are based on the MBE and have only a single value.
+      // We don't want to artifically amplify the clamping force so
+      // use the min gamma_dc based on the design strength limit state
+      pgsTypes::LimitState ls = (IsStrengthILimitState(limitState) ? pgsTypes::StrengthI : pgsTypes::StrengthII);
+      gamma_dc = pLoadFactors->GetDCMin(ls);
+   }
+   else
+   {
+      gamma_dc = pLoadFactors->GetDCMin(limitState);
+   }
    pArtifact->SetNormalCompressionForceLoadFactor(gamma_dc);
 
 

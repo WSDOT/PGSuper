@@ -210,7 +210,7 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(CRepor
             *pPara << pPara->GetName() << rptNewLine;
             *pChapter << pPara;
          }
-         CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx, limitState);
+         CInterfaceShearDetails(pDisplayUnits).Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx, limitState);
       }
    } // next group
 
