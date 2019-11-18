@@ -75,7 +75,7 @@ public:
 protected:
    // GROUP: DATA MEMBERS
    void ReportPedestrianLoad(rptChapter* pChapter,IBroker* pBroker,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const;
-   void ReportSlabLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const;
+   void ReportSlabLoad(IBroker* pBroker,rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const;
    void ReportOverlayLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,bool bRating,const CSegmentKey& thisSegmentKey) const;
    void ReportConstructionLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const;
    void ReportLongitudinalJointLoad(rptChapter* pChapter, IBridge* pBridge, IProductLoads* pProdLoads, IEAFDisplayUnits* pDisplayUnits, const CSegmentKey& thisSegmentKey) const;

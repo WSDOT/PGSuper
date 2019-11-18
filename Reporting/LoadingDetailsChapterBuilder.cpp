@@ -284,7 +284,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             ReportLongitudinalJointLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
             ReportConstructionLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
             ReportShearKeyLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey, one_girder_has_shear_key);
-            ReportSlabLoad(        pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
+            ReportSlabLoad(pBroker, pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
             ReportOverlayLoad(     pChapter,pBridge,pProdLoads,pDisplayUnits,bRating,thisSegmentKey);
             ReportPedestrianLoad(pChapter, pBroker, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
          } // segIdx
@@ -460,7 +460,7 @@ void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,IB
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    // slab loads between supports
    rptParagraph* pPara = nullptr;
@@ -469,6 +469,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
    INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,  pDisplayUnits->GetGeneralForceUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         comp, pDisplayUnits->GetComponentDimUnit(),     false );
+   INIT_UV_PROTOTYPE( rptDensityUnitValue,        density, pDisplayUnits->GetDensityUnit(),       true );
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
@@ -476,6 +477,9 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
    
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
+      GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
+      GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
+
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
@@ -495,12 +499,18 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
 
       if (is_uniform)
       {
-         *pNotePara << strDeckName << _T(" load is uniform along entire girder length.");
+         *pNotePara << strDeckName << _T(" load is uniform along entire girder length.") << rptNewLine;
       }
       else
       {
-         *pNotePara << strDeckName << _T(" load is approximated with linear load segments applied along the length of the girder. Segments located outside of bearings are applied as point loads/moments at bearings.");
+         *pNotePara << strDeckName << _T(" load is approximated with linear load segments applied along the length of the girder. Segments located outside of bearings are applied as point loads/moments at bearings.") << rptNewLine;
       }
+
+      IndexType deckCastingRegionIdx = 0; // assume region zero to get properties that are common to all castings
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+      Float64 deck_density = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx, castDeckIntervalIdx);
+      Float64 deck_unit_weight = deck_density; // *unitSysUnitsMgr::GetGravitationalAcceleration();
+      *pNotePara << _T("Unit weight of ") << strDeckName << _T(" material is ") << density.SetValue(deck_unit_weight);
 
       pPara = new rptParagraph;
       *pChapter << pPara;
