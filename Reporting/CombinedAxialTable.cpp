@@ -131,6 +131,7 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
+   bool doLimitState = intervalIdx >= liveLoadIntervalIdx;
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -138,7 +139,7 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
 
    bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
 
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,_T("Axial"),false,bRating,intervalIdx>=liveLoadIntervalIdx,
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,_T("Axial"),false,bRating,doLimitState,
                                                                                     analysisType,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
    *p << p_table;
 
@@ -220,7 +221,7 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
          minPScum = pForces2->GetAxial( intervalIdx, lcPS, vPoi, minBAT, rtCumulative );
       }
 
-      if ( intervalIdx < liveLoadIntervalIdx )
+      if ( doLimitState )
       {
          pLsForces2->GetAxial( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &dummy, &maxServiceI );
          pLsForces2->GetAxial( intervalIdx, pgsTypes::ServiceI, vPoi, minBAT, &minServiceI, &dummy );
@@ -287,7 +288,7 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
                (*p_table)(row,col++) << axial.SetValue( minPScum[index] );
             }
 
-            if ( intervalIdx < liveLoadIntervalIdx )
+            if ( doLimitState )
             {
                (*p_table)(row,col++) << axial.SetValue( maxServiceI[index] );
                (*p_table)(row,col++) << axial.SetValue( minServiceI[index] );
@@ -327,7 +328,7 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
                (*p_table)(row,col++) << axial.SetValue( maxPScum[index] );
             }
 
-            if ( intervalIdx < liveLoadIntervalIdx )
+            if ( doLimitState )
             {
                (*p_table)(row,col++) << axial.SetValue( maxServiceI[index] );
             }

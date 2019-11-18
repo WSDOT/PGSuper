@@ -6631,7 +6631,7 @@ void CGirderModelManager::GetBearingLiveLoadReaction(IntervalIndexType intervalI
    {
       ATLASSERT(pBridge->IsInteriorPier(location.PierIdx));
 
-      GET_IFACE(IReactions,pReactions);
+      GET_IFACE_NOCHECK(IReactions,pReactions);
       REACTION Rmin,Rmax;
       // get maximum vertical (Fy) reaction with corresponding rotation (Mz = Rz)
       GM_GetLiveLoadReaction(intervalIdx,llType,location.PierIdx,location.GirderKey,bat,bIncludeImpact,bIncludeLLDF,pgsTypes::fetFy,pgsTypes::fetRz,&Rmin,&Rmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
