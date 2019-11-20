@@ -1016,8 +1016,12 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
    }
 
    // This is a design/check case, so use the regular specifications
+   GET_IFACE(IPointOfInterest, pPoi);
+   CClosureKey closureKey;
+   VERIFY(pPoi->IsInClosureJoint(poi, &closureKey));
+
    GET_IFACE(IMaterials,pMaterials);
-   Float64 fc = pMaterials->GetClosureJointDesignFc(segmentKey,task.intervalIdx);
+   Float64 fc = pMaterials->GetClosureJointDesignFc(closureKey,task.intervalIdx);
 
    Float64 fAllow = GetClosureJointAllowableTensionStress(poi,task,fc,bWithBondedReinforcement,bInPrecompressedTensileZone);
    return fAllow;
