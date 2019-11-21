@@ -690,6 +690,7 @@ CGirderModelSectionView* CGirderModelChildFrame::GetGirderModelSectionView() con
 
 void CGirderModelChildFrame::UpdateViews()
 {
+   CWaitCursor wait;
    GetGirderModelElevationView()->OnUpdate(nullptr,0,nullptr);
    GetGirderModelSectionView()->OnUpdate(nullptr,0,nullptr);
 }
