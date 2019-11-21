@@ -16769,6 +16769,108 @@ Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi,Developm
    return GetApsTensionSide(poi, devAdjust, false, pConfig );
 }
 
+StrandIndexType CBridgeAgentImp::GetNumStrandsBottomHalf(const pgsPointOfInterest & poi, pgsTypes::StrandType strandType, const GDRCONFIG * pConfig) const
+{
+   VALIDATE( GIRDER );
+
+   StrandIndexType nStrands = 0;
+   if ( !IsOnSegment(poi) )
+   {
+      return nStrands;
+   }
+ 
+   IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(poi.GetSegmentKey());
+   Float64 Hg = GetHg(releaseIntervalIdx,poi);
+
+   Float64 half_depth_elevation = GetHalfElevation(poi); // y=0 at top of girder... measured in Girder Section Coordinates
+   half_depth_elevation += Hg; // now measured up from bottom of girder
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey,&girder);
+
+   Float64 dist_from_start = poi.GetDistFromStart();
+
+   CComPtr<IStrandModel> strandModel;
+   girder->get_StrandModel(&strandModel);
+   CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
+
+   // Straight strands 
+   if (pgsTypes::Straight == strandType || pgsTypes::Permanent == strandType)
+   {
+      CComPtr<IPoint2dCollection> strand_points;
+      if (pConfig)
+      {
+         CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Straight));
+         strandGridModel->GetStrandPositionsEx(Straight, dist_from_start, &strand_fill, &strand_points);
+      }
+      else
+      {
+         strandModel->GetStrandPositions(Straight, dist_from_start, &strand_points);
+      }
+
+      StrandIndexType Ns;
+      strand_points->get_Count(&Ns);
+
+      for (StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++)
+      {
+         CComPtr<IPoint2d> strand_point;
+         strand_points->get_Item(strandIdx, &strand_point);
+
+         Float64 y;
+         strand_point->get_Y(&y); // measured in Girder Section Coordinates
+         y += Hg; // now measured up from bottom
+
+         if (y <= half_depth_elevation)
+         {
+            nStrands++;
+         }
+      }
+   }
+
+   // harped strands
+   if (pgsTypes::Harped == strandType || pgsTypes::Permanent == strandType)
+   {
+      CComPtr<IPoint2dCollection> strand_points;
+      if (pConfig)
+      {
+         CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Harped));
+         // Use CStrandMoverSwapper to temporarily swap out girder's strand mover and harping offset limits
+         //  for design
+         IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+         Float64 Hg = GetHg(releaseIntervalIdx, poi);
+
+         GET_IFACE(IBridgeDescription, pIBridgeDesc);
+         CStrandMoverSwapper swapper(segmentKey, Hg, pConfig->PrestressConfig, this, strandGridModel, pIBridgeDesc);
+         strandGridModel->GetStrandPositionsEx(Harped, dist_from_start, &strand_fill, &strand_points);
+      }
+      else
+      {
+         strandModel->GetStrandPositions(Harped, dist_from_start, &strand_points);
+      }
+
+      StrandIndexType Nh;
+      strand_points->get_Count(&Nh);
+      for (StrandIndexType strandIdx = 0; strandIdx < Nh; strandIdx++)
+      {
+         CComPtr<IPoint2d> strand_point;
+         strand_points->get_Item(strandIdx, &strand_point);
+
+         Float64 y;
+         strand_point->get_Y(&y); // measured in Girder Section Coordinates
+         y += Hg; // now measured up from bottom
+
+         if (y <= half_depth_elevation)
+         {
+            nStrands++;
+         }
+      }
+   }
+
+   return nStrands;
+}
+
 Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,const GDRCONFIG* pConfig) const
 {
    return GetApsTensionSide(poi, devAdjust, true, pConfig );

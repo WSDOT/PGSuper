@@ -5626,9 +5626,17 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
 
    Float64 maxFraPerRow = pDebondLimits->GetMaxDebondedStrandsPerRow(segmentKey);
 
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
+
+   // Get total number of straight strands below half height. Never include harped strands in count
+   pgsTypes::StrandType strand_type = adj_type == pgsTypes::asHarped ? pgsTypes::Straight : pgsTypes::Permanent;
+   pgsPointOfInterest poi(segmentKey,0); // we can use a dummy poi here because we are getting rows for straight strands
+
+   StrandIndexType nStrands = pStrandGeometry->GetNumStrandsBottomHalf(poi, strand_type);
+
    // Only straight strands can be debonded
    // Total number of debonded strands
-   StrandIndexType nStrands  = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
    StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
    Float64 fra = (nStrands == 0 ? 0 : (Float64)nDebonded/(Float64)nStrands);
 
@@ -5638,8 +5646,6 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
 
    // If adjustable strands are straight, we will need to match up rows in order to get a total for each row
    bool doCheckAdj(false);
-   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-   pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
    if (pgsTypes::asHarped != adj_type)
    {
       if (pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped) > 0)
@@ -5649,7 +5655,6 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
    }
 
    // Number of debonded strands in row
-   pgsPointOfInterest poi(segmentKey,0); // we can use a dummy poi here because we are getting rows for straight strands
    RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
    for ( RowIndexType row = 0; row < nRows; row++ )
    {
@@ -5692,12 +5697,13 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
    Float64 lmax_debond_length = 0.0;
 
    // left end
+   StrandIndexType nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetStart);
    Float64 prev_location = 0.0;
    SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
    for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
    {
       StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
-      Float64 fraDebondedStrands = (nStrands == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nStrands);
+      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nDebondedEnd);
       Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
       pArtifact->AddDebondSection(location,nDebondedStrands,fraDebondedStrands);
 
@@ -5716,11 +5722,12 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
    }
 
    // right end
+   nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEnd);
    nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
    for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
    {
       StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metEnd,sectionIdx,pgsTypes::Straight);
-      Float64 fraDebondedStrands = (nStrands == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nStrands);
+      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nDebondedEnd);
       Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metEnd,sectionIdx,pgsTypes::Straight);
       pArtifact->AddDebondSection(location,nDebondedStrands,fraDebondedStrands);
 

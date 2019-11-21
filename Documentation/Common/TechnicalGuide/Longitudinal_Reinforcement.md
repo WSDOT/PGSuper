@@ -25,7 +25,7 @@ Where:
 
 A<sub>s</sub> = Area of non-prestressed tension reinforcement<br>
 f<sub>y</sub> = Specified minimum yield strength of reinforcing bars<br>
-A<sub>ps</sub> = Area of prestressing steel on the tension side of the member, reduced for any lack of full development<br>
+A<sub>ps</sub> = Area of prestressing steel on the tension side (half-height) of the member, reduced for any lack of full development<br>
 f<sub>ps</sub> = Average stress in prestressing steel at the time for which the nominal resistance of member is required<br>
 M<sub>u</sub> = Factored moment at the section<br>
 d<sub>v</sub> = Effective shear depth<br>
@@ -38,7 +38,7 @@ V<sub>s</sub> = Shear resistance provided by shear reinforcement<br>
 V<sub>p</sub> = Shear resistance provided by vertical component of prestressing<br>
 <span style="font-family:symbol">q</span> = Angle of inclination of diagonal compressive stresses<br>
  
-> Tip: The option to use longitudinal reinforcement must be enabled on the Project Criteria library - @ref ug_library_dialogs_project_criteria_shear_capacity tab
+> Tip: The option to use longitudinal mild steel reinforcement must be enabled on the Project Criteria library - @ref ug_library_dialogs_project_criteria_shear_capacity tab
 
 Allowable Tensile Stress for Temporary Conditions
 ----------------------------------------------------

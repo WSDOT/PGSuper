@@ -126,7 +126,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGi
          *p <<Bold(_T("Warning: "));
       }
 
-      *p << ndb <<_T(", or ")<< total_fra << _T("% of total strands are debonded. Debonded strands should not exceed ") << limit_fra << _T("% of the total.") << rptNewLine;
+      *p << ndb <<_T(", or ")<< total_fra << _T("% of total straight strands below girder half height are debonded. Percentage should not exceed ") << limit_fra << _T("% of the total.") << rptNewLine;
 
       // check debond lengths 
       Float64 dbl_limit;

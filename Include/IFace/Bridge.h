@@ -1123,6 +1123,9 @@ interface IStrandGeometry : IUnknown
    virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const = 0; // Fig. 5.8.3.4.2-3
 
+   // needed for debond percentage check
+   virtual StrandIndexType GetNumStrandsBottomHalf(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
+
    virtual StrandIndexType GetMaxNumPermanentStrands(const CSegmentKey& segmentKey) const = 0;
    virtual StrandIndexType GetMaxNumPermanentStrands(LPCTSTR strGirderName) const = 0;
    // get ratio of harped/straight strands if total permanent strands is used for input. returns false if total doesn't fit
