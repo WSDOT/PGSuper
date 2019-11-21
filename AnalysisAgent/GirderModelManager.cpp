@@ -14413,11 +14413,14 @@ void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::Me
    // shear factors can vary at each end of girder
    PoiList vPoi;
    pPoi->GetPointsOfInterest(spanKey, endType == pgsTypes::metEnd ? (POI_10L  | POI_SPAN) : (POI_0L | POI_SPAN), &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+
+   const pgsPointOfInterest& poi(vPoi.front());
 
    Float64 gpmstr, gnmstr, gvstr;
    Float64 gpmfat, gnmfat, gvfat;
-   pLLDF->GetDistributionFactors(vPoi.front(), pgsTypes::StrengthI, &gpmstr, &gnmstr, &gvstr);
-   pLLDF->GetDistributionFactors(vPoi.front(), pgsTypes::FatigueI, &gpmfat, &gnmfat, &gvfat);
+   pLLDF->GetDistributionFactors(poi, pgsTypes::StrengthI, &gpmstr, &gnmstr, &gvstr);
+   pLLDF->GetDistributionFactors(poi, pgsTypes::FatigueI, &gpmfat, &gnmfat, &gvfat);
 
    Float64 gpM = 99999999;
    Float64 gnM = 99999999;
