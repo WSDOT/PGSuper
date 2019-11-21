@@ -355,17 +355,8 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
 
          write_Vn_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
 
-         if ( bDesign )
-         {
-            write_Avs_table(        pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            write_bar_spacing_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-
-            if ( bPermit )
-            {
-               write_Avs_table(        pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_bar_spacing_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            }
-         }
+         write_Avs_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
+         write_bar_spacing_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
       }
    } // next group
 
