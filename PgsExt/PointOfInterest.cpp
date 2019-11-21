@@ -757,8 +757,17 @@ bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
       return false;
    }
 
+   if (GetReferencedAttributes(POI_SPAN) != 0 && rOther.GetReferencedAttributes(POI_SPAN) != 0)
+   {
+      // of the two poi's that are being merged are both span POI, then we have a common
+      // point in adjacent spans. these can't be merbed.
+      // We want (Span i-1, 1.0L) and (Span i, 0.0L) as seperate attributes
+      // because a POI can't be at two of the same type of tenth point locations at once
+      return false;
+   }
+
    m_Attributes |= rOther.m_Attributes;
-   for ( int i = 0; i < 6; i++ )
+   for ( int i = 0; i < gs_nRefAttributes; i++ )
    {
       m_RefAttributes[i] |= rOther.m_RefAttributes[i];
    }
