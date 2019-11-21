@@ -678,6 +678,8 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    {
       intervalIdx = castDeckIntervalIdx;
    }
+   intervalIdx--; // we actually want one interval before so when we compute D(live load interval) - D(interval) we get the increment of deflection
+                  // between interval and service
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    auto firstPTIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
@@ -807,7 +809,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    pLimitStateForces->GetDeflection(liveLoadIntervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,&vDmin2,&vDmax2);
    std::vector<Float64> vC;
    std::transform(vDmin2.cbegin(),vDmin2.cend(),vDmin1.cbegin(),std::back_inserter(vC),[](const auto& a, const auto& b) {return a - b;});
+
+   GET_IFACE2(pBroker, ICamber, pCamber);
 #endif
+
 
    i = 0;
    for (const pgsPointOfInterest& poi : vPoi)
@@ -830,6 +835,11 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
       }
 
       ATLASSERT(IsEqual(C,vC[i]));
+#if defined _DEBUG
+      Float64 _d_, _c_;
+      pCamber->GetExcessCamberEx(poi, CREEP_MAXTIME, &_d_, &_c_);
+      ATLASSERT(IsEqual(_c_, -C));
+#endif
 
       (*pTable)(row,col++) << deflection.SetValue(-C); // minus because screed camber is equal and opposite the deflections
 
