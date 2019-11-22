@@ -2394,13 +2394,17 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                  altTensionRequirements.bLimitBarStress = false;
 	               }
 	
-	               CComPtr<IShape> shape;
-	               pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, &shape);
-	               CComPtr<IRebarSection> rebarSection;
+                  CComPtr<IShape> shape;
+                  pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, &shape);
+                  altTensionRequirements.shape = shape;
+
+                  CComPtr<IRebarSection> rebarSection;
 	               pRebarGeom->GetRebars(poi, &rebarSection);
-	
-	               altTensionRequirements.shape = shape;
 	               altTensionRequirements.rebarSection = rebarSection;
+                  altTensionRequirements.bAdjustForDevelopmentLength = (pRebarGeom->IsAnchored(poi) ? false : true);
+
+                  Float64 Ytg = pSectProps->GetY(task.intervalIdx, poi, pgsTypes::TopGirder);
+                  altTensionRequirements.Ytg = Ytg;
 	
 	               Float64 Ca, Cbx, Cby;
 	               IndexType controllingTopStressPointIdx;
@@ -2412,7 +2416,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	               pSectProps->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Ca, &Cbx, &Cby, &controllingBottomStressPointIdx);
 	               ATLASSERT(controllingBottomStressPointIdx != INVALID_INDEX);
 	               std::vector<gpPoint2d> vBottomStressPoints = pSectProps->GetStressPoints(task.intervalIdx, poi, pgsTypes::BottomGirder);
-	
+
 	               bool bBiaxialStresses = (vTopStressPoints.size() == 1 && vBottomStressPoints.size() == 1 ? false : true);
 	
 	               if (vTopStressPoints.size() == 1)
@@ -2901,11 +2905,13 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
       {
          CComPtr<IShape> shape;
          pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, &shape);
+         altTensionRequirements.shape = shape;
+
          CComPtr<IRebarSection> rebarSection;
          pRebarGeom->GetRebars(poi, &rebarSection);
-
-         altTensionRequirements.shape = shape;
          altTensionRequirements.rebarSection = rebarSection;
+
+         altTensionRequirements.bAdjustForDevelopmentLength = (pRebarGeom->IsAnchored(poi) ? false : true);
 
          Float64 Ca, Cbx, Cby;
          IndexType controllingTopStressPointIdx;
@@ -2982,6 +2988,7 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
             altTensionRequirements.pntBottomRight.Move(pntBot2.X(), pntBot2.Y(), fBot2);
          }
 
+         altTensionRequirements.Ytg = pSectProps->GetY(task.intervalIdx, poi, pgsTypes::TopGirder);
          gbtComputeAlternativeStressRequirements(&altTensionRequirements);
          artifact.SetAlternativeTensileStressRequirements(pgsTypes::BottomGirder, altTensionRequirements, fAllowableWithRebar, bBiaxialStresses);
 

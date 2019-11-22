@@ -971,6 +971,8 @@ interface ILongRebarGeometry : IUnknown
 
    virtual REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey,IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const = 0;
    virtual REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const = 0;
+
+   virtual bool IsAnchored(const pgsPointOfInterest& poi) const = 0;
 };
 
 /*****************************************************************************

@@ -13945,6 +13945,34 @@ REBARDEVLENGTHDETAILS CBridgeAgentImp::GetDeckRebarDevelopmentLengthDetails(IReb
    return GetRebarDevelopmentLengthDetails(CSegmentKey(), rebar,type, fc, isFct, Fct);
 }
 
+bool CBridgeAgentImp::IsAnchored(const pgsPointOfInterest& poi) const
+{
+   GET_IFACE(ILongitudinalRebar, pLongRebar);
+   const CLongitudinalRebarData* pLRD = nullptr;
+   CClosureKey closureKey;
+   if (IsInClosureJoint(poi, &closureKey))
+   {
+      pLRD = pLongRebar->GetClosureJointLongitudinalRebarData(closureKey);
+   }
+   else
+   {
+      pLRD = pLongRebar->GetSegmentLongitudinalRebarData(poi.GetSegmentKey());
+   }
+
+   // this is a row by row evaluation... lets say that both ends of all 
+   // rows must be anchored to consider the longitudinal rebar anchored
+   bool bAnchored = true;
+   for (const auto& rebarRow : pLRD->RebarRows)
+   {
+      if (!rebarRow.IsLeftEndExtended() || !rebarRow.IsRightEndExtended())
+      {
+         bAnchored = false;
+         break;
+      }
+   }
+   return bAnchored;
+}
+
 REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const
 {
    USES_CONVERSION;
@@ -21693,11 +21721,6 @@ std::vector<gpPoint2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType interv
 
    bool bHasAsymmetricGirders = HasAsymmetricGirders();
 
-   CComQIPtr<ICompositeSectionEx> compSection(section);
-   CComPtr<ICompositeSectionItemEx> item;
-   compSection->get_Item(gdr_idx, &item);
-   CComPtr<IShape> shape;
-   item->get_Shape(&shape);
 
    IntervalIndexType erectionIntervalIdx = GetErectSegmentInterval(segmentKey);
 
@@ -21705,6 +21728,12 @@ std::vector<gpPoint2d> CBridgeAgentImp::GetStressPoints(IntervalIndexType interv
    {
       // at this point, the stress location must be for the girder
       ATLASSERT(IsGirderStressLocation(location));
+
+      CComQIPtr<ICompositeSectionEx> compSection(section);
+      CComPtr<ICompositeSectionItemEx> item;
+      compSection->get_Item(gdr_idx, &item);
+      CComPtr<IShape> shape;
+      item->get_Shape(&shape);
 
       CComQIPtr<IAsymmetricSection> asymmetric(shape);
 

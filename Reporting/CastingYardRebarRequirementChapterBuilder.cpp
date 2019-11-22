@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Allowables.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -256,11 +257,11 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
 
    if (bSimpleTable)
    {
-      (*pPara) << Sub2(_T("Y"), _T("na")) << _T(", the location of the neutral axis, is measured from the top of the closure joint") << rptNewLine;
+      (*pPara) << Sub2(_T("Y"), _T("na")) << _T(", the location of the neutral axis, is measured from the top of the closure joint based on the non-composite girder section") << rptNewLine;
    }
    else
    {
-      (*pPara) << _T("The neutral axis is defined by its location with respect to the top center of the closure joint (") << Sub2(_T("Y"), _T("na")) << _T(") and its slope (Slope NA)") << rptNewLine;
+      (*pPara) << _T("The neutral axis is defined by its location with respect to the top center of the closure joint based on the non-composite girder section (") << Sub2(_T("Y"), _T("na")) << _T(") and its slope (Slope NA)") << rptNewLine;
    }
    (*pPara) << Super(_T("*")) << _T(" to be considered sufficient, reinforcement must be fully developed and lie within the tension area of the section") << rptNewLine;
    (*pPara) << _T("** minimum area of sufficiently bonded reinforcement needed to use the alternative tensile stress limit") << rptNewLine;
@@ -381,10 +382,18 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
 
    // allowable tension stresses are checked in the Service I limit state before live load is applied and in the
    // Service III limit state after live load is applied
    pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
+
+   GET_IFACE2(pBroker,IDocumentType, pDocType);
+   if (pDocType->IsPGSpliceDocument() && overlayIntervalIdx != INVALID_INDEX && overlayIntervalIdx == intervalIdx && liveLoadIntervalIdx < overlayIntervalIdx)
+   {
+      limitState = pgsTypes::ServiceI;
+   }
+
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS || poi.GetID() != INVALID_ID);
