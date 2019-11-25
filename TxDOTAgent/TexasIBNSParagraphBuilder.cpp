@@ -699,8 +699,9 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
             (*p_table)(row++,col) << nh;
 
-            if (bFirst)
-               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
+// Note removed when TxDOT went back to all harped designs Nov 25, 2019
+//            if (bFirst)
+//               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ End");
 
             Float64 TO;
             pStrandGeometry->GetHighestHarpedStrandLocationEnds(segmentKey,&TO);
@@ -710,8 +711,8 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
             (*p_table)(row++,col) << ecc.SetValue(TO);
 
-            if (bFirst)
-               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ CL");
+//            if (bFirst)
+//               (*p_table)(row,0) << _T("Y")<<Sub(_T("b"))<<_T(" of Topmost Depressed Strand(s) @ CL");
          }
 
          // Yb for both harped and adj str are reported. headings are from if blocks above
