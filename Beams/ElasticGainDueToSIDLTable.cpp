@@ -308,9 +308,13 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+   IndexType deckCastingRegionIdx = INVALID_INDEX;
+   if (m_bHasDeckLoads)
+   {
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+   }
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
