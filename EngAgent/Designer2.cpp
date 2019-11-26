@@ -5202,9 +5202,7 @@ void pgsDesigner2::CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmen
    {
       // We need to compute zo. The best way to do that is to delegate to the stability engineer.
       // We want zo for no overhangs. Do a dummy lifting stability analysis and get the zo result
-      GET_IFACE(IBridge, pBridge);
       HANDLINGCONFIG config;
-      config.GdrConfig = pBridge->GetSegmentConfiguration(segmentKey);
       config.bIgnoreGirderConfig = true; // ignore the girder configuration... we want the functions we call to use the handling configuration
       config.LeftOverhang = 0;
       config.RightOverhang = 0;
