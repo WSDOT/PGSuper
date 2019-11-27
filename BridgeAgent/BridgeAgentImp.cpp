@@ -9166,21 +9166,9 @@ void CBridgeAgentImp::GetPierDiaphragmSize(PierIndexType pierIdx,pgsTypes::PierF
    const CPierData2* pPierData = pBridgeDesc->GetPier(pierIdx);
    ATLASSERT( pPierData );
 
-   if ( pPierData->IsInteriorPier() )
-   {
-      // if this pier has a continuous segment connection type, there is only
-      // one diaphragm at the pier... the data for that diaphragm is on the back side
-      // the ahead side data isn't used.
-      // Use half the width for the ahead and back sides
-      *pH = pPierData->GetDiaphragmHeight(pgsTypes::Back);
-      *pW = pPierData->GetDiaphragmWidth(pgsTypes::Back)/2;
-   }
-   else
-   {
-      *pH = pPierData->GetDiaphragmHeight(pierFace);
-      *pW = pPierData->GetDiaphragmWidth(pierFace);
-   }
-
+   *pH = pPierData->GetDiaphragmHeight(pierFace);
+   *pW = pPierData->GetDiaphragmWidth(pierFace);
+   
    if ( *pH < 0 )
    {
       *pH = ComputePierDiaphragmHeight(pierIdx,pierFace);
