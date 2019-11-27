@@ -3354,15 +3354,15 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Continuous placement",IDC_CAST_DECK_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,7,87,10
     CONTROL         "Staged placement",IDC_CAST_DECK_2,"Button",BS_AUTORADIOBUTTON,99,7,73,10
-    LTEXT           "Age of concrete when continutity is achieved",IDC_STATIC,7,36,162,8
-    EDITTEXT        IDC_AGE,178,33,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_AGE_UNIT,220,36,17,8
-    LTEXT           "Curing duration (shrinkage begins when curing ends)",IDC_STATIC,7,49,169,8
-    EDITTEXT        IDC_CURING,178,49,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_CURING_UNIT,220,52,17,8
+    LTEXT           "Age of concrete when deck becomes composite with girders",IDC_STATIC,7,36,198,8
+    EDITTEXT        IDC_AGE,206,33,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_AGE_UNIT,248,36,17,8
+    LTEXT           "Curing duration (shrinkage begins when curing ends)",IDC_STATIC,7,51,169,8
+    EDITTEXT        IDC_CURING,206,49,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_CURING_UNIT,248,52,17,8
     LTEXT           "Time between casting",IDC_TIME_BETWEEN_CASTING_LABEL,7,64,70,8
-    EDITTEXT        IDC_TIME_BETWEEN_CASTING,109,61,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_TIME_BETWEEN_CASTING_UNIT,154,63,17,8
+    EDITTEXT        IDC_TIME_BETWEEN_CASTING,206,65,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_TIME_BETWEEN_CASTING_UNIT,248,67,17,8
     LTEXT           "Placement regions",IDC_PLACEMENT_REGION_LABEL,7,78,59,8
     CONTROL         "Custom1",IDC_DECK_REGION_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,89,357,85
     LTEXT           "Region boundaries are",IDC_REGION_BOUNDARY_LABEL,7,179,73,8
@@ -3370,7 +3370,7 @@ BEGIN
     LTEXT           "Custom",IDC_DECK_REGIONS,7,191,358,82
     DEFPUSHBUTTON   "OK",IDOK,210,279,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,263,279,50,14
-    PUSHBUTTON      "Help",ID_HELP,316,279,50,14
+    PUSHBUTTON      "Help",ID_HELP,318,279,50,14
 END
 
 IDD_POSTTENSION_PARAMETERS DIALOGEX 0, 0, 282, 116
@@ -3887,6 +3887,14 @@ BEGIN
 
     IDD_STRESS_TENDON, DIALOG
     BEGIN
+    END
+
+    IDD_CAST_DECK, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 368
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 293
     END
 
     IDD_BEARINGSAME4_BRIDGE, DIALOG

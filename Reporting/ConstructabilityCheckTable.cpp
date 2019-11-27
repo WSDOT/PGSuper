@@ -645,7 +645,14 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
    ColumnIndexType col = 0;
    if (needSpanCols)
    {
-      (*pTable)(0,col++) << _T("Span");
+      if (pDocType->IsPGSpliceDocument())
+      {
+         (*pTable)(0, col++) << _T("Group");
+      }
+      else
+      {
+         (*pTable)(0, col++) << _T("Span");
+      }
       (*pTable)(0,col++) << _T("Girder");
    }
 
@@ -1334,7 +1341,7 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
       else
       {
          C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
-         (*pTable)(row, 0) << _T("Screed Camber, C");
+         (*pTable)(row, 0) << _T("Screed Camber, C at mid-span");
          (*pTable)(row++, 1) << dim.SetValue(C);
       }
 
@@ -1578,15 +1585,20 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,_T(""));
 
-   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
    pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    *pBody << pTable << rptNewLine;
 
-   (*pTable)(0,0) << _T("Span");
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   if (pDocType->IsPGSpliceDocument())
+   {
+      (*pTable)(0, 0) << _T("Segment");
+   }
+   else
+   {
+      (*pTable)(0, 0) << _T("Span");
+   }
    (*pTable)(0,1) << _T("Description");
    (*pTable)(0,2) << COLHDR(_T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
@@ -1597,58 +1609,116 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
    GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
-   SpanIndexType startSpanIdx, endSpanIdx;
-   pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
-   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+
+   if (pDocType->IsPGSpliceDocument())
    {
-      CSpanKey spanKey(spanIdx, girderKey.girderIndex);
-      PoiList vPoi;
-      pPoi->GetPointsOfInterest(spanKey, POI_5L | POI_SPAN, &vPoi);
-      ATLASSERT(vPoi.size() == 1);
-      const pgsPointOfInterest& poiMidSpan(vPoi.front());
-
-      pTable->SetRowSpan(row, 0, 2);
-      (*pTable)(row, 0) << LABEL_SPAN(spanIdx);
-
-      GET_IFACE2(pBroker, ICamber, pCamber);
-      Float64 C = pCamber->GetScreedCamber(poiMidSpan,CREEP_MAXTIME);
-      (*pTable)(row, 1) << _T("Screed Camber, C");
-      (*pTable)(row++, 2) << dim.SetValue(C);
-
-      Float64 Dmin, Dmax;
-      pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
-      ATLASSERT(IsEqual(Dmin, Dmax));
-      (*pTable)(row, 1) << _T("Camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
-
-      if ( Dmin < 0 )
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
-         (*pTable)(row++,2) << color(Red) << dim.SetValue(Dmin) << color(Black);
-      }
-      else
-      {
-         (*pTable)(row++,2) << dim.SetValue(Dmin);
-      }
+         CSegmentKey segmentKey(girderKey, segIdx);
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         const pgsPointOfInterest& poiMidSpan(vPoi.front());
 
-      if ( pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType) )
-      {
-         std::_tstring camberType;
-   
-         if ( Dmin < C )
+         pTable->SetRowSpan(row, 0, 2);
+         (*pTable)(row, 0) << LABEL_SEGMENT(segIdx);
+
+         GET_IFACE2(pBroker, ICamber, pCamber);
+         Float64 C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+         (*pTable)(row, 1) << _T("Screed Camber, C at mid-segment");
+         (*pTable)(row++, 2) << dim.SetValue(C);
+
+         Float64 Dmin, Dmax;
+         pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+         ATLASSERT(IsEqual(Dmin, Dmax));
+         (*pTable)(row, 1) << _T("Mid-segment camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
+
+         if (Dmin < 0)
          {
-            rptParagraph* p = new rptParagraph;
-            *pChapter << p;
-   
-            *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            (*pTable)(row++, 2) << color(Red) << dim.SetValue(Dmin) << color(Black);
          }
-         else if ( IsEqual(C,Dmin,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+         else
          {
-            rptParagraph* p = new rptParagraph;
-            *pChapter << p;
-   
-            *p << color(Red) << _T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            (*pTable)(row++, 2) << dim.SetValue(Dmin);
          }
-      }
-   }  // next span
+
+         if (pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType))
+         {
+            std::_tstring camberType;
+
+            if (Dmin < C)
+            {
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+
+               *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            }
+            else if (IsEqual(C, Dmin, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+            {
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+
+               *p << color(Red) << _T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            }
+         }
+      }  // next segment 
+   }
+   else
+   {
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pBridge->GetGirderGroupSpans(girderKey.groupIndex, &startSpanIdx, &endSpanIdx);
+      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+      {
+         CSpanKey spanKey(spanIdx, girderKey.girderIndex);
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(spanKey, POI_5L | POI_SPAN, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         const pgsPointOfInterest& poiMidSpan(vPoi.front());
+
+         pTable->SetRowSpan(row, 0, 2);
+         (*pTable)(row, 0) << LABEL_SPAN(spanIdx);
+
+         GET_IFACE2(pBroker, ICamber, pCamber);
+         Float64 C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+         (*pTable)(row, 1) << _T("Screed Camber, C at mid-span");
+         (*pTable)(row++, 2) << dim.SetValue(C);
+
+         Float64 Dmin, Dmax;
+         pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+         ATLASSERT(IsEqual(Dmin, Dmax));
+         (*pTable)(row, 1) << _T("Mid-span camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
+
+         if (Dmin < 0)
+         {
+            (*pTable)(row++, 2) << color(Red) << dim.SetValue(Dmin) << color(Black);
+         }
+         else
+         {
+            (*pTable)(row++, 2) << dim.SetValue(Dmin);
+         }
+
+         if (pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType))
+         {
+            std::_tstring camberType;
+
+            if (Dmin < C)
+            {
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+
+               *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            }
+            else if (IsEqual(C, Dmin, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+            {
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+
+               *p << color(Red) << _T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            }
+         }
+      }  // next span 
+   }
 }
 
 //======================== ACCESS     =======================================

@@ -53,6 +53,9 @@ rptChapter* CTimeStepCamberChapterBuilder::Build(CReportSpecification* pRptSpec,
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -93,7 +96,7 @@ rptChapter* CTimeStepCamberChapterBuilder::Build(CReportSpecification* pRptSpec,
    *pPara << CreateFinalDeflectionTable(pBroker,girderKey)             << rptNewLine;
    pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
-   *pPara << Sub2(symbol(DELTA), _T("service")) << _T(" = deflection at service (open to traffic)") << rptNewLine;
+   *pPara << Sub2(symbol(DELTA), _T("service")) << _T(" = deflection at service (open to traffic), Interval ") << LABEL_INTERVAL(liveLoadIntervalIdx) << rptNewLine;
    *pPara << Sub2(symbol(DELTA), _T("final")) << _T(" = final deflection = sum of the individual deflections given in this table") << rptNewLine;
 
    return pChapter;
@@ -499,7 +502,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
-
+ 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
@@ -776,7 +779,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    vProductForces.push_back(pgsTypes::pftShrinkage);
    vProductForces.push_back(pgsTypes::pftRelaxation);
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(vProductForces.size()+2,_T("Deflections from deck casting to service (Screed Camber)"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(vProductForces.size()+2,_T("Deflections immediately prior to deck casting to service (Screed Camber)"));
 
    std::vector<Float64>* pResults1 = new std::vector<Float64>[vProductForces.size()];
    std::vector<Float64>* pResults2 = new std::vector<Float64>[vProductForces.size()];
@@ -819,7 +822,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    {
       col = 0;
 
-      (*pTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+      (*pTable)(row, col++) << location.SetValue(POI_ERECTED_SEGMENT, poi);
 
       Float64 C = 0;
       std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
