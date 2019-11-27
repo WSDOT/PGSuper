@@ -35739,24 +35739,24 @@ Float64 CBridgeAgentImp::ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsType
       // we need it to be measured normal to the CL pier
       // get the angle between the pier and the girder, then deduct 90 degrees
       // so that it is the angle between the pier normal and the girder.
-      // multiple the bearing offset by this angle to get the bearing offset
+      // multiply the bearing offset by this angle to get the bearing offset
       // normal to the pier.
       // Since the girders need not be parallel, each girder can have a different intersection
       // angle with the pier. For this reason, we have to compute the bearing offset and
       // support width normal to the pier uniquely for each girder.
       CComPtr<IAngle> objSegAngle;
       Float64 segAngle;
-      if ( pierFace == pgsTypes::Back)
+      if ( pierFace == pgsTypes::Back || (pierFace == pgsTypes::Ahead && pPier->IsInteriorPier() && !IsSegmentContinuousOverPier(pPier->GetSegmentConnectionType())) )
       {
          brgOffset = GetSegmentEndBearingOffset(segmentKey);
-         GetSegmentAngle(segmentKey,pgsTypes::metEnd,&objSegAngle);
+         GetSegmentAngle(segmentKey, pgsTypes::metEnd, &objSegAngle);
          objSegAngle->get_Value(&segAngle);
          segAngle -= PI_OVER_2;
       }
       else
       {
          brgOffset = GetSegmentStartBearingOffset(segmentKey);
-         GetSegmentAngle(segmentKey,pgsTypes::metStart,&objSegAngle);
+         GetSegmentAngle(segmentKey, pgsTypes::metStart, &objSegAngle);
          objSegAngle->get_Value(&segAngle);
          segAngle -= PI_OVER_2;
       }

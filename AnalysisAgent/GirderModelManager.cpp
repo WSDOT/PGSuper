@@ -12095,9 +12095,11 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
                SaveOverhangPointLoads(CSegmentKey(girderKey, 0), analysisType, bstrStageBack, bstrLoadGroup, 0, Pback);
 
                mbrID = GetFirstSuperstructureMemberID(nextSegmentKey);
+               Float64 location = ahead_bearing_offset - next_start_end_dist;
                if ( !IsZero(next_start_end_dist) )
                {
                   mbrID++;
+                  location = 0;
                }
 
 
@@ -12109,7 +12111,7 @@ void CGirderModelManager::ApplyDiaphragmLoadsAtPiers(ILBAMModel* pModel, pgsType
                aheadLoad.CoCreateInstance(CLSID_PointLoad);
                aheadLoad->put_MemberType(mtSuperstructureMember);
                aheadLoad->put_MemberID(mbrID);
-               aheadLoad->put_Location(ahead_bearing_offset-next_start_end_dist);
+               aheadLoad->put_Location(location);
                aheadLoad->put_Fy(Pahead);
                aheadLoad->put_Mz(Mahead);
 

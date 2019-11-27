@@ -1309,8 +1309,9 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
          if ( bSimpleSpanSegments )
          {
             // these POI are between segments so they don't apply
-            pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
-            pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+            vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }),vPoi.end());
+            //pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
+            //pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
          }
 
          // Map POI coordinates to X-values for the graph
