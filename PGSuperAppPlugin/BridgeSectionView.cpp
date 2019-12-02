@@ -2552,6 +2552,12 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
             slope = (y2-y1)/(x2-x1);
          }
 
+         CComPtr<iTextBlock> doText;
+         doText.CoCreateInstance(CLSID_TextBlock);
+         doText->SetPosition(txtLoc);
+         Float64 angle = atan(slope) * 1800.0 / M_PI;
+         doText->SetAngle((LONG)angle); 
+
          // change the slope from our analytical model to
          // the sign convension of the input
          // slopes down and away from the controlling crown point are < 0
@@ -2559,12 +2565,6 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
          {
             slope *= -1;
          }
-
-         CComPtr<iTextBlock> doText;
-         doText.CoCreateInstance(CLSID_TextBlock);
-         doText->SetPosition(txtLoc);
-         Float64 angle = atan(slope) * 1800.0 / M_PI;
-         doText->SetAngle((LONG)angle); 
 
          CString strLabel;
          strLabel.Format(_T("%.3f %s"), slope, strSlopeTag);
