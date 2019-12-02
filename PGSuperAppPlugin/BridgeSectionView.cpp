@@ -89,6 +89,27 @@ static char THIS_FILE[] = __FILE__;
 
 #define ALIGNMENT_ID -200
 
+inline void GetGirderSection(IShape* pShape, IGirderSection** ppSection)
+{
+   CComQIPtr<IGirderSection> section(pShape);
+   if (!section)
+   {
+      CComQIPtr<ICompositeShape> compShape(pShape);
+      if (compShape)
+      {
+         CComPtr<ICompositeShapeItem> shapeItem;
+         compShape->get_Item(0, &shapeItem);
+         CComPtr<IShape> gdrShape;
+         shapeItem->get_Shape(&gdrShape);
+         gdrShape.QueryInterface(ppSection);
+      }
+   }
+   else
+   {
+      section.CopyTo(ppSection);
+   }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionView
 
@@ -958,19 +979,8 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
 
       CComPtr<IPoint2d> pntWorkPoint;
-      CComQIPtr<IGirderSection> section(shape);
-      if (!section)
-      {
-         CComQIPtr<ICompositeShape> compShape(shape);
-         if (compShape)
-         {
-            CComPtr<ICompositeShapeItem> shapeItem;
-            compShape->get_Item(0, &shapeItem);
-            CComPtr<IShape> gdrShape;
-            shapeItem->get_Shape(&gdrShape);
-            gdrShape.QueryInterface(&section);
-         }
-      }
+      CComPtr<IGirderSection> section;
+      GetGirderSection(shape, &section);
 
       CComQIPtr<IXYPosition> position(shape);
       CComPtr<IPoint2d> pntTopCenter;
@@ -1754,7 +1764,9 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       // Get bottom center coordinates of the exterior girders
       CComPtr<IPoint2d> p1;
-      CComQIPtr<IGirderSection> section(shape);
+      CComPtr<IGirderSection> section;
+      GetGirderSection(shape, &section);
+
       if (section)
       {
          section->get_WorkPoint(&p1);
@@ -1843,7 +1855,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             strategy2->GetShape(&shape2);
 
             CComPtr<IPoint2d> p1;
-            CComQIPtr<IGirderSection> section1(shape1);
+            CComPtr<IGirderSection> section1;
+            GetGirderSection(shape1, &section1);
             if (section1)
             {
                section1->get_WorkPoint(&p1);
@@ -1855,7 +1868,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             }
 
             CComPtr<IPoint2d> p2;
-            CComQIPtr<IGirderSection> section2(shape2);
+            CComPtr<IGirderSection> section2;
+            GetGirderSection(shape2, &section2);
             if (section2)
             {
                section2->get_WorkPoint(&p2);
