@@ -1066,6 +1066,24 @@ void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, IBro
 
 void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
 {
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   std::_tstring spec_name = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   pgsTypes::SupportedBeamSpacing spacingType = pIBridgeDesc->GetGirderSpacingType();
+   if (pSpecEntry->CheckBottomFlangeClearance() && ::IsJointSpacing(spacingType))
+   {
+      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pTitle;
+      *pTitle << _T("Bottom Flange Clearance");
+
+      rptParagraph* pBody = new rptParagraph;
+      *pChapter << pBody;
+      *pBody << _T("Bottom flange clearance is not checked for girder framing based on joint spacing") << rptNewLine;
+      return;
+   }
+
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker, IDocumentType, pDocType);
