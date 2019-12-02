@@ -810,6 +810,7 @@ HRESULT CPGSuperDocProxyAgent::OnSpecificationChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
+   m_pMyDocument->UpdateProjectCriteriaIndicator();
 
    FireEvent( 0, HINT_SPECCHANGED, nullptr );
    return S_OK;
