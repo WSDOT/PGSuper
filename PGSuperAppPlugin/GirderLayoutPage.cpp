@@ -794,7 +794,10 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       DDX_CBItemData(&dx, IDC_PREV_PIER_GIRDER_SPACING_MEASURE, m_CacheGirderSpacingMeasure[pgsTypes::metStart]);
       DDX_CBItemData(&dx, IDC_NEXT_PIER_GIRDER_SPACING_MEASURE, m_CacheGirderSpacingMeasure[pgsTypes::metEnd]);
 
-      pParent->m_pGirderGroup->SetGirderTopWidthGroups(m_TopWidthCache);
+      if (IsTopWidthSpacing(spacingType))
+      {
+         pParent->m_pGirderGroup->SetGirderTopWidthGroups(m_TopWidthCache);
+      }
    }
 
    pParent->m_BridgeDesc.SetGirderSpacingType(spacingType);
