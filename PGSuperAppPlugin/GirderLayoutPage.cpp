@@ -348,8 +348,8 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    }
    else if (spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth || spacingType == pgsTypes::sbsGeneralAdjacentWithTopWidth)
    {
-      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used for the entire bridge")), (DWORD_PTR)(pgsTypes::sbsGeneralAdjacentWithTopWidth));
-      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("Top flange width and joint spacing is defined span by span")), (DWORD_PTR)(pgsTypes::sbsUniformAdjacentWithTopWidth));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used for the entire bridge")), (DWORD_PTR)(pgsTypes::sbsUniformAdjacentWithTopWidth));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("Top flange width and joint spacing is defined span by span")), (DWORD_PTR)(pgsTypes::sbsGeneralAdjacentWithTopWidth));
       m_cbGirderSpacingType.SetCurSel(spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth ? 0 : 1);
    }
    else
