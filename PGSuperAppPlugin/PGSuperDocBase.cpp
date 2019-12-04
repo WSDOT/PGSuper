@@ -3827,41 +3827,64 @@ void CPGSDocBase::OnEditPier()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   PierIndexType nPiers = pBridgeDesc->GetPierCount();
+   GET_IFACE(ISelection, pSelection);
+   PierIndexType editPierIdx = pSelection->GetSelectedPier();
 
-   CString strItems;
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+   if (editPierIdx == INVALID_INDEX)
    {
-      CString strItem;
-      strItem.Format(_T("%s %d\n"),(pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abutment") : _T("Pier")),LABEL_PIER(pierIdx));
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
-      strItems += strItem;
+      CString strItems;
+      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+      {
+         CString strItem;
+         strItem.Format(_T("%s %d\n"), (pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier")), LABEL_PIER(pierIdx));
+
+         strItems += strItem;
+      }
+
+      CSelectItemDlg dlg;
+      dlg.m_strTitle = _T("Select Abutment/Pier");
+      dlg.m_strItems = strItems;
+      dlg.m_strLabel = _T("Select an abutment or pier to edit");
+      dlg.m_ItemIdx = m_Selection.PierIdx;
+
+      if (dlg.DoModal() == IDOK)
+      {
+         editPierIdx = dlg.m_ItemIdx;
+      }
+      else
+      {
+         return;
+      }
    }
 
-   CSelectItemDlg dlg;
-   dlg.m_strTitle = _T("Select Abutment/Pier");
-   dlg.m_strItems = strItems;
-   dlg.m_strLabel = _T("Select an abutment or pier to edit");
-   dlg.m_ItemIdx = m_Selection.PierIdx;
-
-   if ( dlg.DoModal() == IDOK )
-   {
-      EditPierDescription(dlg.m_ItemIdx,EPD_GENERAL);
-   }
+   EditPierDescription(editPierIdx, EPD_GENERAL);
 }
 
 void CPGSDocBase::OnEditSpan() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   GET_IFACE(ISelection, pSelection);
+   SpanIndexType editSpanIdx = pSelection->GetSelectedSpan();
+   
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
-   if (nSpans>1)
+   if (nSpans == 1)
    {
+      // if there is only one span, then edit span 0
+      editSpanIdx = 0;
+   }
+
+   if (1 < nSpans && editSpanIdx == INVALID_INDEX)
+   {
+      // if there is more than one span, and a span is not currently selected
+      // then prompted for the span to edit
       CString strItems;
       for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
       {
@@ -3879,14 +3902,15 @@ void CPGSDocBase::OnEditSpan()
 
       if ( dlg.DoModal() == IDOK )
       {
-         EditSpanDescription(dlg.m_ItemIdx,ESD_GENERAL);
+         editSpanIdx = dlg.m_ItemIdx;
+      }
+      else
+      {
+         return;
       }
    }
-   else
-   {
-      // No reason to ask which span if there is only one
-      EditSpanDescription(0,ESD_GENERAL);
-   }
+
+   EditSpanDescription(editSpanIdx, ESD_GENERAL);
 }
 
 void CPGSDocBase::DeletePier(PierIndexType pierIdx)
