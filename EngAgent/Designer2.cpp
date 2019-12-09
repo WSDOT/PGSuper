@@ -4231,7 +4231,7 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
       pArtifact->SetMr(Mr);
    }
 
-   Float64 capacity = as*fy + aps*fps;
+   Float64 capacity = as*fy + aps*fps + aptGirder*fptGirder + aptSegment*fptSegment;
 
    pArtifact->SetEquation(equation);
    pArtifact->SetDemandForce(demand);
