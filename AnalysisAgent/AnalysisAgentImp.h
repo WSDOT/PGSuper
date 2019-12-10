@@ -355,7 +355,6 @@ public:
    virtual Float64 GetDiaphragmDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetUserLoadDeflection(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetSlabBarrierOverlayDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetSidlDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetExcessCamber(const pgsPointOfInterest& poi,Int16 time,const GDRCONFIG* pConfig=nullptr) const override;

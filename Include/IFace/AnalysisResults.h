@@ -796,9 +796,6 @@ interface ICamber : IUnknown
    virtual Float64 GetScreedCamber(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetScreedCamberUnfactored(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
 
-   // Deflection due to superimposed dead loads (dead loads applied after the deck is composite)
-   virtual Float64 GetSidlDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;
-
    // This is the camber that remains in the girder after the slab pour
    // It is equal to the Total camber less the screed camber.
    virtual Float64 GetExcessCamber(const pgsPointOfInterest& poi,Int16 time, const GDRCONFIG* pConfig=nullptr) const = 0;
