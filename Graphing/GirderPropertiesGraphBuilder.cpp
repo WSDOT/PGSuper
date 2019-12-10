@@ -383,7 +383,6 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
       case Centroid:
          {
          IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
          IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
@@ -405,7 +404,6 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
       case SectionModulus:
          {
          IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
          IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
@@ -448,7 +446,6 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
       case EffectiveFlangeWidth:
          {
          IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
          IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {

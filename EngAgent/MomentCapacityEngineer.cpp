@@ -1573,7 +1573,6 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
          else
          {
             IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-            ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
             fr = pMaterial->GetDeckFlexureFr(deckCastingRegionIdx,intervalIdx);
          }
       }
@@ -1596,7 +1595,6 @@ Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType interva
       {
          GET_IFACE(IPointOfInterest, pPoi);
          IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
          fr = pMaterial->GetDeckFlexureFr(deckCastingRegionIdx,intervalIdx);
       }
    }
