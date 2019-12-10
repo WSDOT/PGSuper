@@ -868,7 +868,7 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag(pDX, IDC_NC_CREEP, IDC_NC_CREEP_TAG, m_Entry.m_TotalCreepDuration, pDisplayUnits->Time2 );
-   DDV_UnitValueGreaterThanLimit(pDX, IDC_NC_CREEP,m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
+   DDV_UnitValueLimitOrMore(pDX, IDC_NC_CREEP,m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
 
    DDX_Radio(pDX,IDC_CURING_METHOD,m_Entry.m_CuringMethod);
 
