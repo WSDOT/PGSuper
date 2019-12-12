@@ -613,8 +613,6 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    std::vector<CRITSECTDETAILS> criticalSections;
    GetCriticalSectionZones(girderKey, limitState, &criticalSections);
 
-   GET_IFACE(IMaterials, pMaterials);
-
    GET_IFACE(IPointOfInterest, pPoi);
    PoiList vMyPoi(vPoi);
 
@@ -879,6 +877,8 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
          Float64 Vu = gDC*DC + gDW*DW + gCR*CR + gSH*SH + gRE*RE + gPS*PS + gLL*(LLIM + PL);
 
          IndexType castingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
+         GET_IFACE(IMaterials, pMaterials);
          Float64 fcSlab = pMaterials->GetDeckFc(castingRegionIdx, loadRatingIntervalIdx);
          Float64 fcGirder;
          Float64 E, fy, fu;
