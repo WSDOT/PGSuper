@@ -115,7 +115,7 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
       // Data coming out of the dialog
       CCastDeckActivity castDeckActivity = GetCastDeckActivity(pDX);
 
-      DDV_GreaterThanZero(pDX,IDC_AGE,castDeckActivity.GetConcreteAgeAtContinuity());
+      DDV_NonNegativeDouble(pDX,IDC_AGE,castDeckActivity.GetConcreteAgeAtContinuity());
       DDV_NonNegativeDouble(pDX,IDC_CURING,castDeckActivity.GetCuringDuration());
 
       if (castDeckActivity.GetCastingType() == CCastDeckActivity::Staged)

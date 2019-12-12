@@ -1451,7 +1451,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
       {
          ATLASSERT(IsEqual(duration,castDeckActivity.GetDuration()));
          ATLASSERT(pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone);
-         if (0 < duration)
+         if (0 <= duration)
          {
             // only model deck curing if we are doing a time-step analysis
 
