@@ -4632,10 +4632,14 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
       // Girder PT already included because it is in the pgsTypes::pftSecondaryEffects product load, however, segment PT is not because
       // it is more like prestressing...
       // we don't want to add girder PT so get the deflection in an interval that's before any girders are erected
-      IntervalIndexType i = Min(pIntervals->GetFirstGirderTendonStressingInterval(girderKey) - 1,intervalIdx);
-      std::vector<Float64> deltaPT = pProductForces->GetDeflection(i, pgsTypes::pftPostTensioning, vPoi, bat, rtCumulative, false);
-      std::transform(deltaPT.cbegin(), deltaPT.cend(), pMin->cbegin(), pMin->begin(), [](const auto& a, const auto& b) {return a + b; });
-      std::transform(deltaPT.cbegin(), deltaPT.cend(), pMax->cbegin(), pMax->begin(), [](const auto& a, const auto& b) {return a + b; });
+      IntervalIndexType firstPTIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
+      if (firstPTIntervalIdx != INVALID_INDEX)
+      {
+         IntervalIndexType i = Min(firstPTIntervalIdx - 1, intervalIdx);
+         std::vector<Float64> deltaPT = pProductForces->GetDeflection(i, pgsTypes::pftPostTensioning, vPoi, bat, rtCumulative, false);
+         std::transform(deltaPT.cbegin(), deltaPT.cend(), pMin->cbegin(), pMin->begin(), [](const auto& a, const auto& b) {return a + b; });
+         std::transform(deltaPT.cbegin(), deltaPT.cend(), pMax->cbegin(), pMax->begin(), [](const auto& a, const auto& b) {return a + b; });
+      }
    }
    else
    {
