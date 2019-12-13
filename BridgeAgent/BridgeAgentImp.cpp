@@ -2550,7 +2550,7 @@ bool CBridgeAgentImp::BuildCogoModel()
    ComputeReasonableSurfaceStationRange(m_CogoModel, pBridgeDesc, alignment_data, alignment, profile_data, &startStation, &endStation);
 
    std::size_t numTempls = section_data.RoadwaySectionTemplates.size();
-   if (numTempls==0)
+   if (numTempls == 0)
    {
       // If no section templates are defined, we have a flat level roadway with crown at center
       surface->put_AlignmentPoint(1);
@@ -2573,9 +2573,9 @@ bool CBridgeAgentImp::BuildCogoModel()
    else
    {
       // we have user defined templates. use input data
-      IndexType controllingRidgePoint = section_data.ControllingRidgePointIdx;
-      surface->put_AlignmentPoint(controllingRidgePoint);
-      surface->put_ProfileGradePoint(controllingRidgePoint);
+      IndexType controllingRidgePointIdx = section_data.ControllingRidgePointIdx;
+      surface->put_AlignmentPoint(controllingRidgePointIdx);
+      surface->put_ProfileGradePoint(controllingRidgePointIdx);
 
       std::size_t it = 0;
       for (const auto& super : section_data.RoadwaySectionTemplates)
@@ -2585,12 +2585,15 @@ bool CBridgeAgentImp::BuildCogoModel()
          surfaceTemplate->put_Station(CComVariant(super.Station));
 
          // left infinite segment
-         surfaceTemplate->AddSegment(width, super.LeftSlope, tsHorizontal);
+         surfaceTemplate->AddSegment(width, -super.LeftSlope, tsHorizontal);
 
          // interior segments
+         IndexType ridgePointIdx = 1;
          for (const auto& segment : super.SegmentDataVec)
          {
-            surfaceTemplate->AddSegment(segment.Length, segment.Slope, tsHorizontal);
+            Float64 sign = (ridgePointIdx < controllingRidgePointIdx ? -1 : 1);
+            surfaceTemplate->AddSegment(segment.Length, sign*segment.Slope, tsHorizontal);
+            ridgePointIdx++;
          }
 
          // right infinite segment
@@ -2610,7 +2613,7 @@ bool CBridgeAgentImp::BuildCogoModel()
          }
          else if (it == 0)
          {
-            if (super.Station > startStation)
+            if (startStation < super.Station)
             {
                // add a template at start so we have a prismatic surface until our first defined template
                CComPtr<ISurfaceTemplate> startTemplate;
