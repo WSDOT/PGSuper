@@ -235,7 +235,7 @@ void CLocationGraphController::FillGroupCtrl(bool bInit)
       curSel = 0;
       m_GirderKey.groupIndex = 0;
    }
-   else if ( nGroups < m_GirderKey.groupIndex )
+   else if ( nGroups <= m_GirderKey.groupIndex )
    {
       curSel = pcbGroup->GetCount()-1;
       m_GirderKey.groupIndex = nGroups-1;
