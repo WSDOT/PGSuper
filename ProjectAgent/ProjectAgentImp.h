@@ -647,6 +647,7 @@ public:
 
 // ILossParameters
 public:
+   virtual std::_tstring GetLossMethodDescription() const override;
    virtual pgsTypes::LossMethod GetLossMethod() const override;
    virtual pgsTypes::TimeDependentModel GetTimeDependentModel() const override;
    virtual void IgnoreCreepEffects(bool bIgnore) override;

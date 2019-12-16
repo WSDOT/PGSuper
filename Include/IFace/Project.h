@@ -1239,6 +1239,10 @@ DEFINE_GUID(IID_ILossParameters,
 0xaaf586aa, 0xd06e, 0x446b, 0x9e, 0xb2, 0xca, 0x91, 0x64, 0x27, 0xad, 0x9e);
 interface ILossParameters : IUnknown
 {
+   // Returns a string that describes the method used to compute prestress losses
+   // This string is intended to be used in reports
+   virtual std::_tstring GetLossMethodDescription() const = 0;
+
    // Returns the method for computing prestress losses
    virtual pgsTypes::LossMethod GetLossMethod() const = 0;
 

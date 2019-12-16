@@ -250,6 +250,17 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
    //   }
    //}
 
+
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pTitlePage << p;
+   *p << _T("Analysis Controls") << rptNewLine;
+
+   p = new rptParagraph();
+   *pTitlePage << p;
+
+   GET_IFACE(ILossParameters, pLossParams);
+   *p << _T("Losses: ") << pLossParams->GetLossMethodDescription() << rptNewLine;
+
    rptRcTable* pTable;
    int row = 0;
 
