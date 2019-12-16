@@ -656,60 +656,6 @@ void CParabolicDuctGeometry::SetRange(PierIndexType startPierIdx, PierIndexType 
    EndPierIdx = endPierIdx;
 
    PGS_ASSERT_VALID;
-
-
-   //// since we are using indicies, work backwards from end to start
-
-   //// adjust end of range
-   //SpanIndexType endSpanIdx = (SpanIndexType)(EndPierIdx - 1);
-   //SpanIndexType newEndSpanIdx = (SpanIndexType)(endPierIdx - 1);
-
-   //if (newEndSpanIdx < endSpanIdx)
-   //{
-   //   // end of the new span range is before the end of the old span range
-   //   // remove spans between the new and old ends
-   //   for (SpanIndexType spanIdx = newEndSpanIdx + 1; spanIdx <= endSpanIdx; spanIdx--)
-   //   {
-   //      RemoveSpan(spanIdx, (PierIndexType)(spanIdx + 1));
-   //   }
-   //}
-   //else
-   //{
-   //   // end of the new span range is after the end of the old span range
-   //   // add spans between the old and new ends
-   //   for (SpanIndexType spanIdx = endSpanIdx + 1; spanIdx <= newEndSpanIdx; spanIdx++)
-   //   {
-   //      PierIndexType pierIdx = (PierIndexType)spanIdx;
-   //      InsertSpan(pierIdx, pgsTypes::Ahead);
-   //   }
-   //}
-   //EndPierIdx = endPierIdx;
-
-   //// adjust start of range
-   //SpanIndexType startSpanIdx = (SpanIndexType)StartPierIdx;
-   //SpanIndexType newStartSpanIdx = (SpanIndexType)startPierIdx;
-
-   //if (startSpanIdx <= newStartSpanIdx)
-   //{
-   //   // start of the new span range is after the start of the old span range
-   //   // remove spans between the old and new start
-   //   for (SpanIndexType spanIdx = startSpanIdx; spanIdx < newStartSpanIdx; spanIdx++)
-   //   {
-   //      RemoveSpan(spanIdx,(PierIndexType)(spanIdx+1));
-   //   }
-   //}
-   //else
-   //{
-   //   // start of the new span range is before the start of the old span range
-   //   // add spans between the new and old starts
-   //   for (SpanIndexType spanIdx = newStartSpanIdx; spanIdx < startSpanIdx; spanIdx++)
-   //   {
-   //      PierIndexType pierIdx = (PierIndexType)spanIdx;
-   //      InsertSpan(pierIdx, pgsTypes::Ahead);
-   //   }
-   //}
-
-   //StartPierIdx = startPierIdx;
 }
 
 void CParabolicDuctGeometry::GetRange(PierIndexType* pStartPierIdx, PierIndexType* pEndPierIdx) const
@@ -1628,6 +1574,15 @@ void CPTData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierTy
    {
       CDuctData& duct = *iter;
       duct.RemoveSpan(spanIdx-startSpanIdx,pierIdx-startPierIdx);
+
+      if (duct.DuctGeometryType == CDuctGeometry::Parabolic && spanIdx == startSpanIdx)
+      {
+         // if the removed span is the same as the start span, then shift the duct because all the spans/piers shift
+         PierIndexType ductStartPierIdx, ductEndPierIdx;
+         duct.ParabolicDuctGeometry.GetRange(&ductStartPierIdx, &ductEndPierIdx);
+         ATLASSERT(0 < ductStartPierIdx && 0 < ductEndPierIdx);
+         duct.ParabolicDuctGeometry.SetRange(ductStartPierIdx - 1, ductEndPierIdx - 1);
+      }
    }
 }
 

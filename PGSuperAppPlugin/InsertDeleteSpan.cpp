@@ -231,6 +231,8 @@ bool txnDeleteSpan::Execute()
       }
    }
 
+   pIBridgeDesc->DeletePier(m_RefPierIdx, m_PierFace);
+
    PierIndexType pierIdx = (m_PierFace == pgsTypes::Back ? m_RefPierIdx - 1 : m_RefPierIdx + 1); // index of the pier that is not deleted
    if (m_bIsBoundaryPier)
    {
@@ -238,10 +240,18 @@ bool txnDeleteSpan::Execute()
    }
    else
    {
-      pIBridgeDesc->SetBoundaryCondition(pierIdx, m_SegmentConnection, m_CastClosureEventIdx);
+      PierIndexType nPiers = pBridge->GetPierCount();
+      if (m_RefPierIdx == 0 || m_RefPierIdx == nPiers/*-1 don't subtract one because the pier was already deleted above*/)
+      {
+         // the first or last pier in the bridge is being removed... this makes the
+         // the new first/last pier a boundary pier so change its boundary condition
+         pIBridgeDesc->SetBoundaryCondition(pierIdx, pgsTypes::bctRoller);
+      }
+      else
+      {
+         pIBridgeDesc->SetBoundaryCondition(pierIdx, m_SegmentConnection, m_CastClosureEventIdx);
+      }
    }
-
-   pIBridgeDesc->DeletePier(m_RefPierIdx, m_PierFace);
 
    return true;
 }
