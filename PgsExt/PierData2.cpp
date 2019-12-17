@@ -2217,7 +2217,7 @@ const CColumnData& CPierData2::GetColumnData(ColumnIndexType colIdx) const
 
 void CPierData2::SetDiaphragmHeight(pgsTypes::PierFaceType pierFace,Float64 d)
 {
-   ATLASSERT(IsEqual(d, -1.0) || 0 < d); // -1 means compute, otherwise must be greater than zone
+   ATLASSERT(IsEqual(d, -1.0) || 0 <= d); // -1 means compute, otherwise must be greater than zone
    m_DiaphragmHeight[pierFace] = d;
 }
 
@@ -2228,7 +2228,7 @@ Float64 CPierData2::GetDiaphragmHeight(pgsTypes::PierFaceType pierFace) const
 
 void CPierData2::SetDiaphragmWidth(pgsTypes::PierFaceType pierFace,Float64 w)
 {
-   ATLASSERT(IsEqual(w, -1.0) || 0 < w); // -1 means compute, otherwise must be greater than zone
+   ATLASSERT(IsEqual(w, -1.0) || 0 <= w); // -1 means compute, otherwise must be greater than zone
    m_DiaphragmWidth[pierFace] = w;
 }
 

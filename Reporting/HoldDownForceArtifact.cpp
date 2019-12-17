@@ -134,14 +134,15 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
 
          if (holdDownForceType == HOLD_DOWN_TOTAL)
          {
-            (*pTable)(0, 0) << COLHDR(_T("Total Hold Down Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+            (*pTable)(0, 0) << COLHDR(_T("Hold Down Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+            (*pTable)(0, 1) << COLHDR(_T("Hold Down Force Limit"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
          }
          else
          {
-            (*pTable)(0, 0) << COLHDR(_T("Hold Down Force per Strand"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+            (*pTable)(0, 0) << _T("Hold Down Force") << rptNewLine << _T("(") << rptForceUnitTag(&pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure) << _T("/strand)");
+            (*pTable)(0, 1) << _T("Hold Down Force Limit") << rptNewLine << _T("(") << rptForceUnitTag(&pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure) << _T("/strand)");
          }
-         (*pTable)(0, 1) << COLHDR(_T("Hold Down Force Limit"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
-         (*pTable)(0,2) << _T("Status");
+         (*pTable)(0, 2) << _T("Status");
 
          (*pTable)(1,0) << force.SetValue(pArtifact->GetDemand());
          (*pTable)(1,1) << force.SetValue(pArtifact->GetCapacity());
