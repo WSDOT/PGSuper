@@ -1364,7 +1364,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType strandStressingIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
    Float64 Ph = pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, strandStressingIntervalIdx, pgsTypes::Start, &config);
-   Float64 strand_force = Ph / (1 + m_HoldDownFriction);
+   Float64 strand_force = Ph * (1 + m_HoldDownFriction);
    if (!m_bTotalHoldDownForce)
    {
       strand_force /= Nh;
