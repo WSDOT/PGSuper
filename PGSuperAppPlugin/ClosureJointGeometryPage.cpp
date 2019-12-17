@@ -294,8 +294,8 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
 
          pParent->m_pPier->SetDiaphragmHeight(pgsTypes::Back,m_DiaphragmHeight);
          pParent->m_pPier->SetDiaphragmHeight(pgsTypes::Ahead,m_DiaphragmHeight);
-         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Back,m_DiaphragmWidth/2);
-         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Ahead,m_DiaphragmWidth/2);
+         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Back, m_DiaphragmWidth < 0 ? -1 : m_DiaphragmWidth/2);
+         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Ahead, m_DiaphragmWidth < 0 ? -1 : m_DiaphragmWidth/2);
          pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Back,ConnectionLibraryEntry::ApplyAtBearingCenterline);
          pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Ahead,ConnectionLibraryEntry::ApplyAtBearingCenterline);
       }

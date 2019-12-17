@@ -349,6 +349,10 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
       *p << _T("Section Properties: Transformed") << rptNewLine;
    }
 
+   GET_IFACE(ILossParameters, pLossParams);
+   *p << _T("Losses: ") << pLossParams->GetLossMethodDescription() << rptNewLine;
+
+
    GET_IFACE_NOCHECK(IBridge, pBridge);
    if (girderKey.girderIndex != INVALID_INDEX && IsDifferentNumberOfGirdersPerSpan(pBridge) )
    {

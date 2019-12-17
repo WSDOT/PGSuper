@@ -10624,6 +10624,71 @@ void CProjectAgentImp::IgnoreEffectiveFlangeWidthLimits(bool bIgnore)
 
 ////////////////////////////////////////////////////////////////////////
 // ILossParameters
+std::_tstring CProjectAgentImp::GetLossMethodDescription() const
+{
+   std::_tstring strLossMethod;
+   pgsTypes::LossMethod lossMethod = GetLossMethod();
+   switch (lossMethod)
+   {
+   case pgsTypes::AASHTO_REFINED: 
+   case pgsTypes::AASHTO_REFINED_2005:
+      strLossMethod = _T("Refined estimate per AASHTO LRFD ");
+      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")));
+      break;
+
+   case pgsTypes::AASHTO_LUMPSUM:
+   case pgsTypes::AASHTO_LUMPSUM_2005:
+         strLossMethod = _T("Approximate lump sum estimate per AASHTO LRFD ");
+      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
+      break;
+
+   case pgsTypes::GENERAL_LUMPSUM:
+      strLossMethod = _T("General lump sum");
+      break;
+
+   case pgsTypes::WSDOT_LUMPSUM:
+   case pgsTypes::WSDOT_LUMPSUM_2005:
+      strLossMethod = _T("Approximate lump sum estimate per WSDOT Bridge Design Manual");
+      break;
+
+   case pgsTypes::WSDOT_REFINED:
+   case pgsTypes::WSDOT_REFINED_2005:
+      strLossMethod = _T("Refined estimate per WSDOT Bridge Design Manual");
+      break;
+
+   case pgsTypes::TXDOT_REFINED_2004:
+      strLossMethod = _T("Refined estimate per TxDOT Bridge Design Manual");
+      break;
+
+   case pgsTypes::TXDOT_REFINED_2013:
+      strLossMethod = _T("Refined estimate per TxDOT Research Report 0-6374-2");
+      break;
+
+   case pgsTypes::TIME_STEP:
+      strLossMethod = _T("Time Step");
+      switch (GetTimeDependentModel())
+      {
+      case pgsTypes::tdmAASHTO:
+         strLossMethod += std::_tstring(_T(" (AASHTO LRFD)"));
+         break;
+      case pgsTypes::tdmACI209:
+         strLossMethod += std::_tstring(_T(" (ACI 209R-92)"));
+         break;
+      case pgsTypes::tdmCEBFIP:
+         strLossMethod += std::_tstring(_T(" (CEB-FIP 1990)"));
+         break;
+      default:
+         ATLASSERT(false); // this is there a new time dependent model?
+      }
+      break;
+
+   default:
+      ATLASSERT(false); // is there a new loss method?
+   }
+
+   return strLossMethod;
+}
+
 pgsTypes::LossMethod CProjectAgentImp::GetLossMethod() const
 {
    pgsTypes::LossMethod loss_method;

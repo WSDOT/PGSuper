@@ -1025,6 +1025,13 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("DiaphragmWidth"),&var);
          m_DiaphragmWidth[pgsTypes::Back] = var.dblVal;
+         if (m_DiaphragmWidth[pgsTypes::Back] < 0)
+         {
+            // there was a bug that split the -1 between two sides of the pier
+            // so the resulting width was taken to be -0.5... this is wrong
+            // reset to -1
+            m_DiaphragmWidth[pgsTypes::Back] = -1;
+         }
 
          hr = pStrLoad->get_Property(_T("DiaphragmHeight"),&var);
          m_DiaphragmHeight[pgsTypes::Back] = var.dblVal;
@@ -1153,6 +1160,13 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("DiaphragmWidth"),&var);
          m_DiaphragmWidth[pgsTypes::Ahead] = var.dblVal;
+         if (m_DiaphragmWidth[pgsTypes::Ahead] < 0)
+         {
+            // there was a bug that split the -1 between two sides of the pier
+            // so the resulting width was taken to be -0.5... this is wrong
+            // reset to -1
+            m_DiaphragmWidth[pgsTypes::Ahead] = -1;
+         }
 
          hr = pStrLoad->get_Property(_T("DiaphragmHeight"),&var);
          m_DiaphragmHeight[pgsTypes::Ahead] = var.dblVal;
@@ -2203,6 +2217,7 @@ const CColumnData& CPierData2::GetColumnData(ColumnIndexType colIdx) const
 
 void CPierData2::SetDiaphragmHeight(pgsTypes::PierFaceType pierFace,Float64 d)
 {
+   ATLASSERT(IsEqual(d, -1.0) || 0 < d); // -1 means compute, otherwise must be greater than zone
    m_DiaphragmHeight[pierFace] = d;
 }
 
@@ -2213,6 +2228,7 @@ Float64 CPierData2::GetDiaphragmHeight(pgsTypes::PierFaceType pierFace) const
 
 void CPierData2::SetDiaphragmWidth(pgsTypes::PierFaceType pierFace,Float64 w)
 {
+   ATLASSERT(IsEqual(w, -1.0) || 0 < w); // -1 means compute, otherwise must be greater than zone
    m_DiaphragmWidth[pierFace] = w;
 }
 

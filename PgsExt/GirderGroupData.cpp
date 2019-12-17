@@ -281,11 +281,6 @@ void CGirderGroupData::AddSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType f
 
 void CGirderGroupData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
-   // Adjust the slab offsets
-   PierIndexType pierIdx = (PierIndexType)spanIdx + (rmPierType == pgsTypes::PrevPier ? 0 : 1);
-   PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-   PierIndexType nPiersToRemove = pierIdx - startPierIdx;
-
    // Adjust the girders in the group for the span that is removed
    // remove span references from the girders before the span is destroyed
    // Segments have pointers to the spans they start and end in

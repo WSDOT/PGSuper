@@ -1728,9 +1728,6 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
       m_GirderGroups.erase(m_GirderGroups.begin()+pGroup->GetIndex());
    }
 
-   // remove the span from the group
-   pGroup->RemoveSpan(spanIdx,rmPierType); // this will update the slab offsets and remove the span from the girders in this group
-
    // If the pier that is being removed is at the boundary of a group, capture the 
    // adjacent groups so they can be updated below
    // (this update needs to happen after RenumberSpans is called)
@@ -1744,6 +1741,27 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
       pPrevGroup = pRemovePier->GetPrevGirderGroup();
       pNextGroup = pRemovePier->GetNextGirderGroup();
    }
+
+   if(pCommonPier->IsInteriorPier())
+   {
+      if (!IsSegmentContinuousOverPier(pCommonPier->GetSegmentConnectionType()))
+      {
+         CClosureJointData* pClosure = pCommonPier->GetClosureJoint(0);
+         EventIndexType eventIdx = m_TimelineManager.GetCastClosureJointEventIndex(pClosure);
+         if (eventIdx != INVALID_INDEX)
+         {
+            CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(eventIdx);
+
+            if (pClosure->GetPier())
+            {
+               pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
+            }
+         }
+      }
+   }
+
+   // remove the span from the group
+   pGroup->RemoveSpan(spanIdx, rmPierType); // this will update the slab offsets and remove the span from the girders in this group
 
    // Remove span and pier from the bridge
    Float64 removedPierStation;

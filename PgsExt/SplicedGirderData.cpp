@@ -1117,10 +1117,6 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
 
          RemoveSegmentFromTimelineManager(pSegment);
 
-         // Delete the segment, mark it's position in the vector with nullptr
-         delete pSegment;
-         *segIter = nullptr;
-
          if ( pStartClosure )
          {
             pStartClosure->GetLeftSegment()->SetEndClosure(nullptr);
@@ -1136,6 +1132,11 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
             RemoveClosureJointFromTimelineManager(pEndClosure);
             delete pEndClosure;
          }
+
+         // Delete the segment, mark it's position in the vector with nullptr
+         delete pSegment;
+         pSegment = nullptr;
+         *segIter = nullptr;
       }
       else if (startSpanIdx == spanIdx )
       {
@@ -1159,9 +1160,13 @@ void CSplicedGirderData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierTy
    std::vector<CPrecastSegmentData*>::iterator new_segment_end = std::remove(m_Segments.begin(),m_Segments.end(),(CPrecastSegmentData*)nullptr);
    m_Segments.erase(new_segment_end,m_Segments.end());
 
+   // Remove all references to deleted closure joints
    std::vector<CClosureJointData*>::iterator new_closure_end = std::remove(m_Closures.begin(),m_Closures.end(),(CClosureJointData*)nullptr);
    m_Closures.erase(new_closure_end,m_Closures.end());
 
+   UpdateSegments(); // causes the segment index and other things to be updated after a change
+
+   // Remove the span from the post-tensioning definition
    m_PTData.RemoveSpan(spanIdx,rmPierType);
 }
 
