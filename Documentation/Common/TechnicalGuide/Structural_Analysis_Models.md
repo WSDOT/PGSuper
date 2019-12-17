@@ -93,9 +93,9 @@ Some girder types, such as U-beams, may be defined with diaphragms that are cast
 Intervals 3 - 6 model the non-composite precast elements during Lifting, Storage, and Hauling. The loading conditions for this analysis intervals are the same as for Interval 2. However, the support location is that for lifting, storage, and hauling, respectively.
 
 ### Interval 7: Erect Girders ###
-The precast elements have been erected onto the supporting elements of the bridge. They are supported at their specified bearing locations. The loading condition is similar to that Interval 2; however if the length of the cantilever in the analysis model is less than 1.1 times the depth of the non-composite girder section at the centerline bearing (H<sub>g</sub>), the cantilever is assumed to be a deep beam. In this case, the dead load of the cantilever is applied directly over the centerline of bearing as a concentrated load.
+The precast elements have been erected onto the supporting elements of the bridge. They are supported at their specified bearing locations. The loading condition is similar to that in Interval 2; however if the length of the cantilever in the analysis model is less than the depth of the non-composite girder section at the centerline bearing (H<sub>g</sub>), the cantilever is assumed to be a deep beam. This is constent with LRFD 5.5.1.2.1 and the definition of B-Region and D-Region. The dead load of the cantilever is applied directly over the centerline of bearing as a concentrated load.
 
-In the figure below, the cantilever on the left is greater than 1.1H<sub>g</sub> in length and it is treated as a flexural element. The cantilever on the right is less that 1.1H<sub>g</sub> and is treated as a deep beam where forces are transfered directly to the support through an internal compression strut.
+In the figure below, the cantilever on the left is greater than H<sub>g</sub> in length and it is treated as a flexural element. The cantilever on the right is less that H<sub>g</sub> and is treated as a deep beam where forces are transfered directly to the support through an internal compression strut.
 
 ![](ErectedGirderModel.png)
 

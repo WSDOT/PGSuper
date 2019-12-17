@@ -4972,9 +4972,11 @@ void CBridgeAgentImp::ModelCantilevers(const CSegmentKey& segmentKey,bool* pbSta
    Float64 segment_height_end   = GetHeight(poiEndBrg);
 
    // the cantilevers at the ends of the segment are modeled as flexural members
-   // if the cantilever length exceeds 110% of the height of the girder
-   *pbStartCantilever = (*pbStartCantilever || ::IsLT(1.1*segment_height_start,start_offset) ? true : false);
-   *pbEndCantilever   = (*pbEndCantilever   || ::IsLT(1.1*segment_height_end,  end_offset)   ? true : false);
+   // if the cantilever length exceeds the height of the girder. From LRFD 5.5.1.2.1, B-Regions
+   // are beyond one member depth on either side of the discontinuity in geoemtry or force.
+   // In this case, the discontinuity in force is the bearing reaction
+   *pbStartCantilever = (::IsLT(segment_height_start,start_offset) ? true : false);
+   *pbEndCantilever   = (::IsLT(segment_height_end,  end_offset)   ? true : false);
 }
 
 void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 segmentOffset)
