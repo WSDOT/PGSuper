@@ -1927,7 +1927,7 @@ CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx)
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      CClosureJointData* pClosure = pSegment->GetEndClosure();
+      CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
       if ( pClosure->GetPier() == this )
       {
          return pClosure;
@@ -1966,7 +1966,7 @@ const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) con
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      const CClosureJointData* pClosure = pSegment->GetEndClosure();
+      const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
       if ( pClosure->GetPier() == this )
       {
          return pClosure;

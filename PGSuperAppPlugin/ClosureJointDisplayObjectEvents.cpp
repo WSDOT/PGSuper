@@ -58,7 +58,7 @@ DELEGATE_CUSTOM_INTERFACE(CClosureJointDisplayObjectEvents,Events);
 
 void CClosureJointDisplayObjectEvents::EditClosureJoint(iDisplayObject* pDO)
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_CLOSURE,0);
+   m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_CLOSURE,0);
 }
 
 void CClosureJointDisplayObjectEvents::SelectClosureJoint(iDisplayObject* pDO)

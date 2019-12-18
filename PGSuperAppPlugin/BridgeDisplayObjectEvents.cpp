@@ -82,7 +82,7 @@ STDMETHODIMP CBridgeDisplayObjectEvents::XEvents::QueryInterface(
 
 void CBridgeDisplayObjectEvents::EditBridge()
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
+   m_pFrame->PostMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 /////////////////////////////////////////////////////////////////////////////

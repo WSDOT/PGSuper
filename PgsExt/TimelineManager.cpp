@@ -2535,7 +2535,7 @@ int CTimelineManager::Validate() const
                }
             }
 
-            const CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+            const CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosureJoint )
             {
                // if there is a closure joint....
@@ -2604,7 +2604,7 @@ int CTimelineManager::ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexT
 			return TLM_STRESS_TENDON_ERROR;
 		}
 
-		const auto* pClosureJoint = pGirder->GetSegment(segIdx)->GetEndClosure();
+		const auto* pClosureJoint = pGirder->GetSegment(segIdx)->GetClosureJoint(pgsTypes::metEnd);
 		if (pClosureJoint && segIdx != endSegIdx)
 		{
 			// if there is a closure at the end of the segment, and this is not the last segment, 
@@ -2859,6 +2859,11 @@ void CTimelineManager::Sort()
          pTimelineEvent->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad(false);
       }
    }
+}
+
+void CTimelineManager::ClearCaches()
+{
+   std::for_each(std::begin(m_TimelineEvents), std::end(m_TimelineEvents), [](auto* pTimelineEvent) {pTimelineEvent->ClearCaches(); });
 }
 
 Float64 g_Day;

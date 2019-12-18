@@ -1461,7 +1461,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
          write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,bUse90dayStrength,bUse90dayStrength,fc90,Ec90,lambda,pSegment->Material.Concrete,row);
          row++;
 
-         const CClosureJointData* pClosure = pSegment->GetEndClosure();
+         const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
          if ( pClosure )
          {
             ATLASSERT(false); // this should never happen because the basic concrete model
@@ -1687,7 +1687,7 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
          write_aci209_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pSegment->Material.Concrete,row,bAASHTOParameters);
          row++;
 
-         const CClosureJointData* pClosure = pSegment->GetEndClosure();
+         const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
          if ( pClosure )
          {
             Float64 fc28 = pMaterials->GetClosureJointFc28(thisSegmentKey);
@@ -1832,7 +1832,7 @@ void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
          write_cebfip_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pSegment->Material.Concrete,row);
          row++;
 
-         const CClosureJointData* pClosure = pSegment->GetEndClosure();
+         const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
          if ( pClosure )
          {
             Float64 fc28 = pMaterials->GetClosureJointFc28(thisSegmentKey);
@@ -2518,7 +2518,7 @@ void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
       {
          const CPierData2* pPier = nullptr;
          const CTemporarySupportData* pTS = nullptr;
-         const CClosureJointData* pClosure = pSegment->GetEndClosure();
+         const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
          if ( pClosure == nullptr )
          {
             pPier = pGirder->GetPier(pgsTypes::metEnd);

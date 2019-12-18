@@ -207,7 +207,7 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject*
    }
    else if ( nChar == VK_DELETE )
    {
-      pThis->m_pFrame->SendMessage(WM_COMMAND,ID_DELETE,0);
+      pThis->m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
       return true;
    }
 

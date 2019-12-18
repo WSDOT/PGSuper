@@ -5304,7 +5304,7 @@ void CProjectAgentImp::UpdateConcreteMaterial()
                pSegment->Material.Concrete.Type = pgsTypes::SandLightweight;
             }
 
-            CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+            CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosureJoint )
             {
                if ( !pClosureJoint->GetConcrete().bUserEci )
@@ -5377,7 +5377,7 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
             pSegment->Material.Concrete.bCEBFIPUserParameters = true;
             matCEBFIPConcrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.S);
 
-            CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+            CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
             ATLASSERT(pClosureJoint == nullptr); // we can't go from a non-time step method to a time-step method unless we have a regular precast girder bridge. For a regular precast girder bridge, there aren't any closure joints
          }
       }
@@ -5534,7 +5534,7 @@ void CProjectAgentImp::VerifyRebarGrade()
                pSegment->ShearData.ShearBarGrade = matRebar::Grade60;
             }
 
-            CClosureJointData* pClosure = pSegment->GetEndClosure();
+            CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosure )
             {
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == matRebar::Grade100 )
@@ -6845,7 +6845,7 @@ const CClosureJointData* CProjectAgentImp::GetClosureJointData(const CSegmentKey
    const CGirderGroupData*   pGroup    = m_BridgeDescription.GetGirderGroup(closureKey.groupIndex);
    const CSplicedGirderData* pGirder   = pGroup->GetGirder(closureKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(closureKey.segmentIndex);
-   return pSegment->GetEndClosure();
+   return pSegment->GetClosureJoint(pgsTypes::metEnd);
 }
 
 void CProjectAgentImp::SetClosureJointData(const CSegmentKey& closureKey,const CClosureJointData& closure)
@@ -6853,7 +6853,7 @@ void CProjectAgentImp::SetClosureJointData(const CSegmentKey& closureKey,const C
    CGirderGroupData*    pGroup   = m_BridgeDescription.GetGirderGroup(closureKey.groupIndex);
    CSplicedGirderData*  pGirder  = pGroup->GetGirder(closureKey.girderIndex);
    CPrecastSegmentData* pSegment = pGirder->GetSegment(closureKey.segmentIndex);
-   CClosureJointData*    pClosure = pSegment->GetEndClosure();
+   CClosureJointData*    pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
 
    // this method sets the right closure joint data... there is not a closure
    // at the right end of the last segment
@@ -8392,7 +8392,7 @@ void CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closure
 void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint->GetStirrups().ShearBarType != type || pClosureJoint->GetStirrups().ShearBarGrade != grade)
    {
       pClosureJoint->GetStirrups().ShearBarType = type;
@@ -8404,7 +8404,7 @@ void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closure
 const CShearData2* CProjectAgentImp::GetClosureJointShearData(const CClosureKey& closureKey) const
 {
    const CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   const CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   const CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint == nullptr )
    {
       return nullptr;
@@ -8416,7 +8416,7 @@ const CShearData2* CProjectAgentImp::GetClosureJointShearData(const CClosureKey&
 void CProjectAgentImp::SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& shearData)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint && pClosureJoint->GetStirrups() != shearData )
    {
       pClosureJoint->SetStirrups(shearData);
@@ -8482,7 +8482,7 @@ void CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKe
 void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint->GetRebar().BarGrade != grade || pClosureJoint->GetRebar().BarType != type )
    {
       pClosureJoint->GetRebar().BarGrade = grade;
@@ -8494,14 +8494,14 @@ void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKe
 const CLongitudinalRebarData* CProjectAgentImp::GetClosureJointLongitudinalRebarData(const CClosureKey& closureKey) const
 {
    const CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   const CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   const CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    return &pClosureJoint->GetRebar();
 }
 
 void CProjectAgentImp::SetClosureJointLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint->GetRebar() != data )
    {
       pClosureJoint->GetRebar() = data;

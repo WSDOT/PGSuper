@@ -135,6 +135,8 @@ protected:
    CTimelineManager* m_pTimelineMgr; // weak reference
    void SetTimelineManager(CTimelineManager* pTimelineMgr);
 
+   void ClearCaches();
+
    EventIDType m_ID; // unique identifier for this event (it is your job to make sure it is unique)
 
    Float64 m_Day;

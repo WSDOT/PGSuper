@@ -62,7 +62,7 @@ DELEGATE_CUSTOM_INTERFACE(CTrafficBarrierDisplayObjectEvents,Events);
 
 void CTrafficBarrierDisplayObjectEvents::EditBarrier()
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_PROJECT_BARRIER,0);
+   m_pFrame->PostMessage(WM_COMMAND,ID_PROJECT_BARRIER,0);
 }
 
 void CTrafficBarrierDisplayObjectEvents::SelectPrev()

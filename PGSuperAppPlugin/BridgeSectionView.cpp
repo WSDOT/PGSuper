@@ -532,7 +532,7 @@ void CBridgeSectionView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
 
 void CBridgeSectionView::HandleLButtonDblClk(UINT nFlags, CPoint point) 
 {
-   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
+   GetFrame()->PostMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)

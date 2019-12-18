@@ -155,7 +155,7 @@ void CAlignmentPlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 void CAlignmentPlanView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint) 
 {
-   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_ALIGNMENT,0);
+   GetFrame()->PostMessage(WM_COMMAND,ID_PROJECT_ALIGNMENT,0);
 }
 
 void CAlignmentPlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
