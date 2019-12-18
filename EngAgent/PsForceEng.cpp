@@ -714,8 +714,12 @@ Float64 pgsPsForceEng::GetHoldDownForce(const CSegmentKey& segmentKey, bool bTot
       // The slope of the strands may be different at each harp point... need to compute the
       // hold down force for each harp point and return the maximum value
 
-      Float64 s = 0; // slope associated with governing hold down force
+      Float64 s = Float64_Max; // slope associated with governing hold down force
       Float64 F = 0; // governing hold down force
+      if (pPoi)
+      {
+         *pPoi = vPoi.front();
+      }
       for (const pgsPointOfInterest& poi : vPoi)
       {
          Float64 harped = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,pgsTypes::Start,pConfig);
