@@ -24,6 +24,7 @@
 #include <PgsExt\PgsExtExp.h>
 
 class CBridgeDescription2;
+class CTimelineEvent;
 
 /*****************************************************************************
 CLASS 
@@ -80,12 +81,16 @@ protected:
    virtual LPCTSTR GetUnitName() = 0;
    virtual Float64 GetUnitVersion() = 0;
 
+   virtual void ClearCaches();
+
    bool m_bEnabled;
    std::set<PierIDType> m_Piers;
    std::set<SupportIDType> m_TempSupports;
 
-   mutable bool m_bUpdate;
+   mutable bool m_bUpdateClosureKeys;
    mutable std::vector<CClosureKey> m_vClosureKeys;
+
+   friend CTimelineEvent;
 };
 
 class PGSEXTCLASS CErectPiersActivity : public CSupportActivityBase

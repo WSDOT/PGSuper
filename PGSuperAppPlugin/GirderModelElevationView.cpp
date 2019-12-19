@@ -696,7 +696,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
 
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
-   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetStartClosure() : pSegment->GetEndClosure());
+   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetClosureJoint(pgsTypes::metStart) : pSegment->GetClosureJoint(pgsTypes::metEnd));
    const CPierData2* pPier = nullptr;
    const CTemporarySupportData* pTS = nullptr;
 

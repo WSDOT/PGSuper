@@ -84,6 +84,7 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
    ON_BN_CLICKED(IDC_FC1, &CSpecDesignPage::OnFcTypeChanged)
    ON_BN_CLICKED(IDC_FC2, &CSpecDesignPage::OnFcTypeChanged)
    ON_BN_CLICKED(IDC_DESIGN_A, &CSpecDesignPage::OnDesignA)
+   ON_BN_CLICKED(IDC_USE_90_DAY_STRENGTH, &CSpecDesignPage::OnBnClicked90DayStrength)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -129,6 +130,8 @@ BOOL CSpecDesignPage::OnInitDialog()
    OnBnClickedLlDeflection();
 
    OnBnClickedCheckHandlingWeight();
+
+   OnBnClicked90DayStrength();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -293,8 +296,16 @@ void CSpecDesignPage::OnBnClickedCheckHandlingWeight()
 
 void CSpecDesignPage::OnFcTypeChanged()
 {
-   BOOL bEnable = IsDlgButtonChecked(IDC_FC2);
-   GetDlgItem(IDC_USE_90_DAY_STRENGTH)->EnableWindow(bEnable);
+   OnBnClicked90DayStrength();
+}
+
+void CSpecDesignPage::OnBnClicked90DayStrength()
+{
+   BOOL bCorrectFcSetting = IsDlgButtonChecked(IDC_FC2);
+   BOOL bIsUsed = IsDlgButtonChecked(IDC_USE_90_DAY_STRENGTH);
+   BOOL bEnable = (bIsUsed && bCorrectFcSetting);
+
+   GetDlgItem(IDC_USE_90_DAY_STRENGTH)->EnableWindow(bCorrectFcSetting);
    GetDlgItem(IDC_90_DAY_STRENGTH_FACTOR)->EnableWindow(bEnable);
    GetDlgItem(IDC_90_DAY_STRENGTH_LABEL)->EnableWindow(bEnable);
 }

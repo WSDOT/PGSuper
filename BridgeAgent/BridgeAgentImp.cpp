@@ -4906,7 +4906,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
       if ( i == nPnts )
       {
          const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-         const CClosureJointData*   pClosure = pSegment->GetEndClosure();
+         const CClosureJointData*   pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
          if ( pClosure != nullptr )
          {
             Float64 closure_left, closure_right;
@@ -6085,7 +6085,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
    }
 
    // add POI at centerline of pier between groups
-   if ( pSegment->GetEndClosure() == nullptr )
+   if ( pSegment->GetClosureJoint(pgsTypes::metEnd) == nullptr )
    {
       const CPierData2* pPier;
       const CTemporarySupportData* pTS;
@@ -9228,7 +9228,7 @@ Float64 CBridgeAgentImp::GetSegmentStartSupportWidth(const CSegmentKey& segmentK
    else
    {
       const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-      const CClosureJointData* pClosure = pSegment->GetStartClosure();
+      const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metStart);
       if (pClosure)
       {
          if (pClosure->GetPier())
@@ -9266,7 +9266,7 @@ Float64 CBridgeAgentImp::GetSegmentEndSupportWidth(const CSegmentKey& segmentKey
    else
    {
       const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-      const CClosureJointData* pClosure = pSegment->GetEndClosure();
+      const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
       if (pClosure)
       {
          if (pClosure->GetPier())
@@ -19961,15 +19961,15 @@ void CBridgeAgentImp::ResolveSegmentVariation(const CPrecastSegmentData* pSegmen
    Float64 Ls = GetSegmentLength(segmentKey);
 
    Float64 Lcp1 = 0;
-   if (pSegment->GetStartClosure())
+   if (pSegment->GetClosureJoint(pgsTypes::metStart))
    {
-      Lcp1 = GetClosureJointLength(pSegment->GetStartClosure()->GetClosureKey()) / 2;
+      Lcp1 = GetClosureJointLength(pSegment->GetClosureJoint(pgsTypes::metStart)->GetClosureKey()) / 2;
    }
 
    Float64 Lcp2 = 0;
-   if (pSegment->GetEndClosure())
+   if (pSegment->GetClosureJoint(pgsTypes::metEnd))
    {
-      Lcp2 = GetClosureJointLength(pSegment->GetEndClosure()->GetClosureKey()) / 2;
+      Lcp2 = GetClosureJointLength(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetClosureKey()) / 2;
    }
 
    Float64 left_prismatic_length = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
@@ -24582,14 +24582,14 @@ std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> CBridgeAgentImp::GetElevationDetai
                   CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
                   GetSegmentEndPoints(segmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
 
-                  if (pThisSegment->GetStartClosure() == ts->GetClosureJoint(gdrIdx))
+                  if (pThisSegment->GetClosureJoint(pgsTypes::metStart) == ts->GetClosureJoint(gdrIdx))
                   {
                      endType = pgsTypes::metStart;
                      pnt = pntBrg1;
                   }
                   else
                   {
-                     ATLASSERT(pThisSegment->GetEndClosure() == ts->GetClosureJoint(gdrIdx));
+                     ATLASSERT(pThisSegment->GetClosureJoint(pgsTypes::metEnd) == ts->GetClosureJoint(gdrIdx));
                      endType = pgsTypes::metEnd;
                      pnt = pntBrg2;
                   }
@@ -26684,8 +26684,8 @@ void CBridgeAgentImp::GetSegmentEndDistance(const CSegmentKey& segmentKey,Float6
 void CBridgeAgentImp::GetSegmentEndDistance(const CSegmentKey& segmentKey,const CSplicedGirderData* pGirder,Float64* pStartEndDistance,Float64* pEndEndDistance) const
 {
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-   const CClosureJointData* pStartClosure  = pSegment->GetStartClosure();
-   const CClosureJointData* pEndClosure = pSegment->GetEndClosure();
+   const CClosureJointData* pStartClosure  = pSegment->GetClosureJoint(pgsTypes::metStart);
+   const CClosureJointData* pEndClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
 
    // Assume pGirder is not associated with our bridge, but rather a detached copy that is
    // being used in an editing situation.

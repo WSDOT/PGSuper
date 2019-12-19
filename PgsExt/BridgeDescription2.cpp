@@ -45,11 +45,6 @@ static char THIS_FILE[] = __FILE__;
 // No new data was added in version 9.0. The version number was changed so we can tell the difference between files
 // that have an explicity construction event (9.0 <= version) for diaphragms and those that do not (version <= 8.0)
 
-bool CompareTempSupportLocation(const CTemporarySupportData* a,const CTemporarySupportData* b)
-{
-   return *a < *b;
-}
-
 /****************************************************************************
 CLASS
    CBridgeDescription2
@@ -843,37 +838,16 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
 
    pStrSave->BeginUnit(_T("Piers"),1.0);
    pStrSave->put_Property(_T("PierCount"),CComVariant(m_Piers.size()));
-
-   std::vector<CPierData2*>::iterator pierIter(m_Piers.begin());
-   std::vector<CPierData2*>::iterator pierIterEnd(m_Piers.end());
-   for ( ; pierIter != pierIterEnd; pierIter++ )
-   {
-      CPierData2* pPier = *pierIter;
-      pPier->Save(pStrSave,pProgress);
-   }
+   std::for_each(std::begin(m_Piers), std::end(m_Piers), [pStrSave,pProgress](auto* pPier) {pPier->Save(pStrSave, pProgress); });
    pStrSave->EndUnit();
 
    pStrSave->BeginUnit(_T("TemporarySupports"),1.0);
    pStrSave->put_Property(_T("TemporarySupportCount"),CComVariant(m_TemporarySupports.size()));
-
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
-   {
-      CTemporarySupportData* pTS = *tsIter;
-      pTS->Save(pStrSave,pProgress);
-   }
+   std::for_each(std::begin(m_TemporarySupports), std::end(m_TemporarySupports), [pStrSave, pProgress](auto* pTS) {pTS->Save(pStrSave, pProgress); });
    pStrSave->EndUnit();
 
    pStrSave->BeginUnit(_T("Spans"),1.0);
-   std::vector<CSpanData2*>::iterator spanIter(m_Spans.begin());
-   std::vector<CSpanData2*>::iterator spanIterEnd(m_Spans.end());
-   for ( ; spanIter != spanIterEnd; spanIter++ )
-   {
-      CSpanData2* pSpan = *spanIter;
-      pSpan->Save(pStrSave,pProgress);
-   }
-
+   std::for_each(std::begin(m_Spans), std::end(m_Spans), [pStrSave, pProgress](auto* pSpan) {pSpan->Save(pStrSave, pProgress); });
    pStrSave->EndUnit();
 
 
@@ -889,13 +863,7 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
 
    pStrSave->BeginUnit(_T("GirderGroups"),1.0);
    pStrSave->put_Property(_T("GirderGroupCount"),CComVariant(m_GirderGroups.size()));
-   std::vector<CGirderGroupData*>::iterator groupIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::iterator groupIterEnd(m_GirderGroups.end());
-   for ( ; groupIter != groupIterEnd; groupIter++ )
-   {
-      CGirderGroupData* pGroup = *groupIter;
-      pGroup->Save(pStrSave,pProgress);
-   }
+   std::for_each(std::begin(m_GirderGroups), std::end(m_GirderGroups), [pStrSave, pProgress](auto* pGroup) {pGroup->Save(pStrSave, pProgress); });
    pStrSave->EndUnit();
 
    // added in version 11
@@ -1016,12 +984,8 @@ Float64 CBridgeDescription2::GetLeastSlabOffset() const
 
    // this will cover the case of by pier and by segment
    Float64 minSlabOffset = DBL_MAX;
-   std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for(const auto* pGroup : m_GirderGroups)
    {
-      const CGirderGroupData* pGroup = *grpIter;
-
       // getting slab offset by segment will cover piers and temporary supports
       // if slab offset is defined by pier, then we just need to use one girder
       // because all of the other girders will be the same
@@ -1664,15 +1628,9 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
 void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
-   IndexType castDeckEventIdx = m_TimelineManager.GetCastDeckEventIndex();
-   if (castDeckEventIdx != INVALID_INDEX)
-   {
-      auto* pEvent = m_TimelineManager.GetEventByIndex(castDeckEventIdx);
-      pEvent->GetCastDeckActivity().RemoveSpan(this, spanIdx, rmPierType);
-   }
-
    // Removes a span and associated pier
    // If this is the last span in a group, the group will be removed as well
+
    CSpanData2* pPrevSpan = GetSpan(spanIdx-1);
    CSpanData2* pSpan     = GetSpan(spanIdx);
    CSpanData2* pNextSpan = GetSpan(spanIdx+1);
@@ -1683,11 +1641,17 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    bool bDeletePrevPier = false;
    bool bDeleteNextPier = false;
 
-   Float64 span_length = pSpan->GetSpanLength();
-
    PierIndexType removePierIdx = (rmPierType == pgsTypes::PrevPier ? pPrevPier->GetIndex() : pNextPier->GetIndex());
    PierIDType    removePierID  = (rmPierType == pgsTypes::PrevPier ? pPrevPier->GetID()    : pNextPier->GetID());
    PierIndexType nPiers = m_Piers.size(); // number of piers before removal
+
+   // remove the span from deck casting (this matters if we are doing staged casting)
+   IndexType castDeckEventIdx = m_TimelineManager.GetCastDeckEventIndex();
+   if (castDeckEventIdx != INVALID_INDEX)
+   {
+      auto* pEvent = m_TimelineManager.GetEventByIndex(castDeckEventIdx);
+      pEvent->GetCastDeckActivity().RemoveSpan(this, spanIdx, rmPierType);
+   }
 
    //
    // remove all temporary supports that occur in this span
@@ -1697,26 +1661,10 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    // (we can't remove when the TS is found because it will alter the container and 
    // mess up the iterator)
    std::vector<SupportIndexType> tsIndices;
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
-   {
-      CTemporarySupportData* pTS = *tsIter;
-      if ( pTS->GetSpan() == pSpan )
-      {
-         tsIndices.push_back(pTS->GetIndex());
-      }
-   }
+   std::for_each(std::begin(m_TemporarySupports), std::end(m_TemporarySupports), [&tsIndices, &pSpan](auto* pTS) {if (pTS->GetSpan() == pSpan) tsIndices.push_back(pTS->GetIndex()); });
 
-   // remove temporary supports by index.. work in reverse order. the spliced girder closure joints and segments
-   // will be adjusted
-   std::vector<SupportIndexType>::reverse_iterator tsIdxIter( tsIndices.rbegin() );
-   std::vector<SupportIndexType>::reverse_iterator tsIdxIterEnd( tsIndices.rend() );
-   for ( ; tsIdxIter != tsIdxIterEnd; tsIdxIter++ )
-   {
-      SupportIndexType tsIdx = *tsIdxIter;
-      RemoveTemporarySupportByIndex(tsIdx);
-   }
+   // remove temporary supports by index.. work in reverse order. the spliced girder closure joints and segments will be adjusted
+   std::for_each(std::rbegin(tsIndices), std::rend(tsIndices), [&](auto tsIdx) {RemoveTemporarySupportByIndex(tsIdx); });
 
    // Adjust the girder group
    CGirderGroupData* pGroup = GetGirderGroup(pSpan);
@@ -1732,7 +1680,7 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    // adjacent groups so they can be updated below
    // (this update needs to happen after RenumberSpans is called)
    CPierData2* pRemovePier = m_Piers[removePierIdx];
-   CPierData2* pCommonPier = nullptr;
+   CPierData2* pCommonPier = nullptr; // this is the pier that spans will join at when the span/pier are removed
    CGirderGroupData* pPrevGroup = nullptr;
    CGirderGroupData* pNextGroup = nullptr;
    if ( pRemovePier->IsBoundaryPier() )
@@ -1742,8 +1690,30 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
       pNextGroup = pRemovePier->GetNextGirderGroup();
    }
 
-   if(pCommonPier->IsInteriorPier())
+   if (pRemovePier->IsInteriorPier() && !IsSegmentContinuousOverPier(pRemovePier->GetSegmentConnectionType()))
    {
+      // the pier that is going to be removed is an interior pier and the segments are not continuous over
+      // the pier, therefore there is a closure. Remove the closure from the timeline
+      CClosureJointData* pClosure = pRemovePier->GetClosureJoint(0);
+      EventIndexType eventIdx = m_TimelineManager.GetCastClosureJointEventIndex(pClosure);
+      if (eventIdx != INVALID_INDEX)
+      {
+         CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(eventIdx);
+
+         if (pClosure->GetPier())
+         {
+            ATLASSERT(pClosure->GetPier()->GetID() == pRemovePier->GetID());
+            pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
+         }
+      }
+   }
+
+   if(pCommonPier && pCommonPier->IsInteriorPier())
+   {
+      // the common pier will become a boundary pier so, there is a closure joint
+      // at the common pier, make sure the closure joint is removed from the timeline
+      // QUESTION??? WHEN DOES THE CLOSURE JOINT OBJECT GET DELETED? THAT IS WHEN THE
+      // CASTING EVENT SHOULD BE REMOVED
       if (!IsSegmentContinuousOverPier(pCommonPier->GetSegmentConnectionType()))
       {
          CClosureJointData* pClosure = pCommonPier->GetClosureJoint(0);
@@ -1821,34 +1791,21 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    }
    else
    {
-      // offset all piers after the pier that was removed by the length of the span that was removed
-      // ie. restation all the piers after the pier that was removed so that span lengths are maintained
-      std::vector<CPierData2*>::iterator pierIter(m_Piers.begin()+removePierIdx);
-      std::vector<CPierData2*>::iterator pierIterEnd(m_Piers.end());
-      for ( ; pierIter != pierIterEnd; pierIter++ )
-      {
-         CPierData2* pPier = *pierIter;
-         pPier->SetStation( pPier->GetStation() - span_length );
-      }
+      Float64 span_length = pSpan->GetSpanLength();
 
-      // offset all temporary supports after the pier that was removed by the span that was removed
-      // temp support container has changed so we need to reset the iterators
-      tsIter = m_TemporarySupports.begin();
-      tsIterEnd = m_TemporarySupports.end();
-      for ( ; tsIter != tsIterEnd; tsIter++ )
-      {
-         CTemporarySupportData* pTS = *tsIter;
-         if ( removedPierStation < pTS->GetStation() )
-         {
-            pTS->SetStation(pTS->GetStation() - span_length);
-         }
-      }
+      // offset all piers after the pier that was removed by the length of the span that was removed
+      // ie. re-station all the piers after the pier that was removed so that span lengths are maintained
+      std::for_each(std::begin(m_Piers) + removePierIdx, std::end(m_Piers), [span_length](auto* pPier) {pPier->SetStation(pPier->GetStation() - span_length);});
+
+      // offset all temporary supports after the pier that was removed by the length of the span that was removed
+      std::for_each(std::begin(m_TemporarySupports), std::end(m_TemporarySupports), [span_length, removedPierStation](auto* pTS) {if (removedPierStation < pTS->GetStation()) pTS->SetStation(pTS->GetStation() - span_length); });
    }
 
 
    if ( bDeletePrevPier )
    {
       delete pPrevPier;
+      pPrevPier = nullptr;
    }
 
    delete pSpan;
@@ -1856,11 +1813,13 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    if ( bDeleteNextPier )
    {
       delete pNextPier;
+      pNextPier = nullptr;
    }
 
    if ( bDeleteGroup )
    {
       delete pGroup;
+      pGroup = nullptr;
       RenumberGroups();
    }
 
@@ -1904,8 +1863,8 @@ GroupIndexType CBridgeDescription2::CreateGirderGroup(GroupIndexType refGroupIdx
                        // offset to accomodate the new spans
 
    // Create new spans and piers
-   std::vector<Float64>::iterator iter(spanLengths.begin());
-   std::vector<Float64>::iterator iterEnd(spanLengths.end());
+   auto iter = std::begin(spanLengths);
+   auto iterEnd = std::end(spanLengths);
    int i = 0;
    for ( ; iter != iterEnd; iter++, i++ )
    {
@@ -1988,11 +1947,8 @@ CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pSpan)
    PierIndexType prevPierIdx = pSpan->GetPrevPier()->GetIndex();
    PierIndexType nextPierIdx = pSpan->GetNextPier()->GetIndex();
 
-   std::vector<CGirderGroupData*>::iterator iter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::iterator iterEnd(m_GirderGroups.end());
-   for ( ; iter != iterEnd; iter++ )
+   for(auto* pGroup : m_GirderGroups)
    {
-      CGirderGroupData* pGroup = *iter;
       PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
       PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
 
@@ -2016,11 +1972,8 @@ const CGirderGroupData* CBridgeDescription2::GetGirderGroup(const CSpanData2* pS
    PierIndexType prevPierIdx = pSpan->GetPrevPier()->GetIndex();
    PierIndexType nextPierIdx = pSpan->GetNextPier()->GetIndex();
 
-   std::vector<CGirderGroupData*>::const_iterator iter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::const_iterator iterEnd(m_GirderGroups.end());
-   for ( ; iter != iterEnd; iter++ )
+   for(const auto* pGroup : m_GirderGroups)
    {
-      const CGirderGroupData* pGroup = *iter;
       PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
       PierIndexType endPierIdx   = pGroup->GetPierIndex(pgsTypes::metEnd);
 
@@ -2135,11 +2088,8 @@ void CBridgeDescription2::RemoveGirderGroup(GroupIndexType grpIdx,pgsTypes::Remo
    
    // move all the temporary supports that occur after the last pier in the group to the left
    // by an amount equal to the length of the group
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
+   for(auto* pTS : m_TemporarySupports)
    {
-      CTemporarySupportData* pTS = *tsIter;
       if ( endSpanIdx < pTS->GetSpan()->GetIndex() )
       {
          pTS->SetStation(pTS->GetStation() - group_length);
@@ -2202,11 +2152,8 @@ const CPierData2* CBridgeDescription2::GetPier(PierIndexType pierIdx) const
 
 CPierData2* CBridgeDescription2::FindPier(PierIDType pierID)
 {
-   std::vector<CPierData2*>::iterator iter(m_Piers.begin());
-   std::vector<CPierData2*>::iterator iterEnd(m_Piers.end());
-   for ( ; iter != iterEnd; iter++ )
+   for(auto* pPier : m_Piers)
    {
-      CPierData2* pPier = *iter;
       if ( pPier->GetID() == pierID )
       {
          return pPier;
@@ -2219,11 +2166,8 @@ CPierData2* CBridgeDescription2::FindPier(PierIDType pierID)
 
 const CPierData2* CBridgeDescription2::FindPier(PierIDType pierID) const
 {
-   std::vector<CPierData2*>::const_iterator iter(m_Piers.begin());
-   std::vector<CPierData2*>::const_iterator iterEnd(m_Piers.end());
-   for ( ; iter != iterEnd; iter++ )
+   for (const auto* pPier : m_Piers)
    {
-      const CPierData2* pPier = *iter;
       if ( pPier->GetID() == pierID )
       {
          return pPier;
@@ -2307,11 +2251,8 @@ bool CBridgeDescription2::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
    pSpan = GetSpan(spanIdx);
    Float64 newEndSpanStation = pSpan->GetNextPier()->GetStation();
 
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
+   for( auto* pTS : m_TemporarySupports)
    {
-      CTemporarySupportData* pTS = *tsIter;
       Float64 tsStation = pTS->GetStation();
 
       if ( endSpanStation < tsStation )
@@ -2396,11 +2337,8 @@ const CTemporarySupportData* CBridgeDescription2::GetTemporarySupport(SupportInd
 
 CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportIDType tsID)
 {
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
+   for( auto* pTS : m_TemporarySupports)
    {
-      CTemporarySupportData* pTS = *tsIter;
       if ( pTS->GetID() == tsID )
       {
          return pTS;
@@ -2413,11 +2351,8 @@ CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportIDType t
 
 const CTemporarySupportData* CBridgeDescription2::FindTemporarySupport(SupportIDType tsID) const
 {
-   std::vector<CTemporarySupportData*>::const_iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::const_iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
+   for (const auto* pTS : m_TemporarySupports)
    {
-      const CTemporarySupportData* pTS = *tsIter;
       if ( pTS->GetID() == tsID )
       {
          return pTS;
@@ -2544,11 +2479,8 @@ SupportIndexType CBridgeDescription2::SetTemporarySupportByIndex(SupportIndexTyp
 
 SupportIndexType CBridgeDescription2::SetTemporarySupportByID(SupportIDType tsID,const CTemporarySupportData& tsData)
 {
-   std::vector<CTemporarySupportData*>::const_iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::const_iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
+   for(auto* pTS : m_TemporarySupports)
    {
-      const CTemporarySupportData* pTS = *tsIter;
       if ( pTS->GetID() == tsID )
       {
          SupportIndexType tsIdx = pTS->GetIndex();
@@ -2578,9 +2510,9 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
          if ( eventIdx != INVALID_INDEX )
          {
             ATLASSERT(pClosure->GetPier() == nullptr);
-            ATLASSERT(pClosure->GetTemporarySupport());
+            ATLASSERT(pClosure->GetTemporarySupport() && pClosure->GetTemporarySupport() == pTS);
             CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(eventIdx);
-            pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
+            pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pTS->GetID());
          }
       }
 
@@ -2618,11 +2550,8 @@ void CBridgeDescription2::RemoveTemporarySupportByIndex(SupportIndexType tsIdx)
 
 void CBridgeDescription2::RemoveTemporarySupportByID(SupportIDType tsID)
 {
-   std::vector<CTemporarySupportData*>::const_iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::const_iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
+   for (auto* pTS : m_TemporarySupports)
    {
-      const CTemporarySupportData* pTS = *tsIter;
       if ( pTS->GetID() == tsID )
       {
          SupportIndexType tsIdx = pTS->GetIndex();
@@ -2651,35 +2580,16 @@ void CBridgeDescription2::Clear()
 
    ClearGirderGroups();
 
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
-   {
-      CTemporarySupportData* pTSData = *tsIter;
-      delete pTSData;
-   }
+   std::for_each(std::begin(m_TemporarySupports), std::end(m_TemporarySupports), [](auto* pTS) {delete pTS; });
    m_TemporarySupports.clear();
 
-   std::vector<CPierData2*>::iterator pierIter(m_Piers.begin());
-   std::vector<CPierData2*>::iterator pierIterEnd(m_Piers.end());
-   for ( ; pierIter != pierIterEnd; pierIter++ )
-   {
-      CPierData2* pPierData = *pierIter;
-      delete pPierData;
-   }
+   std::for_each(std::begin(m_Piers), std::end(m_Piers), [](auto* pPier) {delete pPier; });
    m_Piers.clear();
 
-   std::vector<CSpanData2*>::iterator spanIter(m_Spans.begin());
-   std::vector<CSpanData2*>::iterator spanIterEnd(m_Spans.end());
-   for ( ; spanIter != spanIterEnd; spanIter++ )
-   {
-      CSpanData2* pSpanData = *spanIter;
-      delete pSpanData;
-   }
+   std::for_each(std::begin(m_Spans), std::end(m_Spans), [](auto* pSpan) {delete pSpan; });
    m_Spans.clear();
 
    m_TimelineManager.Clear();
-
 
    m_TempSupportID = 0;
    m_SegmentID     = 0;
@@ -2719,11 +2629,8 @@ bool CBridgeDescription2::IsOnBridge(Float64 station) const
 
 PierIndexType CBridgeDescription2::IsPierLocation(Float64 station,Float64 tolerance) const
 {
-   std::vector<CPierData2*>::const_iterator iter(m_Piers.begin());
-   std::vector<CPierData2*>::const_iterator end(m_Piers.end());
-   for ( ; iter != end; iter++ )
+   for(const auto* pPier : m_Piers)
    {
-      const CPierData2* pPier = *iter;
       if ( IsEqual(station,pPier->GetStation(),tolerance) )
       {
          return pPier->GetIndex();
@@ -2735,11 +2642,8 @@ PierIndexType CBridgeDescription2::IsPierLocation(Float64 station,Float64 tolera
 
 SupportIndexType CBridgeDescription2::IsTemporarySupportLocation(Float64 station,Float64 tolerance) const
 {
-   std::vector<CTemporarySupportData*>::const_iterator iter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::const_iterator end(m_TemporarySupports.end());
-   for ( ; iter != end; iter++ )
+   for(const auto* pTS : m_TemporarySupports)
    {
-      const CTemporarySupportData* pTS = *iter;
       if ( IsEqual(station,pTS->GetStation(),tolerance) )
       {
          return pTS->GetIndex();
@@ -2757,13 +2661,7 @@ void CBridgeDescription2::UseSameNumberOfGirdersInAllGroups(bool bSame)
 
       // make sure the internal data structures for all groups are
       // set to the correct number of girders
-      std::vector<CGirderGroupData*>::iterator iter(m_GirderGroups.begin());
-      std::vector<CGirderGroupData*>::iterator end(m_GirderGroups.end());
-      for ( ; iter != end; iter++ )
-      {
-         CGirderGroupData* pGroup = *iter;
-         pGroup->SetGirderCount(this->m_nGirders);
-      }
+      std::for_each(std::begin(m_GirderGroups), std::end(m_GirderGroups), [nGirders=m_nGirders](auto* pGroup) {pGroup->SetGirderCount(nGirders); });
    }
 }
 
@@ -2778,11 +2676,8 @@ void CBridgeDescription2::SetGirderCount(GirderIndexType nGirders)
 
    if ( m_bSameNumberOfGirders )
    {
-      std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
-      std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
-      for ( ; grpIter != grpIterEnd; grpIter++ )
+      for(auto* pGroup : m_GirderGroups)
       {
-         CGirderGroupData* pGroup = *grpIter;
          pGroup->SetGirderCount(nGirders);
 
          CSpanData2* pStartSpan = pGroup->GetPier(pgsTypes::metStart)->GetNextSpan();
@@ -2792,13 +2687,7 @@ void CBridgeDescription2::SetGirderCount(GirderIndexType nGirders)
          while ( !bDone )
          {
             std::vector<CTemporarySupportData*> vTS = pSpan->GetTemporarySupports();
-            std::vector<CTemporarySupportData*>::iterator tsIter(vTS.begin());
-            std::vector<CTemporarySupportData*>::iterator tsIterEnd(vTS.end());
-            for ( ; tsIter != tsIterEnd; tsIter++ )
-            {
-               CTemporarySupportData* pTS = *tsIter;
-               pTS->GetSegmentSpacing()->SetGirderCount(nGirders);
-            }
+            std::for_each(std::begin(vTS), std::end(vTS), [&nGirders](auto* pTS) {pTS->GetSegmentSpacing()->SetGirderCount(nGirders); });
 
             pSpan = pSpan->GetNextPier()->GetNextSpan();
             if ( pSpan == pEndSpan )
@@ -2862,11 +2751,8 @@ void CBridgeDescription2::SetGirderName(LPCTSTR strName)
       // need to reset prestressing data
       // need to reset longitudinal reinforcement
       // need to reset transverse reinforcement
-      std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
-      std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
-      for ( ; grpIter != grpIterEnd; grpIter++ )
+      for(auto* pGroup : m_GirderGroups)
       {
-         CGirderGroupData* pGroup = *grpIter;
          GirderIndexType nGirders = pGroup->GetGirderCount();
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
@@ -2912,11 +2798,8 @@ void CBridgeDescription2::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry
 
             // need to make sure the segment variation type is consistent with the
             // types available for this girder library entry
-            std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
-            std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
-            for ( ; grpIter != grpIterEnd; grpIter++ )
+            for(auto* pGroup : m_GirderGroups)
             {
-               CGirderGroupData* pGroup = *grpIter;
                GirderIndexType nGirders = pGroup->GetGirderCount();
                for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
                {
@@ -3135,11 +3018,8 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    m_LongitudinalJointConcrete = rOther.m_LongitudinalJointConcrete;
 
    // Copy Piers
-   std::vector<CPierData2*>::const_iterator pierIter( rOther.m_Piers.begin() );
-   std::vector<CPierData2*>::const_iterator pierIterEnd( rOther.m_Piers.end() );
-   for ( ; pierIter != pierIterEnd; pierIter++ )
+   for(const auto* pPier : rOther.m_Piers)
    {
-      const CPierData2* pPier = *pierIter;
       CPierData2* pNewPier = new CPierData2;
       *pNewPier = *pPier; // assign everything
 
@@ -3149,11 +3029,8 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    }
 
    // Copy Spans
-   std::vector<CSpanData2*>::const_iterator spanIter( rOther.m_Spans.begin() );
-   std::vector<CSpanData2*>::const_iterator spanIterEnd( rOther.m_Spans.end() );
-   for ( ; spanIter != spanIterEnd; spanIter++ )
+   for(const auto* pSpan : rOther.m_Spans)
    {
-      const CSpanData2* pSpan = *spanIter;
       CSpanData2* pNewSpan = new CSpanData2;
 
       *pNewSpan = *pSpan; // assign everything
@@ -3167,11 +3044,8 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    RenumberSpans();
 
    // Copy Temporary Supports
-   std::vector<CTemporarySupportData*>::const_iterator tsIter(rOther.m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::const_iterator tsIterEnd(rOther.m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
+   for(const auto* pTS : rOther.m_TemporarySupports)
    {
-      const CTemporarySupportData* pTS = *tsIter;
       CTemporarySupportData* pNewTS = new CTemporarySupportData;
       *pNewTS = *pTS; // assign everything
       m_TemporarySupports.push_back(pNewTS);
@@ -3185,11 +3059,8 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    // This logically comes first, but it must be last. When a group is copied, it copies
    // girders, segments, and closures.... it also resolves the references to temporary supports,
    // piers, and spans. In order to resolve these references, they must exist.
-   std::vector<CGirderGroupData*>::const_iterator grpIter(rOther.m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::const_iterator grpIterEnd(rOther.m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for(const auto* pGroup : rOther.m_GirderGroups)
    {
-      const CGirderGroupData* pGroup = *grpIter;
       CGirderGroupData* pNewGroup = new CGirderGroupData(this);
       *pNewGroup = *pGroup;
       m_GirderGroups.push_back(pNewGroup);
@@ -3219,11 +3090,8 @@ pgsTypes::DistributionFactorMethod CBridgeDescription2::GetDistributionFactorMet
 
 CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID)
 {
-   std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for(auto* pGroup : m_GirderGroups)
    {
-      CGirderGroupData* pGroup = *grpIter;
       if ( pGroup->GetID() == grpID )
       {
          return pGroup;
@@ -3236,11 +3104,8 @@ CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID)
 
 const CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID) const
 {
-   std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for (const auto* pGroup : m_GirderGroups)
    {
-      const CGirderGroupData* pGroup = *grpIter;
       if ( pGroup->GetID() == grpID )
       {
          return pGroup;
@@ -3253,11 +3118,8 @@ const CGirderGroupData* CBridgeDescription2::FindGirderGroup(GroupIDType grpID) 
 
 CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID)
 {
-   std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for (auto* pGroup : m_GirderGroups)
    {
-      CGirderGroupData* pGroup = *grpIter;
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
@@ -3275,11 +3137,8 @@ CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID)
 
 const CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID) const
 {
-   std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for (const auto* pGroup : m_GirderGroups)
    {
-      const CGirderGroupData* pGroup = *grpIter;
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
@@ -3297,11 +3156,8 @@ const CSplicedGirderData* CBridgeDescription2::FindGirder(GirderIDType gdrID) co
 
 CPrecastSegmentData* CBridgeDescription2::FindSegment(SegmentIDType segID)
 {
-   std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for (auto* pGroup : m_GirderGroups)
    {
-      CGirderGroupData* pGroup = *grpIter;
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
@@ -3324,11 +3180,8 @@ CPrecastSegmentData* CBridgeDescription2::FindSegment(SegmentIDType segID)
 
 const CPrecastSegmentData* CBridgeDescription2::FindSegment(SegmentIDType segID) const
 {
-   std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for (const auto* pGroup : m_GirderGroups)
    {
-      const CGirderGroupData* pGroup = *grpIter;
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
@@ -3351,11 +3204,8 @@ const CPrecastSegmentData* CBridgeDescription2::FindSegment(SegmentIDType segID)
 
 CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType closureID)
 {
-   std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for (auto* pGroup : m_GirderGroups)
    {
-      CGirderGroupData* pGroup = *grpIter;
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
@@ -3364,7 +3214,7 @@ CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType closureID
          for (SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
          {
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-            CClosureJointData* pClosure = pSegment->GetEndClosure();
+            CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosure->GetID() == closureID )
             {
                return pClosure;
@@ -3379,11 +3229,8 @@ CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType closureID
 
 const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType closureID) const
 {
-   std::vector<CGirderGroupData*>::const_iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::const_iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for (const auto* pGroup : m_GirderGroups)
    {
-      const CGirderGroupData* pGroup = *grpIter;
       GirderIndexType nGirders = pGroup->GetPrivateGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
       {
@@ -3397,7 +3244,7 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
          for (SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
          {
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-            const CClosureJointData* pClosure = pSegment->GetEndClosure();
+            const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosure->GetID() == closureID )
             {
                return pClosure;
@@ -3411,11 +3258,8 @@ const CClosureJointData* CBridgeDescription2::FindClosureJoint(ClosureIDType clo
 
 void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssumedExcessCamber, bool bBearingData)
 {
-   std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
+   for (auto* pGroup : m_GirderGroups)
    {
-      CGirderGroupData* pGroup = *grpIter;
       if ( bGirderCount )
       {
          pGroup->SetGirderCount( m_nGirders );
@@ -3491,13 +3335,8 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
 
    if(bAssumedExcessCamber)
    {
-      std::vector<CSpanData2*> m_Spans;
-      std::vector<CSpanData2*>::iterator spnIter(m_Spans.begin());
-      std::vector<CSpanData2*>::iterator spnIterEnd(m_Spans.end());
-      for ( ; spnIter != spnIterEnd; spnIter++ )
+      for(auto* pSpan : m_Spans)
       {
-         CSpanData2* pSpan = *spnIter;
-
          GirderIndexType nGirders = pSpan->GetGirderCount();
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
@@ -3508,12 +3347,8 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
 
    if ( bSpacing )
    {
-      std::vector<CPierData2*>::iterator pierIter(m_Piers.begin());
-      std::vector<CPierData2*>::iterator pierIterEnd(m_Piers.end());
-      for ( ; pierIter != pierIterEnd; pierIter++ )
+      for(auto* pPier : m_Piers)
       {
-         CPierData2* pPier = *pierIter;
-
          if ( pPier->IsInteriorPier() && 
             (pPier->GetSegmentConnectionType() == pgsTypes::psctContinuousSegment ||
              pPier->GetSegmentConnectionType() == pgsTypes::psctIntegralSegment)
@@ -3558,12 +3393,8 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
          }
       }
 
-      std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-      std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-      for ( ; tsIter != tsIterEnd; tsIter++ )
+      for(auto* pTS : m_TemporarySupports)
       {
-         CTemporarySupportData* pTS = *tsIter;
-
          CGirderSpacing2* pSpacing = pTS->GetSegmentSpacing();
          if ( bGirderCount )
          {
@@ -3583,12 +3414,8 @@ void CBridgeDescription2::CopyDown(bool bGirderCount,bool bGirderType,bool bSpac
    {
       if (this->m_BearingType == pgsTypes::brtBridge)
       {
-         std::vector<CPierData2*>::iterator pierIter(m_Piers.begin());
-         std::vector<CPierData2*>::iterator pierIterEnd(m_Piers.end());
-         for (; pierIter != pierIterEnd; pierIter++)
+         for(auto* pPier : m_Piers)
          {
-            CPierData2* pPier = *pierIter;
-
             for (Uint32 i = 0; i < 2; i++)
             {
                pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
@@ -3681,13 +3508,7 @@ IndexType CBridgeDescription2::GetClosureJointCount() const
    GirderIndexType gdrIdx = 0; // all girders in a group have the same number of closure joints.
                                // use index 0 as it is safest
 
-   std::vector<CGirderGroupData*>::const_iterator iter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::const_iterator end(m_GirderGroups.end());
-   for ( ; iter != end; iter++ )
-   {
-      const CGirderGroupData* pGroup = *iter;
-      nClosures += pGroup->GetGirder(gdrIdx)->GetClosureJointCount();
-   }
+   std::for_each(std::begin(m_GirderGroups), std::end(m_GirderGroups), [&nClosures, gdrIdx](auto* pGroup) {nClosures += pGroup->GetGirder(gdrIdx)->GetClosureJointCount(); });
 
    return nClosures;
 }
@@ -3752,11 +3573,8 @@ void CBridgeDescription2::GetSegmentsAtTemporarySupport(SupportIndexType tsIdx,C
       {
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
          std::vector<const CTemporarySupportData*> tempSupports(pSegment->GetTemporarySupports());
-         std::vector<const CTemporarySupportData*>::iterator tsIter(tempSupports.begin());
-         std::vector<const CTemporarySupportData*>::iterator tsIterEnd(tempSupports.end());
-         for ( ; tsIter != tsIterEnd; tsIter++ )
+         for(const auto* pTempSupport : tempSupports)
          {
-            const CTemporarySupportData* pTempSupport = *tsIter;
             if ( pTS->GetIndex() == pTempSupport->GetIndex() )
             {
                CSegmentKey segKey(grpIdx,INVALID_INDEX,segIdx);
@@ -4104,23 +3922,10 @@ bool CBridgeDescription2::MoveBridge(PierIndexType pierIdx,Float64 newStation)
    }
 
    // move temporary supports
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
-   {
-      CTemporarySupportData* pTS = *tsIter;
-      pTS->SetStation(pTS->GetStation() + deltaStation);
-   }
+   std::for_each(std::begin(m_TemporarySupports), std::end(m_TemporarySupports), [deltaStation](auto* pTS) {pTS->SetStation(pTS->GetStation() + deltaStation); });
 
    // move all the deck points
-   std::vector<CDeckPoint>::iterator ptIter(m_Deck.DeckEdgePoints.begin());
-   std::vector<CDeckPoint>::iterator ptIterEnd(m_Deck.DeckEdgePoints.end());
-   for ( ; ptIter != ptIterEnd; ptIter++ )
-   {
-      CDeckPoint& deckPoint = *ptIter;
-      deckPoint.Station += deltaStation;
-   }
-
+   std::for_each(std::begin(m_Deck.DeckEdgePoints), std::end(m_Deck.DeckEdgePoints), [deltaStation](auto& deckPoint) {deckPoint.Station += deltaStation; });
 
    return true;
 }
@@ -4151,16 +3956,8 @@ bool CBridgeDescription2::MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64
    }
 
    // move temporary supports that occur after pierIdx
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
-   {
-      CTemporarySupportData* pTS = *tsIter;
-      if ( old_station <= pTS->GetStation() )
-      {
-         pTS->SetStation(pTS->GetStation() + deltaStation);
-      }
-   }
+   std::for_each(std::begin(m_TemporarySupports), std::end(m_TemporarySupports), 
+      [old_station, deltaStation](auto* pTS) {if (old_station <= pTS->GetStation()) pTS->SetStation(pTS->GetStation() + deltaStation); });
 
    return true;
 }
@@ -4191,16 +3988,8 @@ bool CBridgeDescription2::MoveBridgeAdjustNextSpan(PierIndexType pierIdx,Float64
    }
 
    // move temporary supports that occur before pierIdx
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
-   for ( ; tsIter != tsIterEnd; tsIter++ )
-   {
-      CTemporarySupportData* pTS = *tsIter;
-      if ( pTS->GetStation() <= old_station )
-      {
-         pTS->SetStation(pTS->GetStation() + deltaStation);
-      }
-   }
+   std::for_each(std::begin(m_TemporarySupports), std::end(m_TemporarySupports), 
+      [old_station, deltaStation](auto* pTS) {if (pTS->GetStation() <= old_station) pTS->SetStation(pTS->GetStation() + deltaStation); });
 
    return true;
 }
@@ -4251,22 +4040,16 @@ bool CBridgeDescription2::MoveBridgeAdjustAdjacentSpans(PierIndexType pierIdx,Fl
 void CBridgeDescription2::RenumberGroups()
 {
    GroupIndexType grpIdx = 0;
-   std::vector<CGirderGroupData*>::iterator grpIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::iterator grpIterEnd(m_GirderGroups.end());
-   for ( ; grpIter != grpIterEnd; grpIter++ )
-   {
-      CGirderGroupData* pGroup = *grpIter;
-      pGroup->SetIndex(grpIdx++);
-   }
+   std::for_each(std::begin(m_GirderGroups), std::end(m_GirderGroups), [&grpIdx](auto* pGroup) {pGroup->SetIndex(grpIdx++); });
 }
 
 void CBridgeDescription2::RenumberSpans()
 {
    // renumbers the spans and piers and updates all the prev/next pointers.
-   std::vector<CSpanData2*>::iterator spanIter(    m_Spans.begin() );
-   std::vector<CSpanData2*>::iterator spanIterEnd( m_Spans.end()   );
-   std::vector<CPierData2*>::iterator pierIter(    m_Piers.begin() );
-   std::vector<CPierData2*>::iterator pierIterEnd( m_Piers.end()   );
+   auto spanIter = std::begin(m_Spans);
+   auto spanIterEnd = std::end(m_Spans);
+   auto pierIter = std::begin(m_Piers);
+   auto pierIterEnd = std::end(m_Piers);
 
    SpanIndexType spanIdx = 0;
    PierIndexType pierIdx = 0;
@@ -4305,15 +4088,15 @@ void CBridgeDescription2::RenumberSpans()
 void CBridgeDescription2::UpdateTemporarySupports()
 {
    // sort temporary supports based on station
-   std::sort(m_TemporarySupports.begin(),m_TemporarySupports.end(),CompareTempSupportLocation);
+   std::sort(m_TemporarySupports.begin(), m_TemporarySupports.end(), [](auto* pTS1, auto* pTS2) {return *pTS1 < *pTS2; });
 
    // assign span based on location
    SupportIndexType tsIdx = 0;
    CSpanData2* pSpan = m_Spans[0];
    CPierData2* pPrevPier = pSpan->GetPrevPier();
    CPierData2* pNextPier = pSpan->GetNextPier();
-   std::vector<CTemporarySupportData*>::iterator tsIter(m_TemporarySupports.begin());
-   std::vector<CTemporarySupportData*>::iterator tsIterEnd(m_TemporarySupports.end());
+   auto tsIter = std::begin(m_TemporarySupports);
+   auto tsIterEnd = std::end(m_TemporarySupports);
    for ( ; tsIter != tsIterEnd; tsIter++ )
    {
       CTemporarySupportData* pTS = *tsIter;
@@ -4352,9 +4135,9 @@ void CBridgeDescription2::UpdateTemporarySupports()
 
 void CBridgeDescription2::RemoveNegMomentRebar(PierIndexType removeRebarPierIdx)
 {
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator begin(m_Deck.DeckRebarData.NegMomentRebar.begin());
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator end(m_Deck.DeckRebarData.NegMomentRebar.end());
-   std::vector<CDeckRebarData::NegMomentRebarData>::iterator last = std::remove_if(begin, end, [removeRebarPierIdx](auto& item) {return item.PierIdx == removeRebarPierIdx;});
+   auto begin = std::begin(m_Deck.DeckRebarData.NegMomentRebar);
+   auto end = std::end(m_Deck.DeckRebarData.NegMomentRebar);
+   auto last = std::remove_if(begin, end, [removeRebarPierIdx](auto& item) {return item.PierIdx == removeRebarPierIdx;});
    m_Deck.DeckRebarData.NegMomentRebar.erase(last, end);
 }
 
@@ -4378,20 +4161,7 @@ HRESULT CBridgeDescription2::LoadOldBridgeDescription(Float64 version,IStructure
 
 void CBridgeDescription2::ClearGirderGroups()
 {
-   std::vector<CGirderGroupData*>::iterator groupIter(m_GirderGroups.begin());
-   std::vector<CGirderGroupData*>::iterator groupIterEnd(m_GirderGroups.end());
-   for ( ; groupIter != groupIterEnd; groupIter++ )
-   {
-      CGirderGroupData* pGroupData = *groupIter;
-      pGroupData->Clear();
-   }
-
-   groupIter = m_GirderGroups.begin();
-   for ( ; groupIter != groupIterEnd; groupIter++ )
-   {
-      CGirderGroupData* pGroupData = *groupIter;
-      delete pGroupData;
-   }
+   std::for_each(std::begin(m_GirderGroups), std::end(m_GirderGroups), [](auto* pGroup) {pGroup->Clear(); delete pGroup; pGroup = nullptr; });
    m_GirderGroups.clear();
 }
 

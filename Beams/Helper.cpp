@@ -211,8 +211,8 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    std::array<bool, 2> bHasClosure = {
-                           pSegment->GetStartClosure()  != nullptr, 
-                           pSegment->GetEndClosure() != nullptr
+                           pSegment->GetClosureJoint(pgsTypes::metStart)  != nullptr, 
+                           pSegment->GetClosureJoint(pgsTypes::metEnd) != nullptr
                          };
 
    // If this is the first segment of a girder and there is a previous group -OR-

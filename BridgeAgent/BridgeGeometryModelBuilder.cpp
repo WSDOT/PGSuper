@@ -759,8 +759,8 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
 
 void CBridgeGeometryModelBuilder::GetPierID(const CPrecastSegmentData* pSegment,PierIDType* pStartID,PierIDType* pEndID)
 {
-   const CClosureJointData* pStartClosure  = pSegment->GetStartClosure();
-   const CClosureJointData* pEndClosure = pSegment->GetEndClosure();
+   const CClosureJointData* pStartClosure  = pSegment->GetClosureJoint(pgsTypes::metStart);
+   const CClosureJointData* pEndClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
 
    if ( pStartClosure == nullptr )
    {

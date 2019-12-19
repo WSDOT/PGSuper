@@ -76,7 +76,7 @@ bool txnEditGirderline::Execute()
 
          if ( segIdx < nSegments-1 )
          {
-            CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+            CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
             EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosureJoint);
             vClosureEvents.push_back(castClosureEventIdx);
          }
@@ -102,7 +102,7 @@ bool txnEditGirderline::Execute()
 
             if ( segIdx < nSegments-1 )
             {
-               CClosureJointData* pClosure = pSegment->GetEndClosure();
+               CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
                pTimelineMgr->SetCastClosureJointEventByIndex(pClosure,vClosureEvents[segIdx]);
             }
          }

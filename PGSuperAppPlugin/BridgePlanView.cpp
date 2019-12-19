@@ -1042,7 +1042,7 @@ void CBridgePlanView::UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw)
 
 void CBridgePlanView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint) 
 {
-   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
+   GetFrame()->PostMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)

@@ -934,12 +934,12 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
          ROWCOL startRow;
          CString strStartSupportLabel;
          Float64 startStation;
-         if ( pSegment->GetStartClosure() )
+         if ( pSegment->GetClosureJoint(pgsTypes::metStart) )
          {
-            if ( pSegment->GetStartClosure()->GetTemporarySupport() )
+            if ( pSegment->GetClosureJoint(pgsTypes::metStart)->GetTemporarySupport() )
             {
-               startRow = GetTemporarySupportRow(pSegment->GetStartClosure()->GetTemporarySupport()->GetIndex());
-               if (pSegment->GetStartClosure()->GetTemporarySupport()->GetSupportType() == pgsTypes::ErectionTower)
+               startRow = GetTemporarySupportRow(pSegment->GetClosureJoint(pgsTypes::metStart)->GetTemporarySupport()->GetIndex());
+               if (pSegment->GetClosureJoint(pgsTypes::metStart)->GetTemporarySupport()->GetSupportType() == pgsTypes::ErectionTower)
                {
                   strStartSupportLabel = _T("Erection Tower");
                }
@@ -947,13 +947,13 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
                {
                   strStartSupportLabel = _T("Strongback");
                }
-               startStation = pSegment->GetStartClosure()->GetTemporarySupport()->GetStation();
+               startStation = pSegment->GetClosureJoint(pgsTypes::metStart)->GetTemporarySupport()->GetStation();
             }
             else
             {
-               startRow = GetPierRow(pSegment->GetStartClosure()->GetPier()->GetIndex());
-               strStartSupportLabel.Format(_T("%s %d"), pSegment->GetStartClosure()->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetStartClosure()->GetPier()->GetIndex()));
-               startStation = pSegment->GetStartClosure()->GetPier()->GetStation();
+               startRow = GetPierRow(pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetIndex());
+               strStartSupportLabel.Format(_T("%s %d"), pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetIndex()));
+               startStation = pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetStation();
             }
          }
          else
@@ -966,12 +966,12 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
          ROWCOL endRow;
          CString strEndSupportLabel;
          Float64 endStation;
-         if ( pSegment->GetEndClosure() )
+         if ( pSegment->GetClosureJoint(pgsTypes::metEnd) )
          {
-            if ( pSegment->GetEndClosure()->GetTemporarySupport() )
+            if ( pSegment->GetClosureJoint(pgsTypes::metEnd)->GetTemporarySupport() )
             {
-               endRow = GetTemporarySupportRow(pSegment->GetEndClosure()->GetTemporarySupport()->GetIndex());
-               if (pSegment->GetEndClosure()->GetTemporarySupport()->GetSupportType() == pgsTypes::ErectionTower)
+               endRow = GetTemporarySupportRow(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetTemporarySupport()->GetIndex());
+               if (pSegment->GetClosureJoint(pgsTypes::metEnd)->GetTemporarySupport()->GetSupportType() == pgsTypes::ErectionTower)
                {
                   strEndSupportLabel = _T("Erection Tower");
                }
@@ -979,13 +979,13 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
                {
                   strEndSupportLabel = _T("Strongback");
                }
-               endStation = pSegment->GetEndClosure()->GetTemporarySupport()->GetStation();
+               endStation = pSegment->GetClosureJoint(pgsTypes::metEnd)->GetTemporarySupport()->GetStation();
             }
             else
             {
-               endRow = GetPierRow(pSegment->GetEndClosure()->GetPier()->GetIndex());
-               strEndSupportLabel.Format(_T("%s %d"), pSegment->GetEndClosure()->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetEndClosure()->GetPier()->GetIndex()));
-               endStation = pSegment->GetEndClosure()->GetPier()->GetStation();
+               endRow = GetPierRow(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetIndex());
+               strEndSupportLabel.Format(_T("%s %d"), pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetIndex()));
+               endStation = pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetStation();
             }
          }
          else

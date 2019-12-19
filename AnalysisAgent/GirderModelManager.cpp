@@ -8377,7 +8377,7 @@ void CGirderModelManager::GetLBAMBoundaryConditions(bool bContinuous,const CTime
    CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
    // Determine boundary conditions at end of segment
-   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetStartClosure() : pSegment->GetEndClosure());
+   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetClosureJoint(pgsTypes::metStart) : pSegment->GetClosureJoint(pgsTypes::metEnd));
    const CPierData2* pPier = nullptr;
    const CTemporarySupportData* pTS = nullptr;
    if ( pClosure )

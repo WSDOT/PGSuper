@@ -66,16 +66,17 @@ protected:
 	afx_msg void OnCheckSplitting();
 	afx_msg void OnCheckConfinement();
    afx_msg void OnBnClickedIsSupportLessThan();
-	//}}AFX_MSG
+   afx_msg void OnBnClicked90DayStrength();
+   afx_msg void OnBnClickedCheckBottomFlangeClearance();
+   afx_msg void OnBnClickedCheckInclindedGirder();
+   afx_msg void OnBnClickedLlDeflection();
+   afx_msg void OnBnClickedCheckHandlingWeight();
+   //}}AFX_MSG
    afx_msg void OnHelp();
    afx_msg void OnFcTypeChanged();
    DECLARE_MESSAGE_MAP()
 public:
-   afx_msg void OnBnClickedCheckBottomFlangeClearance();
-   afx_msg void OnBnClickedCheckInclindedGirder();
    virtual BOOL OnSetActive();
-   afx_msg void OnBnClickedLlDeflection();
-   afx_msg void OnBnClickedCheckHandlingWeight();
 };
 
 //{{AFX_INSERT_LOCATION}}

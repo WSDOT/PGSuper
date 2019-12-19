@@ -233,7 +233,8 @@ bool txnDeleteSpan::Execute()
 
    pIBridgeDesc->DeletePier(m_RefPierIdx, m_PierFace);
 
-   PierIndexType pierIdx = (m_PierFace == pgsTypes::Back ? m_RefPierIdx - 1 : m_RefPierIdx + 1); // index of the pier that is not deleted
+   // index of the pier that is not deleted
+   PierIndexType pierIdx = (m_PierFace == pgsTypes::Back ? m_RefPierIdx - 1 : m_RefPierIdx/* + 1 don't add one because m_RefPierIdx has already been deleted so the index is one less than normal*/);
    if (m_bIsBoundaryPier)
    {
       pIBridgeDesc->SetBoundaryCondition(pierIdx, m_BoundaryCondition);

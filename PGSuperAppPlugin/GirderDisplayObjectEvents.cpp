@@ -63,7 +63,7 @@ DELEGATE_CUSTOM_INTERFACE(CBridgePlanViewGirderDisplayObjectEvents,Events);
 
 void CBridgePlanViewGirderDisplayObjectEvents::EditGirder(iDisplayObject* pDO)
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
+   m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
 }
 
 void CBridgePlanViewGirderDisplayObjectEvents::SelectGirder(iDisplayObject* pDO)
@@ -340,7 +340,7 @@ DELEGATE_CUSTOM_INTERFACE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
 
 void CBridgePlanViewSegmentDisplayObjectEvents::EditSegment(iDisplayObject* pDO)
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_SEGMENT,0);
+   m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_SEGMENT,0);
 }
 
 void CBridgePlanViewSegmentDisplayObjectEvents::SelectSegment(iDisplayObject* pDO)
@@ -650,7 +650,7 @@ DELEGATE_CUSTOM_INTERFACE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
 
 void CBridgeSectionViewGirderDisplayObjectEvents::EditGirder(iDisplayObject* pDO)
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
+   m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
 }
 
 void CBridgeSectionViewGirderDisplayObjectEvents::SelectGirder(iDisplayObject* pDO)

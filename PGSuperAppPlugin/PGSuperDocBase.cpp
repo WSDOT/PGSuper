@@ -4085,49 +4085,53 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
    {
       pgsTypes::BoundaryConditionType bc = pPier->GetBoundaryConditionType(); // current boundary condition
 
-      std::vector<pgsTypes::BoundaryConditionType> connections(pBridgeDesc->GetBoundaryConditionTypes(deletePierIdx)); // boundary conditions of the pier being deleted
-
       const CPierData2* pDeletePier = pBridgeDesc->GetPier(deletePierIdx);
 
-      auto found = std::find(connections.begin(), connections.end(), bc);
-      if (found == connections.end())
+      if (pDeletePier->IsBoundaryPier())
       {
-         // the boundary conditions of the pier will become invalid, select a new bc
-         SpanIndexType deleteSpanIdx = (SpanIndexType)(deleteSpanOnPierFace == pgsTypes::Back ? deletePierIdx - 1 : deletePierIdx);
-         CString strPrompt;
-         strPrompt.Format(_T("Removing Span %d and Pier %d will make the boundary condition of Pier %d invalid.\r\nSelect a valid boundary condition."), LABEL_SPAN(deleteSpanIdx), LABEL_PIER(deletePierIdx), LABEL_PIER(pierIdx));
+         std::vector<pgsTypes::BoundaryConditionType> connections(pBridgeDesc->GetBoundaryConditionTypes(deletePierIdx)); // boundary conditions of the pier being deleted
 
-         CSelectBoundaryConditionDlg dlg;
-         dlg.m_strPrompt = strPrompt;
-         dlg.m_BoundaryCondition = connections.front();
-         dlg.m_Connections = connections;
-         dlg.m_bIsBoundaryPier = pPier->IsBoundaryPier();
-         dlg.m_bIsNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
-         if (pDeletePier->IsPier()/*the pier being deleted is not an abutment*/)
+
+         auto found = std::find(connections.begin(), connections.end(), bc);
+         if (found == connections.end())
          {
-            dlg.m_PierType = PIERTYPE_INTERMEDIATE;
-         }
-         else
-         {
-            ATLASSERT(pDeletePier->IsAbutment());
-            if (pDeletePier->GetIndex() == 0)
+            // the boundary conditions of the pier will become invalid, select a new bc
+            SpanIndexType deleteSpanIdx = (SpanIndexType)(deleteSpanOnPierFace == pgsTypes::Back ? deletePierIdx - 1 : deletePierIdx);
+            CString strPrompt;
+            strPrompt.Format(_T("Removing Span %d and Pier %d will make the boundary condition of Pier %d invalid.\r\nSelect a valid boundary condition."), LABEL_SPAN(deleteSpanIdx), LABEL_PIER(deletePierIdx), LABEL_PIER(pierIdx));
+
+            CSelectBoundaryConditionDlg dlg;
+            dlg.m_strPrompt = strPrompt;
+            dlg.m_BoundaryCondition = connections.front();
+            dlg.m_Connections = connections;
+            dlg.m_bIsBoundaryPier = pPier->IsBoundaryPier();
+            dlg.m_bIsNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+            if (pDeletePier->IsPier()/*the pier being deleted is not an abutment*/)
             {
-               dlg.m_PierType = PIERTYPE_START;
+               dlg.m_PierType = PIERTYPE_INTERMEDIATE;
             }
             else
             {
-               dlg.m_PierType = PIERTYPE_END;
+               ATLASSERT(pDeletePier->IsAbutment());
+               if (pDeletePier->GetIndex() == 0)
+               {
+                  dlg.m_PierType = PIERTYPE_START;
+               }
+               else
+               {
+                  dlg.m_PierType = PIERTYPE_END;
+               }
             }
-         }
 
-         if (dlg.DoModal() == IDOK)
-         {
-            bc = dlg.m_BoundaryCondition;
-         }
-         else
-         {
-            // user cancelled
-            return;
+            if (dlg.DoModal() == IDOK)
+            {
+               bc = dlg.m_BoundaryCondition;
+            }
+            else
+            {
+               // user cancelled
+               return;
+            }
          }
       }
       txnDeleteSpan* pTxn = new txnDeleteSpan(deletePierIdx, deleteSpanOnPierFace, bc);

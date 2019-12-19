@@ -195,7 +195,7 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnKeyDown(i
    }
    else if ( nChar == VK_DELETE )
    {
-      pThis->m_pFrame->SendMessage(WM_COMMAND,ID_DELETE,0);
+      pThis->m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
       return true;
    }
 
@@ -405,7 +405,7 @@ STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnKeyDow
    }
    else if ( nChar == VK_DELETE )
    {
-      pThis->m_pFrame->SendMessage(WM_COMMAND,ID_DELETE,0);
+      pThis->m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
       return true;
    }
 
