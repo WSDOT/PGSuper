@@ -1,29 +1,25 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    7   6.67                     1     1    5SB12          46  1/2  270   2.72   2.60   8.00   8.00   6    2.5   28     6    4   2   0   0   0   5.600  6.100   2.923    -3.860     1223   0.510  0.917   2.465 -1.195 -0.042 -0.046 -1.283 117.63  346.02    1.00    1.00    1.00 
+ 44.00    7   6.67                     1     1    5SB12          46  1/2  270   2.72   2.60   8.00   8.00   6    2.5   28     6    4   2   0   0   0   5.600  6.100   2.923    -3.860     1223   0.510  0.609   2.465 -1.195 -0.042 -0.046 -1.283 117.63  346.02    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+The Specification Check was Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    7   6.67                     1     2    5SB12          46  1/2  270   2.72   2.60   8.00   8.00   6    2.5   28     6    2   2   2   0   0   5.600  6.100   2.972    -3.940     1248   0.510  0.917   2.443 -1.258 -0.055 -0.045 -1.358 118.31  345.22    1.00    1.00    1.00 
+ 44.00    7   6.67                     1     2    5SB12          46  1/2  270   2.72   2.60   8.00   8.00   6    2.5   28     6    2   2   2   0   0   5.600  6.100   2.972    -3.940     1248   0.510  0.609   2.443 -1.258 -0.055 -0.045 -1.358 118.31  345.22    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Stirrup detailing checks failed for the Strength I Limit State.
 Debond arrangement checks failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    7   6.67                     1     4    5SB12          44  1/2  270   2.77   2.66   8.00   8.00   6    2.5   28     6    2   4   0   0   0   5.300  5.900   2.962    -3.855     1210   0.510  0.917   2.442 -1.258 -0.055  0.000 -1.313 111.62  323.71    1.00    1.00    1.00 
+ 44.00    7   6.67                     1     4    5SB12          44  1/2  270   2.77   2.66   8.00   8.00   6    2.5   28     6    2   4   0   0   0   5.300  5.900   2.962    -3.855     1210   0.510  0.609   2.442 -1.258 -0.055  0.000 -1.313 111.62  323.71    1.00    1.00    1.00 
 
 
-The Specification Check was Not Successful
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
-Stirrup detailing checks failed for the Strength I Limit State.
+The Specification Check was Successful
 
 

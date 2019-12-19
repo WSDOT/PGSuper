@@ -408,7 +408,6 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
       if ( gM1.ControllingMethod & INTERIOR_OVERRIDE )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior.")) << rptNewLine;
-         (*pPara) << rptRcImage(strImagePath + _T("mg_1_MI_TxDOT_SpreadSlab.png")) << rptNewLine;
          (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
       }
       else
@@ -454,7 +453,6 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
          if ( gM2.ControllingMethod & INTERIOR_OVERRIDE )
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for interior")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + _T("mg_2_MI_TxDOT_SpreadSlab.png")) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
          }
          else
