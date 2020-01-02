@@ -295,12 +295,6 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 
          const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
 
-         // Don't report values in end regions
-         if (pArtifact->IsInCriticalSectionZone())
-         {
-            continue;
-         }
-
          (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          (*table)(row,1) << dim.SetValue(pArtifact->GetBv());
 
@@ -436,12 +430,6 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
          ATLASSERT(poi.GetSegmentKey() == segmentKey);
 
          const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
-
-         // Don't report values between critical sections
-         if (pArtifact->IsInCriticalSectionZone())
-         {
-            continue;
-         }
 
          (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          if ( bAfter1999 )
