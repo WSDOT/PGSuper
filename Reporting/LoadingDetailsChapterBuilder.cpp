@@ -497,6 +497,8 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
       rptParagraph* pNotePara = new rptParagraph;
       *pChapter << pNotePara;
 
+      *pNotePara << _T("Tributary width used to compute slab load is measured from top CL girder") << rptNewLine;
+
       if (is_uniform)
       {
          *pNotePara << strDeckName << _T(" load is uniform along entire girder length.") << rptNewLine;

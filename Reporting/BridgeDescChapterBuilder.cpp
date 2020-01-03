@@ -2669,17 +2669,53 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    
    if (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) )
    {
-      *pPara << _T("Girder Spacing Datum") << rptNewLine;
+      *pPara << _T("Girder Spacing Datum:") << rptNewLine;
    }
    else
    {
-      *pPara << _T("Joint Spacing Datum") << rptNewLine;
+      *pPara << _T("Joint Spacing Datum:") << rptNewLine;
    }
 
    *pPara << _T("(1) Measured normal to the alignment at the abutment/pier line") << rptNewLine;
    *pPara << _T("(2) Measured normal to the alignment at the centerline of bearing") << rptNewLine;
    *pPara << _T("(3) Measured at and along the abutment/pier line") << rptNewLine;
-   *pPara << _T("(4) Measured at and along the centerline of bearing") << rptNewLine;
+   *pPara << _T("(4) Measured at and along the centerline of bearing") << rptNewLine << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   pgsTypes::WorkPointLocation wploc = pBridgeDesc->GetWorkPointLocation();
+   *pPara << _T("Girder spacing is measured at the work point elevation, which is at ") << (wploc == pgsTypes::wplBottomGirder ? _T("bottom centerline of girder.") : _T("top centerline of girder.")) << rptNewLine;
+
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+   CString strGrp = (bIsSplicedGirder ? _T("Group") : _T("Span"));
+
+   pgsTypes::GirderOrientationType orientType = pBridgeDesc->GetGirderOrientation();
+   *pPara << _T("Girder orientation is set ");
+   if (pgsTypes::Plumb == orientType)
+   {
+      *pPara << _T("plumb") << rptNewLine;
+   }
+   else if (pgsTypes::StartNormal == orientType)
+   {
+      *pPara << _T("normal to roadway at start of ") << strGrp << rptNewLine;
+   }
+   else if (pgsTypes::MidspanNormal == orientType)
+   {
+      *pPara << _T("normal to roadway at middle of ") << strGrp << rptNewLine;
+   }
+   else if (pgsTypes::EndNormal == orientType)
+   {
+      *pPara << _T("normal to roadway at end of ") << strGrp << rptNewLine;
+   }
+   else if (pgsTypes::Balanced == orientType)
+   {
+      *pPara << _T("balanced to mimimize haunch depth at both ends of ") << strGrp << rptNewLine;
+   }
+   else
+   {
+      ATLASSERT(0); // new type?
+   }
 }
 
 void write_girder_spacing(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,const CGirderSpacing2* pGirderSpacing,RowIndexType row,ColumnIndexType col)

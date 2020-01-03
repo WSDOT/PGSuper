@@ -1,3 +1,5 @@
+#include "..\Include\PgsExt\BridgeDescription2.h"
+#include "..\Include\PgsExt\BridgeDescription2.h"
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
 // Copyright © 1999-2019  Washington State Department of Transportation
@@ -39,7 +41,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define FILE_VERSION 11
+#define FILE_VERSION 12
+// Version 12 - added work point location
 // Version 11 - Added BearingData, and Top Width Spacing for adjacent deck beams
 // Version 10 - added assumed excess camber data
 // No new data was added in version 9.0. The version number was changed so we can tell the difference between files
@@ -85,6 +88,8 @@ CBridgeDescription2::CBridgeDescription2()
 
    m_MeasurementLocation = pgsTypes::AtPierLine;
    m_MeasurementType = pgsTypes::NormalToItem;
+
+   m_WorkPointLocation = pgsTypes::wplTopGirder; // long standing program default
 
    m_RefGirderIdx = INVALID_INDEX;
    m_RefGirderOffset = 0;
@@ -246,6 +251,11 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
    }
 
    if (HasStructuralLongitudinalJoints() && m_LongitudinalJointConcrete != rOther.m_LongitudinalJointConcrete)
+   {
+      return false;
+   }
+
+   if ( m_WorkPointLocation != rOther.m_WorkPointLocation )
    {
       return false;
    }
@@ -491,6 +501,13 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("RefGirderOffset"),&var);
          m_RefGirderOffset = var.dblVal;
+      }
+
+      if (11 < version)
+      {
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("WorkPointLocation"),&var);
+         m_WorkPointLocation = (pgsTypes::WorkPointLocation)(var.lVal);
       }
 
       var.vt = VT_I4;
@@ -809,6 +826,8 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
       pStrSave->put_Property(_T("RefGirderOffsetType"),CComVariant(m_RefGirderOffsetType));
       pStrSave->put_Property(_T("RefGirderOffset"),CComVariant(m_RefGirderOffset));
    }
+
+   pStrSave->put_Property(_T("WorkPointLocation"), CComVariant(m_WorkPointLocation));
 
    hr = pStrSave->put_Property(_T("LLDFMethod"),CComVariant(m_LLDFMethod));
 
@@ -2925,6 +2944,16 @@ pgsTypes::MeasurementLocation CBridgeDescription2::GetMeasurementLocation() cons
    return m_MeasurementLocation;
 }
 
+void CBridgeDescription2::SetWorkPointLocation(pgsTypes::WorkPointLocation wl)
+{
+   m_WorkPointLocation = wl;
+}
+
+pgsTypes::WorkPointLocation CBridgeDescription2::GetWorkPointLocation() const
+{
+   return m_WorkPointLocation;
+}
+
 void CBridgeDescription2::SetRefGirder(GirderIndexType refGdrIdx)
 {
    m_RefGirderIdx = refGdrIdx;
@@ -2999,6 +3028,7 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    m_RightTopWidth            = rOther.m_RightTopWidth;
    m_MeasurementType          = rOther.m_MeasurementType;
    m_MeasurementLocation      = rOther.m_MeasurementLocation;
+   m_WorkPointLocation      = rOther.m_WorkPointLocation;
    m_RefGirderIdx             = rOther.m_RefGirderIdx;
    m_RefGirderOffset          = rOther.m_RefGirderOffset;
    m_RefGirderOffsetType      = rOther.m_RefGirderOffsetType;

@@ -831,9 +831,25 @@ bool CMultiWeb2Factory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimen
    return false;
 }
 
+pgsTypes::WorkPointLocations CMultiWeb2Factory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+//   wpls.push_back(pgsTypes::wplBottomGirder);
+
+   return wpls;
+}
+
+bool CMultiWeb2Factory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CMultiWeb2Factory::GetSupportedGirderOrientation() const
 {
-   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
@@ -936,6 +952,22 @@ Float64 CMultiWeb2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensio
    return 2*(T1+T2+T3+Wmax) + W2;
 }
 
+void CMultiWeb2Factory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 T1 = GetDimension(dimensions,_T("T1"));
+   Float64 T2 = GetDimension(dimensions,_T("T2"));
+   Float64 T3 = GetDimension(dimensions,_T("T3"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 C2 = GetDimension(dimensions,_T("C2"));
+   Float64 Wmin = GetDimension(dimensions,_T("Wmin"));
+
+   Float64 top = 2*(T1+T2+T3+Wmin-C2) + W2;
+
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
+}
 
 bool CMultiWeb2Factory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {

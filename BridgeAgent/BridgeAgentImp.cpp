@@ -25,7 +25,6 @@
 #include "BridgeAgent.h"
 #include "BridgeAgentImp.h"
 #include "BridgeHelpers.h"
-#include "BridgeGeometryModelBuilder.h"
 #include <PGSuperException.h>
 #include "DeckEdgeBuilder.h"
 
@@ -1793,71 +1792,19 @@ void CBridgeAgentImp::ValidateSegmentOrientation(const CSegmentKey& segmentKey) 
 {
    VALIDATE_POINTS_OF_INTEREST(segmentKey); // calls VALIDATE(GIRDER);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   pgsTypes::GirderOrientationType orientationType = pBridgeDesc->GetGirderOrientation();
-
-   Float64 orientation;
-   if ( orientationType == pgsTypes::Plumb )
+   // Orientation was cached by geometry model builder
+   Float64 orientation = 0.0;
+   auto found = m_GirderOrientationCollection.find(segmentKey);
+   if (found != m_GirderOrientationCollection.end())
    {
-      orientation = 0.0;
+      orientation = found->second.m_Orientation;
    }
    else
    {
-      PoiList vPoi;
-      pgsPointOfInterest poi;
-      Float64 station, offset;
-      switch ( orientationType )
-      {
-      case pgsTypes::StartNormal:
-         GetPointsOfInterest(segmentKey,&vPoi);
-         poi = vPoi.front();
-         break;
-
-      case pgsTypes::MidspanNormal:
-         GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT,&vPoi);
-         poi = vPoi.front();
-         break;
-
-      case pgsTypes::EndNormal:
-         GetPointsOfInterest(segmentKey,&vPoi);
-         poi = vPoi.back();
-         break;
-
-      case pgsTypes::Plumb:
-      default:
-         ATLASSERT(false); // should never get here
-      };
-
-      GetStationAndOffset(poi,&station,&offset);
-
-      MatingSurfaceIndexType nMatingSurfaces = GetNumberOfMatingSurfaces(segmentKey);
-      ATLASSERT(0 < nMatingSurfaces); // going to subtract 1 below, and this is an unsigned value
-
-      Float64 left_mating_surface_offset  = GetMatingSurfaceLocation(poi,0);
-      Float64 right_mating_surface_offset = GetMatingSurfaceLocation(poi,nMatingSurfaces-1);
-
-      Float64 left_mating_surface_width  = GetMatingSurfaceWidth(poi,0);
-      Float64 right_mating_surface_width = GetMatingSurfaceWidth(poi,nMatingSurfaces-1);
-
-      Float64 left_edge_offset  = left_mating_surface_offset  - left_mating_surface_width/2;
-      Float64 right_edge_offset = right_mating_surface_offset + right_mating_surface_width/2;
-
-      Float64 distance = right_edge_offset - left_edge_offset;
-
-      if ( IsZero(distance) )
-      {
-         orientation = GetSlope(station,offset);
-      }
-      else
-      {   
-         Float64 ya_left  = GetElevation(station,offset+left_edge_offset);
-         Float64 ya_right = GetElevation(station,offset+right_edge_offset);
-
-         orientation = (ya_left - ya_right)/distance;
-      }
+      ATLASSERT(0); // should never happen
    }
 
+   // Store orientation in model
    CComPtr<ISuperstructureMember> ssmbr;
    GetSuperstructureMember(segmentKey,&ssmbr);
 
@@ -2671,8 +2618,7 @@ bool CBridgeAgentImp::BuildBridgeGeometryModel()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CBridgeGeometryModelBuilder model_builder;
-   model_builder.BuildBridgeGeometryModel(pBridgeDesc,m_CogoModel,alignment,bridgeGeometry);
-   return true;
+   return model_builder.BuildBridgeGeometryModel(pBridgeDesc,m_CogoModel,alignment,bridgeGeometry,m_GirderOrientationCollection);
 }
 
 bool CBridgeAgentImp::BuildBridgeModel()
@@ -8209,6 +8155,98 @@ std::vector<SpaceBetweenGirder> CBridgeAgentImp::GetGirderSpacing(Float64 statio
       gdrSpacing.firstGdrIdx = gdrSpacing.lastGdrIdx;
 
       pntIntersection1 = pntIntersection2;
+   }
+
+   return vSpacing;
+}
+
+std::vector<SpaceBetweenGirder> CBridgeAgentImp::GetGirderSpacingAtBottomClGirder(Float64 station) const
+{
+   // We will be calling GetGirderSpacing, but first need to know which group we are in...
+   VALIDATE(GIRDER);
+   std::vector<SpaceBetweenGirder> vSpacing;
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
+   const CGirderGroupData* pGroup = nullptr;
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+   {
+      const CGirderGroupData* pThisGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+      Float64 startStation = pThisGroup->GetPier(pgsTypes::metStart)->GetStation();
+      Float64 endStation = pThisGroup->GetPier(pgsTypes::metEnd)->GetStation();
+      if (::InRange(startStation, station, endStation))
+      {
+         pGroup = pThisGroup;
+         break;
+      }
+   }
+
+   if (pGroup == nullptr)
+   {
+      return vSpacing;
+   }
+
+   GroupIndexType grpIdx = pGroup->GetIndex();
+
+   GirderIndexType ngdrs = pGroup->GetGirderCount();
+   if (ngdrs < 2)
+   {
+      return vSpacing;
+   }
+
+   // Get the spacing at top CL girders
+   std::vector<SpaceBetweenGirder> topClSpacings = GetGirderSpacing(station);
+   if (topClSpacings.empty())
+   {
+      return vSpacing;
+   }
+
+   pgsTypes::GirderOrientationType orientationType = pBridgeDesc->GetGirderOrientation();
+   if (orientationType == pgsTypes::Plumb)
+   {
+      return topClSpacings; // top and bottom spacing are identical for plumb girders
+   }
+
+   // build a list of girder orientation shift values for each girder
+   std::vector<Float64> girderShifts;
+   girderShifts.reserve(ngdrs);
+   for (GirderIndexType igdr = 0; igdr < ngdrs; igdr++)
+   {
+      CSegmentKey segKey(grpIdx, igdr, 0); // just use segment 0 since all segments in a group are oriented and shifted the same
+
+      girderShifts.push_back( GetWorkPointShiftOffset(segKey) );
+   }
+
+   // explode (ungroup) top spacings
+   std::vector<SpaceBetweenGirder> explodedTopClSpacings;
+   explodedTopClSpacings.reserve(ngdrs - 1);
+   for (const auto& spacing : topClSpacings)
+   {
+      for (GirderIDType idx = spacing.firstGdrIdx; idx < spacing.lastGdrIdx; idx++)
+      {
+         SpaceBetweenGirder newSpace;
+         newSpace.firstGdrIdx = idx;
+         newSpace.lastGdrIdx = idx + 1;
+         newSpace.spacing = spacing.spacing;
+         explodedTopClSpacings.push_back(newSpace);
+      }
+   }
+
+   // Cycle over exploded spacings accounting that a change in shift will change spacing
+   Float64 prev_shift = girderShifts[0];
+   GirderIndexType curGdrIdx = 1;
+   for (const auto& spacing : explodedTopClSpacings)
+   {
+      Float64 curr_shift = girderShifts[curGdrIdx];
+      SpaceBetweenGirder newSpace = spacing;
+
+      newSpace.spacing -= (prev_shift - curr_shift);
+
+      vSpacing.push_back(newSpace);
+
+      prev_shift = curr_shift;
+      curGdrIdx++;
    }
 
    return vSpacing;
@@ -25682,6 +25720,25 @@ Float64 CBridgeAgentImp::GetOrientation(const CSegmentKey& segmentKey) const
    segment->get_Orientation(&orientation);
 
    return orientation;
+}
+
+Float64 CBridgeAgentImp::GetWorkPointShiftOffset(const CSegmentKey& segmentKey) const
+{
+   VALIDATE_POINTS_OF_INTEREST(segmentKey); // calls VALIDATE(GIRDER);
+
+   // Orientation was cached by geometry model builder
+   Float64 shift = 0.0;
+   auto found = m_GirderOrientationCollection.find(segmentKey);
+   if (found != m_GirderOrientationCollection.end())
+   {
+      shift = found->second.m_LayoutLineShift;
+   }
+   else
+   {
+      ATLASSERT(0); // should never happen
+   }
+
+   return shift;
 }
 
 Float64 CBridgeAgentImp::GetTransverseTopFlangeSlope(const CSegmentKey& segmentKey) const

@@ -386,7 +386,8 @@ typedef struct pgsTypes
       Plumb = 0,     // Girder is plumb
       StartNormal,   // Girder is normal to deck at start of span
       MidspanNormal, // Girder is normal to deck at midspan
-      EndNormal      // Girder is normal to deck at end of span
+      EndNormal,     // Girder is normal to deck at end of span
+      Balanced       // Orient girder to minimize clearance at opposing corners
    } GirderOrientationType;
 
    typedef enum DeckOverhangTaper
@@ -459,6 +460,11 @@ typedef struct pgsTypes
       sbsGeneralAdjacentWithTopWidth // Beams are adjacent and top width and joint width can vary by span. Top width is input by user.
    } SupportedBeamSpacing;
 
+   typedef enum WorkPointLocation  // Vertical location of working point
+   {
+      wplTopGirder,
+      wplBottomGirder
+   } WorkPointLocation;
 
    typedef enum SlabOffsetType
    {
@@ -493,6 +499,7 @@ typedef struct pgsTypes
 
    typedef std::vector<SupportedDeckType>    SupportedDeckTypes;
    typedef std::vector<SupportedBeamSpacing> SupportedBeamSpacings;
+   typedef std::vector<WorkPointLocation> WorkPointLocations;
 
    typedef enum RemovePierType
    {

@@ -275,6 +275,15 @@ interface IBeamFactory : IUnknown
    virtual bool ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const = 0;
 
    //---------------------------------------------------------------------------------
+   // Returns all of methods of work point location supported by this beam for the given spacing type
+   // Generally, variable depth girders only allow the work point at girder top
+   virtual pgsTypes::WorkPointLocations GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Returns true if workpoint location type is supported by this beam for the given spacing type
+   virtual bool IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation workPointType) const = 0;
+
+   //---------------------------------------------------------------------------------
    // Returns all of the girder orientations types supported by this girder
    virtual std::vector<pgsTypes::GirderOrientationType> GetSupportedGirderOrientation() const = 0;
    virtual bool IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const = 0;
@@ -323,6 +332,11 @@ interface IBeamFactory : IUnknown
    //---------------------------------------------------------------------------------
    // Returns the width of the beam at the specified end
    virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const = 0;
+
+   //---------------------------------------------------------------------------------
+   // Get the left and right widths from centerline of the top surface of the beam (e.g., out to out of all mating surface(s))
+   // If beam has variable width top flange, this function returns the min specified width.
+   virtual void GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const = 0;
 
    //---------------------------------------------------------------------------------
    // Shear key.

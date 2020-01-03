@@ -4600,6 +4600,11 @@ Float64 GirderLibraryEntry::GetBeamWidth(pgsTypes::MemberEndType endType) const
    return m_pBeamFactory->GetBeamWidth(m_Dimensions,endType);
 }
 
+void GirderLibraryEntry::GetBeamTopWidth(pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   m_pBeamFactory->GetBeamTopWidth(m_Dimensions, endType, pLeftWidth, pRightWidth);
+}
+
 void GirderLibraryEntry::SetDiaphragmLayoutRules(const DiaphragmLayoutRules& rules)
 {
    m_DiaphragmLayoutRules = rules;

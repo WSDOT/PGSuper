@@ -866,6 +866,8 @@
 #define IDC_FATIGUE_I_DC_LABEL          1626
 #define IDC_PREV_PIER_GIRDER_SPACING_LABEL 1626
 #define IDC_LEFT_PRISMATIC_HEIGHT       1626
+#define IDC_GIRDER_SPACING_TYPE2        1626
+#define IDC_WORKPOINT_TYPE              1626
 #define IDC_FATIGUE_I_LABEL             1627
 #define IDC_NEXT_PIER_GIRDER_SPACING_LABEL 1627
 #define IDC_LEFT_PRISMATIC_HEIGHT_UNIT  1627
@@ -1385,6 +1387,7 @@
 #define IDC_HG_MIDDLE                   2022
 #define IDC_HG_END                      2023
 #define IDC_INSTALLATION_TIME           2025
+#define IDC_WORKPOINT_STATIC            2026
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1542,7 +1545,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        401
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         2026
+#define _APS_NEXT_CONTROL_VALUE         2027
 #define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

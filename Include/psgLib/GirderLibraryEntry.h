@@ -598,6 +598,11 @@ public:
    Float64 GetBeamHeight(pgsTypes::MemberEndType endType) const;
    Float64 GetBeamWidth(pgsTypes::MemberEndType endType) const;
 
+   //---------------------------------------------------------------------------------
+   // Get the left and right widths from centerline of the top surface of the beam (e.g., out to out of all mating surface(s))
+   // If beam has variable width top flange, this function returns the min specified width.
+   void GetBeamTopWidth(pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const;
+
    bool OddNumberOfHarpedStrands() const;
    void EnableOddNumberOfHarpedStrands(bool bEnable);
 

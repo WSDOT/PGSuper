@@ -43,6 +43,7 @@
 
 #include "EffectiveFlangeWidthTool.h"
 #include "ContinuousStandFiller.h"
+#include "BridgeGeometryModelBuilder.h"
 
 #include <memory>
 
@@ -266,6 +267,7 @@ public:
    virtual std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(SpanIndexType spanIdx,Float64 Xspan) const override;
    virtual void GetSpacingAlongGirder(const CGirderKey& girderKey,Float64 Xg,Float64* leftSpacing,Float64* rightSpacing) const override;
    virtual void GetSpacingAlongGirder(const pgsPointOfInterest& poi,Float64* leftSpacing,Float64* rightSpacing) const override;
+   virtual std::vector<SpaceBetweenGirder> GetGirderSpacingAtBottomClGirder(Float64 station) const override;
    virtual std::vector<std::pair<SegmentIndexType,Float64>> GetSegmentLengths(const CSpanKey& spanKey) const override;
    virtual Float64 GetSegmentLength(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentSpanLength(const CSegmentKey& segmentKey) const override;
@@ -1114,6 +1116,7 @@ public:
    virtual void GetSegmentEndPoints(const CSegmentKey& segmentKey,pgsTypes::PlanCoordinateType pcType,IPoint2d** pntPier1,IPoint2d** pntEnd1,IPoint2d** pntBrg1,IPoint2d** pntBrg2,IPoint2d** pntEnd2,IPoint2d** pntPier2) const override;
    virtual void GetSegmentPlanPoints(const CSegmentKey& segmentKey, pgsTypes::PlanCoordinateType pcType, IPoint2d** ppEnd1Left, IPoint2d** ppEnd1, IPoint2d** ppEnd1Right, IPoint2d** ppEnd2Right, IPoint2d** ppEnd2, IPoint2d** ppEnd2Left) const override;
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetWorkPointShiftOffset(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetTransverseTopFlangeSlope(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi) const override;
@@ -1724,6 +1727,9 @@ private:
    Float64 GetHalfElevation(Float64 gdrHeight, Float64 deckThickness) const;
 
    void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, const CCastDeckActivity* pActivity, IPoint2dCollection** points) const;
+
+// Orientation of girder segments. cached from bridge geometry model builder
+   GirderOrientationCollection  m_GirderOrientationCollection;
 };
 
 #endif //__BRIDGEAGENT_H_

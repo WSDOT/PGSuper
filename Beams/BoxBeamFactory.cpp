@@ -928,6 +928,19 @@ Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions
    return Max(top,bot);
 }
 
+void CBoxBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W1 = GetDimension(dimensions, _T("W1"));
+   Float64 W2 = GetDimension(dimensions, _T("W2"));
+   Float64 W3 = GetDimension(dimensions, _T("W3"));
+
+   Float64 top = 2 * (W1 + W2) + W3;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
+}
+
 void CBoxBeamFactory::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
 {
    Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;

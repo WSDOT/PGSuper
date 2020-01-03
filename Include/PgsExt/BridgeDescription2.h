@@ -315,6 +315,10 @@ public:
    void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
    pgsTypes::MeasurementLocation GetMeasurementLocation() const;
 
+   // Defines where girder spacing (or joint width) is measured
+   void SetWorkPointLocation(pgsTypes::WorkPointLocation ml);
+   pgsTypes::WorkPointLocation GetWorkPointLocation() const;
+
    // Set/Get the girder top width if top width is the same
    // for the entire bridge. This parameter is invalid if the girder spacing type 
    // does not support top width (e.g. top width is only used for certain types of
@@ -474,6 +478,7 @@ private:
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
    pgsTypes::MeasurementType m_MeasurementType;
    pgsTypes::MeasurementLocation m_MeasurementLocation;
+   pgsTypes::WorkPointLocation m_WorkPointLocation;
 
    Float64 m_SlabOffset;
    pgsTypes::SlabOffsetType m_SlabOffsetType;

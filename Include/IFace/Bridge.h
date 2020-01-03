@@ -400,6 +400,7 @@ interface IBridge : IUnknown
    // left/right parameter will be < 0 (meaning not applicable)
    virtual void GetBottomFlangeClearance(const pgsPointOfInterest& poi,Float64* pLeft,Float64* pRight) const = 0;
 
+   ////// NOTE: All spacings below are between top CL of girder unless otherwise specified /////
    // returns the spacing between girders. adjacent spaces that are the same are grouped together
    // the returned vector is empty if the spacings could not be determined (e.g. station is off the bridge)
    virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(Float64 station) const = 0;
@@ -408,6 +409,9 @@ interface IBridge : IUnknown
 
    // returns girder spacing at a pier. The vector will contain nGirders-1 spaces
    virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace, pgsTypes::MeasurementLocation measureLocation, pgsTypes::MeasurementType measureType) const = 0;
+
+   // Same as GetGirderSpacing(fl64) above, except returns spacings at bottom CL girder
+   virtual std::vector<SpaceBetweenGirder> GetGirderSpacingAtBottomClGirder(Float64 station) const = 0;
 
    // Returns the offset from the offset measure datum to the specified girder, measured along the CL pier
    virtual Float64 GetGirderOffset(GirderIndexType gdrIdx,PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::OffsetMeasurementType offsetMeasureDatum) const = 0;
@@ -1736,6 +1740,12 @@ interface IGirder : public IUnknown
    // An orientation of 0 means the girder is plumb
    // Positive values means the Y axis of the girder is rotated CW
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey) const = 0;
+
+   // Internally, the girderline work point is always located at top CL girder. However, the UI allows other locations
+   // such as the bottom of the girder. To accomodate for this we shift the work point (layout line) a distance equal to
+   // the orientation * (depth from top of girder to work point) when the bridge goemetry is layed out. 
+   // This function returns that shift offset distance.
+   virtual Float64 GetWorkPointShiftOffset(const CSegmentKey& segmentKey) const = 0;
 
    // Returns the transverse slope of the girder top flange
    virtual Float64 GetTransverseTopFlangeSlope(const CSegmentKey& segmentKey) const = 0;

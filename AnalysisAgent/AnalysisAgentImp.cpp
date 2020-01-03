@@ -7066,7 +7066,7 @@ void CAnalysisAgentImp::GetDeckDeflection(const pgsPointOfInterest& poi,const GD
 #if defined _DEBUG
       GET_IFACE(IBridge, pBridge);
       pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-      ATLASSERT(deckType == pgsTypes::sdtNone);
+      ATLASSERT(deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtNonstructuralOverlay);
 #endif
       *pSlabDy = 0;
       *pSlabRz = 0;

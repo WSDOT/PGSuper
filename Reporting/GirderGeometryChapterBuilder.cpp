@@ -120,6 +120,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
    pPara = new rptParagraph;
    (*pChapter) << pPara;
+   *pPara << _T("Girder points are measured at top CL of girders.") << rptNewLine;
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
@@ -342,6 +343,7 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
 
    pPara = new rptParagraph;
    (*pChapter) << pPara;
+   *pPara << _T("Offsets are measured at top CL of girders.") << rptNewLine;
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
@@ -740,6 +742,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
    pPara = new rptParagraph;
    (*pChapter) << pPara;
+   *pPara << _T("Girder spacing is measured at top CL of girders.") << rptNewLine;
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, spacingValue, pDisplayUnits->GetXSectionDimUnit(), false );
 

@@ -35,6 +35,7 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistFactorEngineer.h>
+#include <IFace\DocumentType.h>
 
 #include <EAF\EAFMainFrame.h>
 
@@ -77,6 +78,7 @@ CBridgeDescGeneralPage::CBridgeDescGeneralPage() : CPropertyPage(CBridgeDescGene
    m_MinGirderCount = 2;
    m_CacheGirderConnectivityIdx = CB_ERR;
    m_CacheDeckTypeIdx = CB_ERR;
+   m_CacheWorkPointTypeIdx = CB_ERR;
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -212,6 +214,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX,IDC_REF_GIRDER,m_RefGirderIdx);
    DDX_OffsetAndTag(pDX,IDC_REF_GIRDER_OFFSET,IDC_REF_GIRDER_OFFSET_UNIT,m_RefGirderOffset,pDisplayUnits->GetXSectionDimUnit() );
    DDX_CBItemData(pDX,IDC_REF_GIRDER_OFFSET_TYPE,m_RefGirderOffsetType);
+   DDX_CBItemData(pDX,IDC_WORKPOINT_TYPE,m_WorkPointLocation);
 
    ////////////////////////////////////////////////
    // Top Width
@@ -334,8 +337,11 @@ BOOL CBridgeDescGeneralPage::OnInitDialog()
 
    EnableLongitudinalJointMaterial();
 
+   FillWorkPointLocationComboBox();
+
 	CPropertyPage::OnInitDialog();
    
+
    m_NumGdrSpinner.SetRange32((int)m_MinGirderCount,(int)MAX_GIRDERS_PER_SPAN);
 
    UDACCEL accel[2];
@@ -445,6 +451,8 @@ void CBridgeDescGeneralPage::Init()
       m_strCacheRightTopWidth.Format(_T("%s"), FormatDimension(0, pDisplayUnits->GetXSectionDimUnit(), false));
    }
 
+   m_WorkPointLocation = pParent->m_BridgeDesc.GetWorkPointLocation();
+
    int sign = ::Sign(m_RefGirderOffset);
    LPTSTR strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
    m_strCacheRefGirderOffset.Format(_T("%s %s"),FormatDimension(fabs(m_RefGirderOffset),pDisplayUnits->GetXSectionDimUnit(),false),strOffset);
@@ -530,6 +538,8 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    pParent->m_BridgeDesc.SetMeasurementLocation(m_GirderSpacingMeasurementLocation);
    pParent->m_BridgeDesc.SetMeasurementType(m_GirderSpacingMeasurementType);
+
+   pParent->m_BridgeDesc.SetWorkPointLocation(m_WorkPointLocation);
 
    pParent->m_BridgeDesc.SetRefGirder(m_RefGirderIdx);
    pParent->m_BridgeDesc.SetRefGirderOffset(m_RefGirderOffset);
@@ -826,9 +836,22 @@ void CBridgeDescGeneralPage::FillGirderNameComboBox()
    pcbGirders->SetCurSel(m_CacheGirderNameIdx);
 }
 
-static LPCTSTR lpszOrientation[] = { _T("Plumb"), _T("Normal to roadway at Start of Bridge"),_T("Normal to roadway at Mid-span of Bridge"),_T("Normal to roadway at End of Bridge") };
 void CBridgeDescGeneralPage::FillGirderOrientationComboBox()
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+
+   CString strGrp = (bIsSplicedGirder ? _T("Group") : _T("Span"));
+
+   CString strOrientation[5];
+   strOrientation[0] = _T("Plumb");
+   strOrientation[1].Format(_T("Normal to roadway at Start of %s"), strGrp);
+   strOrientation[2].Format(_T("Normal to roadway at Middle of %s"), strGrp);
+   strOrientation[3].Format(_T("Normal to roadway at End of %s"), strGrp);
+   strOrientation[4] = _T("Balanced to minimize haunch depth");
+
    // Girder Orientation
    CComboBox* pOrientation = (CComboBox*)GetDlgItem(IDC_GIRDER_ORIENTATION);
    int curSel = pOrientation->GetCurSel();
@@ -836,7 +859,7 @@ void CBridgeDescGeneralPage::FillGirderOrientationComboBox()
    std::vector<pgsTypes::GirderOrientationType> vTypes = m_Factory->GetSupportedGirderOrientation();
    for (auto type : vTypes)
    {
-      int idx = pOrientation->AddString(lpszOrientation[type]);
+      int idx = pOrientation->AddString(strOrientation[type]);
       pOrientation->SetItemData(idx, (DWORD_PTR)type);
    }
 
@@ -943,6 +966,63 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
       ASSERT(IsJointSpacing(m_GirderSpacingType));
       DDX_Tag(&dx,IDC_SPACING_UNIT,pDisplayUnits->GetComponentDimUnit());
    }
+}
+
+void CBridgeDescGeneralPage::FillWorkPointLocationComboBox()
+{
+   CComboBox* pWorkPointCB = (CComboBox*)GetDlgItem(IDC_WORKPOINT_TYPE);
+
+   int oldSel = pWorkPointCB->GetCurSel();
+
+   // Fill control
+   pWorkPointCB->ResetContent();
+   pgsTypes::WorkPointLocations wpls = m_Factory->GetSupportedWorkPointLocations(m_GirderSpacingType);
+   int idx;
+   for ( auto & rwpl : wpls )
+   {
+      switch( rwpl )
+      {
+      case pgsTypes::wplTopGirder:
+         idx = pWorkPointCB->AddString(_T("Top Centerline of Girders"));
+         pWorkPointCB->SetItemData(idx,(DWORD)rwpl);
+         break;
+
+      case pgsTypes::wplBottomGirder:
+         idx = pWorkPointCB->AddString(_T("Bottom Centerline of Girders"));
+         pWorkPointCB->SetItemData(idx,(DWORD)rwpl);
+         break;
+
+      default:
+         ATLASSERT(false); // is there a new type???
+      }
+   }
+
+   // Disable control if only one item in it. This means that only top is allowed
+   BOOL benable = wpls.size() > 1 ? 1 : 0; 
+
+   // Cache last enabled index if we are switching from disabled -> enabled
+   int curSel = max(0, oldSel);
+   if (benable)
+   {
+      if (!pWorkPointCB->IsWindowEnabled())
+      {
+         curSel = m_CacheWorkPointTypeIdx;
+      }
+   }
+   else
+   {
+      curSel = 0; // Top wp location available only
+      m_CacheWorkPointTypeIdx = oldSel; // cache old setting
+   }
+
+   if ( curSel != CB_ERR )
+   {
+      pWorkPointCB->SetCurSel(curSel);
+   }
+
+   pWorkPointCB->EnableWindow(benable);
+   GetDlgItem(IDC_WORKPOINT_STATIC)->EnableWindow(benable);
+
 }
 
 void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
@@ -1191,6 +1271,7 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
    FillDeckTypeComboBox();
    FillGirderSpacingTypeComboBox();
    FillTopWidthComboBox();
+   FillWorkPointLocationComboBox();
 
    UpdateData(FALSE);
 
@@ -1308,6 +1389,8 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
                            // this must be done before the girder spacing limits are determined
 
    FillGirderConnectivityComboBox();
+
+   FillWorkPointLocationComboBox();
 
    BOOL specify_spacing = UpdateGirderSpacingLimits();
    // spacing only needs to be specified if it can take on multiple values

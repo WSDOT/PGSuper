@@ -409,9 +409,29 @@ bool CBoxBeamFactoryImpl::ConvertBeamSpacing(const IBeamFactory::Dimensions& dim
    return false;
 }
 
+pgsTypes::WorkPointLocations CBoxBeamFactoryImpl::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+
+   if (IsSpreadSpacing(spacingType))
+   {
+      wpls.push_back(pgsTypes::wplBottomGirder);
+   }
+
+   return wpls;
+}
+
+bool CBoxBeamFactoryImpl::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType,pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CBoxBeamFactoryImpl::GetSupportedGirderOrientation() const
 {
-   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb,pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb,pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced};
    return types;
 }
 

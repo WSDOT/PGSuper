@@ -969,6 +969,26 @@ bool CIBeamFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimension
    return false;
 }
 
+pgsTypes::WorkPointLocations CIBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+
+   if (IsSpreadSpacing(spacingType))
+   {
+      wpls.push_back(pgsTypes::wplBottomGirder);
+   }
+
+   return wpls;
+}
+
+bool CIBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CIBeamFactory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb/*, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal*/ };
@@ -1075,6 +1095,23 @@ Float64 CIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,p
    Float64 bot = 2*(W3+W4) + T2;
 
    return Max(top,bot);
+}
+
+void CIBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W1 = GetDimension(dimensions,_T("W1"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 W3 = GetDimension(dimensions,_T("W3"));
+   Float64 W4 = GetDimension(dimensions,_T("W4"));
+   Float64 T1 = GetDimension(dimensions,_T("T1"));
+   Float64 T2 = GetDimension(dimensions,_T("T2"));
+
+   Float64 top = 2*(W1+W2) + T1;
+
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CIBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
