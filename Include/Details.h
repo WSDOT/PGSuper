@@ -254,8 +254,6 @@ struct CRITSECTIONDETAILSATPOI
 {
    CRITSECTIONDETAILSATPOI() 
    { 
-      // Critical section POI must be exact... do not merge them with other POI
-      Poi.CanMerge(false); 
    }
 
    enum IntersectionType {DvIntersection, ThetaIntersection, NoIntersection};

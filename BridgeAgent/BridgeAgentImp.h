@@ -848,7 +848,7 @@ public:
    virtual void MergePoiLists(const PoiList& list1, const PoiList& list2, PoiList* pPoiList) const override;
    virtual void SortPoiList(PoiList* pPoiList) const override;
    virtual const pgsPointOfInterest& GetPointOfInterest(PoiIDType poiID) const override;
-   virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs,Float64 tolerance=0.001) const override;
+   virtual pgsPointOfInterest GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xs) const override;
    virtual bool GetPointOfInterest(const CSegmentKey& segmentKey,Float64 station,IDirection* pDirection,pgsPointOfInterest* pPoi) const override;
    virtual void GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey, PoiList* pPoiList) const override;
    virtual void GetCriticalSections(pgsTypes::LimitState ls,const CGirderKey& girderKey,const GDRCONFIG& config, std::vector<pgsPointOfInterest>* pvPoi) const override;
@@ -866,7 +866,7 @@ public:
    virtual bool IsInBoundaryPierDiaphragm(const pgsPointOfInterest& poi) const override;
    virtual bool IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState) const override;
    virtual IndexType GetDeckCastingRegion(const pgsPointOfInterest& poi) const override;
-   virtual pgsPointOfInterest ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan,Float64 tolerance=0.001) const override;
+   virtual pgsPointOfInterest ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan) const override;
    virtual void ConvertPoiToSpanPoint(const pgsPointOfInterest& poi,CSpanKey* pSpanKey,Float64* pXspan) const override;
    virtual void ConvertSpanPointToSegmentCoordiante(const CSpanKey& spanKey,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXs) const override;
    virtual void ConvertSegmentCoordinateToSpanPoint(const CSegmentKey& segmentKey,Float64 Xs,CSpanKey* pSpanKey,Float64* pXspan) const override;
@@ -881,7 +881,7 @@ public:
    virtual void GetSegmentKeys(const PoiList& vPoi,const CGirderKey& girderKey, std::vector<CSegmentKey>*pvSegments) const override;
    virtual void GetGirderKeys(const PoiList& vPoi, std::vector<CGirderKey>* pvGirders) const override;
    virtual Float64 ConvertPoiToSegmentPathCoordinate(const pgsPointOfInterest& poi) const override;
-   virtual pgsPointOfInterest ConvertSegmentPathCoordinateToPoi(const CSegmentKey& segmentKey,Float64 Xsp,Float64 tolerance=0.001) const override;
+   virtual pgsPointOfInterest ConvertSegmentPathCoordinateToPoi(const CSegmentKey& segmentKey,Float64 Xsp) const override;
    virtual Float64 ConvertSegmentPathCoordinateToSegmentCoordinate(const CSegmentKey& segmentKey,Float64 Xsp) const override;
    virtual Float64 ConvertSegmentCoordinateToGirderCoordinate(const CSegmentKey& segmentKey,Float64 Xs) const override;
    //virtual void ConvertGirderCoordinateToSegmentCoordinate(const CGirderKey& girderKey,Float64 Xg,CSegmentKey* pSegmentKey,Float64* pXs) const override;
@@ -889,14 +889,14 @@ public:
    virtual Float64 ConvertSegmentPathCoordinateToGirderPathCoordinate(const CSegmentKey& segmentKey,Float64 Xsp) const override;
    virtual Float64 ConvertSegmentCoordinateToSegmentPathCoordinate(const CSegmentKey& segmentKey,Float64 Xs) const override;
    virtual Float64 ConvertPoiToGirderCoordinate(const pgsPointOfInterest& poi) const override;
-   virtual pgsPointOfInterest ConvertGirderCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg,Float64 tolerance=0.001) const override;
+   virtual pgsPointOfInterest ConvertGirderCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg) const override;
    virtual Float64 ConvertPoiToGirderPathCoordinate(const pgsPointOfInterest& poi) const override;
-   virtual pgsPointOfInterest ConvertGirderPathCoordinateToPoi(const CGirderKey& girderKey,Float64 Xgp,Float64 tolerance=0.001) const override;
+   virtual pgsPointOfInterest ConvertGirderPathCoordinateToPoi(const CGirderKey& girderKey,Float64 Xgp) const override;
    virtual Float64 ConvertGirderCoordinateToGirderPathCoordinate(const CGirderKey& girderKey,Float64 Xg) const override;
    virtual Float64 ConvertGirderPathCoordinateToGirderCoordinate(const CGirderKey& girderKey,Float64 Xgp) const override;
    virtual Float64 ConvertGirderPathCoordinateToGirderlineCoordinate(const CGirderKey& girderKey,Float64 Xgp) const override;
    virtual Float64 ConvertPoiToGirderlineCoordinate(const pgsPointOfInterest& poi) const override;
-   virtual pgsPointOfInterest ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl,Float64 tolerance=0.001) const override;
+   virtual pgsPointOfInterest ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl) const override;
    virtual Float64 ConvertRouteToBridgeLineCoordinate(Float64 station) const override;
    virtual Float64 ConvertBridgeLineToRouteCoordinate(Float64 Xb) const override;
    virtual Float64 ConvertPoiToBridgeLineCoordinate(const pgsPointOfInterest& poi) const override;

@@ -91,7 +91,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#if defined _DEBUG
+#if defined _DEBUG || defined _BETA_VERSION
 //#define CHECK_POI_CONVERSIONS // if this is defined the POI conversion methods are checked. Note, this can significally reduce performance
 #endif
 
@@ -260,8 +260,6 @@ Float64 GetDevLengthAdjustment(Float64 bonded_length, Float64 dev_length, Float6
 
 // floating tolerance
 static const Float64 TOL=1.0e-04;
-
-static const Float64 gs_PoiTolerance = ::ConvertToSysUnits(1.0,unitMeasure::Millimeter);
 
 // Function to choose confinement bars from primary and additional
 static void ChooseConfinementBars(Float64 requiredZoneLength, 
@@ -768,7 +766,6 @@ UINT CBridgeAgentImp::DeleteSectionProperties(LPVOID pParam)
 pgsPoiMgr* CBridgeAgentImp::CreatePoiManager()
 {
    auto pPoiMgr = std::make_unique<pgsPoiMgr>();
-   pPoiMgr->SetTolerance(gs_PoiTolerance);
    return pPoiMgr.release();
 }
 
@@ -1294,7 +1291,7 @@ void CBridgeAgentImp::ValidatePointLoads()
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
 
             pgsPointOfInterest poi(segmentKey,Xs,POI_CONCLOAD);
-            m_pPoiMgr->AddPointOfInterest( poi );
+            VERIFY(m_pPoiMgr->AddPointOfInterest( poi ) != INVALID_ID);
 
             // put load into our collection
             IntervalIndexType intervalIdx;
@@ -1546,7 +1543,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
 
             pgsPointOfInterest poiStart(segmentKey,Xs);
-            m_pPoiMgr->AddPointOfInterest( poiStart );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
 
             ConvertSpanPointToSegmentCoordiante(thisSpanKey,upl.m_EndLocation,&segmentKey,&Xs);
 
@@ -1554,7 +1551,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
 
             pgsPointOfInterest poiEnd(segmentKey,Xs);
-            m_pPoiMgr->AddPointOfInterest( poiEnd );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
             IntervalIndexType intervalIdx;
             if ( pDistLoad->m_LoadCase == UserLoads::LL_IM )
@@ -1756,7 +1753,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
 
             pgsPointOfInterest poi(segmentKey,Xs,POI_CONCLOAD);
-            m_pPoiMgr->AddPointOfInterest( poi );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
 
             // put load into our collection
             IntervalIndexType intervalIdx;
@@ -4708,20 +4705,10 @@ void CBridgeAgentImp::LayoutSpanPoi(const CSpanKey& spanKey,Uint16 nPnts)
       pgsPointOfInterest poi = ConvertSpanPointToPoi(spanKey,Xspan);
       if ( poi.GetID() != INVALID_ID)
       {
-         // This is a new POI. Use a new ID
+         // we found an existing POI at the same location
+         // clear it's ID and attributes, but keep the location (segment key, etc) the same
          poi.SetID(INVALID_ID);
-         poi.SetNonReferencedAttributes(0);
-         poi.SetReferencedAttributes(0);
-
-         if (poi.GetReferencedAttributes(POI_SPAN) != 0)
-         {
-            // if the poi has an ID and it is a span attribute then it is
-            // a common POI in an adjacent span. don't merge this poi
-            // when adding to the poi manager
-            // We want (Span i-1, 1.0L) and (Span i, 0.0L) as seperate attributes
-            // because a POI can't be at two of the same type of tenth point locations at once
-            poi.CanMerge(false);
-         }
+         poi.ClearAttributes();
       }
 
       Uint16 tenthPoint = 0;
@@ -4736,7 +4723,7 @@ void CBridgeAgentImp::LayoutSpanPoi(const CSpanKey& spanKey,Uint16 nPnts)
 
       poi.MakeTenthPoint(POI_SPAN,tenthPoint);
 
-      m_pPoiMgr->AddPointOfInterest( poi );
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 }
 
@@ -4755,11 +4742,9 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
    Float64 left_end_size   = GetSegmentStartEndDistance(segmentKey);
 
    pgsPointOfInterest poiStartFace(segmentKey,0.0,POI_START_FACE);
-   poiStartFace.CanMerge(false);
    pgsPointOfInterest poiEndFace(segmentKey,segment_length,POI_END_FACE);
-   poiEndFace.CanMerge(false);
-   m_pPoiMgr->AddPointOfInterest(poiStartFace);
-   m_pPoiMgr->AddPointOfInterest(poiEndFace);
+   VERIFY(m_pPoiMgr->AddPointOfInterest(poiStartFace) != INVALID_ID);
+   VERIFY(m_pPoiMgr->AddPointOfInterest(poiEndFace) != INVALID_ID);
 
    Float64 left_release_point, right_release_point;
    GetSegmentReleaseSupportLocations(segmentKey,&left_release_point,&right_release_point);
@@ -4816,7 +4801,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
       Float64 Xg  = Xgp - first_segment_start_offset;  // distance from left face of first segment
       pgsPointOfInterest cyPoi(segmentKey,Xs,Xsp,Xg,Xgp,attribute | POI_RELEASED_SEGMENT);
       cyPoi.MakeTenthPoint(POI_RELEASED_SEGMENT,tenthPoint);
-      m_pPoiMgr->AddPointOfInterest( cyPoi );
+      VERIFY(m_pPoiMgr->AddPointOfInterest(cyPoi) != INVALID_ID);
 
       Xs  = left_end_size + bridge_site_dist;
       Xsp = start_offset + Xs;
@@ -4824,10 +4809,6 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest bsPoi(segmentKey,Xs,Xsp,Xg,Xgp,attribute | POI_ERECTED_SEGMENT);
       bsPoi.MakeTenthPoint(POI_ERECTED_SEGMENT,tenthPoint);
-      if (tenthPoint == 1 || tenthPoint == 11)
-      {
-         bsPoi.CanMerge(false);
-      }
 
       // If this is the very first or very last erected segment 10th point in the bridge, these
       // are key CL Bearing points. Mark them with the POI_ABUTMENT attribute so they can be
@@ -4837,7 +4818,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
       {
          bsPoi.SetNonReferencedAttributes(bsPoi.GetNonReferencedAttributes() | POI_ABUTMENT);
       }
-      m_pPoiMgr->AddPointOfInterest( bsPoi );
+      VERIFY(m_pPoiMgr->AddPointOfInterest(bsPoi) != INVALID_ID);
 
       Xs  = left_storage_point + storage_dist;
       Xsp = start_offset + Xs;
@@ -4845,7 +4826,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest stPoi(segmentKey,Xs,Xsp,Xg,Xgp,attribute | POI_STORAGE_SEGMENT);
       stPoi.MakeTenthPoint(POI_STORAGE_SEGMENT,tenthPoint);
-      m_pPoiMgr->AddPointOfInterest( stPoi );
+      VERIFY(m_pPoiMgr->AddPointOfInterest(stPoi) != INVALID_ID);
 
       // if this is the last poi on the segment, and there is a closure joint on the right end
       // of the segment, then add a closure POI
@@ -4872,7 +4853,7 @@ void CBridgeAgentImp::LayoutRegularPoi(const CSegmentKey& segmentKey,Uint16 nPnt
             {
                cpPOI.SetNonReferencedAttributes(cpPOI.GetNonReferencedAttributes() | POI_BOUNDARY_PIER);
             }
-            m_pPoiMgr->AddPointOfInterest( cpPOI );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(cpPOI) != INVALID_ID);
          }
       }
    }
@@ -4969,13 +4950,9 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
          Float64 Xg = Xgp - first_segment_start_offset;
          pgsPointOfInterest poi(segmentKey, Xs, Xsp, Xg, Xgp,POI_SPAN | POI_CANTILEVER);
          poi.SetReferencedAttributes(POI_ERECTED_SEGMENT | POI_CANTILEVER);
-         if ( poiIdx == nPoi-1 )
-         {
-            // this is the POI a the "fixed" end of the cantilever.
-            // We don't want it to merge with the POI on the other side of the support
-            poi.CanMerge(false);
-         }
-         m_pPoiMgr->AddPointOfInterest(poi);
+         ATLASSERT(poi.GetReferencedAttributes(POI_SPAN) == (POI_SPAN | POI_CANTILEVER));
+         ATLASSERT(poi.GetReferencedAttributes(POI_ERECTED_SEGMENT) == (POI_ERECTED_SEGMENT | POI_CANTILEVER));
+         VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
          Xs += poi_spacing;
       }
    }
@@ -4987,10 +4964,9 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
       Float64 Xg = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi(segmentKey, Xs, Xsp, Xg, Xgp, POI_SPAN | POI_CANTILEVER);
       poi.SetReferencedAttributes(POI_ERECTED_SEGMENT | POI_CANTILEVER);
-      // this is the POI a the "fixed" end of the cantilever.
-      // We don't want it to merge with the POI on the other side of the support
-      poi.CanMerge(false);
-      m_pPoiMgr->AddPointOfInterest(poi);
+      ATLASSERT(poi.GetReferencedAttributes(POI_SPAN) == (POI_SPAN | POI_CANTILEVER));
+      ATLASSERT(poi.GetReferencedAttributes(POI_ERECTED_SEGMENT) == (POI_ERECTED_SEGMENT | POI_CANTILEVER));
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 
    if ( bEndCantilever )
@@ -5014,13 +4990,9 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
          Float64 Xg = Xgp - first_segment_start_offset;
          pgsPointOfInterest poi(segmentKey, Xs, Xsp, Xg, Xgp,POI_SPAN | POI_CANTILEVER);
          poi.SetReferencedAttributes(POI_ERECTED_SEGMENT | POI_CANTILEVER);
-         if ( poiIdx == 0 )
-         {
-            // this is the POI a the "fixed" end of the cantilever.
-            // We don't want it to merge with the POI on the other side of the support
-            poi.CanMerge(false);
-         }
-         m_pPoiMgr->AddPointOfInterest( poi );
+         ATLASSERT(poi.GetReferencedAttributes(POI_SPAN) == (POI_SPAN | POI_CANTILEVER));
+         ATLASSERT(poi.GetReferencedAttributes(POI_ERECTED_SEGMENT) == (POI_ERECTED_SEGMENT | POI_CANTILEVER));
+         VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
          Xs += poi_spacing;
       }
    }
@@ -5032,10 +5004,9 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
       Float64 Xg = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi(segmentKey, Xs, Xsp, Xg, Xgp, POI_SPAN | POI_CANTILEVER);
       poi.SetReferencedAttributes(POI_ERECTED_SEGMENT | POI_CANTILEVER);
-      // this is the POI a the "fixed" end of the cantilever.
-      // We don't want it to merge with the POI on the other side of the support
-      poi.CanMerge(false);
-      m_pPoiMgr->AddPointOfInterest( poi );
+      ATLASSERT(poi.GetReferencedAttributes(POI_SPAN) == (POI_SPAN | POI_CANTILEVER));
+      ATLASSERT(poi.GetReferencedAttributes(POI_ERECTED_SEGMENT) == (POI_ERECTED_SEGMENT | POI_CANTILEVER));
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 
    // Add a POI at the start and end of every segment, except at the start of the first segment in the first group
@@ -5050,7 +5021,7 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
       Float64 Xgp = segmentOffset + Xsp;
       Float64 Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi(segmentKey,Xs,Xsp,Xg,Xgp);
-      m_pPoiMgr->AddPointOfInterest(poi);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 
    if ( !((segmentKey.segmentIndex == nSegments-1) && (segmentKey.groupIndex == nGroups-1)) )
@@ -5060,7 +5031,7 @@ void CBridgeAgentImp::LayoutEndSizePoi(const CSegmentKey& segmentKey,Float64 seg
       Float64 Xgp = segmentOffset + Xsp;
       Float64 Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi(segmentKey,Xs,Xsp,Xg,Xgp);
-      m_pPoiMgr->AddPointOfInterest(poi);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 }
 
@@ -5124,8 +5095,8 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float6
       pStatusCenter->Add(pStatusItem);
    }
 
-   m_pPoiMgr->AddPointOfInterest( poiHP1 );
-   m_pPoiMgr->AddPointOfInterest( poiHP2 );
+   VERIFY(m_pPoiMgr->AddPointOfInterest(poiHP1) != INVALID_ID);
+   VERIFY(m_pPoiMgr->AddPointOfInterest(poiHP2) != INVALID_ID);
 
    // add POI on either side of the harping point. Because the vertical component of prestress, Vp, is zero
    // on one side of the harp point and Vp on the other side there is a jump in shear capacity. Add these
@@ -5136,8 +5107,8 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float6
    poiHP1.SetNonReferencedAttributes(0);
    poiHP2.SetNonReferencedAttributes(0);
    
-   m_pPoiMgr->AddPointOfInterest( poiHP1 );
-   m_pPoiMgr->AddPointOfInterest( poiHP2 );
+   VERIFY(m_pPoiMgr->AddPointOfInterest(poiHP1) != INVALID_ID);
+   VERIFY(m_pPoiMgr->AddPointOfInterest(poiHP2) != INVALID_ID);
 }
 
 void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& segmentKey,Float64 segmentOffset)
@@ -5186,16 +5157,14 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    Float64 Xgp = segmentOffset + Xsp;
    Float64 Xg  = Xgp - first_segment_start_offset;
    pgsPointOfInterest poiXfer1(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-   poiXfer1.CanMerge(false);
-   m_pPoiMgr->AddPointOfInterest( poiXfer1 );
+   VERIFY(m_pPoiMgr->AddPointOfInterest(poiXfer1) != INVALID_ID);
 
    Xs  = d2;
    Xsp = Xs + start_offset;
    Xgp = segmentOffset + Xsp;
    Xg  = Xgp - first_segment_start_offset;
    pgsPointOfInterest poiXfer2(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-   poiXfer2.CanMerge(false);
-   m_pPoiMgr->AddPointOfInterest( poiXfer2 );
+   VERIFY(m_pPoiMgr->AddPointOfInterest(poiXfer2) != INVALID_ID);
 
    ////////////////////////////////////////////////////////////////
    // debonded strands
@@ -5225,16 +5194,14 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
             Xgp = segmentOffset + Xsp;
             Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiDBD(segmentKey,Xs,Xsp,Xg,Xgp,attrib_debond);
-            poiDBD.CanMerge(false);
-            m_pPoiMgr->AddPointOfInterest( poiDBD );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
 
             Xs  = d2;
             Xsp = Xs + start_offset;
             Xgp = segmentOffset + Xsp;
             Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiXFR(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-            poiXFR.CanMerge(false);
-            m_pPoiMgr->AddPointOfInterest( poiXFR );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poiXFR) != INVALID_ID);
          }
 
          d1 = segment_length - debond_info.Length[pgsTypes::metEnd];
@@ -5247,16 +5214,14 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
             Xgp = segmentOffset + Xsp;
             Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiDBD(segmentKey,Xs,Xsp,Xg,Xgp,attrib_debond);
-            poiDBD.CanMerge(false);
-            m_pPoiMgr->AddPointOfInterest( poiDBD );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
 
             Xs  = d2;
             Xsp = Xs + start_offset;
             Xgp = segmentOffset + Xsp;
             Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiXFR(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-            poiXFR.CanMerge(false);
-            m_pPoiMgr->AddPointOfInterest( poiXFR );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poiXFR) != INVALID_ID);
          }
       }
    }
@@ -5286,7 +5251,7 @@ void CBridgeAgentImp::LayoutPoiForPrecastDiaphragmLoads(const CSegmentKey& segme
       Float64 Xgp = segmentOffset + Xsp;  // location in girder path coordinates
       Float64 Xg  = Xgp - first_segment_start_offset;   // location in girder coordinates
       pgsPointOfInterest poi( segmentKey, Xs, Xsp, Xg, Xgp, POI_DIAPHRAGM);
-      m_pPoiMgr->AddPointOfInterest( poi );
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 }
 
@@ -5304,11 +5269,11 @@ void CBridgeAgentImp::LayoutPoiForIntermediateDiaphragmLoads(const CSpanKey& spa
       Float64 Xspan = diaphragm.Location;
 
       pgsPointOfInterest poi = ConvertSpanPointToPoi(spanKey,Xspan);
-      poi.CanMerge(true);
       poi.SetID(INVALID_ID);
+      poi.ClearAttributes();
       poi.SetNonReferencedAttributes(POI_DIAPHRAGM);
 
-      m_pPoiMgr->AddPointOfInterest( poi );
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 }
 
@@ -5362,28 +5327,28 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_075h( segmentKey, Xs, Xsp, Xg, Xgp);
-      m_pPoiMgr->AddPointOfInterest(poi_075h);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi_075h) != INVALID_ID);
 
       Xs  = start_end_dist + support_width/2 + Hg;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_h( segmentKey, Xs, Xsp, Xg, Xgp, POI_H);
-      m_pPoiMgr->AddPointOfInterest(poi_h);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi_h) != INVALID_ID);
 
       Xs  = start_end_dist + support_width/2 + 1.5*Hg;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_15h( segmentKey, Xs, Xsp, Xg, Xgp, POI_15H);
-      m_pPoiMgr->AddPointOfInterest(poi_15h);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi_15h) != INVALID_ID);
 
       Xs  = start_end_dist + support_width/2;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_fos( segmentKey, Xs, Xsp, Xg, Xgp, POI_FACEOFSUPPORT);
-      m_pPoiMgr->AddPointOfInterest(poi_fos);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi_fos) != INVALID_ID);
    }
 
    pSegment->GetSupport(pgsTypes::metEnd,&pPier,&pTS);
@@ -5413,28 +5378,28 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_075h( segmentKey, Xs, Xsp, Xg, Xgp);
-      m_pPoiMgr->AddPointOfInterest(poi_075h);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi_075h) != INVALID_ID);
 
       Xs  = segment_length - (end_end_dist + support_width/2 + Hg);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_h( segmentKey, Xs, Xsp, Xg, Xgp, POI_H);
-      m_pPoiMgr->AddPointOfInterest(poi_h);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi_h) != INVALID_ID);
 
       Xs  = segment_length - (end_end_dist + support_width/2 + 1.5*Hg);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_15h( segmentKey, Xs, Xsp, Xg, Xgp, POI_15H);
-      m_pPoiMgr->AddPointOfInterest(poi_15h);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi_15h) != INVALID_ID);
 
       Xs  = segment_length - (end_end_dist + support_width/2);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_fos( segmentKey, Xs, Xsp, Xg, Xgp, POI_FACEOFSUPPORT);
-      m_pPoiMgr->AddPointOfInterest(poi_fos);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poi_fos) != INVALID_ID);
    }
 
 
@@ -5460,7 +5425,7 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
          Xg  = Xgp - first_segment_start_offset;
 
          pgsPointOfInterest poi(segmentKey, Xs, Xsp, Xg, Xgp, POI_STIRRUP_ZONE);
-         m_pPoiMgr->AddPointOfInterest(poi);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
       }
    }
 }
@@ -5521,12 +5486,12 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
             poi.SetID(INVALID_ID);
             poi.ClearAttributes();
             poi.SetNonReferencedAttributes(POI_DECKBARCUTOFF);
-            m_pPoiMgr->AddPointOfInterest( poi );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
 
             // put a POI just after the bar cutoff so we capture jumps in capacity
             poi.ClearAttributes();
             poi.SetDistFromStart(poi.GetDistFromStart()+DECK_REBAR_OFFSET);
-            m_pPoiMgr->AddPointOfInterest( poi );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
          }
 
          if ( pierIdx != startPierIdx )
@@ -5555,12 +5520,12 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
             poi.SetID(INVALID_ID);
             poi.ClearAttributes();
             poi.SetNonReferencedAttributes(POI_DECKBARCUTOFF);
-            m_pPoiMgr->AddPointOfInterest( poi );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
 
             // put a POI just before the bar cutoff so we capture jumps in capacity
             poi.ClearAttributes();
             poi.SetDistFromStart(poi.GetDistFromStart()-DECK_REBAR_OFFSET);
-            m_pPoiMgr->AddPointOfInterest( poi );
+            VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
          }
       }
    }
@@ -5746,7 +5711,7 @@ void CBridgeAgentImp::LayoutPoiForSlabCastingRegions(const CGirderKey& girderKey
                }
 
                pgsPointOfInterest poi(segmentKey, Xpoi, attrib[endType]);
-               m_pPoiMgr->AddPointOfInterest(poi);
+               VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
                break; // we found the POI, so no need to continue search through the segments
             }
          } // next segment
@@ -5810,12 +5775,12 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
       // Add pois at cutoffs if they are within bearing locations
       if (left_brg_loc < startLoc && startLoc < right_brg_loc)
       {
-         m_pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey, startLoc, cut_attribute) );
+         VERIFY(m_pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey, startLoc, cut_attribute)) != INVALID_ID);
       }
 
       if (left_brg_loc < endLoc && endLoc < right_brg_loc)
       {
-         m_pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey, endLoc, cut_attribute) );
+         VERIFY(m_pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey, endLoc, cut_attribute)) != INVALID_ID);
       }
 
       // we only create one pattern per layout
@@ -5842,12 +5807,12 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
 
                if (left_brg_loc < startLoc && startLoc < right_brg_loc)
                {
-                  m_pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey, startLoc, dev_attribute) );
+                  VERIFY(m_pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey, startLoc, dev_attribute)) != INVALID_ID);
                }
 
                if (left_brg_loc < endLoc && endLoc < right_brg_loc)
                {
-                  m_pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey, endLoc,   dev_attribute) );
+                  VERIFY(m_pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey, endLoc, dev_attribute)) != INVALID_ID);
                }
             }
          }
@@ -5907,7 +5872,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
          Float64 Xpoi;
          VERIFY(GetPierLocation(pPier->GetIndex(),segmentKey,&Xpoi));
          pgsPointOfInterest poi(segmentKey,Xpoi,POI_INTERMEDIATE_PIER);
-         m_pPoiMgr->AddPointOfInterest(poi);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
 
          // POI at h and 1.5h from cl-brg (also at 2.5h for purposes of computing critical section)
          Float64 Hg = GetHeight(poi);
@@ -5929,7 +5894,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = Ls + (BOl - EDl) + (BOr - EDr) + location;
          }
          pgsPointOfInterest left_H(thisSegmentKey,location,POI_H);
-         m_pPoiMgr->AddPointOfInterest(left_H);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(left_H) != INVALID_ID);
 
          thisSegmentKey = segmentKey;
          location = Xpoi - 1.5*Hg;
@@ -5946,7 +5911,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = Ls + (BOl - EDl) + (BOr - EDr) + location;
          }
          pgsPointOfInterest left_15H(thisSegmentKey,location,POI_15H);
-         m_pPoiMgr->AddPointOfInterest(left_15H);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(left_15H) != INVALID_ID);
 
          thisSegmentKey = segmentKey;
          location = Xpoi - 2.5*Hg;
@@ -5963,7 +5928,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = Ls + (BOl - EDl) + (BOr - EDr) + location;
          }
          pgsPointOfInterest left_25H(thisSegmentKey,location);
-         m_pPoiMgr->AddPointOfInterest(left_25H);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(left_25H) != INVALID_ID);
 
          // right side of pier
          Float64 segment_length = GetSegmentLength(segmentKey);
@@ -5981,7 +5946,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = location - segment_length - dist_between_segments;
          }
          pgsPointOfInterest right_H(thisSegmentKey,location,POI_H);
-         m_pPoiMgr->AddPointOfInterest(right_H);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(right_H) != INVALID_ID);
 
          thisSegmentKey = segmentKey;
          location = Xpoi + 1.5*Hg;
@@ -5997,7 +5962,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = location - segment_length - dist_between_segments;
          }
          pgsPointOfInterest right_15H(thisSegmentKey,location,POI_15H);
-         m_pPoiMgr->AddPointOfInterest(right_15H);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(right_15H) != INVALID_ID);
 
          thisSegmentKey = segmentKey;
          location = Xpoi + 2.5*Hg;
@@ -6013,19 +5978,19 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
             location = location - segment_length - dist_between_segments;
          }
          pgsPointOfInterest right_25H(thisSegmentKey,location);
-         m_pPoiMgr->AddPointOfInterest(right_25H);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(right_25H) != INVALID_ID);
 
          // Add POIs for face of support
          Float64 left_support_width  = pPier->GetSupportWidth(segmentKey.girderIndex, pgsTypes::Back);
          Float64 right_support_width = pPier->GetSupportWidth(segmentKey.girderIndex, pgsTypes::Ahead);
 
          pgsPointOfInterest leftFOS(segmentKey,Xpoi - left_support_width,POI_FACEOFSUPPORT);
-         m_pPoiMgr->AddPointOfInterest(leftFOS);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(leftFOS) != INVALID_ID);
 
          if ( !IsZero(left_support_width) && !IsZero(right_support_width) )
          {
             pgsPointOfInterest rightFOS(segmentKey,Xpoi + right_support_width,POI_FACEOFSUPPORT);
-            m_pPoiMgr->AddPointOfInterest(rightFOS);
+            VERIFY(m_pPoiMgr->AddPointOfInterest(rightFOS) != INVALID_ID);
          }
       } // next pier
    }
@@ -6044,7 +6009,7 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
          Float64 Xs; // pier is in segment coordinates
          GetPierLocation(pPier->GetIndex(),segmentKey,&Xs);
          pgsPointOfInterest poi(segmentKey,Xs,POI_BOUNDARY_PIER);
-         m_pPoiMgr->AddPointOfInterest(poi);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
       }
    }
 }
@@ -6089,7 +6054,7 @@ void CBridgeAgentImp::LayoutPoiForTemporarySupports(const CSegmentKey& segmentKe
          VERIFY(GetTemporarySupportLocation(pTS->GetIndex(),segmentKey,&Xpoi));
          pgsPointOfInterest poi(segmentKey,Xpoi,POI_INTERMEDIATE_TEMPSUPPORT);
 
-         m_pPoiMgr->AddPointOfInterest(poi);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
       }
    } // next temporary support
 }
@@ -6221,33 +6186,31 @@ void CBridgeAgentImp::LayoutHandlingPoi(const CSegmentKey& segmentKey,
    ATLASSERT(0.0 < span_length); // should be checked in input
 
    // add poi at support locations
-   pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,leftOverhang,attrib | poiReference | supportAttribute) );
-   pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,segment_length - rightOverhang,attrib | poiReference | supportAttribute) );
+   VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey, leftOverhang, attrib | poiReference | supportAttribute)) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey, segment_length - rightOverhang, attrib | poiReference | supportAttribute)) != INVALID_ID);
 
    GET_IFACE(ISegmentLiftingSpecCriteria, pLiftingCriteria);
    if ( !IsEqual(pLiftingCriteria->GetLiftingCableMinInclination(),PI_OVER_2) && poiReference == POI_LIFT_SEGMENT )
    { 
       // when lifting with inclined cables, add poi's just outboard of the lift points to capture the jump in the
       // horizontal cable force moment diagram
-      Float64 offset = ::ConvertToSysUnits(0.001, unitMeasure::Feet);
+      Float64 offset = ::ConvertToSysUnits(0.01, unitMeasure::Feet);
       if (!IsZero(leftOverhang))
       {
          pgsPointOfInterest leftPoi(segmentKey, leftOverhang - offset);
-         leftPoi.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(leftPoi);
+         VERIFY(pPoiMgr->AddPointOfInterest(leftPoi) != INVALID_ID);
       }
 
       if (!IsZero(rightOverhang))
       {
          pgsPointOfInterest rightPoi(segmentKey, segment_length - rightOverhang + offset);
-         rightPoi.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(rightPoi);
+         VERIFY(pPoiMgr->AddPointOfInterest(rightPoi) != INVALID_ID);
       }
    }
 
    // add poi at ends of girder
-   pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,0,attrib) );
-   pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,segment_length,attrib) );
+   VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey, 0, attrib)) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey, segment_length, attrib)) != INVALID_ID);
 
    // n-th point POI between overhang support points
    const Float64 toler = +1.0e-6;
@@ -6268,13 +6231,7 @@ void CBridgeAgentImp::LayoutHandlingPoi(const CSegmentKey& segmentKey,
       
       pgsPointOfInterest poi(segmentKey,dist,attribute);
       poi.MakeTenthPoint(poiReference,tenthPoint);
-
-      if ( tenthPoint == 1 || tenthPoint == 11 )
-      {
-         poi.CanMerge(false);
-      }
-
-      pPoiMgr->AddPointOfInterest( poi );
+      VERIFY(pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 
 }
@@ -7824,8 +7781,7 @@ void CBridgeAgentImp::GetBottomFlangeClearance(const pgsPointOfInterest& poi,Flo
    Float64 right_width = 0;
    if ( 0 != segmentKey.girderIndex )
    {
-      pgsPointOfInterest leftPoi(poi);
-      leftPoi.SetSegmentKey( CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex-1,segmentKey.segmentIndex) );
+      pgsPointOfInterest leftPoi = GetPointOfInterest(CSegmentKey(segmentKey.groupIndex, segmentKey.girderIndex - 1, segmentKey.segmentIndex), poi.GetDistFromStart());
       left_width = GetBottomWidth(leftPoi);
    }
 
@@ -7833,8 +7789,7 @@ void CBridgeAgentImp::GetBottomFlangeClearance(const pgsPointOfInterest& poi,Flo
 
    if ( segmentKey.girderIndex < nGirders-1 )
    {
-      pgsPointOfInterest rightPoi(poi);
-      rightPoi.SetSegmentKey( segmentKey );
+      pgsPointOfInterest rightPoi = GetPointOfInterest(CSegmentKey(segmentKey.groupIndex, segmentKey.girderIndex + 1, segmentKey.segmentIndex), poi.GetDistFromStart());
       right_width = GetBottomWidth(rightPoi);
    }
 
@@ -20237,17 +20192,14 @@ const pgsPointOfInterest& CBridgeAgentImp::GetPointOfInterest(PoiIDType poiID) c
    return m_pPoiMgr->GetPointOfInterest(poiID);
 }
 
-pgsPointOfInterest CBridgeAgentImp::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi,Float64 tolerance) const
+pgsPointOfInterest CBridgeAgentImp::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) const
 {
    // This validate is commented out because it causes problems with validating the bridge model
    // The main validate calls this method which calls ValidatePointsOfInterest which calls the main validate
    // ... recursion ==> CRASH
    //ValidatePointsOfInterest(segmentKey);
 
-   Float64 oldTolerance = m_pPoiMgr->SetTolerance(tolerance);
-   pgsPointOfInterest poi = m_pPoiMgr->GetPointOfInterest(segmentKey,Xpoi);
-   m_pPoiMgr->SetTolerance(oldTolerance);
-   return poi;
+   return m_pPoiMgr->GetPointOfInterest(segmentKey,Xpoi);
 }
 
 bool CBridgeAgentImp::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 station,IDirection* pDirection,pgsPointOfInterest* pPoi) const
@@ -20411,7 +20363,7 @@ void CBridgeAgentImp::GetCriticalSections(pgsTypes::LimitState limitState,const 
       for ( ; iter != end; iter++ )
       {
          const CRITSECTDETAILS& csDetails(*iter);
-         m_pPoiMgr->AddPointOfInterest(csDetails.GetPointOfInterest());
+         VERIFY(m_pPoiMgr->AddPointOfInterest(csDetails.GetPointOfInterest()) != INVALID_ID);
       }
 
       m_CriticalSectionState[idx].insert( girderKey );
@@ -20431,9 +20383,8 @@ void CBridgeAgentImp::GetCriticalSections(pgsTypes::LimitState limitState,const 
    for ( ; iter != end; iter++ )
    {
       Float64 Xg = *iter;
-      pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(girderKey,Xg,0.0/*we have to be exact, so set tolerance to 0.0*/);
+      pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(girderKey,Xg);
       poi.SetNonReferencedAttributes(attrib);
-      poi.CanMerge(false); // never want to merge critical section POIs with nearby poi... the location of CS POI are critical
       pvPoi->push_back(poi);
    }
 }
@@ -20457,7 +20408,7 @@ pgsPointOfInterest CBridgeAgentImp::GetTemporarySupportPointOfInterest(const CGi
    return ConvertGirderPathCoordinateToPoi(girderKey,Xgp);
 }
 
-pgsPointOfInterest CBridgeAgentImp::ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan,Float64 tolerance) const
+pgsPointOfInterest CBridgeAgentImp::ConvertSpanPointToPoi(const CSpanKey& spanKey,Float64 Xspan) const
 {
    // convert spanIdx and Xspan to girder coordinates, Xg
    GroupIndexType grpIdx = GetGirderGroupIndex(spanKey.spanIndex);
@@ -20520,7 +20471,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertSpanPointToPoi(const CSpanKey& spanKe
    Xg += Xspan;
 
    // now convert the girder coordinate to a POI
-   pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(CGirderKey(grpIdx,gdrIdx),Xg,tolerance);
+   pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(CGirderKey(grpIdx,gdrIdx),Xg);
 
    // if the POI is at a span boundary
    if ( poi.IsTenthPoint(POI_SPAN) == 11 )
@@ -20533,14 +20484,14 @@ pgsPointOfInterest CBridgeAgentImp::ConvertSpanPointToPoi(const CSpanKey& spanKe
       if ( mySpanKey.spanIndex != spanKey.spanIndex )
       {
          // the poi we want is in another span
-         poi = ConvertGirderCoordinateToPoi(CGirderKey(grpIdx,gdrIdx),Xg+1.01*tolerance,tolerance);
+         poi = ConvertGirderCoordinateToPoi(CGirderKey(grpIdx,gdrIdx),Xg+0.001);
 #if defined _DEBUG
          CSpanKey mySpanKey;
          Float64 myXspan;
          ConvertPoiToSpanPoint(poi,&mySpanKey,&myXspan);
          ATLASSERT(mySpanKey.spanIndex == spanKey.spanIndex);
 #endif
-         poi.SetDistFromStart(poi.GetDistFromStart()-1.01*tolerance);
+         poi.SetDistFromStart(poi.GetDistFromStart()-0.001);
       }
    }
 
@@ -20571,7 +20522,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertSpanPointToPoi(const CSpanKey& spanKe
       }
       else
       {
-         ATLASSERT(testSpanIdx == spanKey.spanIndex && IsEqual(testXspan,Xspan,1.01*tolerance));
+         ATLASSERT(testSpanIdx == spanKey.spanIndex && IsEqual(testXspan,Xspan,0.001));
       }
       bTesting = false;
    }
@@ -20842,7 +20793,7 @@ Float64 CBridgeAgentImp::ConvertPoiToSegmentPathCoordinate(const pgsPointOfInter
       // force manual computation to verify the dimension in the poi is correct
       pgsPointOfInterest testPoi(poi.GetSegmentKey(),poi.GetDistFromStart());
       Float64 XspTest = ConvertPoiToSegmentPathCoordinate(testPoi);
-      ATLASSERT(IsEqual(XspTest,poi.GetSegmentPathCoordinate(),gs_PoiTolerance));
+      ATLASSERT(IsEqual(XspTest,poi.GetSegmentPathCoordinate()));
 #endif
       Xsp = poi.GetSegmentPathCoordinate();
    }
@@ -20870,10 +20821,10 @@ Float64 CBridgeAgentImp::ConvertPoiToSegmentPathCoordinate(const pgsPointOfInter
    return Xsp;
 }
 
-pgsPointOfInterest CBridgeAgentImp::ConvertSegmentPathCoordinateToPoi(const CSegmentKey& segmentKey,Float64 Xsp,Float64 tolerance) const
+pgsPointOfInterest CBridgeAgentImp::ConvertSegmentPathCoordinateToPoi(const CSegmentKey& segmentKey,Float64 Xsp) const
 {
    Float64 Xs = ConvertSegmentPathCoordinateToSegmentCoordinate(segmentKey,Xsp);
-   pgsPointOfInterest poi = GetPointOfInterest(segmentKey,Xs,tolerance);
+   pgsPointOfInterest poi = GetPointOfInterest(segmentKey,Xs);
 
 #if defined CHECK_POI_CONVERSIONS
    static bool bTesting = false;
@@ -20881,7 +20832,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertSegmentPathCoordinateToPoi(const CSeg
    {
       bTesting = true;
       Float64 testXsp = ConvertPoiToSegmentPathCoordinate(poi);
-      ATLASSERT(IsEqual(testXsp,Xsp,tolerance));
+      ATLASSERT(IsEqual(testXsp,Xsp));
       bTesting = false;
    }
 #endif
@@ -20913,7 +20864,7 @@ Float64 CBridgeAgentImp::ConvertSegmentCoordinateToSegmentPathCoordinate(const C
    {
       bTesting = true;
       Float64 testXs = ConvertSegmentPathCoordinateToSegmentCoordinate(segmentKey,Xsp);
-      ATLASSERT(IsEqual(testXs,Xs,gs_PoiTolerance));
+      ATLASSERT(IsEqual(testXs,Xs));
       bTesting = false;
    }
 #endif
@@ -20945,7 +20896,7 @@ Float64 CBridgeAgentImp::ConvertSegmentPathCoordinateToSegmentCoordinate(const C
    {
       bTesting = true;
       Float64 testXsp = ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,Xs);
-      ATLASSERT(IsEqual(testXsp,Xsp,gs_PoiTolerance));
+      ATLASSERT(IsEqual(testXsp,Xsp));
       bTesting = false;
    }
 #endif
@@ -20998,7 +20949,7 @@ Float64 CBridgeAgentImp::ConvertPoiToGirderPathCoordinate(const pgsPointOfIntere
       pgsPointOfInterest testPoi;
       testPoi.SetLocation(poi.GetSegmentKey(),poi.GetDistFromStart());
       Float64 XgpTest = ConvertPoiToGirderPathCoordinate(testPoi);
-      ATLASSERT(IsEqual(Xgp,XgpTest,gs_PoiTolerance));
+      ATLASSERT(IsEqual(Xgp,XgpTest));
 #endif
    }
    else
@@ -21038,10 +20989,10 @@ Float64 CBridgeAgentImp::ConvertPoiToGirderPathCoordinate(const pgsPointOfIntere
    return Xgp;
 }
 
-pgsPointOfInterest CBridgeAgentImp::ConvertGirderPathCoordinateToPoi(const CGirderKey& girderKey,Float64 Xgp,Float64 tolerance) const
+pgsPointOfInterest CBridgeAgentImp::ConvertGirderPathCoordinateToPoi(const CGirderKey& girderKey,Float64 Xgp) const
 {
    Float64 Xg = ConvertGirderPathCoordinateToGirderCoordinate(girderKey,Xgp);
-   pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(girderKey,Xg,tolerance);
+   pgsPointOfInterest poi = ConvertGirderCoordinateToPoi(girderKey,Xg);
 
 #if defined CHECK_POI_CONVERSIONS
    static bool bTesting = false;
@@ -21049,7 +21000,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertGirderPathCoordinateToPoi(const CGird
    {
       bTesting = true;
       Float64 testXgp = ConvertPoiToGirderPathCoordinate(poi);
-      ATLASSERT(IsEqual(Xgp,testXgp,tolerance));
+      ATLASSERT(IsEqual(Xgp,testXgp));
       bTesting = false;
    }
 #endif
@@ -21057,7 +21008,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertGirderPathCoordinateToPoi(const CGird
    return poi;
 }
 
-pgsPointOfInterest CBridgeAgentImp::ConvertGirderCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg,Float64 tolerance) const
+pgsPointOfInterest CBridgeAgentImp::ConvertGirderCoordinateToPoi(const CGirderKey& girderKey,Float64 Xg) const
 {
    pgsPointOfInterest poi;
 
@@ -21133,8 +21084,8 @@ pgsPointOfInterest CBridgeAgentImp::ConvertGirderCoordinateToPoi(const CGirderKe
             Xpoi = IsEqual(Xpoi,segmentLength) ? segmentLength : Xpoi;
 
             // Gets the actual POI at this location, or returns a temporary poi if not found
-            poi = GetPointOfInterest(segmentKey,Xpoi,tolerance);
-            ATLASSERT(IsEqual(poi.GetDistFromStart(),Xpoi,tolerance));
+            poi = GetPointOfInterest(segmentKey,Xpoi);
+            ATLASSERT(IsEqual(poi.GetDistFromStart(),Xpoi));
             break;
          }
          else
@@ -21152,7 +21103,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertGirderCoordinateToPoi(const CGirderKe
    {
       bTesting = true;
       Float64 testXg = ConvertPoiToGirderCoordinate(poi);
-      ATLASSERT(IsEqual(Xg,testXg,tolerance));
+      ATLASSERT(IsEqual(Xg,testXg));
       bTesting = false;
    }
 #endif
@@ -21170,7 +21121,7 @@ Float64 CBridgeAgentImp::ConvertPoiToGirderCoordinate(const pgsPointOfInterest& 
       pgsPointOfInterest testPoi;
       testPoi.SetLocation(poi.GetSegmentKey(),poi.GetDistFromStart());
       Float64 XgTest = ConvertPoiToGirderCoordinate(testPoi);
-      ATLASSERT(IsEqual(Xg,XgTest,gs_PoiTolerance));
+      ATLASSERT(IsEqual(Xg,XgTest));
 #endif
    }
    else
@@ -21275,7 +21226,7 @@ Float64 CBridgeAgentImp::ConvertPoiToGirderlineCoordinate(const pgsPointOfIntere
       // force manual computation to verify the dimension in the poi is correct
       pgsPointOfInterest testPoi(poi.GetSegmentKey(), poi.GetDistFromStart());
       Float64 XglTest = ConvertPoiToGirderlineCoordinate(testPoi);
-      ATLASSERT(IsEqual(XglTest, poi.GetGirderlineCoordinate(), gs_PoiTolerance));
+      ATLASSERT(IsEqual(XglTest, poi.GetGirderlineCoordinate()));
 #endif
       return poi.GetGirderlineCoordinate();
    }
@@ -21317,7 +21268,7 @@ Float64 CBridgeAgentImp::ConvertPoiToGirderlineCoordinate(const pgsPointOfIntere
    return Xgl;
 }
 
-pgsPointOfInterest CBridgeAgentImp::ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl,Float64 tolerance) const
+pgsPointOfInterest CBridgeAgentImp::ConvertGirderlineCoordinateToPoi(GirderIndexType gdrIdx,Float64 Xgl) const
 {
    // It will be easier to find which group Xgl is located in if we
    // convert it to a measurement from the Pier line at abutment 0.
@@ -21377,7 +21328,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertGirderlineCoordinateToPoi(GirderIndex
 
    Float64 Xgp = X - Xstart;
    CGirderKey girderKey(grpIdx,Min(GetGirderCount(grpIdx)-1,gdrIdx));
-   return ConvertGirderPathCoordinateToPoi(girderKey,Xgp,tolerance);
+   return ConvertGirderPathCoordinateToPoi(girderKey,Xgp);
 }
 
 Float64 CBridgeAgentImp::ConvertRouteToBridgeLineCoordinate(Float64 station) const
@@ -21618,7 +21569,9 @@ IndexType PoiToDeckCastingRegion(T* pSlab, const pgsPointOfInterest& poi)
    CComPtr<ICastingRegion> region;
    HRESULT hr = regions->FindRegionEx(ssmbrID, segIdx, Xs, sectionBias, &regionIdx, &region);
    if (FAILED(hr))
+   {
       return INVALID_INDEX;
+   }
 
    return regionIdx;
 }
@@ -24134,8 +24087,8 @@ void CBridgeAgentImp::GetHaulingDesignPointsOfInterest(const CSegmentKey& segmen
       Float64 hp1, hp2;
       strandGridModel->GetHarpingPointLocations( &hp1, &hp2 );
 
-      poiMgr.AddPointOfInterest( pgsPointOfInterest(segmentKey,hp1,attrib | POI_HARPINGPOINT) );
-      poiMgr.AddPointOfInterest( pgsPointOfInterest(segmentKey,hp2,attrib | POI_HARPINGPOINT) );
+      VERIFY(poiMgr.AddPointOfInterest(pgsPointOfInterest(segmentKey, hp1, attrib | POI_HARPINGPOINT)) != INVALID_ID);
+      VERIFY(poiMgr.AddPointOfInterest(pgsPointOfInterest(segmentKey, hp2, attrib | POI_HARPINGPOINT)) != INVALID_ID);
    }
 
    Uint32 mgrMode = (mode == POIFIND_AND ? POIMGR_AND : POIMGR_OR);

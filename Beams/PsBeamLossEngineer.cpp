@@ -50,7 +50,7 @@ const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, co
 {
    Losses* pLosses = nullptr;
 
-   std::map<pgsPointOfInterest,Losses,ComparePoi>::iterator found(m_Losses.find(poi));
+   auto found(m_Losses.find(poi));
    if ( found != m_Losses.end() )
    {
       pLosses = &(found->second);
@@ -84,7 +84,7 @@ void CDesignLosses::SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& 
    l.m_Config = config;
    l.m_Details = losses;
 
-   std::pair<std::map<pgsPointOfInterest,Losses,ComparePoi>::iterator,bool> result = m_Losses.insert( std::make_pair(poi,l) );
+   auto result = m_Losses.insert( std::make_pair(poi,l) );
    ATLASSERT( result.second == true );
 }
 
@@ -140,6 +140,7 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
       LOSSDETAILS details = m_Engineer.ComputeLossesForDesign((CPsLossEngineer::BeamType)m_BeamType,poi,config);
       m_DesignLosses.SaveToCache(poi,config,details);
       pLossDetails = m_DesignLosses.GetFromCache(poi,config);
+      ATLASSERT(pLossDetails != nullptr);
    }
 
    return pLossDetails;

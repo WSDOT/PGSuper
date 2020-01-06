@@ -44,7 +44,7 @@ class CDesignLosses
       LOSSDETAILS m_Details;
    };
 
-   std::map<pgsPointOfInterest,Losses,ComparePoi> m_Losses;
+   std::map<pgsPointOfInterest,Losses> m_Losses;
    
 public:
    CDesignLosses();

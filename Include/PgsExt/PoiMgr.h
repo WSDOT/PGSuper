@@ -65,11 +65,8 @@ public:
    PoiIDType AddPointOfInterest(const pgsPointOfInterest& poi);
 
    //------------------------------------------------------------------------
-   // Removes a point of interest. If bConsiderAttributes is true, removes the poi
-   // that exactly matches the specified poi, otherwise it removes the poi if just the
-   // locations match. The poi IDs are not considered when matching poi. Returns true
-   // if successful
-   bool RemovePointOfInterest(const pgsPointOfInterest& poi,bool bConsiderAttributes=true);
+   // Removes a point of interest
+   bool RemovePointOfInterest(const pgsPointOfInterest& poi);
 
    // Removes a point of interest that has the specified ID. Returns true if successful.
    bool RemovePointOfInterest(PoiIDType poiID);
@@ -132,21 +129,6 @@ public:
    bool ReplacePointOfInterest(PoiIDType ID,const pgsPointOfInterest& poi);
 
    //------------------------------------------------------------------------
-   // Sets the tolerance for eliminating duplicate points of interest.  If two
-   // points of interest, on the same segment, are with this tolerance of each
-   // other,  they are considered to be at the same point.  These POI's are merged,
-   // maintaining the attributes of both POI. 
-   //
-   // If pgsPointOfInterest::MergePOI is set to false, duplicate points are not merged.
-   //
-   // Changing the tolerance does not effect previously stored points of interest.
-   Float64 SetTolerance(Float64 tol);
-
-   //------------------------------------------------------------------------
-   // Returns the POI tolerance.
-   Float64 GetTolerance() const;
-
-   //------------------------------------------------------------------------
    // Returns the number of points of interest.
    CollectionIndexType GetPointOfInterestCount() const;
 
@@ -158,7 +140,6 @@ private:
    pgsPoiMgr& operator=(const pgsPoiMgr& rOther) = delete;
 
    static PoiIDType ms_NextID;
-   Float64 m_Tolerance;
 
    pgsPointOfInterest m_DefaultPoi;
 

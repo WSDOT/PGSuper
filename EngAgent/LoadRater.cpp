@@ -541,7 +541,7 @@ void pgsLoadRater::GetCriticalSectionZones(const CGirderKey& girderKey,pgsTypes:
          vCSPoi.erase(
             std::remove_if(vCSPoi.begin(), vCSPoi.end(), [&vCS](const pgsPointOfInterest& poi) 
                {
-                  return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.GetPointOfInterest().AtExactSamePlace(poi);}) == vCS.cend();
+                  return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.GetPointOfInterest().AtSamePlace(poi);}) == vCS.cend();
                }),
             vCSPoi.end());
       }
@@ -583,7 +583,7 @@ ZoneIndexType pgsLoadRater::GetCriticalSectionZone(const pgsPointOfInterest& poi
       const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
       const CSegmentKey& csSegmentKey = csPoi.GetSegmentKey();
 
-      if (csSegmentKey == poi.GetSegmentKey() && ::InRange(csDetails.Start, Xpoi, csDetails.End, pgsPointOfInterest::GetTolerance()))
+      if (csSegmentKey == poi.GetSegmentKey() && ::InRange(csDetails.Start, Xpoi, csDetails.End))
       {
          // poi is in the critical section zone
          if (!bIncludeCS && csPoi.AtSamePlace(poi))

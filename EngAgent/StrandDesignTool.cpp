@@ -3292,13 +3292,11 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
       if (IsEqual(poi_loc,left_support_point_loc) )
       {
          // poi is at the location of the left support, no need to re-add
-         ATLASSERT(poi.CanMerge() == false);
          do_add_left = false; 
       }
       else if ( IsEqual(poi_loc,right_support_point_loc) )
       {
          // poi is at the location of the right support, no need to re-add
-         ATLASSERT(poi.CanMerge() == false);
          do_add_right = false; 
       }
       else
@@ -3311,7 +3309,8 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
             // otherwise, clear the support point attribute bit and add the poi back
             sysFlags<PoiAttributeType>::Clear(&attributes,supportAttribute);
             poi.SetReferencedAttributes(attributes);
-            m_PoiMgr.AddPointOfInterest(poi);
+            poi.SetID(INVALID_ID);
+            VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
          }
       }
    }
@@ -3319,23 +3318,21 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
    if (do_add_left)
    {
       pgsPointOfInterest left_support_point(segmentKey,left_support_point_loc,supportAttribute | poiReference);
-      left_support_point.CanMerge(false); // don't ever want this poi to be merged with another poi
-      m_PoiMgr.AddPointOfInterest(left_support_point);
+      VERIFY(m_PoiMgr.AddPointOfInterest(left_support_point) != INVALID_ID);
    }
 
    if (do_add_right)
    {
       pgsPointOfInterest right_support_point(segmentKey,right_support_point_loc,supportAttribute | poiReference);
-      right_support_point.CanMerge(false); // don't ever want this poi to be merged with another poi
-      m_PoiMgr.AddPointOfInterest(right_support_point);
+      VERIFY(m_PoiMgr.AddPointOfInterest(right_support_point) != INVALID_ID);
    }
 
    // add POI at ends of segment
    pgsPointOfInterest poiStart(segmentKey,0.0,poiReference);
-   m_PoiMgr.AddPointOfInterest(poiStart);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiStart) != INVALID_ID);
 
    pgsPointOfInterest poiEnd(segmentKey,m_SegmentLength,poiReference);
-   m_PoiMgr.AddPointOfInterest(poiEnd);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // add 10th point attributes
 
@@ -3362,8 +3359,7 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
       
       pgsPointOfInterest poi(segmentKey,dist,attribute);
       poi.MakeTenthPoint(poiReference,tenthPoint);
-      poi.CanMerge(false); // these POI need to be in their exact location so don't merge with nearby POI
-      m_PoiMgr.AddPointOfInterest( poi );
+      VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
    }
    
 
@@ -3428,7 +3424,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
          Float64 loc = poi.GetDistFromStart();
          if (0.0 < loc && loc < m_SegmentLength) // locations at ends of girder are of no interest to design
          {
-            m_PoiMgr.AddPointOfInterest(poi);
+            poi.SetID(INVALID_ID);
+            VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
          }
       }
 
@@ -3446,7 +3443,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       if (xfer_length < start_conn)
       {
          pgsPointOfInterest pxfer(m_SegmentKey,start_conn,attrib_xfer);
-         m_PoiMgr.AddPointOfInterest(pxfer);
+         VERIFY(m_PoiMgr.AddPointOfInterest(pxfer) != INVALID_ID);
       }
 
       Float64 end_conn = pBridge->GetSegmentEndEndDistance(m_SegmentKey);
@@ -3454,7 +3451,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       if (xfer_length < end_conn)
       {
          pgsPointOfInterest pxfer(m_SegmentKey,m_SegmentLength-end_conn,attrib_xfer);
-         m_PoiMgr.AddPointOfInterest(pxfer);
+         VERIFY(m_PoiMgr.AddPointOfInterest(pxfer) != INVALID_ID);
       }
 
    }
@@ -3475,7 +3472,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
             if ( ! ( poi.HasAttribute(POI_DEBOND) || 
                      poi.HasAttribute(POI_PSXFER) ) )
             {
-               m_PoiMgr.AddPointOfInterest(poi);
+               poi.SetID(INVALID_ID);
+               VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
             }
          }
       }
@@ -3546,9 +3544,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
 
 void pgsStrandDesignTool::AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn)
 {
-   m_PoiMgr.AddPointOfInterest(rpoi);
+   VERIFY(m_PoiMgr.AddPointOfInterest(rpoi) != INVALID_ID);
 }
-
 
 void pgsStrandDesignTool::ComputeMidZoneBoundaries()
 {

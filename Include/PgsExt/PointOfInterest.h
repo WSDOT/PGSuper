@@ -99,15 +99,17 @@ typedef Uint64 PoiAttributeType;
 //#define POI_NONREF8                0x4000000000000000
 //#define POI_NONREF7                0x2000000000000000
 
-// Special Points
+// Duct boundary POI
 #define POI_DUCT_START               0x1000000000000000 // Start of a duct/tendon
 #define POI_DUCT_END                 0x0800000000000000 // End of a duct/tendon
 #define POI_DUCT_BOUNDARY            POI_DUCT_START | POI_DUCT_END
 
+// Casting region boundary POI
 #define POI_CASTING_BOUNDARY_START   0x0400000000000000 // Start of a deck casting region
 #define POI_CASTING_BOUNDARY_END     0x0200000000000000 // End of a deck casting region
 #define POI_CASTING_BOUNDARY POI_CASTING_BOUNDARY_START | POI_CASTING_BOUNDARY_END
 
+// Special points of interest
 #define POI_START_FACE               0x0100000000000000 // Start face of a segment (left end)
 #define POI_END_FACE                 0x0080000000000000 // End face of a segment (right end)
 #define POI_STIRRUP_ZONE             0x0040000000000000 // Stirrup Zone Boundary
@@ -127,8 +129,8 @@ typedef Uint64 PoiAttributeType;
 #define POI_FACEOFSUPPORT            0x0000010000000000 // POI at face of support
 #define POI_CLOSURE                  0x0000008000000000 // POI at center of closure joint
 
-#define POI_SPECIAL POI_STIRRUP_ZONE | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD | \
-                    POI_PSXFER | POI_PSDEV | POI_DEBOND | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | \
+#define POI_SPECIAL POI_START_FACE | POI_END_FACE | POI_STIRRUP_ZONE | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD | \
+                    POI_DIAPHRAGM | POI_PSXFER | POI_PSDEV | POI_DEBOND | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | \
                     POI_H | POI_15H | POI_FACEOFSUPPORT | POI_CLOSURE
 
 // Section Changes
@@ -193,11 +195,9 @@ public:
 
    pgsPointOfInterest& operator = (const pgsPointOfInterest& rOther);
 
-   // Returns true if this poi is less than rOther, based on location
+   // Operators defined relative positions between points of interest
    bool operator<(const pgsPointOfInterest& rOther) const;
    bool operator<=(const pgsPointOfInterest& rOther) const;
-
-   // Returns true if this poi is less than rOther, based on location
    bool operator==(const pgsPointOfInterest& rOther) const;
    bool operator!=(const pgsPointOfInterest& rOther) const;
 
@@ -243,6 +243,10 @@ public:
    {
       return m_Xpoi;
    }
+
+   // Returns true if at the same place as other.
+   // Attributes such as left and right faces are not considered
+   bool AtSamePlace(const pgsPointOfInterest& other) const;
 
    // Set/Get the location of this poi in Segment Path Coordinates
    void SetSegmentPathCoordinate(Float64 Xsp);
@@ -310,20 +314,12 @@ public:
    // returns true if attrib is one of the reference attribute types
    static bool IsReferenceAttribute(PoiAttributeType attrib);
 
-   // prevents POI merging
-   bool CanMerge() const;
-   void CanMerge(bool bCanMerge);
-
    // Merge attributes for this POI with another's. Returns true if successful
    // If unsuccessful, the attributes of this POI are not changed
    bool MergeAttributes(const pgsPointOfInterest& rOther);
 
    // This POI is a tenth point on this segment
    void MakeTenthPoint(PoiAttributeType poiReference,Uint16 tenthPoint);
-
-   // Tolerance for comparing distance from start.
-   static void SetTolerance(Float64 tol);
-   static Float64 GetTolerance();
 
    // Returns true if this poi is at a harping point
    bool IsHarpingPoint() const;
@@ -350,12 +346,6 @@ public:
    // Returns true if this poi has attributes
    bool HasAttributes() const;
 
-   // At same location within tolerance
-   bool AtSamePlace(const pgsPointOfInterest& other) const;
-
-   // At same location withing exacting tolerance
-   bool AtExactSamePlace(const pgsPointOfInterest& other) const;
-
    // Returns a string of attribute codes.
    std::_tstring GetAttributes(PoiAttributeType reference,bool bIncludeMarkup) const;
 
@@ -374,7 +364,7 @@ protected:
    CSegmentKey m_SegmentKey;
    Float64 m_Xpoi; // distance from left end of segment (left face of the actual bridge member), AKA Segment Coorodinate
    
-#if defined _DEBUG 
+#if defined _DEBUG || defined _BETA_VERSION
    // NOTE: this is a weird place to put this, but it makes it easy to see the attributes string in the debugger
    std::_tstring m_strAttributes;
    void UpdateAttributeString();
@@ -399,40 +389,19 @@ protected:
    bool m_bHasDeckCastingRegion; // tracks if the deck casting region has been set
    IndexType m_DeckCastingRegionIdx;  // deck casting region this POI is located in
 
-   bool m_bCanMerge; // if true, this poi can be merged with other poi
-
    // returns the index of the reference attribute
    static IndexType GetIndex(PoiAttributeType refAttribute);
 
    std::array<PoiAttributeType,6> m_RefAttributes; // referenced attributes (10th points)
    PoiAttributeType m_Attributes; // non-referenced attributes
 
-   static Float64 ms_Tol; // tolerance for same poi location
-
    friend pgsPoiMgr; // This guy sets the POI id.
 
 public:
-#if defined _DEBUG
+#if defined _DEBUG || defined _BETA_VERSION
    // Returns true if the object is in a valid state, otherwise returns false.
    virtual bool AssertValid() const;
 #endif
-};
-
-// Used to compare POI without using the < operator
-class ComparePoi
-{
-public:
-   bool operator()(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2) const
-   {
-      if ( poi1.AtSamePlace(poi2) )
-      {
-         return poi1.GetID() < poi2.GetID();
-      }
-      else
-      {
-         return poi1 < poi2;
-      }
-   }
 };
 
 // We use POIs more than anything else and they are really just keys. We don't

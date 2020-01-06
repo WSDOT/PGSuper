@@ -387,20 +387,20 @@ void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE  );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
    if ( !IsPrismatic(segmentKey) )
    {
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,1*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,2*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,3*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,4*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,5*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,6*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,7*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,8*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
-      pPoiMgr->AddPointOfInterest( pgsPointOfInterest(segmentKey,9*gdrLength/10, POI_SECTCHANGE_TRANSITION ) );
+      VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey,1*gdrLength/10,POI_SECTCHANGE_TRANSITION)) != INVALID_ID);
+      VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey,2*gdrLength/10,POI_SECTCHANGE_TRANSITION)) != INVALID_ID);
+      VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey,3*gdrLength/10,POI_SECTCHANGE_TRANSITION)) != INVALID_ID);
+      VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey,4*gdrLength/10,POI_SECTCHANGE_TRANSITION)) != INVALID_ID);
+      VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey,5*gdrLength/10,POI_SECTCHANGE_TRANSITION)) != INVALID_ID);
+      VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey,6*gdrLength/10,POI_SECTCHANGE_TRANSITION)) != INVALID_ID);
+      VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey,7*gdrLength/10,POI_SECTCHANGE_TRANSITION)) != INVALID_ID);
+      VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey,8*gdrLength/10,POI_SECTCHANGE_TRANSITION)) != INVALID_ID);
+      VERIFY(pPoiMgr->AddPointOfInterest(pgsPointOfInterest(segmentKey,9*gdrLength/10,POI_SECTCHANGE_TRANSITION)) != INVALID_ID);
    }
 }
 

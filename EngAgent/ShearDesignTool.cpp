@@ -603,11 +603,11 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
          // Strip CSS's of their attribute
          pgsPointOfInterest newpoi = poi;
          newpoi.RemoveAttributes(POI_CRITSECTSHEAR1);
-         m_PoiMgr.AddPointOfInterest(newpoi);
+         VERIFY(m_PoiMgr.AddPointOfInterest(newpoi) != INVALID_ID);
       }
       else
       {
-         m_PoiMgr.AddPointOfInterest(poi);
+         VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
       }
    }
 
@@ -620,7 +620,7 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
    ATLASSERT(vCSPoi.size() == 2);
    for (const pgsPointOfInterest& csPoi : vCSPoi)
    {
-      m_PoiMgr.AddPointOfInterest(csPoi);
+      VERIFY(m_PoiMgr.AddPointOfInterest(csPoi) != INVALID_ID);
    }
 
    // Create some additional pois at 2H, 3H, 4H at each end of girder
@@ -638,18 +638,18 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
    hgRight = pGdr->GetHeight(poiRightEnd);
 
    pgsPointOfInterest poiL2H(m_SegmentKey, m_LeftFosLocation+2.0*hgLeft);
-   m_PoiMgr.AddPointOfInterest(poiL2H);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiL2H) != INVALID_ID);
    pgsPointOfInterest poiL3H(m_SegmentKey, m_LeftFosLocation+3.0*hgLeft);
-   m_PoiMgr.AddPointOfInterest(poiL3H);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiL3H) != INVALID_ID);
    pgsPointOfInterest poiL4H(m_SegmentKey, m_LeftFosLocation+4.0*hgLeft);
-   m_PoiMgr.AddPointOfInterest(poiL4H);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiL4H) != INVALID_ID);
 
    pgsPointOfInterest poiR2H(m_SegmentKey, m_RightFosLocation-2.0*hgRight);
-   m_PoiMgr.AddPointOfInterest(poiR2H);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiR2H) != INVALID_ID);
    pgsPointOfInterest poiR3H(m_SegmentKey, m_RightFosLocation-3.0*hgRight);
-   m_PoiMgr.AddPointOfInterest(poiR3H);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiR3H) != INVALID_ID);
    pgsPointOfInterest poiR4H(m_SegmentKey, m_RightFosLocation-4.0*hgRight);
-   m_PoiMgr.AddPointOfInterest(poiR4H);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiR4H) != INVALID_ID);
 
    // Add pois at the confinement and splitting locations if needed
    if (m_bDoDesignForConfinement)
@@ -657,13 +657,13 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
       if( m_StartConnectionLength < m_StartConfinementZl )
       {
          pgsPointOfInterest poiStart( m_SegmentKey, m_StartConfinementZl);
-         m_PoiMgr.AddPointOfInterest(poiStart);
+         VERIFY(m_PoiMgr.AddPointOfInterest(poiStart) != INVALID_ID);
       }
 
       if ( m_EndConnectionLength < m_EndConfinementZl)
       {
          pgsPointOfInterest poiEnd(m_SegmentKey, m_SegmentLength-m_EndConfinementZl);
-         m_PoiMgr.AddPointOfInterest(poiEnd);
+         VERIFY(m_PoiMgr.AddPointOfInterest(poiEnd) != INVALID_ID);
       }
    }
 
@@ -672,13 +672,13 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
       if ( m_StartConnectionLength < m_StartSplittingZl )
       {
          pgsPointOfInterest poiStart(m_SegmentKey, m_StartSplittingZl);
-         m_PoiMgr.AddPointOfInterest(poiStart);
+         VERIFY(m_PoiMgr.AddPointOfInterest(poiStart) != INVALID_ID);
       }
 
       if ( m_EndConnectionLength < m_EndSplittingZl )
       {
          pgsPointOfInterest poiEnd(m_SegmentKey, m_SegmentLength-m_EndSplittingZl);
-         m_PoiMgr.AddPointOfInterest(poiEnd);
+         VERIFY(m_PoiMgr.AddPointOfInterest(poiEnd) != INVALID_ID);
       }
    }
 
@@ -687,13 +687,13 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
    if (m_StartConnectionLength==0.0 && m_LeftFosLocation==0.0)
    {
       pgsPointOfInterest poiend(m_SegmentKey, 0.0);
-      m_PoiMgr.AddPointOfInterest(poiend);
+      VERIFY(m_PoiMgr.AddPointOfInterest(poiend) != INVALID_ID);
    }
 
    if (m_EndConnectionLength==0.0 && m_RightFosLocation==m_SegmentLength)
    {
       pgsPointOfInterest poiend(m_SegmentKey, m_SegmentLength);
-      m_PoiMgr.AddPointOfInterest(poiend);
+      VERIFY(m_PoiMgr.AddPointOfInterest(poiend) != INVALID_ID);
    }
 
    // Update our Vector to allow ordered access to design pois

@@ -36,7 +36,7 @@
 
 #include <Plugins\CLSID.h>
 
-typedef std::map<pgsPointOfInterest,LOSSDETAILS/*,ComparePoi*/> SectionLossContainer;
+typedef std::map<pgsPointOfInterest,LOSSDETAILS> SectionLossContainer;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimeStepLossEngineer

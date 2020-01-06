@@ -3529,14 +3529,14 @@ ZoneIndexType CEngAgentImp::GetCriticalSectionZoneIndex(pgsTypes::LimitState lim
       const auto& csDetails(*iter);
       if ( csDetails.bAtFaceOfSupport )
       {
-         if ( csDetails.poiFaceOfSupport.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End,pgsPointOfInterest::GetTolerance()) )
+         if ( csDetails.poiFaceOfSupport.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End) )
          {
             return (ZoneIndexType)std::distance(std::begin(vCSDetails), iter);
          }
       }
       else 
       {
-         if ( csDetails.pCriticalSection->Poi.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End,pgsPointOfInterest::GetTolerance()) )
+         if ( csDetails.pCriticalSection->Poi.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End) )
          {
             return (ZoneIndexType)std::distance(std::begin(vCSDetails), iter);
          }

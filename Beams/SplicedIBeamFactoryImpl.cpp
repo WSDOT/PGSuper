@@ -295,8 +295,8 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    pgsPointOfInterest poiStart(segmentKey,0.00,POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,segment_length,POI_SECTCHANGE_LEFTFACE );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
 
    //
@@ -328,10 +328,10 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       }
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
-      pPoiMgr->AddPointOfInterest( poiStart );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
 
       pgsPointOfInterest poiEnd( segmentKey, segment_length-xRight, POI_SECTCHANGE_TRANSITION);
-      pPoiMgr->AddPointOfInterest( poiEnd );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
    }
    else if ( variationType == pgsTypes::svtDoubleLinear || variationType == pgsTypes::svtDoubleParabolic )
    {
@@ -351,20 +351,20 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       }
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
-      pPoiMgr->AddPointOfInterest( poiStart );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
 
       xLeft += pSegment->GetVariationLength(pgsTypes::sztLeftTapered);
       poiStart.SetDistFromStart(xLeft); // causes the attributes to be reset
       poiStart.SetNonReferencedAttributes(POI_SECTCHANGE_TRANSITION);
-      pPoiMgr->AddPointOfInterest( poiStart );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
 
       pgsPointOfInterest poiEnd( segmentKey, segment_length-xRight, POI_SECTCHANGE_TRANSITION );
-      pPoiMgr->AddPointOfInterest( poiEnd );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
       xRight += pSegment->GetVariationLength(pgsTypes::sztRightTapered);
       poiEnd.SetDistFromStart(segment_length-xRight); // causes the attributes to be reset
       poiEnd.SetNonReferencedAttributes(POI_SECTCHANGE_TRANSITION);
-      pPoiMgr->AddPointOfInterest( poiEnd );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
    }
    else
    {

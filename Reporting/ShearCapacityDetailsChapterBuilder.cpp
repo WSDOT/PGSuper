@@ -779,8 +779,6 @@ void write_fpc_table(IBroker* pBroker,
 
       //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-      GET_IFACE2(pBroker,IBridge,pBridge);
-      
       RowIndexType row = table->GetNumberOfHeaderRows();
 
       GET_IFACE2(pBroker,IShearCapacity,pShearCap);

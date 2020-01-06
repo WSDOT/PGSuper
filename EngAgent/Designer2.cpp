@@ -1052,6 +1052,9 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
          pSegmentDesignArtifact->SetOutcome(outcome);
       }
    }
+   
+   GET_IFACE(ILosses, pLosses);
+   pLosses->ClearDesignLosses();
 
    return artifact;
 }
@@ -3274,7 +3277,7 @@ ZoneIndexType pgsDesigner2::GetCriticalSectionZone(const pgsPointOfInterest& poi
       const pgsPointOfInterest& csPoi = csDetails.GetPointOfInterest();
       const CSegmentKey& csSegmentKey = csPoi.GetSegmentKey();
 
-      if ( csSegmentKey == poi.GetSegmentKey() && ::InRange(csDetails.Start,Xpoi,csDetails.End,pgsPointOfInterest::GetTolerance()) )
+      if ( csSegmentKey == poi.GetSegmentKey() && ::InRange(csDetails.Start,Xpoi,csDetails.End) )
       {
          // poi is in the critical section zone
          if ( !bIncludeCS && csPoi.AtSamePlace(poi) )
@@ -3312,7 +3315,7 @@ ZoneIndexType pgsDesigner2::GetSupportZoneIndex(const pgsPointOfInterest& poi) c
    for ( ; iter != end; iter++ )
    {
       const SUPPORTZONE& supportZone = *iter;
-      if ( ::InRange(supportZone.Start,x,supportZone.End,pgsPointOfInterest::GetTolerance()) )
+      if ( ::InRange(supportZone.Start,x,supportZone.End) )
       {
          return (ZoneIndexType)std::distance(m_SupportZones.cbegin(),iter);
       }
@@ -4489,7 +4492,7 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
          vCSPoi.erase(
             std::remove_if(vCSPoi.begin(), vCSPoi.end(), [&vCS](const pgsPointOfInterest& poi)
          {
-            return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.GetPointOfInterest().AtExactSamePlace(poi);}) == vCS.cend();
+            return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.GetPointOfInterest().AtSamePlace(poi);}) == vCS.cend();
          }),
             vCSPoi.end());
       }
@@ -4533,7 +4536,7 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
          vCSPoi.erase(
             std::remove_if(vCSPoi.begin(), vCSPoi.end(), [&vCS](auto& poi)
          {
-            return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.GetPointOfInterest().AtExactSamePlace(poi);}) == vCS.cend();
+            return std::find_if(vCS.begin(), vCS.end(), [&poi](const auto& csDetails) {return csDetails.GetPointOfInterest().AtSamePlace(poi);}) == vCS.cend();
          }),
             vCSPoi.end());
       }
@@ -5562,48 +5565,40 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
 
          GET_IFACE(IPointOfInterest, pPoi);
 
-         Float64 C = Float64_Max;
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
+         ATLASSERT(vPoi.size() == 2);
+
+         Float64 CleftStart, CrightStart;
+         pBridge->GetBottomFlangeClearance(vPoi.front(),&CleftStart,&CrightStart);
+
+         Float64 CleftEnd, CrightEnd;
+         pBridge->GetBottomFlangeClearance(vPoi.back(),&CleftEnd,&CrightEnd);
+
+         Float64 Cleft  = Min(CleftStart, CleftEnd);
+         Float64 Cright = Min(CrightStart,CrightEnd);
+
+         Float64 CthisSegment = 0;
+         if ( 0 < Cleft && 0 < Cright )
          {
-            CSegmentKey segmentKey(girderKey,segIdx);
-
-            PoiList vPoi;
-            pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
-            ATLASSERT(vPoi.size() == 2);
-
-            Float64 CleftStart, CrightStart;
-            pBridge->GetBottomFlangeClearance(vPoi.front(),&CleftStart,&CrightStart);
-
-            Float64 CleftEnd, CrightEnd;
-            pBridge->GetBottomFlangeClearance(vPoi.back(),&CleftEnd,&CrightEnd);
-
-            Float64 Cleft  = Min(CleftStart, CleftEnd);
-            Float64 Cright = Min(CrightStart,CrightEnd);
-
-            Float64 CthisSegment = 0;
-            if ( 0 < Cleft && 0 < Cright )
-            {
-               CthisSegment = Min(Cleft,Cright);
-            }
-            else if ( Cleft < 0 && 0 < Cright)
-            {
-               CthisSegment = Cright;
-            }
-            else if (0 < Cleft && Cright < 0 )
-            {
-               CthisSegment = Cleft;
-            }
-            else 
-            {
-               // Cleft and Cright < 0... this is a single girder bridges
-               artifact.SetBottomFlangeClearanceApplicability(false); // not applicable
-            }
-            C = Min(C,CthisSegment);
-         } // next segment
+            CthisSegment = Min(Cleft,Cright);
+         }
+         else if ( Cleft < 0 && 0 < Cright)
+         {
+            CthisSegment = Cright;
+         }
+         else if (0 < Cleft && Cright < 0 )
+         {
+            CthisSegment = Cleft;
+         }
+         else 
+         {
+            // Cleft and Cright < 0... this is a single girder bridges
+            artifact.SetBottomFlangeClearanceApplicability(false); // not applicable
+         }
 
          Float64 Cmin = pSpecEntry->GetMinBottomFlangeClearance();
-         artifact.SetBottomFlangeClearanceParameters(C,Cmin);
+         artifact.SetBottomFlangeClearanceParameters(CthisSegment,Cmin);
       }
       else
       {

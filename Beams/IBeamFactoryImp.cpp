@@ -313,8 +313,8 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE  );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // end block transition points
    if (0 < (ebLength + ebTransition))
@@ -323,20 +323,16 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
       {
          // there is an abrupt section change
          pgsPointOfInterest poiStartEndBlock1(segmentKey, ebLength, POI_SECTCHANGE_LEFTFACE);
-         poiStartEndBlock1.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock1) != INVALID_ID);
 
          pgsPointOfInterest poiStartEndBlock2(segmentKey, ebLength, POI_SECTCHANGE_RIGHTFACE);
-         poiStartEndBlock2.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock2) != INVALID_ID);
 
          pgsPointOfInterest poiEndEndBlock1(segmentKey, gdrLength - ebLength, POI_SECTCHANGE_LEFTFACE);
-         poiEndEndBlock1.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock1) != INVALID_ID);
 
          pgsPointOfInterest poiEndEndBlock2(segmentKey, gdrLength - ebLength, POI_SECTCHANGE_RIGHTFACE);
-         poiEndEndBlock2.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock2) != INVALID_ID);
       }
       else
       {
@@ -346,10 +342,10 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
          pgsPointOfInterest poiEndEndBlock2(segmentKey, gdrLength - ebLength - ebTransition, POI_SECTCHANGE_TRANSITION);
          pgsPointOfInterest poiEndEndBlock1(segmentKey, gdrLength - ebLength, POI_SECTCHANGE_TRANSITION);
 
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock1) != INVALID_ID);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock2) != INVALID_ID);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock2) != INVALID_ID);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock1) != INVALID_ID);
       }
    }
 }

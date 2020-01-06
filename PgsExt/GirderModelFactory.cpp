@@ -105,7 +105,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE,&vPoi);
    ATLASSERT(vPoi.size() == 1);
-   if ( xsPOI.empty() || !vPoi.front().get().AtExactSamePlace(xsPOI.front()) ) // don't add duplicates
+   if ( xsPOI.empty() || vPoi.front().get() != xsPOI.front() ) // don't add duplicates
    {
       xsPOI.insert(xsPOI.begin(),vPoi.front());
    }
@@ -113,7 +113,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    vPoi.clear();
    pPoi->GetPointsOfInterest(segmentKey, POI_END_FACE,&vPoi);
    ATLASSERT(vPoi.size() == 1);
-   if ( !vPoi.front().get().AtExactSamePlace(xsPOI.back()) ) // don't add duplicates
+   if ( vPoi.front().get() != xsPOI.back() ) // don't add duplicates
    {
       xsPOI.push_back(vPoi.front());
    }

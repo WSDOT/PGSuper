@@ -395,22 +395,20 @@ void LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey,const CPr
       {
          // there is an abrupt section change
          pgsPointOfInterest poiStartEndBlock1(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart], POI_SECTCHANGE_LEFTFACE);
-         poiStartEndBlock1.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock1) != INVALID_ID);
 
          pgsPointOfInterest poiStartEndBlock2(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart], POI_SECTCHANGE_RIGHTFACE);
-         poiStartEndBlock2.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock2) != INVALID_ID);
       }
       else
       {
          // there is a smooth taper over the transition length
          pgsPointOfInterest poiStartEndBlock1(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart], POI_SECTCHANGE_TRANSITION);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock1) != INVALID_ID);
 
          // end of end block transition (end block is the width of the web)
          pgsPointOfInterest poiStartEndBlock2(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart] + pSegment->EndBlockTransitionLength[pgsTypes::metStart], POI_SECTCHANGE_TRANSITION);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock2) != INVALID_ID);
       }
    }
 
@@ -420,12 +418,10 @@ void LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey,const CPr
       {
          // there is an abrupt section change
          pgsPointOfInterest poiEndEndBlock2(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_LEFTFACE);
-         poiEndEndBlock2.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock2) != INVALID_ID);
 
          pgsPointOfInterest poiEndEndBlock1(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_RIGHTFACE);
-         poiEndEndBlock1.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock1) != INVALID_ID);
       }
       else
       {
@@ -433,11 +429,11 @@ void LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey,const CPr
 
          // end of end block transition (end block is the width of the web)
          pgsPointOfInterest poiEndEndBlock2(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_TRANSITION);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock2) != INVALID_ID);
 
          // start of end block transition (wide end)
          pgsPointOfInterest poiEndEndBlock1(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd], POI_SECTCHANGE_TRANSITION);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock1) != INVALID_ID);
       }
    }
 }

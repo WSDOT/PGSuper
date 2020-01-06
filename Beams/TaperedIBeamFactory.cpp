@@ -368,12 +368,12 @@ void CTaperedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       if ( x < start_length || gdrLength-end_length < x)
       {
          pgsPointOfInterest poi(segmentKey,x,attrib);
-         pPoiMgr->AddPointOfInterest( poi );
+         VERIFY(pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
       }
       else
       {
          pgsPointOfInterest poi(segmentKey,x,attrib);
-         pPoiMgr->AddPointOfInterest(poi);
+         VERIFY(pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
       }
    }
 }
