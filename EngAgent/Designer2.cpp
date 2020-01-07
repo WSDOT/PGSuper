@@ -3653,15 +3653,12 @@ void pgsDesigner2::ComputeHorizAvs(const pgsPointOfInterest& poi,bool* pIsRoughe
 
 Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi) const
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IMaterials,pMaterial);
-   GET_IFACE(IIntervals,pIntervals);
-
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IPointOfInterest, pPoi);
    IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
 
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
    // permanent compressive force between slab and girder top
@@ -3680,6 +3677,9 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi) cons
    {
       return 0;
    }
+
+   GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IMaterials, pMaterial);
 
    // slab load
    Float64 wslab = 0; // weight of slab on shear interface
