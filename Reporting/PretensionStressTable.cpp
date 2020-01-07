@@ -215,22 +215,23 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
             {
                Float64 Fp = pForce->GetPrestressForce(poi, pgsTypes::Permanent, intervalIdx, intervalTime);
                Float64 Ft = pForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, intervalTime);
-               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");
+               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << _T(" ");
+                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << rptNewLine;
                   (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                }
                else
                {
                   (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                }
+
                if (0 < Nt)
                {
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << _T(" ");
+                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << rptNewLine;
                   if (bIsAsymmetric)
                   {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << _T(" ");
+                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << rptNewLine;
                      (*p_table)(row, col) << Sub2(_T("e"), _T("ty")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
                   }
                   else
@@ -249,22 +250,23 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI, bIncludeElasticEffects);
                Float64 Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceI, bIncludeElasticEffects);
                (*p_table)(row, col) << _T("Service I") << rptNewLine;
-               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");
+               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << _T(" ");
+                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << rptNewLine;
                   (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                }
                else
                {
                   (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                }
+
                if (0 < Nt)
                {
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << _T(" ");
+                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << rptNewLine;
                   if (bIsAsymmetric)
                   {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << _T(" ");
+                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << rptNewLine;
                      (*p_table)(row, col) << Sub2(_T("e"), _T("ty")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
                   }
                   else
@@ -283,10 +285,10 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII, bIncludeElasticEffects);
                Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceIII, bIncludeElasticEffects);
                (*p_table)(row, col) << _T("Service III") << rptNewLine;
-               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");
+               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << _T(" ");
+                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << rptNewLine;
                   (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                }
                else
@@ -295,10 +297,10 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                }
                if (0 < Nt)
                {
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << _T(" ");
+                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << rptNewLine;
                   if (bIsAsymmetric)
                   {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << _T(" ");
+                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << rptNewLine;
                      (*p_table)(row, col) << Sub2(_T("e"), _T("ty")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
                   }
                   else
@@ -319,22 +321,23 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, ls, bIncludeElasticEffects);
                Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, ls, bIncludeElasticEffects);
                (*p_table)(row, col) << strLS << rptNewLine;
-               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");
+               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << _T(" ");
+                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << rptNewLine;
                   (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                }
                else
                {
                   (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                }
+
                if (0 < Nt)
                {
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << _T(" ");
+                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << rptNewLine;
                   if (bIsAsymmetric)
                   {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << _T(" ");
+                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << rptNewLine;
                      (*p_table)(row, col) << Sub2(_T("e"), _T("ty")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
                   }
                   else
@@ -370,10 +373,10 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                {
                   Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState);
                   (*p_table)(row, col) << GetLimitStateString(limitState) << rptNewLine;
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");
+                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                   if (bIsAsymmetric)
                   {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << _T(" ");
+                     (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << rptNewLine;
                      (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                   }
                   else
@@ -399,10 +402,10 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                      Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState, bIncludeElasticEffects, vehicleIdx);
                      std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
                      (*p_table)(row, col) << GetLimitStateString(limitState) << _T(", ") << name << rptNewLine;
-                     (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << _T(" ");
+                     (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                      if (bIsAsymmetric)
                      {
-                        (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << _T(" ");
+                        (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(epx) << rptNewLine;
                         (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                      }
                      else
