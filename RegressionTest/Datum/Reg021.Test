@@ -5,10 +5,10 @@
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service IA Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service IA Limit State in Interval 17 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 
 
@@ -18,7 +18,7 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 
 

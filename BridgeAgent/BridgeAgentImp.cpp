@@ -12818,6 +12818,17 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
 
 Float64 CBridgeAgentImp::GetDeckEc(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
 {
+   // For PGSuper models, when the deck curing duration is zero to avoid creep after deck casting
+   // the casting, curing, and composite intervals all occur at the same time.
+   // The call to GetTime and the GetDeckEc returns the Ec of the deck concrete at the time it becomes composite
+   // 
+   // If intervalIdx is before the deck is composite, Ec should be zero.
+   IntervalIndexType compositeIntervalIdx = m_IntervalManager.GetCompositeDeckInterval(castingRegionIdx);
+   if (intervalIdx < compositeIntervalIdx)
+   {
+      return 0;
+   }
+
    Float64 time = m_IntervalManager.GetTime(intervalIdx,timeType);
    return m_ConcreteManager.GetDeckEc(castingRegionIdx,time);
 }
@@ -30543,7 +30554,7 @@ IntervalIndexType CBridgeAgentImp::GetNoncompositeUserLoadInterval() const
 
 IntervalIndexType CBridgeAgentImp::GetCompositeUserLoadInterval() const
 {
-   return GetLastCompositeInterval();
+   return GetInstallRailingSystemInterval();
 }
 
 IntervalIndexType CBridgeAgentImp::GetLastNoncompositeInterval() const

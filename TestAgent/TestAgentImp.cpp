@@ -1883,7 +1883,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 55007, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,erectSegmentIntervalIdx,pgsTypes::End),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 55008, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,tsRemovalIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 55009, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,noncompositeIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55009a,"<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent, compositeIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55009a,"<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent, trafficBarrierIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 55010, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,liveLoadIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
 // loss in temporary strands
       resultsFile<<bridgeId<<", "<<pid<<", 55101, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetElasticShortening(poi,pgsTypes::Temporary),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
@@ -1895,7 +1895,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 55107, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,erectSegmentIntervalIdx,pgsTypes::End),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 55108, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,tsRemovalIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 55109, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary, noncompositeIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 55109a,"<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,compositeIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 55109a,"<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary, trafficBarrierIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 55110, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pLosses->GetEffectivePrestressLoss(poi,pgsTypes::Temporary,liveLoadIntervalIdx,pgsTypes::Start),unitMeasure::MPa)) << ", 15, "<<SEGMENT(segmentKey)<<std::endl;
 
       // eff flange width
@@ -1915,7 +1915,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50019, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(min , unitMeasure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
 
       // bridge site 2
-      pLsForces->GetStress(compositeIntervalIdx, pgsTypes::ServiceI, poi, bat, true, pgsTypes::TopGirder, &min,&max);
+      pLsForces->GetStress(trafficBarrierIntervalIdx, pgsTypes::ServiceI, poi, bat, true, pgsTypes::TopGirder, &min,&max);
       resultsFile<<bridgeId<<", "<<pid<<", 50020, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(min , unitMeasure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
 
       // bridge site 3
@@ -1949,8 +1949,8 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 56019, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 56020, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(noncompositeIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 56021, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(noncompositeIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 56022, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(compositeIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile<<bridgeId<<", "<<pid<<", 56023, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(compositeIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56022, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(trafficBarrierIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 56023, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(trafficBarrierIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 56024, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(liveLoadIntervalIdx,poi,pgsTypes::TopGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 56025, "<<loc<<", "<< QUITE(::ConvertFromSysUnits(pPrestressStresses->GetStress(liveLoadIntervalIdx,poi,pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/), unitMeasure::MPa)) <<         ", 15, "<<SEGMENT(segmentKey)<<std::endl;
 

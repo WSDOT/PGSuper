@@ -11806,7 +11806,13 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    pgsTypes::SupportedDeckType deckType = m_BridgeDescription.GetDeckDescription()->GetDeckType();
 
-   Float64 deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day),28.0);
+   Float64 deck_diaphragm_curing_duration = 0; // we assume composite deck locks in creep deflections. Girder creep occurs over the curing duration. Set the duration to 0 day to avoid creep deflection
+   if (IsNonstructuralDeck(deckType))
+   {
+      // deck is non-composite or there is no deck so creep can continue
+      deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day), 28.0);
+   }
+
    if ( IsJointSpacing(m_BridgeDescription.GetGirderSpacingType()) && m_BridgeDescription.HasStructuralLongitudinalJoints() )
    {
       // No deck
