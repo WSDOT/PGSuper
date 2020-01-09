@@ -2061,11 +2061,16 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
    // force that includes CR, SH, and RE.
    IntervalIndexType pretensionIntervalIdx = (bTimeStepAnalysis ? releaseIntervalIdx : task.intervalIdx);
 
-   bool bCheckTemporaryStresses = pAllowable->CheckTemporaryStresses();
-   if ( task.intervalIdx != tsRemovalIntervalIdx && task.intervalIdx != castDeckIntervalIdx )
+   GET_IFACE(IDocumentType, pDocType);
+   bool bCheckTemporaryStresses = false;
+   if (pDocType->IsPGSuperDocument())
    {
-      // if this is not one of the temporary condition intervals, don't check temporary stresses
-      bCheckTemporaryStresses = false;
+      bCheckTemporaryStresses = pAllowable->CheckTemporaryStresses();
+      if (task.intervalIdx != tsRemovalIntervalIdx && task.intervalIdx != castDeckIntervalIdx)
+      {
+         // if this is not one of the temporary condition intervals, don't check temporary stresses
+         bCheckTemporaryStresses = false;
+      }
    }
 
    DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
