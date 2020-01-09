@@ -7213,8 +7213,8 @@ void CGirderModelManager::BuildLBAM(GirderIndexType gdrLineIdx,bool bContinuousM
 {
    try
    {
-      pModel->put_ForceEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::Kip));
-      pModel->put_MomentEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::KipFeet));
+      //pModel->put_ForceEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::Kip));
+      //pModel->put_MomentEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::KipFeet));
 
       // prepare load modifiers
       lrfdLoadModifier load_modifier;
