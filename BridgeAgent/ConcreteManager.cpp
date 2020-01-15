@@ -741,6 +741,10 @@ void CConcreteManager::ValidateLongitudinalJointConcrete() const
       //vsDeck = ::RoundOff(vsJoint, ::ConvertToSysUnits(0.5, unitMeasure::Millimeter));
 
       //m_pLongitudinalJointConcrete->SetVSRatio(vsJoint);
+      
+      // Assume a 9" joint that is 6" thick
+      // V/S = A*l/P*l = A/P A = 9*6, P = 9+9, V/S = 3
+      m_pLongitudinalJointConcrete->SetVSRatio(::ConvertToSysUnits(3.0, unitMeasure::Inch));
    }
 
    m_bIsLongitudinalJointValidated = true;
