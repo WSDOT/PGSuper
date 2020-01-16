@@ -1854,7 +1854,14 @@ bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,Inte
 
    // round up to nearest 100psi
    fcRequired = CeilOff(fcRequired, m_ConcreteAccuracy );
-   LOG(_T("Round up to nearest 100psi. New Required value is now = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI"));;
+   LOG(_T("Round up to nearest 100psi. New Required value is now = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI"));
+
+   Float64 fc_min = GetMinimumConcreteStrength();
+   if (fcRequired < fc_min)
+   {
+      LOG(_T("Required concrete stress is less than minimum. Setting concrete strength to minimum: ") << ::ConvertFromSysUnits(fc_min, unitMeasure::KSI) << _T(" KSI"));
+      fcRequired = fc_min;
+   }
 
    Float64 fc_max = GetMaximumConcreteStrength();
    if (fc_max < fcRequired)

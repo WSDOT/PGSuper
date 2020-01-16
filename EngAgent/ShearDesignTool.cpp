@@ -596,17 +596,19 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
    m_PoiMgr.RemoveAll();
 
    // Add all Poi's used from the flexure analysis. 
-   for ( const pgsPointOfInterest& poi : vPois)
+   for ( pgsPointOfInterest poi : vPois) // we want to copy the POI because it might be modified
    {
       if (poi.HasAttribute(POI_CRITSECTSHEAR1))
       {
          // Strip CSS's of their attribute
          pgsPointOfInterest newpoi = poi;
+         newpoi.SetID(INVALID_ID);
          newpoi.RemoveAttributes(POI_CRITSECTSHEAR1);
          VERIFY(m_PoiMgr.AddPointOfInterest(newpoi) != INVALID_ID);
       }
       else
       {
+         poi.SetID(INVALID_ID); // ID must be invalid when assigning it to the POI manager
          VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
       }
    }
@@ -618,8 +620,9 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
    std::vector<pgsPointOfInterest> vCSPoi;
    pPoi->GetCriticalSections(pgsTypes::StrengthI, m_SegmentKey, gconfig, &vCSPoi);
    ATLASSERT(vCSPoi.size() == 2);
-   for (const pgsPointOfInterest& csPoi : vCSPoi)
+   for (pgsPointOfInterest csPoi : vCSPoi) // we want to copy the POI because it might be modified
    {
+      csPoi.SetID(INVALID_ID); // ID must be invalid when assigning it to the POI manager
       VERIFY(m_PoiMgr.AddPointOfInterest(csPoi) != INVALID_ID);
    }
 
