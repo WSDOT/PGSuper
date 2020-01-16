@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    10367   0.956  1.048  -0.854 -0.694  0.000 -0.048 -0.742   0.00    0.00    0.00    0.00    0.00 
+ 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    10412   0.956  1.048  -0.854 -0.694  0.000 -0.048 -0.742   0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -75,7 +75,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258     8801   0.677  1.048  -0.854 -0.685  0.000 -0.049 -0.734   0.00    0.00    0.00    0.00    0.00 
+ 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258     8843   0.677  1.048  -0.854 -0.685  0.000 -0.049 -0.734   0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -110,7 +110,6 @@ Tension stress check failed for Service I Limit State in Interval 26 Cast deck r
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
 Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
-Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 3
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 3
 Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons, Remove Temporary Support for Segment 3
 Compression stress check failed for Service I Limit State in Interval 22 Cast Closure Joint, Cast deck regions 1, 3, Install Intermediate Diaphragms for Segment 3

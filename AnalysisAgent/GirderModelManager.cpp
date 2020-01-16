@@ -10629,20 +10629,14 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
 
    CComBSTR bstrLoadGroup(GetLoadGroupName(pgsTypes::pftSecondaryEffects));
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
 
    GET_IFACE(IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(gdrLineIdx, &vGirderKeys);
    for(const auto& girderKey : vGirderKeys)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
-      GirderIDType gdrID = pGirder->GetID();
-
-      const CPTData* pPTData = pGirder->GetPostTensioning();
-      DuctIndexType nDucts = pPTData->GetDuctCount();
+      DuctIndexType nDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
          IntervalIndexType stressTendonInterval = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
@@ -12234,10 +12228,6 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
    GET_IFACE(IGirder,pIGirder);
    WebIndexType nWebs = pIGirder->GetWebCount(girderKey);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CPTData*             pPTData     = pIBridgeDesc->GetPostTensioning(girderKey);
-   const CDuctData*           pDuctData   = pPTData->GetDuct(ductIdx/nWebs);
-
    // NOTE: If something other than Pj - Avg Friction - Avg Anchor Set is used for equivalent tendon forces, 
    // make the corresponding changes in the TimeStepLossEngineer
    IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
@@ -12251,6 +12241,7 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
    Float64 P2 = P1;
 #endif
 
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IPointOfInterest,pPoi);
 
