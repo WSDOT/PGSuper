@@ -10560,6 +10560,8 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
 
    CComBSTR bstrLoadGroup(GetLoadGroupName(pgsTypes::pftSecondaryEffects));
 
+   GET_IFACE(ITendonGeometry,pTendonGeometry);
+   
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
@@ -10571,11 +10573,7 @@ void CGirderModelManager::ApplyPostTensionDeformation(ILBAMModel* pModel,GirderI
 
       CGirderKey girderKey(grpIdx,Min(gdrLineIdx,nGirders-1));
 
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
-      GirderIDType gdrID = pGirder->GetID();
-
-      const CPTData* pPTData = pGirder->GetPostTensioning();
-      DuctIndexType nDucts = pPTData->GetDuctCount();
+      DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
          IntervalIndexType stressTendonInterval = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
