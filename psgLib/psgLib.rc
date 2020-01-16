@@ -88,7 +88,7 @@ BEGIN
             VALUE "FileDescription", "psgLib DLL"
             VALUE "FileVersion", "5.0.0.6"
             VALUE "InternalName", "psgLib"
-            VALUE "LegalCopyright", "Copyright © 1999-2019, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "5.0.0.6"

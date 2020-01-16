@@ -69,7 +69,7 @@ BEGIN
             VALUE "FileDescription", "ReportAgent Module\0"
             VALUE "FileVersion", "5.0.0.6\0"
             VALUE "InternalName", "REPORTAGENT\0"
-            VALUE "LegalCopyright", "Copyright © 1999-2019, Washington State Department of Transportation, All Rights Reserved\0"
+            VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OLESelfRegister", "\0"
             VALUE "OriginalFilename", "REPORTAGENT.DLL\0"
