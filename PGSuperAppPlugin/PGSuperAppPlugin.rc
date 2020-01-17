@@ -3757,7 +3757,7 @@ BEGIN
             VALUE "FileDescription", "PGSuper"
             VALUE "FileVersion", "4.1.5.0"
             VALUE "InternalName", "PGSuper"
-            VALUE "LegalCopyright", "Copyright © 1999-2019, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "4.1.5.0"

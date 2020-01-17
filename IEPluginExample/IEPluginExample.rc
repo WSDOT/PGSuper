@@ -72,7 +72,7 @@ BEGIN
             VALUE "FileDescription", "IEPluginExample Module"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "IEPluginExample"
-            VALUE "LegalCopyright", "Copyright © 1999-2019, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "IEPluginExample.DLL"
             VALUE "ProductName", "IEPluginExample Module"
             VALUE "ProductVersion", "1.0.0.1"
