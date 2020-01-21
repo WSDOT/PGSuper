@@ -13,7 +13,8 @@ This option allows you to select the default method for computing live load dist
 Item | Description
 -----|----------------
 Method | Select the method for computing live load distribution factors. Options are AASHTO LRFD Specifications,  WSDOT Bridge Design Manual, or TxDOT Bridge Design Manual.
-Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All Distribution Factors | When checked the live load distribution factor will be not be taken less than (Number of Lanes)/(Number of Beams).of Beams).
+Ignore skew reduction for moment (LRFD 4.6.2.2.2e) | When checked, the skew reduction for the moment live load distribution factor is ignored.
+Use (Number of Lanes)/(Number of Beams) as the Lower Limit for All Distribution Factors | When checked the live load distribution factor will be not be taken less than (Number of Lanes)/(Number of Beams).
 Maximum Angular Deviation Between Girders | The equations in LRFD 4.6.2.2 may be used to compute distribution factors as long as "Beams are parallel and have approximately the same stiffness". However, no guidance is given as to when girders are not parallel. Enter the maximum allowable angular deviation between girder where you consider girders to be "parallel". 
 Maximum Girder Stiffness Ratio | The equations in LRFD 4.6.2.2 may be used to compute distribution factors as long as "Beams are parallel and have approximately the same stiffness". However, no definition is given for "approximately the same stiffness". Enter the maximum percentage that Ix can vary between girders in a span.
 Location to Measure Girder Spacing For Distribution Factors | Enter the fractional distance, measured from the ends of a span, for the location(s) where girder spacing is to be measured in order to determine the value of S and de for use in the live load distribution factor equations.

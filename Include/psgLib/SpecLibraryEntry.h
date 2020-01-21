@@ -812,6 +812,11 @@ public:
    Int16 GetLiveLoadDistributionMethod() const;
    void SetLiveLoadDistributionMethod(Int16 method);
 
+   // Set/Get a flag indicating if the skew reduction factor for moment LLDF
+   // is to be ignored
+   void IgnoreSkewReductionForMoment(bool bIgnore);
+   bool IgnoreSkewReductionForMoment() const;
+
    // Set/Get decision to impose a lower limit on distribution factors
    // If true, live load distribution factors are never taken less than
    // the number of lanes divided by the number of girders
@@ -1451,6 +1456,7 @@ private:
 
    // Live Load Distribution Factors
    int m_LldfMethod;
+   bool m_bIgnoreSkewReductionForMoment;
 
    // Longitudinal reinforcement shear capacity
    int m_LongReinfShearMethod;

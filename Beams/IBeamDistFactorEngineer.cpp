@@ -190,6 +190,13 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
       (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
 
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLibrary);
+      const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+      if (pSpecEntry->IgnoreSkewReductionForMoment())
+      {
+         (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
+      }
 
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
@@ -485,7 +492,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
    std::vector<IntermedateDiaphragm>::size_type nDiaphragms = diaphragms.size();
 
    bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) ); 
-   bool bSkewMoment = bSkew;
+   bool bSkewMoment = pSpecEntry->IgnoreSkewReductionForMoment() ? false : bSkew;
    bool bSkewShear  = bSkew;
 
    if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )

@@ -152,6 +152,13 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
       (*pPara) << _T("Possion Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PossionRatio << rptNewLine;
    //   (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
    //   (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLibrary);
+      const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+      if (pSpecEntry->IgnoreSkewReductionForMoment())
+      {
+         (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
+      }
 
       if (pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::LeverRule)
       {
@@ -575,10 +582,12 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
    }
    else
    {
-      bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) );
-
-      bool bSkewMoment = bSkew;
-      bool bSkewShear  = bSkew;
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLibrary);
+      const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+      bool bSkew = !(IsZero(plldf->skew1) && IsZero(plldf->skew2));
+      bool bSkewMoment = pSpecEntry->IgnoreSkewReductionForMoment() ? false : bSkew;
+      bool bSkewShear = bSkew;
 
       if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
       {

@@ -187,6 +187,12 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       //////////////////////////////////////////////////////
       // Moments
       //////////////////////////////////////////////////////
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLibrary);
+      if (pSpecEntry->IgnoreSkewReductionForMoment())
+      {
+         (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
+      }
 
       // Distribution factor for exterior girder
       if ( bContinuousAtStart || bIntegralAtStart )
@@ -404,10 +410,12 @@ lrfdLiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(
    plldf->d = pGdr->GetHeight(poi);
    plldf->L = GetEffectiveSpanLength(spanOrPierIdx,gdrIdx,dfType);
 
-   bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) );
-
-   bool bSkewMoment = bSkew;
-   bool bSkewShear  = bSkew;
+   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(ILibrary, pLibrary);
+   const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+   bool bSkew = !(IsZero(plldf->skew1) && IsZero(plldf->skew2));
+   bool bSkewMoment = pSpecEntry->IgnoreSkewReductionForMoment() ? false : bSkew;
+   bool bSkewShear = bSkew;
 
    if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
    {

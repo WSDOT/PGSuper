@@ -202,6 +202,7 @@ void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
 
    // live load distribution
    DDX_CBIndex(pDX, IDC_LLDF, m_Entry.m_LldfMethod);
+   DDX_Check_Bool(pDX, IDC_IGNORE_SKEW_REDUCTION, m_Entry.m_bIgnoreSkewReductionForMoment);
 
    DDX_UnitValueAndTag(pDX, IDC_MAXGIRDERANGLE, IDC_MAXGIRDERANGLE_UNIT, m_Entry.m_MaxAngularDeviationBetweenGirders, pDisplayUnits->Angle);
    DDX_Text(pDX, IDC_GIRDERSTIFFNESSRATIO, m_Entry.m_MinGirderStiffnessRatio);

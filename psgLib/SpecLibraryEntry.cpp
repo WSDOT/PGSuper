@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 73.0 
+#define CURRENT_VERSION 74.0 
 
 /****************************************************************************
 CLASS
@@ -171,6 +171,7 @@ m_ShippingLosses(::ConvertToSysUnits(20,unitMeasure::KSI)),
 m_FinalLosses(0),
 m_ShippingTime(::ConvertToSysUnits(10,unitMeasure::Day)),
 m_LldfMethod(LLDF_LRFD),
+m_bIgnoreSkewReductionForMoment(false),
 m_bUseRigidMethod(false),
 m_BeforeTempStrandRemovalLosses(0),
 m_AfterTempStrandRemovalLosses(0),
@@ -730,6 +731,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit(); // ModulusOfRuptureCoefficient
 
    pSave->Property(_T("BsLldfMethod"), (Int16)m_LldfMethod );  // added LLDF_TXDOT for version 21.0
+   pSave->Property(_T("IgnoreSkewReductionForMoment"), m_bIgnoreSkewReductionForMoment); // added in version 74
    // added in version 29
    pSave->Property(_T("MaxAngularDeviationBetweenGirders"),m_MaxAngularDeviationBetweenGirders);
    pSave->Property(_T("MinGirderStiffnessRatio"),m_MinGirderStiffnessRatio);
@@ -2771,6 +2773,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
       m_LldfMethod = temp;
 
+      if (73 < version)
+      {
+         // added in version 74
+         if (!pLoad->Property(_T("IgnoreSkewReductionForMoment"), &m_bIgnoreSkewReductionForMoment))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
       if ( 28 < version )
       {
          // added in version 29
@@ -4740,6 +4751,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    }
 
    if ( m_LldfMethod != rOther.m_LldfMethod ||
+        m_bIgnoreSkewReductionForMoment != rOther.m_bIgnoreSkewReductionForMoment ||
         m_LimitDistributionFactorsToLanesBeams != rOther.m_LimitDistributionFactorsToLanesBeams ||
         !::IsEqual(m_MaxAngularDeviationBetweenGirders, rOther.m_MaxAngularDeviationBetweenGirders) ||
         !::IsEqual(m_MinGirderStiffnessRatio,           rOther.m_MinGirderStiffnessRatio) ||
@@ -6603,6 +6615,16 @@ void SpecLibraryEntry::SetLiveLoadDistributionMethod(Int16 method)
    m_LldfMethod = method;
 }
 
+void SpecLibraryEntry::IgnoreSkewReductionForMoment(bool bIgnore)
+{
+   m_bIgnoreSkewReductionForMoment = bIgnore;
+}
+
+bool SpecLibraryEntry::IgnoreSkewReductionForMoment() const
+{
+   return m_bIgnoreSkewReductionForMoment;
+}
+
 Int16 SpecLibraryEntry::GetLongReinfShearMethod() const
 {
    // WSDOT method has been recinded
@@ -7577,6 +7599,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_LiveLoadElasticGain      = rOther.m_LiveLoadElasticGain;
 
    m_LldfMethod                 = rOther.m_LldfMethod;
+   m_bIgnoreSkewReductionForMoment = rOther.m_bIgnoreSkewReductionForMoment;
    m_bUseRigidMethod = rOther.m_bUseRigidMethod;
    m_LongReinfShearMethod       = rOther.m_LongReinfShearMethod;
 
