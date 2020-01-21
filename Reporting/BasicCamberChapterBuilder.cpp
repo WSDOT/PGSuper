@@ -314,7 +314,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
        }
 
       *pPara << _T(" + ") << SCL(cm.SlabUser1Factor) << _T(" * (") << DEFL(_T("slab")) << _T(" + ") << DEFL(_T("user1")) << _T(")");
-      *pPara << _T(" + ") << SCL(cm.SlabPadLoadFactor) << _T(" * (") << DEFL(_T("haunch")) << rptNewLine;
+      *pPara << _T(" + ") << SCL(cm.SlabPadLoadFactor) << _T(" * ") << DEFL(_T("haunch")) << rptNewLine;
 
       *pPara << DEFL(_T("6")) << _T(" = ") << DEFL(_T("5"));
 
