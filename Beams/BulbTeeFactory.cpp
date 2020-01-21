@@ -301,6 +301,8 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
 
    bool bPrismatic = IsPrismatic(pSegment);
 
+   bool bHasLongitudinalJoints = pBridgeDesc->HasStructuralLongitudinalJoints();
+
    // Build up the beam shape
    // Beam materials
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
@@ -312,9 +314,12 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
       BuildAgeAdjustedGirderMaterialModel(pBroker, pSegment, pSSMbrSegment, &aaMaterial);
       aaMaterial.QueryInterface(&material);
 
-      CComPtr<IAgeAdjustedMaterial> aaJointMaterial;
-      BuildAgeAdjustedJointMaterialModel(pBroker, pSegment, pSSMbrSegment, &aaJointMaterial);
-      aaJointMaterial.QueryInterface(&jointMaterial);
+      if (bHasLongitudinalJoints)
+      {
+         CComPtr<IAgeAdjustedMaterial> aaJointMaterial;
+         BuildAgeAdjustedJointMaterialModel(pBroker, pSegment, pSSMbrSegment, &aaJointMaterial);
+         aaJointMaterial.QueryInterface(&jointMaterial);
+      }
    }
    else
    {
