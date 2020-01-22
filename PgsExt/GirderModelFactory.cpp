@@ -88,10 +88,6 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
       (*ppModel)->AddRef();
    }
 
-   // This is the same tolerance as used to build LBAM's in CGirderModelManager::BuildLBAM()
-   (*ppModel)->put_ForceEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::Kip));
-   (*ppModel)->put_MomentEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::KipFeet));
-
    // get all the cross section changes
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList xsPOI;
