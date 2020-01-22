@@ -1001,8 +1001,6 @@ Float64 CSpecAgentImp::GetClosureJointAllowableTensionStress(const pgsPointOfInt
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   ATLASSERT(IsStressCheckApplicable(segmentKey,task));
-
    if ( IsLoadRatingServiceIIILimitState(task.limitState) )
    {
 #if defined _DEBUG
@@ -1424,8 +1422,6 @@ Float64 CSpecAgentImp::GetClosureJointAllowableCompressionStressCoefficient(cons
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   ATLASSERT(IsStressCheckApplicable(segmentKey,task));
-
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
@@ -1649,7 +1645,10 @@ void CSpecAgentImp::GetSegmentAllowableTensionStressCoefficient(const pgsPointOf
             }
             else
             {
-               ATLASSERT( task.limitState == pgsTypes::ServiceIII  );
+#if defined _DEBUG
+               GET_IFACE(IDocumentType, pDocType);
+               ATLASSERT((pDocType->IsPGSpliceDocument() && task.limitState == pgsTypes::ServiceI) || task.limitState == pgsTypes::ServiceIII);
+#endif
                GET_IFACE(IEnvironment,pEnv);
                int exposureCondition = pEnv->GetExposureCondition() == expNormal ? EXPOSURE_NORMAL : EXPOSURE_SEVERE;
                x = pSpec->GetFinalTensionStressFactor(exposureCondition);
