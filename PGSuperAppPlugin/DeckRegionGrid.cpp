@@ -37,13 +37,14 @@ static char THIS_FILE[] = __FILE__;
 
 GRID_IMPLEMENT_REGISTER(CDeckRegionGrid, CS_DBLCLKS, 0, 0, 0);
 
-const ROWCOL colSpan       = 1;
-const ROWCOL colPier       = 2;
-const ROWCOL colXback      = 3;
-const ROWCOL colXbackUnit  = 4;
-const ROWCOL colXahead     = 5;
-const ROWCOL colXaheadUnit = 6;
-const ROWCOL colSequence   = 7;
+const ROWCOL colType       = 1;
+const ROWCOL colSpan       = 2;
+const ROWCOL colPier       = 3;
+const ROWCOL colXback      = 4;
+const ROWCOL colXbackUnit  = 5;
+const ROWCOL colXahead     = 6;
+const ROWCOL colXaheadUnit = 7;
+const ROWCOL colSequence   = 8;
 
 class CDeckRegionType : public CGXAbstractUserAttribute
 {
@@ -98,7 +99,7 @@ void CDeckRegionGrid::CustomInit()
    SpanIndexType nSpans = pBridge->GetSpanCount();
    PierIndexType nPiers = pBridge->GetPierCount();
 
-   const int num_cols = 7;
+   const int num_cols = 8;
    SetRowCount(0);
 	SetColCount(num_cols);
 
@@ -117,6 +118,14 @@ void CDeckRegionGrid::CustomInit()
       .SetVerticalAlignment(DT_VCENTER)
       .SetEnabled(FALSE)          // disables usage as current cell
       .SetValue("Region")
+   );
+
+   SetStyleRange(CGXRange(0, colType), CGXStyle()
+      .SetWrapText(TRUE)
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_VCENTER)
+      .SetEnabled(FALSE)          // disables usage as current cell
+      .SetValue("Type")
    );
 
    SetStyleRange(CGXRange(0, colSpan), CGXStyle()
@@ -402,7 +411,9 @@ void CDeckRegionGrid::SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 
 {
    ROWCOL row = GetPierRow(pierIdx);
 
-   SetStyleRange(CGXRange(row, colSpan), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE)));
+   SetStyleRange(CGXRange(row, colType, row, colSpan), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE)));
+
+   SetStyleRange(CGXRange(row, colType), CGXStyle().SetHorizontalAlignment(DT_CENTER).SetValue(_T("-M")));
 
    CString strPierLabel;
    strPierLabel.Format(_T("%d"), LABEL_PIER(pierIdx));
@@ -502,17 +513,17 @@ void CDeckRegionGrid::SetSpanData(SpanIndexType spanIdx, Float64 L, IndexType se
 {
    ROWCOL row = GetSpanRow(spanIdx);
 
+   SetStyleRange(CGXRange(row, colType, row, colPier), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE)));
+
+   SetStyleRange(CGXRange(row, colType), CGXStyle().SetHorizontalAlignment(DT_CENTER).SetValue(_T("+M")));
+
    CString strSpanLabel;
    strSpanLabel.Format(_T("%d"), LABEL_SPAN(spanIdx));
    SetStyleRange(CGXRange(row, colSpan), CGXStyle()
-      .SetEnabled(FALSE)
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_VCENTER)
-      .SetInterior(::GetSysColor(COLOR_BTNFACE))
       .SetValue(strSpanLabel)
    );
-
-   SetStyleRange(CGXRange(row, colPier), CGXStyle().SetEnabled(FALSE).SetInterior(::GetSysColor(COLOR_BTNFACE)));
 
    CString strSpanLength;
    strSpanLength.Format(_T("L = %s"), FormatDimension(L, pDisplayUnits->GetSpanLengthUnit(), true));

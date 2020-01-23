@@ -16,11 +16,15 @@ Curing Duration | Enter the duration of active curing of the concrete. Shrinkage
 Time between casting | For staged placement, enter the timing between the start of each placement
 
 Define the placement regions
-When Stage placement is selected, the deck concrete is placed in regions in the specified sequence. Regions with the same sequence number are placed at the same time. The general layout of regions is automatically determined based on the structure framing. Regions roughly correspond to the positive and negative moment areas. The specific boundaries of the regions are defined by the engineer. The negative moment regions are defined by boundaries relative to the intermediate piers. Positive moment regions are located between the negative moment regions in the vicinity of the middle of spans. Region boundaries can be normal to the alignment or parallel to a pier.
+-----------------------------
+When Staged placement is selected, the deck concrete is placed in regions in the specified sequence. Regions with the same sequence number are placed at the same time. The general layout of regions is automatically determined based on the structure framing. Regions roughly correspond to the positive and negative moment areas. The specific boundaries of the regions are defined by the engineer. The negative moment regions are defined by boundaries relative to the intermediate piers. Positive moment regions are located between the negative moment regions in the vicinity of the middle of spans. Region boundaries can be normal to the alignment or parallel to a pier.
+
+The deck casting regions are roughly divided into positive and negative moment regions. The boundaries of these regions are specified in the Back and Ahead fields of the grid.
 
 Item | Description
 -----|---------------
 Region | A number identifying a placement region
+Type | A mnemonic identifying the region type; +M for positive moment, -M for negative moment.
 Span | Span number and pier to pier span length, based on layout stationing
 Pier | Pier number and location of region boundary measured from the centerline pier. Region boundaries are parallel to the pier and are located by an absolute distance or a fraction of the length of the adjacent span
 Back | Distance from the centerline of pier to region boundary on the back side of the pier

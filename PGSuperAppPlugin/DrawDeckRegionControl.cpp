@@ -192,14 +192,15 @@ void CDrawDeckRegionControl::OnPaint()
       shapeProps->get_Centroid(&pntCG);
       LONG dx, dy;
       mapper.WPtoDP(pntCG, &dx, &dy);
+      CString strType(regionType == CCastingRegion::Pier ? _T("-M") : _T("+M"));
       CString strSequence;
       if (regionIdx == 0)
       {
-         strSequence.Format(_T("Region:   %d\nSequence: %d"), LABEL_INDEX(regionIdx), LABEL_INDEX(sequenceIdx));
+         strSequence.Format(_T("Region:   %d\nSequence: %d\n%s"), LABEL_INDEX(regionIdx), LABEL_INDEX(sequenceIdx),strType);
       }
       else
       {
-         strSequence.Format(_T("%d\n%d"), LABEL_INDEX(regionIdx), LABEL_INDEX(sequenceIdx));
+         strSequence.Format(_T("%d\n%d\n%s"), LABEL_INDEX(regionIdx), LABEL_INDEX(sequenceIdx), strType);
       }
       MultiLineTextOut(&dc, dx, dy, strSequence);
    }
