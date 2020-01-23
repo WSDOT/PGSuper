@@ -490,7 +490,8 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
+   if (lossMethod != pgsTypes::TIME_STEP)
    {
       GetDlgItem(IDC_DECK_EVENT)->EnableWindow(FALSE);
       GetDlgItem(IDC_DECK_EVENT_DETAILS)->EnableWindow(FALSE);
@@ -539,14 +540,14 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    idx = pCB->AddString(_T("Overlay"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::wstOverlay);
 
-   BOOL bIsPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
-   if ( bIsPGSuper )
+   if (lossMethod != pgsTypes::TIME_STEP)
    {
       idx = pCB->AddString(_T("Future Overlay"));
       pCB->SetItemData(idx,(DWORD)pgsTypes::wstFutureOverlay);
    }
 
    // Slab offset type combo
+   BOOL bIsPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
    CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
    int sqidx = pBox->AddString( GetSlabOffsetTypeAsString(pgsTypes::sotBridge,bIsPGSuper));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::sotBridge);
