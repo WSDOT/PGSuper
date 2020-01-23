@@ -609,6 +609,7 @@ private:
 
    void GetRawPrecamber(const pgsPointOfInterest& poi, Float64 Ls,Float64* pDprecamber,Float64* pRprecamber) const;
    IntervalIndexType GetErectionInterval(const PoiList& vPoi) const;
+   IntervalIndexType GetStorageInterval(const PoiList& vPoi) const;
 };
 
 #endif //__ANALYSISAGENT_H_

@@ -1629,15 +1629,22 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
 {
    ATLASSERT(pfType != pgsTypes::pftPretension); // pretension results are obtained from the segment models
 
+#if defined _DEBUG
+   if (pfType == pgsTypes::pftGirder)
+   {
+      // Girder deflection requests must be incremental
+      // Cummulative results are incorrect due to how the LBAM is constructed
+      // and changes in modulus of elasticity and boundary conditions between
+      // the beginning of storage and erection
+      ATLASSERT(resultsType == rtIncremental);
+   }
+#endif
+
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
 
-   GET_IFACE_NOCHECK(IIntervals,pIntervals); // only used if pfType == pgsTypes::pftGirder
-   GET_IFACE_NOCHECK(IProductForces,pProductForces); // only used if pfType == pgsTypes::pftGirder
-   GET_IFACE_NOCHECK(IBridge,pBridge); // only used if pfType == pgsTypes::pftGirder
-   GET_IFACE_NOCHECK(IPointOfInterest,pPoi); // only used if pfType == pgsTypes::pftGirder
    GET_IFACE_NOCHECK(IMaterials,pMaterials);
    GET_IFACE_NOCHECK(ISectionProperties,pSectProps);
 
@@ -1650,18 +1657,6 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
    }
 
    CComBSTR bstrLoadGroup = GetLoadGroupName(pfType);
-
-   CComBSTR bstrLoadGroupIncremental;
-   if ( pfType == pgsTypes::pftGirder )
-   {
-      // we want the incremental girder deflection... we will later add the deflection at end of storage
-      // to get the total deflection
-      // The load group for "Girder" assumes all the girder weight is applied at erection, which is true, but modeling it as such
-      // does not capture incremental effects from changing support locations between storage and erection.
-      bstrLoadGroupIncremental = bstrLoadGroup;
-      bstrLoadGroupIncremental.Append(_T("_Incremental"));
-   }
-
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
    ResultsSummationType resultsSummation = (resultsType == rtIncremental ? rsIncremental : rsCumulative);
@@ -1683,92 +1678,19 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
       ar = pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup, m_LBAMPoi, bstrStage, resultsSummation, &section_results);
    }
 
-   CComPtr<ISectionResult3Ds> section_results_incremental;
-   if ( pfType == pgsTypes::pftGirder )
-   {
-      if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
-      {
-         CAnalysisResult ar(_T(__FILE__),__LINE__);
-         ar = pModelData->pMinLoadGroupResponseEnvelope[fetDy][optMinimize]->ComputeDeflections(bstrLoadGroupIncremental,m_LBAMPoi,bstrStage, resultsSummation,&section_results_incremental);
-      }
-      else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
-      {
-         CAnalysisResult ar(_T(__FILE__),__LINE__);
-         ar = pModelData->pMaxLoadGroupResponseEnvelope[fetDy][optMaximize]->ComputeDeflections(bstrLoadGroupIncremental,m_LBAMPoi,bstrStage, resultsSummation,&section_results_incremental);
-      }
-      else
-      {
-         CAnalysisResult ar(_T(__FILE__),__LINE__);
-         ar = pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroupIncremental,m_LBAMPoi,bstrStage, resultsSummation,&section_results_incremental);
-      }
-   }
-
-   CSegmentKey lastSegmentKey;
-   Float64 IxEc = -9999999999;
-   Float64 IxEci = -99999999999;
    IndexType idx = 0;
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      const CSegmentKey& segmentKey(poi.GetSegmentKey());
-
       CComPtr<ISectionResult3D> result;
-      section_results->get_Item(idx,&result);
+      section_results->get_Item(idx, &result);
 
-      Float64 Dy, Dyr;
-      result->get_YLeft(&Dy);
+      Float64 Dyl, Dyr;
+      result->get_YLeft(&Dyl);
       result->get_YRight(&Dyr);
-
-      ATLASSERT(IsEqual(Dy,Dyr));
-
-      if (pfType == pgsTypes::pftPretension || (pfType == pgsTypes::pftGirder && resultsType == rtCumulative))
-      {
-         if (segmentKey != lastSegmentKey)
-         {
-            // The segment key changed so update the section properties
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-            IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-            Float64 Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
-            Float64 Ec = pMaterials->GetSegmentEc(segmentKey, erectionIntervalIdx);
-
-            // section properties in the LBAM are based on mid-span of the erected segment
-            PoiList vMyPoi;
-            pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, &vMyPoi);
-            ATLASSERT(vMyPoi.size() == 1);
-            const pgsPointOfInterest& spPoi = vMyPoi.front();
-            ATLASSERT(spPoi.IsMidSpan(POI_ERECTED_SEGMENT));
-
-            // section properties at release
-            Float64 Ixxr = pSectProps->GetIxx(releaseIntervalIdx, spPoi);
-            Float64 Iyyr = pSectProps->GetIyy(releaseIntervalIdx, spPoi);
-            Float64 Ixyr = pSectProps->GetIxy(releaseIntervalIdx, spPoi);
-
-            // section properties at erection
-            Float64 Ixxe = pSectProps->GetIxx(erectionIntervalIdx, spPoi);
-            Float64 Iyye = pSectProps->GetIyy(erectionIntervalIdx, spPoi);
-            Float64 Ixye = pSectProps->GetIxy(erectionIntervalIdx, spPoi);
-
-            IxEci = Eci*(Ixxr*Iyyr - Ixyr*Ixyr) / Ixxr;
-            IxEc = Ec*(Ixxe*Iyye - Ixye*Ixye) / Ixxe;
-
-            lastSegmentKey = segmentKey;
-         }
-
-         CComPtr<ISectionResult3D> inc_result;
-         section_results_incremental->get_Item(idx,&inc_result);
-         Float64 Dyinc, Dyrinc;
-         inc_result->get_YLeft(&Dyinc);
-         inc_result->get_YRight(&Dyrinc);
-         ATLASSERT(IsEqual(Dyinc,Dyrinc));
-
-         Dy *= (IxEc/IxEci); // adjust deflection to be based on Eci at release
-         Dy += (1 - IxEc/IxEci)*Dyinc;
-      }
-
-      results.push_back(Dy);
-
+      ATLASSERT(IsEqual(Dyl, Dyr));
+      results.push_back(Dyl);
       idx++;
    }
-
    return results;
 }
 
@@ -1776,15 +1698,22 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
 {
    ATLASSERT(pfType != pgsTypes::pftPretension); // pretension results are obtained from the segment models
 
+#if defined _DEBUG
+   if (pfType == pgsTypes::pftGirder)
+   {
+      // Girder deflection requests must be incremental
+      // Cummulative results are incorrect due to how the LBAM is constructed
+      // and changes in modulus of elasticity and boundary conditions between
+      // the beginning of storage and erection
+      ATLASSERT(resultsType == rtIncremental);
+   }
+#endif
+
    std::vector<Float64> results;
    results.reserve(vPoi.size());
 
    CGirderModelData* pModelData = UpdateLBAMPois(vPoi);
 
-   GET_IFACE_NOCHECK(IIntervals,pIntervals); // only used if pfType == pgsTypes::pftGirder
-   GET_IFACE_NOCHECK(IProductForces,pProductForces); // only used if pfType == pgsTypes::pftGirder
-   GET_IFACE_NOCHECK(IBridge,pBridge); // only used if pfType == pgsTypes::pftGirder
-   GET_IFACE_NOCHECK(IPointOfInterest,pPoi); // only used if pfType == pgsTypes::pftGirder
    GET_IFACE_NOCHECK(IMaterials,pMaterials);
    GET_IFACE_NOCHECK(ISectionProperties,pSectProps);
 
@@ -1797,18 +1726,6 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
    }
 
    CComBSTR bstrLoadGroup = GetLoadGroupName(pfType);
-
-   CComBSTR bstrLoadGroupIncremental;
-   if ( pfType == pgsTypes::pftGirder )
-   {
-      // we want the incremental girder deflection... we will later add the deflection at end of storage
-      // to get the total deflection
-      // The load group for "Girder" assumes all the girder weight is applied at erection, which is true, but modeling it as such
-      // does not capture incremental effects from changing support locations between storage and erection.
-      bstrLoadGroupIncremental = bstrLoadGroup;
-      bstrLoadGroupIncremental.Append(_T("_Incremental"));
-   }
-
    CComBSTR bstrStage( GetLBAMStageName(intervalIdx) );
 
    ResultsSummationType resultsSummation = (resultsType == rtIncremental ? rsIncremental : rsCumulative);
@@ -1830,88 +1747,17 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
       ar = pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroup,m_LBAMPoi,bstrStage, resultsSummation,&section_results);
    }
 
-   CComPtr<ISectionResult3Ds> section_results_incremental;
-   if ( pfType == pgsTypes::pftGirder )
-   {
-      if ( bat == pgsTypes::MinSimpleContinuousEnvelope )
-      {
-         CAnalysisResult ar(_T(__FILE__),__LINE__);
-         ar = pModelData->pMinLoadGroupResponseEnvelope[fetDy][optMinimize]->ComputeDeflections(bstrLoadGroupIncremental,m_LBAMPoi,bstrStage, resultsSummation,&section_results_incremental);
-      }
-      else if ( bat == pgsTypes::MaxSimpleContinuousEnvelope )
-      {
-         CAnalysisResult ar(_T(__FILE__),__LINE__);
-         ar = pModelData->pMaxLoadGroupResponseEnvelope[fetDy][optMaximize]->ComputeDeflections(bstrLoadGroupIncremental,m_LBAMPoi,bstrStage, resultsSummation,&section_results_incremental);
-      }
-      else
-      {
-         CAnalysisResult ar(_T(__FILE__),__LINE__);
-         ar = pModelData->pLoadGroupResponse[bat]->ComputeDeflections(bstrLoadGroupIncremental,m_LBAMPoi,bstrStage, resultsSummation,&section_results_incremental);
-      }
-   }
-
-   CSegmentKey lastSegmentKey;
-   Float64 IxEc = -9999999999;
-   Float64 IxEci = -99999999999;
    IndexType idx = 0;
    for ( const pgsPointOfInterest& poi : vPoi)
    {
-      const CSegmentKey& segmentKey(poi.GetSegmentKey());
-
       CComPtr<ISectionResult3D> result;
       section_results->get_Item(idx,&result);
 
-      Float64 Rz, Rzr;
-      result->get_ZLeft(&Rz);
+      Float64 Rzl, Rzr;
+      result->get_ZLeft(&Rzl);
       result->get_ZRight(&Rzr);
-
-      ATLASSERT(IsEqual(Rz,Rzr));
-
-      if ( pfType == pgsTypes::pftPretension || (pfType == pgsTypes::pftGirder && resultsType == rtCumulative) )
-      {
-         if (segmentKey != lastSegmentKey)
-         {
-            // only need to update this when the segment key changes
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-            IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-            Float64 Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
-            Float64 Ec = pMaterials->GetSegmentEc(segmentKey, erectionIntervalIdx);
-
-            // section properties in the LBAM are based on mid-span of the erected segment
-            PoiList vMyPoi;
-            pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, &vMyPoi);
-            ATLASSERT(vMyPoi.size() == 1);
-            const pgsPointOfInterest& spPoi = vMyPoi.front();
-            ATLASSERT(spPoi.IsMidSpan(POI_ERECTED_SEGMENT));
-
-            // section properties at release
-            Float64 Ixxr = pSectProps->GetIxx(releaseIntervalIdx, spPoi);
-            Float64 Iyyr = pSectProps->GetIyy(releaseIntervalIdx, spPoi);
-            Float64 Ixyr = pSectProps->GetIxy(releaseIntervalIdx, spPoi);
-
-            // section properties at erection
-            Float64 Ixxe = pSectProps->GetIxx(erectionIntervalIdx, spPoi);
-            Float64 Iyye = pSectProps->GetIyy(erectionIntervalIdx, spPoi);
-            Float64 Ixye = pSectProps->GetIxy(erectionIntervalIdx, spPoi);
-
-            IxEci = Eci*(Ixxr*Iyyr - Ixyr*Ixyr) / Ixxr;
-            IxEc = Ec*(Ixxe*Iyye - Ixye*Ixye) / Ixxe;
-
-            lastSegmentKey = segmentKey;
-         }
-
-         CComPtr<ISectionResult3D> inc_result;
-         section_results_incremental->get_Item(idx,&inc_result);
-         Float64 Rzinc, Rzrinc;
-         inc_result->get_ZLeft(&Rzinc);
-         inc_result->get_ZRight(&Rzrinc);
-         ATLASSERT(IsEqual(Rzinc,Rzrinc));
-
-         Rz *= (IxEc/IxEci);
-         Rz += (1 - IxEc/IxEci)*Rzinc;
-      }
-
-      results.push_back(Rz);
+      ATLASSERT(IsEqual(Rzl,Rzr));
+      results.push_back(Rzl);
       idx++;
    }
 
@@ -3629,7 +3475,9 @@ std::vector<Float64> CGirderModelManager::GetDeflection(IntervalIndexType interv
       // add it into the DC combination.
       CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
       badGirderDeflection  = GetDeflection(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative); // get bad deflection (use the string version instead of the pfType version so the girder load name doesn't get altered)
-      goodGirderDeflection = GetDeflection(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
+
+      GET_IFACE(IProductForces2, pProdForces);
+      goodGirderDeflection = pProdForces->GetDeflection(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
    }
 
 
@@ -3717,7 +3565,8 @@ std::vector<Float64> CGirderModelManager::GetRotation(IntervalIndexType interval
       // add it into the DC combination.
       CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
       badGirderRotation  = GetRotation(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative); // get bad rotation (use the string version instead of the pfType version so the girder load name doesn't get altered)
-      goodGirderRotation = GetRotation(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
+      GET_IFACE(IProductForces2, pProdForces);
+      goodGirderRotation = pProdForces->GetRotation(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
    }
 
    IndexType nResults;
@@ -4590,7 +4439,8 @@ void CGirderModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes::
    CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
    std::vector<Float64> badGirderDeflection  = GetDeflection(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative);
-   std::vector<Float64> goodGirderDeflection = GetDeflection(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
+   GET_IFACE(IProductForces2, pProdForces);
+   std::vector<Float64> goodGirderDeflection = pProdForces->GetDeflection(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
    
    GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
@@ -4685,7 +4535,8 @@ void CGirderModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::Li
    CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
    CComBSTR bstrLoadGroup( GetLoadGroupName(pgsTypes::pftGirder) );
    std::vector<Float64> badGirderRotation  = GetRotation(intervalIdx,OLE2T(bstrLoadGroup),vPoi,bat,rtCumulative);
-   std::vector<Float64> goodGirderRotation = GetRotation(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
+   GET_IFACE(IProductForces2, pProdForces);
+   std::vector<Float64> goodGirderRotation = pProdForces->GetRotation(intervalIdx,pgsTypes::pftGirder,vPoi,bat,rtCumulative);
 
    GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();

@@ -1804,8 +1804,8 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
    d_inc = GetDeflection(erectionIntervalIdx, _T("Girder_Incremental"), poi, bat, rtCumulative, false);
    r_inc = GetRotation(erectionIntervalIdx, _T("Girder_Incremental"), poi, bat, rtCumulative, false);
 
-   ATLASSERT(IsEqual(dStorage+d_inc,dErected,0.001)); // dStorage+d_inc also needs to deal with support datum change
-   //ATLASSERT(IsEqual(rStorage+r_inc,rErected));
+   ATLASSERT(IsEqual(dStorage+d_inc,dErected));
+   ATLASSERT(IsEqual(rStorage+r_inc,rErected));
 
    if (pConfig != nullptr)
    {
@@ -2935,6 +2935,28 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
             std::vector<Float64> Dthis = GetDeflection(intervalIdx,  pfType,vPoi,bat,rtCumulative);
             std::transform(Dthis.cbegin(),Dthis.cend(),Dprev.cbegin(),std::back_inserter(deflections),[](const auto& a, const auto& b) {return a - b;});
          }
+         else if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftGirder)
+         {
+            // girder deflection is tricky. girder deflection at and after erection is the segment deflection during storage
+            // plus all the incremental deflections that happen thereafter
+            IntervalIndexType storageIntervalIdx = GetStorageInterval(vPoi);
+
+            // Get the storage deflection
+            std::vector<Float64> dStorage = GetDeflection(storageIntervalIdx, pfType, vPoi, bat, resultsType);
+
+            // Get the increment of deflection associated with moving the girder from storage to its erected configuration
+            std::vector<Float64> dInc = m_pGirderModelManager->GetDeflection(erectionIntervalIdx, _T("Girder_Incremental"), vPoi, bat, rtIncremental);
+
+            // Sum to get deflection at erection
+            std::transform(dStorage.cbegin(), dStorage.cend(), dInc.cbegin(), std::back_inserter(deflections), [](const auto& a, const auto& b) {return a + b; });
+
+            // now sum all the incremental deflections that occur after erection, upto and including the specified interval
+            for (IntervalIndexType intIdx = erectionIntervalIdx + 1; intIdx <= intervalIdx; intIdx++)
+            {
+               std::vector<Float64> dInc = m_pGirderModelManager->GetDeflection(intIdx, pfType, vPoi, bat, rtIncremental);
+               std::transform(dInc.cbegin(), dInc.cend(), deflections.cbegin(), deflections.begin(), [](const auto& a, const auto& b) {return a + b; });
+            }
+         }
          else
          {
             deflections = m_pGirderModelManager->GetDeflection(intervalIdx,pfType,vPoi,bat,resultsType);
@@ -3196,6 +3218,28 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
                girder_pt_rotations.reserve(vPoi.size());
                girder_pt_rotations = m_pGirderModelManager->GetRotation(intervalIdx, pfType, vPoi, bat, resultsType);
                std::transform(girder_pt_rotations.cbegin(), girder_pt_rotations.cend(), rotations.cbegin(), rotations.begin(), [](const auto& a, const auto& b) {return a + b; });
+            }
+         }
+         else if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftGirder)
+         {
+            // girder deflection is tricky. girder deflection at and after erection is the segment deflection during storage
+            // plus all the incremental deflections that happen thereafter
+            IntervalIndexType storageIntervalIdx = GetStorageInterval(vPoi);
+
+            // Get the storage rotation
+            std::vector<Float64> rStorage = GetRotation(storageIntervalIdx, pfType, vPoi, bat, resultsType);
+
+            // Get the increment of rotation associated with moving the girder from storage to its erected configuration
+            std::vector<Float64> rInc = m_pGirderModelManager->GetRotation(erectionIntervalIdx, _T("Girder_Incremental"), vPoi, bat, rtIncremental);
+
+            // Sum to get rotation at erection
+            std::transform(rStorage.cbegin(), rStorage.cend(), rInc.cbegin(), std::back_inserter(rotations), [](const auto& a, const auto& b) {return a + b;});
+
+            // now sum all the incremental rotations that occur after erection, upto and including the specified interval
+            for (IntervalIndexType intIdx = erectionIntervalIdx + 1; intIdx <= intervalIdx; intIdx++)
+            {
+               std::vector<Float64> rInc = m_pGirderModelManager->GetRotation(intIdx, pfType, vPoi, bat, rtIncremental);
+               std::transform(rInc.cbegin(), rInc.cend(), rotations.cbegin(), rotations.begin(), [](const auto& a, const auto& b) {return a + b;});
             }
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
@@ -11003,4 +11047,24 @@ IntervalIndexType CAnalysisAgentImp::GetErectionInterval(const PoiList& vPoi) co
    }
 
    return erectionIntervalIdx;
+}
+
+IntervalIndexType CAnalysisAgentImp::GetStorageInterval(const PoiList& vPoi) const
+{
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IPointOfInterest, pPoi);
+   std::vector<CSegmentKey> vSegments;
+   pPoi->GetSegmentKeys(vPoi, &vSegments);
+   IntervalIndexType storageIntervalIdx;
+   if (vSegments.size() == 1)
+   {
+      storageIntervalIdx = pIntervals->GetStorageInterval(vSegments.front());
+   }
+   else
+   {
+      CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
+      storageIntervalIdx = pIntervals->GetFirstStorageInterval(girderKey);
+   }
+
+   return storageIntervalIdx;
 }

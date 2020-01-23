@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    1     1    WF74G    *     34  0.6  270  32.74  21.97  11.50  11.50                                               6  66.0  3.0  4.900  6.100   3.462    -3.163     9836   0.887  0.915   3.225 -0.794 -0.060 -0.060 -0.914 133.86  281.22    1.75    5.00    5.00 
+ 40.00    6   6.58 Puyallup River B    1     1    WF74G    *     34  0.6  270  32.74  21.97  11.50  11.50                                               6  66.0  3.0  4.900  6.100   3.462    -3.163     9836   0.887  0.915   3.226 -0.794 -0.060 -0.060 -0.914 133.86  281.22    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -33,7 +33,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     1    WF74G          69  0.6  270  31.37  13.39  11.75  11.75                                              23  70.0  6.0  9.100 10.300   6.953    -6.600    18313   0.932  0.957   6.647 -3.252 -0.239 -0.241 -3.732 353.66  467.59    1.75   13.13   13.13 
+ 40.00    6   6.58 Puyallup River B    2     1    WF74G          69  0.6  270  31.37  13.39  11.75  11.75                                              23  70.0  6.0  9.100 10.300   6.953    -6.600    18313   0.932  0.957   6.648 -3.252 -0.239 -0.241 -3.732 353.66  467.59    1.75   13.13   13.13 
 
 
 The Specification Check was Not Successful
@@ -43,7 +43,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     2    WF74G    *     58  0.6  270  31.48  15.55  11.75  11.75                                              16  70.0  6.0  7.400  8.800   5.700    -5.551    15359   0.723  0.743   6.047 -2.701 -0.253 -0.255 -3.209 268.77  402.52    3.75   13.13   13.13 
+ 40.00    6   6.58 Puyallup River B    2     2    WF74G    *     58  0.6  270  31.48  15.55  11.75  11.75                                              16  70.0  6.0  7.400  8.800   5.700    -5.551    15359   0.723  0.743   6.048 -2.701 -0.253 -0.255 -3.209 268.77  402.52    3.75   13.13   13.13 
 
 
 The Specification Check was Not Successful
@@ -53,7 +53,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     4    WF74G    *     58  0.6  270  31.48  15.55  11.75  11.75                                              16  70.0  6.0  7.400  8.800   5.701    -5.552    15359   0.723  0.743   6.047 -2.702 -0.253 -0.255 -3.210 268.77  402.45    3.75   13.13   13.13 
+ 40.00    6   6.58 Puyallup River B    2     4    WF74G    *     58  0.6  270  31.48  15.55  11.75  11.75                                              16  70.0  6.0  7.400  8.800   5.701    -5.552    15359   0.723  0.743   6.048 -2.702 -0.253 -0.255 -3.210 268.77  402.45    3.75   13.13   13.13 
 
 
 The Specification Check was Not Successful
