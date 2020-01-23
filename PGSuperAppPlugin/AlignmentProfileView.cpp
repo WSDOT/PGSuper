@@ -307,9 +307,12 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
    Float64 station_inc = (end_station - start_station)/(nPoints-1);
    Float64 station = start_station - station_inc;
    std::generate(std::begin(vStations), std::end(vStations), [&]() {return station += station_inc;}); // generate nPoint stations
-   for (const auto& sectionTemplate : roadwaySectionData.RoadwaySectionTemplates) // add section template locations
+   if (1 < roadwaySectionData.RoadwaySectionTemplates.size())
    {
-      vStations.push_back(sectionTemplate.Station);
+      for (const auto& sectionTemplate : roadwaySectionData.RoadwaySectionTemplates) // add section template locations, if there is more than one
+      {
+         vStations.push_back(sectionTemplate.Station);
+      }
    }
    std::sort(std::begin(vStations), std::end(vStations)); // sort and remove duplicates
    vStations.erase(std::unique(std::begin(vStations), std::end(vStations), [](auto& a, auto& b) {return IsEqual(a, b);}), std::end(vStations));
