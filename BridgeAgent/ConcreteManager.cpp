@@ -357,6 +357,9 @@ void CConcreteManager::ValidateConcrete() const
    bool bSI = lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? true : false;
    Float64 fcMin = bSI ? ::ConvertToSysUnits(28, unitMeasure::MPa) : ::ConvertToSysUnits(4, unitMeasure::KSI);
 
+   Float64 fcMax = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
+   fcMax = ::ConvertToSysUnits(fcMax, unitMeasure::KSI);
+
    // check railing system
    if ( !IsConcreteDensityInRange(m_pRailingConcrete[pgsTypes::tboLeft]->GetStrengthDensity(),(pgsTypes::ConcreteType)m_pRailingConcrete[pgsTypes::tboLeft]->GetType()) )
    {
@@ -419,6 +422,17 @@ void CConcreteManager::ValidateConcrete() const
             pStatusCenter->Add(pStatusItem);
             //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
             //THROW_UNWIND(strMsg.c_str(),-1);
+         }
+
+         if (fcMax < fc28)
+         {
+            std::_tostringstream os;
+            os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
+            std::_tstring strMsg = os.str();
+
+            CSegmentKey dummyKey;
+            pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::Slab, pgsConcreteStrengthStatusItem::FinalStrength, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+            pStatusCenter->Add(pStatusItem);
          }
 
          pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)pDeckConcrete->GetType();
@@ -519,6 +533,17 @@ void CConcreteManager::ValidateConcrete() const
          pStatusCenter->Add(pStatusItem);
          //strMsg += std::_tstring(_T("\nSee Status Center for Details"));
          //THROW_UNWIND(strMsg.c_str(),-1);
+      }
+
+      if (fcMax < fc28)
+      {
+         std::_tostringstream os;
+         os << _T("Longitudinal joint strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
+         std::_tstring strMsg = os.str();
+
+         CSegmentKey dummyKey;
+         pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(pgsConcreteStrengthStatusItem::LongitudinalJoint, pgsConcreteStrengthStatusItem::FinalStrength, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+         pStatusCenter->Add(pStatusItem);
       }
 
       pgsTypes::ConcreteType jointConcreteType = (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType();
@@ -767,6 +792,9 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
    // the LRFD doesn't say that this specifically applies to closure joints,
    // but we are going to assume that it does.
 
+   Float64 fcMax = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017 ? 10.0 : 15.0); // KSI... limit went from 10ksi to 15ksi in 8th edition
+   fcMax = ::ConvertToSysUnits(fcMax, unitMeasure::KSI);
+
    Float64 max_fci, max_fc;
    if ( elementType == pgsConcreteStrengthStatusItem::GirderSegment )
    {
@@ -792,6 +820,18 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
       os << strLabel << _T(": Concrete strength is less that permitted by LRFD 5.4.2.1");
       strMsg = os.str();
       pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType,pgsConcreteStrengthStatusItem::FinalStrength,segmentKey,m_StatusGroupID,m_scidConcreteStrengthWarning,strMsg.c_str());
+      pStatusCenter->Add(pStatusItem);
+   }
+
+
+   if (fcMax < fc28)
+   {
+      std::_tostringstream os;
+      os << strLabel << _T(" strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
+      std::_tstring strMsg = os.str();
+
+      CSegmentKey dummyKey;
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::FinalStrength, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
