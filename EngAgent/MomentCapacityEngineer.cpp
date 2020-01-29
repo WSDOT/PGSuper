@@ -1888,7 +1888,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    //
    // Create Materials
    //
-   // 90 day strength isn't applicable to strength limit states (only stress limit states, LRFD 5.12.3.2.4)
+   // 90 day strength isn't applicable to strength limit states (only stress limit states, LRFD 5.12.3.2.5)
    // so use 28day properties
    bool bUse90DayStrength;
    Float64 factor;
@@ -1911,7 +1911,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    matGirder.CoCreateInstance(CLSID_UnconfinedConcrete);
    if ( pConfig )
    {
-      matGirder->put_fc(bUse90DayStrength ? pConfig->fc28 : pConfig->fc );
+      matGirder->put_fc(bUse90DayStrength ? pConfig->fc28 /*if 90 day strength option is enabled, force fc to the 28 day value*/: pConfig->fc );
    }
    else
    {
