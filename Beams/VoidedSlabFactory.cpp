@@ -922,11 +922,7 @@ pgsTypes::WorkPointLocations CVoidedSlabFactory::GetSupportedWorkPointLocations(
 {
    pgsTypes::WorkPointLocations wpls;
    wpls.push_back(pgsTypes::wplTopGirder);
-
-   if (IsSpreadSpacing(spacingType))
-   {
-      wpls.push_back(pgsTypes::wplBottomGirder);
-   }
+   wpls.push_back(pgsTypes::wplBottomGirder);
 
    return wpls;
 }
