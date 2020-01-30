@@ -897,6 +897,15 @@ public:
    void SetShearCapacityMethod(ShearCapacityMethod method);
    ShearCapacityMethod GetShearCapacityMethod() const;
 
+   // Set/Get flag indicating if the net tensile strain computed per LRFD Eq. 5.7.3.4.2-4 should be limited to non-negative numbers
+   void LimitNetTensionStrainToPositiveValues(bool bLimit);
+   bool LimitNetTensionStrainToPositiveValues() const;
+
+   // Set/Get flag indicating if the mininimum stirrup requirement is ignored when choosing
+   // to compute beta by equation 5.7.3.4.2-1 or -2.
+   void IgnoreMiniumStirrupRequirementForBeta(bool bIgnore);
+   bool IgnoreMiniumStirrupRequirementForBeta() const;
+
    // Set/Get the coefficient for computing modulus of rupture for shear capacity analysis
    void SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
    Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
@@ -1393,6 +1402,8 @@ private:
    bool    m_bIncludeStrand_NegMoment;
    Float64  m_FlexureModulusOfRuptureCoefficient[3]; // index is pgsTypes::ConcreteType enum
    Float64  m_ShearModulusOfRuptureCoefficient[3];   // index is pgsTypes::ConcreteType enum
+   bool m_bLimitNetTensionStrainToPositiveValues; // when true, es from LRFD Eq 5.7.3.4.2-4 is taken to be zero if it is computed as a negative value
+   bool m_bIgnoreMinStirrupRequirementForBeta; // when true, LRFD Eq 5.7.3.4.2-1 is always used to compute Beta
 
    // Closure Joint Allowable Stresses
    Float64 m_ClosureCompStressAtStressing;

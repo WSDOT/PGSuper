@@ -6,6 +6,10 @@ Shear Capacity
 ---------------
 Select the method for computing shear capacity.
 
+Limit net longitudinal strain in the section at the centroid of the tension reinforcement (es) to positive values (LRFD 5.7.3.4.2). When this option is checked, the strain computed by LRFD Equation 5.7.3.4.2-4 (pre-2017: 5.8.3.4.2-4) is taken to be zero if the computed value is negative.
+
+Always use LRFD Eq. 5.7.3.4.2-1 (pre-2017: 5.8.3.4.2-1) to compute Beta (Ignore cracking spacing parameter). When this option is checked, Beta is always computed with LRFD Eq. 5.7.3.4.2-1 regardless of the amount of shear reinforcement.
+
 Enter the coefficient for computing the modulus of rupture for determining the cracking moment.
 
 Resistance Factors (LRFD 5.5.4.2)

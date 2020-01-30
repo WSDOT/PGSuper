@@ -1085,6 +1085,7 @@
 #define IDC_STRAIGHT_RAISE_CHECK        1557
 #define IDC_RIGID_METHOD                1557
 #define IDC_BEARING_ELEVS               1557
+#define IDC_LIMIT_STRAIN                1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
 #define IDC_DEBOND_RAISE_CHECK          1558
@@ -1335,6 +1336,7 @@
 #define IDC_CHECK3                      1710
 #define IDC_USE_90_DAY_STRENGTH         1710
 #define IDC_IGNORE_SKEW_REDUCTION       1710
+#define IDC_IGNORE_MIN_STEEL            1710
 #define IDC_90_DAY_STRENGTH_LABEL       1711
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752

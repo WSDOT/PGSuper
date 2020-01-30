@@ -207,6 +207,8 @@ m_ShearFlowMethod(sfmClassical),
 m_MaxInterfaceShearConnectorSpacing(::ConvertToSysUnits(48.0,unitMeasure::Inch)),
 m_bUseDeckWeightForPc(true),
 m_ShearCapacityMethod(scmBTEquations),
+m_bLimitNetTensionStrainToPositiveValues(false),
+m_bIgnoreMinStirrupRequirementForBeta(false),
 m_CuringMethodTimeAdjustmentFactor(7),
 m_MinLiftPoint(-1), // H
 m_LiftPointAccuracy(::ConvertToSysUnits(0.25,unitMeasure::Feet)),
@@ -909,7 +911,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 //   pSave->Property(_T("SlabOffsetMethod"),(long)m_SlabOffsetMethod);
 
    // reconfigured in version 37 and added Phi
-   pSave->BeginUnit(_T("Shear"),3.0);
+   pSave->BeginUnit(_T("Shear"),4.0);
       // moved here in version 37
       pSave->Property(_T("LongReinfShearMethod"),(Int16)m_LongReinfShearMethod); // added for version 1.2
 
@@ -921,6 +923,8 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("MaxInterfaceShearConnectorSpacing"),m_MaxInterfaceShearConnectorSpacing);
       pSave->Property(_T("UseDeckWeightForPc"), m_bUseDeckWeightForPc); // added in version 3 of Shear data block
       pSave->Property(_T("ShearCapacityMethod"),(long)m_ShearCapacityMethod);
+      pSave->Property(_T("LimitNetTensionStrainToPositiveValues"), m_bLimitNetTensionStrainToPositiveValues); // added in version 4 of this data block
+      pSave->Property(_T("IgnoreMinStirrupRequirementForBeta"), m_bIgnoreMinStirrupRequirementForBeta); // added in version 4 of this data block
 
       // added in version 37
       pSave->BeginUnit(_T("ResistanceFactor"),1.0);
@@ -3893,6 +3897,19 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_ShearCapacityMethod = scmBTEquations;
          }
 
+         if (3 < shear_version)
+         {
+            if (!pLoad->Property(_T("LimitNetTensionStrainToPositiveValues"), &m_bLimitNetTensionStrainToPositiveValues)) // added in version 4 of this data block
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+
+            if (!pLoad->Property(_T("IgnoreMinStirrupRequirementForBeta"), &m_bIgnoreMinStirrupRequirementForBeta)) // added in version 4 of this data block
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
+
          // Fixed misspelling in version 2 of the Shear data block
          if ( shear_version < 2 )
          {
@@ -4841,6 +4858,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    //
 
    if ( m_ShearCapacityMethod != rOther.m_ShearCapacityMethod ||
+      m_bLimitNetTensionStrainToPositiveValues != rOther.m_bLimitNetTensionStrainToPositiveValues ||
+      m_bIgnoreMinStirrupRequirementForBeta != rOther.m_bIgnoreMinStirrupRequirementForBeta ||
       !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
       !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) || 
       (GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2016Interims && !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight])) )
@@ -6925,6 +6944,26 @@ ShearCapacityMethod SpecLibraryEntry::GetShearCapacityMethod() const
    return m_ShearCapacityMethod;
 }
 
+void SpecLibraryEntry::LimitNetTensionStrainToPositiveValues(bool bLimit)
+{
+   m_bLimitNetTensionStrainToPositiveValues = bLimit;
+}
+
+bool SpecLibraryEntry::LimitNetTensionStrainToPositiveValues() const
+{
+   return m_bLimitNetTensionStrainToPositiveValues;
+}
+
+void SpecLibraryEntry::IgnoreMiniumStirrupRequirementForBeta(bool bIgnore)
+{
+   m_bIgnoreMinStirrupRequirementForBeta = bIgnore;
+}
+
+bool SpecLibraryEntry::IgnoreMiniumStirrupRequirementForBeta() const
+{
+   return m_bIgnoreMinStirrupRequirementForBeta;
+}
+
 void SpecLibraryEntry::SetCuringMethodTimeAdjustmentFactor(Float64 f)
 {
    m_CuringMethodTimeAdjustmentFactor = f;
@@ -7674,6 +7713,9 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_bUseDeckWeightForPc = rOther.m_bUseDeckWeightForPc;
 
    m_ShearCapacityMethod = rOther.m_ShearCapacityMethod;
+
+   m_bLimitNetTensionStrainToPositiveValues = rOther.m_bLimitNetTensionStrainToPositiveValues;
+   m_bIgnoreMinStirrupRequirementForBeta = rOther.m_bIgnoreMinStirrupRequirementForBeta;
 
    m_CuringMethodTimeAdjustmentFactor = rOther.m_CuringMethodTimeAdjustmentFactor;
 

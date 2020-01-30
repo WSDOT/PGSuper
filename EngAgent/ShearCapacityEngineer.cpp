@@ -990,6 +990,9 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       }
    }
 
+
+   pscd->bLimitNetTensionStrainToPositiveValues = pSpecEntry->LimitNetTensionStrainToPositiveValues();
+   pscd->bIgnoreMiniumStirrupRequirementForBeta = pSpecEntry->IgnoreMiniumStirrupRequirementForBeta();
    return true;
 }
 
@@ -1030,6 +1033,8 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
    data.fct          = pscd->fct;
    data.sx           = pscd->sx; // cracking
    data.ag           = pscd->ag;
+   data.bLimitNetTensionStrainToPositiveValues = pscd->bLimitNetTensionStrainToPositiveValues;
+   data.bIgnoreMiniumStirrupRequirementForBeta = pscd->bIgnoreMiniumStirrupRequirementForBeta;
 
    GET_IFACE(IMaterials,pMaterials);
    data.lambda = pMaterials->GetSegmentLambda(segmentKey);

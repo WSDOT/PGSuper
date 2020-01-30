@@ -1144,68 +1144,72 @@ BEGIN
     LTEXT           "in",IDC_A_ROUNDING_UNIT,411,207,23,8
 END
 
-IDD_SPEC_SHEAR DIALOGEX 0, 0, 395, 371
+IDD_SPEC_SHEAR DIALOGEX 0, 0, 431, 441
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Shear Capacity"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Shear Capacity",IDC_STATIC,7,7,381,99
+    GROUPBOX        "Shear Capacity",IDC_STATIC,7,7,417,120
     COMBOBOX        IDC_SHEAR_CAPACITY,15,21,297,97,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Modulus of rupture for cracking moment due to externally applied loads (LRFD 5.4.2.6)",IDC_FR_HEADING,17,39,348,12
-    LTEXT           "Normal weight concrete",IDC_NWC_FR_LABEL,17,55,76,8
-    EDITTEXT        IDC_FR,107,52,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,143,55,154,8
-    LTEXT           "MPa",IDC_FR_LABEL,172,56,31,8,NOT WS_VISIBLE
-    LTEXT           "Sand Lightweight concrete",IDC_SLWC_FR_LABEL,17,71,86,8
-    EDITTEXT        IDC_SLWC_FR,107,69,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,143,71,154,8
-    LTEXT           "MPa",IDC_FR_LABEL_SLWC,172,72,31,8,NOT WS_VISIBLE
-    LTEXT           "All Lightweight concrete",IDC_ALWC_FR_LABEL,17,88,76,8
-    EDITTEXT        IDC_ALWC_FR,107,86,32,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,143,88,154,8
-    LTEXT           "MPa",IDC_FR_LABEL_ALWC,172,88,31,8,NOT WS_VISIBLE
-    GROUPBOX        "Resistance Factors",IDC_PHI_GROUP,7,108,381,80
-    GROUPBOX        "Conventional Construction (LRFD 5.5.4.2)",IDC_STATIC,12,118,178,67
-    CTEXT           "Normal weight concrete",IDC_STATIC,81,132,47,19
-    EDITTEXT        IDC_NWC_PHI,92,151,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    CTEXT           "Lightweight concrete",IDC_STATIC,134,133,47,19
-    EDITTEXT        IDC_LWC_PHI,145,151,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Closure Joint (LRFD 5.5.4.2, 5.14.1.3.2d)",IDC_SCLOSURE,195,118,169,67
-    RTEXT           "Fully Bonded Tendons",IDC_STATIC,201,156,72,8
-    CTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER2,268,133,47,19
-    EDITTEXT        IDC_NWC_JOINT_PHI,280,154,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    CTEXT           "Lightweight concrete",IDC_PHI_LWC_HEADER2,319,133,41,19
-    EDITTEXT        IDC_LWC_JOINT_PHI,328,154,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Maximum Spacing of Transverse Reinforcement (LRFD 5.7.2.6)",IDC_STATIC,7,191,381,46
-    LTEXT           "vu < 0.125f'c  Smax = ",IDC_SPACING_LABEL_1,19,203,115,8
-    EDITTEXT        IDC_SPACING_COEFFICIENT_1,138,201,21,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "dv <=",IDC_STATIC,161,204,19,8
-    EDITTEXT        IDC_MAX_SPACING_1,186,201,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MAX_SPACING_1_UNIT,232,204,19,8
-    LTEXT           "LRFD Eq 5.8.2.7-1",IDC_SLTSPACING,258,203,60,8
-    LTEXT           "vu >= 0.125f'c  Smax = ",IDC_SPACING_LABEL_2,19,220,115,8
-    EDITTEXT        IDC_SPACING_COEFFICIENT_2,138,219,21,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "dv <=",IDC_STATIC,161,222,19,8
-    EDITTEXT        IDC_MAX_SPACING_2,186,219,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MAX_SPACING_2_UNIT,232,221,19,8
-    LTEXT           "LRFD Eq 5.8.2.7-2",IDC_SGTSPACING,258,221,60,8
-    GROUPBOX        "Longitudinal Reinforcement for Shear",IDC_STATIC,7,239,381,49
-    COMBOBOX        IDC_LRSH,12,252,297,55,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Limit net longitudinal strain in the section at the centroid of the tension reinforcement (es) to positive values (LRFD 5.7.3.4.2)",IDC_LIMIT_STRAIN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,39,403,10
+    CONTROL         "Always use LRFD Eq. 5.7.3.4.2-1 to compute Beta (Ignore crack spacing parameter)",IDC_IGNORE_MIN_STEEL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,52,281,10
+    LTEXT           "Modulus of rupture for cracking moment due to externally applied loads (LRFD 5.4.2.6)",IDC_FR_HEADING,17,66,348,12
+    LTEXT           "Normal weight concrete",IDC_NWC_FR_LABEL,17,80,76,8
+    EDITTEXT        IDC_FR,107,77,32,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_FR_UNIT,143,80,154,8
+    LTEXT           "MPa",IDC_FR_LABEL,172,81,31,8,NOT WS_VISIBLE
+    LTEXT           "Sand Lightweight concrete",IDC_SLWC_FR_LABEL,17,96,86,8
+    EDITTEXT        IDC_SLWC_FR,107,94,32,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_SLWC_FR_UNIT,143,96,154,8
+    LTEXT           "MPa",IDC_FR_LABEL_SLWC,172,97,31,8,NOT WS_VISIBLE
+    LTEXT           "All Lightweight concrete",IDC_ALWC_FR_LABEL,17,113,76,8
+    EDITTEXT        IDC_ALWC_FR,107,111,32,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "sqrt(f'c)",IDC_ALWC_FR_UNIT,143,113,154,8
+    LTEXT           "MPa",IDC_FR_LABEL_ALWC,172,113,31,8,NOT WS_VISIBLE
+    GROUPBOX        "Resistance Factors",IDC_PHI_GROUP,7,131,417,80
+    GROUPBOX        "Conventional Construction (LRFD 5.5.4.2)",IDC_STATIC,12,141,178,67
+    CTEXT           "Normal weight concrete",IDC_STATIC,81,155,47,19
+    EDITTEXT        IDC_NWC_PHI,92,174,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    CTEXT           "Lightweight concrete",IDC_STATIC,134,156,47,19
+    EDITTEXT        IDC_LWC_PHI,145,174,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Closure Joint (LRFD 5.5.4.2, 5.14.1.3.2d)",IDC_SCLOSURE,195,141,169,67
+    RTEXT           "Fully Bonded Tendons",IDC_STATIC,201,179,72,8
+    CTEXT           "Normal weight concrete",IDC_PHI_NWC_HEADER2,268,156,47,19
+    EDITTEXT        IDC_NWC_JOINT_PHI,280,177,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    CTEXT           "Lightweight concrete",IDC_PHI_LWC_HEADER2,319,156,41,19
+    EDITTEXT        IDC_LWC_JOINT_PHI,328,177,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Maximum Spacing of Transverse Reinforcement (LRFD 5.7.2.6)",IDC_STATIC,7,214,417,46
+    LTEXT           "vu < 0.125f'c  Smax = ",IDC_SPACING_LABEL_1,19,226,115,8
+    EDITTEXT        IDC_SPACING_COEFFICIENT_1,138,224,21,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "dv <=",IDC_STATIC,161,227,19,8
+    EDITTEXT        IDC_MAX_SPACING_1,186,224,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MAX_SPACING_1_UNIT,232,227,19,8
+    LTEXT           "LRFD Eq 5.8.2.7-1",IDC_SLTSPACING,258,226,60,8
+    LTEXT           "vu >= 0.125f'c  Smax = ",IDC_SPACING_LABEL_2,19,243,115,8
+    EDITTEXT        IDC_SPACING_COEFFICIENT_2,138,242,21,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "dv <=",IDC_STATIC,161,245,19,8
+    EDITTEXT        IDC_MAX_SPACING_2,186,242,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MAX_SPACING_2_UNIT,232,244,19,8
+    LTEXT           "LRFD Eq 5.8.2.7-2",IDC_SGTSPACING,258,244,60,8
+    GROUPBOX        "Longitudinal Reinforcement for Shear",IDC_STATIC,7,262,417,49
+    COMBOBOX        IDC_LRSH,12,275,297,55,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Include girder longitudinal mild reinforcement in capacity calculations",IDC_INCLUDE_REBAR_SHEAR,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,271,230,10
-    GROUPBOX        "Horizontal Interface Shear",IDC_STATIC,7,293,381,71
-    LTEXT           "Compute shear stress at slab/girder interface",IDC_STATIC,14,305,141,8
-    COMBOBOX        IDC_SHEAR_FLOW_METHOD,162,303,197,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "LRFD 5.8.4.2 Spacing of interface shear connectors shall not exceed",IDC_SHIS,14,324,219,8
-    EDITTEXT        IDC_SMAX,237,320,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_SMAX_UNIT,279,323,19,8
-    LTEXT           "or the depth of the member",IDC_DEPTH_OF_UNIT,299,323,86,8
-    RTEXT           "Fully Bonded Strands",IDC_STATIC,16,153,68,8
-    EDITTEXT        IDC_NWC_PHI_DEBOND,92,167,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_LWC_PHI_DEBOND,145,167,23,14,ES_RIGHT | ES_AUTOHSCROLL
-    RTEXT           "Debonded Strands",IDC_STATIC_PHI_DEBOND,16,169,68,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,294,230,10
+    GROUPBOX        "Horizontal Interface Shear",IDC_STATIC,7,316,417,61
+    LTEXT           "Compute shear stress at slab/girder interface",IDC_STATIC,14,328,141,8
+    COMBOBOX        IDC_SHEAR_FLOW_METHOD,162,326,197,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "LRFD 5.8.4.2 Spacing of interface shear connectors shall not exceed",IDC_SHIS,14,347,219,8
+    EDITTEXT        IDC_SMAX,237,343,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_SMAX_UNIT,279,346,19,8
+    LTEXT           "or the depth of the member",IDC_DEPTH_OF_UNIT,299,346,86,8
+    RTEXT           "Fully Bonded Strands",IDC_STATIC,16,176,68,8
+    EDITTEXT        IDC_NWC_PHI_DEBOND,92,190,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_LWC_PHI_DEBOND,145,190,23,14,ES_RIGHT | ES_AUTOHSCROLL
+    RTEXT           "Debonded Strands",IDC_STATIC_PHI_DEBOND,16,192,68,8
     CONTROL         "Use the deck weight for the permanent net compressive force normal to the shear plane, (Pc LRFD 5.7.4.3)",IDC_USE_DECK_FOR_PC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,336,371,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,359,371,10
 END
 
 IDD_SPEC_MOMENT DIALOGEX 0, 0, 456, 350
@@ -2128,9 +2132,9 @@ BEGIN
     IDD_SPEC_SHEAR, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 388
+        RIGHTMARGIN, 424
         TOPMARGIN, 7
-        BOTTOMMARGIN, 364
+        BOTTOMMARGIN, 434
     END
 
     IDD_SPEC_MOMENT, DIALOG

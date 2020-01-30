@@ -543,7 +543,7 @@ void write_shear_stress_table(IBroker* pBroker,
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    ColumnIndexType nColumns = 7;
-   if (0 < nMaxSegmentDucts + nGirderDucts)
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
    {
       nColumns++;
    }
@@ -570,7 +570,7 @@ void write_shear_stress_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
-   if (0 < nMaxSegmentDucts + nGirderDucts)
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
    {
       pParagraph = new rptParagraph;
       *pChapter << pParagraph;
@@ -592,7 +592,7 @@ void write_shear_stress_table(IBroker* pBroker,
    (*table)(0,col++) << symbol(phi);
    (*table)(0,col++) << COLHDR(_T("V") << Sub(_T("u")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
-   if (0 < nMaxSegmentDucts + nGirderDucts)
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
    {
       (*table)(0, col++) << COLHDR(_T("V") << Sub(_T("ps")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
    }
@@ -639,7 +639,7 @@ void write_shear_stress_table(IBroker* pBroker,
       (*table)(row,col++) << scd.Phi;
       (*table)(row,col++) << force.SetValue( scd.Vu );
 
-      if (0 < nMaxSegmentDucts + nGirderDucts)
+      if (0 < (nMaxSegmentDucts + nGirderDucts))
       {
          (*table)(row, col++) << force.SetValue(scd.Vps);
       }
@@ -1023,13 +1023,21 @@ void write_fpo_table(IBroker* pBroker,
             }
 
 
-            if (0 < nMaxSegmentDucts + nGirderDucts)
+            if (0 < (nMaxSegmentDucts + nGirderDucts))
             {
                *pParagraph << _T("Strands") << rptNewLine;
             }
             const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
             Kps = 0.70;
-            *pParagraph << italic(ON) << Sub2(_T("f"),_T("po ps")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
+
+            if (0 < (nMaxSegmentDucts + nGirderDucts))
+            {
+               *pParagraph << RPT_STRESS(_T("po ps")) << _T(" = 0.70") << RPT_FPU;
+            }
+            else
+            {
+               *pParagraph << RPT_STRESS(_T("po")) << _T(" = 0.70") << RPT_FPU;
+            }
 
             *pParagraph << _T(" = ") << stress.SetValue(Kps*pStrand->GetUltimateStrength()) << rptNewLine;
             
@@ -1038,7 +1046,7 @@ void write_fpo_table(IBroker* pBroker,
                *pParagraph << _T("Segment Tendons") << rptNewLine;
                const matPsStrand* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
                Kpt = 0.70;
-               *pParagraph << italic(ON) << Sub2(_T("f"), _T("po pts")) << _T(" = 0.70") << Sub2(_T("f"), _T("pu")) << italic(OFF);
+               *pParagraph << RPT_STRESS(_T("po pts")) << _T(" = 0.70") << RPT_FPU;
                *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
             }
 
@@ -1109,7 +1117,7 @@ void write_fpo_table(IBroker* pBroker,
          }
 
          (*table)(0,col++) << COLHDR( RPT_FPC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         if ( 0 == nMaxSegmentDucts + nGirderDucts)
+         if ( 0 == (nMaxSegmentDucts + nGirderDucts))
          {
             (*table)(0,col++) << COLHDR( RPT_EP,  rptStressUnitTag, pDisplayUnits->GetModEUnit() );
          }
@@ -1130,7 +1138,7 @@ void write_fpo_table(IBroker* pBroker,
          
          (*table)(0,col++) << COLHDR( RPT_EC,  rptStressUnitTag, pDisplayUnits->GetModEUnit() );
 
-         if ( 0 == nMaxSegmentDucts + nGirderDucts)
+         if ( 0 == (nMaxSegmentDucts + nGirderDucts))
          {
             (*table)(0,col++) << COLHDR( RPT_FPO, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
@@ -1406,12 +1414,13 @@ void write_ex_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
-   bool bAfter2003 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2002Interims ? true : false );
-   bool bAfter2004 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEditionWith2005Interims  ? true : false );
-   bool bAfter2007 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::FourthEditionWith2008Interims ? true : false );
-   bool bAfter2009 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::FifthEdition2010 ? true : false );
-   bool bAfter2016 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SeventhEditionWith2016Interims ? true : false );
+   auto specType = pSpecEntry->GetSpecificationType();
+   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims  <= specType ? true : false );
+   bool bAfter2003 = ( lrfdVersionMgr::SecondEditionWith2002Interims  <= specType ? true : false );
+   bool bAfter2004 = ( lrfdVersionMgr::ThirdEditionWith2005Interims   <= specType ? true : false );
+   bool bAfter2007 = ( lrfdVersionMgr::FourthEditionWith2008Interims  <= specType ? true : false );
+   bool bAfter2009 = ( lrfdVersionMgr::FifthEdition2010               <= specType ? true : false );
+   bool bAfter2016 = ( lrfdVersionMgr::SeventhEditionWith2016Interims <= specType ? true : false );
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
 
@@ -1506,6 +1515,11 @@ void write_ex_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+   if (pSpecEntry->LimitNetTensionStrainToPositiveValues())
+   {
+      *pParagraph << _T("When the computed strain is negative, it is taken as zero (LRFD 5.7.3.4.1)") << rptNewLine;
+   }
+
    if ( !bAfter1999 )
    {
       *pParagraph << Sub2(symbol(epsilon),_T("x")) << _T(" includes ") << Sub2(_T("F"),symbol(epsilon)) << _T(" when applicable") << rptNewLine;
@@ -1526,7 +1540,7 @@ void write_ex_table(IBroker* pBroker,
       nCol += 2;
    }
 
-   if (0 < nMaxSegmentDucts + nGirderDucts)
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
    {
       nCol++;
    }
@@ -1553,7 +1567,7 @@ void write_ex_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
-   if (0 < nMaxSegmentDucts + nGirderDucts)
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
    {
       pParagraph = new rptParagraph;
       *pChapter << pParagraph;
@@ -1586,7 +1600,7 @@ void write_ex_table(IBroker* pBroker,
    if ( bAfter1999 )
    {
       (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("u")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-      if (0 < nMaxSegmentDucts + nGirderDucts)
+      if (0 < (nMaxSegmentDucts + nGirderDucts))
       {
          (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("ps")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
       }
@@ -1706,7 +1720,7 @@ void write_ex_table(IBroker* pBroker,
       if ( bAfter1999 )
       {
          (*table)(row,col++) << shear.SetValue( scd.Vu );
-         if (0 < nMaxSegmentDucts + nGirderDucts)
+         if (0 < (nMaxSegmentDucts + nGirderDucts))
          {
             (*table)(row, col++) << shear.SetValue(scd.Vps);
          }
@@ -1834,7 +1848,7 @@ void write_btsummary_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    CString strTitle;
-   strTitle.Format(_T("Shear Parameters Summary - %s  [%s]"),GetLimitStateString(ls),LrfdCw8th(_T("5.8.3.4.2"),_T("5.7.3.4.2")));
+   strTitle.Format(_T("Shear Parameter Summary - %s  [%s]"),GetLimitStateString(ls),LrfdCw8th(_T("5.8.3.4.2"),_T("5.7.3.4.2")));
    *pParagraph << strTitle << rptNewLine;
 
    pParagraph = new rptParagraph();
@@ -1857,6 +1871,12 @@ void write_btsummary_table(IBroker* pBroker,
       else
       {
          *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SxeEqn.png")) << rptNewLine;
+      }
+
+
+      if (pSpecEntry->IgnoreMiniumStirrupRequirementForBeta())
+      {
+         *pParagraph << symbol(beta) << _T(" is always computed with LRFD Eq. 5.7.3.4.2-1") << rptNewLine;
       }
 
       INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdimu,    pDisplayUnits->GetComponentDimUnit(),    true );

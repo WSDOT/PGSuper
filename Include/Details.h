@@ -188,6 +188,8 @@ struct SHEARCAPACITYDETAILS
    Float64 MomentArm;
    CRACKINGMOMENTDETAILS McrDetails;
    bool    bTensionBottom; // true if the flexural tension side is on the bottom of the girder
+   bool bLimitNetTensionStrainToPositiveValues;
+   bool bIgnoreMiniumStirrupRequirementForBeta;
 
    // [OUT]
    Float64 fpops; // fpo for strand

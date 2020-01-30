@@ -768,6 +768,9 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
+   DDX_Check_Bool(pDX, IDC_LIMIT_STRAIN, m_Entry.m_bLimitNetTensionStrainToPositiveValues);
+   DDX_Check_Bool(pDX, IDC_IGNORE_MIN_STEEL, m_Entry.m_bIgnoreMinStirrupRequirementForBeta);
+
    DDX_CBIndex(pDX, IDC_LRSH, m_Entry.m_LongReinfShearMethod); 
    DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_SHEAR, m_Entry.m_bIncludeRebar_Shear );
    DDX_Check_Bool(pDX, IDC_USE_DECK_FOR_PC, m_Entry.m_bUseDeckWeightForPc);
