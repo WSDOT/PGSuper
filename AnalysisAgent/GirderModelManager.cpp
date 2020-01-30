@@ -866,8 +866,12 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 
 void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pier,const CGirderKey& girderKey,pgsTypes::PierFaceType pierFace,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,Float64* pTmin,Float64* pTmax,Float64* pRmin,Float64* pRmax,VehicleIndexType* pMinConfig,VehicleIndexType* pMaxConfig) const
 {
-   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
-   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
+   if (llType == pgsTypes::lltPedestrian)
+   {
+      ATLASSERT(bIncludeLLDF); // caller should know this, but force anyway
+      bIncludeLLDF = true; 
+   }
 
    // need the POI where the girder intersects the pier
    GET_IFACE(IPointOfInterest,pPoi);
@@ -1877,8 +1881,12 @@ void CGirderModelManager::GetLiveLoadAxial(IntervalIndexType intervalIdx,pgsType
 {
    USES_CONVERSION;
 
-   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
-   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
+   if (llType == pgsTypes::lltPedestrian)
+   {
+      ATLASSERT(bIncludeLLDF); // caller should know this, but force anyway
+      bIncludeLLDF = true; 
+   }
    
    pPmin->clear();
    pPmax->clear();
@@ -1982,8 +1990,12 @@ void CGirderModelManager::GetLiveLoadShear(IntervalIndexType intervalIdx,pgsType
 {
    USES_CONVERSION;
 
-   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
-   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
+   if (llType == pgsTypes::lltPedestrian)
+   {
+      ATLASSERT(bIncludeLLDF); // caller should know this, but force anyway
+      bIncludeLLDF = true; 
+   }
 
    pVmin->clear();
    pVmax->clear();
@@ -2091,8 +2103,12 @@ void CGirderModelManager::GetLiveLoadMoment(IntervalIndexType intervalIdx,pgsTyp
 {
    USES_CONVERSION;
 
-   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
-   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
+   if (llType == pgsTypes::lltPedestrian)
+   {
+      ATLASSERT(bIncludeLLDF); // caller should know this, but force anyway
+      bIncludeLLDF = true; 
+   }
 
    pMmin->clear();
    pMmax->clear();
@@ -2198,8 +2214,12 @@ void CGirderModelManager::GetLiveLoadDeflection(IntervalIndexType intervalIdx,pg
 {
    USES_CONVERSION;
 
-   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
-   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
+   if (llType == pgsTypes::lltPedestrian)
+   {
+      ATLASSERT(bIncludeLLDF); // caller should know this, but force anyway
+      bIncludeLLDF = true; 
+   }
 
    pDmin->clear();
    pDmax->clear();
@@ -2271,8 +2291,12 @@ void CGirderModelManager::GetLiveLoadRotation(IntervalIndexType intervalIdx,pgsT
 {
    USES_CONVERSION;
 
-   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
-   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
+   if (llType == pgsTypes::lltPedestrian)
+   {
+      ATLASSERT(bIncludeLLDF); // caller should know this, but force anyway
+      bIncludeLLDF = true; 
+   }
 
    pRmin->clear();
    pRmax->clear();
@@ -2344,8 +2368,12 @@ void CGirderModelManager::GetLiveLoadStress(IntervalIndexType intervalIdx,pgsTyp
 {
    USES_CONVERSION;
 
-   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
-   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   // bIncludeLLDF should be true when llType is pgsTypes::lltPedestrian since we use LLDF's to set pedestrian load
+   if (llType == pgsTypes::lltPedestrian)
+   {
+      ATLASSERT(bIncludeLLDF); // caller should know this, but force anyway
+      bIncludeLLDF = true; 
+   }
 
    GET_IFACE(IPointOfInterest,pPoi);
 
@@ -5957,8 +5985,12 @@ void CGirderModelManager::GM_GetLiveLoadReaction(IntervalIndexType intervalIdx,p
    CGirderModelData* pModelData = nullptr;
    pModelData = GetGirderModel(GetGirderLineIndex(girderKey),bat);
 
-   // bIncludeLLDF must be true when llType is pgsTypes::lltPedestrian
-   ATLASSERT(llType == pgsTypes::lltPedestrian ? bIncludeLLDF == true : true);
+   // Tricky:: We play a game here where the Pedestian uniform lane load value is equal to the live load distribution factor. In the LBAM, the lane load is a unit value.
+   //          This means that we must always include the LLDF for pedestrian loads, and the response is always per girder. Force the issue:
+   if (llType == pgsTypes::lltPedestrian)
+   {
+      bIncludeLLDF = true; 
+   }
 
    if ( pTmin )
    {

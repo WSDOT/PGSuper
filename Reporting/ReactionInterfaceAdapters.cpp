@@ -224,7 +224,6 @@ void ProductForcesReactionAdapter::GetLiveLoadReaction(IntervalIndexType interva
                                                        bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                                        VehicleIndexType* pMinConfig, VehicleIndexType* pMaxConfig)
 {
-   ATLASSERT(bIncludeLLDF == false); // pier reactions cannot be LLDF'd
    REACTION Rmin, Rmax;
    m_pReactions->GetLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pgsTypes::fetFy, &Rmin, &Rmax, pMinConfig, pMaxConfig);
    *pRmin = Rmin.Fy;
