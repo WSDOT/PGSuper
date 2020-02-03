@@ -208,14 +208,16 @@ struct SHEARCAPACITYDETAILS
    Float64 sxe; // [E5.8.3.4.2-5]
    Float64 sxe_tbl;
    Float64 Theta;
+   Float64 FiberStress;// coefficient for compute the contribution of fibers in UHPC to the shear capacity (taken as 0.75 ksi for now)
    Float64 Vc;
    Float64 Vs;
+   Float64 Vf; // capacity of UHPC fibers
    Float64 Vn1;  // [E5.8.3.3-1]
    Float64 Vn2;  // [E5.8.3.3-2]
    Float64 Vn;   // Nominal shear resistance
    Float64 pVn;  // Factored nominal shear resistance
    Float64 VuLimit; // Limiting Vu where stirrups are required [E5.8.2.4-1]
-   bool bStirrupsReqd;
+   bool bStirrupsReqd; // If true, stirrups and/or Vf from fibers is required LRFD 5.7.2.3-1
    Int16 Equation; // Equation used to comupte ex (Only applicable after LRFD 1999)
    Float64 vfc_tbl;
    Float64 ex_tbl;

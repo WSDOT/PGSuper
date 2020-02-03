@@ -3074,6 +3074,9 @@ pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(IBroker* pBroker,const pgsPo
    {
       m_bNearMidSpan = true;
    }
+
+   GET_IFACE(IMaterials, pMaterials);
+   m_bUHPC = (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false);
 }
 
 Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const
@@ -3090,7 +3093,7 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType st
    if ( !m_bNearMidSpan )
    {
       bool bDebonded = IsDebonded(strandIdx,strandType);
-      STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,bDebonded, m_pConfig);
+      STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,bDebonded,m_bUHPC, m_pConfig);
       bond_factor = m_pPrestressForce->GetStrandBondFactor(m_Poi,strandIdx,strandType,dev_length.fps,dev_length.fpe, m_pConfig);
    }
 

@@ -914,26 +914,12 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
       if ( !IsDensityInRange(m_LeftRailingSystem.Concrete.StrengthDensity,m_LeftRailingSystem.Concrete.Type) ||
            !IsDensityInRange(m_LeftRailingSystem.Concrete.WeightDensity,  m_LeftRailingSystem.Concrete.Type) )
       {
-         if ( m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal )
-         {
-            AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-         }
-         else
-         {
-            AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-         }
+         AfxMessageBox((m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal || m_LeftRailingSystem.Concrete.Type == pgsTypes::UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
       else if ( !IsDensityInRange(m_RightRailingSystem.Concrete.StrengthDensity,m_RightRailingSystem.Concrete.Type) ||
                 !IsDensityInRange(m_RightRailingSystem.Concrete.WeightDensity,  m_RightRailingSystem.Concrete.Type) )
       {
-         if ( m_RightRailingSystem.Concrete.Type == pgsTypes::Normal )
-         {
-            AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-         }
-         else
-         {
-            AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-         }
+         AfxMessageBox((m_RightRailingSystem.Concrete.Type == pgsTypes::Normal || m_RightRailingSystem.Concrete.Type == pgsTypes::UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
    }
 
@@ -948,7 +934,7 @@ void CBridgeDescRailingSystemPage::SetConcreteTypeLabel(UINT nID,pgsTypes::Concr
 
 bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
-   if ( type == pgsTypes::Normal )
+   if (type == pgsTypes::Normal || type == pgsTypes::UHPC)
    {
       return ( m_MinNWCDensity <= density );
    }

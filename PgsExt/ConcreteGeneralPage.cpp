@@ -187,7 +187,10 @@ BOOL CConcreteGeneralPage::OnInitDialog()
       pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::AllLightweight);
 
       idx = pcbConcreteType->AddString(_T("Sand lightweight"));
-      pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
+      pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::SandLightweight);
+
+      idx = pcbConcreteType->AddString(_T("UHPC"));
+      pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
    }
    else
    {
@@ -197,7 +200,10 @@ BOOL CConcreteGeneralPage::OnInitDialog()
       idx = pcbConcreteType->AddString(_T("Lightweight"));
       pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
 
-      ATLASSERT( m_Type == pgsTypes::Normal || m_Type == pgsTypes::SandLightweight );
+      idx = pcbConcreteType->AddString(_T("UHPC"));
+      pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
+
+      ATLASSERT( m_Type == pgsTypes::Normal || m_Type == pgsTypes::SandLightweight || m_Type == pgsTypes::UHPC );
    }
 
 	CPropertyPage::OnInitDialog();
@@ -426,7 +432,7 @@ void CConcreteGeneralPage::OnOK()
 
 bool CConcreteGeneralPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
-   if ( type == pgsTypes::Normal )
+   if ( type == pgsTypes::Normal || type == pgsTypes::UHPC)
    {
       return ( IsLE(m_MinNWCDensity,density) );
    }

@@ -8178,7 +8178,7 @@ std::vector<SpaceBetweenGirder> CBridgeAgentImp::GetGirderSpacingAtBottomClGirde
    explodedTopClSpacings.reserve(ngdrs - 1);
    for (const auto& spacing : topClSpacings)
    {
-      for (GirderIDType idx = spacing.firstGdrIdx; idx < spacing.lastGdrIdx; idx++)
+      for (GirderIndexType idx = spacing.firstGdrIdx; idx < spacing.lastGdrIdx; idx++)
       {
          SpaceBetweenGirder newSpace;
          newSpace.firstGdrIdx = idx;
@@ -33373,7 +33373,8 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,Develop
    {
       return Aps;
    }
- 
+
+
    IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(poi.GetSegmentKey());
    Float64 Hg = GetHg(releaseIntervalIdx,poi);
 
@@ -33410,8 +33411,10 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,Develop
       const pgsPointOfInterest& poi = vPoi.front();
       ATLASSERT(poi.IsMidSpan(POI_ERECTED_SEGMENT));
 
+      bool bUHPC = GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
+
       GET_IFACE(IPretensionForce,pPSForce);
-      dla_det = pPSForce->GetDevLengthDetails(poi, false, pConfig);
+      dla_det = pPSForce->GetDevLengthDetails(poi, false, bUHPC, pConfig);
    }
 
    // Get straight strand locations

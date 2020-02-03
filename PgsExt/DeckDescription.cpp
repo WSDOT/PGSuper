@@ -450,7 +450,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          var.Clear();
          var.vt = VT_BSTR;
          hr = pStrLoad->get_Property(_T("Type"),&var);
-         SlabConcreteType = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(OLE2T(var.bstrVal));
+         SlabConcreteType = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
 
          var.Clear();
          var.vt = VT_R8;

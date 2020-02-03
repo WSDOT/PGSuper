@@ -163,6 +163,7 @@ private:
       Float64 m_GirderLength;
       Float64 m_DistFromStart;
       bool m_bNearMidSpan;
+      bool m_bUHPC;
    };
 
    // GROUP: OPERATIONS

@@ -9,7 +9,8 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
+#include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1153,8 +1154,6 @@ BEGIN
     COMBOBOX        IDC_SHEAR_CAPACITY,15,21,297,97,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Limit net longitudinal strain in the section at the centroid of the tension reinforcement (es) to positive values (LRFD 5.7.3.4.2)",IDC_LIMIT_STRAIN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,39,403,10
-    CONTROL         "Always use LRFD Eq. 5.7.3.4.2-1 to compute Beta (Ignore crack spacing parameter)",IDC_IGNORE_MIN_STEEL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,52,281,10
     LTEXT           "Modulus of rupture for cracking moment due to externally applied loads (LRFD 5.4.2.6)",IDC_FR_HEADING,17,66,348,12
     LTEXT           "Normal weight concrete",IDC_NWC_FR_LABEL,17,80,76,8
     EDITTEXT        IDC_FR,107,77,32,14,ES_RIGHT | ES_AUTOHSCROLL
@@ -2878,7 +2877,8 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
+#include "grid\gxres.rc"               // Objective Grid resources
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

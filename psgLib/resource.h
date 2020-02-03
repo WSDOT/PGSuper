@@ -1336,7 +1336,6 @@
 #define IDC_CHECK3                      1710
 #define IDC_USE_90_DAY_STRENGTH         1710
 #define IDC_IGNORE_SKEW_REDUCTION       1710
-#define IDC_IGNORE_MIN_STEEL            1710
 #define IDC_90_DAY_STRENGTH_LABEL       1711
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752

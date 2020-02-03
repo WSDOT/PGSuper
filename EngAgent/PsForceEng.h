@@ -135,7 +135,7 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the prestress development length
-   Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig=nullptr) const;
+   Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the development length adjustment factor. The factor is 0 at the
@@ -145,8 +145,8 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the details of the develpment lenght computations
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig=nullptr) const;
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
+   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
+   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the prestress hold down force

@@ -274,7 +274,7 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             var.vt = VT_BSTR;
             hr = pStrLoad->get_Property(_T("Type"),&var);
-            Concrete.Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(OLE2T(var.bstrVal));
+            Concrete.Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
 
             var.vt = VT_R8;
             hr = pStrLoad->get_Property(_T("fc"),&var);

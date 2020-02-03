@@ -410,7 +410,7 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    var.vt = VT_BSTR;
    pStrLoad->get_Property(_T("Type"),&var);
-   Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(OLE2T(var.bstrVal));
+   Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
 
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("Fc"),&var);

@@ -1365,15 +1365,15 @@ Float64 CEngAgentImp::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsT
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded) const
+Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC) const
 {
-   return m_PsForceEngineer.GetDevLength(poi,bDebonded);
+   return m_PsForceEngineer.GetDevLength(poi,bDebonded,bUHPC);
 }
 
 //-----------------------------------------------------------------------------
-STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig) const
+STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig) const
 {
-    return m_PsForceEngineer.GetDevLengthDetails(poi,bDebonded,pConfig);
+    return m_PsForceEngineer.GetDevLengthDetails(poi,bDebonded,bUHPC,pConfig);
 }
 
 //-----------------------------------------------------------------------------

@@ -210,17 +210,19 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
 
    if (pscd->ShearInRange)
    {
-     // Vs - if Vc was calc'd successfully
-      VERIFY(ComputeVs(poi,pscd));
+     // Vs and Vf - if Vc was calc'd successfully
+      VERIFY(ComputeVs(poi, pscd));
+      VERIFY(ComputeVf(poi, pscd));
 
       // final capacity
       // 5.7.3.3-1 (pre2017: 5.8.3.3-1)
-      pscd->Vn1 = pscd->Vc + pscd->Vs + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
+      pscd->Vn1 = pscd->Vc + pscd->Vs + pscd->Vf + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
    }
    else
    {
-      pscd->Vs=0.0;
-      pscd->Vn1=0.0;
+      pscd->Vs = 0.0;
+      pscd->Vf = 0.0;
+      pscd->Vn1 = 0.0;
    }
 
    // Max crushing capacity - 5.7.3.3-2 (pre2017: 5.8.3.3-2)
@@ -253,7 +255,7 @@ void pgsShearCapacityEngineer::EvaluateStirrupRequirements(SHEARCAPACITYDETAILS*
    // 5.7.2.3-1 (pre2017: 5.8.2.4-1)
    // transverse reinforcement required?
    pscd->VuLimit = 0.5 * pscd->Phi * ( pscd->Vc + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp) );
-   pscd->bStirrupsReqd = pscd->Vu > pscd->VuLimit;
+   pscd->bStirrupsReqd = (pscd->VuLimit < pscd->Vu && IsZero(pscd->Vf) ? true : false); // Vf or Vs is required, since Vf == 0, we must have Vs
 }
 
 void pgsShearCapacityEngineer::TweakShearCapacityOutboardOfCriticalSection(const pgsPointOfInterest& poiCS,SHEARCAPACITYDETAILS* pscd,const SHEARCAPACITYDETAILS* pscd_at_cs) const
@@ -264,11 +266,12 @@ void pgsShearCapacityEngineer::TweakShearCapacityOutboardOfCriticalSection(const
    pscd->Beta  = pscd_at_cs->Beta;
    pscd->Theta = pscd_at_cs->Theta;
    pscd->Vc    = pscd_at_cs->Vc;
+   pscd->Vf    = pscd_at_cs->Vf;
    pscd->Vs    = pscd_at_cs->Vs;
 
    // Update values that have Vp because we need to use the Vp at the
    // actual section
-   pscd->Vn1 = pscd->Vs + pscd->Vc + pscd->Vp;
+   pscd->Vn1 = pscd->Vs + pscd->Vc + pscd->Vf + pscd->Vp;
    pscd->Vn  = Min(pscd->Vn1,pscd->Vn2);
    pscd->pVn = pscd->Phi * pscd->Vn;
 
@@ -954,6 +957,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       switch( pscd->ConcreteType )
       {
       case pgsTypes::Normal:
+      case pgsTypes::UHPC:
          pscd->bHasFct = false;
          pscd->fct = 0;
          break;
@@ -991,8 +995,8 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    }
 
 
-   pscd->bLimitNetTensionStrainToPositiveValues = pSpecEntry->LimitNetTensionStrainToPositiveValues();
-   pscd->bIgnoreMiniumStirrupRequirementForBeta = pSpecEntry->IgnoreMiniumStirrupRequirementForBeta();
+   pscd->bLimitNetTensionStrainToPositiveValues = (pscd->ConcreteType == pgsTypes::UHPC || pSpecEntry->LimitNetTensionStrainToPositiveValues());
+   pscd->bIgnoreMiniumStirrupRequirementForBeta = (pscd->ConcreteType == pgsTypes::UHPC);
    return true;
 }
 
@@ -1286,7 +1290,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          }
          else
          {
-            if ( pscd->ConcreteType == pgsTypes::Normal )
+            if ( pscd->ConcreteType == pgsTypes::Normal || pscd->ConcreteType == pgsTypes::UHPC)
             {
                sqrt_fc = sqrt(fc);
             }
@@ -1345,16 +1349,14 @@ void pgsShearCapacityEngineer::ComputeVsReqd(const pgsPointOfInterest& poi, SHEA
 
       Float64 Vu = pscd->Vu;
       Float64 Vc = pscd->Vc;
+      Float64 Vf = pscd->Vf;
       Float64 Vp = (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
       Float64 Phi = pscd->Phi;
       Float64 Theta = pscd->Theta;
       Float64 fy = pscd->fy;
       Float64 dv = pscd->dv;
 
-      Vs = Vu/Phi - Vc - Vp;
-
-//      ATLASSERT( 0.5*Phi*(Vc+Vp) < Vu ); // this assert is information only
-//                                         // this is a case when stirrups are required by code, but not by strength
+      Vs = Vu/Phi - Vc - Vf - Vp;
 
       if (Vs < 0)
       {
@@ -1367,4 +1369,21 @@ void pgsShearCapacityEngineer::ComputeVsReqd(const pgsPointOfInterest& poi, SHEA
 
    pscd->VsReqd       = Vs;
    pscd->AvOverS_Reqd = AvOverS;
+}
+
+bool pgsShearCapacityEngineer::ComputeVf(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
+{
+   // computes contribution to shear from UHPC fibers
+   // contribution is (0.75ksi)*cot(theta)*bv*dv
+   GET_IFACE(IMaterials, pMaterial);
+   if (pMaterial->GetSegmentConcreteType(poi.GetSegmentKey()) == pgsTypes::UHPC)
+   {
+      pscd->FiberStress = ::ConvertToSysUnits(0.75, unitMeasure::KSI);
+      pscd->Vf = pscd->FiberStress*pscd->bv*pscd->dv / tan(pscd->Theta);
+   }
+   else
+   {
+      pscd->Vf = 0;
+   }
+   return true;
 }

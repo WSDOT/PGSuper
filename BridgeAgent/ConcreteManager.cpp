@@ -885,7 +885,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
    if ( !IsConcreteDensityInRange(pConcrete->GetStrengthDensity(), concreteType) )
    {
       std::_tostringstream os;
-      if ( concreteType == pgsTypes::Normal )
+      if ( concreteType == pgsTypes::Normal || concreteType == pgsTypes::UHPC)
       {
          os << strLabel << _T(": concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
       }
@@ -932,7 +932,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
 
 bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type) const
 {
-   if ( type == pgsTypes::Normal )
+   if ( type == pgsTypes::Normal || type == pgsTypes::UHPC)
    {
       return ( GetNWCDensityLimit() <= density );
    }

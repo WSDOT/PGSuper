@@ -127,7 +127,6 @@ BOOL CSpecShearPage::OnSetActive()
 
    // 2017 crosswalk chapter 5 reorg
    GetDlgItem(IDC_LIMIT_STRAIN)->SetWindowText(CString(_T("Limit net longitudinal strain in the section at the centroid of the tension reinforcement (es) to positive values (LRFD ")) + pDad->LrfdCw8th(_T("5.8.3.4.2"), _T("5.7.3.4.2")) + _T(")"));
-   GetDlgItem(IDC_IGNORE_MIN_STEEL)->SetWindowText(CString(_T("Always use LRFD Eq. ")) + pDad->LrfdCw8th(_T("5.8.3.4.2-1"), _T("5.7.3.4.2-1")) + _T(" to compute Beta (Ignore crack spacing parameter)"));
    GetDlgItem(IDC_SCLOSURE)->SetWindowText(CString(_T("Closure Joint (LRFD 5.5.4.2, ")) +  pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
    GetDlgItem(IDC_SLTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-1"),_T("5.7.2.6-1")));
    GetDlgItem(IDC_SGTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-2"),_T("5.7.2.6-2")));

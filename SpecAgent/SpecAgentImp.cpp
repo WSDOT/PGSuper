@@ -3038,6 +3038,10 @@ void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* p
 
    GET_IFACE(IBridge,pBridge);
 
+   GET_IFACE(ISegmentData, pSegmentData);
+   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC ? true : false;
+
+
    Float64 gdrlength = pBridge->GetSegmentLength(segmentKey);
 
    GET_IFACE(IPointOfInterest,pPOI);
@@ -3048,7 +3052,7 @@ void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* p
 
    // always use half girder length - development length
    GET_IFACE(IPretensionForce, pPrestressForce ); 
-   Float64 dev_len = pPrestressForce->GetDevLength(poi,true); // set debonding to true to get max length
+   Float64 dev_len = pPrestressForce->GetDevLength(poi,true,bUHPC); // set debonding to true to get max length
 
    Float64 min_len = gdrlength/2.0 - dev_len;
    *pControl = pgsTypes::mdbDefault;

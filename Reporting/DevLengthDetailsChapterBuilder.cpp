@@ -161,6 +161,8 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsPGSplice = pDocType->IsPGSpliceDocument();
 
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    for(const auto& thisGirderKey : vGirderKeys)
@@ -173,8 +175,11 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
       ATLASSERT( vPoi.size() != 0 );
       const pgsPointOfInterest& dummy_poi( vPoi.front() );
 
-      STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(dummy_poi,false); // not debonded
-      STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(dummy_poi,true);  // debonded
+
+      bool bUHPC = pSegmentData->GetSegmentMaterial(dummy_poi.GetSegmentKey())->Concrete.Type == pgsTypes::UHPC ? true : false;
+
+      STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(dummy_poi,false,bUHPC); // not debonded
+      STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(dummy_poi,true,bUHPC);  // debonded
 
       // Transfer Length
       rptParagraph* pParagraph_h = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -221,7 +226,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
       }
 
       (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("DevLengthReduction.png")) << rptNewLine;
-      (*pParagraph) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps")) << _T(" = Development Length Reduction Factor (See LRFD Eqn. (") << LrfdCw8th(_T("5.11.4.2-2 and -3"),_T("5.9.4.3.2-2 and -3")) << _T(")") << rptNewLine;
+      (*pParagraph) << RPT_STRESS(_T("px")) << _T("/") << RPT_STRESS(_T("ps")) << _T(" = Development Length Reduction Factor (See LRFD Eqn. ") << LrfdCw8th(_T("5.11.4.2-2 and -3"),_T("5.9.4.3.2-2 and -3")) << _T(")") << rptNewLine;
 
       rptRcTable* pTable = rptStyleManager::CreateDefaultTable(13);
       (*pParagraph) << pTable << rptNewLine;
@@ -262,11 +267,15 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
       RowIndexType row = pTable->GetNumberOfHeaderRows();
       for (const pgsPointOfInterest& poi : vPoi)
       {
-         Float64 segment_length = pBridge->GetSegmentLength(poi.GetSegmentKey());
+         const auto& segmentKey(poi.GetSegmentKey());
+         
+         Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
          Float64 half_segment_length = segment_length/2;
 
-         STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(poi,false); // not debonded
-         STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(poi,true); // debonded
+         bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC ? true : false;
+
+         STRANDDEVLENGTHDETAILS bonded_details   = pPSForce->GetDevLengthDetails(poi,false,bUHPC); // not debonded
+         STRANDDEVLENGTHDETAILS debonded_details = pPSForce->GetDevLengthDetails(poi,true, bUHPC); // debonded
 #pragma Reminder("UPDATE: bond factor should not be computed in the report") // use the code in the engineer agent
 
          Float64 lpx;

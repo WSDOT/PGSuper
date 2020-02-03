@@ -305,7 +305,7 @@ XFERLENGTHDETAILS pgsPsForceEng::GetXferLengthDetails(const CSegmentKey& segment
 
       GET_IFACE(ISegmentData,pSegmentData);
       const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
-      ATLASSERT(pStrand!=0);
+      ATLASSERT(pStrand != nullptr);
 
       // for epoxy coated strand see PCI "Guidelines for the use of Epoxy-Coated Strand"
       // PCI Journal, July-August 1993
@@ -313,6 +313,15 @@ XFERLENGTHDETAILS pgsPsForceEng::GetXferLengthDetails(const CSegmentKey& segment
       details.bEpoxy = (pStrand->GetCoating() == matPsStrand::None ? false : true);
       details.db = pStrand->GetNominalDiameter();
       details.ndb = (details.bEpoxy ? 50 : 60);
+
+      const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
+      if (pMaterial->Concrete.Type == pgsTypes::UHPC)
+      {
+         // it is conservative to use the same transfer length for bare and epoxy coated 
+         // strand in UHPC
+         details.ndb = 20;
+      }
+
       details.lt = details.ndb * details.db;
       return details;
    }
@@ -545,13 +554,13 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pg
    return adjust;
 }
 
-Float64 pgsPsForceEng::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig) const
 {
-   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded,pConfig);
+   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded,bUHPC,pConfig);
    return details.ld;
 }
 
-STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig) const
+STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -576,15 +585,15 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.db = pStrand->GetNominalDiameter();
    details.fpe = fpe;
    details.fps = pmcd->fps_avg;
-   details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
-   details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
+   details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded, bUHPC);
+   details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded, bUHPC);
 
    details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
 
    return details;
 }
 
-STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,Float64 fps,Float64 fpe,const GDRCONFIG* pConfig) const
+STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,Float64 fps,Float64 fpe,const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -598,8 +607,8 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
    details.db = pStrand->GetNominalDiameter();
    details.fpe = fpe;
    details.fps = fps;
-   details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded);
-   details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded );
+   details.k = lrfdPsStrand::GetDevLengthFactor(mbrDepth,bDebonded, bUHPC);
+   details.ld = lrfdPsStrand::GetDevLength( *pStrand, details.fps, details.fpe, mbrDepth, bDebonded, bUHPC);
 
    details.ltDetails = GetXferLengthDetails(segmentKey,pgsTypes::Permanent);
 
@@ -608,7 +617,10 @@ STRANDDEVLENGTHDETAILS pgsPsForceEng::GetDevLengthDetails(const pgsPointOfIntere
 
 Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig) const
 {
-   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,false,pConfig);
+   GET_IFACE(ISegmentData, pSegmentData);
+   bool bUHPC = pSegmentData->GetSegmentMaterial(poi.GetSegmentKey())->Concrete.Type == pgsTypes::UHPC ? true : false;
+
+   STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,false,bUHPC,pConfig);
    return GetDevLengthAdjustment(poi,strandIdx,strandType,details.fps,details.fpe,pConfig);
 }
 
@@ -624,6 +636,9 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
    Float64 bond_start, bond_end;
    bool bDebonded = pStrandGeom->IsStrandDebonded(segmentKey,strandIdx,strandType,pConfig,&bond_start,&bond_end);
    bool bExtendedStrand = pStrandGeom->IsExtendedStrand(poi,strandIdx,strandType,pConfig);
+
+   GET_IFACE(ISegmentData, pSegmentData);
+   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC ? true : false;
 
    // determine minimum bonded length from poi
    Float64 left_bonded_length, right_bonded_length;
@@ -657,7 +672,7 @@ Float64 pgsPsForceEng::GetDevLengthAdjustment(const pgsPointOfInterest& poi,Stra
    }
    else
    {
-      STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded,fps,fpe,pConfig);
+      STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,bDebonded,bUHPC,fps,fpe,pConfig);
       Float64 xfer_length = details.ltDetails.lt;
       Float64 dev_length  = details.ld;
 

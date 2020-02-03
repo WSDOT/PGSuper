@@ -1403,7 +1403,6 @@ private:
    Float64  m_FlexureModulusOfRuptureCoefficient[3]; // index is pgsTypes::ConcreteType enum
    Float64  m_ShearModulusOfRuptureCoefficient[3];   // index is pgsTypes::ConcreteType enum
    bool m_bLimitNetTensionStrainToPositiveValues; // when true, es from LRFD Eq 5.7.3.4.2-4 is taken to be zero if it is computed as a negative value
-   bool m_bIgnoreMinStirrupRequirementForBeta; // when true, LRFD Eq 5.7.3.4.2-1 is always used to compute Beta
 
    // Closure Joint Allowable Stresses
    Float64 m_ClosureCompStressAtStressing;

@@ -129,7 +129,7 @@ BOOL CAASHTOConcretePage::OnSetActive()
    CPropertyPage::OnSetActive();
 
    CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
-   BOOL bEnable = (pParent->m_General.m_Type == pgsTypes::Normal ? FALSE : TRUE);
+   BOOL bEnable = (pParent->m_General.m_Type == pgsTypes::Normal || pParent->m_General.m_Type == pgsTypes::UHPC ? FALSE : TRUE);
    GetDlgItem(IDC_HAS_AGG_STRENGTH)->EnableWindow(bEnable);
    GetDlgItem(IDC_AGG_STRENGTH)->EnableWindow(bEnable);
    GetDlgItem(IDC_AGG_STRENGTH_T)->EnableWindow(bEnable);
