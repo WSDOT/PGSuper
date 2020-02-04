@@ -102,7 +102,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
 
    if (write_note)
    {
-      *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
+      *p << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"),_T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
       *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
    }
 
@@ -116,7 +116,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
 
       if (write_note)
       {
-         *p << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
+         *p << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"),_T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
          *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
       }
    }

@@ -1233,15 +1233,19 @@ bool pgsStirrupDetailArtifact::Passed() const
       }
    }
 
-   // always check spacing requirements
-   if (m_SMax < m_S-TOLERANCE)
+   // only check required stirrups spacing if stirrups are required
+   // stirrups are required when Av/S min is > 0
+   if (0 < m_AvsMin)
+   {
+      if (::IsLT(m_SMax,m_S,TOLERANCE))
    {
       return false;
    }
 
-   if (m_S+TOLERANCE < m_SMin)
+      if (::IsGT(m_S,m_SMin,TOLERANCE))
    {
       return false;
+      }
    }
 
    return true;

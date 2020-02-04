@@ -3075,13 +3075,14 @@ void write_Avs_table(IBroker* pBroker,
 
    if ( shear_capacity_method == scmVciVcw )
    {
-      *pParagraph << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << Sub2(_T("V"),_T("c"));
-      *pParagraph << _T(" [Eqn 5.8.2.4-1 with ") << Sub2(_T("V"),_T("p")) << _T(" taken to be 0]") << rptNewLine;
+      *pParagraph << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"), _T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"), _T("c"));
+      *pParagraph << _T(")");
+      *pParagraph << _T(" [LRFD Eqn 5.8.2.4-1 with ") << Sub2(_T("V"), _T("p")) << _T(" taken to be 0]") << rptNewLine;
    }
    else
    {
-      *pParagraph << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
-      *pParagraph  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
+      *pParagraph << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"),_T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
+      *pParagraph  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [LRFD Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
    }
 }
 
@@ -3137,6 +3138,11 @@ void write_bar_spacing_table(IBroker* pBroker,
    if ( 0 < pShearData->ShearZones.size() )
    {
       nLegs = pShearData->ShearZones[0].nVertBars;
+   }
+
+   if (nLegs == 0)
+   {
+      nLegs = 2;
    }
 
    std::_tostringstream os3;
