@@ -40,4 +40,4 @@ Several modifications are made to shear capacity analyais for UHPC concrete.
 
 1. <span style="font-family:Symbol">b</span> is always computed by LRFD Equation 5.7.3.4.2-1 and is limited to a maximum value of 4.8
 2. <span style="font-family:Symbol">q</span> is limited to a minimum value of 29 degrees
-3. LRFD Equation 5.7.3.3-1 for nominal shear capacity is modfied to ![](.\Vn_UHPC.png#left) where ![](.\Vf.png#left)
+3. LRFD Equation 5.7.3.3-1 for nominal shear capacity is modfied to ![](.\Vn_UHPC.png) where ![](.\Vf.png)
