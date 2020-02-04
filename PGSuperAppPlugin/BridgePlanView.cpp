@@ -3036,14 +3036,22 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    CString strBaseMsg = strMsg1 + strMsg2 + strMsg3;
 
    // build display objects for each deck casting region
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
+   SpanIndexType lastSpanIdx = (m_EndSpanIdx == ALL_SPANS ? nSpans - 1 : m_EndSpanIdx);
+
    IndexType nRegions = pBridge->GetDeckCastingRegionCount();
    for(IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
    {
-      IndexType nPoints = 10;
+      PierIndexType startPierIdx, endPierIdx;
+      Float64 Xstart, Xend;
       CCastingRegion::RegionType regionType;
       IndexType sequenceIdx;
+      pBridge->GetDeckCastingRegionLimits(regionIdx, &startPierIdx, &Xstart, &endPierIdx, &Xend, &regionType, &sequenceIdx);
+
+      IndexType nPoints = 10;
       CComPtr<IPoint2dCollection> points;
-      pBridge->GetDeckCastingRegionPerimeter(regionIdx, nPoints, pgsTypes::pcGlobal, &regionType, &sequenceIdx, nullptr, &points);
+      pBridge->GetDeckCastingRegionPerimeter(regionIdx, firstSpanIdx, lastSpanIdx, nPoints, pgsTypes::pcGlobal, &regionType, &sequenceIdx, nullptr, &points);
 
       COLORREF deck_fill_color = (regionType == CCastingRegion::Span ? DECK_FILL_POS_MOMENT_REGION_COLOR : DECK_FILL_NEG_MOMENT_REGION_COLOR);
 

@@ -577,8 +577,11 @@ interface IBridge : IUnknown
    // The region's casting sequence number is returned as well. The provided cast deck activity is used. If, null, the deck casting activity from the current timeline is used
    virtual void GetDeckCastingRegionLimits(IndexType regionIdx, PierIndexType* pStartPierIdx, Float64* pXstart, PierIndexType* pEndPierIdx, Float64* pXend, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx,const CCastDeckActivity* pActivity=nullptr) const = 0;
 
-   // Gets the perimeter of the deck casting region
+   // Gets the perimeter of the deck casting region.
+   // If startSpanIdx or endSpanIdx is specifed, the perimeter of the region is constrained by the piers at the boundries of this spans
+   // To get the full region, use ALL_SPANS for startSpanIdx and endSpanIdx
    virtual void GetDeckCastingRegionPerimeter(IndexType regionIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetDeckCastingRegionPerimeter(IndexType regionIdx, SpanIndexType startSpanIdx, SpanIndexType endSpanIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity, IPoint2dCollection** ppPoints) const = 0;
 
    ///////////////////////////////////////////////////
    // Pier data

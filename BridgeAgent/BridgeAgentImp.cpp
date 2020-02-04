@@ -22970,9 +22970,30 @@ void CBridgeAgentImp::GetDeckCastingRegionLimits(IndexType regionIdx, PierIndexT
 
 void CBridgeAgentImp::GetDeckCastingRegionPerimeter(IndexType regionIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity, IPoint2dCollection** ppPoints) const
 {
+   GetDeckCastingRegionPerimeter(regionIdx, ALL_SPANS, ALL_SPANS, nPoints, pcType, pRegionType, pSequenceIdx, pActivity, ppPoints);
+}
+
+void CBridgeAgentImp::GetDeckCastingRegionPerimeter(IndexType regionIdx, SpanIndexType startSpanIdx, SpanIndexType endSpanIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity, IPoint2dCollection** ppPoints) const
+{
    PierIndexType startPierIdx, endPierIdx;
    Float64 Xstart, Xend;
    GetDeckCastingRegionLimits(regionIdx, &startPierIdx, &Xstart, &endPierIdx, &Xend, pRegionType, pSequenceIdx, pActivity);
+   if (startSpanIdx != ALL_SPANS && startPierIdx < (PierIndexType)startSpanIdx)
+   {
+      // the start of a span range has been provided and it is after the starting pier for this region
+      // constrain the start of the region to the pier at the start of startSpanIdx
+      startPierIdx = (PierIndexType)startSpanIdx;
+      Xstart = 0;
+   }
+
+   if (endSpanIdx != ALL_SPANS && (PierIndexType)(endSpanIdx+1) < endPierIdx)
+   {
+      // the end of a span range has been provided and it is before the ending pier for this region
+      // constrain the end of the region to the pier at the end of endSpanIdx
+      endPierIdx = (PierIndexType)(endSpanIdx + 1);
+      Xend = 0;
+   }
+
    GetSlabPerimeter(startPierIdx, Xstart, endPierIdx, Xend, nPoints, pcType, pActivity, ppPoints);
 }
 
