@@ -336,6 +336,7 @@ lrfdLiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetL
 {
    GET_IFACE(IGirder, pGdr);
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridge,pBridge);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -373,6 +374,7 @@ lrfdLiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetL
 
    plldf->d = pGdr->GetHeight(poi);
    plldf->L = GetEffectiveSpanLength(spanOrPierIdx,gdrIdx,dfType);
+   plldf->ts = pBridge->GetStructuralSlabDepth(poi);
 
    lrfdLiveLoadDistributionFactorBase* pLLDF;
    pLLDF = new lrfdTxdotLldfSpreadSlab(plldf->gdrNum, // to fix this warning, clean up the WBFL data types
@@ -384,6 +386,7 @@ lrfdLiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetL
                               plldf->wLane,
                               plldf->d,
                               plldf->L,
+                              plldf->ts,
                               plldf->skew1, 
                               plldf->skew2);
 

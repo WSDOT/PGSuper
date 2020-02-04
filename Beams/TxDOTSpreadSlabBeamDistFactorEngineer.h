@@ -33,6 +33,7 @@ struct TXSPREADSLABBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 {
    Float64 L;
    Float64 d;
+   Float64 ts;
 };
 
 /////////////////////////////////////////////////////////////////////////////
