@@ -27,6 +27,7 @@ Topics
 * @subpage tg_pjack
 * @subpage tg_moment_capacity
 * @subpage tg_prestress_losses_time_step
+* @subpage tg_principal_tensile_stress
 * @subpage tg_section_properties
 * @subpage tg_shear_capacity
 * @subpage tg_slab_offset

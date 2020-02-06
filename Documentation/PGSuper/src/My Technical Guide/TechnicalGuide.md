@@ -30,6 +30,7 @@ Topics
 * @subpage tg_prestress_losses
 * @subpage tg_prestress_losses_txdot
 * @subpage tg_prestress_losses_time_step
+* @subpage tg_principal_tensile_stress
 * @subpage tg_section_properties
 * @subpage tg_shear_capacity
 * @subpage tg_simple_spans_made_continuous
