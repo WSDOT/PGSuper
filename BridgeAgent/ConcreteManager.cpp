@@ -1177,7 +1177,7 @@ Float64 CConcreteManager::GetSegmentShrinkageK2(const CSegmentKey& segmentKey) c
    {
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
-      K2 = pMaterial->Concrete.ShrinkageK1;
+      K2 = pMaterial->Concrete.ShrinkageK2;
    }
 
    return K2;
