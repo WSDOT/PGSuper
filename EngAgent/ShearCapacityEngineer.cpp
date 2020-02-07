@@ -226,7 +226,9 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    }
 
    // Max crushing capacity - 5.7.3.3-2 (pre2017: 5.8.3.3-2)
-   pscd->Vn2 = 0.25* pscd->fc * pscd->dv * pscd->bv + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
+   bool bUHPC = pMaterial->GetSegmentConcreteType(segmentKey);
+   Float64 k = (bUHPC ? 0.18 : 0.25);
+   pscd->Vn2 = k * pscd->fc * pscd->dv * pscd->bv + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
 
    if (pscd->ShearInRange)
    {
@@ -1378,7 +1380,11 @@ bool pgsShearCapacityEngineer::ComputeVf(const pgsPointOfInterest& poi, SHEARCAP
    GET_IFACE(IMaterials, pMaterial);
    if (pMaterial->GetSegmentConcreteType(poi.GetSegmentKey()) == pgsTypes::UHPC)
    {
-      pscd->FiberStress = ::ConvertToSysUnits(0.75, unitMeasure::KSI);
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLib);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+      pscd->FiberStress = pSpecEntry->GetUHPCFiberShearStrength();
       pscd->Vf = pscd->FiberStress*pscd->bv*pscd->dv / tan(pscd->Theta);
    }
    else

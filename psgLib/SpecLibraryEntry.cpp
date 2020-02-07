@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 74.0 
+#define CURRENT_VERSION 75.0 
 
 /****************************************************************************
 CLASS
@@ -94,6 +94,7 @@ m_TensStressLiftingWithRebar(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
 m_TensStressHaulingWithRebarNormalCrown(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
 m_TensStressHaulingWithRebarMaxSuper(::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI)),
 m_SplittingZoneLengthFactor(4.0),
+m_UHPCStregthAtFirstCrack(::ConvertToSysUnits(1.0,unitMeasure::KSI)),
 m_LiftingUpwardImpact(0),
 m_LiftingDownwardImpact(0),
 m_HaulingUpwardImpact(0),
@@ -266,7 +267,8 @@ m_LiftingCamberMultiplier(1.0),
 m_HaulingCamberMultiplier(1.0),
 m_FinishedElevationTolerance(::ConvertToSysUnits(1.00,unitMeasure::Inch)),
 m_SlabOffsetRoundingMethod(pgsTypes::sormRoundNearest),
-m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch))
+m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
+m_UHPCFiberShearStrength(::ConvertToSysUnits(0.75,unitMeasure::KSI))
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -324,18 +326,22 @@ m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch))
    m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.37,unitMeasure::SqrtKSI);
    m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.20,unitMeasure::SqrtKSI);
    m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.17,unitMeasure::SqrtKSI);
-   
+   m_FlexureModulusOfRuptureCoefficient[pgsTypes::UHPC]            = ::ConvertToSysUnits(0.37, unitMeasure::SqrtKSI);
+
    m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.20,unitMeasure::SqrtKSI);
    m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.20,unitMeasure::SqrtKSI);
    m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.17,unitMeasure::SqrtKSI);
+   m_ShearModulusOfRuptureCoefficient[pgsTypes::UHPC]            = ::ConvertToSysUnits(0.20, unitMeasure::SqrtKSI);
 
    m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
    m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.21,unitMeasure::SqrtKSI);
    m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.18,unitMeasure::SqrtKSI);
+   m_LiftingModulusOfRuptureCoefficient[pgsTypes::UHPC]            = ::ConvertToSysUnits(0.24, unitMeasure::SqrtKSI);
 
    m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]          = ::ConvertToSysUnits(0.24,unitMeasure::SqrtKSI);
    m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = ::ConvertToSysUnits(0.21,unitMeasure::SqrtKSI);
    m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]  = ::ConvertToSysUnits(0.18,unitMeasure::SqrtKSI);
+   m_HaulingModulusOfRuptureCoefficient[pgsTypes::UHPC]            = ::ConvertToSysUnits(0.24, unitMeasure::SqrtKSI);
 
    m_PhiFlexureTensionPS[pgsTypes::Normal]      = 1.00;
    m_PhiFlexureTensionRC[pgsTypes::Normal]      = 0.90;
@@ -352,21 +358,30 @@ m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch))
    m_PhiFlexureTensionSpliced[pgsTypes::AllLightweight] = 1.00;
    m_PhiFlexureCompression[pgsTypes::AllLightweight]    = 0.75;
 
+   m_PhiFlexureTensionPS[pgsTypes::UHPC]      = 1.00;
+   m_PhiFlexureTensionRC[pgsTypes::UHPC]      = 0.90;
+   m_PhiFlexureTensionSpliced[pgsTypes::UHPC] = 1.00;
+   m_PhiFlexureCompression[pgsTypes::UHPC]    = 0.75;
+
    m_PhiShear[pgsTypes::Normal]          = 0.9;
    m_PhiShear[pgsTypes::SandLightweight] = 0.7;
    m_PhiShear[pgsTypes::AllLightweight]  = 0.7;
+   m_PhiShear[pgsTypes::UHPC]            = 0.9;
 
    m_PhiShearDebonded[pgsTypes::Normal]          = 0.85; // set defaults to 8th edition
    m_PhiShearDebonded[pgsTypes::SandLightweight] = 0.85;
    m_PhiShearDebonded[pgsTypes::AllLightweight]  = 0.85;
+   m_PhiShearDebonded[pgsTypes::UHPC]            = 0.85;
 
    m_PhiClosureJointFlexure[pgsTypes::Normal]          = 0.95;
    m_PhiClosureJointFlexure[pgsTypes::SandLightweight] = 0.90;
    m_PhiClosureJointFlexure[pgsTypes::AllLightweight]  = 0.90;
+   m_PhiClosureJointFlexure[pgsTypes::UHPC]            = 0.95;
 
    m_PhiClosureJointShear[pgsTypes::Normal]          = 0.90;
    m_PhiClosureJointShear[pgsTypes::SandLightweight] = 0.70;
    m_PhiClosureJointShear[pgsTypes::AllLightweight]  = 0.70;
+   m_PhiClosureJointShear[pgsTypes::UHPC]            = 0.90;
 
 
    m_MaxSlabFc[pgsTypes::Normal]             = ::ConvertToSysUnits(6.0,unitMeasure::KSI);
@@ -392,6 +407,14 @@ m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch))
    m_MaxClosureFc[pgsTypes::SandLightweight]          = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
    m_MaxConcreteUnitWeight[pgsTypes::SandLightweight] = ::ConvertToSysUnits(125.,unitMeasure::LbfPerFeet3);
    m_MaxConcreteAggSize[pgsTypes::SandLightweight]    = ::ConvertToSysUnits(1.5,unitMeasure::Inch);
+
+   m_MaxSlabFc[pgsTypes::UHPC] = ::ConvertToSysUnits(6.0, unitMeasure::KSI);
+   m_MaxSegmentFci[pgsTypes::UHPC] = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
+   m_MaxSegmentFc[pgsTypes::UHPC] = ::ConvertToSysUnits(20.0, unitMeasure::KSI);
+   m_MaxClosureFci[pgsTypes::UHPC] = ::ConvertToSysUnits(6.0, unitMeasure::KSI);
+   m_MaxClosureFc[pgsTypes::UHPC] = ::ConvertToSysUnits(8.0, unitMeasure::KSI);
+   m_MaxConcreteUnitWeight[pgsTypes::UHPC] = ::ConvertToSysUnits(165., unitMeasure::LbfPerFeet3);
+   m_MaxConcreteAggSize[pgsTypes::UHPC] = ::ConvertToSysUnits(1.5, unitMeasure::Inch);
 
    m_DoCheckStirrupSpacingCompatibility = true;
    m_bCheckSag = true;
@@ -520,7 +543,8 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("CyTensStressLifting"), m_CyTensStressLifting);
    pSave->Property(_T("CyDoTensStressLiftingMax"),m_CyDoTensStressLiftingMax);
    pSave->Property(_T("CyTensStressLiftingMax"),m_CyTensStressLiftingMax);
-   pSave->Property(_T("BurstingZoneLengthFactor"), m_SplittingZoneLengthFactor),
+   pSave->Property(_T("BurstingZoneLengthFactor"), m_SplittingZoneLengthFactor);
+   pSave->Property(_T("UHPCStregthAtFirstCrack"), m_UHPCStregthAtFirstCrack); // added in version 75
    pSave->Property(_T("LiftingUpwardImpact"),m_LiftingUpwardImpact);
    pSave->Property(_T("LiftingDownwardImpact"),m_LiftingDownwardImpact);
    pSave->Property(_T("HaulingUpwardImpact"),m_HaulingUpwardImpact);
@@ -709,27 +733,33 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    //pSave->Property(_T("ModulusOfRuptureCoefficient"),m_FlexureModulusOfRuptureCoefficient); // added for version 9.0
    //pSave->Property(_T("ShearModulusOfRuptureCoefficient"),m_ShearModulusOfRuptureCoefficient); // added for version 18
    pSave->BeginUnit(_T("ModulusOfRuptureCoefficient"),1.0);
-      pSave->BeginUnit(_T("Moment"),1.0);
+      pSave->BeginUnit(_T("Moment"),2.0);
          pSave->Property(_T("Normal"),m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]);
          pSave->Property(_T("AllLightweight"),m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
-         pSave->Property(_T("SandLightweight"),m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
-      pSave->EndUnit(); // Moment
-      pSave->BeginUnit(_T("Shear"),1.0);
+         pSave->Property(_T("SandLightweight"), m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
+         pSave->Property(_T("UHPC"), m_FlexureModulusOfRuptureCoefficient[pgsTypes::UHPC]); // added in version 2
+         pSave->EndUnit(); // Moment
+      pSave->BeginUnit(_T("Shear"),2.0);
          pSave->Property(_T("Normal"),m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]);
          pSave->Property(_T("AllLightweight"),m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
-         pSave->Property(_T("SandLightweight"),m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
-      pSave->EndUnit(); // Shear
-      pSave->BeginUnit(_T("Lifting"),1.0);
+         pSave->Property(_T("SandLightweight"), m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
+         pSave->Property(_T("UHPC"), m_ShearModulusOfRuptureCoefficient[pgsTypes::UHPC]); // added in version 2
+         pSave->EndUnit(); // Shear
+      pSave->BeginUnit(_T("Lifting"),2.0);
          pSave->Property(_T("Normal"),m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]);
          pSave->Property(_T("AllLightweight"),m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
          pSave->Property(_T("SandLightweight"),m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
-      pSave->EndUnit(); // Lifting
-      pSave->BeginUnit(_T("Shipping"),1.0);
+         pSave->Property(_T("UHPC"), m_LiftingModulusOfRuptureCoefficient[pgsTypes::UHPC]); // added in version 2
+         pSave->EndUnit(); // Lifting
+      pSave->BeginUnit(_T("Shipping"),2.0);
          pSave->Property(_T("Normal"),m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]);
          pSave->Property(_T("AllLightweight"),m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]);
-         pSave->Property(_T("SandLightweight"),m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
-      pSave->EndUnit(); // Shipping
+         pSave->Property(_T("SandLightweight"), m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]);
+         pSave->Property(_T("UHPC"), m_HaulingModulusOfRuptureCoefficient[pgsTypes::UHPC]);
+         pSave->EndUnit(); // Shipping
    pSave->EndUnit(); // ModulusOfRuptureCoefficient
+
+   pSave->Property(_T("UHPCFiberShearStrength"), m_UHPCFiberShearStrength); // added in version 75
 
    pSave->Property(_T("BsLldfMethod"), (Int16)m_LldfMethod );  // added LLDF_TXDOT for version 21.0
    pSave->Property(_T("IgnoreSkewReductionForMoment"), m_bIgnoreSkewReductionForMoment); // added in version 74
@@ -1352,6 +1382,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if (!pLoad->Property(_T("BurstingZoneLengthFactor"), &m_SplittingZoneLengthFactor))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+      if (74 < version)
+      {
+         if (!pLoad->Property(_T("UHPCStregthAtFirstCrack"), &m_UHPCStregthAtFirstCrack))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
          }
       }
 
@@ -2667,6 +2705,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         Float64 moment_version = pLoad->GetVersion();
+
          if ( !pLoad->Property(_T("Normal"),&m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]) )
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2682,6 +2722,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         if (1 < moment_version)
+         {
+            // added in version 2
+            if (!pLoad->Property(_T("UHPC"), &m_FlexureModulusOfRuptureCoefficient[pgsTypes::UHPC]))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
+
          if ( !pLoad->EndUnit() ) // Moment
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2691,6 +2740,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
+
+         Float64 shear_version = pLoad->GetVersion();
 
          if ( !pLoad->Property(_T("Normal"),&m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]) )
          {
@@ -2707,6 +2758,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         if (1 < shear_version)
+         {
+            // added in version 2
+            if (!pLoad->Property(_T("UHPC"), &m_ShearModulusOfRuptureCoefficient[pgsTypes::UHPC]))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
+
          if ( !pLoad->EndUnit() ) // Shear
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2716,6 +2776,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
+         
+         Float64 lifting_version = pLoad->GetVersion();
 
          if ( !pLoad->Property(_T("Normal"),&m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
          {
@@ -2732,6 +2794,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         if (1 < lifting_version)
+         {
+            // added in version 2
+            if (!pLoad->Property(_T("UHPC"), &m_LiftingModulusOfRuptureCoefficient[pgsTypes::UHPC]))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
+
          if ( !pLoad->EndUnit() ) // Lifting
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2742,6 +2813,8 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
+
+         Float64 shipping_version = pLoad->GetVersion();
 
          if ( !pLoad->Property(_T("Normal"),&m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) )
          {
@@ -2758,6 +2831,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         if (1 < shipping_version)
+         {
+            // added in version 2
+            if (!pLoad->Property(_T("UHPC"), &m_HaulingModulusOfRuptureCoefficient[pgsTypes::UHPC]))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
+
          if ( !pLoad->EndUnit() ) // Shipping
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -2766,6 +2848,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->EndUnit() ) // ModulusOfRuptureCoefficient
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
+      if (74 < version)
+      {
+         if (!pLoad->Property(_T("UHPCFiberShearStrength"), &m_UHPCFiberShearStrength)) // added in version 75
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
          }
       }
 
@@ -4339,7 +4429,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
 
    if ( m_DoCheckSplitting != rOther.m_DoCheckSplitting ||
         m_DoDesignSplitting != rOther.m_DoDesignSplitting ||
-        !::IsEqual(m_SplittingZoneLengthFactor,rOther.m_SplittingZoneLengthFactor) )
+        !::IsEqual(m_SplittingZoneLengthFactor,rOther.m_SplittingZoneLengthFactor) ||
+      !::IsEqual(m_UHPCStregthAtFirstCrack,rOther.m_UHPCStregthAtFirstCrack))
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Splitting Resistance requirements are different"),_T(""),_T("")));
@@ -4628,8 +4719,9 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    }
 
    if ( !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
-        !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] , rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
-        (lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
+      !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
+      !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::UHPC], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::UHPC]) ||
+      (lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Modulus of Rupture for Cracking Moment During Lifting are different"),_T(""),_T("")));
@@ -4685,8 +4777,9 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
          }
 
          if ( !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
-              !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] , rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
-              (lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
+            !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
+            !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::UHPC], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::UHPC]) ||
+            (lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() ? !::IsEqual(m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false) )
          {
             RETURN_ON_DIFFERENCE;
             vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Modulus of Rupture for Cracking Moment During Hauling are different"),_T(""),_T("")));
@@ -4806,14 +4899,15 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
         m_bIncludeRebar_Moment != rOther.m_bIncludeRebar_Moment ||
         !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
         !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
-        (GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2016Interims && !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight])) )
+      !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::UHPC], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::UHPC]) ||
+      (GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2016Interims && !::IsEqual(m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight])) )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Moment Capacity parameters are different"),_T(""),_T("")));
    }
 
    bool bPhiFactors = true;
-   for ( int i = 0; i < 3 && bPhiFactors == true; i++ )
+   for ( int i = 0; i < pgsTypes::ConcreteTypeCount && bPhiFactors == true; i++ )
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
       if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
@@ -4854,14 +4948,16 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       m_bLimitNetTensionStrainToPositiveValues != rOther.m_bLimitNetTensionStrainToPositiveValues ||
       !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
       !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) || 
-      (GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2016Interims && !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight])) )
+      (GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2016Interims && !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight])) ||
+      !::IsEqual(m_ShearModulusOfRuptureCoefficient[pgsTypes::UHPC], rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::UHPC]) ||
+      !::IsEqual(m_UHPCFiberShearStrength,rOther.m_UHPCFiberShearStrength))
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Shear Capacity parameters are different"),_T(""),_T("")));
    }
 
    bPhiFactors = true;
-   for ( int i = 0; i < 3 && bPhiFactors == true; i++ )
+   for ( int i = 0; i < pgsTypes::ConcreteTypeCount && bPhiFactors == true; i++ )
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
       if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
@@ -5072,7 +5168,7 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    }
 
    bool bConcreteLimits = true;
-   for ( int i = 0; i < 3 && bConcreteLimits == true; i++ )
+   for ( int i = 0; i < pgsTypes::ConcreteTypeCount && bConcreteLimits == true; i++ )
    {
       pgsTypes::ConcreteType concreteType = pgsTypes::ConcreteType(i);
       if ( concreteType == pgsTypes::AllLightweight && lrfdVersionMgr::SeventhEditionWith2016Interims <= GetSpecificationType() )
@@ -5081,13 +5177,13 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
          continue;
       }
 
-      if ( !::IsEqual(m_MaxSlabFc[i]             , rOther.m_MaxSlabFc[i] )             ||
-           !::IsEqual(m_MaxSegmentFci[i]         , rOther.m_MaxSegmentFci[i] )         ||
-           !::IsEqual(m_MaxSegmentFc[i]          , rOther.m_MaxSegmentFc[i] )          ||
-           !::IsEqual(m_MaxClosureFci[i]         , rOther.m_MaxClosureFci[i] )         ||
-           !::IsEqual(m_MaxClosureFc[i]          , rOther.m_MaxClosureFc[i] )          ||
-           !::IsEqual(m_MaxConcreteUnitWeight[i] , rOther.m_MaxConcreteUnitWeight[i] ) ||
-           !::IsEqual(m_MaxConcreteAggSize[i]    , rOther.m_MaxConcreteAggSize[i] ) )
+      if ( !::IsEqual(m_MaxSlabFc[concreteType]             , rOther.m_MaxSlabFc[concreteType] )             ||
+           !::IsEqual(m_MaxSegmentFci[concreteType]         , rOther.m_MaxSegmentFci[concreteType] )         ||
+           !::IsEqual(m_MaxSegmentFc[concreteType]          , rOther.m_MaxSegmentFc[concreteType] )          ||
+           !::IsEqual(m_MaxClosureFci[concreteType]         , rOther.m_MaxClosureFci[concreteType] )         ||
+           !::IsEqual(m_MaxClosureFc[concreteType]          , rOther.m_MaxClosureFc[concreteType] )          ||
+           !::IsEqual(m_MaxConcreteUnitWeight[concreteType] , rOther.m_MaxConcreteUnitWeight[concreteType] ) ||
+           !::IsEqual(m_MaxConcreteAggSize[concreteType]    , rOther.m_MaxConcreteAggSize[concreteType] ) )
       {
          bConcreteLimits = false;
       }
@@ -5389,6 +5485,16 @@ void SpecLibraryEntry::SetSplittingZoneLengthFactor(Float64 n)
 Float64 SpecLibraryEntry::GetSplittingZoneLengthFactor() const
 {
    return m_SplittingZoneLengthFactor;
+}
+
+void SpecLibraryEntry::SetUHPCStrengthAtFirstCrack(Float64 f1)
+{
+   m_UHPCStregthAtFirstCrack = f1;
+}
+
+Float64 SpecLibraryEntry::GetUHPCStrengthAtFirstCrack() const
+{
+   return m_UHPCStregthAtFirstCrack;
 }
 
 void SpecLibraryEntry::EnableHaulingCheck(bool enable)
@@ -6727,6 +6833,16 @@ Float64 SpecLibraryEntry::GetShearModulusOfRuptureCoefficient(pgsTypes::Concrete
    return m_ShearModulusOfRuptureCoefficient[type];
 }
 
+void SpecLibraryEntry::SetUHPCFiberShearStrength(Float64 Yffu)
+{
+   m_UHPCFiberShearStrength = Yffu;
+}
+
+Float64 SpecLibraryEntry::GetUHPCFiberShearStrength() const
+{
+   return m_UHPCFiberShearStrength;
+}
+
 void SpecLibraryEntry::SetMaxSlabFc(pgsTypes::ConcreteType type,Float64 fc)
 {
    m_MaxSlabFc[type] = fc;
@@ -7200,7 +7316,7 @@ void SpecLibraryEntry::SetShearResistanceFactor(bool isDebonded, pgsTypes::Concr
 {
    if (isDebonded)
    {
-      ATLASSERT(this->GetSpecificationType() >= lrfdVersionMgr::EighthEdition2017);
+      ATLASSERT(lrfdVersionMgr::EighthEdition2017 <= GetSpecificationType());
       m_PhiShearDebonded[type] = phi;
    }
    else
@@ -7211,7 +7327,7 @@ void SpecLibraryEntry::SetShearResistanceFactor(bool isDebonded, pgsTypes::Concr
 
 Float64 SpecLibraryEntry::GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const
 {
-   if (isDebonded && this->GetSpecificationType() >= lrfdVersionMgr::EighthEdition2017)
+   if (isDebonded && lrfdVersionMgr::EighthEdition2017 <= GetSpecificationType() )
    {
       return m_PhiShearDebonded[type];
    }
@@ -7479,6 +7595,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_CyDoTensStressLiftingMax   = rOther.m_CyDoTensStressLiftingMax;
    m_CyTensStressLiftingMax     = rOther.m_CyTensStressLiftingMax;
    m_SplittingZoneLengthFactor   = rOther.m_SplittingZoneLengthFactor;
+   m_UHPCStregthAtFirstCrack = rOther.m_UHPCStregthAtFirstCrack;
    m_LiftingUpwardImpact        = rOther.m_LiftingUpwardImpact;
    m_LiftingDownwardImpact      = rOther.m_LiftingDownwardImpact;
    m_HaulingUpwardImpact        = rOther.m_HaulingUpwardImpact;
@@ -7518,13 +7635,9 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_HaulingCrackFs           = rOther.m_HaulingCrackFs;
    m_HaulingRollFs            = rOther.m_HaulingRollFs;
 
-   m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal] = rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::Normal];
-   m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight] = rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::AllLightweight];
-   m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = rOther.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight];
+   m_HaulingModulusOfRuptureCoefficient = rOther.m_HaulingModulusOfRuptureCoefficient;
 
-   m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal] = rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::Normal];
-   m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight] = rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::AllLightweight];
-   m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = rOther.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight];
+   m_LiftingModulusOfRuptureCoefficient = rOther.m_LiftingModulusOfRuptureCoefficient;
 
    m_CyTensStressServWithRebar  = rOther.m_CyTensStressServWithRebar;
    m_TensStressLiftingWithRebar = rOther.m_TensStressLiftingWithRebar;
@@ -7572,12 +7685,11 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_Bs3TensStressServScMax     = rOther.m_Bs3TensStressServScMax;
    m_Bs3IgnoreRangeOfApplicability = rOther.m_Bs3IgnoreRangeOfApplicability;
    m_Bs3LRFDOverReinforcedMomentCapacity = rOther.m_Bs3LRFDOverReinforcedMomentCapacity;
-   m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal] = rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal];
-   m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight] = rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight];
-   m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = rOther.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight];
-   m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal] = rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal];
-   m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight] = rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight];
-   m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight] = rOther.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight];
+
+   m_FlexureModulusOfRuptureCoefficient = rOther.m_FlexureModulusOfRuptureCoefficient;
+   m_ShearModulusOfRuptureCoefficient = rOther.m_ShearModulusOfRuptureCoefficient;
+
+   m_UHPCFiberShearStrength = rOther.m_UHPCFiberShearStrength;
 
    m_CreepMethod                = rOther.m_CreepMethod;
    m_XferTime                   = rOther.m_XferTime;
@@ -7658,31 +7770,17 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_bIncludeRebar_Moment = rOther.m_bIncludeRebar_Moment;
    m_bIncludeRebar_Shear = rOther.m_bIncludeRebar_Shear;
 
-   for ( int i = 0; i < 3; i++ )
-   {
-      m_MaxSlabFc[i]             = rOther.m_MaxSlabFc[i];
-      m_MaxSegmentFci[i]         = rOther.m_MaxSegmentFci[i];
-      m_MaxSegmentFc[i]          = rOther.m_MaxSegmentFc[i];
-      m_MaxClosureFci[i]         = rOther.m_MaxClosureFci[i];
-      m_MaxClosureFc[i]          = rOther.m_MaxClosureFc[i];
-      m_MaxConcreteUnitWeight[i] = rOther.m_MaxConcreteUnitWeight[i];
-      m_MaxConcreteAggSize[i]    = rOther.m_MaxConcreteAggSize[i];
-   }
-
    m_DoCheckStirrupSpacingCompatibility = rOther.m_DoCheckStirrupSpacingCompatibility;
    m_bCheckSag = rOther.m_bCheckSag;
    m_SagCamberType = rOther.m_SagCamberType;
 
    m_bUpdateLoadFactors = rOther.m_bUpdateLoadFactors;
-   for ( int i = 0; i < 6; i++ )
-   {
-      m_DCmin[i]   = rOther.m_DCmin[i];
-      m_DWmin[i]   = rOther.m_DWmin[i];
-      m_LLIMmin[i] = rOther.m_LLIMmin[i];
-      m_DCmax[i]   = rOther.m_DCmax[i];
-      m_DWmax[i]   = rOther.m_DWmax[i];
-      m_LLIMmax[i] = rOther.m_LLIMmax[i];
-   }
+   m_DCmin   = rOther.m_DCmin;
+   m_DWmin   = rOther.m_DWmin;
+   m_LLIMmin = rOther.m_LLIMmin;
+   m_DCmax   = rOther.m_DCmax;
+   m_DWmax   = rOther.m_DWmax;
+   m_LLIMmax = rOther.m_LLIMmax;
 
    m_EnableSlabOffsetCheck = rOther.m_EnableSlabOffsetCheck;
    m_EnableSlabOffsetDesign = rOther.m_EnableSlabOffsetDesign;
@@ -7727,18 +7825,23 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_FcgpComputationMethod = rOther.m_FcgpComputationMethod;
 
-   for ( int i = 0; i < 3; i++ )
-   {
-      m_PhiFlexureTensionPS[i]      = rOther.m_PhiFlexureTensionPS[i];
-      m_PhiFlexureTensionRC[i]      = rOther.m_PhiFlexureTensionRC[i];
-      m_PhiFlexureTensionSpliced[i] = rOther.m_PhiFlexureTensionSpliced[i];
-      m_PhiFlexureCompression[i]    = rOther.m_PhiFlexureCompression[i];
-      m_PhiShear[i]                 = rOther.m_PhiShear[i];
-      m_PhiShearDebonded[i]         = rOther.m_PhiShearDebonded[i];
+   m_MaxSlabFc = rOther.m_MaxSlabFc;
+   m_MaxSegmentFci = rOther.m_MaxSegmentFci;
+   m_MaxSegmentFc = rOther.m_MaxSegmentFc;
+   m_MaxClosureFci = rOther.m_MaxClosureFci;
+   m_MaxClosureFc = rOther.m_MaxClosureFc;
+   m_MaxConcreteUnitWeight = rOther.m_MaxConcreteUnitWeight;
+   m_MaxConcreteAggSize = rOther.m_MaxConcreteAggSize;
 
-      m_PhiClosureJointFlexure[i] = rOther.m_PhiClosureJointFlexure[i];
-      m_PhiClosureJointShear[i]   = rOther.m_PhiClosureJointShear[i];
-   }
+   m_PhiFlexureTensionPS      = rOther.m_PhiFlexureTensionPS;
+   m_PhiFlexureTensionRC      = rOther.m_PhiFlexureTensionRC;
+   m_PhiFlexureTensionSpliced = rOther.m_PhiFlexureTensionSpliced;
+   m_PhiFlexureCompression    = rOther.m_PhiFlexureCompression;
+   m_PhiShear                 = rOther.m_PhiShear;
+   m_PhiShearDebonded         = rOther.m_PhiShearDebonded;
+
+   m_PhiClosureJointFlexure = rOther.m_PhiClosureJointFlexure;
+   m_PhiClosureJointShear   = rOther.m_PhiClosureJointShear;
 
    m_bIncludeForNegMoment = rOther.m_bIncludeForNegMoment;
    m_bAllowStraightStrandExtensions = rOther.m_bAllowStraightStrandExtensions;

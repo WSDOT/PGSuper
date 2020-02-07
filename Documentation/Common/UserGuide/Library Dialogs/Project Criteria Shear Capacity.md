@@ -8,14 +8,14 @@ Select the method for computing shear capacity.
 
 Limit net longitudinal strain in the section at the centroid of the tension reinforcement (es) to positive values (LRFD 5.7.3.4.2). When this option is checked, the strain computed by LRFD Equation 5.7.3.4.2-4 (pre-2017: 5.8.3.4.2-4) is taken to be zero if the computed value is negative.
 
-Always use LRFD Eq. 5.7.3.4.2-1 (pre-2017: 5.8.3.4.2-1) to compute Beta (Ignore cracking spacing parameter). When this option is checked, Beta is always computed with LRFD Eq. 5.7.3.4.2-1 regardless of the amount of shear reinforcement.
+Enter the coefficient for computing the modulus of rupture, which is used for determining the cracking moment.
 
-Enter the coefficient for computing the modulus of rupture for determining the cracking moment.
+Enter the residual flexural strength of UHPC concrete. This parameter is used to compute the shear contribution of fibers in the concrete matrix.
 
 Resistance Factors (LRFD 5.5.4.2)
 ----------------------------------
 ### Conventional Construction (LRFD 5.5.4.2) ###
-Enter the normal and lightweight concrete resistance factors.
+Enter the normal, lightweight, and UHPC concrete resistance factors.
 Note the LRFD 8th Edition (2017) added separate resistance factors for dedonded and fully bonded sections.
 
 ### Closure Joints (LRFD 5.5.4.2 and 5.12.3.4.2d (pre-2017: 5.14.1.3.2d)) ###

@@ -3105,7 +3105,8 @@ void write_Vn_table(IBroker* pBroker,
    }
 
 
-   *pParagraph << Super(_T("#")) << Sub2(_T("V"),_T("n2")) << _T(" = ") << _T("0.25") << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v"));
+   std::_tstring strK(bUHPC ? _T("0.18") : _T("0.25"));
+   *pParagraph << Super(_T("#")) << Sub2(_T("V"),_T("n2")) << _T(" = ") << strK << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v"));
    if ( shear_capacity_method == scmVciVcw )
    {
       *pParagraph << _T(" [Eqn  ") << LrfdCw8th(_T("5.8.3.3-2"),_T("5.7.3.3-2")) << _T(" with ") << Sub2(_T("V"),_T("p")) << _T(" taken to be 0]") << rptNewLine;

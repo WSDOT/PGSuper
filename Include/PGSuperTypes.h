@@ -599,7 +599,8 @@ typedef struct pgsTypes
       Normal,
       AllLightweight,
       SandLightweight,
-      UHPC
+      UHPC,
+      ConcreteTypeCount // this should always be the last value in the num
    } ConcreteType;
 
    // Rebar layout defines where longitudinal rebar is placed along girder. 

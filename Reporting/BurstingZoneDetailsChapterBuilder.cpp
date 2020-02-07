@@ -98,6 +98,7 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
 
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    length, pDisplayUnits->GetSpanLengthUnit(),   true );
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, short_length, pDisplayUnits->GetComponentDimUnit(), true);
    INIT_UV_PROTOTYPE( rptStressUnitValue,    stress, pDisplayUnits->GetStressUnit(),       true );
    INIT_UV_PROTOTYPE( rptAreaUnitValue,      area,   pDisplayUnits->GetAreaUnit(),         true );
    INIT_UV_PROTOTYPE( rptForceUnitValue,     force,  pDisplayUnits->GetGeneralForceUnit(), true );
@@ -107,11 +108,15 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
    scalar.SetWidth(4);
    scalar.SetPrecision(1);
 
+   GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterials);
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       CSegmentKey segmentKey(girderKey,segIdx);
+
+      bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
 
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
       const pgsSegmentArtifact* segArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
@@ -157,14 +162,14 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
             {
                (*pPara) << Bold(_T("Right End:")) << rptNewLine;
             }
-            (*pPara) << strName << _T(" Dimension: h = ") << length.SetValue(pArtifact->GetH(endType)) << rptNewLine;
-            (*pPara) << strName << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetSplittingZoneLength(endType)) << rptNewLine;
+            (*pPara) << strName << _T(" Dimension: h = ") << length.SetValue(pArtifact->GetH(endType)) << _T(" = ") << short_length.SetValue(pArtifact->GetH(endType)) << rptNewLine;
+            (*pPara) << strName << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetSplittingZoneLength(endType)) << _T(" = ") << short_length.SetValue(pArtifact->GetSplittingZoneLength(endType)) << rptNewLine;
             (*pPara) << strName << _T(" Direction: ") << (pArtifact->GetSplittingDirection() == pgsTypes::sdVertical ? _T("Vertical") : _T("Horizontal")) << rptNewLine;
             
             if (bTempStrands)
             {
                (*pPara) << strName << _T(" Force at PSXFR: P = ") << Sub2(_T("P"), _T("perm")) << _T(" + ") << Sub2(_T("P"), _T("temp")) << rptNewLine;
-               (*pPara) << Sub2(_T("P"), _T("perm")) << _T(" = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
+               (*pPara) << Sub2(_T("P"), _T("perm")) << _T(" = 0.04A") << Sub2(_T("A"),_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
 
                if (bInitialRelaxation)
                {
@@ -181,13 +186,13 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
                (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(") = ");
                if (bInitialRelaxation)
                {
-                  (*pPara) << _T(" 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(") = ");
+                  (*pPara) << _T(" 0.04(") << Sub2(_T("A"),_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(") = ");
                }
 
                (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetAps(endType, pgsTypes::Permanent)) << _T(")(") << stress.SetValue(pArtifact->GetFpj(endType, pgsTypes::Permanent)) << _T(" - ");
                (*pPara) << stress.SetValue(pArtifact->GetLossesAfterTransfer(endType, pgsTypes::Permanent)) << _T(" ) = ") << force.SetValue(pArtifact->GetSplittingForce(endType, pgsTypes::Permanent)) << rptNewLine;
 
-               (*pPara) << Sub2(_T("P"), _T("temp")) << _T(" = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
+               (*pPara) << Sub2(_T("P"), _T("temp")) << _T(" = 0.04(") << Sub2(_T("A"),_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
 
                if (bInitialRelaxation)
                {
@@ -204,7 +209,7 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
                (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(") = ");
                if (bInitialRelaxation)
                {
-                  (*pPara) << _T(" 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(") = ");
+                  (*pPara) << _T(" 0.04(") << Sub2(_T("A"),_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(") = ");
                }
 
                (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetAps(endType, pgsTypes::Temporary)) << _T(")(") << stress.SetValue(pArtifact->GetFpj(endType, pgsTypes::Temporary)) << _T(" - ");
@@ -214,7 +219,7 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
             }
             else
             {
-               (*pPara) << strName << _T(" Force at PSXFR: P = 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
+               (*pPara) << strName << _T(" Force at PSXFR: P = 0.04(") << Sub2(_T("A"),_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
 
                if (bInitialRelaxation)
                {
@@ -231,17 +236,26 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
                (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(") = ");
                if (bInitialRelaxation)
                {
-                  (*pPara) << _T(" 0.04(A") << Sub(_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(") = ");
+                  (*pPara) << _T(" 0.04(") << Sub2(_T("A"),_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(") = ");
                }
 
                (*pPara) << _T("0.04(") << area.SetValue(pArtifact->GetAps(endType, pgsTypes::Permanent)) << _T(")(") << stress.SetValue(pArtifact->GetFpj(endType, pgsTypes::Permanent)) << _T(" - ");
                (*pPara) << stress.SetValue(pArtifact->GetLossesAfterTransfer(endType, pgsTypes::Permanent)) << _T(" ) = ") << force.SetValue(pArtifact->GetTotalSplittingForce(endType)) << rptNewLine;
             }
 
-            (*pPara) << strName << _T(" Resistance: P") << Sub(_T("r")) << _T(" = ")
-               << RPT_STRESS(_T("s")) << Sub2(_T("A"), _T("s")) << _T(" = ")
-               << _T("(") << stress.SetValue(pArtifact->GetFs(endType)) << _T(")(") << area.SetValue(pArtifact->GetAvs(endType)) << _T(") = ")
-               << force.SetValue(pArtifact->GetSplittingResistance(endType)) << rptNewLine << rptNewLine;
+            (*pPara) << strName << _T(" Resistance: P") << Sub(_T("r")) << _T(" = ") << RPT_STRESS(_T("s")) << Sub2(_T("A"), _T("s"));
+            if (bUHPC)
+            {
+               (*pPara) << _T(" + (f1 / 2)(h /") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(")") << Sub2(_T("b"), _T("v"));
+            }
+            (*pPara) << _T(" = ");
+            (*pPara) << _T("(") << stress.SetValue(pArtifact->GetFs(endType)) << _T(")(") << area.SetValue(pArtifact->GetAvs(endType)) << _T(")");
+            if (bUHPC)
+            {
+               (*pPara) << _T(" + (") << stress.SetValue(pArtifact->GetUHPCStrengthAtFirstCrack()) << _T(" /2)(") << short_length.SetValue(pArtifact->GetH(endType)) << _T("/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(")");
+               (*pPara) << _T("(") << short_length.SetValue(pArtifact->GetShearWidth(endType)) << _T(")");
+            }
+            (*pPara) << _T(" = ") << force.SetValue(pArtifact->GetSplittingResistance(endType)) << rptNewLine << rptNewLine;
          }
       }
       else

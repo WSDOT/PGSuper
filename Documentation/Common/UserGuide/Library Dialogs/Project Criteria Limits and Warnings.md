@@ -12,4 +12,4 @@ Warn if there is a potential for girders to sag under dead load effects | Check 
 
 Concrete Limits
 ---------------
-Limits on several different concrete properties for normal weight and lightweight concrete are specified in the Concrete Limits group. Warnings are posted in the Status Center if these limits are exceeded. These limits do not affect specification checking or girder design.
+Limits on several different concrete properties for normal weight, lightweight, and UHPC concrete are specified in the Concrete Limits group. Warnings are posted in the Status Center if these limits are exceeded. These limits do not affect specification checking or girder design.

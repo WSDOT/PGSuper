@@ -233,6 +233,18 @@ void pgsSplittingZoneArtifact::SetH(pgsTypes::MemberEndType endType,Float64 h)
    m_H[endType] = h;
 }
 
+Float64 pgsSplittingZoneArtifact::GetShearWidth(pgsTypes::MemberEndType endType) const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_bv[endType];
+}
+
+void pgsSplittingZoneArtifact::SetShearWidth(pgsTypes::MemberEndType endType, Float64 bv)
+{
+   ATLASSERT(m_IsApplicable);
+   m_bv[endType] = bv;
+}
+
 Float64 pgsSplittingZoneArtifact::GetSplittingZoneLength(pgsTypes::MemberEndType endType) const
 {
    ATLASSERT(m_IsApplicable);
@@ -375,6 +387,17 @@ void pgsSplittingZoneArtifact::SetSplittingResistance(pgsTypes::MemberEndType en
    m_Pr[endType] = p;
 }
 
+Float64 pgsSplittingZoneArtifact::GetUHPCStrengthAtFirstCrack() const
+{
+   ATLASSERT(m_IsApplicable);
+   return m_f1;
+}
+
+void pgsSplittingZoneArtifact::SetUHPCStrengthAtFirstCrack(Float64 f1)
+{
+   ATLASSERT(m_IsApplicable);
+   m_f1 = f1;
+}
 
 bool pgsSplittingZoneArtifact::Passed(pgsTypes::MemberEndType endType) const
 {
@@ -400,24 +423,17 @@ void pgsSplittingZoneArtifact::MakeCopy(const pgsSplittingZoneArtifact& rOther)
    m_IsApplicable = rOther.m_IsApplicable;
    m_SplittingZoneLengthFactor = rOther.m_SplittingZoneLengthFactor;
    m_SplittingDirection = rOther.m_SplittingDirection;
+   m_f1 = rOther.m_f1;
 
-   for (int i = 0; i < 2; i++)
-   {
-      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
-      m_SplittingZoneLength[endType] = rOther.m_SplittingZoneLength[endType];
-      m_H[endType] = rOther.m_H[endType];
-      m_Avs[endType] = rOther.m_Avs[endType];
-      m_Fs[endType] = rOther.m_Fs[endType];
-      m_Pr[endType] = rOther.m_Pr[endType];
+   m_SplittingZoneLength = rOther.m_SplittingZoneLength;
+   m_H = rOther.m_H;
+   m_Avs = rOther.m_Avs;
+   m_Fs = rOther.m_Fs;
+   m_Pr = rOther.m_Pr;
 
-      for (int j = 0; j < 3; j++)
-      {
-         pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
-         m_Aps[endType][strandType] = rOther.m_Aps[endType][strandType];
-         m_Fpj[endType][strandType] = rOther.m_Fpj[endType][strandType];
-         m_dFpT[endType][strandType] = rOther.m_dFpT[endType][strandType];
-      }
-   }
+   m_Aps = rOther.m_Aps;
+   m_Fpj = rOther.m_Fpj;
+   m_dFpT = rOther.m_dFpT;
 }
 
 void pgsSplittingZoneArtifact::MakeAssignment(const pgsSplittingZoneArtifact& rOther)

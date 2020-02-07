@@ -117,12 +117,14 @@ BOOL CSpecShearPage::OnSetActive()
       GetDlgItem(IDC_STATIC_PHI_DEBOND)->ShowWindow(SW_SHOW);
       GetDlgItem(IDC_NWC_PHI_DEBOND)->ShowWindow(SW_SHOW);
       GetDlgItem(IDC_LWC_PHI_DEBOND)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_UHPC_PHI_DEBOND)->ShowWindow(SW_SHOW);
    }
    else
    {
       GetDlgItem(IDC_STATIC_PHIDEBOND)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_NWC_PHI_DEBOND)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_LWC_PHI_DEBOND)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_UHPC_PHI_DEBOND)->ShowWindow(SW_HIDE);
    }
 
    // 2017 crosswalk chapter 5 reorg

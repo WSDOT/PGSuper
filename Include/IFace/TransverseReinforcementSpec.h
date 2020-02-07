@@ -74,6 +74,11 @@ interface ITransverseReinforcementSpec : IUnknown
    // See LRFD 5.9.4.4 (pre2017: 5.10.10.1)
    virtual Float64 GetSplittingZoneLengthFactor() const = 0;
 
+   //----------------------------------------------------
+   // Returns assumed Strength at First Crack for UHPC concrete for use
+   // in evaluation of splitting resistance requirements
+   virtual Float64 GetUHPCStrengthAtFirstCrack() const = 0;
+
    //------------------------------------------------------------------------
    // Returns the minimum bar size in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
    virtual matRebar::Size GetMinConfinmentBarSize() const = 0;

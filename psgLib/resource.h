@@ -181,6 +181,7 @@
 #define IDC_Y2                          1012
 #define IDC_GEX                         1012
 #define IDC_CONFINE_ZL                  1012
+#define IDC_UHPC_PHI                    1012
 #define IDC_UP_INC                      1013
 #define IDC_D7                          1013
 #define IDC_HE_HAULING_FS_CRACK         1013
@@ -189,6 +190,7 @@
 #define IDC_LIFTING_LOOP_TOLERANCE      1013
 #define IDC_GEY                         1013
 #define IDC_SPLITTING_SPACING2          1013
+#define IDC_UHPC_PHI_DEBOND             1013
 #define IDC_DRAW_GIRDER                 1014
 #define IDC_NS_BOTTOM                   1014
 #define IDC_INSERTROW                   1014
@@ -256,10 +258,12 @@
 #define IDC_DEL_HARPED_STRAND2          1021
 #define IDC_MOVEUP_HARPED_STRAND        1021
 #define IDC_AFTER_DECK_TENSION_MAX      1021
+#define IDC_UHPC_GIRDER_FCI             1021
 #define IDC_CAMBER_CG_ADJUSTMENT        1022
 #define IDC_APPEND_HARPED_STRAND2       1022
 #define IDC_MOVEDOWN_HARPED_STRAND      1022
 #define IDC_SERVICE_I_TENSION_MAX       1022
+#define IDC_UHPC_CLOSURE_FCI            1022
 #define IDC_HARP_LOCATION               1023
 #define IDC_HP_TOP_COVER                1023
 #define IDC_HP_LSL                      1023
@@ -685,16 +689,28 @@
 #define IDC_STATIC_ACSSB                1291
 #define IDC_LWC_CLOSURE_FC_UNIT         1291
 #define IDC_STATIC_LCYDOWN              1292
+#define IDC_UHPC_FC_SLAB                1292
 #define IDC_STATIC_LCP                  1293
+#define IDC_UHPC_FC_SLAB_UNIT           1293
 #define IDC_STATIC_LCPHPP               1294
+#define IDC_UHPC_GIRDER_FCI_UNIT        1294
 #define IDC_STATIC_LCPLPT               1295
+#define IDC_UHPC_GIRDER_FC              1295
 #define IDC_STATIC_LCP_ST               1296
+#define IDC_UHPC_GIRDER_FC_UNIT         1296
 #define IDC_STATIC_LCPLL                1297
+#define IDC_UHPC_CLOSURE_FCI_UNIT       1297
 #define IDC_STATIC_LCP_INC              1298
+#define IDC_UHPC_CLOSURE_FC             1298
 #define IDC_CHECK_ENABLE_HAULING        1299
+#define IDC_UHPC_CLOSURE_FC_UNIT        1299
 #define IDC_STATIC_GH1                  1300
+#define IDC_UHPC_UNIT_WEIGHT            1300
 #define IDC_STATIC_GH2                  1301
+#define IDC_UHPC_UNIT_WEIGHT_UNIT       1301
 #define IDC_STATIC_GH3                  1302
+#define IDC_LWC_AGG_SIZE_UNIT2          1302
+#define IDC_UHPC_AGG_SIZE_UNIT          1302
 #define IDC_STATIC_GH4                  1303
 #define IDC_STATIC_GH5                  1304
 #define IDC_STATIC_GH6                  1305
@@ -973,8 +989,10 @@
 #define IDC_FR_LABEL_ALWC               1504
 #define IDC_SLWC_FR_TXT                 1504
 #define IDC_ALWC_FR_TXT                 1505
+#define IDC_ALWC_FR_UNIT2               1505
 #define IDC_PHI_GROUP                   1506
 #define IDC_PHI_NWC_HEADER              1507
+#define IDC_FR_LABEL_UHPC               1507
 #define IDC_NWC_PHI_TENSION_RC          1508
 #define IDC_NWC_PHI_TENSION_RC_LABEL    1509
 #define IDC_NWC_PHI_COMPRESSION         1510
@@ -992,6 +1010,8 @@
 #define IDC_LWC_PHI_TENSION_RC_LABEL    1514
 #define IDC_CREEP_K2_LABEL              1514
 #define IDC_EDIT_BAR_SPACINGS           1514
+#define IDC_UHPC_PHI_TENSION_RC         1514
+#define IDC_UHPC_AGG_SIZE               1514
 #define IDC_LWC_PHI_COMPRESSION         1515
 #define IDC_SHRINKAGE_K1_LABEL          1515
 #define IDC_EDIT_BAR_SPACINGS_UNIT      1515
@@ -999,6 +1019,7 @@
 #define IDC_SHRINKAGE_K2_LABEL          1516
 #define IDC_MAX_SPACING_CHG_UNIT        1516
 #define IDC_EG_SLAB                     1516
+#define IDC_UHPC_PHI_COMPRESSION        1516
 #define IDC_NWC_PHI_TENSION_PS          1517
 #define IDC_MAX_SHEARCAP_CHG_UNIT       1517
 #define IDC_EG_SLAB_UNIT                1517
@@ -1010,6 +1031,7 @@
 #define IDC_EG_SLABPAD                  1519
 #define IDC_LWC_PHI_TENSION_PS_LABEL    1520
 #define IDC_EG_SLABPAD_UNIT             1520
+#define IDC_UHPC_PHI_TENSION_PS         1520
 #define IDC_NEG_MOMENT                  1521
 #define IDC_EG_SLABPAD_LABEL            1521
 #define IDC_EG_DIAPHRAGM                1522
@@ -1018,6 +1040,7 @@
 #define IDC_NWC_PHI_TENSION_SPLICED     1523
 #define IDC_EG_DIAPHRAGM_LABEL          1524
 #define IDC_LWC_PHI_TENSION_SPLICED_LABEL 1524
+#define IDC_PHI_LWC_HEADER3             1524
 #define IDC_EG_DC_BS2                   1525
 #define IDC_LWC_PHI_TENSION_PS2         1525
 #define IDC_LWC_PHI_TENSION_SPLICED     1525
@@ -1026,10 +1049,16 @@
 #define IDC_EG_DC_BS2_LABEL             1527
 #define IDC_PHI_LWC_HEADER2             1527
 #define IDC_EG_DW_BS2                   1528
+#define IDC_UHPC_PHI_TENSION_SPLICED    1528
+#define IDC_PHI_UHPC_HEADER5            1528
 #define IDC_EG_DW_BS2_UNIT              1529
+#define IDC_PHI_LWC_HEADER4             1529
 #define IDC_EG_DW_BS2_LABEL             1530
+#define IDC_UHPC_FR_TXT                 1530
 #define IDC_EG_DC_BS3                   1531
+#define IDC_UHPC_FR_UNIT                1531
 #define IDC_EG_DC_BS3_UNIT              1532
+#define IDC_UHPC_FR_LABEL               1532
 #define IDC_EG_DC_BS3_LABEL             1533
 #define IDC_EG_DW_BS3                   1534
 #define IDC_EG_DW_BS3_UNIT              1535
@@ -1142,6 +1171,7 @@
 #define IDC_ADTT2_LABEL                 1576
 #define IDC_SERVICE_III_TENSION_WITH_REBAR 1576
 #define IDC_NO_DIAPHRAGMS               1576
+#define IDC_UHPC_JOINT_PHI              1576
 #define IDC_HARPED_FC                   1577
 #define IDC_ADTT2                       1577
 #define IDC_SERVICE_III_TENSION_WITH_REBAR_UNIT 1577
@@ -1337,11 +1367,17 @@
 #define IDC_USE_90_DAY_STRENGTH         1710
 #define IDC_IGNORE_SKEW_REDUCTION       1710
 #define IDC_90_DAY_STRENGTH_LABEL       1711
+#define IDC_UHPC_FIBER_SHEAR_STRENGTH   1712
+#define IDC_UHPC_FIBER_SHEAR_STRENGTH_UNIT 1713
+#define IDC_UHPC_F1                     1714
+#define IDC_UHPC_F1_UNIT                1715
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
 #define IDC_SEED_VALUE_NOTE             1859
+#define IDC_UHPC_FR                     1900
 #define IDC_ALWC_FR                     2017
+#define IDC_ALWC_FR2                    2020
 #define IDR_LIBEDITORTOOLBAR            12132
 #define IDM_ADD_ENTRY                   36864
 #define IDM_EDIT_ENTRY                  36865
@@ -1366,9 +1402,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        326
+#define _APS_NEXT_RESOURCE_VALUE        327
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1712
+#define _APS_NEXT_CONTROL_VALUE         1716
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

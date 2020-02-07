@@ -200,6 +200,7 @@ public:
    virtual Float64 GetMaxSplittingStress(Float64 fyRebar) const override;
    virtual Float64 GetSplittingZoneLength( Float64 girderHeight ) const override;
    virtual Float64 CSpecAgentImp::GetSplittingZoneLengthFactor() const override;
+   virtual Float64 GetUHPCStrengthAtFirstCrack() const override;
    virtual matRebar::Size GetMinConfinmentBarSize() const override;
    virtual Float64 GetMaxConfinmentBarSpacing() const override;
    virtual Float64 GetMinConfinmentAvS() const override;

@@ -21,7 +21,7 @@ Because of fibers in UHPC, some tension capacity can be relied upon for shear st
 > **USE THESE EXPERIMENTAL FEATURES WITH EXTREME CAUTION**
 
 ## General Concrete Properties
-UHPC is generally treated as if it were Normal concrete. Concrete parameters are used in the AASHTO equations as if the concrete was modeled as normal weight. You may want to adjust any or all of the following parameters, and possibly others, to modify how the AASHTO equations are evaluated.
+Concrete parameters are used in the AASHTO equations as if the UHPC concrete was modeled as normal weight concrete. You may want to adjust any or all of the following parameters, and possibly others, to modify how the AASHTO equations are evaluated.
 
 Equation | Property | Possible Modification
 -------------|------------------------|-------------------
@@ -41,3 +41,9 @@ Several modifications are made to shear capacity analyais for UHPC concrete.
 1. <span style="font-family:Symbol">b</span> is always computed by LRFD Equation 5.7.3.4.2-1 and is limited to a maximum value of 4.8
 2. <span style="font-family:Symbol">q</span> is limited to a minimum value of 29 degrees
 3. LRFD Equation 5.7.3.3-1 for nominal shear capacity is modfied to ![](.\Vn_UHPC.png) where ![](.\Vf.png)
+
+## Splitting Resistance
+Fibers in UHPC contribute to splitting resistance. The splitting resistance defined by LRFD Equation 5.9.4.4.1-1 (*pre-2017: Eqn. 5.10.10.1-1*) is modifed to include the fiber contribution. Splitting resistance is taken to be: ![](.\Pr_UHPC.png)
+
+## Girder Dimensions
+AASHTO LRFD 5.12.3.2.2 (*pre-2017 5.14.1.2.2*) limits the thickness of the various parts of a precast concrete girders. Webs of girders made from UHPC are generally much thinner than webs of girders constructed with conventional concrete. Evaluation of web thickness is not performed for UHPC girders.

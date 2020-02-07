@@ -4800,7 +4800,8 @@ void pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCON
    pArtifact->SetH(pgsTypes::metEnd,end_h);
 
    // basically this is h/4 except that the 4 is a parametric value
-   pArtifact->SetSplittingZoneLengthFactor(pTransverseReinforcementSpec->GetSplittingZoneLengthFactor());
+   Float64 n = pTransverseReinforcementSpec->GetSplittingZoneLengthFactor();
+   pArtifact->SetSplittingZoneLengthFactor(n);
 
    Float64 start_zl = pTransverseReinforcementSpec->GetSplittingZoneLength(start_h);
    pArtifact->SetSplittingZoneLength(pgsTypes::metStart,start_zl);
@@ -4919,12 +4920,23 @@ void pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCON
    pgsTypes::SplittingDirection splittingDirection = pGdr->GetSplittingDirection(segmentKey);
    pArtifact->SetSplittingDirection(splittingDirection);
 
+   bool bUHPC = pMat->GetSegmentConcreteType(segmentKey);
+   Float64 f1 = pTransverseReinforcementSpec->GetUHPCStrengthAtFirstCrack();
+   pArtifact->SetUHPCStrengthAtFirstCrack(f1);
+
    for (int i = 0; i < 2; i++)
    {
       pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
       pArtifact->SetAvs(endType, Avs[endType]);
 
       Float64 Pr = fs*Avs[endType];
+      if (bUHPC)
+      {
+         Float64 h = pArtifact->GetH(endType);
+         Float64 bv = pGdr->GetShearWidth(poi[endType]);
+         pArtifact->SetShearWidth(endType, bv);
+         Pr += (f1 / 2)*(h / n)*bv;
+      }
       pArtifact->SetSplittingResistance(endType, Pr);
    }
 }
@@ -4977,8 +4989,12 @@ void pgsDesigner2::CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmen
       pArtifact->SetProvidedTopFlangeThickness(minTopFlange);
    }
 
-   if (  0 == nWebs )
+   GET_IFACE_NOCHECK(IMaterials, pMaterials);
+   if (  0 == nWebs || pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
+      // this is kind of a hack for UHPC
+      // UHPC can have much thinner webs than conventional concrete... the LRFD limit doesn't apply
+      // we can skip the spec check by saying the web thickness is zero.
       pArtifact->SetProvidedWebThickness(0);
    }
    else

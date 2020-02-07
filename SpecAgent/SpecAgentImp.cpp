@@ -1970,8 +1970,16 @@ Float64 CSpecAgentImp::GetSplittingZoneLengthFactor() const
    GET_IFACE(ISpecification,pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   Float64 bzlf = pSpecEntry->GetSplittingZoneLengthFactor();
-   return bzlf;
+   return pSpecEntry->GetSplittingZoneLengthFactor();
+}
+
+Float64 CSpecAgentImp::GetUHPCStrengthAtFirstCrack() const
+{
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   return pSpecEntry->GetUHPCStrengthAtFirstCrack();
 }
 
 Float64 CSpecAgentImp::GetSplittingZoneLength( Float64 girderHeight ) const

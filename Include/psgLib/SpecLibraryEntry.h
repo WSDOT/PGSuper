@@ -241,6 +241,10 @@ public:
    void SetSplittingZoneLengthFactor(Float64 n);
    Float64 GetSplittingZoneLengthFactor() const;
 
+   // Set/Get parameter for splitting reinforcement for UHPC
+   void SetUHPCStrengthAtFirstCrack(Float64 f1);
+   Float64 GetUHPCStrengthAtFirstCrack() const;
+
    // Get/Set the parameter that determines if the slab offset ("A" Dimension)
    // is checked
    void EnableSlabOffsetCheck(bool enable);
@@ -910,6 +914,10 @@ public:
    void SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
    Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
 
+   // Set/Get the UHPC fiber shear strength
+   void SetUHPCFiberShearStrength(Float64 Yffu);
+   Float64 GetUHPCFiberShearStrength() const;
+
    // Set/Get the shear capacity resistance factors
    void SetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type,Float64 phi);
    Float64 GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const;
@@ -1338,8 +1346,8 @@ private:
    bool    m_DoTensStressHaulingMaxMaxSuper;
    Float64 m_TensStressHaulingMaxMaxSuper;
 
-   std::array<Float64, 3> m_HaulingModulusOfRuptureCoefficient;
-   std::array<Float64, 3> m_LiftingModulusOfRuptureCoefficient;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_HaulingModulusOfRuptureCoefficient;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_LiftingModulusOfRuptureCoefficient;
 
    Float64 m_MinLiftPoint;
    Float64 m_LiftPointAccuracy;
@@ -1400,8 +1408,8 @@ private:
    int     m_Bs3LRFDOverReinforcedMomentCapacity;
    bool    m_bIncludeRebar_Moment;
    bool    m_bIncludeStrand_NegMoment;
-   Float64  m_FlexureModulusOfRuptureCoefficient[3]; // index is pgsTypes::ConcreteType enum
-   Float64  m_ShearModulusOfRuptureCoefficient[3];   // index is pgsTypes::ConcreteType enum
+   std::array<Float64, pgsTypes::ConcreteTypeCount>  m_FlexureModulusOfRuptureCoefficient; // index is pgsTypes::ConcreteType enum
+   std::array<Float64, pgsTypes::ConcreteTypeCount>  m_ShearModulusOfRuptureCoefficient;   // index is pgsTypes::ConcreteType enum
    bool m_bLimitNetTensionStrainToPositiveValues; // when true, es from LRFD Eq 5.7.3.4.2-4 is taken to be zero if it is computed as a negative value
 
    // Closure Joint Allowable Stresses
@@ -1492,21 +1500,21 @@ private:
    pgsTypes::AnalysisType m_AnalysisType; // this data will be in old library entries (version < 28)
 
    // Concrete limits
-   Float64 m_MaxSlabFc[3];
-   Float64 m_MaxSegmentFci[3];
-   Float64 m_MaxSegmentFc[3];
-   Float64 m_MaxClosureFci[3];
-   Float64 m_MaxClosureFc[3];
-   Float64 m_MaxConcreteUnitWeight[3];
-   Float64 m_MaxConcreteAggSize[3];
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxSlabFc;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxSegmentFci;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxSegmentFc;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxClosureFci;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxClosureFc;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxConcreteUnitWeight;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxConcreteAggSize;
 
    bool m_bUpdateLoadFactors; // true if the load factors are from an old library entry
-   Float64 m_DCmin[6];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
-   Float64 m_DWmin[6];
-   Float64 m_LLIMmin[6];
-   Float64 m_DCmax[6];
-   Float64 m_DWmax[6];
-   Float64 m_LLIMmax[6];
+   std::array<Float64, 6> m_DCmin;   // index is one of pgsTypes::LimitState constants (except for CLLIM)
+   std::array<Float64, 6> m_DWmin;
+   std::array<Float64, 6> m_LLIMmin;
+   std::array<Float64, 6> m_DCmax;
+   std::array<Float64, 6> m_DWmax;
+   std::array<Float64, 6> m_LLIMmax;
 
    // Warning checks
    bool m_DoCheckStirrupSpacingCompatibility;
@@ -1521,8 +1529,8 @@ private:
    Float64 m_MaxInterfaceShearConnectorSpacing;
    bool m_bUseDeckWeightForPc;
 
-   Float64 m_StirrupSpacingCoefficient[2];
-   Float64 m_MaxStirrupSpacing[2];
+   std::array<Float64, 2> m_StirrupSpacingCoefficient;
+   std::array<Float64, 2> m_MaxStirrupSpacing;
 
    ShearCapacityMethod m_ShearCapacityMethod;
 
@@ -1545,15 +1553,15 @@ private:
 
    pgsTypes::PrestressTransferComputationType m_PrestressTransferComputationType;
 
-   Float64 m_PhiFlexureTensionPS[3]; // tension controlled, prestressed
-   Float64 m_PhiFlexureTensionRC[3]; // tension controlled, reinforced
-   Float64 m_PhiFlexureTensionSpliced[3]; // tension controlled, spliced girders
-   Float64 m_PhiFlexureCompression[3];
-   Float64 m_PhiShear[3];
-   Float64 m_PhiShearDebonded[3];
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiFlexureTensionPS; // tension controlled, prestressed
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiFlexureTensionRC; // tension controlled, reinforced
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiFlexureTensionSpliced; // tension controlled, spliced girders
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiFlexureCompression;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiShear;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiShearDebonded;
 
-   Float64 m_PhiClosureJointFlexure[3];
-   Float64 m_PhiClosureJointShear[3];
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiClosureJointFlexure;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiClosureJointShear;
 
    Int16 m_RelaxationLossMethod;  // method for computing relaxation losses for LRFD 2005 and later, refined method
    Int16 m_FcgpComputationMethod; // method for computing fcgp for losses. only used for txdot 2013
@@ -1566,6 +1574,9 @@ private:
 
    bool m_bCheckGirderInclination;
    Float64 m_InclinedGirder_FSmax;
+
+   Float64 m_UHPCFiberShearStrength;
+   Float64 m_UHPCStregthAtFirstCrack;
 
    pgsTypes::SlabOffsetRoundingMethod m_SlabOffsetRoundingMethod;
    Float64 m_SlabOffsetRoundingTolerance;
