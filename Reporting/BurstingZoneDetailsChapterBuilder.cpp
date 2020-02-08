@@ -246,7 +246,7 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
             (*pPara) << strName << _T(" Resistance: P") << Sub(_T("r")) << _T(" = ") << RPT_STRESS(_T("s")) << Sub2(_T("A"), _T("s"));
             if (bUHPC)
             {
-               (*pPara) << _T(" + (f1 / 2)(h /") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(")") << Sub2(_T("b"), _T("v"));
+               (*pPara) << _T(" + (") << RPT_STRESS(_T("fc")) << _T(" / 2)(h /") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(")") << Sub2(_T("b"), _T("v"));
             }
             (*pPara) << _T(" = ");
             (*pPara) << _T("(") << stress.SetValue(pArtifact->GetFs(endType)) << _T(")(") << area.SetValue(pArtifact->GetAvs(endType)) << _T(")");

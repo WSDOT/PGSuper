@@ -4920,9 +4920,9 @@ void pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCON
    pgsTypes::SplittingDirection splittingDirection = pGdr->GetSplittingDirection(segmentKey);
    pArtifact->SetSplittingDirection(splittingDirection);
 
-   bool bUHPC = pMat->GetSegmentConcreteType(segmentKey);
-   Float64 f1 = pTransverseReinforcementSpec->GetUHPCStrengthAtFirstCrack();
-   pArtifact->SetUHPCStrengthAtFirstCrack(f1);
+   bool bUHPC = pMat->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
+   Float64 f_fc = pTransverseReinforcementSpec->GetUHPCStrengthAtFirstCrack();
+   pArtifact->SetUHPCStrengthAtFirstCrack(f_fc);
 
    for (int i = 0; i < 2; i++)
    {
@@ -4935,7 +4935,7 @@ void pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCON
          Float64 h = pArtifact->GetH(endType);
          Float64 bv = pGdr->GetShearWidth(poi[endType]);
          pArtifact->SetShearWidth(endType, bv);
-         Pr += (f1 / 2)*(h / n)*bv;
+         Pr += (f_fc / 2)*(h / n)*bv;
       }
       pArtifact->SetSplittingResistance(endType, Pr);
    }

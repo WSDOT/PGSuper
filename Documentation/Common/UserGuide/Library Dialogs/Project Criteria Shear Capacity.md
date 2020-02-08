@@ -10,7 +10,7 @@ Limit net longitudinal strain in the section at the centroid of the tension rein
 
 Enter the coefficient for computing the modulus of rupture, which is used for determining the cracking moment.
 
-Enter the residual flexural strength of UHPC concrete. This parameter is used to compute the shear contribution of fibers in the concrete matrix.
+Enter the residual tensile strength of UHPC concrete. This parameter is used to compute the shear contribution of fibers in the concrete matrix.
 
 Resistance Factors (LRFD 5.5.4.2)
 ----------------------------------

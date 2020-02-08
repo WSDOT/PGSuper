@@ -214,13 +214,13 @@ BEGIN
     COMBOBOX        IDC_CONCRETE_TYPE,90,8,85,92,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Strength, f'c",IDC_STATIC,17,29,39,8
     EDITTEXT        IDC_FC,123,24,53,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_FC_T,180,29,35,8
-    LTEXT           "Unit Weight",IDC_STATIC,17,46,38,8
+    LTEXT           "Static",IDC_FC_T,180,27,35,8
+    LTEXT           "Unit Weight",IDC_STATIC,17,44,38,8
     EDITTEXT        IDC_DS,123,41,53,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DS_T,180,46,35,8
-    LTEXT           "Unit Weight with Reinforcement",IDC_STATIC,17,61,101,8
+    LTEXT           "Static",IDC_DS_T,180,44,35,8
+    LTEXT           "Unit Weight with Reinforcement",IDC_STATIC,17,62,101,8
     EDITTEXT        IDC_DW,123,59,53,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DW_T,180,61,35,8
+    LTEXT           "Static",IDC_DW_T,180,62,35,8
     CONTROL         "Mod. Elasticity, Ec",IDC_MOD_E,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,80,74,10
     EDITTEXT        IDC_EC,123,76,53,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_EC_T,180,80,35,8
@@ -1064,12 +1064,12 @@ BEGIN
     LTEXT           "Static",IDC_UHPC_AGG_SIZE_UNIT,277,248,29,8
 END
 
-IDD_SPEC_DESIGN DIALOGEX 0, 0, 513, 406
+IDD_SPEC_DESIGN DIALOGEX 0, 0, 549, 406
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Spec. Checking and Design"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "At Release Check/Design Options",IDC_STATIC,7,6,499,111
+    GROUPBOX        "At Release Check/Design Options",IDC_STATIC,7,6,535,111
     LTEXT           "Harped Strand Hold Down Force",IDC_STATIC,15,22,104,8
     CONTROL         "Check",IDC_CHECK_HD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,137,20,34,8
     CONTROL         "Design",IDC_DESIGN_HD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,20,34,8
@@ -1094,9 +1094,9 @@ BEGIN
     LTEXT           "Splitting zone length",IDC_STATIC_SPL,238,71,64,8
     LTEXT           "h/",IDC_STATIC_SH,307,71,8,8
     EDITTEXT        IDC_N,316,68,18,14,ES_AUTOHSCROLL
-    LTEXT           "UHPC, strength at first crack, f1",IDC_STATIC,342,71,101,8
-    EDITTEXT        IDC_UHPC_F1,445,68,33,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_UHPC_F1_UNIT,479,71,19,8
+    LTEXT           "UHPC, first crack flexural strength (f fc)",IDC_STATIC,340,71,124,8
+    EDITTEXT        IDC_UHPC_F1,466,67,33,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_UHPC_F1_UNIT,500,70,19,8
     LTEXT           "Confinement Reinforcement (5.10.10.2)",IDC_SCONFINEMENT,17,84,124,8
     CONTROL         "Check",IDC_CHECK_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,151,84,37,8
     CONTROL         "Design",IDC_DESIGN_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,191,84,37,8
@@ -1104,7 +1104,7 @@ BEGIN
     CONTROL         "Check",IDC_CHECK_HANDLING_WEIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,95,100,34,10
     EDITTEXT        IDC_HANDLING_WEIGHT,132,99,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_HANDLING_WEIGHT_UNIT,177,101,19,8
-    GROUPBOX        "Lifting Check/Design Options",IDC_STATIC,7,118,499,30
+    GROUPBOX        "Lifting Check/Design Options",IDC_STATIC,7,118,535,30
     CONTROL         "Check",IDC_CHECK_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,131,37,8
     CONTROL         "Design",IDC_DESIGN_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,51,131,37,8
     LTEXT           "Min Lifting Point Location from ends of girder",IDC_MIN_LIFTING_POINT_LABEL,97,132,140,8
@@ -1114,7 +1114,7 @@ BEGIN
     LTEXT           "Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,365,131,31,8
     EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,401,128,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,445,131,19,8
-    GROUPBOX        "Hauling Check/Design Options",IDC_STATIC,7,151,499,40
+    GROUPBOX        "Hauling Check/Design Options",IDC_STATIC,7,151,535,40
     CONTROL         "Check",IDC_CHECK_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,162,37,8
     CONTROL         "Design",IDC_DESIGN_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,51,162,37,8
     LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,90,162,149,8
@@ -1128,7 +1128,7 @@ BEGIN
     EDITTEXT        IDC_SUPPORT_LESS_THAN,166,172,25,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,194,174,44,8
     LTEXT           "(For Kansas method only)",IDC_STATIC_K,249,174,80,8
-    GROUPBOX        "Final Check/Design Options",IDC_STATIC,7,193,499,74
+    GROUPBOX        "Final Check/Design Options",IDC_STATIC,7,193,535,74
     LTEXT           "Haunch Geometry",IDC_STATIC,15,207,94,8
     CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,207,37,8
     CONTROL         "Design",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,207,37,8
@@ -1145,18 +1145,18 @@ BEGIN
     CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,252,37,10
     LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,173,252,51,8
     EDITTEXT        IDC_INCLINDED_GIRDER_FS,233,249,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Harped Strand Design",IDC_STATIC,7,269,499,36
+    GROUPBOX        "Harped Strand Design",IDC_STATIC,7,269,535,36
     CONTROL         "Add Strands Using the Permanent Strand Fill Order",IDC_RADIO_FILL_PERMANENT,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,279,193,10
     CONTROL         "Minimize Number of Harped Strands (*)",IDC_RADIO2,
                     "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,290,137,10
     LTEXT           "* If necessary, straight strands may be traded for harped in order to control top tension",IDC_STATIC,151,290,273,9
-    GROUPBOX        "Roadway Elevation Checks",IDC_ELEVATION_TOLERANCE_GROUP,7,309,499,40
+    GROUPBOX        "Roadway Elevation Checks",IDC_ELEVATION_TOLERANCE_GROUP,7,309,535,40
     LTEXT           "Minimum difference between finished and design roadway surface elevation",IDC_ELEVATION_TOLERANCE_LABEL,16,322,238,8
     EDITTEXT        IDC_ELEVATION_TOLERANCE,266,319,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_ELEVATION_TOLERANCE_UNIT,309,322,19,8
     LTEXT           "This setting applies to adjacent girder bridges without a deck. See documentation for additional details",IDC_ELEVATION_TOLERANCE_NOTE,15,335,320,8
-    GROUPBOX        "Concrete Strength for Limit State Evaluations",IDC_FC_GROUP,7,355,499,44
+    GROUPBOX        "Concrete Strength for Limit State Evaluations",IDC_FC_GROUP,7,355,535,44
     CONTROL         "Use fc at the time of loading (5.14.3.2d and 5.14.1.3.3)",IDC_FC1,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,369,188,10
     CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,382,93,10
@@ -1194,7 +1194,7 @@ BEGIN
     EDITTEXT        IDC_UHPC_FR,107,115,32,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c)",IDC_UHPC_FR_UNIT,143,117,154,8
     LTEXT           "MPa",IDC_FR_LABEL_UHPC,173,118,31,8,NOT WS_VISIBLE
-    LTEXT           "UHPC residual flexural strength",IDC_STATIC,17,134,98,8
+    LTEXT           "UHPC residual tensile strength",IDC_STATIC,17,134,96,8
     EDITTEXT        IDC_UHPC_FIBER_SHEAR_STRENGTH,119,132,32,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_UHPC_FIBER_SHEAR_STRENGTH_UNIT,156,135,19,8
     GROUPBOX        "Resistance Factors",IDC_PHI_GROUP,7,152,417,80
@@ -2163,7 +2163,7 @@ BEGIN
     IDD_SPEC_DESIGN, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 506
+        RIGHTMARGIN, 542
         VERTGUIDE, 15
         VERTGUIDE, 26
         TOPMARGIN, 7
@@ -2791,6 +2791,11 @@ BEGIN
 END
 
 IDD_SPEC_LIMITS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CONCRETE_GENERAL AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
