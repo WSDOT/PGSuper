@@ -224,10 +224,10 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
       }
       m_pGrid->FillGrid(vec, m_ShearData.bAreZonesSymmetrical);
 
-      // can't delete strands at start
-      CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);
-      ASSERT(pdel);
-      pdel->EnableWindow(FALSE);
+      //// can't delete strands at start
+      //CWnd* pdel = GetDlgItem(IDC_REMOVEROWS);
+      //ASSERT(pdel);
+      //pdel->EnableWindow(FALSE);
 
    }
 }
