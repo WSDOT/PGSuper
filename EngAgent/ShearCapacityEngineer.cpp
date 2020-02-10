@@ -226,7 +226,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    }
 
    // Max crushing capacity - 5.7.3.3-2 (pre2017: 5.8.3.3-2)
-   bool bUHPC = pMaterial->GetSegmentConcreteType(segmentKey);
+   bool bUHPC = pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
    Float64 k = (bUHPC ? 0.18 : 0.25);
    pscd->Vn2 = k * pscd->fc * pscd->dv * pscd->bv + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
 
