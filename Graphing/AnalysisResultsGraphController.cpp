@@ -138,6 +138,7 @@ void CAnalysisResultsGraphController::SetActionType(ActionType actionType)
          UpdateElevAdjustment();
          UpdatePrecamberAdjustment();
          UpdateStressControls();
+         UpdateResultsType();
 
          // the loads that are available to plot for a particular action depend on the
          // current action type... update the loading list for this new action
@@ -892,6 +893,17 @@ bool IsCumulativeOnlyGraphType(GraphType graphType)
 
 void CAnalysisResultsGraphController::UpdateResultsType()
 {
+   if (GetActionType() == actionLoadRating)
+   {
+      GetDlgItem(IDC_INCREMENTAL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_CUMULATIVE)->ShowWindow(SW_HIDE);
+      return;
+   }
+
+   // always set to show here because the controls get hidden for load rating graph
+   GetDlgItem(IDC_INCREMENTAL)->ShowWindow(SW_SHOW);
+   GetDlgItem(IDC_CUMULATIVE)->ShowWindow(SW_SHOW);
+
    bool bCumulativeOnly = false;
    CAnalysisResultsGraphBuilder* pGraphBuilder = (CAnalysisResultsGraphBuilder*)GetGraphBuilder();
    if ( GetGraphMode() == Interval )
@@ -918,10 +930,12 @@ void CAnalysisResultsGraphController::UpdateResultsType()
    {
       CheckRadioButton(IDC_INCREMENTAL,IDC_CUMULATIVE,IDC_CUMULATIVE);
       GetDlgItem(IDC_INCREMENTAL)->EnableWindow(FALSE);
+      GetDlgItem(IDC_CUMULATIVE)->EnableWindow(TRUE);
    }
    else
    {
       GetDlgItem(IDC_INCREMENTAL)->EnableWindow(TRUE);
+      GetDlgItem(IDC_CUMULATIVE)->EnableWindow(TRUE);
    }
 }
 

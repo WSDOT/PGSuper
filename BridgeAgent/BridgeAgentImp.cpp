@@ -34002,9 +34002,9 @@ void CBridgeAgentImp::GetShapeProperties(pgsTypes::SectionPropertyType sectPropT
       Float64 Ec;
       csi->get_Efg(&Ec);
 
-      ATLASSERT(!IsEqual(Ec, Ecgdr)); // why are we doing this is the young's modulus isn't different?
+      //ATLASSERT(!IsEqual(Ec, Ecgdr)); // why are we doing this is the young's modulus isn't different?
 
-                                      //Update E for the girder
+      //Update E for the girder
       csi->put_Efg(Ecgdr);
 
       // change background materials

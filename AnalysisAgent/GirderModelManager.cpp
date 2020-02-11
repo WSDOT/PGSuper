@@ -4829,11 +4829,26 @@ std::vector<Float64> CGirderModelManager::GetSlabDesignMoment(pgsTypes::LimitSta
    if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
    {
       GET_IFACE(ICombinedForces2,pForces);
-      GET_IFACE(ILoadFactors,pILoadFactors);
-      const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-      Float64 gCRMax = pLoadFactors->GetCRMax(limitState);
-      Float64 gSHMax = pLoadFactors->GetSHMax(limitState);
-      Float64 gREMax = pLoadFactors->GetREMax(limitState);
+
+      Float64 gCRMax;
+      Float64 gSHMax;
+      Float64 gREMax;
+      if (IsRatingLimitState(limitState))
+      {
+         GET_IFACE(IRatingSpecification, pRatingSpec);
+         gCRMax = pRatingSpec->GetCreepFactor(limitState);
+         gSHMax = pRatingSpec->GetShrinkageFactor(limitState);
+         gREMax = pRatingSpec->GetRelaxationFactor(limitState);
+      }
+      else
+      {
+         GET_IFACE(ILoadFactors, pILoadFactors);
+         const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+         gCRMax = pLoadFactors->GetCRMax(limitState);
+         gSHMax = pLoadFactors->GetSHMax(limitState);
+         gREMax = pLoadFactors->GetREMax(limitState);
+      }
+
 
       std::vector<Float64> vMcr = pForces->GetMoment(lastIntervalIdx,lcCR,vPoi,bat,rtCumulative);
       std::vector<Float64> vMsh = pForces->GetMoment(lastIntervalIdx,lcSH,vPoi,bat,rtCumulative);

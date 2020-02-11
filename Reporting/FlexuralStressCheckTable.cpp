@@ -677,7 +677,7 @@ void CFlexuralStressCheckTable::BuildAllowGirderStressInformation(rptChapter* pC
    // Build table
    INIT_UV_PROTOTYPE( rptPressureSectionValue, stress_u, pDisplayUnits->GetStressUnit(), true );
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals); // doesn't get used in all cases
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
