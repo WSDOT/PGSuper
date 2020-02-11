@@ -1320,6 +1320,12 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
             }
          }
 
+         if (IsZero(avs_demand))
+         {
+            ipoi++;
+            continue;
+         }
+
          // get minimum stirrup spacing requirements (LRFD 5.7.2.5 (pre2017: 5.8.2.5))
          Float64 bv = pGdr->GetShearWidth( poi );
          Float64 avs_min = lrfdRebar::GetAvOverSMin(fc,bv,fy); // LRFD 5.7.2.5 (pre2017: 5.8.2.5)
@@ -2624,9 +2630,19 @@ Float64 pgsShearDesignTool::GetAvsReqdForSplitting() const
    ATLASSERT(DoDesignForSplitting());
 
    const pgsSplittingZoneArtifact* pSplittingArtifact = m_StirrupCheckArtifact.GetSplittingZoneArtifact();
-   Float64 avs_req_start = pSplittingArtifact->GetTotalSplittingForce(pgsTypes::metStart) / (pSplittingArtifact->GetFs(pgsTypes::metStart) * m_StartSplittingZl);
-   Float64 avs_req_end   = pSplittingArtifact->GetTotalSplittingForce(pgsTypes::metEnd)   / (pSplittingArtifact->GetFs(pgsTypes::metEnd)   * m_EndSplittingZl);
+   Float64 f_fc = pSplittingArtifact->GetUHPCStrengthAtFirstCrack();
+   Float64 n = pSplittingArtifact->GetSplittingZoneLengthFactor();
+   std::array<Float64, 2> avs_reqd;
+   for (int i = 0; i < 2; i++)
+   {
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+      Float64 bv = pSplittingArtifact->GetShearWidth(endType);
+      Float64 h = pSplittingArtifact->GetH(endType);
+      Float64 Pr = pSplittingArtifact->GetTotalSplittingForce(endType);
+      Float64 fs = pSplittingArtifact->GetFs(endType);
+      Float64 Lz = (endType == pgsTypes::metStart) ? m_StartSplittingZl : m_EndSplittingZl;
+      avs_reqd[endType] = (Pr - (f_fc / 2)*(h / n)*bv) / (fs*Lz);
+   }
 
-   Float64 avs_req = Max(avs_req_start, avs_req_end);
-   return avs_req;
+   return Max(avs_reqd[pgsTypes::metStart], avs_reqd[pgsTypes::metEnd]);
 }

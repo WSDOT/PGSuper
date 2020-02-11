@@ -15270,7 +15270,6 @@ const CHorizontalInterfaceZoneData* CBridgeAgentImp::GetHorizInterfaceShearZoneD
    ZoneIndexType idx = GetHorizInterfaceShearZoneIndexAtPoi(poi,pShearData);
    if ( idx == INVALID_INDEX )
    {
-      ATLASSERT(false);
       return nullptr;
    }
    return &pShearData->HorizontalInterfaceZones[idx];

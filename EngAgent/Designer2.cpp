@@ -4922,7 +4922,7 @@ void pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCON
    pArtifact->SetSplittingDirection(splittingDirection);
 
    bool bUHPC = pMat->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
-   Float64 f_fc = pTransverseReinforcementSpec->GetUHPCStrengthAtFirstCrack();
+   Float64 f_fc = (bUHPC ? pTransverseReinforcementSpec->GetUHPCStrengthAtFirstCrack() : 0);
    pArtifact->SetUHPCStrengthAtFirstCrack(f_fc);
 
    for (int i = 0; i < 2; i++)
@@ -9716,6 +9716,9 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
    // stirrup tightening is a remedy.
    m_ShearDesignTool.SetLongShearCapacityRequiresStirrupTightening(false);
 
+   GET_IFACE(IMaterials, pMaterials);
+   bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
+
    bool bIter = true;
    while(bIter)
    {
@@ -9731,13 +9734,21 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
       if (bDoStartFromScratch)
       {
          // From-scratch stirrup layout - do initial check with minimal stirrups
-         // Minimal stirrups are needed so we don't use equations for Beta for less than min stirrup configuration
-         CShearData2 default_data; // Use defaults from constructor to create no-stirrup condition
-         shear_data.ShearZones = default_data.ShearZones;
-         shear_data.ShearZones.front().VertBarSize = matRebar::bs5;
-         shear_data.ShearZones.front().BarSpacing  = 24.0 * one_inch;
-         shear_data.ShearZones.front().nVertBars   = 2;
-         shear_data.HorizontalInterfaceZones = default_data.HorizontalInterfaceZones;
+         if (bUHPC)
+         {
+            shear_data.ShearZones.clear();
+            shear_data.HorizontalInterfaceZones.clear();
+         }
+         else
+         {
+            // Minimal stirrups are needed so we don't use equations for Beta for less than min stirrup configuration
+            CShearData2 default_data; // Use defaults from constructor to create no-stirrup condition
+            shear_data.ShearZones = default_data.ShearZones;
+            shear_data.ShearZones.front().VertBarSize = matRebar::bs5;
+            shear_data.ShearZones.front().BarSpacing = 24.0 * one_inch;
+            shear_data.ShearZones.front().nVertBars = 2;
+            shear_data.HorizontalInterfaceZones = default_data.HorizontalInterfaceZones;
+         }
 
          shear_data.bIsRoughenedSurface = m_ShearDesignTool.GetIsTopFlangeRoughened();
          shear_data.bUsePrimaryForSplitting = m_ShearDesignTool.GetDoPrimaryBarsProvideSplittingCapacity();
@@ -9784,14 +9795,13 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
             // Additional rebar is needed for long reinf for shear. Add bars, if possible
             Float64 av_add = m_ShearDesignTool.GetRequiredAsForLongReinfShear();
 
-            GET_IFACE(IMaterials,pMaterial);
             matRebar::Grade barGrade;
             matRebar::Type barType;
-            pMaterial->GetSegmentTransverseRebarMaterial(segmentKey,&barType,&barGrade);
+            pMaterials->GetSegmentTransverseRebarMaterial(segmentKey,&barType,&barGrade);
             lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
             ATLASSERT(pool != nullptr);
 
-            Float64 max_agg_size = pMaterial->GetSegmentMaxAggrSize(segmentKey); // for 1.33 max agg size for bar spacing
+            Float64 max_agg_size = pMaterials->GetSegmentMaxAggrSize(segmentKey); // for 1.33 max agg size for bar spacing
 
             GET_IFACE(IGirder,pGirder);
             Float64 wFlange = pGirder->GetBottomWidth(pgsPointOfInterest(segmentKey, 0.0));
