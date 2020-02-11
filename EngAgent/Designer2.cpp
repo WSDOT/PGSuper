@@ -3955,6 +3955,7 @@ Float64 pgsDesigner2::GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAP
       switch( scd.ConcreteType )
       {
       case pgsTypes::Normal:
+      case pgsTypes::UHPC:
          avs *= sqrt(fc);
          break;
 

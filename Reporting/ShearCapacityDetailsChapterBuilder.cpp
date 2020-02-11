@@ -2267,6 +2267,7 @@ void write_Vc_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_NWC_US.png") : _T("VcEquation_NWC_SI.png"));
                break;
 
@@ -2568,6 +2569,7 @@ void write_Vci_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                strImage = _T("Vci_NWC.png");
                break;
 
@@ -2710,6 +2712,7 @@ void write_Vcw_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                strImage = _T("Vcw_NWC.png");
                break;
 
@@ -2847,6 +2850,7 @@ void write_theta_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                strImage = _T("cotan_theta_NWC.png");
                break;
 

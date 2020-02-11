@@ -140,6 +140,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          switch( concType )
          {
          case pgsTypes::Normal:
+         case pgsTypes::UHPC:
             strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_NWC_US.png") : _T("AvOverSMin_NWC_SI.png"));
             break;
 
@@ -206,6 +207,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          switch( concType )
          {
          case pgsTypes::Normal:
+         case pgsTypes::UHPC:
             strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_NWC_US.png") : _T("AvOverSMin_NWC_SI.png"));
             break;
 

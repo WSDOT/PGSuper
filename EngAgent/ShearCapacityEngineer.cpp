@@ -918,6 +918,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       switch( pscd->ConcreteType )
       {
       case pgsTypes::Normal:
+      case pgsTypes::UHPC:
          pscd->bHasFct = false;
          pscd->fct = 0;
          break;
@@ -1177,6 +1178,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
             switch( pscd->ConcreteType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                Vc *= sqrt(fc);
                break;
 
