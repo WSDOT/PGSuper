@@ -766,6 +766,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
    for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
    {
       Float64 avs_val = 0.0;
+      bool bStirrupsRequired;
       const pgsStirrupCheckAtPoisArtifact* pStrI_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(liveLoadIntervalIdx,pgsTypes::StrengthI,idx);
       const pgsPointOfInterest& poi = pStrI_artf->GetPointOfInterest();
 
@@ -776,6 +777,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
       {
          const pgsVerticalShearArtifact* pvertart = pStrI_artf->GetVerticalShearArtifact();
          avs_val = pvertart->GetAvOverSReqd();
+         bStirrupsRequired = pvertart->GetAreStirrupsReqd();
 
          if( pvertart->IsStrutAndTieRequired() )
          {
@@ -803,9 +805,11 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
 
             // Envelope str I & II
             Float64 avs_II;
+            bool bStirrupsRequired_II;
             const pgsStirrupCheckAtPoisArtifact* pStrII_artf = m_StirrupCheckArtifact.GetStirrupCheckAtPoisArtifact(liveLoadIntervalIdx,pgsTypes::StrengthII,idx);
             const pgsVerticalShearArtifact* pvertart = pStrII_artf->GetVerticalShearArtifact();
             avs_II = pvertart->GetAvOverSReqd();
+            bStirrupsRequired_II = pvertart->GetAreStirrupsReqd();
             was_strut_tie_reqd = true;
 
             // Compute concrete strength required if shear stress forces strut and tie at CSS
@@ -821,7 +825,11 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
 
             LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
 
-            avs_val = Max( avs_val, avs_II );
+            if (avs_val < avs_II)
+            {
+               avs_val = avs_II;
+               bStirrupsRequired = bStirrupsRequired_II;
+            }
          }
          else
          {
@@ -835,7 +843,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
          }
       }
 
-      m_VertShearAvsDemandAtPois.push_back(avs_val);
+      m_VertShearAvsDemandAtPois.emplace_back(avs_val,bStirrupsRequired);
    }
 
    ShearDesignOutcome sd = sdSuccess;
@@ -853,7 +861,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
    return sd;
 }
 
-void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations) const
+void pgsShearDesignTool::ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations) const
 {
    IndexType numpois = m_DesignPois.size();
 
@@ -867,7 +875,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       for ( const pgsPointOfInterest& poi : m_DesignPois)
       {
          Float64 x = poi.GetDistFromStart();
-         Float64 y  = rDemandAtPois[idx];
+         Float64 y  = rDemandAtPois[idx].first;
          if ( !IsEqual(last_x,x) )
          {
             mirror_avs.AddPoint(gpPoint2d(x,y));
@@ -897,7 +905,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
          for ( const pgsPointOfInterest& poi : m_DesignPois)
          {
             Float64 x = poi.GetDistFromStart();
-            Float64& ry  = rDemandAtPois[idx]; // grab reference for reassignment below
+            Float64& ry  = rDemandAtPois[idx].first; // grab reference for reassignment below
             Float64 mry = mirror_avs.Evaluate(x);
    
             Float64 maxy = Max(ry, mry);
@@ -928,12 +936,12 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       {
          if (first)
          {
-            lastval = rDemandAtPois[idx-1];
+            lastval = rDemandAtPois[idx-1].first;
             first = false;
          }
          else
          {
-            Float64& rcurval = rDemandAtPois[idx-1]; // reference
+            Float64& rcurval = rDemandAtPois[idx-1].first; // reference
             if( rcurval < lastval)
             {
                rcurval = lastval;
@@ -951,12 +959,12 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       {
          if (first)
          {
-            lastval = rDemandAtPois[idx];
+            lastval = rDemandAtPois[idx].first;
             first = false;
          }
          else
          {
-            Float64& rcurval = rDemandAtPois[idx];
+            Float64& rcurval = rDemandAtPois[idx].first;
             if( rcurval < lastval)
             {
                rcurval = lastval;
@@ -977,7 +985,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
       for ( const pgsPointOfInterest& poi : m_DesignPois)
       {
          Float64 x = poi.GetDistFromStart();
-         Float64 ry  = rDemandAtPois[idx];
+         Float64 ry  = rDemandAtPois[idx].first;
          Float64 mry = mirror_avs.Evaluate(x);
 
          LOG( x << _T(", ") << mry <<_T(", ") << ry);
@@ -1006,7 +1014,7 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
          x = poi.GetDistFromStart();
       }
 
-      Float64 y  = rDemandAtPois[pidx];
+      Float64 y  = rDemandAtPois[pidx].first;
 
       rDemandAtLocations.AddPoint(gpPoint2d(x,y));
       pidx++;
@@ -1016,7 +1024,13 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, m
 Float64 pgsShearDesignTool::GetVerticalAvsDemand(IndexType PoiIdx) const
 {
    ATLASSERT(PoiIdx < m_VertShearAvsDemandAtPois.size() && PoiIdx != INVALID_INDEX);
-   return m_VertShearAvsDemandAtPois[PoiIdx];
+   return m_VertShearAvsDemandAtPois[PoiIdx].first;
+}
+
+bool pgsShearDesignTool::GetAreVerticalStirrupsRequired(IndexType PoiIdx) const
+{
+   ATLASSERT(PoiIdx < m_VertShearAvsDemandAtPois.size() && PoiIdx != INVALID_INDEX);
+   return m_VertShearAvsDemandAtPois[PoiIdx].second;
 }
 
 Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart) const
@@ -1088,7 +1102,7 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand() const
          avs_val = 0.0;
       }
 
-      m_HorizShearAvsDemandAtPois.push_back(avs_val);
+      m_HorizShearAvsDemandAtPois.emplace_back(avs_val,true);
    }
 
    // Process Av/s curve for symmetry and increasing value toward ends
@@ -1098,7 +1112,7 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand() const
 Float64 pgsShearDesignTool::GetHorizontalAvsDemand(IndexType PoiIdx) const
 {
    ATLASSERT(PoiIdx < m_HorizShearAvsDemandAtPois.size() && PoiIdx != INVALID_INDEX);
-   return m_HorizShearAvsDemandAtPois[PoiIdx];
+   return m_HorizShearAvsDemandAtPois[PoiIdx].first;
 }
 
 Float64 pgsShearDesignTool::GetHorizontalAvsDemand(Float64 distFromStart) const
@@ -1307,6 +1321,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
          // Compute zone data
          Float64 max_spac =   ComputeMaxStirrupSpacing(ipoi);
          Float64 avs_demand = GetVerticalAvsDemand(ipoi);
+         bool bVerticalStirrupsRequired = GetAreVerticalStirrupsRequired(ipoi);
 
          // Use primary bars for horizontal shear if needed.
          bool horiz_controlled = false;
@@ -1318,12 +1333,6 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
                avs_demand = havs_demand;
                horiz_controlled = true;
             }
-         }
-
-         if (IsZero(avs_demand))
-         {
-            ipoi++;
-            continue;
          }
 
          // get minimum stirrup spacing requirements (LRFD 5.7.2.5 (pre2017: 5.8.2.5))
@@ -1347,6 +1356,13 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
                   m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::TooManyStirrupsReqd);
                }
                return false;
+            }
+
+
+            if (IsZero(avs_demand) && !bVerticalStirrupsRequired && !horiz_controlled)
+            {
+               ipoi++;
+               continue;
             }
 
             // We have a bar size and nlegs - start design of first zone

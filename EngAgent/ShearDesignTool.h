@@ -187,7 +187,6 @@ private:
    GDRCONFIG GetSegmentConfiguration() const;
 
    const CSegmentKey& GetSegmentKey() const;
-   Float64 GetSegmentLength() const;
 
    // Design Control Values
    bool DoDesignForConfinement() const;
@@ -319,11 +318,11 @@ private:
    mutable PoiList m_DesignPois; // sorted along girder
 
    // Two ways to store same vert av/s demand data here, by POI, and by X location
-   mutable std::vector<Float64> m_VertShearAvsDemandAtPois;    // Avs demand by POI
+   mutable std::vector<std::pair<Float64,bool>> m_VertShearAvsDemandAtPois;    // Avs demand by POI, bool indicates if stirrups are required regardless of Avs = 0
    mutable mathPwLinearFunction2dUsingPoints m_VertShearAvsDemandAtX; // Avs demand at locations along girder
 
    // Two ways to store same Horiz av/s demand data here, by POI, and by X location
-   mutable std::vector<Float64> m_HorizShearAvsDemandAtPois;    // Avs demand by POI
+   mutable std::vector<std::pair<Float64,bool>> m_HorizShearAvsDemandAtPois;    // Avs demand by POI
    mutable mathPwLinearFunction2dUsingPoints m_HorizShearAvsDemandAtX; // Avs demand at locations along girder
 
    // Store entire stirrup check artifact
@@ -349,6 +348,7 @@ private:
 
    // Av/S demand at poi
    Float64 GetVerticalAvsDemand(IndexType PoiIdx) const;
+   bool GetAreVerticalStirrupsRequired(IndexType PoiIdx) const;
 
    // Av/S demand at locations along girder
    Float64 GetVerticalAvsDemand(Float64 distFromStart) const;
@@ -391,7 +391,7 @@ private:
    ShearDesignOutcome ValidateVerticalAvsDemand() const;
    void ValidateHorizontalAvsDemand() const;
 
-   void ProcessAvsDemand(std::vector<Float64>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations) const;
+   void ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations) const;
 
 private:
 	DECLARE_SHARED_LOGFILE;
