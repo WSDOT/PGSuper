@@ -14915,9 +14915,16 @@ Float64 CBridgeAgentImp::GetPrimarySplittingAv(const CSegmentKey& segmentKey,Flo
 
 void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const
 {
-   const CShearData2* pShearData = GetShearData(segmentKey);
-
    ZoneIndexType nbrZones = GetPrimaryZoneCount(segmentKey);
+   if (nbrZones == 0)
+   {
+      *pSize = matRebar::bsNone;
+      *pProvidedZoneLength = 0.0;
+      *pSpacing = Float64_Max;
+      return;
+   }
+
+   const CShearData2* pShearData = GetShearData(segmentKey);
 
    // First get data from primary zones - use min bar size and max spacing from zones in required region
    Float64 primSpc(-1), primZonL(-1);
@@ -14962,10 +14969,6 @@ void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, 
 
 void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const
 {
-   const CShearData2* pShearData = GetShearData(segmentKey);
-
-   Float64 segment_length = GetSegmentLength(segmentKey);
-
    ZoneIndexType nbrZones = GetPrimaryZoneCount(segmentKey);
    if (nbrZones == 0)
    {
@@ -14974,6 +14977,10 @@ void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, F
       *pSpacing = Float64_Max;
       return;
    }
+
+   const CShearData2* pShearData = GetShearData(segmentKey);
+
+   Float64 segment_length = GetSegmentLength(segmentKey);
 
    // First get data from primary zones - use min bar size and max spacing from zones in required region
    Float64 primSpc(-1), primZonL(-1);
