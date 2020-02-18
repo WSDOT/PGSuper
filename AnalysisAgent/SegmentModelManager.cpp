@@ -2415,7 +2415,17 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
          pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xs, &mbrIDStart, &Xs);
          pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
          
-         pointLoadsX->Create(ptLoadIDX++,mbrIDStart,Xs,equivLoad.P,equivLoad.N,equivLoad.Mx,lotGlobal,&ptLoad);
+         if (IsZero(equivLoad.N))
+         {
+            pointLoadsX->Create(ptLoadIDX++, mbrIDStart, Xs, equivLoad.P, equivLoad.N, equivLoad.Mx, lotGlobal, &ptLoad);
+         }
+         else
+         {
+            // if N is not zero, this is the load for the vertical component of harped strand prestress
+            // P is in the data structure for reporting purposes, so we can show how N is computed
+            // however, there is not a new axial load, P, applied at this location
+            pointLoadsX->Create(ptLoadIDX++, mbrIDStart, Xs, 0.0/*equivLoad.P*/, equivLoad.N, equivLoad.Mx, lotGlobal, &ptLoad);
+         }
 
          if (!IsZero(equivLoad.wy))
          {
