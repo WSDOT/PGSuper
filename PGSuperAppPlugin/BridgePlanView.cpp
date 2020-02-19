@@ -705,6 +705,11 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       SpanIndexType nSpans = pBridge->GetSpanCount();
       m_EndSpanIdx = (nSpans <= m_EndSpanIdx ? nSpans-1 : m_EndSpanIdx);
 
+      if (m_EndSpanIdx < m_StartSpanIdx)
+      {
+         m_StartSpanIdx = 0;
+      }
+
       if ( lHint != HINT_BRIDGEVIEWSETTINGSCHANGED )
       {
          m_pFrame->InitSpanRange();
