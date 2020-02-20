@@ -721,7 +721,7 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
          std::vector<Float64> vRzThisSegment;
          if ((resultsType == rtIncremental && intervalIdx == releaseIntervalIdx) || (resultsType == rtCumulative && releaseIntervalIdx <= intervalIdx))
          {
-            GetPrestressSectionResults(intervalIdx, vPoi, resultsType, &vFx, &vFy, &vMz, &vDx, &vDy, &vRzThisSegment);
+            GetPrestressSectionResults(intervalIdx, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDy, &vRzThisSegment);
             vRz.insert(vRz.end(), vRzThisSegment.begin(), vRzThisSegment.end());
          }
          else

@@ -2405,6 +2405,24 @@ Float64 CAnalysisAgentImp::GetVehicleWeight(pgsTypes::LiveLoadType llType,Vehicl
 //
 std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
+   if (pfType == pgsTypes::pftPretension)
+   {
+      GET_IFACE(IPointOfInterest, pPoi);
+      std::list<PoiList> sPoi;
+      pPoi->GroupBySegment(vPoi, &sPoi);
+      if (1 < sPoi.size())
+      {
+         std::vector<Float64> vFx;
+         vFx.reserve(vPoi.size());
+         for (const auto& vPoiThisSegment : sPoi)
+         {
+            std::vector<Float64> vFxThisSegment = GetAxial(intervalIdx, pfType, vPoiThisSegment, bat, resultsType);
+            vFx.insert(vFx.end(), vFxThisSegment.begin(), vFxThisSegment.end());
+         }
+         return vFx;
+      }
+   }
+
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
 
@@ -2432,13 +2450,16 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
          if ( pfType == pgsTypes::pftPretension )
          {
             // for elastic analysis, force effects due to pretensioning are always those at release
-            if ( resultsType == rtCumulative )
+            CSegmentKey segmentKey = vPoi.front().get().GetSegmentKey();
+            GET_IFACE(IIntervals, pIntervals);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+            if ( resultsType == rtIncremental && intervalIdx != releaseIntervalIdx)
             {
-               CSegmentKey segmentKey = vPoi.front().get().GetSegmentKey();
-               GET_IFACE(IIntervals,pIntervals);
-               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-               intervalIdx = releaseIntervalIdx;
+               // incremental results are zero, except in the release interval
+               results.resize(vPoi.size(), 0.0);
+               return results;
             }
+            intervalIdx = releaseIntervalIdx;
          }
 
          // Post-tensioning is not modeled for linear elastic analysis, so the
