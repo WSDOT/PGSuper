@@ -855,23 +855,51 @@ void CBridgeDescGeneralPage::FillGirderOrientationComboBox()
    // Girder Orientation
    CComboBox* pOrientation = (CComboBox*)GetDlgItem(IDC_GIRDER_ORIENTATION);
    int curSel = pOrientation->GetCurSel();
+   // Assume plumb if no current selection
+   pgsTypes::GirderOrientationType curOrientation = (curSel!=CB_ERR) ? (pgsTypes::GirderOrientationType)pOrientation->GetItemData(curSel) : pgsTypes::Plumb;
 
+   // Refill cb
+   pOrientation->ResetContent();
+   int numInList = 0;
    std::vector<pgsTypes::GirderOrientationType> vTypes = m_Factory->GetSupportedGirderOrientation();
    for (auto type : vTypes)
    {
       int idx = pOrientation->AddString(strOrientation[type]);
       pOrientation->SetItemData(idx, (DWORD_PTR)type);
+      numInList++;
    }
 
-   if (curSel == CB_ERR)
+   // There is a chance that value set in old list is not available in new list
+   bool wasSet(false);
+   if (curSel != CB_ERR)
    {
-      pOrientation->SetCurSel(0);
-   }
-   else
-   {
-      if (pOrientation->SetCurSel(curSel) == CB_ERR)
+      for (int isel = 0; isel < numInList; isel++)
       {
-         pOrientation->SetCurSel(0);
+         pgsTypes::GirderOrientationType orientation = (pgsTypes::GirderOrientationType)pOrientation->GetItemData(isel);
+         if (orientation == curOrientation)
+         {
+            if (pOrientation->SetCurSel(isel) == CB_ERR)
+            {
+               ATLASSERT(0); // should not happen
+            }
+            else
+            {
+               wasSet = true; // success
+               break;
+            }
+         }
+      }
+   }
+
+   if (!wasSet)
+   {
+      // Default to Plumb if all else fails
+      pOrientation->SetCurSel(0);
+
+      if (curSel != CB_ERR)
+      {
+         // If value was previously set and we get here, then we need to modify underlying data as well. (i.e., DoDataExchange will not be called).
+         m_GirderOrientation = pgsTypes::Plumb;
       }
    }
 }
@@ -1338,6 +1366,7 @@ void CBridgeDescGeneralPage::OnGirderNameChanged()
    FillDeckTypeComboBox();
    FillGirderSpacingTypeComboBox();
    FillTopWidthComboBox();
+   FillGirderOrientationComboBox(); // orientation can differ between girder types although it probably should not
 
    UpdateData(FALSE);
 
