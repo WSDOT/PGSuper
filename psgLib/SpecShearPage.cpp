@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -117,19 +117,23 @@ BOOL CSpecShearPage::OnSetActive()
       GetDlgItem(IDC_STATIC_PHI_DEBOND)->ShowWindow(SW_SHOW);
       GetDlgItem(IDC_NWC_PHI_DEBOND)->ShowWindow(SW_SHOW);
       GetDlgItem(IDC_LWC_PHI_DEBOND)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_UHPC_PHI_DEBOND)->ShowWindow(SW_SHOW);
    }
    else
    {
       GetDlgItem(IDC_STATIC_PHIDEBOND)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_NWC_PHI_DEBOND)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_LWC_PHI_DEBOND)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_UHPC_PHI_DEBOND)->ShowWindow(SW_HIDE);
    }
 
    // 2017 crosswalk chapter 5 reorg
+   GetDlgItem(IDC_LIMIT_STRAIN)->SetWindowText(CString(_T("Limit net longitudinal strain in the section at the centroid of the tension reinforcement (es) to positive values (LRFD ")) + pDad->LrfdCw8th(_T("5.8.3.4.2"), _T("5.7.3.4.2")) + _T(")"));
    GetDlgItem(IDC_SCLOSURE)->SetWindowText(CString(_T("Closure Joint (LRFD 5.5.4.2, ")) +  pDad->LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
    GetDlgItem(IDC_SLTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-1"),_T("5.7.2.6-1")));
    GetDlgItem(IDC_SGTSPACING)->SetWindowText(CString(_T("LRFD Eq ")) +  pDad->LrfdCw8th(_T("5.8.2.7-2"),_T("5.7.2.6-2")));
    GetDlgItem(IDC_SHIS)->SetWindowText(CString(_T("LRFD ")) + pDad->LrfdCw8th(_T("5.8.4.2"),_T("5.7.4.5")) + _T(" Spacing of interface shear connectors shall not exceed"));
+   GetDlgItem(IDC_USE_DECK_FOR_PC)->SetWindowText(CString(_T("Use the deck weight for the permanent net compressive force normal to the shear plane, (Pc, LRFD Eq. ")) + pDad->LrfdCw8th(_T("5.8.4.1-3"), _T("5.7.4.3-3")) + _T(")"));
 
    return CPropertyPage::OnSetActive();
 }

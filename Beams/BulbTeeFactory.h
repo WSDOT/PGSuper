@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -78,7 +78,6 @@ public:
    virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) const override;
    virtual bool IsPrismatic(const CSegmentKey& segmentKey) const override;
    virtual bool IsSymmetric(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const override;
    virtual std::_tstring GetImage() const override;
    virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const override;
    virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const override;
@@ -100,6 +99,8 @@ public:
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings() const override;
    virtual bool IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const override;
    virtual bool ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const override;
+   virtual pgsTypes::WorkPointLocations GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const override;
+   virtual bool IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation workPointType) const override;
    virtual std::vector<pgsTypes::GirderOrientationType> GetSupportedGirderOrientation() const override;
    virtual bool IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const override;
    virtual pgsTypes::GirderOrientationType ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const override;
@@ -112,6 +113,7 @@ public:
    virtual WebIndexType GetWebCount(const IBeamFactory::Dimensions& dimensions) const override;
    virtual Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const override;
    virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const override;
+   virtual void GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const override;
    virtual bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const override;
    virtual void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const override;
    virtual bool HasLongitudinalJoints() const override;
@@ -132,6 +134,9 @@ private:
 
    mutable bool m_bHaveOldTopFlangeThickening; // set to true if we have an old D8 value that hasn't been retreived yet (this is just for debugging... we don't want to override a value and lose it)
    mutable Float64 m_OldTopFlangeThickening; /// this is the obsolete D8 value we justed loaded
+
+   StatusCallbackIDType m_scidInformationalWarning;
+   mutable StatusGroupIDType m_StatusGroupID;
 
    void GetDimensions(const IBeamFactory::Dimensions& dimensions, Float64& c1,
                       Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& d7,

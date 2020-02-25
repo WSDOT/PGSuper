@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -111,19 +111,16 @@ BOOL CInsertSpanDlg::OnInitDialog()
    {
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
 
-      if ( !pPier->HasCantilever() )
-      {
-         CString strType(pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+      CString strType(pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
 
-         CString strItem;
-         strItem.Format(_T("Before %s %d\n"),strType,LABEL_PIER(pierIdx));
-         m_Keys.emplace_back(pierIdx,pgsTypes::Back);
-         pcbPiers->AddString(strItem);
+      CString strItem;
+      strItem.Format(_T("Before %s %d\n"),strType,LABEL_PIER(pierIdx));
+      m_Keys.emplace_back(pierIdx,pgsTypes::Back);
+      pcbPiers->AddString(strItem);
 
-         strItem.Format(_T("After %s %d\n"),strType,LABEL_PIER(pierIdx));
-         m_Keys.emplace_back(pierIdx,pgsTypes::Ahead);
-         pcbPiers->AddString(strItem);
-      }
+      strItem.Format(_T("After %s %d\n"),strType,LABEL_PIER(pierIdx));
+      m_Keys.emplace_back(pierIdx,pgsTypes::Ahead);
+      pcbPiers->AddString(strItem);
    }
 
    // Use the current selection to guide the defaults

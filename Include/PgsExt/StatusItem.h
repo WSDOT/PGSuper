@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -173,7 +173,7 @@ public:
 class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions, Bearings } IssueType;
+   typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions, Bearings, DeckCasting } IssueType;
    pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,IssueType issueType,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 

@@ -18,7 +18,7 @@ Roll Over | Enter the minimum factor of safety against roll over of the hauling 
 > NOTE: Refer to the discussion Girder @ref tg_stability in the @ref technical_guide for more information about girder stability analysis and recommended factors of safety.
 
 ### Modulus of Rupture for Cracking Moment ###
-Define the coefficient for computing the modulus of rupture used for computing the cracking moment in the stability analysis.
+Define the coefficient for computing the modulus of rupture, which is used for computing the cracking moment in the stability analysis.
 
 ### Hauling Analysis Parameters ###
 Define hauling stability analysis parameters

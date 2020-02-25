@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -258,6 +258,7 @@ BOOL CTxDOTOptionalDesignView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_C
    // If this is not here, the context menu in the report view will not work
    if (nCode==CN_COMMAND  && !(nID>=ID_FILE_MRU_FIRST && nID<=ID_FILE_MRU_LAST) // mru commands must go to main app
        && (nID != ID_APP_EXIT)
+       && (nID != ID_HELP)
        && m_pPropSheet!=nullptr && ::IsWindow(m_pPropSheet->m_hWnd))
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());

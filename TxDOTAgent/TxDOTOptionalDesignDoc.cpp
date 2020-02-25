@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1315,7 +1315,8 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    Float64 slab_thick = m_ProjectData.GetSlabThickness();
    pDeck->GrossDepth = slab_thick;
    pDeck->SacrificialDepth = 0.0;
-   pDeck->OverhangEdgeDepth = slab_thick;
+   pDeck->OverhangEdgeDepth[pgsTypes::stLeft] = slab_thick;
+   pDeck->OverhangEdgeDepth[pgsTypes::stRight] = slab_thick;
    bridgeDesc.SetSlabOffset(slab_thick);
    bridgeDesc.SetSlabOffsetType(pgsTypes::sotBridge);
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@ interface IEffectivePrestressGraphViewController : IEAFViewController
 {
    enum ViewMode { Stress, Force};
    enum StrandType {Permanent, Temporary};
+   enum DuctType { Segment, Girder };
 
    virtual void GetIntervalRange(IntervalIndexType* pMin, IntervalIndexType* pMax) const = 0;
 
@@ -50,7 +51,8 @@ interface IEffectivePrestressGraphViewController : IEAFViewController
    virtual StrandType GetStrandType() const = 0;
 
    // set the duct index to INVALID_INDEX to show effective prestress of pretensioned strands
-   virtual void SetDuct(DuctIndexType ductIdx) = 0;
+   virtual void SetDuct(DuctType ductType,DuctIndexType ductIdx) = 0;
+   virtual DuctType GetDuctType() const = 0;
    virtual DuctIndexType GetDuct() const = 0;
 
    virtual void ShowGrid(bool bShow) = 0;

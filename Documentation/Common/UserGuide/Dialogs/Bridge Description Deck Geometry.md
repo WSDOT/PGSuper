@@ -1,6 +1,11 @@
 Deck Geometry and Materials {#ug_dialogs_bridge_description_deck_geometry}
 ==============================================
-The deck type selected on the @ref ug_dialogs_bridge_description_general tab and the deck casting event are listed at the top of this tab. Use the drop down list to select the deck casting event (PGSplice only).
+The deck type selected on the @ref ug_dialogs_bridge_description_general tab and the deck casting event are listed at the top of this tab. 
+
+Deck Casting Event
+------------------
+Use the drop down list to select event when the deck casting activity occurs.
+> NOTE: For time-step analysis only
 
 Cross Section
 -------------

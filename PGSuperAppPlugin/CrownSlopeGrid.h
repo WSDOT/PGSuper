@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@ class CCrownSlopeGrid : public CGXGridWnd
 // Construction
 public:
 	CCrownSlopeGrid();
+	CCrownSlopeGrid(RoadwaySectionData* pData); 
 
 // Attributes
 public:
@@ -52,9 +53,9 @@ public:
 	//{{AFX_VIRTUAL(CCrownSlopeGrid)
 	//}}AFX_VIRTUAL
 
-   void SortCrossSections();
-   void SetCrownSlopeData(std::vector<CrownData2>& curves);
-   bool GetCrownSlopeData(std::vector<CrownData2>& curves);
+   bool SortCrossSections(bool updateGrid);
+   void InitRoadwaySectionData(bool updateHeader);
+   bool UpdateRoadwaySectionData();
 
 // Implementation
 public:
@@ -72,21 +73,33 @@ public:
    void CustomInit();
    void AppendRow();
    void RemoveRows();
+   bool IsRowSelected();
+   bool IsGridEmpty();
+
+   void UpdateGridSizeAndHeaders(const RoadwaySectionData& data);
 
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    // get data for a row
-   bool GetRowData(ROWCOL nRow,Float64* pStation,Float64* pLeft,Float64* pRight,Float64* pCPO);
-   void SetRowData(ROWCOL nRow,CrownData2& data);
+   bool GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data);
+   void SetRowData(ROWCOL nRow,const RoadwaySectionTemplate& data);
+
+   // virtual overrides for grid
+   BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol) override;
+   virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol) override;
+   virtual void OnMovedCurrentCell(ROWCOL nRow, ROWCOL nCol) override;
 
 private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
    void InitRowData(ROWCOL row);
-   Float64  GetCrownPointOffset(const CString& strAlignmentOffset);
-   CString GetCrownPointOffset(Float64 alignmentOffset);
-//   bool EnableItemDelete();
+
+   bool m_IsACellInvalid;
+   std::set<ROWCOL> m_LengthCols;
+   std::set<ROWCOL> m_SlopeCols;
+
+   RoadwaySectionData* m_pRoadwaySectionData;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -119,5 +119,5 @@ The incremental internal stress resultants are proportioned to the various parts
 References
 -------------
 1. Time-Dependent Analysis of Composite Frames. Tadros, Maher K., Ghali, Amin and Dilger, Walter H. ST4, s.l. : ASCE, April 1977, ASCE Journal of Structural Engineering, Vol. 103, pp. 871-884.
-2. A Study of Stress Relaxation in Prestressing Reinforcement. Magura, Donald D.,Sozen, Mete A., Seiss, Chester P., April 1964, PCI Journal, pp. 13-57
+2. [A Study of Stress Relaxation in Prestressing Reinforcement. Magura, Donald D.,Sozen, Mete A., Seiss, Chester P., April 1964, PCI Journal, pp. 13-57](https://www.pci.org/PCI/Publications/PCI_Journal/Issues/1964/April/A_Study_of_Stress_Relaxation_in_Prestressing_Reinforcement.aspx)
 3. Roark, Raymond J., and Warren C. Young. Roark's Formulas for Stress and Strain. 6th ed. New York: McGraw-Hill, 1989

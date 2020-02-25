@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,9 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
+
+class CBridgeDescription2;
+class CTimelineEvent;
 
 /*****************************************************************************
 CLASS 
@@ -62,6 +65,8 @@ public:
    void RemoveTempSupport(SupportIDType tsID);
    IndexType GetTemporarySupportCount() const;
 
+   const std::vector<CClosureKey>& GetClosureKeys(const CBridgeDescription2* pBridgeDesc) const;
+
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
@@ -76,9 +81,16 @@ protected:
    virtual LPCTSTR GetUnitName() = 0;
    virtual Float64 GetUnitVersion() = 0;
 
+   virtual void ClearCaches();
+
    bool m_bEnabled;
    std::set<PierIDType> m_Piers;
    std::set<SupportIDType> m_TempSupports;
+
+   mutable bool m_bUpdateClosureKeys;
+   mutable std::vector<CClosureKey> m_vClosureKeys;
+
+   friend CTimelineEvent;
 };
 
 class PGSEXTCLASS CErectPiersActivity : public CSupportActivityBase

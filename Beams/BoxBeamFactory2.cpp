@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -385,26 +385,6 @@ IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredL
    return dimensions;
 }
 
-Float64 CBoxBeamFactory2::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 W2 = GetDimension(dimensions,_T("W2"));
-   Float64 H2 = GetDimension(dimensions,_T("H2"));
-   Float64 F1 = GetDimension(dimensions,_T("F1"));
-   Float64 F2 = GetDimension(dimensions,_T("F2"));
-
-   Float64 void_surface_area = Lg*( 2*(H2 - F1 - F2) + 2*(W2 - F1 - F2) + 2*sqrt(2*F1*F1) + 2*sqrt(2*F2*F2) );
-
-   return void_surface_area;
-}
-
 void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
@@ -592,6 +572,20 @@ Float64 CBoxBeamFactory2::GetBeamWidth(const IBeamFactory::Dimensions& dimension
    Float64 W2 = GetDimension(dimensions,_T("W2"));
 
    return W2 + 2*W1; 
+}
+
+void CBoxBeamFactory2::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W1 = GetDimension(dimensions, _T("W1"));
+   Float64 W2 = GetDimension(dimensions, _T("W2"));
+   Float64 W3 = GetDimension(dimensions, _T("W3"));
+   Float64 W4 = GetDimension(dimensions, _T("W4"));
+
+   Float64 top = 2*(W1-W4+W3) + W2;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 void CBoxBeamFactory2::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const

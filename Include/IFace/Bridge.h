@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -33,6 +33,7 @@
 #include <WBFLGeometry.h>
 
 #include <PgsExt\LongRebarInstance.h>
+#include <PgsExt\CastDeckActivity.h>
 #include <IFace\PointOfInterest.h>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,6 +59,10 @@ class CPrecastSegmentData;
 class CSplicedGirderData;
 class CStrandData;
 class CStrandRow;
+class CPTData;
+class CDuctData;
+class CSegmentPTData;
+class CSegmentDuctData;
 
 interface IRCBeam2Ex;
 interface IEAFDisplayUnits;
@@ -78,6 +83,11 @@ interface ISegmentHaulingDesignPointsOfInterest;
 
 // MISCELLANEOUS
 //
+
+// constants for GetSegmentVolumeAndSurfaceArea
+#define EXCLUDE_INTERIOR_SURFACE_AREA          0 // surface area of exterior of segment only
+#define INCLUDE_INTERIOR_SURFACE_AREA          1 // surface area of exterior of segment plus surface area of voids
+#define INCLUDE_HALF_INTERIOR_SURFACE_AREA     2 // surface area of exterior of segment plus half the surface area of voids (LRFD 5.4.2.3.2)
 
 struct IntermedateDiaphragm
 {
@@ -240,9 +250,17 @@ interface IBridge : IUnknown
    // returns the end to end length of the girder measured along the centerline of its segments
    virtual Float64 GetGirderLength(const CGirderKey& girderKey) const = 0;
 
+   // fills vGirderKeys with the girder keys that make up a girder line (does not empty the container)
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, std::vector<CGirderKey>* pvGirderKeys) const = 0;
+
+   // fills vGirderKeys with the girder keys that make up a girder line between start and end group
+   virtual void GetGirderline(GirderIndexType gdrLineIdx, GroupIndexType startGroupIdx, GroupIndexType endGroupIdx,std::vector<CGirderKey>* pvGirderKeys) const = 0;
+
+   // fills the vector with girder keys that make up the girder line described by girderKey. If girderKey.groupIndex == ALL_GROUPS
+   // all groups are used, otherwise the specified group is used.
+   virtual void GetGirderline(const CGirderKey& girderKey, std::vector<CGirderKey>* pvGirderKeys) const = 0;
+
    // returns the cantilever length of a girder. If the girder end is not cantilevered, returns 0.
-   // The cantilever length applies to spans where one of the end piers is designated as a cantilever.
-   // This is NOT the member end distance!
    virtual Float64 GetCantileverLength(SpanIndexType spanIdx,GirderIndexType gdrIdx,pgsTypes::MemberEndType endType) const = 0;
    virtual Float64 GetCantileverLength(const CSpanKey& spanKey,pgsTypes::MemberEndType endType) const = 0;
 
@@ -382,6 +400,7 @@ interface IBridge : IUnknown
    // left/right parameter will be < 0 (meaning not applicable)
    virtual void GetBottomFlangeClearance(const pgsPointOfInterest& poi,Float64* pLeft,Float64* pRight) const = 0;
 
+   ////// NOTE: All spacings below are between top CL of girder unless otherwise specified /////
    // returns the spacing between girders. adjacent spaces that are the same are grouped together
    // the returned vector is empty if the spacings could not be determined (e.g. station is off the bridge)
    virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(Float64 station) const = 0;
@@ -390,6 +409,9 @@ interface IBridge : IUnknown
 
    // returns girder spacing at a pier. The vector will contain nGirders-1 spaces
    virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace, pgsTypes::MeasurementLocation measureLocation, pgsTypes::MeasurementType measureType) const = 0;
+
+   // Same as GetGirderSpacing(fl64) above, except returns spacings at bottom CL girder
+   virtual std::vector<SpaceBetweenGirder> GetGirderSpacingAtBottomClGirder(Float64 station) const = 0;
 
    // Returns the offset from the offset measure datum to the specified girder, measured along the CL pier
    virtual Float64 GetGirderOffset(GirderIndexType gdrIdx,PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::OffsetMeasurementType offsetMeasureDatum) const = 0;
@@ -531,6 +553,7 @@ interface IBridge : IUnknown
 
    virtual void GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const = 0;
    virtual void GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const = 0;
+   virtual void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** points) const = 0;
    virtual void GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const = 0;
 
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const = 0;
@@ -546,6 +569,19 @@ interface IBridge : IUnknown
    // Distance from top of slab to top of girder - Does not account for camber
    virtual Float64 GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const = 0;
+   
+   // returns the number of deck casting regions
+   virtual IndexType GetDeckCastingRegionCount() const = 0;
+
+   // Gets the limits of a deck casting region. The boundary is defined by the first and last pier, along with an offset from those piers (positive values are up station)
+   // The region's casting sequence number is returned as well. The provided cast deck activity is used. If, null, the deck casting activity from the current timeline is used
+   virtual void GetDeckCastingRegionLimits(IndexType regionIdx, PierIndexType* pStartPierIdx, Float64* pXstart, PierIndexType* pEndPierIdx, Float64* pXend, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx,const CCastDeckActivity* pActivity=nullptr) const = 0;
+
+   // Gets the perimeter of the deck casting region.
+   // If startSpanIdx or endSpanIdx is specifed, the perimeter of the region is constrained by the piers at the boundries of this spans
+   // To get the full region, use ALL_SPANS for startSpanIdx and endSpanIdx
+   virtual void GetDeckCastingRegionPerimeter(IndexType regionIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetDeckCastingRegionPerimeter(IndexType regionIdx, SpanIndexType startSpanIdx, SpanIndexType endSpanIdx, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, CCastingRegion::RegionType* pRegionType, IndexType* pSequenceIdx, const CCastDeckActivity* pActivity, IPoint2dCollection** ppPoints) const = 0;
 
    ///////////////////////////////////////////////////
    // Pier data
@@ -553,7 +589,7 @@ interface IBridge : IUnknown
 
    virtual Float64 GetPierStation(PierIndexType pierIdx) const = 0;
    virtual Float64 GetBearingStation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const = 0;
-   virtual void GetBearingPoint(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const = 0;
+   virtual void GetWorkingPointLocation(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,const CGirderKey& girderKey,Float64* pStation,Float64* pOffset) const = 0;
    virtual void GetPierDirection(PierIndexType pierIdx,IDirection** ppDirection) const = 0;
    virtual void GetPierSkew(PierIndexType pierIdx,IAngle** ppAngle) const = 0;
    virtual void GetPierPoints(PierIndexType pierIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** left,IPoint2d** alignment,IPoint2d** bridge,IPoint2d** right) const = 0;
@@ -568,7 +604,6 @@ interface IBridge : IUnknown
 
    virtual bool IsAbutment(PierIndexType pierIdx) const = 0; // returns true if pier is an end abutment
    virtual bool IsPier(PierIndexType pierIdx) const = 0; // returns true if pier is an intermediate pier
-   virtual bool HasCantilever(PierIndexType pierIdx) const = 0; // returns true if the span is cantilevered at this pier
 
    virtual bool IsInteriorPier(PierIndexType pierIdx) const = 0; // returns true if the pier is interior to a girder group
    virtual bool IsBoundaryPier(PierIndexType pierIdx) const = 0; // returns true if the pier is at a boundary of a girder group
@@ -630,6 +665,9 @@ interface IBridge : IUnknown
    // returned since it is by definition at the CL.
    enum specialBearingIndexType {sbiCLValue=INVALID_INDEX, sbiSingleBearingValue=INVALID_INDEX-1};
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
+
+   // Compute bearing elevation data for each girder along bearing line at edges of girder bottom. Will return two values 0=Left, 1=Right
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
 };
 
 /*****************************************************************************
@@ -666,7 +704,8 @@ interface IMaterials : IUnknown
    // been added to the system yet, this method returns 0
    virtual Float64 GetSegmentWeightDensity(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetClosureJointWeightDensity(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const = 0;
-   virtual Float64 GetDeckWeightDensity(IntervalIndexType intervalIdx) const = 0;
+   virtual Float64 GetDeckWeightDensity(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const = 0;
+   virtual Float64 GetDiaphragmWeightDensity(IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetRailingSystemWeightDensity(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetLongitudinalJointWeightDensity(IntervalIndexType intervalIdx) const = 0;
 
@@ -674,14 +713,14 @@ interface IMaterials : IUnknown
    // be cast or hasn't attained sufficient strength prior to this interval.
    virtual Float64 GetSegmentConcreteAge(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual Float64 GetClosureJointConcreteAge(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
-   virtual Float64 GetDeckConcreteAge(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
+   virtual Float64 GetDeckConcreteAge(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual Float64 GetRailingSystemAge(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual Float64 GetLongitudinalJointConcreteAge(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const = 0;
 
    // Returns the concrete strength at the middle of an interval
    virtual Float64 GetSegmentFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
    virtual Float64 GetClosureJointFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
-   virtual Float64 GetDeckFc(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
+   virtual Float64 GetDeckFc(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
    virtual Float64 GetRailingSystemFc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
    virtual Float64 GetLongitudinalJointFc(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType = pgsTypes::Middle) const = 0;
 
@@ -690,12 +729,12 @@ interface IMaterials : IUnknown
    // the LimitStateConcreteStrength setting from the project criteria.
    virtual Float64 GetSegmentDesignFc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetClosureJointDesignFc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const = 0;
-   virtual Float64 GetDeckDesignFc(IntervalIndexType intervalIdx) const = 0;
+   virtual Float64 GetDeckDesignFc(IntervalIndexType intervalIdx) const = 0; // assuming there is only one casting region for models that support design
 
    // Returns the secant modulus at the middle of an interval
    virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle,const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
-   virtual Float64 GetDeckEc(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
+   virtual Float64 GetDeckEc(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
    virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
    virtual Float64 GetLongitudinalJointEc(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType = pgsTypes::Middle) const = 0;
 
@@ -714,48 +753,48 @@ interface IMaterials : IUnknown
    virtual Float64 GetSegmentShearFr(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
    virtual Float64 GetClosureJointFlexureFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
    virtual Float64 GetClosureJointShearFr(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
-   virtual Float64 GetDeckFlexureFr(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
-   virtual Float64 GetDeckShearFr(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
+   virtual Float64 GetDeckFlexureFr(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
+   virtual Float64 GetDeckShearFr(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
    virtual Float64 GetLongitudinalJointFlexureFr(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType = pgsTypes::Middle) const = 0;
    virtual Float64 GetLongitudinalJointShearFr(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType = pgsTypes::Middle) const = 0;
 
    // Returns the aging coefficient during an interval
    virtual Float64 GetSegmentAgingCoefficient(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetClosureJointAgingCoefficient(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const = 0;
-   virtual Float64 GetDeckAgingCoefficient(IntervalIndexType intervalIdx) const = 0;
+   virtual Float64 GetDeckAgingCoefficient(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetRailingSystemAgingCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetLongitudinalJointAgingCoefficient(IntervalIndexType intervalIdx) const = 0;
 
    // Returns the age adjusted modulus from the middle to the end of an interval
    virtual Float64 GetSegmentAgeAdjustedEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetClosureJointAgeAdjustedEc(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const = 0;
-   virtual Float64 GetDeckAgeAdjustedEc(IntervalIndexType intervalIdx) const = 0;
+   virtual Float64 GetDeckAgeAdjustedEc(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetRailingSystemAgeAdjustedEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetLongitudinalJointAgeAdjustedEc(IntervalIndexType intervalIdx) const = 0;
 
    // Returns the total free shrinkage at the relative time within the specified interval
    virtual Float64 GetTotalSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const = 0;
    virtual Float64 GetTotalClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const = 0;
-   virtual Float64 GetTotalDeckFreeShrinkageStrain(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const = 0;
+   virtual Float64 GetTotalDeckFreeShrinkageStrain(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const = 0;
    virtual Float64 GetTotalRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual Float64 GetTotalLongitudinalJointFreeShrinkageStrain(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time) const = 0;
 
    virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const = 0;
    virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalClosureJointFreeShrinkageStrainDetails(const CSegmentKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const = 0;
-   virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalDeckFreeShrinkageStrainDetails(IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const = 0;
+   virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const = 0;
    virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time) const = 0;
 
    // Returns the free shrinkage occuring within the specified interval
    virtual Float64 GetIncrementalSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetIncrementalClosureJointFreeShrinkageStrain(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const = 0;
-   virtual Float64 GetIncrementalDeckFreeShrinkageStrain(IntervalIndexType intervalIdx) const = 0;
+   virtual Float64 GetIncrementalDeckFreeShrinkageStrain(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetIncrementalRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const = 0;
    virtual Float64 GetIncrementalLongitudinalJointFreeShrinkageStrain(IntervalIndexType intervalIdx) const = 0;
 
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const = 0;
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalClosureJointFreeShrinkageStrainDetails(const CSegmentKey& closureKey,IntervalIndexType intervalIdx) const = 0;
-   virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalDeckFreeShrinkageStrainDetails(IntervalIndexType intervalIdx) const = 0;
+   virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, IntervalIndexType intervalIdx) const = 0;
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx) const = 0;
    virtual INCREMENTALSHRINKAGEDETAILS GetIncrementalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx) const = 0;
 
@@ -763,13 +802,13 @@ interface IMaterials : IUnknown
    // occuring at time (loadingTimeType) in interval (loadingIntervalIdx). 
    virtual Float64 GetSegmentCreepCoefficient(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual Float64 GetClosureJointCreepCoefficient(const CSegmentKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
-   virtual Float64 GetDeckCreepCoefficient(IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
+   virtual Float64 GetDeckCreepCoefficient(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual Float64 GetLongitudinalJointCreepCoefficient(IntervalIndexType loadingIntervalIdx, pgsTypes::IntervalTimeType loadingTimeType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const = 0;
 
    virtual std::shared_ptr<matConcreteBaseCreepDetails> GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual std::shared_ptr<matConcreteBaseCreepDetails> GetClosureJointCreepCoefficientDetails(const CSegmentKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
-   virtual std::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
+   virtual std::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual std::shared_ptr<matConcreteBaseCreepDetails> GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const = 0;
    virtual std::shared_ptr<matConcreteBaseCreepDetails> GetLongitudinalJointCreepCoefficientDetails(IntervalIndexType loadingIntervalIdx, pgsTypes::IntervalTimeType loadingTimeType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const = 0;
 
@@ -813,7 +852,7 @@ interface IMaterials : IUnknown
    virtual Float64 GetDeckCreepK2() const = 0;
    virtual Float64 GetDeckShrinkageK1() const = 0;
    virtual Float64 GetDeckShrinkageK2() const = 0;
-   virtual const matConcreteBase* GetDeckConcrete() const = 0;
+   virtual const matConcreteBase* GetDeckConcrete(IndexType castingRegionIdx) const = 0;
 
    // Longitudinal Joint
    virtual pgsTypes::ConcreteType GetLongitudinalJointConcreteType() const = 0;
@@ -835,10 +874,15 @@ interface IMaterials : IUnknown
    virtual Float64 GetIncrementalStrandRelaxation(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 fpso,pgsTypes::StrandType strandType) const = 0;
    virtual INCREMENTALRELAXATIONDETAILS GetIncrementalStrandRelaxationDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 fpso,pgsTypes::StrandType strandType) const = 0;
 
-   // PT Tendon
-   virtual const matPsStrand* GetTendonMaterial(const CGirderKey& girderKey) const = 0;
-   virtual Float64 GetIncrementalTendonRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const = 0;
-   virtual INCREMENTALRELAXATIONDETAILS GetIncrementalTendonRelaxationDetails(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const = 0;
+   // PT Tendon - field installed
+   virtual const matPsStrand* GetGirderTendonMaterial(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonIncrementalRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const = 0;
+   virtual INCREMENTALRELAXATIONDETAILS GetGirderTendonIncrementalRelaxationDetails(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const = 0;
+
+   // PT Tendon - plant installed
+   virtual const matPsStrand* GetSegmentTendonMaterial(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonIncrementalRelaxation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx, Float64 fpso) const = 0;
+   virtual INCREMENTALRELAXATIONDETAILS GetSegmentTendonIncrementalRelaxationDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx, Float64 fpso) const = 0;
 
    // Properties of Precast Segment Longitudinal Rebar
    virtual void GetSegmentLongitudinalRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu) const = 0;
@@ -934,6 +978,8 @@ interface ILongRebarGeometry : IUnknown
 
    virtual REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey,IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const = 0;
    virtual REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const = 0;
+
+   virtual bool IsAnchored(const pgsPointOfInterest& poi) const = 0;
 };
 
 /*****************************************************************************
@@ -1085,6 +1131,9 @@ interface IStrandGeometry : IUnknown
 
    virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const = 0; // Fig. 5.8.3.4.2-3
+
+   // needed for debond percentage check
+   virtual StrandIndexType GetNumStrandsBottomHalf(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    virtual StrandIndexType GetMaxNumPermanentStrands(const CSegmentKey& segmentKey) const = 0;
    virtual StrandIndexType GetMaxNumPermanentStrands(LPCTSTR strGirderName) const = 0;
@@ -1357,12 +1406,9 @@ interface ISectionProperties : IUnknown
 
    // Volume and surface area
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetSegmentSurfaceArea(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetSegmentVolume(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetClosureJointSurfaceArea(const CClosureKey& closureKey) const = 0;
-   virtual Float64 GetClosureJointVolume(const CClosureKey& closureKey) const = 0;
-   virtual Float64 GetDeckSurfaceArea() const = 0;
-   virtual Float64 GetDeckVolume() const = 0;
+   virtual void GetSegmentVolumeAndSurfaceArea(const CSegmentKey& segmentKey, Float64* pVolume, Float64* pSurfaceArea, int surfaceAreaType = INCLUDE_HALF_INTERIOR_SURFACE_AREA) const = 0;
+   virtual void GetClosureJointVolumeAndSurfaceArea(const CClosureKey& closureKey, Float64* pVolume, Float64* pSurfaceArea) const = 0;
+   virtual void GetDeckVolumeAndSurfaceArea(Float64* pVolume, Float64* pSurfaceArea) const  = 0;
 
    // Bending stiffness of entire bridge section - for deflection calculation
    // Crowns, slopes, and slab haunches are ignored.
@@ -1399,7 +1445,7 @@ DEFINE_GUID(IID_IShapes,
 interface IShapes : public IUnknown
 {
    // returns the raw shape of the segment
-   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType,IShape** ppShape) const = 0;
+   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape) const = 0;
 
    // returns the raw segment shape based on the provided segment data. the shape will be in the girder section coordinate system
    virtual void GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const = 0;
@@ -1518,6 +1564,8 @@ interface IUserDefinedLoads : IUnknown
    virtual const std::vector<UserPointLoad>* GetPointLoads(IntervalIndexType intervalIdx, const CSpanKey& spanKey) const = 0;
    virtual const std::vector<UserDistributedLoad>* GetDistributedLoads(IntervalIndexType intervalIdx, const CSpanKey& spanKey) const = 0;
    virtual const std::vector<UserMomentLoad>* GetMomentLoads(IntervalIndexType intervalIdx, const CSpanKey& spanKey) const = 0;
+
+   virtual const std::vector<IntervalIndexType> GetUserDefinedLoadIntervals(const CGirderKey& girderKey) const = 0;
 };
 
 
@@ -1577,7 +1625,7 @@ interface IGirder : public IUnknown
 
    // Gets the mating surface profile. Returns true if sucessful. Can return false or a nullptr container if a mating surface profile is not available
    // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
-   virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, pgsTypes::SectionCoordinateType scType, bool bGirderOnly, IPoint2dCollection** ppPoints) const = 0;
+   virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, bool bGirderOnly, IPoint2dCollection** ppPoints) const = 0;
 
    // Returns the number of top flanges
    virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey) const = 0;
@@ -1696,6 +1744,12 @@ interface IGirder : public IUnknown
    // Positive values means the Y axis of the girder is rotated CW
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey) const = 0;
 
+   // Internally, the girderline work point is always located at top CL girder. However, the UI allows other locations
+   // such as the bottom of the girder. To accomodate for this we shift the work point (layout line) a distance equal to
+   // the orientation * (depth from top of girder to work point) when the bridge goemetry is layed out. 
+   // This function returns that shift offset distance.
+   virtual Float64 GetWorkPointShiftOffset(const CSegmentKey& segmentKey) const = 0;
+
    // Returns the transverse slope of the girder top flange
    virtual Float64 GetTransverseTopFlangeSlope(const CSegmentKey& segmentKey) const = 0;
 
@@ -1804,34 +1858,40 @@ interface IGirder : public IUnknown
 
 /*****************************************************************************
 INTERFACE
-   ITendonGeometry
+   IGirderTendonGeometry
 
 DESCRIPTION
-   Interface for obtaining information about the geometry of spliced girder
-   ducts and tendons
+   Interface for obtaining information about spliced girder ducts and tendons
 *****************************************************************************/
 // {209DA239-91BD-464c-895F-D1398A48125C}
-DEFINE_GUID(IID_ITendonGeometry, 
+DEFINE_GUID(IID_IGirderTendonGeometry, 
 0x209da239, 0x91bd, 0x464c, 0x89, 0x5f, 0xd1, 0x39, 0x8a, 0x48, 0x12, 0x5c);
-interface ITendonGeometry : public IUnknown
+interface IGirderTendonGeometry : public IUnknown
 {
    // returns the number of ducts in a girder
    virtual DuctIndexType GetDuctCount(const CGirderKey& girderKey) const = 0;
+
+   // returns the start and end location of the duct in girder coordinates
+   virtual void GetDuctRange(const CGirderKey& girderKey, DuctIndexType ductIdx, Float64* pXgs, Float64* pXge) const = 0;
+
+   // returns true if the poi is within the bounds of the duct
+   virtual bool IsOnDuct(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const = 0;
 
    // returns the geometric centerline of a duct as a series of points. 
    // use this to plot ducts in the UI
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint2dCollection** ppPoints) const = 0;
    virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,IPoint3dCollection** ppPoints) const = 0;
 
-   // returns the geometric centerline of a duct for the duct configuration given in the girder object.
-   // use this to plot ducts in the UI
-   virtual void GetDuctCenterline(const CGirderKey& girderKey,DuctIndexType ductIdx,const CSplicedGirderData* pSplicedGirder,IPoint2dCollection** ppPoints) const = 0;
+   // returns the geometric centerline of a duct for the duct configuration given. use this to plot ducts in the UI
+   // if pGirder is nullptr, the current bridge model is used, otherwise the provided girder is used to get height values
+   virtual void GetDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, DuctIndexType ductIdx, const CPTData* pPTData, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CDuctData* pDuctData, IPoint2dCollection** ppPoints) const = 0;
 
    // returns the location of the centerline of the duct in girder section coordiantes given a location in girder coordinates
-   virtual void GetDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
+   virtual void GetGirderDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
 
    // returns the location of the centerline of the duct in girder section coordiantes given a POI
-   virtual void GetDuctPoint(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
+   virtual void GetGirderDuctPoint(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
 
    // returns the diameter of the duct
    virtual Float64 GetOutsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
@@ -1843,16 +1903,16 @@ interface ITendonGeometry : public IUnknown
    virtual StrandIndexType GetTendonStrandCount(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
 
    // returns the area of the tendon
-   virtual Float64 GetTendonArea(const CGirderKey& girderKey,IntervalIndexType intervalIdx,DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetGirderTendonArea(const CGirderKey& girderKey,IntervalIndexType intervalIdx,DuctIndexType ductIdx) const = 0;
 
    // get the slope of a tendon. Slope is in the form of a 3D vector. Z (along the length of the girder) 
    // is always 1.0. X is the slope in the plane of girder cross section. Y is the slope along
    // the length of the girder. Slope is rise over run so it is computed as X/Z and Y/Z, however, Z is
    // always 1.0 so X and Y give the direct value for slope
-   virtual void GetTendonSlope(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IVector3d** ppSlope) const = 0;
+   virtual void GetGirderTendonSlope(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IVector3d** ppSlope) const = 0;
 
    // get the slope of a tendon
-   virtual void GetTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope) const = 0;
+   virtual void GetGirderTendonSlope(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IVector3d** ppSlope) const = 0;
 
    // returns the minimum radius of curvature of the tendon
    virtual Float64 GetMinimumRadiusOfCurvature(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
@@ -1863,7 +1923,7 @@ interface ITendonGeometry : public IUnknown
 
    // returns the distance from the top of the non-composite girder to the CG of the tendon
    // adjustments are made for the tendon being shifted within the duct
-   virtual Float64 GetDuctOffset(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetGirderDuctOffset(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
 
    // returns the centerline length of the duct curve
    virtual Float64 GetDuctLength(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
@@ -1871,28 +1931,134 @@ interface ITendonGeometry : public IUnknown
    // returns the distance from the CG of the girder to the tendon in the specified duct
    // at the specified interval. eccentricity is based on the current section properties mode.
    // adjustments are made for the tendon being shifted within the duct
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
+   virtual void GetGirderTendonEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
 
    // returns the distance from the CG of the girder to the tendon in the specified duct
    // at the specified interval. eccentricity is based on the specified section properties type.
    // adjustments are made for the tendon being shifted within the duct
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
+   virtual void GetGirderTendonEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
 
    // returns the cumulative angular change of the tendon path between one end of the tendon and a poi
-   virtual Float64 GetAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const = 0;
+   virtual Float64 GetGirderTendonAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const = 0;
 
    // returns the angular change of the tendon path between two POIs
    // if poi1 is to the left of poi2, it is assumed that jacking is from the left end otherwise it is from the right end
-   virtual Float64 GetAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetGirderTendonAngularChange(const pgsPointOfInterest& poi1,const pgsPointOfInterest& poi2,DuctIndexType ductIdx) const = 0;
 
    // returns the end from which the PT tendon is jacked
    virtual pgsTypes::JackingEndType GetJackingEnd(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
 
    // returns the area of tendon on the top half of the girder. See Figure C5.7.3.4.2-3
-   virtual Float64 GetAptTopHalf(const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetGirderAptTopHalf(const pgsPointOfInterest& poi) const = 0;
 
    // returns the area of tendon on the bottom half of the girder. See Figure C5.7.3.4.2-3
-   virtual Float64 GetAptBottomHalf(const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetGirderAptBottomHalf(const pgsPointOfInterest& poi) const = 0;
+};
+
+
+/*****************************************************************************
+INTERFACE
+ISegmentTendonGeometry
+
+DESCRIPTION
+Interface for obtaining information about precast segment ducts and tendons
+*****************************************************************************/
+// {F0A93444-F4D5-402E-A8E4-E6A82050B4B7}
+DEFINE_GUID(IID_ISegmentTendonGeometry,
+   0xf0a93444, 0xf4d5, 0x402e, 0xa8, 0xe4, 0xe6, 0xa8, 0x20, 0x50, 0xb4, 0xb7);
+
+interface ISegmentTendonGeometry : public IUnknown
+{
+   // returns the number of ducts in a segment
+   virtual DuctIndexType GetDuctCount(const CSegmentKey& segmentKey) const = 0;
+
+   // returns the maximum number of ducts in all of the segments in the girder
+   virtual DuctIndexType GetMaxDuctCount(const CGirderKey& girderKey) const = 0;
+
+   // returns true if the poi is within the bounds of the duct
+   virtual bool IsOnDuct(const pgsPointOfInterest& poi) const = 0;
+
+   // returns the geometric centerline of a duct as a series of points. 
+   // use this to plot ducts in the UI
+   virtual void GetDuctCenterline(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetDuctCenterline(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IPoint3dCollection** ppPoints) const = 0;
+
+   // returns the geometric centerline of a duct for the duct configuration given. use this to plot ducts in the UI
+   // if pSegment is nullptr, the current bridge model is used, otherwise the provided segment is used to  get height values
+   virtual void GetDuctCenterline(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, DuctIndexType ductIdx, const CSegmentPTData* pPTData, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetDuctCenterline(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, const CSegmentDuctData* pDuctData, IPoint2dCollection** ppPoints) const = 0;
+
+   // returns the location of the centerline of the duct in girder section coordiantes given a location in segment coordinates
+   virtual void GetSegmentDuctPoint(const CSegmentKey& segmentKey, Float64 Xs, DuctIndexType ductIdx, IPoint2d** ppPoint) const = 0;
+
+   // returns the location of the centerline of the duct in girder section coordiantes given a POI
+   virtual void GetSegmentDuctPoint(const pgsPointOfInterest& poi, DuctIndexType ductIdx, IPoint2d** ppPoint) const = 0;
+
+   // returns the location of the center of the specified duct for the duct configuration given. use this to plot ducts in the UI for girder cross sections
+   // if pSegment is nullptr, the current bridge model is used, otherwise the provided pSegment is used
+   virtual void GetSegmentDuctPoint(const pgsPointOfInterest& poi, const CPrecastSegmentData* pSegment, DuctIndexType ductIdx, IPoint3d** ppPoint) const = 0;
+   virtual void GetSegmentDuctPoint(const pgsPointOfInterest& poi, const CPrecastSegmentData* pSegment, const CSegmentDuctData* pDuctData, IPoint3d** ppPoint) const = 0;
+
+   // returns the diameter of the duct
+   virtual Float64 GetOutsideDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetInsideDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   virtual Float64 GetInsideDuctArea(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns number of strands in a duct
+   virtual StrandIndexType GetTendonStrandCount(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the area of the tendon
+   virtual Float64 GetSegmentTendonArea(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, DuctIndexType ductIdx) const = 0;
+
+   // get the slope of a tendon. Slope is in the form of a 3D vector. Z (along the length of the girder) 
+   // is always 1.0. X is the slope in the plane of girder cross section. Y is the slope along
+   // the length of the girder. Slope is rise over run so it is computed as X/Z and Y/Z, however, Z is
+   // always 1.0 so X and Y give the direct value for slope
+   virtual void GetSegmentTendonSlope(const pgsPointOfInterest& poi, DuctIndexType ductIdx, IVector3d** ppSlope) const = 0;
+
+   // get the slope of a tendon
+   virtual void GetSegmentTendonSlope(const CSegmentKey& segmentKey, Float64 Xs, DuctIndexType ductIdx, IVector3d** ppSlope) const = 0;
+
+   // returns the minimum radius of curvature of the tendon
+   virtual Float64 GetMinimumRadiusOfCurvature(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the jacking force
+   virtual Float64 GetPjack(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetFpj(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the distance from the top of the non-composite girder to the CG of the tendon
+   // adjustments are made for the tendon being shifted within the duct
+   virtual Float64 GetSegmentDuctOffset(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx) const = 0;
+
+   // returns the centerline length of the duct curve
+   virtual Float64 GetDuctLength(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the distance from the CG of the girder to the tendon in the specified duct
+   // at the specified interval. eccentricity is based on the current section properties mode.
+   // adjustments are made for the tendon being shifted within the duct
+   virtual void GetSegmentTendonEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
+
+   // returns the distance from the CG of the girder to the tendon in the specified duct
+   // at the specified interval. eccentricity is based on the specified section properties type.
+   // adjustments are made for the tendon being shifted within the duct
+   virtual void GetSegmentTendonEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
+
+   // returns the cumulative angular change of the tendon path between one end of the tendon and a poi
+   virtual Float64 GetSegmentTendonAngularChange(const pgsPointOfInterest& poi, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const = 0;
+
+   // returns the angular change of the tendon path between two POIs
+   // if poi1 is to the left of poi2, it is assumed that jacking is from the left end otherwise it is from the right end
+   virtual Float64 GetSegmentTendonAngularChange(const pgsPointOfInterest& poi1, const pgsPointOfInterest& poi2, DuctIndexType ductIdx) const = 0;
+
+   // returns the end from which the PT tendon is jacked
+   virtual pgsTypes::JackingEndType GetJackingEnd(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+
+   // returns the area of tendon on the top half of the girder. See Figure C5.7.3.4.2-3
+   virtual Float64 GetSegmentAptTopHalf(const pgsPointOfInterest& poi) const = 0;
+
+   // returns the area of tendon on the bottom half of the girder. See Figure C5.7.3.4.2-3
+   virtual Float64 GetSegmentAptBottomHalf(const pgsPointOfInterest& poi) const = 0;
 };
 
 #endif // INCLUDED_IFACE_BRIDGE_H_

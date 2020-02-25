@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 #include <PgsExt\PierData2.h>
 #include <PgsExt\GirderMaterial.h>
 #include <PgsExt\StrandData.h>
+#include <PgsExt\SegmentPTData.h>
 #include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
 #include <PgsExt\HandlingData.h>
@@ -63,6 +64,7 @@ public:
 
 
    CStrandData Strands;      // number of strands, debonding and strand data
+   CSegmentPTData Tendons; // plant installed post-tensioning
    CGirderMaterial Material; // concrete
    CShearData2 ShearData;    // stirrups
    CLongitudinalRebarData LongitudinalRebarData;  // mild reinforcing
@@ -97,23 +99,20 @@ public:
    // Copies only segment definition data. Does not copy ID or Index
    void CopySegmentData(const CPrecastSegmentData* pSegment,bool bCopyLocation);
 
-   void SetSpans(const CSpanData2* pStartSpan,const CSpanData2* pEndSpan);
-   void SetSpan(pgsTypes::MemberEndType endType,const CSpanData2* pSpan);
+   void SetSpans(CSpanData2* pStartSpan,CSpanData2* pEndSpan);
+   void SetSpan(pgsTypes::MemberEndType endType,CSpanData2* pSpan);
    const CSpanData2* GetSpan(pgsTypes::MemberEndType endType) const;
-   
+   CSpanData2* GetSpan(pgsTypes::MemberEndType endType);
+
    SpanIndexType GetSpanIndex(pgsTypes::MemberEndType endType) const;
 
    void SetGirder(CSplicedGirderData* pGirder);
    CSplicedGirderData* GetGirder();
    const CSplicedGirderData* GetGirder() const;
 
-   void SetStartClosure(CClosureJointData* pClosure);
-   const CClosureJointData* GetStartClosure() const;
-   CClosureJointData* GetStartClosure();
-
-   void SetEndClosure(CClosureJointData* pClosure);
-   const CClosureJointData* GetEndClosure() const;
-   CClosureJointData* GetEndClosure();
+   void SetClosureJoint(pgsTypes::MemberEndType endType, CClosureJointData* pClosure);
+   const CClosureJointData* GetClosureJoint(pgsTypes::MemberEndType endType) const;
+   CClosureJointData* GetClosureJoint(pgsTypes::MemberEndType endType);
 
    const CPrecastSegmentData* GetPrevSegment() const;
    const CPrecastSegmentData* GetNextSegment() const;
@@ -176,9 +175,9 @@ protected:
    // A segment can start/end of a temporary support or a pier (hinge/roller connections only)
    // Temporary supports are acceesed through the closure joint object
 
-   // pointers to the closure joint data objects that are on the left and right of this segment.
-   CClosureJointData* m_pStartClosure;  // weak reference, owned by CSplicedGirderData
-   CClosureJointData* m_pEndClosure; // weak reference, owned by CSplicedGirderData
+   // pointers to the closure joint data objects that are at the start and end of this segment.
+   // use pgsTypes::MemberEndType to access the array
+   std::array<CClosureJointData*,2> m_pClosure;  // weak reference, owned by CSplicedGirderData
 
    pgsTypes::SegmentVariationType m_VariationType;
    std::array<Float64, 4> m_VariationLength; // index is the SegmentZoneType enum
@@ -190,9 +189,9 @@ protected:
    Float64 GetSegmentHeight(bool bSegmentHeight) const;
 
    CSplicedGirderData* m_pGirder;
-   std::array<const CSpanData2*,2> m_pSpanData; // [0] is a pointer to the span where this segment starts
-                                                // [1] is a pointer to the span where this segment ends
-                                                // the pgsTypes::MemberEndType enum can be used to access this array
+   std::array<CSpanData2*,2> m_pSpanData; // [0] is a pointer to the span where this segment starts
+                                          // [1] is a pointer to the span where this segment ends
+                                          // the pgsTypes::MemberEndType enum can be used to access this array
    
    SegmentIndexType m_SegmentIndex;
    void SetIndex(SegmentIndexType segIdx);

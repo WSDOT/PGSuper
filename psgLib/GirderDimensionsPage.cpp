@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,7 +69,7 @@ void CGirderComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    }
    else
    {
-      dc.FillSolidRect(&lpDrawItemStruct->rcItem,oldBkColor);
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_WINDOW));
    }
 
    dc.DrawText(lpszText,&lpDrawItemStruct->rcItem,DT_LEFT | DT_SINGLELINE | DT_VCENTER);

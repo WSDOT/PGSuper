@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,8 +86,8 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    if ( !bGirderStresses )
    {
       // only report deck stresses after the deck is composite
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      ATLASSERT(compositeDeckIntervalIdx <= intervalIdx);
+      IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+      ATLASSERT(lastCompositeDeckIntervalIdx <= intervalIdx);
    }
 #endif
 
@@ -236,9 +236,6 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
       std::vector<Float64> fTopPScum, fBotPScum;
 
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;

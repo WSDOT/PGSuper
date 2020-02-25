@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -90,6 +90,18 @@ void CHaulingCheck::Build(rptChapter* pChapter,
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(girderKey,segIdx);
+
+         if (1 < nSegments)
+         {
+            rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+            *pChapter << pTitle;
+            *pTitle << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
+
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
+
+         }
+
          const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
          pHaulArtifact->BuildHaulingCheckReport(segmentKey, pChapter, pBroker, pDisplayUnits);
       }

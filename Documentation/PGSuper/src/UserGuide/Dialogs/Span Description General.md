@@ -28,12 +28,3 @@ Assumed Excess Camber
 Enter the excess camber that is used to define the parabolic haunch depth used for computing composite section properties and/or haunch dead load. Note that this option is only available if the parabolic option is selected for computing composite section properties or haunch loading in the current Project Criteria library entry.
 
 Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models for more information. Refer to @ref tg_section_properties in the Technical Guide for detailed information about haunch depth is used when computing composite section properties.
-
-Cantilevers
-------------
-The first and last span can be defined as cantilever spans. 
-
-Item | Description
------|--------------
-Start of Span | When checked, there is a cantilever at the start of the span. Enter the length of the cantilever, measured along the alignment.
-End of Span | When checked, there is a cantilever at the end of the span. Enter the length of the cantilever, measured along the alignment.

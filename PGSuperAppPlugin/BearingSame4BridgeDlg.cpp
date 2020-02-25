@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -84,7 +84,7 @@ void CBearingSame4BridgeDlg::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag( pDX, IDC_BRG_LENGTH, IDC_BRG_LENGTH_UNIT, m_BearingData.Length, pDisplayUnits->GetComponentDimUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_BRG_LENGTH, m_BearingData.Length, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BRG_LENGTH, m_BearingData.Length, pDisplayUnits->GetComponentDimUnit() );
    if (!(pDX->m_bSaveAndValidate && m_BearingData.Shape==bsRound))
    {
       DDX_UnitValueAndTag( pDX, IDC_BRG_WIDTH, IDC_BRG_WIDTH_UNIT, m_BearingData.Width, pDisplayUnits->GetComponentDimUnit() );

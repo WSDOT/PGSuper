@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,70 +39,20 @@ CLASS
 
 
 // Predicate STL objects.
-class SamePlace
+class TestEqual
 {
 public:
-   SamePlace(const pgsPointOfInterest& poi,Float64 tol) : m_Poi(poi), m_Tol(tol) {}
+   TestEqual(const pgsPointOfInterest& poi) : m_Poi(poi) {}
 
    bool operator()(const std::unique_ptr<pgsPointOfInterest>& pOther) const
    {
-      if ( m_Poi.GetSegmentKey().IsEqual(pOther->GetSegmentKey()) &&
-           IsZero( m_Poi.GetDistFromStart() - pOther->GetDistFromStart(), m_Tol ) )
-      {
-         return true;
-      }
-
-      return false;
+      return m_Poi == *(pOther.get());
    }
-
-   const pgsPointOfInterest& GetPoi() const { return m_Poi; }
 
 private:
    const pgsPointOfInterest& m_Poi;
-   Float64 m_Tol;
 };
 
-class ExactlySame
-{
-public:
-   ExactlySame(const pgsPointOfInterest& poi,Float64 tol) : m_SamePlace(poi,tol) {}
-   
-   bool operator()(const std::unique_ptr<pgsPointOfInterest>& pOther) const
-   {
-      if ( m_SamePlace.operator()(pOther) )
-      {
-         // poi are at the same place, do they have the same attributes?
-         if ( pOther->GetNonReferencedAttributes() != m_SamePlace.GetPoi().GetNonReferencedAttributes() )
-         {
-            return false;
-         }
-
-         PoiAttributeType refAttribute[] = 
-         {
-            POI_RELEASED_SEGMENT, 
-            POI_LIFT_SEGMENT, 
-            POI_STORAGE_SEGMENT,
-            POI_HAUL_SEGMENT, 
-            POI_ERECTED_SEGMENT, 
-            POI_SPAN 
-         };
-         for ( int i = 0; i < 6; i++ )
-         {
-            if (pOther->GetReferencedAttributes(refAttribute[i]) != m_SamePlace.GetPoi().GetReferencedAttributes(refAttribute[i]) )
-            {
-               return false;
-            }
-         }
-
-         return true;
-      }
-
-      return false;
-   }
-
-private:
-   SamePlace m_SamePlace;
-};
 
 class RemoveTest
 {
@@ -161,98 +111,6 @@ private:
    PoiAttributeType m_ExceptAttribute;
 };
 
-//class NotFindPoi
-//{
-//public:
-//   NotFindPoi(const CSegmentKey& segmentKey) {m_GroupIdx = segmentKey.groupIndex; m_GirderIdx = segmentKey.girderIndex; m_SegmentIdx = segmentKey.segmentIndex;}
-//   bool operator()(const std::unique_ptr<pgsPointOfInterest>& pOther) const
-//   {
-//      // returning true causes the poi to be excluded from the container
-//      // return false for those poi that match the search criteria... return false for the poi we want to keep
-//
-//      const CSegmentKey& segmentKey = pOther->GetSegmentKey();
-//      GroupIndexType grpIdx = segmentKey.groupIndex;
-//      GirderIndexType gdrIdx = segmentKey.girderIndex;
-//
-//      if ( (m_GroupIdx   == INVALID_INDEX || m_GroupIdx   == grpIdx) &&  // group matches -AND-
-//           (m_GirderIdx  == INVALID_INDEX || m_GirderIdx  == gdrIdx) &&  // girder matches -AND-
-//           (m_SegmentIdx == INVALID_INDEX || m_SegmentIdx == segmentKey.segmentIndex) // segment matches
-//         )
-//      {
-//         // we want to keep the POI
-//         return false;
-//      }
-//
-//      return true;
-//   }
-//
-//private:
-//   GroupIndexType   m_GroupIdx;
-//   GirderIndexType  m_GirderIdx;
-//   SegmentIndexType m_SegmentIdx;
-//};
-
-bool MergeDuplicatePoi(std::unique_ptr<pgsPointOfInterest>& poi1, std::unique_ptr<pgsPointOfInterest>& poi2)
-{
-   // merges poi2 into poi1 if possible
-   if (poi2->CanMerge() && poi1->AtExactSamePlace(*poi2))
-   {
-      // poi2 is mergable and poi1 and poi2 are at the exact same place... there is a chance we can merge them
-
-      bool doMerge = true;
-      if (poi1->GetID() == poi2->GetID())
-      {
-         // There are rare cases when a function attempts to put in a duplicate POI and we need to merge attributes if this happens.
-         // An example is in PCI_BDM_Ex9.6.pgs span 2, girder 1 when computing the CS shear.
-         doMerge = true;
-      }
-      else if (
-         // don't mess with
-         sysFlags<PoiAttributeType>::IsSet(poi1->GetReferencedAttributes(POI_SPAN), POI_CANTILEVER) || // points on the cantilevers
-         sysFlags<PoiAttributeType>::IsSet(poi2->GetReferencedAttributes(POI_SPAN), POI_CANTILEVER) ||
-         poi1->HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) || // pick points
-         poi1->HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT) || // bunk points
-         poi2->HasAttribute(POI_LIFT_SEGMENT | POI_PICKPOINT) ||
-         poi2->HasAttribute(POI_HAUL_SEGMENT | POI_BUNKPOINT)
-         )
-      {
-         doMerge = false;
-      }
-      else
-      {
-         // section change locations. Don't merge unless to ends of segments. It is possible that an end already has a section change
-         bool isP1EF = poi1->HasAttribute(POI_END_FACE) || poi1->HasAttribute(POI_START_FACE);
-         bool isP2EF = poi2->HasAttribute(POI_END_FACE) || poi2->HasAttribute(POI_START_FACE);
-         bool isP1SC = poi1->HasAttribute(POI_SECTCHANGE);
-         bool isP2SC = poi2->HasAttribute(POI_SECTCHANGE);
-
-         if (isP1SC || isP2SC)
-         {
-            // easier to see logic if merge is true
-            if (isP1EF && isP2SC || isP2EF && isP1SC)
-            {
-               doMerge = true;
-            }
-            else
-            {
-               doMerge = false;
-            }
-         }
-      }
-
-      if (doMerge)
-      {
-         bool bCanMerge = poi1->CanMerge();
-         poi1->CanMerge(true);
-         poi1->MergeAttributes(*poi2);
-         poi1->CanMerge(bCanMerge);
-         return true;
-      }
-   }
-
-   return false;
-}
-
 PoiIDType pgsPoiMgr::ms_NextID = 0;
 
 
@@ -261,8 +119,6 @@ PoiIDType pgsPoiMgr::ms_NextID = 0;
 //======================== LIFECYCLE  =======================================
 pgsPoiMgr::pgsPoiMgr()
 {
-   m_Tolerance = ::ConvertToSysUnits( 1.0, unitMeasure::Millimeter );
-   pgsPointOfInterest::SetTolerance( m_Tolerance );
 }
 
 pgsPoiMgr::~pgsPoiMgr()
@@ -272,10 +128,19 @@ pgsPoiMgr::~pgsPoiMgr()
 
 PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
 {
+   ATLASSERT(poi.GetID() == INVALID_ID); // why are you adding a POI that has already been assigned an ID? ID's get assigned when the POI is added
+
+   // get the POI container for the segment key
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
+   auto& poiContainer = GetPoiContainer(segmentKey);
+
+#if defined _DEBUG
+   // verify that the POI is not currently in the container
+   auto found(std::find_if(std::begin(poiContainer), std::end(poiContainer), [&poi](auto& p) {return p->GetID() == poi.GetID(); }));
+   ATLASSERT(found == std::end(poiContainer));
+#endif
 
    // first see if we have an existing poi at this location. Just merge attributes into existing if we do
-   auto& poiContainer = GetPoiContainer(segmentKey);
    auto iter(std::begin(poiContainer));
    auto end(std::end(poiContainer));
    for ( ; iter != end; iter++)
@@ -283,39 +148,23 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
       auto& pCurrentPoi(*iter);
       ATLASSERT(pCurrentPoi->GetSegmentKey().IsEqual(segmentKey));
 
-      // first try strict merging of poi's... if two POIs are at exactly the same location
-      // they can always be merged
-      if (pCurrentPoi->AtExactSamePlace(poi) )
+      if (pCurrentPoi->AtSamePlace(poi) )
       {
+         // the new poi is at the same place as a previously stored poi
+         // try to merge them together
          if (pCurrentPoi->MergeAttributes(poi))
          {
-            if (poi.CanMerge() == false)
-            {
-               pCurrentPoi->CanMerge(false);
-            }
-            return pCurrentPoi->m_ID; // no need to re-sort vector
+            // merge was successful, we are done
+            return pCurrentPoi->m_ID; 
          }
          else
          {
+            // could not be merged
+
             // sometimes there are multiple POI at the same location... make sure
-            // the next poi is not at the same location... if it is, continue, otherwise bail out
-            auto iter_next = iter + 1;
-            if (iter_next != end && !poi.AtExactSamePlace(*(*(iter_next))))
-            {
-               break; // poi's can't be merged... just break out of here and continue
-            }
-         }
-      }
-      else if (pCurrentPoi->AtSamePlace(poi)) // are POI's close enough?
-      {
-         if (poi.CanMerge() && pCurrentPoi->CanMerge() && pCurrentPoi->MergeAttributes(poi))
-         {
-            return pCurrentPoi->m_ID; // no need to re-sort vector
-         }
-         else
-         {
-            // sometimes there are multiple POI at the same location... make sure
-            // the next poi is not at the same location... if it is, continue, otherwise bail out
+            // the next poi is not at the same location... if it is, continue because
+            // the new poi might be able to be merged with it, otherwise bail out because
+            // there aren't any other POIs at this same place
             auto iter_next = iter + 1;
             if (iter_next != end && !poi.AtSamePlace(*(*(iter_next))))
             {
@@ -326,16 +175,17 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
 
       if (poi.GetDistFromStart() < pCurrentPoi->GetDistFromStart())
       {
-         // the containers are sorted... once we go past the new poi there wont be a match
+         // the containers are sorted... once the current POI goes past the new poi there wont be a match so break the loop
          break;
       }
-   }
+   } // next poi
+
+   // if we get this far, there is a new poi to go into the poi container
 
    PoiIDType id = poi.m_ID;
    if ( id == INVALID_ID )
    {
-      // assert if we are about to roll over the id
-      ATLASSERT(ms_NextID != MAX_ID);
+      ATLASSERT(ms_NextID != MAX_ID); // assert if we are about to roll over the id
       id = ms_NextID++;
    }
    else
@@ -343,59 +193,31 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
       // if in new POI has already been assigned an ID
       // make sure the next POI ID won't conflict with it
       ms_NextID = Max(ms_NextID,id+1);
-
-      auto found(std::find_if(std::begin(poiContainer), std::end(poiContainer), [id](auto& p) {return p->GetID() == id; }));
-      if (found != std::end(poiContainer))
-      {
-         // this POI is already in the container... merge it with itself
-         // This is very rare, but happens when we are creating critical section for shear POI and the critical
-         // section is at the face of support. The face of support POI will already be in the collection
-         auto& pFoundPoi(*found);
-         ATLASSERT(pFoundPoi->AtSamePlace(poi));
-
-         // these next two POI are not absolute error checks... FOS and critical section are the most common
-         // reason this case will occur. The asserts will fire if a different case occurs. The different case
-         // would be one that we haven't thought of yet and should investigate
-         ATLASSERT(pFoundPoi->HasAttribute(POI_FACEOFSUPPORT));
-         ATLASSERT(poi.HasAttribute(POI_CRITSECTSHEAR1) || poi.HasAttribute(POI_CRITSECTSHEAR2));
-
-         pFoundPoi->MergeAttributes(poi);
-         return pFoundPoi->m_ID;
-      }
    }
 
-   // Don't copy poi and put it in because this is a very highly utilized function and copies don't come cheap
 #if defined _DEBUG
-   auto found(std::find_if(std::begin(poiContainer), std::end(poiContainer), [id](auto& p) {return p->GetID() == id; }));
+   // verify there isn't a POI in the container with the new POI's ID
+   found = std::find_if(std::begin(poiContainer), std::end(poiContainer), [id](auto& p) {return p->GetID() == id; });
    ATLASSERT(found == std::end(poiContainer));
 #endif
-
+   
+   // create the new POI and assign it's ID
    poiContainer.emplace_back(std::make_unique<pgsPointOfInterest>(poi));
    poiContainer.back()->m_ID = id;
 
    // sort POIs, not their pointers
    std::sort(std::begin(poiContainer), std::end(poiContainer), [](auto& a, auto& b) {return *a < *b;});
 
-   poiContainer.erase(std::unique(std::begin(poiContainer), std::end(poiContainer),MergeDuplicatePoi), std::end(poiContainer));
-
    return id;
 }
 
-bool pgsPoiMgr::RemovePointOfInterest(const pgsPointOfInterest& poi,bool bConsiderAttributes)
+bool pgsPoiMgr::RemovePointOfInterest(const pgsPointOfInterest& poi)
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    auto& poiContainer = GetPoiContainer(segmentKey);
 
-   PoiContainer::iterator found;
-   if ( bConsiderAttributes )
-   {
-      found = std::find_if(std::begin(poiContainer),std::end(poiContainer), ExactlySame(poi,m_Tolerance) );
-   }
-   else
-   {
-      found = std::find_if(std::begin(poiContainer), std::end(poiContainer), SamePlace(poi,m_Tolerance) );
-   }
+   PoiContainer::iterator found = std::find_if(std::begin(poiContainer), std::end(poiContainer), TestEqual(poi));
 
    if ( found != std::end(poiContainer) )
    {
@@ -442,6 +264,37 @@ void pgsPoiMgr::RemovePointsOfInterest(PoiAttributeType targetAttribute,PoiAttri
 void pgsPoiMgr::RemoveAll()
 {
    m_PoiData.clear();
+   m_DuctBoundaries.clear();
+}
+
+void pgsPoiMgr::AddDuctBoundary(const CGirderKey& girderKey, DuctIndexType ductIdx, PoiIDType startPoiID, PoiIDType endPoiID)
+{
+   auto result = m_DuctBoundaries.emplace(girderKey, ductIdx, startPoiID, endPoiID);
+   ATLASSERT(result.second == true);
+
+#if defined _DEBUG
+   const pgsPointOfInterest& startPoi = GetPointOfInterest(startPoiID);
+   ATLASSERT(startPoi.HasAttribute(POI_DUCT_START));
+
+   const pgsPointOfInterest& endPoi = GetPointOfInterest(endPoiID);
+   ATLASSERT(endPoi.HasAttribute(POI_DUCT_END));
+#endif
+}
+
+void pgsPoiMgr::GetDuctBoundary(const CGirderKey& girderKey, DuctIndexType ductIdx, PoiIDType* pStartPoiID, PoiIDType* pEndPoiID) const
+{
+   auto found = m_DuctBoundaries.find(DuctBoundaryRecord(girderKey, ductIdx, INVALID_ID, INVALID_ID));
+   ATLASSERT(found != m_DuctBoundaries.end());
+   *pStartPoiID = found->startID;
+   *pEndPoiID = found->endID;
+
+#if defined _DEBUG
+   const pgsPointOfInterest& startPoi = GetPointOfInterest(*pStartPoiID);
+   ATLASSERT(startPoi.HasAttribute(POI_DUCT_START));
+
+   const pgsPointOfInterest& endPoi = GetPointOfInterest(*pEndPoiID);
+   ATLASSERT(endPoi.HasAttribute(POI_DUCT_END));
+#endif
 }
 
 pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,Float64 Xpoi) const
@@ -455,12 +308,12 @@ pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,F
    auto begin(std::begin(poiContainer));
    auto end(std::end(poiContainer));
 
-   // find all poi that are within m_Tolerance of Xpoi
+   // find all poi that are at the same place
    auto found = begin;
    std::vector<pgsPointOfInterest> vPoi;
    while ( found != end )
    {
-      found = std::find_if(begin,end,SamePlace(poi,m_Tolerance));
+      found = std::find_if(begin, end, [&poi](const auto& pPoi) {return pPoi->AtSamePlace(poi); });
       if ( found != end )
       {
          vPoi.push_back(*(*found));
@@ -468,7 +321,7 @@ pgsPointOfInterest pgsPoiMgr::GetPointOfInterest(const CSegmentKey& segmentKey,F
       }
    }
 
-   // no poi within m_Tolerance of Xpoi, just return the poi created on the fly above
+   // no poi at the same place, just return the poi created on the fly above
    if ( vPoi.size() == 0 )
    {
       return poi;
@@ -794,20 +647,6 @@ bool pgsPoiMgr::ReplacePointOfInterest(PoiIDType ID,const pgsPointOfInterest& po
 }
 
 //======================== ACCESS     =======================================
-Float64 pgsPoiMgr::SetTolerance(Float64 tol)
-{
-   Float64 oldTolerance = m_Tolerance;
-   m_Tolerance = tol;
-   pgsPointOfInterest::SetTolerance( m_Tolerance );
-   return oldTolerance;
-}
-
-Float64 pgsPoiMgr::GetTolerance() const
-{
-   ATLASSERT(m_Tolerance == pgsPointOfInterest::GetTolerance());
-   return m_Tolerance;
-}
-
 CollectionIndexType pgsPoiMgr::GetPointOfInterestCount() const
 {
    CollectionIndexType nPoi = 0;
@@ -961,7 +800,11 @@ bool pgsPoiMgr::AndAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribut
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT) ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : true) &&
           (sysFlags<PoiAttributeType>::IsSet(attrib,POI_START_FACE)               ? poi.HasAttribute(POI_START_FACE)               : true) &&
-          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_END_FACE)                 ? poi.HasAttribute(POI_END_FACE)                 : true)
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_END_FACE)                 ? poi.HasAttribute(POI_END_FACE)                 : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib, POI_DUCT_START)              ? poi.HasAttribute(POI_DUCT_START)               : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib, POI_DUCT_END)                ? poi.HasAttribute(POI_DUCT_END)                 : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CASTING_BOUNDARY_START)   ? poi.HasAttribute(POI_CASTING_BOUNDARY_START)   : true) &&
+          (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CASTING_BOUNDARY_END)     ? poi.HasAttribute(POI_CASTING_BOUNDARY_END)     : true)
          )
       {
          // This poi matches the selection criteria.
@@ -1094,9 +937,13 @@ bool pgsPoiMgr::OrAttributeEvaluation(const pgsPointOfInterest& poi,PoiAttribute
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_STIRRUP_ZONE)             ? poi.HasAttribute(POI_STIRRUP_ZONE)             : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_INTERMEDIATE_TEMPSUPPORT) ? poi.HasAttribute(POI_INTERMEDIATE_TEMPSUPPORT) : false) ||
        (sysFlags<PoiAttributeType>::IsSet(attrib,POI_CLOSURE)                  ? poi.HasAttribute(POI_CLOSURE)                  : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_START_FACE)               ? poi.HasAttribute(POI_START_FACE)               : false) ||
-       (sysFlags<PoiAttributeType>::IsSet(attrib,POI_END_FACE)                 ? poi.HasAttribute(POI_END_FACE)                 : false)
-       )
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_START_FACE)              ? poi.HasAttribute(POI_START_FACE)               : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_END_FACE)                ? poi.HasAttribute(POI_END_FACE)                 : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_DUCT_START)              ? poi.HasAttribute(POI_DUCT_START)               : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_DUCT_END)                ? poi.HasAttribute(POI_DUCT_END)                 : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_CASTING_BOUNDARY_START)  ? poi.HasAttribute(POI_CASTING_BOUNDARY_START)   : false) ||
+       (sysFlags<PoiAttributeType>::IsSet(attrib, POI_CASTING_BOUNDARY_END)    ? poi.HasAttribute(POI_CASTING_BOUNDARY_END)     : false)
+      )
       {
          // This poi matches the selection criteria.
          return true;

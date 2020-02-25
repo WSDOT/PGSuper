@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -99,19 +99,15 @@ public:
 
 
    // Returns true if a "with rebar" allowable tension stress was used anywhere along the girder
-   bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
-   bool WasGirderWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
-   bool WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   bool WasWithRebarAllowableStressUsed(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const;
+   bool WasGirderWithRebarAllowableStressUsed(const StressCheckTask& task) const;
+   bool WasDeckWithRebarAllowableStressUsed(const StressCheckTask& task) const;
 
    // Returns true if a "with rebar" allowable tension stress limit was applicable anywhere along the girder
    // this is independent of whether or not it was actually used in the stress evaluation
-   bool IsWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
-   bool IsGirderWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
-   bool IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const;
-
-   // Returns true if a flexural stress check is applicable anywhere along the girder
-   bool IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const;
-
+   bool IsWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const;
+   bool IsGirderWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const;
+   bool IsDeckWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const;
 
    Float64 GetRequiredGirderConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState) const;
    Float64 GetRequiredGirderConcreteStrength() const;

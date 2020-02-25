@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -220,7 +220,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    (*p_table)(row++,1) << pProjectData->GetLldfShear();
 
    (*p_table)(row,0) << RPT_EC <<_T(" Deck");
-   (*p_table)(row++,1) << modE.SetValue( pMaterial->GetDeckEc(liveLoadIntervalIdx) );
+   (*p_table)(row++,1) << modE.SetValue( pMaterial->GetDeckEc(0,liveLoadIntervalIdx) );
 
    (*p_table)(row,0) << RPT_EC <<_T(" Beam");
    (*p_table)(row++,1) << modE.SetValue( pMaterial->GetSegmentEc(fabrSegmentKey,liveLoadIntervalIdx) );

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -212,20 +212,20 @@ interface IKdotGirderHaulingSpecCriteria : IUnknown
 {
    // Spec criteria for KDOT analyses
    // Allowable concrete stresses
-   virtual Float64 GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey)=0;
-   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey)=0;
-   virtual Float64 GetKdotHaulingAllowableTensionFactor()=0;
-   virtual Float64 GetKdotHaulingAllowableCompressionFactor()=0;
-   virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) = 0;
-   virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor() = 0;
-   virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) = 0;
-   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar)=0;
-   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc)=0;
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetKdotHaulingAllowableTensionFactor() const = 0;
+   virtual Float64 GetKdotHaulingAllowableCompressionFactor() const = 0;
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor() const = 0;
+   virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) const = 0;
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const = 0;
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc) const = 0;
 
-   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) = 0;
-   virtual Float64 GetHaulingDesignLocationAccuracy() = 0;
+   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const = 0;
+   virtual Float64 GetHaulingDesignLocationAccuracy() const = 0;
 
-   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) = 0;
+   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const = 0;
 };
 
 #endif // INCLUDED_IFACE_GIRDERHANDLINGSPECCRITERIA_H_

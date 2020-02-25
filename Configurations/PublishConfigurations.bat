@@ -4,8 +4,8 @@ REM -------------------------------------------
 REM - Publish PGSuper Configurations
 REM -------------------------------------------
 
-SET PGSUPER_TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSuper\Version_4.1.0
-REM SET PGSUPER_TARGET=\\wsdot\Resources\Topics\Publish\Web\ProdCF\EESC\Bridge\software\PGSuper\Version_4.1.0
+SET PGSUPER_TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSuper\Version_5.0.0
+REM SET PGSUPER_TARGET=\\wsdot\Resources\Topics\Publish\Web\ProdCF\EESC\Bridge\software\PGSuper\Version_5.0.0
 SET PGSUPER_TEMPLATE_EXTENSION=PGT
 
 del %PGSUPER_TARGET%\WSDOT.*
@@ -19,8 +19,8 @@ REM - Publish PGSplice Configurations
 REM -------------------------------------------
 
 
-SET PGSPLICE_TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSplice\Version_4.1.0
-REM SET PGSPLICE_TARGET=\\wsdot\Resources\Topics\Publish\Web\ProdCF\EESC\Bridge\software\PGSuper\Version_4.1.0
+SET PGSPLICE_TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSplice\Version_5.0.0
+REM SET PGSPLICE_TARGET=\\wsdot\Resources\Topics\Publish\Web\ProdCF\EESC\Bridge\software\PGSuper\Version_5.0.0
 SET PGSPLICE_TEMPLATE_EXTENSION=SPT
 
 del %PGSPLICE_TARGET%\WSDOT.*

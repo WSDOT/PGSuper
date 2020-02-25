@@ -533,6 +533,12 @@ xcopy /y /d .\TogaTemplates\*.* $(BRIDGELINKDIR)\TogaTemplates\*.*</Command>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="EccentricityDlg.cpp" />
+    <ClCompile Include="TOGATestFileWriter.cpp" />
+    <ClCompile Include="TxCSVDataExporter.cpp" />
+    <ClCompile Include="TxDataExporter.cpp" />
+    <ClCompile Include="TxDOTLegacyCadWriter.cpp" />
+    <ClCompile Include="TxExcel.cpp" />
+    <ClCompile Include="TxExcelDataExporter.cpp" />
     <ClCompile Include="exportCADData.cpp" />
     <ClCompile Include="mfcdual.cpp" />
     <ClCompile Include="ProjectCriteriaNotFoundDlg.cpp" />
@@ -615,6 +621,12 @@ xcopy /y /d .\TogaTemplates\*.* $(BRIDGELINKDIR)\TogaTemplates\*.*</Command>
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="EccentricityDlg.h" />
+    <ClInclude Include="TOGATestFileWriter.h" />
+    <ClInclude Include="TxCSVDataExporter.h" />
+    <ClInclude Include="TxDataExporter.h" />
+    <ClInclude Include="TxDOTLegacyCadWriter.h" />
+    <ClInclude Include="TxExcel.h" />
+    <ClInclude Include="TxExcelDataExporter.h" />
     <ClInclude Include="exportCADData.h" />
     <ClInclude Include="mfcdual.h" />
     <ClInclude Include="ProjectCriteriaNotFoundDlg.h" />

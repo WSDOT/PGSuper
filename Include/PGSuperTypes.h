@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -250,7 +250,7 @@ typedef struct pgsTypes
       twtAsymmetric // input defines the left and right overhangs explicitly
    } TopWidthType;
 
-   typedef enum StressType { Tension, Compression } StressType;
+   typedef enum StressType { Compression, Tension } StressType;
    
    typedef enum LimitState { 
                      ServiceI   = 0,   // Full dead load and live load
@@ -386,7 +386,8 @@ typedef struct pgsTypes
       Plumb = 0,     // Girder is plumb
       StartNormal,   // Girder is normal to deck at start of span
       MidspanNormal, // Girder is normal to deck at midspan
-      EndNormal      // Girder is normal to deck at end of span
+      EndNormal,     // Girder is normal to deck at end of span
+      Balanced       // Orient girder to minimize clearance at opposing corners
    } GirderOrientationType;
 
    typedef enum DeckOverhangTaper
@@ -459,6 +460,11 @@ typedef struct pgsTypes
       sbsGeneralAdjacentWithTopWidth // Beams are adjacent and top width and joint width can vary by span. Top width is input by user.
    } SupportedBeamSpacing;
 
+   typedef enum WorkPointLocation  // Vertical location of working point
+   {
+      wplTopGirder,
+      wplBottomGirder
+   } WorkPointLocation;
 
    typedef enum SlabOffsetType
    {
@@ -493,6 +499,7 @@ typedef struct pgsTypes
 
    typedef std::vector<SupportedDeckType>    SupportedDeckTypes;
    typedef std::vector<SupportedBeamSpacing> SupportedBeamSpacings;
+   typedef std::vector<WorkPointLocation> WorkPointLocations;
 
    typedef enum RemovePierType
    {
@@ -591,7 +598,9 @@ typedef struct pgsTypes
    {
       Normal,
       AllLightweight,
-      SandLightweight
+      SandLightweight,
+      UHPC,
+      ConcreteTypeCount // this should always be the last value in the num
    } ConcreteType;
 
    // Rebar layout defines where longitudinal rebar is placed along girder. 
@@ -689,6 +698,14 @@ typedef struct pgsTypes
       sitPull
    } StrandInstallationType;
 
+   typedef enum SegmentPTEventType
+   {
+      // Defines when plant installed segment PT tendons are installed
+      sptetRelease, // immediately after release
+      sptetStorage, // immediately after beginning of storage
+      sptetHauling // immediately prior to hauling
+   } SegmentPTEventType;
+
    typedef enum ProductForceType 
    { 
       // externaly applied loads
@@ -776,6 +793,18 @@ typedef struct pgsTypes
       sbLeft,
       sbRight
    } SectionBias;
+
+   typedef enum SlabOffsetRoundingMethod
+   {
+      sormRoundUp,
+      sormRoundNearest
+   } SlabOffsetRoundingMethod;
+
+   typedef enum DeckCastingRegionBoundary
+   {
+      dcrbNormalToAlignment, // deck casting region boundaries are normal to the alignment
+      dcrbParallelToPier // deck casting region boundaries are parallel to their reference pier
+   } DeckCastingRegionBoundary;
 
 } pgsTypes;
 
@@ -1206,8 +1235,11 @@ struct GDRCONFIG
 
    PRESTRESSCONFIG PrestressConfig; // all prestressing information
 
-   Float64 Fc;        // 28 day concrete strength
-   Float64 Fci;       // Concrete release strength
+   // fc/fc28 - The 115% f'c allowance per LRFD 5.12.3.2.5 is only applicable
+   // to stresses. Use Fc28 for strenght analysis
+   Float64 fc28;      // 28 day concrete strength (used for strength)
+   Float64 fc;        // 28 or 90 day compressive strength (used for stresses)
+   Float64 fci;       // Concrete release strength
    pgsTypes::ConcreteType ConcType;
    bool bHasFct;
    Float64 Fct;
@@ -1244,8 +1276,9 @@ struct GDRCONFIG
    {
       if (PrestressConfig != other.PrestressConfig) return false;
 
-      if ( !IsEqual(Fci, other.Fci) ) return false;
-      if ( !IsEqual(Fc,  other.Fc) ) return false;
+      if (!IsEqual(fci, other.fci)) return false;
+      if (!IsEqual(fc, other.fc)) return false;
+      if (!IsEqual(fc28, other.fc28)) return false;
 
       if (bUserEci != other.bUserEci) return false;
       if (bUserEc  != other.bUserEc)  return false;
@@ -1287,8 +1320,9 @@ void MakeCopy( const GDRCONFIG& rOther )
 
    PrestressConfig = rOther.PrestressConfig;
 
-   Fc = rOther.Fc;
-   Fci = rOther.Fci;
+   fc = rOther.fc;
+   fc28 = rOther.fc28;
+   fci = rOther.fci;
    ConcType = rOther.ConcType;
    bHasFct = rOther.bHasFct;
    Fct = rOther.Fct;
@@ -1358,6 +1392,73 @@ struct arDesignOptions
                       maxFci(0.0),
                       maxFc(0.0)
    {;}
+};
+
+
+struct StressCheckTask
+{
+   IntervalIndexType intervalIdx;
+   pgsTypes::LimitState limitState;
+   pgsTypes::StressType stressType;
+   bool bIncludeLiveLoad; // if intervalIdx is a live load interval, live load is include in the prestressing if this parameter is true
+                          // bIncludeLiveLoad should always be set to true unless you explicitly want to exclude live load in the stress check
+                          // bIncludeLiveLoad is used when comparing tasks, show you must match this parameters in queries.
+
+   StressCheckTask()
+   {
+      intervalIdx = INVALID_INDEX;
+      limitState = pgsTypes::ServiceI;
+      stressType = pgsTypes::Compression;
+      bIncludeLiveLoad = true;
+   }
+
+   StressCheckTask(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, pgsTypes::StressType stressType, bool bIncludeLiveLoad = true) :
+      intervalIdx(intervalIdx), limitState(limitState), stressType(stressType), bIncludeLiveLoad(bIncludeLiveLoad)
+   {
+   }
+
+   bool operator==(const StressCheckTask& other) const
+   {
+      return intervalIdx == other.intervalIdx && limitState == other.limitState && stressType == other.stressType && bIncludeLiveLoad == other.bIncludeLiveLoad;
+   }
+
+   bool operator<(const StressCheckTask& other) const
+   {
+      if (intervalIdx < other.intervalIdx)
+         return true;
+
+      if (other.intervalIdx < intervalIdx)
+         return false;
+
+      ATLASSERT(intervalIdx == other.intervalIdx);
+
+      if (limitState < other.limitState)
+         return true;
+
+      if (other.limitState < limitState)
+         return false;
+
+      ATLASSERT(limitState == other.limitState);
+
+      if (stressType < other.stressType)
+         return true;
+
+      if (other.stressType < stressType)
+         return false;
+
+      ATLASSERT(stressType == other.stressType);
+
+      if ((int)bIncludeLiveLoad < (int)other.bIncludeLiveLoad)
+         return true;
+
+      if ((int)other.bIncludeLiveLoad < (int)bIncludeLiveLoad)
+         return false;
+
+      ATLASSERT(bIncludeLiveLoad == other.bIncludeLiveLoad);
+
+      return false;
+
+   }
 };
 
 
@@ -1657,7 +1758,7 @@ inline bool IsStrengthLimitState(pgsTypes::LimitState ls)
 
 inline bool IsFatigueLimitState(pgsTypes::LimitState ls)
 {
-   return (ls == pgsTypes::FatigueI);
+   return (ls == pgsTypes::FatigueI || ls == pgsTypes::ServiceIA);
 }
 
 inline bool IsServiceLimitState(pgsTypes::LimitState ls)

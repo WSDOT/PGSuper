@@ -10,7 +10,7 @@ class COffsetDuctDlg : public CDialog, public COffsetDuctGridCallback
 	DECLARE_DYNAMIC(COffsetDuctDlg)
 
 public:
-	COffsetDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,CWnd* pParent = nullptr);   // standard constructor
+	COffsetDuctDlg(CSplicedGirderGeneralPage* pGdrDlg,DuctIndexType ductIdx,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~COffsetDuctDlg();
 
    void EnableDeleteBtn(BOOL bEnable);
@@ -26,6 +26,7 @@ protected:
    CSplicedGirderGeneralPage* m_pGirderlineDlg;
 
    DuctIndexType RefDuctIdx;
+   DuctIndexType m_DuctIdx;
 
    DECLARE_MESSAGE_MAP()
 

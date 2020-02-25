@@ -15,7 +15,7 @@ Failure | Enter the minimum factor of safety against failure of the section duri
 
 Modulus of Rupture for Cracking Moment
 ---------------------------------------
-Define the coefficient for computing the modulus of rupture used for computing the cracking moment in the stability analysis.
+Define the coefficient for computing the modulus of rupture, which is used for computing the cracking moment in the stability analysis.
 
 Lifting Analysis Parameters
 -------------------

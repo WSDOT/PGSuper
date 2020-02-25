@@ -800,6 +800,18 @@
     <ClCompile Include="SelectBoundaryConditionDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DeckRegionGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DrawDeckRegionControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GirderSegmentTendonsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SegmentTendonGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -1701,6 +1713,18 @@
     <ClInclude Include="SelectBoundaryConditionDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DeckRegionGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawDeckRegionControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GirderSegmentTendonsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SegmentTendonGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bss.ico">
@@ -1883,6 +1907,12 @@
     <Image Include="res\warning2.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\RW_Crosssection.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="PGSuperAppPlugin.idl" />
@@ -2060,6 +2090,54 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\HaulingOverhangs.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromPier.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromPier.emf">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

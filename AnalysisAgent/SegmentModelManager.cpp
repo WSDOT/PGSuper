@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -230,23 +230,6 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
    }
 }
 
-void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,Float64* pRleftMin,Float64* pRleftMax,Float64* pRrightMin,Float64* pRrightMax) const
-{
-   Float64 Rleft, Rright;
-   GetReaction(segmentKey,intervalIdx,lcDC,rtCumulative,&Rleft,&Rright);
-
-   GET_IFACE(ILoadFactors,pILoadFactors);
-   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
-   Float64 gDCMin, gDCMax;
-   pLoadFactors->GetDC(limitState, &gDCMin, &gDCMax);
-
-   *pRleftMin = gDCMin*Rleft;
-   *pRleftMax = gDCMax*Rleft;
-
-   *pRrightMin = gDCMin*Rright;
-   *pRrightMax = gDCMax*Rright;
-}
-
 Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,PierIndexType pierIdx,const CGirderKey& girderKey,ResultsType resultsType) const
 {
    if ( pfType != pgsTypes::pftGirder )
@@ -330,7 +313,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
 
    std::vector<sysSectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
-   if ( pfType == pgsTypes::pftPretension )
+   if ( pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning)
    {
       // For elastic analysis we assume that the deflection due to the pretension force does not
       // change with time. The only change in deflection that we account for is due to rigid body
@@ -348,105 +331,120 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
          const pgsPointOfInterest& poi(vPoiThisSegment.front());
          const CSegmentKey& segmentKey(poi.GetSegmentKey());
       
-         // get the Pretension deflection at release
          std::vector<Float64> vDxThisSegment;
          vDxThisSegment.resize(vPoiThisSegment.size(), 0.0);
 
          std::vector<Float64> vDyThisSegment;
          vDyThisSegment.resize(vPoiThisSegment.size(), 0.0);
 
-         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-         IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
-         IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-
-         if (resultsType == rtCumulative || intervalIdx == releaseIntervalIdx || intervalIdx == tsRemovalIntervalIdx)
+         if (pfType == pgsTypes::pftPretension)
          {
-            int firstStrandType = 0;
-            int nStrandTypes = 2;
-            if (tsInstallationIntervalIdx != INVALID_INDEX && (tsInstallationIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx))
-            {
-               nStrandTypes++;
-            }
-            if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
-            {
-               firstStrandType = (int)(pgsTypes::Temporary);
-               nStrandTypes = firstStrandType+1;
-            }
+            // get the Pretension deflection at release
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+            IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+            IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
-            for (int i = firstStrandType; i < nStrandTypes; i++)
+            if (resultsType == rtCumulative || intervalIdx == releaseIntervalIdx || intervalIdx == tsRemovalIntervalIdx)
             {
-               pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-               LoadCaseIDType lcidMx, lcidMy;
-               GetLoadCaseID(strandType, &lcidMx, &lcidMy);
+               int firstStrandType = 0;
+               int nStrandTypes = 2;
+               if (tsInstallationIntervalIdx != INVALID_INDEX && (tsInstallationIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx))
+               {
+                  nStrandTypes++;
+               }
 
+               if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
+               {
+                  firstStrandType = (int)(pgsTypes::Temporary);
+                  nStrandTypes = firstStrandType + 1;
+               }
+
+               for (int i = firstStrandType; i < nStrandTypes; i++)
+               {
+                  pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+                  LoadCaseIDType lcidMx, lcidMy;
+                  GetLoadCaseID(strandType, &lcidMx, &lcidMy);
+
+                  std::vector<Float64> vDyThisStrandType;
+                  GetSectionResults(releaseIntervalIdx, lcidMx, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDyThisStrandType, &vRz);
+                  std::transform(vDyThisStrandType.cbegin(), vDyThisStrandType.cend(), vDyThisSegment.cbegin(), vDyThisSegment.begin(), [](const auto& a, const auto& b) {return a + b; });
+
+                  std::vector<Float64> vDxThisStrandType;
+                  GetSectionResults(releaseIntervalIdx, lcidMy, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDxThisStrandType, &vRz);
+                  std::transform(vDxThisStrandType.cbegin(), vDxThisStrandType.cend(), vDxThisSegment.cbegin(), vDxThisSegment.begin(), [](const auto& a, const auto& b) {return a + b; });
+               }
+
+               if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
+               {
+                  // removal of strands causes opposite deflection and Ec changes
+                  GET_IFACE(IMaterials, pMaterials);
+                  Float64 Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
+                  Float64 Ec = pMaterials->GetSegmentEc(segmentKey, intervalIdx);
+                  std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), vDyThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
+                  std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), vDxThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
+               }
+
+               // at this time, vDxThisSegment has deflections due to the lateral prestressing moment based on the vertical stiffness of the girder
+               // we need to factor out the vertical stiffness and factor in the lateral stiffness.
+               // At the same time, we need the vertical deflection due to the lateral prestressing
+               PoiList vMidSpanPoi;
+               pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vMidSpanPoi);
+               const pgsPointOfInterest& msPoi(vMidSpanPoi.front());
+               Float64 Ixx = pSectProps->GetIxx(releaseIntervalIdx, msPoi);
+               Float64 Iyy = pSectProps->GetIyy(releaseIntervalIdx, msPoi);
+               Float64 Ixy = pSectProps->GetIxy(releaseIntervalIdx, msPoi);
+
+               // the model was built with EI = E(Ixx*Iyy - Ixy*Ixy)/Iyy. We want to multiply vDxThisSegment deflections by this value to remove its effect
+               // and then divide by E(Ixx*Iyy - Ixy*Ixy)/Ixx to get the actual lateral deflection... if we simplify the expressions, all we need to do
+               // is multiply vDxThisSegment by Ixx/Iyy
+
+               // Also, we need to get the vertical deflection due to the lateral prestressing. This is accomplished by getting the lateral deflection
+               // due to prestressing moment and multipying it by -Ixy/Ixx... the net results is multiplying by -Ixy/Iyy
+#if defined _DEBUG
+               Float64 D1 = Ixx / Iyy; // multiply by vDxThisSegment to get actual x-direction deflection
+               std::vector<Float64> vdx = vDxThisSegment;
+               std::transform(vdx.cbegin(), vdx.cend(), vdx.begin(), [&D1](const auto& dx) {return D1*dx; }); // actual x-direction deflection due to prestress My
+
+               Float64 D2 = -Ixy / Ixx; // then multiply by this to get the vertical deflection associated with the x-direction deflection
+               std::vector<Float64> vdy; // vertical deflection associated with lateral prestress My deflection
+               std::transform(vdx.cbegin(), vdx.cend(), std::back_inserter(vdy), [&D2](const auto& dx) {return D2*dx; });
+
+               // add vdy with vDyThisSegment to get total y deflection
+               std::transform(vdy.cbegin(), vdy.cend(), vDyThisSegment.cbegin(), vdy.begin(), [](const auto& dy1, const auto& dy2) {return dy1 + dy2; });
+#endif
+
+               //Float64 D = (Ixx/Iyy)*(-Ixy/Ixx) = -Ixy/Iyy
+               Float64 D = -Ixy / Iyy;
+
+               // multiply vDxThisSegment by D to get the indirect deflection in the y-direction
+               std::vector<Float64> Dy2;
+               Dy2.reserve(vDxThisSegment.size());
+               std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), std::back_inserter(Dy2), [&D](const auto& dx) {return D*dx; });
+
+               // multiply vDyThisSegment by D to get the indirect deflection in the x-direction
+               std::vector<Float64> Dx2;
+               Dx2.reserve(vDyThisSegment.size());
+               std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), std::back_inserter(Dx2), [&D](const auto& dx) {return D*dx; });
+
+               // Add the direct and indirect deflections to get the total deflection
+               std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), Dx2.cbegin(), vDxThisSegment.begin(), [](const auto& dx1, const auto& dx2) {return dx1 + dx2; });
+               std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), Dy2.cbegin(), vDyThisSegment.begin(), [](const auto& dy1, const auto& dy2) {return dy1 + dy2; });
+
+#if defined _DEBUG
+               ATLASSERT(std::equal(vdy.cbegin(), vdy.cend(), vDyThisSegment.cbegin(), [](const auto& a, const auto& b) {return IsEqual(a, b); }));
+#endif
+            }
+         }
+         else
+         {
+            LoadCaseIDType lcidPT = GetLoadCaseID(pgsTypes::pftPostTensioning);
+            IntervalIndexType stressingIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+            if ((resultsType == rtIncremental && intervalIdx == stressingIntervalIdx) || (resultsType == rtCumulative && stressingIntervalIdx <= intervalIdx))
+            {
                std::vector<Float64> vDyThisStrandType;
-               GetSectionResults(releaseIntervalIdx, lcidMx, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDyThisStrandType, &vRz);
+               GetSectionResults(stressingIntervalIdx, lcidPT, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDyThisStrandType, &vRz);
                std::transform(vDyThisStrandType.cbegin(), vDyThisStrandType.cend(), vDyThisSegment.cbegin(), vDyThisSegment.begin(), [](const auto& a, const auto& b) {return a + b; });
-
-               std::vector<Float64> vDxThisStrandType;
-               GetSectionResults(releaseIntervalIdx, lcidMy, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDxThisStrandType, &vRz);
-               std::transform(vDxThisStrandType.cbegin(), vDxThisStrandType.cend(), vDxThisSegment.cbegin(), vDxThisSegment.begin(), [](const auto& a, const auto& b) {return a + b; });
             }
-
-            if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
-            {
-               // removal of strands causes opposite deflection and Ec changes
-               GET_IFACE(IMaterials, pMaterials);
-               Float64 Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
-               Float64 Ec = pMaterials->GetSegmentEc(segmentKey, intervalIdx);
-               std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), vDyThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
-               std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), vDxThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
-            }
-
-            // at this time, vDxThisSegment has deflections due to the lateral prestressing moment based on the vertical stiffness of the girder
-            // we need to factor out the vertical stiffness and factor in the lateral stiffness.
-            // At the same time, we need the vertical deflection due to the lateral prestressing
-            PoiList vMidSpanPoi;
-            pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vMidSpanPoi);
-            const pgsPointOfInterest& msPoi(vMidSpanPoi.front());
-            Float64 Ixx = pSectProps->GetIxx(releaseIntervalIdx, msPoi);
-            Float64 Iyy = pSectProps->GetIyy(releaseIntervalIdx, msPoi);
-            Float64 Ixy = pSectProps->GetIxy(releaseIntervalIdx, msPoi);
-
-            // the model was built with EI = E(Ixx*Iyy - Ixy*Ixy)/Iyy. We want to multiply vDxThisSegment deflections by this value to remove its effect
-            // and then divide by E(Ixx*Iyy - Ixy*Ixy)/Ixx to get the actual lateral deflection... if we simplify the expressions, all we need to do
-            // is multiply vDxThisSegment by Ixx/Iyy
-            
-            // Also, we need to get the vertical deflection due to the lateral prestressing. This is accomplished by getting the lateral deflection
-            // due to prestressing moment and multipying it by -Ixy/Ixx... the net results is multiplying by -Ixy/Iyy
-#if defined _DEBUG
-            Float64 D1 = Ixx / Iyy; // multiply by vDxThisSegment to get actual x-direction deflection
-            std::vector<Float64> vdx = vDxThisSegment;
-            std::transform(vdx.cbegin(), vdx.cend(), vdx.begin(), [&D1](const auto& dx) {return D1*dx;}); // actual x-direction deflection due to prestress My
-            
-            Float64 D2 = -Ixy / Ixx; // then multiply by this to get the vertical deflection associated with the x-direction deflection
-            std::vector<Float64> vdy; // vertical deflection associated with lateral prestress My deflection
-            std::transform(vdx.cbegin(), vdx.cend(), std::back_inserter(vdy), [&D2](const auto& dx) {return D2*dx;});
-
-            // add vdy with vDyThisSegment to get total y deflection
-            std::transform(vdy.cbegin(), vdy.cend(), vDyThisSegment.cbegin(), vdy.begin(), [](const auto& dy1, const auto& dy2) {return dy1 + dy2;});
-#endif
-
-            //Float64 D = (Ixx/Iyy)*(-Ixy/Ixx) = -Ixy/Iyy
-            Float64 D = -Ixy / Iyy;
-
-            // multiply vDxThisSegment by D to get the indirect deflection in the y-direction
-            std::vector<Float64> Dy2;
-            Dy2.reserve(vDxThisSegment.size());
-            std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), std::back_inserter(Dy2), [&D](const auto& dx) {return D*dx;});
-
-            // multiply vDyThisSegment by D to get the indirect deflection in the x-direction
-            std::vector<Float64> Dx2;
-            Dx2.reserve(vDyThisSegment.size());
-            std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), std::back_inserter(Dx2), [&D](const auto& dx) {return D*dx;});
-
-            // Add the direct and indirect deflections to get the total deflection
-            std::transform(vDxThisSegment.cbegin(), vDxThisSegment.cend(), Dx2.cbegin(), vDxThisSegment.begin(), [](const auto& dx1, const auto& dx2) {return dx1 + dx2;});
-            std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), Dy2.cbegin(), vDyThisSegment.begin(), [](const auto& dy1, const auto& dy2) {return dy1 + dy2;});
-
-#if defined _DEBUG
-            ATLASSERT(std::equal(vdy.cbegin(), vdy.cend(), vDyThisSegment.cbegin(), [](const auto& a, const auto& b) {return IsEqual(a, b);}));
-#endif
          }
 
          // if this is an interval when support locations change, the deflections must be adjusted for the new support datum
@@ -468,7 +466,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
             {
                poiAttribute = POI_STORAGE_SEGMENT;
             }
-            else if ( haulingIntervalIdx <= intervalIdx && intervalIdx < erectionIntervalIdx )
+            else if ( haulingIntervalIdx <= intervalIdx && intervalIdx < erectionIntervalIdx)
             {
                poiAttribute = POI_HAUL_SEGMENT;
             }
@@ -487,7 +485,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
 
             // get the deflections at the segment support locations
             bGettingSupportAdjustment = true;
-            std::vector<Float64> Dsupports = GetDeflection(intervalIdx,pgsTypes::pftPretension,vSupports,rtCumulative);
+            std::vector<Float64> Dsupports = GetDeflection(intervalIdx,pfType,vSupports,rtCumulative);
             bGettingSupportAdjustment = false;
 
             // get the values for use in the linear interpoloation
@@ -522,7 +520,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
          }
       }
    }
-   else if ( pfType == pgsTypes::pftSecondaryEffects || pfType == pgsTypes::pftPostTensioning )
+   else if ( pfType == pgsTypes::pftSecondaryEffects)
    {
       // post-tensioning hasn't been applied yet so the response is zero
       vDy.resize(vPoi.size(),0.0);
@@ -710,13 +708,55 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
    std::vector<sysSectionValue> vFx,vFy,vMz;
    std::vector<Float64> vDx,vDy,vRz;
 
-   if ( pfType == pgsTypes::pftPretension )
+   if ( pfType == pgsTypes::pftPretension)
    {
-      GetPrestressSectionResults(intervalIdx, vPoi, resultsType, &vFx, &vFy, &vMz, &vDx, &vDy, &vRz );
+      GET_IFACE(IIntervals, pIntervals);
+      GET_IFACE(IPointOfInterest, pPoi);
+      std::list<PoiList> sPoi;
+      pPoi->GroupBySegment(vPoi, &sPoi);
+      for (const auto& vPoiThisSegment : sPoi)
+      {
+         const CSegmentKey& segmentKey(vPoiThisSegment.front().get().GetSegmentKey());
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+         std::vector<Float64> vRzThisSegment;
+         if ((resultsType == rtIncremental && intervalIdx == releaseIntervalIdx) || (resultsType == rtCumulative && releaseIntervalIdx <= intervalIdx))
+         {
+            GetPrestressSectionResults(intervalIdx, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDy, &vRzThisSegment);
+            vRz.insert(vRz.end(), vRzThisSegment.begin(), vRzThisSegment.end());
+         }
+         else
+         {
+            vRz.insert(vRz.end(), vPoiThisSegment.size(), 0.0);
+         }
+      }
    }
-   else if ( pfType == pgsTypes::pftSecondaryEffects || pfType == pgsTypes::pftPostTensioning )
+   else if (pfType == pgsTypes::pftPostTensioning)
    {
-      // post-tensioning hasn't been applied yet so the response is zero
+      LoadCaseIDType lcidPT = GetLoadCaseID(pfType);
+
+      GET_IFACE(IIntervals, pIntervals);
+      GET_IFACE(IPointOfInterest, pPoi);
+      std::list<PoiList> sPoi;
+      pPoi->GroupBySegment(vPoi, &sPoi);
+      for (const auto& vPoiThisSegment : sPoi)
+      {
+         const CSegmentKey& segmentKey(vPoiThisSegment.front().get().GetSegmentKey());
+         IntervalIndexType stressingIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+         std::vector<Float64> vRzThisSegment;
+         if ((resultsType == rtIncremental && intervalIdx == stressingIntervalIdx) || (resultsType == rtCumulative && stressingIntervalIdx <= intervalIdx))
+         {
+            GetSectionResults(stressingIntervalIdx, lcidPT, vPoiThisSegment, resultsType, &vFx, &vFy, &vMz, &vDx, &vDy, &vRzThisSegment);
+            vRz.insert(vRz.end(), vRzThisSegment.begin(), vRzThisSegment.end());
+         }
+         else
+         {
+            vRz.insert(vRz.end(), vPoiThisSegment.size(), 0.0);
+         }
+      }
+   }
+   else if ( pfType == pgsTypes::pftSecondaryEffects )
+   {
+      // no secondary effects for segments
       vRz.resize(vPoi.size(),0.0);
    }
    else
@@ -1357,15 +1397,12 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Lim
 // IExternalLoading
 bool CSegmentModelManager::CreateLoading(GirderIndexType girderLineIdx,LPCTSTR strLoadingName)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderLineIdx, &vGirderKeys);
+   for(const auto& girderKey : vGirderKeys)
    {
-      GirderIndexType nGirdersThisGroup = pIBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
-      GirderIndexType gdrIdx = Min(girderLineIdx,nGirdersThisGroup-1);
-
-      CGirderKey girderKey(grpIdx,gdrIdx);
-
       const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -1412,16 +1449,13 @@ bool CSegmentModelManager::CreateLoading(GirderIndexType girderLineIdx,LPCTSTR s
    return true;
 }
 
-bool CSegmentModelManager::AddLoadingToLoadCombination(GirderIndexType girderLineIdx,LPCTSTR strLoadingName,LoadingCombinationType comboType)
+bool CSegmentModelManager::AddLoadingToLoadCombination(GirderIndexType girderLineIdx, LPCTSTR strLoadingName, LoadingCombinationType comboType)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderLineIdx, &vGirderKeys);
+   for (const auto& girderKey : vGirderKeys)
    {
-      GirderIndexType nGirdersThisGroup = pIBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
-      GirderIndexType gdrIdx = Min(girderLineIdx,nGirdersThisGroup-1);
-
-      CGirderKey girderKey(grpIdx,gdrIdx);
       auto& loadCombinationMap(GetLoadCombinationMap(girderKey));
       loadCombinationMap.insert(std::make_pair(comboType,strLoadingName));
    }
@@ -1715,6 +1749,8 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 {
    GET_IFACE(IIntervals, pIntervals);
 
+   LoadCaseIDType lcidPT = GetLoadCaseID(pgsTypes::pftPostTensioning);
+
    CSegmentModelData* pModelData = nullptr;
    CSegmentKey prevSegmentKey;
    for ( const pgsPointOfInterest& poi : vPoi)
@@ -1722,6 +1758,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+      IntervalIndexType stressingIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
 
       if (releaseIntervalIdx <= intervalIdx && !segmentKey.IsEqual(prevSegmentKey))
       {
@@ -1741,12 +1778,19 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
          {
             ApplyPretensionLoad(pModelData,segmentKey,intervalIdx);
          }
+
+         if (pModelData->Loads.find(lcidPT) == pModelData->Loads.end() && lcid == lcidPT)
+         {
+            ApplyPostTensionLoad(pModelData, segmentKey, intervalIdx);
+         }
       }
 
       GET_IFACE_NOCHECK(IPointOfInterest,pPoi);
-      if ( intervalIdx < releaseIntervalIdx || pPoi->IsOffSegment(poi) )
+      if ( intervalIdx < releaseIntervalIdx || (intervalIdx < stressingIntervalIdx && lcid == lcidPT) || pPoi->IsOffSegment(poi) )
       {
-         // interval is before release or the POI is off the segment
+         // interval is before release (so no pretension effects)
+         // or interval is before post-tension and the request is for PT results (so no PT effects)
+         // or the POI is off the segment
          sysSectionValue fx(0,0), fy(0,0), mz(0,0);
          Float64 dx(0), dy(0), rz(0);
 
@@ -2371,7 +2415,17 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
          pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xs, &mbrIDStart, &Xs);
          pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
          
-         pointLoadsX->Create(ptLoadIDX++,mbrIDStart,Xs,equivLoad.P,equivLoad.N,equivLoad.Mx,lotGlobal,&ptLoad);
+         if (IsZero(equivLoad.N))
+         {
+            pointLoadsX->Create(ptLoadIDX++, mbrIDStart, Xs, equivLoad.P, equivLoad.N, equivLoad.Mx, lotGlobal, &ptLoad);
+         }
+         else
+         {
+            // if N is not zero, this is the load for the vertical component of harped strand prestress
+            // P is in the data structure for reporting purposes, so we can show how N is computed
+            // however, there is not a new axial load, P, applied at this location
+            pointLoadsX->Create(ptLoadIDX++, mbrIDStart, Xs, 0.0/*equivLoad.P*/, equivLoad.N, equivLoad.Mx, lotGlobal, &ptLoad);
+         }
 
          if (!IsZero(equivLoad.wy))
          {
@@ -2407,16 +2461,96 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
    }
 }
 
+void CSegmentModelManager::ApplyPostTensionLoad(CSegmentModelData* pModelData, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
+{
+   CComPtr<IFem2dLoadingCollection> loadings;
+   pModelData->Model->get_Loadings(&loadings);
+
+
+   LoadCaseIDType lcidPT = GetLoadCaseID(pgsTypes::pftPostTensioning);
+   if (pModelData->Loads.find(lcidPT) != pModelData->Loads.end())
+   {
+      // this load has been previously applied
+      ATLASSERT(pModelData->Loads.find(lcidPT) != pModelData->Loads.end());
+      return;
+   }
+
+   CComPtr<IFem2dLoading> loading;
+   CComPtr<IFem2dPointLoadCollection> pointLoads;
+   CComPtr<IFem2dDistributedLoadCollection> distLoads;
+
+   loadings->Create(lcidPT, &loading);
+   loading->get_PointLoads(&pointLoads);
+   loading->get_DistributedLoads(&distLoads);
+
+   pModelData->Loads.insert(lcidPT);
+
+   LoadIDType ptLoadID;
+   pointLoads->get_Count((CollectionIndexType*)&ptLoadID);
+
+   LoadIDType distLoadID;
+   distLoads->get_Count((CollectionIndexType*)&distLoadID);
+
+   GET_IFACE_NOCHECK(IProductLoads, pProductLoads);
+   std::vector<EquivPretensionLoad> vLoads = pProductLoads->GetEquivSegmentPostTensionLoads(segmentKey);
+
+   std::vector<EquivPretensionLoad>::iterator iter(vLoads.begin());
+   std::vector<EquivPretensionLoad>::iterator iterEnd(vLoads.end());
+   for (; iter != iterEnd; iter++)
+   {
+      EquivPretensionLoad& equivLoad = *iter;
+
+      CComPtr<IFem2dPointLoad> ptLoad;
+      MemberIDType mbrIDStart, mbrIDEnd;
+      Float64 Xs, Xe;
+      pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xs, &mbrIDStart, &Xs);
+      pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
+
+      pointLoads->Create(ptLoadID++, mbrIDStart, Xs, equivLoad.P, equivLoad.N, equivLoad.Mx, lotGlobal, &ptLoad);
+
+      if (!IsZero(equivLoad.wy))
+      {
+         if (mbrIDStart == mbrIDEnd)
+         {
+            CComPtr<IFem2dDistributedLoad> distLoad;
+            distLoads->Create(distLoadID++, mbrIDStart, loadDirFy, Xs, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+         }
+         else
+         {
+            CComPtr<IFem2dDistributedLoad> distLoad;
+            distLoads->Create(distLoadID++, mbrIDStart, loadDirFy, Xs, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            for (MemberIDType mbrID = mbrIDStart + 1; mbrID < mbrIDEnd; mbrID++)
+            {
+               distLoad.Release();
+               distLoads->Create(distLoadID++, mbrID, loadDirFy, 0, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            }
+            distLoad.Release();
+            distLoads->Create(distLoadID++, mbrIDEnd, loadDirFy, 0, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+         }
+      }
+   }
+}
+
 LoadCaseIDType CSegmentModelManager::GetLoadCaseID(pgsTypes::ProductForceType pfType) const
 {
-   return m_ProductLoadMap.GetLoadCaseID(pfType);
+   if (pfType == pgsTypes::pftPostTensioning)
+   {
+      return m_ProductLoadMap.GetMaxLoadCaseID() + 1;
+   }
+   else
+   {
+      return m_ProductLoadMap.GetLoadCaseID(pfType);
+   }
 }
 
 void CSegmentModelManager::GetLoadCaseID(pgsTypes::StrandType strandType,LoadCaseIDType* plcidMx,LoadCaseIDType* plcidMy) const
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
-   *plcidMx = m_ProductLoadMap.GetMaxLoadCaseID() + 2 * LoadCaseIDType(strandType);
-   *plcidMy = m_ProductLoadMap.GetMaxLoadCaseID() + 2 * LoadCaseIDType(strandType) + 1;
+   //                                               +----- this +2 is for the PT load case ID
+   //                                               |
+   //                                               V
+   *plcidMx = m_ProductLoadMap.GetMaxLoadCaseID() + 2 + 2 * LoadCaseIDType(strandType);
+   *plcidMy = m_ProductLoadMap.GetMaxLoadCaseID() + 2 + 2 * LoadCaseIDType(strandType) + 1;
 }
 
 LoadCaseIDType CSegmentModelManager::GetGirderIncrementalLoadCaseID() const
@@ -2426,8 +2560,8 @@ LoadCaseIDType CSegmentModelManager::GetGirderIncrementalLoadCaseID() const
 
 LoadCaseIDType CSegmentModelManager::GetFirstExternalLoadCaseID() const
 {
-   // 8 = 2*(3 for each strand type) + 1 for Girder_Incremental
-   return m_ProductLoadMap.GetMaxLoadCaseID() + 8; // this gets the IDs past the strand IDs
+   // 9 = 1 for PT + 2*(3 for each strand type) + 1 for Girder_Incremental
+   return m_ProductLoadMap.GetMaxLoadCaseID() + 9; // this gets the IDs past the strand IDs
 }
 
 LoadCaseIDType CSegmentModelManager::GetLoadCaseID(CSegmentModelData* pModelData,LPCTSTR strLoadingName) const

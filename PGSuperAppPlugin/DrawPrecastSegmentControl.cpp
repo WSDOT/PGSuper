@@ -50,7 +50,12 @@ void CDrawPrecastSegmentControl::OnPaint()
    // TODO: Add your message handler code here
    // Do not call CWnd::OnPaint() for painting messages
 
-   dc.SelectClipRgn(nullptr);
+   // set up the clipping region so we don't draw outside of the client rect
+   CRect rClient;
+   GetClientRect(&rClient);
+   CRgn rgn;
+   rgn.CreateRectRgnIndirect(&rClient);
+   dc.SelectClipRgn(&rgn);
 
    const CSplicedGirderData* pSplicedGirder = m_pSource->GetGirder();
    SegmentIndexType nSegments = pSplicedGirder->GetSegmentCount();
@@ -76,13 +81,6 @@ void CDrawPrecastSegmentControl::OnPaint()
    {
       CreateSegmentShape(nextSegmentKey,&nextShape,&nextBottomFlange);
    }
-
-   // set up the clipping region so we don't draw outside of the client rect
-   CRect rClient;
-   GetClientRect(&rClient);
-   CRgn rgn;
-   rgn.CreateRectRgnIndirect(&rClient);
-   dc.SelectClipRgn(&rgn);
 
    // setup coordinate mapping
    rClient.DeflateRect(1,1,1,1);

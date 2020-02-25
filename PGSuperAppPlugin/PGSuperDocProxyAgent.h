@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -256,6 +256,7 @@ public:
    virtual bool EditMomentLoad(CollectionIndexType loadIdx) override;
    virtual bool EditMomentLoadByID(LoadIDType loadID) override;
    virtual bool EditTimeline() override;
+   virtual bool EditCastDeckActivity() override;
    virtual UINT GetStdToolBarID() override;
    virtual UINT GetLibToolBarID() override;
    virtual UINT GetHelpToolBarID() override;

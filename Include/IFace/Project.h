@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -334,29 +334,61 @@ struct ProfileData2
    }
 };
 
-struct CrownData2
+struct RoadwaySegmentData
+{
+   Float64 Length;
+   Float64 Slope;
+
+   bool operator==(const RoadwaySegmentData& other) const
+   {
+      if (Length != other.Length)
+      {
+         return false;
+      }
+
+      if (Slope != other.Slope)
+      {
+         return false;
+      }
+
+      return true;
+   }
+
+
+};
+
+struct RoadwaySectionTemplate
 {
    Float64 Station;
-   Float64 Left;
-   Float64 Right;
-   Float64 CrownPointOffset;
+   Float64 LeftSlope;
+   Float64 RightSlope;
+   std::vector<RoadwaySegmentData> SegmentDataVec; // only used if number of slope segments > 2
 
-   bool operator==(const CrownData2& other) const
+   bool operator==(const RoadwaySectionTemplate& other) const
    {
       return (Station == other.Station) &&
-             (Left == other.Left) &&
-             (Right == other.Right) &&
-             (CrownPointOffset == other.CrownPointOffset);
+             (LeftSlope == other.LeftSlope) &&
+             (RightSlope == other.RightSlope) &&
+             (SegmentDataVec == other.SegmentDataVec);
    }
 };
 
 struct RoadwaySectionData
 {
-   std::vector<CrownData2> Superelevations;
+   IndexType NumberOfSegmentsPerSection; // Always have at least 2 outer infinite segments. Inner segments add to this
+   IndexType ControllingRidgePointIdx;   // Not zero based. No ridge points at ends of outer segments. For 2 segment case,
+                                         // this value is 1.
+   std::vector<RoadwaySectionTemplate> RoadwaySectionTemplates;
 
    bool operator==(const RoadwaySectionData& other) const
    {
-      return Superelevations == other.Superelevations;
+      if (NumberOfSegmentsPerSection != other.NumberOfSegmentsPerSection)
+         return false;
+
+      if (ControllingRidgePointIdx != other.ControllingRidgePointIdx)
+         return false;
+
+      return RoadwaySectionTemplates == other.RoadwaySectionTemplates;
    }
 
    bool operator!=(const RoadwaySectionData& other) const
@@ -505,6 +537,9 @@ interface ISpecification : IUnknown
    virtual bool IsAssumedExcessCamberInputEnabled(bool considerDeckType=true) const = 0; // Depends on library and deck type
    virtual bool IsAssumedExcessCamberForLoad() const = 0; 
    virtual bool IsAssumedExcessCamberForSectProps() const = 0; 
+
+   // Rounding method for required slab offset value
+   virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const = 0;
 };
 
 /*****************************************************************************
@@ -1056,7 +1091,7 @@ interface IBridgeDescription : IUnknown
    virtual void SetAssumedExcessCamber( Float64 assumedExcessCamber) = 0;
    // changes AssumedExcessCamber type to fttPier
    virtual void SetAssumedExcessCamber(SpanIndexType spanIdx, Float64 assumedExcessCamber) = 0;
-   // sets AssExcessCamber per girder ... sets the AssumedExcessCamber type to aecGirder
+   // sets AssumedExcessCamber per girder ... sets the AssumedExcessCamber type to aecGirder
    virtual void SetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 assumedExcessCamber) = 0;
    virtual Float64 GetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx) const = 0;
 
@@ -1204,6 +1239,10 @@ DEFINE_GUID(IID_ILossParameters,
 0xaaf586aa, 0xd06e, 0x446b, 0x9e, 0xb2, 0xca, 0x91, 0x64, 0x27, 0xad, 0x9e);
 interface ILossParameters : IUnknown
 {
+   // Returns a string that describes the method used to compute prestress losses
+   // This string is intended to be used in reports
+   virtual std::_tstring GetLossMethodDescription() const = 0;
+
    // Returns the method for computing prestress losses
    virtual pgsTypes::LossMethod GetLossMethod() const = 0;
 

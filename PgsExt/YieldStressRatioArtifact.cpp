@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,9 +45,13 @@ pgsYieldStressRatioArtifact::pgsYieldStressRatioArtifact()
    m_fsStrand = 0;
    m_fcrStrand = 0;
 
-   m_TendonRF = 0;
-   m_fsTendon = 0;
-   m_fcrTendon = 0;
+   m_SegmentTendonRF = 0;
+   m_fsSegmentTendon = 0;
+   m_fcrSegmentTendon = 0;
+
+   m_GirderTendonRF = 0;
+   m_fsGirderTendon = 0;
+   m_fcrGirderTendon = 0;
 
    m_RatingType = pgsTypes::lrDesign_Inventory;
 
@@ -89,11 +93,17 @@ pgsYieldStressRatioArtifact::pgsYieldStressRatioArtifact()
    m_fyps = 0;
    m_Eps  = 0;
 
-   m_bTendon = false;
-   m_dpt  = 0;
-   m_fpt  = 0;
-   m_fypt = 0;
-   m_Ept  = 0;
+   m_bSegmentTendon = false;
+   m_dptSegment = 0;
+   m_fptSegment = 0;
+   m_fyptSegment = 0;
+   m_EptSegment = 0;
+
+   m_bGirderTendon = false;
+   m_dptGirder = 0;
+   m_fptGirder = 0;
+   m_fyptGirder = 0;
+   m_EptGirder = 0;
 }
 
 pgsYieldStressRatioArtifact::pgsYieldStressRatioArtifact(const pgsYieldStressRatioArtifact& rOther)
@@ -411,23 +421,42 @@ bool pgsYieldStressRatioArtifact::GetStrand(Float64* pdps,Float64* pfps,Float64*
    return m_bStrand;
 }
 
-void pgsYieldStressRatioArtifact::SetTendon(Float64 dpt,Float64 fpt,Float64 fypt,Float64 Ept)
+void pgsYieldStressRatioArtifact::SetSegmentTendon(Float64 dpt, Float64 fpt, Float64 fypt, Float64 Ept)
 {
-   m_dpt  = dpt;
-   m_fpt  = fpt;
-   m_fypt = fypt;
-   m_Ept  = Ept;
-   m_bTendon = true;
+   m_dptSegment = dpt;
+   m_fptSegment = fpt;
+   m_fyptSegment = fypt;
+   m_EptSegment = Ept;
+   m_bSegmentTendon = true;
    m_bRFComputed = false;
 }
 
-bool pgsYieldStressRatioArtifact::GetTendon(Float64* pdpt,Float64* pfpt,Float64* pfypt,Float64* pEpt) const
+bool pgsYieldStressRatioArtifact::GetSegmentTendon(Float64* pdpt, Float64* pfpt, Float64* pfypt, Float64* pEpt) const
 {
-   *pdpt  = m_dpt;
-   *pfpt  = m_fpt;
-   *pfypt = m_fypt;
-   *pEpt  = m_Ept;
-   return m_bTendon;
+   *pdpt = m_dptSegment;
+   *pfpt = m_fptSegment;
+   *pfypt = m_fyptSegment;
+   *pEpt = m_EptSegment;
+   return m_bSegmentTendon;
+}
+
+void pgsYieldStressRatioArtifact::SetGirderTendon(Float64 dpt,Float64 fpt,Float64 fypt,Float64 Ept)
+{
+   m_dptGirder = dpt;
+   m_fptGirder = fpt;
+   m_fyptGirder = fypt;
+   m_EptGirder = Ept;
+   m_bGirderTendon = true;
+   m_bRFComputed = false;
+}
+
+bool pgsYieldStressRatioArtifact::GetGirderTendon(Float64* pdpt,Float64* pfpt,Float64* pfypt,Float64* pEpt) const
+{
+   *pdpt  = m_dptGirder;
+   *pfpt  = m_fptGirder;
+   *pfypt = m_fyptGirder;
+   *pEpt  = m_EptGirder;
+   return m_bGirderTendon;
 }
 
 void pgsYieldStressRatioArtifact::SetEg(Float64 Eg)
@@ -518,32 +547,55 @@ Float64 pgsYieldStressRatioArtifact::GetStrandAllowableStress() const
    return m_AllowableStressRatio*m_fyps;
 }
 
-Float64 pgsYieldStressRatioArtifact::GetTendonCrackingStressIncrement() const
+Float64 pgsYieldStressRatioArtifact::GetSegmentTendonCrackingStressIncrement() const
 {
    ComputeStressRatios();
-   return m_fcrTendon;
+   return m_fcrSegmentTendon;
 }
 
-Float64 pgsYieldStressRatioArtifact::GetTendonStress() const
+Float64 pgsYieldStressRatioArtifact::GetSegmentTendonStress() const
 {
    ComputeStressRatios();
-   return m_fsTendon;
+   return m_fsSegmentTendon;
 }
 
-Float64 pgsYieldStressRatioArtifact::GetTendonStressRatio() const
+Float64 pgsYieldStressRatioArtifact::GetSegmentTendonStressRatio() const
 {
    ComputeStressRatios();
-   return m_TendonRF;
+   return m_SegmentTendonRF;
 }
 
-Float64 pgsYieldStressRatioArtifact::GetTendonAllowableStress() const
+Float64 pgsYieldStressRatioArtifact::GetSegmentTendonAllowableStress() const
 {
-   return m_AllowableStressRatio*m_fypt;
+   return m_AllowableStressRatio*m_fyptSegment;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetGirderTendonCrackingStressIncrement() const
+{
+   ComputeStressRatios();
+   return m_fcrGirderTendon;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetGirderTendonStress() const
+{
+   ComputeStressRatios();
+   return m_fsGirderTendon;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetGirderTendonStressRatio() const
+{
+   ComputeStressRatios();
+   return m_GirderTendonRF;
+}
+
+Float64 pgsYieldStressRatioArtifact::GetGirderTendonAllowableStress() const
+{
+   return m_AllowableStressRatio*m_fyptGirder;
 }
 
 Float64 pgsYieldStressRatioArtifact::GetStressRatio() const
 {
-   return Min(GetRebarStressRatio(),GetStrandStressRatio(),GetTendonStressRatio());
+   return Min(GetRebarStressRatio(), GetStrandStressRatio(),GetSegmentTendonStressRatio(), GetGirderTendonStressRatio());
 }
 
 void pgsYieldStressRatioArtifact::MakeCopy(const pgsYieldStressRatioArtifact& rOther)
@@ -556,14 +608,17 @@ void pgsYieldStressRatioArtifact::MakeCopy(const pgsYieldStressRatioArtifact& rO
    m_strVehicleName = rOther.m_strVehicleName;
    m_RebarRF        = rOther.m_RebarRF;
    m_StrandRF       = rOther.m_StrandRF;
-   m_TendonRF       = rOther.m_TendonRF;
+   m_SegmentTendonRF = rOther.m_SegmentTendonRF;
+   m_GirderTendonRF = rOther.m_GirderTendonRF;
    m_AllowableStressRatio = rOther.m_AllowableStressRatio;
    m_fcrRebar       = rOther.m_fcrRebar;
    m_fcrStrand      = rOther.m_fcrStrand;
-   m_fcrTendon      = rOther.m_fcrTendon;
+   m_fcrSegmentTendon = rOther.m_fcrSegmentTendon;
+   m_fcrGirderTendon = rOther.m_fcrGirderTendon;
    m_fsRebar        = rOther.m_fsRebar;
    m_fsStrand       = rOther.m_fsStrand;
-   m_fsTendon       = rOther.m_fsTendon;
+   m_fsSegmentTendon = rOther.m_fsSegmentTendon;
+   m_fsGirderTendon = rOther.m_fsGirderTendon;
    m_Mdc            = rOther.m_Mdc;
    m_Mdw            = rOther.m_Mdw;
    m_Mcr            = rOther.m_Mcr;
@@ -597,11 +652,17 @@ void pgsYieldStressRatioArtifact::MakeCopy(const pgsYieldStressRatioArtifact& rO
    m_fyps    = rOther.m_fyps;
    m_Eps     = rOther.m_Eps;
 
-   m_bTendon = rOther.m_bTendon;
-   m_dpt     = rOther.m_dpt;
-   m_fpt     = rOther.m_fpt;
-   m_fypt    = rOther.m_fypt;
-   m_Ept     = rOther.m_Ept;
+   m_bSegmentTendon = rOther.m_bSegmentTendon;
+   m_dptSegment = rOther.m_dptSegment;
+   m_fptSegment = rOther.m_fptSegment;
+   m_fyptSegment = rOther.m_fyptSegment;
+   m_EptSegment = rOther.m_EptSegment;
+
+   m_bGirderTendon = rOther.m_bGirderTendon;
+   m_dptGirder = rOther.m_dptGirder;
+   m_fptGirder = rOther.m_fptGirder;
+   m_fyptGirder = rOther.m_fyptGirder;
+   m_EptGirder = rOther.m_EptGirder;
 }
 
 void pgsYieldStressRatioArtifact::MakeAssignment(const pgsYieldStressRatioArtifact& rOther)
@@ -639,15 +700,26 @@ void pgsYieldStressRatioArtifact::ComputeStressRatios() const
       m_fsStrand = 0;
    }
 
-   if ( m_bTendon )
+   if (m_bSegmentTendon)
    {
-      ComputeStressRatio(m_dpt,m_Ept,m_fpt,m_fypt,&m_fcrTendon,&m_fsTendon,&m_TendonRF);
+      ComputeStressRatio(m_dptSegment, m_EptSegment, m_fptSegment, m_fyptSegment, &m_fcrSegmentTendon, &m_fsSegmentTendon, &m_SegmentTendonRF);
    }
    else
    {
-      m_TendonRF = DBL_MAX;
-      m_fcrTendon = 0;
-      m_fsTendon = 0;
+      m_SegmentTendonRF = DBL_MAX;
+      m_fcrSegmentTendon = 0;
+      m_fsSegmentTendon = 0;
+   }
+
+   if (m_bGirderTendon)
+   {
+      ComputeStressRatio(m_dptGirder, m_EptGirder, m_fptGirder, m_fyptGirder, &m_fcrGirderTendon, &m_fsGirderTendon, &m_GirderTendonRF);
+   }
+   else
+   {
+      m_GirderTendonRF = DBL_MAX;
+      m_fcrGirderTendon = 0;
+      m_fsGirderTendon = 0;
    }
 }
 

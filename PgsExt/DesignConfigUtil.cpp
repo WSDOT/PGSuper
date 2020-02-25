@@ -327,7 +327,7 @@ Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType typ
                                                 config.ShearZones.begin(), config.ShearZones.end(), 
                                                 config.ShearZones.size());
 
-   if (0 <= zone)
+   if (0 <= zone && zone != INVALID_INDEX)
    {
       const STIRRUPCONFIG::SHEARZONEDATA& rzd = config.ShearZones[zone];
       *pSpacing = rzd.BarSpacing;
@@ -354,10 +354,10 @@ Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType typ
    }
    else
    {
-      ATLASSERT(false); // this should never happen
+      // this can happen with UHPC
       *pSize = matRebar::bsNone;
       *pNBars = 0.0;
-      *pSpacing = 0.0;
+      *pSpacing = Float64_Max;
       return 0.0;
    }
 }
@@ -370,7 +370,7 @@ Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 loca
    ZoneIndexType zone =  GetZoneIndexAtLocation(location, gdrLength, leftSupportLoc, rgtSupportLoc, config.bAreZonesSymmetrical, 
                                                 config.HorizontalInterfaceZones.begin(), config.HorizontalInterfaceZones.end(), 
                                                 config.HorizontalInterfaceZones.size());
-   if (0 <= zone)
+   if (0 <= zone && zone != INVALID_INDEX)
    {
       const STIRRUPCONFIG::HORIZONTALINTERFACEZONEDATA& rzd = config.HorizontalInterfaceZones[zone];
       *pSize = rzd.BarSize;

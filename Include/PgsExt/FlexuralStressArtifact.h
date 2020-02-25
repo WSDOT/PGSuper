@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,7 @@
 
 #include <WBFLGenericBridgeTools\AlternativeTensileStressCalculator.h>
 
+
 // LOCAL INCLUDES
 //
 
@@ -66,7 +67,7 @@ public:
    //------------------------------------------------------------------------
    // Default constructor
    pgsFlexuralStressArtifact();
-   pgsFlexuralStressArtifact(const pgsPointOfInterest& poi);
+   pgsFlexuralStressArtifact(const pgsPointOfInterest& poi,const StressCheckTask& task);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -83,13 +84,8 @@ public:
    void SetPointOfInterest(const pgsPointOfInterest& poi);
    const pgsPointOfInterest& GetPointOfInterest() const;
 
-   // Set/Get Limit State used in this stress check
-   void SetLimitState(pgsTypes::LimitState limitState);
-   pgsTypes::LimitState GetLimitState() const;
-
-   // Set/Get the type of stress check that was performed
-   void SetStressType(pgsTypes::StressType stressType);
-   pgsTypes::StressType GetStressType() const;
+   void SetTask(const StressCheckTask& task);
+   const StressCheckTask& GetTask() const;
 
    // Set/Get applicability of this stress check
    void IsApplicable(pgsTypes::StressLocation stressLocation,bool bIsApplicable);
@@ -146,6 +142,7 @@ protected:
 
 private:
    pgsPointOfInterest m_Poi;
+   StressCheckTask m_Task;
 
    // In the following arrays, use the pgsTypes::StressLocation enum to access the values
    std::array<bool,4>    m_bIsApplicable; // Applicability of the stress check
@@ -155,9 +152,6 @@ private:
    std::array<bool,4>    m_bIsInPTZ;      // Is the location in the Precompressed Tensile Zone
    std::array<Float64,4> m_fDemand;       // Total stress demand
    std::array<Float64,4> m_fAllowable;    // Allowable stresses
-
-   pgsTypes::LimitState m_LimitState;
-   pgsTypes::StressType m_StressType;
 
    // Alternative tensile stress parameters
    // access array with pgsTypes::StressLocation constant

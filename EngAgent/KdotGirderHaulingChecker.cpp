@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -210,12 +210,12 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
       }
       else
       {
-         Ec = pMaterial->GetEconc(haulConfig.GdrConfig.Fc, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Ec = pMaterial->GetEconc(haulConfig.GdrConfig.fc, pMaterial->GetSegmentStrengthDensity(segmentKey),
                                                            pMaterial->GetSegmentEccK1(segmentKey),
                                                            pMaterial->GetSegmentEccK2(segmentKey));
       }
 
-      Fc = haulConfig.GdrConfig.Fc;
+      Fc = haulConfig.GdrConfig.fc;
       concType = haulConfig.GdrConfig.ConcType;
    }
 
@@ -408,7 +408,8 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
    pArtifact->SetGirderLength(girder_length);
 
    GET_IFACE(ISectionProperties,pSectProp);
-   Float64 volume = pSectProp->GetSegmentVolume(segmentKey);
+   Float64 volume, surface_area;
+   pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &volume, &surface_area);
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 density = pMaterial->GetSegmentWeightDensity(segmentKey,haulSegmentIntervalIdx);
@@ -513,7 +514,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
    }
    else
    {
-      Float64 fc = haulConfig.GdrConfig.Fc;
+      Float64 fc = haulConfig.GdrConfig.fc;
 
       fLowTensAllowable  = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(segmentKey, fc, false);
       fHighTensAllowable = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(segmentKey, fc, true);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,8 @@
 #include <PgsExt\DeckPoint.h>
 #include <PgsExt\DeckRebarData.h>
 #include <PgsExt\ConcreteMaterial.h>
+
+#include <array>
 
 
 class CBridgeDescription2;
@@ -78,8 +80,8 @@ public:
 
    pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity; // only used if SupportedBeamSpacing==sbsUniformAdjacent or sbsGeneralAdjacent
    Float64 GrossDepth; // Cast Depth if SIP
-   pgsTypes::DeckOverhangTaper OverhangTaper;
-   Float64 OverhangEdgeDepth; // depth of overhang at edge of slab
+   std::array<pgsTypes::DeckOverhangTaper,2> OverhangTaper;
+   std::array<Float64,2> OverhangEdgeDepth; // depth of overhang at edge of slab
    pgsTypes::HaunchShapeType HaunchShape; // square or filleted haunch
    Float64 PanelDepth; // depth of SIP panel
    Float64 PanelSupport; // Width of SIP panel support (deduct this from roughened surface width

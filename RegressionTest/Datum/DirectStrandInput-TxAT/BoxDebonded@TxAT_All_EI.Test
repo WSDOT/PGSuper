@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     1    4XB20          44  1/2  270   6.03   5.65   8.00   8.00  12   0.00    0     0                                               5.500  5.500   2.994    -3.806     2236   0.573  0.716   3.252 -1.364 -0.070 -0.060 -1.494 127.67  354.53    1.00    1.00    1.00 
+ 44.00    6   7.60                     1     1    4XB20          44  1/2  270   6.03   5.65   8.00   8.00  12   0.00    0     0                                               5.500  5.500   2.994    -3.806     2236   0.573  0.716   3.253 -1.364 -0.070 -0.060 -1.494 127.67  354.53    1.00    1.00    1.00 
 Warning: Irregular, Non-standard debonding increments used for beam 1 in span  1. Cannot write debonding information to TxDOT CAD format.
 
 
@@ -10,7 +10,7 @@ Debond arrangement checks failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     2    4XB20          42  1/2  270   6.08   5.78   8.00   8.00  10    2.5   22    10    6   2   2   0   0   5.300  5.300   2.967    -3.770     2208   0.557  0.716   3.153 -1.329 -0.084 -0.060 -1.474 118.44  326.14    1.00    1.00    1.00 
+ 44.00    6   7.60                     1     2    4XB20          42  1/2  270   6.08   5.78   8.00   8.00  10    2.5   22    10    6   2   2   0   0   5.300  5.300   2.967    -3.770     2208   0.557  0.716   3.154 -1.329 -0.084 -0.060 -1.474 118.44  326.14    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
@@ -19,13 +19,13 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     4    4XB20    *      0  1/2  270   0.00   0.00   8.00   8.00                                              4.000  5.000   2.967    -3.770     2208   0.557  0.716  -2.807 -1.329 -0.084 -0.060 -1.474   0.00    0.00    1.00    1.00    1.00 
+ 44.00    6   7.60                     1     4    4XB20    *      0  1/2  270   0.00   0.00   8.00   8.00                                              4.000  5.000   2.967    -3.770     2208   0.557  0.716  -2.806 -1.329 -0.084 -0.060 -1.474   0.00    0.00    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 10 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

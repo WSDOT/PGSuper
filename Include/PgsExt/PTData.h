@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -187,9 +187,11 @@ public:
    SpanIndexType GetSpanCount() const;
    void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);
    void RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx);
+   void SetRange(PierIndexType startPierIdx, PierIndexType endPierIdx);
+   void GetRange(PierIndexType* pStartPierIdx, PierIndexType* pEndPierIdx) const;
 
-   void SetStartPoint(Float64 dist,Float64 offset,OffsetType offsetType);
-   void GetStartPoint(Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const;
+   void SetStartPoint(PierIndexType pierIdx,Float64 dist,Float64 offset,OffsetType offsetType);
+   void GetStartPoint(PierIndexType* pPierIdx,Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const;
 
    void SetLowPoint(SpanIndexType spanIdx,Float64   distLow,Float64   offsetLow,OffsetType lowOffsetType);
    void GetLowPoint(SpanIndexType spanIdx,Float64* pDistLow,Float64 *pOffsetLow,OffsetType *pLowOffsetType) const;
@@ -204,8 +206,8 @@ public:
                      Float64* highOffset,OffsetType* highOffsetType,
                      Float64* distRightIP) const;
 
-   void SetEndPoint(Float64 dist,Float64 offset,OffsetType offsetType);
-   void GetEndPoint(Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const;
+   void SetEndPoint(PierIndexType pierIdx,Float64 dist,Float64 offset,OffsetType offsetType);
+   void GetEndPoint(PierIndexType* pPierIdx,Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const;
 
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
@@ -291,6 +293,8 @@ private:
       }
    };
 
+   PierIndexType StartPierIdx;
+   PierIndexType EndPierIdx;
    Point StartPoint;
    Point EndPoint;
    std::vector<Point> LowPoints; // index = spanIdx
@@ -507,7 +511,7 @@ public:
    bool operator==(const CPTData& rOther) const;
    bool operator!=(const CPTData& rOther) const;
 
-   void SetGirder(CSplicedGirderData* pSplicedGirder);
+   void SetGirder(CSplicedGirderData* pSplicedGirder, bool bInit = true/*initialize duct geometry to default values*/);
    CSplicedGirderData* GetGirder();
    const CSplicedGirderData* GetGirder() const;
 

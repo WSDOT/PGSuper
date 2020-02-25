@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -150,6 +150,8 @@ protected:
 
    int m_GirderNameIdx; // combo box index of current girder name just before it is changed
                         // (needed to revert the combobox if user doesn't want to change)
+public:
+   afx_msg void OnStnClickedPrecamberLabel();
 };
 
 //{{AFX_INSERT_LOCATION}}

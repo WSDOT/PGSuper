@@ -6,6 +6,7 @@
 #define EAFID_INDICATOR_MODIFIED        1
 #define EAFID_INDICATOR_STATUS          2
 #define EAFID_INDICATOR_AUTOCALC_ON     3
+#define IDCANCEL2                       3
 #define EAFID_INDICATOR_AUTOCALC_OFF    4
 #define EAFID_INDICATOR_MAX             4
 #define EAF_TOOLBAR_MENU_COUNT          40
@@ -129,6 +130,7 @@
 #define IDC_ORG_FILLTYPE_COMBO          269
 #define IDC_OPT_FILLTYPE_COMBO          270
 #define IDC_DIRECT_STATIC               270
+#define IDC_FILE_FORMAT                 271
 #define IDD_GIRDER_SELECT_STRANDS       324
 #define IDC_VALUE                       1018
 #define IDC_VALUE_UNITS                 1026
@@ -198,9 +200,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        221
+#define _APS_NEXT_RESOURCE_VALUE        223
 #define _APS_NEXT_COMMAND_VALUE         36883
-#define _APS_NEXT_CONTROL_VALUE         271
+#define _APS_NEXT_CONTROL_VALUE         272
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

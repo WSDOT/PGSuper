@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -60,7 +60,6 @@
 #include <IFace\Test1250.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\Artifact.h>
-#include <IFace\TxDOTCadExport.h>
 #include <IFace\Transactions.h>
 #include <IFace\EditByUI.h>
 #include <IFace\VersionInfo.h>
@@ -99,6 +98,8 @@
 
 #include "Hints.h"
 
+#include <PgsExt\Helpers.h>
+
 #include "PGSuperException.h"
 #include <System\FileStream.h>
 #include <System\StructuredLoadXmlPrs.h>
@@ -119,6 +120,7 @@
 #include "SpecDlg.h"
 #include "BridgeEditorSettingsSheet.h"
 #include "GirderEditorSettingsSheet.h"
+#include "CastDeckDlg.h"
 #include "CopyGirderDlg.h"
 #include "LiveLoadDistFactorsDlg.h"
 #include "LiveLoadSelectDlg.h"
@@ -151,6 +153,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\DesignConfigUtil.h>
+#include <PgsExt\ClosureJointData.h>
 
 
 
@@ -1149,6 +1152,28 @@ bool CPGSDocBase::EditTimeline()
    if (dlg.DoModal() == IDOK)
    {
       txnEditTimeline* pTxn = new txnEditTimeline(*pBridgeDesc->GetTimelineManager(), dlg.m_TimelineManager);
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pTxn);
+      return true;
+   }
+
+   return false;
+}
+
+bool CPGSDocBase::EditCastDeckActivity()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
+   CString strName(GetCastDeckEventName(deckType));
+
+   const auto* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   EventIndexType castDeckEventIdx = pTimelineMgr->GetCastDeckEventIndex();
+   CCastDeckDlg dlg(strName, *pTimelineMgr, castDeckEventIdx, FALSE);
+   if (dlg.DoModal() == IDOK)
+   {
+      txnEditTimeline* pTxn = new txnEditTimeline(*pTimelineMgr, dlg.m_TimelineMgr);
       GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(pTxn);
       return true;
@@ -2980,10 +3005,24 @@ void CPGSDocBase::OnLoadsLoadFactors()
 
 void CPGSDocBase::UpdateAnalysisTypeStatusIndicator()
 {
-   CPGSuperStatusBar* pStatusBar = (CPGSuperStatusBar*)(EAFGetMainFrame()->GetStatusBar());
+   CEAFStatusBar* pStatusBar = EAFGetMainFrame()->GetStatusBar();
+   CPGSuperStatusBar* pPGSStatusBar = dynamic_cast<CPGSuperStatusBar*>(pStatusBar);
+   if (pPGSStatusBar)
+   {
+      GET_IFACE(ISpecification, pSpec);
+      pPGSStatusBar->SetAnalysisTypeStatusIndicator(pSpec->GetAnalysisType());
+   }
+}
 
-   GET_IFACE(ISpecification,pSpec);
-   pStatusBar->SetAnalysisTypeStatusIndicator(pSpec->GetAnalysisType());
+void CPGSDocBase::UpdateProjectCriteriaIndicator()
+{
+   CEAFStatusBar* pStatusBar = EAFGetMainFrame()->GetStatusBar();
+   CPGSuperStatusBar* pPGSStatusBar = dynamic_cast<CPGSuperStatusBar*>(pStatusBar);
+   if(pPGSStatusBar)
+   {
+      GET_IFACE(ISpecification, pSpec);
+      pPGSStatusBar->SetProjectCriteria(pSpec->GetSpecification().c_str());
+   }
 }
 
 bool CPGSDocBase::LoadMasterLibrary()
@@ -3560,7 +3599,7 @@ void CPGSDocBase::OnConstructionLoads()
 
 void CPGSDocBase::OnProjectAlignment() 
 {
-   EditAlignmentDescription(EBD_ROADWAY);
+   EditAlignmentDescription(EAD_ROADWAY);
 }
 
 void CPGSDocBase::OnProjectBarriers()
@@ -3570,7 +3609,7 @@ void CPGSDocBase::OnProjectBarriers()
 
 void CPGSDocBase::OnProjectProfile()
 {
-   EditAlignmentDescription(EBD_PROFILE);
+   EditAlignmentDescription(EAD_PROFILE);
 }
 
 void CPGSDocBase::OnLiveLoads() 
@@ -3788,41 +3827,64 @@ void CPGSDocBase::OnEditPier()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   PierIndexType nPiers = pBridgeDesc->GetPierCount();
+   GET_IFACE(ISelection, pSelection);
+   PierIndexType editPierIdx = pSelection->GetSelectedPier();
 
-   CString strItems;
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
+   if (editPierIdx == INVALID_INDEX)
    {
-      CString strItem;
-      strItem.Format(_T("%s %d\n"),(pierIdx == 0 || pierIdx == nPiers-1 ? _T("Abutment") : _T("Pier")),LABEL_PIER(pierIdx));
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
-      strItems += strItem;
+      CString strItems;
+      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+      {
+         CString strItem;
+         strItem.Format(_T("%s %d\n"), (pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier")), LABEL_PIER(pierIdx));
+
+         strItems += strItem;
+      }
+
+      CSelectItemDlg dlg;
+      dlg.m_strTitle = _T("Select Abutment/Pier");
+      dlg.m_strItems = strItems;
+      dlg.m_strLabel = _T("Select an abutment or pier to edit");
+      dlg.m_ItemIdx = m_Selection.PierIdx;
+
+      if (dlg.DoModal() == IDOK)
+      {
+         editPierIdx = dlg.m_ItemIdx;
+      }
+      else
+      {
+         return;
+      }
    }
 
-   CSelectItemDlg dlg;
-   dlg.m_strTitle = _T("Select Abutment/Pier");
-   dlg.m_strItems = strItems;
-   dlg.m_strLabel = _T("Select an abutment or pier to edit");
-   dlg.m_ItemIdx = m_Selection.PierIdx;
-
-   if ( dlg.DoModal() == IDOK )
-   {
-      EditPierDescription(dlg.m_ItemIdx,EPD_GENERAL);
-   }
+   EditPierDescription(editPierIdx, EPD_GENERAL);
 }
 
 void CPGSDocBase::OnEditSpan() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+   GET_IFACE(ISelection, pSelection);
+   SpanIndexType editSpanIdx = pSelection->GetSelectedSpan();
+   
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
-   if (nSpans>1)
+   if (nSpans == 1)
    {
+      // if there is only one span, then edit span 0
+      editSpanIdx = 0;
+   }
+
+   if (1 < nSpans && editSpanIdx == INVALID_INDEX)
+   {
+      // if there is more than one span, and a span is not currently selected
+      // then prompted for the span to edit
       CString strItems;
       for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
       {
@@ -3840,14 +3902,15 @@ void CPGSDocBase::OnEditSpan()
 
       if ( dlg.DoModal() == IDOK )
       {
-         EditSpanDescription(dlg.m_ItemIdx,ESD_GENERAL);
+         editSpanIdx = dlg.m_ItemIdx;
+      }
+      else
+      {
+         return;
       }
    }
-   else
-   {
-      // No reason to ask which span if there is only one
-      EditSpanDescription(0,ESD_GENERAL);
-   }
+
+   EditSpanDescription(editSpanIdx, ESD_GENERAL);
 }
 
 void CPGSDocBase::DeletePier(PierIndexType pierIdx)
@@ -4017,56 +4080,78 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-   pgsTypes::BoundaryConditionType bc = pPier->GetBoundaryConditionType(); // current boundary condition
 
-   std::vector<pgsTypes::BoundaryConditionType> connections(pBridgeDesc->GetBoundaryConditionTypes(deletePierIdx)); // boundary conditions of the pier being deleted
-
-   const CPierData2* pDeletePier = pBridgeDesc->GetPier(deletePierIdx);
-
-   auto found = std::find(connections.begin(), connections.end(), bc);
-   if (found == connections.end())
+   if (pPier->IsBoundaryPier())
    {
-      // the boundary conditions of the pier will become invalid, select a new bc
-      SpanIndexType deleteSpanIdx = (SpanIndexType)(deleteSpanOnPierFace == pgsTypes::Back ? deletePierIdx - 1 : deletePierIdx);
-      CString strPrompt;
-      strPrompt.Format(_T("Removing Span %d and Pier %d will make the boundary condition of Pier %d invalid.\r\nSelect a valid boundary condition."), LABEL_SPAN(deleteSpanIdx), LABEL_PIER(deletePierIdx), LABEL_PIER(pierIdx));
+      pgsTypes::BoundaryConditionType bc = pPier->GetBoundaryConditionType(); // current boundary condition
 
-      CSelectBoundaryConditionDlg dlg;
-      dlg.m_strPrompt = strPrompt;
-      dlg.m_BoundaryCondition = connections.front();
-      dlg.m_Connections = connections;
-      dlg.m_bIsBoundaryPier = pPier->IsBoundaryPier();
-      dlg.m_bIsNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
-      if (pDeletePier->IsPier() || pDeletePier->HasCantilever())
-      {
-         dlg.m_PierType = PIERTYPE_INTERMEDIATE;
-      }
-      else
-      {
-         if (pDeletePier->GetIndex() == 0)
-         {
-            dlg.m_PierType = PIERTYPE_START;
-         }
-         else
-         {
-            dlg.m_PierType = PIERTYPE_END;
-         }
-      }
+      const CPierData2* pDeletePier = pBridgeDesc->GetPier(deletePierIdx);
 
-      if (dlg.DoModal() == IDOK)
+      if (pDeletePier->IsBoundaryPier())
       {
-         bc = dlg.m_BoundaryCondition;
+         std::vector<pgsTypes::BoundaryConditionType> connections(pBridgeDesc->GetBoundaryConditionTypes(deletePierIdx)); // boundary conditions of the pier being deleted
+
+
+         auto found = std::find(connections.begin(), connections.end(), bc);
+         if (found == connections.end())
+         {
+            // the boundary conditions of the pier will become invalid, select a new bc
+            SpanIndexType deleteSpanIdx = (SpanIndexType)(deleteSpanOnPierFace == pgsTypes::Back ? deletePierIdx - 1 : deletePierIdx);
+            CString strPrompt;
+            strPrompt.Format(_T("Removing Span %d and Pier %d will make the boundary condition of Pier %d invalid.\r\nSelect a valid boundary condition."), LABEL_SPAN(deleteSpanIdx), LABEL_PIER(deletePierIdx), LABEL_PIER(pierIdx));
+
+            CSelectBoundaryConditionDlg dlg;
+            dlg.m_strPrompt = strPrompt;
+            dlg.m_BoundaryCondition = connections.front();
+            dlg.m_Connections = connections;
+            dlg.m_bIsBoundaryPier = pPier->IsBoundaryPier();
+            dlg.m_bIsNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+            if (pDeletePier->IsPier()/*the pier being deleted is not an abutment*/)
+            {
+               dlg.m_PierType = PIERTYPE_INTERMEDIATE;
+            }
+            else
+            {
+               ATLASSERT(pDeletePier->IsAbutment());
+               if (pDeletePier->GetIndex() == 0)
+               {
+                  dlg.m_PierType = PIERTYPE_START;
+               }
+               else
+               {
+                  dlg.m_PierType = PIERTYPE_END;
+               }
+            }
+
+            if (dlg.DoModal() == IDOK)
+            {
+               bc = dlg.m_BoundaryCondition;
+            }
+            else
+            {
+               // user cancelled
+               return;
+            }
+         }
       }
-      else
+      txnDeleteSpan* pTxn = new txnDeleteSpan(deletePierIdx, deleteSpanOnPierFace, bc);
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pTxn);
+   }
+   else
+   {
+      pgsTypes::PierSegmentConnectionType connection = pPier->GetSegmentConnectionType();
+      EventIndexType castClosureJointEventIdx = INVALID_INDEX;
+      if (!IsSegmentContinuousOverPier(connection))
       {
-         // user cancelled
-         return;
+         auto closureID = pPier->GetClosureJoint(0)->GetID();
+         castClosureJointEventIdx = pBridgeDesc->GetTimelineManager()->GetCastClosureJointEventIndex(closureID);
       }
+      txnDeleteSpan* pTxn = new txnDeleteSpan(deletePierIdx, deleteSpanOnPierFace, connection, castClosureJointEventIdx);
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pTxn);
    }
 
-   txnDeleteSpan* pTxn = new txnDeleteSpan(deletePierIdx, deleteSpanOnPierFace, bc);
-   GET_IFACE(IEAFTransactions,pTransactions);
-   pTransactions->Execute(pTxn);
 }
 
 void CPGSDocBase::DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pierRemoveType)
@@ -4083,23 +4168,7 @@ void CPGSDocBase::OnInsert()
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   PierIndexType nPiers = pBridgeDesc->GetPierCount();
-   IndexType n = 0; 
-   for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
-   {
-      const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-      if ( !pPier->HasCantilever() )
-      {
-         n++;
-      }
-   }
-   if ( n == 0 )
-   {
-      AfxMessageBox(_T("A span cannot be inserted into the bridge.\r\nRemove one of the cantilevers and try again."),MB_OK | MB_ICONINFORMATION);
-      return;
-   }
-
-   CInsertSpanDlg dlg(pIBridgeDesc->GetBridgeDescription());
+   CInsertSpanDlg dlg(pBridgeDesc);
    if ( dlg.DoModal() == IDOK )
    {
       Float64 span_length         = dlg.m_SpanLength;
@@ -4327,7 +4396,8 @@ void CPGSDocBase::LoadDocumentSettings()
                  IDB_PV_DRAW_ISOTROPIC  |
                  IDB_CS_LABEL_GIRDERS   |
                  IDB_CS_SHOW_DIMENSIONS |
-                 IDB_CS_DRAW_ISOTROPIC;
+                 IDB_CS_DRAW_ISOTROPIC |
+                 IDB_CS_DRAW_RW_CS;
 
    m_BridgeModelEditorSettings = pApp->GetProfileInt(_T("Settings"),_T("BridgeEditor"),def_bm);
 

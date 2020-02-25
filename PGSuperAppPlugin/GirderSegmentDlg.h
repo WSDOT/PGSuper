@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 
 #include "GirderSegmentGeneralPage.h"
 #include "GirderSegmentStrandsPage.h"
+#include "GirderSegmentTendonsPage.h"
 #include "GirderSegmentLongitudinalRebarPage.h"
 #include "GirderSegmentStirrupsPage.h"
 #include "BridgeDescLiftingPage.h"
@@ -88,6 +89,7 @@ protected:
    ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 
    CGirderSegmentStrandsPage m_StrandsPage;
+   CGirderSegmentTendonsPage m_TendonsPage;
    CGirderSegmentLongitudinalRebarPage m_RebarPage;
    CGirderDescLiftingPage m_LiftingPage;
 
@@ -97,6 +99,7 @@ protected:
    CButton m_CheckBox;
 
    friend CGirderSegmentStrandsPage;
+   friend CGirderSegmentTendonsPage;
 
 public:
    virtual BOOL OnInitDialog();

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -284,7 +284,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             ReportLongitudinalJointLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
             ReportConstructionLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
             ReportShearKeyLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey, one_girder_has_shear_key);
-            ReportSlabLoad(        pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
+            ReportSlabLoad(pBroker, pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
             ReportOverlayLoad(     pChapter,pBridge,pProdLoads,pDisplayUnits,bRating,thisSegmentKey);
             ReportPedestrianLoad(pChapter, pBroker, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
          } // segIdx
@@ -333,6 +333,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    ReportEquivPretensionLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
+   ReportEquivSegmentPostTensioningLoads(pChapter, bRating, pBridge, pDisplayUnits, girderKey);
 
    bool bPermit;
    ReportLiveLoad(pChapter,bDesign,bRating,pRatingSpec,bPermit);
@@ -459,7 +460,7 @@ void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,IB
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    // slab loads between supports
    rptParagraph* pPara = nullptr;
@@ -468,6 +469,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
    INIT_UV_PROTOTYPE( rptMomentUnitValue,         moment, pDisplayUnits->GetMomentUnit(),         false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,  pDisplayUnits->GetGeneralForceUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         comp, pDisplayUnits->GetComponentDimUnit(),     false );
+   INIT_UV_PROTOTYPE( rptDensityUnitValue,        density, pDisplayUnits->GetDensityUnit(),       true );
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
@@ -475,6 +477,9 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
    
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
+      GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
+      GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
+
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
@@ -492,14 +497,22 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
       rptParagraph* pNotePara = new rptParagraph;
       *pChapter << pNotePara;
 
+      *pNotePara << _T("Tributary width used to compute slab load is measured from top CL girder") << rptNewLine;
+
       if (is_uniform)
       {
-         *pNotePara << strDeckName << _T(" load is uniform along entire girder length.");
+         *pNotePara << strDeckName << _T(" load is uniform along entire girder length.") << rptNewLine;
       }
       else
       {
-         *pNotePara << strDeckName << _T(" load is approximated with linear load segments applied along the length of the girder. Segments located outside of bearings are applied as point loads/moments at bearings.");
+         *pNotePara << strDeckName << _T(" load is approximated with linear load segments applied along the length of the girder. Segments located outside of bearings are applied as point loads/moments at bearings.") << rptNewLine;
       }
+
+      IndexType deckCastingRegionIdx = 0; // assume region zero to get properties that are common to all castings
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+      Float64 deck_density = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx, castDeckIntervalIdx);
+      Float64 deck_unit_weight = deck_density; // *unitSysUnitsMgr::GetGravitationalAcceleration();
+      *pNotePara << _T("Unit weight of ") << strDeckName << _T(" material is ") << density.SetValue(deck_unit_weight);
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -561,10 +574,32 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
       {
          if (is_uniform)
          {
+            std::set<IndexType> castingRegions;
+            for (const auto& slabLoad : slab_loads)
+            {
+               castingRegions.insert(slabLoad.DeckCastingRegionIdx);
+            }
+            *pPara << _T("Casting Regions ");
+            auto begin = std::begin(castingRegions);
+            auto iter = begin;
+            auto end = std::end(castingRegions);
+            for (; iter != end; iter++)
+            {
+               IndexType castingRegionIdx = *iter;
+               if (iter != begin)
+               {
+                  *pPara << _T(", ");
+               }
+               *pPara << LABEL_INDEX(castingRegionIdx);
+            }
+            *pPara << rptNewLine;
+
+
             rptRcTable* p_table = rptStyleManager::CreateDefaultTable(2,_T(""));
             *pPara << p_table << rptNewLine;
             p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
             p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+
             (*p_table)(0,0) << _T("Load Type");
             (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -586,26 +621,30 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          }
          else
          {
-            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(5,_T(""));
+            rptRcTable* p_table = rptStyleManager::CreateDefaultTable(6,_T(""));
             *pPara << p_table;
 
-            (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-            (*p_table)(0,1) << COLHDR(_T("Main ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,2) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-            (*p_table)(0,3) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0,4) << COLHDR(_T("Total ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            ColumnIndexType col = 0;
+            (*p_table)(0, col++) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0, col++) << _T("Casting") << rptNewLine << _T("Region");
+            (*p_table)(0, col++) << COLHDR(_T("Main ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0, col++) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+            (*p_table)(0, col++) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0, col++) << COLHDR(_T("Total ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
             RowIndexType row = p_table->GetNumberOfHeaderRows();
             for( const auto& slab_load : slab_loads)
             {
+               col = 0;
                Float64 location = slab_load.Loc-end_size;
                Float64 main_load = slab_load.MainSlabLoad;
                Float64 pad_load  = slab_load.PadLoad;
-               (*p_table)(row,0) << loc.SetValue(location);
-               (*p_table)(row,1) << fpl.SetValue(-main_load);
-               (*p_table)(row,2) << comp.SetValue(slab_load.HaunchDepth);
-               (*p_table)(row,3) << fpl.SetValue(-pad_load);
-               (*p_table)(row,4) << fpl.SetValue(-(main_load+pad_load));
+               (*p_table)(row, col++) << loc.SetValue(location);
+               (*p_table)(row, col++) << LABEL_INDEX(slab_load.DeckCastingRegionIdx);
+               (*p_table)(row, col++) << fpl.SetValue(-main_load);
+               (*p_table)(row, col++) << comp.SetValue(slab_load.HaunchDepth);
+               (*p_table)(row, col++) << fpl.SetValue(-pad_load);
+               (*p_table)(row, col++) << fpl.SetValue(-(main_load+pad_load));
                row++;
             }
          }
@@ -622,7 +661,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          }
          else
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry,  and is measured along the centerline of the girder, but does not include a reduction for camber.");
+            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry, and is measured along the centerline of the girder, but does not include a reduction for camber.");
          }
       }
 
@@ -688,17 +727,18 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
          *pChapter << pPara;
          *pPara << strDeckName << _T(" Haunch Load Details") << rptNewLine;
 
-         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(report_camber ? 10:9,_T(""));
+         rptRcTable* p_table = rptStyleManager::CreateDefaultTable(report_camber ? 11:10,_T(""));
          *pPara << p_table;
 
          ColumnIndexType col = 0;
-         (*p_table)(0,col++) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*p_table)(0, col++) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
          (*p_table)(0, col++) << _T("Station");
          (*p_table)(0, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         (*p_table)(0,col++) << COLHDR(_T("Top") << rptNewLine << _T("Slab") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         (*p_table)(0,col++) << COLHDR(_T("Girder") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         (*p_table)(0,col++) << COLHDR(_T("Top") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         (*p_table)(0,col++) << COLHDR(strDeckName<<rptNewLine<<_T("Thickness"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0, col++) << _T("Casting") << rptNewLine << _T("Region");
+         (*p_table)(0, col++) << COLHDR(_T("Top") << rptNewLine << _T("Slab") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0, col++) << COLHDR(_T("Girder") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0, col++) << COLHDR(_T("Top") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+         (*p_table)(0, col++) << COLHDR(strDeckName<<rptNewLine<<_T("Thickness"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          if (report_camber)
          {
             (*p_table)(0, col++) << COLHDR(_T("*Assumed") << rptNewLine << _T("Excess") << rptNewLine << _T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -715,13 +755,14 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(rptChapter* pChapter,IBridge*
             (*p_table)(row, col++) << loc.SetValue(location);
             (*p_table)(row, col++) << rptRcStation(slab_load.Station, &pDisplayUnits->GetStationFormat());
             (*p_table)(row, col++) << RPT_OFFSET(slab_load.Offset, loc);
+            (*p_table)(row, col++) << LABEL_INDEX(slab_load.DeckCastingRegionIdx);
             (*p_table)(row, col++) << loc.SetValue(slab_load.TopSlabElevation);
             (*p_table)(row, col++) << loc.SetValue(slab_load.GirderChordElevation);
             (*p_table)(row, col++) << loc.SetValue(slab_load.TopGirderElevation);
             (*p_table)(row, col++) << comp.SetValue(slab_load.SlabDepth);
             if (report_camber)
             {
-               (*p_table)(row, col++) << comp.SetValue(slab_load.AssExcessCamber);
+               (*p_table)(row, col++) << comp.SetValue(slab_load.AssumedExcessCamber);
             }
             (*p_table)(row, col++) << comp.SetValue(slab_load.HaunchDepth);
             (*p_table)(row, col++) << fpl.SetValue(-slab_load.PadLoad);
@@ -2225,6 +2266,10 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
 
                *pPara << rptNewLine;
             }
+            else
+            {
+               *pPara << _T("No strands in this segment.") << rptNewLine;
+            }
 
             vEquivLoad = pProductLoads->GetEquivPretensionLoads(thisSegmentKey,pgsTypes::Harped);
             if ( 0 < vEquivLoad.size() )
@@ -2331,6 +2376,128 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
                   }
                }
             } // end if
+         } // segmentIdx
+      } // gdrIdx
+   } // groupIdx
+}
+
+void CLoadingDetailsChapterBuilder::ReportEquivSegmentPostTensioningLoads(rptChapter* pChapter, bool bRating, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey) const
+{
+   if (m_bSimplifiedVersion || bRating)
+   {
+      return;
+   }
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+
+   GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), true);
+   INIT_UV_PROTOTYPE(rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), true);
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, ecc, pDisplayUnits->GetComponentDimUnit(), true);
+   INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, distributed, pDisplayUnits->GetForcePerLengthUnit(), true);
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
+
+   // First do a check to see if we are reporting anything
+   bool bReport = false;
+   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType lastGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? nGirders - 1 : firstGirderIdx);
+      for (GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++)
+      {
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx, gdrIdx));
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            CSegmentKey thisSegmentKey(grpIdx, gdrIdx, segIdx);
+            DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(thisSegmentKey);
+            if (0 < nDucts)
+            {
+               bReport = true;
+               break;
+            }
+         }
+      }
+   }
+
+   if (!bReport)
+   {
+      return;
+   }
+
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Equivalent Segment Post-Tension Loading") << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   *pPara << _T("These loads are used to determine girder deflections due to segment post-tension forces") << rptNewLine;
+   *pPara << _T("Loads and eccentricities shown in positive directions") << rptNewLine;
+
+   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("EquivSegmentPTLoading.png")) << rptNewLine;
+
+   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
+      GirderIndexType lastGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? nGirders - 1 : firstGirderIdx);
+      for (GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++)
+      {
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx, gdrIdx));
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            CSegmentKey thisSegmentKey(grpIdx, gdrIdx, segIdx);
+
+            if (1 < nSegments)
+            {
+               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+               *pChapter << pPara;
+               *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+            }
+
+            pPara = new rptParagraph;
+            *pChapter << pPara;
+
+            const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(thisSegmentKey);
+            if (pSegment->Tendons.GetDuctCount() == 0)
+            {
+               *pPara << _T("No tendons in this segment.") << rptNewLine;
+            }
+            else
+            {
+               std::vector<EquivPretensionLoad> vEquivLoad = pProductLoads->GetEquivSegmentPostTensionLoads(thisSegmentKey);
+               for (const auto& equivLoad : vEquivLoad)
+               {
+                  ATLASSERT(IsZero(equivLoad.N));
+
+                  if (!IsZero(equivLoad.Mx))
+                  {
+                     *pPara << Sub2(_T("M"), _T("x")) << _T(" = ");
+                     *pPara << _T("(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eye) << _T(")");
+                     *pPara << _T(" = ") << moment.SetValue(equivLoad.Mx) << _T(" at ") << loc.SetValue(equivLoad.Xs) << rptNewLine;
+                  }
+
+                  if (!IsZero(equivLoad.wy))
+                  {
+                     *pPara << Sub2(_T("w"), _T("y")) << _T(" = 8(") << force.SetValue(equivLoad.P) << _T(")(") << ecc.SetValue(equivLoad.eyh - equivLoad.eye) << _T(")/");
+                     *pPara << _T("(") << loc.SetValue(equivLoad.Ls) << Super2(_T(")"), _T("2")) << _T(" = ");
+                     *pPara << distributed.SetValue(equivLoad.wy) << _T(" from ") << loc.SetValue(equivLoad.Xs);
+                     *pPara << _T(" to ") << loc.SetValue(equivLoad.Xe) << rptNewLine;
+                  }
+               }
+
+               *pPara << rptNewLine;
+            }
          } // segmentIdx
       } // gdrIdx
    } // groupIdx

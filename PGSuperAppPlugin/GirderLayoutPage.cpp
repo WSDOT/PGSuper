@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -348,8 +348,8 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    }
    else if (spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth || spacingType == pgsTypes::sbsGeneralAdjacentWithTopWidth)
    {
-      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used for the entire bridge")), (DWORD_PTR)(pgsTypes::sbsGeneralAdjacentWithTopWidth));
-      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("Top flange width and joint spacing is defined span by span")), (DWORD_PTR)(pgsTypes::sbsUniformAdjacentWithTopWidth));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("The same top flange width and joint spacing is used for the entire bridge")), (DWORD_PTR)(pgsTypes::sbsUniformAdjacentWithTopWidth));
+      m_cbGirderSpacingType.SetItemData(m_cbGirderSpacingType.AddString(_T("Top flange width and joint spacing is defined span by span")), (DWORD_PTR)(pgsTypes::sbsGeneralAdjacentWithTopWidth));
       m_cbGirderSpacingType.SetCurSel(spacingType == pgsTypes::sbsUniformAdjacentWithTopWidth ? 0 : 1);
    }
    else
@@ -794,7 +794,10 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       DDX_CBItemData(&dx, IDC_PREV_PIER_GIRDER_SPACING_MEASURE, m_CacheGirderSpacingMeasure[pgsTypes::metStart]);
       DDX_CBItemData(&dx, IDC_NEXT_PIER_GIRDER_SPACING_MEASURE, m_CacheGirderSpacingMeasure[pgsTypes::metEnd]);
 
-      pParent->m_pGirderGroup->SetGirderTopWidthGroups(m_TopWidthCache);
+      if (IsTopWidthSpacing(spacingType))
+      {
+         pParent->m_pGirderGroup->SetGirderTopWidthGroups(m_TopWidthCache);
+      }
    }
 
    pParent->m_BridgeDesc.SetGirderSpacingType(spacingType);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -598,6 +598,11 @@ public:
    Float64 GetBeamHeight(pgsTypes::MemberEndType endType) const;
    Float64 GetBeamWidth(pgsTypes::MemberEndType endType) const;
 
+   //---------------------------------------------------------------------------------
+   // Get the left and right widths from centerline of the top surface of the beam (e.g., out to out of all mating surface(s))
+   // If beam has variable width top flange, this function returns the min specified width.
+   void GetBeamTopWidth(pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const;
+
    bool OddNumberOfHarpedStrands() const;
    void EnableOddNumberOfHarpedStrands(bool bEnable);
 
@@ -713,6 +718,10 @@ public:
    void SetPrecamberLimit(Float64 limit);
    Float64 GetPrecamberLimit() const;
    bool CanPrecamber() const; // returns true if the girder can be precambered
+
+   void SetDoReportBearingElevationsAtGirderEdges(bool doit);
+   bool GetDoReportBearingElevationsAtGirderEdges() const;
+
 
    pgsCompatibilityData* GetCompatibilityData() const;
 
@@ -1024,6 +1033,8 @@ private:
    Float64 m_DragCoefficient;
 
    Float64 m_PrecamberLimit;
+
+   bool m_DoReportBearingElevationsAtGirderEdges;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

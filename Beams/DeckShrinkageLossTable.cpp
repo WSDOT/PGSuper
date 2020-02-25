@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -348,7 +348,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    table->m_Sign =  ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 ) ? 1 : -1;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   table->compositeIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   table->compositeIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();
 
    return table;
 }

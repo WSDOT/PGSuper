@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,11 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
+#include "resource.h"
 #include <PgsExt\CastDeckActivity.h>
 #include <PgsExt\TimelineManager.h>
+#include "DrawDeckRegionControl.h"
+#include "DeckRegionGrid.h"
 
 // CCastDeckDlg dialog
 
@@ -41,14 +44,29 @@ public:
    EventIndexType m_EventIndex;
 
 protected:
+   friend CDrawDeckRegionControl;
+
    BOOL m_bReadOnly;
    CString m_strTitle;
+
+   CDrawDeckRegionControl m_ctrlDeckRegion;
+   CDeckRegionGrid m_ctrlGrid;
+
+   BOOL m_bExpanded;
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 
+   void UpdateControls(CCastDeckActivity::CastingType castingType);
+
+   void FillRegionBoundaryControl();
+
+   CCastDeckActivity GetCastDeckActivity(CDataExchange* pTheDX = nullptr);
+
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnHelp();
+   afx_msg void OnBnClickedCastDeck(UINT nIDC);
+   afx_msg void OnDeckRegionsChanged();
 };

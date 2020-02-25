@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -52,7 +52,7 @@ public:
    CHaunchByBearingDlg m_HaunchByBearingDlg;
    CHaunchBySegmentDlg m_HaunchBySegmentDlg;
 
-// embedded dialogs for different AssExcessCamber layouts
+// embedded dialogs for different AssumedExcessCamber layouts
    CAssumedExcessCamberByBridgeDlg m_AssumedExcessCamberByBridgeDlg;
    CAssumedExcessCamberBySpanDlg  m_AssumedExcessCamberBySpanDlg;
    CAssumedExcessCamberByGirderDlg m_AssumedExcessCamberByGirderDlg;

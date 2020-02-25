@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,11 +47,17 @@ struct SpanLLDF
    {;}
 };
 
+// Virtual class to share Enable function between lldf grids
+class CEnableGrid : public CGXGridWnd
+{
+public:
+   virtual void Enable(BOOL bEnable) = 0;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // CLLDFGrid window
 
-class CLLDFGrid : public CGXGridWnd
+class CLLDFGrid : public CEnableGrid
 {
 // Construction
 public:
@@ -62,7 +68,7 @@ public:
 
 // Operations
 public:
-   void Enable(BOOL bEnable);
+   virtual void Enable(BOOL bEnable) override;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

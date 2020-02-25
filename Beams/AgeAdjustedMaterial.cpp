@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,7 +67,6 @@ STDMETHODIMP CAgeAdjustedMaterial::InitSegment(const CSegmentKey& segmentKey,IMa
 {
    m_bIsSegment = true;
    m_SegmentKey = segmentKey;
-   m_GirderKey = m_SegmentKey;
    m_pMaterials = pMaterials;
    return S_OK;
 }
@@ -76,16 +75,16 @@ STDMETHODIMP CAgeAdjustedMaterial::InitClosureJoint(const CClosureKey& closureKe
 {
    m_bIsClosure = true;
    m_ClosureKey = closureKey;
-   m_GirderKey = m_ClosureKey;
    m_pMaterials = pMaterials;
    return S_OK;
 }
 
-STDMETHODIMP CAgeAdjustedMaterial::InitDeck(const CGirderKey& girderKey,IMaterials* pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitDeck(IndexType deckCastingRegionIdx,IMaterials* pMaterials)
 {
    m_bIsDeck = true;
-   m_GirderKey = girderKey;
+   m_DeckCastingRegionIdx = deckCastingRegionIdx;
    m_pMaterials = pMaterials;
+
    return S_OK;
 }
 
@@ -103,7 +102,7 @@ STDMETHODIMP CAgeAdjustedMaterial::get_E(StageIndexType stageIdx,Float64* E)
    IntervalIndexType intervalIdx = (IntervalIndexType)stageIdx;
    if ( IsDeck() )
    {
-      *E = m_pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
+      *E = m_pMaterials->GetDeckAgeAdjustedEc(m_DeckCastingRegionIdx,intervalIdx);
    }
    else if ( IsSegment() )
    {
@@ -136,7 +135,7 @@ STDMETHODIMP CAgeAdjustedMaterial::get_Density(StageIndexType stageIdx,Float64* 
    IntervalIndexType intervalIdx = (IntervalIndexType)stageIdx;
    if ( IsDeck() )
    {
-      *w = m_pMaterials->GetDeckWeightDensity(intervalIdx);
+      *w = m_pMaterials->GetDeckWeightDensity(m_DeckCastingRegionIdx,intervalIdx);
    }
    else if ( IsSegment() )
    {

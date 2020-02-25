@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,10 +50,10 @@ public:
 
    // Add a tendon to the list of tendons that are stressed during this event
    void AddTendon(GirderIDType gdrID,DuctIndexType ductIdx);
-   void AddTendon(const CTendonKey& tendonKey);
+   void AddTendon(const CGirderTendonKey& tendonKey);
 
    // Add multiple tendons to the list of tendons that are stressed during this event
-   void AddTendons(const std::vector<CTendonKey>& tendons);
+   void AddTendons(const std::vector<CGirderTendonKey>& tendons);
 
    // Removes a tendon from the stressing list.
    // Pass a value of true for bRemovedFromBridge if the tendon has been removed from the
@@ -71,7 +71,7 @@ public:
    bool IsTendonStressed() const;
 
    // Returns the tendons that are stressed in this activity
-   const std::vector<CTendonKey>& GetTendons() const;
+   const std::vector<CGirderTendonKey>& GetTendons() const;
 
    // Returns the number of tendons in this activity
    IndexType GetTendonCount() const;
@@ -86,5 +86,5 @@ protected:
 
    // tendon keys must use the gdrID parameter!
    // this is a sorted collection
-   std::vector<CTendonKey> m_Tendons;
+   std::vector<CGirderTendonKey> m_Tendons;
 };

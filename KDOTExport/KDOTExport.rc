@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,1,2,0
- PRODUCTVERSION 4,1,2,0
+ FILEVERSION 5,0,0,8
+ PRODUCTVERSION 5,0,0,8
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -70,12 +70,12 @@ BEGIN
             VALUE "Comments", "PGSuperKDOTExport"
             VALUE "CompanyName", "Kansas Department of Transportation"
             VALUE "FileDescription", "PGSuperKDOTExport  Module"
-            VALUE "FileVersion", "4.1.2.0"
+            VALUE "FileVersion", "5.0.0.8"
             VALUE "InternalName", "PGSuperKDOTExport.dll"
-            VALUE "LegalCopyright", "Copyright © 2009-2015, KDOT, All rights reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2020, KDOT, All rights reserved"
             VALUE "OriginalFilename", "PGSuperKDOTExport.dll"
             VALUE "ProductName", "PGSuper KDOT Export"
-            VALUE "ProductVersion", "4.1.2.0"
+            VALUE "ProductVersion", "5.0.0.8"
         END
     END
     BLOCK "VarFileInfo"

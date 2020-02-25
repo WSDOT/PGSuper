@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -149,6 +149,10 @@ BOOL CConcreteEntryGeneralPage::OnInitDialog()
    idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::SandLightweight));
    pcbConcreteType->SetItemData(idx,(DWORD_PTR)pgsTypes::SandLightweight);
 
+   idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::UHPC));
+   pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
+
+
 	CPropertyPage::OnInitDialog();
 	
    OnConcreteType();
@@ -260,17 +264,14 @@ void CConcreteEntryGeneralPage::OnOK()
 
    if ( !m_bErrorInDDX && !IsDensityInRange(m_Ds,m_Type))
    {
-      if (m_Type == pgsTypes::Normal)
-         AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-      else
-         AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+      AfxMessageBox(m_Type == pgsTypes::Normal || m_Type == pgsTypes::UHPC ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE, MB_OK | MB_ICONINFORMATION);
    }
 }
 
 bool CConcreteEntryGeneralPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
    CEAFApp* pApp = EAFGetApp();
-   if ( type == pgsTypes::Normal )
+   if ( type == pgsTypes::Normal || type == pgsTypes::UHPC)
    {
       return IsLE(m_MinNWCDensity,density);
    }

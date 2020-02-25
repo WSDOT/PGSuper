@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -67,6 +67,10 @@ CString ConcreteLibraryEntry::GetConcreteType(pgsTypes::ConcreteType type)
 
    case pgsTypes::SandLightweight:
       lpszType = _T("Sand lightweight");
+      break;
+
+   case pgsTypes::UHPC:
+      lpszType = _T("UHPC");
       break;
 
    default:
@@ -279,7 +283,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          std::_tstring strType;
          pLoad->Property(_T("Type"),&strType);
-         m_Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(strType.c_str());
+         m_Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(strType.c_str());
       }
 
       if(!pLoad->Property(_T("Dw"), &m_Dw))

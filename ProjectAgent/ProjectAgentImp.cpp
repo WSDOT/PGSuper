@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -160,12 +160,13 @@ CProjectAgentImp::CProjectAgentImp()
    m_ProfileData2.Elevation = 0;
    m_ProfileData2.Grade = 0;
 
-   CrownData2 cd;
+   RoadwaySectionTemplate cd;
    cd.Station = 0.0;
-   cd.Left = -0.02;
-   cd.Right = -0.02;
-   cd.CrownPointOffset = 0;
-   m_RoadwaySectionData.Superelevations.push_back(cd);
+   cd.LeftSlope = -0.02;
+   cd.RightSlope = -0.02;
+   m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
+   m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+   m_RoadwaySectionData.RoadwaySectionTemplates.push_back(cd);
 
    m_DuctilityLevel   = ILoadModifiers::Normal;
    m_ImportanceLevel  = ILoadModifiers::Normal;
@@ -2345,51 +2346,93 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
 
    if ( pSave )
    {
-      hr = pSave->BeginUnit(_T("SuperelevationData"),1.0);
+      hr = pSave->BeginUnit(_T("SuperelevationData"),2.0);
       if ( FAILED(hr) )
       {
          return hr;
       }
 
-      hr = pSave->put_Property(_T("SectionCount"),CComVariant((long)pObj->m_RoadwaySectionData.Superelevations.size()));
+      hr = pSave->put_Property(_T("NumberOfSegmentsPerSection"),CComVariant((long)pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection));
       if ( FAILED(hr) )
       {
          return hr;
       }
 
-      std::vector<CrownData2>::iterator iter;
-      for ( iter = pObj->m_RoadwaySectionData.Superelevations.begin(); iter != pObj->m_RoadwaySectionData.Superelevations.end(); iter++ )
+      hr = pSave->put_Property(_T("ControllingRidgePointIdx"),CComVariant((long)pObj->m_RoadwaySectionData.ControllingRidgePointIdx));
+      if ( FAILED(hr) )
       {
-         CrownData2& super = *iter;
+         return hr;
+      }
 
-         hr = pSave->BeginUnit(_T("CrownSlope"),1.0);
+      hr = pSave->put_Property(_T("TemplateCount"),CComVariant((long)pObj->m_RoadwaySectionData.RoadwaySectionTemplates.size()));
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
+      std::vector<RoadwaySectionTemplate>::iterator iter;
+      for ( iter = pObj->m_RoadwaySectionData.RoadwaySectionTemplates.begin(); iter != pObj->m_RoadwaySectionData.RoadwaySectionTemplates.end(); iter++ )
+      {
+         RoadwaySectionTemplate& rtemplate = *iter;
+
+         hr = pSave->BeginUnit(_T("RoadwaySectionTemplate"),1.0);
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         hr = pSave->put_Property(_T("Station"),CComVariant(super.Station));
+         hr = pSave->put_Property(_T("Station"),CComVariant(rtemplate.Station));
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         hr = pSave->put_Property(_T("Left"),CComVariant(super.Left));
+         hr = pSave->put_Property(_T("LeftSlope"),CComVariant(rtemplate.LeftSlope));
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         hr = pSave->put_Property(_T("Right"),CComVariant(super.Right));
+         hr = pSave->put_Property(_T("RightSlope"),CComVariant(rtemplate.RightSlope));
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         hr = pSave->put_Property(_T("CrownPointOffset"),CComVariant(super.CrownPointOffset));
+         hr = pSave->put_Property(_T("SegmentCount"),CComVariant(rtemplate.SegmentDataVec.size()));
          if ( FAILED(hr) )
          {
             return hr;
+         }
+
+         std::vector<RoadwaySegmentData>::iterator iter2;
+         for (iter2 = rtemplate.SegmentDataVec.begin(); iter2 != rtemplate.SegmentDataVec.end(); iter2++)
+         {
+            RoadwaySegmentData& rsegment = *iter2;
+
+            hr = pSave->BeginUnit(_T("RoadwaySegmentData"),1.0);
+            if ( FAILED(hr) )
+            {
+               return hr;
+            }
+
+            hr = pSave->put_Property(_T("Length"),CComVariant(rsegment.Length));
+            if ( FAILED(hr) )
+            {
+               return hr;
+            }
+
+            hr = pSave->put_Property(_T("Slope"),CComVariant(rsegment.Slope));
+            if ( FAILED(hr) )
+            {
+               return hr;
+            }
+
+            hr = pSave->EndUnit();
+            if ( FAILED(hr) )
+            {
+               return hr;
+            }
          }
 
          hr = pSave->EndUnit();
@@ -2407,61 +2450,68 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
    }
    else
    {
-      CComVariant var;
+      // Load
+      pObj->m_RoadwaySectionData.RoadwaySectionTemplates.clear();
 
-      bool bNewFormat = true;
+      // We have two older versions to contend with
+      bool bNewerFormat = true;
+      Float64 superVersion(0.0);
       hr = pLoad->BeginUnit(_T("SuperelevationData"));
       if ( FAILED(hr) )
       {
-         bNewFormat = false;
-      }
-
-      pObj->m_RoadwaySectionData.Superelevations.clear();
-
-      if ( !bNewFormat )
-      {
-         var.vt = VT_R8;
-         hr = pLoad->get_Property(_T("Left"),&var);
-         if ( FAILED(hr) )
-         {
-            return hr;
-         }
-         Float64 left = var.dblVal;
-
-         var.vt = VT_R8;
-         hr = pLoad->get_Property(_T("Right"),&var);
-         if ( FAILED(hr) )
-         {
-            return hr;
-         }
-         Float64 right = var.dblVal;
-
-         CrownData2 crown;
-         crown.Station = 0;
-         crown.Left = left;
-         crown.Right = right;
-         crown.CrownPointOffset = 0;
-         pObj->m_RoadwaySectionData.Superelevations.push_back(crown);
+         bNewerFormat = false;
       }
       else
       {
+         // two possible versions of SuperelevationData
+         pLoad->get_Version(&superVersion);
+      }
+
+      if (!bNewerFormat || superVersion == 1.0)
+      {  // Legacy data
+         return LoadOldSuperelevationData(bNewerFormat, pLoad, pObj);
+      }
+      else
+      {
+         // Load current data
+         CComVariant var;
+
          var.vt = VT_I4;
-         hr = pLoad->get_Property(_T("SectionCount"),&var);
+         hr = pLoad->get_Property(_T("NumberOfSegmentsPerSection"), &var);
          if ( FAILED(hr) )
          {
             return hr;
          }
-         long nSections = var.lVal;
 
-         for ( long s = 0; s < nSections; s++ )
+         pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = var.lVal;
+
+         var.vt = VT_I4;
+         hr = pLoad->get_Property(_T("ControllingRidgePointIdx"),&var);
+         if ( FAILED(hr) )
          {
-            CrownData2 super;
+            return hr;
+         }
 
-            hr = pLoad->BeginUnit(_T("CrownSlope"));
+         pObj->m_RoadwaySectionData.ControllingRidgePointIdx = var.lVal;
+
+         var.vt = VT_I4;
+         hr = pLoad->get_Property(_T("TemplateCount"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+
+         Uint64 numTempls = var.lVal;
+
+         for ( Uint64 it=0; it<numTempls; it++ )
+         {
+            hr = pLoad->BeginUnit(_T("RoadwaySectionTemplate"));
             if ( FAILED(hr) )
             {
                return hr;
             }
+
+            RoadwaySectionTemplate rtemplate;
 
             var.vt = VT_R8;
             hr = pLoad->get_Property(_T("Station"),&var);
@@ -2469,49 +2519,354 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
             {
                return hr;
             }
-            super.Station = var.dblVal;
+
+            rtemplate.Station = var.dblVal;
 
             var.vt = VT_R8;
-            hr = pLoad->get_Property(_T("Left"),&var);
+            hr = pLoad->get_Property(_T("LeftSlope"),&var);
             if ( FAILED(hr) )
             {
                return hr;
             }
-            super.Left = var.dblVal;
 
-            var.vt = VT_R8;
-            hr = pLoad->get_Property(_T("Right"),&var);
+            rtemplate.LeftSlope = var.dblVal;
+
+            hr = pLoad->get_Property(_T("RightSlope"),&var);
             if ( FAILED(hr) )
             {
                return hr;
             }
-            super.Right = var.dblVal;
 
-            var.vt = VT_R8;
-            hr = pLoad->get_Property(_T("CrownPointOffset"),&var);
+            rtemplate.RightSlope = var.dblVal;
+
+            var.vt = VT_I4;
+            hr = pLoad->get_Property(_T("SegmentCount"),&var);
             if ( FAILED(hr) )
             {
                return hr;
             }
-            super.CrownPointOffset = var.dblVal;
 
-            pObj->m_RoadwaySectionData.Superelevations.push_back(super);
+            Uint64 segcnt = var.lVal;
+
+            for (Uint64 iseg=0; iseg<segcnt; iseg++)
+            {
+               hr = pLoad->BeginUnit(_T("RoadwaySegmentData"));
+               if ( FAILED(hr) )
+               {
+                  return hr;
+               }
+
+               RoadwaySegmentData rsegment;
+
+               var.vt = VT_R8;
+               hr = pLoad->get_Property(_T("Length"),&var);
+               if ( FAILED(hr) )
+               {
+                  return hr;
+               }
+
+               rsegment.Length = var.dblVal;
+
+               var.vt = VT_R8;
+               hr = pLoad->get_Property(_T("Slope"),&var);
+               if ( FAILED(hr) )
+               {
+                  return hr;
+               }
+
+               rsegment.Slope = var.dblVal;
+
+               hr = pLoad->EndUnit();
+               if ( FAILED(hr) )
+               {
+                  return hr;
+               }
+
+               rtemplate.SegmentDataVec.push_back(rsegment);
+            }
 
             hr = pLoad->EndUnit();
             if ( FAILED(hr) )
             {
                return hr;
             }
-         }
-      }
 
-      if ( bNewFormat )
-      {
+            pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(rtemplate);
+         }
+
          hr = pLoad->EndUnit();
-         if ( FAILED(hr) ) 
+         if ( FAILED(hr) )
          {
             return hr;
          }
+      }
+   }
+
+   return S_OK;
+}
+
+HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructuredLoad* pLoad,CProjectAgentImp* pObj) 
+{
+   // Old data structure used prior to May 2019 used to hold roadway crown data.
+   // We will use old code to load older data and convert into new format here
+   struct CrownData2
+   {
+      Float64 Station;
+      Float64 Left;
+      Float64 Right;
+      Float64 CrownPointOffset;
+
+      bool operator==(const CrownData2& other) const
+      {
+         return (Station == other.Station) &&
+                (Left == other.Left) &&
+                (Right == other.Right) &&
+                (CrownPointOffset == other.CrownPointOffset);
+      }
+   };
+
+   std::vector<CrownData2> CrownDataVec;
+
+   HRESULT hr;
+   CComVariant var;
+
+   if ( !bNewerFormat )
+   {
+      var.vt = VT_R8;
+      hr = pLoad->get_Property(_T("Left"),&var);
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+      Float64 left = var.dblVal;
+
+      var.vt = VT_R8;
+      hr = pLoad->get_Property(_T("Right"),&var);
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+      Float64 right = var.dblVal;
+
+      CrownData2 crown;
+      crown.Station = 0;
+      crown.Left = left;
+      crown.Right = right;
+      crown.CrownPointOffset = 0;
+      CrownDataVec.push_back(crown);
+   }
+   else
+   {
+      var.vt = VT_I4;
+      hr = pLoad->get_Property(_T("SectionCount"),&var);
+      if ( FAILED(hr) )
+      {
+         return hr;
+      }
+      long nSections = var.lVal;
+
+      for ( long s = 0; s < nSections; s++ )
+      {
+         CrownData2 super;
+
+         hr = pLoad->BeginUnit(_T("CrownSlope"));
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+
+         var.vt = VT_R8;
+         hr = pLoad->get_Property(_T("Station"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+         super.Station = var.dblVal;
+
+         var.vt = VT_R8;
+         hr = pLoad->get_Property(_T("Left"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+         super.Left = var.dblVal;
+
+         var.vt = VT_R8;
+         hr = pLoad->get_Property(_T("Right"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+         super.Right = var.dblVal;
+
+         var.vt = VT_R8;
+         hr = pLoad->get_Property(_T("CrownPointOffset"),&var);
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+         super.CrownPointOffset = var.dblVal;
+
+         CrownDataVec.push_back(super);
+
+         hr = pLoad->EndUnit();
+         if ( FAILED(hr) )
+         {
+            return hr;
+         }
+      }
+   }
+
+   if ( bNewerFormat )
+   {
+      hr = pLoad->EndUnit();
+      if ( FAILED(hr) ) 
+      {
+         return hr;
+      }
+   }
+
+   // The number of segments we need depends on whether there are crown point offsets.
+   // Just store one of the offsets if they exist so we have a default segment length in that direction
+   Float64 defaultLeftOffset(0.0), defaultRightOffset(0.0);
+   for (auto& cd : CrownDataVec)
+   {
+      if (IsGT(0.0, cd.CrownPointOffset))
+      {
+         defaultRightOffset = cd.CrownPointOffset;
+      }
+      else if (IsLT(cd.CrownPointOffset, 0.0))
+      {
+         defaultLeftOffset =  abs( cd.CrownPointOffset ); // remove sign
+      }
+   }
+
+   // At this point we have data loaded into old CrownData2 structure. Now just convert into new format
+   // Four possible cases here for dealing with crown point offsets
+   if (defaultLeftOffset == 0.0 && defaultRightOffset == 0.0)
+   {
+      // no crown point offsets
+      pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
+      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      for (auto& cd : CrownDataVec)
+      {
+         RoadwaySectionTemplate templ;
+         templ.Station = cd.Station;
+         templ.LeftSlope = cd.Left;
+         templ.RightSlope = cd.Right;
+
+         pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(templ);
+      }
+   }
+   else if (defaultLeftOffset != 0.0 && defaultRightOffset == 0.0)
+   {
+      // only have a left crown offset in list
+      pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 3;
+      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 2;
+      for (auto& cd : CrownDataVec)
+      {
+         RoadwaySectionTemplate templ;
+         templ.Station = cd.Station;
+         templ.LeftSlope = cd.Left;
+         templ.RightSlope = cd.Right;
+
+         RoadwaySegmentData sd;
+         sd.Slope = -1.0 * cd.Right;
+         if (cd.CrownPointOffset != 0.0)
+         {
+            sd.Length = abs(cd.CrownPointOffset);
+         }
+         else
+         {
+            sd.Length = defaultLeftOffset;
+         }
+
+         templ.SegmentDataVec.push_back(sd);
+
+         pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(templ);
+      }
+   }
+   else if (defaultLeftOffset == 0.0 && defaultRightOffset != 0.0)
+   {
+      // only have a right crown offset in list
+      pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 3;
+      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      for (auto& cd : CrownDataVec)
+      {
+         RoadwaySectionTemplate templ;
+         templ.Station = cd.Station;
+         templ.LeftSlope = cd.Left;
+         templ.RightSlope = cd.Right;
+
+         RoadwaySegmentData sd;
+         sd.Slope = -1.0 * cd.Left;
+         if (cd.CrownPointOffset != 0.0)
+         {
+            sd.Length = abs(cd.CrownPointOffset);
+         }
+         else
+         {
+            sd.Length = defaultRightOffset;
+         }
+         templ.SegmentDataVec.push_back(sd);
+
+         pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(templ);
+      }
+   }
+   else 
+   {
+      // list has both left and right offsets. we need four segments to model this
+      pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 4;
+      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 2;
+      for (auto& cd : CrownDataVec)
+      {
+         RoadwaySectionTemplate templ;
+         templ.Station = cd.Station;
+         templ.LeftSlope = cd.Left;
+         templ.RightSlope = cd.Right;
+
+         RoadwaySegmentData sd;
+         if (IsZero(cd.CrownPointOffset))
+         {
+            // crown at center
+            // left segment
+            sd.Slope = -1.0 * cd.Left;
+            sd.Length = defaultLeftOffset;
+            templ.SegmentDataVec.push_back(sd);
+
+            // right segment
+            sd.Slope = cd.Right;
+            sd.Length = defaultRightOffset;
+            templ.SegmentDataVec.push_back(sd);
+         }
+         else if (cd.CrownPointOffset < 0)
+         {
+            // crown to left
+            // left segment
+            sd.Slope = -1.0 * cd.Right;
+            sd.Length = abs(cd.CrownPointOffset);
+            templ.SegmentDataVec.push_back(sd);
+
+            // right segment
+            sd.Slope = cd.Right;
+            sd.Length = defaultRightOffset;
+            templ.SegmentDataVec.push_back(sd);
+         }
+         else 
+         {
+            // crown to right
+            // left segment
+            sd.Slope = cd.Left;
+            sd.Length = defaultLeftOffset;
+            templ.SegmentDataVec.push_back(sd);
+
+            // right segment
+            sd.Slope = -1.0 * cd.Left;
+            sd.Length = cd.CrownPointOffset;
+            templ.SegmentDataVec.push_back(sd);
+         }
+
+         pObj->m_RoadwaySectionData.RoadwaySectionTemplates.push_back(templ);
       }
    }
 
@@ -2721,8 +3076,10 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pDeck->DeckRebarData          = xSectionData.DeckRebarData;
       pDeck->SetDeckType( xSectionData.DeckType );
       pDeck->GrossDepth             = xSectionData.GrossDepth;
-      pDeck->OverhangEdgeDepth      = xSectionData.OverhangEdgeDepth;
-      pDeck->OverhangTaper          = xSectionData.OverhangTaper;
+      pDeck->OverhangEdgeDepth[pgsTypes::stLeft] = xSectionData.OverhangEdgeDepth;
+      pDeck->OverhangEdgeDepth[pgsTypes::stRight] = xSectionData.OverhangEdgeDepth;
+      pDeck->OverhangTaper[pgsTypes::stLeft] = xSectionData.OverhangTaper;
+      pDeck->OverhangTaper[pgsTypes::stRight] = xSectionData.OverhangTaper;
       pDeck->OverlayWeight          = xSectionData.OverlayWeight;
       pDeck->OverlayDensity         = xSectionData.OverlayDensity;
       pDeck->OverlayDepth           = xSectionData.OverlayDepth;
@@ -3762,13 +4119,11 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
          Float64 M = var.dblVal;
 
-         hr = pLoad->get_Property(_T("ReactionDistFactor"), &var );
+         hr = pLoad->get_Property(_T("ReactionDistFactor"), &var ); // no longer used 11/4/2019
          if ( FAILED(hr) )
          {
             return hr;
          }
-
-         Float64 R = var.dblVal;
 
          // Fill up the data structures
          CPierData2* pPier = pObj->m_BridgeDescription.GetPier(0);
@@ -3779,11 +4134,6 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
             pPier->SetLLDFNegMoment(pgsTypes::Exterior,pgsTypes::StrengthI,M);
             pPier->SetLLDFNegMoment(pgsTypes::Interior,pgsTypes::FatigueI,M);
             pPier->SetLLDFNegMoment(pgsTypes::Exterior,pgsTypes::FatigueI,M);
-
-            pPier->SetLLDFReaction(pgsTypes::Interior,pgsTypes::StrengthI,R);
-            pPier->SetLLDFReaction(pgsTypes::Exterior,pgsTypes::StrengthI,R);
-            pPier->SetLLDFReaction(pgsTypes::Interior,pgsTypes::FatigueI,R);
-            pPier->SetLLDFReaction(pgsTypes::Exterior,pgsTypes::FatigueI,R);
 
             pSpan = pPier->GetNextSpan();
             if ( pSpan )
@@ -3810,7 +4160,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
       {
          // Load data from 1.1 to pre-version 2.0 format into temporary variables
 
-         Float64 M[2], V[2], R[2];
+         Float64 M[2], V[2];
 
          var.vt = VT_R8 ;
          hr = pLoad->get_Property(_T("IntShearDistFactor"), &var );
@@ -3829,15 +4179,12 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
          M[pgsTypes::Interior] = var.dblVal;
 
-         hr = pLoad->get_Property(_T("IntReactionDistFactor"), &var );
+         hr = pLoad->get_Property(_T("IntReactionDistFactor"), &var ); // no longer used
          if ( FAILED(hr) )
          {
             return hr;
          }
 
-         R[pgsTypes::Interior] = var.dblVal;
-
-      
          hr = pLoad->get_Property(_T("ExtShearDistFactor"), &var );
          if ( FAILED(hr) )
          {
@@ -3854,14 +4201,11 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
          M[pgsTypes::Exterior] = var.dblVal;
 
-         hr = pLoad->get_Property(_T("ExtReactionDistFactor"), &var );
+         hr = pLoad->get_Property(_T("ExtReactionDistFactor"), &var ); // no longer used
          if ( FAILED(hr) )
          {
             return hr;
          }
-
-         R[pgsTypes::Exterior] = var.dblVal;
-
 
          // Fill up the data structures
          CPierData2* pPier = pObj->m_BridgeDescription.GetPier(0);
@@ -3883,8 +4227,6 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
                      pgsTypes::GirderLocation type = (ig==0 || ig==ngdrs-1)? pgsTypes::Exterior : pgsTypes::Interior;
                      
                      pPier->SetLLDFNegMoment(type, limitState,M[type]);
-
-                     pPier->SetLLDFReaction(type, limitState,R[type]);
 
                      if ( pSpan )
                      {
@@ -3916,7 +4258,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
             do
             {
-               Float64 pM, nM, V, R;
+               Float64 pM, nM, V;
 
                var.vt = VT_R8;
                hr = pLoad->BeginUnit(_T("Pier"));
@@ -3937,7 +4279,6 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
                   return hr;
                }
 
-
                pPier->SetLLDFNegMoment(type,pgsTypes::StrengthI,var.dblVal);
                pPier->SetLLDFNegMoment(type,pgsTypes::FatigueI, var.dblVal);
 
@@ -3947,14 +4288,11 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
                   return hr;
                }
 
-               hr = pLoad->get_Property(_T("R"), &var);
+               hr = pLoad->get_Property(_T("R"), &var); // no longer used
                if ( FAILED(hr) )
                {
                   return hr;
                }
-
-               pPier->SetLLDFReaction(type,pgsTypes::StrengthI,var.dblVal);
-               pPier->SetLLDFReaction(type,pgsTypes::FatigueI, var.dblVal);
 
                pLoad->EndUnit();
 
@@ -3994,13 +4332,11 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
 
                   V = var.dblVal;
 
-                  hr = pLoad->get_Property(_T("R"), &var);
+                  hr = pLoad->get_Property(_T("R"), &var); // no longer used
                   if ( FAILED(hr) )
                   {
                      return hr;
                   }
-
-                  R = var.dblVal;
 
                   // Set for all girders
                   CGirderGroupData* pGroup = pObj->m_BridgeDescription.GetGirderGroup(pSpan);
@@ -4640,6 +4976,24 @@ void CProjectAgentImp::UseBridgeLibraryEntries()
    }
 }
 
+void CProjectAgentImp::UseSegmentLibraryEntries(CPrecastSegmentData* pSegment)
+{
+   const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
+   const HaulTruckLibraryEntry* pHaulTruckEntry;
+   use_library_entry(&m_LibObserver, pSegment->HandlingData.HaulTruckName, &pHaulTruckEntry, *pHaulTruckLibrary);
+   pSegment->HandlingData.pHaulTruckLibraryEntry = pHaulTruckEntry;
+
+   UseDuctLibraryEntries(pSegment);
+}
+
+void CProjectAgentImp::ReleaseSegmentLibraryEntries(CPrecastSegmentData* pSegment)
+{
+   const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
+   release_library_entry(&m_LibObserver, pSegment->HandlingData.pHaulTruckLibraryEntry, *pHaulTruckLibrary);
+
+   ReleaseDuctLibraryEntries(pSegment);
+}
+
 void CProjectAgentImp::UseGirderLibraryEntries()
 {
    UseDuctLibraryEntries();
@@ -4731,6 +5085,8 @@ void CProjectAgentImp::UseDuctLibraryEntries()
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
             CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+
+            // Field installed tendons
             CPTData* pPTData = pGirder->GetPostTensioning();
             DuctIndexType nDucts = pPTData->GetDuctCount();
             for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -4742,8 +5098,34 @@ void CProjectAgentImp::UseDuctLibraryEntries()
                                  *pDuctLibrary);
                pDuct->pDuctLibEntry = pEntry;
             } // duct loop
+
+            // plant installed tendons
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               UseDuctLibraryEntries(pSegment);
+            } // segment loop
          }// girder loop
       }// group loop
+   }
+}
+
+void CProjectAgentImp::UseDuctLibraryEntries(CPrecastSegmentData* pSegment)
+{
+   if (m_pLibMgr)
+   {
+      // Ducts
+      const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
+      const DuctLibraryEntry* pEntry;
+
+      DuctIndexType nDucts = pSegment->Tendons.GetDuctCount();
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+      {
+         CSegmentDuctData* pDuct = pSegment->Tendons.GetDuct(ductIdx);
+         use_library_entry(&m_LibObserver, pDuct->Name, &pEntry, *pDuctLibrary);
+         pDuct->pDuctLibEntry = pEntry;
+      } // duct loop
    }
 }
 
@@ -4847,6 +5229,8 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries()
          for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
          {
             CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+
+            // field installed tendons
             CPTData* pPTData = pGirder->GetPostTensioning();
             DuctIndexType nDucts = pPTData->GetDuctCount();
             for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -4855,7 +5239,32 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries()
                release_library_entry(&m_LibObserver,pDuctData->pDuctLibEntry,*pDuctLibrary);
                pDuctData->pDuctLibEntry = nullptr;
             }
+
+            // plant installed tendons
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               ReleaseDuctLibraryEntries(pSegment);
+            }
          }
+      }
+   }
+}
+
+void CProjectAgentImp::ReleaseDuctLibraryEntries(CPrecastSegmentData* pSegment)
+{
+   if (m_pLibMgr)
+   {
+      // duct entry
+      const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
+
+      DuctIndexType nDucts = pSegment->Tendons.GetDuctCount();
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+      {
+         CSegmentDuctData* pDuctData = pSegment->Tendons.GetDuct(ductIdx);
+         release_library_entry(&m_LibObserver, pDuctData->pDuctLibEntry, *pDuctLibrary);
+         pDuctData->pDuctLibEntry = nullptr;
       }
    }
 }
@@ -4895,7 +5304,7 @@ void CProjectAgentImp::UpdateConcreteMaterial()
                pSegment->Material.Concrete.Type = pgsTypes::SandLightweight;
             }
 
-            CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+            CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosureJoint )
             {
                if ( !pClosureJoint->GetConcrete().bUserEci )
@@ -4968,7 +5377,7 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
             pSegment->Material.Concrete.bCEBFIPUserParameters = true;
             matCEBFIPConcrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.S);
 
-            CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+            CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
             ATLASSERT(pClosureJoint == nullptr); // we can't go from a non-time step method to a time-step method unless we have a regular precast girder bridge. For a regular precast girder bridge, there aren't any closure joints
          }
       }
@@ -5000,6 +5409,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
    std::map<CSegmentKey,Int32> strandKeys[3]; // map value is strand pool key, array index is strand type
+   std::map<CSegmentKey, Int32> segmentTendonKeys;
    std::map<CGirderKey,Int32> tendonKeys; // map value of strand pool key for ducts
 
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
@@ -5029,6 +5439,9 @@ void CProjectAgentImp::UpdateStrandMaterial()
                strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
                strandKeys[type].insert(std::make_pair(segmentKey,strand_pool_key));
             }
+
+            strand_pool_key = pPool->GetStrandKey(pSegment->Tendons.m_pStrand);
+            segmentTendonKeys.insert(std::make_pair(segmentKey, strand_pool_key));
          }
       }
    }
@@ -5062,6 +5475,9 @@ void CProjectAgentImp::UpdateStrandMaterial()
                strand_pool_key = strandKeys[i][segmentKey];
                pSegment->Strands.SetStrandMaterial((pgsTypes::StrandType)i,pPool->GetStrand(strand_pool_key));
             }
+
+            strand_pool_key = segmentTendonKeys[segmentKey];
+            pSegment->Tendons.m_pStrand = pPool->GetStrand(strand_pool_key);
          }
       }
    }
@@ -5118,7 +5534,7 @@ void CProjectAgentImp::VerifyRebarGrade()
                pSegment->ShearData.ShearBarGrade = matRebar::Grade60;
             }
 
-            CClosureJointData* pClosure = pSegment->GetEndClosure();
+            CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosure )
             {
                if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == matRebar::Grade100 )
@@ -5278,28 +5694,6 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    pgsTypes::SupportedBeamSpacing spacingType = m_BridgeDescription.GetGirderSpacingType();
    if (!beamFactory->IsSupportedBeamSpacing(spacingType))
    {
-      if (spacingType == pgsTypes::sbsConstantAdjacent && !m_BridgeDescription.UseSameGirderForEntireBridge())
-      {
-         // an error in the previous version allowed inconsistent girder types to be modeled
-         // if girders have a constant adjacent spacing, and different girders are used throughout
-         // the bridge, the spacing isn't going to be consistent... force the bridge model into something
-         // we can handle
-
-         ReleaseGirderLibraryEntries();
-
-         m_BridgeDescription.SetGirderName(pGirder->GetGirderName());
-         m_BridgeDescription.UseSameGirderForEntireBridge(true);
-         m_BridgeDescription.CopyDown(false, true, false, false, false, false);
-
-         UseGirderLibraryEntries();
-      
-         GET_IFACE(IEAFStatusCenter, pStatusCenter);
-         CString strMsg(_T("Your bridge model contained incompatible girder types. The model has been changed to use the same girder for the entire bridge."));
-         AfxMessageBox(strMsg);
-         pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::General,strMsg);
-         pStatusCenter->Add(pStatusItem);
-      }
-
       // we don't have a valid spacing type, convert it
       if (m_BridgeDescription.UseSameGirderForEntireBridge())
       {
@@ -5332,6 +5726,8 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
                if (grpIdx == 0 && gdrIdx == 0)
                {
                   m_BridgeDescription.SetGirderSpacingType(newSpacingType);
+                  m_BridgeDescription.SetGirderSpacing(newSpacing);
+                  m_BridgeDescription.SetGirderTopWidth(pgsTypes::twtSymmetric, topWidth, 0.0);
                }
 
                if (gdrIdx != nGirders - 1)
@@ -6433,14 +6829,12 @@ void CProjectAgentImp::SetPrecastSegmentData(const CSegmentKey& segmentKey,const
    if ( *pSegment != segment )
    {
       // copy only data. don't alter ID or Index
-      const HaulTruckLibrary* pHaulTruckLibrary = m_pLibMgr->GetHaulTruckLibrary();
-      release_library_entry(&m_LibObserver,pSegment->HandlingData.pHaulTruckLibraryEntry,*pHaulTruckLibrary);
+      ReleaseSegmentLibraryEntries(pSegment);
 
       pSegment->CopySegmentData(&segment,true);
 
-      const HaulTruckLibraryEntry* pHaulTruckEntry;
-      use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pHaulTruckEntry,*pHaulTruckLibrary);
-      pSegment->HandlingData.pHaulTruckLibraryEntry = pHaulTruckEntry;
+      UseSegmentLibraryEntries(pSegment);
+
 
       Fire_GirderChanged(segmentKey,0/*no hint*/);
    }
@@ -6451,7 +6845,7 @@ const CClosureJointData* CProjectAgentImp::GetClosureJointData(const CSegmentKey
    const CGirderGroupData*   pGroup    = m_BridgeDescription.GetGirderGroup(closureKey.groupIndex);
    const CSplicedGirderData* pGirder   = pGroup->GetGirder(closureKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(closureKey.segmentIndex);
-   return pSegment->GetEndClosure();
+   return pSegment->GetClosureJoint(pgsTypes::metEnd);
 }
 
 void CProjectAgentImp::SetClosureJointData(const CSegmentKey& closureKey,const CClosureJointData& closure)
@@ -6459,7 +6853,7 @@ void CProjectAgentImp::SetClosureJointData(const CSegmentKey& closureKey,const C
    CGirderGroupData*    pGroup   = m_BridgeDescription.GetGirderGroup(closureKey.groupIndex);
    CSplicedGirderData*  pGirder  = pGroup->GetGirder(closureKey.girderIndex);
    CPrecastSegmentData* pSegment = pGirder->GetSegment(closureKey.segmentIndex);
-   CClosureJointData*    pClosure = pSegment->GetEndClosure();
+   CClosureJointData*    pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
 
    // this method sets the right closure joint data... there is not a closure
    // at the right end of the last segment
@@ -6701,7 +7095,7 @@ void CProjectAgentImp::SetAssumedExcessCamber( Float64 assumedExcessCamber)
    if ( m_BridgeDescription.GetAssumedExcessCamberType() != pgsTypes::aecBridge ||
         !IsEqual(assumedExcessCamber,m_BridgeDescription.GetAssumedExcessCamber()) )
    {
-      // AssExcessCamber type and/or value is changing
+      // AssumedExcessCamber type and/or value is changing
       m_BridgeDescription.SetAssumedExcessCamberType(pgsTypes::aecBridge);
       m_BridgeDescription.SetAssumedExcessCamber(assumedExcessCamber);
       Fire_BridgeChanged();
@@ -7998,7 +8392,7 @@ void CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closure
 void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint->GetStirrups().ShearBarType != type || pClosureJoint->GetStirrups().ShearBarGrade != grade)
    {
       pClosureJoint->GetStirrups().ShearBarType = type;
@@ -8010,7 +8404,7 @@ void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closure
 const CShearData2* CProjectAgentImp::GetClosureJointShearData(const CClosureKey& closureKey) const
 {
    const CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   const CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   const CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint == nullptr )
    {
       return nullptr;
@@ -8022,7 +8416,7 @@ const CShearData2* CProjectAgentImp::GetClosureJointShearData(const CClosureKey&
 void CProjectAgentImp::SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& shearData)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint && pClosureJoint->GetStirrups() != shearData )
    {
       pClosureJoint->SetStirrups(shearData);
@@ -8088,7 +8482,7 @@ void CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKe
 void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint->GetRebar().BarGrade != grade || pClosureJoint->GetRebar().BarType != type )
    {
       pClosureJoint->GetRebar().BarGrade = grade;
@@ -8100,14 +8494,14 @@ void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKe
 const CLongitudinalRebarData* CProjectAgentImp::GetClosureJointLongitudinalRebarData(const CClosureKey& closureKey) const
 {
    const CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   const CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   const CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    return &pClosureJoint->GetRebar();
 }
 
 void CProjectAgentImp::SetClosureJointLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
-   CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+   CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
    if ( pClosureJoint->GetRebar() != data )
    {
       pClosureJoint->GetRebar() = data;
@@ -8778,15 +9172,15 @@ Float64 CProjectAgentImp::GetReactionServiceLiveLoadFactor(PierIndexType pierIdx
       if ( vehicleIdx == INVALID_INDEX )
       {
          IndexType minVehicleIdx, maxVehicleIdx;
-         pReactions->GetLiveLoadReaction(liveLoadIntervalIdx,llType,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,pgsTypes::fetFy, &Rmin,&Rmax,&minVehicleIdx,&maxVehicleIdx);
+         pReactions->GetLiveLoadReaction(liveLoadIntervalIdx,llType,pierIdx,girderKey,bat,true/*include impact*/,pgsTypes::fetFy, &Rmin,&Rmax,&minVehicleIdx,&maxVehicleIdx);
          
          REACTION rmin,rmax;
-         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,maxVehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,&rmin,&rmax,nullptr,&maxAxleConfig);
+         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,maxVehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,&rmin,&rmax,nullptr,&maxAxleConfig);
          ATLASSERT(Rmax == rmax);
       }
       else
       {
-         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,vehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,false/*no LLDF*/,&Rmin,&Rmax,&minAxleConfig,&maxAxleConfig);
+         pReactions->GetVehicularLiveLoadReaction(liveLoadIntervalIdx,llType,vehicleIdx,pierIdx,girderKey,bat,true/*include impact*/,&Rmin,&Rmax,&minAxleConfig,&maxAxleConfig);
       }
 
       gLL = GetStrengthLiveLoadFactor(ratingType,maxAxleConfig);
@@ -8835,7 +9229,7 @@ pgsTypes::OverlayLoadDistributionType CProjectAgentImp::GetOverlayLoadDistributi
 
 pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationType() const
 {
-   if(m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP)
+   if(!IsAssumedExcessCamberForLoad())
    {
       // Practically impossible to compute excess camber on the fly for spliced girders. Don't even try
       return pgsTypes::hlcZeroCamber;
@@ -8848,14 +9242,12 @@ pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationTy
 
 Float64 CProjectAgentImp::GetCamberTolerance() const
 {
-   ATLASSERT(m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP);
    ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcAccountForCamber);
    return m_pSpecEntry->GetHaunchLoadCamberTolerance();
 }
 
 Float64 CProjectAgentImp::GetHaunchLoadCamberFactor() const
 {
-   ATLASSERT(m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP);
    ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcAccountForCamber);
    return m_pSpecEntry->GetHaunchLoadCamberFactor();
 }
@@ -8881,12 +9273,23 @@ bool CProjectAgentImp::IsAssumedExcessCamberInputEnabled(bool considerDeckType) 
 
 bool CProjectAgentImp::IsAssumedExcessCamberForLoad() const
 {
-   return m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
+   GET_IFACE(IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+
+   return !bIsSplicedGirder && m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
 }
 
 bool CProjectAgentImp::IsAssumedExcessCamberForSectProps() const
 {
-   return m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic;
+   GET_IFACE(IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+
+   return !bIsSplicedGirder && m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic;
+}
+
+void CProjectAgentImp::GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod * pMethod, Float64 * pTolerance) const
+{
+   m_pSpecEntry->GetRequiredSlabOffsetRoundingParameters(pMethod, pTolerance);
 }
 
 Uint16 CProjectAgentImp::GetMomentCapacityMethod() const
@@ -8947,8 +9350,9 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       if (option.doDesignForFlexure == dtDesignForHarping)
       {
          bool check, design;
-         Float64 d1, d2, d3;
-         pSpecEntry->GetHoldDownForce(&check, &design, &d1);
+         int holdDownForceType;
+         Float64 d1, d2, d3, friction;
+         pSpecEntry->GetHoldDownForce(&check, &design, &holdDownForceType, &d1, &friction);
          option.doDesignHoldDown = design;
 
          pSpecEntry->GetMaxStrandSlope(&check, &design, &d1, &d2, &d3);
@@ -10220,6 +10624,71 @@ void CProjectAgentImp::IgnoreEffectiveFlangeWidthLimits(bool bIgnore)
 
 ////////////////////////////////////////////////////////////////////////
 // ILossParameters
+std::_tstring CProjectAgentImp::GetLossMethodDescription() const
+{
+   std::_tstring strLossMethod;
+   pgsTypes::LossMethod lossMethod = GetLossMethod();
+   switch (lossMethod)
+   {
+   case pgsTypes::AASHTO_REFINED: 
+   case pgsTypes::AASHTO_REFINED_2005:
+      strLossMethod = _T("Refined estimate per AASHTO LRFD ");
+      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")));
+      break;
+
+   case pgsTypes::AASHTO_LUMPSUM:
+   case pgsTypes::AASHTO_LUMPSUM_2005:
+         strLossMethod = _T("Approximate lump sum estimate per AASHTO LRFD ");
+      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
+      break;
+
+   case pgsTypes::GENERAL_LUMPSUM:
+      strLossMethod = _T("General lump sum");
+      break;
+
+   case pgsTypes::WSDOT_LUMPSUM:
+   case pgsTypes::WSDOT_LUMPSUM_2005:
+      strLossMethod = _T("Approximate lump sum estimate per WSDOT Bridge Design Manual");
+      break;
+
+   case pgsTypes::WSDOT_REFINED:
+   case pgsTypes::WSDOT_REFINED_2005:
+      strLossMethod = _T("Refined estimate per WSDOT Bridge Design Manual");
+      break;
+
+   case pgsTypes::TXDOT_REFINED_2004:
+      strLossMethod = _T("Refined estimate per TxDOT Bridge Design Manual");
+      break;
+
+   case pgsTypes::TXDOT_REFINED_2013:
+      strLossMethod = _T("Refined estimate per TxDOT Research Report 0-6374-2");
+      break;
+
+   case pgsTypes::TIME_STEP:
+      strLossMethod = _T("Time Step");
+      switch (GetTimeDependentModel())
+      {
+      case pgsTypes::tdmAASHTO:
+         strLossMethod += std::_tstring(_T(" (AASHTO LRFD)"));
+         break;
+      case pgsTypes::tdmACI209:
+         strLossMethod += std::_tstring(_T(" (ACI 209R-92)"));
+         break;
+      case pgsTypes::tdmCEBFIP:
+         strLossMethod += std::_tstring(_T(" (CEB-FIP 1990)"));
+         break;
+      default:
+         ATLASSERT(false); // this is there a new time dependent model?
+      }
+      break;
+
+   default:
+      ATLASSERT(false); // is there a new loss method?
+   }
+
+   return strLossMethod;
+}
+
 pgsTypes::LossMethod CProjectAgentImp::GetLossMethod() const
 {
    pgsTypes::LossMethod loss_method;
@@ -11317,7 +11786,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    }
 
    EventIndexType eventIdx;
-   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
 
    // Erect girders. It is assumed that girders are transported, erected, and temporary strands 
    // are removed all on the same day. Assuming max construction sequence (D120). The actual
@@ -11331,11 +11800,19 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDescription(_T("Erect Girders"));
    pTimelineEvent->GetErectSegmentsActivity().Enable();
    pTimelineEvent->GetErectSegmentsActivity().AddSegments(segmentIDs);
-   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+   pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+   maxDay = pTimelineEvent->GetDay();
+   pTimelineEvent.release();
 
    pgsTypes::SupportedDeckType deckType = m_BridgeDescription.GetDeckDescription()->GetDeckType();
 
-   Float64 deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day),28.0);
+   Float64 deck_diaphragm_curing_duration = 0; // we assume composite deck locks in creep deflections. Girder creep occurs over the curing duration. Set the duration to 0 day to avoid creep deflection
+   if (IsNonstructuralDeck(deckType))
+   {
+      // deck is non-composite or there is no deck so creep can continue
+      deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day), 28.0);
+   }
+
    if ( IsJointSpacing(m_BridgeDescription.GetGirderSpacingType()) && m_BridgeDescription.HasStructuralLongitudinalJoints() )
    {
       // No deck
@@ -11349,23 +11826,25 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       pTimelineEvent = std::make_unique<CTimelineEvent>();
       day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
       day = Max(day, maxDay);
-      maxDay += 1.0;
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
       pTimelineEvent->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad();
-      pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+      pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
 
       pTimelineEvent = std::make_unique<CTimelineEvent>();
       day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 1.0;
       day = Max(day, maxDay);
-      maxDay += 1.0;
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Longitudinal Joints"));
 
       pTimelineEvent->GetCastLongitudinalJointActivity().Enable();
       pTimelineEvent->GetCastLongitudinalJointActivity().SetConcreteAgeAtContinuity(1.0); // day
       pTimelineEvent->GetCastLongitudinalJointActivity().SetCuringDuration(1.0); // day
-      pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+      pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
       oldBridgeSite1EventIndex = eventIdx;
 
       if ( deckType != pgsTypes::sdtNone)
@@ -11373,15 +11852,17 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
          pTimelineEvent = std::make_unique<CTimelineEvent>();
          day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 2.0;
          day = Max(day, maxDay);
-         maxDay += 1.0;
          pTimelineEvent->SetDay(day);
 
 
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
          pTimelineEvent->GetCastDeckActivity().Enable();
+         pTimelineEvent->GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous); // this is the only option supported for PGSuper models
          pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(deck_diaphragm_curing_duration); // day
          pTimelineEvent->GetCastDeckActivity().SetCuringDuration(deck_diaphragm_curing_duration); // day
-         pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+         pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+         maxDay = pTimelineEvent->GetDay() + 1;
+         pTimelineEvent.release();
          oldBridgeSite1EventIndex = eventIdx;
       }
    }
@@ -11391,27 +11872,29 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       pTimelineEvent = std::make_unique<CTimelineEvent>();
       day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
       day = Max(day, maxDay);
-      maxDay += 1.0;
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
 
       pTimelineEvent->GetApplyLoadActivity().ApplyIntermediateDiaphragmLoad();
-      pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+      pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
       oldBridgeSite1EventIndex = eventIdx;
-
 
       if (deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
          day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
          day = Max(day, maxDay);
-         maxDay += 1.0;
          pTimelineEvent->SetDay(day);
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
          pTimelineEvent->GetCastDeckActivity().Enable();
+         pTimelineEvent->GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous); // this is the only option supported for PGSuper models
          pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(deck_diaphragm_curing_duration); // day
          pTimelineEvent->GetCastDeckActivity().SetCuringDuration(deck_diaphragm_curing_duration); // day
-         pTimelineManager->AddTimelineEvent(pTimelineEvent.release(), true, &eventIdx);
+         pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+         maxDay = pTimelineEvent->GetDay() + 1;
+         pTimelineEvent.release();
          oldBridgeSite1EventIndex = eventIdx;
       }
    }
@@ -11420,7 +11903,6 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent = std::make_unique<CTimelineEvent>();
    day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + deck_diaphragm_curing_duration;
    day = Max(day,maxDay);
-   maxDay += 1.0;
    pTimelineEvent->SetDay( day ); // deck is continuous
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad();
 
@@ -11437,31 +11919,35 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    {
       pTimelineEvent->SetDescription(_T("Install Railing System"));
    }
-   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+   pTimelineManager->AddTimelineEvent(pTimelineEvent.get(),true,&eventIdx);
+   maxDay = pTimelineEvent->GetDay() + 1;
+   pTimelineEvent.release();
    oldBridgeSite2EventIndex = eventIdx; // "bridge site 2 loads are always applied with the railing system
 
    if ( wearingSurface == pgsTypes::wstFutureOverlay )
    {
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetTotalCreepDuration(), unitMeasure::Day) + 1.0;
+      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
       day = Max(day, maxDay);
-      maxDay += 1.0;
       pTimelineEvent->SetDay( day ); 
       pTimelineEvent->SetDescription(_T("Final without Live Load"));
       pTimelineEvent->GetApplyLoadActivity().ApplyOverlayLoad();
-      pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+      pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+      maxDay = pTimelineEvent->GetDay() + 1;
+      pTimelineEvent.release();
    }
 
    // live load
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetTotalCreepDuration(),unitMeasure::Day) + 1.0;
+   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
    day = Max(day, maxDay);
-   maxDay += 1.0;
    pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Final with Live Load"));
    pTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad();
    pTimelineEvent->GetApplyLoadActivity().ApplyRatingLiveLoad();
-   pTimelineManager->AddTimelineEvent(pTimelineEvent.release(),true,&eventIdx);
+   pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
+   maxDay = pTimelineEvent->GetDay() + 1;
+   pTimelineEvent.release();
    oldBridgeSite3EventIndex = eventIdx;
 
    // user defined loads

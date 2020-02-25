@@ -42,6 +42,11 @@ BEGIN
     "\0"
 END
 
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
 
 #endif    // APSTUDIO_INVOKED
 
@@ -52,8 +57,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,1,2,0
- PRODUCTVERSION 4,1,2,0
+ FILEVERSION 5,0,0,8
+ PRODUCTVERSION 5,0,0,8
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -71,12 +76,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "TxDOTAgent Module"
-            VALUE "FileVersion", "4.1.2.0"
+            VALUE "FileVersion", "5.0.0.8"
             VALUE "InternalName", "TOGA"
-            VALUE "LegalCopyright", "Copyright © 1999-2019, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperTxDOTAgent.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "4.1.2.0"
+            VALUE "ProductVersion", "5.0.0.8"
         END
     END
     BLOCK "VarFileInfo"
@@ -116,11 +121,13 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,107,178,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,172,178,50,14
-    CONTROL         "Generate extended data for testing",IDC_EXTENDED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,157,125,10
     GROUPBOX        "Select Girder(s) for CAD Export",IDC_GROUP,10,4,324,148
     CONTROL         "Custom1",IDC_SELECT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,18,15,306,111
     PUSHBUTTON      "Select All",IDC_SELECT_ALL,218,130,50,14
     PUSHBUTTON      "Clear All",IDC_CLEAR_ALL,273,130,50,14
+    COMBOBOX        IDC_FILE_FORMAT,70,156,122,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Export File Format",IDC_STATIC,12,160,55,8
+    PUSHBUTTON      "Help",ID_HELP,237,178,50,14
 END
 
 IDD_BRIDGE_INPUT_PAGE DIALOGEX 0, 0, 424, 390
@@ -629,6 +636,28 @@ BEGIN
     0
 END
 
+IDD_EXPORT_TXDOTCADDATA DLGINIT
+BEGIN
+    IDC_FILE_FORMAT, 0x403, 16, 0
+0x694d, 0x7263, 0x736f, 0x666f, 0x2074, 0x7845, 0x6563, 0x006c, 
+    IDC_FILE_FORMAT, 0x403, 36, 0
+0x6553, 0x696d, 0x6f63, 0x6f6c, 0x2d6e, 0x6573, 0x6170, 0x6172, 0x6574, 
+0x2064, 0x6176, 0x756c, 0x2065, 0x6574, 0x7478, 0x6620, 0x6c69, 0x0065, 
+
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_EXPORT_TXDOTCADDATA AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -720,4 +749,15 @@ END
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
 

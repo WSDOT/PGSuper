@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -309,20 +309,18 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
       // make the minimum size of the graph include the size of the girder. this makes the girder display
       // properly when there aren't any points to graph
+      GET_IFACE(IBridge, pBridge);
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey, &vGirderKeys);
+
       GET_IFACE(IPointOfInterest,pPoi);
-      pgsPointOfInterest startPoi(CSegmentKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex,girderKey.girderIndex,0),0.0);
+      pgsPointOfInterest startPoi(CSegmentKey(vGirderKeys.front(),0),0.0);
       Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(startPoi);
 
-      GET_IFACE(IBridge,pBridge);
-      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-      GroupIndexType grpIdx = girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : girderKey.groupIndex;
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-      CGirderKey thisGirderKey(grpIdx,gdrIdx);
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-      CSegmentKey thisSegmentKey(thisGirderKey,nSegments-1);
-      Float64 Ls = pBridge->GetSegmentLength(thisSegmentKey);
-      pgsPointOfInterest endPoi(thisSegmentKey,Ls);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(vGirderKeys.back());
+      CSegmentKey lastSegmentKey(vGirderKeys.back(),nSegments-1);
+      Float64 Ls = pBridge->GetSegmentLength(lastSegmentKey);
+      pgsPointOfInterest endPoi(lastSegmentKey,Ls);
       Float64 Xend = pPoi->ConvertPoiToGirderlineCoordinate(endPoi);
 
       Xstart += shift;

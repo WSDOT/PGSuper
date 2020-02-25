@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,11 +42,6 @@ CLASS
 class  CTxDOTCommandLineInfo : public CPGSBaseCommandLineInfo
 {
 public:
-   // Different types of Analysis/Design and level of detail (Ext==extended) for TxDOT CAD reports
-   enum TxRunType {txrDesign, txrAnalysis, TxrDistributionFactors, txrDesignShear,txrGeometry};
-   enum TxFType {txfNormal, txfExtended, txfTest};
-
-
    CTxDOTCommandLineInfo();
    virtual ~CTxDOTCommandLineInfo();
 
@@ -56,9 +51,6 @@ public:
    virtual CString GetUsageMessage() override;
 
    // txDOT CAD report from command line
-   bool  m_DoTxCadReport;
-   TxRunType m_TxRunType;
-   TxFType   m_TxFType;
    CString m_TxOutputFile;
    SpanIndexType m_TxSpan;
    GirderIndexType m_TxGirder;

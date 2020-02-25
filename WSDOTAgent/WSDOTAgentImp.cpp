@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,8 +34,6 @@
 #include <IReportManager.h>
 
 #include "GirderScheduleChapterBuilder.h"
-#include "InputSummaryChapter.h"
-#include "OutputSummaryChapter.h"
 #include "LoadRatingSummaryChapterBuilder.h"
 
 #ifdef _DEBUG
@@ -103,18 +101,6 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
       pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
       pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
       pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CGirderScheduleChapterBuilder) );
-      pRptMgr->AddReportBuilder( pRptBuilder.release() );
-
-      // WSDOT Summary Report
-      pRptBuilder = std::make_unique<CReportBuilder>(_T("WSDOT Summary Report"));
-#if defined _DEBUG || defined _BETA_VERSION
-      pRptBuilder->IncludeTimingChapter();
-#endif
-      pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
-      pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-      pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) ); // may have to move this chapter to a common DLL
-      pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CInputSummaryChapter) );
-      pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new COutputSummaryChapter) );
       pRptMgr->AddReportBuilder( pRptBuilder.release() );
    }
 

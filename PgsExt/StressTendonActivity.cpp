@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -93,10 +93,10 @@ void CStressTendonActivity::Clear()
 
 void CStressTendonActivity::AddTendon(GirderIDType gdrID,DuctIndexType ductIdx)
 {
-   AddTendon(CTendonKey(gdrID, ductIdx));
+   AddTendon(CGirderTendonKey(gdrID, ductIdx));
 }
 
-void CStressTendonActivity::AddTendon(const CTendonKey& tendonKey)
+void CStressTendonActivity::AddTendon(const CGirderTendonKey& tendonKey)
 {
    ATLASSERT(tendonKey.girderID != INVALID_ID); // must be using girder ID
    ATLASSERT(std::is_sorted(m_Tendons.begin(), m_Tendons.end()));
@@ -112,7 +112,7 @@ void CStressTendonActivity::AddTendon(const CTendonKey& tendonKey)
    m_bEnabled = true;
 }
 
-void CStressTendonActivity::AddTendons(const std::vector<CTendonKey>& tendons)
+void CStressTendonActivity::AddTendons(const std::vector<CGirderTendonKey>& tendons)
 {
    for (const auto& tendonKey : tendons)
    {
@@ -125,7 +125,7 @@ void CStressTendonActivity::RemoveTendon(GirderIDType gdrID,DuctIndexType ductId
    ATLASSERT(gdrID != ALL_GIRDERS);
    ATLASSERT(std::is_sorted(m_Tendons.begin(), m_Tendons.end()));
 
-   CTendonKey key(gdrID,ductIdx);
+   CGirderTendonKey key(gdrID,ductIdx);
    const auto& found(std::find(m_Tendons.begin(),m_Tendons.end(),key));
    if ( found != m_Tendons.end() )
    {
@@ -159,7 +159,7 @@ class MatchGirderID
 {
 public:
    MatchGirderID(GirderIDType gdrID) : m_GirderID(gdrID) {}
-   bool operator()(const CTendonKey& tendonKey) const
+   bool operator()(const CGirderTendonKey& tendonKey) const
    {
       return( tendonKey.girderID == m_GirderID ? true : false);
    }
@@ -190,7 +190,7 @@ bool CStressTendonActivity::IsTendonStressed(GirderIDType gdrID,DuctIndexType du
    ATLASSERT(gdrID != ALL_GIRDERS);
    ATLASSERT(std::is_sorted(m_Tendons.begin(), m_Tendons.end()));
 
-   CTendonKey key(gdrID,ductIdx);
+   CGirderTendonKey key(gdrID,ductIdx);
    return std::find(m_Tendons.begin(), m_Tendons.end(), key) == m_Tendons.end() ? false : true;
 }
 
@@ -199,7 +199,7 @@ bool CStressTendonActivity::IsTendonStressed() const
    return (m_Tendons.size() != 0 ? true : false);
 }
 
-const std::vector<CTendonKey>& CStressTendonActivity::GetTendons() const
+const std::vector<CGirderTendonKey>& CStressTendonActivity::GetTendons() const
 {
    return m_Tendons;
 }
@@ -241,7 +241,7 @@ HRESULT CStressTendonActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
             hr = pStrLoad->get_Property(_T("DuctIndex"),&var);
             DuctIndexType ductIdx = VARIANT2INDEX(var);
 
-            m_Tendons.push_back(CTendonKey(gdrID,ductIdx));
+            m_Tendons.push_back(CGirderTendonKey(gdrID,ductIdx));
 
             pStrLoad->EndUnit(); // Tendon
          }

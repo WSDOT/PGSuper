@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,9 +63,6 @@ CPierData2::CPierData2()
    m_Station     = 0.0;
    Orientation = Normal;
    Angle       = 0.0;
-
-   m_bHasCantilever = false;
-   m_CantileverLength = 0.0;
 
    m_BoundaryConditionType = pgsTypes::bctHinge;
    m_SegmentConnectionType = pgsTypes::psctContinuousSegment;
@@ -219,19 +216,6 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       }
    }
 
-   if ( IsAbutment() )
-   {
-      if ( m_bHasCantilever != rOther.m_bHasCantilever )
-      {
-         return false;
-      }
-
-      if ( m_bHasCantilever && !IsEqual(m_CantileverLength,rOther.m_CantileverLength) )
-      {
-         return false;
-      }
-   }
-
    if ( m_PierModelType != rOther.m_PierModelType )
    {
       return false;
@@ -318,28 +302,24 @@ bool CPierData2::operator==(const CPierData2& rOther) const
 
       pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
 
-      if ( !m_bHasCantilever )
+      if ( !IsEqual(m_GirderEndDistance[face], rOther.m_GirderEndDistance[face]) )
       {
-         // not used if pier has a cantilever
-         if ( !IsEqual(m_GirderEndDistance[face], rOther.m_GirderEndDistance[face]) )
-         {
-            return false;
-         }
+         return false;
+      }
 
-         if ( m_EndDistanceMeasurementType[face] != rOther.m_EndDistanceMeasurementType[face] )
-         {
-            return false;
-         }
+      if ( m_EndDistanceMeasurementType[face] != rOther.m_EndDistanceMeasurementType[face] )
+      {
+         return false;
+      }
 
-         if ( !IsEqual(m_GirderBearingOffset[face], rOther.m_GirderBearingOffset[face]) )
-         {
-            return false;
-         }
+      if ( !IsEqual(m_GirderBearingOffset[face], rOther.m_GirderBearingOffset[face]) )
+      {
+         return false;
+      }
 
-         if ( m_BearingOffsetMeasurementType[face] != rOther.m_BearingOffsetMeasurementType[face] )
-         {
-            return false;
-         }
+      if ( m_BearingOffsetMeasurementType[face] != rOther.m_BearingOffsetMeasurementType[face] )
+      {
+         return false;
       }
 
       if (m_pBridgeDesc->GetBearingType() != pgsTypes::brtBridge)
@@ -504,7 +484,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    // Make sure outside changes to the bridge haven't made our data out of sync
    ProtectBearingData();
-   pStrSave->BeginUnit(_T("PierDataDetails"),19.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),21.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -518,11 +498,11 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("SegmentConnectionType"),  CComVariant( m_SegmentConnectionType ) );
    }
 
-   // added in version 13
-   if ( m_bHasCantilever )
-   {
-      pStrSave->put_Property(_T("CantileverLength"),CComVariant(m_CantileverLength));
-   }
+   // added in version 13, removed in version 20
+   //if ( m_bHasCantilever )
+   //{
+   //   pStrSave->put_Property(_T("CantileverLength"),CComVariant(m_CantileverLength));
+   //}
 
    // added in version 19
    pStrSave->put_Property(_T("BackSlabOffset"), CComVariant(m_SlabOffset[pgsTypes::Back]));
@@ -700,7 +680,8 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // added in version 5
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
-      pStrSave->BeginUnit(_T("LLDF"),3.0); // Version 3 went from interior/exterior to girder by girder
+      pStrSave->BeginUnit(_T("LLDF"),4.0); // Version 3 went from interior/exterior to girder by girder
+                                           // Version 4 got rid of gR's
 
       GirderIndexType ngs = GetLldfGirderCount();
       pStrSave->put_Property(_T("nLLDFGirders"),CComVariant(ngs));
@@ -711,9 +692,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
          LLDF& lldf = GetLLDF(igs);
 
          pStrSave->put_Property(_T("gM_Strength"), CComVariant(lldf.gM[0]));
-         pStrSave->put_Property(_T("gR_Strength"), CComVariant(lldf.gR[0]));
          pStrSave->put_Property(_T("gM_Fatigue"),  CComVariant(lldf.gM[1]));
-         pStrSave->put_Property(_T("gR_Fatigue"),  CComVariant(lldf.gR[1]));
          pStrSave->EndUnit(); // LLDF_Girder
       }
 
@@ -814,14 +793,22 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          m_SegmentConnectionType = (pgsTypes::PierSegmentConnectionType)var.lVal;
       }
 
-      if ( 12 < version )
+      std::array<bool, 2> bCantilever{ false,false }; // if we load cantilever information, skip connection information below
+      if ( 12 < version && version < 20)
       {
-         // added in version 13
+         // added in version 13, removed in version 20
          var.vt = VT_R8;
          if ( SUCCEEDED(pStrLoad->get_Property(_T("CantileverLength"),&var)) )
          {
-            m_bHasCantilever = true;
-            m_CantileverLength = var.dblVal;
+            // convert span/pier defined cantilever into equivalent connection geometry
+            ATLASSERT(m_PierIdx != INVALID_INDEX); // we are counting on the pier index being assigned
+            pgsTypes::PierFaceType face = (m_PierIdx == 0 ? pgsTypes::Ahead : pgsTypes::Back);
+            bCantilever[face] = true;
+            m_GirderEndDistance[face] = var.dblVal; // cantilever length is now the girder end distance, measured from the CLBearing
+            m_EndDistanceMeasurementType[face] = ConnectionLibraryEntry::FromBearingNormalToPier;
+
+            m_GirderBearingOffset[face] = 0; // bearing offset is at the reference line
+            m_BearingOffsetMeasurementType[face] = ConnectionLibraryEntry::NormalToPier;
          }
       }
 
@@ -956,21 +943,24 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       Float64 back_version;
       pStrLoad->get_Version(&back_version);
 
+      // NOTE: for the next 4 items... starting with version 20, the explicit cantilever dimension is removed and cantilevers are modeled
+      // exclusively with connection geometry. If we loaded a cantilever dimension above (as defined by bCantilever[]), the don't alter
+      // the connection information (we still have to load the information, but we just discard it)
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("GirderEndDistance"),&var);
-      m_GirderEndDistance[pgsTypes::Back] = var.dblVal;
+      m_GirderEndDistance[pgsTypes::Back] = bCantilever[pgsTypes::Back] ? m_GirderEndDistance[pgsTypes::Back] : var.dblVal;
 
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("EndDistanceMeasurementType"),&var);
-      m_EndDistanceMeasurementType[pgsTypes::Back] = ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
+      m_EndDistanceMeasurementType[pgsTypes::Back] = bCantilever[pgsTypes::Back] ? m_EndDistanceMeasurementType[pgsTypes::Back] : ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
 
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("GirderBearingOffset"),&var);
-      m_GirderBearingOffset[pgsTypes::Back] = var.dblVal;
+      m_GirderBearingOffset[pgsTypes::Back] = bCantilever[pgsTypes::Back] ? m_GirderBearingOffset[pgsTypes::Back] : var.dblVal;
 
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var);
-      m_BearingOffsetMeasurementType[pgsTypes::Back] = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
+      m_BearingOffsetMeasurementType[pgsTypes::Back] = bCantilever[pgsTypes::Back] ? m_BearingOffsetMeasurementType[pgsTypes::Back] : ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
 
       // Some gymnastics to load support width from older versions and assign to bearingdata. Assign to first bearing on bearing line
       if (version < 18)
@@ -997,15 +987,15 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             try 
             {
-               for (Uint32 ib = 0; ib < cnt; ib++)
-               {
-                  CBearingData2 bd;
-                  hr = bd.Load(pStrLoad, pProgress);
-                  m_BearingData[pgsTypes::Back].push_back(bd);
-               }
-
-               hr = pStrLoad->EndUnit();
+            for (Uint32 ib = 0; ib < cnt; ib++)
+            {
+               CBearingData2 bd;
+               hr = bd.Load(pStrLoad, pProgress);
+               m_BearingData[pgsTypes::Back].push_back(bd);
             }
+
+            hr = pStrLoad->EndUnit();
+         }
             catch (...)
             {
                // This was a bug in pgsuper version 4.0.10. The program could write out a value of cnt==1, but then have no data to read.
@@ -1035,6 +1025,13 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("DiaphragmWidth"),&var);
          m_DiaphragmWidth[pgsTypes::Back] = var.dblVal;
+         if (m_DiaphragmWidth[pgsTypes::Back] < 0)
+         {
+            // there was a bug that split the -1 between two sides of the pier
+            // so the resulting width was taken to be -0.5... this is wrong
+            // reset to -1
+            m_DiaphragmWidth[pgsTypes::Back] = -1;
+         }
 
          hr = pStrLoad->get_Property(_T("DiaphragmHeight"),&var);
          m_DiaphragmHeight[pgsTypes::Back] = var.dblVal;
@@ -1081,21 +1078,24 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       Float64 ahead_version;
       pStrLoad->get_Version(&ahead_version);
 
+      // NOTE: for the next 4 items... starting with version 20, the explicit cantilever dimension is removed and cantilevers are modeled
+      // exclusively with connection geometry. If we loaded a cantilever dimension above (as defined by bCantilever[]), the don't alter
+      // the connection information (we still have to load the information, but we just discard it)
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("GirderEndDistance"),&var);
-      m_GirderEndDistance[pgsTypes::Ahead] = var.dblVal;
+      m_GirderEndDistance[pgsTypes::Ahead] = bCantilever[pgsTypes::Ahead] ? m_GirderEndDistance[pgsTypes::Ahead] : var.dblVal;
 
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("EndDistanceMeasurementType"),&var);
-      m_EndDistanceMeasurementType[pgsTypes::Ahead] = ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
+      m_EndDistanceMeasurementType[pgsTypes::Ahead] = bCantilever[pgsTypes::Ahead] ? m_EndDistanceMeasurementType[pgsTypes::Ahead] : ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(OLE2T(var.bstrVal));
 
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("GirderBearingOffset"),&var);
-      m_GirderBearingOffset[pgsTypes::Ahead] = var.dblVal;
+      m_GirderBearingOffset[pgsTypes::Ahead] = bCantilever[pgsTypes::Ahead] ? m_GirderBearingOffset[pgsTypes::Ahead] : var.dblVal;
 
       var.vt = VT_BSTR;
       hr = pStrLoad->get_Property(_T("BearingOffsetMeasurementType"),&var);
-      m_BearingOffsetMeasurementType[pgsTypes::Ahead] = ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
+      m_BearingOffsetMeasurementType[pgsTypes::Ahead] = bCantilever[pgsTypes::Ahead] ? m_BearingOffsetMeasurementType[pgsTypes::Ahead] : ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(OLE2T(var.bstrVal));
 
       if (version < 18)
       {
@@ -1121,14 +1121,14 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             try
             {
-               for (Uint32 ib = 0; ib < cnt; ib++)
-               {
-                  CBearingData2 bd;
-                  hr = bd.Load(pStrLoad, pProgress);
-                  m_BearingData[pgsTypes::Ahead].push_back(bd);
-               }
+            for (Uint32 ib = 0; ib < cnt; ib++)
+            {
+               CBearingData2 bd;
+               hr = bd.Load(pStrLoad, pProgress);
+               m_BearingData[pgsTypes::Ahead].push_back(bd);
+            }
 
-               hr = pStrLoad->EndUnit();
+            hr = pStrLoad->EndUnit();
             }
             catch (...)
             {
@@ -1160,6 +1160,13 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("DiaphragmWidth"),&var);
          m_DiaphragmWidth[pgsTypes::Ahead] = var.dblVal;
+         if (m_DiaphragmWidth[pgsTypes::Ahead] < 0)
+         {
+            // there was a bug that split the -1 between two sides of the pier
+            // so the resulting width was taken to be -0.5... this is wrong
+            // reset to -1
+            m_DiaphragmWidth[pgsTypes::Ahead] = -1;
+         }
 
          hr = pStrLoad->get_Property(_T("DiaphragmHeight"),&var);
          m_DiaphragmHeight[pgsTypes::Ahead] = var.dblVal;
@@ -1211,7 +1218,6 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          {
             // Prior to version 3, factors were for interior and exterior only
             Float64 gM[2][2];
-            Float64 gR[2][2];
 
             if ( lldf_version < 2 )
             {
@@ -1233,23 +1239,18 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                gM[pgsTypes::Exterior][0] = var.dblVal;
                gM[pgsTypes::Exterior][1] = var.dblVal;
 
+               // Reaction lldf's were removed in version 4 (pierdata version 21). Load them, but don't use them
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Interior"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
 
-               gR[pgsTypes::Interior][0] = var.dblVal;
-               gR[pgsTypes::Interior][1] = var.dblVal;
-
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
-
-               gR[pgsTypes::Exterior][0] = var.dblVal;
-               gR[pgsTypes::Exterior][1] = var.dblVal;
             }
             else
             {
@@ -1269,21 +1270,18 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
                gM[pgsTypes::Exterior][0] = var.dblVal;
 
+               // Reaction lldf's were removed in pierdata version 21. Load them, but don't use them
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Strength"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
 
-               gR[pgsTypes::Interior][0] = var.dblVal;
-
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Strength"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
-
-               gR[pgsTypes::Exterior][0] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gM_Interior_Fatigue"),&var)) )
@@ -1302,20 +1300,16 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                gM[pgsTypes::Exterior][1] = var.dblVal;
 
                var.vt = VT_R8;
-               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Fatigue"),&var)) )
+               if ( FAILED(pStrLoad->get_Property(_T("gR_Interior_Fatigue"),&var)) ) // no longer used
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
-
-               gR[pgsTypes::Interior][1] = var.dblVal;
 
                var.vt = VT_R8;
                if ( FAILED(pStrLoad->get_Property(_T("gR_Exterior_Fatigue"),&var)) )
                {
                   return STRLOAD_E_INVALIDFORMAT;
                }
-
-               gR[pgsTypes::Exterior][1] = var.dblVal;
             }
 
             // Move interior and exterior factors into first two slots in df vector. We will 
@@ -1325,15 +1319,11 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             LLDF df;
             df.gM[0] = gM[pgsTypes::Exterior][0];
             df.gM[1] = gM[pgsTypes::Exterior][1];
-            df.gR[0] = gR[pgsTypes::Exterior][0];
-            df.gR[1] = gR[pgsTypes::Exterior][1];
 
             m_LLDFs.push_back(df); // First in list is exterior
 
             df.gM[0] = gM[pgsTypes::Interior][0];
             df.gM[1] = gM[pgsTypes::Interior][1];
-            df.gR[0] = gR[pgsTypes::Interior][0];
-            df.gR[1] = gR[pgsTypes::Interior][1];
 
             m_LLDFs.push_back(df); // Second is interior
          }
@@ -1355,14 +1345,18 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                hr = pStrLoad->get_Property(_T("gM_Strength"),&var);
                lldf.gM[0] = var.dblVal;
 
-               hr = pStrLoad->get_Property(_T("gR_Strength"),&var);
-               lldf.gR[0] = var.dblVal;
+               if (lldf_version < 4)
+               {
+                  hr = pStrLoad->get_Property(_T("gR_Strength"), &var); // no longer used in version 4
+               }
 
                hr = pStrLoad->get_Property(_T("gM_Fatigue"),&var);
                lldf.gM[1] = var.dblVal;
 
-               hr = pStrLoad->get_Property(_T("gR_Fatigue"),&var);
-               lldf.gR[1] = var.dblVal;
+               if (lldf_version < 4)
+               {
+                  hr = pStrLoad->get_Property(_T("gR_Fatigue"), &var);
+               }
 
                pStrLoad->EndUnit(); // LLDF
 
@@ -1398,9 +1392,6 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    m_strOrientation        = rOther.m_strOrientation;
    Orientation             = rOther.Orientation;
    Angle                   = rOther.Angle;
-
-   m_bHasCantilever = rOther.m_bHasCantilever;
-   m_CantileverLength = rOther.m_CantileverLength;
 
    m_PierModelType = rOther.m_PierModelType;
    m_RefColumnIdx = rOther.m_RefColumnIdx;
@@ -1607,36 +1598,48 @@ void CPierData2::SetOrientation(LPCTSTR strOrientation)
    m_strOrientation = strOrientation;
 }
 
-void CPierData2::HasCantilever(bool bHasCantilever)
-{
-   m_bHasCantilever = bHasCantilever;
-   ValidateBoundaryConditionType();
-}
-
-bool CPierData2::HasCantilever() const
-{
-   return m_bHasCantilever;
-}
-
-void CPierData2::SetCantileverLength(Float64 Lc)
-{
-   m_CantileverLength = Lc;
-}
-
-Float64 CPierData2::GetCantileverLength() const
-{
-   return m_CantileverLength;
-}
-
 pgsTypes::BoundaryConditionType CPierData2::GetBoundaryConditionType() const
 {
    ATLASSERT(IsBoundaryPier()); // only applicable to boundary piers
    return m_BoundaryConditionType;
 }
 
-void CPierData2::SetBoundaryConditionType(pgsTypes::BoundaryConditionType type)
+void CPierData2::SetBoundaryConditionType(pgsTypes::BoundaryConditionType newType)
 {
-   m_BoundaryConditionType = type;
+   pgsTypes::BoundaryConditionType oldType = m_BoundaryConditionType;
+   if (oldType == newType)
+   {
+      return; // nothing is changing
+   }
+
+   m_BoundaryConditionType = newType;
+
+   if (!m_pBridgeDesc)
+   {
+      return; // can't do anything else if this pier isn't attached to a bridge
+   }
+
+   // fix up the deck casting model
+   EventIndexType castDeckEventIdx = m_pBridgeDesc->GetTimelineManager()->GetCastDeckEventIndex();
+   if (castDeckEventIdx != INVALID_INDEX)
+   {
+      CTimelineEvent* pEvent = m_pBridgeDesc->GetTimelineManager()->GetEventByIndex(castDeckEventIdx);
+      CCastDeckActivity& castDeckActivity = pEvent->GetCastDeckActivity();
+      PierIndexType pierIdx = GetIndex();
+
+      bool bIsOldBCContinuous = IsContinuousBoundaryCondition(oldType);
+      bool bIsNewBCContinuous = IsContinuousBoundaryCondition(newType);
+      if (bIsOldBCContinuous && !bIsNewBCContinuous)
+      {
+         // remove neg moment casting region for this pier
+         castDeckActivity.RemoveNegMomentRegion(pierIdx);
+      }
+      else if (!bIsOldBCContinuous && bIsNewBCContinuous)
+      {
+         // add neg moment casting region for this pier
+         castDeckActivity.AddNegMomentRegion(pierIdx);
+      }
+   }
 }
 
 pgsTypes::PierSegmentConnectionType CPierData2::GetSegmentConnectionType() const
@@ -1656,6 +1659,7 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
 
    if ( !m_pBridgeDesc )
    {
+      m_SegmentConnectionType = newType;
       return; // can't do anything else if this pier isn't attached to a bridge
    }
 
@@ -1711,6 +1715,11 @@ void CPierData2::SetSegmentConnectionType(pgsTypes::PierSegmentConnectionType ne
       m_GirderSpacing[pgsTypes::Back].SetGirderCount(nGirders);
       m_GirderSpacing[pgsTypes::Ahead].SetGirderCount(nGirders);
    }
+   else
+   {
+      // type has changed, but no modifications are required
+      m_SegmentConnectionType = newType;
+   }
 }
 
 void CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure)
@@ -1721,16 +1730,8 @@ void CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDis
 
 void CPierData2::GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const
 {
-   if ( m_bHasCantilever )
-   {
-      *pEndDist = m_CantileverLength;
-      *pMeasure = ConnectionLibraryEntry::FromBearingAlongGirder;
-   }
-   else
-   {
-      *pEndDist = m_GirderEndDistance[face];
-      *pMeasure = m_EndDistanceMeasurementType[face];
-   }
+   *pEndDist = m_GirderEndDistance[face];
+   *pMeasure = m_EndDistanceMeasurementType[face];
 }
 
 void CPierData2::SetBearingOffset(pgsTypes::PierFaceType face,Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure)
@@ -1741,14 +1742,7 @@ void CPierData2::SetBearingOffset(pgsTypes::PierFaceType face,Float64 offset,Con
 
 void CPierData2::GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const
 {
-   if ( m_bHasCantilever )
-   {
-      *pOffset = 0.0;
-   }
-   else
-   {
-      *pOffset = m_GirderBearingOffset[face];
-   }
+   *pOffset = m_GirderBearingOffset[face];
    *pMeasure = m_BearingOffsetMeasurementType[face];
 }
 
@@ -1933,7 +1927,7 @@ CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx)
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      CClosureJointData* pClosure = pSegment->GetEndClosure();
+      CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
       if ( pClosure->GetPier() == this )
       {
          return pClosure;
@@ -1972,7 +1966,7 @@ const CClosureJointData* CPierData2::GetClosureJoint(GirderIndexType gdrIdx) con
       // NOTE: nSegments-1 because there is one less closure than segments
       // no need to check the right end of the last segment as there isn't a closure there)
       const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-      const CClosureJointData* pClosure = pSegment->GetEndClosure();
+      const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
       if ( pClosure->GetPier() == this )
       {
          return pClosure;
@@ -2223,6 +2217,7 @@ const CColumnData& CPierData2::GetColumnData(ColumnIndexType colIdx) const
 
 void CPierData2::SetDiaphragmHeight(pgsTypes::PierFaceType pierFace,Float64 d)
 {
+   ATLASSERT(IsEqual(d, -1.0) || 0 <= d); // -1 means compute, otherwise must be greater than zone
    m_DiaphragmHeight[pierFace] = d;
 }
 
@@ -2233,6 +2228,7 @@ Float64 CPierData2::GetDiaphragmHeight(pgsTypes::PierFaceType pierFace) const
 
 void CPierData2::SetDiaphragmWidth(pgsTypes::PierFaceType pierFace,Float64 w)
 {
+   ATLASSERT(IsEqual(w, -1.0) || 0 <= w); // -1 means compute, otherwise must be greater than zone
    m_DiaphragmWidth[pierFace] = w;
 }
 
@@ -2293,37 +2289,6 @@ void CPierData2::SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::Lim
    }
 }
 
-Float64 CPierData2::GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const
-{
-   LLDF& rlldf = GetLLDF(gdrIdx);
-
-   return rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0];
-}
-
-void CPierData2::SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gR)
-{
-   LLDF& rlldf = GetLLDF(gdrIdx);
-
-   rlldf.gR[ls == pgsTypes::FatigueI ? 1 : 0] = gR;
-}
-
-void CPierData2::SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM)
-{
-   GirderIndexType ngdrs = GetLldfGirderCount();
-   if (ngdrs>2 && gdrloc==pgsTypes::Interior)
-   {
-      for (GirderIndexType ig=1; ig<ngdrs-1; ig++)
-      {
-         SetLLDFReaction(ig,ls,gM);
-      }
-   }
-   else if (gdrloc==pgsTypes::Exterior)
-   {
-      SetLLDFReaction(0,ls,gM);
-      SetLLDFReaction(ngdrs-1,ls,gM);
-   }
-}
-
 bool CPierData2::IsContinuousConnection() const
 {
    if ( IsInteriorPier() )
@@ -2355,14 +2320,7 @@ bool CPierData2::IsContinuous() const
    }
    else
    {
-      if ( HasCantilever() )
-      {
-         return true;
-      }
-      else
-      {
-         return (m_BoundaryConditionType == pgsTypes::bctContinuousBeforeDeck || m_BoundaryConditionType == pgsTypes::bctContinuousAfterDeck);
-      }
+      return (m_BoundaryConditionType == pgsTypes::bctContinuousBeforeDeck || m_BoundaryConditionType == pgsTypes::bctContinuousAfterDeck);
    }
 }
 
@@ -2647,9 +2605,6 @@ void CPierData2::SetPierData(CPierData* pPier)
       lldf2.gM[0] = lldf.gM[0];
       lldf2.gM[1] = lldf.gM[1];
 
-      lldf2.gR[0] = lldf.gR[0];
-      lldf2.gR[1] = lldf.gR[1];
-      
       m_LLDFs.push_back(lldf2);
    }
 

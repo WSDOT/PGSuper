@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -84,7 +84,7 @@ public:
    virtual void BuildLiveLoad(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+                      pgsTypes::AnalysisType analysisType, 
                       bool includeImpact, bool bDesign,bool bRating) const;
 
    //------------------------------------------------------------------------
@@ -108,10 +108,10 @@ protected:
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
                       bool bDesign=true,bool bRating=true) const;
 
-   virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+   virtual void BuildBearingLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,bool includeImpact,
                       IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
-                      pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+                      pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
 
    //------------------------------------------------------------------------

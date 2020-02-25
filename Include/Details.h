@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,9 +29,6 @@
 #include <Lrfd\Lrfd.h>
 #include <WBFLRCCapacity.h>
 
-#define SLAB_OFFSET_TOLERANCE_US ::ConvertToSysUnits(0.25,unitMeasure::Inch)
-#define SLAB_OFFSET_TOLERANCE_SI ::ConvertToSysUnits(5.0,unitMeasure::Millimeter)
-
 struct SLAB_OFFSET_AT_SECTION
 {
    pgsPointOfInterest PointOfInterest;
@@ -53,13 +50,14 @@ struct SLAB_OFFSET_AT_SECTION
    Float64 ElevTopGirder; // elevation of top of girder, including camber, precamber, elevation adjustment, and top flange thickening effects
    Float64 TopSlabToTopGirder;
    Float64 ElevAdjustment; // elevation adjustment at temporary supports
-   Float64 RequiredSlabOffset;
+   Float64 RequiredSlabOffsetRaw;  // raw full precision value
 };
 
 struct SLABOFFSETDETAILS
 {
    std::vector<SLAB_OFFSET_AT_SECTION> SlabOffset;
-   Float64 RequiredSlabOffset; // "A" Dimension
+   Float64 RequiredMaxSlabOffsetRaw; // "A" Dimension - max of raw values
+   Float64 RequiredMaxSlabOffsetRounded; // "A" Dimension - max of rounded values
    Float64 HaunchDiff; // maximum difference in haunch thickness
 };
 
@@ -88,7 +86,8 @@ struct MOMENTCAPACITYDETAILS
    Float64 ecl;       // Compression Control Strain Limit
 
    Float64 fps_avg;   // Average stress in strands at nominal resistance
-   Float64 fpt_avg;   // Average stress in tendons at nominal resistance
+   Float64 fpt_avg_segment;  // Average stress in segment tendons at nominal resistance
+   Float64 fpt_avg_girder;  // Average stress in girder tendons at nominal resistance
 
    // LRFD_METHOD 
    // For C5.7.3.3.1... Capacity of over reinforced section  (removed from spec 2005)
@@ -104,8 +103,11 @@ struct MOMENTCAPACITYDETAILS
    Float64 fpe_ps; // Effective prestress
    Float64 eps_initial; // Initial strain in strands
 
-   std::vector<Float64> fpe_pt; // Effective prestress
-   std::vector<Float64> ept_initial; // Initial strain in strands
+   std::vector<Float64> fpe_pt_segment; // Effective prestress in segment tendons
+   std::vector<Float64> ept_initial_segment; // Initial strain in segment tendons
+
+   std::vector<Float64> fpe_pt_girder; // Effective prestress in girder tendons
+   std::vector<Float64> ept_initial_girder; // Initial strain in girder  tendons
 
    // solution object provides the full equilibrium state of the moment
    // capacity solution
@@ -155,19 +157,23 @@ struct SHEARCAPACITYDETAILS
    Float64 Vd; // Vdc + Vdw
    Float64 Vp;  // vertical component of prestress Vps + Vpt
    Float64 Vps; // vertical component of prestress due to strands
-   Float64 Vpt; // vertical component of prestress due to tendons
+   Float64 VptSegment; // vertical component of prestress due to segment tendons
+   Float64 VptGirder; // vertical component of prestress due to girder tendons
    Float64 Phi;
    Float64 dv;
    Float64 bv;
    Float64 fpeps;
-   Float64 fpept;
+   Float64 fpeptSegment; // average effective prestress in segment tendons
+   Float64 fpeptGirder; // average effective prestress in girder tendons
    Float64 fpc;
    Float64 Es;
    Float64 As;
    Float64 Eps;
    Float64 Aps;
-   Float64 Ept;
-   Float64 Apt;
+   Float64 EptSegment;
+   Float64 AptSegment;
+   Float64 EptGirder;
+   Float64 AptGirder;
    Float64 Ec;
    Float64 Ac;
    Float64 fc;
@@ -182,10 +188,13 @@ struct SHEARCAPACITYDETAILS
    Float64 MomentArm;
    CRACKINGMOMENTDETAILS McrDetails;
    bool    bTensionBottom; // true if the flexural tension side is on the bottom of the girder
+   bool bLimitNetTensionStrainToPositiveValues;
+   bool bIgnoreMiniumStirrupRequirementForBeta;
 
    // [OUT]
    Float64 fpops; // fpo for strand
-   Float64 fpopt; // fpo for tendon
+   Float64 fpoptSegment; // fpo for segment tendons
+   Float64 fpoptGirder; // fpo for girder tendons
    bool ShearInRange; // If this is true, the applied shear was in range so
                       // shear capacity could be calculated. Otherwise all
                       // values below to Vn1 are not defined.
@@ -199,14 +208,16 @@ struct SHEARCAPACITYDETAILS
    Float64 sxe; // [E5.8.3.4.2-5]
    Float64 sxe_tbl;
    Float64 Theta;
+   Float64 FiberStress;// coefficient for compute the contribution of fibers in UHPC to the shear capacity (taken as 0.75 ksi for now)
    Float64 Vc;
    Float64 Vs;
+   Float64 Vf; // capacity of UHPC fibers
    Float64 Vn1;  // [E5.8.3.3-1]
    Float64 Vn2;  // [E5.8.3.3-2]
    Float64 Vn;   // Nominal shear resistance
    Float64 pVn;  // Factored nominal shear resistance
    Float64 VuLimit; // Limiting Vu where stirrups are required [E5.8.2.4-1]
-   bool bStirrupsReqd;
+   bool bStirrupsReqd; // If true, stirrups and/or Vf from fibers is required LRFD 5.7.2.3-1
    Int16 Equation; // Equation used to comupte ex (Only applicable after LRFD 1999)
    Float64 vfc_tbl;
    Float64 ex_tbl;
@@ -229,8 +240,10 @@ struct FPCDETAILS
 {
    Float64 eps; // Eccentricity of prestress strand
    Float64 Pps; // Prestress force
-   Float64 ept; // Eccentricity of post-tension strand
-   Float64 Ppt; // Post-tension force
+   Float64 eptSegment; // Eccentricity of segment post-tension strand
+   Float64 PptSegment; // Segment Post-tension force
+   Float64 eptGirder; // Eccentricity of girder post-tension strand
+   Float64 PptGirder; // Girder Post-tension force
    Float64 Ag;  // Area of non-composite girder
    Float64 Ig;  // Moment of inertia of non-composite girder
    Float64 Ybg; // Ybottom of girder
@@ -245,8 +258,6 @@ struct CRITSECTIONDETAILSATPOI
 {
    CRITSECTIONDETAILSATPOI() 
    { 
-      // Critical section POI must be exact... do not merge them with other POI
-      Poi.CanMerge(false); 
    }
 
    enum IntersectionType {DvIntersection, ThetaIntersection, NoIntersection};
@@ -381,6 +392,7 @@ struct INCREMENTALRELAXATIONDETAILS
    INCREMENTALRELAXATIONDETAILS()
    {
       memset((void*)this,0,sizeof(INCREMENTALRELAXATIONDETAILS));
+      epoxyFactor = 1.0;
    }
 
    // common parameters
@@ -389,7 +401,10 @@ struct INCREMENTALRELAXATIONDETAILS
    Float64 fpu;
    Float64 tStart;
    Float64 tEnd;
-   Float64 epoxyFactor;
+   Float64 epoxyFactor; // this factor is multiplied to the relaxation.
+                        // see PCI "Guidelines for the use of Epoxy-Coated Strand", PCI Journal, July-August 1993
+                        // relaxation is doubled, so this factor is 2.0, for expoxy coated strands
+
 
    // These parameters are for AASHTO and ACI209 models
    Float64 K;
@@ -424,7 +439,8 @@ struct TIME_STEP_CONCRETE
    Float64 Yn;  // Centroid measured in Girder Section Coordinates
    Float64 In;  // Moment of inertia
    Float64 H;   // Height of concrete part
-   Float64 E;   // Modulus of Elasticity used for computing transformed section properties
+   Float64 E;   // Modulus of Elasticity
+   Float64 Ea;  // Age adjusted Modulus of Elasticity (used for computing transformed section properties)
 
    // Creep Strains during this interval due to loads applied in previous intervals
    struct CREEP_STRAIN
@@ -491,26 +507,26 @@ struct TIME_STEP_CONCRETE
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
 
-   Float64 dei[pftTimeStepSize];
+   std::array<Float64,pftTimeStepSize> dei;
    Float64 de;
 
-   Float64 ei[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> ei;
    Float64 e;
 
-   Float64 dri[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> dri;
    Float64 dr;
 
-   Float64 ri[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> ri;
    Float64 r;
 
    // Force on this concrete part due to elastic effects during this interval
-   Float64 dPi[pftTimeStepSize]; // index is one of the pgsTypes::ProductForceType enum values
-   Float64 dMi[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> dPi; // index is one of the pgsTypes::ProductForceType enum values
+   std::array<Float64, pftTimeStepSize> dMi;
    Float64 dP, dM; // summation of dPi and dMi
 
    // Force on this concrete part at the end of this interval
-   Float64 Pi[pftTimeStepSize]; // = (P in previous interval) + dP;
-   Float64 Mi[pftTimeStepSize]; // = (M in previous interval) + dM;
+   std::array<Float64, pftTimeStepSize> Pi; // = (P in previous interval) + dP;
+   std::array<Float64, pftTimeStepSize> Mi; // = (M in previous interval) + dM;
    Float64 P, M; // summation of Pi and Mi
 
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
@@ -606,20 +622,20 @@ struct TIME_STEP_STRAND
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 dei[pftTimeStepSize]; // change in strain in strand due to deformations in this interval
+   std::array<Float64, pftTimeStepSize> dei; // change in strain in strand due to deformations in this interval
    Float64 de; // summation of dei
 
-   Float64 dPi[pftTimeStepSize]; // change in force in strand due to deformations in this interval
+   std::array<Float64, pftTimeStepSize> dPi; // change in force in strand due to deformations in this interval
    Float64 dP; // summation of dPi
 
-   Float64 ei[pftTimeStepSize]; // strain in strand at end of this interval = (e previous interval + de)
+   std::array<Float64, pftTimeStepSize> ei; // strain in strand at end of this interval = (e previous interval + de)
    Float64 e; // summation of ei
    
-   Float64 Pi[pftTimeStepSize]; // force in strand at end of this interval = (P previous interval + dP)
+   std::array<Float64, pftTimeStepSize> Pi; // force in strand at end of this interval = (P previous interval + dP)
    Float64 P; // summation of Pi
 
    // Loss/Gain during this interval (change in effective prestress this interval)
-   Float64 dfpei[pftTimeStepSize]; // = dP/Aps
+   std::array<Float64, pftTimeStepSize> dfpei; // = dP/Aps
    Float64 dfpe; // summation of dfpei
 
    // Effective prestress
@@ -702,16 +718,16 @@ struct TIME_STEP_REBAR
    //
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
-   Float64 dei[pftTimeStepSize]; // change in strain in bar due to deformations in this interval
+   std::array<Float64, pftTimeStepSize> dei; // change in strain in bar due to deformations in this interval
    Float64 de; // summation of dei
 
-   Float64 dPi[pftTimeStepSize]; // change in force in bar during this interval
+   std::array<Float64, pftTimeStepSize> dPi; // change in force in bar during this interval
    Float64 dP; // summation of dPi
 
-   Float64 ei[pftTimeStepSize]; // strain in bar at end of this interval = (e previous interval + de)
+   std::array<Float64, pftTimeStepSize> ei; // strain in bar at end of this interval = (e previous interval + de)
    Float64 e; // summation of ei
 
-   Float64 Pi[pftTimeStepSize]; // force in rebar at end of this interval = (P previous interval + dP)
+   std::array<Float64, pftTimeStepSize> Pi; // force in rebar at end of this interval = (P previous interval + dP)
    Float64 P; // summation of Pi
 
    TIME_STEP_REBAR()
@@ -754,12 +770,12 @@ struct TIME_STEP_DETAILS
    // The centroid, Ytr, is in Girder Section Coordinate (measured from top of girder, up is positive)
    Float64 Atr, Ytr, Itr;
 
-   Float64 E; // modulus used to transform properties into an equivalent material
+   Float64 Ea; // modulus used to transform properties into an equivalent material
 
    // Change in total loading on the section due to externally applied loads during this interval
    // Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   Float64 dPi[pftTimeStepSize], dMi[pftTimeStepSize];
+   std::array<Float64,pftTimeStepSize> dPi, dMi;
 
    // total change in loading on the section (summation of dPi and dMi)
    Float64 dP, dM;
@@ -767,7 +783,7 @@ struct TIME_STEP_DETAILS
    // Total loading on the section due to externally applied loads in all intervals upto
    // and including this interval. Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   Float64 Pi[pftTimeStepSize], Mi[pftTimeStepSize];
+   std::array<Float64, pftTimeStepSize> Pi, Mi;
 
    // total change in loading on the section (summation of Pi and Mi)
    Float64 P, M;
@@ -778,11 +794,12 @@ struct TIME_STEP_DETAILS
 
    // Time step parameters for strands and tendons
 #if defined LUMP_STRANDS
-   TIME_STEP_STRAND Strands[3]; // pgsTypes::StrandType (Straight, Harped, Temporary)
+   std::array<TIME_STEP_STRAND,3> Strands; // pgsTypes::StrandType (Straight, Harped, Temporary)
 #else
    std::vector<TIME_STEP_STRAND> Strands[3]; // pgsTypes::StrandType (Straight, Harped, Temporary)
 #endif
-   std::vector<TIME_STEP_STRAND> Tendons; // one per duct
+   std::vector<TIME_STEP_STRAND> GirderTendons; // one per duct
+   std::vector<TIME_STEP_STRAND> SegmentTendons; // one per duct
 
    // Time step parameters for rebar
    // access first array with pgsTypes::DeckRebarMatType and second with pgsTypes::DeckRebarBarType
@@ -794,19 +811,19 @@ struct TIME_STEP_DETAILS
    std::vector<TIME_STEP_REBAR> GirderRebar;
 
    // Forces required to totally restrain the cross section for initial strains occuring during this interval
-   Float64 Pr[3], Mr[3]; // index is one of the TIMESTEP_XXX constants
+   std::array<Float64,3> Pr, Mr; // index is one of the TIMESTEP_XXX constants
 
    // Initial Strains 
-   Float64 e[3]; // index is one of the TIMESTEP_XXX constants
-   Float64 r[3];
+   std::array<Float64,3> e; // index is one of the TIMESTEP_XXX constants
+   std::array<Float64,3> r;
 
    // Deformation due to externally applied loads and restraining forces in this interval
-   Float64 der[pftTimeStepSize]; // axial strain
-   Float64 drr[pftTimeStepSize]; // curvature
+   std::array<Float64, pftTimeStepSize> der; // axial strain
+   std::array<Float64, pftTimeStepSize> drr; // curvature
 
    // Total deformation due to externally applied loads and restraining forces
-   Float64 er[pftTimeStepSize]; // axial strain
-   Float64 rr[pftTimeStepSize]; // curvature
+   std::array<Float64, pftTimeStepSize> er; // axial strain
+   std::array<Float64, pftTimeStepSize> rr; // curvature
 
    // Check equilibrium
    Float64 dPext, dPint; // change in external and internal axial force during this interval (dPext == dPint)
@@ -824,7 +841,7 @@ struct TIME_STEP_DETAILS
       Atr = 0;
       Ytr = 0;
       Itr = 0;
-      E   = 0;
+      Ea  = 0;
 
       int n = sizeof(dPi)/sizeof(dPi[0]);
       for ( int i = 0; i < n ; i++ )
@@ -874,27 +891,22 @@ struct TIME_STEP_DETAILS
 // the parameters for the seating wedge
 struct ANCHORSETDETAILS
 {
-   ANCHORSETDETAILS()
+   ANCHORSETDETAILS() :
+      Lset{ 0,0 }, dfpAT{ 0,0 }, dfpS{ 0,0 }
    { 
-      girderKey = CGirderKey(INVALID_INDEX,INVALID_INDEX); 
+      segmentKey = CSegmentKey(INVALID_INDEX,INVALID_INDEX,INVALID_INDEX);
       ductIdx = INVALID_INDEX;
-      for ( int i = 0; i < 2; i++ )
-      {
-         Lset[i]  = 0;
-         dfpAT[i] = 0;
-         dfpS[i]  = 0;
-      }
    }
 
    // Key
-   CGirderKey girderKey;
+   CSegmentKey segmentKey; // if segmentIndex == ALL_SEGMENTS, then the key represents a girder key
    DuctIndexType ductIdx;
 
    // Value
    // Array index is pgsTypes::MemberEndType
-   Float64 Lset[2]; // Anchor set zone length
-   Float64 dfpAT[2]; // Loss of effective stress at anchorage due to seating
-   Float64 dfpS[2];  // Loss of effective stress at end of anchor set zone length due to seating
+   std::array<Float64, 2> Lset; // Anchor set zone length
+   std::array<Float64, 2> dfpAT; // Loss of effective stress at anchorage due to seating
+   std::array<Float64, 2> dfpS;  // Loss of effective stress at end of anchor set zone length due to seating
                      // This is typically zero except when the anchor set zone is longer than the tendon
 };
 
@@ -902,6 +914,10 @@ struct ANCHORSETDETAILS
 // losses at a POI
 struct FRICTIONLOSSDETAILS
 {
+   FRICTIONLOSSDETAILS()
+   { 
+      memset((void*)this, 0, sizeof(FRICTIONLOSSDETAILS));
+   };
    Float64 alpha; // total angular change from jacking end to this POI
    Float64 X;     // distance from start of tendon to this POI
    Float64 dfpF;  // friction loss at this POI
@@ -925,7 +941,8 @@ struct LOSSDETAILS
       LossMethod = other.LossMethod;
       pLosses = other.pLosses;
 
-      FrictionLossDetails = other.FrictionLossDetails;
+      GirderFrictionLossDetails = other.GirderFrictionLossDetails;
+      SegmentFrictionLossDetails = other.SegmentFrictionLossDetails;
 
       TimeStepDetails = other.TimeStepDetails;
 
@@ -957,7 +974,8 @@ struct LOSSDETAILS
 
    // Friction and Anchor Set Losses
    // vector index is the duct index
-   std::vector<FRICTIONLOSSDETAILS> FrictionLossDetails;
+   std::vector<FRICTIONLOSSDETAILS> GirderFrictionLossDetails;
+   std::vector<FRICTIONLOSSDETAILS> SegmentFrictionLossDetails;
 
    // vector index in an interval index
    std::vector<TIME_STEP_DETAILS> TimeStepDetails;
@@ -1004,8 +1022,8 @@ struct FABRICATIONOPTIMIZATIONDETAILS
 
    // Required strength and support locations for lifting
    // index is one of the xx_TTS constants above
-   Float64 Fci[4];
-   Float64 L[4];
+   std::array<Float64, 4> Fci;
+   std::array<Float64,4> L;
 
    bool bTempStrandsRequiredForShipping;
 
@@ -1048,8 +1066,9 @@ struct TEMPORARYSUPPORTELEVATIONDETAILS
    Float64 ProfileGrade;
    Float64 GirderGrade;
    Float64 GirderOrientation;
-   Float64 HaunchDepth;
+   Float64 SlabOffset;
    Float64 Hg;
+   Float64 ElevationAdjustment; // elevation adjustment from temporary support tower
    Float64 Elevation; // elevation at bottom of girder
 
    bool operator<(const TEMPORARYSUPPORTELEVATIONDETAILS& other) const

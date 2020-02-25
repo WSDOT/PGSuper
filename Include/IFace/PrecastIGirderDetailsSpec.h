@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -59,15 +59,15 @@ interface IPrecastIGirderDetailsSpec : IUnknown
 {
    //------------------------------------------------------------------------
    // Minimum Top Flange thickness
-   virtual Float64 GetMinTopFlangeThickness() = 0;
+   virtual Float64 GetMinTopFlangeThickness() const = 0;
 
    //------------------------------------------------------------------------
    // Minimum web thickness
-   virtual Float64 GetMinWebThickness() = 0;
+   virtual Float64 GetMinWebThickness() const = 0;
 
    //------------------------------------------------------------------------
    // Minimum Bottom Flange thickness
-   virtual Float64 GetMinBottomFlangeThickness() = 0;
+   virtual Float64 GetMinBottomFlangeThickness() const = 0;
 };
 
 #endif // INCLUDED_IFACE_PRECASTIGIRDERDETAILSSPEC_H_

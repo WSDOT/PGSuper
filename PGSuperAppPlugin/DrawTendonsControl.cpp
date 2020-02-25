@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,6 +49,9 @@ IMPLEMENT_DYNAMIC(CDrawTendonsControl, CWnd)
 CDrawTendonsControl::CDrawTendonsControl()
 {
    m_pGirder = nullptr;
+   m_pPTData = nullptr;
+   m_MapMode = grlibPointMapper::Isotropic;
+   m_DuctIdx = ALL_DUCTS;
 }
 
 CDrawTendonsControl::~CDrawTendonsControl()
@@ -58,23 +61,93 @@ CDrawTendonsControl::~CDrawTendonsControl()
 
 BEGIN_MESSAGE_MAP(CDrawTendonsControl, CWnd)
    ON_WM_PAINT()
+   ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 
 
 // CDrawTendonsControl message handlers
-void CDrawTendonsControl::CustomInit(const CGirderKey& girderKey,const CSplicedGirderData* pGirder)
+void CDrawTendonsControl::CustomInit(const CGirderKey& girderKey,const CSplicedGirderData* pGirder,const CPTData* pPTData)
 {
    m_GirderKey = girderKey;
    m_pGirder = pGirder;
+   m_pPTData = pPTData;
 }
 
+void CDrawTendonsControl::SetMapMode(grlibPointMapper::MapMode mm)
+{
+   if (m_MapMode != mm)
+   {
+      m_MapMode = mm;
+      Invalidate();
+      UpdateWindow();
+   }
+}
+
+grlibPointMapper::MapMode CDrawTendonsControl::GetMapMode() const
+{
+   return m_MapMode;
+}
+
+void CDrawTendonsControl::SetDuct(DuctIndexType ductIdx)
+{
+   if (m_DuctIdx != ductIdx)
+   {
+      m_DuctIdx = ductIdx;
+      Invalidate();
+      UpdateWindow();
+   }
+}
+
+DuctIndexType CDrawTendonsControl::GetDuct() const
+{
+   return m_DuctIdx;
+}
+
+BOOL CDrawTendonsControl::OnEraseBkgnd(CDC* pDC)
+{
+   CWnd* pParent = GetParent();
+   int color = COLOR_BTNFACE;
+   if (pParent->IsKindOf(RUNTIME_CLASS(CPropertyPage)))
+   {
+      color = COLOR_WINDOW;
+   }
+
+   CBrush brush(::GetSysColor(color));
+   brush.UnrealizeObject();
+
+   CPen pen(PS_SOLID, 1, ::GetSysColor(color));
+   pen.UnrealizeObject();
+
+   CBrush* pOldBrush = pDC->SelectObject(&brush);
+   CPen* pOldPen = pDC->SelectObject(&pen);
+
+   CRect rect;
+   GetClientRect(&rect);
+   rect.InflateRect(1, 1);
+   pDC->Rectangle(rect);
+
+   pDC->SelectObject(pOldBrush);
+   pDC->SelectObject(pOldPen);
+
+   return TRUE;
+
+   // default isn't working so we have to do our own erasing
+   //return CWnd::OnEraseBkgnd(pDC);
+}
 
 void CDrawTendonsControl::OnPaint()
 {
    CPaintDC dc(this); // device context for painting
    // TODO: Add your message handler code here
    // Do not call CWnd::OnPaint() for painting messages
+
+   // setup a clipping region so we don't draw outside of the control boundaries
+   CRect rClient;
+   GetClientRect(&rClient);
+   CRgn rgn;
+   rgn.CreateRectRgnIndirect(&rClient);
+   dc.SelectClipRgn(&rgn);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -107,13 +180,16 @@ void CDrawTendonsControl::OnPaint()
 
    // Create a poly line for each tendon. 
    std::vector<CComPtr<IPoint2dCollection>> ducts;
-   GET_IFACE2_NOCHECK(pBroker,ITendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
+   GET_IFACE2_NOCHECK(pBroker,IGirderTendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there are ducts/tendons
-   CollectionIndexType nDucts = m_pGirder->GetPostTensioning()->GetDuctCount();
-   for ( CollectionIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   DuctIndexType nDucts = m_pPTData->GetDuctCount();
+   DuctIndexType startDuctIdx = (m_DuctIdx == ALL_DUCTS ? 0 : m_DuctIdx);
+   DuctIndexType endDuctIdx = (m_DuctIdx == ALL_DUCTS ? nDucts - 1 : startDuctIdx);
+   for (DuctIndexType ductIdx = startDuctIdx; ductIdx <= endDuctIdx; ductIdx++)
    {
       CComPtr<IPoint2dCollection> ductPoints;
-      pTendonGeometry->GetDuctCenterline(m_GirderKey,ductIdx,m_pGirder,&ductPoints);
+      const CDuctData* pDuct = m_pPTData->GetDuct(ductIdx);
+      pTendonGeometry->GetDuctCenterline(m_GirderKey,m_pGirder,pDuct,&ductPoints);
 
       IndexType nPoints;
       ductPoints->get_Count(&nPoints);
@@ -144,12 +220,10 @@ void CDrawTendonsControl::OnPaint()
    gpSize2d size = box.Size();
    gpPoint2d org = box.Center();
 
-   CRect rClient;
-   GetClientRect(&rClient);
    CSize sClient = rClient.Size();
 
    grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   mapper.SetMappingMode(m_MapMode);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(sClient.cx,sClient.cy);
@@ -175,7 +249,6 @@ void CDrawTendonsControl::OnPaint()
       CComPtr<IShape> shape = *shapeIter;
       DrawShape(&dc,mapper,shape);
 
-
       CComPtr<IShapeProperties> props;
       shape->get_ShapeProperties(&props);
 
@@ -190,7 +263,7 @@ void CDrawTendonsControl::OnPaint()
    }
 
    // Draw the tendons
-   CPen tendonColor(PS_SOLID,1,TENDON_LINE_COLOR);
+   CPen tendonColor(PS_SOLID,1,GIRDER_TENDON_LINE_COLOR);
    dc.SelectObject(&tendonColor);
    std::vector<CComPtr<IPoint2dCollection>>::iterator ductIter(ducts.begin());
    std::vector<CComPtr<IPoint2dCollection>>::iterator ductIterEnd(ducts.end());

@@ -1,11 +1,10 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.00    4   9.00                     1     1    Strai    *     46  0.6  270  20.40   9.44  11.00  11.00                                              14  60.0 24.0  7.200  8.300   5.188    -4.747    11370   0.933  0.933   4.128 -2.345  0.000 -0.155 -2.500 167.96  314.74    1.00   27.50   27.50 
+ 33.00    4   9.00                     1     1    Strai    *     50  0.6  270  19.75   8.87  12.00  12.00                                              16  60.0 26.0  6.100 14.900   5.555    -4.892    11494   0.933  0.933   4.986 -2.030  0.000 -0.135 -2.166 206.18  430.86    1.00   27.50   27.50 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 14 Open to Traffic
 Splitting zone check failed.
 Confinement zone check failed.
 Hauling checks failed
@@ -13,7 +12,7 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.00    4   9.00                     1     2    Strai    *     44  0.6  270  20.32   8.86  11.50  11.50                                              14  60.0 24.0  5.500 14.900   5.370    -4.580    10489   0.735  0.884   4.447 -2.078  0.000 -0.133 -2.212 164.52  361.50    1.00   27.50   27.50 
+ 33.00    4   9.00                     1     2    Strai    *     44  0.6  270  20.32   8.86  11.50  11.50                                              14  60.0 24.0  5.500 14.600   5.361    -4.577    10455   0.735  0.884   4.447 -2.092  0.000 -0.134 -2.226 164.52  360.78    1.00   27.50   27.50 
 
 
 Girder design was Not Successful

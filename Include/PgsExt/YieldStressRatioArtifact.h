@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -126,8 +126,11 @@ public:
    void SetStrand(Float64 dps, Float64 fps, Float64 fyps, Float64 Eps);
    bool GetStrand(Float64* pdps, Float64* pfps, Float64* pfyps, Float64* pEps) const;
 
-   void SetTendon(Float64 dpt, Float64 fpt, Float64 fypt, Float64 Ept);
-   bool GetTendon(Float64* pdpt, Float64* pfpt, Float64* pfypt, Float64* pEpt) const;
+   void SetSegmentTendon(Float64 dpt, Float64 fpt, Float64 fypt, Float64 Ept);
+   bool GetSegmentTendon(Float64* pdpt, Float64* pfpt, Float64* pfypt, Float64* pEpt) const;
+
+   void SetGirderTendon(Float64 dpt, Float64 fpt, Float64 fypt, Float64 Ept);
+   bool GetGirderTendon(Float64* pdpt, Float64* pfpt, Float64* pfypt, Float64* pEpt) const;
 
    void SetEg(Float64 Eg);
    Float64 GetEg() const;
@@ -144,10 +147,15 @@ public:
    Float64 GetStrandStressRatio() const;
    Float64 GetStrandAllowableStress() const;
 
-   Float64 GetTendonCrackingStressIncrement() const;
-   Float64 GetTendonStress() const;
-   Float64 GetTendonStressRatio() const;
-   Float64 GetTendonAllowableStress() const;
+   Float64 GetSegmentTendonCrackingStressIncrement() const;
+   Float64 GetSegmentTendonStress() const;
+   Float64 GetSegmentTendonStressRatio() const;
+   Float64 GetSegmentTendonAllowableStress() const;
+
+   Float64 GetGirderTendonCrackingStressIncrement() const;
+   Float64 GetGirderTendonStress() const;
+   Float64 GetGirderTendonStressRatio() const;
+   Float64 GetGirderTendonAllowableStress() const;
 
    Float64 GetStressRatio() const;
    Float64 GetRatingFactor() const { return GetStressRatio(); }
@@ -162,15 +170,18 @@ protected:
 
    mutable Float64 m_RebarRF;
    mutable Float64 m_StrandRF;
-   mutable Float64 m_TendonRF;
+   mutable Float64 m_SegmentTendonRF;
+   mutable Float64 m_GirderTendonRF;
 
    mutable Float64 m_fcrRebar;
    mutable Float64 m_fcrStrand;
-   mutable Float64 m_fcrTendon;
-   
+   mutable Float64 m_fcrSegmentTendon;
+   mutable Float64 m_fcrGirderTendon;
+
    mutable Float64 m_fsRebar;
    mutable Float64 m_fsStrand;
-   mutable Float64 m_fsTendon;
+   mutable Float64 m_fsSegmentTendon;
+   mutable Float64 m_fsGirderTendon;
 
    pgsPointOfInterest m_POI;
 
@@ -213,9 +224,15 @@ protected:
    Float64 m_fyps; // yield strength
    Float64 m_Eps;  // mod E.
 
-   bool m_bTendon;
-   Float64 m_dpt;  // depth to reinforcement from extreme compression face
-   Float64 m_fpt;  // stress in reinforcement beforc cracking
-   Float64 m_fypt; // yield strength
-   Float64 m_Ept;  // mod E.
+   bool m_bSegmentTendon;
+   Float64 m_dptSegment;  // depth to reinforcement from extreme compression face
+   Float64 m_fptSegment;  // stress in reinforcement beforc cracking
+   Float64 m_fyptSegment; // yield strength
+   Float64 m_EptSegment;  // mod E.
+
+   bool m_bGirderTendon;
+   Float64 m_dptGirder;  // depth to reinforcement from extreme compression face
+   Float64 m_fptGirder;  // stress in reinforcement beforc cracking
+   Float64 m_fyptGirder; // yield strength
+   Float64 m_EptGirder;  // mod E.
 };

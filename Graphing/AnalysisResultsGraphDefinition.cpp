@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -110,17 +110,16 @@ const std::vector<IntervalIndexType>& intervals
 
 // constructor for demands
 CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
-IDType id,
-const std::_tstring& name,
-pgsTypes::LimitState lstype,
-GraphType grtype,
-const std::vector<IntervalIndexType>& intervals
-): m_ID(id),m_Name(name)
+   IDType id,
+   const std::_tstring& name,
+   pgsTypes::LimitState lstype,
+   GraphType grtype,
+   const std::vector<IntervalIndexType>& intervals
+) : m_ID(id), m_Name(name)
 {
    m_GraphType = grtype;
    m_LoadType.LimitStateType = lstype;
-   m_IntervalApplicability.insert(intervals.begin(),intervals.end());
-
+   m_IntervalApplicability.insert(intervals.begin(), intervals.end());
    m_ApplicableActions = ACTIONS_STRESS_ONLY;
 }
 
@@ -173,6 +172,15 @@ int apaction
 
    m_ApplicableActions = apaction;
    m_VehicleIndex = INVALID_INDEX; // not a specific vehicle, but rather an envelope
+}
+
+CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(IDType id, const std::_tstring& name, pgsTypes::LimitState lstype, GraphType lctype, ActionType ratingAction, VehicleIndexType vehicleIdx, const std::vector<IntervalIndexType>& intervals) :
+   m_ID(id), m_Name(name), m_GraphType(lctype), m_RatingAction(ratingAction), m_VehicleIndex(vehicleIdx)
+{
+   ATLASSERT(m_RatingAction == actionMoment || m_RatingAction == actionShear || m_RatingAction == actionStress); // this are the only actions that produce rating factors
+   m_LoadType.LimitStateType = lstype;
+   m_IntervalApplicability.insert(intervals.begin(), intervals.end());
+   m_ApplicableActions = ACTIONS_LOAD_RATING;
 }
 
 void CAnalysisResultsGraphDefinition::AddIntervals(const std::vector<IntervalIndexType>& intervals)
@@ -265,8 +273,11 @@ std::vector< std::pair<std::_tstring,IDType> > CAnalysisResultsGraphDefinitions:
             break;
 
          case actionShear:
-         case actionReaction:
             bApplicableAction = def.m_ApplicableActions & ACTIONS_SHEAR_ONLY ? true : false;
+            break;
+
+         case actionReaction:
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_REACTION_ONLY ? true : false;
             break;
 
          case actionMoment:
@@ -284,6 +295,10 @@ std::vector< std::pair<std::_tstring,IDType> > CAnalysisResultsGraphDefinitions:
 
          case actionStress:
             bApplicableAction = def.m_ApplicableActions & ACTIONS_STRESS_ONLY ? true : false;
+            break;
+
+         case actionLoadRating:
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_LOAD_RATING ? true : false;
             break;
 
          default:

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -95,7 +95,7 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
 
    ColumnIndexType col = 0;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(15,strName);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(14,strName);
    (*pPara) << pTable << rptNewLine;
    (*pTable)(0,col++) << _T("POI ID");
    (*pTable)(0,col++) << _T("Group");
@@ -110,7 +110,6 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
    (*pTable)(0,col++) << _T("On Girder");
    (*pTable)(0,col++) << _T("On Segment");
    (*pTable)(0,col++) << _T("On Closure");
-   (*pTable)(0, col++) << _T("Can Merge");
    (*pTable)(0, col++) << _T("Attribute");
 
    RowIndexType row = 1;
@@ -139,12 +138,10 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
       bool bIsOnSegment = pPoi->IsOnSegment(poi);
       CClosureKey closureKey;
       bool bIsOnClosure = pPoi->IsInClosureJoint(poi,&closureKey);
-      bool bCanMerge = poi.CanMerge();
       std::_tstring strBoolean[2] = { _T("true"), _T("false") };
       (*pTable)(row, col++) << strBoolean[bIsOnGirder ? 0 : 1].c_str();
       (*pTable)(row, col++) << strBoolean[bIsOnSegment ? 0 : 1].c_str();
       (*pTable)(row, col++) << strBoolean[bIsOnClosure ? 0 : 1].c_str();
-      (*pTable)(row, col++) << strBoolean[bCanMerge ? 0 : 1].c_str();
 
       (*pTable)(row, col++) << poi.GetAttributes(attribute,false);
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Constructability.h>
 #include <IFace\Intervals.h>
+#include <IFace\DocumentType.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
@@ -161,32 +162,49 @@ void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,IBro
    }
 }
 
-void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   GET_IFACE2_NOCHECK(pBroker,IGirderHaunch,pGdrHaunch);
-   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker, IGirderHaunch, pGdrHaunch);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
 
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; //ConstrNeedSpanCols(girderList, pBridge);
 
    // Create table - delete it later if we don't need it
    ColumnIndexType nCols = needSpanCols ? 6 : 4; // put span/girder in table if multi girder
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
+   if (pDocType->IsPGSpliceDocument())
+   {
+      nCols++; // add one column for segment
+   }
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols, _T(""));
 
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim2, pDisplayUnits->GetComponentDimUnit(), true);
 
-   pTable->SetColumnStyle(nCols-1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(nCols-1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(nCols - 1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(nCols - 1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
    if (needSpanCols)
    {
-      (*pTable)(0,col++) << _T("Span");
-      (*pTable)(0,col++) << _T("Girder");
+      if (pDocType->IsPGSpliceDocument())
+      {
+         (*pTable)(0, col++) << _T("Group");
+      }
+      else
+      {
+         (*pTable)(0, col++) << _T("Span");
+      }
+      (*pTable)(0, col++) << _T("Girder");
    }
 
+   if (pDocType->IsPGSpliceDocument())
+   {
+      (*pTable)(0, col++) << _T("Segment");
+   }
+      
    (*pTable)(0,col++) << COLHDR(_T("Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << COLHDR(_T("Required"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << _T("Status");
@@ -228,80 +246,83 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
          {
             bCheckStirrupLengths = true;
          }
-      } // next segment
 
-      col = 0;
+         col = 0;
 
-      if (needSpanCols)
-      {
-         GroupIndexType group = girderKey.groupIndex;
-         GirderIndexType girder = girderKey.girderIndex;
-         (*pTable)(row, col++) << LABEL_SPAN(group);
-         (*pTable)(row, col++) << LABEL_GIRDER(girder);
-      }
-
-      (*pTable)(row, col++) << dim.SetValue(Aprovided);
-      (*pTable)(row, col++) << dim.SetValue(Areqd);
-
-      switch(slabOffsetStatus)
-      {
-      case pgsSegmentConstructabilityArtifact::Pass:
-         (*pTable)(row, col++) << RPT_PASS;
-         break;
-
-      case pgsSegmentConstructabilityArtifact::Fail:
-         (*pTable)(row, col++) << RPT_FAIL;
-         break;
-
-      case pgsSegmentConstructabilityArtifact::Excessive:
-         (*pTable)(row, col++) << color(Blue) << _T("Excessive") << color(Black);
-         break;
-
-      case pgsSegmentConstructabilityArtifact::NA:
-         (*pTable)(row, col++) << RPT_NA;
-         break;
-
-      default:
-         ATLASSERT(false);
-         break;
-      }
-
-      bool didNote(false);
-      // NOTE: Don't increment the column counter in the (*pTable)(row,col) below. All notes go into the same column. If we do (*pTable)(row,col++)
-      // and there are multiple notes, the column index advances and we are then writing beyond the end of the table for each subsequent note.
-      if ( bCheckStirrupLengths )
-      {
-         didNote = true;
-         (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(MaxHaunchDiff) 
-                                             << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
-                                                 
-         if(pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP)
+         if (needSpanCols)
          {
-            (*pTable)(row, col) << _T(" Also carefully check deck panel leveling.");
+            (*pTable)(row, col++) << LABEL_SPAN(segmentKey.groupIndex);
+            (*pTable)(row, col++) << LABEL_GIRDER(segmentKey.girderIndex);
          }
 
-         (*pTable)(row, col) << _T(" Refer to the Haunch Details chapter in the Details report for more information.") << color(Black) << rptNewLine;
-      }
+         if (pDocType->IsPGSpliceDocument())
+         {
+            (*pTable)(row, col++) << LABEL_SEGMENT(segmentKey.segmentIndex);
+         }
 
-      if (slabOffsetStatus == pgsSegmentConstructabilityArtifact::Excessive)
-      {
-         didNote = true;
+         (*pTable)(row, col++) << dim.SetValue(Aprovided);
+         (*pTable)(row, col++) << dim.SetValue(Areqd);
 
-         GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-         const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
-         const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
-         const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+         switch(slabOffsetStatus)
+         {
+         case pgsSegmentConstructabilityArtifact::Pass:
+            (*pTable)(row, col++) << RPT_PASS;
+            break;
 
-         (*pTable)(row, col) << _T("Provided Slab Offset exceeded Required by allowable tolerance of ") << dim2.SetValue(pGirderEntry->GetExcessiveSlabOffsetWarningTolerance()) << rptNewLine;
-      }
+         case pgsSegmentConstructabilityArtifact::Fail:
+            (*pTable)(row, col++) << RPT_FAIL;
+            break;
 
-      if (!didNote)
-      {
-         (*pTable)(row, col) << _T(""); // otherwise table will be rendered funkily
-      }
+         case pgsSegmentConstructabilityArtifact::Excessive:
+            (*pTable)(row, col++) << color(Blue) << _T("Excessive") << color(Black);
+            break;
 
-      row++;
+         case pgsSegmentConstructabilityArtifact::NA:
+            (*pTable)(row, col++) << RPT_NA;
+            break;
+
+         default:
+            ATLASSERT(false);
+            break;
+         }
+
+         bool didNote(false);
+         // NOTE: Don't increment the column counter in the (*pTable)(row,col) below. All notes go into the same column. If we do (*pTable)(row,col++)
+         // and there are multiple notes, the column index advances and we are then writing beyond the end of the table for each subsequent note.
+         if ( bCheckStirrupLengths )
+         {
+            didNote = true;
+            (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(MaxHaunchDiff) 
+                                                << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
+                                                 
+            if(pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP)
+            {
+               (*pTable)(row, col) << _T(" Also carefully check deck panel leveling.");
+            }
+
+            (*pTable)(row, col) << _T(" Refer to the Haunch Details chapter in the Details report for more information.") << color(Black) << rptNewLine;
+         }
+
+         if (slabOffsetStatus == pgsSegmentConstructabilityArtifact::Excessive)
+         {
+            didNote = true;
+
+            GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+            const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+            const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+            const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
+            const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+
+            (*pTable)(row, col) << _T("Provided Slab Offset exceeded Required by allowable tolerance of ") << dim2.SetValue(pGirderEntry->GetExcessiveSlabOffsetWarningTolerance()) << rptNewLine;
+         }
+
+         if (!didNote)
+         {
+            (*pTable)(row, col) << _T(""); // otherwise table will be rendered funkily
+         }
+
+         row++;
+      } // next segment
    } // next girder
 
    // Only return a table if it has content
@@ -312,7 +333,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
       *pTitle << _T("Slab Offset (\"A\" Dimension)");
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
-      *pBody << _T("This table compares the input slab offset to the computed slab offset required to have the least haunch depth be equal to the Fillet dimension. A failed status indicates that the top of the girder will encroach into the deck slab and the Slab Offset dimension should be refined.") << rptNewLine;
+      *pBody << _T("This table compares the input slab offset to the rounded computed slab offset required to have the least haunch depth be equal to the Fillet dimension. A failed status indicates that the top of the girder will encroach into the deck slab and the Slab Offset dimension should be refined.") << rptNewLine;
       *pBody << pTable << rptNewLine;
    }
    else
@@ -326,12 +347,18 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2_NOCHECK(pBroker,IGirderHaunch,pGdrHaunch);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
 
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
 
    // Create table - delete it later if we don't need it
    ColumnIndexType nCols = needSpanCols ? 9 : 7; // put span/girder in table if multi girder
+
+   if (pDocType->IsPGSpliceDocument())
+   {
+      nCols++; // add one column for segments
+   }
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
@@ -344,8 +371,20 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
    ColumnIndexType col = 0;
    if (needSpanCols)
    {
-      (*pTable)(0,col++) << _T("Span");
+      if (pDocType->IsPGSpliceDocument())
+      {
+         (*pTable)(0, col++) << _T("Group");
+      }
+      else
+      {
+         (*pTable)(0, col++) << _T("Span");
+      }
       (*pTable)(0,col++) << _T("Girder");
+   }
+
+   if (pDocType->IsPGSpliceDocument())
+   {
+      (*pTable)(0, col++) << _T("Segment");
    }
 
    (*pTable)(0,col++) << COLHDR(_T("Slab Offset") << rptNewLine << _T("at Left End") << rptNewLine << _T("CL Brg"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -375,10 +414,13 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
 
          if (needSpanCols)
          {
-            GroupIndexType group = girderKey.groupIndex;
-            GirderIndexType girder = girderKey.girderIndex;
-            (*pTable)(row, col++) << LABEL_SPAN(group);
-            (*pTable)(row, col++) << LABEL_GIRDER(girder);
+            (*pTable)(row, col++) << LABEL_SPAN(segmentKey.groupIndex);
+            (*pTable)(row, col++) << LABEL_GIRDER(segmentKey.girderIndex);
+         }
+
+         if (pDocType->IsPGSpliceDocument())
+         {
+            (*pTable)(row, col++) << LABEL_SEGMENT(segmentKey.segmentIndex);
          }
 
          Float64 endA, startA;
@@ -574,10 +616,16 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
       return;
    }
 
+   GET_IFACE2(pBroker,IDocumentType, pDocType);
+   
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
 
    ColumnIndexType nCols = needSpanCols ? 5 : 3; // put span/girder in table if multi girder
+   if (pDocType->IsPGSpliceDocument())
+   {
+      nCols++;
+   }
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
@@ -597,8 +645,20 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
    ColumnIndexType col = 0;
    if (needSpanCols)
    {
-      (*pTable)(0,col++) << _T("Span");
+      if (pDocType->IsPGSpliceDocument())
+      {
+         (*pTable)(0, col++) << _T("Group");
+      }
+      else
+      {
+         (*pTable)(0, col++) << _T("Span");
+      }
       (*pTable)(0,col++) << _T("Girder");
+   }
+
+   if (pDocType->IsPGSpliceDocument())
+   {
+      (*pTable)(0, col++) << _T("Segment");
    }
 
    (*pTable)(0,col++) << COLHDR(_T("Provided"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -625,6 +685,11 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
             GirderIndexType girder = girderKey.girderIndex;
             (*pTable)(row, col++) << LABEL_SPAN(group);
             (*pTable)(row, col++) << LABEL_GIRDER(girder);
+         }
+
+         if (pDocType->IsPGSpliceDocument())
+         {
+            (*pTable)(row, col++) << LABEL_SEGMENT(segIdx);
          }
 
          (*pTable)(row, col++) << dim.SetValue(artifact.GetProvidedFillet());
@@ -830,7 +895,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GlobalGirderStability.gif")) << rptNewLine;
+   *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("GlobalGirderStability.png")) << rptNewLine;
 
    rptRcScalar slope;
    slope.SetFormat(pDisplayUnits->GetScalarFormat().Format);
@@ -857,12 +922,11 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
          strTitle = _T("");
       }
 
-      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(8,strTitle);
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7,strTitle);
       std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
       ColumnIndexType col = 0;
-      (*pTable)(0, col++) << COLHDR(Sub2(_T("W"),_T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-      (*pTable)(0, col++) << COLHDR(_T("Brg Pad Deduct"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << COLHDR(_T("Brg Width"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << COLHDR(Sub2(_T("Y"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << COLHDR(Sub2(_T("z"), _T("o")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(0, col++) << _T("Inclination (") << symbol(theta) << _T(")") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
@@ -870,14 +934,13 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
       (*pTable)(0, col++) << _T("FS");
       (*pTable)(0, col++) << _T("Status");
 
-      Float64 Wb, BrgPadDeduct, Yb, Orientation, zo;
-      pArtifact->GetGlobalGirderStabilityParameters(&Wb,&BrgPadDeduct,&Yb,&Orientation,&zo);
+      Float64 BrgPadWidth, Yb, Orientation, zo;
+      pArtifact->GetGlobalGirderStabilityParameters(&BrgPadWidth,&Yb,&Orientation,&zo);
       Float64 ThetaMax = pArtifact->GetMaxGirderIncline();
       Float64 FS = pArtifact->GetFactorOfSafety();
 
       col = 0;
-      (*pTable)(1, col++) << dim.SetValue(Wb);
-      (*pTable)(1, col++) << dim.SetValue(BrgPadDeduct);
+      (*pTable)(1, col++) << dim.SetValue(BrgPadWidth);
       (*pTable)(1, col++) << dim.SetValue(Yb);
       (*pTable)(1, col++) << dim.SetValue(zo);
       (*pTable)(1, col++) << slope.SetValue(Orientation);
@@ -1003,14 +1066,37 @@ void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, IBro
 
 void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
 {
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   std::_tstring spec_name = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   pgsTypes::SupportedBeamSpacing spacingType = pIBridgeDesc->GetGirderSpacingType();
+   if (pSpecEntry->CheckBottomFlangeClearance() && ::IsJointSpacing(spacingType))
+   {
+      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pTitle;
+      *pTitle << _T("Bottom Flange Clearance");
+
+      rptParagraph* pBody = new rptParagraph;
+      *pChapter << pBody;
+      *pBody << _T("Bottom flange clearance is not checked for girder framing based on joint spacing") << rptNewLine;
+      return;
+   }
+
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
 
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
 
    // Create table - delete it later if we don't need it
    ColumnIndexType nCols = needSpanCols ? 5 : 3; // put span/girder in table if multi girder
+   if (pDocType->IsPGSpliceDocument())
+   {
+      nCols++; // add one column for segments
+   }
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -1022,8 +1108,20 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
    ColumnIndexType col = 0;
    if (needSpanCols)
    {
-      (*pTable)(0,col++) << _T("Span");
-      (*pTable)(0,col++) << _T("Girder");
+      if (pDocType->IsPGSpliceDocument())
+      {
+         (*pTable)(0, col++) << _T("Group");
+      }
+      else
+      {
+         (*pTable)(0, col++) << _T("Span");
+      }
+      (*pTable)(0, col++) << _T("Girder");
+   }
+
+   if (pDocType->IsPGSpliceDocument())
+   {
+      (*pTable)(0, col++) << _T("Segment");
    }
 
    (*pTable)(0,col++) << COLHDR(_T("Clearance"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -1048,11 +1146,15 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
 
             if (needSpanCols)
             {
-               GroupIndexType group = girderKey.groupIndex;
-               GirderIndexType girder = girderKey.girderIndex;
-               (*pTable)(row, col++) << LABEL_SPAN(group);
-               (*pTable)(row, col++) << LABEL_GIRDER(girder);
+               (*pTable)(row, col++) << LABEL_SPAN(girderKey.groupIndex);
+               (*pTable)(row, col++) << LABEL_GIRDER(girderKey.girderIndex);
             }
+
+            if (pDocType->IsPGSpliceDocument())
+            {
+               (*pTable)(row, col++) << LABEL_SEGMENT(segIdx);
+            }
+
 
             Float64 C, Cmin;
             artifact.GetBottomFlangeClearanceParameters(&C,&Cmin);
@@ -1257,7 +1359,7 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
       else
       {
          C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
-         (*pTable)(row, 0) << _T("Screed Camber, C");
+         (*pTable)(row, 0) << _T("Screed Camber, C at mid-span");
          (*pTable)(row++, 1) << dim.SetValue(C);
       }
 
@@ -1481,8 +1583,8 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   Float64 deckCastingTime = pIntervals->GetTime(castDeckIntervalIdx,pgsTypes::Start);
+   IntervalIndexType firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
+   Float64 deckCastingTime = pIntervals->GetTime(firstCastDeckIntervalIdx,pgsTypes::Start);
 
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
    Float64 lastIntervalTime = pIntervals->GetTime(lastIntervalIdx, pgsTypes::End);
@@ -1501,15 +1603,20 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,_T(""));
 
-   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
    pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
 
    *pBody << pTable << rptNewLine;
 
-   (*pTable)(0,0) << _T("Span");
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   if (pDocType->IsPGSpliceDocument())
+   {
+      (*pTable)(0, 0) << _T("Segment");
+   }
+   else
+   {
+      (*pTable)(0, 0) << _T("Span");
+   }
    (*pTable)(0,1) << _T("Description");
    (*pTable)(0,2) << COLHDR(_T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
@@ -1520,58 +1627,116 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
    GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
-   SpanIndexType startSpanIdx, endSpanIdx;
-   pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
-   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+
+   if (pDocType->IsPGSpliceDocument())
    {
-      CSpanKey spanKey(spanIdx, girderKey.girderIndex);
-      PoiList vPoi;
-      pPoi->GetPointsOfInterest(spanKey, POI_5L | POI_SPAN, &vPoi);
-      ATLASSERT(vPoi.size() == 1);
-      const pgsPointOfInterest& poiMidSpan(vPoi.front());
-
-      pTable->SetRowSpan(row, 0, 2);
-      (*pTable)(row, 0) << LABEL_SPAN(spanIdx);
-
-      GET_IFACE2(pBroker, ICamber, pCamber);
-      Float64 C = pCamber->GetScreedCamber(poiMidSpan,CREEP_MAXTIME);
-      (*pTable)(row, 1) << _T("Screed Camber, C");
-      (*pTable)(row++, 2) << dim.SetValue(C);
-
-      Float64 Dmin, Dmax;
-      pLSForces->GetDeflection(castDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
-      ATLASSERT(IsEqual(Dmin, Dmax));
-      (*pTable)(row, 1) << _T("Camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
-
-      if ( Dmin < 0 )
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
-         (*pTable)(row++,2) << color(Red) << dim.SetValue(Dmin) << color(Black);
-      }
-      else
-      {
-         (*pTable)(row++,2) << dim.SetValue(Dmin);
-      }
+         CSegmentKey segmentKey(girderKey, segIdx);
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         const pgsPointOfInterest& poiMidSpan(vPoi.front());
 
-      if ( pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType) )
-      {
-         std::_tstring camberType;
-   
-         if ( Dmin < C )
+         pTable->SetRowSpan(row, 0, 2);
+         (*pTable)(row, 0) << LABEL_SEGMENT(segIdx);
+
+         GET_IFACE2(pBroker, ICamber, pCamber);
+         Float64 C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+         (*pTable)(row, 1) << _T("Screed Camber, C at mid-segment");
+         (*pTable)(row++, 2) << dim.SetValue(C);
+
+         Float64 Dmin, Dmax;
+         pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+         ATLASSERT(IsEqual(Dmin, Dmax));
+         (*pTable)(row, 1) << _T("Mid-segment camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
+
+         if (Dmin < 0)
          {
-            rptParagraph* p = new rptParagraph;
-            *pChapter << p;
-   
-            *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            (*pTable)(row++, 2) << color(Red) << dim.SetValue(Dmin) << color(Black);
          }
-         else if ( IsEqual(C,Dmin,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+         else
          {
-            rptParagraph* p = new rptParagraph;
-            *pChapter << p;
-   
-            *p << color(Red) << _T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            (*pTable)(row++, 2) << dim.SetValue(Dmin);
          }
-      }
-   }  // next span
+
+         if (pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType))
+         {
+            std::_tstring camberType;
+
+            if (Dmin < C)
+            {
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+
+               *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            }
+            else if (IsEqual(C, Dmin, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+            {
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+
+               *p << color(Red) << _T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            }
+         }
+      }  // next segment 
+   }
+   else
+   {
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pBridge->GetGirderGroupSpans(girderKey.groupIndex, &startSpanIdx, &endSpanIdx);
+      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+      {
+         CSpanKey spanKey(spanIdx, girderKey.girderIndex);
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(spanKey, POI_5L | POI_SPAN, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         const pgsPointOfInterest& poiMidSpan(vPoi.front());
+
+         pTable->SetRowSpan(row, 0, 2);
+         (*pTable)(row, 0) << LABEL_SPAN(spanIdx);
+
+         GET_IFACE2(pBroker, ICamber, pCamber);
+         Float64 C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+         (*pTable)(row, 1) << _T("Screed Camber, C at mid-span");
+         (*pTable)(row++, 2) << dim.SetValue(C);
+
+         Float64 Dmin, Dmax;
+         pLSForces->GetDeflection(firstCastDeckIntervalIdx - 1, pgsTypes::ServiceI, poiMidSpan, bat, true/*include prestress*/, false/*no liveload*/, true /*include elevation adjustment*/, true /*include precamber*/, &Dmin, &Dmax);
+         ATLASSERT(IsEqual(Dmin, Dmax));
+         (*pTable)(row, 1) << _T("Mid-span camber at time of deck casting, at ") << deckCastingTime << _T(" days, D");
+
+         if (Dmin < 0)
+         {
+            (*pTable)(row++, 2) << color(Red) << dim.SetValue(Dmin) << color(Black);
+         }
+         else
+         {
+            (*pTable)(row++, 2) << dim.SetValue(Dmin);
+         }
+
+         if (pSpecEntry->CheckGirderSag() && IsStructuralDeck(deckType))
+         {
+            std::_tstring camberType;
+
+            if (Dmin < C)
+            {
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+
+               *p << color(Red) << _T("WARNING: Screed Camber, C, is greater than the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            }
+            else if (IsEqual(C, Dmin, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+            {
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+
+               *p << color(Red) << _T("WARNING: Screed Camber, C, is nearly equal to the camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
+            }
+         }
+      }  // next span 
+   }
 }
 
 //======================== ACCESS     =======================================

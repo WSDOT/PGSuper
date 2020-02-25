@@ -4,8 +4,8 @@
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -22,8 +22,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -39,12 +39,12 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Lifting checks failed
 Hauling checks failed
@@ -57,7 +57,7 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Slab Offset ("A" Dimension) check failed
@@ -70,12 +70,12 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed.
@@ -90,8 +90,8 @@ Minimum fillet value exceeded for bridge check failed
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Cast Deck
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

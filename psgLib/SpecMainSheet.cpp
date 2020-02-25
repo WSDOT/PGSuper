@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -202,6 +202,7 @@ void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
 
    // live load distribution
    DDX_CBIndex(pDX, IDC_LLDF, m_Entry.m_LldfMethod);
+   DDX_Check_Bool(pDX, IDC_IGNORE_SKEW_REDUCTION, m_Entry.m_bIgnoreSkewReductionForMoment);
 
    DDX_UnitValueAndTag(pDX, IDC_MAXGIRDERANGLE, IDC_MAXGIRDERANGLE_UNIT, m_Entry.m_MaxAngularDeviationBetweenGirders, pDisplayUnits->Angle);
    DDX_Text(pDX, IDC_GIRDERSTIFFNESSRATIO, m_Entry.m_MinGirderStiffnessRatio);
@@ -211,6 +212,8 @@ void CSpecMainSheet::ExchangeLiveLoadsData(CDataExchange* pDX)
    DDV_MinMaxDouble(pDX, m_Entry.m_LLDFGirderSpacingLocation, 0.0, 1.0);
 
    DDX_Check_Bool(pDX, IDC_LANESBEAMS, m_Entry.m_LimitDistributionFactorsToLanesBeams);
+
+   DDX_Check_Bool(pDX, IDC_RIGID_METHOD, m_Entry.m_bUseRigidMethod);
 }
 
 void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
@@ -358,6 +361,9 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
 
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_FR, IDC_UHPC_FR_UNIT, m_Entry.m_LiftingModulusOfRuptureCoefficient[pgsTypes::UHPC], pDisplayUnits->SqrtPressure);
+   DDX_Text(pDX, IDC_UHPC_FR_UNIT, tag);
+
    DDX_UnitValueAndTag(pDX, IDC_PICK_POINT_HEIGHT, IDC_PICK_POINT_HEIGHT_UNITS, m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim);
    DDV_UnitValueZeroOrMore(pDX, IDC_PICK_POINT_HEIGHT,m_Entry.m_PickPointHeight, pDisplayUnits->ComponentDim );
    DDX_UnitValueAndTag(pDX, IDC_LIFTING_LOOP_TOLERANCE, IDC_LIFTING_LOOP_TOLERANCE_UNITS, m_Entry.m_LiftingLoopTolerance, pDisplayUnits->ComponentDim );
@@ -468,8 +474,8 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    DDX_Text(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
    DDV_GreaterThanZero(pDX, IDC_HAULING_GLOBAL_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
 
-   DDX_Text(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
-   DDV_GreaterThanZero(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_GlobalCompStressHauling);
+   DDX_Text(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_PeakCompStressHauling);
+   DDV_GreaterThanZero(pDX, IDC_HAULING_PEAK_COMPRESSION, m_Entry.m_PeakCompStressHauling);
 
    CString tag;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
@@ -489,6 +495,9 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
+
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_FR, IDC_UHPC_FR_UNIT, m_Entry.m_HaulingModulusOfRuptureCoefficient[pgsTypes::UHPC], pDisplayUnits->SqrtPressure);
+   DDX_Text(pDX, IDC_UHPC_FR_UNIT, tag);
 
    DDX_UnitValueAndTag(pDX, IDC_HAULING_TENSION_CROWN, IDC_HAULING_TENSION_CROWN_UNIT, m_Entry.m_TensStressHaulingNormalCrown, pDisplayUnits->SqrtPressure );
    DDX_Text(pDX,IDC_HAULING_TENSION_CROWN_UNIT,tag);
@@ -684,14 +693,17 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_ALWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_SLWC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_FR, IDC_UHPC_FR_LABEL, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::UHPC],            pDisplayUnits->SqrtPressure);
 
-   DDX_Text(pDX,IDC_FR_UNIT,     tag);
-   DDX_Text(pDX,IDC_ALWC_FR_UNIT,tag);
-   DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
+   DDX_Text(pDX, IDC_FR_UNIT,     tag);
+   DDX_Text(pDX, IDC_ALWC_FR_UNIT,tag);
+   DDX_Text(pDX, IDC_SLWC_FR_UNIT,tag);
+   DDX_Text(pDX, IDC_UHPC_FR_UNIT, tag);
 
    DDV_UnitValueZeroOrMore(pDX, IDC_FR,      m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
    DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_UHPC_FR, m_Entry.m_FlexureModulusOfRuptureCoefficient[pgsTypes::UHPC],            pDisplayUnits->SqrtPressure);
 
    // NOTE: this looks goofy, but it is correct. There is only one LWC entry for both all and sand lightweight
    // but it is easier to have 3 sets of values so the application is consistent.
@@ -710,9 +722,15 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_LWC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::SandLightweight]);
    DDX_Text(pDX,IDC_LWC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::SandLightweight]);
 
-   DDX_Text(pDX,IDC_NWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::Normal]);
-   DDX_Text(pDX,IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::AllLightweight]);
-   DDX_Text(pDX,IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::SandLightweight]);
+   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_RC,      m_Entry.m_PhiFlexureTensionRC[pgsTypes::UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_PS,      m_Entry.m_PhiFlexureTensionPS[pgsTypes::UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_TENSION_SPLICED, m_Entry.m_PhiFlexureTensionSpliced[pgsTypes::UHPC]);
+   DDX_Text(pDX, IDC_UHPC_PHI_COMPRESSION,     m_Entry.m_PhiFlexureCompression[pgsTypes::UHPC]);
+
+   DDX_Text(pDX, IDC_NWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::Normal]);
+   DDX_Text(pDX, IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::AllLightweight]);
+   DDX_Text(pDX, IDC_LWC_JOINT_PHI,           m_Entry.m_PhiClosureJointFlexure[pgsTypes::SandLightweight]);
+   DDX_Text(pDX, IDC_UHPC_JOINT_PHI,          m_Entry.m_PhiClosureJointFlexure[pgsTypes::UHPC]);
 }
 
 void CSpecMainSheet::CheckShearCapacityMethod()
@@ -765,8 +783,11 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
+   DDX_Check_Bool(pDX, IDC_LIMIT_STRAIN, m_Entry.m_bLimitNetTensionStrainToPositiveValues);
+
    DDX_CBIndex(pDX, IDC_LRSH, m_Entry.m_LongReinfShearMethod); 
    DDX_Check_Bool(pDX, IDC_INCLUDE_REBAR_SHEAR, m_Entry.m_bIncludeRebar_Shear );
+   DDX_Check_Bool(pDX, IDC_USE_DECK_FOR_PC, m_Entry.m_bUseDeckWeightForPc);
 
    DDX_CBEnum(pDX,IDC_SHEAR_FLOW_METHOD,m_Entry.m_ShearFlowMethod);
 
@@ -791,29 +812,37 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
       tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
-   DDX_UnitValueAndTag(pDX, IDC_FR,     IDC_FR_LABEL,     m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
-   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_FR_LABEL_ALWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_ALWC_FR, IDC_FR_LABEL_ALWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
    DDX_UnitValueAndTag(pDX, IDC_SLWC_FR, IDC_FR_LABEL_SLWC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_FR, IDC_FR_LABEL_UHPC, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::UHPC],            pDisplayUnits->SqrtPressure);
 
-   DDX_Text(pDX,IDC_FR_UNIT,tag);
-   DDX_Text(pDX,IDC_ALWC_FR_UNIT,tag);
-   DDX_Text(pDX,IDC_SLWC_FR_UNIT,tag);
+   DDX_Text(pDX, IDC_FR_UNIT,      tag);
+   DDX_Text(pDX, IDC_ALWC_FR_UNIT, tag);
+   DDX_Text(pDX, IDC_SLWC_FR_UNIT, tag);
+   DDX_Text(pDX, IDC_UHPC_FR_UNIT, tag);
 
    DDV_UnitValueZeroOrMore(pDX, IDC_FR ,     m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
    DDV_UnitValueZeroOrMore(pDX, IDC_SLWC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::SandLightweight], pDisplayUnits->SqrtPressure );
    DDV_UnitValueZeroOrMore(pDX, IDC_ALWC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::AllLightweight],  pDisplayUnits->SqrtPressure );
+   DDV_UnitValueZeroOrMore(pDX, IDC_UHPC_FR, m_Entry.m_ShearModulusOfRuptureCoefficient[pgsTypes::UHPC],            pDisplayUnits->SqrtPressure);
+
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_FIBER_SHEAR_STRENGTH, IDC_UHPC_FIBER_SHEAR_STRENGTH_UNIT, m_Entry.m_UHPCFiberShearStrength, pDisplayUnits->Stress);
 
    DDX_Text(pDX,IDC_NWC_PHI,m_Entry.m_PhiShear[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::SandLightweight]);
-   DDX_Text(pDX,IDC_LWC_PHI,m_Entry.m_PhiShear[pgsTypes::AllLightweight]);
+   DDX_Text(pDX, IDC_LWC_PHI, m_Entry.m_PhiShear[pgsTypes::AllLightweight]);
+   DDX_Text(pDX, IDC_UHPC_PHI, m_Entry.m_PhiShear[pgsTypes::UHPC]);
 
    DDX_Text(pDX,IDC_NWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_LWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::SandLightweight]);
-   DDX_Text(pDX,IDC_LWC_PHI_DEBOND,m_Entry.m_PhiShearDebonded[pgsTypes::AllLightweight]);
+   DDX_Text(pDX, IDC_LWC_PHI_DEBOND, m_Entry.m_PhiShearDebonded[pgsTypes::AllLightweight]);
+   DDX_Text(pDX, IDC_UHPC_PHI_DEBOND, m_Entry.m_PhiShearDebonded[pgsTypes::UHPC]);
 
    DDX_Text(pDX,IDC_NWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::Normal]);
    DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::AllLightweight]);
-   DDX_Text(pDX,IDC_LWC_JOINT_PHI,  m_Entry.m_PhiClosureJointShear[pgsTypes::SandLightweight]);
+   DDX_Text(pDX, IDC_LWC_JOINT_PHI, m_Entry.m_PhiClosureJointShear[pgsTypes::SandLightweight]);
+   DDX_Text(pDX, IDC_UHPC_JOINT_PHI, m_Entry.m_PhiClosureJointShear[pgsTypes::UHPC]);
 
    DDX_UnitValueAndTag(pDX, IDC_SMAX, IDC_SMAX_UNIT, m_Entry.m_MaxInterfaceShearConnectorSpacing, pDisplayUnits->ComponentDim );
 
@@ -865,7 +894,7 @@ void CSpecMainSheet::ExchangeCreepData(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag(pDX, IDC_NC_CREEP, IDC_NC_CREEP_TAG, m_Entry.m_TotalCreepDuration, pDisplayUnits->Time2 );
-   DDV_UnitValueGreaterThanLimit(pDX, IDC_NC_CREEP,m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
+   DDV_UnitValueLimitOrMore(pDX, IDC_NC_CREEP,m_Entry.m_TotalCreepDuration, m_Entry.m_CreepDuration2Min, pDisplayUnits->Time2 );
 
    DDX_Radio(pDX,IDC_CURING_METHOD,m_Entry.m_CuringMethod);
 
@@ -1139,6 +1168,14 @@ void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LWC_UNIT_WEIGHT, IDC_LWC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::AllLightweight], pDisplayUnits->Density);
    DDX_UnitValueAndTag(pDX, IDC_LWC_AGG_SIZE,    IDC_LWC_AGG_SIZE_UNIT,    m_Entry.m_MaxConcreteAggSize[pgsTypes::AllLightweight],    pDisplayUnits->ComponentDim);
 
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_FC_SLAB, IDC_UHPC_FC_SLAB_UNIT, m_Entry.m_MaxSlabFc[pgsTypes::UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FCI, IDC_UHPC_GIRDER_FCI_UNIT, m_Entry.m_MaxSegmentFci[pgsTypes::UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_GIRDER_FC, IDC_UHPC_GIRDER_FC_UNIT, m_Entry.m_MaxSegmentFc[pgsTypes::UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FCI, IDC_UHPC_CLOSURE_FCI_UNIT, m_Entry.m_MaxClosureFci[pgsTypes::UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_CLOSURE_FC, IDC_UHPC_CLOSURE_FC_UNIT, m_Entry.m_MaxClosureFc[pgsTypes::UHPC], pDisplayUnits->Stress);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_UNIT_WEIGHT, IDC_UHPC_UNIT_WEIGHT_UNIT, m_Entry.m_MaxConcreteUnitWeight[pgsTypes::UHPC], pDisplayUnits->Density);
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_AGG_SIZE, IDC_UHPC_AGG_SIZE_UNIT, m_Entry.m_MaxConcreteAggSize[pgsTypes::UHPC], pDisplayUnits->ComponentDim);
+
    DDX_Check_Bool(pDX, IDC_CHECK_STIRRUP_COMPATIBILITY, m_Entry.m_DoCheckStirrupSpacingCompatibility);
    DDX_Check_Bool(pDX, IDC_CHECK_GIRDER_SAG, m_Entry.m_bCheckSag);
    DDX_CBEnum(pDX, IDC_SAG_OPTIONS, m_Entry.m_SagCamberType);
@@ -1212,33 +1249,53 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
 	DDX_Check_Bool(pDX, IDC_CHECK_HD,  m_Entry.m_DoCheckHoldDown);
 	DDX_Check_Bool(pDX, IDC_DESIGN_HD, m_Entry.m_DoDesignHoldDown);
 
+   DDX_CBIndex(pDX, IDC_HOLD_DOWN_FORCE_TYPE, m_Entry.m_HoldDownForceType);
+
    DDX_UnitValueAndTag(pDX, IDC_HOLD_DOWN_FORCE, IDC_HOLD_DOWN_FORCE_UNITS, m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
    if (m_Entry.m_DoCheckHoldDown)
    {
       DDV_UnitValueGreaterThanZero(pDX, IDC_HOLD_DOWN_FORCE,m_Entry.m_HoldDownForce, pDisplayUnits->GeneralForce );
    }
+   DDX_Percentage(pDX, IDC_FRICTION, m_Entry.m_HoldDownFriction);
 
    // Harped Strand Slope
 	DDX_Check_Bool(pDX, IDC_CHECK_SLOPE,  m_Entry.m_DoCheckStrandSlope);
 	DDX_Check_Bool(pDX, IDC_DESIGN_SLOPE, m_Entry.m_DoDesignStrandSlope);
 
 	DDX_Text(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_MaxSlope05);
-   if (m_Entry.m_DoCheckStrandSlope) 
+   if (m_Entry.m_DoCheckStrandSlope)
+   {
       DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_05, m_Entry.m_MaxSlope05);
+   }
 
 	DDX_Text(pDX, IDC_STRAND_SLOPE_06, m_Entry.m_MaxSlope06);
-   if (m_Entry.m_DoCheckStrandSlope) 
+   if (m_Entry.m_DoCheckStrandSlope)
+   {
       DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_06, m_Entry.m_MaxSlope06);
+   }
 
 	DDX_Text(pDX, IDC_STRAND_SLOPE_07, m_Entry.m_MaxSlope07);
-   if (m_Entry.m_DoCheckStrandSlope) 
+   if (m_Entry.m_DoCheckStrandSlope)
+   {
       DDV_NonNegativeDouble(pDX, IDC_STRAND_SLOPE_07, m_Entry.m_MaxSlope07);
+   }
+   
+   // Handling Weight
+   DDX_Check_Bool(pDX, IDC_CHECK_HANDLING_WEIGHT, m_Entry.m_bCheckHandlingWeightLimit);
+   DDX_UnitValueAndTag(pDX, IDC_HANDLING_WEIGHT, IDC_HANDLING_WEIGHT_UNIT, m_Entry.m_HandlingWeightLimit, pDisplayUnits->GeneralForce);
+   if (m_Entry.m_bCheckHandlingWeightLimit)
+   {
+      DDV_UnitValueGreaterThanZero(pDX, IDC_HANDLING_WEIGHT, m_Entry.m_HandlingWeightLimit, pDisplayUnits->GeneralForce);
+   }
 
    // Splitting Resistance
 	DDX_Check_Bool(pDX, IDC_CHECK_SPLITTING,  m_Entry.m_DoCheckSplitting);
 	DDX_Check_Bool(pDX, IDC_DESIGN_SPLITTING, m_Entry.m_DoDesignSplitting);
 	DDX_Text(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
    DDV_GreaterThanZero(pDX, IDC_N, m_Entry.m_SplittingZoneLengthFactor);
+
+   DDX_UnitValueAndTag(pDX, IDC_UHPC_F1, IDC_UHPC_F1_UNIT, m_Entry.m_UHPCStregthAtFirstCrack, pDisplayUnits->Stress);
+   DDV_UnitValueZeroOrMore(pDX, IDC_UHPC_F1, m_Entry.m_UHPCStregthAtFirstCrack, pDisplayUnits->Stress);
 
    // Confinement Reinforcement
 	DDX_Check_Bool(pDX, IDC_CHECK_CONFINEMENT,  m_Entry.m_DoCheckConfinement);
@@ -1268,6 +1325,9 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    // Slab Offset
 	DDX_Check_Bool(pDX, IDC_CHECK_A, m_Entry.m_EnableSlabOffsetCheck);
 	DDX_Check_Bool(pDX, IDC_DESIGN_A, m_Entry.m_EnableSlabOffsetDesign);
+   DDX_CBEnum(pDX,IDC_A_ROUNDING_CB,m_Entry.m_SlabOffsetRoundingMethod);
+   DDX_UnitValueAndTag(pDX, IDC_A_ROUNDING_EDIT,IDC_A_ROUNDING_UNIT,m_Entry.m_SlabOffsetRoundingTolerance, pDisplayUnits->ComponentDim );
+   DDV_UnitValueZeroOrMore(pDX, IDC_A_ROUNDING_EDIT,m_Entry.m_SlabOffsetRoundingTolerance, pDisplayUnits->ComponentDim );
 
    // Live Load Deflections
    DDX_Check_Bool(pDX, IDC_LL_DEFLECTION, m_Entry.m_bDoEvaluateDeflection );
@@ -1282,7 +1342,6 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    // Girder Inclination
    DDX_Check_Bool(pDX, IDC_CHECK_INCLINDED_GIRDER, m_Entry.m_bCheckGirderInclination);
    DDX_Text(pDX, IDC_INCLINDED_GIRDER_FS, m_Entry.m_InclinedGirder_FSmax);
-   DDX_UnitValueAndTag(pDX, IDC_INCLINDED_GIRDER_BRGPADDEDUCT, IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT, m_Entry.m_InclinedGirder_BrgPadDeduction, pDisplayUnits->ComponentDim);
 
    // Strand Fill
    int value = (int)m_Entry.m_DesignStrandFillType;
@@ -1297,6 +1356,18 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       m_Entry.m_LimitStateConcreteStrength = (pgsTypes::LimitStateConcreteStrength)value;
+   }
+
+   DDX_Check_Bool(pDX, IDC_USE_90_DAY_STRENGTH, m_Entry.m_bUse90DayConcreteStrength);
+   DDX_Percentage(pDX, IDC_90_DAY_STRENGTH_FACTOR, m_Entry.m_90DayConcreteStrengthFactor);
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (m_Entry.m_90DayConcreteStrengthFactor < 1.0)
+      {
+         pDX->PrepareEditCtrl(IDC_90_DAY_STRENGTH_FACTOR);
+         AfxMessageBox(_T("Factor for 90 day concrete strength must be at least 100%"));
+         pDX->Fail();
+      }
    }
 
    // Roadway elevations

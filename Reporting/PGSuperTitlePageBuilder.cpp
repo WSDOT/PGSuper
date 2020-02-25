@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -82,6 +82,20 @@ bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, CollectionIndexType nI
 
    return false;
 }
+
+inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
+{
+   GroupIndexType ngrps = pBridge->GetGirderGroupCount();
+   GirderIndexType ngdrs = pBridge->GetGirderCount(0);
+   for (GroupIndexType igrp = 1; igrp < ngrps; igrp++)
+   {
+      if (pBridge->GetGirderCount(igrp) != ngdrs)
+         return true;
+   }
+
+   return false;
+}
+
 
 CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion, bool bPageBreakAfter) :
 CTitlePageBuilder(strTitle),
@@ -299,6 +313,76 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
       }
    }
 
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pTitlePage << p;
+   *p << _T("Analysis Controls") << rptNewLine;
+
+   GET_IFACE(ISpecification, pSpec);
+   pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+   p = new rptParagraph();
+   *pTitlePage << p;
+   *p << _T("Structural Analysis Method: ");
+   switch (analysisType)
+   {
+   case pgsTypes::Simple:
+      *p << _T("Simple Span");
+      break;
+
+   case pgsTypes::Continuous:
+      *p << _T("Simple Spans made Continuous");
+      break;
+
+   case pgsTypes::Envelope:
+      *p << _T("Envelope of Simple Span and Simple Spans made Continuous");
+      break;
+   }
+   *p << rptNewLine;
+
+   GET_IFACE(ISectionProperties, pSectProps);
+   if (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross)
+   {
+      *p << _T("Section Properties: Gross") << rptNewLine;
+   }
+   else
+   {
+      *p << _T("Section Properties: Transformed") << rptNewLine;
+   }
+
+   GET_IFACE(ILossParameters, pLossParams);
+   *p << _T("Losses: ") << pLossParams->GetLossMethodDescription() << rptNewLine;
+
+
+   GET_IFACE_NOCHECK(IBridge, pBridge);
+   if (girderKey.girderIndex != INVALID_INDEX && IsDifferentNumberOfGirdersPerSpan(pBridge) )
+   {
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pTitlePage << p;
+      *p << _T("Beams Used in Girderline Analysis Models") << rptNewLine;
+
+      p = new rptParagraph();
+      *pTitlePage << p;
+      *p << italic(ON) << _T("This bridge is described with a different number of girders in each span.") <<  italic(OFF) << _T(" Plane frame analysis is performed in accordance with LRFD 4.6.2. ");
+      *p << _T("The structural analysis model for Girderline ") << LABEL_GIRDER(girderKey.girderIndex) << _T(" consists of ");
+
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys);
+      size_t cnt = vGirderKeys.size();
+      size_t ic = 0;
+      for (const auto& thisGirderKey : vGirderKeys)
+      {
+         *p << _T("Span ") << LABEL_SPAN(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex); 
+
+         if (++ic < cnt)
+         {
+            *p << _T(", ");
+         }
+      }
+
+      *p << _T(". Note that the pier cap is assumed to be torsionally rigid for transfer of continuous moment. Refer to the Structural Analysis Models section in the Help Technical Guide for more guidance.") << rptNewLine;
+   }
+
+
    rptRcTable* pTable;
    int row = 0;
 
@@ -357,6 +441,12 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
 
       (*pTable)(row, 0) << _T("STRF");
       (*pTable)(row++, 1) << _T("Section Transitions, Right Face");
+
+      (*pTable)(row, 0) << _T("SDCR");
+      (*pTable)(row++, 1) << _T("Start of Deck Casting Region");
+
+      (*pTable)(row, 0) << _T("EDCR");
+      (*pTable)(row++, 1) << _T("End of Deck Casting Region");
 
       (*pTable)(row,0) << _T("Diaphragm");
       (*pTable)(row++,1) << _T("Location of a precast or cast in place diaphragm");

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 interface IEAFDisplayUnits;
 class pgsGirderArtifact;
 class pgsSegmentArtifact;
+struct StressCheckTask;
 
 /*****************************************************************************
 CLASS 
@@ -52,103 +53,36 @@ public:
 
    CFlexuralStressCheckTable& operator = (const CFlexuralStressCheckTable& rOther);
 
-   virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,
-                      const pgsGirderArtifact* pGirderArtifact,
-                      IEAFDisplayUnits* pDisplayUnits,
-                      IntervalIndexType intervalIdx,
-                      pgsTypes::LimitState ls,
-                      bool bGirderStresses
-                      ) const;
+   virtual void Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses ) const;
 
    //------------------------------------------------------------------------
    // Builds the stress table and notes
-   // NOTE: stress type is ignored for stages other than BSS3
-   virtual void Build(rptChapter* pChapter,
-                      IBroker* pBroker,
-                      const pgsGirderArtifact* pGirderArtifact,
-                      SegmentIndexType segIdx,
-                      IEAFDisplayUnits* pDisplayUnits,
-                      IntervalIndexType intervalIdx,
-                      pgsTypes::LimitState ls,
-                      bool bGirderStresses
-                      ) const;
+   virtual void Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses ) const;
 
    //------------------------------------------------------------------------
    // Builds the notes above stress table
-   void BuildNotes(rptChapter* pChapter, 
-                   IBroker* pBroker,
-                   const pgsGirderArtifact* pGirderArtifact,
-                   SegmentIndexType segIdx,
-                   IEAFDisplayUnits* pDisplayUnits,
-                   IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   bool bGirderStresses) const;
+   void BuildNotes(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
    //------------------------------------------------------------------------
    // Builds the table only
-   void BuildTable(rptChapter* pChapter, 
-                   IBroker* pBroker,
-                   const pgsGirderArtifact* pGirderArtifact,
-                   SegmentIndexType segIdx,
-                   IEAFDisplayUnits* pDisplayUnits,
-                   IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   bool bGirderStresses) const;
+   void BuildTable(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
 protected:
    void MakeCopy(const CFlexuralStressCheckTable& rOther);
    void MakeAssignment(const CFlexuralStressCheckTable& rOther);
 
 
-   void BuildSectionHeading(rptChapter* pChapter, 
-                   IBroker* pBroker,
-                   const pgsGirderArtifact* pGirderArtifact,
-                   SegmentIndexType segIdx,
-                   IEAFDisplayUnits* pDisplayUnits,
-                   IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   bool bGirderStresses) const;
+   void BuildSectionHeading(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
-   void BuildAllowStressInformation(rptChapter* pChapter, 
-                   IBroker* pBroker,
-                   const pgsGirderArtifact* pGirderArtifact,
-                   SegmentIndexType segIdx,
-                   IEAFDisplayUnits* pDisplayUnits,
-                   IntervalIndexType intervalIdx,
-                   pgsTypes::LimitState ls,
-                   bool bGirderStresses) const;
+   void BuildAllowStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
-   void BuildAllowGirderStressInformation(rptChapter* pChapter, 
-                                          IBroker* pBroker,
-                                          const pgsGirderArtifact* pGirderArtifact,
-                                          SegmentIndexType segIdx,
-                                          IEAFDisplayUnits* pDisplayUnits,
-                                          IntervalIndexType intervalIdx,
-                                          pgsTypes::LimitState ls) const;
+   void BuildAllowGirderStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits,const StressCheckTask& task) const;
 
-   void BuildAllowDeckStressInformation(rptChapter* pChapter, 
-                                        IBroker* pBroker,
-                                        const pgsGirderArtifact* pGirderArtifact,
-                                        IEAFDisplayUnits* pDisplayUnits,
-                                        IntervalIndexType intervalIdx,
-                                        pgsTypes::LimitState ls) const;
+   void BuildAllowDeckStressInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
 
-   void BuildAllowSegmentStressInformation(rptParagraph* pPara, 
-                                           IBroker* pBroker,
-                                           const pgsSegmentArtifact* pSegmentArtifact,
-                                           IndexType artifactIdx,
-                                           IEAFDisplayUnits* pDisplayUnits,
-                                           IntervalIndexType intervalIdx,
-                                           pgsTypes::LimitState limitState) const;
+   void BuildAllowSegmentStressInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
 
-   void BuildAllowClosureJointStressInformation(rptParagraph* pPara, 
-                                           IBroker* pBroker,
-                                           const pgsSegmentArtifact* pSegmentArtifact,
-                                           IndexType artifactIdx,
-                                           IEAFDisplayUnits* pDisplayUnits,
-                                           IntervalIndexType intervalIdx,
-                                           pgsTypes::LimitState limitState) const;
+   void BuildAllowClosureJointStressInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
 
 
 private:

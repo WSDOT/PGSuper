@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -122,3 +122,7 @@ struct __declspec(uuid("{53884B6C-07D5-4e5e-9ED3-DF162DE1C27E}")) VoidedSlabDist
 
 DEFINE_GUID(CLSID_VoidedSlab2DistFactorEngineer, 0x7B95DAC5, 0x4E68, 0x4e16, 0x85, 0x04, 0x22, 0xD2, 0x1A, 0x0E, 0x6B, 0x52);
 struct __declspec(uuid("{7B95DAC5-4E68-4e16-8504-22D21A0E6B52}")) VoidedSlab2DistFactorEngineer;
+
+
+DEFINE_GUID(CLSID_TxDOTSpreadSlabBeamDistFactorEngineer, 0xd89b6608, 0x3c6c, 0x422d, 0xa2, 0xfb, 0x3f, 0xb7, 0x4b, 0x89, 0xbd, 0x7c);
+struct __declspec(uuid("{D89B6608-3C6C-422D-A2FB-3FB74B89BD7C}")) TxDOTSpreadSlabBeamDistFactorEngineer;

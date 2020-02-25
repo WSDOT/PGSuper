@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -53,12 +53,14 @@
 #define TLM_RAILING_SYSTEM_ERROR                         0x00100000 // railing system is installed before deck is cast
 #define TLM_STRESS_TENDON_ERROR                          0x00200000 // tendon stressed before closure joints are cast or segments are erected
 #define TLM_LOAD_RATING_ERROR                            0x00400000 // load rating occurs before bridge is open to traffic
+#define TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR         0x00800000 // intermediate diaphragm are cast after the deck is cast (must occur before)
 
 #define TLM_SUCCESS                                      0xffffffff // event was successfully added
 
 class CBridgeDescription2;
 class CLoadManager;
 class CClosureJointData;
+class CSplicedGirderData;
 
 /*****************************************************************************
 CLASS 
@@ -179,7 +181,7 @@ public:
    bool IsTendonStressed(GirderIDType girderID,DuctIndexType ductIdx) const;
 
    void SetPierErectionEventByIndex(PierIDType pierID,EventIndexType eventIdx);
-   void SetPierErectionEventByID(PierIDType pierID,IDType ID);
+   void SetPierErectionEventByID(PierIDType pierID,EventIDType ID);
    EventIndexType GetPierErectionEventIndex(PierIDType pierID) const;
    EventIDType GetPierErectionEventID(PierIDType pierID) const;
 
@@ -273,6 +275,11 @@ protected:
    void MakeAssignment(const CTimelineManager& rOther);
    void Sort();
 
+   void ClearCaches();
+
+   int ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexType ductIdx) const;
+
+
    std::vector<CTimelineEvent*> m_TimelineEvents; // owns the timeline events... will be deleted in the destructor
    const CBridgeDescription2* m_pBridgeDesc;
    const CLoadManager* m_pLoadManager;
@@ -281,6 +288,7 @@ protected:
 
    friend CTimelineEvent;
    friend CBridgeDescription2;
+   friend CSegmentActivityBase;
 
 #if defined _DEBUG
    void AssertValid() const;

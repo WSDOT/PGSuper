@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,24 @@
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PgsExt\BoundaryConditionComboBox.h>
 #include <PgsExt\TimelineManager.h>
+
+class CSegmentConnectionComboBox : public CComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
+
+class CClosureJointBearingOffsetMeasureComboBox : public CComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
+
+class CClosureJointEndDistanceMeasureComboBox : public CComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
 
 // CClosureJointGeometryPage dialog
 
@@ -65,8 +83,19 @@ protected:
    CString GetImageName(pgsTypes::TempSupportSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
    CString GetImageName(pgsTypes::PierSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
 
+   void UpdateConnectionPicture(pgsTypes::TempSupportSegmentConnectionType connectionType);
+   void UpdateConnectionPicture(pgsTypes::PierSegmentConnectionType connectionType);
+   void UpdateConnectionPicture(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType);
+   void UpdateConnectionPicture(ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+
    CMetaFileStatic m_ConnectionPicture;
    CBrush m_WhiteBrush;
+   CSegmentConnectionComboBox m_cbSegmentConnection;
+   friend CSegmentConnectionComboBox;
+   CClosureJointBearingOffsetMeasureComboBox m_cbBearingOffsetMeasure;
+   friend CClosureJointBearingOffsetMeasureComboBox;
+   CClosureJointEndDistanceMeasureComboBox m_cbEndDistMeasure;
+   friend CClosureJointEndDistanceMeasureComboBox;
 
    bool m_bIsPier;
    CString m_strSupportLabel;

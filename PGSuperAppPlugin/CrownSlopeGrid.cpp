@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 
 #include "stdafx.h"
 #include "CrownSlopeGrid.h"
-#include "ProfilePage.h"
+#include "CrownSlopePage.h"
 #include "PGSuperUnits.h"
 #include "PGSuperDoc.h"
 
@@ -38,14 +38,39 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// simple, exception-safe class for blocking events
+class SimpleMutex
+{
+public:
+   SimpleMutex(bool& flag):
+   m_Flag(flag)
+   {
+      m_Flag = true;
+   }
+
+   ~SimpleMutex()
+   {
+      m_Flag = false;
+   }
+private:
+   bool& m_Flag;
+};
+
+static bool stbBlockEvent = false;
+
+
 GRID_IMPLEMENT_REGISTER(CCrownSlopeGrid, CS_DBLCLKS, 0, 0, 0);
 
 /////////////////////////////////////////////////////////////////////////////
 // CCrownSlopeGrid
-
-CCrownSlopeGrid::CCrownSlopeGrid()
+CCrownSlopeGrid::CCrownSlopeGrid():
+   m_pRoadwaySectionData(nullptr)
 {
-//   RegisterClass();
+}
+
+CCrownSlopeGrid::CCrownSlopeGrid(RoadwaySectionData* pRoadwaySectionData):
+   m_pRoadwaySectionData(pRoadwaySectionData)
+{
 }
 
 CCrownSlopeGrid::~CCrownSlopeGrid()
@@ -83,37 +108,99 @@ void CCrownSlopeGrid::RemoveRows()
 		range.ExpandRange(1, 0, GetRowCount(), 0);
       CGXGridWnd::RemoveRows(range.top, range.bottom);
 	}
+
+   // renumber rows or blast segments data if no more segments
+   ROWCOL nrows = GetRowCount();
+   if (nrows > 1)
+   {
+      for (ROWCOL row = 2; row <= nrows; row++)
+      {
+         SetValueRange(CGXRange(row, 0), row - 1); // row num
+      }
+   }
+   else
+   {
+      m_pRoadwaySectionData->NumberOfSegmentsPerSection = 2;
+      m_pRoadwaySectionData->ControllingRidgePointIdx = 1;
+      m_pRoadwaySectionData->RoadwaySectionTemplates.clear();
+      UpdateGridSizeAndHeaders(*m_pRoadwaySectionData);
+   }
+}
+
+bool CCrownSlopeGrid::IsRowSelected()
+{
+	CGXRangeList* pSelList = GetParam()->GetRangeList();
+   return (pSelList->IsAnyCellFromCol(0) && pSelList->GetCount() == 1);
+}
+
+bool CCrownSlopeGrid::IsGridEmpty()
+{
+   ROWCOL nrows = GetRowCount();
+   return nrows == 1;
 }
 
 void CCrownSlopeGrid::InitRowData(ROWCOL row)
 {
 	GetParam()->EnableUndo(FALSE);
 
-   SetValueRange(CGXRange(row,1),"0+00");
-   SetValueRange(CGXRange(row,2),"-0.02");
-   SetValueRange(CGXRange(row,3),"-0.02");
-   SetValueRange(CGXRange(row,4),"0.00");
+   ROWCOL nrows = GetRowCount();
+   if (nrows > 2)
+   {
+      SetValueRange(CGXRange(row, 0), row - 1); // row num
+      // copy data from row above
+      ROWCOL cprow = max(2, row-1);
+      ROWCOL ncols = GetColCount();
+      for (ROWCOL icol = 1; icol <= ncols; icol++)
+      {
+         CString s = GetCellValue(cprow, icol);
+         SetValueRange(CGXRange(row, icol), s);
+      }
+   }
+   else
+   {
+      // No row to copy. just make some reasonable assumptions
+      SetValueRange(CGXRange(row, 0), row - 1); // row num
+      SetValueRange(CGXRange(row, 1), "0+00");
+      SetValueRange(CGXRange(row, 2), "-0.02");
+
+      ROWCOL col = 3;
+      for (IndexType ir = 0; ir < m_pRoadwaySectionData->NumberOfSegmentsPerSection - 2; ir++)
+      {
+         SetValueRange(CGXRange(row, col++), "10.00");
+         SetValueRange(CGXRange(row, col++), "-0.02");
+      }
+
+      SetValueRange(CGXRange(row, col), "-0.02");
+   }
 
    GetParam()->EnableUndo(TRUE);
 }
 
 void CCrownSlopeGrid::CustomInit()
 {
-   CProfilePage* pParent = (CProfilePage*)GetParent();
+   CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
    const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
    // in OnInitialUpdate.
-	this->Initialize( );
+   this->Initialize();
+
+	this->EnableIntelliMouse();
+}
+
+void CCrownSlopeGrid::UpdateGridSizeAndHeaders(const RoadwaySectionData& data)
+{
+   CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
+   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits,pDisplayUnits);
 
 	this->GetParam( )->EnableUndo(FALSE);
 
-   const int num_rows=0;
-   const int num_cols=4;
+   const ROWCOL num_rows=1;
+   const ROWCOL num_cols = 2 + (ROWCOL)data.NumberOfSegmentsPerSection*2 - 2 -1;
 
 	this->SetRowCount(num_rows);
 	this->SetColCount(num_cols);
@@ -124,6 +211,13 @@ void CCrownSlopeGrid::CustomInit()
    // no row moving
 	this->GetParam()->EnableMoveRows(FALSE);
 
+   // we want to merge cells
+   SetMergeCellsMode(gxnMergeEvalOnDisplay);
+
+   SetFrozenRows(1/*# frozen rows*/,1/*# extra header rows*/);
+
+   ROWCOL col = 0;
+
    // disable left side
 	this->SetStyleRange(CGXRange(0,0,num_rows,0), CGXStyle()
 			.SetControl(GX_IDS_CTRL_HEADER)
@@ -132,61 +226,107 @@ void CCrownSlopeGrid::CustomInit()
 		);
 
    // set text along top row
-	this->SetStyleRange(CGXRange(0,0), CGXStyle()
-         .SetWrapText(TRUE)
+	SetStyleRange(CGXRange(0,col,1,col), CGXStyle()
          .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
+         .SetVerticalAlignment(DT_TOP)
 			.SetEnabled(FALSE)          // disables usage as current cell
-			.SetValue(_T("Section\n#"))
+         .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
+      .SetValue(_T("Temp-\nlate"))
+   );
+   col++;
+
+	SetStyleRange(CGXRange(0,col,1,col), CGXStyle()
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_TOP)
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
+			.SetValue(_T("Station"))
+      .SetWrapText(FALSE)
+   );
+   col++;
+
+	this->SetStyleRange(CGXRange(0,col), CGXStyle()
+			.SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_TOP)
+			.SetValue(_T("Segment 1"))
+      .SetWrapText(FALSE)
+   );
+
+   CString strUnitTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag().c_str();
+
+   CString strSlope;
+   strSlope.Format(_T("Slope\n(%s/%s)"),strUnitTag,strUnitTag);
+
+   CString strLength;
+   strLength.Format(_T("Length\n(%s)"),strUnitTag);
+
+	this->SetStyleRange(CGXRange(1,col++), CGXStyle()
+			.SetEnabled(FALSE)          // disables usage as current cell
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetValue(strSlope)
+      .SetWrapText(TRUE)
+   );
+   
+   IndexType ns = 2;
+   for (; ns < data.NumberOfSegmentsPerSection; ns++)
+   {
+      CString strSegment;
+      strSegment.Format(_T("Segment %d"), ns);
+
+      SetStyleRange(CGXRange(0, col, 0, col + 1), CGXStyle()
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_TOP)
+         .SetEnabled(FALSE)
+         .SetValue(strSegment)
+         .SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE)
+         .SetWrapText(TRUE)
+      );
+
+	   this->SetStyleRange(CGXRange(1,col++), CGXStyle()
+			   .SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_TOP)
+         .SetValue(strLength)
+         .SetWrapText(TRUE)
+      );
+
+	   this->SetStyleRange(CGXRange(1,col++), CGXStyle()
+			   .SetEnabled(FALSE)          // disables usage as current cell
+         .SetHorizontalAlignment(DT_CENTER)
+         .SetVerticalAlignment(DT_TOP)
+         .SetValue(strSlope)
+         .SetWrapText(TRUE)
+      );
+   }
+
+   CString strSegment;
+   strSegment.Format(_T("Segment %d"), ns);
+
+	this->SetStyleRange(CGXRange(0,col), CGXStyle()
+			.SetEnabled(FALSE)          // disables usage as current cell
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetValue(strSegment)
+      .SetWrapText(FALSE)
 		);
 
-   CString cv("Station");
-	this->SetStyleRange(CGXRange(0,1), CGXStyle()
-         .SetWrapText(TRUE)
+	this->SetStyleRange(CGXRange(1,col), CGXStyle()
 			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(cv)
-		);
-
-   CString strLeftSlope;
-   strLeftSlope.Format(_T("Left\nSlope\n(%s/%s)"),strUnitTag.c_str(),strUnitTag.c_str());
-	this->SetStyleRange(CGXRange(0,2), CGXStyle()
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(strLeftSlope)
-		);
-
-   CString strRightSlope;
-   strRightSlope.Format(_T("Right\nSlope\n(%s/%s)"),strUnitTag.c_str(),strUnitTag.c_str());
-	this->SetStyleRange(CGXRange(0,3), CGXStyle()
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(strRightSlope)
-		);
-
-   CString strCPO;
-   strCPO.Format(_T("Crown Point Offset\nfrom\nProfile Grade\n(%s)"),strUnitTag.c_str());
-	this->SetStyleRange(CGXRange(0,4), CGXStyle()
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(strCPO)
-		);
+      .SetHorizontalAlignment(DT_CENTER)
+      .SetVerticalAlignment(DT_TOP)
+      .SetValue(strSlope)
+      .SetWrapText(TRUE)
+   );
 
    // make it so that text fits correctly in header row
-	this->ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
+	this->ResizeRowHeightsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
+	this->ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 
    // don't allow users to resize grids
-   this->GetParam( )->EnableTrackColWidth(0); 
    this->GetParam( )->EnableTrackRowHeight(0); 
 
-	this->EnableIntelliMouse();
 	this->SetFocus();
 
 	this->GetParam( )->EnableUndo(TRUE);
@@ -196,7 +336,12 @@ void CCrownSlopeGrid::SetRowStyle(ROWCOL nRow)
 {
 	GetParam()->EnableUndo(FALSE);
 
-   this->SetStyleRange(CGXRange(nRow,1,nRow,4), CGXStyle()
+   this->SetStyleRange(CGXRange(nRow, 0), CGXStyle()
+      .SetHorizontalAlignment(DT_CENTER)
+   );
+
+   ROWCOL ncols = GetColCount();
+   this->SetStyleRange(CGXRange(nRow,1,nRow,ncols), CGXStyle()
 	      .SetHorizontalAlignment(DT_RIGHT)
 		);
 
@@ -218,37 +363,53 @@ CString CCrownSlopeGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
     }
 }
 
-void CCrownSlopeGrid::SetRowData(ROWCOL nRow,CrownData2& data)
+void CCrownSlopeGrid::SetRowData(ROWCOL nRow, const RoadwaySectionTemplate& data)
 {
+   m_LengthCols.clear();
+   m_SlopeCols.clear();
+
 	GetParam()->EnableUndo(FALSE);
 
-   CProfilePage* pParent = (CProfilePage*)GetParent();
-
+   CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 station = data.Station;
    station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
+   ROWCOL col = 0;
+   SetValueRange(CGXRange(nRow,col++),nRow-1); // row num
+
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
    objStation->put_Value(station);
    CComBSTR bstrStation;
    objStation->AsString(unit_mode,VARIANT_FALSE,&bstrStation);
-   SetValueRange(CGXRange(nRow,1),CString(bstrStation));
+   SetValueRange(CGXRange(nRow,col++),CString(bstrStation));
 
-   SetValueRange(CGXRange(nRow,2),data.Left);
-   SetValueRange(CGXRange(nRow,3),data.Right);
+   m_SlopeCols.insert(col);
+   SetValueRange(CGXRange(nRow,col++),data.LeftSlope);
 
-   CString strCPO = GetCrownPointOffset(data.CrownPointOffset);
-   SetValueRange(CGXRange(nRow,4), strCPO);
+   for (const auto& segment : data.SegmentDataVec)
+   {
+      Float64 length = ::ConvertFromSysUnits(segment.Length, pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+      m_LengthCols.insert(col);
+      SetValueRange(CGXRange(nRow,col++),length);
+      m_SlopeCols.insert(col);
+      SetValueRange(CGXRange(nRow,col++),segment.Slope);
+   }
+
+   m_SlopeCols.insert(col);
+   SetValueRange(CGXRange(nRow,col),data.RightSlope);
 
    GetParam()->EnableUndo(TRUE);
 }
 
-bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pLeft,Float64* pRight,Float64* pCPO)
+bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
 {
-   CProfilePage* pParent = (CProfilePage*)GetParent();
+   data.SegmentDataVec.clear();
+
+   CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
@@ -257,118 +418,247 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pLeft,Fl
    CComPtr<IStation> station;
    station.CoCreateInstance(CLSID_Station);
    HRESULT hr = station->FromString(CComBSTR(strStation),unit_mode);
-   if ( FAILED(hr) )
+   if (FAILED(hr))
+   {
+      CString msg;
+      msg.Format(_T("Invalid station data for template %d"), nRow-1);
+      ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
       return false;
+   }
 
    Float64 station_value;
    station->get_Value(&station_value);
    station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-   *pStation = station_value;
+   data.Station = station_value;
 
-   CString strLeft = GetCellValue(nRow,2);
-   *pLeft = _tstof(strLeft);
+   CString strVal = GetCellValue(nRow,2);
+   data.LeftSlope = 0.0;
+   if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.LeftSlope))
+	{
+      CString msg;
+      msg.Format(_T("Leftmost slope value not a number for template %d"), nRow-1);
+      ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+      return false;
+	}
 
-   CString strRight = GetCellValue(nRow,3);
-   *pRight = _tstof(strRight);
+   ROWCOL ncols = GetColCount();
+   ROWCOL col = 3;
+   IndexType nsegments = (ncols - 3) / 2;
+   for (IndexType ns = 0; ns < nsegments; ns++)
+   {
+      RoadwaySegmentData seg;
+      strVal = GetCellValue(nRow,col++);
+      Float64 length = 0.0;
+      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &length))
+	   {
+         CString msg;
+         msg.Format(_T("Length value not a number for template %d"), nRow-1);
+         ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+         return false;
+	   }
 
-   CString strCPO = GetCellValue(nRow,4);
-   *pCPO = GetCrownPointOffset(strCPO);
+      if (length < 0.0)
+      {
+         CString msg;
+         msg.Format(_T("A segment length is less than zero for template %d"), nRow-1);
+         ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+         return false;
+      }
+
+      seg.Length = ::ConvertToSysUnits(length,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+
+      strVal = GetCellValue(nRow,col++);
+      seg.Slope = 0.0;
+      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &seg.Slope))
+	   {
+         CString msg;
+         msg.Format(_T("A slope value is not a number for template %d"), nRow-1);
+         ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+         return false;
+	   }
+
+      data.SegmentDataVec.push_back(seg);
+   }
+
+   strVal = GetCellValue(nRow,col);
+   data.RightSlope = 0.0;
+   if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.RightSlope))
+	{
+      CString msg;
+      msg.Format(_T("Rightmost slope value not a number for template %d"), nRow-1);
+      ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+      return false;
+	}
 
    return true;
 }
 
-void CCrownSlopeGrid::SetCrownSlopeData(std::vector<CrownData2>& curves)
+void CCrownSlopeGrid::InitRoadwaySectionData(bool updateHeader)
 {
+   // use mutex to keep grid from attempting to reselect current cell. program will crash if we don't do this.
+   SimpleMutex mutex(stbBlockEvent);
+
+   // set up our width and headers
+   if (updateHeader)
+   {
+      UpdateGridSizeAndHeaders(*m_pRoadwaySectionData);
+   }
+
    GetParam()->EnableUndo(FALSE);
 
    // empty the grid
-   if ( 0 < GetRowCount() )
-      CGXGridWnd::RemoveRows(1,GetRowCount());
+   if ( 1 < GetRowCount() )
+      CGXGridWnd::RemoveRows(2,GetRowCount());
 
-   // now fill it up
-   std::vector<CrownData2>::iterator iter;
-   for ( iter = curves.begin(); iter != curves.end(); iter++ )
+   for(const auto& templ : m_pRoadwaySectionData->RoadwaySectionTemplates)
    {
-      CrownData2& curve_data = *iter;
       AppendRow();
-      SetRowData(GetRowCount(),curve_data);
+      SetRowData(GetRowCount(), templ);
    }
 
    GetParam()->EnableUndo(TRUE);
+
+	this->ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 }
 
-bool CCrownSlopeGrid::GetCrownSlopeData(std::vector<CrownData2>& curves)
+bool CCrownSlopeGrid::UpdateRoadwaySectionData()
 {
-   curves.clear();
+   m_pRoadwaySectionData->RoadwaySectionTemplates.clear();
+
    ROWCOL nRows = GetRowCount();
-   for (ROWCOL row = 1; row <= nRows; row++ )
+   for (ROWCOL row = 2; row <= nRows; row++ )
    {
-      CrownData2 curve_data;
-      if ( !GetRowData(row,&curve_data.Station,&curve_data.Left,&curve_data.Right,&curve_data.CrownPointOffset) )
+      RoadwaySectionTemplate curve_data;
+      if ( !GetRowData(row, curve_data) )
          return false;
 
-      curves.push_back(curve_data);
+      m_pRoadwaySectionData->RoadwaySectionTemplates.push_back(curve_data);
    }
 
    return true;
 }
 
-bool SortByStation(const CrownData2& c1,const CrownData2& c2)
+bool SortByStation(const RoadwaySectionTemplate& c1,const RoadwaySectionTemplate& c2)
 {
    return c1.Station < c2.Station;
 }
 
-void CCrownSlopeGrid::SortCrossSections()
+bool CCrownSlopeGrid::SortCrossSections(bool doUpdateGrid)
 {
-   std::vector<CrownData2> curves;
-   
-   if (GetCrownSlopeData(curves))
+   if (UpdateRoadwaySectionData())
    {
-      std::sort(curves.begin(),curves.end(),SortByStation);
-      SetCrownSlopeData(curves);
+      std::sort(m_pRoadwaySectionData->RoadwaySectionTemplates.begin(),m_pRoadwaySectionData->RoadwaySectionTemplates.end(),SortByStation);
+
+      if (doUpdateGrid)
+      {
+         InitRoadwaySectionData(false);
+      }
+
+      if (!m_pRoadwaySectionData->RoadwaySectionTemplates.empty())
+      {
+         std::vector<RoadwaySectionTemplate>::const_iterator iter = m_pRoadwaySectionData->RoadwaySectionTemplates.begin();
+         Float64 sta = iter->Station;
+         iter++;
+         while (iter != m_pRoadwaySectionData->RoadwaySectionTemplates.end())
+         {
+            if (sta == iter->Station)
+            {
+               // can't have templates at the same station
+               return false;
+            }
+
+            sta = iter->Station;
+            iter++;
+         }
+      }
+
+      return true;
    }
+
+   return false;
 }
 
-Float64 CCrownSlopeGrid::GetCrownPointOffset(const CString& strAlignmentOffset)
+BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   Float64 sign = 1;
-   TCHAR cDir = strAlignmentOffset.GetAt(strAlignmentOffset.GetLength()-1);
-   if ( cDir == _T('L') || cDir == _T('l'))
+   if (m_IsACellInvalid)
    {
-      sign = -1;
+      return FALSE;
    }
-   else if ( cDir == _T('R') || cDir == _T('r'))
-   {
-      sign = 1;
-   }
-
-   Float64 value = _tstof(strAlignmentOffset);
-   value *= sign;
-
-   value = ::ConvertToSysUnits(value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-
-   return value;
-}
-
-CString CCrownSlopeGrid::GetCrownPointOffset(Float64 alignmentOffset)
-{
-   int sign = Sign(alignmentOffset);
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
-   CString strAlignmentOffset;
-   if ( sign == 0 )
-      strAlignmentOffset.Format(_T("%s"),FormatDimension(alignmentOffset,pDisplayUnits->GetAlignmentLengthUnit(),false));
-   else if ( sign < 0 )
-      strAlignmentOffset.Format(_T("%s %c"),FormatDimension(fabs(alignmentOffset),pDisplayUnits->GetAlignmentLengthUnit(),false),_T('L'));
    else
-      strAlignmentOffset.Format(_T("%s %c"),FormatDimension(fabs(alignmentOffset),pDisplayUnits->GetAlignmentLengthUnit(),false),_T('R'));
+   {
+      return CGXGridWnd::OnValidateCell(nRow, nCol);
+   }
+}
 
-   return strAlignmentOffset;
+// validate input
+void CCrownSlopeGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
+{
+   CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
+
+   // set up styles
+   CGXStyle valid_style;
+   CGXStyle error_style;
+   valid_style.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+   error_style.SetTextColor(RGB(255,0,0));
+
+   bool is_valid(true);
+   if (nCol == 1)
+   {
+      CString strStation = GetCellValue(nRow, 1);
+
+      GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+      UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
+      CComPtr<IStation> station;
+      station.CoCreateInstance(CLSID_Station);
+      HRESULT hr = station->FromString(CComBSTR(strStation), unit_mode);
+      if (FAILED(hr))
+      {
+         is_valid = false;
+      }
+   }
+   else
+   {
+      // only validate slope and length data on the fly
+      bool docheck = m_SlopeCols.find(nCol) != m_SlopeCols.end() || m_LengthCols.find(nCol) != m_LengthCols.end();
+
+      if (docheck)
+      {
+         CString s;
+         CGXControl* pControl = GetControl(nRow, nCol);
+         pControl->GetCurrentText(s);
+
+         if (nCol > 1 && !s.IsEmpty())
+         {
+            Float64 dbl;
+            if (!sysTokenizer::ParseDouble(s, &dbl))
+            {
+               is_valid = false;
+            }
+         }
+      }
+   }
+
+   // set the styles
+   CGXRange range(nRow, nCol);
+   SetStyleRange(range,  (is_valid  ? valid_style : error_style) );
+
+   m_IsACellInvalid = !is_valid;
+
+   if (is_valid)
+   {
+      // tell parent to draw template if we have valid data
+      pParent->OnChange(); 
+   }
+
+   CGXGridWnd::OnModifyCell(nRow, nCol);
+}
+
+void CCrownSlopeGrid::OnMovedCurrentCell(ROWCOL nRow, ROWCOL nCol)
+{
+   if (!stbBlockEvent && nRow > 1)
+   {
+      // tell parent to update its graphic
+      CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
+      pParent->OnGridTemplateClicked(nRow - 2);
+   }
 }

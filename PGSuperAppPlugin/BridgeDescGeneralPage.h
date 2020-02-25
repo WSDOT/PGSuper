@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -106,6 +106,7 @@ protected:
    void FillGirderOrientationComboBox();
    void FillGirderSpacingTypeComboBox();
    void FillGirderSpacingMeasurementComboBox();
+   void FillWorkPointLocationComboBox();
    void FillDeckTypeComboBox();
    void FillRefGirderOffsetTypeComboBox();
    void FillRefGirderComboBox();
@@ -151,6 +152,7 @@ protected:
    pgsTypes::SupportedBeamSpacing m_GirderSpacingType;
    pgsTypes::MeasurementType      m_GirderSpacingMeasurementType;
    pgsTypes::MeasurementLocation  m_GirderSpacingMeasurementLocation;
+   pgsTypes::WorkPointLocation    m_WorkPointLocation;
 
    GirderIndexType m_RefGirderIdx;
    Float64 m_RefGirderOffset;
@@ -187,6 +189,7 @@ protected:
    int m_CacheUseSameGirderNameBtn;
    int m_CacheDeckTypeIdx;
    int m_CacheGirderConnectivityIdx;
+   int m_CacheWorkPointTypeIdx;
 };
 
 //{{AFX_INSERT_LOCATION}}

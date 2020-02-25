@@ -17,10 +17,10 @@ Resistance Factors (LRFD 5.5.4.2)
 Define the resistance factors
 
 ### Conventional Construction (LRFD 5.5.4.2) ###
-Define the resistance factors for conventional construction for normal weight and lightweight concrete.
+Define the resistance factors for conventional construction for normal weight, lightweight concrete, and UHPC.
 
 ### Closure Joint (LRFD 5.5.4.2 and 5.12.3.4.2d (*pre-2017: 5.14.1.3.2d*)) ###
-Define the resistance factors for cast-in-place closure joints for normal weight and lightweight concrete.
+Define the resistance factors for cast-in-place closure joints for normal weight, lightweight concrete, and UHPC.
 
 Negative Moment Capacity
 ------------------------

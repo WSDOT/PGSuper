@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,6 +37,8 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <DManipTools\DManipTools.h>
+
+#include <algorithm>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -272,7 +274,7 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
    doRightCurb->put_Color(GREEN);
    doRightCurb->put_PointType(plpNone);
 
-   // Register an event sink with the alignment object so that we can handle Float64 clicks
+   // Register an event sink with the alignment object so that we can handle double clicks
    // on the alignment differently then a general dbl-click
    CComPtr<iDisplayObject> dispObj;
    doProfile->QueryInterface(IID_iDisplayObject,(void**)&dispObj);
@@ -290,10 +292,32 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
    Float64 rightOffset = pBridge->GetRightCurbOffset((PierIndexType)0);
 
    // model the profile as a series of individual points
+
+   // get we want the stations at all roadway sections
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
+   const auto roadwaySectionData = pRoadwayData->GetRoadwaySectionData();
+   auto nSectionTemplates = roadwaySectionData.RoadwaySectionTemplates.size();
+   
+   // we also want to use a minimum of nPoints
    long nPoints = 50;
+
+   // create a vector of stations
+   std::vector<Float64> vStations;
+   vStations.resize(nPoints);
    Float64 station_inc = (end_station - start_station)/(nPoints-1);
-   Float64 station = start_station;
-   for ( long i = 0; i < nPoints; i++, station += station_inc)
+   Float64 station = start_station - station_inc;
+   std::generate(std::begin(vStations), std::end(vStations), [&]() {return station += station_inc;}); // generate nPoint stations
+   if (1 < roadwaySectionData.RoadwaySectionTemplates.size())
+   {
+      for (const auto& sectionTemplate : roadwaySectionData.RoadwaySectionTemplates) // add section template locations, if there is more than one
+      {
+         vStations.push_back(sectionTemplate.Station);
+      }
+   }
+   std::sort(std::begin(vStations), std::end(vStations)); // sort and remove duplicates
+   vStations.erase(std::unique(std::begin(vStations), std::end(vStations), [](auto& a, auto& b) {return IsEqual(a, b);}), std::end(vStations));
+
+   for(Float64 station : vStations)
    {
       Float64 y = pRoadway->GetElevation(station,0.0);
       CComPtr<IPoint2d> pnt;

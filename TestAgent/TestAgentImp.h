@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,8 +31,14 @@
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\TestFileExport.h>
 
 #include <EAF\EAFInterfaceCache.h>
+#include <EAF\EAFUIIntegration.h>
+
+#include "TestCommandLineInfo.h"
+
+class pgsSegmentDesignArtifact;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTestAgentImp
@@ -41,7 +47,9 @@ class ATL_NO_VTABLE CTestAgentImp :
 	public CComCoClass<CTestAgentImp, &CLSID_TestAgent>,
 	public IConnectionPointContainerImpl<CTestAgentImp>,
 	public IAgentEx,
-   public ITest1250
+   public IEAFProcessCommandLine,
+   public ITest1250,
+   public ITestFileExport
 {
 public:
 	CTestAgentImp()
@@ -59,6 +67,8 @@ BEGIN_COM_MAP(CTestAgentImp)
    COM_INTERFACE_ENTRY(IAgentEx)
 	COM_INTERFACE_ENTRY(ITest1250)
 	COM_INTERFACE_ENTRY(IConnectionPointContainer)
+   COM_INTERFACE_ENTRY(IEAFProcessCommandLine)
+   COM_INTERFACE_ENTRY(ITestFileExport)
 END_COM_MAP()
 BEGIN_CONNECTION_POINT_MAP(CTestAgentImp)
 END_CONNECTION_POINT_MAP()
@@ -85,6 +95,13 @@ public:
 
    virtual bool IsTesting() const override;
 
+// ITestFileExport
+   virtual int WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey, bool designSucceeded) override;
+   virtual int WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey) override;
+
+// IEAFProcessCommandLine
+   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
+
 private:
    DECLARE_EAF_AGENT_DATA;
 
@@ -108,6 +125,11 @@ private:
    bool RunFabOptimizationTest(std::_tofstream& resultsFile,std::_tofstream& poiFile,const CSegmentKey& segmentKey);
    bool RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CGirderKey& girderKey);
    bool RunAlignmentTest(std::_tofstream& resultsFile);
+
+   void ProcessTestReport(const CTestCommandLineInfo& rCmdInfo);
+   bool CreateTestFileNames(const CString& output, CString* pErrFileName);
+   bool DoTestReport(const CString& outputFileName, const CString& errorFileName, const CTestCommandLineInfo& txInfo);
+   void SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSegmentDesignArtifact* pArtifact);
 };
 
 #endif //__TESTAGENT_H_

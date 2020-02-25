@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,6 +35,7 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistFactorEngineer.h>
+#include <IFace\DocumentType.h>
 
 #include <EAF\EAFMainFrame.h>
 
@@ -77,6 +78,7 @@ CBridgeDescGeneralPage::CBridgeDescGeneralPage() : CPropertyPage(CBridgeDescGene
    m_MinGirderCount = 2;
    m_CacheGirderConnectivityIdx = CB_ERR;
    m_CacheDeckTypeIdx = CB_ERR;
+   m_CacheWorkPointTypeIdx = CB_ERR;
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -105,7 +107,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	DDX_Control(pDX, IDC_NUMGDR_SPIN, m_NumGdrSpinner);
    DDX_Control(pDX, IDC_ALIGNMENTOFFSET_FMT, m_AlignmentOffsetFormat);
-	//}}AFX_DATA_MAP
+   //}}AFX_DATA_MAP
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -212,6 +214,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX,IDC_REF_GIRDER,m_RefGirderIdx);
    DDX_OffsetAndTag(pDX,IDC_REF_GIRDER_OFFSET,IDC_REF_GIRDER_OFFSET_UNIT,m_RefGirderOffset,pDisplayUnits->GetXSectionDimUnit() );
    DDX_CBItemData(pDX,IDC_REF_GIRDER_OFFSET_TYPE,m_RefGirderOffsetType);
+   DDX_CBItemData(pDX,IDC_WORKPOINT_TYPE,m_WorkPointLocation);
 
    ////////////////////////////////////////////////
    // Top Width
@@ -334,8 +337,11 @@ BOOL CBridgeDescGeneralPage::OnInitDialog()
 
    EnableLongitudinalJointMaterial();
 
+   FillWorkPointLocationComboBox();
+
 	CPropertyPage::OnInitDialog();
    
+
    m_NumGdrSpinner.SetRange32((int)m_MinGirderCount,(int)MAX_GIRDERS_PER_SPAN);
 
    UDACCEL accel[2];
@@ -352,7 +358,7 @@ BOOL CBridgeDescGeneralPage::OnInitDialog()
    }
 
    CString fmt;
-   fmt.LoadString( IDS_ALIGNMENTOFFSET_FMT);
+   fmt.LoadString(IDS_ALIGNMENTOFFSET_FMT);
    m_AlignmentOffsetFormat.SetWindowText(fmt);
 
    UpdateConcreteTypeLabel();
@@ -439,6 +445,13 @@ void CBridgeDescGeneralPage::Init()
       m_strCacheLeftTopWidth.Format(_T("%s"), FormatDimension(m_LeftTopWidth, pDisplayUnits->GetXSectionDimUnit(), false));
       m_strCacheRightTopWidth.Format(_T("%s"), FormatDimension(m_RightTopWidth, pDisplayUnits->GetXSectionDimUnit(), false));
    }
+   else
+   {
+      m_strCacheLeftTopWidth.Format(_T("%s"), FormatDimension(0, pDisplayUnits->GetXSectionDimUnit(), false));
+      m_strCacheRightTopWidth.Format(_T("%s"), FormatDimension(0, pDisplayUnits->GetXSectionDimUnit(), false));
+   }
+
+   m_WorkPointLocation = pParent->m_BridgeDesc.GetWorkPointLocation();
 
    int sign = ::Sign(m_RefGirderOffset);
    LPTSTR strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
@@ -450,6 +463,11 @@ void CBridgeDescGeneralPage::Init()
    m_JointConcrete = pParent->m_BridgeDesc.GetLongitudinalJointMaterial();
 
    UpdateMinimumGirderCount();
+
+   // there are a couple controls that we don't want to be empty so put some dummy text in them
+   GetDlgItem(IDC_LEFT_TOP_WIDTH)->SetWindowText(_T("0"));
+   GetDlgItem(IDC_RIGHT_TOP_WIDTH)->SetWindowText(_T("0"));
+   GetDlgItem(IDC_SPACING)->SetWindowText(_T("0"));
 }
 
 void CBridgeDescGeneralPage::UpdateBridgeDescription()
@@ -520,6 +538,8 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    pParent->m_BridgeDesc.SetMeasurementLocation(m_GirderSpacingMeasurementLocation);
    pParent->m_BridgeDesc.SetMeasurementType(m_GirderSpacingMeasurementType);
+
+   pParent->m_BridgeDesc.SetWorkPointLocation(m_WorkPointLocation);
 
    pParent->m_BridgeDesc.SetRefGirder(m_RefGirderIdx);
    pParent->m_BridgeDesc.SetRefGirderOffset(m_RefGirderOffset);
@@ -816,9 +836,22 @@ void CBridgeDescGeneralPage::FillGirderNameComboBox()
    pcbGirders->SetCurSel(m_CacheGirderNameIdx);
 }
 
-static LPCTSTR lpszOrientation[] = { _T("Plumb"), _T("Normal to roadway at Start of Bridge"),_T("Normal to roadway at Mid-span of Bridge"),_T("Normal to roadway at End of Bridge") };
 void CBridgeDescGeneralPage::FillGirderOrientationComboBox()
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+
+   CString strGrp = (bIsSplicedGirder ? _T("Group") : _T("Span"));
+
+   CString strOrientation[5];
+   strOrientation[0] = _T("Plumb");
+   strOrientation[1].Format(_T("Normal to roadway at Start of %s"), strGrp);
+   strOrientation[2].Format(_T("Normal to roadway at Middle of %s"), strGrp);
+   strOrientation[3].Format(_T("Normal to roadway at End of %s"), strGrp);
+   strOrientation[4] = _T("Balanced to minimize haunch depth");
+
    // Girder Orientation
    CComboBox* pOrientation = (CComboBox*)GetDlgItem(IDC_GIRDER_ORIENTATION);
    int curSel = pOrientation->GetCurSel();
@@ -826,7 +859,7 @@ void CBridgeDescGeneralPage::FillGirderOrientationComboBox()
    std::vector<pgsTypes::GirderOrientationType> vTypes = m_Factory->GetSupportedGirderOrientation();
    for (auto type : vTypes)
    {
-      int idx = pOrientation->AddString(lpszOrientation[type]);
+      int idx = pOrientation->AddString(strOrientation[type]);
       pOrientation->SetItemData(idx, (DWORD_PTR)type);
    }
 
@@ -933,6 +966,63 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
       ASSERT(IsJointSpacing(m_GirderSpacingType));
       DDX_Tag(&dx,IDC_SPACING_UNIT,pDisplayUnits->GetComponentDimUnit());
    }
+}
+
+void CBridgeDescGeneralPage::FillWorkPointLocationComboBox()
+{
+   CComboBox* pWorkPointCB = (CComboBox*)GetDlgItem(IDC_WORKPOINT_TYPE);
+
+   int oldSel = pWorkPointCB->GetCurSel();
+
+   // Fill control
+   pWorkPointCB->ResetContent();
+   pgsTypes::WorkPointLocations wpls = m_Factory->GetSupportedWorkPointLocations(m_GirderSpacingType);
+   int idx;
+   for ( auto & rwpl : wpls )
+   {
+      switch( rwpl )
+      {
+      case pgsTypes::wplTopGirder:
+         idx = pWorkPointCB->AddString(_T("Top Centerline of Girders"));
+         pWorkPointCB->SetItemData(idx,(DWORD)rwpl);
+         break;
+
+      case pgsTypes::wplBottomGirder:
+         idx = pWorkPointCB->AddString(_T("Bottom Centerline of Girders"));
+         pWorkPointCB->SetItemData(idx,(DWORD)rwpl);
+         break;
+
+      default:
+         ATLASSERT(false); // is there a new type???
+      }
+   }
+
+   // Disable control if only one item in it. This means that only top is allowed
+   BOOL benable = wpls.size() > 1 ? 1 : 0; 
+
+   // Cache last enabled index if we are switching from disabled -> enabled
+   int curSel = max(0, oldSel);
+   if (benable)
+   {
+      if (!pWorkPointCB->IsWindowEnabled())
+      {
+         curSel = m_CacheWorkPointTypeIdx;
+      }
+   }
+   else
+   {
+      curSel = 0; // Top wp location available only
+      m_CacheWorkPointTypeIdx = oldSel; // cache old setting
+   }
+
+   if ( curSel != CB_ERR )
+   {
+      pWorkPointCB->SetCurSel(curSel);
+   }
+
+   pWorkPointCB->EnableWindow(benable);
+   GetDlgItem(IDC_WORKPOINT_STATIC)->EnableWindow(benable);
+
 }
 
 void CBridgeDescGeneralPage::FillGirderSpacingMeasurementComboBox()
@@ -1163,6 +1253,8 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
 
    UpdateBridgeDescription();
 
+   pgsTypes::SupportedBeamSpacing oldSpacingType = m_GirderSpacingType;
+
    if ( !UpdateGirderSpacingLimits() || m_NumGdrSpinner.GetPos() == 1)
    {
       EnableGirderSpacing(FALSE,FALSE);
@@ -1175,9 +1267,24 @@ void CBridgeDescGeneralPage::OnGirderFamilyChanged()
    EnableTopWidth(IsTopWidthSpacing(m_GirderSpacingType));
    UpdateGirderTopWidthSpacingLimits();
 
-   EnableLongitudinalJointMaterial();
-
    UpdateSuperstructureDescription();
+   FillDeckTypeComboBox();
+   FillGirderSpacingTypeComboBox();
+   FillTopWidthComboBox();
+   FillWorkPointLocationComboBox();
+
+   UpdateData(FALSE);
+
+
+   //if (oldSpacingType != m_GirderSpacingType)
+   {
+      OnGirderSpacingTypeChanged();
+   }
+
+   EnableTopWidth(IsTopWidthSpacing(m_GirderSpacingType));
+   OnTopWidthTypeChanged();
+
+   EnableLongitudinalJointMaterial();
 }
 
 void CBridgeDescGeneralPage::UpdateMinimumGirderCount()
@@ -1196,11 +1303,11 @@ void CBridgeDescGeneralPage::OnBeforeChangeGirderName()
    m_GirderNameIdx = pCB->GetCurSel();
 }
 
-void CBridgeDescGeneralPage::OnGirderNameChanged() 
+void CBridgeDescGeneralPage::OnGirderNameChanged()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GDR_TYPE);
-   int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"),MB_YESNO);
-   if ( result == IDNO )
+   int result = AfxMessageBox(_T("Changing the girder type will reset the strands, stirrups, and longitudinal rebar to default values.\n\nIs that OK?"), MB_YESNO);
+   if (result == IDNO)
    {
       pCB->SetCurSel((int)m_GirderNameIdx);
       return;
@@ -1282,6 +1389,8 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
                            // this must be done before the girder spacing limits are determined
 
    FillGirderConnectivityComboBox();
+
+   FillWorkPointLocationComboBox();
 
    BOOL specify_spacing = UpdateGirderSpacingLimits();
    // spacing only needs to be specified if it can take on multiple values
@@ -1586,6 +1695,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
       castDeckEvent.GetCastDeckActivity().Enable();
       castDeckEvent.SetDescription(GetCastDeckEventName(newDeckType));
       castDeckEvent.GetCastDeckActivity().Enable();
+      castDeckEvent.GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous);
       castDeckEvent.GetCastDeckActivity().SetConcreteAgeAtContinuity(28.0); // day
       castDeckEvent.GetCastDeckActivity().SetCuringDuration(28.0); // day
       
@@ -1922,7 +2032,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    int cursel = box->GetCurSel();
    pgsTypes::SupportedDeckType deckType = (pgsTypes::SupportedDeckType)box->GetItemData(cursel);
 
-   description += _T(", ") + CString(GetDeckTypeName(deckType));
+   description += _T(", Deck: ") + CString(GetDeckTypeName(deckType));
 
    pgsTypes::AdjacentTransverseConnectivity connect = pgsTypes::atcConnectedAsUnit;
 
@@ -2049,7 +2159,7 @@ BOOL CBridgeDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
          break;
 
       case IDC_REF_GIRDER_OFFSET:
-         m_strToolTipText.LoadString(IDS_ALIGNMENTOFFSET_FMT);
+         m_strToolTipText = _T("Locates the girders, in plan view, relative to the Aligment or Bridge Line");
          bShowTip = TRUE;
          break;
 

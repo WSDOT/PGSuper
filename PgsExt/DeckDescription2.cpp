@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,9 @@ CLASS
 ****************************************************************************/
 
 
-CDeckDescription2::CDeckDescription2()
+CDeckDescription2::CDeckDescription2() :
+   OverhangTaper{ pgsTypes::dotTopTopFlange,pgsTypes::dotTopTopFlange },
+   OverhangEdgeDepth{ ::ConvertToSysUnits(7.0, unitMeasure::Inch),::ConvertToSysUnits(7.0, unitMeasure::Inch) }
 {
    DeckType               = pgsTypes::sdtCompositeCIP;
    TransverseConnectivity = pgsTypes::atcConnectedAsUnit; // only applicable if girder spacing is adjacent
@@ -88,9 +90,6 @@ CDeckDescription2::CDeckDescription2()
    PanelDepth       = ::ConvertToSysUnits(  0.0, unitMeasure::Inch );
    PanelSupport     = ::ConvertToSysUnits(  4.0, unitMeasure::Inch );
                          // for horizontal shear capacity)
-
-   OverhangTaper = pgsTypes::dotTopTopFlange;
-   OverhangEdgeDepth = ::ConvertToSysUnits( 7.0, unitMeasure::Inch );
 
    Condition = pgsTypes::cfGood;
    ConditionFactor = 1.0;
@@ -139,12 +138,12 @@ bool CDeckDescription2::operator == (const CDeckDescription2& rOther) const
       return false;
    }
 
-   if ( OverhangTaper != rOther.OverhangTaper )
+   if ( OverhangTaper[pgsTypes::stLeft] != rOther.OverhangTaper[pgsTypes::stLeft] || OverhangTaper[pgsTypes::stRight] != rOther.OverhangTaper[pgsTypes::stRight])
    {
       return false;
    }
 
-   if ( !IsEqual( OverhangEdgeDepth, rOther.OverhangEdgeDepth ) )
+   if ( !IsEqual( OverhangEdgeDepth[pgsTypes::stLeft], rOther.OverhangEdgeDepth[pgsTypes::stLeft]) || !IsEqual(OverhangEdgeDepth[pgsTypes::stRight], rOther.OverhangEdgeDepth[pgsTypes::stRight]))
    {
       return false;
    }
@@ -282,15 +281,44 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          pStrLoad->EndUnit();
       }
 
-      var.Clear();
-      var.vt = VT_R8;
-      hr = pStrLoad->get_Property(_T("OverhangEdgeDepth"),&var);
-      OverhangEdgeDepth = var.dblVal;
+      if (version < 4)
+      {
+         // removed in version 4
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("OverhangEdgeDepth"), &var);
+         OverhangEdgeDepth[pgsTypes::stLeft] = var.dblVal;
+         OverhangEdgeDepth[pgsTypes::stRight] = var.dblVal;
 
-      var.Clear();
-      var.vt = VT_I4;
-      hr = pStrLoad->get_Property(_T("OverhangTaperType"),&var);
-      OverhangTaper = (pgsTypes::DeckOverhangTaper)(var.lVal);
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("OverhangTaperType"), &var);
+         OverhangTaper[pgsTypes::stLeft] = (pgsTypes::DeckOverhangTaper)(var.lVal);
+         OverhangTaper[pgsTypes::stRight] = (pgsTypes::DeckOverhangTaper)(var.lVal);
+      }
+      else
+      {
+         // added in version 4
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("LeftOverhangEdgeDepth"), &var);
+         OverhangEdgeDepth[pgsTypes::stLeft] = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("LeftOverhangTaperType"), &var);
+         OverhangTaper[pgsTypes::stLeft] = (pgsTypes::DeckOverhangTaper)(var.lVal);
+
+         var.Clear();
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("RightOverhangEdgeDepth"), &var);
+         OverhangEdgeDepth[pgsTypes::stRight] = var.dblVal;
+
+         var.Clear();
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("RightOverhangTaperType"), &var);
+         OverhangTaper[pgsTypes::stRight] = (pgsTypes::DeckOverhangTaper)(var.lVal);
+      }
 
       // Fillet was moved to bridge in version 3. Save fillet here for bridge to get later
       if (version < 3)
@@ -411,7 +439,7 @@ HRESULT CDeckDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("Deck"),3.0);
+   pStrSave->BeginUnit(_T("Deck"),4.0);
 
    pStrSave->put_Property(_T("SlabType"),         CComVariant(DeckType));
    pStrSave->put_Property(_T("TransverseConnectivity"), CComVariant(TransverseConnectivity)); // added for version 14.0
@@ -429,8 +457,13 @@ HRESULT CDeckDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->EndUnit();
    }
 
-   pStrSave->put_Property(_T("OverhangEdgeDepth"),CComVariant(OverhangEdgeDepth));
-   pStrSave->put_Property(_T("OverhangTaperType"),CComVariant(OverhangTaper));
+   //pStrSave->put_Property(_T("OverhangEdgeDepth"),CComVariant(OverhangEdgeDepth)); // removed in version 4
+   //pStrSave->put_Property(_T("OverhangTaperType"),CComVariant(OverhangTaper)); // removed in version 4
+   pStrSave->put_Property(_T("LeftOverhangEdgeDepth"), CComVariant(OverhangEdgeDepth[pgsTypes::stLeft])); // added in version 4
+   pStrSave->put_Property(_T("LeftOverhangTaperType"), CComVariant(OverhangTaper[pgsTypes::stLeft])); // added in version 4
+   pStrSave->put_Property(_T("RightOverhangEdgeDepth"), CComVariant(OverhangEdgeDepth[pgsTypes::stRight])); // added in version 4
+   pStrSave->put_Property(_T("RightOverhangTaperType"), CComVariant(OverhangTaper[pgsTypes::stRight])); // added in version 4
+
    pStrSave->put_Property(_T("HaunchShape"),      CComVariant(HaunchShape));
    pStrSave->put_Property(_T("PanelDepth"),       CComVariant(PanelDepth));
    pStrSave->put_Property(_T("PanelSupport"),     CComVariant(PanelSupport));

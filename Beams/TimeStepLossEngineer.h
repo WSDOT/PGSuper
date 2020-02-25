@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@
 
 #include <Plugins\CLSID.h>
 
-typedef std::map<pgsPointOfInterest,LOSSDETAILS/*,ComparePoi*/> SectionLossContainer;
+typedef std::map<pgsPointOfInterest,LOSSDETAILS> SectionLossContainer;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimeStepLossEngineer
@@ -69,9 +69,12 @@ public:
    virtual void ClearDesignLosses() override;
    virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
    virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
-   virtual const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
-   virtual Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
-   virtual void GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
+   virtual const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
+   virtual Float64 GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
+   virtual void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
+   virtual const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) override;
+   virtual Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) override;
+   virtual void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) override;
 
 private:
    pgsTypes::BridgeAnalysisType m_Bat;
@@ -84,7 +87,8 @@ private:
    CComPtr<IBridgeDescription> m_pBridgeDesc;
    CComPtr<IBridge>            m_pBridge;
    CComPtr<IStrandGeometry>    m_pStrandGeom;
-   CComPtr<ITendonGeometry>    m_pTendonGeom;
+   CComPtr<IGirderTendonGeometry>    m_pGirderTendonGeometry;
+   CComPtr<ISegmentTendonGeometry>   m_pSegmentTendonGeometry;
    CComPtr<IIntervals>         m_pIntervals;
    CComPtr<ISectionProperties> m_pSectProp;
    CComPtr<IGirder>            m_pGirder;
@@ -113,21 +117,27 @@ private:
 
    struct LOSSES
    {
-      std::vector<ANCHORSETDETAILS> AnchorSet; // one for each duct
+      std::vector<ANCHORSETDETAILS> GirderAnchorSet; // one for each duct
+      std::map<CSegmentKey, std::vector<ANCHORSETDETAILS>> SegmentAnchorSet;
       SectionLossContainer SectionLosses;
    };
 
    std::map<CGirderKey,LOSSES> m_Losses;
 
-   std::map<CTendonKey,std::pair<Float64,Float64>> m_AvgFrictionAndAnchorSetLoss; // first in pair is friction, second is anchor set loss
-   std::map<CTendonKey,std::pair<Float64,Float64>> m_Elongation; // first in pair is left end, second is right end
+   std::map<CGirderTendonKey,std::pair<Float64,Float64>> m_GirderTendonAvgFrictionAndAnchorSetLoss; // first in pair is friction, second is anchor set loss
+   std::map<CGirderTendonKey, std::pair<Float64, Float64>> m_GirderTendonElongation; // first in pair is left end, second is right end
+   
+   std::map<CSegmentTendonKey, std::pair<Float64, Float64>> m_SegmentTendonAvgFrictionAndAnchorSetLoss; // first in pair is friction, second is anchor set loss
+   std::map<CSegmentTendonKey, std::pair<Float64, Float64>> m_SegmentTendonElongation; // first in pair is left end, second is right end
 
    // computes losses for the specified girder for all intervals upto and including endAnalysisIntervalIdx
    void ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx);
    void ComputeLosses(GirderIndexType girderLineIdx,IntervalIndexType endAnalysisIntervalIdx,std::vector<LOSSES*>* pvpLosses);
 
    void ComputeFrictionLosses(const CGirderKey& girderKey,LOSSES* pLosses);
+   void ComputeFrictionLosses(const CPrecastSegmentData* pSegment, LOSSES* pLosses);
    void ComputeAnchorSetLosses(const CGirderKey& girderKey,LOSSES* pLosses);
+   void ComputeAnchorSetLosses(const CPrecastSegmentData* pSegment, LOSSES* pLosses);
 
    void ComputeSectionLosses(GirderIndexType girderLineIdx,IntervalIndexType endAnalysisIntervalIdx,std::vector<LOSSES*>* pvpLosses);
    void InitializeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details);
@@ -137,10 +147,16 @@ private:
    void ComputeAnchorSetLosses(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pdfpA,Float64* pdfpS,Float64* pXSet);
    void BoundAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,Float64 Dset,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pXsetMin,Float64* pDsetMin,Float64* pdfpATMin,Float64* pdfpSMin,Float64* pXsetMax,Float64* pDsetMax,Float64* pdfpATMax,Float64* pdfpSMax);
    Float64 EvaluateAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64 Xset,Float64* pdfpAT,Float64* pdfpS);
+
+   void ComputeAnchorSetLosses(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, LOSSES* pLosses, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64* pdfpA, Float64* pdfpS, Float64* pXSet);
+   void BoundAnchorSet(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, Float64 Dset, LOSSES* pLosses, Float64 fpj, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64* pXsetMin, Float64* pDsetMin, Float64* pdfpATMin, Float64* pdfpSMin, Float64* pXsetMax, Float64* pDsetMax, Float64* pdfpATMax, Float64* pdfpSMax);
+   Float64 EvaluateAnchorSet(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, LOSSES* pLosses, Float64 fpj, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64 Xset, Float64* pdfpAT, Float64* pdfpS);
+
    LOSSDETAILS* GetLossDetails(LOSSES* pLosses,const pgsPointOfInterest& poi);
    std::vector<pgsTypes::ProductForceType> GetApplicableProductLoads(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bExternalForcesOnly=false);
 
-   void GetAnalysisLocations(const CGirderKey& girderKey,PoiList* pPoiList);
+   void GetAnalysisLocations(const CGirderKey& girderKey, PoiList* pPoiList);
+   void GetAnalysisLocations(const CSegmentKey& segmentKey, PoiList* pPoiList);
 
    CSegmentKey m_SegmentKey; // segment for which we are currently computing deflections
 };

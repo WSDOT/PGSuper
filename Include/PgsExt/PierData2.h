@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -148,12 +148,6 @@ public:
    LPCTSTR GetOrientation() const;
    void SetOrientation(LPCTSTR strOrientation);
 
-   // Set/Get cantilever settings. Only used if IsAbutment returns true.
-   void HasCantilever(bool bHasCantilever);
-   bool HasCantilever() const;
-   void SetCantileverLength(Float64 Lc);
-   Float64 GetCantileverLength() const;
-
    // Set/Get the connection type at the pier (boundary condition)
    // Used only with Boundary Piers
    pgsTypes::BoundaryConditionType GetBoundaryConditionType() const;
@@ -298,15 +292,11 @@ public:
 
 
    // =================================================================================
-   // Live load distribution factors (neg moment and reactions at this pier)
+   // Live load distribution factors (neg moment ) at this pier
    // =================================================================================
    Float64 GetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
    void SetLLDFNegMoment(GirderIndexType gdrIdx, pgsTypes::LimitState ls, Float64 gM);
    void SetLLDFNegMoment(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls, Float64 gM);
-
-   Float64 GetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls) const;
-   void SetLLDFReaction(GirderIndexType gdrIdx, pgsTypes::LimitState ls,Float64 gR);
-   void SetLLDFReaction(pgsTypes::GirderLocation gdrloc, pgsTypes::LimitState ls,Float64 gR);
 
 #if defined _DEBUG
    void AssertValid() const;
@@ -332,16 +322,14 @@ private:
    pgsTypes::BoundaryConditionType m_BoundaryConditionType; // defines connection when pier is at a boundary between girder groups
    pgsTypes::PierSegmentConnectionType m_SegmentConnectionType; // defines segment connection when pier is in the middle of a girder group
 
-   bool m_bHasCantilever;
-   Float64 m_CantileverLength;
-
-   Float64 m_GirderEndDistance[2];
-   ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType[2];
-   Float64 m_GirderBearingOffset[2];
-   ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType[2];
+   // use PierFace to access arrays
+   std::array<Float64, 2> m_GirderEndDistance;
+   std::array<ConnectionLibraryEntry::EndDistanceMeasurementType, 2> m_EndDistanceMeasurementType;
+   std::array<Float64, 2> m_GirderBearingOffset;
+   std::array<ConnectionLibraryEntry::BearingOffsetMeasurementType, 2> m_BearingOffsetMeasurementType;
 
    // Bearing data
-   mutable std::vector<CBearingData2> m_BearingData[2]; // bearing data (ahead/back) for each girder framing into pier bearing line. If single bearing line, data is in [0]
+   mutable std::array<std::vector<CBearingData2>, 2> m_BearingData; // bearing data (ahead/back) for each girder framing into pier bearing line. If single bearing line, data is in [0]
 
    // make sure bearing data stays intact from girder count changes
    void ProtectBearingData() const;
@@ -364,11 +352,11 @@ private:
    pgsTypes::OffsetMeasurementType m_TransverseOffsetMeasurement;
 
    // Cross Beam Dimensions (array index is SideType enum)
-   Float64 m_XBeamHeight[2];
-   Float64 m_XBeamTaperHeight[2];
-   Float64 m_XBeamTaperLength[2];
-   Float64 m_XBeamEndSlopeOffset[2];
-   Float64 m_XBeamOverhang[2];
+   std::array<Float64, 2> m_XBeamHeight;
+   std::array<Float64, 2> m_XBeamTaperHeight;
+   std::array<Float64, 2> m_XBeamTaperLength;
+   std::array<Float64, 2> m_XBeamEndSlopeOffset;
+   std::array<Float64, 2> m_XBeamOverhang;
    Float64 m_XBeamWidth;
 
    // Column Dimensions and Layout
@@ -376,10 +364,10 @@ private:
    std::vector<Float64> m_ColumnSpacing;
    std::vector<CColumnData> m_Columns;
 
-   Float64 m_DiaphragmHeight[2];
-   Float64 m_DiaphragmWidth[2];
-   ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType[2];
-   Float64 m_DiaphragmLoadLocation[2];
+   std::array<Float64, 2> m_DiaphragmHeight;
+   std::array<Float64, 2> m_DiaphragmWidth;
+   std::array<ConnectionLibraryEntry::DiaphragmLoadType, 2> m_DiaphragmLoadType;
+   std::array<Float64, 2> m_DiaphragmLoadLocation;
 
    CSpanData2* m_pPrevSpan;
    CSpanData2* m_pNextSpan;
@@ -390,18 +378,16 @@ private:
    // 0 for strength/service limit state, 1 for fatigue limit state
    struct LLDF
    {
-      Float64 gM[2];
-      Float64 gR[2];
+      std::array<Float64, 2> gM;
 
       LLDF()
       {
-         gM[0]=1.0; gM[1]=1.0; gR[0]=1.0; gR[1]=1.0;
+         gM[0]=1.0; gM[1]=1.0;
       }
 
       bool operator==(const LLDF& rOther) const
       {
-         return IsEqual(gM[0], rOther.gM[0]) && IsEqual(gM[1], rOther.gM[1]) &&
-                IsEqual( gR[0], rOther.gR[0])  && IsEqual( gR[1], rOther.gR[1]);
+         return IsEqual(gM[0], rOther.gM[0]) && IsEqual(gM[1], rOther.gM[1]);
       }
    };
 

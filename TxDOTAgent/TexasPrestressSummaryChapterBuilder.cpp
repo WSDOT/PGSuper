@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\PrestressLossTable.h>
 #include "TexasPrestressSummaryChapterBuilder.h"
-
+#include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
@@ -67,11 +67,14 @@ rptChapter* CTexasPrestressSummaryChapterBuilder::Build(CReportSpecification* pR
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   GET_IFACE2(pBroker, ISectionProperties, pSectProps);
+   bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
+
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << CPrestressLossTable().Build(pBroker,segmentKey,false,pDisplayUnits) << rptNewLine;
+   *pPara << CPrestressLossTable().Build(pBroker,segmentKey,bIncludeElasticEffects,false,pDisplayUnits) << rptNewLine;
 
    return pChapter;
 }

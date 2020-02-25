@@ -6,6 +6,8 @@ An idealized pier model is defined by a simple idealized boundary condition as d
 
 A physical pier model is defined by the physical attributes of the pier including its material properties, cross beam, and column arrangement.
 
+See @ref tg_structural_analysis_models in the @ref technical_guide for more information on boundary conditions and structural analysis for idealized and physical pier models.
+
 Material Properties
 -------------------
 Define the material properties of the cross beam and columns.

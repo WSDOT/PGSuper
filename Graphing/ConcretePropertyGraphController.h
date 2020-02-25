@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,6 +42,9 @@ public:
    void SetClosureJoint(const CClosureKey& closureKey);
    const CClosureKey& GetClosureJoint() const;
 
+   void SetDeckCastingRegion(IndexType castingRegionIdx);
+   IndexType GetDeckCastingRegion() const;
+
    void SetXAxisType(int type);
    int GetXAxisType() const;
 
@@ -58,6 +61,7 @@ protected:
    afx_msg void OnGirderChanged();
    afx_msg void OnSegmentChanged();
    afx_msg void OnClosureChanged();
+   afx_msg void OnDeckCastingRegionChanged();
    afx_msg void OnXAxis();
    afx_msg void OnShowGrid();
    //}}AFX_MSG
@@ -70,6 +74,7 @@ protected:
    void FillGirderControl();
    void FillSegmentControl();
    void FillClosureControl();
+   void FillDeckCastingRegionControl();
 
    void UpdateGraph();
 
@@ -77,6 +82,7 @@ protected:
 
    CSegmentKey m_SegmentKey;
    CClosureKey m_ClosureKey;
+   IndexType m_DeckCastingRegionIdx;
 
 #ifdef _DEBUG
 public:

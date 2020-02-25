@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -136,12 +136,12 @@ public:
    // returns the minimum permissible value for slab offset
    Float64 GetMinSlabOffset() const;
 
-   // set/get the Assumed Excess Camber type. This parameter indicates where the AssExcessCamber is measured
+   // set/get the Assumed Excess Camber type. This parameter indicates where the AssumedExcessCamber is measured
    void SetAssumedExcessCamberType(pgsTypes::AssumedExcessCamberType AssumedExcessCamberType);
    pgsTypes::AssumedExcessCamberType GetAssumedExcessCamberType() const;
 
-   // Set/get the Assumed Excess Camber. Has no net effect if AssExcessCamber type is not sotBridge
-   // Get method returns invalid data if AssExcessCamber type is not sotBridge
+   // Set/get the Assumed Excess Camber. Has no net effect if AssumedExcessCamber type is not sotBridge
+   // Get method returns invalid data if AssumedExcessCamber type is not sotBridge
    void SetAssumedExcessCamber(Float64 assumedExcessCamber);
    Float64 GetAssumedExcessCamber(bool bGetRawValue = false) const;
 
@@ -315,6 +315,10 @@ public:
    void SetMeasurementLocation(pgsTypes::MeasurementLocation ml);
    pgsTypes::MeasurementLocation GetMeasurementLocation() const;
 
+   // Defines where girder spacing (or joint width) is measured
+   void SetWorkPointLocation(pgsTypes::WorkPointLocation ml);
+   pgsTypes::WorkPointLocation GetWorkPointLocation() const;
+
    // Set/Get the girder top width if top width is the same
    // for the entire bridge. This parameter is invalid if the girder spacing type 
    // does not support top width (e.g. top width is only used for certain types of
@@ -378,7 +382,7 @@ public:
    CClosureJointData* FindClosureJoint(ClosureIDType closureID);
    const CClosureJointData* FindClosureJoint(ClosureIDType closureID) const;
 
-   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssExcessCamber, bool bBearingData); 
+   void CopyDown(bool bGirderCount,bool bGirderType,bool bSpacing,bool bSlabOffset,bool bAssumedExcessCamber, bool bBearingData); 
                     // takes all the data defined at the bridge level and copies
                     // it down to the spans and girders (only for this parameters set to true)
 
@@ -415,8 +419,8 @@ public:
    // Set/get the Bearing. Has no net effect if Bearing type is not sotBridge
    // Get method returns invalid data if Bearing type is not sotBridge
    void SetBearingData(const CBearingData2& Bearing);
-   const CBearingData2* GetBearingData(bool bGetRawValue = false) const;
-   CBearingData2* GetBearingData(bool bGetRawValue = false);
+   const CBearingData2* GetBearingData() const;
+   CBearingData2* GetBearingData();
 
 
    // Longitudinal joints (note, joint spacing is in the GirderSpacing data above)
@@ -474,6 +478,7 @@ private:
    pgsTypes::OffsetMeasurementType m_RefGirderOffsetType;
    pgsTypes::MeasurementType m_MeasurementType;
    pgsTypes::MeasurementLocation m_MeasurementLocation;
+   pgsTypes::WorkPointLocation m_WorkPointLocation;
 
    Float64 m_SlabOffset;
    pgsTypes::SlabOffsetType m_SlabOffsetType;
@@ -515,6 +520,8 @@ private:
    void UpdateTemporarySupports();
 
    void ClearGirderGroups();
+
+   void RemoveNegMomentRebar(PierIndexType removeRebarPierIdx);
 
    HRESULT LoadOldBridgeDescription(Float64 version,IStructuredLoad* pStrLoad,IProgress* pProgress);
 

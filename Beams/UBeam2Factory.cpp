@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -235,8 +235,8 @@ void CUBeam2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const 
    pgsPointOfInterest poiStart(segmentKey,0.00,POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // put section breaks just on either side of the end blocks/void interface
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -249,21 +249,19 @@ void CUBeam2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const 
    {
       pgsPointOfInterest poiLeftFace1(segmentKey, endBlockLength, POI_SECTCHANGE_LEFTFACE);
       pgsPointOfInterest poiRightFace1(segmentKey, endBlockLength, POI_SECTCHANGE_RIGHTFACE);
-      poiLeftFace1.CanMerge(false);
-      poiRightFace1.CanMerge(false);
       PoiIDType poiID = pPoiMgr->AddPointOfInterest(poiLeftFace1);
+      ATLASSERT(poiID != INVALID_ID);
       poiLeftFace1 = pPoiMgr->GetPointOfInterest(poiID);
       poiRightFace1.SetDistFromStart(poiLeftFace1.GetDistFromStart(),true);
-      pPoiMgr->AddPointOfInterest(poiRightFace1);
+      VERIFY(pPoiMgr->AddPointOfInterest(poiRightFace1) != INVALID_ID);
 
       pgsPointOfInterest poiRightFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_RIGHTFACE);
       pgsPointOfInterest poiLeftFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_LEFTFACE);
-      poiRightFace2.CanMerge(false);
-      poiLeftFace2.CanMerge(false);
       poiID = pPoiMgr->AddPointOfInterest(poiRightFace2);
+      ATLASSERT(poiID != INVALID_ID);
       poiRightFace2 = pPoiMgr->GetPointOfInterest(poiID);
       poiLeftFace2.SetDistFromStart(poiRightFace2.GetDistFromStart(),true);
-      pPoiMgr->AddPointOfInterest(poiLeftFace2);
+      VERIFY(pPoiMgr->AddPointOfInterest(poiLeftFace2) != INVALID_ID);
    }
 }
 
@@ -637,11 +635,6 @@ bool CUBeam2Factory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CUBeam2Factory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CUBeam2Factory::GetImage() const
 {
    return std::_tstring(_T("UBeam2.jpg"));
@@ -883,9 +876,26 @@ bool CUBeam2Factory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensio
    return false;
 }
 
+pgsTypes::WorkPointLocations CUBeam2Factory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+   wpls.push_back(pgsTypes::wplBottomGirder);
+
+   return wpls;
+}
+
+bool CUBeam2Factory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(), wpType);
+   return found == sbs.end() ? false : true;
+}
+
+
 std::vector<pgsTypes::GirderOrientationType> CUBeam2Factory::GetSupportedGirderOrientation() const
 {
-   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
@@ -970,6 +980,17 @@ Float64 CUBeam2Factory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions
 Float64 CUBeam2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("W2"));
+}
+
+void CUBeam2Factory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+
+   Float64 top = W2;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CUBeam2Factory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const

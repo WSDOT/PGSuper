@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,7 @@ public:
 	CTimelineEventDlg(const CTimelineManager& timelineMgr,
                      EventIndexType eventIdx, // index of event, INVALID_INDEX if creating a new event
                      BOOL bEditEvent, // true to display the event details editing, otherwise so the list of prev. defined events for creating new events on the fly
+                     EventIndexType minEventIdx = INVALID_INDEX, // if an event index is specified, the newly created event cannot be before that event index
                      BOOL bReadOnly=FALSE,
                      CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CTimelineEventDlg();
@@ -45,6 +46,7 @@ public:
    CTimelineManager m_TimelineManager; // our local copy of the timeline manager which were are operating upon
    CTimelineEvent* m_pTimelineEvent; // the event in m_TimelineManager that we are operating upon
    EventIndexType m_EventIndex;
+   EventIndexType m_MinEventIdx;
 
 // Dialog Data
 	enum { IDD = IDD_TIMELINE_EVENT };

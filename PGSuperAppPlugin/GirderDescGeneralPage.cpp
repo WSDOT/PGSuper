@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -308,6 +308,7 @@ BEGIN_MESSAGE_MAP(CGirderDescGeneralPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_TOP_WIDTH_TYPE, OnTopWidthTypeChanged)
 	//}}AFX_MSG_MAP
    ON_CBN_SELCHANGE(IDC_TOP_FLANGE_THICKENING_TYPE, &CGirderDescGeneralPage::OnTopFlangeThickeningTypeChanged)
+   ON_STN_CLICKED(IDC_PRECAMBER_LABEL, &CGirderDescGeneralPage::OnStnClickedPrecamberLabel)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1357,18 +1358,18 @@ void CGirderDescGeneralPage::OnChangeAssumedExcessCamberType()
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   CWnd* pwndAssExcessCamber = GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER);
+   CWnd* pwndAssumedExcessCamber = GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER);
    if ( m_AssumedExcessCamberType == pgsTypes::aecGirder )
    {
       // going into girder by girder slab offset mode
       CString strTemp = m_strAssumedExcessCamberCache;
 
-      pwndAssExcessCamber->GetWindowText(m_strAssumedExcessCamberCache);
-      pwndAssExcessCamber->SetWindowText(strTemp);
+      pwndAssumedExcessCamber->GetWindowText(m_strAssumedExcessCamberCache);
+      pwndAssumedExcessCamber->SetWindowText(strTemp);
    }
    else if ( m_AssumedExcessCamberType == pgsTypes::aecSpan )
    {
-      //pwndAssExcessCamber->SetWindowText(m_strAssExcessCamberCache);
+      //pwndAssumedExcessCamber->SetWindowText(m_strAssumedExcessCamberCache);
    }
    else
    {
@@ -1382,7 +1383,6 @@ void CGirderDescGeneralPage::OnChangeAssumedExcessCamberType()
 
 
    m_strAssumedExcessCamberCache.Format(_T("%s"), FormatDimension(m_AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit(), false));
-
    FillAssumedExcessCamberComboBox();
    CComboBox* pcbAssumedExcessCamberType = (CComboBox*)GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_TYPES);
    pcbAssumedExcessCamberType->SetCurSel(m_AssumedExcessCamberType == pgsTypes::aecGirder ? 1 : 0);
@@ -1762,4 +1762,9 @@ void CGirderDescGeneralPage::FillAssumedExcessCamberComboBox()
    }
    int idx = pcbAssumedExcessCamberType->AddString(_T("Assumed Excess Cambers are defined girder by girder"));
    pcbAssumedExcessCamberType->SetItemData(idx, (DWORD_PTR)pgsTypes::aecGirder);
+}
+
+void CGirderDescGeneralPage::OnStnClickedPrecamberLabel()
+{
+   // TODO: Add your control notification handler code here
 }

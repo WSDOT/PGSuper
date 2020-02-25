@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -87,16 +87,6 @@ Float64 CBulbTeeDistFactorEngineer::GetShearDF(const CSpanKey& spanKey,pgsTypes:
    return m_pImpl->GetShearDF(spanKey,ls,fcgdr);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
-{
-   return m_pImpl->GetReactionDF(pierIdx,gdrIdx,ls);
-}
-
-Float64 CBulbTeeDistFactorEngineer::GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr)
-{
-   return m_pImpl->GetReactionDF(pierIdx,gdrIdx,ls,fcgdr);
-}
-
 void CBulbTeeDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    m_pImpl->BuildReport(girderKey,pChapter,pDisplayUnits);
@@ -110,12 +100,11 @@ bool CBulbTeeDistFactorEngineer::Run1250Tests(const CSpanKey& spanKey,pgsTypes::
 bool CBulbTeeDistFactorEngineer::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,
                                Float64* gnM, Float64* gnM1, Float64* gnM2,
-                               Float64* gV,  Float64* gV1,  Float64* gV2,
-                               Float64* gR,  Float64* gR1,  Float64* gR2 ) 
+                               Float64* gV,  Float64* gV1,  Float64* gV2 )
 {
    return m_pImpl->GetDFResultsEx(spanKey, ls,
                                gpM, gpM1, gpM2, gnM, gnM1, gnM2,
-                               gV,  gV1, gV2, gR, gR1, gR2 ); 
+                               gV,  gV1, gV2); 
 }
 
 Float64 CBulbTeeDistFactorEngineer::GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls)

@@ -27,5 +27,5 @@ It should be noted that, while this process is most critical for long, slender g
 The fabrication optimization chapter and report lists the various combinations of lifting locations and release strength for lifting with and without temporary strands and for pretensioned and post-tensioned temporary strands.
 
 More detailed information on designing for optimized fabrication is available from
-[Brice, Richard, B. Khaleghi, and S. J. Seguirant, 2009, Design optimization for fabrication of pretensioned concrete bridge girders: An example problem. PCI Journal, V. 54, No. 4 (Fall 2009): pp. 73-111](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/2009/DOI_Articles/JL-09-FALL-8.pdf).
+[Brice, Richard, B. Khaleghi, and S. J. Seguirant, 2009, Design optimization for fabrication of pretensioned concrete bridge girders: An example problem. PCI Journal, V. 54, No. 4 (Fall 2009): pp. 73-111](https://www.pci.org/PCI/Publications/PCI_Journal/Issues/2009/Fall/Design_optimization_for_fabrication_of_pretensioned_concrete_bridge_girders__An_example_problem.aspx).
 

@@ -24,6 +24,8 @@
 #define IDC_SEGMENT                     3014
 #define IDC_CLOSURE                     3015
 #define IDC_INTERVAL                    3016
+#define IDC_CLOSURE2                    3016
+#define IDC_DECK_CASTING_REGION         3016
 #define IDC_GRAPH_TYPE                  3017
 #define IDC_ACTION                      3020
 #define IDC_GRID                        3021
@@ -74,7 +76,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        208
+#define _APS_NEXT_RESOURCE_VALUE        209
 #define _APS_NEXT_COMMAND_VALUE         32774
 #define _APS_NEXT_CONTROL_VALUE         3072
 #define _APS_NEXT_SYMED_VALUE           3000

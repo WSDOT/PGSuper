@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -30,6 +30,7 @@
 #include <PgsExt\PoiArtifactKey.h>
 #include <PgsExt\StrandSlopeArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
+#include <PgsExt\PlantHandlingWeightArtifact.h>
 #include <PgsExt\ConstructabilityArtifact.h>
 #include <PgsExt\SegmentStabilityArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
@@ -37,6 +38,8 @@
 #include <PgsExt\DebondArtifact.h>
 #include <PgsExt\StirrupCheckAtZonesArtifact.h>
 #include <PgsExt\DeflectionCheckArtifact.h>
+#include <PgsExt\TendonStressArtifact.h>
+#include <PgsExt\DuctSizeArtifact.h>
 
 #include <Stability\Stability.h>
 
@@ -91,12 +94,15 @@ public:
    const pgsHoldDownForceArtifact* GetHoldDownForceArtifact() const;
    pgsHoldDownForceArtifact* GetHoldDownForceArtifact();
 
-   void AddFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,
-                                  const pgsFlexuralStressArtifact& artifact);
-   CollectionIndexType GetFlexuralStressArtifactCount(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const;
-   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx) const;
-   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,CollectionIndexType idx);
-   const pgsFlexuralStressArtifact* GetFlexuralStressArtifactAtPoi(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress,PoiIDType poiID) const;
+   void SetPlantHandlingWeightArtifact(const pgsPlantHandlingWeightArtifact& artifact);
+   const pgsPlantHandlingWeightArtifact* GetPlantHandlingWeightArtifact() const;
+   pgsPlantHandlingWeightArtifact* GetPlantHandlingWeightArtifact();
+
+   void AddFlexuralStressArtifact(const pgsFlexuralStressArtifact& artifact);
+   CollectionIndexType GetFlexuralStressArtifactCount(const StressCheckTask& task) const;
+   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx) const;
+   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx);
+   const pgsFlexuralStressArtifact* GetFlexuralStressArtifactAtPoi(const StressCheckTask& task,PoiIDType poiID) const;
 
    pgsStirrupCheckArtifact* GetStirrupCheckArtifact();
    const pgsStirrupCheckArtifact* GetStirrupCheckArtifact() const;
@@ -114,33 +120,38 @@ public:
    void SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact*  artifact);
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
 
-   // Returns true if flexural stress checks are applicable anywhere along the segment
-   bool IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const;
+   void SetTendonStressArtifact(DuctIndexType ductIdx, const pgsTendonStressArtifact& artifact);
+   const pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx) const;
+   pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx);
+
+   void SetDuctSizeArtifact(DuctIndexType ductIdx, const pgsDuctSizeArtifact& artifact);
+   const pgsDuctSizeArtifact* GetDuctSizeArtifact(DuctIndexType ductIdx) const;
+   pgsDuctSizeArtifact* GetDuctSizeArtifact(DuctIndexType ductIdx);
 
    // returns true if the allowable tension capacity with adequate reinforcement
    // was used at any POI in this segment. If attribute = 0, only segments are checked
    // if attribute is POI_CLOSURE, only closure joints are checked
-   bool WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
+   bool WasWithRebarAllowableStressUsed(const StressCheckTask& task,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
 
-   bool WasSegmentWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
-   bool WasClosureJointWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const;
+   bool WasSegmentWithRebarAllowableStressUsed(const StressCheckTask& task) const;
+   bool WasClosureJointWithRebarAllowableStressUsed(const StressCheckTask& task,bool bIsInPTZ) const;
 
    // returns true if the allowable tension capacity with adequate reinforcement was used
    // anywhere along this segment for the deck
-   bool WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   bool WasDeckWithRebarAllowableStressUsed(const StressCheckTask& task) const;
 
 
    // returns true if the allowable tension capacity with adequate reinforcement
    // is applicable at any POI in this segment. If attribute = 0, only segments are checked
    // if attribute is POI_CLOSURE, only closure joints are checked
-   bool IsWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
+   bool IsWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation,PoiAttributeType attribute = 0) const;
 
-   bool IsSegmentWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
-   bool IsClosureJointWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bIsInPTZ) const;
+   bool IsSegmentWithRebarAllowableStressApplicable(const StressCheckTask& task) const;
+   bool IsClosureJointWithRebarAllowableStressApplicable(const StressCheckTask& task,bool bIsInPTZ) const;
 
    // returns true if the allowable tension capacity with adequate reinforcement is applicable
    // anywhere along this segment for the deck
-   bool IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const;
+   bool IsDeckWithRebarAllowableStressApplicable(const StressCheckTask& task) const;
 
    pgsDebondArtifact* GetDebondArtifact();
    const pgsDebondArtifact* GetDebondArtifact() const;
@@ -184,43 +195,19 @@ private:
    pgsStrandStressArtifact     m_StrandStressArtifact;
    pgsStrandSlopeArtifact      m_StrandSlopeArtifact;
    pgsHoldDownForceArtifact    m_HoldDownForceArtifact;
+   pgsPlantHandlingWeightArtifact m_PlantHandlingWeightArtifact;
    pgsSegmentStabilityArtifact m_StabilityArtifact;
 
-   struct StressKey
-   {
-      IntervalIndexType intervalIdx;
-      pgsTypes::LimitState ls;
-      pgsTypes::StressType stress;
-      bool operator<(const StressKey& key) const
-      {
-         if ( intervalIdx < key.intervalIdx )
-            return true;
-
-         if ( key.intervalIdx < intervalIdx )
-            return false;
-
-         if ( ls < key.ls )
-            return true;
-
-         if ( key.ls < ls )
-            return false;
-
-         if ( stress < key.stress )
-            return true;
-
-         if ( key.stress < stress )
-            return false;
-
-         return false;
-      }
-   };
-   mutable std::map<StressKey,std::vector<pgsFlexuralStressArtifact>> m_FlexuralStressArtifacts;
-   std::vector<pgsFlexuralStressArtifact>& GetFlexuralStressArtifacts(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stress) const;
+   mutable std::map<StressCheckTask,std::vector<pgsFlexuralStressArtifact>> m_FlexuralStressArtifacts;
+   std::vector<pgsFlexuralStressArtifact>& GetFlexuralStressArtifacts(const StressCheckTask& task) const;
    bool DidFlexuralStressPass() const;
 
    pgsStirrupCheckArtifact m_StirrupCheckArtifact;
 
    pgsPrecastIGirderDetailingArtifact m_PrecastIGirderDetailingArtifact;
+
+   std::map<DuctIndexType, pgsTendonStressArtifact> m_TendonStressArtifacts;
+   std::map<DuctIndexType, pgsDuctSizeArtifact> m_DuctSizeArtifacts;
 
    const stbLiftingCheckArtifact* m_pLiftingCheckArtifact; // point is not owned by this object
    const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object

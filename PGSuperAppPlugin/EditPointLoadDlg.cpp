@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -180,11 +180,11 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
 
       if ( m_Load.m_bLoadOnCantilever[pgsTypes::metStart] || m_Load.m_bLoadOnCantilever[pgsTypes::metEnd] )
       {
+         // The current load parameters indicate the load is on a cantilever at the start or end of the bridge
          ATLASSERT(m_Load.m_SpanKey.spanIndex == 0 || m_Load.m_SpanKey.spanIndex == nSpans-1);
-         const CSpanData2* pSpan = pBridgeDesc->GetSpan(m_Load.m_SpanKey.spanIndex);
-         if ( (m_Load.m_SpanKey.spanIndex == 0 && !pSpan->GetPrevPier()->HasCantilever())
+         if ( (m_Load.m_bLoadOnCantilever[pgsTypes::metStart] && m_Load.m_SpanKey.spanIndex == 0 && !HasCantilever(pgsTypes::metStart))
               ||
-              (m_Load.m_SpanKey.spanIndex == nSpans-1 && !pSpan->GetNextPier()->HasCantilever())
+              (m_Load.m_bLoadOnCantilever[pgsTypes::metEnd] && m_Load.m_SpanKey.spanIndex == nSpans-1 && !HasCantilever(pgsTypes::metEnd))
             )
          {
             ::AfxMessageBox(_T("Warning - The span for this loading does not have a cantilever. Moving the load into the span"));
@@ -473,20 +473,41 @@ void CEditPointLoadDlg::OnHelp()
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_EDIT_POINT_LOADS );
 }
 
+bool CEditPointLoadDlg::HasCantilever(pgsTypes::MemberEndType endType)
+{
+   // endType means end of bridge
+   GET_IFACE(IBridge, pBridge);
+   if (endType == pgsTypes::metStart)
+   {
+      CSegmentKey segmentKey(0, 0, 0);
+      bool bModelLeftCantilever, bModelRightCantilever;
+      pBridge->ModelCantilevers(segmentKey, &bModelLeftCantilever, &bModelRightCantilever);
+      return bModelLeftCantilever;
+   }
+   else
+   {
+      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(nGroups - 1, 0);
+      CSegmentKey segmentKey(nGroups - 1, 0, nSegments - 1);
+      bool bModelLeftCantilever, bModelRightCantilever;
+      pBridge->ModelCantilevers(segmentKey, &bModelLeftCantilever, &bModelRightCantilever);
+      return bModelRightCantilever;
+   }
+
+   ATLASSERT(false); // should never get here
+   return false;
+}
+
 void CEditPointLoadDlg::UpdateSpanList()
 {
    CComboBox* pcbSpans = (CComboBox*)GetDlgItem(IDC_SPANS);
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
-
+   GET_IFACE(IBridge, pBridge);
+   SpanIndexType nSpans = pBridge->GetSpanCount();
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
    {
       if ( spanIdx == 0 )
       {
-         const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
-         const CPierData2* pPier = pSpan->GetPrevPier();
-         if ( pPier->HasCantilever() )
+         if (HasCantilever(pgsTypes::metStart) )
          {
             CString str;
             str.Format(_T("Span %d Start Cantilever"), LABEL_SPAN(spanIdx));
@@ -510,9 +531,7 @@ void CEditPointLoadDlg::UpdateSpanList()
 
       if ( spanIdx == nSpans-1 )
       {
-         const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
-         const CPierData2* pPier = pSpan->GetNextPier();
-         if ( pPier->HasCantilever() )
+         if (HasCantilever(pgsTypes::metEnd))
          {
             CString str;
             str.Format(_T("Span %d End Cantilever"), LABEL_SPAN(spanIdx));

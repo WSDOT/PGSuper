@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,7 +85,7 @@ void SortDebondLevels(std::vector<DebondLevelType>& rDebondLevelsAtSections)
 // starting default to use about 2/3 straight and 1/3 harped, and if not possible; use whatever fits
 static const Float64 DefaultHarpedRatio = 1.0/3.0;
 
-pgsStrandDesignTool::pgsStrandDesignTool(SHARED_LOGFILE lf):
+pgsStrandDesignTool::pgsStrandDesignTool(SHARED_LOGFILE lf) :
 LOGFILE(lf),
 m_pArtifact(nullptr),
 m_pBroker(nullptr),
@@ -94,6 +94,8 @@ m_DoDesignForStrandSlope(false),
 m_AllowableStrandSlope(0.0),
 m_DoDesignForHoldDownForce(false),
 m_AllowableHoldDownForce(0.0),
+m_HoldDownFriction(0.0),
+m_bTotalHoldDownForce(true),
 m_MinimumFinalMzEccentricity(Float64_Max),
 m_HarpedRatio(DefaultHarpedRatio),
 m_MinPermanentStrands(0),
@@ -229,7 +231,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
       m_pArtifact->SetSlabOffset( pgsTypes::metEnd,   defaultA);
    }
 
-   // Set initial design for AssExcessCamber here. Design is only for haunch load determination
+   // Set initial design for AssumedExcessCamber here. Design is only for haunch load determination
    GET_IFACE_NOCHECK(ISpecification,pSpec);
    m_bIsDesignExcessCamber = sodSlabOffsetandAssumedExcessCamberDesign == m_DesignOptions.doDesignSlabOffset &&
                                                        pSpec->IsAssumedExcessCamberForLoad();
@@ -865,7 +867,7 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    ATLASSERT(castDiaphragmIntervalIdx != INVALID_INDEX);
-   bool bIncTempStrands = (intervalIdx < castDiaphragmIntervalIdx ? true : false); // temporary strands are assumed to be removed just prior to casting intermediate diaphragms
+
    // NOTE: Can't use the following code block. If the original input (before design) does not have
    // temporary strands then the install and remove intervals will be INVALID_INDEX. If the interval
    // in question is before the deck is cast, then include temporary strands. Otherwise, the deck
@@ -873,12 +875,17 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
    //IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(m_SegmentKey);
    //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(m_SegmentKey);
    //bool bIncTempStrands = (tsInstallIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx) ? true : false;
+   bool bIncTempStrands = (intervalIdx < castDiaphragmIntervalIdx ? true : false); // temporary strands are assumed to be removed just prior to casting intermediate diaphragms
+   // NOTE: When temporary strands are post-tensioned they are installed after release. If we are including temporary strands in the computation,
+   // and we don't know when they are installed (see note above), we have to estimate the interval. The earliest PT-TTS can be installed is immediately after
+   // release. For this reason, add one to release interval
+   IntervalIndexType eccIntervalIdx = releaseIntervalIdx + (bIncTempStrands ? 1 : 0);
 
-   const GDRCONFIG& guess = GetSegmentConfiguration();
+   const GDRCONFIG& config = GetSegmentConfiguration();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    Float64 neff;
-   return pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, bIncTempStrands, &guess, &neff);
+   return pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &config, &neff);
 }
 
 Float64 pgsStrandDesignTool::GetTransferLength(pgsTypes::StrandType strandType) const
@@ -939,25 +946,25 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    Float64 loss;
-   if ( pDesignParams->intervalIdx < liveLoadIntervalIdx )
+   if ( pDesignParams->task.intervalIdx < liveLoadIntervalIdx )
    {
-      loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->intervalIdx,pgsTypes::End,&guess);
+      loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->task.intervalIdx,pgsTypes::End,&guess);
    }
    else
    {
-      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->limit_state,INVALID_INDEX/*controlling live load*/,&guess);
+      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState,INVALID_INDEX/*controlling live load*/,&guess,true/*include elastic effects*/);
    }
 
 #if defined _DEBUG
    GET_IFACE(ILosses,pILosses);
-   if ( pDesignParams->intervalIdx < liveLoadIntervalIdx )
+   if ( pDesignParams->task.intervalIdx < liveLoadIntervalIdx )
    {
-      Float64 check_loss = pILosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->intervalIdx,pgsTypes::End,&guess);
+      Float64 check_loss = pILosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->task.intervalIdx,pgsTypes::End,&guess);
       ATLASSERT(IsEqual(loss,check_loss));
    }
    else
    {
-      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->limit_state, INVALID_INDEX/*controlling live load*/,&guess);
+      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState, INVALID_INDEX/*controlling live load*/,&guess, true/*include elastic effects*/);
       ATLASSERT(IsEqual(loss,check_loss));
    }
 #endif // _DEBUG
@@ -1336,68 +1343,72 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
 
    ATLASSERT(m_DoDesignForHoldDownForce); // should not be calling this
 
-   StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
-   if (nh == 0)
+   StrandIndexType Nh = m_pArtifact->GetNumHarpedStrands();
+   if (Nh == 0)
    {
       LOG(_T("No harped strands, no hold down force"));
       return true;
    }
 
+   GET_IFACE(IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(m_SegmentKey);
+
    // could use interface to get hdf directly, but need raw values to adjust
    const GDRCONFIG& config = GetSegmentConfiguration();
 
-   GET_IFACE(IPointOfInterest,pPOI);
-   PoiList vPOI;
-   pPOI->GetPointsOfInterest(m_SegmentKey, POI_HARPINGPOINT, &vPOI);
-
-   // no hold down force if there aren't any harped strands
-   if ( vPOI.size() == 0 )
-   {
-      ATLASSERT(false); // we have harped strands and no harping points?
-      return false;
-   }
-
-   Float64 maxHFT = 0;
-   Float64 slope; // slope associated with max hold down force
-   Float64 strand_force; // strand force associated with max hold down force
-   pgsPointOfInterest poi; 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(IPretensionForce,pPrestressForce);
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType stressStrandsIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
+   pgsPointOfInterest poi; // poi where max hold down force occurs
+   Float64 slope; // slope associated with max hold down force
+   Float64 maxHFT = pPrestressForce->GetHoldDownForce(m_SegmentKey, m_bTotalHoldDownForce, &slope, &poi, &config);
 
-   for ( const pgsPointOfInterest& thisPOI : vPOI)
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType strandStressingIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
+   Float64 Ph = pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, strandStressingIntervalIdx, pgsTypes::Start, &config);
+   Float64 strand_force = Ph * (1 + m_HoldDownFriction);
+   if (!m_bTotalHoldDownForce)
    {
-      Float64 s = pStrandGeom->GetAvgStrandSlope( thisPOI, &config);
-      s = fabs(s); // slope could be + or -
-      LOG(_T("Average Strand Slope = 1 : ") << s);
-
-      // NOTE: May want to add friction for hold down force...
-      Float64 f = pPrestressForce->GetPrestressForce(thisPOI,pgsTypes::Harped,stressStrandsIntervalIdx,pgsTypes::Start/*pgsTypes::Jacking*/,&config);
-      LOG(_T("PS Force in harped strands ") << ::ConvertFromSysUnits(f,unitMeasure::Kip) << _T(" kip"));
-
-      // finally, the hold down force
-      Float64 hft = f / sqrt( 1*1 + s*s);
-      if ( maxHFT < hft )
-      {
-         maxHFT = hft;
-         slope = s;
-         strand_force = f;
-         poi = thisPOI;
-      }
+      strand_force /= Nh;
    }
 
-   LOG(_T("Maximum HD ") << ::ConvertFromSysUnits(m_AllowableHoldDownForce,unitMeasure::Kip) << _T(" kip"));
-   LOG(_T("Actual  HD ") << ::ConvertFromSysUnits(maxHFT,unitMeasure::Kip) << _T(" kip"));
+#if defined _DEBUG
+   // verify total harped strand force, slope, and vertical (hold down) harped strand force
+   // are all consistent
+   GET_IFACE(IStrandGeometry, pStrandGeometry);
+   Float64 _slope;
+   if (m_bTotalHoldDownForce)
+   {
+      _slope = pStrandGeometry->GetAvgStrandSlope(poi, &config);
+   }
+   else
+   {
+      _slope = pStrandGeometry->GetMaxStrandSlope(poi, &config);
+   }
+   ATLASSERT(IsEqual(slope, _slope));
+   Float64 Pv = strand_force / sqrt(1 + _slope*_slope);
+   ATLASSERT(IsEqual(Pv, maxHFT));
+#endif
+
+   LOG(_T("P Harp = ") << ::ConvertFromSysUnits(strand_force, unitMeasure::Kip) << _T(" kip"));
+   LOG(_T("Current slope = 1 : ") << slope);
+   LOG(_T("Actual  HD = ") << ::ConvertFromSysUnits(maxHFT, unitMeasure::Kip) << _T(" kip"));
+   LOG(_T("Maximum HD = ") << ::ConvertFromSysUnits(m_AllowableHoldDownForce,unitMeasure::Kip) << _T(" kip"));
 
    Float64 adj = 0.0;
    if ( m_AllowableHoldDownForce < maxHFT )
    {
       LOG(_T("Hold down force exceeds max, strands need adjustment"));
 
+      pgsTypes::MemberEndType endType = (poi.GetDistFromStart() < Ls / 2 ? pgsTypes::metStart : pgsTypes::metEnd);
+
       // slope required for allowable hold down
       Float64 sl_reqd = sqrt( (strand_force*strand_force)/(m_AllowableHoldDownForce*m_AllowableHoldDownForce)-1.0 );
-      ATLASSERT(sl_reqd > slope);
+      if (endType == pgsTypes::metStart)
+      {
+         sl_reqd *= -1;
+      }
+
+      ATLASSERT(::BinarySign(slope) == ::BinarySign(sl_reqd));
+      ATLASSERT(fabs(slope) < fabs(sl_reqd));
 
       LOG(_T("Slope required = 1 : ")<< sl_reqd);
       LOG(_T("Current Start offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metStart],unitMeasure::Inch) << _T(" in"));
@@ -1405,9 +1416,8 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       LOG(_T("Current HP2 offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],unitMeasure::Inch) << _T(" in"));
       LOG(_T("Current End offset = ")<< ::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],unitMeasure::Inch) << _T(" in"));
 
-      pgsTypes::MemberEndType endType = (poi == vPOI.front() ? pgsTypes::metStart : pgsTypes::metEnd);
-
-      if ( !AdjustStrandsForSlope(sl_reqd, slope, endType, nh, pStrandGeom) )
+      GET_IFACE(IStrandGeometry, pStrandGeom);
+      if ( !AdjustStrandsForSlope(sl_reqd, slope, endType, Nh, pStrandGeom) )
       {
          LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable hold down"));
          m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::ExceededMaxHoldDownForce);
@@ -1418,7 +1428,14 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       LOG(_T("** Adjusted HP1   offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metStart) ,unitMeasure::Inch) << _T(" in"));
       LOG(_T("** Adjusted HP2   offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metEnd) ,unitMeasure::Inch) << _T(" in"));
       LOG(_T("** Adjusted End   offset = ")<< ::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metEnd) ,unitMeasure::Inch) << _T(" in"));
-      LOG(_T("New slope is 1 : ")<< pStrandGeom->GetAvgStrandSlope( poi, &GetSegmentConfiguration()) );
+      if (m_bTotalHoldDownForce)
+      {
+         LOG(_T("New avg slope is 1 : ") << pStrandGeom->GetAvgStrandSlope(poi, &GetSegmentConfiguration()));
+      }
+      else
+      {
+         LOG(_T("New max strand slope is 1 : ") << pStrandGeom->GetMaxStrandSlope(poi, &GetSegmentConfiguration()));
+      }
    }
 
    return true;
@@ -1429,8 +1446,8 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    // compute adjustment distance
    Float64 X1, X2, X3, X4;
    pStrandGeom->GetHarpingPointLocations(m_SegmentKey, &X1, &X2, &X3, &X4);
-   Float64 adj1 = (X2-X1) * (1/slope - 1/sl_reqd);
-   Float64 adj2 = (X4-X3) * (1/slope - 1/sl_reqd);
+   Float64 adj1 = (X2-X1) * (1/fabs(slope) - 1/fabs(sl_reqd));
+   Float64 adj2 = (X4-X3) * (1/fabs(slope) - 1/fabs(sl_reqd));
    Float64 adj = Max(adj1,adj2);
 
    LOG(_T("Vertical adjustment required to acheive slope = ")<< ::ConvertFromSysUnits(adj,unitMeasure::Inch) << _T(" in"));
@@ -1779,7 +1796,7 @@ void pgsStrandDesignTool::FillArtifactWithFlexureValues()
    m_bConfigDirty = true; // cache is dirty
 }
 
-bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation)
+bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired, const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
    Float64 fc_current = m_pArtifact->GetConcreteStrength();
    LOG(_T("Update Final Concrete Strength if needed. f'c required = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI f'c current = ")<< ::ConvertFromSysUnits(fc_current,unitMeasure::KSI) << _T(" KSI"));;
@@ -1815,7 +1832,7 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired,IntervalInde
    }
 
    Float64 newfc;
-   if ( m_FcControl.DoUpdate(fcRequired, intervalIdx, stressType,limitState,stressLocation,&newfc) )
+   if ( m_FcControl.DoUpdate(fcRequired, task,stressLocation,&newfc) )
    {
       m_pArtifact->SetConcreteStrength(newfc);
       m_bConfigDirty = true; // cache is dirty
@@ -1837,7 +1854,14 @@ bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,Inte
 
    // round up to nearest 100psi
    fcRequired = CeilOff(fcRequired, m_ConcreteAccuracy );
-   LOG(_T("Round up to nearest 100psi. New Required value is now = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI"));;
+   LOG(_T("Round up to nearest 100psi. New Required value is now = ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI"));
+
+   Float64 fc_min = GetMinimumConcreteStrength();
+   if (fcRequired < fc_min)
+   {
+      LOG(_T("Required concrete stress is less than minimum. Setting concrete strength to minimum: ") << ::ConvertFromSysUnits(fc_min, unitMeasure::KSI) << _T(" KSI"));
+      fcRequired = fc_min;
+   }
 
    Float64 fc_max = GetMaximumConcreteStrength();
    if (fc_max < fcRequired)
@@ -1855,7 +1879,7 @@ bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,Inte
    return true;
 }
 
-bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation)
+bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
    LOG(_T("Update Concrete Strength if needed. f'ci required = ")<< ::ConvertFromSysUnits(fciRequired,unitMeasure::KSI) << _T(" KSI"));;
 
@@ -1878,7 +1902,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    LOG(_T("Required fully adjusted f'ci now = ")<< ::ConvertFromSysUnits(fciRequired,unitMeasure::KSI) << _T(" KSI, Current = ")<< ::ConvertFromSysUnits(m_pArtifact->GetReleaseStrength(), unitMeasure::KSI) << _T(" KSI"));
 
    Float64 fci;
-   if ( m_FciControl.DoUpdate(fciRequired,intervalIdx,stressType,limitState,stressLocation,&fci) )
+   if ( m_FciControl.DoUpdate(fciRequired,task,stressLocation,&fci) )
    {
       LOG(_T("** Setting new release strength to  = ")<< ::ConvertFromSysUnits(fci, unitMeasure::KSI) << _T(" KSI"));;
       m_pArtifact->SetReleaseStrength(fci);
@@ -1887,7 +1911,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
       ATLASSERT(strengthResult != ConcFailed); // this should always be blocked
 
       // new compression controlled values cannot override the need for minimum rebar
-      if (stressType == pgsTypes::Tension)
+      if (task.stressType == pgsTypes::Tension)
       {
          m_ReleaseStrengthResult = strengthResult;
       }
@@ -1895,7 +1919,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    else
    {
       // allow tension to override the need to use min rebar even if concrete strenth doesn't need change
-      if (stressType == pgsTypes::Tension && strengthResult == ConcSuccessWithRebar)
+      if (task.stressType == pgsTypes::Tension && strengthResult == ConcSuccessWithRebar)
       {
          if (m_ReleaseStrengthResult != ConcSuccessWithRebar)
          {
@@ -1912,7 +1936,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    }
 
    // Release strength can drive final.
-   if (UpdateConcreteStrength(fci,intervalIdx,limitState,stressType,stressLocation))
+   if (UpdateConcreteStrength(fci,task,stressLocation))
    {
       LOG(_T("** Concrete strength changed by change in release strength"));
    }
@@ -1920,7 +1944,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    return true;
 }
 
-ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc) const
+ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,const StressCheckTask& task,Float64* pfc) const
 {
    LOG(_T("Entering ComputeRequiredConcreteStrength"));
    Float64 fc_reqd;
@@ -1931,10 +1955,10 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    ConcStrengthResultType result = ConcSuccess;
 
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
-   if ( stressType == pgsTypes::Compression )
+   if ( task.stressType == pgsTypes::Compression )
    {
       GET_IFACE(IAllowableConcreteStress,pAllowStress);
-      Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,ls);
+      Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,task);
       fc_reqd = fControl/c;
       LOG(c << _T("F demand (compression) = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << ::ConvertFromSysUnits(fc_reqd,unitMeasure::KSI) << _T(" KSI"));
    }
@@ -1950,7 +1974,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
          bool bfMax;
 
          GET_IFACE(IAllowableConcreteStress,pAllowStress);
-         pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,ls,false/*without rebar*/,false,&t,&bfMax,&fmax);
+         pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,task,false/*without rebar*/,false,&t,&bfMax,&fmax);
          if (0 < t)
          {
             LOG(_T("f allow coeff = ") << ::ConvertFromSysUnits(t,unitMeasure::SqrtKSI) << _T("_/f'c = ") << ::ConvertFromSysUnits(fControl,unitMeasure::KSI));
@@ -1959,13 +1983,16 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
             if ( bfMax && fmax < fControl) 
             {
                // allowable stress is limited to value lower than needed
-               if ( intervalIdx == releaseIntervalIdx )
+               if ( task.intervalIdx == releaseIntervalIdx )
                {
                   // try getting the alternative allowable if rebar is used
                   bool bCheckMaxAlt;
                   Float64 fMaxAlt;
                   Float64 talt;
-                  pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,intervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
+
+                  ATLASSERT(task.limitState == pgsTypes::ServiceI && task.stressType == pgsTypes::Tension);
+
+                  pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,task,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
                   fc_reqd = pow(fControl/(lambda*talt),2);
                   result = ConcSuccessWithRebar;
                   LOG(_T("Min rebar is required to acheive required strength"));
@@ -1998,9 +2025,9 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
       }
    }
 
-   Float64 fc_min = (intervalIdx == releaseIntervalIdx) ? GetMinimumReleaseStrength() : GetMinimumConcreteStrength();
+   Float64 fc_min = (task.intervalIdx == releaseIntervalIdx) ? GetMinimumReleaseStrength() : GetMinimumConcreteStrength();
 
-   Float64 fc_max = (intervalIdx == releaseIntervalIdx) ? GetMaximumReleaseStrength() : GetMaximumConcreteStrength();
+   Float64 fc_max = (task.intervalIdx == releaseIntervalIdx) ? GetMaximumReleaseStrength() : GetMaximumConcreteStrength();
    if ( fc_reqd < fc_min )
    {
       fc_reqd = fc_min;
@@ -2028,7 +2055,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    return result;
 }
 
-bool pgsStrandDesignTool::Bump500(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation)
+bool pgsStrandDesignTool::Bump500(const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
@@ -2050,13 +2077,13 @@ bool pgsStrandDesignTool::Bump500(IntervalIndexType intervalIdx,pgsTypes::LimitS
       return false;
    }
 
-   if (!UpdateConcreteStrength(fc,intervalIdx,limitState,stressType,stressLocation))
+   if (!UpdateConcreteStrength(fc,task,stressLocation))
    {
       LOG(_T("Failed increasing concrete strength"));
       return false;
    }
 
-   if (intervalIdx == releaseIntervalIdx || intervalIdx == liftSegmentIntervalIdx)
+   if (task.intervalIdx == releaseIntervalIdx || task.intervalIdx == liftSegmentIntervalIdx)
    {
       fci += five_ksi;
       LOG(_T("target f'ci = ") << ::ConvertFromSysUnits(fci,unitMeasure::KSI) << _T(" KSI") );
@@ -2067,7 +2094,7 @@ bool pgsStrandDesignTool::Bump500(IntervalIndexType intervalIdx,pgsTypes::LimitS
          LOG(_T("Release Strength Exceeds Maximum of ")<<::ConvertFromSysUnits(fci_max,unitMeasure::KSI) << _T(" KSI - Bump 500 failed") );
          return false;
       }
-      else if (!UpdateReleaseStrength(fci,m_ReleaseStrengthResult,intervalIdx,limitState,stressType,stressLocation))
+      else if (!UpdateReleaseStrength(fci,m_ReleaseStrengthResult,task,stressLocation))
       {
          LOG(_T("Failed increasing concrete release strength"));
          return false;
@@ -2489,7 +2516,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    // NOTE: can't use temp strand removal interval because it is based on the original input which may not have temp strands
    //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(poi.GetSegmentKey());
@@ -2532,7 +2559,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
    }
    else
    {
-      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII,INVALID_INDEX/*controlling live load*/,&guess);
+      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII,INVALID_INDEX/*controlling live load*/,&guess, true/*include elastic effects*/);
    }
 
    if (intervalIdx == releaseIntervalIdx)
@@ -2627,9 +2654,8 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
       ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
-      bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
       // NOTE: Can't use the following code block. If the original input (before design) does not have
       // temporary strands then the install and remove intervals will be INVALID_INDEX. If the interval
       // in question is before the deck is cast, then include temporary strands. Otherwise, the deck
@@ -2637,22 +2663,28 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
       //IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(m_SegmentKey);
       //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(m_SegmentKey);
       //bool bIncTempStrands = (tsInstallIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx) ? true : false;
+      bool bIncTempStrands = (intervalIdx < castDeckIntervalIdx ? true : false);
+      // NOTE: When temporary strands are post-tensioned they are installed after release. If we are including temporary strands in the computation,
+      // and we don't know when they are installed (see note above), we have to estimate the interval. The earliest PT-TTS can be installed is immediately after
+      // release. For this reason, add one to release interval
+      IntervalIndexType eccIntervalIdx = releaseIntervalIdx + (bIncTempStrands ? 1 : 0);
+
       GDRCONFIG guess = GetSegmentConfiguration();
 
       GET_IFACE(IStrandGeometry,pStrandGeom);
       Float64 neff_ss(0.0), neff_ts(0.0), neff_hs(0.0);
 
-      Float64 ecc_ss = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &guess, &neff_ss);
+      Float64 ecc_ss = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Straight, &guess, &neff_ss);
 
-      Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &guess, &neff_ts) : 0.0;
+      Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Temporary, &guess, &neff_ts) : 0.0;
 
       // compute hs eccentricities for hp offsets of +1.0 and -1.0, and extrapolate the required offset
       guess.PrestressConfig.HpOffset[pgsTypes::metStart] = 1.0;
       guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = 1.0;
-      Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
+      Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
       guess.PrestressConfig.HpOffset[pgsTypes::metStart] = -1.0;
       guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = -1.0;
-      Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
+      Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
 
       Float64 neff = neff_ss + neff_hs + neff_ts;
       ATLASSERT(neff>0.0);
@@ -2671,7 +2703,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
 
       guess.PrestressConfig.HpOffset[pgsTypes::metStart] = off;
       guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = off;
-      Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, bIncTempStrands, &guess, &neff);
+      Float64 new_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &guess, &neff);
       ATLASSERT(IsEqual(ecc,new_ecc,0.01));
 
       return off;
@@ -2709,7 +2741,6 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType nonCompoisteIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    ATLASSERT(nonCompoisteIntervalIdx != INVALID_INDEX);
-   bool bIncTempStrands = (intervalIdx < nonCompoisteIntervalIdx ? true : false);
    // NOTE: Can't use the following code block. If the original input (before design) does not have
    // temporary strands then the install and remove intervals will be INVALID_INDEX. If the interval
    // in question is before the deck is cast, then include temporary strands. Otherwise, the deck
@@ -2717,6 +2748,11 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    //IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(m_SegmentKey);
    //IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(m_SegmentKey);
    //bool bIncTempStrands = (tsInstallIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx) ? true : false;
+   bool bIncTempStrands = (intervalIdx < nonCompoisteIntervalIdx ? true : false);
+   // NOTE: When temporary strands are post-tensioned they are installed after release. If we are including temporary strands in the computation,
+   // and we don't know when they are installed (see note above), we have to estimate the interval. The earliest PT-TTS can be installed is immediately after
+   // release. For this reason, add one to release interval
+   IntervalIndexType eccIntervalIdx = releaseIntervalIdx + (bIncTempStrands ? 1 : 0);
 
    GDRCONFIG guess = GetSegmentConfiguration();
 
@@ -2790,7 +2826,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
       guess.PrestressConfig.SetStrandFill(pgsTypes::Straight, sfillvec);
       guess.PrestressConfig.SetStrandFill(pgsTypes::Harped,   hfillvec);
 
-      Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, bIncTempStrands, &guess, &neff_ss);
+      Float64 new_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &guess, &neff_ss);
 
       ATLASSERT(0.0 < neff_ss);
 
@@ -2806,7 +2842,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
       
       // we have to guard against causing mid-zone Bottom Service tension to go out of bounds. Odd case, but it happens for WF42G
       Float64 neff;
-      Float64 ms_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, ms_poi, false, &guess, &neff);
+      Float64 ms_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, ms_poi, false, &guess, &neff);
       LOG(_T("New Eccentricity in mid-zone, without temp strands, is ") <<::ConvertFromSysUnits( ms_ecc , unitMeasure::Inch)<< _T(" in"));
       LOG(_T("Minimum ecc for release tension mz = ") <<::ConvertFromSysUnits( GetMinimumFinalMidZoneEccentricity() , unitMeasure::Inch)<< _T(" in"));
 
@@ -3263,13 +3299,11 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
       if (IsEqual(poi_loc,left_support_point_loc) )
       {
          // poi is at the location of the left support, no need to re-add
-         ATLASSERT(poi.CanMerge() == false);
          do_add_left = false; 
       }
       else if ( IsEqual(poi_loc,right_support_point_loc) )
       {
          // poi is at the location of the right support, no need to re-add
-         ATLASSERT(poi.CanMerge() == false);
          do_add_right = false; 
       }
       else
@@ -3282,7 +3316,8 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
             // otherwise, clear the support point attribute bit and add the poi back
             sysFlags<PoiAttributeType>::Clear(&attributes,supportAttribute);
             poi.SetReferencedAttributes(attributes);
-            m_PoiMgr.AddPointOfInterest(poi);
+            poi.SetID(INVALID_ID);
+            VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
          }
       }
    }
@@ -3290,23 +3325,21 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
    if (do_add_left)
    {
       pgsPointOfInterest left_support_point(segmentKey,left_support_point_loc,supportAttribute | poiReference);
-      left_support_point.CanMerge(false); // don't ever want this poi to be merged with another poi
-      m_PoiMgr.AddPointOfInterest(left_support_point);
+      VERIFY(m_PoiMgr.AddPointOfInterest(left_support_point) != INVALID_ID);
    }
 
    if (do_add_right)
    {
       pgsPointOfInterest right_support_point(segmentKey,right_support_point_loc,supportAttribute | poiReference);
-      right_support_point.CanMerge(false); // don't ever want this poi to be merged with another poi
-      m_PoiMgr.AddPointOfInterest(right_support_point);
+      VERIFY(m_PoiMgr.AddPointOfInterest(right_support_point) != INVALID_ID);
    }
 
    // add POI at ends of segment
    pgsPointOfInterest poiStart(segmentKey,0.0,poiReference);
-   m_PoiMgr.AddPointOfInterest(poiStart);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiStart) != INVALID_ID);
 
    pgsPointOfInterest poiEnd(segmentKey,m_SegmentLength,poiReference);
-   m_PoiMgr.AddPointOfInterest(poiEnd);
+   VERIFY(m_PoiMgr.AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // add 10th point attributes
 
@@ -3333,8 +3366,7 @@ void pgsStrandDesignTool::GetHandlingDesignPointsOfInterest(const CSegmentKey& s
       
       pgsPointOfInterest poi(segmentKey,dist,attribute);
       poi.MakeTenthPoint(poiReference,tenthPoint);
-      poi.CanMerge(false); // these POI need to be in their exact location so don't merge with nearby POI
-      m_PoiMgr.AddPointOfInterest( poi );
+      VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
    }
    
 
@@ -3399,7 +3431,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
          Float64 loc = poi.GetDistFromStart();
          if (0.0 < loc && loc < m_SegmentLength) // locations at ends of girder are of no interest to design
          {
-            m_PoiMgr.AddPointOfInterest(poi);
+            poi.SetID(INVALID_ID);
+            VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
          }
       }
 
@@ -3417,7 +3450,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       if (xfer_length < start_conn)
       {
          pgsPointOfInterest pxfer(m_SegmentKey,start_conn,attrib_xfer);
-         m_PoiMgr.AddPointOfInterest(pxfer);
+         VERIFY(m_PoiMgr.AddPointOfInterest(pxfer) != INVALID_ID);
       }
 
       Float64 end_conn = pBridge->GetSegmentEndEndDistance(m_SegmentKey);
@@ -3425,7 +3458,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       if (xfer_length < end_conn)
       {
          pgsPointOfInterest pxfer(m_SegmentKey,m_SegmentLength-end_conn,attrib_xfer);
-         m_PoiMgr.AddPointOfInterest(pxfer);
+         VERIFY(m_PoiMgr.AddPointOfInterest(pxfer) != INVALID_ID);
       }
 
    }
@@ -3446,7 +3479,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
             if ( ! ( poi.HasAttribute(POI_DEBOND) || 
                      poi.HasAttribute(POI_PSXFER) ) )
             {
-               m_PoiMgr.AddPointOfInterest(poi);
+               poi.SetID(INVALID_ID);
+               VERIFY(m_PoiMgr.AddPointOfInterest(poi) != INVALID_ID);
             }
          }
       }
@@ -3517,9 +3551,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
 
 void pgsStrandDesignTool::AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Float64 rgt_conn)
 {
-   m_PoiMgr.AddPointOfInterest(rpoi);
+   VERIFY(m_PoiMgr.AddPointOfInterest(rpoi) != INVALID_ID);
 }
-
 
 void pgsStrandDesignTool::ComputeMidZoneBoundaries()
 {
@@ -3692,7 +3725,9 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const matPsStrand* pstrand)
    }
 
    // hold down
-   pSpecEntry->GetHoldDownForce(&bCheck,&bDesign,&m_AllowableHoldDownForce);
+   int holdDownForceType;
+   pSpecEntry->GetHoldDownForce(&bCheck,&bDesign,&holdDownForceType,&m_AllowableHoldDownForce,&m_HoldDownFriction);
+   m_bTotalHoldDownForce = (holdDownForceType == HOLD_DOWN_TOTAL);
 
    m_DoDesignForHoldDownForce = bDesign && nh_max>0;
 

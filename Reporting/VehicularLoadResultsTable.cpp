@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -85,16 +85,18 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval() : pIntervals->GetLiveLoadInterval() );
 
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
-   GirderIndexType nGirdersFirstGroup = pBridge->GetGirderCount(0);
-   Float64 end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(0,Min(girderKey.girderIndex,nGirdersFirstGroup-1),0));
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey.girderIndex, startGroupIdx, endGroupIdx, &vGirderKeys);
+
+   Float64 end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(vGirderKeys.front(),0));
  
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bReportAxial = pProductLoads->ReportAxialResults();
@@ -196,13 +198,8 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    GET_IFACE2(pBroker,IProductForces2,pForces2);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-
-      CGirderKey thisGirderKey(grpIdx,gdrIdx);
-
       PoiList vPoi;
       pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
 
@@ -382,10 +379,8 @@ void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguratio
    INIT_UV_PROTOTYPE( rptLengthUnitValue, position, pDisplayUnits->GetSpanLengthUnit(), true);
 
    int nRowsWritten = 0;
-   AxleConfiguration::const_iterator axleIter;
-   for ( axleIter = config.begin(); axleIter != config.end(); axleIter++ )
+   for(const auto& axlePlacement : config)
    {
-      const AxlePlacement& axlePlacement = *axleIter;
       if ( 0 < axlePlacement.Weight )
       {
          (*pTable)(row,col) << weight.SetValue(axlePlacement.Weight) << _T(" @ ") << position.SetValue(axlePlacement.Location) << rptNewLine;

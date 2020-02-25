@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,8 +29,12 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\Project.h>
 
 #include <WBFLGenericBridgeTools.h>
+
+#include <PgsExt\TimelineEvent.h>
+#include <PgsExt\CastDeckActivity.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -86,7 +90,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    }
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -99,7 +104,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    ecc,        pDisplayUnits->GetComponentDimUnit(),    false);
@@ -279,72 +284,100 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    *pChapter << pPara;
    (*pPara) << _T("Deck") << rptNewLine;
 
-   pPara = new rptParagraph;
-   *pChapter << pPara;
 
-   ColumnIndexType col = 0;
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9,_T("Concrete Parameters"));
-   (*pPara) << pTable << rptNewLine;
-
-   (*pTable)(0,col++) << _T("Interval");
-   (*pTable)(0,col++) << COLHDR(_T("Age"),rptTimeUnitTag,pDisplayUnits->GetWholeDaysUnit());
-   (*pTable)(0,col++) << COLHDR(_T("f'c"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   (*pTable)(0,col++) << COLHDR(_T("Ec"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   (*pTable)(0,col++) << symbol(psi);
-   (*pTable)(0,col++) << symbol(chi);
-   (*pTable)(0,col++) << COLHDR(_T("E'c = Ec/(") << _T("1+") << symbol(chi) << symbol(psi) << _T(")"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
-   (*pTable)(0,col++) << symbol(DELTA) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
-   (*pTable)(0,col++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
-
-
-   RowIndexType row = pTable->GetNumberOfHeaderRows();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+   const auto* pTimelineEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
+   const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
+   ATLASSERT(castDeckActivity.IsEnabled());
+   IndexType nCastings = castDeckActivity.GetCastingCount();
+   for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
    {
-      col = 0;
-      (*pTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-      (*pTable)(row,col++) << pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::Middle);
-      (*pTable)(row,col++) << stress.SetValue(pMaterials->GetDeckFc(intervalIdx));
-      (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckEc(intervalIdx));
-      (*pTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(intervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-      (*pTable)(row,col++) << pMaterials->GetDeckAgingCoefficient(intervalIdx);
-      (*pTable)(row,col++) << modE.SetValue(pMaterials->GetDeckAgeAdjustedEc(intervalIdx));
-      (*pTable)(row,col++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(intervalIdx);
-      (*pTable)(row,col++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
-   }
+      pPara = new rptParagraph;
+      *pChapter << pPara;
 
-   rptRcTable* pCreepTable = rptStyleManager::CreateDefaultTable(1 + 2*(nIntervals-1),_T("Creep Coefficients"));
-   *pPara << pCreepTable << rptNewLine;
-   pCreepTable->SetNumberOfHeaderRows(2);
-
-   col = 0;
-   pCreepTable->SetRowSpan(0,col,2);
-   (*pCreepTable)(0,col++) << _T("Interval") << rptNewLine << _T("i");
-
-   for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals-1; intervalIdx++ )
-   {
-      pCreepTable->SetColumnSpan(1, col, 2);
-      (*pCreepTable)(0,col)   << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ie")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
-      (*pCreepTable)(0,col+1) << symbol(psi) << _T("(") << Sub2(_T("t"),_T("ib")) << _T(",") << Sub2(_T("t"),_T("jm")) << _T(")");
-      (*pCreepTable)(1,col) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
-      col += 2;
-   }
-
-   row = pCreepTable->GetNumberOfHeaderRows();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++ )
-   {
-      col = 0;
-      (*pCreepTable)(row,col++) << LABEL_INTERVAL(intervalIdx);
-      for ( IntervalIndexType loadIntIdx = 0; loadIntIdx < intervalIdx && loadIntIdx < nIntervals-1; loadIntIdx++ )
+      IndexType sequenceIdx = castDeckActivity.GetSequenceNumber(castingIdx);
+      (*pPara) << _T("Sequence ") << LABEL_INDEX(sequenceIdx) << _T(" for regions ");
+      std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+      auto begin = std::begin(vRegions);
+      auto iter = begin;
+      auto end = std::end(vRegions);
+      for (; iter != end; iter++)
       {
-         (*pCreepTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-         (*pCreepTable)(row,col++) << pMaterials->GetDeckCreepCoefficient(loadIntIdx,pgsTypes::Middle,intervalIdx,pgsTypes::Start);
+         if (iter != begin)
+         {
+            (*pPara) << _T(",");
+         }
+         (*pPara) << _T(" ") << LABEL_INDEX(*iter);
       }
-      for ( IntervalIndexType i = intervalIdx; i < nIntervals-1; i++ )
+      (*pPara) << rptNewLine;
+
+      IndexType deckCastingRegionIdx = vRegions.front();
+
+      ColumnIndexType col = 0;
+      rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9, _T("Concrete Parameters"));
+      (*pPara) << pTable << rptNewLine;
+
+      (*pTable)(0, col++) << _T("Interval");
+      (*pTable)(0, col++) << COLHDR(_T("Age"), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
+      (*pTable)(0, col++) << COLHDR(_T("f'c"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0, col++) << COLHDR(_T("Ec"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0, col++) << symbol(psi);
+      (*pTable)(0, col++) << symbol(chi);
+      (*pTable)(0, col++) << COLHDR(_T("E'c = Ec/(") << _T("1+") << symbol(chi) << symbol(psi) << _T(")"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable)(0, col++) << symbol(DELTA) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+      (*pTable)(0, col++) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+
+
+      RowIndexType row = pTable->GetNumberOfHeaderRows();
+      for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++)
       {
-         (*pCreepTable)(row,col++) << _T("");
-         (*pCreepTable)(row,col++) << _T("");
+         col = 0;
+         (*pTable)(row, col++) << LABEL_INTERVAL(intervalIdx);
+         (*pTable)(row, col++) << pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx, pgsTypes::Middle);
+         (*pTable)(row, col++) << stress.SetValue(pMaterials->GetDeckFc(deckCastingRegionIdx, intervalIdx));
+         (*pTable)(row, col++) << modE.SetValue(pMaterials->GetDeckEc(deckCastingRegionIdx, intervalIdx));
+         (*pTable)(row, col++) << pMaterials->GetDeckCreepCoefficient(deckCastingRegionIdx, intervalIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
+         (*pTable)(row, col++) << pMaterials->GetDeckAgingCoefficient(deckCastingRegionIdx, intervalIdx);
+         (*pTable)(row, col++) << modE.SetValue(pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx, intervalIdx));
+         (*pTable)(row, col++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(deckCastingRegionIdx, intervalIdx);
+         (*pTable)(row, col++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(deckCastingRegionIdx, intervalIdx, pgsTypes::End);
       }
-   }
+
+      rptRcTable* pCreepTable = rptStyleManager::CreateDefaultTable(1 + 2 * (nIntervals - 1), _T("Creep Coefficients"));
+      *pPara << pCreepTable << rptNewLine;
+      pCreepTable->SetNumberOfHeaderRows(2);
+
+      col = 0;
+      pCreepTable->SetRowSpan(0, col, 2);
+      (*pCreepTable)(0, col++) << _T("Interval") << rptNewLine << _T("i");
+
+      for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals - 1; intervalIdx++)
+      {
+         pCreepTable->SetColumnSpan(1, col, 2);
+         (*pCreepTable)(0, col) << symbol(psi) << _T("(") << Sub2(_T("t"), _T("ie")) << _T(",") << Sub2(_T("t"), _T("jm")) << _T(")");
+         (*pCreepTable)(0, col + 1) << symbol(psi) << _T("(") << Sub2(_T("t"), _T("ib")) << _T(",") << Sub2(_T("t"), _T("jm")) << _T(")");
+         (*pCreepTable)(1, col) << _T("j = ") << LABEL_INTERVAL(intervalIdx);
+         col += 2;
+      }
+
+      row = pCreepTable->GetNumberOfHeaderRows();
+      for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++, row++)
+      {
+         col = 0;
+         (*pCreepTable)(row, col++) << LABEL_INTERVAL(intervalIdx);
+         for (IntervalIndexType loadIntIdx = 0; loadIntIdx < intervalIdx && loadIntIdx < nIntervals - 1; loadIntIdx++)
+         {
+            (*pCreepTable)(row, col++) << pMaterials->GetDeckCreepCoefficient(deckCastingRegionIdx, loadIntIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
+            (*pCreepTable)(row, col++) << pMaterials->GetDeckCreepCoefficient(deckCastingRegionIdx, loadIntIdx, pgsTypes::Middle, intervalIdx, pgsTypes::Start);
+         }
+         for (IntervalIndexType i = intervalIdx; i < nIntervals - 1; i++)
+         {
+            (*pCreepTable)(row, col++) << _T("");
+            (*pCreepTable)(row, col++) << _T("");
+         }
+      }
+   } // next deck casting
 
 
    ///////////////////////////////////////////////////////////////////////////////////
@@ -358,6 +391,12 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    {
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
+      DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      if (!pPoi->IsOnSegment(poi))
+      {
+         nSegmentDucts = 0;
+      }
+
       *pPara << location.SetValue(POI_SPAN,poi) << _T(" (ID = " ) << poi.GetID() << _T(")") << rptNewLine;
 
       CComPtr<IRebarSection> rebar_section;
@@ -366,7 +405,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       IndexType nRebar = 0;
       rebar_section->get_Count(&nRebar);
 
-      ColumnIndexType nColumns = 109 + 4*nRebar;
+      ColumnIndexType nColumns = 126 + 4*nRebar;
       rptRcTable* pTable2 = rptStyleManager::CreateDefaultTable(nColumns,_T("Time Step Parameters"));
       *pPara << pTable2 << rptNewLine << rptNewLine;
 
@@ -405,12 +444,16 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(0,col2++) << COLHDR(Sub2(Overline(_T("N")),_T("dsh")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
       // Slab top mat rebar properties
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("A"),_T("tm")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("Y"),_T("tm")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("A"), _T("tm i")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("Y"), _T("tm i")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("A"), _T("tm l")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("Y"), _T("tm l")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       // Slab bottom mat rebar properties
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("A"),_T("bm")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("Y"),_T("bm")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("A"), _T("bm i")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("Y"), _T("bm i")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("A"), _T("bm l")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("Y"), _T("bm l")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       // Girder Rebar
       for (IndexType rebarIdx = 0; rebarIdx < nRebar; rebarIdx++ )
@@ -440,12 +483,19 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(0,col2++) << symbol(DELTA) << Sub2(Overline(symbol(epsilon)),_T("ps")) << _T("(i)");
       (*pTable2)(0,col2++) << COLHDR(Sub2(Overline(_T("N")),_T("ps")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
-      // unrestrained deformations and component restraining forces for tendon
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("A"),_T("pt")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("Y"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("f"),_T("r pt")) << _T("(i)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable2)(0,col2++) << symbol(DELTA) << Sub2(Overline(symbol(epsilon)),_T("pt")) << _T("(i)");
-      (*pTable2)(0,col2++) << COLHDR(Sub2(Overline(_T("N")),_T("pt")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      // unrestrained deformations and component restraining forces for segment tendon
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("A"), _T("pt s")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("Y"), _T("pt s")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("f"), _T("r pt s")) << _T("(i)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable2)(0, col2++) << symbol(DELTA) << Sub2(Overline(symbol(epsilon)), _T("pt s")) << _T("(i)");
+      (*pTable2)(0, col2++) << COLHDR(Sub2(Overline(_T("N")), _T("pt s")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+
+      // unrestrained deformations and component restraining forces for girder tendon
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("A"), _T("pt g")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("Y"), _T("pt g")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("f"), _T("r pt g")) << _T("(i)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable2)(0, col2++) << symbol(DELTA) << Sub2(Overline(symbol(epsilon)), _T("pt g")) << _T("(i)");
+      (*pTable2)(0, col2++) << COLHDR(Sub2(Overline(_T("N")), _T("pt g")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
       // total cross section restraining force
       (*pTable2)(0,col2++) << COLHDR(Overline(_T("Ncr")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
@@ -487,10 +537,12 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("M"),_T("d")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
 
       // deck top mat rebar
-      (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"),_T("tm")), rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"), _T("tm i")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"), _T("tm l")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
       // deck bottom mat rebar
-      (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"),_T("bm")), rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"), _T("bm i")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"), _T("bm l")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
       // girder rebar
       for ( IndexType rebarIdx = 0; rebarIdx < nRebar; rebarIdx++ )
@@ -507,8 +559,11 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       // strands (temporary)
       (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"),_T("ps t")), rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit());
 
-      // tendons
-      (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"),_T("pt")), rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit());
+      // segment tendons
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"), _T("pt s")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+
+      // girder tendons
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("N"), _T("pt g")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
       // Component forces at the end of this interval
 
@@ -521,10 +576,12 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(0,col2++) << COLHDR(Sub2(_T("M"),_T("d")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
 
       // deck top mat rebar
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("N"),_T("tm")), rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("N"), _T("tm i")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("N"), _T("tm l")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
       // deck bottom mat rebar
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("N"),_T("bm")), rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("N"), _T("bm i")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("N"), _T("bm l")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
       // girder rebar
       for ( IndexType rebarIdx = 0; rebarIdx < nRebar; rebarIdx++ )
@@ -541,8 +598,11 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       // strands (temporary)
       (*pTable2)(0,col2++) << COLHDR(Sub2(_T("N"),_T("ps t")), rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit());
 
-      // tendons
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("N"),_T("pt")), rptForceUnitTag,  pDisplayUnits->GetGeneralForceUnit());
+      // segment tendons
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("N"), _T("pt s")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+
+      // girder tendons
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("N"), _T("pt g")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
       // Change in strand stress during this interval
       
@@ -557,10 +617,14 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       // strands (temporary)
       (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("f"),_T("ps t")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*pTable2)(0,col2++) << COLHDR(Sub2(_T("f"),_T("pse t")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      
-      // tendons
-      (*pTable2)(0,col2++) << COLHDR(symbol(DELTA) << Sub2(_T("f"),_T("pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-      (*pTable2)(0,col2++) << COLHDR(Sub2(_T("f"),_T("pte")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
+      // segment tendons
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("f"), _T("pt s")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("f"), _T("pte s")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
+      // girder tendons
+      (*pTable2)(0, col2++) << COLHDR(symbol(DELTA) << Sub2(_T("f"), _T("pt g")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pTable2)(0, col2++) << COLHDR(Sub2(_T("f"), _T("pte g")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
       // girder stress
       (*pTable2)(0,col2++) << COLHDR(Sub2(_T("f"),_T("bot girder")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -723,15 +787,15 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << tsDetails.Deck.Shrinkage.esi;
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Deck.PrShrinkage);
 
-         //(*pTable2)(row2,col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].As);
-         //(*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].Ys);
-         (*pTable2)(row2,col2++) << _T("?");
-         (*pTable2)(row2,col2++) << _T("?");
+         (*pTable2)(row2, col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].As);
+         (*pTable2)(row2, col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].Ys);
+         (*pTable2)(row2, col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].As);
+         (*pTable2)(row2, col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].Ys);
 
-         //(*pTable2)(row2,col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].As);
-         //(*pTable2)(row2,col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].Ys);
-         (*pTable2)(row2,col2++) << _T("?");
-         (*pTable2)(row2,col2++) << _T("?");
+         (*pTable2)(row2, col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As);
+         (*pTable2)(row2, col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys);
+         (*pTable2)(row2, col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].As);
+         (*pTable2)(row2, col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].Ys);
 
          std::vector<TIME_STEP_REBAR>::const_iterator iter(tsDetails.GirderRebar.begin());
          std::vector<TIME_STEP_REBAR>::const_iterator end(tsDetails.GirderRebar.end());
@@ -767,14 +831,25 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 #endif
          } // next strand type
 
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.Tendons[ductIdx]);
-            (*pTable2)(row2,col2+0) << area.SetValue(tendon.As) << rptNewLine;
-            (*pTable2)(row2,col2+1) << ecc.SetValue(tendon.Ys) << rptNewLine;
-            (*pTable2)(row2,col2+2) << stress.SetValue(tendon.Relaxation.fr) << rptNewLine;
-            (*pTable2)(row2,col2+3) << tendon.er << rptNewLine;
-            (*pTable2)(row2,col2+4) << force.SetValue(tendon.PrRelaxation) << rptNewLine;
+            const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
+            (*pTable2)(row2, col2 + 0) << area.SetValue(tendon.As) << rptNewLine;
+            (*pTable2)(row2, col2 + 1) << ecc.SetValue(tendon.Ys) << rptNewLine;
+            (*pTable2)(row2, col2 + 2) << stress.SetValue(tendon.Relaxation.fr) << rptNewLine;
+            (*pTable2)(row2, col2 + 3) << tendon.er << rptNewLine;
+            (*pTable2)(row2, col2 + 4) << force.SetValue(tendon.PrRelaxation) << rptNewLine;
+         }
+         col2 += 5;
+
+         for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+         {
+            const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
+            (*pTable2)(row2, col2 + 0) << area.SetValue(tendon.As) << rptNewLine;
+            (*pTable2)(row2, col2 + 1) << ecc.SetValue(tendon.Ys) << rptNewLine;
+            (*pTable2)(row2, col2 + 2) << stress.SetValue(tendon.Relaxation.fr) << rptNewLine;
+            (*pTable2)(row2, col2 + 3) << tendon.er << rptNewLine;
+            (*pTable2)(row2, col2 + 4) << force.SetValue(tendon.PrRelaxation) << rptNewLine;
          }
          col2 += 5;
 
@@ -786,19 +861,19 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_SH] );
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mr[TIMESTEP_RE] );
 
-         (*pTable2)(row2,col2++) << _T("?")/*tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead]*/;
-         (*pTable2)(row2,col2++) << _T("?")/*tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead]*/;
-         (*pTable2)(row2,col2++) << _T("?")/*tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead]*/;
-         (*pTable2)(row2,col2++) << _T("?")/*curvature.SetValue(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead])*/;
-         (*pTable2)(row2,col2++) << _T("?")/*curvature.SetValue(tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead])*/;
-         (*pTable2)(row2,col2++) << _T("?")/*curvature.SetValue(tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead])*/;
+         (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_CR];
+         (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_SH];
+         (*pTable2)(row2,col2++) << tsDetails.e[TIMESTEP_RE];
+         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_CR]);
+         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_SH]);
+         (*pTable2)(row2,col2++) << curvature.SetValue(tsDetails.r[TIMESTEP_RE]);
 
-         (*pTable2)(row2,col2++) << _T("?");//force.SetValue( tsDetails.Pre[TIMESTEP_CR] );
-         (*pTable2)(row2,col2++) << _T("?");//force.SetValue( tsDetails.Pre[TIMESTEP_SH] );
-         (*pTable2)(row2,col2++) << _T("?");//force.SetValue( tsDetails.Pre[TIMESTEP_RE] );
-         (*pTable2)(row2,col2++) << _T("?");//moment.SetValue(tsDetails.Mre[TIMESTEP_CR]);
-         (*pTable2)(row2,col2++) << _T("?");//moment.SetValue(tsDetails.Mre[TIMESTEP_SH]);
-         (*pTable2)(row2,col2++) <<_T("?");// moment.SetValue(tsDetails.Mre[TIMESTEP_RE]);
+         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.dPi[pgsTypes::pftCreep] );
+         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.dPi[pgsTypes::pftShrinkage] );
+         (*pTable2)(row2,col2++) << force.SetValue( tsDetails.dPi[pgsTypes::pftRelaxation] );
+         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.dMi[pgsTypes::pftCreep]);
+         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.dMi[pgsTypes::pftShrinkage]);
+         (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.dMi[pgsTypes::pftRelaxation]);
 
          Float64 der = 0;
          Float64 drr = 0;
@@ -816,8 +891,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          Float64 dMgirder = 0;
          Float64 dPdeck = 0;
          Float64 dMdeck = 0;
-         Float64 dPtopMat = 0;
-         Float64 dPbotMat = 0;
+         std::array<Float64, 2> dPtopMat{ 0.,0. };
+         std::array<Float64, 2> dPbotMat{ 0.,0. };
 
          for ( int i = 0; i < N; i++ )
          {
@@ -827,18 +902,20 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
             dPdeck += tsDetails.Deck.dPi[i];
             dMdeck += tsDetails.Deck.dMi[i];
 
-            dPtopMat += tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].dPi[i];
-            dPbotMat += tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].dPi[i];
-            dPtopMat += tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].dPi[i];
-            dPbotMat += tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].dPi[i];
+            dPtopMat[pgsTypes::drbIndividual] += tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].dPi[i];
+            dPtopMat[pgsTypes::drbLumpSum] += tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].dPi[i];
+            dPbotMat[pgsTypes::drbIndividual] += tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].dPi[i];
+            dPbotMat[pgsTypes::drbLumpSum] += tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].dPi[i];
          }
 
          (*pTable2)(row2,col2++) << force.SetValue( dPgirder );
          (*pTable2)(row2,col2++) << moment.SetValue( dMgirder );
          (*pTable2)(row2,col2++) << force.SetValue( dPdeck );
          (*pTable2)(row2,col2++) << moment.SetValue( dMdeck );
-         (*pTable2)(row2,col2++) << force.SetValue(dPtopMat);
-         (*pTable2)(row2,col2++) << force.SetValue(dPbotMat);
+         (*pTable2)(row2, col2++) << force.SetValue(dPtopMat[pgsTypes::drbIndividual]);
+         (*pTable2)(row2, col2++) << force.SetValue(dPtopMat[pgsTypes::drbLumpSum]);
+         (*pTable2)(row2, col2++) << force.SetValue(dPbotMat[pgsTypes::drbIndividual]);
+         (*pTable2)(row2, col2++) << force.SetValue(dPbotMat[pgsTypes::drbLumpSum]);
 
          iter = tsDetails.GirderRebar.begin();
          for ( ; iter != end; iter++ )
@@ -878,9 +955,21 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 #endif
          } // next strand type
 
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.Tendons[ductIdx]);
+            const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
+            Float64 dPtendon = 0;
+            for (int i = 0; i < N; i++)
+            {
+               dPtendon += tendon.dPi[i];
+            }
+            (*pTable2)(row2, col2) << force.SetValue(dPtendon) << rptNewLine;
+         }
+         col2 += 1;
+
+         for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+         {
+            const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
             Float64 dPtendon = 0;
             for ( int i = 0; i < N; i++ )
             {
@@ -894,10 +983,10 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Girder.M);
          (*pTable2)(row2,col2++) << force.SetValue(tsDetails.Deck.P);
          (*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Deck.M);
-         //(*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].P);
-         //(*pTable2)(row2,col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].P);
-         (*pTable2)(row2,col2++) << _T("?");
-         (*pTable2)(row2,col2++) << _T("?");
+         (*pTable2)(row2, col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].P);
+         (*pTable2)(row2, col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].P);
+         (*pTable2)(row2, col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].P);
+         (*pTable2)(row2, col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].P);
 
          iter = tsDetails.GirderRebar.begin();
          for ( ; iter != end; iter++ )
@@ -927,9 +1016,16 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 #endif
          } // next strand type
 
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.Tendons[ductIdx]);
+            const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
+            (*pTable2)(row2, col2) << force.SetValue(tendon.P) << rptNewLine;
+         }
+         col2 += 1;
+
+         for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+         {
+            const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
             (*pTable2)(row2,col2) << force.SetValue(tendon.P) << rptNewLine;
          }
          col2 += 1;
@@ -953,9 +1049,17 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 #endif
          } // next strand type
 
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.Tendons[ductIdx]);
+            const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
+            (*pTable2)(row2, col2 + 0) << stress.SetValue(tendon.dfpe) << rptNewLine;
+            (*pTable2)(row2, col2 + 1) << stress.SetValue(tendon.fpe) << rptNewLine;
+         }
+         col2 += 2;
+
+         for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+         {
+            const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
             (*pTable2)(row2,col2+0) << stress.SetValue(tendon.dfpe) << rptNewLine;
             (*pTable2)(row2,col2+1) << stress.SetValue(tendon.fpe)  << rptNewLine;
          }
@@ -1020,11 +1124,15 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(row2,col2++) << _T(""); //tsDetails.Deck.esi;
       (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Deck.PrShrinkage);
 
-      (*pTable2)(row2,col2++) << _T(""); //area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].As);
-      (*pTable2)(row2,col2++) << _T(""); //ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].Ys);
+      (*pTable2)(row2, col2++) << _T(""); //area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].As);
+      (*pTable2)(row2, col2++) << _T(""); //ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].Ys);
+      (*pTable2)(row2, col2++) << _T(""); //area.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].As);
+      (*pTable2)(row2, col2++) << _T(""); //ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].Ys);
 
-      (*pTable2)(row2,col2++) << _T(""); //area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].As);
-      (*pTable2)(row2,col2++) << _T(""); //ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].Ys);
+      (*pTable2)(row2, col2++) << _T(""); //area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As);
+      (*pTable2)(row2, col2++) << _T(""); //ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys);
+      (*pTable2)(row2, col2++) << _T(""); //area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].As);
+      (*pTable2)(row2, col2++) << _T(""); //ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].Ys);
 
       std::vector<TIME_STEP_REBAR>::const_iterator iter(tsDetails.GirderRebar.begin());
       std::vector<TIME_STEP_REBAR>::const_iterator end(tsDetails.GirderRebar.end());
@@ -1046,13 +1154,23 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Strands[strandType].Pr);
       }
 
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
       {
-         (*pTable2)(row2,col2+0) << _T(""); //area.SetValue(tsDetails.Tendons[ductIdx].As) << rptNewLine;
-         (*pTable2)(row2,col2+1) << _T(""); //ecc.SetValue(tsDetails.Tendons[ductIdx].Ys) << rptNewLine;
-         (*pTable2)(row2,col2+2) << _T(""); //stress.SetValue(tsDetails.Tendons[ductIdx].fr) << rptNewLine;
-         (*pTable2)(row2,col2+3) << _T(""); //tsDetails.Tendons[ductIdx].er << rptNewLine;
-         (*pTable2)(row2,col2+4) << _T(""); //force.SetValue(tsDetails.Tendons[ductIdx].Pr) << rptNewLine;
+         (*pTable2)(row2, col2 + 0) << _T(""); //area.SetValue(tsDetails.SegmentTendons[ductIdx].As) << rptNewLine;
+         (*pTable2)(row2, col2 + 1) << _T(""); //ecc.SetValue(tsDetails.SegmentTendons[ductIdx].Ys) << rptNewLine;
+         (*pTable2)(row2, col2 + 2) << _T(""); //stress.SetValue(tsDetails.SegmentTendons[ductIdx].fr) << rptNewLine;
+         (*pTable2)(row2, col2 + 3) << _T(""); //tsDetails.SegmentTendons[ductIdx].er << rptNewLine;
+         (*pTable2)(row2, col2 + 4) << _T(""); //force.SetValue(tsDetails.SegmentTendons[ductIdx].Pr) << rptNewLine;
+      }
+      col2 += 5;
+
+      for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+      {
+         (*pTable2)(row2, col2 + 0) << _T(""); //area.SetValue(tsDetails.GirderTendons[ductIdx].As) << rptNewLine;
+         (*pTable2)(row2, col2 + 1) << _T(""); //ecc.SetValue(tsDetails.GirderTendons[ductIdx].Ys) << rptNewLine;
+         (*pTable2)(row2, col2 + 2) << _T(""); //stress.SetValue(tsDetails.GirderTendons[ductIdx].fr) << rptNewLine;
+         (*pTable2)(row2, col2 + 3) << _T(""); //tsDetails.GirderTendons[ductIdx].er << rptNewLine;
+         (*pTable2)(row2, col2 + 4) << _T(""); //force.SetValue(tsDetails.GirderTendons[ductIdx].Pr) << rptNewLine;
       }
       col2 += 5;
 
@@ -1084,8 +1202,10 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(row2,col2++) << _T(""); //moment.SetValue(tsDetails.Girder.dM);
       (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Deck.dP);
       (*pTable2)(row2,col2++) << _T(""); //moment.SetValue(tsDetails.Deck.dM);
-      (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].dP);
-      (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].dP);
+      (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].dP);
+      (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].dP);
+      (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].dP);
+      (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].dP);
 
       iter = tsDetails.GirderRebar.begin();
       for ( ; iter != end; iter++ )
@@ -1098,9 +1218,16 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       {
          (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Strands[i].dP);
       }
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
       {
-         (*pTable2)(row2,col2) << _T(""); //force.SetValue(tsDetails.Tendons[ductIdx].dP) << rptNewLine;
+         (*pTable2)(row2, col2) << _T(""); //force.SetValue(tsDetails.SegmentTendons[ductIdx].dP) << rptNewLine;
+      }
+      col2 += 1;
+
+      for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+      {
+         (*pTable2)(row2, col2) << _T(""); //force.SetValue(tsDetails.GirderTendons[ductIdx].dP) << rptNewLine;
       }
       col2 += 1;
 
@@ -1108,8 +1235,10 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(row2,col2++) << _T(""); //moment.SetValue(tsDetails.Girder.M);
       (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Deck.P);
       (*pTable2)(row2,col2++) << _T(""); //moment.SetValue(tsDetails.Deck.M);
-      (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop].P);
-      (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom].P);
+      (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbIndividual].P);
+      (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmTop][pgsTypes::drbLumpSum].P);
+      (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].P);
+      (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].P);
 
       iter = tsDetails.GirderRebar.begin();
       for ( ; iter != end; iter++ )
@@ -1123,9 +1252,15 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Strands[i].P);
       }
 
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
       {
-         (*pTable2)(row2,col2) << _T(""); //force.SetValue(tsDetails.Tendons[ductIdx].P) << rptNewLine;
+         (*pTable2)(row2, col2) << _T(""); //force.SetValue(tsDetails.SegmentTendons[ductIdx].P) << rptNewLine;
+      }
+      col2 += 1;
+
+      for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+      {
+         (*pTable2)(row2, col2) << _T(""); //force.SetValue(tsDetails.GirderTendons[ductIdx].P) << rptNewLine;
       }
       col2 += 1;
 
@@ -1147,11 +1282,19 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
 #endif
       }
 
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
       {
-         const TIME_STEP_STRAND& tendon(tsDetails.Tendons[ductIdx]);
+         const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
+         (*pTable2)(row2, col2 + 0) << stress.SetValue(tendon.loss) << rptNewLine;
+         (*pTable2)(row2, col2 + 1) << _T(""); //stress.SetValue(tsDetails.SegmentTendons[ductIdx].fpe)  << rptNewLine;
+      }
+      col2 += 2;
+
+      for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+      {
+         const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
          (*pTable2)(row2,col2+0) << stress.SetValue(tendon.loss) << rptNewLine;
-         (*pTable2)(row2,col2+1) << _T(""); //stress.SetValue(tsDetails.Tendons[ductIdx].fpe)  << rptNewLine;
+         (*pTable2)(row2,col2+1) << _T(""); //stress.SetValue(tsDetails.GirderTendons[ductIdx].fpe)  << rptNewLine;
       }
       col2 += 2;
 
@@ -1203,10 +1346,10 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
          const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
          (*pTable3)(row3,col3++) << force.SetValue(tsDetails.Pr[TIMESTEP_CR]+tsDetails.Pr[TIMESTEP_SH]+tsDetails.Pr[TIMESTEP_RE]);
          (*pTable3)(row3,col3++) << moment.SetValue(tsDetails.Mr[TIMESTEP_CR]+tsDetails.Mr[TIMESTEP_SH]+tsDetails.Mr[TIMESTEP_RE]);
-         (*pTable3)(row3,col3++) << _T("?")/*tsDetails.e[TIMESTEP_CR][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_SH][pgsTypes::Ahead] + tsDetails.e[TIMESTEP_RE][pgsTypes::Ahead]*/;
-         (*pTable3)(row3,col3++) << _T("?")/*::ConvertFromSysUnits(tsDetails.r[TIMESTEP_CR][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_SH][pgsTypes::Ahead]+tsDetails.r[TIMESTEP_RE][pgsTypes::Ahead],pDisplayUnits->GetCurvatureUnit().UnitOfMeasure)*/;
-         (*pTable3)(row3,col3++) << _T("?");//force.SetValue(tsDetails.Pre[TIMESTEP_CR]+tsDetails.Pre[TIMESTEP_SH]+tsDetails.Pre[TIMESTEP_RE]);
-         (*pTable3)(row3,col3++) << _T("?");//moment.SetValue(tsDetails.Mre[TIMESTEP_CR]+tsDetails.Mre[TIMESTEP_SH]+tsDetails.Mre[TIMESTEP_RE]);
+         (*pTable3)(row3, col3++) << tsDetails.e[TIMESTEP_CR] + tsDetails.e[TIMESTEP_SH] + tsDetails.e[TIMESTEP_RE];
+         (*pTable3)(row3,col3++) << curvature.SetValue(tsDetails.r[TIMESTEP_CR]+tsDetails.r[TIMESTEP_SH]+tsDetails.r[TIMESTEP_RE]);
+         (*pTable3)(row3,col3++) << force.SetValue(tsDetails.dPi[pgsTypes::pftCreep]+tsDetails.dPi[pgsTypes::pftShrinkage]+tsDetails.dPi[pgsTypes::pftRelaxation]);
+         (*pTable3)(row3,col3++) << moment.SetValue(tsDetails.dMi[pgsTypes::pftCreep]+tsDetails.dMi[pgsTypes::pftShrinkage]+tsDetails.dMi[pgsTypes::pftRelaxation]);
       }
 
       row3++;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace\Allowables.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -83,11 +84,13 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
 
    location.IncludeSpanAndGirder(true);
 
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(girderKey));
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
-   IntervalIndexType compositeDeckIntervalIdx        = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    IntervalIndexType loadRatingIntervalIdx           = pIntervals->GetLoadRatingInterval();
-   IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstTendonStressingInterval(girderKey);
+   IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
 
    ATLASSERT(firstTendonStressingIntervalIdx != INVALID_INDEX);
 
@@ -99,7 +102,7 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
    {
       // if we are reporting stresses in the deck, don't report any intervals before
       // the deck is composite
-      minIntervalIdx = Max(minIntervalIdx,compositeDeckIntervalIdx);
+      minIntervalIdx = Max(minIntervalIdx,lastCompositeDeckIntervalIdx);
    }
 
    // remove the intervals

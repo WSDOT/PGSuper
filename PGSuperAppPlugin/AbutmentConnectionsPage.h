@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,19 @@
 #include "resource.h"
 #include <PgsExt\PierData2.h>
 #include <PgsExt\BoundaryConditionComboBox.h>
+
+
+class CAbutmentBearingOffsetMeasureComboBox : public CComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
+
+class CAbutmentEndDistanceMeasureComboBox : public CComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // CAbutmentConnectionsPage dialog
@@ -70,17 +83,24 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    CBoundaryConditionComboBox m_cbBoundaryCondition;
+   CAbutmentBearingOffsetMeasureComboBox m_cbBearingOffsetMeasure;
+   friend CAbutmentBearingOffsetMeasureComboBox;
+   CAbutmentEndDistanceMeasureComboBox m_cbEndDistanceMeasure;
+   friend CAbutmentEndDistanceMeasureComboBox;
 
    void OnEndDistanceMeasureChanged();
    void OnBearingOffsetMeasureChanged();
    void OnBoundaryConditionChanged();
 
    void UpdateConnectionPicture();
+   void UpdateConnectionPicture(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType);
+   void UpdateConnectionPicture(ConnectionLibraryEntry::EndDistanceMeasurementType endType);
    void FillBearingOffsetComboBox();
    void FillEndDistanceComboBox();
    void FillDiaphragmLoadComboBox();
    void FillBoundaryConditionComboBox();
    CString GetImageName(pgsTypes::BoundaryConditionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+
 
    CPierData2* m_pPier;
 

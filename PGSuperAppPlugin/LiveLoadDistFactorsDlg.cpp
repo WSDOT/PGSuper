@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -117,8 +117,6 @@ void CLiveLoadDistFactorsDlg::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBIndex(pDX, IDC_ROA_CB, action );
    DDX_Radio(pDX, IDC_LLDF_COMPUTE, method );
-   int grid=0;
-   DDX_Radio(pDX, IDC_GIRDER_RADIO, grid );
 
    pgsTypes::DistributionFactorMethod lldf_method = GetDfMethodForInt(method);
 
@@ -161,8 +159,7 @@ void CLiveLoadDistFactorsDlg::DoDataExchange(CDataExchange* pDX)
    }
 
 	// validation routine for CGXTabWnd controls
-	DDV_GXTabWnd(pDX, &m_GirderTabWnd);
-	DDV_GXTabWnd(pDX, &m_PierTabWnd);
+	DDV_GXTabWnd(pDX, &m_LldfTabWnd);
 }
  
 
@@ -174,8 +171,6 @@ BEGIN_MESSAGE_MAP(CLiveLoadDistFactorsDlg, CDialog)
 	ON_COMMAND(ID_HELP, OnHelp)
    ON_WM_NCACTIVATE()
 	//}}AFX_MSG_MAP
-   ON_BN_CLICKED(IDC_GIRDER_RADIO, &CLiveLoadDistFactorsDlg::OnBnClickedPierGirderRadio)
-   ON_BN_CLICKED(IDC_PIER_RADIO,   &CLiveLoadDistFactorsDlg::OnBnClickedPierGirderRadio)
    ON_BN_CLICKED(IDC_LLDF_FILL2, &CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton)
 END_MESSAGE_MAP()
 
@@ -184,8 +179,7 @@ END_MESSAGE_MAP()
 
 BOOL CLiveLoadDistFactorsDlg::OnInitDialog() 
 {
-   m_GirderTabWnd.SubclassDlgItem(IDC_LLDF_GIRDERS_TABW, this);
-   m_PierTabWnd.SubclassDlgItem(IDC_LLDF_PIERS_TABW, this);
+   m_LldfTabWnd.SubclassDlgItem(IDC_LLDF_TABW, this);
 
    GET_IFACE(IBridge,pBridge);
 
@@ -193,13 +187,27 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
    SpanIndexType nspans = m_BridgeDesc.GetSpanCount();
    for (SpanIndexType ispan=0; ispan<nspans; ispan++)
    {
+      // Create pier tab and grid
+      CLLDFPierGrid* ppiergrid = new CLLDFPierGrid();
+
+	   ppiergrid->Create(0, CRect(0,0,1,1), &m_LldfTabWnd, m_LldfTabWnd.GetNextID());
+
+      CString pier_name;
+      pier_name.Format(_T("Pier %d"), LABEL_PIER(ispan));
+   	m_LldfTabWnd.AttachWnd(ppiergrid, pier_name);
+
+      ppiergrid->CustomInit(ispan);
+
+      m_PierGrids.push_back( std::shared_ptr<CLLDFPierGrid>(ppiergrid) );
+
+      // Create span tab and grid
       CLLDFGrid* pgrid = new CLLDFGrid();
 
-	   pgrid->Create(0, CRect(0,0,1,1), &m_GirderTabWnd, m_GirderTabWnd.GetNextID());
+	   pgrid->Create(0, CRect(0,0,1,1), &m_LldfTabWnd, m_LldfTabWnd.GetNextID());
 
       CString span_name;
       span_name.Format(_T("Span %d"), LABEL_SPAN(ispan));
-   	m_GirderTabWnd.AttachWnd(pgrid, span_name);
+   	m_LldfTabWnd.AttachWnd(pgrid, span_name);
 
       bool bNegMoments = pBridge->ProcessNegativeMoments(ispan);
 
@@ -208,22 +216,19 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
       m_GirderGrids.push_back( std::shared_ptr<CLLDFGrid>(pgrid) );
    }
 
-   // Init Pier grids
-   PierIndexType npiers = m_BridgeDesc.GetPierCount();
-   for (PierIndexType pierIdx = 0; pierIdx < npiers; pierIdx++)
-   {
-      CLLDFPierGrid* pgrid = new CLLDFPierGrid();
+   // Init end pier tab and grid
+   CLLDFPierGrid* pgrid = new CLLDFPierGrid();
 
-	   pgrid->Create(0, CRect(0,0,1,1), &m_PierTabWnd, m_PierTabWnd.GetNextID());
+	pgrid->Create(0, CRect(0,0,1,1), &m_LldfTabWnd, m_LldfTabWnd.GetNextID());
 
-      CString pier_name;
-      pier_name.Format(_T("Pier %d"), LABEL_SPAN(pierIdx));
-   	m_PierTabWnd.AttachWnd(pgrid, pier_name);
+   CString pier_name;
+   pier_name.Format(_T("Pier %d"), LABEL_PIER(nspans));
+   m_LldfTabWnd.AttachWnd(pgrid, pier_name);
 
-      pgrid->CustomInit(pierIdx);
+   pgrid->CustomInit(nspans);
 
-      m_PierGrids.push_back( std::shared_ptr<CLLDFPierGrid>(pgrid) );
-   }
+   m_PierGrids.push_back( std::shared_ptr<CLLDFPierGrid>(pgrid) );
+
 
 	CDialog::OnInitDialog();
 
@@ -236,20 +241,18 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
       growhgt = Max(growhgt, ig->get()->CalcSumOfRowHeights(0,nrows-1)); 
    }
 
-   m_GirderTabWnd.ShowScrollBar(SB_HORZ, FALSE);
-   m_PierTabWnd.ShowScrollBar(SB_HORZ, FALSE);
+   m_LldfTabWnd.ShowScrollBar(SB_HORZ, FALSE);
 
    CRect trect;
-   m_GirderTabWnd.GetInsideRect(trect);
+   m_LldfTabWnd.GetInsideRect(trect);
 
    if (growhgt < trect.Height())
    {
-      m_GirderTabWnd.ShowScrollBar(SB_VERT, FALSE);
-      m_PierTabWnd.ShowScrollBar(SB_VERT, FALSE);
+      m_LldfTabWnd.ShowScrollBar(SB_VERT, FALSE);
    }
 
-	m_GirderTabWnd.SetFocus();
-	m_PierTabWnd.SetFocus();
+   m_LldfTabWnd.SwitchTab(1); // set to span 1
+	m_LldfTabWnd.SetFocus();
 
    OnMethod();
 
@@ -280,39 +283,18 @@ BOOL CLiveLoadDistFactorsDlg::OnNcActivate(BOOL bActive)
 	return CDialog::OnNcActivate(bActive);
 }
 
-void CLiveLoadDistFactorsDlg::OnBnClickedPierGirderRadio()
-{
-   DealWithGridStates();
-}
-
 void CLiveLoadDistFactorsDlg::DealWithGridStates()
 {
 	BOOL bEnable = IsDlgButtonChecked(IDC_LLDF_INPUT);
 
-   GetDlgItem(IDC_GIRDER_RADIO)->EnableWindow(bEnable);
-   GetDlgItem(IDC_PIER_RADIO)->EnableWindow(bEnable);
    GetDlgItem(IDC_LLDF_FILL2)->EnableWindow(bEnable);
    GetDlgItem(IDC_USER_LLDF_NOTE)->EnableWindow(bEnable);
 
-   CButton* pBut = (CButton*)GetDlgItem(IDC_GIRDER_RADIO);
-   if (pBut->GetCheck()==BST_CHECKED)
-   {
-      m_GirderTabWnd.ShowWindow((SW_SHOW));
-      m_PierTabWnd.ShowWindow((SW_HIDE));
+   m_LldfTabWnd.ShowWindow((SW_SHOW));
 
-      CLLDFGrid* pGrid = (CLLDFGrid*)m_GirderTabWnd.GetActivePane();
-      pGrid->Enable(bEnable);
-      m_GirderTabWnd.GetBeam().EnableWindow(bEnable);
-   }
-   else
-   {
-      m_GirderTabWnd.ShowWindow((SW_HIDE));
-      m_PierTabWnd.ShowWindow((SW_SHOW));
-
-      CLLDFPierGrid* pGrid = (CLLDFPierGrid*)m_PierTabWnd.GetActivePane();
-      pGrid->Enable(bEnable);
-      m_PierTabWnd.GetBeam().EnableWindow(bEnable);
-   }
+   CEnableGrid* pGrid = (CEnableGrid*)m_LldfTabWnd.GetActivePane();
+   pGrid->Enable(bEnable);
+   m_LldfTabWnd.GetBeam().EnableWindow(bEnable);
 }
 
 void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
@@ -350,7 +332,7 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
          // Computed either by lever rule or LRFD
          GET_IFACE(IBridgeDescription,pIBridgeDesc);
          GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
-         GET_IFACE(ILiveLoads,pLiveLoads);
+         GET_IFACE_NOCHECK(ILiveLoads,pLiveLoads);
          GET_IFACE(IProgress,pProgress);
          GET_IFACE(IEvents, pEvents);
 
@@ -436,24 +418,18 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
                if( pSpanBack != nullptr && pg.Girder < nGirdersBack)
                {
                   lldf_Back.pgNMService= pLLDF->GetNegMomentDistFactorAtPier(pg.Pier, pg.Girder, pgsTypes::ServiceI,pgsTypes::Back);
-                  lldf_Back.pgRService = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::ServiceI);
                   lldf_Back.pgNMFatigue= pLLDF->GetNegMomentDistFactorAtPier(pg.Pier, pg.Girder, pgsTypes::FatigueI,pgsTypes::Back);
-                  lldf_Back.pgRFatigue = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::FatigueI);
                }
 
                if( pSpanAhead != nullptr && pg.Girder < nGirdersAhead)
                {
                   lldf_Ahead.pgNMService= pLLDF->GetNegMomentDistFactorAtPier(pg.Pier, pg.Girder, pgsTypes::ServiceI,pgsTypes::Ahead);
-                  lldf_Ahead.pgRService = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::ServiceI);
                   lldf_Ahead.pgNMFatigue= pLLDF->GetNegMomentDistFactorAtPier(pg.Pier, pg.Girder, pgsTypes::FatigueI,pgsTypes::Ahead);
-                  lldf_Ahead.pgRFatigue = pLLDF->GetReactionDistFactor(pg.Pier, pg.Girder, pgsTypes::FatigueI);
                }
 
                PierLLDF lldf;
                lldf.pgNMService= Max(lldf_Back.pgNMService, lldf_Ahead.pgNMService);
-               lldf.pgRService = Max(lldf_Back.pgRService , lldf_Ahead.pgRService);
                lldf.pgNMFatigue= Max(lldf_Back.pgNMFatigue, lldf_Ahead.pgNMFatigue);
-               lldf.pgRFatigue = Max(lldf_Back.pgRFatigue,  lldf_Ahead.pgRFatigue);
 
                pier_lldfs.push_back(lldf);
 

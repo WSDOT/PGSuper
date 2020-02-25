@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -50,7 +50,7 @@ const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, co
 {
    Losses* pLosses = nullptr;
 
-   std::map<pgsPointOfInterest,Losses,ComparePoi>::iterator found(m_Losses.find(poi));
+   auto found(m_Losses.find(poi));
    if ( found != m_Losses.end() )
    {
       pLosses = &(found->second);
@@ -84,7 +84,7 @@ void CDesignLosses::SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& 
    l.m_Config = config;
    l.m_Details = losses;
 
-   std::pair<std::map<pgsPointOfInterest,Losses,ComparePoi>::iterator,bool> result = m_Losses.insert( std::make_pair(poi,l) );
+   auto result = m_Losses.insert( std::make_pair(poi,l) );
    ATLASSERT( result.second == true );
 }
 
@@ -140,6 +140,7 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
       LOSSDETAILS details = m_Engineer.ComputeLossesForDesign((CPsLossEngineer::BeamType)m_BeamType,poi,config);
       m_DesignLosses.SaveToCache(poi,config,details);
       pLossDetails = m_DesignLosses.GetFromCache(poi,config);
+      ATLASSERT(pLossDetails != nullptr);
    }
 
    return pLossDetails;
@@ -160,7 +161,7 @@ void CPsBeamLossEngineer::ReportFinalLosses(const CGirderKey& girderKey,rptChapt
    m_Engineer.ReportFinalLosses((CPsLossEngineer::BeamType)m_BeamType,girderKey,pChapter,pDisplayUnits);
 }
 
-const ANCHORSETDETAILS* CPsBeamLossEngineer::GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx)
+const ANCHORSETDETAILS* CPsBeamLossEngineer::GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey, DuctIndexType ductIdx)
 {
    // This returns basically a dummy object... non-spliced girders don't have PT so
    // there is no anchor set... this implementation keeps the compiler happy
@@ -168,7 +169,15 @@ const ANCHORSETDETAILS* CPsBeamLossEngineer::GetAnchorSetDetails(const CGirderKe
    return nullptr;
 }
 
-Float64 CPsBeamLossEngineer::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
+const ANCHORSETDETAILS* CPsBeamLossEngineer::GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx)
+{
+   // This returns basically a dummy object... non-spliced girders don't have PT so
+   // there is no anchor set... this implementation keeps the compiler happy
+   ATLASSERT(false); // why did this method get called? it shouldn't happen
+   return nullptr;
+}
+
+Float64 CPsBeamLossEngineer::GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
 {
    // This returns basically a dummy object... non-spliced girders don't have PT so
    // there is no anchor set... this implementation keeps the compiler happy
@@ -176,7 +185,24 @@ Float64 CPsBeamLossEngineer::GetElongation(const CGirderKey& girderKey,DuctIndex
    return 0;
 }
 
-void CPsBeamLossEngineer::GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA)
+Float64 CPsBeamLossEngineer::GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType)
+{
+   // This returns basically a dummy object... non-spliced girders don't have PT so
+   // there is no anchor set... this implementation keeps the compiler happy
+   ATLASSERT(false); // why did this method get called? it shouldn't happen
+   return 0;
+}
+
+void CPsBeamLossEngineer::GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA)
+{
+   // This returns basically a dummy object... non-spliced girders don't have PT so
+   // there is no anchor set... this implementation keeps the compiler happy
+   ATLASSERT(false); // why did this method get called? it shouldn't happen
+   *pfpF = 0;
+   *pfpA = 0;
+}
+
+void CPsBeamLossEngineer::GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA)
 {
    // This returns basically a dummy object... non-spliced girders don't have PT so
    // there is no anchor set... this implementation keeps the compiler happy

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,10 @@
 #include <ATLBase.h>
 
 #include "exportCADData.h"
+#include "Documentation\TxCADExport\TxCADExport.hh"
 
 #include <IFace\Bridge.h>
+#include <MfcTools\CustomDDX.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -46,7 +48,7 @@ exportCADData::exportCADData(IBroker* pBroker,CWnd* pParent /*=nullptr*/)
 {
    m_pBroker  = pBroker;
 	//{{AFX_DATA_INIT(exportCADData)
-	m_IsExtended = FALSE;
+   m_FileFormatType = ctxExcel;
 	//}}AFX_DATA_INIT
 
    m_pGrid = new CMultiGirderSelectGrid();
@@ -63,7 +65,7 @@ void exportCADData::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(exportCADData)
-	DDX_Check(pDX, IDC_EXTENDED, m_IsExtended);
+	DDX_CBEnum(pDX, IDC_FILE_FORMAT, m_FileFormatType);
 	//}}AFX_DATA_MAP
 
    if ( pDX->m_bSaveAndValidate )
@@ -144,11 +146,10 @@ BOOL exportCADData::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-
 /*--------------------------------------------------------------------*/
 void exportCADData::OnHelp() 
 {
-   //EAFHelp( IDH_DIALOG_EXPORTTXDOTCADDATA);
+   EAFHelp(_T("TxCADExport"),IDH_TX_CAD_EXPORT);
 }
 
 void exportCADData::OnSelchangeSpan() 
@@ -180,7 +181,6 @@ void exportCADData::OnSelchangeSpan()
    girder = Min(girder, cGirder-1); // don't allow out of bounds if ng decreases between spans
 
    pGdrBox->SetCurSel((int)girder);
-	
 }
 
 void exportCADData::OnBnClickedSelectAll()

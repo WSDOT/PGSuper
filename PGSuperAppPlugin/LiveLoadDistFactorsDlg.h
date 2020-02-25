@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -89,15 +89,12 @@ public:
 // Implementation
 protected:
 
-   // User-input girder grid
-   CGXTabWnd m_GirderTabWnd;
+   // User-input lldf grid
+   CGXTabWnd m_LldfTabWnd;
 
    typedef std::vector< std::shared_ptr<CLLDFGrid> > GirderGridList;
    typedef GirderGridList::iterator GirderGridIterator;
    GirderGridList m_GirderGrids;
-
-   // User-input pier grid
-   CGXTabWnd m_PierTabWnd;
 
    typedef std::vector< std::shared_ptr<CLLDFPierGrid> > PierGridList;
    typedef PierGridList::iterator PierGridIterator;
@@ -109,7 +106,6 @@ protected:
 	afx_msg void OnMethod();
 	afx_msg void OnHelp();
 	afx_msg BOOL OnNcActivate(BOOL bActive);
-   afx_msg void OnBnClickedPierGirderRadio();
    afx_msg void OnBnClickedLldfFillButton();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

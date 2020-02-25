@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,19 @@
 #include "resource.h"
 #include <PgsExt\PierData2.h>
 #include <PgsExt\BoundaryConditionComboBox.h>
+
+
+class CPierBearingOffsetMeasureComboBox : public CCacheComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
+
+class CPierEndDistanceMeasureComboBox : public CCacheComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierConnectionsPage dialog
@@ -71,11 +84,18 @@ protected:
 
    CBoundaryConditionComboBox m_cbBoundaryCondition;
 
+   CPierBearingOffsetMeasureComboBox m_cbBearingOffsetMeasure;
+   friend CPierBearingOffsetMeasureComboBox;
+   CPierEndDistanceMeasureComboBox m_cbEndDistanceMeasure;
+   friend CPierEndDistanceMeasureComboBox;
+
    void OnEndDistanceMeasureChanged();
    void OnBearingOffsetMeasureChanged();
    void OnBoundaryConditionChanged();
 
    void UpdateConnectionPicture();
+   void UpdateConnectionPicture(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType);
+   void UpdateConnectionPicture(ConnectionLibraryEntry::EndDistanceMeasurementType endType);
    void FillBearingOffsetComboBox();
    void FillEndDistanceComboBox();
    void FillDiaphragmLoadComboBox();
@@ -87,25 +107,23 @@ protected:
    PierIndexType m_PierIdx;
 
    CMetaFileStatic m_ConnectionPicture;
-   CCacheEdit m_BearingOffsetEdit[2];
-   CCacheEdit m_EndDistanceEdit[2];
-   CCacheComboBox m_cbEndDistanceMeasurementType;
-   CCacheComboBox m_cbBearingOffsetMeasurementType;
-   CCacheEdit m_DiaphragmHeightEdit[2];
-   CCacheEdit m_DiaphragmWidthEdit[2];
-   CCacheEdit m_DiaphragmLoadLocationEdit[2];
+   std::array<CCacheEdit,2> m_BearingOffsetEdit;
+   std::array<CCacheEdit,2> m_EndDistanceEdit;
+   std::array<CCacheEdit,2> m_DiaphragmHeightEdit;
+   std::array<CCacheEdit,2> m_DiaphragmWidthEdit;
+   std::array<CCacheEdit,2> m_DiaphragmLoadLocationEdit;
 
    CBrush m_WhiteBrush;
 
    pgsTypes::BoundaryConditionType m_BoundaryConditionType;
 
-   Float64 m_DiaphragmHeight[2];
-   Float64 m_DiaphragmWidth[2];
-   ConnectionLibraryEntry::DiaphragmLoadType m_DiaphragmLoadType[2];
-   Float64 m_DiaphragmLoadLocation[2];
+   std::array<Float64,2> m_DiaphragmHeight;
+   std::array<Float64,2> m_DiaphragmWidth;
+   std::array<ConnectionLibraryEntry::DiaphragmLoadType,2> m_DiaphragmLoadType;
+   std::array<Float64,2> m_DiaphragmLoadLocation;
 
-   Float64 m_BearingOffset[2];
-   Float64 m_EndDistance[2];
+   std::array<Float64,2> m_BearingOffset;
+   std::array<Float64,2> m_EndDistance;
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistanceMeasurementType;
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
 

@@ -7,13 +7,7 @@
     <ClCompile Include="GirderScheduleChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="InputSummaryChapter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="LoadRatingSummaryChapterBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OutputSummaryChapter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PGSpliceComponentInfo.cpp">
@@ -39,13 +33,7 @@
     <ClInclude Include="GirderScheduleChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InputSummaryChapter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="LoadRatingSummaryChapterBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OutputSummaryChapter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGSpliceComponentInfo.h">

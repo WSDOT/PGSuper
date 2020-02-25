@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,6 +29,7 @@
 #include "PGSuperDocBase.h"
 #include "BridgeSectionView.h"
 #include "SlabDisplayObjectEvents.h"
+#include "AlignmentDisplayObjectEvents.h"
 #include "BridgePlanView.h"
 
 #include "PGSuperUnits.h"
@@ -71,6 +72,7 @@ static char THIS_FILE[] = __FILE__;
 #define GIRDER_LABEL_DISPLAY_LIST      6
 #define TRAFFIC_BARRIER_DISPLAY_LIST   7
 #define ALIGNMENT_DISPLAY_LIST         8
+#define RW_CROSS_SECTION_DISPLAY_LIST  9
 
 #define LEFT_CURB_SOCKET         100
 #define RIGHT_CURB_SOCKET        200
@@ -84,6 +86,29 @@ static char THIS_FILE[] = __FILE__;
 #define RIGHT_INT_SW_SOCKET      703
 #define LEFT_INT_OVERLAY_SOCKET     710
 #define RIGHT_INT_OVERLAY_SOCKET    711
+
+#define ALIGNMENT_ID -200
+
+inline void GetGirderSection(IShape* pShape, IGirderSection** ppSection)
+{
+   CComQIPtr<IGirderSection> section(pShape);
+   if (!section)
+   {
+      CComQIPtr<ICompositeShape> compShape(pShape);
+      if (compShape)
+      {
+         CComPtr<ICompositeShapeItem> shapeItem;
+         compShape->get_Item(0, &shapeItem);
+         CComPtr<IShape> gdrShape;
+         shapeItem->get_Shape(&gdrShape);
+         gdrShape.QueryInterface(ppSection);
+      }
+   }
+   else
+   {
+      section.CopyTo(ppSection);
+   }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionView
@@ -257,11 +282,23 @@ void CBridgeSectionView::SelectTrafficBarrier(pgsTypes::TrafficBarrierOrientatio
 
 void CBridgeSectionView::SelectAlignment(bool bSelect)
 {
-   // sort of a dummy function to clear the selection in this view
-   // when the alignment is selected in another view
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
-   dispMgr->ClearSelectedObjects();
+
+   CComPtr<iDisplayList> displayList;
+   dispMgr->FindDisplayList(RW_CROSS_SECTION_DISPLAY_LIST, &displayList);
+
+   CComPtr<iDisplayObject> pDO;
+   dispMgr->FindDisplayObject(ALIGNMENT_ID, RW_CROSS_SECTION_DISPLAY_LIST, atByID, &pDO);
+
+   if (pDO)
+   {
+      dispMgr->SelectObject(pDO, bSelect);
+   }
+   else
+   {
+      dispMgr->ClearSelectedObjects();
+   }
 }
 
 void CBridgeSectionView::SelectTemporarySupport(bool bSelect)
@@ -309,6 +346,11 @@ void CBridgeSectionView::BuildDisplayLists()
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&dim_line_list);
    dim_line_list->SetID(DIMENSION_DISPLAY_LIST);
    dispMgr->AddDisplayList(dim_line_list);
+
+   CComPtr<iDisplayList> rwxs_line_list;
+   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&rwxs_line_list);
+   rwxs_line_list->SetID(RW_CROSS_SECTION_DISPLAY_LIST);
+   dispMgr->AddDisplayList(rwxs_line_list);
 
    CComPtr<iDisplayList> title_list;
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
@@ -482,9 +524,15 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    }
 }
 
+void CBridgeSectionView::HandleLButtonDown(UINT nFlags, CPoint logPoint)
+{
+   CBridgeModelViewChildFrame* pFrame = GetFrame();
+   pFrame->ClearSelection();
+}
+
 void CBridgeSectionView::HandleLButtonDblClk(UINT nFlags, CPoint point) 
 {
-   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
+   GetFrame()->PostMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
@@ -784,6 +832,7 @@ void CBridgeSectionView::UpdateDisplayObjects()
    BuildTrafficBarrierDisplayObjects();
    BuildDimensionLineDisplayObjects();
    BuildAlignmentDisplayObjects();
+   BuildRoadwayCrossSectionDisplayObjects();
 
    UpdateGirderTooltips();
 
@@ -856,6 +905,8 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
 
    GET_IFACE2(pBroker, IRoadway, pAlignment);
    GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pTendonGeom);
 
    std::vector<pgsPointOfInterest> vPoi = GetPointsOfInterest();
 
@@ -883,6 +934,9 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
          segment_border_color = SEGMENT_BORDER_COLOR_ADJACENT;
       }
 
+      CComPtr<iCompoundDrawPointStrategy> compound_strategy;
+      compound_strategy.CoCreateInstance(CLSID_CompoundDrawPointStrategy);
+
       // Display object for the girder cross section
       CComPtr<iPointDisplayObject> dispObj;
       dispObj.CoCreateInstance(CLSID_PointDisplayObject);
@@ -891,7 +945,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       IntervalIndexType intervalIdx = pIntervals->GetErectSegmentInterval(thisSegmentKey);
 
       CComPtr<IShape> shape;
-      pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,pgsTypes::hspVariableParabolic,&shape);
+      pShapes->GetSegmentShape(intervalIdx,poi,true,pgsTypes::scBridge,&shape);
 
       CComPtr<IPoint2d> point;
       pBridge->GetPoint(poi, pgsTypes::pcGlobal, &point);
@@ -899,9 +953,8 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       pAlignment->GetStationAndOffset(pgsTypes::pcGlobal, point, &station, &offset);
       if (!IsEqual(station, cut_station))
       {
-         GET_IFACE2(pBroker, IGirder, pGirder);
          CComPtr<IDirection> segDirection;
-         pGirder->GetSegmentDirection(poi.GetSegmentKey(), &segDirection);
+         pGirder->GetSegmentDirection(thisSegmentKey, &segDirection);
 
          Float64 dirSegment;
          segDirection->get_Value(&dirSegment);
@@ -924,29 +977,24 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
          shape = skewedShape;
       }
 
+      CComPtr<IPoint2d> pntWorkPoint; // note that the section work point is always the top CL girder and not the pgsuper-level WP
+      CComPtr<IGirderSection> section;
+      GetGirderSection(shape, &section);
 
-      CComPtr<IPoint2d> pntWorkPoint;
-      CComQIPtr<IGirderSection> section(shape);
       CComQIPtr<IXYPosition> position(shape);
+      CComPtr<IPoint2d> pntTopCenter;
+      position->get_LocatorPoint(lpTopCenter,&pntTopCenter);
       if (section)
       {
          section->get_WorkPoint(&pntWorkPoint);
       }
       else
       {
-         position->get_LocatorPoint(lpTopCenter, &pntWorkPoint);
+         pntWorkPoint = pntTopCenter;
       }
       dispObj->SetPosition(pntWorkPoint,FALSE,FALSE);
 
-      CComPtr<iCompoundDrawPointStrategy> compound_strategy;
-      compound_strategy.CoCreateInstance(CLSID_CompoundDrawPointStrategy);
-
-      CComPtr<iSimpleDrawPointStrategy> draw_work_point_strategy;
-      draw_work_point_strategy.CoCreateInstance(CLSID_SimpleDrawPointStrategy);
-      draw_work_point_strategy->SetColor(RED);
-      draw_work_point_strategy->SetLogicalPointSize(5); // make the "meatballs" 5 pixels
-      draw_work_point_strategy->SetPointType(ptCircle);
-
+      // Drawing objct for girder shape
       CComPtr<iShapeDrawStrategy> shape_draw_strategy;
       shape_draw_strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
       shape_draw_strategy->SetShape(shape);
@@ -957,7 +1005,93 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       shape_draw_strategy->DoFill(true);
 
       compound_strategy->AddStrategy(shape_draw_strategy);
+
+      // Drawing object for plant installed ducts.
+      // the bridge section cut is for the erection interval. at that interval, the plant installed tendons
+      // are grouted so the circle shape is no longer part of the girder shape object (unlike the field
+      // installed tendons which are part because they ducts aren't grouted yet). we want to draw the
+      // circles for the plant installed tendons so we will create circle shape objects here
+      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisSegmentKey);
+      for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+      {
+         CComPtr<iShapeDrawStrategy> duct_draw_strategy;
+         duct_draw_strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+
+         CComPtr<IPoint2d> pntDuct;
+         pTendonGeom->GetSegmentDuctPoint(poi, ductIdx, &pntDuct);
+
+         // pntDuct is in girder section coordinates (measured from top center of girder)
+         // pntTopCenter is in bridge section coordinates
+         // we want pntDuct in bridge section coordinates... duct x,y are relative offsets from
+         // top center.... move the duct point
+         Float64 dx, dy;
+         pntDuct->Location(&dx, &dy);
+         
+         Float64 tx, ty;
+         pntTopCenter->Location(&tx, &ty);
+
+         pntDuct->Move(tx + dx, ty + dy);
+
+         Float64 diameter = pTendonGeom->GetOutsideDiameter(thisSegmentKey, ductIdx);
+
+         duct_draw_strategy->DoFill(true);
+         duct_draw_strategy->SetSolidFillColor(GetSysColor(COLOR_WINDOW)); // draw as a void
+         duct_draw_strategy->SetSolidLineColor(SEGMENT_TENDON_BORDER_COLOR);
+
+         CComPtr<ICircle> circle;
+         circle.CoCreateInstance(CLSID_Circle);
+         circle->putref_Center(pntDuct);
+         circle->put_Radius(diameter / 2);
+         CComQIPtr<IShape> shape(circle);
+         duct_draw_strategy->SetShape(shape);
+
+         compound_strategy->AddStrategy(duct_draw_strategy);
+      }
+
+      // Drawing object for the work point
+      CComPtr<iShapeDrawStrategy> draw_work_point_strategy;
+      draw_work_point_strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+
+      draw_work_point_strategy->DoFill(true);
+      draw_work_point_strategy->SetSolidFillColor(RED);
+      draw_work_point_strategy->SetSolidLineColor(RED);
+
+      pgsTypes::WorkPointLocation wploc = pBridgeDesc->GetWorkPointLocation();
+      CComPtr<IPoint2d> pntWP;
+      pntWorkPoint->Clone(&pntWP);
+
+      if (wploc == pgsTypes::wplBottomGirder)
+      {
+         // assume small angles to locate work point. This will reconstitute assumptions made in 
+         // bridge geometry model builder so we can get dimensions correct
+         Float64 gdr_depth = pGirder->GetHeight(poi);
+         Float64 wp_offset = pGirder->GetWorkPointShiftOffset(thisSegmentKey);
+
+         pntWP->Offset(wp_offset, -gdr_depth);
+      }
+      else
+      {
+         ATLASSERT(wploc == pgsTypes::wplTopGirder); // new option??
+      }
+
+      CComPtr<ICircle> wpcircle;
+      wpcircle.CoCreateInstance(CLSID_Circle);
+      wpcircle->putref_Center(pntWP);
+      wpcircle->put_Radius(::ConvertToSysUnits(0.75,unitMeasure::Inch)); // 1.5" diameter point
+      CComQIPtr<IShape> wpshape(wpcircle);
+      draw_work_point_strategy->SetShape(wpshape);
       compound_strategy->AddStrategy(draw_work_point_strategy); // draw second so it goes over the girder shape
+
+      // If the work point is not at the top of the girder draw a cross hair at the top, since we will continue dimensioning here
+      if (wploc != pgsTypes::wplTopGirder)
+      {
+         CComPtr<iSimpleDrawPointStrategy> draw_top_cl_strategy;
+         draw_top_cl_strategy.CoCreateInstance(CLSID_SimpleDrawPointStrategy);
+         draw_top_cl_strategy->SetColor(BLACK);
+         draw_top_cl_strategy->SetLogicalPointSize(5);
+         draw_top_cl_strategy->SetPointType(ptCrossHair);
+         compound_strategy->AddStrategy(draw_top_cl_strategy);
+      }
 
       dispObj->SetDrawingStrategy(compound_strategy);
 
@@ -1048,6 +1182,12 @@ void CBridgeSectionView::BuildLongitudinalJointDisplayObject()
    IDType jointID = 0;
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
+   if (intervalIdx == INVALID_INDEX)
+   {
+      return; // the longitudinal joints aren't structural (they are just a gap)
+   }
+
    GET_IFACE2(pBroker, IShapes, pShapes);
 
    GroupIndexType grpIdx = GetGroupIndex();
@@ -1075,14 +1215,12 @@ void CBridgeSectionView::BuildLongitudinalJointDisplayObject()
       CComPtr<iPointDisplayObject> dispObj;
       dispObj.CoCreateInstance(CLSID_PointDisplayObject);
 
-      IntervalIndexType intervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
-
       CComPtr<IShape> leftJointShape, rightJointShape;
       pShapes->GetJointShapes(intervalIdx, poi, true, pgsTypes::scBridge, &leftJointShape, &rightJointShape);
 
       if (leftJointShape == nullptr && rightJointShape == nullptr)
       {
-         return;
+         return; // there aren't any longitudinal joint
       }
 
       CComPtr<ICompositeShape> compShape;
@@ -1288,7 +1426,8 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
    CComQIPtr<IShape> shape(poly_shape);
    strategy->SetShape(shape);
 
-   if ( pBridge->IsFutureOverlay() )
+   bool bIsFutureOverlay = pBridge->IsFutureOverlay();
+   if ( bIsFutureOverlay )
    {
       strategy->SetSolidLineColor(FUTURE_OVERLAY_COLOR);
       strategy->SetSolidFillColor(FUTURE_OVERLAY_COLOR);
@@ -1308,7 +1447,7 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
    IndexType nPoints;
    surfacePoints->get_Count(&nPoints);
 
-   // points along the bottom of the overlay (along the top of deck)
+   // points along the finished profile grade surface
    for (IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
    {
       CComPtr<IPoint2d> pnt;
@@ -1316,7 +1455,11 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
       poly_shape->AddPointEx(pnt);
    }
 
-   // now work backwards, offset the points upwards by the depth of the overlay
+   // if it is a future overaly, the overlay is above the finished surface
+   // otherwise it is the finished surface
+   depth *= (bIsFutureOverlay ? 1 : -1);
+
+   // now work backwards, offset the points by the depth of the overlay
    for ( IndexType pntIdx = nPoints-1; pntIdx != INVALID_INDEX; pntIdx-- )
    {
       CComPtr<IPoint2d> pnt;
@@ -1582,9 +1725,10 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    CComPtr<iSocket> firstSocket, lastSocket;
    long witness_length;
 
-   // find the top of the "lowest" girder so all the dimension lines can be at
+   // find the top of the "highest" girder so all the dimension lines can be at
    // the same elevation
-   Float64 yLowest = DBL_MAX;
+   Float64 yHighest = -DBL_MAX;
+   Float64 yLowest  =  DBL_MAX;
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
       CComPtr<iDisplayObject> doGirder;
@@ -1630,7 +1774,12 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       Float64 y;
       p->get_Y(&y);
-      yLowest = Min(y, yLowest);
+      yHighest = Max(y, yHighest);
+
+      CComPtr<IPoint2d> pl;
+      position->get_LocatorPoint(lpBottomCenter, &pl);
+      pl->get_Y(&y);
+      yLowest  = Min(y, yLowest);
    }
 
    // make a dimension line for each spacing group
@@ -1657,7 +1806,9 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       // Get bottom center coordinates of the exterior girders
       CComPtr<IPoint2d> p1;
-      CComQIPtr<IGirderSection> section(shape);
+      CComPtr<IGirderSection> section;
+      GetGirderSection(shape, &section);
+
       if (section)
       {
          section->get_WorkPoint(&p1);
@@ -1746,7 +1897,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             strategy2->GetShape(&shape2);
 
             CComPtr<IPoint2d> p1;
-            CComQIPtr<IGirderSection> section1(shape1);
+            CComPtr<IGirderSection> section1;
+            GetGirderSection(shape1, &section1);
             if (section1)
             {
                section1->get_WorkPoint(&p1);
@@ -1758,7 +1910,8 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             }
 
             CComPtr<IPoint2d> p2;
-            CComQIPtr<IGirderSection> section2(shape2);
+            CComPtr<IGirderSection> section2;
+            GetGirderSection(shape2, &section2);
             if (section2)
             {
                section2->get_WorkPoint(&p2);
@@ -1769,9 +1922,9 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
                position2->get_LocatorPoint(lpTopCenter, &p2);
             }
 
-            // adjust points so both are at the same, and lowest, elevation
-            p1->put_Y(yLowest);
-            p2->put_Y(yLowest);
+            // adjust points so both are at the same, and highest, elevation
+            p1->put_Y(yHighest);
+            p2->put_Y(yHighest);
 
             // Add sockets to the display objects at these points
             CComQIPtr<iConnectable> c1(do1);
@@ -1879,7 +2032,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
          // get bottom left of slab
          CComPtr<IPoint2d> left_overhang_point;
          slabPosition->get_LocatorPoint(lpBottomLeft,&left_overhang_point);
-         left_overhang_point->put_Y(yLowest);
+         left_overhang_point->put_Y(yHighest);
 
          // Add sockets to the display objects at these points
          CComQIPtr<iConnectable> leftOverhangConnectable(doSlab);
@@ -1932,7 +2085,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
          // get bottom right of slab
          CComPtr<IPoint2d> right_overhang_point;
          slabPosition->get_LocatorPoint(lpBottomRight,&right_overhang_point);
-         right_overhang_point->put_Y(yLowest);
+         right_overhang_point->put_Y(yHighest);
 
          // Add sockets to the display objects at these points
          CComQIPtr<iConnectable> rightOverhangConnectable(doSlab);
@@ -1968,6 +2121,187 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
             display_list->AddDisplayObject(rightOverhangDimLine);
          }
       }
+   }
+
+   // If work point is at bottom, add dimension lines along bottom of bridge cross section
+   // make a dimension line for each spacing group
+   pgsTypes::WorkPointLocation wploc = pBridgeDesc->GetWorkPointLocation();
+   if (nGirders != 1 && wploc == pgsTypes::wplBottomGirder)
+   {
+      GET_IFACE2(pBroker, IGirder, pGirder);
+
+      std::vector<SpaceBetweenGirder> vSpacing(pBridge->GetGirderSpacingAtBottomClGirder(cut_station));
+      for (auto& spacingData : vSpacing)
+      {
+         // get the girder spacing for this group
+         Float64 spacing = spacingData.spacing;
+         GirderIndexType firstGdrIdx = spacingData.firstGdrIdx;
+         GirderIndexType lastGdrIdx = spacingData.lastGdrIdx;
+
+         SpacingIndexType nSpacesInGroup = lastGdrIdx - firstGdrIdx;
+
+         Float64 total = spacing*nSpacesInGroup;
+
+         // Create dimension line display object for this spacing group
+         CComPtr<iDimensionLine> doDimLine;
+         doDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
+         CComQIPtr<iConnector> connector(doDimLine);
+
+         // Going to attach dimension line to girder display objects, so get them now
+         CComPtr<iDisplayObject> do1, do2;
+         CSegmentKey firstGirderKey(grpIdx, firstGdrIdx, INVALID_INDEX);
+         CSegmentKey lastGirderKey(grpIdx, lastGdrIdx, INVALID_INDEX);
+
+         GirderIDCollection::iterator found(m_GirderIDs.find(firstGirderKey));
+         if (found == m_GirderIDs.end())
+         {
+            continue;
+         }
+
+         IDType firstID = (*found).second;
+
+         found = m_GirderIDs.find(lastGirderKey);
+         if (found == m_GirderIDs.end())
+         {
+            continue;
+         }
+
+         IDType lastID = (*found).second;
+
+         girder_list->FindDisplayObject(firstID, &do1);
+         girder_list->FindDisplayObject(lastID, &do2);
+
+         if (do1 && do2)
+         {
+            CComQIPtr<iPointDisplayObject> pdo1(do1);
+            CComQIPtr<iPointDisplayObject> pdo2(do2);
+
+            // We know that these display objects use ShapeDrawStrategy objects, and they hold the girder shape
+            // Get the strategies and then the shapes
+            CComPtr<iDrawPointStrategy> ds1, ds2;
+            pdo1->GetDrawingStrategy(&ds1);
+            pdo2->GetDrawingStrategy(&ds2);
+
+            CComQIPtr<iCompoundDrawPointStrategy> compound_strategy1(ds1);
+            CComQIPtr<iCompoundDrawPointStrategy> compound_strategy2(ds2);
+
+            CComPtr<iDrawPointStrategy> dps1;
+            CComPtr<iDrawPointStrategy> dps2;
+            compound_strategy1->GetStrategy(0, &dps1);
+            compound_strategy2->GetStrategy(0, &dps2);
+
+            CComQIPtr<iShapeDrawStrategy> strategy1(dps1);
+            CComQIPtr<iShapeDrawStrategy> strategy2(dps2);
+
+            CComPtr<IShape> shape1, shape2;
+            strategy1->GetShape(&shape1);
+            strategy2->GetShape(&shape2);
+
+            CComPtr<IPoint2d> p1;
+            CComPtr<IGirderSection> section1;
+            GetGirderSection(shape1, &section1);
+            if (section1)
+            {
+               section1->get_WorkPoint(&p1);
+            }
+            else
+            {
+               CComQIPtr<IXYPosition> position1(shape1);
+               position1->get_LocatorPoint(lpTopCenter, &p1);
+            }
+
+            CComPtr<IPoint2d> p2;
+            CComPtr<IGirderSection> section2;
+            GetGirderSection(shape2, &section2);
+            if (section2)
+            {
+               section2->get_WorkPoint(&p2);
+            }
+            else
+            {
+               CComQIPtr<IXYPosition> position2(shape2);
+               position2->get_LocatorPoint(lpTopCenter, &p2);
+            }
+
+            // adjust points so both are at the same, and lowest, elevation
+            p1->put_Y(yLowest);
+            p2->put_Y(yLowest);
+
+            // now adjust for orientation shift
+            CSegmentKey gk1(grpIdx, firstGdrIdx, 0);
+            CSegmentKey gk2(grpIdx, lastGdrIdx, 0);
+
+            Float64 wp_offset1 = pGirder->GetWorkPointShiftOffset(gk1);
+            Float64 wp_offset2 = pGirder->GetWorkPointShiftOffset(gk2);
+
+            p1->Offset(wp_offset1, 0.0);
+            p2->Offset(wp_offset2, 0.0);
+
+            // Add sockets to the display objects at these points
+            CComQIPtr<iConnectable> c1(do1);
+            CComQIPtr<iConnectable> c2(do2);
+            CComPtr<iSocket> s1, s2;
+            c1->AddSocket(0, p1, &s1);
+            c2->AddSocket(0, p2, &s2);
+
+            // save the first and last sockets for use with creating
+            // the slab overhang dimensions
+            if (firstGdrIdx == 0)
+            {
+               firstSocket = s1;
+            }
+
+            if (lastGdrIdx == nGirders - 1)
+            {
+               lastSocket = s2;
+            }
+
+            // get the plugs
+            CComPtr<iPlug> startPlug;
+            CComPtr<iPlug> endPlug;
+            connector->GetStartPlug(&startPlug);
+            connector->GetEndPlug(&endPlug);
+
+            // connect the dimension line
+            DWORD dwCookie;
+            s1->Connect(startPlug, &dwCookie);
+            s2->Connect(endPlug, &dwCookie);
+
+            // Orient dimension line
+            witness_length = doDimLine->GetWitnessLength();
+            witness_length *= -1;
+            doDimLine->SetWitnessLength(witness_length);
+
+            //
+            // Develop the text for the dimension line
+            //
+            CComPtr<iTextBlock> text;
+            text.CoCreateInstance(CLSID_TextBlock);
+            text->SetBkMode(TRANSPARENT);
+
+            CString strSpacing = FormatDimension(spacing, rlen);
+            CString strTotal = FormatDimension(total, rlen);
+
+            if (0 < nSpacesInGroup)
+            {
+               std::_tostringstream os;
+               if (nSpacesInGroup == 1)
+               {
+                  os << (LPCTSTR)strSpacing;
+               }
+               else
+               {
+                  os << nSpacesInGroup << _T(" spaces @ ") << (LPCTSTR)strSpacing << _T(" = ") << (LPCTSTR)strTotal;
+               }
+
+               text->SetText(os.str().c_str());
+
+               doDimLine->SetTextBlock(text);
+
+               display_list->AddDisplayObject(doDimLine);
+            }
+         } // end if do1 && do2
+      } // end group loop
    }
 
    //
@@ -2328,6 +2662,185 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
 
       // Need to add a dimension line between the alignment and the BLO
    }
+}
+
+void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
+{
+   CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
+
+   UINT settings = pDoc->GetBridgeEditorSettings();
+
+   if (!(settings & IDB_CS_DRAW_RW_CS))
+   {
+      return;
+   }
+
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   CDManipClientDC dc(this);
+
+   CComPtr<iDisplayList> displayList;
+   dispMgr->FindDisplayList(RW_CROSS_SECTION_DISPLAY_LIST, &displayList);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+   CString strDimTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag().c_str();
+   CString strSlopeTag = strDimTag + _T("/") + strDimTag;
+
+   Float64 cut_station = m_pFrame->GetCurrentCutLocation();
+   Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(cut_station);
+
+   Float64 feets = ::ConvertToSysUnits(1.0, unitMeasure::Feet); //  make sure alignment is also in there
+   Float64 left_offset = pBridge->GetLeftSlabEdgeOffset(Xb);
+   left_offset = min(left_offset, 0.0);
+   Float64 right_offset = pBridge->GetRightSlabEdgeOffset(Xb);
+   right_offset = max(right_offset, 0.0);
+
+   left_offset -= feets; // display line a bit wider than bridge.
+   right_offset += feets;
+
+   Float64 left_elev = pRoadway->GetElevation(cut_station, left_offset);
+
+   // The alignment is represented on the screen by a poly line object
+   CComPtr<iPolyLineDisplayObject> doAlignment;
+   doAlignment.CoCreateInstance(CLSID_PolyLineDisplayObject);
+
+   // Register an event sink with the alignment object so that we can handle double clicks
+   // on the alignment differently then a general dbl-click
+   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::BridgeSection);
+   CComPtr<iDisplayObjectEvents> events;
+   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
+
+   CComPtr<iDisplayObject> dispObj;
+   doAlignment->QueryInterface(IID_iDisplayObject, (void**)&dispObj);
+   dispObj->RegisterEventSink(events);
+   dispObj->SetToolTipText(_T("Double click to edit alignment"));
+   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
+   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+
+   CComPtr<IPoint2d> pnt1, pnt2;
+   pnt1.CoCreateInstance(CLSID_Point2d);
+   pnt1->Move(left_offset, left_elev);
+   doAlignment->AddPoint(pnt1);
+
+   bool bfinished = false;
+   IndexType contrl_crown_point = pRoadway->GetControllingCrownPointIndex(cut_station);
+   IndexType num_crown_points = pRoadway->GetCrownPointIndexCount(cut_station);
+   for (IndexType icp = 0; icp < num_crown_points; icp++)
+   {
+      Float64 cp_offset = pRoadway->GetCrownPointOffset(icp, cut_station);
+      Float64 cp_elev = pRoadway->GetElevation(cut_station, cp_offset);
+
+      if (left_offset < cp_offset && cp_offset < right_offset)
+      {
+         pnt2.CoCreateInstance(CLSID_Point2d);
+         pnt2->Move(cp_offset, cp_elev);
+      }
+      else if (right_offset < cp_offset)
+      {
+         bfinished = true;
+         cp_offset = right_offset;
+         cp_elev = pRoadway->GetElevation(cut_station, right_offset);
+
+         pnt2.CoCreateInstance(CLSID_Point2d);
+         pnt2->Move(cp_offset, cp_elev);
+      }
+
+      if (pnt2)
+      {
+         doAlignment->AddPoint(pnt2);
+
+         if (!bfinished)
+         {
+            // ridge points
+            CComPtr<iPointDisplayObject> dispPnt;
+            dispPnt.CoCreateInstance(CLSID_PointDisplayObject);
+            dispPnt->SetPosition(pnt2,FALSE,FALSE);
+
+            CComPtr<iDrawPointStrategy> draw_point_strategy;
+            dispPnt->GetDrawingStrategy(&draw_point_strategy);
+            CComQIPtr<iSimpleDrawPointStrategy> drawRwXsPointStrategy(draw_point_strategy);
+            drawRwXsPointStrategy->SetColor(ALIGNMENT_COLOR);
+            drawRwXsPointStrategy->SetLogicalPointSize((icp==contrl_crown_point) ? 12 : 8); // make controlling point bigger
+            drawRwXsPointStrategy->SetPointType(ptCircle);
+
+            displayList->AddDisplayObject(dispPnt);
+         }
+
+         // Slope text
+         CComPtr<IPoint2d> txtLoc;
+         txtLoc.CoCreateInstance(CLSID_Point2d);
+         Float64 x1, x2, y1, y2;
+         pnt1->get_X(&x1);
+         pnt1->get_Y(&y1);
+         pnt2->get_X(&x2);
+         pnt2->get_Y(&y2);
+         txtLoc->Move((x1+x2)/2.0, (y1+y2)/2.0);
+
+         Float64 slope(0.0);
+         if (!IsEqual(x1, x2))
+         {
+            slope = (y2-y1)/(x2-x1);
+         }
+
+         CComPtr<iTextBlock> doText;
+         doText.CoCreateInstance(CLSID_TextBlock);
+         doText->SetPosition(txtLoc);
+         Float64 angle = atan(slope) * 1800.0 / M_PI;
+         doText->SetAngle((LONG)angle); 
+
+         // change the slope from our analytical model to
+         // the sign convension of the input
+         // slopes down and away from the controlling crown point are < 0
+         if (icp <= contrl_crown_point)
+         {
+            slope *= -1;
+         }
+
+         CString strLabel;
+         strLabel.Format(_T("%.3f %s"), slope, strSlopeTag);
+         doText->SetText(strLabel);
+         doText->SetBkMode(TRANSPARENT);
+         doText->SetTextColor(ALIGNMENT_COLOR);
+         doText->SetTextAlign(TA_CENTER | TA_BOTTOM);
+         displayList->AddDisplayObject(doText);
+
+         // clean up for next point
+         pnt1.Release();
+         pnt2->Clone(&pnt1);
+         pnt2.Release();
+      }
+
+      if (bfinished)
+      {
+         break;
+      }
+   }
+
+   doAlignment->put_Width(ALIGNMENT_LINE_WEIGHT);
+   doAlignment->put_Color(ALIGNMENT_COLOR);
+   doAlignment->put_PointType(plpNone);
+   doAlignment->Commit();
+
+   doAlignment->SetSelectionType(stAll);
+   doAlignment->SetID(ALIGNMENT_ID);
+
+   displayList->AddDisplayObject(doAlignment);
+
+   // links the display object to the event handler
+   // the display object isn't really a drop site, however the drop
+   // site interface has the method we need. contrast this with the
+   // bridge plan view where the alignment display object is really a drop site
+   CComQIPtr<iDropSite> drop_site(events);
+   drop_site->SetDisplayObject(dispObj);
+
+   ATLASSERT(bfinished); // crown point model is not wide enough for our needs
 }
 
 void CBridgeSectionView::CreateLineDisplayObject(IPoint2d* pntStart,IPoint2d* pntEnd,iLineDisplayObject** ppLineDO)

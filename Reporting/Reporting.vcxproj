@@ -491,6 +491,7 @@
     <ClCompile Include="HaulingCheckChapterBuilder.cpp" />
     <ClCompile Include="HaulingCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="HoldDownForceArtifact.cpp" />
+    <ClCompile Include="HorizontalInterfaceShearCapacityDetailsChapterBuilder.cpp" />
     <ClCompile Include="InitialStrainAnalysisChapterBuilder.cpp" />
     <ClCompile Include="InitialStrainAnalysisDlg.cpp" />
     <ClCompile Include="InitialStrainAnalysisReportSpecification.cpp" />
@@ -506,7 +507,6 @@
     <ClCompile Include="LiftingCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="LiveLoadDetailsChapterBuilder.cpp" />
     <ClCompile Include="LiveLoadDistributionFactorTable.cpp" />
-    <ClCompile Include="LiveLoadReactionTable.cpp" />
     <ClCompile Include="LoadingDetailsChapterBuilder.cpp" />
     <ClCompile Include="LoadRatingChapterBuilder.cpp" />
     <ClCompile Include="LoadRatingDetailsChapterBuilder.cpp" />
@@ -535,6 +535,7 @@
     <ClCompile Include="PGSuperTitlePageBuilder.cpp" />
     <ClCompile Include="PierGeometryChapterBuilder.cpp" />
     <ClCompile Include="PierReactionChapterBuilder.cpp" />
+    <ClCompile Include="PlantHandlingCheck.cpp" />
     <ClCompile Include="PointOfInterestChapterBuilder.cpp" />
     <ClCompile Include="PosttensionStressTable.cpp" />
     <ClCompile Include="PrestressForceChapterBuilder.cpp" />
@@ -557,6 +558,7 @@
     <ClCompile Include="SectPropChapterBuilder.cpp" />
     <ClCompile Include="SectPropTable.cpp" />
     <ClCompile Include="SectPropTable2.cpp" />
+    <ClCompile Include="SegmentTendonGeometryChapterBuilder.cpp" />
     <ClCompile Include="SelectPointOfInterestDlg.cpp" />
     <ClCompile Include="ShearCapacityDetailsChapterBuilder.cpp" />
     <ClCompile Include="ShearCheckTable.cpp" />
@@ -587,7 +589,7 @@
     <ClCompile Include="TemporarySupportElevationDetailsChapterBuilder.cpp" />
     <ClCompile Include="TemporarySupportElevationsChapterBuilder.cpp" />
     <ClCompile Include="TemporarySupportReactionChapterBuilder.cpp" />
-    <ClCompile Include="TendonGeometryChapterBuilder.cpp" />
+    <ClCompile Include="GirderTendonGeometryChapterBuilder.cpp" />
     <ClCompile Include="TendonStressCheckTable.cpp" />
     <ClCompile Include="TimeStepCamberChapterBuilder.cpp" />
     <ClCompile Include="TimeStepDetailsChapterBuilder.cpp" />
@@ -672,6 +674,7 @@
     <ClInclude Include="..\Include\Reporting\HaulingCheckChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\HaulingCheckDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\HoldDownForceCheck.h" />
+    <ClInclude Include="..\Include\Reporting\HorizontalInterfaceShearCapacityDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisReportSpecificationBuilder.h" />
@@ -686,7 +689,6 @@
     <ClInclude Include="..\Include\Reporting\LiftingCheckDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LiveLoadDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LiveLoadDistributionFactorTable.h" />
-    <ClInclude Include="..\Include\Reporting\LiveLoadReactionTable.h" />
     <ClInclude Include="..\Include\Reporting\LoadingDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingDetailsChapterBuilder.h" />
@@ -714,6 +716,7 @@
     <ClInclude Include="..\Include\Reporting\PGSuperTitlePageBuilder.h" />
     <ClInclude Include="..\Include\Reporting\PierGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\PierReactionChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PlantHandlingCheck.h" />
     <ClInclude Include="..\Include\Reporting\PointOfInterestChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\PosttensionStressTable.h" />
     <ClInclude Include="..\Include\Reporting\PrestressForceChapterBuilder.h" />
@@ -736,6 +739,7 @@
     <ClInclude Include="..\Include\Reporting\SectPropChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SectPropTable.h" />
     <ClInclude Include="..\Include\Reporting\SectPropTable2.h" />
+    <ClInclude Include="..\Include\Reporting\SegmentTendonGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ShearCapacityDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ShearCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\ShrinkageStrainChapterBuilder.h" />
@@ -757,7 +761,7 @@
     <ClInclude Include="..\Include\Reporting\TemporarySupportElevationDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TemporarySupportElevationsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TemporarySupportReactionChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\TendonGeometryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\GirderTendonGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TendonStressCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepCamberChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepDetailsChapterBuilder.h" />

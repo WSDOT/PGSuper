@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@
 #pragma once
 #include <Reporting\ReportingExp.h>
 #include <Reporting\PGSuperChapterBuilder.h>
+#include <IFace\Bridge.h>
+#include <IFace\Project.h>
 
 // Base class for bearing seat elevations and bearing deduct chapters
 /////////////////////////////////////////////////////////////////////////
@@ -37,7 +39,11 @@ public:
    virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const override;
 
 private:
-   rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face) const;
+   rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc) const;
+
+   rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc) const;
 
    CBearingSeatElevationsChapterBuilderBase();
    TableType m_TableType;

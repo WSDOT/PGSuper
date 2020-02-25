@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -529,7 +529,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
 
       C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
-      (*pTable)(++row, 0) << _T("Screed Camber, C");
+      (*pTable)(++row, 0) << _T("Screed Camber, C at mid-span");
       (*pTable)(row, 1) << gdim.SetValue(C);
    }
 

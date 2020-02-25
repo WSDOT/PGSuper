@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1487,7 +1487,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtExactSamePlace(poi))
+      if (row1 != 1 && prev_poi.AtSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -1686,7 +1686,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    {
       bSkipToNextRow = false;
 
-      if ( row1 != 1 && prev_poi.AtExactSamePlace(poi))
+      if ( row1 != 1 && prev_poi.AtSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -1866,7 +1866,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtExactSamePlace(poi))
+      if (row1 != 1 && prev_poi.AtSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -1999,7 +1999,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtExactSamePlace(poi))
+      if (row1 != 1 && prev_poi.AtSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -2122,7 +2122,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtExactSamePlace(poi))
+      if (row1 != 1 && prev_poi.AtSamePlace(poi))
       {
          row1--;
          bSkipToNextRow = true;
@@ -2690,6 +2690,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    GET_IFACE_NOCHECK(ILoadFactors, pILoadFactors);
    GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IGirder, pGirder);
+   GET_IFACE(IPointOfInterest, pPoi);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -2745,16 +2746,17 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-   Float64 nStrandsEffective;
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType erectIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType compositeLongitudinalJointIntervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -2774,8 +2776,8 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
    if (pConfig)
    {
-      *pFci = pConfig->Fci;
-      *pFc = pConfig->Fc;
+      *pFci = pConfig->fci;
+      *pFc = pConfig->fc;
 
       if (pConfig->bUserEci)
       {
@@ -2783,7 +2785,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
       else
       {
-         *pEci = pMaterial->GetEconc(pConfig->Fci, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
+         *pEci = pMaterial->GetEconc(pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
       }
 
       if (pConfig->bUserEc)
@@ -2792,7 +2794,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
       else
       {
-         *pEc = pMaterial->GetEconc(pConfig->Fc, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
+         *pEc = pMaterial->GetEconc(pConfig->fc, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
       }
    }
    else
@@ -2824,7 +2826,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       *pDeckShrinkageK1 = pMaterial->GetDeckShrinkageK1();
       *pDeckShrinkageK2 = pMaterial->GetDeckShrinkageK2();
 
-      *pFcSlab = pMaterial->GetDeckFc(compositeDeckIntervalIdx);
+      *pFcSlab = pMaterial->GetDeckFc(deckCastingRegionIdx,compositeDeckIntervalIdx);
 
       if (pDeck->Concrete.bUserEc)
       {
@@ -2832,12 +2834,13 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
       else
       {
-         *pEcSlab = pMaterial->GetDeckEc(compositeDeckIntervalIdx);
+         *pEcSlab = pMaterial->GetDeckEc(deckCastingRegionIdx,compositeDeckIntervalIdx);
       }
    }
 
 
    // eccentricity of the permanent strands at release
+   Float64 nStrandsEffective;
    Float64 ex, ey;
    pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, pConfig, &nStrandsEffective, &ex, &ey);
    pepermRelease->Move(ex, ey);
@@ -2847,7 +2850,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    pepermFinal->Move(ex, ey);
 
    // eccentricity of the temporary strands
-   pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, pConfig, &nStrandsEffective, &ex, &ey);
+   pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poi, pgsTypes::Temporary, pConfig, &nStrandsEffective, &ex, &ey);
    petemp->Move(ex, ey);
 
    pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
@@ -2863,13 +2866,13 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    {
       if (pConfig)
       {
-         *pAc1 = pSectProp->GetAg(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->Fc);
-         *pIc1 = pSectProp->GetIxx(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->Fc);
-         *pYbc1 = pSectProp->GetY(spType, compositeLongitudinalJointIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->Fc);
+         *pAc1 = pSectProp->GetAg(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->fc);
+         *pIc1 = pSectProp->GetIxx(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->fc);
+         *pYbc1 = pSectProp->GetY(spType, compositeLongitudinalJointIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->fc);
 
-         *pAc2 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
-         *pIc2 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
-         *pYbc2 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->Fc);
+         *pAc2 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->fc);
+         *pIc2 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->fc);
+         *pYbc2 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->fc);
       }
       else
       {
@@ -2886,9 +2889,9 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    {
       if (pConfig)
       {
-         *pAc1 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
-         *pIc1 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->Fc);
-         *pYbc1 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->Fc);
+         *pAc1 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->fc);
+         *pIc1 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->fc);
+         *pYbc1 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->fc);
       }
       else
       {
@@ -2901,8 +2904,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       *pYbc2 = *pYbc1;
    }
 
-   *pVolume = pSectProp->GetSegmentVolume(segmentKey);
-   *pSurfaceArea = pSectProp->GetSegmentSurfaceArea(segmentKey);
+   pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, pVolume, pSurfaceArea);
 
    if ( spType == pgsTypes::sptTransformed )
    {
@@ -2959,7 +2961,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       // eccentricity of deck... use gross slab depth because sacrifical wearing surface hasn't worn off while early age shrinkage is occuring
       if (pConfig)
       {
-         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig->Fc) + pBridge->GetGrossSlabDepth(poi) / 2;
+         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig->fc) + pBridge->GetGrossSlabDepth(poi) / 2;
       }
       else
       {
@@ -3104,7 +3106,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
    }
 
-   GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);

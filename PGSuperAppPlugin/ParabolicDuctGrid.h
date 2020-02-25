@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,9 +47,9 @@ public:
    // custom stuff for grid
    void CustomInit(CParabolicDuctGridCallback* pCallback);
 
-   void AddPoint();
-   void DeletePoint();
-   
+   void SetTendonRange(PierIndexType startPierIdx, PierIndexType endPierIdx);
+   void GetTendonRange(PierIndexType* pStartPierIdx, PierIndexType* pEndPierIdx) const;
+
    CParabolicDuctGeometry GetData();
    void SetData(const CParabolicDuctGeometry& ductGeometry);
 
@@ -58,8 +58,9 @@ public:
 	//{{AFX_VIRTUAL(CLinearDuctGrid)
 	//}}AFX_VIRTUAL
    
-   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt);
-   virtual int GetColWidth(ROWCOL nCol);
+   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt) override;
+   virtual int GetColWidth(ROWCOL nCol) override;
+   virtual void OnModifyCell(ROWCOL nRow, ROWCOL nCol) override;
 
 // Implementation
 public:
@@ -74,7 +75,7 @@ protected:
 
    CParabolicDuctGridCallback* m_pCallback;
 
-   const CSplicedGirderData* m_pGirder;
+   CParabolicDuctGeometry m_DuctGeometry;
 
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 

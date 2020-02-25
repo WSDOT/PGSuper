@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@ DEFINE_GUID(IID_ICrackedSection,
 0xcd48333f, 0xe8b8, 0x4025, 0x89, 0xc4, 0x86, 0xba, 0x5, 0xe6, 0x1, 0x21);
 interface ICrackedSection : IUnknown
 {
-   virtual void GetCrackedSectionDetails(const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKEDSECTIONDETAILS* pCSD) const = 0;
    virtual Float64 GetIcr(const pgsPointOfInterest& poi,bool bPositiveMoment) const = 0;
-   virtual std::vector<CRACKEDSECTIONDETAILS> GetCrackedSectionDetails(const PoiList& vPoi,bool bPositiveMoment) const = 0;
+   virtual const CRACKEDSECTIONDETAILS* GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const = 0;
+   virtual std::vector<const CRACKEDSECTIONDETAILS*> GetCrackedSectionDetails(const PoiList& vPoi,bool bPositiveMoment) const = 0;
 };

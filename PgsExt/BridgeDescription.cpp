@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -527,8 +527,10 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
    pDeck->DeckRebarData             = m_Deck.DeckRebarData;
    pDeck->SetDeckType( m_Deck.DeckType );
    pDeck->GrossDepth                = m_Deck.GrossDepth;
-   pDeck->OverhangEdgeDepth         = m_Deck.OverhangEdgeDepth;
-   pDeck->OverhangTaper             = m_Deck.OverhangTaper;
+   pDeck->OverhangEdgeDepth[pgsTypes::stLeft] = m_Deck.OverhangEdgeDepth;
+   pDeck->OverhangEdgeDepth[pgsTypes::stRight] = m_Deck.OverhangEdgeDepth;
+   pDeck->OverhangTaper[pgsTypes::stLeft] = m_Deck.OverhangTaper;
+   pDeck->OverhangTaper[pgsTypes::stRight] = m_Deck.OverhangTaper;
    pDeck->OverlayDensity            = m_Deck.OverlayDensity;
    pDeck->OverlayDepth              = m_Deck.OverlayDepth;
    pDeck->OverlayWeight             = m_Deck.OverlayWeight;

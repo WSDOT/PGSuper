@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -134,27 +134,6 @@ pgsTypes::AnalysisType CAnalysisResultsGraphViewController::GetAnalysisType() co
 {
    return m_pGraphController->GetAnalysisType();
 }
-
-//void CAnalysisResultsGraphViewController::GetIntervalRange(IntervalIndexType* pMin, IntervalIndexType* pMax) const
-//{
-//   *pMin = m_pGraphController->GetFirstInterval();
-//   *pMax = m_pGraphController->GetLastInterval();
-//}
-//
-//void CAnalysisResultsGraphViewController::SelectInterval(IntervalIndexType intervalIdx)
-//{
-//   m_pGraphController->SelectInterval(intervalIdx);
-//}
-//
-//void CAnalysisResultsGraphViewController::SelectIntervals(const std::vector<IntervalIndexType>& vIntervals)
-//{
-//   m_pGraphController->SelectIntervals(vIntervals);
-//}
-//
-//std::vector<IntervalIndexType> CAnalysisResultsGraphViewController::GetSelectedIntervals() const
-//{
-//   return m_pGraphController->GetSelectedIntervals();
-//}
 
 IndexType CAnalysisResultsGraphViewController::GetGraphTypeCount() const
 {

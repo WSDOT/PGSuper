@@ -1,9 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     1    Chain          24  0.6  270   3.33   3.33   6.50   6.50                                              5.000 11.000   3.002    -3.016      938   0.451  0.668   1.621 -0.180 -0.022 -0.032 -0.234  73.68  188.14    1.75    5.00    5.00 
+ 40.00    8   0.00  Chain Up Creek     1     1    Chain          24  0.6  270   3.33   3.33   6.50   6.50                                              5.000 11.200   3.006    -3.015      936   0.451  0.668   1.621 -0.177 -0.022 -0.032 -0.231  73.68  188.44    1.75    5.00    5.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Lifting checks failed
@@ -11,10 +13,12 @@ Lifting checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     2    Chain          24  0.6  270   3.33   3.33   6.50   6.50                                              5.000 11.100   2.937    -2.925      881   0.407  0.736   1.619 -0.179 -0.022 -0.032 -0.233  73.68  188.26    1.75    5.00    5.00 
+ 40.00    8   0.00  Chain Up Creek     1     2    Chain          24  0.6  270   3.33   3.33   6.50   6.50                                              5.000 11.200   2.936    -2.922      880   0.408  0.736   1.621 -0.177 -0.022 -0.032 -0.231  73.68  188.44    1.75    5.00    5.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Lifting checks failed
@@ -22,10 +26,12 @@ Lifting checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     5    Chain          22  0.6  270   3.45   3.45   6.25   6.25                                              4.700 11.100   2.855    -2.800      840   0.407  0.736   1.540 -0.172 -0.022  0.000 -0.194  64.88  174.73    1.75    5.00    5.00 
+ 40.00    8   0.00  Chain Up Creek     1     5    Chain          22  0.6  270   3.45   3.45   6.25   6.25                                              4.700 11.200   2.854    -2.797      839   0.408  0.736   1.541 -0.171 -0.022  0.000 -0.193  64.88  174.88    1.75    5.00    5.00 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Lifting checks failed

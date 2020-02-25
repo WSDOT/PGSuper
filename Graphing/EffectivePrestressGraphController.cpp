@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -48,7 +48,7 @@ IMPLEMENT_DYNCREATE(CEffectivePrestressGraphController,CMultiIntervalGirderGraph
 
 CEffectivePrestressGraphController::CEffectivePrestressGraphController():
 CMultiIntervalGirderGraphControllerBase(false/*don't use ALL_GROUPS*/),
-m_DuctIdx(INVALID_INDEX)
+m_DuctType(CEffectivePrestressGraphBuilder::Segment),m_DuctIdx(INVALID_INDEX)
 {
 }
 
@@ -109,10 +109,11 @@ CEffectivePrestressGraphController::StrandType CEffectivePrestressGraphControlle
    return (nIDC == IDC_PERMANENT ? Permanent : Temporary);
 }
 
-void CEffectivePrestressGraphController::SetDuct(DuctIndexType ductIdx)
+void CEffectivePrestressGraphController::SetDuct(CEffectivePrestressGraphBuilder::DuctType ductType,DuctIndexType ductIdx)
 {
-   if (m_DuctIdx != ductIdx)
+   if (m_DuctType != ductType || m_DuctIdx != ductIdx)
    {
+      m_DuctType = ductType;
       m_DuctIdx = ductIdx;
       FillIntervalCtrl();
 
@@ -124,6 +125,11 @@ void CEffectivePrestressGraphController::SetDuct(DuctIndexType ductIdx)
 
       UpdateGraph();
    }
+}
+
+CEffectivePrestressGraphBuilder::DuctType CEffectivePrestressGraphController::GetDuctType() const
+{
+   return m_DuctType;
 }
 
 DuctIndexType CEffectivePrestressGraphController::GetDuct() const
@@ -179,13 +185,26 @@ void CEffectivePrestressGraphController::OnDuctChanged()
    CComboBox* pcbDuct = (CComboBox*)GetDlgItem(IDC_DUCT);
    int curSel = pcbDuct->GetCurSel();
    DuctIndexType ductIdx = (DuctIndexType)pcbDuct->GetItemData(curSel);
-   SetDuct(ductIdx);
+
+   GroupIndexType grpIdx = GetGirderGroup();
+   GirderIndexType gdrIdx = GetGirder();
+
+   CGirderKey girderKey(grpIdx, gdrIdx);
+
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+
+   CEffectivePrestressGraphBuilder::DuctType ductType = (nMaxSegmentDucts < curSel) ? CEffectivePrestressGraphBuilder::Girder : CEffectivePrestressGraphBuilder::Segment;
+
+   SetDuct(ductType,ductIdx);
 }
 
 void CEffectivePrestressGraphController::FillDuctCtrl()
 {
    GroupIndexType grpIdx = GetGirderGroup();
    GirderIndexType gdrIdx = GetGirder();
+
+   CGirderKey girderKey(grpIdx, gdrIdx);
 
    CComboBox* pcbDuct = (CComboBox*)GetDlgItem(IDC_DUCT);
    int curSel = pcbDuct->GetCurSel();
@@ -194,13 +213,22 @@ void CEffectivePrestressGraphController::FillDuctCtrl()
    int idx = pcbDuct->AddString(_T("Pretensioning"));
    pcbDuct->SetItemData(idx,(DWORD_PTR)INVALID_INDEX);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(CGirderKey(grpIdx,gdrIdx));
-   
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+   for (DuctIndexType ductIdx = 0; ductIdx < nMaxSegmentDucts; ductIdx++)
    {
       CString strDuct;
-      strDuct.Format(_T("Tendon %d"),LABEL_DUCT(ductIdx));
+      strDuct.Format(_T("Segment Tendon %d"), LABEL_DUCT(ductIdx));
+      idx = pcbDuct->AddString(strDuct);
+      pcbDuct->SetItemData(idx, (DWORD_PTR)ductIdx);
+   }
+
+   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+   {
+      CString strDuct;
+      strDuct.Format(_T("Girder Tendon %d"),LABEL_DUCT(ductIdx));
       idx = pcbDuct->AddString(strDuct);
       pcbDuct->SetItemData(idx,(DWORD_PTR)ductIdx);
    }
@@ -208,16 +236,18 @@ void CEffectivePrestressGraphController::FillDuctCtrl()
    curSel = pcbDuct->SetCurSel(curSel);
    if ( curSel == CB_ERR )
    {
+      m_DuctIdx = INVALID_INDEX;
       curSel = pcbDuct->SetCurSel(0);
    }
 
-   if ( curSel == CB_ERR || nDucts == 0 )
+   if ( curSel == CB_ERR || nMaxSegmentDucts+nGirderDucts == 0 )
    {
       m_DuctIdx = INVALID_INDEX;
       pcbDuct->EnableWindow(FALSE);
    }
    else
    {
+      m_DuctType = (nMaxSegmentDucts < curSel ? CEffectivePrestressGraphBuilder::Girder : CEffectivePrestressGraphBuilder::Segment);
       m_DuctIdx = (DuctIndexType)pcbDuct->GetItemData(curSel);
       pcbDuct->EnableWindow(TRUE);
    }
@@ -233,7 +263,14 @@ IntervalIndexType CEffectivePrestressGraphController::GetFirstInterval()
    }
    else
    {
-      return pIntervals->GetFirstTendonStressingInterval(girderKey);
+      if (m_DuctType == CEffectivePrestressGraphBuilder::Segment)
+      {
+         return pIntervals->GetFirstSegmentTendonStressingInterval(girderKey);
+      }
+      else
+      {
+         return pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
+      }
    }
 }
 

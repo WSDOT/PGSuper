@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,8 +69,8 @@ pgsFlexuralStressArtifact::pgsFlexuralStressArtifact()
    }
 }
 
-pgsFlexuralStressArtifact::pgsFlexuralStressArtifact(const pgsPointOfInterest& poi):
-m_Poi(poi)
+pgsFlexuralStressArtifact::pgsFlexuralStressArtifact(const pgsPointOfInterest& poi, const StressCheckTask& task):
+m_Poi(poi),m_Task(task)
 {
    for ( int i = 0; i < 4; i++ )
    {
@@ -129,29 +129,19 @@ const pgsPointOfInterest& pgsFlexuralStressArtifact::GetPointOfInterest() const
    return m_Poi;
 }
 
+void pgsFlexuralStressArtifact::SetTask(const StressCheckTask& task)
+{
+   m_Task = task;
+}
+
+const StressCheckTask& pgsFlexuralStressArtifact::GetTask() const
+{
+   return m_Task;
+}
+
 bool pgsFlexuralStressArtifact::operator<(const pgsFlexuralStressArtifact& rOther) const
 {
    return m_Poi < rOther.m_Poi;
-}
-
-void pgsFlexuralStressArtifact::SetLimitState(pgsTypes::LimitState limitState)
-{
-   m_LimitState = limitState;
-}
-
-pgsTypes::LimitState pgsFlexuralStressArtifact::GetLimitState() const
-{
-   return m_LimitState;
-}
-
-void pgsFlexuralStressArtifact::SetStressType(pgsTypes::StressType type)
-{
-   m_StressType = type;
-}
-
-pgsTypes::StressType pgsFlexuralStressArtifact::GetStressType() const
-{
-   return m_StressType;
 }
 
 void pgsFlexuralStressArtifact::IsApplicable(pgsTypes::StressLocation stressLocation,bool bIsApplicable)
@@ -294,7 +284,7 @@ bool pgsFlexuralStressArtifact::Passed(pgsTypes::StressLocation stressLocation) 
 bool pgsFlexuralStressArtifact::StressedPassed(pgsTypes::StressLocation stressLocation) const
 {
    Float64 fStress = GetDemand(stressLocation);
-   if ( m_StressType == pgsTypes::Compression )
+   if ( m_Task.stressType == pgsTypes::Compression )
    {
       if ( IsTopStressLocation(stressLocation) && m_bIsApplicable[stressLocation] )
       {
@@ -514,9 +504,8 @@ Float64 pgsFlexuralStressArtifact::GetCDRatio(pgsTypes::StressLocation stressLoc
 
 void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther)
 {
-   m_Poi                 = rOther.m_Poi;
-   m_LimitState          = rOther.m_LimitState;
-   m_StressType          = rOther.m_StressType;
+   m_Poi  = rOther.m_Poi;
+   m_Task = rOther.m_Task;
 
    for ( int i = 0; i < 4; i++ )
    {

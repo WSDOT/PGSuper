@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,11 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace\Project.h>
 #include <Material\ConcreteBase.h>
 #include <Material\ACI209Concrete.h>
+#include <PgsExt\TimelineEvent.h>
+#include <PgsExt\CastDeckActivity.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -155,33 +158,69 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
       }
    }
 
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+   if (IsStructuralDeck(pBridge->GetDeckType()) )
    {
-      const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-      const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
-
-      ColumnIndexType colIdx = 0;
-
-      (*pTable)(rowIdx,colIdx++) << _T("Deck");
-      (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
-      if ( pConcrete->GetCureMethod() == pgsTypes::Moist )
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+      const auto& castDeckActivity = pIBridgeDesc->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity();
+      IndexType nCastings = castDeckActivity.GetCastingCount();
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
       {
-         (*pTable)(rowIdx,colIdx++) << pACIConcrete->GetInitialMoistCureFactor();
-      }
-      else
-      {
-         (*pTable)(rowIdx,colIdx++) << _T("");
-      }
-      (*pTable)(rowIdx,colIdx++) << vsRatio.SetValue(pConcrete->GetVSRatio());
-      (*pTable)(rowIdx,colIdx++) << pACIConcrete->GetSizeFactorShrinkage();
-      (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
-      (*pTable)(rowIdx,colIdx++) << pACIConcrete->GetRelativeHumidityFactorShrinkage();
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
 
-      rowIdx++;
+         ColumnIndexType colIdx = 0;
+
+         CString strTitle(_T("Deck"));
+         if (1 < nCastings)
+         {
+            strTitle += _T(" Regions ");
+            auto begin = std::begin(vRegions);
+            auto iter = begin;
+            auto end = std::end(vRegions);
+            for (; iter != end; iter++)
+            {
+               if (iter != begin)
+               {
+                  strTitle += _T(", ");
+               }
+               CString strRegion;
+               strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+               strTitle += strRegion;
+            }
+         }
+
+
+         (*pTable)(rowIdx, colIdx++) << strTitle;
+         (*pTable)(rowIdx, colIdx++) << strCuring[pConcrete->GetCureMethod()];
+         if (pConcrete->GetCureMethod() == pgsTypes::Moist)
+         {
+            (*pTable)(rowIdx, colIdx++) << pACIConcrete->GetInitialMoistCureFactor();
+         }
+         else
+         {
+            (*pTable)(rowIdx, colIdx++) << _T("");
+         }
+         (*pTable)(rowIdx, colIdx++) << vsRatio.SetValue(pConcrete->GetVSRatio());
+         (*pTable)(rowIdx, colIdx++) << pACIConcrete->GetSizeFactorShrinkage();
+         (*pTable)(rowIdx, colIdx++) << pConcrete->GetRelativeHumidity();
+         (*pTable)(rowIdx, colIdx++) << pACIConcrete->GetRelativeHumidityFactorShrinkage();
+
+         rowIdx++;
+      } // next casting stage
    }
 
 #if defined _DEBUG || defined _BETA_VERSION
-   pTable = rptStyleManager::CreateDefaultTable(6*nSegments+1);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckIndex = pIBridgeDesc->GetCastDeckEventIndex();
+   const auto* pEvent = pIBridgeDesc->GetEventByIndex(castDeckIndex);
+   const auto& castDeckActivity = pEvent->GetCastDeckActivity();
+   IndexType nCastings = castDeckActivity.GetCastingCount();
+   IndexType nClosures = nSegments - 1;
+
+   pTable = rptStyleManager::CreateDefaultTable(3 * (nSegments + nClosures + nCastings) + 1, _T("Debugging Table"));
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
@@ -209,11 +248,37 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
       }
    }
-   pTable->SetColumnSpan(rowIdx,colIdx,3);
-   (*pTable)(rowIdx,colIdx) << _T("Deck");
-   (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
-   (*pTable)(rowIdx+1,colIdx++) << symbol(DELTA) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
-   (*pTable)(rowIdx+1,colIdx++) << Sub2(symbol(epsilon),_T("sh")) << _T("x10") << Super(_T("6"));
+
+   for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
+   {
+      pTable->SetColumnSpan(rowIdx, colIdx, 3);
+
+      CString strTitle(_T("Deck"));
+      if (1 < nCastings)
+      {
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+
+         strTitle += _T(" Regions ");
+         auto begin = std::begin(vRegions);
+         auto iter = begin;
+         auto end = std::end(vRegions);
+         for (; iter != end; iter++)
+         {
+            if (iter != begin)
+            {
+               strTitle += _T(", ");
+            }
+            CString strRegion;
+            strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+            strTitle += strRegion;
+         }
+      }
+
+      (*pTable)(rowIdx, colIdx) << strTitle;
+      (*pTable)(rowIdx + 1, colIdx++) << _T("t") << rptNewLine << _T("(days)");
+      (*pTable)(rowIdx + 1, colIdx++) << symbol(DELTA) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+      (*pTable)(rowIdx + 1, colIdx++) << Sub2(symbol(epsilon), _T("sh")) << _T("x10") << Super(_T("6"));
+   }
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -268,22 +333,27 @@ rptChapter* CACI209ShrinkageStrainChapterBuilder::Build(CReportSpecification* pR
          }
       }
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      if ( compositeDeckIntervalIdx <= intervalIdx )
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
       {
-         Float64 t  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
-         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-         const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
-         Float64 cure = pACIConcrete->GetCureTime();
-         (*pTable)(rowIdx,colIdx++) << t - cure;
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(intervalIdx);
-         (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(intervalIdx,pgsTypes::End);
-      }
-      else
-      {
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+         if ( compositeDeckIntervalIdx <= intervalIdx )
+         {
+            Float64 t  = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
+            const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+            const matACI209Concrete* pACIConcrete = dynamic_cast<const matACI209Concrete*>(pConcrete);
+            Float64 cure = pACIConcrete->GetCureTime();
+            (*pTable)(rowIdx,colIdx++) << t - cure;
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetIncrementalDeckFreeShrinkageStrain(deckCastingRegionIdx,intervalIdx);
+            (*pTable)(rowIdx,colIdx++) << 1E6*pMaterials->GetTotalDeckFreeShrinkageStrain(deckCastingRegionIdx,intervalIdx,pgsTypes::End);
+         }
+         else
+         {
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+            (*pTable)(rowIdx,colIdx++) << _T("");
+         }
       }
    }
 #endif //#if defined _DEBUG || defined _BETA_VERSION

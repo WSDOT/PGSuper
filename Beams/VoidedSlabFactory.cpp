@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "VoidedSlabFactory.h"
 #include "IBeamDistFactorEngineer.h"
 #include "VoidedSlabDistFactorEngineer.h"
+#include "TxDOTSpreadSlabBeamDistFactorEngineer.h"
 #include "UBeamDistFactorEngineer.h"
 #include "PsBeamLossEngineer.h"
 #include "TimeStepLossEngineer.h"
@@ -192,8 +193,8 @@ void CVoidedSlabFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,co
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE  );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
 void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
@@ -216,15 +217,31 @@ void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupID
    }
    else
    {
-      // this is a type b section... type b's are the same as type c's which are U-beams
-      ATLASSERT( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
+      GET_IFACE2(pBroker, ILibrary,       pLib);
+      GET_IFACE2(pBroker, ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-      CComObject<CUBeamDistFactorEngineer>* pEngineer;
-      CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-      pEngineer->Init(true,true); // this is a type b cross section, and a spread slab
-      pEngineer->SetBroker(pBroker,statusGroupID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      int lldf_method = pSpecEntry->GetLiveLoadDistributionMethod();
+      if (lldf_method == LLDF_TXDOT)
+      {
+         CComObject<CTxDOTSpreadSlabBeamDistFactorEngineer>* pEngineer;
+         CComObject<CTxDOTSpreadSlabBeamDistFactorEngineer>::CreateInstance(&pEngineer);
+         pEngineer->SetBroker(pBroker, statusGroupID);
+         (*ppEng) = pEngineer;
+         (*ppEng)->AddRef();
+      }
+      else
+      {
+         // this is a type b section... type b's are the same as type c's which are U-beams
+         ATLASSERT(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
+
+         CComObject<CUBeamDistFactorEngineer>* pEngineer;
+         CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
+         pEngineer->Init(true, true); // this is a type b cross section, and a spread slab
+         pEngineer->SetBroker(pBroker, statusGroupID);
+         (*ppEng) = pEngineer;
+         (*ppEng)->AddRef();
+      }
    }
 }
 
@@ -557,23 +574,6 @@ bool CVoidedSlabFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 bool CVoidedSlabFactory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return true;
-}
-
-Float64 CVoidedSlabFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-
-   Float64 D = GetDimension(dimensions,_T("Void_Diameter"));
-   long    N = (long)GetDimension(dimensions,_T("Number_of_Voids"));
-   Float64 void_surface_area = Lg*N*M_PI*D;
-   return void_surface_area;
 }
 
 std::_tstring CVoidedSlabFactory::GetImage() const
@@ -918,9 +918,25 @@ bool CVoidedSlabFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dime
    return false;
 }
 
+pgsTypes::WorkPointLocations CVoidedSlabFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+   wpls.push_back(pgsTypes::wplBottomGirder);
+
+   return wpls;
+}
+
+bool CVoidedSlabFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(), wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CVoidedSlabFactory::GetSupportedGirderOrientation() const
 {
-   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
@@ -996,6 +1012,17 @@ Float64 CVoidedSlabFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimens
 Float64 CVoidedSlabFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("W"));
+}
+
+void CVoidedSlabFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W = GetDimension(dimensions,_T("W"));
+
+   Float64 top = W;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CVoidedSlabFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const

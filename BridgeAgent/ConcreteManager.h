@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -116,17 +116,17 @@ public:
    // t is the absolute time in the time sequence. Time is automatically
    // convert to concrete age when computing properties. Zero is returned
    // if t is before the concrete has been cast or attained strength
-   Float64 GetDeckCastingTime() const;
-   Float64 GetDeckFc(Float64 t) const;
-   Float64 GetDeckEc(Float64 t) const;
-   Float64 GetDeckFlexureFr(Float64 t) const;
-   Float64 GetDeckShearFr(Float64 t) const;
-   Float64 GetDeckFreeShrinkageStrain(Float64 t) const;
-   std::shared_ptr<matConcreteBaseShrinkageDetails> GetDeckFreeShrinkageStrainDetails(Float64 t) const;
-   Float64 GetDeckCreepCoefficient(Float64 t,Float64 tla) const;
-   std::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(Float64 t,Float64 tla) const;
-   Float64 GetDeckAgingCoefficient(Float64 timeOfLoading) const;
-   const matConcreteBase* GetDeckConcrete() const;
+   Float64 GetDeckCastingTime(IndexType castingRegionIdx) const;
+   Float64 GetDeckFc(IndexType castingRegionIdx, Float64 t) const;
+   Float64 GetDeckEc(IndexType castingRegionIdx, Float64 t) const;
+   Float64 GetDeckFlexureFr(IndexType castingRegionIdx, Float64 t) const;
+   Float64 GetDeckShearFr(IndexType castingRegionIdx, Float64 t) const;
+   Float64 GetDeckFreeShrinkageStrain(IndexType castingRegionIdx, Float64 t) const;
+   std::shared_ptr<matConcreteBaseShrinkageDetails> GetDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, Float64 t) const;
+   Float64 GetDeckCreepCoefficient(IndexType castingRegionIdx, Float64 t,Float64 tla) const;
+   std::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, Float64 t,Float64 tla) const;
+   Float64 GetDeckAgingCoefficient(IndexType castingRegionIdx, Float64 timeOfLoading) const;
+   const matConcreteBase* GetDeckConcrete(IndexType castingRegionIdx) const;
 
    Float64 GetSegmentCastingTime(const CSegmentKey& segmentKey) const;
    Float64 GetSegmentFc(const CSegmentKey& segmentKey,Float64 t) const;
@@ -237,7 +237,7 @@ private:
    mutable Float64 m_DeckCreepK2;
    mutable Float64 m_DeckShrinkageK1;
    mutable Float64 m_DeckShrinkageK2;
-   mutable std::unique_ptr<matConcreteBase> m_pDeckConcrete; // time dependent Deck concrete model
+   mutable std::vector<std::unique_ptr<matConcreteBase>> m_pvDeckConcrete; // time dependent Deck concrete model. vector index is the deck casting region index
 
    // Material model for longitudinal joint concrete
    mutable Float64 m_LongitudinalJointEcK1;
@@ -249,7 +249,7 @@ private:
    mutable std::unique_ptr<matConcreteBase> m_pLongitudinalJointConcrete; // time dependent Longitudinal Joint concrete model
 
    // Material model for railing system concrete
-   mutable std::unique_ptr<matConcreteBase> m_pRailingConcrete[2]; // index is pgsTypes::TrafficBarrierOrientation
+   mutable std::array<std::unique_ptr<matConcreteBase>, 2> m_pRailingConcrete; // index is pgsTypes::TrafficBarrierOrientation
 
    // callback IDs for the status callbacks we register
    StatusCallbackIDType m_scidConcreteStrengthWarning;

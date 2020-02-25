@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -261,7 +261,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfM, pDisplayUnits->GetScalarFormat());
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfV, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   GET_IFACE2_NOCHECK(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    bool bContinuousLeft,bContinuousRight;
@@ -275,7 +275,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    rptParagraph* pBody = new rptParagraph;
    *pChapter << pBody;
 
-   ColumnIndexType nCols = 3;
+   ColumnIndexType nCols = 2;
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       nCols += 2; // for fatigue limit state LLDF
 
@@ -290,22 +290,17 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    {
       pTable->SetNumberOfHeaderRows(1);
       (*pTable)(0,1) << _T("-M");
-      (*pTable)(0,2) << _T("R");
    }
    else
    {
       pTable->SetNumberOfHeaderRows(2);
       pTable->SetRowSpan(0,0,2);
 
-      pTable->SetColumnSpan(0,1,2);
       (*pTable)(0, 1) << _T("Strength/Service");
       (*pTable)(1, 1) << _T("-M");
-      (*pTable)(1, 2) << _T("R");
 
-      pTable->SetColumnSpan(0,3,2);
-      (*pTable)(0,3) << _T("Fatigue/Special Permit Rating");
-      (*pTable)(1,3) << _T("-M");
-      (*pTable)(1,4) << _T("R");
+      (*pTable)(0,2) << _T("Fatigue/Special Permit Rating");
+      (*pTable)(1,2) << _T("-M");
    }
 
    // report ahead face of pier except at end
@@ -321,7 +316,6 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
       (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(gdrIdx);
 
       sysSectionValue nM;
-      Float64 V;
       if ( bNegMoments )
       {
          if ( pierIdx == 0 )
@@ -346,10 +340,6 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
          (*pTable)(row,1) << _T("------");
       }
 
-      V = pDistFact->GetReactionDistFactor(pierIdx,gdrIdx,pgsTypes::StrengthI);
-      (*pTable)(row,2) << dfV.SetValue(V);
-
-
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
          if ( bNegMoments )
@@ -369,15 +359,12 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
                nM.Left()  = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::FatigueI,pgsTypes::Back);
                nM.Right() = pDistFact->GetNegMomentDistFactorAtPier(pierIdx,gdrIdx,pgsTypes::FatigueI,pgsTypes::Ahead);
             }
-            (*pTable)(row,3) << dfM.SetValue(nM);
+            (*pTable)(row,2) << dfM.SetValue(nM);
          }
          else
          {
-            (*pTable)(row,3) << _T("------");
+            (*pTable)(row,2) << _T("------");
          }
-
-         V = pDistFact->GetReactionDistFactor(pierIdx,gdrIdx,pgsTypes::FatigueI);
-         (*pTable)(row,4) << dfV.SetValue(V);
       }
 
       row++;

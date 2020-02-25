@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -281,20 +281,12 @@ void CGirderGroupData::AddSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType f
 
 void CGirderGroupData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierType)
 {
-   // Adjust the slab offsets
-   PierIndexType pierIdx = (PierIndexType)spanIdx + (rmPierType == pgsTypes::PrevPier ? 0 : 1);
-   PierIndexType startPierIdx = GetPierIndex(pgsTypes::metStart);
-   PierIndexType nPiersToRemove = pierIdx - startPierIdx;
-
    // Adjust the girders in the group for the span that is removed
    // remove span references from the girders before the span is destroyed
    // Segments have pointers to the spans they start and end in
-   std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
-   std::vector<CSplicedGirderData*>::iterator end(m_Girders.end());
-   for ( ; iter != end; iter++ )
+   for(auto* pGirder : m_Girders)
    {
-      CSplicedGirderData* pGirder = *iter;
-      pGirder->RemoveSpan(spanIdx,rmPierType);
+      pGirder->RemoveSpan(spanIdx, rmPierType);
    }
 }
 
@@ -1931,13 +1923,8 @@ void CGirderGroupData::RepairGirderTypeGroups()
 
 void CGirderGroupData::Clear()
 {
-   std::vector<CSplicedGirderData*>::iterator iter(m_Girders.begin());
-   std::vector<CSplicedGirderData*>::iterator end(m_Girders.end());
-   for ( ; iter != end; iter++ )
-   {
-      CSplicedGirderData* pGirder = *iter;
-      pGirder->Clear();
-   }
+   std::for_each(std::begin(m_Girders), std::end(m_Girders), [](auto* pGirder) {pGirder->Clear(); });
+   // NOTE: the girder pointers are deleted and the m_Girders collection cleared in the destructor
 
    m_GirderTypeGroups.clear();
    m_GirderTopWidthGroups.clear();

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,7 @@ static char THIS_FILE[] = __FILE__;
 static UINT indicators[] =
 {
    ID_SEPARATOR,           // status line indicator
+   ID_INDICATOR_CRITERIA,
    ID_INDICATOR_ANALYSIS,
    EAFID_INDICATOR_STATUS,
    EAFID_INDICATOR_MODIFIED,
@@ -53,6 +54,7 @@ static UINT indicators[] =
 
 CPGSuperStatusBar::CPGSuperStatusBar()
 {
+   m_ProjectCriteriaPaneIdx = -1;
    m_AnalysisModePaneIdx = -1;
 }
 
@@ -85,6 +87,13 @@ void CPGSuperStatusBar::OnLButtonDblClk(UINT nFlags, CPoint point)
 {
    CRect rect;
 
+   // Project criteria
+   GetStatusBarCtrl().GetRect(GetProjectCriteriaPaneIndex(), &rect);
+   if (rect.PtInRect(point))
+   {
+      PostMessage(WM_COMMAND, ID_PROJECT_SPEC, 0);
+   }
+
    // Analysis Type
    GetStatusBarCtrl().GetRect(GetAnalysisModePaneIndex(),&rect);
    if (rect.PtInRect(point))
@@ -93,6 +102,28 @@ void CPGSuperStatusBar::OnLButtonDblClk(UINT nFlags, CPoint point)
    }
 
    CEAFAutoCalcStatusBar::OnLButtonDblClk(nFlags, point);
+}
+
+int CPGSuperStatusBar::GetProjectCriteriaPaneIndex()
+{
+   if (m_ProjectCriteriaPaneIdx < 0)
+   {
+      for (int i = 0; i < GetPaneCount(); i++)
+      {
+         UINT nID;
+         UINT nStyle;
+         int cxWidth;
+         GetPaneInfo(i, nID, nStyle, cxWidth);
+
+         if (nID == ID_INDICATOR_CRITERIA)
+         {
+            m_ProjectCriteriaPaneIdx = i;
+            break;
+         }
+      }
+   }
+
+   return m_ProjectCriteriaPaneIdx;
 }
 
 int CPGSuperStatusBar::GetAnalysisModePaneIndex()
@@ -121,10 +152,28 @@ void CPGSuperStatusBar::Reset()
 {
    CEAFAutoCalcStatusBar::Reset();
 
-   int idx = GetAnalysisModePaneIndex();
-   if ( 0 <= idx )
+   int idx = GetProjectCriteriaPaneIndex();
+   if (0 <= idx)
    {
-      SetPaneText( idx, _T("") );
+      SetPaneText(idx, _T(""));
+   }
+
+   idx = GetAnalysisModePaneIndex();
+   if (0 <= idx)
+   {
+      SetPaneText(idx, _T(""));
+   }
+}
+
+void CPGSuperStatusBar::SetProjectCriteria(LPCTSTR lpszCriteria)
+{
+   int idx = GetProjectCriteriaPaneIndex();
+   if (0 <= idx)
+   {
+      CDC* pDC = GetDC();
+      CSize size = pDC->GetTextExtent(lpszCriteria);
+      SetPaneInfo(idx, ID_INDICATOR_CRITERIA, SBPS_NORMAL, size.cx);
+      SetPaneText(idx, lpszCriteria, TRUE);
    }
 }
 

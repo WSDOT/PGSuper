@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -660,6 +660,25 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
    }
    else if (lHint == 0 || lHint == HINT_BRIDGECHANGED || lHint == HINT_GIRDERCHANGED || lHint == HINT_UNITSCHANGED )
    {
+      if (lHint == HINT_BRIDGECHANGED)
+      {
+         // If the bridge changed, make sure the girder key is still valid
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker, IBridge, pBridge);
+         GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+         if (nGroups <= m_GirderKey.groupIndex)
+         {
+            m_GirderKey.groupIndex = nGroups - 1;
+         }
+
+         GirderIndexType nGirders = pBridge->GetGirderCount(m_GirderKey.groupIndex);
+         if (nGirders <= m_GirderKey.girderIndex)
+         {
+            m_GirderKey.girderIndex = nGirders - 1;
+         }
+      }
+
       UpdateCutRange();
       m_cutPoi = GetCutPointOfInterest(m_cutPoi.GetDistFromStart());
       FillEventComboBox();
@@ -690,6 +709,7 @@ CGirderModelSectionView* CGirderModelChildFrame::GetGirderModelSectionView() con
 
 void CGirderModelChildFrame::UpdateViews()
 {
+   CWaitCursor wait;
    GetGirderModelElevationView()->OnUpdate(nullptr,0,nullptr);
    GetGirderModelSectionView()->OnUpdate(nullptr,0,nullptr);
 }

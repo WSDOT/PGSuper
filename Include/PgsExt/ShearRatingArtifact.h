@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -122,6 +122,9 @@ public:
    void SetLongReinfShearArtifact(const pgsLongReinfShearArtifact& artifact);
    const pgsLongReinfShearArtifact& GetLongReinfShearArtifact() const;
 
+   void SetHorizontalInterfaceShearArtifact(const pgsHorizontalShearArtifact& artifact);
+   const pgsHorizontalShearArtifact& GetHorizontalInterfaceShearArtifact() const;
+
    Float64 GetRatingFactor() const;
 
 protected:
@@ -158,4 +161,5 @@ protected:
    Float64 m_Vps;
    Float64 m_Vllim;
    pgsLongReinfShearArtifact m_LongReinfShearArtifact;
+   pgsHorizontalShearArtifact m_HorizShearArtifact;
 };

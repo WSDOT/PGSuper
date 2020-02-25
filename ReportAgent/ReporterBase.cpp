@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -47,6 +47,7 @@
 #include <Reporting\LossesChapterBuilder.h>
 #include <Reporting\MomentCapacityDetailsChapterBuilder.h>
 #include <Reporting\ShearCapacityDetailsChapterBuilder.h>
+#include <Reporting\HorizontalInterfaceShearCapacityDetailsChapterBuilder.h>
 #include <Reporting\CritSectionChapterBuilder.h>
 #include <Reporting\StirrupDetailingCheckChapterBuilder.h>
 #include <Reporting\ADimChapterBuilder.h>
@@ -77,7 +78,8 @@
 #include <Reporting\BridgeAnalysisChapterBuilder.h>
 
 #include <Reporting\IntervalChapterBuilder.h>
-#include <Reporting\TendonGeometryChapterBuilder.h>
+#include <Reporting\GirderTendonGeometryChapterBuilder.h>
+#include <Reporting\SegmentTendonGeometryChapterBuilder.h>
 #include <Reporting\TimeStepParametersChapterBuilder.h>
 
 #include <Reporting\BearingDesignParametersChapterBuilder.h>
@@ -188,7 +190,8 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLossesChapterBuilder) ); 
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCastingYardRebarRequirementChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CMomentCapacityDetailsChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(true,false)) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(true, false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CHorizontalInterfaceShearCapacityDetailsChapterBuilder(true, false)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CStirrupDetailingCheckChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCritSectionChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLongReinfShearCheckChapterBuilder(true,false)) );
@@ -237,7 +240,8 @@ void CReporterBase::CreateLoadRatingReport()
    //pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLossesChapterBuilder(false)) ); 
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CFinalLossesChapterBuilder(false)) ); 
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CMomentCapacityDetailsChapterBuilder(false,false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(false,true,false)) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(false, true, false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CHorizontalInterfaceShearCapacityDetailsChapterBuilder(false, true, false)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCritSectionChapterBuilder(false,true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLongReinfShearCheckChapterBuilder(false,true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder(false)) );
@@ -394,7 +398,8 @@ void CReporterBase::CreateStageByStageDetailsReport()
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CSegmentTendonGeometryChapterBuilder));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CGirderTendonGeometryChapterBuilder));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTimeStepParametersChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 }

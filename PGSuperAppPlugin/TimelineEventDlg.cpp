@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -54,13 +54,14 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CTimelineEventDlg, CDialog)
 
-CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
+CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,EventIndexType minEventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
 	: CDialog(CTimelineEventDlg::IDD, pParent)
 {
    m_bEdit = bEditEvent;
    m_bReadOnly = bReadOnly;
    m_TimelineManager = timelineMgr;
    m_EventIndex = eventIdx;
+   m_MinEventIdx = minEventIdx;
 }
 
 CTimelineEventDlg::~CTimelineEventDlg()
@@ -76,16 +77,7 @@ bool CTimelineEventDlg::UpdateTimelineManager(const CTimelineManager& timelineMg
    if ( result != TLM_SUCCESS )
    {
       // The event that was changed doesn't fit... as the user what to do about it
-      CString strProblem;
-      if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
-      {
-         strProblem = _T("This event begins before the activities in the previous event have completed.");
-      }
-      else
-      {
-         strProblem = _T("The activities in this event end after the next event begins.");
-      }
-
+      CString strProblem = timelineMgr.GetErrorMessage(result);
       CString strRemedy(_T("The timeline will be adjusted to accomodate this event."));
 
       CString strMsg;
@@ -209,17 +201,19 @@ BOOL CTimelineEventDlg::OnInitDialog()
       m_TimelineEventList.InsertColumn(2,_T("Description"));
 
       EventIndexType nEvents = m_TimelineManager.GetEventCount();
-      for ( EventIndexType eventIdx = 0; eventIdx < nEvents; eventIdx++ )
+      for ( EventIndexType eventIdx = (m_MinEventIdx == INVALID_INDEX ? 0 : m_MinEventIdx); eventIdx < nEvents; eventIdx++ )
       {
          const CTimelineEvent* pTimelineEvent = m_TimelineManager.GetEventByIndex(eventIdx);
          CString strEventIndex;
          strEventIndex.Format(_T("%lld"), LABEL_EVENT(eventIdx) );
-         m_TimelineEventList.InsertItem(LVIF_TEXT,(int)eventIdx,strEventIndex,0,0,0,0);
+
+         int item = (int)(eventIdx - (m_MinEventIdx == INVALID_INDEX ? 0 : m_MinEventIdx));
+         m_TimelineEventList.InsertItem(LVIF_TEXT,item,strEventIndex,0,0,0,0);
 
          CString strDay;
          strDay.Format(_T("%d"),(int)pTimelineEvent->GetDay());
-         m_TimelineEventList.SetItemText((int)eventIdx,1,strDay);
-         m_TimelineEventList.SetItemText((int)eventIdx,2,pTimelineEvent->GetDescription());
+         m_TimelineEventList.SetItemText(item,1,strDay);
+         m_TimelineEventList.SetItemText(item,2,pTimelineEvent->GetDescription());
       }
 
       m_TimelineEventList.SetColumnWidth(0,LVSCW_AUTOSIZE_USEHEADER);

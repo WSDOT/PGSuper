@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -120,6 +120,7 @@ public:
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
 	//}}AFX_VIRTUAL
 
+   void UpdateProjectCriteriaIndicator();
    void UpdateAnalysisTypeStatusIndicator();
    void OnLoadsLldf();
    void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
@@ -172,6 +173,7 @@ public:
    void DeleteMomentLoadByID(LoadIDType loadID);
 
    bool EditTimeline();
+   bool EditCastDeckActivity();
    bool EditEffectiveFlangeWidth();
    bool SelectProjectCriteria();
 
@@ -181,8 +183,8 @@ public:
 
    void GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem);
 
-   void DeletePier(SpanIndexType pierIdx);
-   void DeletePier(SpanIndexType pierIdx,pgsTypes::PierFaceType face);
+   void DeletePier(PierIndexType pierIdx);
+   void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType face);
    void DeleteSpan(SpanIndexType spanIdx);
    void DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pierRemoveType);
    void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,IndexType eventIdx);

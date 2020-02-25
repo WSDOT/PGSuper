@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,8 @@ private:
    CTimeStepCamberChapterBuilder(const CTimeStepCamberChapterBuilder&) = delete;
    CTimeStepCamberChapterBuilder& operator=(const CTimeStepCamberChapterBuilder&) = delete;
 
-   rptRcTable* CreateStorageDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateStorageDeflectionTable(IBroker* pBroker, const CGirderKey& girderKey) const;
+   rptRcTable* CreateHandlingDeflectionTable(IBroker* pBroker, const CGirderKey& girderKey) const;
    rptRcTable* CreateAfterErectionDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
 
    rptRcTable* CreateTable(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;

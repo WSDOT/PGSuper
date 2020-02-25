@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -130,6 +130,8 @@ void BearingInputData::CopyFromBridgeDescription(const CBridgeDescription2* pBri
    ///////////////////////////////////
    m_BearingType = pBridgeDescr->GetBearingType();
 
+   m_SingleBearing = *(pBridgeDescr->GetBearingData());
+
    // Pier and girder based A data are treated the same for all types
    PierIndexType npiers = pBridgeDescr->GetPierCount();
 
@@ -139,7 +141,7 @@ void BearingInputData::CopyFromBridgeDescription(const CBridgeDescription2* pBri
       const CPierData2* pPier = pBridgeDescr->GetPier(ipier);
 
       // We want to iterate over bearing lines. Determine how many
-      pgsTypes::PierFaceType pierFaces[2];
+      std::array<pgsTypes::PierFaceType, 2> pierFaces;
       PierIndexType nbrglines = 1; 
       if (ipier==0)
       {
@@ -193,12 +195,6 @@ void BearingInputData::CopyFromBridgeDescription(const CBridgeDescription2* pBri
          {
             const CBearingData2* pBr = pPier->GetBearingData(ig, pierFaces[ibrg]);
             brgData.m_BearingsForGirders.push_back(*pBr);
-
-            // Fill data for case when single Bearing is used for entire bridge. Use bearingline 1, girder 1
-            if (ipier==0 && ig==0)
-            {
-               m_SingleBearing  = *pBr;
-            }
          }
 
          m_Bearings.push_back( brgData );
@@ -544,42 +540,56 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Spacing,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Length,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Width,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Height,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].RecessHeight,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].RecessLength,*m_pCompUnit, false))
          );
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
          .SetEnabled(TRUE)
+         .SetHorizontalAlignment(DT_RIGHT)
+         .SetVerticalAlignment(DT_TOP)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].SolePlateHeight,*m_pCompUnit, false))
          );
 
@@ -743,7 +753,7 @@ BOOL CBearingPierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       else
       {
          Float64 val = _tstof(strVal);
-         if (IsLE(val, 0.0))
+         if (IsLT(val, 0.0))
          {
             SetWarningText(_T("Bearing length must be greater than zero"));
             return false;
@@ -764,7 +774,7 @@ BOOL CBearingPierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          else
          {
             Float64 val = _tstof(strVal);
-            if (IsLE(val, 0.0))
+            if (IsLT(val, 0.0))
             {
                SetWarningText(_T("Bearing width must be greater than zero"));
                return false;

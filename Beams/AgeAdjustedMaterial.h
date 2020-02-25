@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -42,6 +42,8 @@ public:
       m_bIsClosure = false;
       m_bIsSegment = false;
       m_bIsLongitudinalJoint = false;
+
+      m_DeckCastingRegionIdx = INVALID_INDEX;
 	}
 
    HRESULT FinalConstruct();
@@ -54,7 +56,6 @@ BEGIN_COM_MAP(CAgeAdjustedMaterial)
 END_COM_MAP()
 
 private:
-   CGirderKey m_GirderKey;
    CSegmentKey m_SegmentKey;
    CClosureKey m_ClosureKey;
 
@@ -62,6 +63,8 @@ private:
    bool m_bIsClosure;
    bool m_bIsSegment;
    bool m_bIsLongitudinalJoint;
+
+   IndexType m_DeckCastingRegionIdx;
 
    // use weak refereces so we don't have circular dependencies
    IMaterials* m_pMaterials;
@@ -75,7 +78,7 @@ private:
 public:
    STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IMaterials* pMaterials) override;
    STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IMaterials* pMaterials) override;
-   STDMETHOD(InitDeck)(const CGirderKey& girderKey,IMaterials* pMaterials) override;
+   STDMETHOD(InitDeck)(IndexType deckCastingRegionIdx, IMaterials* pMaterials) override;
    STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, IMaterials* pMaterials) override;
 
 // IMaterial

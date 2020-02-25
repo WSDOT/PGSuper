@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -250,6 +250,17 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
    //   }
    //}
 
+
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pTitlePage << p;
+   *p << _T("Analysis Controls") << rptNewLine;
+
+   p = new rptParagraph();
+   *pTitlePage << p;
+
+   GET_IFACE(ILossParameters, pLossParams);
+   *p << _T("Losses: ") << pLossParams->GetLossMethodDescription() << rptNewLine;
+
    rptRcTable* pTable;
    int row = 0;
 
@@ -302,6 +313,18 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
 
       (*pTable)(row, 0) << _T("STRF");
       (*pTable)(row++, 1) << _T("Section Transitions, Right Face");
+
+	  (*pTable)(row, 0) << _T("DS");
+	  (*pTable)(row++, 1) << _T("Start of Post-Tensioning Duct");
+
+	  (*pTable)(row, 0) << _T("DE");
+	  (*pTable)(row++, 1) << _T("End of Post-Tensioning Duct");
+
+      (*pTable)(row, 0) << _T("SDCR");
+      (*pTable)(row++, 1) << _T("Start of Deck Casting Region");
+
+      (*pTable)(row, 0) << _T("EDCR");
+      (*pTable)(row++, 1) << _T("End of Deck Casting Region");
 
       (*pTable)(row,0) << _T("IP");
       (*pTable)(row++,1) << _T("Interior Pier");

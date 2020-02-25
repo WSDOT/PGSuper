@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@ public:
 	CDrawStrandControl();
 	virtual ~CDrawStrandControl();
 
-   void CustomInit(const CPrecastSegmentData* pSegment,const CStrandData* pStrands);
+   void CustomInit(const CPrecastSegmentData* pSegment,const CStrandData* pStrands,const CSegmentPTData* pTendons);
 
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg void OnPaint();
@@ -44,7 +44,8 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
    const CPrecastSegmentData* m_pSegment; // this is the segment for which we are drawing strands
-   const CStrandData* m_pStrands; // these are the actual strand data (can be edited from UI and thus different from m_pSegment->Strands)
+   const CStrandData* m_pStrands; // these are the actual strands (can be edited from UI and thus different from m_pSegment->Strands)
+   const CSegmentPTData* m_pTendons; // these are the actual tendons (can be edited from UI and thuse different form m_pSegment->Tendons)
 
    Float64 m_Hg; // overall height including top flange thickening and precamber
 
@@ -62,7 +63,8 @@ protected:
    void CreateSegmentProfiles(IShape** ppShape,IPoint2dCollection** ppPoints);
    void DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape);
    void Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon);
-   void DrawStrands(CDC* pDC,grlibPointMapper& leftMapper,grlibPointMapper& centerMapper,grlibPointMapper& rightMapper);
+   void DrawStrands(CDC* pDC, grlibPointMapper& leftMapper, grlibPointMapper& centerMapper, grlibPointMapper& rightMapper);
+   void DrawTendons(CDC* pDC, grlibPointMapper& leftMapper, grlibPointMapper& centerMapper, grlibPointMapper& rightMapper);
 };
 
 

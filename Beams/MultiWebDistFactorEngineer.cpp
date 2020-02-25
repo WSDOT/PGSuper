@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,10 +96,6 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
       GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, USE_CURRENT_FC, &pier1_lldf);
       GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  USE_CURRENT_FC, &pier2_lldf);
 
-      REACTIONDETAILS reaction1_lldf, reaction2_lldf;
-      GetPierReactionDF(pier1, gdrIdx, pgsTypes::StrengthI, USE_CURRENT_FC, &reaction1_lldf);
-      GetPierReactionDF(pier2, gdrIdx, pgsTypes::StrengthI, USE_CURRENT_FC, &reaction2_lldf);
-
       // do a sanity check to make sure the fundimental values are correct
       ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
       ATLASSERT(span_lldf.Method  == pier2_lldf.Method);
@@ -163,6 +159,14 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
       (*pPara) << _T("Roadway overhang = ") << xdim.SetValue(ro) << rptNewLine;
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
       (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
+      
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLibrary);
+      const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+      if (pSpecEntry->IgnoreSkewReductionForMoment())
+      {
+         (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
+      }
 
       if (pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::LeverRule)
       {
@@ -322,44 +326,6 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
                   span_lldf.gV,
                   bSIUnits,pDisplayUnits);
 
-      //////////////////////////////////////////////////////////////
-      // Reactions
-      //////////////////////////////////////////////////////////////
-      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-      (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier1) << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-
-      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction1_lldf.skew1 + reaction1_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction1_lldf.L) << rptNewLine << rptNewLine;
-
-      ReportShear(pPara,
-                  reaction1_lldf,
-                  reaction1_lldf.gR1,
-                  reaction1_lldf.gR2,
-                  reaction1_lldf.gR,
-                  bSIUnits,pDisplayUnits);
-
-        ///////
-
-      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-      (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier2) << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-
-      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction2_lldf.skew1 + reaction2_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction2_lldf.L) << rptNewLine << rptNewLine;
-
-      ReportShear(pPara,
-                  reaction2_lldf,
-                  reaction2_lldf.gR1,
-                  reaction2_lldf.gR2,
-                  reaction2_lldf.gR,
-                  bSIUnits,pDisplayUnits);
-
-
       ////////////////////////////////////////////////////////////////////////////
       // Fatigue limit states
       ////////////////////////////////////////////////////////////////////////////
@@ -437,31 +403,6 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
          superscript = (span_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
          mpf = span_lldf.gV1.GetMultiplePresenceFactor();
          (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gV1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(span_lldf.gV1.mg/mpf);
-
-         //////////////////////////////////////////////////////////////
-         // Reactions
-         //////////////////////////////////////////////////////////////
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier1) << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-
-         superscript = (reaction1_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-         mpf = reaction1_lldf.gR1.GetMultiplePresenceFactor();
-         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction1_lldf.gR1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(reaction1_lldf.gR1.mg/mpf);
-
-           ///////
-
-         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-         (*pChapter) << pPara;
-         (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier2) << rptNewLine;
-         pPara = new rptParagraph;
-         (*pChapter) << pPara;
-
-         superscript = (reaction2_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-         mpf = reaction2_lldf.gR1.GetMultiplePresenceFactor();
-         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction2_lldf.gR1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(reaction2_lldf.gR1.mg/mpf);
       }
    } // next span
 }
@@ -573,7 +514,11 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
    {
       GET_IFACE(IMaterials, pMaterials);
 
-      Float64 EcDeck = pMaterials->GetDeckEc(llIntervalIdx);
+      GET_IFACE(IPointOfInterest, pPoi);
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(spPoi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+      Float64 EcDeck = pMaterials->GetDeckEc(deckCastingRegionIdx,llIntervalIdx);
       if ( fcgdr < 0 )
       {
          // fcgdr < 0 means use the current bridge model
@@ -623,7 +568,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
          // Get the top flange shape and subtract it from the total girder shape to get the stem by itself
          GET_IFACE(IShapes, pShapes);
          CComPtr<IShape> segment_shape;
-         pShapes->GetSegmentShape(releaseIntervalIdx, spPoi, false, pgsTypes::scGirder, pSectProp->GetHaunchAnalysisSectionPropertiesType(), &segment_shape);
+         pShapes->GetSegmentShape(releaseIntervalIdx, spPoi, false, pgsTypes::scGirder, &segment_shape);
 
          CComQIPtr<IFlangePoints> flangePoints(segment_shape);
          if (flangePoints)

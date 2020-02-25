@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -389,42 +389,56 @@ void CBearingGdrGrid::WriteBearingRow(ROWCOL row, const CBearingData2& bearingDa
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingSpacingCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.Spacing,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingLengthCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.Length,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingWidthCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.Width,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingHeightCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.Height,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingRecessHeightCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.RecessHeight,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingRecessLengthCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.RecessLength,*m_pCompUnit, false))
       );
 
    SetStyleRange(CGXRange(row,m_DGetter.m_BearingSolePlateCol), CGXStyle()
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
+      .SetHorizontalAlignment(DT_RIGHT)
+      .SetVerticalAlignment(DT_TOP)
       .SetValue(FormatDimension(bearingData.SolePlateHeight,*m_pCompUnit, false))
       );
 
@@ -598,7 +612,7 @@ BOOL CBearingGdrGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
             Float64 spacing = _tstof(strSpacing);
             if (IsLE(spacing, 0.0))
             {
-               SetWarningText(_T("Bearing spacing must be greater than zero"));
+               SetWarningText(_T("Bearing spacing must be zero or greater"));
                return false;
             }
          }
@@ -615,9 +629,9 @@ BOOL CBearingGdrGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       else
       {
          Float64 val = _tstof(strVal);
-         if (IsLE(val, 0.0))
+         if (IsLT(val, 0.0))
          {
-            SetWarningText(_T("Bearing length must be greater than zero"));
+            SetWarningText(_T("Bearing length must be zero or greater"));
             return false;
          }
       }
@@ -636,9 +650,9 @@ BOOL CBearingGdrGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          else
          {
             Float64 val = _tstof(strVal);
-            if (IsLE(val, 0.0))
+            if (IsLT(val, 0.0))
             {
-               SetWarningText(_T("Bearing width must be greater than zero"));
+               SetWarningText(_T("Bearing width must be zero or greater"));
                return false;
             }
          }

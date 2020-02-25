@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -195,6 +195,7 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    GET_IFACE2(pBroker, IExternalLoading, pExtLoading);
    GET_IFACE2(pBroker, IProductForces, pProduct);
    GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -203,8 +204,6 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
 
@@ -359,6 +358,11 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
       const pgsPointOfInterest& releasePoi(*releasePoiIter);
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
+
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(erectedPoi);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+
 
       Float64 DpsRelease = pProduct->GetDeflection(releaseIntervalIdx, pgsTypes::pftPretension, releasePoi, bat, rtCumulative, false);
       Float64 DpsStorage = pProduct->GetDeflection(storageIntervalIdx, pgsTypes::pftPretension, storagePoi, bat, rtCumulative, false);
@@ -574,6 +578,7 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    GET_IFACE2(pBroker, IExternalLoading, pExtLoading);
    GET_IFACE2(pBroker, IProductForces, pProduct);
    GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -582,7 +587,6 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -806,6 +810,9 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
       const pgsPointOfInterest& releasePoi(*releasePoiIter);
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
+
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(erectedPoi);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
       Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
       Float64 DpsStorage  = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);
@@ -1078,6 +1085,7 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    GET_IFACE2(pBroker, IExternalLoading, pExtLoading);
    GET_IFACE2(pBroker, IProductForces, pProduct);
    GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -1085,7 +1093,6 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
@@ -1252,6 +1259,9 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
 
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(erectedPoi);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+      
       Float64 DpsRelease = pProduct->GetDeflection(releaseIntervalIdx, pgsTypes::pftPretension, releasePoi, bat, rtCumulative, false);
       Float64 DpsStorage = pProduct->GetDeflection(storageIntervalIdx, pgsTypes::pftPretension, storagePoi, bat, rtCumulative, false);
       Float64 DpsErected = pProduct->GetDeflection(erectionIntervalIdx, pgsTypes::pftPretension, erectedPoi, bat, rtCumulative, false);
@@ -1474,6 +1484,7 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    GET_IFACE2(pBroker,IExternalLoading,pExtLoading);
    GET_IFACE2(pBroker,IProductForces,pProduct);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx           = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -1482,7 +1493,6 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
    IntervalIndexType tempStrandRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
    IntervalIndexType railingSystemIntervalIdx     = pIntervals->GetInstallRailingSystemInterval();
@@ -1718,6 +1728,9 @@ void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKe
       const pgsPointOfInterest& releasePoi(*releasePoiIter);
       const pgsPointOfInterest& storagePoi(*storagePoiIter);
       const pgsPointOfInterest& erectedPoi(*erectedPoiIter);
+
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(erectedPoi);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
       Float64 DpsRelease   = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,releasePoi,bat,rtCumulative,false);
       Float64 DpsStorage   = pProduct->GetDeflection(storageIntervalIdx,pgsTypes::pftPretension,storagePoi,bat,rtCumulative,false);

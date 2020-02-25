@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -103,26 +103,25 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
    // get poi where pier rotations occur
    PoiList vPoi;
-   for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey.girderIndex, startGroup, endGroup, &vGirderKeys);
+   for (const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-
-      PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(grpIdx);
-      PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(grpIdx);
+      PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
+      PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
       for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
       {
          if ( pierIdx == startPierIdx )
          {
-            CSegmentKey segmentKey(grpIdx,gdrIdx,0);
+            CSegmentKey segmentKey(thisGirderKey,0);
             PoiList segPoi;
             pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &segPoi);
             vPoi.push_back(segPoi.front());
          }
          else if ( pierIdx == endPierIdx )
          {
-            SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
-            CSegmentKey segmentKey(grpIdx,gdrIdx,nSegments-1);
+            SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+            CSegmentKey segmentKey(thisGirderKey,nSegments-1);
             PoiList segPoi;
             pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &segPoi);
             vPoi.push_back(segPoi.front());
@@ -130,7 +129,6 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
          else
          {
             Float64 Xgp;
-            CGirderKey thisGirderKey(grpIdx,gdrIdx);
             VERIFY(pBridge->GetPierLocation(thisGirderKey,pierIdx,&Xgp));
             pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey,Xgp);
             vPoi.push_back(poi);
@@ -139,8 +137,8 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    }
 
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey) );
 
    // Fill up the table
    GET_IFACE2(pBroker,IProductForces,pProductForces);

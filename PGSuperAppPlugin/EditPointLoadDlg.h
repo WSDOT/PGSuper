@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -86,6 +86,8 @@ private:
    void UpdateSpanLength();
    void UpdateSpanList();
    void UpdateGirderList();
+
+   bool HasCantilever(pgsTypes::MemberEndType endType);
 
    void FillEventList();
    EventIndexType CreateEvent();

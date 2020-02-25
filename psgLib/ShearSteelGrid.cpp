@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -121,7 +121,7 @@ BOOL CShearSteelGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFla
 
    ROWCOL nrows = GetRowCount();
 
-   if (nCol==0 && (nRow!=0 && nRow!=nrows))
+   if (nCol == 0 && 0 < nRow)
    {
       pdlg->OnEnableDelete(true);
    }
@@ -207,12 +207,23 @@ void CShearSteelGrid::OnEditRemoveRows()
 void CShearSteelGrid::DoRemoveRows()
 {
 	CGXRangeList* pSelList = GetParam()->GetRangeList();
-	if (pSelList->IsAnyCellFromCol(0) && pSelList->GetCount() == 1)
+	if (pSelList->IsAnyCellFromCol(0))
 	{
 		CGXRange range = pSelList->GetHead();
-		range.ExpandRange(1, 0, GetRowCount(), 0);
-		RemoveRows(range.top, range.bottom);
-      SetCurrentCell(range.top,1); // if this is not here, the next insert will go below grid bottom
+      ROWCOL rowCount = GetRowCount();
+		range.ExpandRange(1, 0, rowCount, 0);
+
+      RemoveRows(range.top, range.bottom);
+      if (range.bottom < rowCount)
+      {
+         SetCurrentCell(range.top, 1); // if this is not here, the next insert will go below grid bottom
+      }
+
+      if (range.bottom == rowCount)
+      {
+         // the last row was deleted... make sure the new last row is "To Center" or "To End of Girder"
+         SetSymmetry(m_IsSymmetrical);
+      }
 	}
 }
 
@@ -230,9 +241,7 @@ bool CShearSteelGrid::EnableItemDelete()
    ROWCOL nrows = GetRowCount();
 
 	CGXRangeList* pSelList = GetParam()->GetRangeList();
-	return (pSelList->IsAnyCellFromCol(0) && 
-           !pSelList->IsAnyCellFromRow(nrows) &&
-           pSelList->GetCount() == 1);
+   return pSelList->IsAnyCellFromCol(0) ? true : false;
 }
 
 void CShearSteelGrid::SetSymmetry(bool isSymmetrical)
@@ -520,7 +529,7 @@ bool CShearSteelGrid::GetRowData(ROWCOL nRow, ROWCOL numRows, CShearZoneData2* p
    return true;
 }
 
-void CShearSteelGrid::FillGrid(const CShearData2::ShearZoneVec& rvec, bool isSymmetrical)
+void CShearSteelGrid::FillGrid(const CShearData2::ShearZoneVec& vShearZones, bool isSymmetrical)
 {
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -534,7 +543,7 @@ void CShearSteelGrid::FillGrid(const CShearData2::ShearZoneVec& rvec, bool isSym
 	   RemoveRows(1, rows);
    }
 
-   IndexType size = rvec.size();
+   IndexType size = vShearZones.size();
    if (0 < size)
    {
       // size grid
@@ -545,31 +554,27 @@ void CShearSteelGrid::FillGrid(const CShearData2::ShearZoneVec& rvec, bool isSym
 
       // fill grid
       ROWCOL nRow=1;
-      for (CShearData2::ShearZoneConstIterator it = rvec.begin(); it!=rvec.end(); it++)
+      for (const auto& shearZone : vShearZones)
       {
          if (nRow<size)
          {
-            SetValueRange(CGXRange(nRow, 1), (*it).ZoneLength);
+            SetValueRange(CGXRange(nRow, 1), shearZone.ZoneLength);
          }
 
          CString tmp;
-         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize((*it).VertBarSize).c_str());
+         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize(shearZone.VertBarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 2), tmp));
 
-         SetValueRange(CGXRange(nRow, 3), (*it).BarSpacing);
+         SetValueRange(CGXRange(nRow, 3), shearZone.BarSpacing);
 
-         VERIFY(SetValueRange(CGXRange(nRow, 4), (*it).nVertBars));
-         VERIFY(SetValueRange(CGXRange(nRow, 5), (*it).nHorzInterfaceBars));
+         VERIFY(SetValueRange(CGXRange(nRow, 4), shearZone.nVertBars));
+         VERIFY(SetValueRange(CGXRange(nRow, 5), shearZone.nHorzInterfaceBars));
 
-         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize((*it).ConfinementBarSize).c_str());
+         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize(shearZone.ConfinementBarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
 
          nRow++;
       }
-   }
-   else
-   {
-	   InsertRow(true);
    }
 
 	ScrollCellInView(1, GetLeftCol());

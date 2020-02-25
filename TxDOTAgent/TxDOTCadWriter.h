@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -19,14 +19,14 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
-
+#pragma once
 // SYSTEM INCLUDES
 //
 
 // PROJECT INCLUDES
 //
 #include <IFace\Bridge.h>
-#include <IFace\TxDOTCadExport.h>
+#include <IFace\TestFileExport.h>
 
 // Utility class for structuring debond data
 #include <PgsExt\DebondUtil.h>
@@ -36,9 +36,7 @@
 
 // FORWARD DECLARATIONS
 //
-// Utility constants, stuff for TxDOT CAD export
-#define CAD_DELIM	_T(" ")
-#define CAD_SPACE	_T(" ")
+class CTxDataExporter;
 
 // MISCELLANEOUS
 //
@@ -55,74 +53,28 @@ DESCRIPTION
 LOG
    rdp : 04.09.2009 : Created file
 *****************************************************************************/
-static const int BF_SIZ=1024; // buffer size
 
-// Main External functions that write the file
-int TxDOT_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, TxDOTCadExportFormatType format, bool designSucceeded);
-int TxDOT_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey);
-int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker);
-
-
-// Local utility class that does the real writing
-class CadWriterWorkerBee
+class TxDOTCadWriter
 {
 public:
-   enum Justification {jLeft, jCenter, jRight};
-
-   CadWriterWorkerBee(bool doWriteTitles); 
-
-   void WriteFloat64(Float64 val, LPCTSTR title, Int16 colWidth, Int16 nChars, LPCTSTR format);
-   void WriteInt16(Int16 val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format);
-   void WriteString(LPCTSTR val, LPCTSTR title, Int16 colWidth, Int16 nchars, LPCTSTR format);
-   void WriteStringEx(LPCTSTR val, LPCTSTR title, Int16 lftPad, Int16 nchars, Int16 rhtPad, LPCTSTR format);
-   void WriteBlankSpaces(Int16 ns);
-   void WriteBlankSpacesNoTitle(Int16 ns);
-   void WriteToFile(FILE* fp);
-
-private:
-   bool m_DoWriteTitles;
-
-   // The text to be written
-   TCHAR m_DataLine[BF_SIZ];
-   TCHAR m_TitleLine[BF_SIZ];
-   TCHAR m_DashLine[BF_SIZ];
-
-   // Cursors for location of last write
-   LPTSTR m_DataLineCursor;
-   LPTSTR m_TitleLineCursor;
-   LPTSTR m_DashLineCursor;
-
-   CadWriterWorkerBee(); // no default const
-   void WriteTitle(LPCTSTR title, Int16 colWidth);
-
-   // remaining buffer sizes for *printf_s type functions
-   size_t DataBufferRemaining() const
-   {
-      return sizeof(*m_DataLineCursor)*(m_DataLine+BF_SIZ-m_DataLineCursor)/sizeof(TCHAR);
-   }
-};
-
-// Workhorse for writing debond information
-
-class TxDOTCadWriter : public TxDOTDebondTool
-{
-public:
-
-   TxDOTCadWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, IStrandGeometry* pStrandGeometry):
-   TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry), 
-   m_isUBeam(isUBeam)
+   TxDOTCadWriter():
+      m_RowNum(0), m_NonStandardCnt(0)
    {;}
 
-   void WriteInitialData(CadWriterWorkerBee& workerBee);
-   void WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int16 extraSpacesForSlabOffset);
+   // Determine what type of strand layout we have
+   enum txcwStrandLayout { tslStraight, tslHarped, tslDebondedIBeam, tslMixed };
 
-   StrandIndexType GetTotalNumDebonds() const
-   {
-      return this->m_NumDebonded;
-   }
+   // Non-standard string can either be put into a separate table (excel) or integrated into the main table (txt)
+   enum txcwNsTableLayout { ttlnTwoTables, ttlnSingleTable };
+
+   txcwStrandLayout GetStrandLayoutType(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys);
+
+   // Main External function to write the file
+   int WriteCADDataToFile(CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, txcwStrandLayout strandLayout, txcwNsTableLayout tableLayout);
 
 private:
-   void WriteRowData(CadWriterWorkerBee& workerBee, const RowData& row,Float64 Hg) const;
-   bool m_isUBeam;
+   Uint32 m_RowNum;
+   Uint32 m_NonStandardCnt;
 };
+
 

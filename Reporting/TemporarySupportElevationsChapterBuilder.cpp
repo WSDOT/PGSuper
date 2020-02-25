@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -63,8 +63,12 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(CReportSpecificatio
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
+   if (nTS == 0)
+   {
+      *pPara << _T("No temporary supports modeled") << rptNewLine;
+   }
 
-   GET_IFACE2(pBroker, ITempSupport, pTempSupport);
+   GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport); // not used if no temp supports
 
    std::array<std::_tstring, 2> strMemberEnd{ _T("Start"),_T("End") };
 

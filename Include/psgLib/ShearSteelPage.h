@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,6 @@
 #include <psgLib\ShearData.h>
 
 #include <psgLib\ShearSteelGrid.h>
-#include <psgLib\HorizShearGrid.h>
 
 class PSGLIBCLASS CShearSteelPageParent
 {
@@ -61,7 +60,6 @@ public:
 	//}}AFX_DATA
 protected:
    std::unique_ptr<CShearSteelGrid> m_pGrid;
-   std::unique_ptr<CHorizShearGrid> m_pHorizGrid;
 public:
    std::_tstring m_CurGrdName;
 
@@ -83,10 +81,9 @@ protected:
 	afx_msg void OnInsertRow();
 	afx_msg void OnHelp();
    afx_msg void OnClickedSymmetrical();
-	afx_msg void OnRemoveHorizRows();
-	afx_msg void OnInsertHorizRow();
    afx_msg void OnRestoreDefaults();
-	//}}AFX_MSG
+   afx_msg void OnBnClickedAdditionalInterfaceShearBars();
+   //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    void FillBarComboBox(CComboBox* pCB);
@@ -95,9 +92,6 @@ public:
    void OnEnableDelete(bool canDelete);
    void DoRemoveRows();
    void DoInsertRow();
-   void OnEnableHorizDelete(bool canDelete);
-   void DoRemoveHorizRows();
-   void DoInsertHorizRow();
 
    CShearData2 m_ShearData;
 
@@ -112,6 +106,7 @@ protected:
 
     virtual UINT GetHelpID();
 
+public:
 };
 
 //{{AFX_INSERT_LOCATION}}

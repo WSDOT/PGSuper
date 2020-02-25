@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -532,7 +532,8 @@ BOOL CLLDFGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
                CLLDFGrid* pGrid = (CLLDFGrid*)rti.pExtra;
 
                ROWCOL nrows = pGrid->GetRowCount();
-               if (nRow<=nrows)  // don't allow overflow
+               ROWCOL ncols = pGrid->GetColCount();
+               if (nRow<=nrows && nCol<ncols)  // don't allow overflow
                {
                   CGXStyle cellStyle;
                   pGrid->GetStyleRowCol(nRow,nCol,cellStyle);

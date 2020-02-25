@@ -9,11 +9,12 @@ Bursting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00 Pamplin Creek Br    1     2     IV            32  1/2  270  21.00  14.63   8.00   8.00                                               6  40.0  6.0  4.000  5.000   2.512    -2.869     5096   0.677  0.890   1.414 -0.818 -0.064 -0.042 -0.924  82.71  215.93    0.00    0.00    0.00 
+ 44.00    6   8.00 Pamplin Creek Br    1     2     IV            32  1/2  270  21.00  14.63   8.00   8.00                                               6  40.0  6.0  4.000  5.000   2.512    -2.869     5096   0.677  0.890   1.415 -0.818 -0.064 -0.042 -0.924  82.71  215.93    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Bursting zone check failed.
 
 
@@ -88,7 +89,7 @@ Bursting zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00 Pamplin Creek Br    4     1     IV            28  1/2  270  21.32  17.47   8.00   8.00                                               6  24.0  6.0  4.000  5.000   2.392    -2.717     4886   0.678  0.889   1.232 -0.661 -0.067 -0.044 -0.772  63.30  171.40    0.00    0.00    0.00 
+ 44.00    6   8.00 Pamplin Creek Br    4     1     IV            28  1/2  270  21.32  17.47   8.00   8.00                                               6  24.0  6.0  4.000  5.000   2.392    -2.717     4886   0.678  0.889   1.233 -0.661 -0.067 -0.044 -0.772  63.30  171.40    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful

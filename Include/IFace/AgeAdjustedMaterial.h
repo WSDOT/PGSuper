@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@ interface IAgeAdjustedMaterial : IMaterial
 {
    STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IMaterials* pMaterials) = 0;
    STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IMaterials* pMaterials) = 0;
-   STDMETHOD(InitDeck)(const CGirderKey& girderKey,IMaterials* pMaterials) = 0;
+   STDMETHOD(InitDeck)(IndexType deckCastingRegionIdx,IMaterials* pMaterials) = 0;
    STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, IMaterials* pMaterials) = 0;
 };
 

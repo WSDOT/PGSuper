@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -255,7 +255,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             *pPara << rptNewLine;
             if ( j == 0 )
             {
-               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
+               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
             }
             else if ( j == 1 )
             {
@@ -263,7 +263,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             }
             else
             {
-               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
+               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
             }
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
             *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
@@ -279,7 +279,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             *pPara << rptNewLine;
             if ( j == 0 )
             {
-               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
+               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
             }
             else if ( j == 1 )
             {
@@ -287,7 +287,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             }
             else
             {
-               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
+               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
             }
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
             if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
@@ -450,7 +450,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             *pPara << rptNewLine;
             if ( j == 0 )
             {
-               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
+               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
             }
             else if ( j == 1 )
             {
@@ -458,7 +458,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             }
             else
             {
-               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
+               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
             }
 
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
@@ -475,7 +475,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             *pPara << rptNewLine;
             if ( j == 0 )
             {
-               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
+               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
             }
             else if ( j == 1 )
             {
@@ -483,7 +483,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             }
             else
             {
-               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
+               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
             }
 
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -114,13 +114,12 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
       SpanIndexType startSpanIdx, endSpanIdx;
-      pBridge->GetGirderGroupSpans(grpIdx,&startSpanIdx,&endSpanIdx);
+      pBridge->GetGirderGroupSpans(thisGirderKey.groupIndex,&startSpanIdx,&endSpanIdx);
       bool bProcessNegativeMoments = false;
       for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
       {
@@ -131,16 +130,9 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(CReportSpecification* pR
          }
       }
 
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
-      {
-         CGirderKey thisGirderKey(grpIdx,gdrIdx);
-         PoiList vPoi;
-         pPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
-         write_cracked_section_table(pBroker,pDisplayUnits, thisGirderKey, vPoi, pChapter, bProcessNegativeMoments);
-      }
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
+      write_cracked_section_table(pBroker,pDisplayUnits, thisGirderKey, vPoi, pChapter, bProcessNegativeMoments);
    }
 
    return pChapter;
@@ -212,12 +204,11 @@ void write_cracked_section_table(IBroker* pBroker,
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    for (const pgsPointOfInterest& poi : vPoi)
    {
-      CRACKEDSECTIONDETAILS csd;
-      pCrackedSection->GetCrackedSectionDetails(poi,true,&csd);
+      const CRACKEDSECTIONDETAILS* pCSD = pCrackedSection->GetCrackedSectionDetails(poi,true);
 
       Float64 h = pSectProp->GetHg(liveLoadIntervalIdx,poi);
 
-      Float64 Yt = csd.c;
+      Float64 Yt = pCSD->c;
       Float64 Yb = h - Yt;
 
       col = 0;
@@ -225,16 +216,16 @@ void write_cracked_section_table(IBroker* pBroker,
       (*table)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
       (*table)(row,col++) << dim.SetValue( Yt );
       (*table)(row,col++) << dim.SetValue( Yb );
-      (*table)(row,col++) << mom_i.SetValue( csd.Icr );
+      (*table)(row,col++) << mom_i.SetValue( pCSD->Icr );
 
       if ( bIncludeNegMoment )
       {
-         pCrackedSection->GetCrackedSectionDetails(poi,false,&csd);
-         Yt = csd.c;
+         pCSD = pCrackedSection->GetCrackedSectionDetails(poi,false);
+         Yt = pCSD->c;
          Yb = h - Yt;
          (*table)(row,col++) << dim.SetValue( Yt );
          (*table)(row,col++) << dim.SetValue( Yb );
-         (*table)(row,col++) << mom_i.SetValue( csd.Icr );
+         (*table)(row,col++) << mom_i.SetValue( pCSD->Icr );
       }
 
       row++;

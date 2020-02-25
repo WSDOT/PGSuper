@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -77,25 +77,19 @@ ReactionLocation MakeReactionLocation(PierIndexType pierIdx, PierIndexType nPier
    return location;
 }
 
-ReactionLocationContainer GetBearingReactionLocations(IntervalIndexType intervalIdx,const CGirderKey& girderKey, 
+ReactionLocationContainer CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(IntervalIndexType intervalIdx,const CGirderKey& girderKey, 
                                                       IBridge* pBridge, IBearingDesign* pBearing)
 {
    ReactionLocationContainer container;
 
    PierIndexType nPiers = pBridge->GetPierCount();
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = (girderKey.girderIndex < nGirders ? girderKey.girderIndex : nGirders-1);
-
-      CGirderKey thisGirderKey(grpIdx,gdrIdx);
-
       PierIndexType startPierIdx, endPierIdx;
-      pBridge->GetGirderGroupPiers(grpIdx,&startPierIdx,&endPierIdx);
+      pBridge->GetGirderGroupPiers(thisGirderKey.groupIndex,&startPierIdx,&endPierIdx);
 
       std::vector<PierIndexType> vPiers = pBearing->GetBearingReactionPiers(intervalIdx,thisGirderKey);
       for (const auto& pierIdx : vPiers)
@@ -146,7 +140,10 @@ ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, 
       GroupIndexType grpIdx = (aheadGroupIdx == INVALID_INDEX ? backGroupIdx : aheadGroupIdx);
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
 
-      CGirderKey thisGirderKey(grpIdx,Min(girderKey.girderIndex,nGirders-1));
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey.girderIndex, grpIdx, grpIdx, &vGirderKeys);
+      ATLASSERT(vGirderKeys.size() == 1);
+      const auto& thisGirderKey = vGirderKeys.front();
 
       PierReactionFaceType face = rftMid; // pier reactions are always for the whole pier, not just a face
       ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey);
@@ -228,7 +225,7 @@ void ProductForcesReactionAdapter::GetLiveLoadReaction(IntervalIndexType interva
                                                        VehicleIndexType* pMinConfig, VehicleIndexType* pMaxConfig)
 {
    REACTION Rmin, Rmax;
-   m_pReactions->GetLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, bIncludeLLDF, pgsTypes::fetFy, &Rmin, &Rmax, pMinConfig, pMaxConfig);
+   m_pReactions->GetLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pgsTypes::fetFy, &Rmin, &Rmax, pMinConfig, pMaxConfig);
    *pRmin = Rmin.Fy;
    *pRmax = Rmax.Fy;
 }
@@ -251,7 +248,7 @@ BearingDesignProductReactionAdapter::~BearingDesignProductReactionAdapter()
 
 ReactionLocationIter BearingDesignProductReactionAdapter::GetReactionLocations(IBridge* pBridge)
 {
-   m_Locations = GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign);
+   m_Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign);
 
    return ReactionLocationIter(m_Locations);
 }
@@ -312,12 +309,6 @@ void CombinedLsForcesReactionAdapter::GetCombinedLiveLoadReaction(IntervalIndexT
    m_pReactions->GetCombinedLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pRmin, pRmax);
 }
 
-// From ILimitStateForces
-void CombinedLsForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax)
-{
-   m_LsPointer->GetReaction(intervalIdx, limitState, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pMin, pMax);
-}
-
 /////////////////////////////////////////////
 // class CmbLsBearingDesignReactionAdapter
 /////////////////////////////////////////////
@@ -355,12 +346,6 @@ void CmbLsBearingDesignReactionAdapter::GetCombinedLiveLoadReaction(IntervalInde
    m_pBearingDesign->GetBearingCombinedLiveLoadReaction(intervalIdx, rLocation, llType, bat, bIncludeImpact, pRmin, pRmax);
 }
 
-void CmbLsBearingDesignReactionAdapter::GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
-{
-   m_pBearingDesign->GetBearingLimitStateReaction(intervalIdx, rLocation, limitState, bat, bIncludeImpact, pRmin, pRmax);
-}
-
-
 /////////////////////////////////////////////
 // class ReactionDecider
 /////////////////////////////////////////////
@@ -395,7 +380,7 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
          bIsSimple = true;
       }
 
-      if (bIsSimple || pBridge->HasCantilever(location.PierIdx) )
+      if (bIsSimple)
       {
          m_bAlwaysReport = true;
       }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -255,7 +255,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("f'c (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("fc (") + ((StressTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
@@ -305,14 +305,11 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
    PoiList vPoi;
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IIntervals, pIntervals);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx = (girderKey.groupIndex== ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-      CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
+      CSegmentKey segmentKey(thisGirderKey,ALL_SEGMENTS);
       PoiList vSegmentPoi;
       pPoi->GetPointsOfInterest(segmentKey, &vSegmentPoi);
 
@@ -324,7 +321,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
          pPoi->RemovePointsOfInterest(vSegmentPoi, POI_BOUNDARY_PIER);
       }
 
-      vPoi.insert(vPoi.end(),vSegmentPoi.begin(),vSegmentPoi.end());
+      vPoi.insert(std::end(vPoi),std::begin(vSegmentPoi),std::end(vSegmentPoi));
    }
 
    // Map POI coordinates to X-values for the graph
@@ -358,7 +355,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
    auto& xIter(xVals.cbegin());
    for ( ; iter != end; iter++, xIter++ )
    {
-      const pgsPointOfInterest& poi = *iter;
+      const pgsPointOfInterest& poi(*iter);
       Float64 value1,value2,value3,value4;
 
       switch(propertyType)
@@ -385,7 +382,8 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
       case Centroid:
          {
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
             value1 = pSectProps->GetY(sectPropType,intervalIdx,poi,pgsTypes::TopGirder);
@@ -405,7 +403,8 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
       case SectionModulus:
          {
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
             value1 = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::TopGirder);
@@ -446,8 +445,8 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
       case EffectiveFlangeWidth:
          {
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if ( intervalIdx < compositeDeckIntervalIdx )
          {
             value1 = 0;
@@ -474,11 +473,16 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
             value1 = pMaterials->GetSegmentFc(poi.GetSegmentKey(),intervalIdx);
          }
 
-         GET_IFACE(IIntervals, pIntervals);
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if (deckType != pgsTypes::sdtNone && compositeDeckIntervalIdx <= intervalIdx)
          {
-            value2 = pMaterials->GetDeckFc(intervalIdx);
+            value2 = pMaterials->GetDeckFc(deckCastingRegionIdx,intervalIdx);
+         }
+         else
+         {
+            value2 = 0;
          }
          break;
          }
@@ -497,11 +501,16 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
             value1 = pMaterials->GetSegmentEc(poi.GetSegmentKey(),intervalIdx);
          }
 
-         GET_IFACE(IIntervals,pIntervals);
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
          if (deckType != pgsTypes::sdtNone && compositeDeckIntervalIdx <= intervalIdx )
          {
-            value2 = pMaterials->GetDeckEc(intervalIdx);
+            value2 = pMaterials->GetDeckEc(deckCastingRegionIdx,intervalIdx);
+         }
+         else
+         {
+            value2 = 0;
          }
          break;
          }
@@ -544,13 +553,18 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
+   // Get max number of ducts per girder for the color range
    DuctIndexType nMaxDucts = 0;
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
-      nMaxDucts = Max(nMaxDucts,nDucts);
+      DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(thisGirderKey);
+
+      DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(thisGirderKey);;
+      nGirderDucts += nMaxSegmentDucts; // max number of ducts this girder
+      nMaxDucts = Max(nMaxDucts, nGirderDucts); // overall max number of ducts
    }
    
    grGraphColor graphColor(nMaxDucts);
@@ -558,13 +572,13 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(thisGirderKey);
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(thisGirderKey);
+      for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
       {
          COLORREF color = graphColor.GetColor(ductIdx);
 
          CString strLabel;
-         strLabel.Format(_T("Tendon %d"),LABEL_DUCT(ductIdx));
+         strLabel.Format(_T("Girder Tendon %d"),LABEL_DUCT(ductIdx));
          IndexType dataSeries = m_Graph.CreateDataSeries(strLabel,PS_SOLID,GRAPH_PEN_WEIGHT,color);
 
          auto iter(vPoi.begin());
@@ -573,22 +587,70 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
          for ( ; iter != end; iter++, xIter++ )
          {
             const pgsPointOfInterest& poi = *iter;
-            Float64 value;
-            if ( propertyType == TendonEccentricity )
+            if (pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
             {
-               value = pTendonGeom->GetEccentricity(intervalIdx,poi,ductIdx);
-            }
-            else
+               Float64 value;
+               if (propertyType == TendonEccentricity)
+               {
+                  Float64 eccX, eccY;
+                  pGirderTendonGeometry->GetGirderTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
+                  value = eccY;
+               }
+               else
+               {
+                  value = pGirderTendonGeometry->GetGirderDuctOffset(intervalIdx, poi, ductIdx);
+               }
+
+               Float64 X = *xIter;
+
+               AddGraphPoint(dataSeries, X, value);
+            } // point on duct
+         } // next point
+      } // next girder duct
+
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         CSegmentKey thisSegmentKey(thisGirderKey, segIdx);
+         DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(thisSegmentKey);
+         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+         {
+            COLORREF color = graphColor.GetColor(nGirderDucts + ductIdx);
+
+            CString strLabel;
+            strLabel.Format(_T("Segment %d Tendon %d"), LABEL_SEGMENT(segIdx), LABEL_DUCT(ductIdx));
+            IndexType dataSeries = m_Graph.CreateDataSeries(strLabel, PS_SOLID, GRAPH_PEN_WEIGHT, color);
+
+            auto iter(vPoi.begin());
+            auto end(vPoi.end());
+            auto xIter(xVals.begin());
+            for (; iter != end; iter++, xIter++)
             {
-               value = pTendonGeom->GetDuctOffset(intervalIdx,poi,ductIdx);
-            }
+               const pgsPointOfInterest& poi = *iter;
 
-            Float64 X = *xIter;
+               if (pSegmentTendonGeometry->IsOnDuct(poi))
+               {
+                  Float64 value;
+                  if (propertyType == TendonEccentricity)
+                  {
+                     Float64 eccX, eccY;
+                     pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
+                     value = eccY;
+                  }
+                  else
+                  {
+                     value = pSegmentTendonGeometry->GetSegmentDuctOffset(intervalIdx, poi, ductIdx);
+                  }
 
-            AddGraphPoint(dataSeries,X,value);
-         }
-      }
-   }
+                  Float64 X = *xIter;
+
+                  AddGraphPoint(dataSeries, X, value);
+               } // if segment
+            } // point on duct
+         } // next segment duct
+      } // next segment
+
+   } // next group
 }
 
 LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyType)
@@ -636,7 +698,7 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
       break;
 
    case Fc:
-      return _T("f'c");
+      return _T("fc");
       break;
 
    case Ec:
@@ -701,7 +763,7 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    case Fc:
       strPropertyLabel1 += _T(" Girder");
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
-      if (deckType != pgsTypes::sdtNone && pIntervals->GetCompositeDeckInterval() <= intervalIdx )
+      if (deckType != pgsTypes::sdtNone && pIntervals->GetFirstCompositeDeckInterval() <= intervalIdx )
       {
          strPropertyLabel2 += _T(" Deck");
          *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);
@@ -711,7 +773,7 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    case Ec:
       strPropertyLabel1 += _T(" Girder");
       *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
-      if (deckType != pgsTypes::sdtNone &&  pIntervals->GetCompositeDeckInterval() <= intervalIdx )
+      if (deckType != pgsTypes::sdtNone &&  pIntervals->GetFirstCompositeDeckInterval() <= intervalIdx )
       {
          strPropertyLabel2 += _T(" Deck");
          *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);

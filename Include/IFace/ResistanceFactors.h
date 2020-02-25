@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -38,13 +38,13 @@ DEFINE_GUID(IID_IResistanceFactors,
 0xa6ae2680, 0x831c, 0x4c25, 0x98, 0xbd, 0xa6, 0xfe, 0x75, 0x56, 0xa7, 0x26);
 interface IResistanceFactors : IUnknown
 {
-   virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) = 0;
-   virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl) = 0;
-   virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) = 0;
-   virtual Float64 GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type) = 0;
-   virtual Float64 GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) = 0;
+   virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const = 0;
+   virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl) const = 0;
+   virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) const = 0;
+   virtual Float64 GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type) const = 0;
+   virtual Float64 GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const = 0;
 
-   virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) = 0;
-   virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) = 0;
+   virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) const = 0;
+   virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const = 0;
 };
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -70,13 +70,11 @@ interface ILiveLoadDistributionFactors : IUnknown
    virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
    virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) const = 0;
    virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
-   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) const = 0;
 
    virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
    virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
    virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) const = 0;
    virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
-   virtual Float64 GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
 
    virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
    virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
@@ -94,8 +92,7 @@ interface ILiveLoadDistributionFactors : IUnknown
    virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,     // pos moment
                                Float64* gnM, Float64* gnM1, Float64* gnM2,     // neg moment
-                               Float64* gV,  Float64* gV1,  Float64* gV2,      // shear 
-                               Float64* gR,  Float64* gR1,  Float64* gR2 ) const = 0;// reaction
+                               Float64* gV,  Float64* gV1,  Float64* gV2 ) const = 0;      // shear 
 
    // returns mpf(#lanes/#beams)
    virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey) const = 0;

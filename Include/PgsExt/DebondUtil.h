@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -392,6 +392,9 @@ public:
    typedef StrandRowSet::iterator StrandRowIter;
 
    static StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+
+   // row set with all strand locations filled
+   static StrandRowUtil::StrandRowSet GetFullyPopulatedStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 };
 
 #endif // INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_

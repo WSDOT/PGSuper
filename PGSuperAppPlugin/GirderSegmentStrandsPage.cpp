@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -113,6 +113,7 @@ void CGirderSegmentStrandsPage::Init(CPrecastSegmentData* pSegment)
 {
    m_pSegment = pSegment;
    m_Strands = m_pSegment->Strands;
+   m_Tendons = m_pSegment->Tendons;
 
    if (m_Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
    {
@@ -134,7 +135,7 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CGirderDescPrestressPage)
 	//}}AFX_DATA_MAP
 
-   bool bPjackUserInput[3];
+   std::array<bool, 3> bPjackUserInput;
    if ( !pDX->m_bSaveAndValidate )
    {
       bPjackUserInput[pgsTypes::Straight]  = !m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight);
@@ -275,7 +276,7 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    m_pGrid->CustomInit(m_pSegment);
 
    m_DrawStrands.SubclassDlgItem(IDC_DRAW_STRANDS,this);
-   //m_DrawStrands.CustomInit(m_pSegment,&m_Strands); // we will do this in OnSetActive
+   //m_DrawStrands.CustomInit(m_pSegment,&m_Strands,&m_Tendons); // we will do this in OnSetActive
 
    // Select the strand size
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
@@ -644,7 +645,9 @@ BOOL CGirderSegmentStrandsPage::OnSetActive()
 {
    // make sure segment geometry is up to date with what ever has been changed during
    // this editing session
-   m_DrawStrands.CustomInit(m_pSegment,&m_Strands);
+   m_Strands = m_pSegment->Strands;
+   m_Tendons = m_pSegment->Tendons;
+   m_DrawStrands.CustomInit(m_pSegment,&m_Strands,&m_Tendons);
 
    OnChange();
 

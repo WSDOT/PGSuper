@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,9 @@ public:
    void SetStrandType(StrandType strandType);
    StrandType GetStrandType() const;
 
-   void SetDuct(DuctIndexType ductIdx);
+   CEffectivePrestressGraphBuilder::DuctType GetDuctType() const;
+
+   void SetDuct(CEffectivePrestressGraphBuilder::DuctType ductType,DuctIndexType ductIdx);
    DuctIndexType GetDuct() const;
 
    bool IsStressGraph();
@@ -70,6 +72,7 @@ protected:
 
    // control variables
    DuctIndexType          m_DuctIdx;
+   CEffectivePrestressGraphBuilder::DuctType m_DuctType;
 
 #ifdef _DEBUG
 public:

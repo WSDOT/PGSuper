@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,25 @@
 
 /*****************************************************************************
 INTERFACE
+IStressCheck
+
+DESCRIPTION
+Interface to get specification related information
+
+*****************************************************************************/
+// {DFA2B573-DE2F-44D0-B32E-4BAE1DF9CEAF}
+DEFINE_GUID(IID_IStressCheck,
+   0xdfa2b573, 0xde2f, 0x44d0, 0xb3, 0x2e, 0x4b, 0xae, 0x1d, 0xf9, 0xce, 0xaf);
+
+interface IStressCheck : IUnknown
+{
+   virtual std::vector<StressCheckTask> GetStressCheckTasks(const CGirderKey& girderKey,bool bDesign = false) const = 0;
+   virtual std::vector<StressCheckTask> GetStressCheckTasks(const CSegmentKey& segmentKey,bool bDesign = false) const = 0;
+   virtual std::vector<IntervalIndexType> GetStressCheckIntervals(const CGirderKey& girderKey, bool bDesign = false) const = 0;
+};
+
+/*****************************************************************************
+INTERFACE
    IAllowableStrandStress
 
    Interface to get the allowable prestressing strand stresses.
@@ -45,28 +64,28 @@ DEFINE_GUID(IID_IAllowableStrandStress,
 interface IAllowableStrandStress : IUnknown
 {
    // Returns true if strand stresses are to be checked at jacking
-   virtual bool CheckStressAtJacking() = 0;
+   virtual bool CheckStressAtJacking() const = 0;
 
    // Returns true if strand stresses are to be check immediately before prestress transfer (release)
-   virtual bool CheckStressBeforeXfer() = 0;
+   virtual bool CheckStressBeforeXfer() const = 0;
 
    // Returns true if strand stresses are to be check immediately after prestress transfer (release)
-   virtual bool CheckStressAfterXfer() = 0;
+   virtual bool CheckStressAfterXfer() const = 0;
 
    // Returns true if strand stresses are to be check after all losses have occured
-   virtual bool CheckStressAfterLosses() = 0;
+   virtual bool CheckStressAfterLosses() const = 0;
 
    // Returns the allowable strand stress at jacking
-   virtual Float64 GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const = 0;
 
    // Returns the allowable strand stress immediately prior to prestress transfer (release)
-   virtual Float64 GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const = 0;
 
    // Returns the allowable strand stress immediately after prestress transfer (release)
-   virtual Float64 GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const = 0;
 
    // Returns the allowable strand stress after all losses have occured
-   virtual Float64 GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) = 0;
+   virtual Float64 GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const = 0;
 };
 
 
@@ -84,19 +103,30 @@ DEFINE_GUID(IID_IAllowableTendonStress,
 0xfc5c901a, 0xc65b, 0x4d10, 0x98, 0xa8, 0x3b, 0x1, 0xee, 0xa8, 0x60, 0x44);
 interface IAllowableTendonStress : IUnknown
 {
-   virtual bool CheckTendonStressAtJacking() = 0;
-   virtual bool CheckTendonStressPriorToSeating() = 0;
-   virtual Float64 GetAllowableAtJacking(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetAllowablePriorToSeating(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetAllowableAfterLosses(const CGirderKey& girderKey) = 0;
+   virtual bool CheckTendonStressAtJacking() const = 0;
+   virtual bool CheckTendonStressPriorToSeating() const = 0;
 
-   virtual Float64 GetAllowableCoefficientAtJacking(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetAllowableCoefficientAfterLosses(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetSegmentTendonAllowableAtJacking(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowablePriorToSeating(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableAfterAnchorSet(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableAfterLosses(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAtJacking(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientPriorToSeating(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterAnchorSet(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterLosses(const CSegmentKey& segmentKey) const = 0;
+
+   virtual Float64 GetGirderTendonAllowableAtJacking(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowablePriorToSeating(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableAfterAnchorSet(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableAfterLosses(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientAtJacking(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const = 0;
 };
 
 /*****************************************************************************
@@ -118,81 +148,78 @@ DEFINE_GUID(IID_IAllowableConcreteStress,
 interface IAllowableConcreteStress : IUnknown
 {
    // Allowable stress for design
-   virtual Float64 GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetAllowableTensionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
+   virtual Float64 GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const = 0;
+   virtual Float64 GetAllowableTensionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const = 0;
    
    // Allowable stress for load rating
-   virtual Float64 GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation) = 0;
+   virtual Float64 GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation) const = 0;
 
-   virtual Float64 GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
-   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
+   virtual Float64 GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const = 0;
+   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const = 0;
 
    // Returns the allowable Compression stress at the specified locations along the girder
-   virtual std::vector<Float64> GetGirderAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
+   virtual std::vector<Float64> GetGirderAllowableCompressionStress(const PoiList& vPoi, const StressCheckTask& task) const = 0;
 
    // Returns the allowable Compression stress at the specified locations along the deck
-   virtual std::vector<Float64> GetDeckAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
+   virtual std::vector<Float64> GetDeckAllowableCompressionStress(const PoiList& vPoi, const StressCheckTask& task) const = 0;
 
    // Returns the allowable tensile stress at the specified locations along the girder. If bWithBondedReinforcement is true, the high allowable tension is returned if it is applicable.
    // If bInPrecompressedTensileZone is true, the allowable tensile stress for the precompressed tensile zone in closure joints is returned
-   virtual std::vector<Float64> GetGirderAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) = 0;
+   virtual std::vector<Float64> GetGirderAllowableTensionStress(const PoiList& vPoi, const StressCheckTask& task,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) const = 0;
 
    // Returns the allowable tensile stress at the specified locations along the girder. If bWithBondedReinforcement is true, the high allowable tension is returned if it is applicable.
-   virtual std::vector<Float64> GetDeckAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement) = 0;
+   virtual std::vector<Float64> GetDeckAllowableTensionStress(const PoiList& vPoi, const StressCheckTask& task,bool bWithBondededReinforcement) const = 0;
 
 
    // Returns the allowable Compression stress in a girder segment at the specified location
-   virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task) const = 0;
 
    // Returns the allowable Compression stress in a closure joint at the specified location
-   virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task) const = 0;
 
    // Returns the allowable Compression stress in the deck at the specified location
-   virtual Float64 GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task) const = 0;
 
    // Returns the allowable Compression stress in a girder segment at the specified location for a specified concrete strength
-   virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc) = 0;
+   virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc) const = 0;
 
    // Returns the allowable Compression stress in a closure joint at the specified location for a specified concrete strength
-   virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc) = 0;
+   virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc) const = 0;
 
    // Returns the allowable Compression stress in the deck at the specified location for a specified concrete strength
-   virtual Float64 GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc) = 0;
+   virtual Float64 GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc) const = 0;
 
-   virtual Float64 GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement) = 0;
-   virtual Float64 GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
-   virtual Float64 GetDeckAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement) = 0;
+   virtual Float64 GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, bool bWithBondedReinforcement) const = 0;
+   virtual Float64 GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, bool bWithBondedReinforcement, bool bInPrecompressedTensileZone) const = 0;
+   virtual Float64 GetDeckAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task, bool bWithBondedReinforcement) const = 0;
 
-   virtual Float64 GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement) = 0;
-   virtual Float64 GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) = 0;
-   virtual Float64 GetDeckAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement) = 0;
+   virtual Float64 GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc,bool bWithBondedReinforcement) const = 0;
+   virtual Float64 GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const = 0;
+   virtual Float64 GetDeckAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc,bool bWithBondedReinforcement) const = 0;
 
-   virtual Float64 GetSegmentAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetClosureJointAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetDeckAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) = 0;
+   virtual Float64 GetSegmentAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task) const = 0;
+   virtual Float64 GetClosureJointAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task) const = 0;
+   virtual Float64 GetDeckAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task) const = 0;
 
-   virtual void GetSegmentAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
-   virtual void GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
-   virtual void GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) = 0;
-
-   // Returns a vector of limit states that are to be spec-checked in for service stresses in a given interval
-   virtual std::vector<pgsTypes::LimitState> GetStressCheckLimitStates(IntervalIndexType intervalIdx) = 0;
+   virtual void GetSegmentAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const = 0;
+   virtual void GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const = 0;
+   virtual void GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const = 0;
 
    // Returns true if the stress check is applicable to this interval, limit state, and stress type
-   virtual bool IsStressCheckApplicable(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType) = 0;
+   virtual bool IsStressCheckApplicable(const CGirderKey& girderKey, const StressCheckTask& task) const = 0;
 
    // Returns true if the the allowable tension stress in the specified interval has a "with bonded reinforcement"
    // option. If bInPTZ is true, the result is for the precompressed tensile zone, otherwise it is for areas other than the
    // precompressed tensile zone. If bSegment is true the result is for a precast segment and segmentKey is for that segment
    // otherwise it is for a closure joint and segmentKey is the closure key
-   virtual bool HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) = 0;
+   virtual bool HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) const = 0;
 
    // returns true if the girder stress checks are to include intermediate, temporary
    // loading conditions
-   virtual bool CheckTemporaryStresses() = 0;
+   virtual bool CheckTemporaryStresses() const = 0;
 
    // returns true if tension stresses due to final dead load are to be evaluated
-   virtual bool CheckFinalDeadLoadTensionStress() = 0;
+   virtual bool CheckFinalDeadLoadTensionStress() const = 0;
 };
 
 
@@ -210,12 +237,12 @@ DEFINE_GUID(IID_IDebondLimits,
 0x34c607ab, 0x62d4, 0x43a6, 0xab, 0x8a, 0x6c, 0xc6, 0x6b, 0xc8, 0xc9, 0x32);
 interface IDebondLimits : IUnknown
 {
-   virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) = 0;  // % of total
-   virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) = 0; // % of total in row
-   virtual Float64 GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) = 0; // % of total debonded
-   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) = 0; 
-   virtual void    GetMaxDebondLength(const CSegmentKey& segmentKey,Float64* pLen, pgsTypes::DebondLengthControl* pControl) = 0; 
-   virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey) = 0; 
+   virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) const = 0;  // % of total
+   virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) const = 0; // % of total in row
+   virtual Float64 GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) const = 0; // % of total debonded
+   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) const = 0;
+   virtual void    GetMaxDebondLength(const CSegmentKey& segmentKey,Float64* pLen, pgsTypes::DebondLengthControl* pControl) const = 0;
+   virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey) const = 0;
 };
 
 
@@ -233,8 +260,14 @@ DEFINE_GUID(IID_IDuctLimits,
 0xc99249a5, 0x87c6, 0x4fdf, 0xac, 0x1a, 0x50, 0x2e, 0x50, 0xfa, 0xea, 0xbc);
 interface IDuctLimits : IUnknown
 {
-   virtual Float64 GetRadiusOfCurvatureLimit(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetTendonAreaLimit(const CGirderKey& girderKey) = 0;
-   virtual Float64 GetDuctSizeLimit(const CGirderKey& girderKey) = 0;
+   virtual Float64 GetSegmentTendonRadiusOfCurvatureLimit(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonAreaLimit(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentTendonDuctSizeLimit(const CSegmentKey& segmentKey) const = 0;
+
+   virtual Float64 GetGirderTendonRadiusOfCurvatureLimit(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonAreaLimit(const CGirderKey& girderKey) const = 0;
+   virtual Float64 GetGirderTendonDuctSizeLimit(const CGirderKey& girderKey) const = 0;
+
+   virtual Float64 GetTendonAreaLimit(pgsTypes::StrandInstallationType installationType) const = 0;
 };
 

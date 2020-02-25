@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -914,26 +914,12 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
       if ( !IsDensityInRange(m_LeftRailingSystem.Concrete.StrengthDensity,m_LeftRailingSystem.Concrete.Type) ||
            !IsDensityInRange(m_LeftRailingSystem.Concrete.WeightDensity,  m_LeftRailingSystem.Concrete.Type) )
       {
-         if ( m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal )
-         {
-            AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-         }
-         else
-         {
-            AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-         }
+         AfxMessageBox((m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal || m_LeftRailingSystem.Concrete.Type == pgsTypes::UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
       else if ( !IsDensityInRange(m_RightRailingSystem.Concrete.StrengthDensity,m_RightRailingSystem.Concrete.Type) ||
                 !IsDensityInRange(m_RightRailingSystem.Concrete.WeightDensity,  m_RightRailingSystem.Concrete.Type) )
       {
-         if ( m_RightRailingSystem.Concrete.Type == pgsTypes::Normal )
-         {
-            AfxMessageBox(IDS_NWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-         }
-         else
-         {
-            AfxMessageBox(IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
-         }
+         AfxMessageBox((m_RightRailingSystem.Concrete.Type == pgsTypes::Normal || m_RightRailingSystem.Concrete.Type == pgsTypes::UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
    }
 
@@ -948,7 +934,7 @@ void CBridgeDescRailingSystemPage::SetConcreteTypeLabel(UINT nID,pgsTypes::Concr
 
 bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
-   if ( type == pgsTypes::Normal )
+   if (type == pgsTypes::Normal || type == pgsTypes::UHPC)
    {
       return ( m_MinNWCDensity <= density );
    }
@@ -1025,21 +1011,12 @@ void CBridgeDescRailingSystemPage::OnEventChanged()
          }
          else
          {
-            CString strProblem;
-            if (result == TLM_OVERLAPS_PREVIOUS_EVENT )
-            {
-               strProblem = _T("This event begins before the activities in the previous event have completed.");
-            }
-            else
-            {
-               strProblem = _T("The activities in this event end after the next event begins.");
-            }
-
+            CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result);
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
             CString strMsg;
             strMsg.Format(_T("%s\n\n%s"),strProblem,strRemedy);
-            if ( AfxMessageBox(strMsg,MB_OKCANCEL | MB_ICONQUESTION) == IDOK )
+            if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
             {
                bAdjustTimeline = true;
             }

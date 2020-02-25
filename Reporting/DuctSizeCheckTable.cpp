@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,12 +69,20 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
 {
    const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeometry);
-   DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
-   if ( nDucts == 0 )
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+
+   if (nMaxSegmentDucts + nGirderDucts == 0)
    {
+      // no ducts
       return;
    }
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, size, pDisplayUnits->GetComponentDimUnit(), false );
@@ -89,12 +97,23 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
    *pChapter << pPara;
 
    // The permissible ratios, Kmax and Tmax
-   GET_IFACE2(pBroker,IDuctLimits,pDuctLimits);
-   Float64 Kmax = pDuctLimits->GetTendonAreaLimit(girderKey);
-   Float64 Tmax = pDuctLimits->GetDuctSizeLimit(girderKey);
+   GET_IFACE2(pBroker, IDuctLimits, pDuctLimits);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+      Float64 Kmax = pDuctLimits->GetSegmentTendonAreaLimit(segmentKey);
+      Float64 Tmax = pDuctLimits->GetSegmentTendonDuctSizeLimit(segmentKey);
+      (*pPara) << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+      (*pPara) << _T("The inside cross-sectional area of the segment tendon duct shall be at least ") << Kmax << _T(" times the net area of the prestress steel.") << rptNewLine;
+      (*pPara) << _T("The size of segment tendon ducts shall not exceed ") << Tmax << _T(" times the least gross concrete thickness at the duct.") << rptNewLine;
+      (*pPara) << rptNewLine;
+   }
 
-   (*pPara) << _T("The inside cross-sectional area of the duct shall be at least ") << Kmax << _T(" times the net area of the prestress steel.") << rptNewLine;
-   (*pPara) << _T("The size of ducts shall not exceed ") << Tmax << _T(" times the least gross concrete thickness at the duct.") << rptNewLine;
+   Float64 Kmax = pDuctLimits->GetGirderTendonAreaLimit(girderKey);
+   Float64 Tmax = pDuctLimits->GetGirderTendonDuctSizeLimit(girderKey);
+   (*pPara) << _T("Girder Ducts") << rptNewLine;
+   (*pPara) << _T("The inside cross-sectional area of the girder tendon duct shall be at least ") << Kmax << _T(" times the net area of the prestress steel.") << rptNewLine;
+   (*pPara) << _T("The size of girder tendon ducts shall not exceed ") << Tmax << _T(" times the least gross concrete thickness at the duct.") << rptNewLine;
    (*pPara) << rptNewLine;
 
 
@@ -113,11 +132,88 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
    (*pTable)(0,col++) << _T("Status");
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++, row++ )
+
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      CSegmentKey segmentKey(girderKey, segIdx);
+      const auto* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+
+      DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      for (DuctIndexType ductIdx = 0; ductIdx < nMaxSegmentDucts; ductIdx++, row++)
+      {
+         col = 0;
+         (*pTable)(row, col++) << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(", Duct ") << LABEL_DUCT(ductIdx);
+
+         if (ductIdx < nDucts)
+         {
+            const pgsDuctSizeArtifact* pDuctSizeArtifact = pSegmentArtifact->GetDuctSizeArtifact(ductIdx);
+
+            Float64 Apt, Aduct, Kmax;
+            pDuctSizeArtifact->GetDuctArea(&Apt, &Aduct, &Kmax);
+
+            Float64 OD, MinGrossThickness, Tmax;
+            pDuctSizeArtifact->GetDuctSize(&OD, &MinGrossThickness, &Tmax);
+
+            (*pTable)(row, col++) << area.SetValue(Aduct);
+            (*pTable)(row, col++) << area.SetValue(Apt);
+            if (IsZero(Apt))
+            {
+               (*pTable)(row, col++) << _T("-");
+            }
+            else
+            {
+               (*pTable)(row, col++) << scalar.SetValue(Aduct / Apt);
+            }
+
+            if (pDuctSizeArtifact->PassedDuctArea())
+            {
+               (*pTable)(row, col++) << RPT_PASS;
+            }
+            else
+            {
+               (*pTable)(row, col++) << RPT_FAIL;
+            }
+
+            (*pTable)(row, col++) << size.SetValue(OD);
+            (*pTable)(row, col++) << size.SetValue(MinGrossThickness);
+
+            if (IsZero(MinGrossThickness))
+            {
+               (*pTable)(row, col++) << _T("-");
+            }
+            else
+            {
+               (*pTable)(row, col++) << scalar.SetValue(OD / MinGrossThickness);
+            }
+
+            if (pDuctSizeArtifact->PassedDuctSize())
+            {
+               (*pTable)(row, col++) << RPT_PASS;
+            }
+            else
+            {
+               (*pTable)(row, col++) << RPT_FAIL;
+            }
+         }
+         else
+         {
+            (*pTable)(row, col++) << _T("-");
+            (*pTable)(row, col++) << _T("-");
+            (*pTable)(row, col++) << _T("-");
+            (*pTable)(row, col++) << _T("-");
+            (*pTable)(row, col++) << _T("-");
+            (*pTable)(row, col++) << _T("-");
+            (*pTable)(row, col++) << _T("-");
+            (*pTable)(row, col++) << _T("-");
+         }
+      }
+   }
+
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++, row++ )
    {
       col = 0;
       const pgsDuctSizeArtifact* pDuctSizeArtifact = pGirderArtifact->GetDuctSizeArtifact(ductIdx);
-      (*pTable)(row,col++) << LABEL_DUCT(ductIdx);
+      (*pTable)(row,col++) << _T("Girder Duct ") << LABEL_DUCT(ductIdx);
 
       Float64 Apt, Aduct, Kmax;
       pDuctSizeArtifact->GetDuctArea(&Apt,&Aduct,&Kmax);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -72,19 +72,16 @@ class CDistFactorEngineerImpl : public IDistFactorEngineer, public IInitialize
 public:
    virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) override;
    virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
+   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) override;
    virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) override;
    virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
-   virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) override;
-   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) override;
    virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) override;
    virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) override;
-   virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) override;
    virtual bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) override;
    virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                                Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
-                               Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
-                               Float64* gR,  Float64* gR1,  Float64* gR2 ) override;  // reaction
+                               Float64* gV,  Float64* gV1,  Float64* gV2) override;   // shear
    virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
    virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
 
@@ -94,14 +91,6 @@ protected:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidRefinedAnalysis;
-
-   struct REACTIONDETAILS : T
-   {
-      // Distribution factors for reaction at pier
-      lrfdILiveLoadDistributionFactor::DFResult gR1;
-      lrfdILiveLoadDistributionFactor::DFResult gR2;
-      Float64 gR;
-   };
 
    struct PIERDETAILS : T
    {
@@ -130,9 +119,6 @@ protected:
 
    std::map<PierGirderHashType,PIERDETAILS> m_PierLLDF[2][2]; // first index is pier face type, second index is limit state type
    void GetPierDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr,PIERDETAILS* plldf);
-
-   std::map<PierGirderHashType,REACTIONDETAILS> m_ReactionLLDF[2]; // index is limit state type
-   void GetPierReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr,REACTIONDETAILS* plldf);
 
    std::map<SpanGirderHashType,SPANDETAILS> m_SpanLLDF[2]; // index is limit state type
    void GetSpanDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr,SPANDETAILS* plldf);
@@ -208,136 +194,6 @@ Float64 CDistFactorEngineerImpl<T>::GetShearDF(const CSpanKey& spanKey,pgsTypes:
    return lldf.gV;
 }
 
-template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls)
-{
-   REACTIONDETAILS lldf;
-   GetPierReactionDF(pierIdx,gdrIdx,ls,-1,&lldf);
-   return lldf.gR;
-}
-
-template <class T>
-Float64 CDistFactorEngineerImpl<T>::GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr)
-{
-   REACTIONDETAILS lldf;
-   GetPierReactionDF(pierIdx,gdrIdx,ls,fcgdr,&lldf);
-   return lldf.gR;
-}
-
-
-template <class T>
-void CDistFactorEngineerImpl<T>::GetPierReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr,REACTIONDETAILS* plldf)
-{
-   std::map<PierGirderHashType,REACTIONDETAILS>::iterator found;
-   found = m_ReactionLLDF[LimitStateType(ls)].find(HashPierGirder(pierIdx,gdrIdx));
-   if ( found != m_ReactionLLDF[LimitStateType(ls)].end() && fcgdr == USE_CURRENT_FC )
-   {
-      *plldf = (*found).second;
-      return; // We already have the distribution factors for this girder
-   }
-
-   std::unique_ptr<lrfdLiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(pierIdx,gdrIdx,dfReaction,fcgdr,plldf) );
-
-   // get method used to compute factors, may be lever override
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
-   pgsTypes::DistributionFactorMethod df_method = pBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod();
-
-   lrfdILiveLoadDistributionFactor::Location loc;
-   loc =  plldf->bExteriorGirder ? lrfdILiveLoadDistributionFactor::ExtGirder : lrfdILiveLoadDistributionFactor::IntGirder;
-
-   try
-   {
-      lrfdTypes::LimitState lrfdls = PGSLimitStateToLRFDLimitState(ls);
-
-      if (df_method == pgsTypes::Calculated)
-      {
-         // Reaction distribution factor
-         plldf->gR1 = pLLDF->ReactionDFEx(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, lrfdls);
-
-         if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI  )
-         {
-            plldf->gR2 = pLLDF->ReactionDFEx(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, lrfdls);
-         }
-         else
-         {
-            plldf->gR2.mg = 0;
-         }
-      }
-      else if (df_method == pgsTypes::LeverRule)
-      {
-         // Reaction distribution factor
-         plldf->gR1 = pLLDF->DistributeReactionByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane);
-
-         if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
-         {
-            plldf->gR2 = pLLDF->DistributeReactionByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes);
-         }
-         else
-         {
-            plldf->gR2.mg = 0;
-         }
-      }
-      else
-      {
-         ATLASSERT(false);
-      }
-
-      // see if we need to compare with lanes/beams
-      GET_IFACE(ISpecification, pSpec);
-      GET_IFACE(ILibrary, pLib);
-      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-      if (pSpecEntry->LimitDistributionFactorsToLanesBeams())
-      {
-         // Compare results with lanes/beams and override if needed
-         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb));
-         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb));
-
-         // Reaction
-         if (plldf->gR1.mg < glb1.mg)
-         {
-            plldf->gR1.mg = glb1.mg;
-            plldf->gR1.ControllingMethod = LANES_DIV_BEAMS | LANES_BEAMS_OVERRIDE;
-            plldf->gR1.LanesBeamsData = glb1.LanesBeamsData;
-         }
-
-         if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
-         {
-            if (plldf->gR2.mg < glb2.mg)
-            {
-               plldf->gR2.mg = glb2.mg;
-               plldf->gR2.ControllingMethod = LANES_DIV_BEAMS | LANES_BEAMS_OVERRIDE;
-               plldf->gR2.LanesBeamsData = glb2.LanesBeamsData;
-            }
-         }
-      }
-
-      // controlling
-      if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
-      {
-         if ( plldf->gR1.ControllingMethod & OVERRIDE_USING_MULTILANE_FACTOR)
-         {
-            // Case where multi-lane factor is always used (e.g., TxDOT U Beams)
-            plldf->gR = plldf->gR2.mg;
-         }
-         else
-         {
-            plldf->gR = Max(plldf->gR1.mg, plldf->gR2.mg);
-         }
-      }
-      else
-      {
-         plldf->gR = plldf->gR1.mg;
-      }
-
-   }
-   catch( const lrfdXRangeOfApplicability& e)
-   {
-      HandleRangeOfApplicabilityError(e);
-   }
-
-   m_ReactionLLDF[LimitStateType(ls)].insert( std::make_pair(HashPierGirder(pierIdx,gdrIdx),*plldf) );
-}
 
 template <class T>
 void CDistFactorEngineerImpl<T>::GetPierDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr,PIERDETAILS* plldf)
@@ -1052,8 +908,7 @@ template <class T>
 bool CDistFactorEngineerImpl<T>::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                                 Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                                                 Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
-                                                Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
-                                                Float64* gR,  Float64* gR1,  Float64* gR2 )  // reaction
+                                                Float64* gV,  Float64* gV1,  Float64* gV2 )   // shear
 {
    PierIndexType pierIdx = spanKey.spanIndex;
 
@@ -1079,9 +934,6 @@ bool CDistFactorEngineerImpl<T>::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes
       *gV   = V;
       *gV1  = V;
       *gV2  = V;
-      *gR   = V;
-      *gR1  = V;
-      *gR2  = V;
    }
    else
    {
@@ -1101,13 +953,6 @@ bool CDistFactorEngineerImpl<T>::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes
       *gnM  = pdet.gM;
       *gnM1 = pdet.gM1.mg;
       *gnM2 = pdet.gM2.mg;
-
-      REACTIONDETAILS rdet;
-      GetPierReactionDF(pierIdx,spanKey.girderIndex,ls,USE_CURRENT_FC,&rdet);
-
-      *gR   = rdet.gR;
-      *gR1  = rdet.gR1.mg;
-      *gR2  = rdet.gR2.mg;
    }
 
    return true;

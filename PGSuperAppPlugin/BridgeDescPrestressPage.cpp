@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -2115,7 +2115,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
          if (st==IDNO)
          {
             // Let user cancel operation
-            box->SetCurSel(m_CurrStrandDefinitionType);
+            CDataExchange dx(this, FALSE);
+            DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
             return;
          }
          // clear debonding and strand extensions
@@ -2143,11 +2144,12 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
             if (st == IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrStrandDefinitionType);
+               CDataExchange dx(this, FALSE);
+               DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                return;
             }
 
-            harped_fill[0]=2;
+            harped_fill[0] = 2;
             num_harped++;
          }
       }
@@ -2182,7 +2184,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
                if (st==IDNO)
                {
                   // Let user cancel operation
-                  box->SetCurSel(m_CurrStrandDefinitionType);
+                  CDataExchange dx(this, FALSE);
+                  DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                   return;
                }
 
@@ -2232,7 +2235,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
             if (st == IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrStrandDefinitionType);
+               CDataExchange dx(this, FALSE);
+               DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                return;
             }
 
@@ -2268,7 +2272,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
             if (st==IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrStrandDefinitionType);
+               CDataExchange dx(this, FALSE);
+               DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                return;
             }
          }
@@ -2279,7 +2284,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
             if (st==IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrStrandDefinitionType);
+               CDataExchange dx(this, FALSE);
+               DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                return;
             }
             // clear debonding and strand extensions
@@ -2314,7 +2320,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
             if (st==IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrStrandDefinitionType);
+               CDataExchange dx(this, FALSE);
+               DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                return;
             }
 
@@ -2341,7 +2348,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
             if (st==IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrStrandDefinitionType);
+               CDataExchange dx(this, FALSE);
+               DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                return;
             }
 
@@ -2365,7 +2373,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
             if (st==IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrStrandDefinitionType);
+               CDataExchange dx(this, FALSE);
+               DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                return;
             }
          }
@@ -2376,7 +2385,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
             if (st==IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrStrandDefinitionType);
+               CDataExchange dx(this, FALSE);
+               DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                return;
             }
             // clear debonding and strand extensions
@@ -2414,7 +2424,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
             if (st == IDNO)
             {
                // Let user cancel operation
-               box->SetCurSel(m_CurrStrandDefinitionType);
+               CDataExchange dx(this, FALSE);
+               DDX_CBItemData(&dx, IDC_STRAND_INPUT_TYPE, m_CurrStrandDefinitionType);
                return;
             }
             // clear debonding and strand extensions
@@ -2945,7 +2956,7 @@ void CGirderDescPrestressPage::EditDirectSelect()
    GET_IFACE2( pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    // Get current offset input values - dialog will force in bounds if needed

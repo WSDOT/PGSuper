@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -90,7 +90,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
       Float64 height = pSectProp->GetHg(releaseIntervalIdx,poi);
       GET_IFACE2(pBroker,IShapes,pShapes);
       CComPtr<IShape> shape;
-      pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,pgsTypes::hspZeroHaunch,&shape);
+      pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
       CString strMsg;
       CComPtr<IPoint2d> point;

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,11 +26,20 @@
 #include "TxDOTCadExporter.h"
 #include "TxDOTCadWriter.h"
 #include "ExportCadData.h" 
+#include "TxDOTLegacyCadWriter.h"
+
+#include "TxExcelDataExporter.h"
+#include "TxCSVDataExporter.h"
 
 #include <EAF\EAFAutoProgress.h>
+#include <EAF\EAFDocument.h>
+
 #include <IFace\Selection.h>
-#include <IFace\TxDOTCadExport.h>
+#include <IFace\TestFileExport.h>
+
 #include <MfcTools\XUnwind.h>
+#include <MFCTools\VersionInfo.h>
+#include <MFCTools\AutoRegistry.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -55,6 +64,40 @@ bool DoesFileExist(const CString& filename)
 // void raised_strand_research(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
 
 // CTxDOTCadExporter
+
+HRESULT CTxDOTCadExporter::FinalConstruct()
+{
+   CEAFApp* pApp = EAFGetApp();
+   CString str = pApp->GetAppLocation();
+
+   CString strDefaultLocation;
+   if (-1 != str.Find(_T("RegFreeCOM")))
+   {
+      // application is on a development box
+      strDefaultLocation = (_T("\\ARP\\PGSuper\\TxDOTAgent\\TxCADExport\\"));
+   }
+   else
+   {
+      strDefaultLocation = str + CString(_T("\\TxCadExport\\"));
+   }
+
+   // Get the user's setting, using the local machine setting as the default if not present
+   m_strTemplateLocation = pApp->GetProfileString(_T("Settings"),_T("TxCADExportTemplateFolder"),strDefaultLocation);
+
+   // make sure we have a trailing backslash
+   if (_T('\\') != m_strTemplateLocation.GetAt(m_strTemplateLocation.GetLength() - 1))
+   {
+      m_strTemplateLocation += _T("\\");
+   }
+
+   return S_OK;
+}
+
+void CTxDOTCadExporter::FinalRelease()
+{
+   CEAFApp* pApp = EAFGetApp();
+   VERIFY(pApp->WriteProfileString(_T("Settings"), _T("TxCADExportTemplateFolder"), m_strTemplateLocation));
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // IPGSuperExporter
@@ -84,24 +127,6 @@ STDMETHODIMP CTxDOTCadExporter::GetCommandHintText(BSTR*  bstrText) const
 
 STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 {
-	//Create CAD data text file using name specified by user.			   
-	//																   
-	//jam.15aug2005  -  Created.								    	   
-	//																   
-	//User is first presented with a modal dialog for entry of span	   
-	//number and girder number. If a valid span/girder id pair is        
-	//entered, the the user is prompted for a filename.  When a valid    
-	//filename is entered, data is gathered from various agents of the   
-	//the application.  Once the data has been successfully gathered,    
-	//a new file is created, and the data is written to the file		   
-	//according to a strict predefined format.             		
-
-	CString default_name("CADexport.txt");
-   CString initial_filespec;
-   CString initial_dir;
-	INT_PTR	stf = IDOK;
-	TCHAR	strFilter[] = {_T("CAD Export Files (*.txt)|*.txt||")};
-
    GET_IFACE2(pBroker,ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
@@ -126,57 +151,176 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
    std::vector<CGirderKey> girderKeys;
    girderKeys.push_back(girderKey);
 
-	/* Create ExportCADData dialog box object */
-   BOOL bIsExtended = FALSE;
+	// Create ExportCADData dialog box object 
+   exportCADData::ctxFileFormatType fileFormat = exportCADData::ctxExcel;;
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	   exportCADData  caddlg (pBroker, nullptr);
       caddlg.m_GirderKeys = girderKeys;
-      caddlg.m_IsExtended = bIsExtended;
+      caddlg.m_FileFormatType = fileFormat;
 
-	   /* Open the ExportCADData dialog box */
-	   stf = caddlg.DoModal();
-	   if (stf == IDOK)
+	   // Open the ExportCADData dialog box 
+	   
+	   if (caddlg.DoModal() == IDOK)
 	   {
-		   /* Get user's span & beam id values */
+		   // Get user's span & beam id values 
 		   girderKeys  = caddlg.m_GirderKeys;
-         bIsExtended = caddlg.m_IsExtended;
+         fileFormat = caddlg.m_FileFormatType;
 	   }
 	   else
 	   {
-		   /* Just do nothing if CANCEL */
+		   // Just do nothing if CANCEL
 	       return S_OK;
 	   }
    }
 
-	/* Create SAVEAS file dialog box object */
-	CFileDialog  fildlg(FALSE,_T("txt"),default_name,OFN_HIDEREADONLY, strFilter);
+   // Generic class for writing CAD format (Excel or CSV) to a specific CTxDataExporter
+   TxDOTCadWriter cadWriter;
 
-	/* Open the SAVEAS dialog box */
-	stf = fildlg.DoModal();
-	if (stf == IDOK)
+   // Get strand layout and do some error checking
+   TxDOTCadWriter::txcwStrandLayout strand_layout = cadWriter.GetStrandLayoutType(pBroker, girderKeys);
+   if (strand_layout == TxDOTCadWriter::tslMixed)
+   {
+      ::AfxMessageBox(_T("Error: The list of girders selected for export have a mix of straight and harped strands. CAD export cannot continue."));
+      return E_FAIL;
+   }
+   else if (strand_layout == TxDOTCadWriter::tslDebondedIBeam)
+   {
+      ::AfxMessageBox(_T("Error: The list of girders selected for export contains an I Beam with debonded strands. This is an invalid strand layout for CAD export. CAD export cannot continue."));
+      return E_FAIL;
+   }
+
+   // Factory the specific file format exporter and its associated information
+   std::unique_ptr<CTxDataExporter> pExporter;
+   TxDOTCadWriter::txcwNsTableLayout table_layout;
+   CString default_name;
+   CString strFilter;
+   CString strSuffix;
+
+   if (exportCADData::ctxLegacy == fileFormat)
+   {
+#pragma Reminder("Legacy TxDOT CAD Export is a hack an may no longer be useful. Remove this option at Version 6.0 if confirmed.")
+      // This doesn't fit with our factory pattern, but the plan is to delete this functionality in the near future
+      // Use the File and girder selection UI from this function and then jump to our old legacy version
+      default_name = _T("CADexport.txt");
+      strFilter = _T("Legacy Text File (*.txt)|*.txt||");
+      strSuffix = _T("txt");
+   }
+   else if (exportCADData::ctxExcel == fileFormat)
+   {
+      table_layout = TxDOTCadWriter::ttlnTwoTables;
+      default_name = _T("CADexport.xlsx");
+      strFilter = _T("CAD Export Excel Worksheet (*.xlsx)|*.xlsx||");
+      strSuffix = _T("xlsx");
+
+      // Determine which template file to open
+      CString templateFolder = this->GetExcelTemplateFolderLocation();
+      CString templateName;
+      if (strand_layout == TxDOTCadWriter::tslHarped)
+      {
+         templateName = templateFolder + _T("CADExport-Harped.xltx");
+      }
+      else
+      {
+         templateName = templateFolder + _T("CADExport-Straight.xltx");
+      }
+
+      if (!DoesFileExist(templateName))
+      {
+         CString errMsg = CString(_T("The Excel template file at ")) + templateName + CString(_T(" does not exist. This is likely an installation problem. CAD export cannot continue."));
+         ::AfxMessageBox(errMsg);
+         return E_FAIL;
+      }
+
+      // Make the exporter
+      auto pExcelExporter = std::make_unique<CTxExcelDataExporter>();
+      pExcelExporter->InitializeExporter(templateName);
+
+      // move to base class ptr
+      pExporter = std::move(pExcelExporter);
+   }
+   else if (exportCADData::ctxCSV == fileFormat)
+   {
+      table_layout = TxDOTCadWriter::ttlnSingleTable;
+      default_name = _T("CADexport.txt");
+      strFilter = _T("Semicolon Separated Value text File (*.txt)|*.txt||");
+      strSuffix = _T("txt");
+
+      // Make CSV exporter and give it the list of columns in its table
+      auto pCSVDataExporter = std::make_unique<CTxCSVDataExporter>();
+
+      pCSVDataExporter->SetSeparator(_T(";")); 
+
+      // Main table
+      std::vector<std::_tstring> cols;
+      if (strand_layout == TxDOTCadWriter::tslHarped)
+      {
+         cols = std::vector<std::_tstring>({ _T("StructureName"),_T("SpanNum"),_T("GdrNum"),_T("GdrType"),_T("NonStd"),_T("NStot"),_T("Size"),_T("Strength"),_T("eCL"),_T("eEnd"),_T("B_1"),
+                                            _T("NH"),_T("ToEnd"),_T("B_2"),_T("FCI"),_T("FC"),_T("B_3"),_T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear"),_T("NSArrangement") });
+      }
+      else
+      {
+         cols = std::vector<std::_tstring>({ _T("StructureName"),_T("SpanNum"),_T("GdrNum"),_T("GdrType"),_T("NonStd"),_T("NStot"),_T("Size"),_T("Strength"),_T("eCL"),_T("eEnd"),
+                                             _T("NDBtot"),_T("DBBotDist"),_T("NSRow"),_T("NDBRow"),_T("DB_3"),_T("DB_6"),_T("DB_9"),_T("DB_12"),_T("DB_15"),_T("FCI"),_T("FC"),_T("B_3"),
+                                             _T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear"),_T("NSArrangement") });
+      }
+
+      pCSVDataExporter->InitializeTable(1, cols);
+
+      // move to base class ptr
+      pExporter = std::move(pCSVDataExporter);
+   }
+   else
+   {
+      ATLASSERT(0); 
+      return E_FAIL;
+   }
+
+   // Create SAVEAS file dialog box object 
+	CFileDialog  fildlg(FALSE,strSuffix,default_name,OFN_HIDEREADONLY, strFilter);
+
+	// Open the SAVEAS dialog box
+	if ( fildlg.DoModal() == IDOK)
 	{
-		/* Get full pathname of selected file */
+		// Get full pathname of selected file 
 		CString file_path = fildlg.GetPathName();
 
-		/* See if the file currently exists */
+		// See if the file currently exists 
 		if (DoesFileExist(file_path))
 		{
-			/* See if the user wants to overwrite file */
+			// See if the user wants to overwrite file 
 			CString msg(_T(" The file: "));
 			msg += file_path + _T(" exists. Overwrite it?");
 			int stm = AfxMessageBox(msg,MB_YESNOCANCEL|MB_ICONQUESTION);
-			if (stm != IDYES) 
+         if (stm != IDYES)
+         {
+            pExporter->Fail();
             return S_OK;
+         }
+         else
+         {
+            if (0 == ::DeleteFile( file_path ))
+            {
+               CString errMsg = CString(_T("Error deleting the file: \" ")) + file_path + CString(_T(" \". Could it be open in another program (e.g., Excel)? CAD export cannot continue."));
+               ::AfxMessageBox(errMsg);
+               pExporter->Fail();
+               return E_FAIL;
+            } 
+         }
 		}
+
+      if (exportCADData::ctxLegacy == fileFormat)
+      {
+#pragma Reminder("Legacy TxDOT CAD Export is a hack. Consider removing this option at Version 6.0")
+         // We have our file name and girder list. Create Legacy format in its own function so it can be removed later
+         return TxDOT_WriteLegacyCADDataToFile(file_path, pBroker, girderKeys);
+      }
 
       bool did_throw=false;
 
       // Create progress window in own scope
       try
       {
-	      /* Create progress bar (before needing one) to remain alive during this task */
-	      /* (otherwise, progress bars will be repeatedly created & destroyed on the fly) */
          GET_IFACE2(pBroker,IProgress,pProgress);
 
          bool multi = girderKeys.size()>1;
@@ -186,38 +330,29 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          if (multi)
             pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
 
-		   /* Open/create the specified text file */
-      	FILE	*fp = nullptr;
-         if (_tfopen_s(&fp,LPCTSTR(file_path), _T("w+")) != 0 || fp == nullptr)
-         {
-			   AfxMessageBox (_T("Warning: File Cannot be Created."));
-			   return S_OK;
-		   }
-
-         // dialog can only ask for normal or extended format
-         TxDOTCadExportFormatType format = bIsExtended ? tcxTest : tcxNormal;
-
-	      /* Write CAD data to text file */
+	      // Write CAD data to text file
+         TxDOTCadWriter cadWriter;
          for (std::vector<CGirderKey>::iterator it = girderKeys.begin(); it!= girderKeys.end(); it++)
          {
             CGirderKey& girderKey(*it);
 
-	         if (CAD_SUCCESS != TxDOT_WriteCADDataToFile(fp, pBroker, girderKey, format,true) )
+	         if (CAD_SUCCESS != cadWriter.WriteCADDataToFile(*pExporter, pBroker, girderKey, strand_layout, table_layout) )
             {
 		         AfxMessageBox (_T("Warning: An error occured while writing to File"));
+               pExporter->Fail();
 		         return S_OK;
             }
 
             pProgress->Increment();
          }
 
-		   /* Close the open text file */
-		   fclose (fp);
-
-//         pProgress->UpdateMessage(_T("Writing Top Strand Research Data"));
-//         raised_strand_research(pBroker, girderKeys);
-
-
+		   // Close the open file
+         if (!pExporter->Commit(file_path))
+         {
+            AfxMessageBox(_T("File Creation Aborted"), MB_ICONINFORMATION | MB_OK);
+            pExporter->Fail();
+            return E_FAIL;
+         }
       } // autoprogress scope
       catch(...)
       {
@@ -226,21 +361,107 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          throw; 
       }
 
-		/* Notify completion */
+		// Notify completion 
 	   CString msg(_T("File: "));
-	   msg += file_path + _T(" creation complete.");
+	   msg += file_path + _T(" file created successfully.");
       AfxMessageBox(msg,MB_ICONINFORMATION|MB_OK);
 
+//         pProgress->UpdateMessage(_T("Writing Top Strand Research Data"));
+//         raised_strand_research(pBroker, girderKeys);
 	}
+
    return S_OK;
 }
 
+//////////////////////////////////////////////////
+// IPGSDocumentation
+STDMETHODIMP CTxDOTCadExporter::GetDocumentationSetName(BSTR* pbstrName) const
+{
+   CComBSTR bstrDocSetName(_T("TxCADExport"));
+   bstrDocSetName.CopyTo(pbstrName);
+   return S_OK;
+}
+
+STDMETHODIMP CTxDOTCadExporter::LoadDocumentationMap()
+{
+   CComBSTR bstrDocSetName;
+   GetDocumentationSetName(&bstrDocSetName);
+
+   CString strDocSetName(OLE2T(bstrDocSetName));
+
+   CEAFApp* pApp = EAFGetApp();
+
+   CString strDocumentationURL = GetDocumentationURL();
+
+   CString strDocMapFile = EAFGetDocumentationMapFile(strDocSetName,strDocumentationURL);
+
+   VERIFY(EAFLoadDocumentationMap(strDocMapFile,m_HelpTopics));
+   return S_OK;
+}
+
+STDMETHODIMP CTxDOTCadExporter::GetDocumentLocation(UINT nHID,BSTR* pbstrURL) const
+{
+   auto found = m_HelpTopics.find(nHID);
+   if ( found == m_HelpTopics.end() )
+   {
+      return E_FAIL;
+   }
+
+   CString strURL;
+   strURL.Format(_T("%s%s"),GetDocumentationURL(),found->second);
+   CComBSTR bstrURL(strURL);
+   bstrURL.CopyTo(pbstrURL);
+   return S_OK;
+}
+
+CString CTxDOTCadExporter::GetDocumentationURL() const
+{
+   CComBSTR bstrDocSetName;
+   GetDocumentationSetName(&bstrDocSetName);
+   CString strDocSetName(OLE2T(bstrDocSetName));
+
+   CEAFApp* pApp = EAFGetApp();
+   CString strDocumentationRootLocation = pApp->GetDocumentationRootLocation();
+
+   CString strDocumentationURL;
+   strDocumentationURL.Format(_T("%s%s/"), strDocumentationRootLocation, strDocSetName);
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CVersionInfo verInfo;
+   CString strAppName = AfxGetAppName(); // needs module state
+   strAppName += _T(".dll");
+   verInfo.Load(strAppName);
+
+   CString strVersion = verInfo.GetProductVersionAsString(false);
+
+   std::_tstring v(strVersion);
+   auto count = std::count(std::begin(v), std::end(v), _T('.'));
+
+   for (auto i = 0; i < count - 1; i++)
+   {
+      int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
+      strVersion = strVersion.Left(pos);
+   }
+   CString strURL;
+   strURL.Format(_T("%s%s/"), strDocumentationURL, strVersion);
+   strDocumentationURL = strURL;
+
+   return strDocumentationURL;
+}
+
+CString CTxDOTCadExporter::GetExcelTemplateFolderLocation() const
+{
+   return m_strTemplateLocation;
+}
+
+
+/*
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\Artifact.h>
 #include <PgsExt\GirderArtifact.h>
 
-/*
 void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);

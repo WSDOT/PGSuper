@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -235,7 +235,7 @@ void CLocationGraphController::FillGroupCtrl(bool bInit)
       curSel = 0;
       m_GirderKey.groupIndex = 0;
    }
-   else if ( nGroups < m_GirderKey.groupIndex )
+   else if ( nGroups <= m_GirderKey.groupIndex )
    {
       curSel = pcbGroup->GetCount()-1;
       m_GirderKey.groupIndex = nGroups-1;

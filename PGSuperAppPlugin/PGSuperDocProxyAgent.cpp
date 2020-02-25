@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -112,6 +112,7 @@ void CPGSuperDocProxyAgent::CreateStatusBar()
    pFrame->SetStatusBar(pStatusBar);
 
    m_pMyDocument->UpdateAnalysisTypeStatusIndicator();
+   m_pMyDocument->UpdateProjectCriteriaIndicator();
    m_pMyDocument->SetModifiedFlag(m_pMyDocument->IsModified());
    m_pMyDocument->EnableAutoCalc(m_pMyDocument->IsAutoCalcEnabled());
 }
@@ -809,6 +810,7 @@ HRESULT CPGSuperDocProxyAgent::OnSpecificationChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
+   m_pMyDocument->UpdateProjectCriteriaIndicator();
 
    FireEvent( 0, HINT_SPECCHANGED, nullptr );
    return S_OK;
@@ -1227,6 +1229,11 @@ bool CPGSuperDocProxyAgent::EditMomentLoadByID(LoadIDType loadID)
 bool CPGSuperDocProxyAgent::EditTimeline()
 {
    return m_pMyDocument->EditTimeline();
+}
+
+bool CPGSuperDocProxyAgent::EditCastDeckActivity()
+{
+   return m_pMyDocument->EditCastDeckActivity();
 }
 
 UINT CPGSuperDocProxyAgent::GetStdToolBarID()

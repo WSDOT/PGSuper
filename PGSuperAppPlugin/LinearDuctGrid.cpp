@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -154,9 +154,36 @@ void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
 	this->GetParam( )->EnableUndo(TRUE);
 }
 
-void CLinearDuctGrid::GetData(CLinearDuctGeometry& ductGeometry)
+void CLinearDuctGrid::SetMeasurementType(CLinearDuctGeometry::MeasurementType mt)
 {
-   ductGeometry.Clear(); // make sure there aren't any points in the geometry object
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+
+   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
+   const CGirderKey& girderKey = pParent->GetGirderKey();
+
+   // convert the duct geometry to the new measurement type
+   Float64 Lg = pBridge->GetGirderLength(girderKey);
+   m_DuctGeometry.ConvertMeasurementType(mt, Lg);
+
+   // put the data back in the grid
+   SetData(m_DuctGeometry);
+
+   if (m_pCallback)
+   {
+      m_pCallback->OnDuctChanged();
+   }
+}
+
+CLinearDuctGeometry::MeasurementType CLinearDuctGrid::GetMeasurementType() const
+{
+   return m_DuctGeometry.GetMeasurementType();
+}
+
+CLinearDuctGeometry CLinearDuctGrid::GetData()
+{
+   m_DuctGeometry.Clear();
 
    ROWCOL nRows = GetRowCount();
    for ( ROWCOL row = 1; row <= nRows; row++ )
@@ -164,8 +191,10 @@ void CLinearDuctGrid::GetData(CLinearDuctGeometry& ductGeometry)
       Float64 location,offset;
       CLinearDuctGeometry::OffsetType offsetType;
       GetPoint(row,&location,&offset,&offsetType);
-      ductGeometry.AddPoint(location,offset,offsetType);
+      m_DuctGeometry.AddPoint(location,offset,offsetType);
    }
+
+   return m_DuctGeometry;
 }
 
 void CLinearDuctGrid::SetData(const CLinearDuctGeometry& ductGeometry)
@@ -176,6 +205,8 @@ void CLinearDuctGrid::SetData(const CLinearDuctGeometry& ductGeometry)
    {
 	   RemoveRows(1,nRows);
    }
+
+   m_DuctGeometry = ductGeometry;
 
    CollectionIndexType nPoints = ductGeometry.GetPointCount();
    InsertRows(1,(ROWCOL)nPoints);
@@ -229,55 +260,28 @@ void CLinearDuctGrid::AddPoint()
 
 void CLinearDuctGrid::DeletePoint()
 {
-#pragma Reminder("UPDATE: can't delete last row")
-
-	CGXRangeList* pSelList = GetParam()->GetRangeList();
-	if (pSelList->IsAnyCellFromCol(0) && pSelList->GetCount() == 1)
+   CRowColArray awRows;
+   ROWCOL nSelRows = GetSelectedRows(awRows);
+   if (0 < nSelRows)
 	{
-		CGXRange range = pSelList->GetHead();
-		range.ExpandRange(1, 0, GetRowCount(), 0);
-		RemoveRows(range.top, range.bottom);
+      BOOL bUndoState = GetParam()->IsEnableUndo();
+      GetParam()->EnableUndo(TRUE);
+
+      for (int i = nSelRows-1; 0 <= i; i--)
+      {
+         RemoveRows(awRows[i],awRows[i]);
+      }
+
+      CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
+      if (pParent->GetMeasurementType() == CLinearDuctGeometry::FromPrevious && !UpdateLastRow())
+      {
+         AfxMessageBox(m_sWarningText);
+         Undo();
+      }
+      GetParam()->EnableUndo(bUndoState);
 	}
 
    SetDeleteButtonState();
-
-   if ( m_pCallback )
-   {
-      m_pCallback->OnDuctChanged();
-   }
-}
-
-void CLinearDuctGrid::SetMeasurementType(CLinearDuctGeometry::MeasurementType mt)
-{
-   CLinearDuctGeometry ductGeometry;
-   ductGeometry.SetMeasurementType(mt); // this is important.. want the current state
-   // to be opposite what we will be setting it to below.
-
-   // set the duct geometry type to the opposite value than it is getting set to
-   // this was the value before the combo box selection changed
-   if ( mt == CLinearDuctGeometry::AlongGirder )
-   {
-      ductGeometry.SetMeasurementType(CLinearDuctGeometry::FromPrevious);
-   }
-   else
-   {
-      ductGeometry.SetMeasurementType(CLinearDuctGeometry::AlongGirder);
-   }
-   GetData(ductGeometry);
-
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-
-   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
-   const CGirderKey& girderKey = pParent->GetGirderKey();
-
-   // convert the duct geometry to the new measurement type
-   Float64 Lg = pBridge->GetGirderLength(girderKey);
-   ductGeometry.ConvertMeasurementType(mt,Lg);
-
-   // put the data back in the grid
-   SetData(ductGeometry);
 
    if ( m_pCallback )
    {
@@ -371,16 +375,6 @@ void CLinearDuctGrid::SetRowStyle(ROWCOL nRow)
    	.SetChoiceList(_T("Bottom Girder\nTop Girder"))
 		.SetValue(0L)
       );
-
-   if ( nRow == 1 || nRow == GetRowCount() )
-   {
-      // first row or last row... location is not editable
-      SetStyleRange(CGXRange(nRow,nLocationCol,nRow,nUnitCol), CGXStyle()
-         .SetEnabled(FALSE)
-         .SetInterior(::GetSysColor(COLOR_BTNFACE))
-         .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
-         );
-   }
 }
 
 CString CLinearDuctGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
@@ -411,12 +405,31 @@ BOOL CLinearDuctGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFla
 
 BOOL CLinearDuctGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
 {
+   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
+   if (nCol == 1 && pParent->GetMeasurementType() == CLinearDuctGeometry::FromPrevious)
+   {
+      if (!UpdateLastRow())
+      {
+         return FALSE;
+      }
+   }
+
    if ( m_pCallback )
    {
       m_pCallback->OnDuctChanged();
    }
 
    return CGXGridWnd::OnEndEditing(nRow,nCol);
+}
+
+void CLinearDuctGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
+{
+   if (m_pCallback)
+   {
+      m_pCallback->OnDuctChanged();
+   }
+
+   __super::OnModifyCell(nRow, nCol);
 }
 
 void CLinearDuctGrid::SetDeleteButtonState()
@@ -433,10 +446,8 @@ void CLinearDuctGrid::SetDeleteButtonState()
       // which rows are selected
       CRowColArray awRows;
       ROWCOL nSelRows = GetSelectedRows(awRows);
-      if ( 0 < nSelRows && (awRows[0] != 1 && awRows[nSelRows-1] != GetRowCount()) )
+      if ( 0 < nSelRows )
       {
-         // rows can be deleted if the first and last rows are not selected
-         // (first and last row can never be deleted)
          pParent->EnableDeleteBtn(TRUE);
       }
       else
@@ -444,4 +455,40 @@ void CLinearDuctGrid::SetDeleteButtonState()
          pParent->EnableDeleteBtn(FALSE);
       }
    }
+}
+
+BOOL CLinearDuctGrid::UpdateLastRow()
+{
+   CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
+   ATLASSERT(pParent->GetMeasurementType() == CLinearDuctGeometry::FromPrevious);
+
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+
+   const CGirderKey& girderKey = pParent->GetGirderKey();
+   Float64 Lg = pBridge->GetGirderLength(girderKey);
+
+   Float64 X = 0;
+   ROWCOL nRows = GetRowCount();
+   for (ROWCOL row = 1; row < nRows; row++)
+   {
+      Float64 location, offset;
+      CLinearDuctGeometry::OffsetType offsetType;
+      GetPoint(row, &location, &offset, &offsetType);
+      X += location;
+   }
+
+   Float64 lastDistance = Lg - X;
+   if (lastDistance < 0)
+   {
+      m_sWarningText = _T("Duct is longer than girder. Adjust duct geometry.");
+      return FALSE;
+   }
+
+   Float64 location, offset;
+   CLinearDuctGeometry::OffsetType offsetType;
+   GetPoint(nRows, &location, &offset, &offsetType);
+   FillRow(nRows, lastDistance, offset, offsetType);
+   return TRUE;
 }

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -76,8 +76,9 @@ BOOL CAssumedExcessCamberByBridgeDlg::OnInitDialog()
    CEditHaunchDlg* pParent = (CEditHaunchDlg*)GetParent();
    if (!pParent->IsAssumedExcessCamberEnabled())
    {
-      CWnd* pWnd = GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER);
-      pWnd->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL)->EnableWindow(FALSE);  
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_UNITS)->EnableWindow(FALSE);
    }
    CDialog::OnInitDialog();
 

@@ -208,6 +208,9 @@
     <ClCompile Include="StdAfx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TxDOTSpreadSlabBeamDistFactorEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\AgeAdjustedMaterial.h">
@@ -465,6 +468,9 @@
     <ClInclude Include="..\Include\Plugins\ConfigureStrandMover.h">
       <Filter>IFace</Filter>
     </ClInclude>
+    <ClInclude Include="TxDOTSpreadSlabBeamDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Res\boxbeam.ico">
@@ -681,6 +687,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="VoidedSlabFamily.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="TxDOTSpreadSlabBeamDistFactorEngineer.rgs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

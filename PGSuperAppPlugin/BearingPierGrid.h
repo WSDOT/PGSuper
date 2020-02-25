@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2015  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -189,7 +189,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
 
          bd.Spacing = val;
 
-         if (val < 0.0)
+         if (val <= 0.0)
          {
             AfxMessageBox(_T("Bearing spacing must be greater than zero"), MB_ICONEXCLAMATION);
             pGrid->SetCurrentCell(row, m_BearingSpacingCol, GX_SCROLLINVIEW | GX_DISPLAYEDITWND);
@@ -214,7 +214,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
 
       if (val < 0.0)
       {
-         AfxMessageBox(_T("Bearing length must be greater than zero"), MB_ICONEXCLAMATION);
+         AfxMessageBox(_T("Bearing length must be zero or greater"), MB_ICONEXCLAMATION);
          pGrid->SetCurrentCell(row, m_BearingLengthCol, GX_SCROLLINVIEW | GX_DISPLAYEDITWND);
          pDX->Fail();
       }
@@ -238,7 +238,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
 
          if (val < 0.0)
          {
-            AfxMessageBox(_T("Bearing Width must be greater than zero"), MB_ICONEXCLAMATION);
+            AfxMessageBox(_T("Bearing Width must be zero or greater"), MB_ICONEXCLAMATION);
             pGrid->SetCurrentCell(row, m_BearingWidthCol, GX_SCROLLINVIEW | GX_DISPLAYEDITWND);
             pDX->Fail();
          }
@@ -262,7 +262,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
 
       if (val < 0.0)
       {
-         AfxMessageBox(_T("Bearing Height must be greater than zero"), MB_ICONEXCLAMATION);
+         AfxMessageBox(_T("Bearing Height must be zero or greater"), MB_ICONEXCLAMATION);
          pGrid->SetCurrentCell(row, m_BearingHeightCol, GX_SCROLLINVIEW | GX_DISPLAYEDITWND);
          pDX->Fail();
       }
@@ -284,7 +284,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
 
       if (val < 0.0)
       {
-         AfxMessageBox(_T("Bearing Recess Height must be greater than zero"), MB_ICONEXCLAMATION);
+         AfxMessageBox(_T("Bearing Recess Height must be zero or greater"), MB_ICONEXCLAMATION);
          pGrid->SetCurrentCell(row, m_BearingRecessHeightCol, GX_SCROLLINVIEW | GX_DISPLAYEDITWND);
          pDX->Fail();
       }
@@ -306,7 +306,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
 
       if (val < 0.0)
       {
-         AfxMessageBox(_T("Bearing Recess Length must be greater than zero"), MB_ICONEXCLAMATION);
+         AfxMessageBox(_T("Bearing Recess Length must be zero or greater"), MB_ICONEXCLAMATION);
          pGrid->SetCurrentCell(row, m_BearingRecessLengthCol, GX_SCROLLINVIEW | GX_DISPLAYEDITWND);
          pDX->Fail();
       }
@@ -329,7 +329,7 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
 
       if (val < 0.0)
       {
-         AfxMessageBox(_T("Bearing Sole Plate must be greater than zero"), MB_ICONEXCLAMATION);
+         AfxMessageBox(_T("Bearing Sole Plate must be zero or greater"), MB_ICONEXCLAMATION);
          pGrid->SetCurrentCell(row, m_BearingSolePlateCol, GX_SCROLLINVIEW | GX_DISPLAYEDITWND);
          pDX->Fail();
       }

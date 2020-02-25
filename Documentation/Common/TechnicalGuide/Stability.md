@@ -11,13 +11,13 @@ Several options are provided to customize the stress and stability calculations 
 
 Analysis of stresses and stability during lifting and hauling is described in the following papers:
 * "Recommended Practice for Lateral Stability of Precast, Prestressed Concrete Bridge Girders", PCI Document CB-02-16-E, 1st Edition.
-* ["Lateral Stability of Long Prestressed Concrete Beams - Part 1", Robert F. Mast, P.E., PCI Journal, January-February 1989 Edition](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/1989/DOI_Articles/jl-89-january-february-3.pdf) 
-* ["Lateral Stability of Long Prestressed Concrete Beams - Part 2", Robert F. Mast, P.E., PCI Journal, January-February 1993 Edition](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/1993/DOI_Articles/jl-93-january-february-6.pdf)
-* ["Handling and Shipping of Long Span Bridge Beams", George Laszlo, P.E. and Richard R. Imper, P.E., PCI Journal, November-December 1987 Edition](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/1987/DOI_Articles/jl-87-november-december-6.pdf)
+* ["Lateral Stability of Long Prestressed Concrete Beams - Part 1", Robert F. Mast, P.E., PCI Journal, January-February 1989 Edition](https://www.pci.org/PCI/Publications/PCI_Journal/Issues/1989/January-February/Lateral_Stability_of_Long_Prestressed_Concrete_Beams_Part_1.aspx) 
+* ["Lateral Stability of Long Prestressed Concrete Beams - Part 2", Robert F. Mast, P.E., PCI Journal, January-February 1993 Edition](https://www.pci.org/PCI/Publications/PCI_Journal/Issues/1993/January-February/Lateral_Stability_of_Long_Prestressed_Concrete_Beams-Part_2.aspx)
+* ["Handling and Shipping of Long Span Bridge Beams", George Laszlo, P.E. and Richard R. Imper, P.E., PCI Journal, November-December 1987 Edition](https://www.pci.org/PCI/Publications/PCI_Journal/Issues/1987/November-December/Handling_and_Shipping_of_Long_Span_Bridge_Beams.aspx)
 
 In-depth examples are given in:
-* ["New Deep WSDOT Standard Sections Extend Spans of Prestressed Concrete Girders", Stephen J. Seguirant, P.E., PCI Journal, July-August 1998 Edition](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/1998/DOI_Articles/jl-98-july-august-7.pdf)
-* ["Design optimization for fabrication of pretensioned concrete bridge girders: An example problem", Brice, Richard, B. Khaleghi, and S. J. Seguirant, 2009, . PCI Journal, V. 54, No. 4 (Fall 2009): pp. 73-111](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/2009/DOI_Articles/JL-09-FALL-8.pdf).
+* ["New Deep WSDOT Standard Sections Extend Spans of Prestressed Concrete Girders", Stephen J. Seguirant, P.E., PCI Journal, July-August 1998 Edition](https://www.pci.org/PCI/Publications/PCI_Journal/Issues/1998/July-August/New_Deep_WSDOT_Standard_Sections_Extend_Spans_of_Prestressed_Concrete_Girders.aspx)
+* ["Design optimization for fabrication of pretensioned concrete bridge girders: An example problem", Brice, Richard, B. Khaleghi, and S. J. Seguirant, 2009, . PCI Journal, V. 54, No. 4 (Fall 2009): pp. 73-111](https://www.pci.org/PCI/Publications/PCI_Journal/Issues/2009/Fall/Design_optimization_for_fabrication_of_pretensioned_concrete_bridge_girders__An_example_problem.aspx).
 
 The WSDOT method for hauling analysis looks at the following cases:
 1) Stress limitations during normal hauling conditions

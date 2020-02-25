@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,10 +23,13 @@
 #include "StdAfx.h"
 #include <Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h>
 
-#include <IFace\AnalysisResults.h>
-#include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace\Project.h>
+#include <Material\ConcreteBase.h>
+#include <Lrfd\LRFDTimeDependentConcrete.h>
+#include <PgsExt\TimelineEvent.h>
+#include <PgsExt\CastDeckActivity.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -254,54 +257,91 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
       }
    }
 
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+   if (IsStructuralDeck(pBridge->GetDeckType()))
    {
-      const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-      const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
-
-      ColumnIndexType colIdx = 0;
-
-      (*pTable)(rowIdx,colIdx++) << _T("Deck");
-      (*pTable)(rowIdx,colIdx++) << strCuring[pConcrete->GetCureMethod()];
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+      const auto& castDeckActivity = pIBridgeDesc->GetEventByIndex(castDeckEventIdx)->GetCastDeckActivity();
+      IndexType nCastings = castDeckActivity.GetCastingCount();
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
       {
-         Float64 K1, K2;
-         pLRFDConcrete->GetCreepCorrectionFactors(&K1,&K2);
-         (*pTable)(rowIdx,colIdx++) << K1;
-         (*pTable)(rowIdx,colIdx++) << K2;
-      }
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
 
-      Float64 t = pLRFDConcrete->GetTimeAtCasting() + pLRFDConcrete->GetCureTime();
+         ColumnIndexType colIdx = 0;
 
-      (*pTable)(rowIdx,colIdx++) << vsRatio.SetValue(pConcrete->GetVSRatio());
+         CString strTitle(_T("Deck"));
+         if (1 < nCastings)
+         {
+            strTitle += _T(" Regions ");
+            auto begin = std::begin(vRegions);
+            auto iter = begin;
+            auto end = std::end(vRegions);
+            for (; iter != end; iter++)
+            {
+               if (iter != begin)
+               {
+                  strTitle += _T(", ");
+               }
+               CString strRegion;
+               strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+               strTitle += strRegion;
+            }
+         }
 
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(-99999,-99999); // 2005 and later, doesn't rely on time
-      }
 
-      (*pTable)(rowIdx,colIdx++) << pConcrete->GetRelativeHumidity();
-      if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
-      {
-         (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetRelativeHumidityFactorCreep();
-      }
+         (*pTable)(rowIdx, colIdx++) << strTitle;
+         (*pTable)(rowIdx, colIdx++) << strCuring[pConcrete->GetCureMethod()];
+         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         {
+            Float64 K1, K2;
+            pLRFDConcrete->GetCreepCorrectionFactors(&K1, &K2);
+            (*pTable)(rowIdx, colIdx++) << K1;
+            (*pTable)(rowIdx, colIdx++) << K2;
+         }
 
-      Float64 fci = pLRFDConcrete->GetFc(t);
-      (*pTable)(rowIdx,colIdx++) << stress.SetValue(fci);
-      (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetConcreteStrengthFactor();
+         Float64 t = pLRFDConcrete->GetTimeAtCasting() + pLRFDConcrete->GetCureTime();
 
-      rowIdx++;
+         (*pTable)(rowIdx, colIdx++) << vsRatio.SetValue(pConcrete->GetVSRatio());
+
+         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         {
+            (*pTable)(rowIdx, colIdx++) << pLRFDConcrete->GetSizeFactorCreep(-99999, -99999); // 2005 and later, doesn't rely on time
+         }
+
+         (*pTable)(rowIdx, colIdx++) << pConcrete->GetRelativeHumidity();
+         if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion())
+         {
+            (*pTable)(rowIdx, colIdx++) << pLRFDConcrete->GetRelativeHumidityFactorCreep();
+         }
+
+         Float64 fci = pLRFDConcrete->GetFc(t);
+         (*pTable)(rowIdx, colIdx++) << stress.SetValue(fci);
+         (*pTable)(rowIdx, colIdx++) << pLRFDConcrete->GetConcreteStrengthFactor();
+
+         rowIdx++;
+      } // next casting stage
    }
 
 #if defined _DEBUG || defined _BETA_VERSION
-   nColumns = 8*nSegments + 1; // four for each segment + four for the deck + 1 for the interval
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EventIndexType castDeckIndex = pIBridgeDesc->GetCastDeckEventIndex();
+   const auto* pEvent = pIBridgeDesc->GetEventByIndex(castDeckIndex);
+   const auto& castDeckActivity = pEvent->GetCastDeckActivity();
+   IndexType nCastings = castDeckActivity.GetCastingCount();
+   IndexType nClosures = nSegments - 1;
+
+   nColumns = 4* (nSegments + nClosures + nCastings) + 1; // four for each segment + 4 for each cloasure + four for each deck region + 1 for the interval
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
    {
-      nColumns += 2*nSegments + 1;
+      // one for for the kc column
+      nColumns += nSegments + nClosures + nCastings;
    }
 
-   pTable = rptStyleManager::CreateDefaultTable(nColumns);
+   pTable = rptStyleManager::CreateDefaultTable(nColumns,_T("Debugging Table"));
    *pPara << pTable << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
@@ -350,18 +390,42 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          (*pTable)(rowIdx+1,colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"),_T("i")) << _T(")");
       }
    }
-   pTable->SetColumnSpan(rowIdx,colIdx,colSpan);
-   (*pTable)(rowIdx,colIdx) << _T("Deck");
-   (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("t"),_T("i")) << rptNewLine << _T("(days)");
-   (*pTable)(rowIdx+1,colIdx++) << _T("t") << rptNewLine << _T("(days)");
 
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+   for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
    {
-      (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("k"),_T("c"));
-   }
+      pTable->SetColumnSpan(rowIdx, colIdx, colSpan);
+      CString strTitle(_T("Deck"));
+      if (1 < nCastings)
+      {
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
 
-   (*pTable)(rowIdx+1,colIdx++) << Sub2(_T("k"),_T("td"));
-   (*pTable)(rowIdx+1,colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"),_T("i")) << _T(")");
+         strTitle += _T(" Regions ");
+         auto begin = std::begin(vRegions);
+         auto iter = begin;
+         auto end = std::end(vRegions);
+         for (; iter != end; iter++)
+         {
+            if (iter != begin)
+            {
+               strTitle += _T(", ");
+            }
+            CString strRegion;
+            strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
+            strTitle += strRegion;
+         }
+      }
+      (*pTable)(rowIdx, colIdx) << strTitle;
+      (*pTable)(rowIdx + 1, colIdx++) << Sub2(_T("t"), _T("i")) << rptNewLine << _T("(days)");
+      (*pTable)(rowIdx + 1, colIdx++) << _T("t") << rptNewLine << _T("(days)");
+
+      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+      {
+         (*pTable)(rowIdx + 1, colIdx++) << Sub2(_T("k"), _T("c"));
+      }
+
+      (*pTable)(rowIdx + 1, colIdx++) << Sub2(_T("k"), _T("td"));
+      (*pTable)(rowIdx + 1, colIdx++) << symbol(psi) << _T("(t,") << Sub2(_T("t"), _T("i")) << _T(")");
+   }
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -459,43 +523,48 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
          }
       }
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      if ( compositeDeckIntervalIdx <= intervalIdx )
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
       {
-         Float64 ti = pMaterials->GetDeckConcreteAge(compositeDeckIntervalIdx,pgsTypes::Middle);
-         Float64 t  = pMaterials->GetDeckConcreteAge(intervalIdx,pgsTypes::End);
-         const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete();
-         const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
-         (*pTable)(rowIdx,colIdx++) << ti;
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+         std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
+         IndexType deckCastingRegionIdx = vRegions.front();
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+         if (compositeDeckIntervalIdx <= intervalIdx)
          {
-            (*pTable)(rowIdx,colIdx++) << t;
+            Float64 ti = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx, compositeDeckIntervalIdx, pgsTypes::Middle);
+            Float64 t = pMaterials->GetDeckConcreteAge(deckCastingRegionIdx, intervalIdx, pgsTypes::End);
+            const matConcreteBase* pConcrete = pMaterials->GetDeckConcrete(deckCastingRegionIdx);
+            const lrfdLRFDTimeDependentConcrete* pLRFDConcrete = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pConcrete);
+            (*pTable)(rowIdx, colIdx++) << ti;
+            if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+            {
+               (*pTable)(rowIdx, colIdx++) << t;
+            }
+            else
+            {
+               (*pTable)(rowIdx, colIdx++) << t - ti;
+            }
+            if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+            {
+               (*pTable)(rowIdx, colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t, ti);
+            }
+
+            std::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetDeckCreepCoefficientDetails(deckCastingRegionIdx, compositeDeckIntervalIdx, pgsTypes::Middle, intervalIdx, pgsTypes::End);
+            lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
+
+            (*pTable)(rowIdx, colIdx++) << pLRFDDetails->ktd;
+            (*pTable)(rowIdx, colIdx++) << pDetails->Ct;
          }
          else
          {
-            (*pTable)(rowIdx,colIdx++) << t - ti;
+            (*pTable)(rowIdx, colIdx++) << _T("");
+            (*pTable)(rowIdx, colIdx++) << _T("");
+            if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+            {
+               (*pTable)(rowIdx, colIdx++) << _T("");
+            }
+            (*pTable)(rowIdx, colIdx++) << _T("");
+            (*pTable)(rowIdx, colIdx++) << _T("");
          }
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
-         {
-            (*pTable)(rowIdx,colIdx++) << pLRFDConcrete->GetSizeFactorCreep(t,ti);
-         }
-
-         std::shared_ptr<matConcreteBaseCreepDetails> pDetails = pMaterials->GetDeckCreepCoefficientDetails(compositeDeckIntervalIdx,pgsTypes::Middle,intervalIdx,pgsTypes::End);
-         lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
-
-         (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
-         (*pTable)(rowIdx,colIdx++) << pDetails->Ct;
-      }
-      else
-      {
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims )
-         {
-            (*pTable)(rowIdx,colIdx++) << _T("");
-         }
-         (*pTable)(rowIdx,colIdx++) << _T("");
-         (*pTable)(rowIdx,colIdx++) << _T("");
       }
    }
 #endif //#if defined _DEBUG || defined _BETA_VERSION

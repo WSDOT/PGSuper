@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -123,6 +123,16 @@ txnDeleteSpan::txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pie
    m_RefPierIdx = refPierIdx;
    m_PierFace   = pierFace;
    m_BoundaryCondition = boundaryCondition;
+   m_bIsBoundaryPier = true;
+}
+
+txnDeleteSpan::txnDeleteSpan(PierIndexType refPierIdx, pgsTypes::PierFaceType pierFace, pgsTypes::PierSegmentConnectionType segmentConnection,EventIndexType castClosureEventIdx)
+{
+   m_RefPierIdx = refPierIdx;
+   m_PierFace = pierFace;
+   m_SegmentConnection = segmentConnection;
+   m_CastClosureEventIdx = castClosureEventIdx;
+   m_bIsBoundaryPier = false;
 }
 
 txnDeleteSpan::txnDeleteSpan(const txnDeleteSpan& other)
@@ -130,6 +140,9 @@ txnDeleteSpan::txnDeleteSpan(const txnDeleteSpan& other)
    m_RefPierIdx = other.m_RefPierIdx;
    m_PierFace = other.m_PierFace;
    m_BoundaryCondition = other.m_BoundaryCondition;
+   m_SegmentConnection = other.m_SegmentConnection;
+   m_CastClosureEventIdx = other.m_CastClosureEventIdx;
+   m_bIsBoundaryPier = other.m_bIsBoundaryPier;
 
    m_BridgeDescription = other.m_BridgeDescription;
    m_StartSpanIdx = other.m_StartSpanIdx;
@@ -218,10 +231,28 @@ bool txnDeleteSpan::Execute()
       }
    }
 
-   PierIndexType pierIdx = (m_PierFace == pgsTypes::Back ? m_RefPierIdx - 1 : m_RefPierIdx + 1); // index of the pier that is not deleted
-   pIBridgeDesc->SetBoundaryCondition(pierIdx, m_BoundaryCondition);
-
    pIBridgeDesc->DeletePier(m_RefPierIdx, m_PierFace);
+
+   // index of the pier that is not deleted
+   PierIndexType pierIdx = (m_PierFace == pgsTypes::Back ? m_RefPierIdx - 1 : m_RefPierIdx/* + 1 don't add one because m_RefPierIdx has already been deleted so the index is one less than normal*/);
+   if (m_bIsBoundaryPier)
+   {
+      pIBridgeDesc->SetBoundaryCondition(pierIdx, m_BoundaryCondition);
+   }
+   else
+   {
+      PierIndexType nPiers = pBridge->GetPierCount();
+      if (m_RefPierIdx == 0 || m_RefPierIdx == nPiers/*-1 don't subtract one because the pier was already deleted above*/)
+      {
+         // the first or last pier in the bridge is being removed... this makes the
+         // the new first/last pier a boundary pier so change its boundary condition
+         pIBridgeDesc->SetBoundaryCondition(pierIdx, pgsTypes::bctRoller);
+      }
+      else
+      {
+         pIBridgeDesc->SetBoundaryCondition(pierIdx, m_SegmentConnection, m_CastClosureEventIdx);
+      }
+   }
 
    return true;
 }

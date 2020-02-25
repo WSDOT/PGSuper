@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -286,6 +286,19 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   if (!pPoi->IsOnSegment(poi))
+   {
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+      Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+      Float64 Xs = poi.GetDistFromStart();
+      Xs = ::ForceIntoRange(0.0, Xs, Ls);
+      poi = pPoi->GetPointOfInterest(segmentKey, Xs);
+      ATLASSERT(pPoi->IsOnSegment(poi));
+   }
+
+
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    EventIndexType eventIdx = m_pFrame->GetEvent();
    EventIndexType erectionEventIdx = pIBridgeDesc->GetSegmentErectionEventIndex(poi.GetSegmentKey());
@@ -425,14 +438,19 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       }
 
 
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-      if (compositeDeckIntervalIdx <= intervalIdx)
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      if (deckCastingRegionIdx != INVALID_INDEX)
       {
-         Float64 Wtrib = pSectProps->GetTributaryFlangeWidth(poi);
-         Float64 Weff = pSectProps->GetEffectiveFlangeWidth(poi);
-         CString strFlange;
-         strFlange.Format(_T("\nTributary Flange Width = %s\nEffective Flange Width = %s"), FormatDimension(Wtrib, pDisplayUnits->GetComponentDimUnit()), FormatDimension(Weff, pDisplayUnits->GetComponentDimUnit()));
-         strProps += strFlange;
+         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+         if (compositeDeckIntervalIdx <= intervalIdx)
+         {
+            Float64 Wtrib = pSectProps->GetTributaryFlangeWidth(poi);
+            Float64 Weff = pSectProps->GetEffectiveFlangeWidth(poi);
+            CString strFlange;
+            strFlange.Format(_T("\nTributary Flange Width = %s\nEffective Flange Width = %s"), FormatDimension(Wtrib, pDisplayUnits->GetComponentDimUnit()), FormatDimension(Weff, pDisplayUnits->GetComponentDimUnit()));
+            strProps += strFlange;
+         }
       }
 
       CComPtr<iAnchoredTextBlock> textBlock;
@@ -476,7 +494,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    // Get the shape in Girder Section Coordinates so that it is in the same coordinate system
    // as the items internal to the section (strand, rebar, etc.) (0,0 is at top center of girder)
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(intervalIdx,poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,pSectProps->GetHaunchAnalysisSectionPropertiesType(),&shape);
+   pShapes->GetSegmentShape(intervalIdx, poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,&shape);
    strategy->SetShape(shape);
    strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
    strategy->SetSolidFillColor(segmentKey.girderIndex == m_pFrame->GetSelection().girderIndex ? SEGMENT_FILL_COLOR : SEGMENT_FILL_GHOST_COLOR);
@@ -544,7 +562,14 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    connectable->AddSocket(SOCKET_TC,pntTC,&socketTC);
 
    // sockets for bottom flange dimension line
-   CComQIPtr<IGirderSection> section(shape);
+
+   CComQIPtr<ICompositeShape> composite(shape);
+   CComPtr<ICompositeShapeItem> girderShapeItem;
+   composite->get_Item(0, &girderShapeItem); // basic girder is always first in composite
+   CComPtr<IShape> girderShape;
+   girderShapeItem->get_Shape(&girderShape);
+
+   CComQIPtr<IGirderSection> section(girderShape);
    FlangeIndexType nBottomFlanges, nWebs;
    section->get_BottomFlangeCount(&nBottomFlanges);
    section->get_WebCount(&nWebs);
@@ -832,6 +857,53 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
    }
 }
 
+void CGirderModelSectionView::GetDuctDisplayObject(IntervalIndexType intervalIdx,IntervalIndexType ptIntervalIdx,IPoint2d* pntDuct,Float64 ductDiameter,StrandIndexType nStrands,COLORREF fillColor,COLORREF borderColor,iDisplayObject** ppDO)
+{
+   CComPtr<iCompositeDisplayObject> compDO;
+   compDO.CoCreateInstance(CLSID_CompositeDisplayObject);
+
+   if (ptIntervalIdx < intervalIdx)
+   {
+      CComPtr<iPointDisplayObject> pntDO;
+      pntDO.CoCreateInstance(CLSID_PointDisplayObject);
+
+      CComPtr<iShapeDrawStrategy> shape_draw_strategy;
+      shape_draw_strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+      pntDO->SetDrawingStrategy(shape_draw_strategy);
+      shape_draw_strategy->SetSolidFillColor(fillColor);
+      shape_draw_strategy->SetSolidLineColor(borderColor);
+
+      CComPtr<ICircle> circle;
+      circle.CoCreateInstance(CLSID_Circle);
+      circle->putref_Center(pntDuct);
+      circle->put_Radius(ductDiameter / 2);
+      CComQIPtr<IShape> shape(circle);
+      shape_draw_strategy->SetShape(shape);
+
+      compDO->AddDisplayObject(pntDO);
+   }
+
+   CString strStrands;
+   strStrands.Format(_T("%d"), nStrands);
+
+   CComPtr<iTextBlock> textBlock;
+   ::CoCreateInstance(CLSID_TextBlock, nullptr, CLSCTX_ALL, IID_iTextBlock, (void**)&textBlock);
+
+   CComPtr<IPoint2d> pntBottomCircle;
+   pntDuct->Clone(&pntBottomCircle);
+   pntBottomCircle->Offset(0, -ductDiameter / 2);
+   textBlock->SetText(strStrands);
+   textBlock->SetPosition(pntBottomCircle);
+   textBlock->SetTextAlign(TA_BASELINE | TA_CENTER);
+   textBlock->SetTextColor(BLACK);
+   textBlock->SetBkMode(TRANSPARENT);
+   textBlock->SetPointSize(FONT_POINT_SIZE);
+   compDO->AddDisplayObject(textBlock);
+
+   CComQIPtr<iDisplayObject> dispObj(compDO);
+   dispObj.CopyTo(ppDO);
+}
+
 void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
 {
    // The outlines of the ducts are drawn as part of the girder cross section
@@ -847,36 +919,47 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
 
-#pragma Reminder("REVIEW: assuming tendon starts/ends at start/end face of girder")
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetGirderLength(girderKey);
-   if ( Xg < 0 || Lg < Xg )
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EventIndexType eventIdx = m_pFrame->GetEvent();
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
+
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
    {
-      return; // poi is not within the extent of the tendon
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+      CComPtr<IPoint2d> pntDuct;
+      pSegmentTendonGeometry->GetSegmentDuctPoint(poi, ductIdx, &pntDuct);
+      Float64 diameter = pSegmentTendonGeometry->GetOutsideDiameter(segmentKey, ductIdx);
+      StrandIndexType nStrands = pSegmentTendonGeometry->GetTendonStrandCount(segmentKey, ductIdx);
+
+      CComPtr<iDisplayObject> doDuct;
+      GetDuctDisplayObject(intervalIdx, ptIntervalIdx, pntDuct, diameter, nStrands, SEGMENT_TENDON_FILL_COLOR, SEGMENT_TENDON_BORDER_COLOR, &doDuct);
+
+      pDisplayList->AddDisplayObject(doDuct);
    }
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      StrandIndexType nStrands = pTendonGeom->GetTendonStrandCount(girderKey,ductIdx);
-      CString strStrands;
-      strStrands.Format(_T("%d"),nStrands);
+      if (!pTendonGeom->IsOnDuct(poi,ductIdx))
+      {
+         continue; // point is not within the extend of the tendon
+      }
 
-      CComPtr<IPoint2d> pnt;
-      pTendonGeom->GetDuctPoint(girderKey,Xg,ductIdx,&pnt);
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx);
+      CComPtr<IPoint2d> pntDuct;
+      pTendonGeom->GetGirderDuctPoint(girderKey, Xg, ductIdx, &pntDuct);
 
-      CComPtr<iTextBlock> textBlock;
-      ::CoCreateInstance(CLSID_TextBlock,nullptr,CLSCTX_ALL,IID_iTextBlock,(void**)&textBlock);
+      Float64 diameter = pTendonGeom->GetOutsideDiameter(girderKey, ductIdx);
 
-      textBlock->SetText(strStrands);
-      textBlock->SetPosition(pnt);
-      textBlock->SetTextAlign(TA_BASELINE | TA_CENTER);
-      textBlock->SetTextColor(BLACK);
-      textBlock->SetBkMode(TRANSPARENT);
-      textBlock->SetPointSize(FONT_POINT_SIZE);
+      StrandIndexType nStrands = pTendonGeom->GetTendonStrandCount(girderKey, ductIdx);
 
-      pDisplayList->AddDisplayObject(textBlock);
+      CComPtr<iDisplayObject> doDuct;
+      GetDuctDisplayObject(intervalIdx, ptIntervalIdx, pntDuct, diameter, nStrands, GIRDER_TENDON_FILL_COLOR, GIRDER_TENDON_BORDER_COLOR, &doDuct);
+
+      pDisplayList->AddDisplayObject(doDuct);
    }
 }
 
@@ -1030,7 +1113,6 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
    EventIndexType eventIdx = m_pFrame->GetEvent();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType castDeckintervalIdx = pIntervals->GetCastDeckInterval();
    if (intervalIdx < releaseIntervalIdx)
    {
       intervalIdx = releaseIntervalIdx;
@@ -1540,7 +1622,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
       Float64 nEff;
-      Float64 ecc = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi,true,&nEff);
+      Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi,true,&nEff);
       Float64 yps = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
       textBlock.Release();

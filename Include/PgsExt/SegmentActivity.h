@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\Keys.h>
 
+class CTimelineEvent;
+
 /*****************************************************************************
 CLASS 
    CSegmentActivityBase
@@ -35,7 +37,7 @@ DESCRIPTION
 class PGSEXTCLASS CSegmentActivityBase
 {
 public:
-   CSegmentActivityBase();
+   CSegmentActivityBase(CTimelineEvent* pEvent);
    CSegmentActivityBase(const CSegmentActivityBase& rOther);
    ~CSegmentActivityBase();
 
@@ -71,6 +73,10 @@ protected:
    // when the index of a segment changes
    std::set<SegmentIDType> m_Segments;
 
+   CTimelineEvent* m_pTimelineEvent;
+
+   void Update();
+
    virtual LPCTSTR GetUnitName() = 0;
 };
 
@@ -82,7 +88,7 @@ protected:
 class PGSEXTCLASS CConstructSegmentActivity : public CSegmentActivityBase
 {
 public:
-   CConstructSegmentActivity();
+   CConstructSegmentActivity(CTimelineEvent* pTimelineEvent);
    CConstructSegmentActivity(const CConstructSegmentActivity& rOther);
 
    CConstructSegmentActivity& operator= (const CConstructSegmentActivity& rOther);
@@ -116,6 +122,9 @@ protected:
 // and are thus modeled with this activity.
 class PGSEXTCLASS CErectSegmentActivity : public CSegmentActivityBase
 {
+public:
+   CErectSegmentActivity(CTimelineEvent* pTimelineEvent);
+
 protected:
    virtual LPCTSTR GetUnitName() override { return _T("ErectSegments"); }
 };

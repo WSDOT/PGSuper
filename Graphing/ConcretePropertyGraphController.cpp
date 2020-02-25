@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -56,7 +56,8 @@ IMPLEMENT_DYNCREATE(CConcretePropertyGraphController,CEAFGraphControlWindow)
 
 CConcretePropertyGraphController::CConcretePropertyGraphController() :
    m_SegmentKey(0,0,0),
-   m_ClosureKey(0,0,0)
+   m_ClosureKey(0,0,0),
+   m_DeckCastingRegionIdx(0)
 {
 }
 
@@ -73,6 +74,7 @@ BEGIN_MESSAGE_MAP(CConcretePropertyGraphController, CEAFGraphControlWindow)
    ON_CBN_SELCHANGE(IDC_GIRDER,OnGirderChanged)
    ON_CBN_SELCHANGE(IDC_SEGMENT,OnSegmentChanged)
    ON_CBN_SELCHANGE(IDC_CLOSURE,OnClosureChanged)
+   ON_CBN_SELCHANGE(IDC_DECK_CASTING_REGION,OnDeckCastingRegionChanged)
    ON_BN_CLICKED(IDC_TIME_LOG,OnXAxis)
    ON_BN_CLICKED(IDC_TIME_LINEAR,OnXAxis)
    ON_BN_CLICKED(IDC_AGE_LOG,OnXAxis)
@@ -96,6 +98,8 @@ BOOL CConcretePropertyGraphController::OnInitDialog()
    FillSegmentControl();
 
    FillClosureControl();
+
+   FillDeckCastingRegionControl();
 
    UpdateElementControls();
 
@@ -123,6 +127,7 @@ BOOL CConcretePropertyGraphController::OnInitDialog()
    if ( IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType()) )
    {
       GetDlgItem(IDC_DECK)->EnableWindow(FALSE);
+      GetDlgItem(IDC_DECK_CASTING_REGION)->EnableWindow(FALSE);
    }
 
    return TRUE;
@@ -236,6 +241,18 @@ const CClosureKey& CConcretePropertyGraphController::GetClosureJoint() const
    return m_ClosureKey;
 }
 
+void CConcretePropertyGraphController::SetDeckCastingRegion(IndexType castingRegionIdx)
+{
+   m_DeckCastingRegionIdx = castingRegionIdx;
+   SetGraphElement(GRAPH_ELEMENT_DECK);
+   UpdateGraph();
+}
+
+IndexType CConcretePropertyGraphController::GetDeckCastingRegion() const
+{
+   return m_DeckCastingRegionIdx;
+}
+
 void CConcretePropertyGraphController::OnShowGrid()
 {
    // toggle the grid setting
@@ -281,21 +298,25 @@ void CConcretePropertyGraphController::UpdateElementControls()
    ATLASSERT(nIDC != 0); // 0 means nothing is selected
    BOOL bEnableSegment(TRUE);
    BOOL bEnableClosure(TRUE);
+   BOOL bEnableDeckCastingRegion(TRUE);
    switch(nIDC)
    {
    case IDC_PRECAST_SEGMENT:
       bEnableSegment = TRUE;
       bEnableClosure = FALSE;
+      bEnableDeckCastingRegion = FALSE;
       break;
 
    case IDC_CLOSURE_JOINT:
       bEnableSegment = FALSE;
       bEnableClosure = TRUE;
+      bEnableDeckCastingRegion = FALSE;
       break;
 
    case IDC_DECK:
       bEnableSegment = FALSE;
       bEnableClosure = FALSE;
+      bEnableDeckCastingRegion = TRUE;
       break;
 
    default:
@@ -307,6 +328,8 @@ void CConcretePropertyGraphController::UpdateElementControls()
    GetDlgItem(IDC_SEGMENT)->EnableWindow(bEnableSegment);
 
    GetDlgItem(IDC_CLOSURE)->EnableWindow(bEnableClosure);
+
+   GetDlgItem(IDC_DECK_CASTING_REGION)->EnableWindow(bEnableDeckCastingRegion);
 }
 
 void CConcretePropertyGraphController::FillGroupControl()
@@ -353,10 +376,12 @@ void CConcretePropertyGraphController::FillGirderControl()
    if ( curSel == CB_ERR )
    {
       pcbGirder->SetCurSel(0);
+      m_SegmentKey.girderIndex = 0;
    }
    else
    {
       curSel = Min(curSel,(int)(nGirders-1));
+      m_SegmentKey.girderIndex = curSel;
       pcbGirder->SetCurSel(curSel);
    }
 }
@@ -381,10 +406,12 @@ void CConcretePropertyGraphController::FillSegmentControl()
    if ( curSel == CB_ERR )
    {
       pcbSegment->SetCurSel(0);
+      m_SegmentKey.segmentIndex = 0;
    }
    else
    {
       curSel = Min(curSel,(int)(nSegments-1));
+      m_SegmentKey.segmentIndex = curSel;
       pcbSegment->SetCurSel(curSel);
    }
 
@@ -403,7 +430,7 @@ void CConcretePropertyGraphController::FillClosureControl()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(GroupIndexType(0))->GetGirder(0);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
-   const CClosureJointData* pClosure = pSegment->GetEndClosure();
+   const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
 
    if ( pClosure == nullptr )
    {
@@ -435,7 +462,7 @@ void CConcretePropertyGraphController::FillClosureControl()
 
          if ( pClosure->GetRightSegment() )
          {
-            pClosure = pClosure->GetRightSegment()->GetEndClosure();
+            pClosure = pClosure->GetRightSegment()->GetClosureJoint(pgsTypes::metEnd);
          }
          else
          {
@@ -443,6 +470,28 @@ void CConcretePropertyGraphController::FillClosureControl()
          }
       }
 
+      pCB->SetCurSel(0);
+   }
+}
+
+void CConcretePropertyGraphController::FillDeckCastingRegionControl()
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   if (pIBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
+   {
+      CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DECK_CASTING_REGION);
+      pCB->ResetContent();
+      EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+      const auto* pTimelineEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
+      const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
+      ATLASSERT(castDeckActivity.IsEnabled());
+      IndexType nCastingRegions = castDeckActivity.GetCastingRegionCount();
+      for (IndexType regionIdx = 0; regionIdx < nCastingRegions; regionIdx++)
+      {
+         CString strRegion;
+         strRegion.Format(_T("Region %d"), LABEL_INDEX(regionIdx));
+         pCB->AddString(strRegion);
+      }
       pCB->SetCurSel(0);
    }
 }
@@ -497,6 +546,15 @@ void CConcretePropertyGraphController::OnClosureChanged()
       m_ClosureKey = pClosure->GetClosureKey();
    }
 
+   UpdateGraph();
+}
+
+void CConcretePropertyGraphController::OnDeckCastingRegionChanged()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DECK_CASTING_REGION);
+   int curSel = pCB->GetCurSel();
+   ATLASSERT(curSel != CB_ERR);
+   m_DeckCastingRegionIdx = (IndexType)curSel;
    UpdateGraph();
 }
 

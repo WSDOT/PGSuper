@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,10 @@
 #include <PgsExt\statusitem.h>
 #include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\GirderLabel.h>
+
+#if defined _DEBUG
+#include <IFace\DocumentType.h>
+#endif
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -140,9 +144,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       if (0 < pscd->Aps)
       {
          Float64 fpu = pStrand->GetUltimateStrength();
-
          Float64 K = 0.70;
-
          pscd->fpops = xfer*K*fpu;
       }
       else
@@ -159,25 +161,36 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    // Tendons
    if ( bAfter1999 )
    {
-      const matPsStrand* pTendon = pMaterial->GetTendonMaterial(girderKey);
+      const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+      const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(girderKey);
 
-      if (0 < pscd->Apt)
+      if (0 < pscd->AptSegment)
       {
-         Float64 fpu = pTendon ->GetUltimateStrength();
-
+         Float64 fpu = pSegmentTendon->GetUltimateStrength();
          Float64 K = 0.70;
-
-         pscd->fpopt = K*fpu;
+         pscd->fpoptSegment = K*fpu;
       }
       else
       {
-         pscd->fpopt = 0; // no prestressing on this side
+         pscd->fpoptSegment = 0; // no prestressing on this side
+      }
+
+      if (0 < pscd->AptGirder)
+      {
+         Float64 fpu = pGirderTendon ->GetUltimateStrength();
+         Float64 K = 0.70;
+         pscd->fpoptGirder = K*fpu;
+      }
+      else
+      {
+         pscd->fpoptGirder = 0; // no prestressing on this side
       }
    }
    else
    {
       // C5.7.3.4.2-1 (pre2017: C5.8.3.4.2-1)
-      pscd->fpopt = pscd->fpept + pscd->fpc*pscd->Ept/pscd->Ec;
+      pscd->fpoptSegment = pscd->fpeptSegment + pscd->fpc*pscd->EptSegment / pscd->Ec;
+      pscd->fpoptGirder = pscd->fpeptGirder + pscd->fpc*pscd->EptGirder / pscd->Ec;
    }
 
    // concrete shear capacity
@@ -197,21 +210,25 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
 
    if (pscd->ShearInRange)
    {
-     // Vs - if Vc was calc'd successfully
-      VERIFY(ComputeVs(poi,pscd));
+     // Vs and Vf - if Vc was calc'd successfully
+      VERIFY(ComputeVs(poi, pscd));
+      VERIFY(ComputeVf(poi, pscd));
 
       // final capacity
       // 5.7.3.3-1 (pre2017: 5.8.3.3-1)
-      pscd->Vn1 = pscd->Vc + pscd->Vs + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
+      pscd->Vn1 = pscd->Vc + pscd->Vs + pscd->Vf + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
    }
    else
    {
-      pscd->Vs=0.0;
-      pscd->Vn1=0.0;
+      pscd->Vs = 0.0;
+      pscd->Vf = 0.0;
+      pscd->Vn1 = 0.0;
    }
 
    // Max crushing capacity - 5.7.3.3-2 (pre2017: 5.8.3.3-2)
-   pscd->Vn2 = 0.25* pscd->fc * pscd->dv * pscd->bv + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
+   bool bUHPC = pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
+   Float64 k = (bUHPC ? 0.18 : 0.25);
+   pscd->Vn2 = k * pscd->fc * pscd->dv * pscd->bv + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
 
    if (pscd->ShearInRange)
    {
@@ -240,7 +257,7 @@ void pgsShearCapacityEngineer::EvaluateStirrupRequirements(SHEARCAPACITYDETAILS*
    // 5.7.2.3-1 (pre2017: 5.8.2.4-1)
    // transverse reinforcement required?
    pscd->VuLimit = 0.5 * pscd->Phi * ( pscd->Vc + (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp) );
-   pscd->bStirrupsReqd = pscd->Vu > pscd->VuLimit;
+   pscd->bStirrupsReqd = (pscd->VuLimit < pscd->Vu && IsZero(pscd->Vf) ? true : false); // Vf or Vs is required, since Vf == 0, we must have Vs
 }
 
 void pgsShearCapacityEngineer::TweakShearCapacityOutboardOfCriticalSection(const pgsPointOfInterest& poiCS,SHEARCAPACITYDETAILS* pscd,const SHEARCAPACITYDETAILS* pscd_at_cs) const
@@ -251,11 +268,12 @@ void pgsShearCapacityEngineer::TweakShearCapacityOutboardOfCriticalSection(const
    pscd->Beta  = pscd_at_cs->Beta;
    pscd->Theta = pscd_at_cs->Theta;
    pscd->Vc    = pscd_at_cs->Vc;
+   pscd->Vf    = pscd_at_cs->Vf;
    pscd->Vs    = pscd_at_cs->Vs;
 
    // Update values that have Vp because we need to use the Vp at the
    // actual section
-   pscd->Vn1 = pscd->Vs + pscd->Vc + pscd->Vp;
+   pscd->Vn1 = pscd->Vs + pscd->Vc + pscd->Vf + pscd->Vp;
    pscd->Vn  = Min(pscd->Vn1,pscd->Vn2);
    pscd->pVn = pscd->Phi * pscd->Vn;
 
@@ -275,15 +293,11 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
 
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
-   CGirderKey girderKey(poi.GetSegmentKey());
-   
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   CGirderKey girderKey(segmentKey);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType noncompsiteIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
@@ -296,23 +310,50 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
       + pPsForce->GetPrestressForce(poi, pgsTypes::Straight, finalIntervalIdx, pgsTypes::End, pConfig);
 
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if there are tendons
-   GET_IFACE_NOCHECK(ITendonGeometry,pTendonGeometry); // only used if there are tendons
-   Float64 Pe  = 0;
-   Float64 Ppt = 0;
-   DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   Float64 PeSegment = 0;
+   Float64 PptSegment = 0;
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
    {
-      // only include tendons that are stress prior to the section becoming composite
-      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
-      if ( stressTendonIntervalIdx < compositeIntervalIdx )
+      // only include tendons that are stressed prior to the section becoming composite
+      if (pSegmentTendonGeometry->IsOnDuct(poi))
       {
-         Float64 e = pTendonGeometry->GetEccentricity(finalIntervalIdx,poi,ductIdx);
-         Float64 F = pPTForce->GetTendonForce(poi,finalIntervalIdx,pgsTypes::End,ductIdx,true,true);
-         Ppt += F;
-         Pe  += F*e;
+         if (stressTendonIntervalIdx < compositeIntervalIdx)
+         {
+            Float64 eccX, eccY;
+            pSegmentTendonGeometry->GetSegmentTendonEccentricity(finalIntervalIdx, poi, ductIdx, &eccX, &eccY);
+            Float64 F = pPTForce->GetSegmentTendonForce(poi, finalIntervalIdx, pgsTypes::End, ductIdx, true, true);
+            PptSegment += F;
+            PeSegment += F*eccY;
+         }
       }
    }
-   Float64 ept = (IsZero(Ppt) ? 0 : Pe/Ppt);
+   Float64 eptSegment = (IsZero(PptSegment) ? 0 : PeSegment / PptSegment);
+
+   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
+   Float64 PeGirder  = 0;
+   Float64 PptGirder = 0;
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+   {
+      // only include tendons that are stressed prior to the section becoming composite
+      if (pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
+      {
+         IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx);
+         if (stressTendonIntervalIdx < compositeIntervalIdx)
+         {
+            Float64 eccX, eccY;
+            pGirderTendonGeometry->GetGirderTendonEccentricity(finalIntervalIdx, poi, ductIdx, &eccX, &eccY);
+            Float64 F = pPTForce->GetGirderTendonForce(poi, finalIntervalIdx, pgsTypes::End, ductIdx, true, true);
+            PptGirder += F;
+            PeGirder += F*eccY;
+         }
+      }
+   }
+   Float64 eptGirder = (IsZero(PptGirder) ? 0 : PeGirder/PptGirder);
 
    // girder only props
    Float64 Ybg = pSectProp->GetY(noncompsiteIntervalIdx,poi,pgsTypes::BottomGirder);
@@ -329,13 +370,15 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    Float64 Mg = pCombinedForces->GetMoment(noncompsiteIntervalIdx, lcDC, poi, bat, rtCumulative);
    Mg        += pCombinedForces->GetMoment(noncompsiteIntervalIdx, lcDW, poi, bat, rtCumulative);
 
-   Float64 fpc = -(Pps+Ppt)/A - (Pps*eps+Ppt*ept)*c/I + Mg*c/I;
+   Float64 fpc = -(Pps+PptSegment + PptGirder)/A - (Pps*eps + PptSegment*eptSegment + PptGirder*eptGirder)*c/I + Mg*c/I;
    fpc *= -1.0; // Need to make the compressive stress a positive value
 
    pd->eps = eps;
    pd->Pps = Pps;
-   pd->ept = ept;
-   pd->Ppt = Ppt;
+   pd->eptSegment = eptSegment;
+   pd->PptSegment = PptSegment;
+   pd->eptGirder = eptGirder;
+   pd->PptGirder = PptGirder;
    pd->Ag  = A;
    pd->Ig  = I;
    pd->Ybg = Ybg;
@@ -529,12 +572,29 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // material props
    if ( pConfig == nullptr )
    {
-      pscd->fc = pMaterial->GetSegmentDesignFc(segmentKey,intervalIdx);
-      pscd->Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx);
+      GET_IFACE(ILibrary, pLib);
+      GET_IFACE(ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      bool bUse90DayStrength;
+      Float64 factor;
+      pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90DayStrength, &factor);
+
+      if (bUse90DayStrength)
+      {
+         // 90 day strength isn't applicable to strength limit states (only stress limit states, LRFD 5.12.3.2.4)
+         // so use 28day properties
+         pscd->fc = pMaterial->GetSegmentFc28(segmentKey);
+         pscd->Ec = pMaterial->GetSegmentEc28(segmentKey);
+      }
+      else
+      {
+         pscd->fc = pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx);
+         pscd->Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+      }
    }
    else
    {
-      pscd->fc = pConfig->Fc;
+      pscd->fc = pConfig->fc28;
 
       if ( pConfig->bUserEc )
       {
@@ -542,7 +602,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       }
       else
       {
-         pscd->Ec = pMaterial->GetEconc(pConfig->Fc,
+         pscd->Ec = pMaterial->GetEconc(pscd->fc,
                                         pMaterial->GetSegmentStrengthDensity(segmentKey),
                                         pMaterial->GetSegmentEccK1(segmentKey),
                                         pMaterial->GetSegmentEccK2(segmentKey));
@@ -550,12 +610,16 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    }
 
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-   ATLASSERT(pStrand != 0);
+   ATLASSERT(pStrand != nullptr);
    pscd->Eps = pStrand->GetE();
 
-   const matPsStrand* pTendon = pMaterial->GetTendonMaterial(segmentKey);
-   ATLASSERT(pTendon != 0);
-   pscd->Ept = pTendon->GetE();
+   const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+   ATLASSERT(pSegmentTendon != nullptr);
+   pscd->EptSegment = pSegmentTendon->GetE();
+
+   const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
+   ATLASSERT(pGirderTendon != nullptr);
+   pscd->EptGirder = pGirderTendon->GetE();
 
    // stirrup properties
    GET_IFACE(IStirrupGeometry,pStirrups);
@@ -652,7 +716,8 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // not used when design
    GET_IFACE(IMomentCapacity,pMomentCapacity);
    GET_IFACE(IStrandGeometry,pStrandGeometry);
-   GET_IFACE(ITendonGeometry,pTendonGeometry);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IGirder,pGdr);
    GET_IFACE(ISectionProperties,pSectProps);
@@ -661,14 +726,20 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi, intervalIdx, pgsTypes::End, pConfig);
    if (pConfig == nullptr)
    {
-      pscd->Vpt = pPTForce->GetVerticalTendonForce(poi,intervalIdx,pgsTypes::End,ALL_DUCTS);
+      pscd->VptSegment = pPTForce->GetSegmentTendonVerticalForce(poi, intervalIdx, pgsTypes::End, ALL_DUCTS);
+      pscd->VptGirder = pPTForce->GetGirderTendonVerticalForce(poi, intervalIdx, pgsTypes::End, ALL_DUCTS);
    }
    else
    {
       // if there is a config, this is a pretensioned bridge so no tendons.
-      pscd->Vpt = 0;
+      pscd->VptSegment = 0;
+      pscd->VptGirder = 0;
+#if defined _DEBUG
+      GET_IFACE(IDocumentType, pDocType);
+      ATLASSERT(pDocType->IsPGSuperDocument());
+#endif
    }
-   pscd->Vp = pscd->Vps + pscd->Vpt;
+   pscd->Vp = pscd->Vps + pscd->VptSegment + pscd->VptGirder;
 
    const MOMENTCAPACITYDETAILS* pCapdet = pMomentCapacity->GetMomentCapacityDetails(intervalIdx, poi, (pscd->bTensionBottom ? true : false), pConfig);
 
@@ -685,7 +756,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    Float64 struct_slab_h = pBridge->GetStructuralSlabDepth(poi);
 
-   pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
+   pgsTypes::HaunchAnalysisSectionPropertiesType hatype = pSectProps->GetHaunchAnalysisSectionPropertiesType();
    Float64 haunch_depth = pSectProps->GetStructuralHaunchDepth(poi, hatype);
 
    pscd->h = pGdr->GetHeight(poi) + struct_slab_h + haunch_depth;
@@ -724,22 +795,36 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    if ( bAfter1999 )
    {
-      pscd->fpept = -999999; // not used so set parameter to a dummy value
+      pscd->fpeptSegment = -999999; // not used so set parameter to a dummy value
+      pscd->fpeptGirder = -999999; // not used so set parameter to a dummy value
    }
    else
    {
-      // compute average stress in tendons
-      DuctIndexType nDucts = pTendonGeometry->GetDuctCount(segmentKey);
-      Float64 fpeApt = 0;
-      Float64 Apt = 0;
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      // compute average stress in segment tendons
+      DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      Float64 fpeAptSegment = 0;
+      Float64 AptSegment = 0;
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
       {
-         Float64 fpe = pPTForce->GetTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx,true,true);
-         Float64 apt = pTendonGeometry->GetTendonArea(segmentKey,intervalIdx,ductIdx);
-         fpeApt += fpe*apt;
-         Apt += apt;
+         Float64 fpe = pPTForce->GetSegmentTendonStress(poi, intervalIdx, pgsTypes::End, ductIdx, true, true);
+         Float64 apt = pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, intervalIdx, ductIdx);
+         fpeAptSegment += fpe*apt;
+         AptSegment += apt;
       }
-      pscd->fpept = (IsZero(Apt) ? 0 : fpeApt/Apt);
+      pscd->fpeptSegment = (IsZero(AptSegment) ? 0 : fpeAptSegment / AptSegment);
+
+      // compute average stress in girder tendons
+      DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
+      Float64 fpeAptGirder = 0;
+      Float64 AptGirder = 0;
+      for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+      {
+         Float64 fpe = pPTForce->GetGirderTendonStress(poi,intervalIdx,pgsTypes::End,ductIdx,true,true);
+         Float64 apt = pGirderTendonGeometry->GetGirderTendonArea(segmentKey,intervalIdx,ductIdx);
+         fpeAptGirder += fpe*apt;
+         AptGirder += apt;
+      }
+      pscd->fpeptGirder = (IsZero(AptGirder) ? 0 : fpeAptGirder/AptGirder);
    }
 
    // prestress area - factor for development length
@@ -774,17 +859,19 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    if ( pscd->bTensionBottom )
    {
-      pscd->Apt = pTendonGeometry->GetAptBottomHalf(poi);
+      pscd->AptSegment = pSegmentTendonGeometry->GetSegmentAptBottomHalf(poi);
+      pscd->AptGirder = pGirderTendonGeometry->GetGirderAptBottomHalf(poi);
    }
    else
    {
-      pscd->Apt = pTendonGeometry->GetAptTopHalf(poi);
+      pscd->AptSegment = pSegmentTendonGeometry->GetSegmentAptTopHalf(poi);
+      pscd->AptGirder = pGirderTendonGeometry->GetGirderAptTopHalf(poi);
    }
 
 #if defined _DEBUG
    if ( pConfig != nullptr )
    {
-      ATLASSERT(IsZero(pscd->Apt)); // if we have a config, we better not have a tendon
+      ATLASSERT(IsZero(pscd->AptSegment + pscd->AptGirder)); // if we have a config, we better not have a tendon
    }
 #endif
 
@@ -796,7 +883,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    CRACKINGMOMENTDETAILS mcr_details;
    if ( pConfig == nullptr )
    {
-      pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,(pscd->bTensionBottom ? true : false),&mcr_details);
+      mcr_details = *(pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,(pscd->bTensionBottom ? true : false)));
    }
    else
    {
@@ -812,7 +899,15 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    }
    else
    {
-      pscd->McrDetails.fr = pMaterial->GetDeckShearFr(intervalIdx);
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      if (deckCastingRegionIdx == INVALID_INDEX)
+      {
+         pscd->McrDetails.fr = pMaterial->GetSegmentShearFr(segmentKey, intervalIdx);
+      }
+      else
+      {
+         pscd->McrDetails.fr = pMaterial->GetDeckShearFr(deckCastingRegionIdx, intervalIdx);
+      }
    }
 
    pscd->McrDetails.Mcr = pscd->McrDetails.Sbc*(pscd->McrDetails.fr + pscd->McrDetails.fcpe - pscd->McrDetails.Mdnc/pscd->McrDetails.Sb);
@@ -823,6 +918,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       switch( pscd->ConcreteType )
       {
       case pgsTypes::Normal:
+      case pgsTypes::UHPC:
          pscd->bHasFct = false;
          pscd->fct = 0;
          break;
@@ -864,6 +960,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       switch( pscd->ConcreteType )
       {
       case pgsTypes::Normal:
+      case pgsTypes::UHPC:
          pscd->bHasFct = false;
          pscd->fct = 0;
          break;
@@ -900,6 +997,9 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       }
    }
 
+
+   pscd->bLimitNetTensionStrainToPositiveValues = (pscd->ConcreteType == pgsTypes::UHPC || pSpecEntry->LimitNetTensionStrainToPositiveValues());
+   pscd->bIgnoreMiniumStirrupRequirementForBeta = (pscd->ConcreteType == pgsTypes::UHPC);
    return true;
 }
 
@@ -919,12 +1019,15 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
    data.As           = pscd->As;
    data.Eps          = pscd->Eps;
    data.Aps          = pscd->Aps;
-   data.Ept          = pscd->Ept;
-   data.Apt          = pscd->Apt;
+   data.EptSegment   = pscd->EptSegment;
+   data.AptSegment   = pscd->AptSegment;
+   data.EptGirder    = pscd->EptGirder;
+   data.AptGirder    = pscd->AptGirder;
    data.Ec           = pscd->Ec;
    data.Ac           = pscd->Ac;
    data.fpops        = pscd->fpops;
-   data.fpopt        = pscd->fpopt;
+   data.fpoptSegment = pscd->fpoptSegment;
+   data.fpoptGirder  = pscd->fpoptGirder;
    data.fc           = pscd->fc;
    data.fy           = pscd->fy;
    data.AvS          = IsZero(pscd->S) ? 0 : pscd->Av/pscd->S;
@@ -937,6 +1040,8 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
    data.fct          = pscd->fct;
    data.sx           = pscd->sx; // cracking
    data.ag           = pscd->ag;
+   data.bLimitNetTensionStrainToPositiveValues = pscd->bLimitNetTensionStrainToPositiveValues;
+   data.bIgnoreMiniumStirrupRequirementForBeta = pscd->bIgnoreMiniumStirrupRequirementForBeta;
 
    GET_IFACE(IMaterials,pMaterials);
    data.lambda = pMaterials->GetSegmentLambda(segmentKey);
@@ -1073,6 +1178,7 @@ bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAP
             switch( pscd->ConcreteType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                Vc *= sqrt(fc);
                break;
 
@@ -1188,7 +1294,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          }
          else
          {
-            if ( pscd->ConcreteType == pgsTypes::Normal )
+            if ( pscd->ConcreteType == pgsTypes::Normal || pscd->ConcreteType == pgsTypes::UHPC)
             {
                sqrt_fc = sqrt(fc);
             }
@@ -1247,19 +1353,19 @@ void pgsShearCapacityEngineer::ComputeVsReqd(const pgsPointOfInterest& poi, SHEA
 
       Float64 Vu = pscd->Vu;
       Float64 Vc = pscd->Vc;
+      Float64 Vf = pscd->Vf;
       Float64 Vp = (shear_capacity_method == scmVciVcw ? 0 : pscd->Vp);
       Float64 Phi = pscd->Phi;
       Float64 Theta = pscd->Theta;
       Float64 fy = pscd->fy;
       Float64 dv = pscd->dv;
 
-      Vs = Vu/Phi - Vc - Vp;
+      Vs = Vu/Phi - Vc - Vf - Vp;
 
-//      ATLASSERT( 0.5*Phi*(Vc+Vp) < Vu ); // this assert is information only
-//                                         // this is a case when stirrups are required by code, but not by strength
-
-      if ( Vs < 0 ) 
+      if (Vs < 0)
+      {
          Vs = 0;
+      }
 
       Float64 cot = 1/tan(Theta);
       AvOverS = Vs/(fy*dv*cot);
@@ -1267,4 +1373,25 @@ void pgsShearCapacityEngineer::ComputeVsReqd(const pgsPointOfInterest& poi, SHEA
 
    pscd->VsReqd       = Vs;
    pscd->AvOverS_Reqd = AvOverS;
+}
+
+bool pgsShearCapacityEngineer::ComputeVf(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
+{
+   // computes contribution to shear from UHPC fibers
+   // contribution is (0.75ksi)*cot(theta)*bv*dv
+   GET_IFACE(IMaterials, pMaterial);
+   if (pMaterial->GetSegmentConcreteType(poi.GetSegmentKey()) == pgsTypes::UHPC)
+   {
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLib);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+      pscd->FiberStress = pSpecEntry->GetUHPCFiberShearStrength();
+      pscd->Vf = pscd->FiberStress*pscd->bv*pscd->dv / tan(pscd->Theta);
+   }
+   else
+   {
+      pscd->Vf = 0;
+   }
+   return true;
 }

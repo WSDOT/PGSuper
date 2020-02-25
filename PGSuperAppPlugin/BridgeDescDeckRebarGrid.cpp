@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -100,7 +100,11 @@ void CBridgeDescDeckRebarGrid::AddRow()
    nRow = GetRowCount()+1;
 	nRow = Max((ROWCOL)1, nRow);
 
-	InsertRows(nRow, 1);
+   if (!InsertRows(nRow, 1))
+   {
+      return;
+   }
+
    SetRowStyle(nRow);
 
    // Set some default data
@@ -109,13 +113,14 @@ void CBridgeDescDeckRebarGrid::AddRow()
    ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
    CDeckRebarData::NegMomentRebarData rebarData;
+   rebarData.PierIdx = 0;
 
    // find the first continuous pier
    PierIndexType nPiers = pGrandParent->m_BridgeDesc.GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
       const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
-      if ( pPier->HasCantilever() || pPier->IsContinuousConnection() )
+      if ( pPier->IsContinuousConnection() )
       {
          rebarData.PierIdx = pierIdx;
          break;
@@ -285,20 +290,16 @@ void CBridgeDescDeckRebarGrid::UpdatePierList()
    IndexType idx = 0;
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
-      const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
-      if ( pPier->HasCantilever() || pPier->IsContinuousConnection() )
+      if ( idx == 0 )
       {
-         if ( idx == 0 )
-         {
-            m_strPiers.Format(_T("%d"),LABEL_PIER(pierIdx));
-            idx++;
-         }
-         else
-         {
-            CString str = m_strPiers;
-            m_strPiers.Format(_T("%s\n%d"),str,LABEL_PIER(pierIdx));
-            idx++;
-         }
+         m_strPiers.Format(_T("%d"),LABEL_PIER(pierIdx));
+         idx++;
+      }
+      else
+      {
+         CString str = m_strPiers;
+         m_strPiers.Format(_T("%s\n%d"),str,LABEL_PIER(pierIdx));
+         idx++;
       }
    }
 
@@ -507,17 +508,9 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
    ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(rebarData.PierIdx);
-   if ( pPier->HasCantilever() || pPier->IsContinuousConnection() )
-   {
-      HideRows(nRow,nRow,FALSE);
-   }
-   else
-   {
-      HideRows(nRow,nRow,TRUE);
-   }
 
    // pier index
-   SetValueRange(CGXRange(nRow,1),(LONG)(rebarData.PierIdx+1L));
+   SetValueRange(CGXRange(nRow,1),(LONG)(LABEL_PIER(rebarData.PierIdx)));
 
    // Mat
    SetValueRange(CGXRange(nRow,2),rebarData.Mat == CDeckRebarData::TopMat ? _T("Top") : _T("Bottom"));
@@ -560,34 +553,28 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
    bool bHasLeftCutoff = true;
    bool bHasRightCutoff = true;
 
-   if ( pPier->IsBoundaryPier() && !pPier->HasCantilever() )
-   {
-      pgsTypes::BoundaryConditionType boundaryConditionType = pPier->GetBoundaryConditionType();
-      if ( boundaryConditionType == pgsTypes::bctHinge || boundaryConditionType == pgsTypes::bctRoller )
-      {
-         bHasLeftCutoff = false;
-         bHasRightCutoff = false;
-      }
-      else
-      {
-         if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeBack || 
-              boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeBack ||
-              (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetPrevSpan() == nullptr) ||
-              (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetPrevSpan() == nullptr) 
-            )
-         {
-            bHasLeftCutoff = false;
-         }
+#pragma Reminder("UPDATE - when deck rebar model improves, improve the way cutoffs are handled")
+   // right now, the UI will show cutoffs on both sides of all piers
+   // there are cases whete this doesn't make sense (simple span at start/end of bridge, unless there are cantilevers)
+   // bars and cutoff information not needed is ignored so any "bad input" isn't harmful
 
-         if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeAhead || 
-              boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeAhead ||
-             (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetNextSpan() == nullptr) ||
-             (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetNextSpan() == nullptr) 
-            ) 
-         {
-            bHasRightCutoff = false;
-         }
-      }
+   pgsTypes::BoundaryConditionType boundaryConditionType = pPier->GetBoundaryConditionType();
+   if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeBack || 
+        boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeBack ||
+       (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetPrevSpan() == nullptr) ||
+       (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetPrevSpan() == nullptr) 
+      )
+   {
+      bHasLeftCutoff = false;
+   }
+
+   if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeAhead || 
+        boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeAhead ||
+       (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetNextSpan() == nullptr) ||
+       (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetNextSpan() == nullptr) 
+      ) 
+   {
+      bHasRightCutoff = false;
    }
 
    if ( bHasLeftCutoff )
@@ -716,11 +703,14 @@ BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
       const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
 
-      if ( pPier->IsBoundaryPier() )
+      if ( pPier->IsBoundaryPier() && !pPier->IsAbutment() )
       {
          // can't have reinforcement running over a boundary pier if there is a hinge or roller connection.
          // Boundary piers are between groups and hinge/roller connection means there is a hinge point in
          // the superstructure. If bars go over the pier, there wouldn't be a hinge
+         //
+         // Generally this should apply to abutments too, however if there is a cantilever (which can't be determined
+         // at this point), we want the rebar to run over the abutment for negative moments.
          if ( pPier->GetBoundaryConditionType() == pgsTypes::bctHinge || pPier->GetBoundaryConditionType() == pgsTypes::bctRoller )
          {
             CString strMsg;

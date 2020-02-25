@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,8 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\SegmentActivity.h>
+#include <PgsExt\TimelineEvent.h>
+#include <PgsExt\TimelineManager.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -29,8 +31,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CSegmentActivityBase::CSegmentActivityBase()
+CSegmentActivityBase::CSegmentActivityBase(CTimelineEvent* pTimelineEvent)
 {
+   m_pTimelineEvent = pTimelineEvent;
    m_bEnabled = false;
 }
 
@@ -93,12 +96,14 @@ void CSegmentActivityBase::AddSegment(SegmentIDType segmentID)
 {
    m_Segments.insert(segmentID);
    m_bEnabled = true;
+   Update();
 }
 
 void CSegmentActivityBase::AddSegments(const std::set<SegmentIDType>& segments)
 {
    m_Segments.insert(segments.begin(),segments.end());
    m_bEnabled = true;
+   Update();
 }
 
 const std::set<SegmentIDType>& CSegmentActivityBase::GetSegments() const
@@ -124,6 +129,7 @@ void CSegmentActivityBase::RemoveSegment(SegmentIDType segmentID)
    {
       m_bEnabled = false;
    }
+   Update();
 }
 
 IndexType CSegmentActivityBase::GetSegmentCount() const
@@ -234,10 +240,21 @@ HRESULT CSegmentActivityBase::SaveSubclassData(IStructuredSave* pStrSave,IProgre
    return S_OK;
 }
 
+void CSegmentActivityBase::Update()
+{
+   // There are caches of segment keys in the timeline manager. When the number of segments change,
+   // the caches become invalid. This call tells the timeline manager to hit every timeline event
+   // and clear its caches
+   auto* pTimelineMgr = m_pTimelineEvent->GetTimelineManager();
+   if (pTimelineMgr)
+   {
+      pTimelineMgr->ClearCaches();
+   }
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 // CConstructSegmentActivity
-CConstructSegmentActivity::CConstructSegmentActivity() : CSegmentActivityBase()
+CConstructSegmentActivity::CConstructSegmentActivity(CTimelineEvent* pTimelineEvent) : CSegmentActivityBase(pTimelineEvent)
 {
    m_RelaxationTime = 1.0; // day
    m_AgeAtRelease   = 1.0; // day
@@ -352,4 +369,10 @@ HRESULT CConstructSegmentActivity::SaveSubclassData(IStructuredSave* pStrSave,IP
    }
 
    return S_OK;
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// CErectSegmentActivity
+CErectSegmentActivity::CErectSegmentActivity(CTimelineEvent* pTimelineEvent) : CSegmentActivityBase(pTimelineEvent)
+{
 }

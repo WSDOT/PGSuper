@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2019  Washington State Department of Transportation
+// Copyright © 1999-2020  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -91,6 +91,7 @@ protected:
 
    CPrecastSegmentData* m_pSegment; // holds the strand data for the calling dialog
    CStrandData m_Strands; // holds strand data while editing is occuring (this is used to update the display)
+   CSegmentPTData m_Tendons; // holds strand data while editing is occuring (this is used to update the display)
 
 public:
    afx_msg void OnBnClickedAdd();
