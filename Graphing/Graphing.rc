@@ -67,8 +67,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,1,6,0
- PRODUCTVERSION 4,1,6,0
+ FILEVERSION 5,0,0,9
+ PRODUCTVERSION 5,0,0,9
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -86,12 +86,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper Graphing"
-            VALUE "FileVersion", "4.1.6.0"
+            VALUE "FileVersion", "5.0.0.9"
             VALUE "InternalName", "Graphing"
             VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperGraphing.dll"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "4.1.6.0"
+            VALUE "ProductVersion", "5.0.0.9"
         END
     END
     BLOCK "VarFileInfo"
@@ -213,7 +213,7 @@ IDD_CONCRETE_PROPERTY_GRAPH_CONTROLLER DIALOGEX 0, 0, 155, 369
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
-    GROUPBOX        "Element",IDC_STATIC,6,7,142,113
+    GROUPBOX        "Element",IDC_STATIC,6,7,142,130
     CONTROL         "Precast Segment",IDC_PRECAST_SEGMENT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,14,22,70,10
     CONTROL         "Closure Joint",IDC_CLOSURE_JOINT,"Button",BS_AUTORADIOBUTTON,14,79,57,10
     CONTROL         "Bridge Deck",IDC_DECK,"Button",BS_AUTORADIOBUTTON,14,106,53,10
@@ -221,18 +221,19 @@ BEGIN
     COMBOBOX        IDC_GIRDER,13,48,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_SEGMENT,13,63,67,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_CLOSURE,13,90,135,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Property",IDC_STATIC,6,127,142,69
-    CONTROL         "f'c",IDC_FC,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,140,23,10
-    CONTROL         "Ec",IDC_EC,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,153,23,10
-    CONTROL         "Shrinkage Strain",IDC_SH,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,166,68,10
-    CONTROL         "Creep Coefficients",IDC_CR,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,179,75,10
-    GROUPBOX        "Horizontal Axis",IDC_STATIC,6,201,142,78
-    CONTROL         "Time (Linear Scale)",IDC_TIME_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,214,76,10
-    CONTROL         "Time (Logarithmic Scale)",IDC_TIME_LOG,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,226,93,10
-    CONTROL         "Age (Linear Scale)",IDC_AGE_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,238,74,10
-    CONTROL         "Age (Logarithmic Scale)",IDC_AGE_LOG,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,250,91,10
-    CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,262,41,10
-    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,287,48,10
+    COMBOBOX        IDC_DECK_CASTING_REGION,13,118,135,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Property",IDC_STATIC,6,140,142,69
+    CONTROL         "fc",IDC_FC,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,153,22,10
+    CONTROL         "Ec",IDC_EC,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,166,23,10
+    CONTROL         "Shrinkage Strain",IDC_SH,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,179,68,10
+    CONTROL         "Creep Coefficients",IDC_CR,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,192,75,10
+    GROUPBOX        "Horizontal Axis",IDC_STATIC,6,214,142,78
+    CONTROL         "Time (Linear Scale)",IDC_TIME_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,13,227,76,10
+    CONTROL         "Time (Logarithmic Scale)",IDC_TIME_LOG,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,239,93,10
+    CONTROL         "Age (Linear Scale)",IDC_AGE_LINEAR,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,251,74,10
+    CONTROL         "Age (Logarithmic Scale)",IDC_AGE_LOG,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,263,91,10
+    CONTROL         "Interval",IDC_INTERVALS,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,13,275,41,10
+    CONTROL         "Show Grid",IDC_GRID,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,300,48,10
 END
 
 IDD_INITIALSTRAIN_GRAPH_CONTROLLER DIALOGEX 0, 0, 156, 190
@@ -367,6 +368,11 @@ BEGIN
 END
 
 IDD_ANALYSISRESULTS_GRAPH_CONTROLLER AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CONCRETE_PROPERTY_GRAPH_CONTROLLER AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

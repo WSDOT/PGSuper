@@ -54,7 +54,7 @@ txnDesignGirder::txnDesignGirder( std::vector<const pgsGirderDesignArtifact*>& a
    m_FromSpanIdx = fromSpan;
    m_FromGirderIdx = fromGirder;
 
-   // AssExcessCamber design uses same input as slab offset
+   // AssumedExcessCamber design uses same input as slab offset
    if (m_NewSlabOffsetType == sodtBridge)
    {
       m_NewAssumedExcessCamberType = pgsTypes::aecBridge;
@@ -171,7 +171,7 @@ void txnDesignGirder::Init()
             if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodSlabOffsetandAssumedExcessCamberDesign &&
                  pSpec->IsAssumedExcessCamberForLoad())
             {
-               // AssExcessCamber was done too - store it
+               // AssumedExcessCamber was done too - store it
                m_DidAssumedExcessCamberDesign = true;
                m_DesignAssumedExcessCamber = pSegmentDesignArtifact->GetAssumedExcessCamber();
             }

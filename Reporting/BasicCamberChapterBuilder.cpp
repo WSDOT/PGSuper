@@ -310,7 +310,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
 
        if (bDeckPanels)
        {
-          *pPara << _T(" + ") << SCL(cm.ErectionFactor) << _T(" * ") << DEFL(_T("panels"));
+          *pPara << _T(" + ") << SCL(cm.DeckPanelFactor) << _T(" * ") << DEFL(_T("panels"));
        }
 
       *pPara << _T(" + ") << SCL(cm.SlabUser1Factor) << _T(" * (") << DEFL(_T("slab")) << _T(" + ") << DEFL(_T("user1")) << _T(")");
@@ -537,9 +537,17 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       *pPara << DEFL(_T("5")) << _T(" = ") << DEFL(_T("4"));
       *pPara << _T(" + ") << SCL(cm.BarrierSwOverlayUser2Factor) << _T(" * (") << DEFL(_T("barrier"));
 
+      if ( bOverlay )
+      {
+         *pPara << _T(" + ") << DEFL(_T("overlay"));
+      }
+
+      *pPara << _T(" + ") << DEFL(_T("user2")) << _T(")");
+
       if (deckType == pgsTypes::sdtNonstructuralOverlay)
       {
-         *pPara << _T(" + ") << DEFL(_T("slab")) << _T(" + ") << DEFL(_T("haunch"));
+         *pPara << _T(" + ") << SCL(cm.SlabUser1Factor) << _T(" * ") << DEFL(_T("slab"));
+         *pPara << _T(" + ") << SCL(cm.SlabPadLoadFactor) << _T(" * ") << DEFL(_T("haunch"));
       }
 
       if ( bSidewalk )
@@ -547,12 +555,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
          *pPara << _T(" + ") << DEFL(_T("sidewalk"));
       }
 
-      if ( bOverlay )
-      {
-         *pPara << _T(" + ") << DEFL(_T("overlay"));
-      }
-
-      *pPara << _T(" + ") << DEFL(_T("user2")) << _T(")") << rptNewLine;
+      *pPara << rptNewLine;
 
       *pPara << DEFL(_T("6")) << _T(" = ") << DEFL(_T("5")) << _T(" + ") << SCL(cm.CreepFactor) << _T(" * ") << DEFL(_T("creep3"));
       *pPara << _T(" = ") << Sub2(symbol(DELTA),_T("excess")) << _T(" = Computed Excess Camber") << rptNewLine;

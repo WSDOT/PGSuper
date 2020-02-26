@@ -33,6 +33,19 @@
 #include <PgsExt\PierData2.h>
 #include <PgsExt\BoundaryConditionComboBox.h>
 
+
+class CAbutmentBearingOffsetMeasureComboBox : public CComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
+
+class CAbutmentEndDistanceMeasureComboBox : public CComboBox
+{
+public:
+   virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct);
+};
+
 /////////////////////////////////////////////////////////////////////////////
 // CAbutmentConnectionsPage dialog
 class CAbutmentConnectionsPage : public CPropertyPage
@@ -70,17 +83,24 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    CBoundaryConditionComboBox m_cbBoundaryCondition;
+   CAbutmentBearingOffsetMeasureComboBox m_cbBearingOffsetMeasure;
+   friend CAbutmentBearingOffsetMeasureComboBox;
+   CAbutmentEndDistanceMeasureComboBox m_cbEndDistanceMeasure;
+   friend CAbutmentEndDistanceMeasureComboBox;
 
    void OnEndDistanceMeasureChanged();
    void OnBearingOffsetMeasureChanged();
    void OnBoundaryConditionChanged();
 
    void UpdateConnectionPicture();
+   void UpdateConnectionPicture(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType);
+   void UpdateConnectionPicture(ConnectionLibraryEntry::EndDistanceMeasurementType endType);
    void FillBearingOffsetComboBox();
    void FillEndDistanceComboBox();
    void FillDiaphragmLoadComboBox();
    void FillBoundaryConditionComboBox();
    CString GetImageName(pgsTypes::BoundaryConditionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+
 
    CPierData2* m_pPier;
 

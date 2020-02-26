@@ -235,6 +235,7 @@ void CGirderModelChildFrame::SelectGirder(const CGirderKey& girderKey,bool bDoUp
    if ( girderKey.groupIndex != INVALID_INDEX && girderKey.girderIndex != INVALID_INDEX )
    {
       m_GirderKey = girderKey;
+      UpdateCutRange();
       UpdateBar();
 
       if ( bDoUpdate )
@@ -657,8 +658,27 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
          }
       }
    }
-   else if ( lHint == HINT_BRIDGECHANGED || lHint == HINT_GIRDERCHANGED || lHint == HINT_UNITSCHANGED )
+   else if (lHint == 0 || lHint == HINT_BRIDGECHANGED || lHint == HINT_GIRDERCHANGED || lHint == HINT_UNITSCHANGED )
    {
+      if (lHint == HINT_BRIDGECHANGED)
+      {
+         // If the bridge changed, make sure the girder key is still valid
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker, IBridge, pBridge);
+         GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+         if (nGroups <= m_GirderKey.groupIndex)
+         {
+            m_GirderKey.groupIndex = nGroups - 1;
+         }
+
+         GirderIndexType nGirders = pBridge->GetGirderCount(m_GirderKey.groupIndex);
+         if (nGirders <= m_GirderKey.girderIndex)
+         {
+            m_GirderKey.girderIndex = nGirders - 1;
+         }
+      }
+
       UpdateCutRange();
       m_cutPoi = GetCutPointOfInterest(m_cutPoi.GetDistFromStart());
       FillEventComboBox();
@@ -689,6 +709,7 @@ CGirderModelSectionView* CGirderModelChildFrame::GetGirderModelSectionView() con
 
 void CGirderModelChildFrame::UpdateViews()
 {
+   CWaitCursor wait;
    GetGirderModelElevationView()->OnUpdate(nullptr,0,nullptr);
    GetGirderModelSectionView()->OnUpdate(nullptr,0,nullptr);
 }
@@ -754,12 +775,11 @@ void CGirderModelChildFrame::UpdateCutRange()
    }
    else
    {
-      CSegmentKey segmentKey = m_cutPoi.GetSegmentKey();
-      if (segmentKey.girderIndex != m_GirderKey.girderIndex)
+      CGirderKey girderKey = m_cutPoi.GetSegmentKey();
+      if (m_GirderKey.groupIndex != ALL_GROUPS && !m_GirderKey.IsEqual(girderKey))
       {
          // if the cut poi is no longer on the selected girder, update it
-         segmentKey.girderIndex = m_GirderKey.girderIndex;
-         m_cutPoi = pPoi->GetNearestPointOfInterest(segmentKey, m_cutPoi.GetDistFromStart());
+         m_cutPoi = pPoi->GetNearestPointOfInterest(CSegmentKey(m_GirderKey,0), m_cutPoi.GetDistFromStart());
       }
 
       Float64 Xmin, Xmax, X;

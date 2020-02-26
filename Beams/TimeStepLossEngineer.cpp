@@ -214,7 +214,6 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
 
    ATLASSERT( poiFound != losses.end() );
    const LOSSDETAILS* pLossDetails = &(*poiFound).second;
-   //ATLASSERT(intervalIdx < pLossDetails->TimeStepDetails.size());
    return pLossDetails;
 }
 
@@ -229,16 +228,28 @@ void CTimeStepLossEngineer::ClearDesignLosses()
    ATLASSERT(false); // should not get called... not doing design with time-step method
 }
 
-const ANCHORSETDETAILS* CTimeStepLossEngineer::GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx)
+const ANCHORSETDETAILS* CTimeStepLossEngineer::GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx)
 {
    ComputeLosses(girderKey,0);
    std::map<CGirderKey,LOSSES>::const_iterator found;
    found = m_Losses.find( girderKey );
    ATLASSERT(found != m_Losses.end());
-   return &(*found).second.AnchorSet[ductIdx];
+   return &(*found).second.GirderAnchorSet[ductIdx];
 }
 
-Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
+const ANCHORSETDETAILS* CTimeStepLossEngineer::GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx)
+{
+   ComputeLosses(segmentKey, 0);
+   auto found_losses = m_Losses.find(segmentKey);
+   ATLASSERT(found_losses != m_Losses.end());
+   const auto& losses = found_losses->second;
+   auto found_anchor_set = losses.SegmentAnchorSet.find(segmentKey);
+   ATLASSERT(found_anchor_set != losses.SegmentAnchorSet.end());
+   const auto& anchor_set_details_container(found_anchor_set->second);
+   return &(anchor_set_details_container[ductIdx]);
+}
+
+Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
 {
    ComputeLosses(girderKey,0);
    std::map<CGirderKey,LOSSES>::const_iterator found;
@@ -246,7 +257,7 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
    ATLASSERT(found != m_Losses.end());
    const LOSSES& losses = found->second;
 
-   CTendonKey tendonKey(girderKey,ductIdx);
+   CGirderTendonKey tendonKey(girderKey,ductIdx);
 
 #if defined _DEBUG
    // Elongation calculations are kind of tricky... they are computed with friction losses
@@ -269,7 +280,7 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
       if ( pDuct->bPjCalc )
       {
          GET_IFACE(IPosttensionForce,pPTForce);
-         Pj = pPTForce->GetPjackMax(girderKey,pDuct->nStrands);
+         Pj = pPTForce->GetGirderTendonPjackMax(girderKey,pDuct->nStrands);
       }
       else
       {
@@ -281,7 +292,7 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
       Float64 Apt = apt*nStrands;
 
       GET_IFACE(IMaterials,pMaterials);
-      Float64 Ept = pMaterials->GetTendonMaterial(girderKey)->GetE();
+      Float64 Ept = pMaterials->GetGirderTendonMaterial(girderKey)->GetE();
 
       // this is iterating by POI
       GET_IFACE(IPointOfInterest,pPoi);
@@ -292,29 +303,31 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
       }
 
       const LOSSDETAILS& lossDetails = sectionLossIter->second;
-      Float64 X1    = lossDetails.FrictionLossDetails[ductIdx].X;
-      Float64 dfpF1 = lossDetails.FrictionLossDetails[ductIdx].dfpF;
+      Float64 X1    = lossDetails.GirderFrictionLossDetails[ductIdx].X;
+      Float64 dfpF1 = lossDetails.GirderFrictionLossDetails[ductIdx].dfpF;
 
       sectionLossIter++;
 
+      GET_IFACE(IGirderTendonGeometry, pTendonGeom);
       SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
       for ( ; sectionLossIter != sectionLossIterEnd; sectionLossIter++ )
       {
-         if ( pPoi->IsOnGirder(sectionLossIter->first) )
+         const LOSSDETAILS& lossDetails = sectionLossIter->second;
+         Float64 X2    = lossDetails.GirderFrictionLossDetails[ductIdx].X;
+         Float64 dfpF2 = lossDetails.GirderFrictionLossDetails[ductIdx].dfpF;
+
+         Float64 dX = X2 - X1;
+         Float64 dP = 0;
+         if (pTendonGeom->IsOnDuct(sectionLossIter->first, ductIdx))
          {
-            const LOSSDETAILS& lossDetails = sectionLossIter->second;
-            Float64 X2    = lossDetails.FrictionLossDetails[ductIdx].X;
-            Float64 dfpF2 = lossDetails.FrictionLossDetails[ductIdx].dfpF;
-
-            Float64 dX = X2 - X1;
-            Float64 dP = Pj - 0.5*Apt*(dfpF2 + dfpF1);
-            Float64 dElongation = dP*dX;
-            elongation += dElongation;
-
-            // get ready for next time throught hte loop
-            X1 = X2;
-            dfpF1 = dfpF2;
+            dP = Pj - 0.5*Apt*(dfpF2 + dfpF1);
          }
+         Float64 dElongation = dP*dX;
+         elongation += dElongation;
+
+         // get ready for next time throught the loop
+         X1 = X2;
+         dfpF1 = dfpF2;
       }
 
       elongation /= (Ept*Apt);
@@ -326,7 +339,7 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
       }
    }
 
-   Float64 e = (endType == pgsTypes::metStart ? m_Elongation[tendonKey].first : m_Elongation[tendonKey].second);
+   Float64 e = (endType == pgsTypes::metStart ? m_GirderTendonElongation[tendonKey].first : m_GirderTendonElongation[tendonKey].second);
 //#if defined _BETA_VERSION
 //   if ( !IsEqual(elongation,e) )
 //   {
@@ -341,19 +354,150 @@ Float64 CTimeStepLossEngineer::GetElongation(const CGirderKey& girderKey,DuctInd
    ATLASSERT(IsEqual(elongation,e));
 #endif // _DEBUG
 
-   return (endType == pgsTypes::metStart ? m_Elongation[tendonKey].first : m_Elongation[tendonKey].second);
+   return (endType == pgsTypes::metStart ? m_GirderTendonElongation[tendonKey].first : m_GirderTendonElongation[tendonKey].second);
 }
 
-void CTimeStepLossEngineer::GetAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA)
+Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType)
 {
-   CTendonKey tendonKey(girderKey,ductIdx);
+   ComputeLosses(segmentKey, 0);
+   std::map<CGirderKey, LOSSES>::const_iterator found;
+   found = m_Losses.find(segmentKey);
+   ATLASSERT(found != m_Losses.end());
+   const LOSSES& losses = found->second;
 
-   std::map<CTendonKey,std::pair<Float64,Float64>>::iterator found = m_AvgFrictionAndAnchorSetLoss.find(tendonKey);
-   if ( found == m_AvgFrictionAndAnchorSetLoss.end() )
+   CSegmentTendonKey tendonKey(segmentKey, ductIdx);
+
+#if defined _DEBUG
+   // Elongation calculations are kind of tricky... they are computed with friction losses
+   // Re-compute them here using a more direct method and compare to what was computed before.
+   GET_IFACE(IBridgeDescription, pBridgeDesc);
+   GET_IFACE(IGirder, pIGirder);
+   const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
+   const CSegmentPTData* pPTData = &(pSegment->Tendons);
+   WebIndexType nWebs = pIGirder->GetWebCount(segmentKey);
+   const CSegmentDuctData* pDuct = pPTData->GetDuct(ductIdx / nWebs);
+
+   Float64 elongation = 0;
+
+   if ((pDuct->JackingEnd == pgsTypes::jeStart  && endType == pgsTypes::metStart) ||
+      (pDuct->JackingEnd == pgsTypes::jeEnd && endType == pgsTypes::metEnd) ||
+      pDuct->JackingEnd == pgsTypes::jeBoth
+      )
+   {
+      Float64 Pj;
+      if (pDuct->bPjCalc)
+      {
+         GET_IFACE(IPosttensionForce, pPTForce);
+         Pj = pPTForce->GetSegmentTendonPjackMax(segmentKey, pDuct->nStrands);
+      }
+      else
+      {
+         Pj = pDuct->Pj;
+      }
+
+      Float64 apt = pPTData->m_pStrand->GetNominalArea();
+      StrandIndexType nStrands = pDuct->nStrands;
+      Float64 Apt = apt*nStrands;
+
+      GET_IFACE(IMaterials, pMaterials);
+      Float64 Ept = pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
+
+      // this is iterating by POI... advance the iterator until we get the first poi that is on the subject segment
+      GET_IFACE(IPointOfInterest, pPoi);
+      SectionLossContainer::const_iterator sectionLossIter(losses.SectionLosses.begin());
+      while ( (!segmentKey.IsEqual(sectionLossIter->first.GetSegmentKey()) || !pPoi->IsOnSegment(sectionLossIter->first)) && sectionLossIter != losses.SectionLosses.end())
+      {
+         sectionLossIter++;
+      }
+
+      const LOSSDETAILS& lossDetails = sectionLossIter->second;
+      Float64 X1 = lossDetails.SegmentFrictionLossDetails[ductIdx].X;
+      Float64 dfpF1 = lossDetails.SegmentFrictionLossDetails[ductIdx].dfpF;
+
+      sectionLossIter++;
+
+      GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+      SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
+      for (; sectionLossIter != sectionLossIterEnd; sectionLossIter++)
+      {
+         if ((!segmentKey.IsEqual(sectionLossIter->first.GetSegmentKey()) || !pPoi->IsOnSegment(sectionLossIter->first) ) && sectionLossIter != losses.SectionLosses.end())
+         {
+            // if the current POI belongs to a segment that isn't the subject segment, we've gone far enough
+            // note that this condition depends on the condition above of the iterator starting at the first POI for the subject segment
+            break;
+         }
+            
+         const LOSSDETAILS& lossDetails = sectionLossIter->second;
+         Float64 X2 = lossDetails.SegmentFrictionLossDetails[ductIdx].X;
+         Float64 dfpF2 = lossDetails.SegmentFrictionLossDetails[ductIdx].dfpF;
+
+         Float64 dX = X2 - X1;
+         Float64 dP = 0;
+         if (pTendonGeom->IsOnDuct(sectionLossIter->first))
+         {
+            dP = Pj - 0.5*Apt*(dfpF2 + dfpF1);
+         }
+         Float64 dElongation = dP*dX;
+         elongation += dElongation;
+
+         // get ready for next time throught the loop
+         X1 = X2;
+         dfpF1 = dfpF2;
+      }
+
+      elongation /= (Ept*Apt);
+
+      if (pDuct->JackingEnd == pgsTypes::jeBoth)
+      {
+         // half of total elongation at each end
+         elongation /= 2;
+      }
+   }
+
+   Float64 e = (endType == pgsTypes::metStart ? m_SegmentTendonElongation[tendonKey].first : m_SegmentTendonElongation[tendonKey].second);
+   //#if defined _BETA_VERSION
+   //   if ( !IsEqual(elongation,e) )
+   //   {
+   //      CString strMsg;
+   //      strMsg.Format(_T("Elongation 1 = %s, Elongation 2 = %s"),
+   //         ::FormatDimension(elongation,m_pDisplayUnits->GetComponentDimUnit()),
+   //         ::FormatDimension(e,m_pDisplayUnits->GetComponentDimUnit()));
+   //      AfxMessageBox(strMsg);
+   //   }
+   //#endif // _BETA_RELEASE
+
+   ATLASSERT(IsEqual(elongation, e));
+#endif // _DEBUG
+
+   return (endType == pgsTypes::metStart ? m_SegmentTendonElongation[tendonKey].first : m_SegmentTendonElongation[tendonKey].second);
+}
+
+void CTimeStepLossEngineer::GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA)
+{
+   CGirderTendonKey tendonKey(girderKey,ductIdx);
+
+   std::map<CGirderTendonKey,std::pair<Float64,Float64>>::iterator found = m_GirderTendonAvgFrictionAndAnchorSetLoss.find(tendonKey);
+   if ( found == m_GirderTendonAvgFrictionAndAnchorSetLoss.end() )
    {
       ComputeLosses(girderKey,0);
-      found = m_AvgFrictionAndAnchorSetLoss.find(tendonKey);
-      ATLASSERT(found != m_AvgFrictionAndAnchorSetLoss.end());
+      found = m_GirderTendonAvgFrictionAndAnchorSetLoss.find(tendonKey);
+      ATLASSERT(found != m_GirderTendonAvgFrictionAndAnchorSetLoss.end());
+   }
+
+   *pfpF = found->second.first;
+   *pfpA = found->second.second;
+}
+
+void CTimeStepLossEngineer::GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA)
+{
+   CSegmentTendonKey tendonKey(segmentKey, ductIdx);
+
+   std::map<CSegmentTendonKey, std::pair<Float64, Float64>>::iterator found = m_SegmentTendonAvgFrictionAndAnchorSetLoss.find(tendonKey);
+   if (found == m_SegmentTendonAvgFrictionAndAnchorSetLoss.end())
+   {
+      ComputeLosses(segmentKey, 0);
+      found = m_SegmentTendonAvgFrictionAndAnchorSetLoss.find(tendonKey);
+      ATLASSERT(found != m_SegmentTendonAvgFrictionAndAnchorSetLoss.end());
    }
 
    *pfpF = found->second.first;
@@ -370,17 +514,15 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
 
       // create the loss objects for this girderline
       std::vector<LOSSES*> vpLosses;
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
-      for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
-      {
-         GirderIndexType nGirders = pIBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();
-         GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
 
-         CGirderKey thisGirderKey(grpIdx,gdrIdx);
+      GET_IFACE(IBridge, pBridge);
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys); // must use girderline index version here (not the girder key version)
+      for(const auto& thisGirderKey : vGirderKeys)
+      {
          LOSSES losses;
          std::pair<std::map<CGirderKey,LOSSES>::iterator,bool> result;
-         result = m_Losses.insert(std::make_pair(thisGirderKey,losses)); // losses is copied when inserted
+         result = m_Losses.emplace(thisGirderKey,losses);
          ATLASSERT(result.second == true);
          LOSSES* pLosses = &(result.first->second);
          vpLosses.push_back(pLosses);
@@ -398,14 +540,15 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
    }
 
    // Get frequently used interfaces
-   // NOTE: We can't get this interfaces and hold them for the lifetime of this object
+   // NOTE: We can't get these interfaces and hold them for the lifetime of this object
    // because it creates circular references. As a result there are massive memory leaks
    // Get them here, do the full timestep analysis, then release them.
    m_pBroker->GetInterface(IID_IProgress,          (IUnknown**)&m_pProgress);
    m_pBroker->GetInterface(IID_IBridgeDescription, (IUnknown**)&m_pBridgeDesc);
    m_pBroker->GetInterface(IID_IBridge,            (IUnknown**)&m_pBridge);
    m_pBroker->GetInterface(IID_IStrandGeometry,    (IUnknown**)&m_pStrandGeom);
-   m_pBroker->GetInterface(IID_ITendonGeometry,    (IUnknown**)&m_pTendonGeom);
+   m_pBroker->GetInterface(IID_IGirderTendonGeometry, (IUnknown**)&m_pGirderTendonGeometry);
+   m_pBroker->GetInterface(IID_ISegmentTendonGeometry, (IUnknown**)&m_pSegmentTendonGeometry);
    m_pBroker->GetInterface(IID_IIntervals,         (IUnknown**)&m_pIntervals);
    m_pBroker->GetInterface(IID_ISectionProperties, (IUnknown**)&m_pSectProp);
    m_pBroker->GetInterface(IID_IGirder,            (IUnknown**)&m_pGirder);
@@ -423,7 +566,7 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
    m_pBroker->GetInterface(IID_ILosses,            (IUnknown**)&m_pLosses);
 
    {
-      // scope the use all the interface points accessed above and released below
+      // scope the use of all the interface pointers accessed above and released below
 
       CEAFAutoProgress ap(m_pProgress);
       m_pProgress->UpdateMessage(_T("Computing prestress losses"));
@@ -455,7 +598,8 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
    m_pBridgeDesc.Release();
    m_pBridge.Release();
    m_pStrandGeom.Release();
-   m_pTendonGeom.Release();
+   m_pGirderTendonGeometry.Release();
+   m_pSegmentTendonGeometry.Release();
    m_pIntervals.Release();
    m_pSectProp.Release();
    m_pGirder.Release();
@@ -475,6 +619,15 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
 
 void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LOSSES* pLosses)
 {
+   // start by computing the friction losses for the PT in individual segments
+   const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirder(girderKey);
+   SegmentIndexType nSegments = pGirder->GetSegmentCount();
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+      ComputeFrictionLosses(pSegment, pLosses);
+   }
+
    CString strMsg;
    strMsg.Format(_T("Computing friction losses for tendons in Group %d Girderline %s"),LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex));
    m_pProgress->UpdateMessage(strMsg);
@@ -487,9 +640,8 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
 
    WebIndexType nWebs = m_pGirder->GetWebCount(girderKey);
 
-   const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirder(girderKey);
    const CPTData* pPTData = pGirder->GetPostTensioning();
-   DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(girderKey);
+   DuctIndexType nDucts = m_pGirderTendonGeometry->GetDuctCount(girderKey);
    Float64 Lg = m_pBridge->GetGirderLength(girderKey);
 
    auto begin(std::cbegin(vPoi));
@@ -499,100 +651,108 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
    {
       const pgsPointOfInterest& poi(*iter);
 
-      LOSSDETAILS details;
-      details.FrictionLossDetails.reserve(nDucts);
+      LOSSDETAILS* pLossDetails = &(pLosses->SectionLosses[poi]);
+
+      pLossDetails->GirderFrictionLossDetails.reserve(nDucts);
 #if defined _DEBUG
-      details.POI = poi;
+      ATLASSERT(pLossDetails->POI == poi);
+      ATLASSERT(pLossDetails->LossMethod == pgsTypes::TIME_STEP);
 #endif
 
-      details.LossMethod = pgsTypes::TIME_STEP;
-
       bool bIsOnGirder = m_pPoi->IsOnGirder(poi);
+      Float64 Xg = m_pPoi->ConvertPoiToGirderCoordinate(poi); // distance along girder
 
       if ( bIsOnGirder )
       {
          //////////////////////////////////////////////////////////////////////////
          // Friction Losses
          //////////////////////////////////////////////////////////////////////////
-         Float64 Xg = m_pPoi->ConvertPoiToGirderCoordinate(poi); // distance along girder
-
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
             FRICTIONLOSSDETAILS frDetails;
-
-            const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
-            Float64 Pj;
-            if ( pDuct->bPjCalc )
-            {
-               Pj = m_pPTForce->GetPjackMax(girderKey,pDuct->nStrands);
-            }
-            else
-            {
-               Pj = pDuct->Pj;
-            }
-
-            Float64 aps = pPTData->pStrand->GetNominalArea();
-            StrandIndexType nStrands = pDuct->nStrands;
-            Float64 Aps = aps*nStrands;
-            Float64 fpj = (nStrands == 0 ? 0 : Pj/Aps);
-            
             frDetails.X = Xg;
-            if ( pDuct->JackingEnd == pgsTypes::jeStart )
-            {
-               Float64 alpha = m_pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metStart);
-               frDetails.alpha = alpha;
-               frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + Xg*wobble)));
-            }
-            else if ( pDuct->JackingEnd == pgsTypes::jeEnd )
-            {
-               Float64 alpha = m_pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metEnd);
-               frDetails.alpha = alpha;
-               frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + (Lg-Xg)*wobble)));
-            }
-            else
-            {
-               ATLASSERT(pDuct->JackingEnd == pgsTypes::jeBoth);
 
-               // get friction loss for jacking from left end
-               Float64 alpha_left = m_pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metStart);
-               Float64 dfpF_left = fpj*(1 - exp(-(friction*alpha_left + Xg*wobble)));
+            if (m_pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
+            {
+               Float64 Xgs, Xge;
+               m_pGirderTendonGeometry->GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
 
-               // get friction loss for jacking from right end
-               Float64 alpha_right = m_pTendonGeom->GetAngularChange(poi, ductIdx, pgsTypes::metEnd);
-               Float64 dfpF_right = fpj*(1 - exp(-(friction*alpha_right + (Lg - Xg)*wobble)));
-
-               if (dfpF_left < dfpF_right)
+               const CDuctData* pDuct = pPTData->GetDuct(ductIdx / nWebs);
+               Float64 Pj;
+               if (pDuct->bPjCalc)
                {
-                  // this section is controlled by left end jacking
-                  frDetails.alpha = alpha_left;
-                  frDetails.dfpF = dfpF_left;
+                  Pj = m_pPTForce->GetGirderTendonPjackMax(girderKey, pDuct->nStrands);
                }
                else
                {
-                  // this section is controlled by right end jacking
-                  frDetails.alpha = alpha_right;
-                  frDetails.dfpF = dfpF_right;
+                  Pj = pDuct->Pj;
                }
-            }
 
-            // calculation incremental elongation at this poi... it will
-            // be summed with previously computed increments to get the total
-            // elongation
-            CTendonKey tendonKey(girderKey,ductIdx);
-            if ( iter == begin || pLosses->SectionLosses[*(iter-1)].FrictionLossDetails.size() == 0 )
-            {
-               // first poi that is on the girder ... initialize with zero
-               m_Elongation.insert(std::make_pair(tendonKey,std::make_pair(0,0)));
-            }
-            else
-            {
-               const pgsPointOfInterest& prevPoi(*(iter-1));
-               Float64 dX = frDetails.X - pLosses->SectionLosses[prevPoi].FrictionLossDetails[ductIdx].X;
-               Float64 df = fpj - 0.5*(frDetails.dfpF + pLosses->SectionLosses[prevPoi].FrictionLossDetails[ductIdx].dfpF);
-               m_Elongation[tendonKey].first += df*dX;
-            }
+               Float64 aps = pPTData->pStrand->GetNominalArea();
+               StrandIndexType nStrands = pDuct->nStrands;
+               Float64 Aps = aps*nStrands;
+               Float64 fpj = (nStrands == 0 ? 0 : Pj / Aps);
 
-            details.FrictionLossDetails.push_back(frDetails);
+               if (pDuct->JackingEnd == pgsTypes::jeStart)
+               {
+                  Float64 alpha = m_pGirderTendonGeometry->GetGirderTendonAngularChange(poi, ductIdx, pgsTypes::metStart);
+                  frDetails.alpha = alpha;
+                  Float64 Xleft = Xg - Xgs; // distance from jacking end
+                  frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + Xleft*wobble)));
+               }
+               else if (pDuct->JackingEnd == pgsTypes::jeEnd)
+               {
+                  Float64 alpha = m_pGirderTendonGeometry->GetGirderTendonAngularChange(poi, ductIdx, pgsTypes::metEnd);
+                  frDetails.alpha = alpha;
+                  Float64 Xright = Xge - Xg; // distance from jacking end
+                  frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + Xright*wobble)));
+               }
+               else
+               {
+                  ATLASSERT(pDuct->JackingEnd == pgsTypes::jeBoth);
+
+                  // get friction loss for jacking from left end
+                  Float64 alpha_left = m_pGirderTendonGeometry->GetGirderTendonAngularChange(poi, ductIdx, pgsTypes::metStart);
+                  Float64 Xleft = Xg - Xgs; // distance from jacking end
+                  Float64 dfpF_left = fpj*(1 - exp(-(friction*alpha_left + Xleft*wobble)));
+
+                  // get friction loss for jacking from right end
+                  Float64 alpha_right = m_pGirderTendonGeometry->GetGirderTendonAngularChange(poi, ductIdx, pgsTypes::metEnd);
+                  Float64 Xright = Xge - Xg; // distance from jacking end
+                  Float64 dfpF_right = fpj*(1 - exp(-(friction*alpha_right + Xright*wobble)));
+
+                  if (dfpF_left < dfpF_right)
+                  {
+                     // this section is controlled by left end jacking
+                     frDetails.alpha = alpha_left;
+                     frDetails.dfpF = dfpF_left;
+                  }
+                  else
+                  {
+                     // this section is controlled by right end jacking
+                     frDetails.alpha = alpha_right;
+                     frDetails.dfpF = dfpF_right;
+                  }
+               }
+
+               // calculation incremental elongation at this poi... it will
+               // be summed with previously computed increments to get the total
+               // elongation
+               CGirderTendonKey tendonKey(girderKey, ductIdx);
+               if (iter == begin || pLosses->SectionLosses[*(iter - 1)].GirderFrictionLossDetails.size() == 0)
+               {
+                  // first poi that is on the girder ... initialize with zero
+                  m_GirderTendonElongation.insert(std::make_pair(tendonKey, std::make_pair(0, 0)));
+               }
+               else
+               {
+                  const pgsPointOfInterest& prevPoi(*(iter - 1));
+                  Float64 dX = frDetails.X - pLosses->SectionLosses[prevPoi].GirderFrictionLossDetails[ductIdx].X;
+                  Float64 df = fpj - 0.5*(frDetails.dfpF + pLosses->SectionLosses[prevPoi].GirderFrictionLossDetails[ductIdx].dfpF);
+                  m_GirderTendonElongation[tendonKey].first += df*dX;
+               }
+            } // if on duct
+            pLossDetails->GirderFrictionLossDetails.push_back(frDetails);
          } // next duct
       }
       else
@@ -601,99 +761,277 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
             FRICTIONLOSSDETAILS frDetails;
-            frDetails.alpha = 0;
-            frDetails.X = 0;
-            frDetails.dfpF = 0;
-            frDetails.dfpA = 0;
+            frDetails.X = Xg;
 
-            details.FrictionLossDetails.push_back(frDetails);
+            pLossDetails->GirderFrictionLossDetails.push_back(frDetails);
          } // next duct
       } // end if bIsOnGirder
-
-      pLosses->SectionLosses.insert(std::make_pair(poi,details));
    } // next poi
 
    // For elongation calculations we have the sum of (PL/A)... we need (PL/AE)
    // Elongation is shoved into array for pgsTypes::metStart for easy of computation
    // now make sure the elongation is in the correct position of the array for
    // the actual jacking condition
-   Float64 Ept = m_pMaterials->GetTendonMaterial(girderKey)->GetE();
+   Float64 Ept = m_pMaterials->GetGirderTendonMaterial(girderKey)->GetE();
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      CTendonKey tendonKey(girderKey,ductIdx);
-      m_Elongation[tendonKey].first /= Ept;
+      CGirderTendonKey tendonKey(girderKey,ductIdx);
+      m_GirderTendonElongation[tendonKey].first /= Ept;
       const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
       if ( pDuct->JackingEnd == pgsTypes::jeStart )
       {
          // jacking from left end, no elongation at end
-         m_Elongation[tendonKey].second = 0;
+         m_GirderTendonElongation[tendonKey].second = 0;
       }
       else if ( pDuct->JackingEnd == pgsTypes::jeEnd )
       {
          // jacking from right end, no elongation at start
-         m_Elongation[tendonKey].second = m_Elongation[tendonKey].first;
-         m_Elongation[tendonKey].first = 0;
+         m_GirderTendonElongation[tendonKey].second = m_GirderTendonElongation[tendonKey].first;
+         m_GirderTendonElongation[tendonKey].first = 0;
       }
       else
       {
          // jacking from both ends at the same time... elongation is split equally
-         m_Elongation[tendonKey].first *= 0.5;
-         m_Elongation[tendonKey].second = m_Elongation[tendonKey].first;
+         m_GirderTendonElongation[tendonKey].first *= 0.5;
+         m_GirderTendonElongation[tendonKey].second = m_GirderTendonElongation[tendonKey].first;
+      }
+   }
+}
+
+void CTimeStepLossEngineer::ComputeFrictionLosses(const CPrecastSegmentData* pSegment, LOSSES* pLosses)
+{
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+
+   CString strMsg;
+   strMsg.Format(_T("Computing friction losses for tendons in Group %d Girder %s Segment %d"), LABEL_GROUP(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex), LABEL_SEGMENT(segmentKey.segmentIndex));
+   m_pProgress->UpdateMessage(strMsg);
+
+   Float64 Dset, wobble, friction;
+   m_pLossParams->GetTendonPostTensionParameters(&Dset, &wobble, &friction);
+
+   PoiList vPoi;
+   GetAnalysisLocations(segmentKey, &vPoi);
+
+   WebIndexType nWebs = m_pGirder->GetWebCount(segmentKey);
+
+   Float64 Ls = m_pBridge->GetSegmentLength(segmentKey);
+
+   const CSegmentPTData* pPTData = &(pSegment->Tendons);
+   DuctIndexType nDucts = m_pSegmentTendonGeometry->GetDuctCount(segmentKey);
+
+   auto begin(std::cbegin(vPoi));
+   auto iter(std::cbegin(vPoi));
+   auto end(std::cend(vPoi));
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi(*iter);
+
+      LOSSDETAILS* pLossDetails = &(pLosses->SectionLosses[poi]);
+      pLossDetails->LossMethod = pgsTypes::TIME_STEP;
+#if defined _DEBUG
+      pLossDetails->POI = poi;
+#endif
+
+      bool bIsOnSegment = m_pPoi->IsOnSegment(poi);
+      Float64 Xs = poi.GetDistFromStart();
+
+      if (bIsOnSegment)
+      {
+         //////////////////////////////////////////////////////////////////////////
+         // Friction Losses
+         //////////////////////////////////////////////////////////////////////////
+         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+         {
+            FRICTIONLOSSDETAILS frDetails;
+            frDetails.X = Xs;
+
+            if (m_pSegmentTendonGeometry->IsOnDuct(poi))
+            {
+               const CSegmentDuctData* pDuct = pPTData->GetDuct(ductIdx / nWebs);
+               Float64 Pj;
+               if (pDuct->bPjCalc)
+               {
+                  Pj = m_pPTForce->GetSegmentTendonPjackMax(segmentKey, pDuct->nStrands);
+               }
+               else
+               {
+                  Pj = pDuct->Pj;
+               }
+
+               Float64 aps = pPTData->m_pStrand->GetNominalArea();
+               StrandIndexType nStrands = pDuct->nStrands;
+               Float64 Aps = aps*nStrands;
+               Float64 fpj = (nStrands == 0 ? 0 : Pj / Aps);
+
+               if (pDuct->JackingEnd == pgsTypes::jeStart)
+               {
+                  Float64 alpha = m_pSegmentTendonGeometry->GetSegmentTendonAngularChange(poi, ductIdx, pgsTypes::metStart);
+                  frDetails.alpha = alpha;
+                  Float64 Xleft = Xs; // distance from jacking end
+                  frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + Xleft*wobble)));
+               }
+               else if (pDuct->JackingEnd == pgsTypes::jeEnd)
+               {
+                  Float64 alpha = m_pSegmentTendonGeometry->GetSegmentTendonAngularChange(poi, ductIdx, pgsTypes::metEnd);
+                  frDetails.alpha = alpha;
+                  Float64 Xright = Ls - Xs; // distance from jacking end
+                  frDetails.dfpF = fpj*(1 - exp(-(friction*alpha + Xright*wobble)));
+               }
+               else
+               {
+                  ATLASSERT(pDuct->JackingEnd == pgsTypes::jeBoth);
+
+                  // get friction loss for jacking from left end
+                  Float64 alpha_left = m_pSegmentTendonGeometry->GetSegmentTendonAngularChange(poi, ductIdx, pgsTypes::metStart);
+                  Float64 Xleft = Xs; // distance from jacking end
+                  Float64 dfpF_left = fpj*(1 - exp(-(friction*alpha_left + Xleft*wobble)));
+
+                  // get friction loss for jacking from right end
+                  Float64 alpha_right = m_pSegmentTendonGeometry->GetSegmentTendonAngularChange(poi, ductIdx, pgsTypes::metEnd);
+                  Float64 Xright = Ls - Xs; // distance from jacking end
+                  Float64 dfpF_right = fpj*(1 - exp(-(friction*alpha_right + Xright*wobble)));
+
+                  if (dfpF_left < dfpF_right)
+                  {
+                     // this section is controlled by left end jacking
+                     frDetails.alpha = alpha_left;
+                     frDetails.dfpF = dfpF_left;
+                  }
+                  else
+                  {
+                     // this section is controlled by right end jacking
+                     frDetails.alpha = alpha_right;
+                     frDetails.dfpF = dfpF_right;
+                  }
+               }
+
+               // calculation incremental elongation at this poi... it will
+               // be summed with previously computed increments to get the total
+               // elongation
+               CSegmentTendonKey tendonKey(segmentKey, ductIdx);
+               if (iter == begin || pLosses->SectionLosses[*(iter - 1)].SegmentFrictionLossDetails.size() == 0)
+               {
+                  // first poi that is on this segment... initialize with zero
+                  m_SegmentTendonElongation.insert(std::make_pair(tendonKey, std::make_pair(0, 0)));
+               }
+               else
+               {
+                  const pgsPointOfInterest& prevPoi(*(iter - 1));
+                  Float64 dX = frDetails.X - pLosses->SectionLosses[prevPoi].SegmentFrictionLossDetails[ductIdx].X;
+                  Float64 df = fpj - 0.5*(frDetails.dfpF + pLosses->SectionLosses[prevPoi].SegmentFrictionLossDetails[ductIdx].dfpF);
+                  m_SegmentTendonElongation[tendonKey].first += df*dX;
+               }
+            } // if on duct
+
+            pLossDetails->SegmentFrictionLossDetails.push_back(frDetails);
+         } // next duct
+      }
+      else
+      {
+         // poi is not on segment.... just add a place holder
+         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+         {
+            FRICTIONLOSSDETAILS frDetails;
+            frDetails.X = Xs;
+            pLossDetails->SegmentFrictionLossDetails.push_back(frDetails);
+         } // next duct
+      } // end if bIsOnGirder
+   } // next poi
+
+     // For elongation calculations we have the sum of (PL/A)... we need (PL/AE)
+     // Elongation is shoved into array for pgsTypes::metStart for easy of computation
+     // now make sure the elongation is in the correct position of the array for
+     // the actual jacking condition
+   Float64 Ept = m_pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      CSegmentTendonKey tendonKey(segmentKey, ductIdx);
+      m_SegmentTendonElongation[tendonKey].first /= Ept;
+      const CSegmentDuctData* pDuct = pPTData->GetDuct(ductIdx / nWebs);
+      if (pDuct->JackingEnd == pgsTypes::jeStart)
+      {
+         // jacking from left end, no elongation at end
+         m_SegmentTendonElongation[tendonKey].second = 0;
+      }
+      else if (pDuct->JackingEnd == pgsTypes::jeEnd)
+      {
+         // jacking from right end, no elongation at start
+         m_SegmentTendonElongation[tendonKey].second = m_SegmentTendonElongation[tendonKey].first;
+         m_SegmentTendonElongation[tendonKey].first = 0;
+      }
+      else
+      {
+         // jacking from both ends at the same time... elongation is split equally
+         m_SegmentTendonElongation[tendonKey].first *= 0.5;
+         m_SegmentTendonElongation[tendonKey].second = m_SegmentTendonElongation[tendonKey].first;
       }
    }
 }
 
 void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,LOSSES* pLosses)
 {
+   // start by computing the anchor set losses for the PT in individual segments
+   const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirder(girderKey);
+   SegmentIndexType nSegments = pGirder->GetSegmentCount();
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+      ComputeAnchorSetLosses(pSegment, pLosses);
+   }
+
    CString strMsg;
    strMsg.Format(_T("Computing anchor set losses for tendons in Group %d"),LABEL_GROUP(girderKey.groupIndex));
    m_pProgress->UpdateMessage(strMsg);
 
    // First, compute the seating wedge, then compute anchor set loss at each POI
-   Float64 girder_length = m_pBridge->GetGirderLength(girderKey);
+   Float64 Lg = m_pBridge->GetGirderLength(girderKey);
 
-   const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirder(girderKey);
    const CPTData* pPTData = pGirder->GetPostTensioning();
-
-   Float64 Dset, wobble, friction;
-   m_pLossParams->GetTendonPostTensionParameters(&Dset,&wobble,&friction);
 
    WebIndexType nWebs = m_pGirder->GetWebCount(girderKey);
 
-
-#pragma Reminder("UPDATE: this assumes that the PT starts/ends at the face of girder")
-   // the input allows the PT to start and end at any arbitrary point along the girder
-
-   DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(girderKey);
-   pLosses->AnchorSet.reserve(nDucts);
+   DuctIndexType nDucts = m_pGirderTendonGeometry->GetDuctCount(girderKey);
+   pLosses->GirderAnchorSet.reserve(nDucts);
 
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
       const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
 
-      // find location of minimum friction loss. this is the location of no movement in the strand
-      SectionLossContainer::iterator frMinIter;
+	  const pgsPointOfInterest* pStartPoi;
+	  const pgsPointOfInterest* pEndPoi;
+	  m_pPoi->GetDuctRange(girderKey, ductIdx, &pStartPoi, &pEndPoi);
+
+	  Float64 Xgs, Xge;
+	  m_pGirderTendonGeometry->GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
+
+	  // find location of minimum friction loss. this is the location of no movement in the strand
+	  SectionLossContainer::iterator frMinIter;
       if ( pDuct->JackingEnd == pgsTypes::jeStart )
       {
          // jack at left end, no movement occurs at right end
-         frMinIter = pLosses->SectionLosses.end();
-         frMinIter--;
+		  frMinIter = pLosses->SectionLosses.find(*pEndPoi);
+		  ATLASSERT(frMinIter != pLosses->SectionLosses.end());
       }
       else if ( pDuct->JackingEnd == pgsTypes::jeEnd )
       {
          // jack at right end, no movement occurs at left end
-         frMinIter = pLosses->SectionLosses.begin();
-      }
+		  frMinIter = pLosses->SectionLosses.find(*pStartPoi);
+		  ATLASSERT(frMinIter != pLosses->SectionLosses.end());
+	  }
       else
       {
          // jack at both ends, no movement occurs somewhere in the middle... search for it
-         SectionLossContainer::iterator iter(pLosses->SectionLosses.begin());
-         SectionLossContainer::iterator end(pLosses->SectionLosses.end());
-         Float64 dfpF_Prev = iter->second.FrictionLossDetails[ductIdx].dfpF;
+         SectionLossContainer::iterator iter(pLosses->SectionLosses.find(*pStartPoi));
+         SectionLossContainer::iterator end(pLosses->SectionLosses.find(*pEndPoi));
+		 ATLASSERT(iter != pLosses->SectionLosses.end());
+		 ATLASSERT(end  != pLosses->SectionLosses.end());
+		 end++; // actually want one past end because of the way the loop below works
+
+		 Float64 dfpF_Prev = iter->second.GirderFrictionLossDetails[ductIdx].dfpF;
          iter++;
          for ( ; iter != end; iter++ )
          {
-            Float64 dfpF_Curr = iter->second.FrictionLossDetails[ductIdx].dfpF;
+            Float64 dfpF_Curr = iter->second.GirderFrictionLossDetails[ductIdx].dfpF;
             if ( dfpF_Curr < dfpF_Prev )
             {
                // the current friction loss is less than the previous friction loss... 
@@ -707,7 +1045,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
       }
 
       ANCHORSETDETAILS anchor_set;
-      anchor_set.girderKey = girderKey;
+      anchor_set.segmentKey = CSegmentKey(girderKey,ALL_SEGMENTS);
       anchor_set.ductIdx   = ductIdx;
 
       anchor_set.Lset[pgsTypes::metStart]  = 0;
@@ -718,13 +1056,13 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
       anchor_set.dfpAT[pgsTypes::metEnd] = 0;
       anchor_set.dfpS[pgsTypes::metEnd]  = 0;
 
-      if ( 0 < frMinIter->second.FrictionLossDetails.size() )
+      if ( 0 < frMinIter->second.GirderFrictionLossDetails.size() )
       {
          if ( pDuct->JackingEnd == pgsTypes::jeStart || pDuct->JackingEnd == pgsTypes::jeBoth )
          {
             Float64 dfpAT, dfpS, Xset;
-            ComputeAnchorSetLosses(pPTData,pDuct,ductIdx,pgsTypes::metStart,pLosses,girder_length,frMinIter,&dfpAT,&dfpS,&Xset);
-            anchor_set.Lset[pgsTypes::metStart]  = Min(girder_length,Xset);
+            ComputeAnchorSetLosses(pPTData,pDuct,ductIdx,pgsTypes::metStart,pLosses,Lg,frMinIter,&dfpAT,&dfpS,&Xset);
+            anchor_set.Lset[pgsTypes::metStart]  = Min(Xset,Xge) - Xgs;
             anchor_set.dfpAT[pgsTypes::metStart] = dfpAT;
             anchor_set.dfpS[pgsTypes::metStart]  = dfpS;
          }
@@ -732,25 +1070,26 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
          if ( pDuct->JackingEnd == pgsTypes::jeEnd || pDuct->JackingEnd == pgsTypes::jeBoth  )
          {
             Float64 dfpAT, dfpS, Xset;
-            ComputeAnchorSetLosses(pPTData,pDuct,ductIdx,pgsTypes::metEnd,pLosses,girder_length,frMinIter,&dfpAT,&dfpS,&Xset);
-            anchor_set.Lset[pgsTypes::metEnd]  = Min(girder_length,girder_length - Xset);
+            ComputeAnchorSetLosses(pPTData,pDuct,ductIdx,pgsTypes::metEnd,pLosses, Lg,frMinIter,&dfpAT,&dfpS,&Xset);
+            anchor_set.Lset[pgsTypes::metEnd]  = Xge - Max(0.0, Xset);
             anchor_set.dfpAT[pgsTypes::metEnd] = dfpAT;
             anchor_set.dfpS[pgsTypes::metEnd]  = dfpS;
          }
       }
 
-      pLosses->AnchorSet.push_back(anchor_set);
+      pLosses->GirderAnchorSet.push_back(anchor_set);
    }
 
+   // compute average friction and anchor set
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      ANCHORSETDETAILS& anchorSetDetails( pLosses->AnchorSet[ductIdx] );
+      ANCHORSETDETAILS& anchorSetDetails( pLosses->GirderAnchorSet[ductIdx] );
 
       const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
       Float64 Pj;
       if ( pDuct->bPjCalc )
       {
-         Pj = m_pPTForce->GetPjackMax(girderKey,pDuct->nStrands);
+         Pj = m_pPTForce->GetGirderTendonPjackMax(girderKey,pDuct->nStrands);
       }
       else
       {
@@ -767,6 +1106,9 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
       Float64 Sum_dfpF = 0;
       Float64 Sum_dfpA = 0;
 
+	  Float64 Xgs, Xge;
+	  m_pGirderTendonGeometry->GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
+
       IndexType nPoints = 0;
       SectionLossContainer::iterator iter(pLosses->SectionLosses.begin());
       SectionLossContainer::iterator end(pLosses->SectionLosses.end());
@@ -774,31 +1116,40 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
       {
          const pgsPointOfInterest& poi(iter->first);
 
-         bool bIsOnGirder = m_pPoi->IsOnGirder(poi);
+		 bool bIsOnDuct = m_pGirderTendonGeometry->IsOnDuct(poi, ductIdx);
 
-         if ( bIsOnGirder )
-         {
-            LOSSDETAILS& details(iter->second);
+		 if (bIsOnDuct)
+		 {
+			 LOSSDETAILS& details(iter->second);
 
-            FRICTIONLOSSDETAILS& frDetails(details.FrictionLossDetails[ductIdx]);
+			 FRICTIONLOSSDETAILS& frDetails(details.GirderFrictionLossDetails[ductIdx]);
 
-            Float64 dfpA[2] = {0,0};
-            const CDuctData* pDuct = pPTData->GetDuct(ductIdx/nWebs);
-            if ( frDetails.X <= anchorSetDetails.Lset[pgsTypes::metStart] )
-            {
-               // POI is in the left anchorage zone
-               if ( IsZero(anchorSetDetails.Lset[pgsTypes::metStart]) )
-               {
-                  dfpA[pgsTypes::metStart] = 0;
-               }
-               else
-               {
-                  dfpA[pgsTypes::metStart] = ::LinInterp(frDetails.X,anchorSetDetails.dfpAT[pgsTypes::metStart],anchorSetDetails.dfpS[pgsTypes::metStart],anchorSetDetails.Lset[pgsTypes::metStart]);
-               }
-            }
+			 std::array<Float64, 2> dfpA = { 0,0 };
+			 const CDuctData* pDuct = pPTData->GetDuct(ductIdx / nWebs);
+			 //  |------>frDetails.X
+			 //  |----------+==============+----------------==============--------------------|
+			 //  |         Xgs
+			 //             |<--- Lset --->|
+			 if (InRange(Xgs, frDetails.X, (Xgs + anchorSetDetails.Lset[pgsTypes::metStart])))
+			 {
+				 // POI is in the left anchorage zone
+				 if (IsZero(anchorSetDetails.Lset[pgsTypes::metStart]))
+				 {
+					 dfpA[pgsTypes::metStart] = 0;
+				 }
+				 else
+				 {
+					 dfpA[pgsTypes::metStart] = ::LinInterp((frDetails.X - Xgs), anchorSetDetails.dfpAT[pgsTypes::metStart], anchorSetDetails.dfpS[pgsTypes::metStart], anchorSetDetails.Lset[pgsTypes::metStart]);
+				 }
+			 }
 
-            if ( girder_length-anchorSetDetails.Lset[pgsTypes::metEnd] <= frDetails.X )
-            {
+			 //  |----------------------------->frDetails.X
+			 //  |-------==========-----------------------+==============+---------------------|
+			 //  |                                                       Xge                   |
+			 //  |                                        |<--- Lset --->|                     |
+			 //  |<--------------------- Lg -------------------------------------------------->|
+			 if (InRange(Xge - anchorSetDetails.Lset[pgsTypes::metEnd], frDetails.X, Xge))
+			 {
                // POI is in the right anchorage zone
                if ( IsZero(anchorSetDetails.Lset[pgsTypes::metEnd]) )
                {
@@ -806,7 +1157,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
                }
                else
                {
-                  dfpA[pgsTypes::metEnd] = ::LinInterp(anchorSetDetails.Lset[pgsTypes::metEnd] - (girder_length-frDetails.X),anchorSetDetails.dfpS[pgsTypes::metEnd],anchorSetDetails.dfpAT[pgsTypes::metEnd],anchorSetDetails.Lset[pgsTypes::metEnd]);
+                  dfpA[pgsTypes::metEnd] = ::LinInterp(anchorSetDetails.Lset[pgsTypes::metEnd] - (Xge-frDetails.X),anchorSetDetails.dfpS[pgsTypes::metEnd],anchorSetDetails.dfpAT[pgsTypes::metEnd],anchorSetDetails.Lset[pgsTypes::metEnd]);
                }
             }
 
@@ -824,14 +1175,220 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
             Sum_dfpA += frDetails.dfpA;
 
             nPoints++;
-         } // end if bIsOnGirder
+         } // end if bIsOnDuct
       } // next poi
       
       Float64 dfpF = (nPoints == 0 ? 0 : Sum_dfpF/nPoints);
       Float64 dfpA = (nPoints == 0 ? 0 : Sum_dfpA/nPoints);
 
-      CTendonKey tendonKey(girderKey,ductIdx);
-      m_AvgFrictionAndAnchorSetLoss.insert(std::make_pair(tendonKey,std::make_pair(dfpF,dfpA)));
+      CGirderTendonKey tendonKey(girderKey,ductIdx);
+      m_GirderTendonAvgFrictionAndAnchorSetLoss.insert(std::make_pair(tendonKey,std::make_pair(dfpF,dfpA)));
+   } // next duct
+}
+
+void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CPrecastSegmentData* pSegment, LOSSES* pLosses)
+{
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+
+   CString strMsg;
+   strMsg.Format(_T("Computing anchor set losses for tendons in Girder %s Segment %d"), LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex));
+   m_pProgress->UpdateMessage(strMsg);
+
+   // First, compute the seating wedge, then compute anchor set loss at each POI
+   Float64 Ls = m_pBridge->GetSegmentLength(segmentKey);
+
+   const CSegmentPTData* pPTData = &(pSegment->Tendons);
+
+   WebIndexType nWebs = m_pGirder->GetWebCount(segmentKey);
+
+   PoiList vPoi;
+   m_pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
+   const pgsPointOfInterest& startPoi(vPoi.front());
+   const pgsPointOfInterest& endPoi(vPoi.back());
+
+   DuctIndexType nDucts = m_pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   pLosses->SegmentAnchorSet.insert(std::make_pair(segmentKey, std::vector<ANCHORSETDETAILS>()));
+   pLosses->SegmentAnchorSet[segmentKey].reserve(nDucts);
+
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      const CSegmentDuctData* pDuct = pPTData->GetDuct(ductIdx / nWebs);
+
+      // find location of minimum friction loss. this is the location of no movement in the strand
+      SectionLossContainer::iterator frMinIter;
+      if (pDuct->JackingEnd == pgsTypes::jeStart)
+      {
+         // jack at left end, no movement occurs at right end
+         frMinIter = pLosses->SectionLosses.find(endPoi);
+         ATLASSERT(frMinIter != pLosses->SectionLosses.end());
+      }
+      else if (pDuct->JackingEnd == pgsTypes::jeEnd)
+      {
+         // jack at right end, no movement occurs at left end
+         frMinIter = pLosses->SectionLosses.find(startPoi);
+         ATLASSERT(frMinIter != pLosses->SectionLosses.end());
+      }
+      else
+      {
+         // jack at both ends, no movement occurs somewhere in the middle... search for it
+         SectionLossContainer::iterator iter(pLosses->SectionLosses.find(startPoi));
+         SectionLossContainer::iterator end(pLosses->SectionLosses.find(endPoi));
+         ATLASSERT(iter != pLosses->SectionLosses.end());
+         ATLASSERT(end != pLosses->SectionLosses.end());
+         end++; // actually want one past end because of the way the loop below works
+
+         Float64 dfpF_Prev = iter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+         iter++;
+         for (; iter != end; iter++)
+         {
+            Float64 dfpF_Curr = iter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+            if (dfpF_Curr < dfpF_Prev)
+            {
+               // the current friction loss is less than the previous friction loss... 
+               // that means we have gone past the POI where the min value occurs.
+               frMinIter = --iter; // back up one
+               break;
+            }
+
+            dfpF_Prev = dfpF_Curr;
+         }
+      }
+
+      ANCHORSETDETAILS anchor_set;
+      anchor_set.segmentKey = segmentKey;
+      anchor_set.ductIdx = ductIdx;
+
+      anchor_set.Lset[pgsTypes::metStart] = 0;
+      anchor_set.dfpAT[pgsTypes::metStart] = 0;
+      anchor_set.dfpS[pgsTypes::metStart] = 0;
+
+      anchor_set.Lset[pgsTypes::metEnd] = 0;
+      anchor_set.dfpAT[pgsTypes::metEnd] = 0;
+      anchor_set.dfpS[pgsTypes::metEnd] = 0;
+
+      if (0 < frMinIter->second.SegmentFrictionLossDetails.size())
+      {
+         if (pDuct->JackingEnd == pgsTypes::jeStart || pDuct->JackingEnd == pgsTypes::jeBoth)
+         {
+            Float64 dfpAT, dfpS, Xset;
+            ComputeAnchorSetLosses(pPTData, pDuct, ductIdx, pgsTypes::metStart, pLosses, Ls, frMinIter, &dfpAT, &dfpS, &Xset);
+            anchor_set.Lset[pgsTypes::metStart] = Min(Xset, Ls);
+            anchor_set.dfpAT[pgsTypes::metStart] = dfpAT;
+            anchor_set.dfpS[pgsTypes::metStart] = dfpS;
+         }
+
+         if (pDuct->JackingEnd == pgsTypes::jeEnd || pDuct->JackingEnd == pgsTypes::jeBoth)
+         {
+            Float64 dfpAT, dfpS, Xset;
+            ComputeAnchorSetLosses(pPTData, pDuct, ductIdx, pgsTypes::metEnd, pLosses, Ls, frMinIter, &dfpAT, &dfpS, &Xset);
+            anchor_set.Lset[pgsTypes::metEnd] = Ls - Max(0.0, Xset);
+            anchor_set.dfpAT[pgsTypes::metEnd] = dfpAT;
+            anchor_set.dfpS[pgsTypes::metEnd] = dfpS;
+         }
+      }
+
+      pLosses->SegmentAnchorSet[segmentKey].push_back(anchor_set);
+   }
+
+   // compute average friction and anchor set
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      ANCHORSETDETAILS& anchorSetDetails(pLosses->SegmentAnchorSet[segmentKey][ductIdx]);
+
+      const CSegmentDuctData* pDuct = pPTData->GetDuct(ductIdx / nWebs);
+      Float64 Pj;
+      if (pDuct->bPjCalc)
+      {
+         Pj = m_pPTForce->GetSegmentTendonPjackMax(segmentKey, pDuct->nStrands);
+      }
+      else
+      {
+         Pj = pDuct->Pj;
+      }
+
+      Float64 aps = pPTData->m_pStrand->GetNominalArea();
+      StrandIndexType nStrands = pDuct->nStrands;
+      Float64 Aps = aps*nStrands;
+      Float64 fpj = (nStrands == 0 ? 0 : Pj / Aps);
+
+
+      // sum of friction and anchor set losses along the tendon (for computing average value)
+      Float64 Sum_dfpF = 0;
+      Float64 Sum_dfpA = 0;
+
+      IndexType nPoints = 0;
+      SectionLossContainer::iterator iter(pLosses->SectionLosses.begin());
+      SectionLossContainer::iterator end(pLosses->SectionLosses.end());
+      for (; iter != end; iter++)
+      {
+         const pgsPointOfInterest& poi(iter->first);
+
+         bool bIsOnDuct = m_pSegmentTendonGeometry->IsOnDuct(poi);
+
+         if (bIsOnDuct)
+         {
+            LOSSDETAILS& details(iter->second);
+
+            FRICTIONLOSSDETAILS& frDetails(details.SegmentFrictionLossDetails[ductIdx]);
+
+            std::array<Float64, 2> dfpA = { 0,0 };
+            const CSegmentDuctData* pDuct = pPTData->GetDuct(ductIdx / nWebs);
+            //  |------>frDetails.X
+            //  |==============+-------------------------+==============|
+            //  |<--- Lset --->|
+            if ( InRange(0.0,frDetails.X,anchorSetDetails.Lset[pgsTypes::metStart]))
+            {
+               // POI is in the left anchorage zone
+               if (IsZero(anchorSetDetails.Lset[pgsTypes::metStart]))
+               {
+                  dfpA[pgsTypes::metStart] = 0;
+               }
+               else
+               {
+                  dfpA[pgsTypes::metStart] = ::LinInterp(frDetails.X, anchorSetDetails.dfpAT[pgsTypes::metStart], anchorSetDetails.dfpS[pgsTypes::metStart], anchorSetDetails.Lset[pgsTypes::metStart]);
+               }
+            }
+
+            //  |----------------------------->frDetails.X
+            //  |==========+----------------------+==============|
+            //  |                                 |<--- Lset --->|
+            //  |<---------------- Ls -------------------------->|
+            if (InRange(Ls - anchorSetDetails.Lset[pgsTypes::metEnd], frDetails.X, Ls))
+            {
+               // POI is in the right anchorage zone
+               if (IsZero(anchorSetDetails.Lset[pgsTypes::metEnd]))
+               {
+                  dfpA[pgsTypes::metEnd] = 0;
+               }
+               else
+               {
+                  dfpA[pgsTypes::metEnd] = ::LinInterp(anchorSetDetails.Lset[pgsTypes::metEnd] - frDetails.X, anchorSetDetails.dfpS[pgsTypes::metEnd], anchorSetDetails.dfpAT[pgsTypes::metEnd], anchorSetDetails.Lset[pgsTypes::metEnd]);
+               }
+            }
+
+            frDetails.dfpA = dfpA[pgsTypes::metStart] + dfpA[pgsTypes::metEnd];
+
+            if (fpj - frDetails.dfpF - frDetails.dfpA < 0)
+            {
+               // anchor set loss cannot be so much that the effective prestress is "compressive" (a negative value)
+               // This happens in cases when the friction loss is very large (bad input) and the friction loss negates
+               // most of the jacking stress. The stress in the tendon goes to zero before the full seating can happen
+               frDetails.dfpA = fpj - frDetails.dfpF;
+            }
+
+            Sum_dfpF += frDetails.dfpF;
+            Sum_dfpA += frDetails.dfpA;
+
+            nPoints++;
+         } // end if bIsOnDuct
+      } // next poi
+
+      Float64 dfpF = (nPoints == 0 ? 0 : Sum_dfpF / nPoints);
+      Float64 dfpA = (nPoints == 0 ? 0 : Sum_dfpA / nPoints);
+
+      CSegmentTendonKey tendonKey(segmentKey, ductIdx);
+      m_SegmentTendonAvgFrictionAndAnchorSetLoss.insert(std::make_pair(tendonKey, std::make_pair(dfpF, dfpA)));
    } // next duct
 }
 
@@ -911,14 +1468,18 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    bool bIgnoreRelaxationEffects = m_pLossParams->IgnoreRelaxationEffects();
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   CGirderKey girderKey(segmentKey);
+   const CGirderKey& girderKey(segmentKey);
 
 
-   DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(segmentKey);
+   DuctIndexType nGirderDucts = m_pGirderTendonGeometry->GetDuctCount(girderKey);
+   DuctIndexType nSegmentDucts = m_pSegmentTendonGeometry->GetDuctCount(segmentKey);
+
+   IndexType deckCastingRegionIdx = m_pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
    IntervalIndexType stressStrandsIntervalIdx = m_pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx       = m_pIntervals->GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType liveLoadIntervalIdx      = m_pIntervals->GetLiveLoadInterval();
 
    CClosureKey closureKey;
@@ -929,8 +1490,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    bool bIsOnGirder = m_pPoi->IsOnGirder(poi);
 
    // Material Properties
-   Float64 EDeck = m_pMaterials->GetDeckEc(intervalIdx);
-   Float64 EaDeck = m_pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
+   Float64 EDeck = m_pMaterials->GetDeckEc(deckCastingRegionIdx,intervalIdx);
+   Float64 EaDeck = m_pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx, intervalIdx);
    Float64 EGirder, EaGirder;
    if (bIsOnSegment)
    {
@@ -952,8 +1513,9 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                                      m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetE(),
                                      m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE()};
 
-   Float64 ETendon = m_pMaterials->GetTendonMaterial(girderKey)->GetE();
-   
+   Float64 ESegmentTendon = m_pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
+   Float64 EGirderTendon = m_pMaterials->GetGirderTendonMaterial(girderKey)->GetE();
+
    Float64 EDeckRebar, EGirderRebar, Fy, Fu;
    m_pMaterials->GetDeckRebarProperties(&EDeckRebar,&Fy,&Fu);
 
@@ -1079,12 +1641,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    {
       // The strands are stressed
       const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-      for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+      for(const auto& strandType : strandTypes)
       {
-         pgsTypes::StrandType strandType = *strandTypeIter;
-
          // time from strand stressing to end of this interval
          Float64 tStressing       = m_pIntervals->GetTime(stressStrandsIntervalIdx,pgsTypes::Start);
          Float64 tEndThisInterval = m_pIntervals->GetTime(intervalIdx,pgsTypes::End);
@@ -1254,119 +1812,218 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       } // next strand type
    }
 
-   // TENDON PARAMETERS
-   if ( bIsOnGirder )
+   // SEGMENT TENDON PARAMETERS
+   if (bIsOnSegment)
    {
-      if ( m_pIntervals->IsTendonStressingInterval(girderKey,intervalIdx) )
+      IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressSegmentTendonInterval(segmentKey);
+      bool bIsOnDuct = m_pSegmentTendonGeometry->IsOnDuct(poi);
+
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+      {
+         TIME_STEP_STRAND tsTendon;
+         if (bIsOnDuct)
+         {
+            Float64 tStressing = m_pIntervals->GetTime(stressTendonIntervalIdx, pgsTypes::Start);
+            Float64 tEndThisInterval = m_pIntervals->GetTime(intervalIdx, pgsTypes::End);
+            tsTendon.tEnd = Max(0.0, tEndThisInterval - tStressing);
+            tsTendon.As = m_pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, intervalIdx, ductIdx);
+            tsTendon.Ys = (intervalIdx < stressTendonIntervalIdx ? 0 : m_pSegmentTendonGeometry->GetSegmentDuctOffset(intervalIdx, poi, ductIdx));
+            tsTendon.E = ESegmentTendon;
+
+            if (intervalIdx == stressTendonIntervalIdx)
+            {
+               // The jacking force that is transfered to the girder is Pjack - Apt*(Friction Loss + Anchor Set Loss)
+#if defined USE_AVERAGE_TENDON_FORCE
+               Float64 dfpF, dfpA; // equiv. PT loads are based on average loss so use the same thing here
+
+               look up directly, don't call this method... calling this method here will
+                  mess up the m_Losses data structure
+                  GetAverageFrictionAndAnchorSetLoss(segmentKey, ductIdx, &dfpF, &dfpA);
+
+               CSegmentTendonKey tendonKey(segmentKey, ductIdx);
+               std::map<SegmentTendonKey, std::pair<Float64, Float64>>::iterator found = m_AvgFrictionAndAnchorSetLoss.find(tendonKey);
+               ATLASSERT(found != m_AvgFrictionAndAnchorSetLoss.end()); // this should have already been done!
+
+               dfpF = found->second.first;
+               dfpA = found->second.second;
+#else
+               Float64 dfpF = details.SegmentFrictionLossDetails[ductIdx].dfpF; // friction loss at this POI
+               Float64 dfpA = details.SegmentFrictionLossDetails[ductIdx].dfpA; // anchor set loss at this POI
+#endif // USE_AVERAGE_TENDON_FORCE
+
+               tsTendon.Pj = m_pSegmentTendonGeometry->GetPjack(segmentKey, ductIdx) - tsTendon.As*(dfpF + dfpA);
+            }
+            else
+            {
+               tsTendon.Pj = 0;
+            }
+            tsTendon.fpj = IsZero(tsTendon.As) ? 0 : tsTendon.Pj / tsTendon.As;
+            tsTendon.Pi[pgsTypes::pftPostTensioning] = tsTendon.Pj;
+
+            // time from tendon stressing to end of this interval
+            if (intervalIdx < stressTendonIntervalIdx)
+            {
+               // tendons not installed yet, no relaxation
+               tsTendon.Relaxation.fr = 0;
+            }
+            else if (intervalIdx == stressTendonIntervalIdx)
+            {
+               TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx - 1]);
+
+               // this the interval when the pt force is applied to the girders, apply the
+               // prestress as an external force. The prestress force is the area of strand times
+               // the effective stress at the end of the previous interval.
+               // Negative sign because the force resisted by the girder section is equal and opposite
+               // the force in the strand
+               tsDetails.dPi[pgsTypes::pftPostTensioning] -= tsTendon.Pj;
+               tsDetails.dMi[pgsTypes::pftPostTensioning] -= tsTendon.Pj*(tsDetails.Ytr - tsTendon.Ys);
+
+               tsDetails.Pi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Pi[pgsTypes::pftPostTensioning] + tsDetails.dPi[pgsTypes::pftPostTensioning];
+               tsDetails.Mi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Mi[pgsTypes::pftPostTensioning] + tsDetails.dMi[pgsTypes::pftPostTensioning];
+
+               // relaxation during the stressing interval
+               if (!bIgnoreRelaxationEffects)
+               {
+                  tsTendon.Relaxation = m_pMaterials->GetSegmentTendonIncrementalRelaxationDetails(segmentKey, ductIdx, intervalIdx, tsTendon.fpj);
+               }
+            }
+            else
+            {
+               TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx - 1]);
+
+               // by using the effective prestress at the end of the previous interval we get a very good approximation for 
+               // the actual (reduced) relaxation. See "Time-Dependent Analysis of Composite Frames", Tadros, Ghali, Dilger, 1977, pg 876
+               if (!bIgnoreRelaxationEffects)
+               {
+                  tsTendon.Relaxation = m_pMaterials->GetSegmentTendonIncrementalRelaxationDetails(segmentKey, ductIdx, intervalIdx, prevTimeStepDetails.SegmentTendons[ductIdx].fpe);
+               }
+            }
+
+            // apparent strain due to relaxation
+            tsTendon.er = -tsTendon.Relaxation.fr / ESegmentTendon;
+
+            // force required to resist apparent relaxation strain
+            tsTendon.PrRelaxation = tsTendon.Relaxation.fr*tsTendon.As;
+         }
+         tsDetails.SegmentTendons.push_back(tsTendon);
+      } // next duct
+   } // if on segment
+
+   // GIRDER TENDON PARAMETERS
+   if (bIsOnGirder)
+   {
+      if (m_pIntervals->IsGirderTendonStressingInterval(girderKey, intervalIdx))
       {
          // Secondary effects
          // NOTE: Don't do secondary effects in the loop below (looping over each duct)
          // The secondary effects are for all tendons stressed during this interval.
          // We don't have secondary effects per tendon, but rather secondary effects
          // for all tendons stressed during this interval.
-         TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx-1]);
+         TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx - 1]);
 
-         Float64 dM = m_pProductForces->GetMoment(intervalIdx,pgsTypes::pftSecondaryEffects,poi,m_Bat, rtIncremental);
+         Float64 dM = m_pProductForces->GetMoment(intervalIdx, pgsTypes::pftSecondaryEffects, poi, m_Bat, rtIncremental);
          tsDetails.dMi[pgsTypes::pftSecondaryEffects] += dM;
-         tsDetails.Mi[pgsTypes::pftSecondaryEffects]  += prevTimeStepDetails.Mi[pgsTypes::pftSecondaryEffects] + tsDetails.dMi[pgsTypes::pftSecondaryEffects];
+         tsDetails.Mi[pgsTypes::pftSecondaryEffects] += prevTimeStepDetails.Mi[pgsTypes::pftSecondaryEffects] + tsDetails.dMi[pgsTypes::pftSecondaryEffects];
 
          //Float64 dP = m_pProductForces->GetAxial(intervalIdx,pgsTypes::pftSecondaryEffects,poi,m_Bat, rtIncremental);
          Float64 dP = 0;
          tsDetails.dPi[pgsTypes::pftSecondaryEffects] += dP;
-         tsDetails.Pi[pgsTypes::pftSecondaryEffects]  += prevTimeStepDetails.Pi[pgsTypes::pftSecondaryEffects] + tsDetails.dPi[pgsTypes::pftSecondaryEffects];
+         tsDetails.Pi[pgsTypes::pftSecondaryEffects] += prevTimeStepDetails.Pi[pgsTypes::pftSecondaryEffects] + tsDetails.dPi[pgsTypes::pftSecondaryEffects];
       }
 
-      for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+      for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
       {
-         IntervalIndexType stressTendonIntervalIdx  = m_pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+         IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx);
 
          TIME_STEP_STRAND tsTendon;
-
-         Float64 tStressing = m_pIntervals->GetTime(stressTendonIntervalIdx,pgsTypes::Start);
-         Float64 tEndThisInterval = m_pIntervals->GetTime(intervalIdx,pgsTypes::End);
-         tsTendon.tEnd = Max(0.0,tEndThisInterval - tStressing);
-         tsTendon.As = m_pTendonGeom->GetTendonArea(girderKey,intervalIdx,ductIdx);
-         tsTendon.Ys = (intervalIdx < stressTendonIntervalIdx ? 0 : m_pTendonGeom->GetDuctOffset(intervalIdx,poi,ductIdx));
-         tsTendon.E = ETendon;
-
-         if ( intervalIdx == stressTendonIntervalIdx )
+         if(m_pGirderTendonGeometry->IsOnDuct(poi,ductIdx))
          {
-            // The jacking force that is transfered to the girder is Pjack - Apt*(Friction Loss + Anchor Set Loss)
+            Float64 tStressing = m_pIntervals->GetTime(stressTendonIntervalIdx, pgsTypes::Start);
+            Float64 tEndThisInterval = m_pIntervals->GetTime(intervalIdx, pgsTypes::End);
+            tsTendon.tEnd = Max(0.0, tEndThisInterval - tStressing);
+            tsTendon.As = m_pGirderTendonGeometry->GetGirderTendonArea(girderKey, intervalIdx, ductIdx);
+            tsTendon.Ys = (intervalIdx < stressTendonIntervalIdx ? 0 : m_pGirderTendonGeometry->GetGirderDuctOffset(intervalIdx, poi, ductIdx));
+            tsTendon.E = EGirderTendon;
+
+            if (intervalIdx == stressTendonIntervalIdx)
+            {
+               // The jacking force that is transfered to the girder is Pjack - Apt*(Friction Loss + Anchor Set Loss)
 #if defined USE_AVERAGE_TENDON_FORCE
-            Float64 dfpF, dfpA; // equiv. PT loads are based on average loss so use the same thing here
+               Float64 dfpF, dfpA; // equiv. PT loads are based on average loss so use the same thing here
 
-             look up directly, don't call this method... calling this method here will
-             mess up the m_Losses data structure
-            GetAverageFrictionAndAnchorSetLoss(girderKey,ductIdx,&dfpF,&dfpA);
+               look up directly, don't call this method... calling this method here will
+                  mess up the m_Losses data structure
+                  GetAverageFrictionAndAnchorSetLoss(girderKey, ductIdx, &dfpF, &dfpA);
 
-            CTendonKey tendonKey(girderKey,ductIdx);
-            std::map<CTendonKey,std::pair<Float64,Float64>>::iterator found = m_AvgFrictionAndAnchorSetLoss.find(tendonKey);
-            ATLASSERT( found != m_AvgFrictionAndAnchorSetLoss.end() ); // this should have already been done!
+               CGirderTendonKey tendonKey(girderKey, ductIdx);
+               std::map<CGirderTendonKey, std::pair<Float64, Float64>>::iterator found = m_AvgFrictionAndAnchorSetLoss.find(tendonKey);
+               ATLASSERT(found != m_AvgFrictionAndAnchorSetLoss.end()); // this should have already been done!
 
-            dfpF = found->second.first;
-            dfpA = found->second.second;
+               dfpF = found->second.first;
+               dfpA = found->second.second;
 #else
-            Float64 dfpF = details.FrictionLossDetails[ductIdx].dfpF; // friction loss at this POI
-            Float64 dfpA = details.FrictionLossDetails[ductIdx].dfpA; // anchor set loss at this POI
+               Float64 dfpF = details.GirderFrictionLossDetails[ductIdx].dfpF; // friction loss at this POI
+               Float64 dfpA = details.GirderFrictionLossDetails[ductIdx].dfpA; // anchor set loss at this POI
 #endif // USE_AVERAGE_TENDON_FORCE
 
-            tsTendon.Pj  = m_pTendonGeom->GetPjack(girderKey,ductIdx) - tsTendon.As*(dfpF + dfpA);
-         }
-         else
-         {
-            tsTendon.Pj = 0;
-         }
-         tsTendon.fpj = IsZero(tsTendon.As) ? 0 : tsTendon.Pj/tsTendon.As;
-         tsTendon.Pi[pgsTypes::pftPostTensioning]  = tsTendon.Pj;
-
-         // time from tendon stressing to end of this interval
-         if ( intervalIdx < stressTendonIntervalIdx )
-         {
-            // tendons not installed yet, no relaxation
-            tsTendon.Relaxation.fr = 0;
-         }
-         else if ( intervalIdx == stressTendonIntervalIdx )
-         {
-            TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx-1]);
-
-            // this the interval when the pt force is release into the girders, apply the
-            // prestress as an external force. The prestress force is the area of strand times
-            // the effective stress at the end of the previous interval.
-            // Negative sign because the force resisted by the girder section is equal and opposite
-            // the force in the strand
-            tsDetails.dPi[pgsTypes::pftPostTensioning] -= tsTendon.Pj;
-            tsDetails.dMi[pgsTypes::pftPostTensioning] -= tsTendon.Pj*(tsDetails.Ytr - tsTendon.Ys);
-
-            tsDetails.Pi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Pi[pgsTypes::pftPostTensioning] + tsDetails.dPi[pgsTypes::pftPostTensioning];
-            tsDetails.Mi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Mi[pgsTypes::pftPostTensioning] + tsDetails.dMi[pgsTypes::pftPostTensioning];
-
-            // relaxation during the stressing interval
-            if ( !bIgnoreRelaxationEffects )
-            {
-               tsTendon.Relaxation = m_pMaterials->GetIncrementalTendonRelaxationDetails(girderKey,ductIdx,intervalIdx,tsTendon.fpj);
+               tsTendon.Pj = m_pGirderTendonGeometry->GetPjack(girderKey, ductIdx) - tsTendon.As*(dfpF + dfpA);
             }
-         }
-         else
-         {
-            TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx-1]);
-
-            // by using the effective prestress at the end of the previous interval we get a very good approximation for 
-            // the actual (reduced) relaxation. See "Time-Dependent Analysis of Composite Frames", Tadros, Ghali, Dilger, pg 876
-            if ( !bIgnoreRelaxationEffects )
+            else
             {
-               tsTendon.Relaxation = m_pMaterials->GetIncrementalTendonRelaxationDetails(girderKey,ductIdx,intervalIdx,prevTimeStepDetails.Tendons[ductIdx].fpe);
+               tsTendon.Pj = 0;
             }
+            tsTendon.fpj = IsZero(tsTendon.As) ? 0 : tsTendon.Pj / tsTendon.As;
+            tsTendon.Pi[pgsTypes::pftPostTensioning] = tsTendon.Pj;
+
+            // time from tendon stressing to end of this interval
+            if (intervalIdx < stressTendonIntervalIdx)
+            {
+               // tendons not installed yet, no relaxation
+               tsTendon.Relaxation.fr = 0;
+            }
+            else if (intervalIdx == stressTendonIntervalIdx)
+            {
+               TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx - 1]);
+
+               // this the interval when the pt force is applied to the girders, apply the
+               // prestress as an external force. The prestress force is the area of strand times
+               // the effective stress at the end of the previous interval.
+               // Negative sign because the force resisted by the girder section is equal and opposite
+               // the force in the strand
+               tsDetails.dPi[pgsTypes::pftPostTensioning] -= tsTendon.Pj;
+               tsDetails.dMi[pgsTypes::pftPostTensioning] -= tsTendon.Pj*(tsDetails.Ytr - tsTendon.Ys);
+
+               tsDetails.Pi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Pi[pgsTypes::pftPostTensioning] + tsDetails.dPi[pgsTypes::pftPostTensioning];
+               tsDetails.Mi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Mi[pgsTypes::pftPostTensioning] + tsDetails.dMi[pgsTypes::pftPostTensioning];
+
+               // relaxation during the stressing interval
+               if (!bIgnoreRelaxationEffects)
+               {
+                  tsTendon.Relaxation = m_pMaterials->GetGirderTendonIncrementalRelaxationDetails(girderKey, ductIdx, intervalIdx, tsTendon.fpj);
+               }
+            }
+            else
+            {
+               TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx - 1]);
+
+               // by using the effective prestress at the end of the previous interval we get a very good approximation for 
+               // the actual (reduced) relaxation. See "Time-Dependent Analysis of Composite Frames", Tadros, Ghali, Dilger, 1977, pg 876
+               if (!bIgnoreRelaxationEffects)
+               {
+                  tsTendon.Relaxation = m_pMaterials->GetGirderTendonIncrementalRelaxationDetails(girderKey, ductIdx, intervalIdx, prevTimeStepDetails.GirderTendons[ductIdx].fpe);
+               }
+            }
+
+            // apparent strain due to relaxation
+            tsTendon.er = -tsTendon.Relaxation.fr / EGirderTendon;
+
+            // force required to resist apparent relaxation strain
+            tsTendon.PrRelaxation = tsTendon.Relaxation.fr*tsTendon.As;
          }
-
-         // apparent strain due to relaxation
-         tsTendon.er = -tsTendon.Relaxation.fr/ETendon;
-
-         // force required to resist apparent relaxation strain
-         tsTendon.PrRelaxation = tsTendon.Relaxation.fr*tsTendon.As;
-
-         tsDetails.Tendons.push_back(tsTendon);
+         tsDetails.GirderTendons.push_back(tsTendon);
       } // next duct
-   }
+   } // if on girder
+
 
    // Compute unrestrained creep strain due to loads applied prior to this interval
    // Tadros 1977, Second term in Equations 3 and 4
@@ -1424,11 +2081,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          Float64 dP_Deck = 0;
          Float64 dM_Deck = 0;
          std::vector<pgsTypes::ProductForceType> vProductForces = GetApplicableProductLoads(i, poi);
-         std::vector<pgsTypes::ProductForceType>::iterator pfIter(vProductForces.begin());
-         std::vector<pgsTypes::ProductForceType>::iterator pfIterEnd(vProductForces.end());
-         for (; pfIter != pfIterEnd; pfIter++)
+         for(const auto& pfType : vProductForces)
          {
-            pgsTypes::ProductForceType pfType = *pfIter;
             dP_Girder += iTimeStepDetails.Girder.dPi[pfType];
             dM_Girder += iTimeStepDetails.Girder.dMi[pfType];
 
@@ -1471,13 +2125,13 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          INCREMENTALCREEPDETAILS deckCreepDetails;
          if (m_pBridge->IsCompositeDeck() && !bIgnoreCreepEffects)
          {
-            deckCreepDetails.pStartDetails = m_pMaterials->GetDeckCreepCoefficientDetails(i, pgsTypes::Middle, intervalIdx, pgsTypes::Start);
-            deckCreepDetails.pEndDetails = m_pMaterials->GetDeckCreepCoefficientDetails(i, pgsTypes::Middle, intervalIdx, pgsTypes::End);
+            deckCreepDetails.pStartDetails = m_pMaterials->GetDeckCreepCoefficientDetails(deckCastingRegionIdx, i, pgsTypes::Middle, intervalIdx, pgsTypes::Start);
+            deckCreepDetails.pEndDetails = m_pMaterials->GetDeckCreepCoefficientDetails(deckCastingRegionIdx, i, pgsTypes::Middle, intervalIdx, pgsTypes::End);
             Cs = deckCreepDetails.pStartDetails->Ct;
             Ce = deckCreepDetails.pEndDetails->Ct;
 
-            Xs = m_pMaterials->GetDeckAgingCoefficient(intervalIdx);
-            Xe = m_pMaterials->GetDeckAgingCoefficient(intervalIdx);
+            Xs = m_pMaterials->GetDeckAgingCoefficient(deckCastingRegionIdx, intervalIdx);
+            Xe = m_pMaterials->GetDeckAgingCoefficient(deckCastingRegionIdx, intervalIdx);
          }
          else
          {
@@ -1488,8 +2142,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          }
          tsDetails.Deck.Creep.push_back(deckCreepDetails);
 
-         // Modulus in interval i (not age adjusteded because we apply the creep coefficients Ce and Cs)
-         Float64 EiDeck = m_pMaterials->GetDeckEc(i);
+         // Modulus in interval i (not age adjusted because we apply the creep coefficients Ce and Cs)
+         Float64 EiDeck = m_pMaterials->GetDeckEc(deckCastingRegionIdx, i);
          Float64 EiADeck = EiDeck*iTimeStepDetails.Deck.An;
          Float64 EiIDeck = EiDeck*iTimeStepDetails.Deck.In;
 
@@ -1532,8 +2186,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
       if ( m_pBridge->IsCompositeDeck() && !bIgnoreShrinkageEffects )
       {
-         tsDetails.Deck.Shrinkage.pStartDetails = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(intervalIdx,pgsTypes::Start);
-         tsDetails.Deck.Shrinkage.pEndDetails   = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(intervalIdx,pgsTypes::End);
+         tsDetails.Deck.Shrinkage.pStartDetails = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(deckCastingRegionIdx, intervalIdx,pgsTypes::Start);
+         tsDetails.Deck.Shrinkage.pEndDetails   = m_pMaterials->GetTotalDeckFreeShrinkageStrainDetails(deckCastingRegionIdx, intervalIdx,pgsTypes::End);
          tsDetails.Deck.Shrinkage.esi = tsDetails.Deck.Shrinkage.pEndDetails->esh - tsDetails.Deck.Shrinkage.pStartDetails->esh;
       }
 
@@ -1586,11 +2240,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       tsDetails.Pr[TIMESTEP_RE] = 0; // start with 0 and sum contribrution of each strand
       tsDetails.Mr[TIMESTEP_RE] = 0;
       const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-      for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+      for(const auto& strandType : strandTypes)
       {
-         pgsTypes::StrandType strandType = *strandTypeIter;
          StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey,strandType);
          for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
          {
@@ -1601,11 +2252,22 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       } // next strand type
 #endif // !LUMP_STRANDS
 
+      if (bIsOnSegment)
+      {
+         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+         {
+            TIME_STEP_STRAND& tendon = tsDetails.SegmentTendons[ductIdx];
+
+            tsDetails.Pr[TIMESTEP_RE] += tendon.PrRelaxation;
+            tsDetails.Mr[TIMESTEP_RE] += tendon.PrRelaxation*(tsDetails.Ytr - tendon.Ys);
+         }
+      }
+
       if ( bIsOnGirder )
       {
-         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
          {
-            TIME_STEP_STRAND& tendon = tsDetails.Tendons[ductIdx];
+            TIME_STEP_STRAND& tendon = tsDetails.GirderTendons[ductIdx];
 
             tsDetails.Pr[TIMESTEP_RE] += tendon.PrRelaxation;
             tsDetails.Mr[TIMESTEP_RE] += tendon.PrRelaxation*(tsDetails.Ytr - tendon.Ys);
@@ -1737,16 +2399,19 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    // of the cross section using a transformed section analysis.
    // Determine the change in force/moment in each part of the cross section.
    // Determine the change in stress at the top and bottom of the concrete parts (girder and deck)
-   // Determine the change in stress in the prestress and reinforcement parts (strands, tendonds, and rebar)
+   // Determine the change in stress in the prestress and reinforcement parts (strands, tendons, and rebar)
 
    TIME_STEP_DETAILS& tsDetails(details.TimeStepDetails[intervalIdx]);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   CGirderKey girderKey(segmentKey);
+   const CGirderKey& girderKey(segmentKey);
 
    CClosureKey closureKey;
    bool bIsInClosure = m_pPoi->IsInClosureJoint(poi,&closureKey);
    bool bIsOnSegment = m_pPoi->IsOnSegment(poi);
+
+   IndexType deckCastingRegionIdx = m_pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
    bool bIsOnGirder = m_pPoi->IsOnGirder(poi);
 
@@ -1754,7 +2419,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    IntervalIndexType releaseIntervalIdx       = m_pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx       = m_pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx      = m_pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType liveLoadIntervalIdx      = m_pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < releaseIntervalIdx )
@@ -1855,7 +2520,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx-1]);
 
       // get some material properties that we are going to need for the analysis
-      Float64 EaDeck  = m_pMaterials->GetDeckAgeAdjustedEc(intervalIdx);
+      Float64 EaDeck  = m_pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx);
 
       Float64 EaGirder;
       if ( bIsOnSegment )
@@ -1873,11 +2538,12 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          EaGirder = EaDeck;
       }
 
-      Float64 EStrand[3] = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
-                             m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetE(),
-                             m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE()};
+      std::array<Float64,3> EStrand = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
+                                        m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetE(),
+                                        m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE()};
 
-      Float64 ETendon = m_pMaterials->GetTendonMaterial(girderKey)->GetE();
+      Float64 ESegmentTendon = m_pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
+      Float64 EGirderTendon = m_pMaterials->GetGirderTendonMaterial(girderKey)->GetE();
 
       Float64 EDeckRebar, EGirderRebar, Fy, Fu;
       m_pMaterials->GetDeckRebarProperties(&EDeckRebar,&Fy,&Fu);
@@ -1902,10 +2568,16 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       Float64 EaDeck_An = EaDeck*tsDetails.Deck.An;
       Float64 EaDeck_In = EaDeck*tsDetails.Deck.In;
 
-      DuctIndexType nDucts = 0;
+      DuctIndexType nSegmentDucts = 0;
+      if (bIsOnSegment)
+      {
+         nSegmentDucts = m_pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      }
+
+      DuctIndexType nGirderDucts = 0;
       if ( bIsOnGirder )
       {
-         nDucts = m_pTendonGeom->GetDuctCount(girderKey); // outside of if block because we need it in several places
+         nGirderDucts = m_pGirderTendonGeometry->GetDuctCount(girderKey);
       }
 
 #if defined _BETA_VERSION
@@ -1925,11 +2597,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                          tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As*tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys +
                          tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].As*tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].Ys);
 
-      std::vector<TIME_STEP_REBAR>::iterator rIter(tsDetails.GirderRebar.begin());
-      std::vector<TIME_STEP_REBAR>::iterator rIterEnd(tsDetails.GirderRebar.end());
-      for ( ; rIter != rIterEnd; rIter++ )
+      for(const auto& tsRebar : tsDetails.GirderRebar)
       {
-         TIME_STEP_REBAR& tsRebar(*rIter);
          EA  += EGirderRebar*tsRebar.As;
          EAy += EGirderRebar*tsRebar.As*tsRebar.Ys;
       }
@@ -1937,11 +2606,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       if ( bIsOnSegment )
       {
          const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-         for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+         for(const auto& strandType : strandTypes)
          {
-            pgsTypes::StrandType strandType = *strandTypeIter;
 #if defined LUMP_STRANDS
             EA  += EStrand[strandType]*tsDetails.Strands[strandType].As;
             EAy += EStrand[strandType]*tsDetails.Strands[strandType].As*tsDetails.Strands[strandType].Ys;
@@ -1957,18 +2623,33 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          }
       }
 
-      if ( bIsOnGirder )
+      if (bIsOnSegment)
       {
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressSegmentTendonInterval(segmentKey);
+         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
          {
-            IntervalIndexType stressTendonIntervalIdx  = m_pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+            TIME_STEP_STRAND& tendon = tsDetails.SegmentTendons[ductIdx];
 
-            TIME_STEP_STRAND& tendon = tsDetails.Tendons[ductIdx];
-
-            if ( stressTendonIntervalIdx < intervalIdx )
+            if (stressTendonIntervalIdx < intervalIdx)
             {
-               EA  += ETendon*tendon.As;
-               EAy += ETendon*tendon.As*tendon.Ys;
+               EA += ESegmentTendon*tendon.As;
+               EAy += ESegmentTendon*tendon.As*tendon.Ys;
+            }
+         }
+      }
+
+      if (bIsOnGirder)
+      {
+         for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+         {
+            IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx);
+
+            TIME_STEP_STRAND& tendon = tsDetails.GirderTendons[ductIdx];
+
+            if (stressTendonIntervalIdx < intervalIdx)
+            {
+               EA += EGirderTendon*tendon.As;
+               EAy += EGirderTendon*tendon.As*tendon.Ys;
             }
          }
       }
@@ -1986,21 +2667,16 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].Ys),2));
       EI += EDeckRebar*(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].As*pow((Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].Ys),2));
 
-      rIter = tsDetails.GirderRebar.begin();
-      for ( ; rIter != rIterEnd; rIter++ )
+      for(const auto& tsRebar : tsDetails.GirderRebar)
       {
-         TIME_STEP_REBAR& tsRebar(*rIter);
          EI += EGirderRebar*(tsRebar.As*pow((Ytr - tsRebar.Ys),2));
       }
 
       if ( bIsOnSegment )
       {
          const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-         for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+         for(const auto& strandType : strandTypes)
          {
-            pgsTypes::StrandType strandType = *strandTypeIter;
 #if defined LUMP_STRANDS
             TIME_STEP_STRAND& strand = tsDetails.Strands[strandType];
             EI += EStrand[strandType]*strand.As*pow((Ytr - strand.Ys),2);
@@ -2015,17 +2691,31 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          }
       }
 
-      if ( bIsOnGirder )
+      if (bIsOnSegment)
       {
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressSegmentTendonInterval(segmentKey);
+         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
          {
-            IntervalIndexType stressTendonIntervalIdx  = m_pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+            TIME_STEP_STRAND& tendon = tsDetails.SegmentTendons[ductIdx];
 
-            TIME_STEP_STRAND& tendon = tsDetails.Tendons[ductIdx];
-
-            if ( stressTendonIntervalIdx < intervalIdx )
+            if (stressTendonIntervalIdx < intervalIdx)
             {
-               EI += ETendon*(tendon.As*pow((Ytr - tendon.Ys),2));
+               EI += ESegmentTendon*(tendon.As*pow((Ytr - tendon.Ys), 2));
+            }
+         }
+      }
+
+      if (bIsOnGirder)
+      {
+         for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+         {
+            IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx);
+
+            TIME_STEP_STRAND& tendon = tsDetails.GirderTendons[ductIdx];
+
+            if (stressTendonIntervalIdx < intervalIdx)
+            {
+               EI += EGirderTendon*(tendon.As*pow((Ytr - tendon.Ys), 2));
             }
          }
       }
@@ -2407,11 +3097,8 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          if ( bIsOnSegment )
          {
             const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-            std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-            std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-            for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+            for(const auto& strandType : strandTypes)
             {
-               pgsTypes::StrandType strandType = *strandTypeIter;
 #if defined LUMP_STRANDS
 
                // change in strand force
@@ -2550,94 +3237,182 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             tsDetails.Mi[pgsTypes::pftPretension] = prevTimeStepDetails.Mi[pgsTypes::pftPretension] + tsDetails.dMi[pgsTypes::pftPretension];
          } // if not closure joint
 
-         // Compute change in force in tendons
-         if ( bIsOnGirder )
+         // Compute change in force in segment tendons
+         if (bIsOnSegment)
          {
-            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+            IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressSegmentTendonInterval(segmentKey);
+            for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
             {
-               TIME_STEP_STRAND& tendon = tsDetails.Tendons[ductIdx];
-
-               IntervalIndexType stressTendonIntervalIdx  = m_pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+               TIME_STEP_STRAND& tendon = tsDetails.SegmentTendons[ductIdx];
 
                // Change in tendon force due to deformations during this interval
                // tendon forces are already set in the Initialize method at and before the stressing interval
-               if ( stressTendonIntervalIdx < intervalIdx )
+               if (stressTendonIntervalIdx < intervalIdx)
                {
-                  dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType]/EaGirder_Atr)
-                      + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType]*(tsDetails.Ytr - tendon.Ys)/EaGirder_Itr);
-                  dPi = dei*ETendon*tendon.As;
+                  dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType] / EaGirder_Atr)
+                      + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType] * (tsDetails.Ytr - tendon.Ys) / EaGirder_Itr);
+                  dPi = dei*ESegmentTendon*tendon.As;
 
                   tendon.dei[pfType] += dei;
                   tendon.dPi[pfType] += dPi;
 
-                  if ( pfType == pgsTypes::pftCreep )
+                  if (pfType == pgsTypes::pftCreep)
                   {
-                     dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR]/EaGirder_Atr;
-                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR]*(tsDetails.Ytr - tendon.Ys)/EaGirder_Itr;
-                     dPi  = dei*ETendon*tendon.As;
+                     dei = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR] / EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR] * (tsDetails.Ytr - tendon.Ys) / EaGirder_Itr;
+                     dPi = dei*ESegmentTendon*tendon.As;
 
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
                   }
-                  else if ( pfType == pgsTypes::pftShrinkage )
+                  else if (pfType == pgsTypes::pftShrinkage)
                   {
-                     dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH]/EaGirder_Atr;
-                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH]*(tsDetails.Ytr - tendon.Ys)/EaGirder_Itr;
-                     dPi  = dei*ETendon*tendon.As;
+                     dei = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH] / EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH] * (tsDetails.Ytr - tendon.Ys) / EaGirder_Itr;
+                     dPi = dei*ESegmentTendon*tendon.As;
 
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
                   }
-                  else if ( pfType == pgsTypes::pftRelaxation )
+                  else if (pfType == pgsTypes::pftRelaxation)
                   {
-                     dei  = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE]/EaGirder_Atr;
-                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE]*(tsDetails.Ytr - tendon.Ys)/EaGirder_Itr;
-                     dPi  = dei*ETendon*tendon.As + tendon.PrRelaxation;
+                     dei = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE] / EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE] * (tsDetails.Ytr - tendon.Ys) / EaGirder_Itr;
+                     dPi = dei*ESegmentTendon*tendon.As + tendon.PrRelaxation;
 
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
                   }
 
-                  tendon.Pi[pfType]  += prevTimeStepDetails.Tendons[ductIdx].Pi[pfType] + tendon.dPi[pfType];
-                  tendon.dP          += tendon.dPi[pfType];
-                  tendon.P           += tendon.Pi[pfType];
+                  tendon.Pi[pfType] += prevTimeStepDetails.SegmentTendons[ductIdx].Pi[pfType] + tendon.dPi[pfType];
+                  tendon.dP += tendon.dPi[pfType];
+                  tendon.P += tendon.Pi[pfType];
 
-                  tendon.ei[pfType]  += prevTimeStepDetails.Tendons[ductIdx].ei[pfType] + tendon.dei[pfType];
-                  tendon.de          += tendon.dei[pfType];
-                  tendon.e           += tendon.ei[pfType];
+                  tendon.ei[pfType] += prevTimeStepDetails.SegmentTendons[ductIdx].ei[pfType] + tendon.dei[pfType];
+                  tendon.de += tendon.dei[pfType];
+                  tendon.e += tendon.ei[pfType];
                }
 
                // Losses prestress
-               tendon.dfpei[pfType] += (IsZero(tendon.As) ? 0 : tendon.dPi[pfType]/tendon.As);
+               tendon.dfpei[pfType] += (IsZero(tendon.As) ? 0 : tendon.dPi[pfType] / tendon.As);
                tendon.dfpe += tendon.dfpei[pfType];
 
-               if ( intervalIdx == stressTendonIntervalIdx )
+               if (intervalIdx == stressTendonIntervalIdx)
                {
                   // tendons are stressed, but not released
                   // effective stress at end of interval is fpj
-                  if ( i == 0 )
+                  if (i == 0)
                   {
                      tendon.fpe = tendon.fpj;
                   }
-                  tendon.fpe  += tendon.dfpei[pfType];
+                  tendon.fpe += tendon.dfpei[pfType];
                   tendon.loss += tendon.dfpei[pfType];
                }
-               else if ( stressTendonIntervalIdx < intervalIdx )
+               else if (stressTendonIntervalIdx < intervalIdx)
                {
                   // effective stress at end of this interval = effective stress at end of previous interval + change in stress this interval
-                  if ( i == 0 )
+                  if (i == 0)
                   {
-                     tendon.fpe  = prevTimeStepDetails.Tendons[ductIdx].fpe;
-                     tendon.loss = prevTimeStepDetails.Tendons[ductIdx].loss;
+                     tendon.fpe = prevTimeStepDetails.SegmentTendons[ductIdx].fpe;
+                     tendon.loss = prevTimeStepDetails.SegmentTendons[ductIdx].loss;
                   }
 
-                  tendon.fpe  += tendon.dfpei[pfType];
+                  tendon.fpe += tendon.dfpei[pfType];
                   tendon.loss -= tendon.dfpei[pfType];
 
-                  ATLASSERT(IsEqual(tendon.loss,details.TimeStepDetails[stressTendonIntervalIdx].Tendons[ductIdx].fpj - tendon.fpe));
+                  ATLASSERT(IsEqual(tendon.loss, details.TimeStepDetails[stressTendonIntervalIdx].SegmentTendons[ductIdx].fpj - tendon.fpe));
                }
             } // next tendon
-         }
+         } // if on segment
+
+         // Compute change in force in girder tendons
+         if (bIsOnGirder)
+         {
+            for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+            {
+               TIME_STEP_STRAND& tendon = tsDetails.GirderTendons[ductIdx];
+
+               IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx);
+
+               // Change in tendon force due to deformations during this interval
+               // tendon forces are already set in the Initialize method at and before the stressing interval
+               if (stressTendonIntervalIdx < intervalIdx)
+               {
+                  dei = (IsZero(EaGirder_Atr) ? 0 : tsDetails.dPi[pfType] / EaGirder_Atr)
+                     + (IsZero(EaGirder_Itr) ? 0 : tsDetails.dMi[pfType] * (tsDetails.Ytr - tendon.Ys) / EaGirder_Itr);
+                  dPi = dei*EGirderTendon*tendon.As;
+
+                  tendon.dei[pfType] += dei;
+                  tendon.dPi[pfType] += dPi;
+
+                  if (pfType == pgsTypes::pftCreep)
+                  {
+                     dei = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_CR] / EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_CR] * (tsDetails.Ytr - tendon.Ys) / EaGirder_Itr;
+                     dPi = dei*EGirderTendon*tendon.As;
+
+                     tendon.dei[pfType] += dei;
+                     tendon.dPi[pfType] += dPi;
+                  }
+                  else if (pfType == pgsTypes::pftShrinkage)
+                  {
+                     dei = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_SH] / EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_SH] * (tsDetails.Ytr - tendon.Ys) / EaGirder_Itr;
+                     dPi = dei*EGirderTendon*tendon.As;
+
+                     tendon.dei[pfType] += dei;
+                     tendon.dPi[pfType] += dPi;
+                  }
+                  else if (pfType == pgsTypes::pftRelaxation)
+                  {
+                     dei = IsZero(EaGirder_Atr) ? 0 : -tsDetails.Pr[TIMESTEP_RE] / EaGirder_Atr;
+                     dei += IsZero(EaGirder_Itr) ? 0 : -tsDetails.Mr[TIMESTEP_RE] * (tsDetails.Ytr - tendon.Ys) / EaGirder_Itr;
+                     dPi = dei*EGirderTendon*tendon.As + tendon.PrRelaxation;
+
+                     tendon.dei[pfType] += dei;
+                     tendon.dPi[pfType] += dPi;
+                  }
+
+                  tendon.Pi[pfType] += prevTimeStepDetails.GirderTendons[ductIdx].Pi[pfType] + tendon.dPi[pfType];
+                  tendon.dP += tendon.dPi[pfType];
+                  tendon.P += tendon.Pi[pfType];
+
+                  tendon.ei[pfType] += prevTimeStepDetails.GirderTendons[ductIdx].ei[pfType] + tendon.dei[pfType];
+                  tendon.de += tendon.dei[pfType];
+                  tendon.e += tendon.ei[pfType];
+               }
+
+               // Losses prestress
+               tendon.dfpei[pfType] += (IsZero(tendon.As) ? 0 : tendon.dPi[pfType] / tendon.As);
+               tendon.dfpe += tendon.dfpei[pfType];
+
+               if (intervalIdx == stressTendonIntervalIdx)
+               {
+                  // tendons are stressed, but not released
+                  // effective stress at end of interval is fpj
+                  if (i == 0)
+                  {
+                     tendon.fpe = tendon.fpj;
+                  }
+                  tendon.fpe += tendon.dfpei[pfType];
+                  tendon.loss += tendon.dfpei[pfType];
+               }
+               else if (stressTendonIntervalIdx < intervalIdx)
+               {
+                  // effective stress at end of this interval = effective stress at end of previous interval + change in stress this interval
+                  if (i == 0)
+                  {
+                     tendon.fpe = prevTimeStepDetails.GirderTendons[ductIdx].fpe;
+                     tendon.loss = prevTimeStepDetails.GirderTendons[ductIdx].loss;
+                  }
+
+                  tendon.fpe += tendon.dfpei[pfType];
+                  tendon.loss -= tendon.dfpei[pfType];
+
+                  ATLASSERT(IsEqual(tendon.loss, details.TimeStepDetails[stressTendonIntervalIdx].GirderTendons[ductIdx].fpj - tendon.fpe));
+               }
+            } // next tendon
+         } // if on girder 
       } // next product force
 
 
@@ -2662,175 +3437,6 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          tsDetails.P = prevTimeStepDetails.P + tsDetails.dP;
          tsDetails.M = prevTimeStepDetails.M + tsDetails.dM;
       }
-
-// We need elastic gains due to live load for different live load types and vehicles (e.g. Service III, Emergency Vehicle Rating, EV2 truck)
-// Elastic gains are computed elsewhere as needed
-//      //
-//      // Compute stress in the parts of the cross section due to live load
-//      //
-//
-//      // Get Live Load this interval
-//      Float64 PllMin, PllMax;
-//      m_pCombinedForces->GetCombinedLiveLoadAxial(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&PllMin,&PllMax);
-//      if ( bIsInClosure && intervalIdx < compositeClosureIntervalIdx )
-//      {
-//         PllMin = 0;
-//         PllMax = 0;
-//      }
-//
-//      // Eaxial strain due to live load moment
-//      Float64 eLLMin = IsZero(EaGirder_Atr) ? 0 : PllMin/EaGirder_Atr;
-//      Float64 eLLMax = IsZero(EaGirder_Atr) ? 0 : PllMax/EaGirder_Atr;
-//
-//      Float64 MllMin, MllMax;
-//      m_pCombinedForces->GetCombinedLiveLoadMoment(intervalIdx,pgsTypes::lltDesign,poi,m_Bat,&MllMin,&MllMax);
-//      if ( bIsInClosure && intervalIdx < compositeClosureIntervalIdx )
-//      {
-//         MllMin = 0;
-//         MllMax = 0;
-//      }
-//
-//      // Curvature due to live load moment
-//      Float64 rLLMin = IsZero(EaGirder_Itr) ? 0 : MllMin/EaGirder_Itr;
-//      Float64 rLLMax = IsZero(EaGirder_Itr) ? 0 : MllMax/EaGirder_Itr;
-//
-//      // Axial force and moment in girder
-//      Float64 Pmin = EaGirder_An*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Girder.Yn));
-//      Float64 Pmax = EaGirder_An*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Girder.Yn));
-//      Float64 Mmin = EaGirder_In*rLLMin;
-//      Float64 Mmax = EaGirder_In*rLLMax;
-//
-//      if ( !IsZero(tsDetails.Girder.An) && !IsZero(tsDetails.Girder.In) )
-//      {
-//         tsDetails.Girder.fLLMin[pgsTypes::TopFace] = Pmin/tsDetails.Girder.An + Mmin*tsDetails.Girder.Yn/tsDetails.Girder.In;
-//         tsDetails.Girder.fLLMax[pgsTypes::TopFace] = Pmax/tsDetails.Girder.An + Mmax*tsDetails.Girder.Yn/tsDetails.Girder.In;
-//         if (tsDetails.Girder.fLLMax[pgsTypes::TopFace] < tsDetails.Girder.fLLMin[pgsTypes::TopFace])
-//         {
-//            std::swap(tsDetails.Girder.fLLMin[pgsTypes::TopFace],tsDetails.Girder.fLLMax[pgsTypes::TopFace]);
-//         }
-//
-//         tsDetails.Girder.fLLMin[pgsTypes::BottomFace] = Pmin/tsDetails.Girder.An + Mmin*(tsDetails.Girder.H + tsDetails.Girder.Yn)/tsDetails.Girder.In;
-//         tsDetails.Girder.fLLMax[pgsTypes::BottomFace] = Pmax/tsDetails.Girder.An + Mmax*(tsDetails.Girder.H + tsDetails.Girder.Yn)/tsDetails.Girder.In;
-//         if (tsDetails.Girder.fLLMax[pgsTypes::BottomFace] < tsDetails.Girder.fLLMin[pgsTypes::BottomFace])
-//         {
-//            std::swap(tsDetails.Girder.fLLMin[pgsTypes::BottomFace],tsDetails.Girder.fLLMax[pgsTypes::BottomFace]);
-//         }
-//      }
-//
-//      // Compute stresses in deck due to live load
-//      // Axial force and moment in deck
-//      Pmin = EaDeck_An*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Deck.Yn));
-//      Pmax = EaDeck_An*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Deck.Yn));
-//      Mmin = EaDeck_In*rLLMin;
-//      Mmax = EaDeck_In*rLLMax;
-//
-//      if ( compositeDeckIntervalIdx <= intervalIdx && !IsZero(tsDetails.Deck.An) && !IsZero(tsDetails.Deck.In) )
-//      {
-//         tsDetails.Deck.fLLMin[pgsTypes::TopFace] = Pmin/tsDetails.Deck.An + Mmin*(tsDetails.Deck.Yn - tsDetails.Deck.H)/tsDetails.Deck.In;
-//         tsDetails.Deck.fLLMax[pgsTypes::TopFace] = Pmax/tsDetails.Deck.An + Mmax*(tsDetails.Deck.Yn - tsDetails.Deck.H)/tsDetails.Deck.In;
-//         if (tsDetails.Deck.fLLMax[pgsTypes::TopFace] < tsDetails.Deck.fLLMin[pgsTypes::TopFace])
-//         {
-//            std::swap(tsDetails.Deck.fLLMin[pgsTypes::TopFace],tsDetails.Deck.fLLMax[pgsTypes::TopFace]);
-//         }
-//
-//         tsDetails.Deck.fLLMin[pgsTypes::BottomFace] = Pmin/tsDetails.Deck.An + Mmin*tsDetails.Deck.Yn/tsDetails.Deck.In;
-//         tsDetails.Deck.fLLMax[pgsTypes::BottomFace] = Pmax/tsDetails.Deck.An + Mmax*tsDetails.Deck.Yn/tsDetails.Deck.In;
-//         if (tsDetails.Deck.fLLMax[pgsTypes::BottomFace] < tsDetails.Deck.fLLMin[pgsTypes::BottomFace])
-//         {
-//            std::swap(tsDetails.Deck.fLLMin[pgsTypes::BottomFace],tsDetails.Deck.fLLMax[pgsTypes::BottomFace]);
-//         }
-//      }
-//
-//      // Deck Rebar (not captured, isn't of any value)
-//
-//      // Girder Rebar (not captured, isn't of any value)
-//
-//      // Strands
-//      if ( bIsOnSegment )
-//      {
-//         const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-//         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-//         std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-//         for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
-//         {
-//            pgsTypes::StrandType strandType = *strandTypeIter;
-//#if defined LUMP_STRANDS
-//            if ( intervalIdx < liveLoadIntervalIdx // before live load is applied
-//               || // OR
-//               IsZero(tsDetails.Strands[strandType].As) // there aren't any strands of this type
-//               )
-//            {
-//               tsDetails.Strands[strandType].dFllMin = 0;
-//               tsDetails.Strands[strandType].dFllMax = 0;
-//            }
-//            else
-//            {
-//               tsDetails.Strands[strandType].dFllMin = EStrand[strandType]*(eLLMin + rLLMin*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys));
-//               tsDetails.Strands[strandType].dFllMax = EStrand[strandType]*(eLLMax + rLLMax*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys));
-//            }
-//            tsDetails.Strands[strandType].fpeLLMin  = tsDetails.Strands[strandType].fpe  + tsDetails.Strands[strandType].dFllMin;
-//            tsDetails.Strands[strandType].lossLLMin = tsDetails.Strands[strandType].loss - tsDetails.Strands[strandType].dFllMin;
-//
-//            tsDetails.Strands[strandType].fpeLLMax  = tsDetails.Strands[strandType].fpe  + tsDetails.Strands[strandType].dFllMax;
-//            tsDetails.Strands[strandType].lossLLMax = tsDetails.Strands[strandType].loss - tsDetails.Strands[strandType].dFllMax;
-//#else
-//            StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey,strandType);
-//            for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
-//            {
-//               TIME_STEP_STRAND& strand = tsDetails.Strands[strandType][strandIdx];
-//               if ( intervalIdx < liveLoadIntervalIdx // before live load is applied
-//                  || // OR
-//                  IsZero(strand.As) // there aren't any strands of this type
-//                  )
-//               {
-//                  strand.dFllMin = 0;
-//                  strand.dFllMax = 0;
-//               }
-//               else
-//               {
-//                  // live load is on the structure... add elastic effect
-//                  strand.dFllMin = EStrand[strandType]*(eLLMin + rLLMin*(tsDetails.Ytr - strand.Ys));
-//                  strand.dFllMax = EStrand[strandType]*(eLLMax + rLLMax*(tsDetails.Ytr - strand.Ys));
-//               }
-//               strand.fpeLLMin  = strand.fpe  + strand.dFllMin;  // increasing stress in strand...
-//               strand.lossLLMin = strand.loss - strand.dFllMin;  // ...is the same as decreasing its loss
-//
-//               strand.fpeLLMax  = strand.fpe  + strand.dFllMax;
-//               strand.lossLLMax = strand.loss - strand.dFllMax;
-//            } // next strand
-//#endif // LUMP_STRANDS
-//         } // next strand type
-//      }
-//
-//
-//      // Tendons
-//      if ( bIsOnGirder )
-//      {
-//         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-//         {
-//            TIME_STEP_STRAND& tendon = tsDetails.Tendons[ductIdx];
-//
-//            if ( intervalIdx < liveLoadIntervalIdx // before live load
-//                 || // OR
-//                 IsZero(tendon.As) // aren't any strands in the duct
-//               )
-//            {
-//               tendon.dFllMin = 0;
-//               tendon.dFllMax = 0;
-//            }
-//            else
-//            {
-//               tendon.dFllMin = ETendon*(eLLMin + rLLMin*(tsDetails.Ytr - tendon.Ys));
-//               tendon.dFllMax = ETendon*(eLLMax + rLLMax*(tsDetails.Ytr - tendon.Ys));
-//            }
-//            tendon.fpeLLMin  = tendon.fpe  + tendon.dFllMin;
-//            tendon.lossLLMin = tendon.loss - tendon.dFllMin;
-//
-//            tendon.fpeLLMax  = tendon.fpe  + tendon.dFllMax; // increasing stress in tendon due to external load...
-//            tendon.lossLLMax = tendon.loss - tendon.dFllMax; // ... is the same as reducing the loss
-//         } // next tendon
-//      }
-
 
       // total due to primary pt at the end of this interval
       tsDetails.Pi[pgsTypes::pftPostTensioning] = prevTimeStepDetails.Pi[pgsTypes::pftPostTensioning] + tsDetails.dPi[pgsTypes::pftPostTensioning];
@@ -2881,21 +3487,15 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                        + tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].dPi[pfType]*(tsDetails.Ytr - tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum   ].Ys);
 
 
-      std::vector<TIME_STEP_REBAR>::iterator iter(tsDetails.GirderRebar.begin());
-      std::vector<TIME_STEP_REBAR>::iterator end(tsDetails.GirderRebar.end());
-      for ( ; iter != end; iter++ )
+      for(const auto& tsRebar : tsDetails.GirderRebar)
       {
-         TIME_STEP_REBAR& tsRebar(*iter);
          tsDetails.dPint += tsRebar.dPi[pfType];
          tsDetails.dMint += tsRebar.dPi[pfType]*(tsDetails.Ytr - tsRebar.Ys);
       }
 
       const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIter(strandTypes.begin());
-      std::vector<pgsTypes::StrandType>::const_iterator strandTypeIterEnd(strandTypes.end());
-      for ( ; strandTypeIter != strandTypeIterEnd; strandTypeIter++ )
+      for(const auto& strandType : strandTypes)
       {
-         pgsTypes::StrandType strandType = *strandTypeIter;
 #if defined LUMP_STRANDS
          tsDetails.dPint += tsDetails.Strands[strandType].dPi[pfType];
          tsDetails.dMint += tsDetails.Strands[strandType].dPi[pfType]*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys);
@@ -2910,13 +3510,23 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 #endif // LUMP_STRANDS
       } // next strand type
 
-      if ( bIsOnGirder )
+      if (bIsOnSegment)
       {
-         DuctIndexType nDucts = m_pTendonGeom->GetDuctCount(girderKey);
-         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+         DuctIndexType nDucts = m_pSegmentTendonGeometry->GetDuctCount(segmentKey);
+         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
          {
-            tsDetails.dPint += tsDetails.Tendons[ductIdx].dPi[pfType];
-            tsDetails.dMint += tsDetails.Tendons[ductIdx].dPi[pfType]*(tsDetails.Ytr - tsDetails.Tendons[ductIdx].Ys);
+            tsDetails.dPint += tsDetails.SegmentTendons[ductIdx].dPi[pfType];
+            tsDetails.dMint += tsDetails.SegmentTendons[ductIdx].dPi[pfType] * (tsDetails.Ytr - tsDetails.SegmentTendons[ductIdx].Ys);
+         }
+      }
+
+      if (bIsOnGirder)
+      {
+         DuctIndexType nDucts = m_pGirderTendonGeometry->GetDuctCount(girderKey);
+         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+         {
+            tsDetails.dPint += tsDetails.GirderTendons[ductIdx].dPi[pfType];
+            tsDetails.dMint += tsDetails.GirderTendons[ductIdx].dPi[pfType] * (tsDetails.Ytr - tsDetails.GirderTendons[ductIdx].Ys);
          }
       }
    } // next product load type
@@ -3043,10 +3653,12 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
 
    GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
+      CSegmentKey segmentKey(girderKey, segIdx);
+
       std::_tostringstream os;
-      if ( 1 < nSegments )
+      if (1 < nSegments)
       {
          os << _T("Segment ") << LABEL_SEGMENT(segIdx) << _T(" - Losses in Pretensioned Strands");
       }
@@ -3055,68 +3667,151 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
          os << _T("Losses in Pretensioned Strands");
       }
 
-      rptRcTable* pPSLossTable = rptStyleManager::CreateDefaultTable(2+nIntervals,os.str().c_str());
+      rptRcTable* pPSLossTable = rptStyleManager::CreateDefaultTable(2 + nIntervals, os.str().c_str());
       *pPara << pPSLossTable << rptNewLine;
 
       RowIndexType row = pPSLossTable->GetNumberOfHeaderRows();
 
 
       ColumnIndexType col = 0;
-      (*pPSLossTable)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+      (*pPSLossTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+      for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
       {
-         (*pPSLossTable)(0,col) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ps")) << rptNewLine << _T("Interval ") << LABEL_INTERVAL(intervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*pPSLossTable)(0,col) << rptNewLine << _T("Straight") << rptNewLine << _T("Harped");
+         (*pPSLossTable)(0, col) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("ps")) << rptNewLine << _T("Interval ") << LABEL_INTERVAL(intervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         (*pPSLossTable)(0, col) << rptNewLine << _T("Straight") << rptNewLine << _T("Harped");
          col++;
       }
-      (*pPSLossTable)(0,col) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-      (*pPSLossTable)(0,col) << rptNewLine << _T("Straight") << rptNewLine << _T("Harped");
+      (*pPSLossTable)(0, col) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*pPSLossTable)(0, col) << rptNewLine << _T("Straight") << rptNewLine << _T("Harped");
 
       // Get the losses for this segment
-      GET_IFACE(IPointOfInterest,pPoi);
+      GET_IFACE(IPointOfInterest, pPoi);
       PoiList vPoi;
-      pPoi->GetPointsOfInterest(CSegmentKey(girderKey, segIdx), POI_ERECTED_SEGMENT | POI_TENTH_POINTS, &vPoi);
-      for ( const pgsPointOfInterest& poi : vPoi)
+      pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_TENTH_POINTS, &vPoi);
+      for (const pgsPointOfInterest& poi : vPoi)
       {
          col = 0;
-         const LOSSDETAILS* pLossDetails = GetLosses(poi,INVALID_INDEX);
+         const LOSSDETAILS* pLossDetails = GetLosses(poi, INVALID_INDEX);
 
-         (*pPSLossTable)(row,col++) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         (*pPSLossTable)(row, col++) << location.SetValue(POI_ERECTED_SEGMENT, poi);
 
-         for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+         for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
          {
 #if defined LUMP_STRANDS
             // dfpe is the change in force... values < 0 are losses (a reduction in force)
             // however, in the context of this table, we want losses to be positive
             // so that's why there is the - sign in stress.SetValue(-dfpe)
-            (*pPSLossTable)(row,col) << stress.SetValue( -pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe );
-            (*pPSLossTable)(row,col) << rptNewLine;
-            (*pPSLossTable)(row,col) << stress.SetValue( -pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].dfpe );
+            (*pPSLossTable)(row, col) << stress.SetValue(-pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe);
+            (*pPSLossTable)(row, col) << rptNewLine;
+            (*pPSLossTable)(row, col) << stress.SetValue(-pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].dfpe);
 #else
-            (*pPSLossTable)(row,col) << stress.SetValue( pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe );
-            (*pPSLossTable)(row,col) << rptNewLine;
-            (*pPSLossTable)(row,col) << stress.SetValue( pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].dfpe );
+            (*pPSLossTable)(row, col) << stress.SetValue(pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Straight].dfpe);
+            (*pPSLossTable)(row, col) << rptNewLine;
+            (*pPSLossTable)(row, col) << stress.SetValue(pLossDetails->TimeStepDetails[intervalIdx].Strands[pgsTypes::Harped].dfpe);
 #endif // LUMP_STRANDS
             col++;
          }
 
 #if defined LUMP_STRANDS
-         (*pPSLossTable)(row,col) << stress.SetValue( pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Straight].loss );
-         (*pPSLossTable)(row,col) << rptNewLine;
-         (*pPSLossTable)(row,col) << stress.SetValue( pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Harped].loss );
+         (*pPSLossTable)(row, col) << stress.SetValue(pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Straight].loss);
+         (*pPSLossTable)(row, col) << rptNewLine;
+         (*pPSLossTable)(row, col) << stress.SetValue(pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Harped].loss);
 #else
 #pragma Reminder("UPDATE: reporting of loss in strands")
-         (*pPSLossTable)(row,col) << rptNewLine; //stress.SetValue( pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Straight].loss );
-         (*pPSLossTable)(row,col) << rptNewLine;
-         (*pPSLossTable)(row,col) << rptNewLine; //stress.SetValue( pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Harped].loss );
+         (*pPSLossTable)(row, col) << rptNewLine; //stress.SetValue( pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Straight].loss );
+         (*pPSLossTable)(row, col) << rptNewLine;
+         (*pPSLossTable)(row, col) << rptNewLine; //stress.SetValue( pLossDetails->TimeStepDetails.back().Strands[pgsTypes::Harped].loss );
 #endif // LLUMP_STRANDS
 
          row++;
       } // next POI
+
+      GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+      DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+
+      if (0 < nDucts)
+      {
+         IntervalIndexType ptIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+         rptRcTable** pPTLossTable = new rptRcTable*[nDucts];
+         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+         {
+            CString strTitle;
+
+            strTitle.Format(_T("Duct %d - Losses in Post-Tension Segment Tendon"), LABEL_DUCT(ductIdx));
+            pPTLossTable[ductIdx] = rptStyleManager::CreateDefaultTable(4 + (nIntervals - ptIntervalIdx), strTitle);
+            *pPara << pPTLossTable[ductIdx] << rptNewLine;
+
+
+            ColumnIndexType ductCol = 0;
+            (*pPTLossTable[ductIdx])(0, ductCol++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+            (*pPTLossTable[ductIdx])(0, ductCol++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pF")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            (*pPTLossTable[ductIdx])(0, ductCol++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pA")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            for (IntervalIndexType intervalIdx = ptIntervalIdx; intervalIdx < nIntervals; intervalIdx++)
+            {
+               (*pPTLossTable[ductIdx])(0, ductCol++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pt")) << rptNewLine << _T("Interval ") << LABEL_INTERVAL(intervalIdx), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            }
+            (*pPTLossTable[ductIdx])(0, ductCol++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         } // next duct
+
+         Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey, 0));
+         RowIndexType row = pPTLossTable[0]->GetNumberOfHeaderRows();
+
+         PoiList vPoi;
+         pPoi->GetPointsOfInterest(segmentKey, &vPoi);
+         for (const pgsPointOfInterest& poi : vPoi)
+         {
+            const LOSSDETAILS* pLossDetails = GetLosses(poi, INVALID_INDEX);
+
+            bool bIsOnSegment = pPoi->IsOnSegment(poi);
+
+            for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+            {
+               ColumnIndexType ductCol = 0;
+
+               IntervalIndexType ptIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+               (*pPTLossTable[ductIdx])(row, ductCol++) << location.SetValue(POI_RELEASED_SEGMENT, poi);
+
+               if (bIsOnSegment)
+               {
+                  (*pPTLossTable[ductIdx])(row, ductCol++) << stress.SetValue(pLossDetails->SegmentFrictionLossDetails[ductIdx].dfpF);
+                  (*pPTLossTable[ductIdx])(row, ductCol++) << stress.SetValue(pLossDetails->SegmentFrictionLossDetails[ductIdx].dfpA);
+
+                  for (IntervalIndexType intervalIdx = ptIntervalIdx; intervalIdx < nIntervals; intervalIdx++)
+                  {
+                     // dfpe is the change in force... values < 0 are losses (a reduction in force)
+                     // however, in the context of this table, we want losses to be positive
+                     // so that's why there is the - sign in stress.SetValue(-dfpe)
+                     Float64 dfpe = pLossDetails->TimeStepDetails[intervalIdx].SegmentTendons[ductIdx].dfpe;
+                     (*pPTLossTable[ductIdx])(row, ductCol++) << stress.SetValue(-dfpe);
+                  }
+
+                  Float64 loss = pLossDetails->TimeStepDetails.back().SegmentTendons[ductIdx].loss;
+                  (*pPTLossTable[ductIdx])(row, ductCol++) << stress.SetValue(loss);
+               }
+               else
+               {
+                  (*pPTLossTable[ductIdx])(row, ductCol++) << _T(""); //stress.SetValue(pLossDetails->SegmentFrictionLossDetails[ductIdx].dfpF);
+                  (*pPTLossTable[ductIdx])(row, ductCol++) << _T(""); //stress.SetValue(pLossDetails->SegmentFrictionLossDetails[ductIdx].dfpA);
+
+                  for (IntervalIndexType intervalIdx = ptIntervalIdx; intervalIdx < nIntervals; intervalIdx++)
+                  {
+                     (*pPTLossTable[ductIdx])(row, ductCol++) << _T(""); //stress.SetValue(-dfpe);
+                  }
+
+                  (*pPTLossTable[ductIdx])(row, ductCol++) << _T(""); //stress.SetValue(loss);
+               }
+            }
+            row++;
+         }
+
+         // deletes the array of points, not the pointers themselves
+         delete[] pPTLossTable;
+      }
    } // next segment
 
-  
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
    if ( 0 < nDucts )
@@ -3126,9 +3821,9 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
       {
          CString strTitle;
 
-         IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+         IntervalIndexType ptIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
 
-         strTitle.Format(_T("Duct %d - Losses in Post-Tension Tendon"),LABEL_DUCT(ductIdx));
+         strTitle.Format(_T("Duct %d - Losses in Post-Tension Girder Tendon"),LABEL_DUCT(ductIdx));
          pPTLossTable[ductIdx] = rptStyleManager::CreateDefaultTable(4+(nIntervals-ptIntervalIdx),strTitle);
          *pPara << pPTLossTable[ductIdx] << rptNewLine;
 
@@ -3152,31 +3847,30 @@ void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* 
       pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
       for ( const pgsPointOfInterest& poi : vPoi)
       {
-         if ( pPoi->IsOnGirder(poi) )
+         const LOSSDETAILS* pLossDetails = GetLosses(poi,INVALID_INDEX);
+
+         for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
          {
-            const LOSSDETAILS* pLossDetails = GetLosses(poi,INVALID_INDEX);
+            ColumnIndexType ductCol = 0;
 
-            for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+            IntervalIndexType ptIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
+
+            (*pPTLossTable[ductIdx])(row,ductCol++) << location.SetValue( POI_SPAN, poi );
+
+            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->GirderFrictionLossDetails[ductIdx].dfpF );
+            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->GirderFrictionLossDetails[ductIdx].dfpA );
+
+            for ( IntervalIndexType intervalIdx = ptIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
             {
-               ColumnIndexType ductCol = 0;
-
-               IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
-
-               (*pPTLossTable[ductIdx])(row,ductCol++) << location.SetValue( POI_SPAN, poi );
-
-               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->FrictionLossDetails[ductIdx].dfpF );
-               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->FrictionLossDetails[ductIdx].dfpA );
-
-               for ( IntervalIndexType intervalIdx = ptIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-               {
-                  // dfpe is the change in force... values < 0 are losses (a reduction in force)
-                  // however, in the context of this table, we want losses to be positive
-                  // so that's why there is the - sign in stress.SetValue(-dfpe)
-                  (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( -pLossDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].dfpe );
-               }
-
-               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( pLossDetails->TimeStepDetails.back().Tendons[ductIdx].loss );
+               // dfpe is the change in force... values < 0 are losses (a reduction in force)
+               // however, in the context of this table, we want losses to be positive
+               // so that's why there is the - sign in stress.SetValue(-dfpe)
+               Float64 dfpe = pLossDetails->TimeStepDetails[intervalIdx].GirderTendons[ductIdx].dfpe;
+               (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( -dfpe );
             }
+
+            Float64 loss = pLossDetails->TimeStepDetails.back().GirderTendons[ductIdx].loss;
+            (*pPTLossTable[ductIdx])(row,ductCol++) << stress.SetValue( loss );
          }
          row++;
       }
@@ -3214,10 +3908,10 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CPTData* pPTData,const 
 
    const CGirderKey& girderKey(pPTData->GetGirder()->GetGirderKey());
 
-   IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+   IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
 
-   Float64 Apt = m_pTendonGeom->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
-   Float64 Pj  = (Apt == 0 ? 0 : m_pTendonGeom->GetPjack(girderKey,ductIdx));
+   Float64 Apt = m_pGirderTendonGeometry->GetGirderTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
+   Float64 Pj  = (Apt == 0 ? 0 : m_pGirderTendonGeometry->GetPjack(girderKey,ductIdx));
    Float64 fpj = (Apt == 0 ? 0 : Pj/Apt);
 
    Float64 XsetMin, XsetMax; // position of end of anchor set zone measured from left end of girder
@@ -3298,32 +3992,131 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CPTData* pPTData,const 
    *pdfpS  = dfpS;
 }
 
+
+void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, LOSSES* pLosses, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64* pdfpAT, Float64* pdfpS, Float64* pXset)
+{
+   if (pDuctData->nStrands == 0)
+   {
+      // If there aren't any strands in the tendon, there aren't any losses.
+      *pXset = 0;
+      *pdfpAT = 0;
+      *pdfpS = 0;
+      return;
+   }
+
+   // solve with method of false position (aka regula falsi method)
+   // http://en.wikipedia.org/wiki/False_position_method
+   // http://mathworld.wolfram.com/MethodofFalsePosition.html
+
+   Float64 Dset, wobble, friction;
+   m_pLossParams->GetTendonPostTensionParameters(&Dset, &wobble, &friction);
+
+   const CSegmentKey& segmentKey(pPTData->GetSegment()->GetSegmentKey());
+
+   IntervalIndexType stressTendonIntervalIdx = m_pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   Float64 Apt = m_pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, stressTendonIntervalIdx, ductIdx);
+   Float64 Pj = (Apt == 0 ? 0 : m_pSegmentTendonGeometry->GetPjack(segmentKey, ductIdx));
+   Float64 fpj = (Apt == 0 ? 0 : Pj / Apt);
+
+   Float64 XsetMin, XsetMax; // position of end of anchor set zone measured from left end of girder
+   Float64 DsetMin, DsetMax;
+   Float64 dfpATMin, dfpATMax;
+   Float64 dfpSMin, dfpSMax;
+   BoundAnchorSet(pPTData, pDuctData, ductIdx, endType, Dset, pLosses, fpj, Ls, frMinIter, &XsetMin, &DsetMin, &dfpATMin, &dfpSMin, &XsetMax, &DsetMax, &dfpATMax, &dfpSMax);
+
+   // If the solution is nailed, get the heck outta here
+   if (IsEqual(DsetMin, Dset))
+   {
+      *pXset = XsetMin;
+      *pdfpAT = dfpATMin;
+      *pdfpS = dfpSMin;
+      return;
+   }
+
+   if (IsEqual(DsetMax, Dset))
+   {
+      *pXset = XsetMax;
+      *pdfpAT = dfpATMax;
+      *pdfpS = dfpSMax;
+      return;
+   }
+
+   // ok, we've got some work to do...
+   int side = 0;
+   long maxIter = 100;
+   Float64 Xset;
+   Float64 dfpAT;
+   Float64 dfpS;
+   long iter = 0;
+   for (iter = 0; iter < maxIter; iter++)
+   {
+      Xset = ((DsetMin - Dset)*XsetMax - (DsetMax - Dset)*XsetMin) / ((DsetMin - Dset) - (DsetMax - Dset));
+      Float64 Dset1 = EvaluateAnchorSet(pPTData, pDuctData, ductIdx, endType, pLosses, fpj, Ls, frMinIter, Xset, &dfpAT, &dfpS);
+
+      if (IsEqual(Dset, Dset1))
+      {
+         break;
+      }
+
+      if (0 < (Dset1 - Dset)*(DsetMax - Dset))
+      {
+         XsetMax = Xset;
+         DsetMax = Dset1;
+         if (side == -1)
+         {
+            DsetMin = (DsetMin + Dset) / 2;
+         }
+
+         side = -1;
+      }
+      else if (0 < (Dset1 - Dset)*(DsetMin - Dset))
+      {
+         XsetMin = Xset;
+         DsetMin = Dset1;
+         if (side == 1)
+         {
+            DsetMax = (DsetMax + Dset) / 2;
+         }
+
+         side = 1;
+      }
+      else
+      {
+         break;
+      }
+   }
+
+   if (maxIter <= iter)
+   {
+      ATLASSERT(false); // did not converge
+   }
+
+   *pXset = Xset;
+   *pdfpAT = dfpAT;
+   *pdfpS = dfpS;
+}
+
 void CTimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,Float64 Dset,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pXsetMin,Float64* pDsetMin,Float64* pdfpATMin,Float64* pdfpSMin,Float64* pXsetMax,Float64* pDsetMax,Float64* pdfpATMax,Float64* pdfpSMax)
 {
    const CSplicedGirderData* pGirder = pPTData->GetGirder();
-   const CGirderGroupData*   pGroup  = pGirder->GetGirderGroup();
-   const CPierData2*         pPier   = pGroup->GetPier(endType);
-
-   SpanIndexType   spanIdx = (endType == pgsTypes::metStart ? pPier->GetNextSpan()->GetIndex() : pPier->GetPrevSpan()->GetIndex());
-   GirderIndexType gdrIdx  = pGirder->GetIndex();
-
-   Float64 span_length = m_pBridge->GetSpanLength(spanIdx,gdrIdx);
-
    const CGirderKey& girderKey(pGirder->GetGirderKey());
-   Float64 girder_length = m_pBridge->GetGirderLength(girderKey);
+   Float64 Xgs, Xge;
+   m_pGirderTendonGeometry->GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
 
-   Float64 XsetMin, XsetMax;
 
    Float64 deltaX = ::ConvertToSysUnits(1.0,unitMeasure::Meter);
    Float64 K = 1.5; // increase deltaX by 50% each time it is used... 
    // exponentially grow the values we are trying to bound the solution.
 
-   XsetMin = 0.5*span_length; // Take a guess at the location of the end of the anchor set zone
+   Float64 XsetMin, XsetMax;
+   Float64 dx = 0.1;// assume anchor set starts 10% in from start of tendon
+   XsetMin = (1.+dx)*Xgs; 
    if ( endType == pgsTypes::metEnd )
    {
       // need XsetMin measured from left end of girder
-      XsetMin = Lg - XsetMin;
-      deltaX *= -1;
+      XsetMin = (1.-dx)*Xge;
+      deltaX *= -1; // for right end jacking, we step Xset backwards
    }
 
    Float64 dfpAT, dfpS;
@@ -3372,11 +4165,11 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctDat
             return;
          }
 
-         if ( girder_length < XsetMax && IsEqual(Dset1,Dset1Last) )
+         if ( Xge < XsetMax && IsEqual(Dset1,Dset1Last) )
          {
-            // XsetMax is beyond the end of the girder (which is ok) but the
+            // XsetMax is beyond the end of the tendon (which is ok) but the
             // estimates of Dset aren't changing so we will never converge.
-            *pXsetMax = girder_length;
+            *pXsetMax = Xge;
             *pDsetMax = Dset;
             *pdfpATMax = dfpAT;
             *pdfpSMax  = dfpS;
@@ -3425,12 +4218,135 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctDat
    }
 }
 
+void CTimeStepLossEngineer::BoundAnchorSet(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, Float64 Dset, LOSSES* pLosses, Float64 fpj, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64* pXsetMin, Float64* pDsetMin, Float64* pdfpATMin, Float64* pdfpSMin, Float64* pXsetMax, Float64* pDsetMax, Float64* pdfpATMax, Float64* pdfpSMax)
+{
+   const CPrecastSegmentData* pSegment = pPTData->GetSegment();
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+
+   Float64 deltaX = ::ConvertToSysUnits(1.0, unitMeasure::Meter);
+   Float64 K = 1.5; // increase deltaX by 50% each time it is used... 
+                    // exponentially grow the values we are trying to bound the solution.
+
+   Float64 XsetMin, XsetMax;
+   Float64 dx = 0.1;// assume anchor set starts 10% in from start of tendon
+   XsetMin = dx*Ls;
+   if (endType == pgsTypes::metEnd)
+   {
+      // need XsetMin measured from left end of girder
+      XsetMin = (1. - dx)*Ls;
+      deltaX *= -1; // for right end jacking, we step Xset backwards
+   }
+
+   Float64 dfpAT, dfpS;
+   Float64 Dset1 = EvaluateAnchorSet(pPTData, pDuctData, ductIdx, endType, pLosses, fpj, Ls, frMinIter, XsetMin, &dfpAT, &dfpS);
+   if (IsEqual(Dset1, Dset))
+   {
+      // Nailed it first guess!!!
+      *pXsetMin = XsetMin;
+      *pDsetMin = Dset;
+      *pdfpATMin = dfpAT;
+      *pdfpSMin = dfpS;
+
+      *pXsetMax = *pXsetMin;
+      *pDsetMax = *pDsetMin;
+      *pdfpATMax = *pdfpATMin;
+      *pdfpSMax = *pdfpSMin;
+
+      return;
+   }
+
+   Float64 Dset1Last = 0;
+   if (Dset1 < Dset)
+   {
+      // XsetMin is too small... we have a lower bound
+      *pXsetMin = XsetMin;
+      *pDsetMin = Dset1;
+      *pdfpATMin = dfpAT;
+      *pdfpSMin = dfpS;
+
+      // find the upper bound
+      XsetMax = XsetMin;
+      while (true)
+      {
+         XsetMax += deltaX;
+         deltaX *= K;
+
+         Dset1 = EvaluateAnchorSet(pPTData, pDuctData, ductIdx, endType, pLosses, fpj, Ls, frMinIter, XsetMax, &dfpAT, &dfpS);
+         if (Dset < Dset1)
+         {
+            // XsetMax is too big... we have an upper bound
+            *pXsetMax = XsetMax;
+            *pDsetMax = Dset1;
+            *pdfpATMax = dfpAT;
+            *pdfpSMax = dfpS;
+
+            return;
+         }
+
+         if (Ls < XsetMax && IsEqual(Dset1, Dset1Last))
+         {
+            // XsetMax is beyond the end of the tendon (which is ok) but the
+            // estimates of Dset aren't changing so we will never converge.
+            *pXsetMax = Ls;
+            *pDsetMax = Dset;
+            *pdfpATMax = dfpAT;
+            *pdfpSMax = dfpS;
+            return;
+         }
+         Dset1Last = Dset1;
+      }
+   }
+   else if (Dset < Dset1)
+   {
+      // LsetMin is too big... we have the upper bound
+      *pXsetMax = XsetMin;
+      *pDsetMax = Dset1;
+      *pdfpATMax = dfpAT;
+      *pdfpSMax = dfpS;
+
+      // find the lower bound
+      while (true)
+      {
+         XsetMin -= deltaX;
+         deltaX *= K;
+
+         Dset1 = EvaluateAnchorSet(pPTData, pDuctData, ductIdx, endType, pLosses, fpj, Ls, frMinIter, XsetMin, &dfpAT, &dfpS);
+         if (Dset1 < Dset)
+         {
+            // XsetMin is too small.. we have a lower bound
+            *pXsetMin = XsetMin;
+            *pDsetMin = Dset1;
+            *pdfpATMin = dfpAT;
+            *pdfpSMin = dfpS;
+
+            return;
+         }
+
+         if (XsetMin < 0 && IsEqual(Dset1, Dset1Last))
+         {
+            // we've got too far
+            *pXsetMin = 0;
+            *pDsetMin = Dset;
+            *pdfpATMin = dfpAT;
+            *pdfpSMin = dfpS;
+            return;
+         }
+         Dset1Last = Dset1;
+      }
+   }
+}
+
 Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64 Xset,Float64* pdfpAT,Float64* pdfpS)
 {
    //
    // Computes Dset given an assumed length of the anchor set zone, Lset
    //
-   FRICTIONLOSSDETAILS& minFrDetails = frMinIter->second.FrictionLossDetails[ductIdx];
+   FRICTIONLOSSDETAILS& minFrDetails = frMinIter->second.GirderFrictionLossDetails[ductIdx];
+
+   const CSplicedGirderData* pGirder = pPTData->GetGirder();
+   const CGirderKey& girderKey(pGirder->GetGirderKey());
+   Float64 Xgs, Xge;
+   m_pGirderTendonGeometry->GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
 
    // Find friction loss at Xset
    Float64 dfpF_Xset;
@@ -3451,8 +4367,8 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
          do
          {
             frIter--; // back up one location
-            X2 = frIter->second.FrictionLossDetails[ductIdx].X;
-            f2 = frIter->second.FrictionLossDetails[ductIdx].dfpF;
+            X2 = frIter->second.GirderFrictionLossDetails[ductIdx].X;
+            f2 = frIter->second.GirderFrictionLossDetails[ductIdx].dfpF;
          } while (IsEqual(X1,X2));
 
          dfpF_Xset = ::LinInterp(Xset-X2,f2,f1,X1-X2);
@@ -3463,13 +4379,13 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
       else
       {
          // do a linear search for the loss details at locations that bound Lset
-         Float64 X1  = iter->second.FrictionLossDetails[ductIdx].X;
-         Float64 fr1 = iter->second.FrictionLossDetails[ductIdx].dfpF;
+         Float64 X1  = iter->second.GirderFrictionLossDetails[ductIdx].X;
+         Float64 fr1 = iter->second.GirderFrictionLossDetails[ductIdx].dfpF;
          iter++;
          for ( ; iter != end; iter++ )
          {
-            Float64 X2  = iter->second.FrictionLossDetails[ductIdx].X;
-            Float64 fr2 = iter->second.FrictionLossDetails[ductIdx].dfpF;
+            Float64 X2  = iter->second.GirderFrictionLossDetails[ductIdx].X;
+            Float64 fr2 = iter->second.GirderFrictionLossDetails[ductIdx].dfpF;
 
             if ( InRange(X1,Xset,X2) )
             {
@@ -3488,8 +4404,9 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
       // Calculate incremental contribution to seating loss along the strand
       // This is numerical integration using the trapezoidal rule
       iter = pLosses->SectionLosses.begin();
-      Float64 X1  = iter->second.FrictionLossDetails[ductIdx].X;
-      Float64 fr1 = iter->second.FrictionLossDetails[ductIdx].dfpF;
+      Float64 X1  = iter->second.GirderFrictionLossDetails[ductIdx].X;
+      Float64 fr1 = iter->second.GirderFrictionLossDetails[ductIdx].dfpF;
+      bool bX1OnDuct = InRange(Xgs, X1, Xge);
       iter++;
       bool bDone = false;
       for ( ; !bDone; iter++ )
@@ -3499,26 +4416,32 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
          if ( iter == end )
          {
             iter--;
-            fr2 = iter->second.FrictionLossDetails[ductIdx].dfpF;
+            fr2 = iter->second.GirderFrictionLossDetails[ductIdx].dfpF;
 
-            X2  = Min(Lg,Xset);
-            fr2 = (Xset < Lg ? dfpF_Xset : fr2);
+            X2  = Min(Xge,Xset);
+            fr2 = (Xset < Xge ? dfpF_Xset : fr2);
             bDone = true;
          }
          else
          {
-            X2  = iter->second.FrictionLossDetails[ductIdx].X;
-            fr2 = iter->second.FrictionLossDetails[ductIdx].dfpF;
+            X2  = iter->second.GirderFrictionLossDetails[ductIdx].X;
+            fr2 = iter->second.GirderFrictionLossDetails[ductIdx].dfpF;
          }
 
-         Float64 fpt1 = fpj - fr1;
-         Float64 fpt2 = fpj - fr2;
-         Float64 fps  = fpj - dfpF_Xset;
-         Float64 dDset = (0.5*(fpt1+fpt2) - fps)*(X2-X1);
-         Dset += dDset;
+         bool bX2OnDuct = InRange(Xgs, X2, Xge);
+
+         if (bX1OnDuct && bX2OnDuct)
+         {
+	         Float64 fpt1 = fpj - fr1;
+	         Float64 fpt2 = fpj - fr2;
+	         Float64 fps = fpj - dfpF_Xset;
+	         Float64 dDset = (0.5*(fpt1 + fpt2) - fps)*(X2 - X1);
+	         Dset += dDset;
+         }
 
          X1  = X2;
          fr1 = fr2;
+         bX1OnDuct = bX2OnDuct;
       }
    }
    else
@@ -3531,14 +4454,13 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
          Float64 X1 = minFrDetails.X;
          Float64 f1 = minFrDetails.dfpF;
 
-
          SectionLossContainer::iterator frIter = frMinIter;
          Float64 X2,f2;
          do
          {
             frIter++; // advance one location
-            X2 = frIter->second.FrictionLossDetails[ductIdx].X;
-            f2 = frIter->second.FrictionLossDetails[ductIdx].dfpF;
+            X2 = frIter->second.GirderFrictionLossDetails[ductIdx].X;
+            f2 = frIter->second.GirderFrictionLossDetails[ductIdx].dfpF;
          } while (IsEqual(X1,X2));
 
          dfpF_Xset = ::LinInterp(Xset-X1,f1,f2,X2-X1);
@@ -3548,13 +4470,13 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
       }
       else
       {
-         Float64 X1  = rIter->second.FrictionLossDetails[ductIdx].X;
-         Float64 fr1 = rIter->second.FrictionLossDetails[ductIdx].dfpF;
+         Float64 X1  = rIter->second.GirderFrictionLossDetails[ductIdx].X;
+         Float64 fr1 = rIter->second.GirderFrictionLossDetails[ductIdx].dfpF;
          rIter++;
          for ( ; rIter != rIterEnd; rIter++ )
          {
-            Float64 X2  = rIter->second.FrictionLossDetails[ductIdx].X;
-            Float64 fr2 = rIter->second.FrictionLossDetails[ductIdx].dfpF;
+            Float64 X2  = rIter->second.GirderFrictionLossDetails[ductIdx].X;
+            Float64 fr2 = rIter->second.GirderFrictionLossDetails[ductIdx].dfpF;
 
             if ( InRange(X2,Xset,X1) )
             {
@@ -3572,8 +4494,9 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
       // Calculate incremental contribution to seating loss along the strand
       // This is numerical integration using the trapezoidal rule
       rIter = pLosses->SectionLosses.rbegin();
-      Float64 X1  = rIter->second.FrictionLossDetails[ductIdx].X;
-      Float64 fr1 = rIter->second.FrictionLossDetails[ductIdx].dfpF;
+      Float64 X1  = rIter->second.GirderFrictionLossDetails[ductIdx].X;
+      Float64 fr1 = rIter->second.GirderFrictionLossDetails[ductIdx].dfpF;
+      bool bX1OnDuct = InRange(Xgs, X1, Xge);
       rIter++;
       bool bDone = false;
       for ( ; !bDone; rIter++ )
@@ -3582,7 +4505,7 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
          if ( rIter == rIterEnd )
          {
             rIter--;
-            fr2 = rIter->second.FrictionLossDetails[ductIdx].dfpF;
+            fr2 = rIter->second.GirderFrictionLossDetails[ductIdx].dfpF;
 
             X2  = Max(Xset,0.0);
             fr2 = (0 < Xset ? dfpF_Xset : fr2);
@@ -3590,24 +4513,30 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
          }
          else
          {
-            X2  = rIter->second.FrictionLossDetails[ductIdx].X;
-            fr2 = rIter->second.FrictionLossDetails[ductIdx].dfpF;
+            X2  = rIter->second.GirderFrictionLossDetails[ductIdx].X;
+            fr2 = rIter->second.GirderFrictionLossDetails[ductIdx].dfpF;
          }
 
-         Float64 fpt1 = fpj - fr1;
-         Float64 fpt2 = fpj - fr2;
-         Float64 fps  = fpj - dfpF_Xset;
-         Float64 dDset = (0.5*(fpt1+fpt2) - fps)*(X1-X2);
-         Dset += dDset;
+         bool bX2OnDuct = InRange(Xgs, X2, Xge);
+
+         if (bX1OnDuct && bX2OnDuct)
+         {
+	         Float64 fpt1 = fpj - fr1;
+	         Float64 fpt2 = fpj - fr2;
+	         Float64 fps = fpj - dfpF_Xset;
+	         Float64 dDset = (0.5*(fpt1 + fpt2) - fps)*(X1 - X2);
+	         Dset += dDset;
+         }
 
          X1  = X2;
          fr1 = fr2;
+		 bX1OnDuct = bX2OnDuct;
       }
    }
 
    *pdfpAT = 2*dfpF_Xset;
 
-   if ( InRange(0.0,Xset,Lg) )
+   if ( InRange(Xgs,Xset,Xge) )
    {
       *pdfpS = 0;
    }
@@ -3617,6 +4546,218 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
    }
 
    Float64 Ept = pPTData->pStrand->GetE();
+   Dset /= Ept;
+   return Dset;
+}
+
+Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, LOSSES* pLosses, Float64 fpj, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64 Xset, Float64* pdfpAT, Float64* pdfpS)
+{
+   //
+   // Computes Dset given an assumed length of the anchor set zone, Lset
+   //
+   FRICTIONLOSSDETAILS& minFrDetails = frMinIter->second.SegmentFrictionLossDetails[ductIdx];
+
+   const CPrecastSegmentData* pSegment = pPTData->GetSegment();
+   const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
+
+   // Find friction loss at Xset
+   Float64 dfpF_Xset;
+   Float64 dfpF;
+   Float64 Dset = 0;
+   if (endType == pgsTypes::metStart)
+   {
+      SectionLossContainer::iterator iter(pLosses->SectionLosses.begin());
+      SectionLossContainer::iterator end(pLosses->SectionLosses.end());
+      if (minFrDetails.X < Xset)
+      {
+         // anchor set exceeds the length of the tendon
+         Float64 X1 = minFrDetails.X;
+         Float64 f1 = minFrDetails.dfpF;
+
+         SectionLossContainer::iterator frIter = frMinIter;
+         Float64 X2, f2;
+         do
+         {
+            frIter--; // back up one location
+            X2 = frIter->second.SegmentFrictionLossDetails[ductIdx].X;
+            f2 = frIter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+         } while (IsEqual(X1, X2));
+
+         dfpF_Xset = ::LinInterp(Xset - X2, f2, f1, X1 - X2);
+         dfpF = f1;
+
+         end = frMinIter;
+      }
+      else
+      {
+         // do a linear search for the loss details at locations that bound Lset
+         Float64 X1 = iter->second.SegmentFrictionLossDetails[ductIdx].X;
+         Float64 fr1 = iter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+         iter++;
+         for (; iter != end; iter++)
+         {
+            Float64 X2 = iter->second.SegmentFrictionLossDetails[ductIdx].X;
+            Float64 fr2 = iter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+
+            if (InRange(X1, Xset, X2))
+            {
+               // use linear interpolation to get friction loss at Lset
+               dfpF_Xset = ::LinInterp(Xset - X1, fr1, fr2, X2 - X1);
+               dfpF = 0;
+               end = iter;
+               break;
+            }
+
+            X1 = X2;
+            fr1 = fr2;
+         }
+      }
+
+      // Calculate incremental contribution to seating loss along the strand
+      // This is numerical integration using the trapezoidal rule
+      iter = pLosses->SectionLosses.begin();
+      Float64 X1 = iter->second.SegmentFrictionLossDetails[ductIdx].X;
+      Float64 fr1 = iter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+      bool bX1OnDuct = InRange(0.0, X1, Ls);
+      iter++;
+      bool bDone = false;
+      for (; !bDone; iter++)
+      {
+         Float64 X2, fr2;
+
+         if (iter == end)
+         {
+            iter--;
+            fr2 = iter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+
+            X2 = Min(Ls, Xset);
+            fr2 = (Xset < Ls ? dfpF_Xset : fr2);
+            bDone = true;
+         }
+         else
+         {
+            X2 = iter->second.SegmentFrictionLossDetails[ductIdx].X;
+            fr2 = iter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+         }
+
+         bool bX2OnDuct = InRange(0.0, X2, Ls);
+
+         if (bX1OnDuct && bX2OnDuct)
+         {
+            Float64 fpt1 = fpj - fr1;
+            Float64 fpt2 = fpj - fr2;
+            Float64 fps = fpj - dfpF_Xset;
+            Float64 dDset = (0.5*(fpt1 + fpt2) - fps)*(X2 - X1);
+            Dset += dDset;
+         }
+
+         X1 = X2;
+         fr1 = fr2;
+         bX1OnDuct = bX2OnDuct;
+      }
+   }
+   else
+   {
+      SectionLossContainer::reverse_iterator rIter(pLosses->SectionLosses.rbegin());
+      SectionLossContainer::reverse_iterator rIterEnd(pLosses->SectionLosses.rend());
+      if (Xset < minFrDetails.X)
+      {
+         // anchor set exceeds the length of the tendon
+         Float64 X1 = minFrDetails.X;
+         Float64 f1 = minFrDetails.dfpF;
+
+         SectionLossContainer::iterator frIter = frMinIter;
+         Float64 X2, f2;
+         do
+         {
+            frIter++; // advance one location
+            X2 = frIter->second.SegmentFrictionLossDetails[ductIdx].X;
+            f2 = frIter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+         } while (IsEqual(X1, X2));
+
+         dfpF_Xset = ::LinInterp(Xset - X1, f1, f2, X2 - X1);
+         dfpF = f1;
+
+         rIterEnd = SectionLossContainer::reverse_iterator(frMinIter);
+      }
+      else
+      {
+         Float64 X1 = rIter->second.SegmentFrictionLossDetails[ductIdx].X;
+         Float64 fr1 = rIter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+         rIter++;
+         for (; rIter != rIterEnd; rIter++)
+         {
+            Float64 X2 = rIter->second.SegmentFrictionLossDetails[ductIdx].X;
+            Float64 fr2 = rIter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+
+            if (InRange(X2, Xset, X1))
+            {
+               dfpF_Xset = ::LinInterp(Xset - X2, fr2, fr1, X1 - X2);
+               dfpF = 0;
+               rIterEnd = rIter;
+               break;
+            }
+
+            X1 = X2;
+            fr1 = fr2;
+         }
+      }
+
+      // Calculate incremental contribution to seating loss along the strand
+      // This is numerical integration using the trapezoidal rule
+      rIter = pLosses->SectionLosses.rbegin();
+      Float64 X1 = rIter->second.SegmentFrictionLossDetails[ductIdx].X;
+      Float64 fr1 = rIter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+      bool bX1OnDuct = InRange(0.0, X1, Ls);
+      rIter++;
+      bool bDone = false;
+      for (; !bDone; rIter++)
+      {
+         Float64 X2, fr2;
+         if (rIter == rIterEnd)
+         {
+            rIter--;
+            fr2 = rIter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+
+            X2 = Max(Xset, 0.0);
+            fr2 = (0 < Xset ? dfpF_Xset : fr2);
+            bDone = true;
+         }
+         else
+         {
+            X2 = rIter->second.SegmentFrictionLossDetails[ductIdx].X;
+            fr2 = rIter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
+         }
+
+         bool bX2OnDuct = InRange(0.0, X2, Ls);
+
+         if (bX1OnDuct && bX2OnDuct)
+         {
+            Float64 fpt1 = fpj - fr1;
+            Float64 fpt2 = fpj - fr2;
+            Float64 fps = fpj - dfpF_Xset;
+            Float64 dDset = (0.5*(fpt1 + fpt2) - fps)*(X1 - X2);
+            Dset += dDset;
+         }
+
+         X1 = X2;
+         fr1 = fr2;
+         bX1OnDuct = bX2OnDuct;
+      }
+   }
+
+   *pdfpAT = 2 * dfpF_Xset;
+
+   if (InRange(0.0, Xset, Ls))
+   {
+      *pdfpS = 0;
+   }
+   else
+   {
+      *pdfpS = 2 * (dfpF_Xset - dfpF);
+   }
+
+   Float64 Ept = pPTData->m_pStrand->GetE();
    Dset /= Ept;
    return Dset;
 }
@@ -3729,7 +4870,9 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
    // Force effects due to dead loads that are applied along with the slab self-weight occur
    // at the deck casting interval and any interval when a temporary support is removed after
    // the slab (and related) dead load is applied
-   IntervalIndexType castDeckIntervalIdx = m_pIntervals->GetCastDeckInterval();
+   IndexType deckCastingRegionIdx = m_pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+   IntervalIndexType castDeckIntervalIdx = m_pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
    bool bTSRemovedAfterDeckCasting = (0 < std::count_if(vTSRemovalIntervals.begin(),vTSRemovalIntervals.end(),
       [&castDeckIntervalIdx](const auto& intervalIdx) {return castDeckIntervalIdx < intervalIdx;}));
 
@@ -3769,7 +4912,7 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
          vProductForces.push_back(pgsTypes::pftShearKey);
       }
 
-#pragma Reminder("longitudinal joint - need longitudinal joint in time-step analysis")
+#pragma Reminder("longitudinal joint - need longitudinal joint in time-step analysis - fix when adding spliced deck bulb tee girders")
       // also need to look at code above regarding deck and diaphragms.
       //vProductForces.push_back(pgsTypes::pftLongitudinalJoint);
    }
@@ -3859,12 +5002,17 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
 
    if ( !bIsInClosure || (bIsInClosure && compositeClosureIntervalIdx <= intervalIdx) )
    {
-      if ( m_pIntervals->IsTendonStressingInterval(segmentKey,intervalIdx) )
+      bool bSegmentTendonStressingInterval = m_pIntervals->IsSegmentTendonStressingInterval(segmentKey, intervalIdx);
+      bool bGirderTendonStressingInterval = m_pIntervals->IsGirderTendonStressingInterval(segmentKey, intervalIdx);
+      if (bSegmentTendonStressingInterval || bGirderTendonStressingInterval)
       {
          if ( !bExternalForcesOnly )
          {
             vProductForces.push_back(pgsTypes::pftPostTensioning);
-            vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+            if (bGirderTendonStressingInterval)
+            {
+               vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+            }
          }
       }
 
@@ -3935,4 +5083,9 @@ void CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey,Poi
    m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE | POI_START_FACE | POI_END_FACE, pPoiLlist;
    *pPoiLlist = m_pPoi->SetPoiList(pPoiLlist);
 #endif
+}
+
+void CTimeStepLossEngineer::GetAnalysisLocations(const CSegmentKey& segmentKey, PoiList* pPoiList)
+{
+   m_pPoi->GetPointsOfInterest(segmentKey, pPoiList);
 }

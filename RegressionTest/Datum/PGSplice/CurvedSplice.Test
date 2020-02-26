@@ -1,0 +1,98 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 70.00    7  10.50       26122         1     1     60      *     16  0.6  270  44.72  43.08   9.50   9.50                                              5.997  8.128   2.136    -3.794    18670   0.992  0.992  -0.565 -1.799  0.000 -0.081 -1.880  11.63  135.54    1.50    1.50    1.50 
+
+
+The Specification Check was Not Successful
+Tendon 1 is overstressed
+Tendon 2 is overstressed
+Tendon 3 is overstressed
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Cast Deck for Segment 1
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 1
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Cast Deck for Segment 3
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons, Remove Temporary Support for Segment 3
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 3
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 4
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons, Remove Temporary Support for Segment 4
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 4
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Deck
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Cast Deck for Segment 5
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 6
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons, Remove Temporary Support for Segment 6
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 6
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Deck
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Cast Deck for Segment 7
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 7
+Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Debond arrangement checks failed for Segment 2.
+Debond arrangement checks failed for Segment 4.
+Debond arrangement checks failed for Segment 6.
+Splitting zone check failed for Segment 3.
+Splitting zone check failed for Segment 5.
+Splitting zone check failed for Segment 7.
+Confinement zone check failed for Segment 1.
+Confinement zone check failed for Segment 2.
+Confinement zone check failed for Segment 3.
+Confinement zone check failed for Segment 4.
+Confinement zone check failed for Segment 5.
+Confinement zone check failed for Segment 6.
+Confinement zone check failed for Segment 7.
+Slab Offset ("A" Dimension) check failed
+Minimum fillet value exceeded for bridge check failed
+Duct Size check failed for Duct 1.
+Duct Size check failed for Duct 2.
+Duct Size check failed for Duct 3.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 70.00    7  10.50       26122         1     2     60      *     16  0.6  270  44.72  43.49   9.50   9.50                                              5.997  8.128   2.104    -3.708    17303   0.775  0.985  -0.601 -2.133  0.000 -0.083 -2.217  11.30  127.16    1.50    1.50    1.50 
+
+
+The Specification Check was Not Successful
+Tendon 1 is overstressed
+Tendon 2 is overstressed
+Tendon 3 is overstressed
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Cast Deck for Segment 1
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons, Remove Temporary Support for Segment 1
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 1
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Cast Deck for Segment 3
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 3
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 4
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 4
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Deck
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Cast Deck for Segment 5
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons, Remove Temporary Support for Segment 5
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 5
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 6
+Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 6
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Cast Deck for Segment 7
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting zone check failed for Segment 1.
+Splitting zone check failed for Segment 3.
+Splitting zone check failed for Segment 5.
+Splitting zone check failed for Segment 7.
+Confinement zone check failed for Segment 1.
+Confinement zone check failed for Segment 2.
+Confinement zone check failed for Segment 3.
+Confinement zone check failed for Segment 4.
+Confinement zone check failed for Segment 5.
+Confinement zone check failed for Segment 6.
+Confinement zone check failed for Segment 7.
+Slab Offset ("A" Dimension) check failed
+Minimum fillet value exceeded for bridge check failed
+Duct Size check failed for Duct 1.
+Duct Size check failed for Duct 2.
+Duct Size check failed for Duct 3.
+
+

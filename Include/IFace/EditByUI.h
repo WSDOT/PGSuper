@@ -28,8 +28,9 @@
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
 
-#define EBD_ROADWAY        0
-#define EBD_PROFILE        1
+#define EAD_ROADWAY        0
+#define EAD_PROFILE        1
+#define EAD_SECTION        2
 
 #define EBD_GENERAL        0
 #define EBD_FRAMING        1
@@ -93,6 +94,7 @@ interface IEditByUI : IUnknown
    virtual bool EditMomentLoad(CollectionIndexType loadIdx) = 0;
    virtual bool EditMomentLoadByID(LoadIDType loadID) = 0;
    virtual bool EditTimeline() = 0;
+   virtual bool EditCastDeckActivity() = 0;
 
    virtual UINT GetStdToolBarID() = 0;
    virtual UINT GetLibToolBarID() = 0;

@@ -38,8 +38,7 @@ CLASS
 pgsSegmentStabilityArtifact::pgsSegmentStabilityArtifact():
 m_bIsGlobalGirderStabilityApplicable(false)
 {
-   m_Wbottom = 0;
-   m_BrgPadDeduct = 0;
+   m_BrgPadWidth = 0;
    m_Zo = 0;
    m_Ybottom = 1;
    m_Orientation = 0;
@@ -85,19 +84,17 @@ Float64 pgsSegmentStabilityArtifact::GetTargetFactorOfSafety() const
    return m_FS;
 }
 
-void pgsSegmentStabilityArtifact::SetGlobalGirderStabilityParameters(Float64 Wbottom,Float64 brgPadDeduct,Float64 Ybottom,Float64 Orientation,Float64 Zo)
+void pgsSegmentStabilityArtifact::SetGlobalGirderStabilityParameters(Float64 brgPadWidth,Float64 Ybottom,Float64 Orientation,Float64 Zo)
 {
-   m_Wbottom = Wbottom;
-   m_BrgPadDeduct = brgPadDeduct;
+   m_BrgPadWidth = brgPadWidth;
    m_Ybottom = Ybottom;
    m_Orientation = Orientation;
    m_Zo = Zo;
 }
 
-void pgsSegmentStabilityArtifact::GetGlobalGirderStabilityParameters(Float64 *Wbottom,Float64* brgPadDeduct,Float64 *Ybottom,Float64 *Orientation,Float64* Zo) const
+void pgsSegmentStabilityArtifact::GetGlobalGirderStabilityParameters(Float64* brgPadWidth,Float64 *Ybottom,Float64 *Orientation,Float64* Zo) const
 {
-   *Wbottom     = m_Wbottom;
-   *brgPadDeduct = m_BrgPadDeduct;
+   *brgPadWidth = m_BrgPadWidth;
    *Ybottom     = m_Ybottom;
    *Orientation = m_Orientation;
    *Zo          = m_Zo;
@@ -113,7 +110,7 @@ Float64 pgsSegmentStabilityArtifact::GetFactorOfSafety() const
 
 Float64 pgsSegmentStabilityArtifact::GetMaxGirderIncline() const
 {
-   return fabs((m_Wbottom-m_BrgPadDeduct)/(6*(m_Zo + m_Ybottom))); // resultant at kern point
+   return fabs(m_BrgPadWidth /(6*(m_Zo + m_Ybottom))); // resultant at kern point
 }
 
 bool pgsSegmentStabilityArtifact::Passed() const
@@ -130,8 +127,7 @@ bool pgsSegmentStabilityArtifact::Passed() const
 void pgsSegmentStabilityArtifact::MakeCopy(const pgsSegmentStabilityArtifact& rOther)
 {
    m_bIsGlobalGirderStabilityApplicable = rOther.m_bIsGlobalGirderStabilityApplicable;
-   m_Wbottom = rOther.m_Wbottom;
-   m_BrgPadDeduct = rOther.m_BrgPadDeduct;
+   m_BrgPadWidth = rOther.m_BrgPadWidth;
    m_Ybottom = rOther.m_Ybottom;
    m_Orientation = rOther.m_Orientation;
    m_Zo = rOther.m_Zo;

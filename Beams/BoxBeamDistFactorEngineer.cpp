@@ -93,10 +93,6 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
       GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, USE_CURRENT_FC, &pier1_lldf);
       GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  USE_CURRENT_FC, &pier2_lldf);
 
-      REACTIONDETAILS reaction1_lldf, reaction2_lldf;
-      GetPierReactionDF(pier1, gdrIdx, pgsTypes::StrengthI, USE_CURRENT_FC, &reaction1_lldf);
-      GetPierReactionDF(pier2, gdrIdx, pgsTypes::StrengthI, USE_CURRENT_FC, &reaction2_lldf);
-
       // do a sanity check to make sure the fundimental values are correct
       ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
       ATLASSERT(span_lldf.Method  == pier2_lldf.Method);
@@ -155,6 +151,14 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
       (*pPara) << _T("Possion Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PossionRatio << rptNewLine;
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
       (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
+
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLibrary);
+      const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+      if (pSpecEntry->IgnoreSkewReductionForMoment())
+      {
+         (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
+      }
 
       if (pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::LeverRule)
       {
@@ -288,52 +292,6 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
                   span_lldf.gV,
                   bSIUnits,pDisplayUnits);
 
-      //////////////////////////////////////////////////////////////
-      // Reactions
-      //////////////////////////////////////////////////////////////
-      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-      (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier1+1) << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-
-      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction1_lldf.skew1 + reaction1_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction1_lldf.L) << rptNewLine << rptNewLine;
-
-      ReportShear(pPara,
-                  reaction1_lldf,
-                  reaction1_lldf.gR1,
-                  reaction1_lldf.gR2,
-                  reaction1_lldf.gR,
-                  bSIUnits,pDisplayUnits);
-
-        ///////
-
-      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-      (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << long(pier2+1) << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-
-      (*pPara) << _T("Average Skew Angle: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs((reaction2_lldf.skew1 + reaction2_lldf.skew2)/2)) << rptNewLine;
-      (*pPara) << _T("Span Length: L = ") << xdim.SetValue(reaction2_lldf.L) << rptNewLine << rptNewLine;
-
-      ReportShear(pPara,
-                  reaction2_lldf,
-                  reaction2_lldf.gR1,
-                  reaction2_lldf.gR2,
-                  reaction2_lldf.gR,
-                  bSIUnits,pDisplayUnits);
-
-      ////////////////////////////////////////////////////////////////////////////
-      // Fatigue limit states
-      ////////////////////////////////////////////////////////////////////////////
-
-      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-      (*pPara) << _T("Fatigue Limit States");
-      (*pChapter) << pPara;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
 
       std::_tstring superscript;
 
@@ -402,30 +360,6 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
       mpf = span_lldf.gV1.GetMultiplePresenceFactor();
       (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gV1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(span_lldf.gV1.mg/mpf);
 
-      //////////////////////////////////////////////////////////////
-      // Reactions
-      //////////////////////////////////////////////////////////////
-      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-      (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier1) << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-
-      superscript = (reaction1_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-      mpf = reaction1_lldf.gR1.GetMultiplePresenceFactor();
-      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction1_lldf.gR1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(reaction1_lldf.gR1.mg/mpf);
-
-        ///////
-
-      pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-      (*pChapter) << pPara;
-      (*pPara) << _T("Distribution Factor for Reaction at Pier ") << LABEL_PIER(pier2) << rptNewLine;
-      pPara = new rptParagraph;
-      (*pChapter) << pPara;
-
-      superscript = (reaction2_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-      mpf = reaction2_lldf.gR1.GetMultiplePresenceFactor();
-      (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(reaction2_lldf.gR1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(reaction2_lldf.gR1.mg/mpf);
    } // next span
 }
 
@@ -1083,9 +1017,12 @@ lrfdLiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameter
    }
    else
    {
-      bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) ); 
-      bool bSkewMoment = bSkew;
-      bool bSkewShear  = bSkew;
+      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLibrary);
+      const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+      bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) );
+      bool bSkewMoment = pSpecEntry->IgnoreSkewReductionForMoment() ? false : bSkew;
+      bool bSkewShear = bSkew;
 
       if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
       {

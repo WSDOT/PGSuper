@@ -60,7 +60,8 @@ CAlignmentDescriptionDlg::~CAlignmentDescriptionDlg()
 BEGIN_MESSAGE_MAP(CAlignmentDescriptionDlg, CPropertySheet)
 	//{{AFX_MSG_MAP(CAlignmentDescriptionDlg)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
-	//}}AFX_MSG_MAP
+      ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
+   //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -76,4 +77,28 @@ void CAlignmentDescriptionDlg::Init()
    AddPage(&m_AlignmentPage);
    AddPage(&m_ProfilePage);
    AddPage(&m_CrownSlopePage);
+}
+
+LRESULT CAlignmentDescriptionDlg::OnKickIdle(WPARAM wp, LPARAM lp)
+{
+   // The CPropertySheet::OnKickIdle method calls GetActivePage()
+   // which doesn't work with extension pages. Since GetActivePage
+   // is not virtual, we have to replace the implementation of
+   // OnKickIdle.
+   // The same problem exists with OnCommandHelp
+
+	ASSERT_VALID(this);
+
+	CPropertyPage* pPage = GetPage(GetActiveIndex());
+
+	/* Forward the message on to the active page of the property sheet */
+	if( pPage != nullptr )
+	{
+		//ASSERT_VALID(pPage);
+		return pPage->SendMessage( WM_KICKIDLE, wp, lp );
+	}
+	else
+   {
+		return 0;
+   }
 }

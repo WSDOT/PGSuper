@@ -9,7 +9,7 @@ Debond arrangement checks failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.58    8   0.00    Lake Creek       1     2    Slab_          22  0.6  270   6.48   6.44   8.25   8.25   4    2.0   18     4    2   0   2   0   0   4.500 11.600   3.064    -3.080     1442   0.298  0.422   2.738 -0.375 -0.050 -0.094 -0.518  75.23  196.98    3.00    1.50    1.50 
+ 30.58    8   0.00    Lake Creek       1     2    Slab_          22  0.6  270   6.48   6.44   8.25   8.25   4    2.0   18     4    2   0   2   0   0   4.500 11.600   3.064    -3.080     1442   0.298  0.422   2.739 -0.375 -0.050 -0.094 -0.518  75.23  196.98    3.00    1.50    1.50 
 
 
 The Specification Check was Not Successful
@@ -18,13 +18,10 @@ Debond arrangement checks failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.58    8   0.00    Lake Creek       1     5    Slab_          18  0.6  270   6.85   6.88   8.25   8.25   2    2.0   18     2    0   2   0   0   0   4.000  5.000   2.695    -2.792     1161   0.301  0.637   2.457 -0.571 -0.065  0.000 -0.636  52.72  155.44    3.00    1.50    1.50 
+ 30.58    8   0.00    Lake Creek       1     5    Slab_          20  0.6  270   6.65   6.63   8.00   8.00   4    2.0   18     4    2   0   2   0   0   4.100 10.300   2.886    -2.861     1339   0.298  0.423   2.532 -0.385 -0.052  0.000 -0.436  64.60  183.51    3.00    1.50    1.50 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
 Debond arrangement checks failed.
 
 

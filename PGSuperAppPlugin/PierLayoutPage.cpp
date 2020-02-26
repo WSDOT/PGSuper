@@ -336,6 +336,10 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
          strLabel = _T("Sand Lightweight Concrete");
          break;
 
+      case pgsTypes::UHPC:
+         strLabel = _T("UHPC");
+         break;
+
       default:
          ATLASSERT(false); // should never get here
          strLabel = _T("Concrete Type Label Error");
@@ -345,7 +349,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
    {
       // LRFD 2016 and later there is only normal and lightweight concrete. We
       //use the SandLightweight enum to mean "lightweight"
-      ATLASSERT( m_pPier->GetConcrete().Type == pgsTypes::Normal || m_pPier->GetConcrete().Type == pgsTypes::SandLightweight );
+      ATLASSERT( m_pPier->GetConcrete().Type == pgsTypes::Normal || m_pPier->GetConcrete().Type == pgsTypes::UHPC || m_pPier->GetConcrete().Type == pgsTypes::SandLightweight );
       switch( m_pPier->GetConcrete().Type )
       {
       case pgsTypes::Normal:
@@ -354,6 +358,10 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
 
       case pgsTypes::SandLightweight:
          strLabel = _T("Lightweight Concrete");
+         break;
+
+      case pgsTypes::UHPC:
+         strLabel = _T("UHPC");
          break;
 
       default:

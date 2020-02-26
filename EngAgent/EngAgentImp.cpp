@@ -40,6 +40,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\LoadFactors.h>
+#include <PgsExt\EngUtil.h>
 
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
@@ -630,7 +631,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
       // get reactions at the pier
       Float64 Rmin,Rmax;
-      pLSForces->GetReaction(intervalIdx,limitState,pierIdx,girderKey,bat,true,&Rmin, &Rmax);
+      pLSForces->GetLSReaction(intervalIdx,limitState,pierIdx,girderKey,bat,true,&Rmin, &Rmax);
 
       Rmin = IsZero(Rmin,0.001) ? 0 : Rmin;
       Rmax = IsZero(Rmax,0.001) ? 0 : Rmax;
@@ -1213,13 +1214,13 @@ Float64 CEngAgentImp::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfIntere
    return m_PsForceEngineer.GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState,vehicleIdx,pConfig);
 }
 
-Float64 CEngAgentImp::GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
+Float64 CEngAgentImp::GetGirderTendonFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( pPoi->IsOnGirder(poi) )
    {
       const LOSSDETAILS* pLossDetails = GetLossDetails(poi,0); // friction losses are always computed in the first interval
-      return pLossDetails->FrictionLossDetails[ductIdx].dfpF;
+      return pLossDetails->GirderFrictionLossDetails[ductIdx].dfpF;
    }
    else
    {
@@ -1227,19 +1228,39 @@ Float64 CEngAgentImp::GetFrictionLoss(const pgsPointOfInterest& poi,DuctIndexTyp
    }
 }
 
-Float64 CEngAgentImp::GetAnchorSetZoneLength(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const
+Float64 CEngAgentImp::GetSegmentTendonFrictionLoss(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const
 {
-   const ANCHORSETDETAILS* pDetails = m_PsForceEngineer.GetAnchorSetDetails(girderKey,ductIdx);
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (pPoi->IsOnSegment(poi))
+   {
+      const LOSSDETAILS* pLossDetails = GetLossDetails(poi, 0); // friction losses are always computed in the first interval
+      return pLossDetails->SegmentFrictionLossDetails[ductIdx].dfpF;
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+Float64 CEngAgentImp::GetGirderTendonAnchorSetZoneLength(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const
+{
+   const ANCHORSETDETAILS* pDetails = m_PsForceEngineer.GetGirderTendonAnchorSetDetails(girderKey,ductIdx);
    return pDetails->Lset[endType];
 }
 
-Float64 CEngAgentImp::GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
+Float64 CEngAgentImp::GetSegmentTendonAnchorSetZoneLength(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const
+{
+   const ANCHORSETDETAILS* pDetails = m_PsForceEngineer.GetSegmentTendonAnchorSetDetails(segmentKey, ductIdx);
+   return pDetails->Lset[endType];
+}
+
+Float64 CEngAgentImp::GetGirderTendonAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( pPoi->IsOnGirder(poi) )
    {
       const LOSSDETAILS* pLossDetails = GetLossDetails(poi,0); // anchor set losses are always computed in the first interval
-      return pLossDetails->FrictionLossDetails[ductIdx].dfpA;
+      return pLossDetails->GirderFrictionLossDetails[ductIdx].dfpA;
    }
    else
    {
@@ -1247,19 +1268,48 @@ Float64 CEngAgentImp::GetAnchorSetLoss(const pgsPointOfInterest& poi,DuctIndexTy
    }
 }
 
-Float64 CEngAgentImp::GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const
+Float64 CEngAgentImp::GetSegmentTendonAnchorSetLoss(const pgsPointOfInterest& poi, DuctIndexType ductIdx) const
 {
-   return m_PsForceEngineer.GetElongation(girderKey,ductIdx,endType);
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (pPoi->IsOnSegment(poi))
+   {
+      const LOSSDETAILS* pLossDetails = GetLossDetails(poi, 0); // anchor set losses are always computed in the first interval
+      return pLossDetails->SegmentFrictionLossDetails[ductIdx].dfpA;
+   }
+   else
+   {
+      return 0;
+   }
 }
 
-Float64 CEngAgentImp::GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+Float64 CEngAgentImp::GetGirderTendonElongation(const CGirderKey& girderKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const
 {
-   return m_PsForceEngineer.GetAverageFrictionLoss(girderKey,ductIdx);
+   return m_PsForceEngineer.GetGirderTendonElongation(girderKey, ductIdx, endType);
 }
 
-Float64 CEngAgentImp::GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+Float64 CEngAgentImp::GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const
 {
-   return m_PsForceEngineer.GetAverageAnchorSetLoss(girderKey,ductIdx);
+   return m_PsForceEngineer.GetSegmentTendonElongation(segmentKey, ductIdx, endType);
+}
+
+Float64 CEngAgentImp::GetGirderTendonAverageFrictionLoss(const CGirderKey& girderKey, DuctIndexType ductIdx) const
+{
+   return m_PsForceEngineer.GetGirderTendonAverageFrictionLoss(girderKey, ductIdx);
+}
+
+Float64 CEngAgentImp::GetSegmentTendonAverageFrictionLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   return m_PsForceEngineer.GetSegmentTendonAverageFrictionLoss(segmentKey, ductIdx);
+}
+
+Float64 CEngAgentImp::GetGirderTendonAverageAnchorSetLoss(const CGirderKey& girderKey, DuctIndexType ductIdx) const
+{
+   return m_PsForceEngineer.GetGirderTendonAverageAnchorSetLoss(girderKey, ductIdx);
+}
+
+Float64 CEngAgentImp::GetSegmentTendonAverageAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   return m_PsForceEngineer.GetSegmentTendonAverageAnchorSetLoss(segmentKey, ductIdx);
 }
 
 bool CEngAgentImp::AreElasticGainsApplicable() const
@@ -1315,15 +1365,15 @@ Float64 CEngAgentImp::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsT
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded) const
+Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC) const
 {
-   return m_PsForceEngineer.GetDevLength(poi,bDebonded);
+   return m_PsForceEngineer.GetDevLength(poi,bDebonded,bUHPC);
 }
 
 //-----------------------------------------------------------------------------
-STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig) const
+STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig) const
 {
-    return m_PsForceEngineer.GetDevLengthDetails(poi,bDebonded,pConfig);
+    return m_PsForceEngineer.GetDevLengthDetails(poi,bDebonded,bUHPC,pConfig);
 }
 
 //-----------------------------------------------------------------------------
@@ -1339,9 +1389,9 @@ Float64 CEngAgentImp::GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIn
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotal,Float64* pSlope,pgsPointOfInterest* pPoi,const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetHoldDownForce(segmentKey,pConfig);
+   return m_PsForceEngineer.GetHoldDownForce(segmentKey,bTotal,pSlope,pPoi,pConfig);
 }
 
 Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
@@ -1558,7 +1608,7 @@ pgsEccEnvelope CEngAgentImp::GetEccentricityEnvelope(const pgsPointOfInterest& r
 
 /////////////////////////////////////////////////////////////////////////////
 // IPosttensionForce
-Float64 CEngAgentImp::GetPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) const
+Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1566,20 +1616,39 @@ Float64 CEngAgentImp::GetPjackMax(const CGirderKey& girderKey,StrandIndexType nS
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(girderKey.girderIndex);
    const CPTData*             pPTData     = pGirder->GetPostTensioning();
 
-   return GetPjackMax(girderKey,*pPTData->pStrand,nStrands);
+   return GetGirderTendonPjackMax(girderKey,*pPTData->pStrand,nStrands);
 }
 
-Float64 CEngAgentImp::GetPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) const
+Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) const
 {
    GET_IFACE( IAllowableTendonStress, pAllowable);
-   Float64 fpj = (pAllowable->CheckTendonStressAtJacking() ? pAllowable->GetAllowableAtJacking(girderKey) : pAllowable->GetAllowablePriorToSeating(girderKey));
+   Float64 fpj = (pAllowable->CheckTendonStressAtJacking() ? pAllowable->GetGirderTendonAllowableAtJacking(girderKey) : pAllowable->GetGirderTendonAllowablePriorToSeating(girderKey));
    Float64 aps = strand.GetNominalArea();
    Float64 Fpj = fpj*aps*nStrands;
 
    return Fpj;
 }
 
-Float64 CEngAgentImp::GetTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
+Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, StrandIndexType nStrands) const
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   const CSegmentPTData* pPTData = &(pSegment->Tendons);
+
+   return GetSegmentTendonPjackMax(segmentKey, *pPTData->m_pStrand, nStrands);
+}
+
+Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const matPsStrand& strand, StrandIndexType nStrands) const
+{
+   GET_IFACE(IAllowableTendonStress, pAllowable);
+   Float64 fpj = (pAllowable->CheckTendonStressAtJacking() ? pAllowable->GetSegmentTendonAllowableAtJacking(segmentKey) : pAllowable->GetSegmentTendonAllowablePriorToSeating(segmentKey));
+   Float64 aps = strand.GetNominalArea();
+   Float64 Fpj = fpj*aps*nStrands;
+
+   return Fpj;
+}
+
+Float64 CEngAgentImp::GetGirderTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( !pPoi->IsOnGirder(poi) )
@@ -1590,7 +1659,7 @@ Float64 CEngAgentImp::GetTendonForce(const pgsPointOfInterest& poi,IntervalIndex
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    CGirderKey girderKey(segmentKey);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
 
    Float64 Fpe = 0;
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
@@ -1598,8 +1667,8 @@ Float64 CEngAgentImp::GetTendonForce(const pgsPointOfInterest& poi,IntervalIndex
    DuctIndexType lastTendonIdx  = (ductIdx == ALL_DUCTS ? nDucts-1 : firstTendonIdx);
    for ( DuctIndexType tendonIdx = firstTendonIdx; tendonIdx <= lastTendonIdx; tendonIdx++ )
    {
-      Float64 fpe = GetTendonStress(poi,intervalIdx,time,tendonIdx,bIncludeMinLiveLoad,bIncludeMaxLiveLoad,limitState,vehicleIdx);
-      Float64 Apt = pTendonGeom->GetTendonArea(girderKey,intervalIdx,tendonIdx);
+      Float64 fpe = GetGirderTendonStress(poi,intervalIdx,time,tendonIdx,bIncludeMinLiveLoad,bIncludeMaxLiveLoad,limitState,vehicleIdx);
+      Float64 Apt = pTendonGeom->GetGirderTendonArea(girderKey,intervalIdx,tendonIdx);
 
       Fpe += fpe*Apt;
    }
@@ -1607,40 +1676,100 @@ Float64 CEngAgentImp::GetTendonForce(const pgsPointOfInterest& poi,IntervalIndex
    return Fpe;
 }
 
-Float64 CEngAgentImp::GetAverageInitialTendonForce(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+Float64 CEngAgentImp::GetSegmentTendonForce(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time, DuctIndexType ductIdx, bool bIncludeMinLiveLoad, bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (!pPoi->IsOnSegment(poi))
+   {
+      return 0;
+   }
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+
+   Float64 Fpe = 0;
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+   DuctIndexType firstTendonIdx = (ductIdx == ALL_DUCTS ? 0 : ductIdx);
+   DuctIndexType lastTendonIdx = (ductIdx == ALL_DUCTS ? nDucts - 1 : firstTendonIdx);
+   for (DuctIndexType tendonIdx = firstTendonIdx; tendonIdx <= lastTendonIdx; tendonIdx++)
+   {
+      Float64 fpe = GetSegmentTendonStress(poi, intervalIdx, time, tendonIdx, bIncludeMinLiveLoad, bIncludeMaxLiveLoad, limitState, vehicleIdx);
+      Float64 Apt = pTendonGeom->GetSegmentTendonArea(segmentKey, intervalIdx, tendonIdx);
+
+      Fpe += fpe*Apt;
+   }
+
+   return Fpe;
+}
+
+Float64 CEngAgentImp::GetGirderTendonAverageInitialForce(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
    ASSERT_GIRDER_KEY(girderKey);
    ATLASSERT(ductIdx != ALL_DUCTS);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   Float64 Apt = pTendonGeom->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
+   Float64 Apt = pTendonGeom->GetGirderTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
 
-   Float64 fpe = GetAverageInitialTendonStress(girderKey,ductIdx);
+   Float64 fpe = GetGirderTendonAverageInitialStress(girderKey,ductIdx);
 
    Float64 Fpe = Apt*fpe;
    return Fpe;
 }
 
-Float64 CEngAgentImp::GetAverageInitialTendonStress(const CGirderKey& girderKey,DuctIndexType ductIdx) const
+Float64 CEngAgentImp::GetSegmentTendonAverageInitialForce(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   ASSERT_SEGMENT_KEY(segmentKey);
+   ATLASSERT(ductIdx != ALL_DUCTS);
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+   Float64 Apt = pTendonGeom->GetSegmentTendonArea(segmentKey, stressTendonIntervalIdx, ductIdx);
+
+   Float64 fpe = GetSegmentTendonAverageInitialStress(segmentKey, ductIdx);
+
+   Float64 Fpe = Apt*fpe;
+   return Fpe;
+}
+
+Float64 CEngAgentImp::GetGirderTendonAverageInitialStress(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
    ASSERT_GIRDER_KEY(girderKey);
    ATLASSERT(ductIdx != ALL_DUCTS);
 
    GET_IFACE(ILosses,pLosses);
-   Float64 dfpF = pLosses->GetAverageFrictionLoss(girderKey,ductIdx);
-   Float64 dfpA = pLosses->GetAverageAnchorSetLoss(girderKey,ductIdx);
+   Float64 dfpF = pLosses->GetGirderTendonAverageFrictionLoss(girderKey,ductIdx);
+   Float64 dfpA = pLosses->GetGirderTendonAverageAnchorSetLoss(girderKey,ductIdx);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    Float64 fpj = pTendonGeom->GetFpj(girderKey,ductIdx);
 
    Float64 fpe = fpj - dfpF - dfpA;
    return fpe;
 }
 
-Float64 CEngAgentImp::GetInitialTendonStress(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const
+Float64 CEngAgentImp::GetSegmentTendonAverageInitialStress(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   ASSERT_SEGMENT_KEY(segmentKey);
+   ATLASSERT(ductIdx != ALL_DUCTS);
+
+   GET_IFACE(ILosses, pLosses);
+   Float64 dfpF = pLosses->GetSegmentTendonAverageFrictionLoss(segmentKey, ductIdx);
+   Float64 dfpA = pLosses->GetSegmentTendonAverageAnchorSetLoss(segmentKey, ductIdx);
+
+   GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+   Float64 fpj = pTendonGeom->GetFpj(segmentKey, ductIdx);
+
+   Float64 fpe = fpj - dfpF - dfpA;
+   return fpe;
+}
+
+Float64 CEngAgentImp::GetGirderTendonInitialStress(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( !pPoi->IsOnGirder(poi) )
@@ -1653,22 +1782,50 @@ Float64 CEngAgentImp::GetInitialTendonStress(const pgsPointOfInterest& poi,DuctI
    CGirderKey girderKey(poi.GetSegmentKey());
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
 
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,stressTendonIntervalIdx);
 
-   Float64 dfpF = pDetails->FrictionLossDetails[ductIdx].dfpF;
-   Float64 dfpA = (bIncludeAnchorSet ? pDetails->FrictionLossDetails[ductIdx].dfpA : 0);
+   Float64 dfpF = pDetails->GirderFrictionLossDetails[ductIdx].dfpF;
+   Float64 dfpA = (bIncludeAnchorSet ? pDetails->GirderFrictionLossDetails[ductIdx].dfpA : 0);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    Float64 fpj = pTendonGeom->GetFpj(girderKey,ductIdx);
 
    Float64 fpe = fpj - dfpF - dfpA;
    return fpe;
 }
 
-Float64 CEngAgentImp::GetInitialTendonForce(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const
+Float64 CEngAgentImp::GetSegmentTendonInitialStress(const pgsPointOfInterest& poi, DuctIndexType ductIdx, bool bIncludeAnchorSet) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (!pPoi->IsOnSegment(poi))
+   {
+      return 0;
+   }
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   ATLASSERT(ductIdx != ALL_DUCTS);
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   GET_IFACE(ILosses, pLosses);
+   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi, stressTendonIntervalIdx);
+
+   Float64 dfpF = pDetails->SegmentFrictionLossDetails[ductIdx].dfpF;
+   Float64 dfpA = (bIncludeAnchorSet ? pDetails->SegmentFrictionLossDetails[ductIdx].dfpA : 0);
+
+   GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+   Float64 fpj = pTendonGeom->GetFpj(segmentKey, ductIdx);
+
+   Float64 fpe = fpj - dfpF - dfpA;
+   return fpe;
+}
+
+Float64 CEngAgentImp::GetGirderTendonInitialForce(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( !pPoi->IsOnGirder(poi) )
@@ -1681,18 +1838,42 @@ Float64 CEngAgentImp::GetInitialTendonForce(const pgsPointOfInterest& poi,DuctIn
    CGirderKey girderKey(poi.GetSegmentKey());
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
-   Float64 Apt = pTendonGeom->GetTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
+   Float64 Apt = pTendonGeom->GetGirderTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
 
-   Float64 fpe = GetInitialTendonStress(poi,ductIdx,bIncludeAnchorSet);
+   Float64 fpe = GetGirderTendonInitialStress(poi,ductIdx,bIncludeAnchorSet);
 
    Float64 Fpe = Apt*fpe;
    return Fpe;
 }
 
-Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
+Float64 CEngAgentImp::GetSegmentTendonInitialForce(const pgsPointOfInterest& poi, DuctIndexType ductIdx, bool bIncludeAnchorSet) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (!pPoi->IsOnSegment(poi))
+   {
+      return 0;
+   }
+
+   ATLASSERT(ductIdx != ALL_DUCTS);
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+   Float64 Apt = pTendonGeom->GetSegmentTendonArea(segmentKey, stressTendonIntervalIdx, ductIdx);
+
+   Float64 fpe = GetSegmentTendonInitialStress(poi, ductIdx, bIncludeAnchorSet);
+
+   Float64 Fpe = Apt*fpe;
+   return Fpe;
+}
+
+Float64 CEngAgentImp::GetGirderTendonStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time,DuctIndexType ductIdx,bool bIncludeMinLiveLoad,bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( !pPoi->IsOnGirder(poi) )
@@ -1704,7 +1885,7 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
    ATLASSERT(time != pgsTypes::Middle); // can only get tendon stress at start or end of interval
 
    const CGirderKey& girderKey(poi.GetSegmentKey());
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    if ( nDucts == 0 )
    {
@@ -1717,7 +1898,7 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
 
    // the Time Step Loss details has the tendon stress at the end of an interval
    // If we want the tendon stress at the start of the interval, get the stress at the end of the previous interval
@@ -1746,11 +1927,11 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
    Float64 fpe = 0;
    if ( intervalIdx == stressTendonIntervalIdx && time == pgsTypes::Start )
    {
-      fpe = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpj + pDetails->FrictionLossDetails[ductIdx].dfpA;
+      fpe = pDetails->TimeStepDetails[intervalIdx].GirderTendons[ductIdx].fpj + pDetails->GirderFrictionLossDetails[ductIdx].dfpA;
    }
    else
    {
-      fpe = pDetails->TimeStepDetails[intervalIdx].Tendons[ductIdx].fpe;
+      fpe = pDetails->TimeStepDetails[intervalIdx].GirderTendons[ductIdx].fpe;
 
       if (bIncludeMinLiveLoad || bIncludeMaxLiveLoad)
       {
@@ -1781,8 +1962,9 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
             gLL = pLF->GetLLIMMax(limitState);
          }
 
-         GET_IFACE(ITendonGeometry, pTendonGeom);
-         Float64 e = pTendonGeom->GetEccentricity(intervalIdx, poi, ductIdx);
+         GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+         Float64 eccX, eccY;
+         pGirderTendonGeometry->GetGirderTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
 
          GET_IFACE(ISectionProperties, pSectProps);
          Float64 Ixx = pSectProps->GetIxx(intervalIdx, poi);
@@ -1801,7 +1983,7 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
             M = Mmax;
          }
 
-         Float64 dfLL = gLL * M * e / Ixx;
+         Float64 dfLL = gLL * M * eccY / Ixx;
          fpe += dfLL;
       }
    }
@@ -1809,7 +1991,126 @@ Float64 CEngAgentImp::GetTendonStress(const pgsPointOfInterest& poi,IntervalInde
    return fpe;
 }
 
-Float64 CEngAgentImp::GetVerticalTendonForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,DuctIndexType ductIdx) const
+Float64 CEngAgentImp::GetSegmentTendonStress(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time, DuctIndexType ductIdx, bool bIncludeMinLiveLoad, bool bIncludeMaxLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (!pPoi->IsOnSegment(poi))
+   {
+      return 0;
+   }
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   ATLASSERT(ductIdx != ALL_DUCTS);
+   ATLASSERT(time != pgsTypes::Middle); // can only get tendon stress at start or end of interval
+
+   GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+   if (nDucts == 0)
+   {
+      // no ducts... get the heck outta here
+      return 0;
+   }
+
+
+   GET_IFACE(ILosses, pLosses);
+   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi, intervalIdx);
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   // the Time Step Loss details has the tendon stress at the end of an interval
+   // If we want the tendon stress at the start of the interval, get the stress at the end of the previous interval
+   // However, if this is the interval when the tendon is stressed the stress at the end of the previous interval is zero so
+   // want we want is the jacking stress in this interval plus the anchor set loss.
+   if (intervalIdx != stressTendonIntervalIdx)
+   {
+      if (time == pgsTypes::Start)
+      {
+         // start of this interval is at the end of the previous interval
+         if (intervalIdx == 0)
+         {
+            return 0;
+         }
+
+         intervalIdx--;
+      }
+   }
+#if defined _DEBUG
+   else
+   {
+      ATLASSERT(pIntervals->GetDuration(intervalIdx) == 0);
+   }
+#endif
+
+   Float64 fpe = 0;
+   if (intervalIdx == stressTendonIntervalIdx && time == pgsTypes::Start)
+   {
+      fpe = pDetails->TimeStepDetails[intervalIdx].SegmentTendons[ductIdx].fpj + pDetails->SegmentFrictionLossDetails[ductIdx].dfpA;
+   }
+   else
+   {
+      fpe = pDetails->TimeStepDetails[intervalIdx].SegmentTendons[ductIdx].fpe;
+
+      if (bIncludeMinLiveLoad || bIncludeMaxLiveLoad)
+      {
+         GET_IFACE(IProductForces, pProductForces);
+         pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+         pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+         Float64 Mmin, Mmax;
+
+         if (vehicleIdx == INVALID_INDEX)
+         {
+            pProductForces->GetLiveLoadMoment(intervalIdx, llType, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &Mmax);
+         }
+         else
+         {
+            pProductForces->GetVehicularLiveLoadMoment(intervalIdx, llType, vehicleIdx, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &Mmax);
+         }
+
+         Float64 gLL;
+         if (IsRatingLimitState(limitState))
+         {
+            GET_IFACE(IRatingSpecification, pRatingSpec);
+            gLL = pRatingSpec->GetLiveLoadFactor(limitState, true);
+         }
+         else
+         {
+            GET_IFACE(ILoadFactors, pLoadFactors);
+            const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+            gLL = pLF->GetLLIMMax(limitState);
+         }
+
+         GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeomGeometry);
+         Float64 eccX, eccY;
+         pSegmentTendonGeomGeometry->GetSegmentTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
+
+         GET_IFACE(ISectionProperties, pSectProps);
+         Float64 Ixx = pSectProps->GetIxx(intervalIdx, poi);
+
+         Float64 M;
+         if (bIncludeMinLiveLoad && bIncludeMaxLiveLoad)
+         {
+            M = Max(Mmin, Mmax);
+         }
+         else if (bIncludeMinLiveLoad)
+         {
+            M = Mmin;
+         }
+         else if (bIncludeMaxLiveLoad)
+         {
+            M = Mmax;
+         }
+
+         Float64 dfLL = gLL * M * eccY / Ixx;
+         fpe += dfLL;
+      }
+   }
+
+   return fpe;
+}
+
+Float64 CEngAgentImp::GetGirderTendonVerticalForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,DuctIndexType ductIdx) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( !pPoi->IsOnGirder(poi) )
@@ -1818,7 +2119,7 @@ Float64 CEngAgentImp::GetVerticalTendonForce(const pgsPointOfInterest& poi,Inter
    }
 
    CGirderKey girderKey(poi.GetSegmentKey());
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nTendons = pTendonGeom->GetDuctCount(girderKey);
    if ( nTendons == 0 )
    {
@@ -1857,24 +2158,101 @@ Float64 CEngAgentImp::GetVerticalTendonForce(const pgsPointOfInterest& poi,Inter
    Float64 Vp = 0;
    for ( DuctIndexType tendonIdx = firstTendonIdx; tendonIdx <= lastTendonIdx; tendonIdx++ )
    {
-      Float64 Fpt = GetTendonForce(poi,intervalIdx,intervalTime,tendonIdx,true,true,pgsTypes::StrengthI,INVALID_INDEX);
-
-      CComPtr<IVector3d> slope;
-      pTendonGeom->GetTendonSlope(poi,tendonIdx,&slope);
-
-      Float64 Y, Z;
-      slope->get_Y(&Y);
-      slope->get_Z(&Z);
-
-      // for the case of zero shear due to external loads,
-      // we want Vp to always be positive. 
-      if ( IsZero(sign) )
+      if (pTendonGeom->IsOnDuct(poi, tendonIdx))
       {
-         Y = fabs(Y);
-         sign = 1;
-      }
+         Float64 Fpt = GetGirderTendonForce(poi, intervalIdx, intervalTime, tendonIdx, true, true, pgsTypes::StrengthI, INVALID_INDEX);
 
-      Vp += sign*Fpt*Y/sqrt(Y*Y + Z*Z);
+         CComPtr<IVector3d> slope;
+         pTendonGeom->GetGirderTendonSlope(poi, tendonIdx, &slope);
+
+         Float64 Y, Z;
+         slope->get_Y(&Y);
+         slope->get_Z(&Z);
+
+         // for the case of zero shear due to external loads,
+         // we want Vp to always be positive. 
+         if (IsZero(sign))
+         {
+            Y = fabs(Y);
+            sign = 1;
+         }
+
+         Vp += sign*Fpt*Y / sqrt(Y*Y + Z*Z);
+      }
+   }
+
+   return Vp;
+}
+
+Float64 CEngAgentImp::GetSegmentTendonVerticalForce(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, DuctIndexType ductIdx) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (!pPoi->IsOnSegment(poi))
+   {
+      return 0;
+   }
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+   DuctIndexType nTendons = pTendonGeom->GetDuctCount(segmentKey);
+   if (nTendons == 0)
+   {
+      return 0.0;
+   }
+
+   DuctIndexType firstTendonIdx = (ductIdx == ALL_DUCTS ? 0 : ductIdx);
+   DuctIndexType lastTendonIdx = (ductIdx == ALL_DUCTS ? nTendons - 1 : firstTendonIdx);
+
+   GET_IFACE(IProductForces, pProductForces);
+   pgsTypes::BridgeAnalysisType batMax = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   GET_IFACE(ILimitStateForces, pLsForces);
+   sysSectionValue Vmin, Vmax, dummy;
+   pLsForces->GetShear(intervalIdx, pgsTypes::StrengthI, poi, batMax, &dummy, &Vmax);
+   pLsForces->GetShear(intervalIdx, pgsTypes::StrengthI, poi, batMin, &Vmin, &dummy);
+
+   Float64 max = Max(Vmax.Left(), Vmax.Right());
+   Float64 min = Min(Vmin.Left(), Vmin.Right());
+   max = IsZero(max) ? 0 : max;
+   min = IsZero(min) ? 0 : min;
+
+   Float64 sign;
+   if (fabs(min) < fabs(max))
+   {
+      sign = ::Sign(max);
+   }
+   else
+   {
+      sign = ::Sign(min);
+   }
+
+   sign *= -1;
+
+   Float64 Vp = 0;
+   for (DuctIndexType tendonIdx = firstTendonIdx; tendonIdx <= lastTendonIdx; tendonIdx++)
+   {
+      if (pTendonGeom->IsOnDuct(poi))
+      {
+         Float64 Fpt = GetSegmentTendonForce(poi, intervalIdx, intervalTime, tendonIdx, true, true, pgsTypes::StrengthI, INVALID_INDEX);
+
+         CComPtr<IVector3d> slope;
+         pTendonGeom->GetSegmentTendonSlope(poi, tendonIdx, &slope);
+
+         Float64 Y, Z;
+         slope->get_Y(&Y);
+         slope->get_Z(&Z);
+
+         // for the case of zero shear due to external loads,
+         // we want Vp to always be positive. 
+         if (IsZero(sign))
+         {
+            Y = fabs(Y);
+            sign = 1;
+         }
+
+         Vp += sign*Fpt*Y / sqrt(Y*Y + Z*Z);
+      }
    }
 
    return Vp;
@@ -2342,47 +2720,6 @@ Float64 CEngAgentImp::GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::Limit
    }
 }
 
-Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState) const
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-   const CSpanData2* pSpan = (pierIdx == pBridgeDesc->GetPierCount()-1 ? pPier->GetPrevSpan() : pPier->GetNextSpan());
-
-   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      return pPier->GetLLDFReaction(gdrIdx, limitState);
-   }
-   else
-   {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),Min(gdrIdx,pGroup->GetGirderCount()-1));
-      ValidateLiveLoadDistributionFactors(girderKey);
-
-      return m_pDistFactorEngineer->GetReactionDF(pierIdx,gdrIdx,limitState);
-   }
-}
-
-Float64 CEngAgentImp::GetReactionDistFactor(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,Float64 fcgdr) const
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-   const CSpanData2* pSpan = (pierIdx == pBridgeDesc->GetPierCount()-1 ? pPier->GetPrevSpan() : pPier->GetNextSpan());
-
-   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      return pPier->GetLLDFReaction(gdrIdx, limitState);
-   }
-   else
-   {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),Min(gdrIdx,pGroup->GetGirderCount()-1));
-      ValidateLiveLoadDistributionFactors(girderKey);
-
-      return m_pDistFactorEngineer->GetReactionDF(pierIdx,gdrIdx,limitState,fcgdr);
-   }
-}
 
 Float64 CEngAgentImp::GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) const
 {
@@ -2742,20 +3079,20 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
       scalar.SetTolerance(1.0e-6);
 
       rptParagraph* pPara;
-      pPara = new rptParagraph;
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       (*pChapter) << pPara;
-      (*pPara) << _T("Method of Computation: Directly Input") << rptNewLine;
+      (*pPara) << _T("Live Load Distribution Factors - Method of Computation: Directly Input") << rptNewLine;
 
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
       pgsTypes::GirderLocation gl = pGroup->IsInteriorGirder(girderKey.girderIndex) ? pgsTypes::Interior : pgsTypes::Exterior;
 
-      ColumnIndexType nCols = 5;
+      ColumnIndexType nCols = 4;
       if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       {
-         nCols += 4;
+         nCols += 3;
       }
 
-      rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols,_T("Live Load Distribution Factors"));
+      rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols,_T(""));
 
       (*pPara) << table;
 
@@ -2768,7 +3105,6 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          (*table)(0,1) << _T("+M");
          (*table)(0,2) << _T("-M");
          (*table)(0,3) << _T("V");
-         (*table)(0,4) << _T("R");
       }
       else
       {
@@ -2778,20 +3114,18 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          table->SetRowSpan(1,0,-1);
          (*table)(0,0) << _T("");
 
-         table->SetColumnSpan(0,1,4);
+         table->SetColumnSpan(0,1,3);
          (*table)(0,1) << _T("Strength/Service");
 
-         table->SetColumnSpan(0,5,4);
-         (*table)(0,5) << _T("Fatigue/Special Permit Rating");
+         table->SetColumnSpan(0,4,3);
+         (*table)(0,4) << _T("Fatigue/Special Permit Rating");
 
          (*table)(1,1) << _T("+M");
          (*table)(1,2) << _T("-M");
          (*table)(1,3) << _T("V");
-         (*table)(1,4) << _T("R");
-         (*table)(1,5) << _T("+M");
-         (*table)(1,6) << _T("-M");
-         (*table)(1,7) << _T("V");
-         (*table)(1,8) << _T("R");
+         (*table)(1,4) << _T("+M");
+         (*table)(1,5) << _T("-M");
+         (*table)(1,6) << _T("V");
       }
 
       const CPierData2* pPier = pBridgeDesc->GetPier(0);
@@ -2820,23 +3154,20 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          }
 
          (*table)(row,3) << _T("");
-         (*table)(row,4) << scalar.SetValue( pPier->GetLLDFReaction(girderKey.girderIndex, pgsTypes::StrengthI) );
 
          if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
          {
-            (*table)(row,5) << _T("");
+            (*table)(row,4) << _T("");
 
             if ( bContinuous || bIntegralOnLeft || bIntegralOnRight)
             {
-               (*table)(row,6) << scalar.SetValue( pPier->GetLLDFNegMoment(girderKey.girderIndex, pgsTypes::FatigueI) );
+               (*table)(row,5) << scalar.SetValue( pPier->GetLLDFNegMoment(girderKey.girderIndex, pgsTypes::FatigueI) );
             }
             else
             {
-               (*table)(row,6) << _T("");
+               (*table)(row,5) << _T("");
             }
-
-            (*table)(row,7) << _T("");
-            (*table)(row,8) << scalar.SetValue( pPier->GetLLDFReaction(girderKey.girderIndex, pgsTypes::FatigueI) );
+            (*table)(row,6) << _T("");
          }
 
          row++;
@@ -2868,23 +3199,21 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
             }
 
             (*table)(row,3) << scalar.SetValue( pSpan->GetLLDFShear(girderKey.girderIndex,pgsTypes::StrengthI) );
-            (*table)(row,4) << _T("");
 
             if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
             {
-               (*table)(row,5) << scalar.SetValue( pSpan->GetLLDFPosMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
+               (*table)(row,4) << scalar.SetValue( pSpan->GetLLDFPosMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
                
                if ( bContinuousStart || bContinuousEnd || bIntegralStart || bIntegralEnd )
                {
-                  (*table)(row,6) << scalar.SetValue( pSpan->GetLLDFNegMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
+                  (*table)(row,5) << scalar.SetValue( pSpan->GetLLDFNegMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
                }
                else
                {
-                  (*table)(row,6) << _T("");
+                  (*table)(row,5) << _T("");
                }
 
-               (*table)(row,7) << scalar.SetValue( pSpan->GetLLDFShear(girderKey.girderIndex,pgsTypes::FatigueI) );
-               (*table)(row,8) << _T("");
+               (*table)(row,6) << scalar.SetValue( pSpan->GetLLDFShear(girderKey.girderIndex,pgsTypes::FatigueI) );
             }
 
             row++;
@@ -2911,8 +3240,7 @@ bool CEngAgentImp::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState lim
 bool CEngAgentImp::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState limitState,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,
                                Float64* gnM, Float64* gnM1, Float64* gnM2,
-                               Float64* gV,  Float64* gV1,  Float64* gV2,
-                               Float64* gR,  Float64* gR1,  Float64* gR2 )  const
+                               Float64* gV,  Float64* gV1,  Float64* gV2 )  const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2924,7 +3252,7 @@ bool CEngAgentImp::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState l
 
    return m_pDistFactorEngineer->GetDFResultsEx(spanKey, limitState,
                                gpM, gpM1, gpM2, gnM, gnM1, gnM2,
-                               gV,  gV1, gV2, gR, gR1, gR2 ); 
+                               gV,  gV1, gV2 ); 
 }
 
 Float64 CEngAgentImp::GetDeflectionDistFactor(const CSpanKey& spanKey) const
@@ -3020,9 +3348,9 @@ Float64 CEngAgentImp::GetCrackingMoment(IntervalIndexType intervalIdx,const pgsP
    return m_pMomentCapacityEngineer->GetCrackingMoment(intervalIdx, poi, bPositiveMoment);
 }
 
-void CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const
+const CRACKINGMOMENTDETAILS* CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment) const
 {
-   m_pMomentCapacityEngineer->GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment, pcmd);
+   return m_pMomentCapacityEngineer->GetCrackingMomentDetails(intervalIdx, poi, bPositiveMoment);
 }
 
 void CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const
@@ -3040,9 +3368,9 @@ Float64 CEngAgentImp::GetMinMomentCapacity(IntervalIndexType intervalIdx,const p
    return m_pMomentCapacityEngineer->GetMinMomentCapacity(intervalIdx, poi, bPositiveMoment);
 }
 
-void CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd) const
+const MINMOMENTCAPDETAILS* CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment) const
 {
-   m_pMomentCapacityEngineer->GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment, pmmcd);
+   return m_pMomentCapacityEngineer->GetMinMomentCapacityDetails(intervalIdx, poi, bPositiveMoment);
 }
 
 void CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG& config,bool bPositiveMoment,MINMOMENTCAPDETAILS* pmmcd) const
@@ -3050,12 +3378,12 @@ void CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,con
    m_pMomentCapacityEngineer->GetMinMomentCapacityDetails(intervalIdx, poi, config, bPositiveMoment, pmmcd);
 }
 
-std::vector<MINMOMENTCAPDETAILS> CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const
+std::vector<const MINMOMENTCAPDETAILS*> CEngAgentImp::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetMinMomentCapacityDetails(intervalIdx, vPoi, bPositiveMoment);
 }
 
-std::vector<CRACKINGMOMENTDETAILS> CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const
+std::vector<const CRACKINGMOMENTDETAILS*> CEngAgentImp::GetCrackingMomentDetails(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetCrackingMomentDetails(intervalIdx, vPoi, bPositiveMoment);
 }
@@ -3201,14 +3529,14 @@ ZoneIndexType CEngAgentImp::GetCriticalSectionZoneIndex(pgsTypes::LimitState lim
       const auto& csDetails(*iter);
       if ( csDetails.bAtFaceOfSupport )
       {
-         if ( csDetails.poiFaceOfSupport.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End,pgsPointOfInterest::GetTolerance()) )
+         if ( csDetails.poiFaceOfSupport.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End) )
          {
             return (ZoneIndexType)std::distance(std::begin(vCSDetails), iter);
          }
       }
       else 
       {
-         if ( csDetails.pCriticalSection->Poi.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End,pgsPointOfInterest::GetTolerance()) )
+         if ( csDetails.pCriticalSection->Poi.GetSegmentKey() == poi.GetSegmentKey() && ::InRange(csDetails.Start,x,csDetails.End) )
          {
             return (ZoneIndexType)std::distance(std::begin(vCSDetails), iter);
          }
@@ -3288,22 +3616,9 @@ void CEngAgentImp::ClearDesignCriticalSections() const
 Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey) const
 {
    const auto& details = GetSlabOffsetDetails(segmentKey);
+   Float64 slab_offset_round = details.RequiredMaxSlabOffsetRounded;
 
-   Float64 slab_offset = details.RequiredSlabOffset;
-
-   // Round to nearest 1/4" (5 mm) per WSDOT BDM
-
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   if ( IS_SI_UNITS(pDisplayUnits) )
-   {
-      slab_offset = RoundOff(slab_offset,::ConvertToSysUnits(5.0,unitMeasure::Millimeter) );
-   }
-   else
-   {
-      slab_offset = RoundOff(slab_offset,::ConvertToSysUnits(0.25, unitMeasure::Inch) );
-   }
-
-   return slab_offset;
+   return slab_offset_round;
 }
 
 const SLABOFFSETDETAILS& CEngAgentImp::GetSlabOffsetDetails(const CSegmentKey& segmentKey) const
@@ -3500,10 +3815,10 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
 
    GET_IFACE(IAllowableConcreteStress,pAllowStress);
    pgsPointOfInterest dummyPOI(segmentKey,0.0);
-   Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI);
+   Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
    Float64 t, fmax;
    bool bfMax;
-   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI,false/*without rebar*/,false,&t,&bfMax,&fmax);
+   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false,&t,&bfMax,&fmax);
 
    Float64 fc_reqd_compression = min_stress_WithoutTTS/c;
    Float64 fc_reqd_tension = 0;
@@ -3520,7 +3835,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
             bool bCheckMaxAlt;
             Float64 fMaxAlt;
             Float64 talt;
-            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,releaseIntervalIdx,pgsTypes::ServiceI,true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
+            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
             fc_reqd_tension = pow(max_stress_WithoutTTS/talt,2);
          }
       }
@@ -3916,17 +4231,17 @@ const pgsHaulingAnalysisArtifact* CEngAgentImp::CreateHaulingAnalysisArtifact(co
 
 /////////////////////////////////////////////////////////////////////////////
 // ICrackedSection
-void CEngAgentImp::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKEDSECTIONDETAILS* pCSD) const
-{
-   m_pMomentCapacityEngineer->GetCrackedSectionDetails(poi, bPositiveMoment, pCSD);
-}
-
 Float64 CEngAgentImp::GetIcr(const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetIcr(poi, bPositiveMoment);
 }
 
-std::vector<CRACKEDSECTIONDETAILS> CEngAgentImp::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
+const CRACKEDSECTIONDETAILS* CEngAgentImp::GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const
+{
+   return m_pMomentCapacityEngineer->GetCrackedSectionDetails(poi, bPositiveMoment);
+}
+
+std::vector<const CRACKEDSECTIONDETAILS*> CEngAgentImp::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetCrackedSectionDetails(vPoi, bPositiveMoment);
 }

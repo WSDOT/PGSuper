@@ -89,18 +89,33 @@ public:
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 };
 
-class PGSEXTCLASS CTendonKey
+class PGSEXTCLASS CGirderTendonKey
 {
 public:
-   CTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx);
-   CTendonKey(GirderIDType girderID,DuctIndexType ductIdx);
-   CTendonKey(const CTendonKey& other);
-   CTendonKey& operator=(const CTendonKey& other);
-   bool operator==(const CTendonKey& other) const;
-   bool operator<(const CTendonKey& other) const;
+   CGirderTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx);
+   CGirderTendonKey(GirderIDType girderID,DuctIndexType ductIdx);
+   CGirderTendonKey(const CGirderTendonKey& other);
+   CGirderTendonKey& operator=(const CGirderTendonKey& other);
+   bool operator==(const CGirderTendonKey& other) const;
+   bool operator<(const CGirderTendonKey& other) const;
 
    GirderIDType girderID;
    CGirderKey girderKey;
+   DuctIndexType ductIdx;
+};
+
+class PGSEXTCLASS CSegmentTendonKey
+{
+public:
+   CSegmentTendonKey(const CSegmentKey& segmentKey, DuctIndexType ductIdx);
+   CSegmentTendonKey(SegmentIDType segmentID, DuctIndexType ductIdx);
+   CSegmentTendonKey(const CSegmentTendonKey& other);
+   CSegmentTendonKey& operator=(const CSegmentTendonKey& other);
+   bool operator==(const CSegmentTendonKey& other) const;
+   bool operator<(const CSegmentTendonKey& other) const;
+
+   SegmentIDType segmentID;
+   CSegmentKey segmentKey;
    DuctIndexType ductIdx;
 };
 

@@ -542,6 +542,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="BridgeDescFramingGrid.cpp" />
     <ClCompile Include="BridgeDescFramingPage.cpp" />
     <ClCompile Include="BridgeDescGeneralPage.cpp" />
+    <ClCompile Include="DrawDeckRegionControl.cpp" />
     <ClCompile Include="GirderDescGeneralPage.cpp" />
     <ClCompile Include="BridgeDescLiftingPage.cpp" />
     <ClCompile Include="BridgeDescLongitudinalRebar.cpp" />
@@ -616,6 +617,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="GirderModelSectionView.cpp" />
     <ClCompile Include="GirderModelViewControllerImp.cpp" />
     <ClCompile Include="GirderNameGrid.cpp" />
+    <ClCompile Include="GirderSegmentTendonsPage.cpp" />
     <ClCompile Include="GirderSelectStrandsDlg.cpp" />
     <ClCompile Include="GirderSelectStrandsPage.cpp" />
     <ClCompile Include="GirderSpacingGrid.cpp" />
@@ -641,6 +643,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="MomentLoadDrawStrategyImpl.cpp" />
     <ClCompile Include="MovePierDlg.cpp" />
     <ClCompile Include="MultiGirderSelectDlg.cpp" />
+    <ClCompile Include="DeckRegionGrid.cpp" />
     <ClCompile Include="PermitRatingPage.cpp" />
     <ClCompile Include="PGSImportPluginDocTemplateBase.cpp" />
     <ClCompile Include="PGSpliceAppPlugin.cpp" />
@@ -719,6 +722,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="StrandFillGrid.cpp" />
     <ClCompile Include="StructuralAnalysisMethodDlg.cpp" />
     <ClCompile Include="SupportDrawStrategyImpl.cpp" />
+    <ClCompile Include="SegmentTendonGrid.cpp" />
     <ClCompile Include="TrafficBarrierDisplayObjectEvents.cpp" />
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="ActivityGrid.cpp" />
@@ -920,6 +924,14 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <None Include="res\PGSuperAppPluginImpl.rgs" />
     <None Include="res\PGSuperComponentInfo.rgs" />
     <None Include="res\PGSuperProjectImporterAppPlugin.rgs" />
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
+    <None Include="res\PierClosure_BrgAlongGdr_EndAlongNormalFromPier.emf" />
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongGdrFromPier.emf" />
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
+    <None Include="res\PierClosure_BrgAlongNormal_EndAlongNormalFromPier.emf" />
     <None Include="res\PierContinuousSegment.emf" />
     <None Include="res\PierLayout.emf" />
     <None Include="res\SA_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
@@ -931,6 +943,14 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <None Include="res\SA_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
     <None Include="res\SA_BrgAlongNormal_EndAlongNormalFromPier.emf" />
     <None Include="res\StrandSpacing.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongNormalFromPier.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromBrg.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongGdrFromPier.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
+    <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromPier.emf" />
     <None Include="res\TempSupportContinuousSegment.emf" />
   </ItemGroup>
   <ItemGroup>
@@ -952,6 +972,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="BridgeDescFramingGrid.h" />
     <ClInclude Include="BridgeDescFramingPage.h" />
     <ClInclude Include="BridgeDescGeneralPage.h" />
+    <ClInclude Include="DrawDeckRegionControl.h" />
     <ClInclude Include="GirderDescGeneralPage.h" />
     <ClInclude Include="BridgeDescLiftingPage.h" />
     <ClInclude Include="BridgeDescLongitudinalRebar.h" />
@@ -1029,6 +1050,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="GirderModelSectionView.h" />
     <ClInclude Include="GirderModelViewControllerImp.h" />
     <ClInclude Include="GirderNameGrid.h" />
+    <ClInclude Include="GirderSegmentTendonsPage.h" />
     <ClInclude Include="GirderSelectStrandsDlg.h" />
     <ClInclude Include="GirderSelectStrandsPage.h" />
     <ClInclude Include="GirderSpacingGrid.h" />
@@ -1079,6 +1101,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="MomentLoadDrawStrategyImpl.h" />
     <ClInclude Include="MovePierDlg.h" />
     <ClInclude Include="MultiGirderSelectDlg.h" />
+    <ClInclude Include="DeckRegionGrid.h" />
     <ClInclude Include="PermitRatingPage.h" />
     <ClInclude Include="PGSImportPluginDocTemplateBase.h" />
     <ClInclude Include="PGSpliceAppPlugin.h" />
@@ -1146,6 +1169,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="StructuralAnalysisMethodDlg.h" />
     <ClInclude Include="SupportDrawStrategy.h" />
     <ClInclude Include="SupportDrawStrategyImpl.h" />
+    <ClInclude Include="SegmentTendonGrid.h" />
     <ClInclude Include="TrafficBarrierDisplayObjectEvents.h" />
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="ActivityGrid.h" />
@@ -1260,6 +1284,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <Image Include="res\GirderView.ico" />
     <Image Include="res\HelpToolbar.bmp" />
     <Image Include="res\Hinges.bmp" />
+    <Image Include="res\icon1.ico" />
     <Image Include="res\Labels.ico" />
     <Image Include="res\LibEntryInUse.bmp" />
     <Image Include="res\LibEntryInUseAndReadOnly.bmp" />
@@ -1285,6 +1310,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <Image Include="res\RatingFactor.ico" />
     <Image Include="res\ReportView.ico" />
     <Image Include="res\Rollers.bmp" />
+    <Image Include="res\RW_Crosssection.ico" />
     <Image Include="res\Schematic.ico" />
     <Image Include="res\SchematicProfile.ico" />
     <Image Include="res\SectionCG.ico" />

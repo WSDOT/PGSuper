@@ -32,7 +32,7 @@ if (machine=="RDPTHINKPAD")
    PGSuperDrive = "C:";
 else if (machine=="HQB0630025")
    PGSuperDrive = "F:";
-else if (machine=="HQC1431001")
+else if (machine=="HQE3609046")
    PGSuperDrive = "F:";
 else if (machine=="HQD1764064")
    PGSuperDrive = "F:";

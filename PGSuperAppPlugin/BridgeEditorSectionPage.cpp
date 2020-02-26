@@ -44,6 +44,7 @@ CBridgeEditorSectionPage::CBridgeEditorSectionPage() : CPropertyPage(CBridgeEdit
 	//{{AFX_DATA_INIT(CBridgeEditorSectionPage)
 	m_LabelGirders = FALSE;
 	m_ShowDimensions = FALSE;
+   m_ShowRwCrossSection = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -57,6 +58,8 @@ void CBridgeEditorSectionPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CBridgeEditorSectionPage)
 	DDX_Check(pDX, IDC_LABEL_GIRDERS, m_LabelGirders);
 	DDX_Check(pDX, IDC_SHOW_DIMENSIONS, m_ShowDimensions);
+	DDX_Check(pDX, IDC_SHOW_RW_CROSSSECTION, m_ShowRwCrossSection);
+   
 	//}}AFX_DATA_MAP
 }
 

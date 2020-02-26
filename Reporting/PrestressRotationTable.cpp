@@ -78,7 +78,7 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
 
    GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
 
-   GET_IFACE2(pBroker, ITendonGeometry, pTendonGeom);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    ColumnIndexType nCols = 2;
    if (0 < nDucts)

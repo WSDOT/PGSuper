@@ -66,7 +66,7 @@ CProductReactionTable& CProductReactionTable::operator= (const CProductReactionT
 
 //======================== OPERATIONS =======================================
 rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                                         ReactionTableType tableType, bool bIncludeImpact, bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,
+                                         ReactionTableType tableType, bool bIncludeImpact,bool bDesign,bool bRating,bool bIndicateControllingLoad,
                                          IEAFDisplayUnits* pDisplayUnits) const
 {
    // Build table
@@ -78,9 +78,11 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    bool bFutureOverlay = pBridge->IsFutureOverlay();
    PierIndexType nPiers = pBridge->GetPierCount();
 
+   bool bIncludeLLDF = false; // this table never distributes live load
+
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-   IntervalIndexType deckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
@@ -97,7 +99,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeck,&bDeckPanels,&bSidewalk,&bShearKey,&bLongitudinalJoint,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
    
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,
-                         tableType==PierReactionsTable ?_T("Total Girder Line Reactions at Abutments and Piers"): _T("Girder Bearing Reactions") );
+                         tableType==PierReactionsTable ?_T("Girder Line Pier Reactions"): _T("Girder Bearing Reactions") );
    RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -245,13 +247,13 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
          {
-            if (reactionDecider.DoReport(deckIntervalIdx))
+            if (reactionDecider.DoReport(firstCastDeckIntervalIdx))
             {
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT));
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT));
 
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT));
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT));
             }
             else
             {
@@ -263,10 +265,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
          }
          else
          {
-            if (reactionDecider.DoReport(deckIntervalIdx))
+            if (reactionDecider.DoReport(firstCastDeckIntervalIdx))
             {
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlab, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
-               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+               (*p_table)(row, col++) << reaction.SetValue(pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
             }
             else
             {
@@ -280,10 +282,10 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       {
          if ( analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting )
          {
-            if ( reactionDecider.DoReport(deckIntervalIdx) )
+            if ( reactionDecider.DoReport(firstCastDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, maxBAT ) );
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT ) );
             }
             else
             {
@@ -293,9 +295,9 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
          }
          else
          {
-            if ( reactionDecider.DoReport(deckIntervalIdx) )
+            if ( reactionDecider.DoReport(firstCastDeckIntervalIdx) )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(deckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(firstCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
             }
             else
             {

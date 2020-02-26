@@ -295,8 +295,8 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    pgsPointOfInterest poiStart(segmentKey,0.00,POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,segment_length,POI_SECTCHANGE_LEFTFACE );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
 
    //
@@ -328,10 +328,10 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       }
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
-      pPoiMgr->AddPointOfInterest( poiStart );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
 
       pgsPointOfInterest poiEnd( segmentKey, segment_length-xRight, POI_SECTCHANGE_TRANSITION);
-      pPoiMgr->AddPointOfInterest( poiEnd );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
    }
    else if ( variationType == pgsTypes::svtDoubleLinear || variationType == pgsTypes::svtDoubleParabolic )
    {
@@ -351,18 +351,20 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       }
 
       pgsPointOfInterest poiStart( segmentKey, xLeft, POI_SECTCHANGE_TRANSITION);
-      pPoiMgr->AddPointOfInterest( poiStart );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
 
       xLeft += pSegment->GetVariationLength(pgsTypes::sztLeftTapered);
-      poiStart.SetDistFromStart(xLeft);
-      pPoiMgr->AddPointOfInterest( poiStart );
+      poiStart.SetDistFromStart(xLeft); // causes the attributes to be reset
+      poiStart.SetNonReferencedAttributes(POI_SECTCHANGE_TRANSITION);
+      VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
 
       pgsPointOfInterest poiEnd( segmentKey, segment_length-xRight, POI_SECTCHANGE_TRANSITION );
-      pPoiMgr->AddPointOfInterest( poiEnd );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
       xRight += pSegment->GetVariationLength(pgsTypes::sztRightTapered);
-      poiEnd.SetDistFromStart(segment_length-xRight);
-      pPoiMgr->AddPointOfInterest( poiEnd );
+      poiEnd.SetDistFromStart(segment_length-xRight); // causes the attributes to be reset
+      poiEnd.SetNonReferencedAttributes(POI_SECTCHANGE_TRANSITION);
+      VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
    }
    else
    {
@@ -691,11 +693,6 @@ bool CSplicedIBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return false;
 }
 
-Float64 CSplicedIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CSplicedIBeamFactory::GetImage() const
 {
    return std::_tstring(_T("SplicedIBeam.jpg"));
@@ -936,6 +933,23 @@ bool CSplicedIBeamFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& di
    return false;
 }
 
+pgsTypes::WorkPointLocations CSplicedIBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+//   wpls.push_back(pgsTypes::wplBottomGirder);
+
+   return wpls;
+}
+
+bool CSplicedIBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(), wpType);
+   return found == sbs.end() ? false : true;
+}
+
+
 std::vector<pgsTypes::GirderOrientationType> CSplicedIBeamFactory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb/*, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal*/ };
@@ -1042,6 +1056,19 @@ Float64 CSplicedIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimen
    Float64 bot = 2*(W3+W4) + T2;
 
    return Max(top,bot);
+}
+
+void CSplicedIBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W1 = GetDimension(dimensions,_T("W1"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 T1 = GetDimension(dimensions,_T("T1"));
+
+   Float64 top = 2*(W1+W2) + T1;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CSplicedIBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const

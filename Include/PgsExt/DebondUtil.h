@@ -392,6 +392,9 @@ public:
    typedef StrandRowSet::iterator StrandRowIter;
 
    static StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+
+   // row set with all strand locations filled
+   static StrandRowUtil::StrandRowSet GetFullyPopulatedStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
 };
 
 #endif // INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_

@@ -54,7 +54,6 @@ CSpanLayoutPage::CSpanLayoutPage() : CPropertyPage(CSpanLayoutPage::IDD)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
    m_SpanLength = -1;
-   m_bHasCantilevers = false;
    m_bHasSlabOffset = true;
 }
 
@@ -104,32 +103,6 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
    {
       AssumedExcessCamber = pParent->m_pSpanData->GetAssumedExcessCamber(0);
       DDX_UnitValueAndTag(pDX, IDC_ASSUMED_EXCESS_CAMBER, IDC_ASSUMED_EXCESS_CAMBER_UNIT, AssumedExcessCamber, pDisplayUnits->GetComponentDimUnit());
-   }
-
-   bool bHasCantilever[2] = { false,false };
-   Float64 cantileverLength[2] = { 0.0,0.0 };
-   if (m_bHasCantilevers)
-   {
-      for (int i = 0; i < 2; i++)
-      {
-         pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
-         bHasCantilever[end] = pParent->m_pSpanData->GetPier(end)->HasCantilever();
-         cantileverLength[end] = pParent->m_pSpanData->GetPier(end)->GetCantileverLength();
-      }
-
-      DDX_Check_Bool(pDX, IDC_START_CANTILEVER, bHasCantilever[pgsTypes::metStart]);
-      DDX_UnitValueAndTag(pDX, IDC_START_CANTILEVER_LENGTH, IDC_START_CANTILEVER_UNIT, cantileverLength[pgsTypes::metStart], pDisplayUnits->GetSpanLengthUnit());
-      if (bHasCantilever[pgsTypes::metStart])
-      {
-         DDV_UnitValueGreaterThanZero(pDX, IDC_START_CANTILEVER_LENGTH, cantileverLength[pgsTypes::metStart], pDisplayUnits->GetSpanLengthUnit());
-      }
-
-      DDX_Check_Bool(pDX, IDC_END_CANTILEVER, bHasCantilever[pgsTypes::metEnd]);
-      DDX_UnitValueAndTag(pDX, IDC_END_CANTILEVER_LENGTH, IDC_END_CANTILEVER_UNIT, cantileverLength[pgsTypes::metEnd], pDisplayUnits->GetSpanLengthUnit());
-      if (bHasCantilever[pgsTypes::metEnd])
-      {
-         DDV_UnitValueGreaterThanZero(pDX, IDC_END_CANTILEVER_LENGTH, cantileverLength[pgsTypes::metEnd], pDisplayUnits->GetSpanLengthUnit());
-      }
    }
 
    if ( pDX->m_bSaveAndValidate )
@@ -203,16 +176,6 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
             }
          }
       }
-
-      if (m_bHasCantilevers)
-      {
-         for (int i = 0; i < 2; i++)
-         {
-            pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
-            pParent->m_pSpanData->GetPier(end)->HasCantilever(bHasCantilever[end]);
-            pParent->m_pSpanData->GetPier(end)->SetCantileverLength(cantileverLength[end]);
-         }
-      }
    }
 }
 
@@ -222,8 +185,6 @@ BEGIN_MESSAGE_MAP(CSpanLayoutPage, CPropertyPage)
 	ON_WM_CTLCOLOR()
 	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
-   ON_BN_CLICKED(IDC_START_CANTILEVER, &CSpanLayoutPage::OnBnClickedStartCantilever)
-   ON_BN_CLICKED(IDC_END_CANTILEVER, &CSpanLayoutPage::OnBnClickedEndCantilever)
    ON_CBN_SELCHANGE(IDC_ASSUMED_EXCESS_CAMBER_TYPE, &CSpanLayoutPage::OnCbnSelchangeAssumedExcessCamberCombo)
    ON_CBN_DROPDOWN(IDC_SLAB_OFFSET_TYPE, &CSpanLayoutPage::OnChangingSlabOffset)
    ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE, &CSpanLayoutPage::OnChangeSlabOffset)
@@ -316,17 +277,6 @@ BOOL CSpanLayoutPage::OnInitDialog()
       GetDlgItem(IDC_SLAB_OFFSET_TYPE)->ShowWindow(SW_HIDE);
    }
 
-   CEAFDocument* pDoc = EAFGetDocument();
-   if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      ShowCantilevers(pParent->m_pSpanData->GetPrevPier()->GetPrevSpan() == nullptr ? TRUE : FALSE,
-                      pParent->m_pSpanData->GetNextPier()->GetNextSpan() == nullptr ? TRUE : FALSE);
-   }
-   else
-   {
-      ShowCantilevers(FALSE,FALSE);
-   }
-   
    GET_IFACE2(pBroker,ISpecification, pSpec );
 
    m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
@@ -393,9 +343,6 @@ BOOL CSpanLayoutPage::OnInitDialog()
    UpdateSlabOffsetWindowState();
 
    UpdateAssumedExcessCamberWindowState();
-
-   OnBnClickedStartCantilever();
-   OnBnClickedEndCantilever();
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -624,43 +571,5 @@ void CSpanLayoutPage::UpdateAssumedExcessCamberWindowState()
       GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL2)->EnableWindow(FALSE);
       GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL)->EnableWindow(FALSE);
    }
-}
-
-void CSpanLayoutPage::ShowCantilevers(BOOL bShowStart,BOOL bShowEnd)
-{
-   GetDlgItem(IDC_START_CANTILEVER)       ->ShowWindow(bShowStart == TRUE ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_START_CANTILEVER_LABEL) ->ShowWindow(bShowStart == TRUE ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_START_CANTILEVER_LENGTH)->ShowWindow(bShowStart == TRUE ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_START_CANTILEVER_UNIT)  ->ShowWindow(bShowStart == TRUE ? SW_SHOW : SW_HIDE);
-
-   GetDlgItem(IDC_END_CANTILEVER)       ->ShowWindow(bShowEnd == TRUE ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_END_CANTILEVER_LABEL) ->ShowWindow(bShowEnd == TRUE ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_END_CANTILEVER_LENGTH)->ShowWindow(bShowEnd == TRUE ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_END_CANTILEVER_UNIT)  ->ShowWindow(bShowEnd == TRUE ? SW_SHOW : SW_HIDE);
-
-   if ( bShowStart == FALSE && bShowEnd == FALSE )
-   {
-      GetDlgItem(IDC_CANTILEVER_GROUP)->ShowWindow(SW_HIDE);
-   }
-
-   m_bHasCantilevers = (bShowStart == TRUE || bShowEnd == TRUE) ? true : false;
-}
-
-void CSpanLayoutPage::OnBnClickedStartCantilever()
-{
-   // TODO: Add your control notification handler code here
-   BOOL bEnable = ( IsDlgButtonChecked(IDC_START_CANTILEVER) == BST_CHECKED ? TRUE : FALSE);
-   GetDlgItem(IDC_START_CANTILEVER_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_START_CANTILEVER_LENGTH)->EnableWindow(bEnable);
-   GetDlgItem(IDC_START_CANTILEVER_UNIT)->EnableWindow(bEnable);
-}
-
-void CSpanLayoutPage::OnBnClickedEndCantilever()
-{
-   // TODO: Add your control notification handler code here
-   BOOL bEnable = ( IsDlgButtonChecked(IDC_END_CANTILEVER) == BST_CHECKED ? TRUE : FALSE);
-   GetDlgItem(IDC_END_CANTILEVER_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END_CANTILEVER_LENGTH)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END_CANTILEVER_UNIT)->EnableWindow(bEnable);
 }
 

@@ -88,6 +88,16 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
          CSegmentKey thisSegmentKey(girderKey, segIdx);
+         if (1 < nSegments)
+         {
+            rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+            *pChapter << pTitle;
+            *pTitle << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+
+            rptParagraph* p = new rptParagraph;
+            *pChapter << p;
+
+         }
          const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
          const stbIGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
          const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);

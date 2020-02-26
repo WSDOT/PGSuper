@@ -256,7 +256,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalLibraryDirectories>$(WBFLDIR)\RegFreeCOM\$(Platform)\$(Configuration);$(BRIDGELINKDIR)\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -544,6 +544,7 @@
     <ClCompile Include="ConfigurePGSuperDlg.cpp" />
     <ClCompile Include="ConstructabilityArtifact.cpp" />
     <ClCompile Include="CopyConcreteEntry.cpp" />
+    <ClCompile Include="CustomDDX.cpp" />
     <ClCompile Include="DebondArtifact.cpp" />
     <ClCompile Include="DebondData.cpp" />
     <ClCompile Include="DebondUtil.cpp" />
@@ -597,6 +598,7 @@
     <ClCompile Include="MomentRatingArtifact.cpp" />
     <ClCompile Include="PierData.cpp" />
     <ClCompile Include="PierData2.cpp" />
+    <ClCompile Include="PlantHandlingWeightArtifact.cpp" />
     <ClCompile Include="PoiArtifactKey.cpp" />
     <ClCompile Include="PoiMap.cpp" />
     <ClCompile Include="PoiMgr.cpp" />
@@ -615,6 +617,7 @@
     <ClCompile Include="SegmentActivity.cpp" />
     <ClCompile Include="SegmentArtifact.cpp" />
     <ClCompile Include="SegmentDesignArtifact.cpp" />
+    <ClCompile Include="SegmentPTData.cpp" />
     <ClCompile Include="SegmentRelatedStatusItem.cpp" />
     <ClCompile Include="SegmentStabilityArtifact.cpp" />
     <ClCompile Include="SelectGirderDlg.cpp" />
@@ -673,6 +676,7 @@
     <ClInclude Include="..\Include\PgsExt\ConcreteGeneralPage.h" />
     <ClInclude Include="..\Include\PgsExt\ConcreteMaterial.h" />
     <ClInclude Include="..\Include\PgsExt\ConstructabilityArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\CustomDDX.h" />
     <ClInclude Include="..\Include\PgsExt\DebondArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\DebondData.h" />
     <ClInclude Include="..\Include\PgsExt\DebondUtil.h" />
@@ -718,6 +722,7 @@
     <ClInclude Include="..\Include\PgsExt\PgsExtExp.h" />
     <ClInclude Include="..\Include\PgsExt\PgsExtLib.h" />
     <ClInclude Include="..\Include\PgsExt\PierData2.h" />
+    <ClInclude Include="..\Include\PgsExt\PlantHandlingWeightArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\PoiArtifactKey.h" />
     <ClInclude Include="..\Include\PgsExt\PoiKey.h" />
     <ClInclude Include="..\Include\PgsExt\PoiMap.h" />
@@ -736,6 +741,7 @@
     <ClInclude Include="..\Include\PgsExt\SegmentActivity.h" />
     <ClInclude Include="..\Include\PgsExt\SegmentArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\SegmentDesignArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\SegmentPTData.h" />
     <ClInclude Include="..\Include\PgsExt\SegmentRelatedStatusItem.h" />
     <ClInclude Include="..\Include\PgsExt\SegmentStabilityArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\Selection.h" />

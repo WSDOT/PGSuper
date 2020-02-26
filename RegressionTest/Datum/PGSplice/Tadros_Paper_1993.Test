@@ -1,0 +1,79 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 41.00    6   7.17                     1     1    BT-72    *     30  1/2  270  29.36   8.12   7.00   7.00                                             12  69.6  5.0  2.394  8.726   3.027    -6.035    11575   0.663  0.755   1.509 -1.665  0.000 -0.481 -2.146  64.62  392.05    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Tendon 1 is overstressed
+Tendon 2 is overstressed
+Tendon 3 is overstressed
+Tension stress check failed for Service I Limit State in Interval 17 Stress Tendons, Remove Temporary Support for Segment 1
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons for Segment 1
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 1
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 17 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons for Segment 2
+Compression stress check failed for Service I Limit State in Interval 29 Load Rating for Segment 2
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 2
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 3
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Confinement zone check failed for Segment 1.
+Confinement zone check failed for Segment 2.
+Confinement zone check failed for Segment 3.
+Lifting checks failed for Segment 1.
+Hauling checks failed for Segment 1.
+Lifting checks failed for Segment 2.
+Lifting checks failed for Segment 3.
+Hauling checks failed for Segment 3.
+Slab Offset ("A" Dimension) check failed
+Minimum fillet value exceeded for bridge check failed
+Duct Size check failed for Duct 1.
+Duct Size check failed for Duct 2.
+Duct Size check failed for Duct 3.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 41.00    6   7.17                     1     2    BT-72    *     30  1/2  270  29.36   8.12   7.00   7.00                                             12  69.6  5.0  2.394  8.726   2.915    -5.875    10911   0.580  0.755   1.509 -1.693  0.000 -0.478 -2.171  64.62  390.74    0.00    0.00    0.00 
+
+
+The Specification Check was Not Successful
+Tendon 1 is overstressed
+Tendon 2 is overstressed
+Tendon 3 is overstressed
+Tension stress check failed for Service I Limit State in Interval 17 Stress Tendons, Remove Temporary Support for Segment 1
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons for Segment 1
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 1
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 17 Stress Tendons, Remove Temporary Support for Segment 2
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons for Segment 2
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 2
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 3
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Stirrup detailing checks failed for the Strength I Limit State.
+Confinement zone check failed for Segment 1.
+Confinement zone check failed for Segment 2.
+Confinement zone check failed for Segment 3.
+Lifting checks failed for Segment 1.
+Hauling checks failed for Segment 1.
+Lifting checks failed for Segment 2.
+Lifting checks failed for Segment 3.
+Hauling checks failed for Segment 3.
+Slab Offset ("A" Dimension) check failed
+Minimum fillet value exceeded for bridge check failed
+Duct Size check failed for Duct 1.
+Duct Size check failed for Duct 2.
+Duct Size check failed for Duct 3.
+
+

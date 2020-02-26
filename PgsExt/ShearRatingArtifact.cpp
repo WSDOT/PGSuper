@@ -341,6 +341,16 @@ const pgsLongReinfShearArtifact& pgsShearRatingArtifact::GetLongReinfShearArtifa
    return m_LongReinfShearArtifact;
 }
 
+void pgsShearRatingArtifact::SetHorizontalInterfaceShearArtifact(const pgsHorizontalShearArtifact& artifact)
+{
+   m_HorizShearArtifact = artifact;
+}
+
+const pgsHorizontalShearArtifact& pgsShearRatingArtifact::GetHorizontalInterfaceShearArtifact() const
+{
+   return m_HorizShearArtifact;
+}
+
 Float64 pgsShearRatingArtifact::GetRatingFactor() const
 {
    if ( m_bRFComputed )
@@ -412,6 +422,7 @@ void pgsShearRatingArtifact::MakeCopy(const pgsShearRatingArtifact& rOther)
    m_Vps                        = rOther.m_Vps;
    m_Vllim                      = rOther.m_Vllim;
    m_LongReinfShearArtifact     = rOther.m_LongReinfShearArtifact;
+   m_HorizShearArtifact         = rOther.m_HorizShearArtifact;
 }
 
 void pgsShearRatingArtifact::MakeAssignment(const pgsShearRatingArtifact& rOther)

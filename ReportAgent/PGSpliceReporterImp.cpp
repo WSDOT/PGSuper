@@ -27,7 +27,8 @@
 
 #include <Reporting\BridgeAnalysisReportSpecificationBuilder.h>
 
-#include <Reporting\TendonGeometryChapterBuilder.h>
+#include <Reporting\SegmentTendonGeometryChapterBuilder.h>
+#include <Reporting\GirderTendonGeometryChapterBuilder.h>
 #include <Reporting\ShrinkageStrainChapterBuilder.h>
 
 #include <Reporting\EquilibriumCheckReportSpecificationBuilder.h>
@@ -78,7 +79,8 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
 
    // Update details report to contain a couple of extra chapters
    std::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
-   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTendonGeometryChapterBuilder),TEXT("Section Properties")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CSegmentTendonGeometryChapterBuilder), TEXT("Section Properties")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CGirderTendonGeometryChapterBuilder),TEXT("Segment Tendon Geometry")));
    VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
    VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTemporarySupportElevationsChapterBuilder), TEXT("Bearing Seat Elevations")));
    VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTemporarySupportElevationDetailsChapterBuilder), TEXT("Bearing Seat Elevation Details")));

@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by PGSuperAppPlugin.rc
 //
+#define ID_INDICATOR_CRITERIA           4
 #define ID_INDICATOR_ANALYSIS           5
 #define IDS_LWC_MESSAGE                 6
 #define IDS_GIRDER_SHEAR                7
@@ -22,7 +23,7 @@
 #define IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN 106
 #define IDD_CLOSURE_CONNECTION          107
 #define IDR_PGSPLICECOMPONENTINFO       110
-#define IDD_SELECTBOUNDARYCONDITION  113
+#define IDD_SELECTBOUNDARYCONDITION     113
 #define IDR_PGSUPER                     130
 #define IDD_PROJECTPROPERTIES           131
 #define IDR_BRIDGEMODELEDITOR           132
@@ -154,6 +155,7 @@
 #define IDD_SEGMENT_GENERAL             331
 #define IDD_SEGMENT_LONGITUDINAL_REBAR  332
 #define IDD_SEGMENT_STRANDS             336
+#define IDD_SEGMENT_TENDONS             337
 #define IDD_SEGMENT_SPACING             338
 #define IDD_TIMELINE_MANAGER            339
 #define IDD_TIMELINE_EVENT              340
@@ -185,8 +187,9 @@
 #define IDD_EDIT_BRNG_GENERIC_PAGE      387
 #define IDD_PIER_BEARINGS_PAGE          387
 #define IDD_GIRDER_SELECT_STRANDS       390
-#define IDD_PIERCONNECTIONS2            391
 #define IDD_SELECT_BOUNDARY_CONDITION   392
+#define IDI_ICON1                       395
+#define IDI_RW_CS                       395
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDR_PGSPLICE_TEMPLATE_ICON      501
 #define IDD_ABOUTBOX                    999
@@ -346,6 +349,7 @@
 #define IDC_SHOW_DIMENSIONS             1151
 #define IDC_SHOW_DIMENSIONS2            1152
 #define IDC_SHOW_PROPERTIES             1152
+#define IDC_SHOW_RW_CROSSSECTION        1152
 #define IDC_SHOW_SCHEMATIC              1155
 #define IDC_SHOW_STRANDS                1157
 #define IDC_SHOW_LONG_REINF             1158
@@ -664,7 +668,9 @@
 #define IDC_STATIC_LLE3                 1498
 #define IDC_DECK_TYPE                   1509
 #define IDC_OVERHANG_DEPTH              1510
+#define IDC_RIGHT_OVERHANG_DEPTH        1510
 #define IDC_OVERHANG_DEPTH_UNIT         1511
+#define IDC_LEFT_OVERHANG_DEPTH         1512
 #define IDC_OVERHANG_DEPTH_LABEL        1513
 #define IDC_ADD_MOMENTLOAD              1514
 #define IDC_ALLOWABLE_SPACING           1515
@@ -860,6 +866,8 @@
 #define IDC_FATIGUE_I_DC_LABEL          1626
 #define IDC_PREV_PIER_GIRDER_SPACING_LABEL 1626
 #define IDC_LEFT_PRISMATIC_HEIGHT       1626
+#define IDC_GIRDER_SPACING_TYPE2        1626
+#define IDC_WORKPOINT_TYPE              1626
 #define IDC_FATIGUE_I_LABEL             1627
 #define IDC_NEXT_PIER_GIRDER_SPACING_LABEL 1627
 #define IDC_LEFT_PRISMATIC_HEIGHT_UNIT  1627
@@ -1017,6 +1025,7 @@
 #define IDC_HEIGHT_MEASURE              1731
 #define IDC_TO_GIRDER                   1732
 #define IDC_LLDF_GIRDERS_TABW           1734
+#define IDC_LLDF_TABW                   1734
 #define IDC_LLDF_PIERS_TABW             1735
 #define IDS_E_UPDATE                    1740
 #define IDC_LEFT_FC_LABEL               1743
@@ -1218,6 +1227,7 @@
 #define IDC_NORTH                       1904
 #define IDC_STRANDS                     1904
 #define IDC_EDIT_BEARINGS               1904
+#define IDC_DECK_EVENT_DETAILS          1904
 #define IDC_LABELS                      1905
 #define IDC_BUTTON2                     1905
 #define IDC_LOAD_LOCATION_NOTE          1906
@@ -1239,6 +1249,8 @@
 #define IDC_SCHEMATIC                   1909
 #define IDC_ASSUMED_EXCESS_CAMBER_LABEL2 1909
 #define IDC_BRG_COUNT                   1910
+#define IDC_SCHEMATIC2                  1910
+#define IDC_RW_CS                       1910
 #define IDC_BRG_SPACING                 1911
 #define IDC_ASSUMED_EXCESS_CAMBER_GROUP 1911
 #define IDC_TOP_WIDTH_GRID_LABEL        1912
@@ -1273,6 +1285,8 @@
 #define IDC_SECTION_CG                  1926
 #define IDC_EDIT1                       1926
 #define IDC_BRG_SPACING_STATIC          1926
+#define IDC_VIEW_TEMPLATE_EDIT          1926
+#define IDC_TIME_BETWEEN_CASTING        1926
 #define IDC_BRG_RECESS_LENGTH_UNIT      1927
 #define IDC_BEARING_GRID                1928
 #define IDC_BRG1_STATIC                 1928
@@ -1310,10 +1324,17 @@
 #define IDC_RIGHT_TOP_WIDTH_LABEL       1960
 #define IDC_COMBO1                      1961
 #define IDC_X1_MEASURE                  1961
+#define IDC_NUMSEGMENTS_COMBO           1961
+#define IDC_REGION_BOUNDARY             1961
+#define IDC_START_PIER                  1961
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_X2_MEASURE                  1962
+#define IDC_RIDGEPT_COMBO               1962
+#define IDC_START_PIER2                 1962
+#define IDC_END_PIER                    1962
 #define IDI_STRANDS                     1963
 #define IDC_X3_MEASURE                  1963
+#define IDC_VIEW_TEMPLATE_COMBO         1963
 #define IDI_STRANDS_CG                  1964
 #define IDC_X1_MEASURE4                 1964
 #define IDC_X4_MEASURE                  1964
@@ -1346,12 +1367,27 @@
 #define IDC_HG_X2                       1998
 #define IDC_BEARING                     1998
 #define IDC_HG_X3                       1999
+#define IDC_LEFT_OVERHANG_DEPTH_LABEL   1999
 #define IDC_HG_X4                       2000
 #define IDC_RIGHT_OVERHANG_DEPTH_LABEL  2000
 #define IDC_SLAB_OFFSET_GROUP           2001
 #define IDC_ADJUSTMENT_GROUP            2004
 #define IDC_PROMPT                      2005
 #define IDC_LIST1                       2006
+#define IDC_VIEW_TEMPLATE_SPIN          2006
+#define IDC_CAST_DECK_1                 2008
+#define IDC_CAST_DECK_2                 2009
+#define IDC_DECK_REGION_GRID            2010
+#define IDC_TIME_BETWEEN_CASTING_LABEL  2015
+#define IDC_TIME_BETWEEN_CASTING_UNIT   2016
+#define IDC_DECK_REGIONS                2018
+#define IDC_PLACEMENT_REGION_LABEL      2019
+#define IDC_REGION_BOUNDARY_LABEL       2020
+#define IDC_HG_START                    2021
+#define IDC_HG_MIDDLE                   2022
+#define IDC_HG_END                      2023
+#define IDC_INSTALLATION_TIME           2025
+#define IDC_WORKPOINT_STATIC            2026
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1507,9 +1543,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        394
+#define _APS_NEXT_RESOURCE_VALUE        401
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         2007
-#define _APS_NEXT_SYMED_VALUE           114
+#define _APS_NEXT_CONTROL_VALUE         2027
+#define _APS_NEXT_SYMED_VALUE           113
 #endif
 #endif

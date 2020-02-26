@@ -64,6 +64,8 @@ public:
    CProfilePage m_ProfilePage;
    CCrownSlopePage m_CrownSlopePage;
 
+	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
+
 	// Generated message map functions
 protected:
    IBroker* m_pBroker;

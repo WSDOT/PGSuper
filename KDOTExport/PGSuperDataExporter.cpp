@@ -202,10 +202,10 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
       GET_IFACE2(pBroker,IMaterials,pMaterials);
       GET_IFACE2(pBroker,IIntervals,pIntervals);
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
       IntervalIndexType finalIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-      Float64 dval = pMaterials->GetDeckFc(compositeDeckIntervalIdx);
+      Float64 dval = pMaterials->GetDeckFc(0,compositeDeckIntervalIdx);
       dval = ::ConvertFromSysUnits(dval, unitMeasure::KSI);
       brdata.SlabFc(dval);
 
@@ -225,7 +225,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
       dval = ::ConvertFromSysUnits(tDeck, unitMeasure::Inch);
       brdata.SlabThickness(dval);
 
-      dval = pDeckDescription->OverhangEdgeDepth;
+      dval = pDeckDescription->OverhangEdgeDepth[pgsTypes::stLeft];
       dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
       brdata.OverhangThickness(dval);
 
@@ -1011,7 +1011,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
       brdata.HaunchVolumeForAllSelectedGirders(dval);
 
       // Now can compute haunch weight for entire bridge
-      Float64 haunchWDensity = pMaterials->GetDeckWeightDensity(compositeDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+      Float64 haunchWDensity = pMaterials->GetDeckWeightDensity(0,compositeDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
       Float64 bridgeHaunchWeight = bridgeHaunchVolume * haunchWDensity;
 
       dval = ::ConvertFromSysUnits(bridgeHaunchWeight, unitMeasure::Kip);
@@ -1111,16 +1111,15 @@ CString CPGSuperDataExporter::GetDocumentationURL() const
    verInfo.Load(strAppName);
 
    CString strVersion = verInfo.GetProductVersionAsString(false);
+
    std::_tstring v(strVersion);
    auto count = std::count(std::begin(v), std::end(v), _T('.'));
 
-   // remove the hot fix and build/release number
    for (auto i = 0; i < count - 1; i++)
    {
       int pos = strVersion.ReverseFind(_T('.')); // find the last '.'
       strVersion = strVersion.Left(pos);
    }
-
    CString strURL;
    strURL.Format(_T("%s%s/"), strDocumentationURL, strVersion);
    strDocumentationURL = strURL;

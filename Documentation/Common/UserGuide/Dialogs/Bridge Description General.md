@@ -8,12 +8,13 @@ Bridge Line Offset | Enter the offset from the alignment to the bridge line.
 Girder Family | Select a general type of girder from the drop down list
 Girder Type | Select a specific type of girder. Check the box below the list if this girder type is to be used for the entire bridge.
 Number of Girders |  Use the up/down arrows to select the number of girders. Check the box below if this number of girders is to be used in all spans.
+Location of Girder Working Points | Specify the vertical location along the CL girder where girder spacing is to be measured; aka, the working point location. The default working point location is at the top CL of girder. However, many girder types allow girder spacing to be measured at the bottom CL girder.
 Spacing Type | Select the spacing type to be used
 Girder Spacing |  Enter the girder spacing, locate the girders transversely, and select the measurement datum. See @ref ug_bridge_modeling in the @ref user_guide and @ref tg_girder_spacing in the @ref technical_guide for additional details.
 Joint Spacing | Enter the joint width between adjacent girders, locate the girders transversly, and select the measurement datum. See @ref ug_bridge_modeling in the @ref user_guide and @ref tg_girder_spacing in the @ref technical_guide for additional details.
 Top Width | Select a top width type and enter the top width dimensions. Top width types are Symmetric (the top flange is symmetric about the centerline of the girder), Centered CG (the length of the top flange on the left and right side of the girder centerline are automatically computed such that the center of gravity of the girder is coincident with the girder centerline), and Asymmetric (the top flange is asymmetric and defined by unique left and right overhangs measured from the girder centerline).
 Girder Connectivity | For adjacent girders, select the transverse connectivity. The girder connectivity influences the live load distribution factor calculations.
-Girder Orientation | Select the girder orientation. Some girders are not aligned with their webs plumb. Girders can be oriented such that their top flanges parallel the roadway surface
+Girder Orientation | Select the girder orientation datum for all girders in the bridge. Orientation can be set plumb; oriented such that top flanges are parallel the roadway surface at the start, middle, or end of spans; or the orientations can be balanced to minimize the haunch depth at both ends of each girder.
 Deck Type | Select the type of deck to be used
 
 A description of the bridge, along with the assumed cross section type for live load distribution factor calculations, is given.

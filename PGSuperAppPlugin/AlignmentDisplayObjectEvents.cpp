@@ -31,6 +31,7 @@
 #include "mfcdual.h"
 #include "PGSuperDocBase.h"
 #include <IFace\Bridge.h>
+#include <IFace\EditByUI.h>
 #include <WBFLDManip.h>
 
 #include <PgsExt\BridgeDescription2.h>
@@ -76,15 +77,9 @@ DELEGATE_CUSTOM_INTERFACE(CAlignmentDisplayObjectEvents,DropSite);
 
 void CAlignmentDisplayObjectEvents::EditAlignment()
 {
-   CComPtr<iDisplayList> pList;
-   m_DispObj->GetDisplayList(&pList);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pList->GetDisplayMgr(&pDispMgr);
-
-   CDisplayView* pView = pDispMgr->GetView();
-
-   pView->SendMessage(WM_COMMAND,ID_PROJECT_ALIGNMENT,0);
+   GET_IFACE(IEditByUI, pEditByUI);
+   int page = (m_ViewType == BridgePlan || m_ViewType == Alignment ? EAD_ROADWAY : EAD_SECTION);
+   pEditByUI->EditAlignmentDescription(page);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -156,7 +151,7 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayOb
       return true;
    }
 
-   if ( pThis->m_ViewType == Bridge )
+   if (pThis->m_ViewType == BridgePlan || pThis->m_ViewType == BridgeSection)
    {
       if ( nChar == VK_DOWN )
       {
@@ -210,7 +205,7 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
 
       CEAFMenu* pMenu;
 
-      if ( pThis->m_ViewType == Bridge )
+      if ( pThis->m_ViewType == BridgePlan || pThis->m_ViewType == BridgeSection )
       {
          const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
 
@@ -289,7 +284,6 @@ STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnCopied(iDisplayObj
 STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
 {
    METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
-   pThis->m_pFrame->ClearSelection();
    pThis->m_pFrame->SelectAlignment();
 }
 

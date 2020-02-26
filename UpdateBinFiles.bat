@@ -14,10 +14,13 @@ xcopy /Y /d %REGFREECOM%\x64\Release\WSDOTAgent.dll	%BINTARGET%\Extensions\WSDOT
 
 REM - TXDOT
 xcopy /Y /d %REGFREECOM%\x64\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT\x64\
+
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.ico		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.lbr		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
+
+xcopy /Y /d TxDOTAgent\TxCADExport\*.xltx               %BINTARGET%\Extensions\TxDOT\TxCADExport\
 
 REM - KDOT
 xcopy /Y /d %REGFREECOM%\x64\Release\KDOTExport.dll	%BINTARGET%\Extensions\KDOT\x64\
@@ -36,10 +39,10 @@ xcopy /Y /d Trucks.pgs				%BINTARGET%\App\
 
 REM - Configuration Files
 xcopy /Y /d Configurations\WSDOT.lbr				%BINTARGET%\Configurations\
-xcopy /Y /d Configurations\PGSuper\WSDOT\Deck_Bulb_Tees\*.ico	%BINTARGET%\Configurations\PGSuper\Deck_Bulb_Tees\
-xcopy /Y /d Configurations\PGSuper\WSDOT\Deck_Bulb_Tees\*.pgt	%BINTARGET%\Configurations\PGSuper\Deck_Bulb_Tees\
 
-xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\*.ico           %BINTARGET%\Configurations\PGSuper\Legacy\
+xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\*.ico                   %BINTARGET%\Configurations\PGSuper\Legacy\
+xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\Deck_Bulb_Tees\*.ico	%BINTARGET%\Configurations\PGSuper\Legacy\Deck_Bulb_Tees\
+xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\Deck_Bulb_Tees\*.pgt	%BINTARGET%\Configurations\PGSuper\Legacy\Deck_Bulb_Tees\
 xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\MultiWeb\*.ico		%BINTARGET%\Configurations\PGSuper\Legacy\MultiWeb\
 xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\MultiWeb\*.pgt		%BINTARGET%\Configurations\PGSuper\Legacy\MultiWeb\
 xcopy /Y /d Configurations\PGSuper\WSDOT\Legacy\Slabs\*.ico		%BINTARGET%\Configurations\PGSuper\Legacy\Slabs\

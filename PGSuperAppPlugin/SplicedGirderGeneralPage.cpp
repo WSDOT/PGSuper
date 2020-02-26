@@ -31,6 +31,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
+#include <PgsExt\CustomDDX.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ClosureJointData.h>
@@ -44,35 +45,6 @@ static char THIS_FILE[] = __FILE__;
 
 
 // CSplicedGirderGeneralPage dialog
-
-
-void DDX_Strand(CDataExchange* pDX,UINT nIDC,const matPsStrand** ppStrand)
-{
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   CComboBox* pList = (CComboBox*)pDX->m_pDlgWnd->GetDlgItem( nIDC );
-
-   if (pDX->m_bSaveAndValidate)
-   {
-      // strand material
-      int curSel = pList->GetCurSel();
-      Int32 key = (Int32)pList->GetItemData( curSel );
-      *ppStrand = pPool->GetStrand( key );
-   }
-   else
-   {
-      Int32 target_key = pPool->GetStrandKey(*ppStrand );
-      int cStrands = pList->GetCount();
-      for ( int i = 0; i < cStrands; i++ )
-      {
-         Int32 key = (Int32)pList->GetItemData( i );
-         if ( key == target_key )
-         {
-            pList->SetCurSel(i);
-            break;
-         }
-      }
-   }
-}
 
 void DDX_PTData(CDataExchange* pDX,INT nIDC,CPTData* ptData)
 {
@@ -144,7 +116,7 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBEnum(pDX, IDC_CONDITION_FACTOR_TYPE, conditionFactorType);
    DDX_Text(pDX,   IDC_CONDITION_FACTOR,     conditionFactor);
    DDX_CBEnum(pDX, IDC_DUCT_TYPE, ductType);
-   DDX_CBEnum(pDX, IDC_INSTALLATION_TYPE, installationType );
+   DDX_CBItemData(pDX, IDC_INSTALLATION_TYPE, installationType );
    if ( pDX->m_bSaveAndValidate )
    {
       pParent->m_pGirder->SetConditionFactor(conditionFactor);
@@ -187,8 +159,9 @@ BEGIN_MESSAGE_MAP(CSplicedGirderGeneralPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_INSTALLATION_TYPE, &CSplicedGirderGeneralPage::OnInstallationTypeChanged)
    ON_CBN_SELCHANGE(IDC_CONDITION_FACTOR_TYPE, &CSplicedGirderGeneralPage::OnConditionFactorTypeChanged)
    ON_COMMAND(ID_HELP, &CSplicedGirderGeneralPage::OnHelp)
-   ON_CBN_SELCHANGE(IDC_CB_SAMEGIRDER,OnChangeGirderType)
+   ON_CBN_SELCHANGE(IDC_CB_SAMEGIRDER, &CSplicedGirderGeneralPage::OnChangeGirderType)
    ON_CBN_SELCHANGE(IDC_GIRDER_NAME, &CSplicedGirderGeneralPage::OnChangedGirderName)
+   ON_BN_CLICKED(IDC_SCHEMATIC, &CSplicedGirderGeneralPage::OnSchematicButton)
 END_MESSAGE_MAP()
 
 
@@ -210,7 +183,7 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
 
    // subclass the schematic drawing of the tendons
    m_DrawTendons.SubclassDlgItem(IDC_TENDONS,this);
-   m_DrawTendons.CustomInit(pParent->m_GirderKey,pParent->m_pGirder);
+   m_DrawTendons.CustomInit(pParent->m_GirderKey,pParent->m_pGirder,pParent->m_pGirder->GetPostTensioning());
 
    const CTimelineManager* pTimelineMgr = pParent->m_BridgeDescription.GetTimelineManager();
    DuctIndexType nDucts = pParent->m_pGirder->GetPostTensioning()->GetDuctCount();
@@ -244,6 +217,11 @@ BOOL CSplicedGirderGeneralPage::OnInitDialog()
    OnConditionFactorTypeChanged();
 
    UpdateGirderTypeControls();
+
+   HINSTANCE hInstance = AfxGetInstanceHandle();
+   CButton* pSchematicBtn = (CButton*)GetDlgItem(IDC_SCHEMATIC);
+   pSchematicBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_SCHEMATIC), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -456,6 +434,17 @@ const matPsStrand* CSplicedGirderGeneralPage::GetStrand()
    return pPool->GetStrand(key);
 }
 
+grlibPointMapper::MapMode CSplicedGirderGeneralPage::GetTendonControlMapMode() const
+{
+   return m_DrawTendons.GetMapMode();
+}
+
+CSplicedGirderData* CSplicedGirderGeneralPage::GetGirder()
+{
+   CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)GetParent();
+   return pParent->m_pGirder;
+}
+
 pgsTypes::StrandInstallationType CSplicedGirderGeneralPage::GetInstallationType()
 {
    CComboBox* pList = (CComboBox*)GetDlgItem(IDC_INSTALLATION_TYPE);
@@ -564,4 +553,11 @@ void CSplicedGirderGeneralPage::OnChangedGirderName()
          }
       } // next segment
    }
+}
+
+void CSplicedGirderGeneralPage::OnSchematicButton()
+{
+   auto mm = m_DrawTendons.GetMapMode();
+   mm = (mm == grlibPointMapper::Isotropic ? grlibPointMapper::Anisotropic : grlibPointMapper::Isotropic);
+   m_DrawTendons.SetMapMode(mm);
 }

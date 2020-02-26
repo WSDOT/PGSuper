@@ -155,6 +155,11 @@ void CTogaGirderModelSectionView::CreateDisplayLists()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
+   dispMgr->EnableLBtnSelect(TRUE);
+   dispMgr->EnableRBtnSelect(TRUE);
+   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+
    // Create display lists
    CComPtr<iDisplayList> straight_strand_list;
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&straight_strand_list);
@@ -252,7 +257,6 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
 
    GET_IFACE2(pBroker,IShapes,pShapes);
    GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
 
    Float64 top_width = pGirder->GetTopWidth(poi);
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
@@ -269,7 +273,7 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,pSectProps->GetHaunchAnalysisSectionPropertiesType(),&shape);
+   pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
    strategy->SetShape(shape);
    strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);

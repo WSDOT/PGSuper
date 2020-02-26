@@ -83,7 +83,7 @@ DELEGATE_CUSTOM_INTERFACE(CTemporarySupportDisplayObjectEvents,Events);
 
 void CTemporarySupportDisplayObjectEvents::EditTemporarySupport(iDisplayObject* pDO)
 {
-   m_pFrame->SendMessage(WM_COMMAND,ID_EDIT_TEMPORARY_SUPPORT,0);
+   m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_TEMPORARY_SUPPORT,0);
 }
 
 void CTemporarySupportDisplayObjectEvents::SelectTemporarySupport(iDisplayObject* pDO)
@@ -202,7 +202,7 @@ STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnKeyDown(iDi
    //}
    else if ( nChar == VK_DELETE )
    {
-      pThis->m_pFrame->SendMessage(WM_COMMAND,ID_DELETE,0);
+      pThis->m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
       return true;
    }
 

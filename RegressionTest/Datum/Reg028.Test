@@ -4,21 +4,21 @@
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Install Railing System
-Compression stress check failed for Service I Limit State in Interval 14 Apply User Defined Loads, Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 14 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 11 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 35.75    3  12.50                     1     2    U60G5          68  0.6  270  19.46   6.75  10.25  10.25                                              6.500  8.300   6.191    -4.134    13011   0.000  0.000   2.411 -2.980  0.000 -0.213 -3.193 310.15  620.03    0.00    0.00    0.00 
+ 35.75    3  12.50                     1     2    U60G5          68  0.6  270  19.46   6.75  10.25  10.25                                              6.500  8.300   6.191    -4.134    13011   0.000  0.000   2.412 -2.980  0.000 -0.213 -3.193 310.15  620.03    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 12 Composite deck, Install Railing System
+Compression stress check failed for Service I Limit State in Interval 17 Apply User Defined Loads, Open to Traffic
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 

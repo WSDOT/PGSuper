@@ -43,6 +43,7 @@ class ATL_NO_VTABLE CSpecAgentImp :
 	public IConnectionPointContainerImpl<CSpecAgentImp>,
 	public IAgentEx,
    public IBridgeDescriptionEventSink,
+   public IStressCheck,
    public IAllowableStrandStress,
    public IAllowableTendonStress,
    public IAllowableConcreteStress,
@@ -68,6 +69,7 @@ BEGIN_COM_MAP(CSpecAgentImp)
 	COM_INTERFACE_ENTRY(IAgent)
    COM_INTERFACE_ENTRY(IAgentEx)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
+   COM_INTERFACE_ENTRY(IStressCheck)
    COM_INTERFACE_ENTRY(IAllowableStrandStress)
    COM_INTERFACE_ENTRY(IAllowableTendonStress)
    COM_INTERFACE_ENTRY(IAllowableConcreteStress)
@@ -106,94 +108,110 @@ public:
    virtual HRESULT OnLiveLoadNameChanged(LPCTSTR strOldName, LPCTSTR strNewName) override;
    virtual HRESULT OnConstructionLoadChanged() override;
 
+// IStressCheck
+public:
+   virtual std::vector<StressCheckTask> GetStressCheckTasks(const CGirderKey& girderKey,bool bDesign = false) const override;
+   virtual std::vector<StressCheckTask> GetStressCheckTasks(const CSegmentKey& segmentKey, bool bDesign = false) const override;
+   virtual std::vector<IntervalIndexType> GetStressCheckIntervals(const CGirderKey& girderKey, bool bDesign = false) const override;
+
 // IAllowableStrandStress
 public:
-   virtual bool CheckStressAtJacking() override;
-   virtual bool CheckStressBeforeXfer() override;
-   virtual bool CheckStressAfterXfer() override;
-   virtual bool CheckStressAfterLosses() override;
-   virtual Float64 GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) override;
-   virtual Float64 GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) override;
-   virtual Float64 GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) override;
-   virtual Float64 GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) override;
+   virtual bool CheckStressAtJacking() const override;;
+   virtual bool CheckStressBeforeXfer() const override;;
+   virtual bool CheckStressAfterXfer() const override;;
+   virtual bool CheckStressAfterLosses() const override;;
+   virtual Float64 GetAllowableAtJacking(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const override;;
+   virtual Float64 GetAllowableBeforeXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const override;;
+   virtual Float64 GetAllowableAfterXfer(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const override;;
+   virtual Float64 GetAllowableAfterLosses(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const override;;
 
 // IAllowableTendonStress
 public:
-   virtual bool CheckTendonStressAtJacking() override;
-   virtual bool CheckTendonStressPriorToSeating() override;
-   virtual Float64 GetAllowableAtJacking(const CGirderKey& girderKey) override;
-   virtual Float64 GetAllowablePriorToSeating(const CGirderKey& girderKey) override;
-   virtual Float64 GetAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) override;
-   virtual Float64 GetAllowableAfterAnchorSet(const CGirderKey& girderKey) override;
-   virtual Float64 GetAllowableAfterLosses(const CGirderKey& girderKey) override;
-   virtual Float64 GetAllowableCoefficientAtJacking(const CGirderKey& girderKey) override;
-   virtual Float64 GetAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) override;
-   virtual Float64 GetAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) override;
-   virtual Float64 GetAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) override;
-   virtual Float64 GetAllowableCoefficientAfterLosses(const CGirderKey& girderKey) override;
+   virtual bool CheckTendonStressAtJacking() const override;;
+   virtual bool CheckTendonStressPriorToSeating() const override;;
+   virtual Float64 GetSegmentTendonAllowableAtJacking(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowablePriorToSeating(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableAfterAnchorSet(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableAfterLosses(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAtJacking(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientPriorToSeating(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterAnchorSet(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAllowableCoefficientAfterLosses(const CSegmentKey& segmentKey) const override;
 
+   virtual Float64 GetGirderTendonAllowableAtJacking(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowablePriorToSeating(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableAfterAnchorSet(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableAfterLosses(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientAtJacking(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientPriorToSeating(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const override;
 // IAllowableConcreteStress
 public:
-   virtual Float64 GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual Float64 GetAllowableTensionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) override;
+   virtual Float64 GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const override;
+   virtual Float64 GetAllowableTensionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const override;
 
-   virtual Float64 GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation) override;
+   virtual Float64 GetAllowableTensionStress(pgsTypes::LoadRatingType ratingType,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation) const override;
 
-   virtual Float64 GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) override;
+   virtual Float64 GetAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const override;
+   virtual void GetAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const override;
 
-   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableCompressionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) override;
-   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableTensionStress(const PoiList& vPoi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondededReinforcement) override;
+   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableCompressionStress(const PoiList& vPoi, const StressCheckTask& task) const override;
+   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableCompressionStress(const PoiList& vPoi, const StressCheckTask& task) const override;
+   virtual std::vector<Float64> CSpecAgentImp::GetGirderAllowableTensionStress(const PoiList& vPoi, const StressCheckTask& task,bool bWithBondededReinforcement,bool bInPrecompressedTensileZone) const override;
+   virtual std::vector<Float64> CSpecAgentImp::GetDeckAllowableTensionStress(const PoiList& vPoi, const StressCheckTask& task,bool bWithBondededReinforcement) const override;
 
-   virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual Float64 GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
+   virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task) const override;
+   virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task) const override;
+   virtual Float64 GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task) const override;
 
-   virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc) override;
-   virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc) override;
-   virtual Float64 GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc) override;
+   virtual Float64 GetSegmentAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc) const override;
+   virtual Float64 GetClosureJointAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc) const override;
+   virtual Float64 GetDeckAllowableCompressionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc) const override;
 
-   virtual Float64 GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement) override;
-   virtual Float64 GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) override;
-   virtual Float64 GetDeckAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement) override;
+   virtual Float64 GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement) const override;
+   virtual Float64 GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const override;
+   virtual Float64 GetDeckAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement) const override;
 
-   virtual Float64 GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement) override;
-   virtual Float64 GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) override;
-   virtual Float64 GetDeckAllowableTensionStress(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,Float64 fc,bool bWithBondedReinforcement) override;
+   virtual Float64 GetSegmentAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc,bool bWithBondedReinforcement) const override;
+   virtual Float64 GetClosureJointAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const override;
+   virtual Float64 GetDeckAllowableTensionStress(const pgsPointOfInterest& poi, const StressCheckTask& task,Float64 fc,bool bWithBondedReinforcement) const override;
 
-   virtual Float64 GetSegmentAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual Float64 GetClosureJointAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
-   virtual Float64 GetDeckAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls) override;
+   virtual Float64 GetSegmentAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi,const StressCheckTask& task) const override;
+   virtual Float64 GetClosureJointAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task) const override;
+   virtual Float64 GetDeckAllowableCompressionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task) const override;
 
-   virtual void GetSegmentAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) override;
-   virtual void GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) override;
-   virtual void GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) override;
+   virtual void GetSegmentAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const override;
+   virtual void GetClosureJointAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const override;
+   virtual void GetDeckAllowableTensionStressCoefficient(const pgsPointOfInterest& poi, const StressCheckTask& task,bool bWithBondedReinforcement,Float64* pCoeff,bool* pbMax,Float64* pMaxValue) const override;
 
-   virtual std::vector<pgsTypes::LimitState> GetStressCheckLimitStates(IntervalIndexType intervalIdx) override;
-   virtual bool IsStressCheckApplicable(const CGirderKey& girderKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType) override;
-   virtual bool HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) override;
+   virtual bool IsStressCheckApplicable(const CGirderKey& girderKey, const StressCheckTask& task) const override;
+   virtual bool HasAllowableTensionWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) const override;
 
-   virtual bool CheckTemporaryStresses() override;
-   virtual bool CheckFinalDeadLoadTensionStress() override;
+   virtual bool CheckTemporaryStresses() const override;
+   virtual bool CheckFinalDeadLoadTensionStress() const override;
 
 // ITransverseReinforcementSpec
 public:
-   virtual Float64 GetMaxSplittingStress(Float64 fyRebar) override;
-   virtual Float64 GetSplittingZoneLength( Float64 girderHeight ) override;
-   virtual Float64 CSpecAgentImp::GetSplittingZoneLengthFactor() override;
-   virtual matRebar::Size GetMinConfinmentBarSize() override;
-   virtual Float64 GetMaxConfinmentBarSpacing() override;
-   virtual Float64 GetMinConfinmentAvS() override;
-   virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit) override;
-   virtual Float64 GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter) override;
+   virtual Float64 GetMaxSplittingStress(Float64 fyRebar) const override;
+   virtual Float64 GetSplittingZoneLength( Float64 girderHeight ) const override;
+   virtual Float64 CSpecAgentImp::GetSplittingZoneLengthFactor() const override;
+   virtual Float64 GetUHPCStrengthAtFirstCrack() const override;
+   virtual matRebar::Size GetMinConfinmentBarSize() const override;
+   virtual Float64 GetMaxConfinmentBarSpacing() const override;
+   virtual Float64 GetMinConfinmentAvS() const override;
+   virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit) const override;
+   virtual Float64 GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter) const override;
 
 // IPrecastIGirderDetailsSpec
 public:
-   virtual Float64 GetMinTopFlangeThickness() override;
-   virtual Float64 GetMinWebThickness() override;
-   virtual Float64 GetMinBottomFlangeThickness() override;
+   virtual Float64 GetMinTopFlangeThickness() const override;
+   virtual Float64 GetMinWebThickness() const override;
+   virtual Float64 GetMinBottomFlangeThickness() const override;
 
 // ISegmentLiftingSpecCriteria
 public:
@@ -283,48 +301,52 @@ public:
 // IKdotGirderHaulingSpecCriteria
 public:
    // Spec criteria for KDOT analyses
-   virtual Float64 GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey) override;
-   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey) override;
-   virtual Float64 GetKdotHaulingAllowableTensionFactor() override;
-   virtual Float64 GetKdotHaulingAllowableCompressionFactor() override;
-   virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) override;
-   virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor() override;
-   virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) override;
-   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) override;
-   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc) override;
-   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) override;
-   virtual Float64 GetHaulingDesignLocationAccuracy() override;
-   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) override;
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStress(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetKdotHaulingAllowableTensionFactor() const override;
+   virtual Float64 GetKdotHaulingAllowableCompressionFactor() const override;
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStress(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetKdotHaulingWithMildRebarAllowableStressFactor() const override;
+   virtual void GetKdotHaulingAllowableTensileConcreteStressParameters(Float64* factor,bool* pbMax,Float64* fmax) const override;
+   virtual Float64 GetKdotHaulingAllowableTensileConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc, bool includeRebar) const override;
+   virtual Float64 GetKdotHaulingAllowableCompressiveConcreteStressEx(const CSegmentKey& segmentKey,Float64 fc) const override;
+   virtual void GetMinimumHaulingSupportLocation(Float64* pHardDistance, bool* pUseFactoredLength, Float64* pLengthFactor) const override;
+   virtual Float64 GetHaulingDesignLocationAccuracy() const override;
+   virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const override;
 
 // IDebondLimits
 public:
-   virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) override;
-   virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) override;
-   virtual Float64 GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) override;
-   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) override;
-   virtual void GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) override;
-   virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey) override;
+   virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) const override;
+   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) const override;
+   virtual void GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) const override;
+   virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey) const override;
 
 // IResistanceFactors
 public:
-   virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) override;
-   virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl) override;
-   virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) override;
-   virtual Float64 GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type) override;
-   virtual Float64 GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) override;
-   virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) override;
-   virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) override;
+   virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const override;
+   virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl) const override;
+   virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) const override;
+   virtual Float64 GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type) const override;
+   virtual Float64 GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const override;
+   virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) const override;
+   virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const override;
 
 // IInterfaceShearRequirements 
 public:
-   virtual ShearFlowMethod GetShearFlowMethod() override;
-   virtual Float64 GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi) override;
+   virtual ShearFlowMethod GetShearFlowMethod() const override;
+   virtual Float64 GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi) const override;
 
 // IDuctLimits
 public:
-   virtual Float64 GetRadiusOfCurvatureLimit(const CGirderKey& girderKey) override;
-   virtual Float64 GetTendonAreaLimit(const CGirderKey& girderKey) override;
-   virtual Float64 GetDuctSizeLimit(const CGirderKey& girderKey) override;
+   virtual Float64 GetSegmentTendonRadiusOfCurvatureLimit(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonAreaLimit(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentTendonDuctSizeLimit(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetGirderTendonRadiusOfCurvatureLimit(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonAreaLimit(const CGirderKey& girderKey) const override;
+   virtual Float64 GetGirderTendonDuctSizeLimit(const CGirderKey& girderKey) const override;
+   virtual Float64 GetTendonAreaLimit(pgsTypes::StrandInstallationType installationType) const override;
 
 private:
    DECLARE_EAF_AGENT_DATA;
@@ -337,7 +359,9 @@ private:
    const GirderLibraryEntry* GetGirderEntry(const CSegmentKey& segmentKey) const;
    const SpecLibraryEntry* GetSpec() const;
 
-   bool IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls);
+   Float64 GetRadiusOfCurvatureLimit(pgsTypes::DuctType ductType) const;
+
+   bool IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls) const;
    void ValidateHaulTruck(const CPrecastSegmentData* pSegment) const;
    void Invalidate();
 };

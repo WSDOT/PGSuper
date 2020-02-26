@@ -71,10 +71,9 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GroupIndexType groupIdx      = girderKey.groupIndex;
-   GroupIndexType startGroupIdx = (groupIdx == ALL_GROUPS ? 0 : groupIdx);
-   GroupIndexType nGroups       = (groupIdx == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount() : 1);
-   GroupIndexType endGroupIdx   = startGroupIdx + nGroups - 1;
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
 
    IntervalIndexType firstErectedSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
 
@@ -135,17 +134,11 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
    //
    // Draw the segments
    //
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
       // deal with girder index when there are different number of girders in each group
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-
-      GirderIndexType nGirders = pGroup->GetGirderCount();
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-
-      const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-
-      CGirderKey thisGirderKey(grpIdx, gdrIdx);
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
 
       SegmentIndexType nSegments = pGirder->GetSegmentCount();
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -187,8 +180,8 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
       //
       if (bIsPermanentInterval)
       {
-         PierIndexType startPierIdx = pBridgeDesc->GetGirderGroup(startGroupIdx)->GetPierIndex(pgsTypes::metStart);
-         PierIndexType endPierIdx = pBridgeDesc->GetGirderGroup(endGroupIdx)->GetPierIndex(pgsTypes::metEnd);
+         PierIndexType startPierIdx = pBridgeDesc->GetGirderGroup(vGirderKeys.front().groupIndex)->GetPierIndex(pgsTypes::metStart);
+         PierIndexType endPierIdx = pBridgeDesc->GetGirderGroup(vGirderKeys.back().groupIndex)->GetPierIndex(pgsTypes::metEnd);
          for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
          {
             DrawPier(beamShift, intervalIdx, girderKey, pierIdx, mapper, pDC);
@@ -448,7 +441,7 @@ void CDrawBeamTool::DrawPier(Float64 beamShift,IntervalIndexType intervalIdx,con
       pgsTypes::BoundaryConditionType boundaryConditionType = pPier->GetBoundaryConditionType();
       PierIndexType pierIdx = pPier->GetIndex();
 
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
       IntervalIndexType erectFirstSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
 
       IntervalIndexType leftContinuityIntervalIdx, rightContinuityIntervalIdx;
@@ -613,21 +606,15 @@ CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType interval
    CSegmentKey backSegmentKey, aheadSegmentKey;
    pBridge->GetSegmentsAtPier(pierIdx, girderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
 
-#if defined _DEBUG
-   bool bIsInteriorPier = false;
-#endif
    if (aheadSegmentKey.segmentIndex == INVALID_INDEX)
    {
       // there isn't an ahead side segment. this could be for one of two reasons
-      // 1) a segment is continuous over this pier (expect backSegmentKey.segmentIndex == INVALID_INDEX
+      // 1) a segment is continuous over this pier (expect backSegmentKey.segmentIndex == INVALID_INDEX)
       // 2) pierIdx is at the end of the bridge
       if (backSegmentKey.segmentIndex == INVALID_INDEX)
       {
          // get the straddling segment
          aheadSegmentKey = pBridge->GetSegmentAtPier(pierIdx, girderKey);
-#if defined _DEBUG
-         bIsInteriorPier = true;
-#endif
       }
       else
       {
@@ -641,31 +628,27 @@ CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType interval
    GET_IFACE(ISectionProperties, pSectProp);
    Float64 sectionHeight = pSectProp->GetSegmentHeightAtPier(aheadSegmentKey, pierIdx);
 
-   Float64 Xs; // location of pier in segment coordinates
-   bool bResult = pBridge->GetPierLocation(pierIdx, aheadSegmentKey, &Xs);
-   ATLASSERT(bResult == true);
-
    GET_IFACE(IPointOfInterest, pPoi);
+   Float64 Xs; // location of pier in segment coordinates
+   if (pBridge->IsAbutment(pierIdx))
+   {
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(aheadSegmentKey, POI_ERECTED_SEGMENT | POI_0L | POI_10L, &vPoi);
+      ATLASSERT(vPoi.size() == 2);
+      Xs = (pierIdx == 0 ? vPoi.front().get().GetDistFromStart() : vPoi.back().get().GetDistFromStart());
+   }
+   else
+   {
+      bool bResult = pBridge->GetPierLocation(pierIdx, aheadSegmentKey, &Xs);
+      ATLASSERT(bResult == true);
+   }
+
    Float64 Xgl = pPoi->ConvertSegmentCoordinateToGirderlineCoordinate(aheadSegmentKey, Xs);
 
    CPoint p;
    Float64 X = m_pUnitConverter->Convert(Xgl + beamShift);
    Float64 H = m_pUnitConverter->Convert(sectionHeight);
    mapper.WPtoDP(X, -H, &p.x, &p.y);
-
-#if defined _DEBUG
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-   if (bIsInteriorPier)
-   {
-      ATLASSERT(pPier->IsInteriorPier());
-   }
-   else
-   {
-      ATLASSERT(pPier->IsBoundaryPier());
-   }
-#endif
 
    return p;
 }
@@ -823,24 +806,75 @@ void CDrawBeamTool::DrawIntegralHingeAhead(CPoint p,CDC* pDC)
 
 void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx, const CGirderKey& girderKey, const grlibPointMapper& mapper,CDC* pDC)
 {
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE_NOCHECK(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
    GET_IFACE_NOCHECK(IIntervals,pIntervals); // only gets used if there are tendons
 
    Float64 tendonShift = ComputeShift(girderKey);
 
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-   for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
+   GET_IFACE(IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
-      CComPtr<IPoint2dCollection> points;
-      pTendonGeom->GetDuctCenterline(girderKey,ductIdx,&points);
+      CSegmentKey segmentKey(girderKey, segIdx);
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+      if (intervalIdx < ptIntervalIdx)
+      {
+         continue; // don't draw if not yet installed
+      }
 
-      IntervalIndexType ptIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+      {
+         CComPtr<IPoint2dCollection> points;
+         pSegmentTendonGeometry->GetDuctCenterline(segmentKey, ductIdx, &points);
+
+         COLORREF color = SEGMENT_TENDON_LINE_COLOR;
+
+         CPen pen(PS_SOLID, 1, color);
+         CPen* pOldPen = pDC->SelectObject(&pen);
+
+         IndexType nPoints;
+         points->get_Count(&nPoints);
+         CPoint* polyPnts = new CPoint[nPoints];
+         for (IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++)
+         {
+            CComPtr<IPoint2d> point;
+            points->get_Item(pntIdx, &point);
+
+            Float64 x, y;
+            point->Location(&x, &y);
+
+            Float64 WX = m_pUnitConverter->Convert(x + beamShift + tendonShift);
+            Float64 WY = m_pUnitConverter->Convert(y);
+
+            LONG DX, DY;
+            mapper.WPtoDP(WX, WY, &DX, &DY);
+
+            polyPnts[pntIdx].x = DX;
+            polyPnts[pntIdx].y = DY;
+         }
+
+         pDC->Polyline(polyPnts, (int)nPoints);
+         delete[] polyPnts;
+
+         pDC->SelectObject(pOldPen);
+      }
+   }
+
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+   for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+   {
+      IntervalIndexType ptIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
       if ( intervalIdx < ptIntervalIdx )
       {
          continue; // don't draw if not yet installed
       }
 
-      COLORREF color = TENDON_LINE_COLOR;
+      CComPtr<IPoint2dCollection> points;
+      pGirderTendonGeometry->GetDuctCenterline(girderKey, ductIdx, &points);
+
+      COLORREF color = GIRDER_TENDON_LINE_COLOR;
 
       CPen pen(PS_SOLID,1,color);
       CPen* pOldPen = pDC->SelectObject(&pen);

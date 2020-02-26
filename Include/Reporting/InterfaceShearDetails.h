@@ -24,7 +24,9 @@
 
 #include <Reporting\ReportingExp.h>
 
+interface IBridge;
 interface IEAFDisplayUnits;
+class pgsHorizontalShearArtifact;
 
 /*****************************************************************************
 CLASS 
@@ -45,7 +47,7 @@ class REPORTINGCLASS CInterfaceShearDetails
 public:
    //------------------------------------------------------------------------
    // Default constructor
-   CInterfaceShearDetails();
+   CInterfaceShearDetails(IEAFDisplayUnits* pDisplayUnits);
 
    //------------------------------------------------------------------------
    // Destructor
@@ -53,16 +55,38 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the table.
-   static void Build(IBroker* pBroker, rptChapter* pChapter,
-                     const CGirderKey& girderKey,
-                     IEAFDisplayUnits* pDisplayUnits,
-                     IntervalIndexType intervalIdx,
-                     pgsTypes::LimitState ls);
+   void Build(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls);
 
 protected:
+   void BuildDesign(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls);
+   void BuildRating(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls);
 
 private:
    //------------------------------------------------------------------------
    // Copy constructor
-   CInterfaceShearDetails(const CInterfaceShearDetails& rOther);
+   CInterfaceShearDetails(const CInterfaceShearDetails& rOther) = delete;
+
+   DECLARE_UV_PROTOTYPE(rptPointOfInterest, location);
+   DECLARE_UV_PROTOTYPE(rptForceUnitValue, shear);
+   DECLARE_UV_PROTOTYPE(rptForcePerLengthUnitValue, shear_per_length);
+   DECLARE_UV_PROTOTYPE(rptStressUnitValue, fy);
+   DECLARE_UV_PROTOTYPE(rptStressUnitValue, stress);
+   DECLARE_UV_PROTOTYPE(rptStressUnitValue, stress_with_tag);
+   DECLARE_UV_PROTOTYPE(rptAreaPerLengthValue, AvS);
+   DECLARE_UV_PROTOTYPE(rptLengthUnitValue, dim);
+   DECLARE_UV_PROTOTYPE(rptAreaUnitValue, area);
+   DECLARE_UV_PROTOTYPE(rptLength3UnitValue, l3);
+   DECLARE_UV_PROTOTYPE(rptLength4UnitValue, l4);
+
+   bool m_bIsSpec2007orOlder;
+   ShearFlowMethod m_ShearFlowMethod;
+
+   rptRcTable* CreateVuiTable(IBroker* pBroker, rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void FillVuiTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
+   rptRcTable* CreateAvfTable(IEAFDisplayUnits* pDisplayUnits);
+   void FillAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
+   rptRcTable* CreateVniTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, const std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts);
+   void FillVniTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
+   rptRcTable* CreateMinAvfTable(rptChapter* pChapter, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits, bool bIsRoughened, bool doAllStirrupsEngageDeck);
+   void FillMinAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact, Float64 llss, IEAFDisplayUnits* pDisplayUnits);
 };

@@ -421,6 +421,7 @@ public:
    virtual bool IsAssumedExcessCamberInputEnabled(bool considerDeckType=true) const override;
    virtual bool IsAssumedExcessCamberForLoad() const override; 
    virtual bool IsAssumedExcessCamberForSectProps() const override; 
+   virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const override;
 
 // IRatingSpecification
 public:
@@ -646,6 +647,7 @@ public:
 
 // ILossParameters
 public:
+   virtual std::_tstring GetLossMethodDescription() const override;
    virtual pgsTypes::LossMethod GetLossMethod() const override;
    virtual pgsTypes::TimeDependentModel GetTimeDependentModel() const override;
    virtual void IgnoreCreepEffects(bool bIgnore) override;
@@ -758,6 +760,8 @@ private:
    AlignmentData2 m_AlignmentData2;
    ProfileData2   m_ProfileData2;
    RoadwaySectionData m_RoadwaySectionData;
+
+   static HRESULT LoadOldSuperelevationData(bool bNewerFormat, IStructuredLoad* pLoad, CProjectAgentImp* pObj);
 
    // Bridge Description Data
    mutable CBridgeDescription2 m_BridgeDescription;
@@ -915,10 +919,14 @@ private:
 
    void UseBridgeLibraryEntries();
    void UseGirderLibraryEntries();
+   void UseSegmentLibraryEntries(CPrecastSegmentData* pSegment);
    void UseDuctLibraryEntries();
+   void UseDuctLibraryEntries(CPrecastSegmentData* pSegment);
    void ReleaseBridgeLibraryEntries();
    void ReleaseGirderLibraryEntries();
+   void ReleaseSegmentLibraryEntries(CPrecastSegmentData* pSegment);
    void ReleaseDuctLibraryEntries();
+   void ReleaseDuctLibraryEntries(CPrecastSegmentData* pSegment);
 
    void UpdateConcreteMaterial();
    void UpdateTimeDependentMaterials();

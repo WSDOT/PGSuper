@@ -45,8 +45,8 @@ public:
    bool IsGlobalGirderStabilityApplicable() const;
    void SetTargetFactorOfSafety(Float64 fs);
    Float64 GetTargetFactorOfSafety() const;
-   void SetGlobalGirderStabilityParameters(Float64 Wbottom,Float64 brgPadDeduct,Float64 Ybottom,Float64 Orientation,Float64 Zo);
-   void GetGlobalGirderStabilityParameters(Float64 *Wbottom,Float64* brgPadDeduct,Float64 *Ybottom,Float64 *Orientation,Float64* Zo) const;
+   void SetGlobalGirderStabilityParameters(Float64 brgPadWidth,Float64 Ybottom,Float64 Orientation,Float64 Zo);
+   void GetGlobalGirderStabilityParameters(Float64* brgPadWidth,Float64 *Ybottom,Float64 *Orientation,Float64* Zo) const;
    Float64 GetMaxGirderIncline() const;
    Float64 GetFactorOfSafety() const;
 
@@ -58,8 +58,7 @@ protected:
 
 private:
    bool m_bIsGlobalGirderStabilityApplicable;
-   Float64 m_Wbottom;
-   Float64 m_BrgPadDeduct;
+   Float64 m_BrgPadWidth;
    Float64 m_Ybottom;
    Float64 m_Orientation;
    Float64 m_Zo;

@@ -105,7 +105,7 @@ void CBridgeDescrBearings::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag( pDX, IDC_BRG_LENGTH, IDC_BRG_LENGTH_UNIT, m_BearingInputData.m_SingleBearing.Length, pDisplayUnits->GetComponentDimUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_BRG_LENGTH, m_BearingInputData.m_SingleBearing.Length, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BRG_LENGTH, m_BearingInputData.m_SingleBearing.Length, pDisplayUnits->GetComponentDimUnit() );
    if (!(pDX->m_bSaveAndValidate && m_BearingInputData.m_SingleBearing.Shape==bsRound))
    {
       DDX_UnitValueAndTag( pDX, IDC_BRG_WIDTH, IDC_BRG_WIDTH_UNIT, m_BearingInputData.m_SingleBearing.Width, pDisplayUnits->GetComponentDimUnit() );

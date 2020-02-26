@@ -529,7 +529,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
 
       C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
-      (*pTable)(++row, 0) << _T("Screed Camber, C");
+      (*pTable)(++row, 0) << _T("Screed Camber, C at mid-span");
       (*pTable)(row, 1) << gdim.SetValue(C);
    }
 

@@ -100,19 +100,23 @@ public:
    //------------------------------------------------------------------------
    // Computes the basic anchor set loss details (basically the anchor set length and
    // anchor set loss a seating end)
-   const ANCHORSETDETAILS* GetAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+   const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey, DuctIndexType ductIdx) const;
+   const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const;
 
    //------------------------------------------------------------------------
    // Computes the tendon elongation during jacking
-   Float64 GetElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const;
+   Float64 GetGirderTendonElongation(const CGirderKey& girderKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const;
+   Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const;
 
    //------------------------------------------------------------------------
    // Returns the average friction loss
-   Float64 GetAverageFrictionLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+   Float64 GetGirderTendonAverageFrictionLoss(const CGirderKey& girderKey, DuctIndexType ductIdx) const;
+   Float64 GetSegmentTendonAverageFrictionLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const;
 
    //------------------------------------------------------------------------
    // Returns the average anchor set loss
-   Float64 GetAverageAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx) const;
+   Float64 GetGirderTendonAverageAnchorSetLoss(const CGirderKey& girderKey, DuctIndexType ductIdx) const;
+   Float64 GetSegmentTendonAverageAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const;
 
    //------------------------------------------------------------------------
    // Returns the maximum jacking force
@@ -131,7 +135,7 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the prestress development length
-   Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig=nullptr) const;
+   Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the development length adjustment factor. The factor is 0 at the
@@ -141,12 +145,12 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the details of the develpment lenght computations
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,const GDRCONFIG* pConfig=nullptr) const;
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
+   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
+   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the prestress hold down force
-   Float64 GetHoldDownForce(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig = nullptr) const;
+   Float64 GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotalForce,Float64* pSlope, pgsPointOfInterest* pPoi, const GDRCONFIG* pConfig = nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the effective force in prestressing strand at the specified interval.. includes losses and gains

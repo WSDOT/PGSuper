@@ -69,7 +69,7 @@ void CGirderComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    }
    else
    {
-      dc.FillSolidRect(&lpDrawItemStruct->rcItem,oldBkColor);
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_WINDOW));
    }
 
    dc.DrawText(lpszText,&lpDrawItemStruct->rcItem,DT_LEFT | DT_SINGLELINE | DT_VCENTER);

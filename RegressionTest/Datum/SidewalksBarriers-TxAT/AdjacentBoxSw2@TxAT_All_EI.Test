@@ -1,11 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.37    8   0.12                     1     1     4B20    *      0  1/2  270   0.00   0.00   5.00   5.00                                              4.700  5.200   2.389    -2.800     1303   0.314  0.558  -3.517 -0.551 -0.052 -0.120 -0.724   0.00    0.00    1.00    1.00    1.00 
+ 30.37    8   0.12                     1     1     4B20    *      0  1/2  270   0.00   0.00   5.00   5.00                                              4.700  5.200   2.389    -2.800     1303   0.314  0.558  -3.516 -0.551 -0.052 -0.120 -0.724   0.00    0.00    1.00    1.00    1.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Install composite overlay
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 11 Install composite overlay
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -25,8 +25,8 @@ The Specification Check was Successful
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 10 Install composite overlay
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 11 Install composite overlay
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

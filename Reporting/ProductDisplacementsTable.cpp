@@ -120,16 +120,13 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
    GET_IFACE2(pBroker,IProductForces2,pForces2);
 
 
-   for ( GroupIndexType grpIdx = startGroup; grpIdx <= endGroup; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey.girderIndex, startGroup, endGroup, &vGirderKeys);
+   for (const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-
-      CGirderKey thisGirderKey(grpIdx,gdrIdx);
-
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
 
-      CSegmentKey allSegmentsKey(grpIdx,gdrIdx,ALL_SEGMENTS);
+      CSegmentKey allSegmentsKey(thisGirderKey,ALL_SEGMENTS);
       PoiList vPoi;
       pIPoi->GetPointsOfInterest(allSegmentsKey, poiRefAttribute, &vPoi);
 

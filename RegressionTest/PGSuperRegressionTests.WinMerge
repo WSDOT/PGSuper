@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
 	<paths>
-		<left>\ARP\PGSuper\RegressionTest\Current\</left>
-		<right>\ARP\PGSuper\RegressionTest\Datum\</right>
+		<left>F:\ARP\PGSuper\RegressionTest\Current\</left>
+    <right>F:\ARP\PGSuper\RegressionTest\Datum\</right>
 		<filter>*.dbr;*.test</filter>
 		<subfolders>1</subfolders>
 		<left-readonly>0</left-readonly>

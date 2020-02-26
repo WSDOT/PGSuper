@@ -223,8 +223,8 @@ void CSplicedUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    pgsPointOfInterest poiStart(segmentKey,0.00,          POI_SECTCHANGE_RIGHTFACE);
    pgsPointOfInterest poiEnd(  segmentKey,segment_length,POI_SECTCHANGE_LEFTFACE );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
 void CSplicedUBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
@@ -603,11 +603,6 @@ bool CSplicedUBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return false;
 }
 
-Float64 CSplicedUBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CSplicedUBeamFactory::GetImage() const
 {
    return std::_tstring(_T("UBeam.jpg"));
@@ -847,9 +842,26 @@ bool CSplicedUBeamFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& di
    return false;
 }
 
+
+pgsTypes::WorkPointLocations CSplicedUBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+//   wpls.push_back(pgsTypes::wplBottomGirder);
+
+   return wpls;
+}
+
+bool CSplicedUBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(), wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CSplicedUBeamFactory::GetSupportedGirderOrientation() const
 {
-   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced};
    return types;
 }
 
@@ -963,6 +975,17 @@ Float64 CSplicedUBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dime
 Float64 CSplicedUBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("W2"));
+}
+
+void CSplicedUBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+
+   Float64 top = W2;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CSplicedUBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const

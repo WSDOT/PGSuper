@@ -368,12 +368,12 @@ void CTaperedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
       if ( x < start_length || gdrLength-end_length < x)
       {
          pgsPointOfInterest poi(segmentKey,x,attrib);
-         pPoiMgr->AddPointOfInterest( poi );
+         VERIFY(pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
       }
       else
       {
          pgsPointOfInterest poi(segmentKey,x,attrib);
-         pPoiMgr->AddPointOfInterest(poi);
+         VERIFY(pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
       }
    }
 }
@@ -753,11 +753,6 @@ bool CTaperedIBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return bSymmetric;
 }
 
-Float64 CTaperedIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CTaperedIBeamFactory::GetImage() const
 {
    return std::_tstring(_T("TaperedIBeam.jpg"));
@@ -999,6 +994,22 @@ bool CTaperedIBeamFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& di
    return false;
 }
 
+pgsTypes::WorkPointLocations CTaperedIBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);  // variable depth sections cannot have bottom work points
+//   wpls.push_back(pgsTypes::wplBottomGirder);
+
+   return wpls;
+}
+
+bool CTaperedIBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CTaperedIBeamFactory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb/*, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal*/ };
@@ -1106,6 +1117,19 @@ Float64 CTaperedIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimen
    Float64 bot = 2*(W3+W4) + T2;
 
    return Max(top,bot);
+}
+
+void CTaperedIBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W1 = GetDimension(dimensions,_T("W1"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 T1 = GetDimension(dimensions,_T("T1"));
+
+   Float64 top = 2*(W1+W2) + T1;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CTaperedIBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const

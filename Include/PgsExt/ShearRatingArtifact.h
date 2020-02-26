@@ -122,6 +122,9 @@ public:
    void SetLongReinfShearArtifact(const pgsLongReinfShearArtifact& artifact);
    const pgsLongReinfShearArtifact& GetLongReinfShearArtifact() const;
 
+   void SetHorizontalInterfaceShearArtifact(const pgsHorizontalShearArtifact& artifact);
+   const pgsHorizontalShearArtifact& GetHorizontalInterfaceShearArtifact() const;
+
    Float64 GetRatingFactor() const;
 
 protected:
@@ -158,4 +161,5 @@ protected:
    Float64 m_Vps;
    Float64 m_Vllim;
    pgsLongReinfShearArtifact m_LongReinfShearArtifact;
+   pgsHorizontalShearArtifact m_HorizShearArtifact;
 };

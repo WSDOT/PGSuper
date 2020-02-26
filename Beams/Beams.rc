@@ -59,8 +59,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 4,1,6,0
- PRODUCTVERSION 4,1,6,0
+ FILEVERSION 5,0,0,9
+ PRODUCTVERSION 5,0,0,9
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -78,12 +78,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "Beams Module for PGSuper"
-            VALUE "FileVersion", "4.1.6.0"
+            VALUE "FileVersion", "5.0.0.9"
             VALUE "InternalName", "Beams"
             VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "Beams.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "4.1.6.0"
+            VALUE "ProductVersion", "5.0.0.9"
         END
     END
     BLOCK "VarFileInfo"
@@ -154,6 +154,7 @@ IDR_MULTIWEBDISTFACTORENGINEER REGISTRY          "MultiWebDistFactorEngineer.rgs
 IDR_UBEAMDISTFACTORENGINEER REGISTRY           "UBeamDistFactorEngineer.rgs"
 IDR_VOIDEDSLABDISTFACTORENGINEER REGISTRY           "VoidedSlabDistFactorEngineer.rgs"
 IDR_VOIDEDSLAB2DISTFACTORENGINEER REGISTRY           "VoidedSlab2DistFactorEngineer.rgs"
+IDR_TXDOTSPREADSLABBEAMDISTFACTORENGINEER REGISTRY   "TxDOTSpreadSlabBeamDistFactorEngineer.rgs"
 
 IDR_SPLICEDIBEAMFAMILY  REGISTRY                "SplicedIBeamFamily.rgs"
 IDR_SPLICEDUBEAMFAMILY  REGISTRY                "SplicedUBeamFamily.rgs"

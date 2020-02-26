@@ -225,8 +225,8 @@ void CTxDotDoubleTFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    pgsPointOfInterest poiStart(segmentKey,0.00,POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
 void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
@@ -575,11 +575,6 @@ bool CTxDotDoubleTFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CTxDotDoubleTFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CTxDotDoubleTFactory::GetImage() const
 {
    return std::_tstring(_T("TxDotDoubleT.gif"));
@@ -836,9 +831,25 @@ bool CTxDotDoubleTFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& di
    return false;
 }
 
+pgsTypes::WorkPointLocations CTxDotDoubleTFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+//   wpls.push_back(pgsTypes::wplBottomGirder);
+
+   return wpls;
+}
+
+bool CTxDotDoubleTFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(), wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CTxDotDoubleTFactory::GetSupportedGirderOrientation() const
 {
-   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
@@ -930,6 +941,22 @@ Float64 CTxDotDoubleTFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimen
    Float64 W2 = GetDimension(dimensions,_T("W2"));
 
    return 2*(T1+T2+T3+W1) + W2;
+}
+
+void CTxDotDoubleTFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 T1 = GetDimension(dimensions,_T("T1"));
+   Float64 T2 = GetDimension(dimensions,_T("T2"));
+   Float64 T3 = GetDimension(dimensions,_T("T3"));
+   Float64 W1 = GetDimension(dimensions,_T("W1"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 C2 = GetDimension(dimensions,_T("C2"));
+
+   Float64 top = 2*(T1+T2+T3+W1-C2) + W2;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CTxDotDoubleTFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const

@@ -400,16 +400,8 @@ private:
 
    const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) const;
 
-   struct StressCheckTask
-   {
-      IntervalIndexType intervalIdx;
-      pgsTypes::LimitState limitState;
-      pgsTypes::StressType stressType;
-      bool bIncludeLiveLoad; // if intervalIdx is a live load interval, live load is include in the prestressing if this parameter is tru
-   };
    mutable std::vector<StressCheckTask> m_StressCheckTasks;
    void ConfigureStressCheckTasks(const CSegmentKey& segmentKey) const;
-
 
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
@@ -463,6 +455,7 @@ private:
    void CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmentArtifact* pGdrArtifact) const;
    void CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlopeArtifact* pArtifact) const;
    void CheckHoldDownForce(const CSegmentKey& segmentKey,pgsHoldDownForceArtifact* pArtifact) const;
+   void CheckPlantHandlingWeightLimit(const CSegmentKey& segmentKey, pgsPlantHandlingWeightArtifact* pArtifact) const;
    void CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmentStabilityArtifact* pArtifact) const;
    void CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifact* pArtifact) const;
 
@@ -509,7 +502,7 @@ private:
 
    void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const GDRCONFIG& config,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact) const;
    void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,pgsFlexuralCapacityArtifact* pArtifact) const;
-   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const MINMOMENTCAPDETAILS& mmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact) const;
+   void CreateFlexuralCapacityArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const MINMOMENTCAPDETAILS* pmmcd,bool bDesign,pgsFlexuralCapacityArtifact* pArtifact) const;
 
    // poi based shear checks
    void CreateStirrupCheckAtPoisArtifact(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, Float64 vu,
@@ -521,14 +514,7 @@ private:
    ZoneIndexType GetCriticalSectionZone(const pgsPointOfInterest& poi,bool bIncludeCS=false) const;
    void CheckStirrupRequirement( const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, pgsVerticalShearArtifact* pArtifact ) const;
    void CheckUltimateShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const SHEARCAPACITYDETAILS& scd, Float64 vu, const GDRCONFIG* pConfig, pgsVerticalShearArtifact* pArtifact ) const;
-   void CheckHorizontalShear(const pgsPointOfInterest& poi, Float64 vu,
-                              Float64 fcSlab,Float64 fcGdr, Float64 fy,
-                              const GDRCONFIG* pConfig,
-                              pgsHorizontalShearArtifact* pArtifact ) const;
-   void CheckHorizontalShearMidZone( const pgsPointOfInterest& poi, Float64 vu,
-                                     Float64 fcSlab,Float64 fcGdr, Float64 fy,
-                                     const GDRCONFIG* pConfig,
-                                     pgsHorizontalShearArtifact* pArtifact ) const;
+   void CheckHorizontalShear(pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, Float64 vu, Float64 fcSlab,Float64 fcGdr, Float64 fy, const GDRCONFIG* pConfig, pgsHorizontalShearArtifact* pArtifact ) const;
 
    void ComputeHorizAvs(const pgsPointOfInterest& poi, bool* pIsRoughened, bool* pDoAllStirrupsEngageDeck, const GDRCONFIG* pConfig, pgsHorizontalShearArtifact* pArtifact ) const;
 
@@ -556,10 +542,6 @@ private:
    DECLARE_LOGFILE;
 
    bool CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneIndexType numZones) const;
-
-
-   // round slab offset to acceptable value
-   Float64 RoundSlabOffset(Float64 offset) const;
 
    void GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom) const;
    void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const pgsPointOfInterest& poi,const StressCheckTask& task) const;

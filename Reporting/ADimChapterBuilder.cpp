@@ -28,6 +28,7 @@
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
+#include <IFace\Intervals.h>
 
 #include <PgsExt\BridgeDescription2.h>
 
@@ -75,6 +76,9 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP);
+
    GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
    if ( !pSpecEntry->IsSlabOffsetCheckEnabled() )
    {
@@ -100,21 +104,12 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, comp, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, compdim, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, defl, pDisplayUnits->GetDeflectionUnit(), false );
 
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    GET_IFACE2(pBroker, IGirder, pGdr);
-
-   Float64 slab_offset_tolerance;
-   if (IS_SI_UNITS(pDisplayUnits))
-   {
-      slab_offset_tolerance = SLAB_OFFSET_TOLERANCE_SI;
-   }
-   else
-   {
-      slab_offset_tolerance = SLAB_OFFSET_TOLERANCE_US;
-   }
 
    bool bTopFlangeShapeEffect = false;
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -137,9 +132,9 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
    pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
-   *pPara << _T("Finished Grade Elevation = Elevation of the roadway surface directly above the centerline of the girder.") << rptNewLine;
+   *pPara << _T("Design Elevation = Elevation of the roadway surface directly above the centerline of the girder.") << rptNewLine;
    *pPara << _T("Profile Chord Elevation = Elevation of an imaginary chord that intersects the roadway surface above the point of bearing at the both ends of the girder.") << rptNewLine;
-   *pPara << _T("Profile Effect = Finished Grade Elevation - Profile Chord Elevation") << rptNewLine;
+   *pPara << _T("Profile Effect = Design Elevation - Profile Chord Elevation") << rptNewLine;
 
    rptRcTable* pTable2 = rptStyleManager::CreateDefaultTable(bHasElevAdj ? 11 : 10, _T("Haunch Details - Part 2"));
    *pPara << pTable2;
@@ -150,7 +145,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    (*pTable1)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable1)(0, col++) << _T("Station");
    (*pTable1)(0, col++) << COLHDR(_T("Offset"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*pTable1)(0, col++) << COLHDR(_T("Finished") << rptNewLine << _T("Grade") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*pTable1)(0, col++) << COLHDR(_T("Design") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable1)(0, col++) << COLHDR(_T("Profile") << rptNewLine << _T("Chord") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*pTable1)(0, col++) << COLHDR(_T("Profile") << rptNewLine << _T("Effect"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*pTable1)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSlab) << rptNewLine << _T("Thickness"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -160,8 +155,20 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       (*pTable1)(0, col++) << COLHDR(_T("Top Flange") << rptNewLine << _T("Shape Effect"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    }
 
-   Float64 days = pSpecEntry->GetCreepDuration2Max(); // haunch is always computined using max time for construction
-   days = ::ConvertFromSysUnits(days, unitMeasure::Day);
+   Float64 days;
+   if (bTimeStepAnalysis)
+   {
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
+      Float64 start_time = pIntervals->GetTime(0, pgsTypes::Start);
+      Float64 deck_casting = pIntervals->GetTime(castDeckIntervalIdx, pgsTypes::Start);
+      days = deck_casting - start_time + 1;
+   }
+   else
+   {
+      days = pSpecEntry->GetCreepDuration2Max(); // haunch is always computined using max time for construction
+      days = ::ConvertFromSysUnits(days, unitMeasure::Day);
+   }
    std::_tostringstream os;
    os << days;
    (*pTable1)(0, col++) << COLHDR(Sub2(_T("D"), os.str().c_str()), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -237,12 +244,12 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          {
             (*pTable2)(row2, col++) << comp.SetValue(slab_offset.ElevAdjustment);
          }
-         (*pTable2)(row2,col++) << comp.SetValue(slab_offset.RequiredSlabOffset);
+         (*pTable2)(row2,col++) << comp.SetValue(slab_offset.RequiredSlabOffsetRaw);
          (*pTable2)(row2,col++) << dim.SetValue(slab_offset.ElevTopGirder);
          (*pTable2)(row2,col++) << comp.SetValue(slab_offset.TopSlabToTopGirder );
 
          Float64 dHaunch = slab_offset.TopSlabToTopGirder - slab_offset.tSlab;
-         if ( dHaunch < -slab_offset_tolerance )
+         if ( dHaunch < slab_offset.Fillet )
          {
             (*pTable2)(row2,col++) << color(Red) << comp.SetValue( dHaunch ) << color(Black);
          }
@@ -261,7 +268,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
             dHaunchMin = slab_offset.TopSlabToTopGirder - slab_offset.tSlab - slab_offset.GirderOrientationEffect;
          }
 
-         if ( dHaunchMin < -slab_offset_tolerance )
+         if ( dHaunchMin < slab_offset.Fillet )
          {
             (*pTable2)(row2,col++) << color(Red) << comp.SetValue( dHaunchMin ) << color(Black);
          }
@@ -272,7 +279,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
 
          row2++;
       }
-      vRequiredSlabOffset[segIdx] = slab_offset_details.RequiredSlabOffset;
+      vRequiredSlabOffset[segIdx] = slab_offset_details.RequiredMaxSlabOffsetRounded;
       vMaxHaunchDiff[segIdx] = slab_offset_details.HaunchDiff;
    } // next segment
 
@@ -303,7 +310,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       // one slab offset for whole bridge
       Float64 slab_offset = pBridgeDesc->GetSlabOffset();
       *pPara << Super(_T("**")) << _T(" includes the effects of camber and based on Slab Offset of ") << comp.SetValue(slab_offset) << _T(".") << rptNewLine;
-      *pPara << Super(_T("***")) << _T(" top of girder to top of deck based on Slab Offset of ") << comp.SetValue(slab_offset) << _T(". (Profile Grade Elevation - Top Girder Elevation)") << rptNewLine;
+      *pPara << Super(_T("***")) << _T(" top of girder to top of deck based on Slab Offset of ") << comp.SetValue(slab_offset) << _T(". (Design Elevation - Top Girder Elevation)") << rptNewLine;
    }
    else
    {
@@ -321,13 +328,13 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(slab_offset[pgsTypes::metEnd]) << _T(".") << rptNewLine;
 
          *pPara << Super(_T("***")) << _T(" actual depth from top C.L. of girder to top of deck based on Slab Offset at the start of the ") << lpszType << _T(" of ") << comp.SetValue(slab_offset[pgsTypes::metStart]);
-         *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(slab_offset[pgsTypes::metEnd]) << _T(". (Profile Grade Elevation - Top Girder Elevation)") << rptNewLine;
+         *pPara << _T(" and a Slab Offset at the end of the girder of ") << comp.SetValue(slab_offset[pgsTypes::metEnd]) << _T(". (Design Elevation - Top Girder Elevation)") << rptNewLine;
       }
       else
       {
          // can't list all of the slab offsets at the ends of all the segments in the footnote.
          *pPara << Super(_T("**")) << _T(" includes the effects of camber and based on Slab Offset at the start and end of the ") << lpszType << _T(".") << rptNewLine;
-         *pPara << Super(_T("***")) << _T(" actual depth from top C.L. of girder to top of deck based on Slab Offset at the start and end of the ") << lpszType << _T(". (Profile Grade Elevation - Top Girder Elevation)") << rptNewLine;
+         *pPara << Super(_T("***")) << _T(" actual depth from top C.L. of girder to top of deck based on Slab Offset at the start and end of the ") << lpszType << _T(". (Design Elevation - Top Girder Elevation)") << rptNewLine;
       }
    }
 
@@ -339,11 +346,24 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
    *pChapter << pPara;
    *pPara << rptNewLine;
 
+   CString strRounding;
+   pgsTypes::SlabOffsetRoundingMethod Method;
+   Float64 Tolerance;
+   pSpecEntry->GetRequiredSlabOffsetRoundingParameters(&Method, &Tolerance);
+   if (pgsTypes::sormRoundNearest == Method)
+   {
+      strRounding = _T(", rounded to the nearest ");
+   }
+   else
+   {
+      strRounding = _T(", rounded upward to the nearest ");
+   }
+
    comp.ShowUnitTag(true);
    if (nSegments == 1)
    {
       *pPara << _T("Required Slab Offset at intersection of centerline bearings and centerline girder: ") << comp.SetValue(vRequiredSlabOffset.front());
-      *pPara << _T(" (") << comp.SetValue(RoundOff(vRequiredSlabOffset.front(), slab_offset_tolerance)) << _T(", rounded)") << rptNewLine;
+      *pPara << _T(" (") << comp.SetValue(vRequiredSlabOffset.front()) << strRounding << compdim.SetValue(Tolerance) << _T(")") << rptNewLine;
       *pPara << _T("Maximum Change in CL Haunch Depth along girder: ") << comp.SetValue(vMaxHaunchDiff.front()) << rptNewLine;
    }
    else
@@ -352,7 +372,7 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       {
          *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
          *pPara << _T("Required Slab Offset at intersection of centerline bearings and centerline segment: ") << comp.SetValue(vRequiredSlabOffset[segIdx]);
-         *pPara << _T(" (") << comp.SetValue(RoundOff(vRequiredSlabOffset[segIdx], slab_offset_tolerance)) << _T(", rounded)") << rptNewLine;
+         *pPara << _T(" (") << comp.SetValue(vRequiredSlabOffset[segIdx]) << strRounding << compdim.SetValue(Tolerance) << _T(")") << rptNewLine;
          *pPara << _T("Maximum Change in CL Haunch Depth along segment: ") << comp.SetValue(vMaxHaunchDiff[segIdx]) << rptNewLine << rptNewLine;
       }
    }

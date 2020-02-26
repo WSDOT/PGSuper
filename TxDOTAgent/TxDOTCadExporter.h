@@ -33,14 +33,13 @@
 #error "Single-threaded COM objects are not properly supported on Windows CE platform, such as the Windows Mobile platforms that do not include full DCOM support. Define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA to force ATL to support creating single-thread COM object's and allow use of it's single-threaded COM object implementations. The threading model in your rgs file was set to 'Free' as that is the only threading model supported in non DCOM Windows CE platforms."
 #endif
 
-
-
 // CTxDOTCadExporter
 
 class ATL_NO_VTABLE CTxDOTCadExporter :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CTxDOTCadExporter, &CLSID_TxDOTCadExporter>,
-	public IPGSDataExporter
+	public IPGSDataExporter,
+   public IPGSDocumentation
 {
 public:
 	CTxDOTCadExporter()
@@ -53,28 +52,37 @@ DECLARE_NOT_AGGREGATABLE(CTxDOTCadExporter)
 
 BEGIN_COM_MAP(CTxDOTCadExporter)
 	COM_INTERFACE_ENTRY(IPGSDataExporter)
+   COM_INTERFACE_ENTRY(IPGSDocumentation)
 END_COM_MAP()
 
 
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-	HRESULT FinalConstruct()
-	{
-		return S_OK;
-	}
+   HRESULT FinalConstruct();
+   void FinalRelease();
 
-	void FinalRelease()
-	{
-	}
-
-// IPGSDataImporter
+// IPGSDataExporter
 public:
    STDMETHOD(Init)(UINT nCmdID) override;
    STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText) const override;
    STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp) const override;
    STDMETHOD(GetCommandHintText)(BSTR*  bstrText) const override;
    STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
+
+// IPGSDocumentation
+public:
+   STDMETHOD(GetDocumentationSetName)(BSTR* pbstrName) const override;
+   STDMETHOD(LoadDocumentationMap)() override;
+   STDMETHOD(GetDocumentLocation)(UINT nHID,BSTR* pbstrURL) const override;
+
+private:
+   std::map<UINT,CString> m_HelpTopics;
+   CString GetDocumentationURL() const;
+
+   CString GetExcelTemplateFolderLocation() const;
+
+   CString m_strTemplateLocation;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(TxDOTCadExporter), CTxDOTCadExporter)

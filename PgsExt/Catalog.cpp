@@ -446,7 +446,7 @@ bool CCatalog::DoParse()
 
                try
                {
-                  PgzEntries.insert(strPgzEntry);
+               PgzEntries.insert(strPgzEntry);
                }
                catch (CCatalogParsingException& ex)
                {

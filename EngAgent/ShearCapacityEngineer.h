@@ -134,6 +134,7 @@ private:
 
    bool ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
    bool ComputeVs(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
+   bool ComputeVf(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
 
    void EvaluateStirrupRequirements(SHEARCAPACITYDETAILS* pscd) const;
 

@@ -69,7 +69,7 @@ private:
 public:
    // Data for Bearing input
    BearingInputData m_BearingInputData;
-   CBearingData2 m_Bearings[2]; // local cache of bearing data at start(0) and end(1) of span or girder
+   std::array<CBearingData2, 2> m_Bearings; // local cache of bearing data at start(0) and end(1) of span or girder (use pgsTypes::MemberEndType to access array)
 
 public:
    virtual BOOL OnInitDialog();

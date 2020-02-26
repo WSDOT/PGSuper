@@ -540,6 +540,30 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
             pStatusCenter->RemoveByID(id);
          }
       }
+      else if (pItem->m_IssueType == pgsBridgeDescriptionStatusItem::DeckCasting)
+      {
+         AFX_MANAGE_STATE(AfxGetStaticModuleState());
+         eafTypes::StatusItemDisplayReturn retval = EAFShowStatusMessage(pItem, m_Severity, FALSE, TRUE, AfxGetAppName(), NULL);
+
+         bool didEdit(false);
+         if (retval == eafTypes::eafsiEdit)
+         {
+            GET_IFACE(IEditByUI, pEdit);
+            didEdit = pEdit->EditCastDeckActivity();
+         }
+
+         if (retval == eafTypes::eafsiRemove || didEdit)
+         {
+            // assume that edit took care of status
+            StatusItemIDType id = pItem->GetID();
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            pStatusCenter->RemoveByID(id);
+         }
+      }
+      else
+      {
+         ATLASSERT(false); // is there a new issue type?
+      }
    }
 }
 

@@ -44,10 +44,10 @@ interface IInterfaceShearRequirements : IUnknown
 {
    //------------------------------------------------------------------------
    // returns the method for computing shear flow
-   virtual ShearFlowMethod GetShearFlowMethod() = 0;
+   virtual ShearFlowMethod GetShearFlowMethod() const = 0;
 
    //------------------------------------------------------------------------
    // returns the maximum longitudinal center-to-center spacing of
    // nonwelded interface shear connectors (LRFD 5.7.4.5 (pre2017: 5.8.4.2))
-   virtual Float64 GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi) = 0;
+   virtual Float64 GetMaxShearConnectorSpacing(const pgsPointOfInterest& poi) const = 0;
 };

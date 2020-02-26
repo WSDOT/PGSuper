@@ -173,7 +173,7 @@ public:
 class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public CEAFStatusItem
 {
 public:
-   typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions, Bearings } IssueType;
+   typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions, Bearings, DeckCasting } IssueType;
    pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,IssueType issueType,LPCTSTR strDescription);
    bool IsEqual(CEAFStatusItem* pOther);
 

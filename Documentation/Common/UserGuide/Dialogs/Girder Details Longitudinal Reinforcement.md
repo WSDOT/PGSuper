@@ -4,6 +4,8 @@ Define the longitudinal reinforcement layout.
 
 > NOTE: Longitudinal reinforcement may be used in moment capacity and shear capacity computations. However, the options to use it must be enabled in the current Project Criteria. Refer to the @ref tg_longitudinal_reinforcement section in the @ref technical_guide for a discussion on how longitudinal rebars are used in analysis.
 
+> NOTE: Be careful to ensure longitindal reinforcement, pretension strands, and post-tensioning ducts do not conflict. Geometric conflicts are not automatically detected.
+
 Item | Description
 -----|---------
 Reinforcement Material | Select the appropriate mild steel for longitudinal rebar

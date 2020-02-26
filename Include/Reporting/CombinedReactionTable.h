@@ -84,7 +84,7 @@ public:
    virtual void BuildLiveLoad(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+                      pgsTypes::AnalysisType analysisType, 
                       bool includeImpact, bool bDesign,bool bRating) const;
 
    //------------------------------------------------------------------------
@@ -108,10 +108,10 @@ protected:
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
                       bool bDesign=true,bool bRating=true) const;
 
-   virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+   virtual void BuildBearingLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,bool includeImpact,
                       IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
-                      pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+                      pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
 
    //------------------------------------------------------------------------

@@ -79,17 +79,34 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
       for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
       {
          const CPierData2* pPier = pParent->m_BridgeDesc.GetPier(pierIdx);
-         pgsTypes::BoundaryConditionType bc = pPier->GetBoundaryConditionType();
-         std::vector<pgsTypes::BoundaryConditionType> boundary_conditions = pParent->m_BridgeDesc.GetBoundaryConditionTypes(pierIdx);
-         auto found = std::find(std::cbegin(boundary_conditions), std::cend(boundary_conditions), bc);
-         if (found == std::cend(boundary_conditions))
+         if (pPier->IsBoundaryPier())
          {
-            CString strPier(pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abut") : _T("Pier"));
-            CString strMsg;
-            strMsg.Format(_T("The boundary conditions for %s %d are invalid.\r\nPress the Edit button in the grid to update the boundary conditions."), strPier, LABEL_PIER(pierIdx));
-            AfxMessageBox(strMsg, MB_ICONERROR | MB_OK);
-            pDX->PrepareCtrl(IDC_PIER_GRID);
-            pDX->Fail();
+            pgsTypes::BoundaryConditionType bc = pPier->GetBoundaryConditionType();
+            std::vector<pgsTypes::BoundaryConditionType> boundary_conditions = pParent->m_BridgeDesc.GetBoundaryConditionTypes(pierIdx);
+            auto found = std::find(std::cbegin(boundary_conditions), std::cend(boundary_conditions), bc);
+            if (found == std::cend(boundary_conditions))
+            {
+               CString strPier(pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abut") : _T("Pier"));
+               CString strMsg;
+               strMsg.Format(_T("The boundary conditions for %s %d are invalid.\r\nPress the Edit button in the grid to update the boundary conditions."), strPier, LABEL_PIER(pierIdx));
+               AfxMessageBox(strMsg, MB_ICONERROR | MB_OK);
+               pDX->PrepareCtrl(IDC_PIER_GRID);
+               pDX->Fail();
+            }
+         }
+         else
+         {
+            pgsTypes::PierSegmentConnectionType connection = pPier->GetSegmentConnectionType();
+            std::vector<pgsTypes::PierSegmentConnectionType> connections = pParent->m_BridgeDesc.GetPierSegmentConnectionTypes(pierIdx);
+            auto found = std::find(std::cbegin(connections), std::cend(connections), connection);
+            if (found == std::cend(connections))
+            {
+               CString strMsg;
+               strMsg.Format(_T("The connection type at Pier %d is invalid.\r\nPress the Edit button in the grid to update the connection type."), LABEL_PIER(pierIdx));
+               AfxMessageBox(strMsg, MB_ICONERROR | MB_OK);
+               pDX->PrepareCtrl(IDC_PIER_GRID);
+               pDX->Fail();
+            }
          }
       }
    }
@@ -114,6 +131,16 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingPage message handlers
+
+void CBridgeDescFramingPage::EnableInsertSpanBtn(BOOL bEnable)
+{
+   GetDlgItem(IDC_ADD_PIER)->EnableWindow(bEnable);
+}
+
+void CBridgeDescFramingPage::EnableInsertTempSupportBtn(BOOL bEnable)
+{
+   GetDlgItem(IDC_ADD_TEMP_SUPPORT)->EnableWindow(bEnable);
+}
 
 void CBridgeDescFramingPage::EnableRemovePierBtn(BOOL bEnable)
 {

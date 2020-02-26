@@ -320,21 +320,21 @@ HRESULT CSpanKey::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    return S_OK;
 }
 
-CTendonKey::CTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx) :
+CGirderTendonKey::CGirderTendonKey(const CGirderKey& girderKey,DuctIndexType ductIdx) :
 girderKey(girderKey),ductIdx(ductIdx),girderID(INVALID_ID)
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a specific girder key
    ATLASSERT(ductIdx != INVALID_INDEX);
 }
 
-CTendonKey::CTendonKey(GirderIDType girderID,DuctIndexType ductIdx) :
+CGirderTendonKey::CGirderTendonKey(GirderIDType girderID,DuctIndexType ductIdx) :
 ductIdx(ductIdx),girderID(girderID)
 {
    ATLASSERT(girderID != INVALID_ID);
    ATLASSERT(ductIdx != INVALID_INDEX);
 }
 
-CTendonKey::CTendonKey(const CTendonKey& other) :
+CGirderTendonKey::CGirderTendonKey(const CGirderTendonKey& other) :
 girderKey(other.girderKey),ductIdx(other.ductIdx),girderID(other.girderID)
 {
 #if defined _DEBUG
@@ -347,7 +347,7 @@ girderKey(other.girderKey),ductIdx(other.ductIdx),girderID(other.girderID)
    ATLASSERT(ductIdx != INVALID_INDEX);
 }
 
-CTendonKey& CTendonKey::operator=(const CTendonKey& other)
+CGirderTendonKey& CGirderTendonKey::operator=(const CGirderTendonKey& other)
 {
    girderID  = other.girderID;
    girderKey = other.girderKey;
@@ -356,7 +356,7 @@ CTendonKey& CTendonKey::operator=(const CTendonKey& other)
    return *this;
 }
 
-bool CTendonKey::operator==(const CTendonKey& other) const
+bool CGirderTendonKey::operator==(const CGirderTendonKey& other) const
 {
    if ( girderID == INVALID_ID )
    {
@@ -368,7 +368,7 @@ bool CTendonKey::operator==(const CTendonKey& other) const
    }
 }
 
-bool CTendonKey::operator<(const CTendonKey& other) const
+bool CGirderTendonKey::operator<(const CGirderTendonKey& other) const
 {
    if ( girderKey.groupIndex != INVALID_INDEX && girderKey.girderIndex != INVALID_INDEX )
    {
@@ -393,6 +393,89 @@ bool CTendonKey::operator<(const CTendonKey& other) const
       }
 
       if ( girderID == other.girderID && ductIdx < other.ductIdx )
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
+
+
+CSegmentTendonKey::CSegmentTendonKey(const CSegmentKey& segmentKey, DuctIndexType ductIdx) :
+   segmentKey(segmentKey), ductIdx(ductIdx), segmentID(INVALID_ID)
+{
+   ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
+   ATLASSERT(ductIdx != INVALID_INDEX);
+}
+
+CSegmentTendonKey::CSegmentTendonKey(SegmentIDType segmentID, DuctIndexType ductIdx) :
+   ductIdx(ductIdx), segmentID(segmentID)
+{
+   ATLASSERT(segmentID != INVALID_ID);
+   ATLASSERT(ductIdx != INVALID_INDEX);
+}
+
+CSegmentTendonKey::CSegmentTendonKey(const CSegmentTendonKey& other) :
+   segmentKey(other.segmentKey), ductIdx(other.ductIdx), segmentID(other.segmentID)
+{
+#if defined _DEBUG
+   if (segmentID == INVALID_ID)
+   {
+      ASSERT_SEGMENT_KEY(segmentKey); // must be a specific segment key
+   }
+#endif
+
+   ATLASSERT(ductIdx != INVALID_INDEX);
+}
+
+CSegmentTendonKey& CSegmentTendonKey::operator=(const CSegmentTendonKey& other)
+{
+   segmentID = other.segmentID;
+   segmentKey = other.segmentKey;
+   ductIdx = other.ductIdx;
+
+   return *this;
+}
+
+bool CSegmentTendonKey::operator==(const CSegmentTendonKey& other) const
+{
+   if (segmentID == INVALID_ID)
+   {
+      return (segmentKey == other.segmentKey && ductIdx == other.ductIdx) ? true : false;
+   }
+   else
+   {
+      return (segmentID == other.segmentID && ductIdx == other.ductIdx) ? true : false;
+   }
+}
+
+bool CSegmentTendonKey::operator<(const CSegmentTendonKey& other) const
+{
+   if (segmentKey.groupIndex != INVALID_INDEX && segmentKey.girderIndex != INVALID_INDEX && segmentKey.segmentIndex != INVALID_INDEX)
+   {
+      // do this based on segmentKey if it is a valid segment key
+      // this is the prefered even if segmentID is a valid ID
+      if (segmentKey < other.segmentKey)
+      {
+         return true;
+      }
+
+      if (segmentKey.IsEqual(other.segmentKey) && ductIdx < other.ductIdx)
+      {
+         return true;
+      }
+   }
+   else
+   {
+      ATLASSERT(segmentID != INVALID_ID);
+      if (segmentID < other.segmentID)
+      {
+         return true;
+      }
+
+      if (segmentID == other.segmentID && ductIdx < other.ductIdx)
       {
          return true;
       }

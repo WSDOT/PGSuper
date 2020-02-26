@@ -60,6 +60,7 @@
 class CBridgeDescription2;
 class CLoadManager;
 class CClosureJointData;
+class CSplicedGirderData;
 
 /*****************************************************************************
 CLASS 
@@ -180,7 +181,7 @@ public:
    bool IsTendonStressed(GirderIDType girderID,DuctIndexType ductIdx) const;
 
    void SetPierErectionEventByIndex(PierIDType pierID,EventIndexType eventIdx);
-   void SetPierErectionEventByID(PierIDType pierID,IDType ID);
+   void SetPierErectionEventByID(PierIDType pierID,EventIDType ID);
    EventIndexType GetPierErectionEventIndex(PierIDType pierID) const;
    EventIDType GetPierErectionEventID(PierIDType pierID) const;
 
@@ -274,6 +275,11 @@ protected:
    void MakeAssignment(const CTimelineManager& rOther);
    void Sort();
 
+   void ClearCaches();
+
+   int ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexType ductIdx) const;
+
+
    std::vector<CTimelineEvent*> m_TimelineEvents; // owns the timeline events... will be deleted in the destructor
    const CBridgeDescription2* m_pBridgeDesc;
    const CLoadManager* m_pLoadManager;
@@ -282,6 +288,7 @@ protected:
 
    friend CTimelineEvent;
    friend CBridgeDescription2;
+   friend CSegmentActivityBase;
 
 #if defined _DEBUG
    void AssertValid() const;

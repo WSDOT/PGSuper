@@ -484,9 +484,7 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="GirderScheduleChapterBuilder.cpp" />
-    <ClCompile Include="InputSummaryChapter.cpp" />
     <ClCompile Include="LoadRatingSummaryChapterBuilder.cpp" />
-    <ClCompile Include="OutputSummaryChapter.cpp" />
     <ClCompile Include="PGSpliceComponentInfo.cpp" />
     <ClCompile Include="PGSuperComponentInfo.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -511,9 +509,7 @@
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="GirderScheduleChapterBuilder.h" />
-    <ClInclude Include="InputSummaryChapter.h" />
     <ClInclude Include="LoadRatingSummaryChapterBuilder.h" />
-    <ClInclude Include="OutputSummaryChapter.h" />
     <ClInclude Include="PGSpliceComponentInfo.h" />
     <ClInclude Include="PGSuperComponentInfo.h" />
     <ClInclude Include="Resource.h" />

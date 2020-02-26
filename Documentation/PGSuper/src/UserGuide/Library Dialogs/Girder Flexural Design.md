@@ -14,13 +14,19 @@ Maximum debonded strands per section | These values limit the number of strands 
 
 Criteria for Debond Distances
 -----------------------------
-These parameters guide the automated designer in selecting the location of sections where debonding begins and terminates along teh length of the precast element.
+These parameters relate to the location of sections where debonding begins and terminates along the length of precast elements.
 
 Item | Description
 ------|------------
+<<<<<<< HEAD
 Maximum Debond Length | The maximum distance from the end of a precast element to any given debonded section cannot exceed lesser of: <ul><li>half the length of the precast element minus the strand development length computed per LRFD 5.9.4.3.3 (*pre-2017: 5.11.4.3*)</li><li>a specified percentage of the overall length of the precast element</li><li>a specified length</li></ul>
-Minimum Debond Length | The minimum distance between adjacent debond sections. Note that this value should always be less than the prestress transfer length for the currently selected strand material, otherwise the debond design algorithm may create designs that do not pass the specification check.
+Minimum distance between debond sections | The minimum distance between adjacent debond sections.
 Default Debond Length | This value is used for design, and as an initial value in the debonding grid. This value cannot be less than the minimum length specified above.
+=======
+Maximum Debond Length | The maximum distance from the end of a precast element to the farthest debonded section (at mid-length) cannot exceed lesser of: <ul><li>half the length of the precast element minus the strand development length computed per LRFD 5.9.4.3.3 (*pre-2017: 5.11.4.3*)</li><li>a specified percentage of the overall length of the precast element</li><li>a specified length</li></ul>. This value is used by the automated design algorithm only
+Minimum distance between debond sections | The minimum distance between adjacent debond sections. As a rule of thumb, this length should typically be longer than the prestress transfer length. This criteria is evaluated by the spec checker and will result in a spec check fail if violated.
+Default Debond Length | This value is used for design, and as an initial value in the debonding grid. The value cannot be less than the minimum length specified above.
+>>>>>>> version-5.0
 
 Prestressing Optimization Strategies for the Automated Girder Designer
 -----------------------------------------------------------------------

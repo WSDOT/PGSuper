@@ -140,6 +140,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          switch( concType )
          {
          case pgsTypes::Normal:
+         case pgsTypes::UHPC:
             strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_NWC_US.png") : _T("AvOverSMin_NWC_SI.png"));
             break;
 
@@ -206,6 +207,7 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          switch( concType )
          {
          case pgsTypes::Normal:
+         case pgsTypes::UHPC:
             strImage = (IS_US_UNITS(pDisplayUnits) ? _T("AvOverSMin_NWC_US.png") : _T("AvOverSMin_NWC_SI.png"));
             break;
 
@@ -294,12 +296,6 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
          const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
 
          const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
-
-         // Don't report values in end regions
-         if (pArtifact->IsInCriticalSectionZone())
-         {
-            continue;
-         }
 
          (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          (*table)(row,1) << dim.SetValue(pArtifact->GetBv());
@@ -436,12 +432,6 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
          ATLASSERT(poi.GetSegmentKey() == segmentKey);
 
          const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
-
-         // Don't report values between critical sections
-         if (pArtifact->IsInCriticalSectionZone())
-         {
-            continue;
-         }
 
          (*table)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
          if ( bAfter1999 )

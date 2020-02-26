@@ -255,8 +255,8 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,c
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE  );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // put section breaks just on either side of the end blocks/void interface
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -272,21 +272,19 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,c
    {
       pgsPointOfInterest poiLeftFace1(segmentKey, endBlockLength, POI_SECTCHANGE_LEFTFACE);
       pgsPointOfInterest poiRightFace1(segmentKey, endBlockLength, POI_SECTCHANGE_RIGHTFACE);
-      poiLeftFace1.CanMerge(false);
-      poiRightFace1.CanMerge(false);
       PoiIDType poiID = pPoiMgr->AddPointOfInterest( poiLeftFace1 );
+      ATLASSERT(poiID != INVALID_ID);
       poiLeftFace1 = pPoiMgr->GetPointOfInterest(poiID);
       poiRightFace1.SetDistFromStart(poiLeftFace1.GetDistFromStart(),true);
-      pPoiMgr->AddPointOfInterest( poiRightFace1 );
+      VERIFY(pPoiMgr->AddPointOfInterest(poiRightFace1) != INVALID_ID);
 
       pgsPointOfInterest poiRightFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_RIGHTFACE);
       pgsPointOfInterest poiLeftFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_LEFTFACE);
-      poiRightFace2.CanMerge(false);
-      poiLeftFace2.CanMerge(false);
       poiID = pPoiMgr->AddPointOfInterest(poiRightFace2);
+      ATLASSERT(poiID != INVALID_ID);
       poiRightFace2 = pPoiMgr->GetPointOfInterest(poiID);
       poiLeftFace2.SetDistFromStart(poiRightFace2.GetDistFromStart(),true);
-      pPoiMgr->AddPointOfInterest(poiLeftFace2);
+      VERIFY(pPoiMgr->AddPointOfInterest(poiLeftFace2) != INVALID_ID);
    }
 }
 
@@ -803,41 +801,6 @@ bool CVoidedSlab2Factory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CVoidedSlab2Factory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 D1 = GetDimension(dimensions,_T("D1"));
-   Float64 D2 = GetDimension(dimensions,_T("D2"));
-   Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
-   long    N = (long)GetDimension(dimensions,_T("Number_of_Voids"));
-   long nIntVoids, nExtVoids;
-   if ( N == 0 )
-   {
-      nIntVoids = 0;
-      nExtVoids = 0;
-   }
-   else if ( N == 1 )
-   {
-      nExtVoids = 1;
-      nIntVoids = 0;
-   }
-   else
-   {
-      nExtVoids = 2;
-      nIntVoids = N - nExtVoids;
-   }
-
-   Float64 void_surface_area = (Lg-2*endBlockLength)*(nExtVoids*M_PI*D1 + nIntVoids*M_PI*D2);
-   return void_surface_area;
-}
-
 std::_tstring CVoidedSlab2Factory::GetImage() const
 {
    return std::_tstring(_T("VoidedSlab2.jpg"));
@@ -1111,9 +1074,25 @@ bool CVoidedSlab2Factory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dim
    return false;
 }
 
+pgsTypes::WorkPointLocations CVoidedSlab2Factory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+   wpls.push_back(pgsTypes::wplBottomGirder);
+
+   return wpls;
+}
+
+bool CVoidedSlab2Factory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(), wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CVoidedSlab2Factory::GetSupportedGirderOrientation() const
 {
-   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
@@ -1189,6 +1168,18 @@ Float64 CVoidedSlab2Factory::GetBeamHeight(const IBeamFactory::Dimensions& dimen
 Float64 CVoidedSlab2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("W"));
+}
+
+void CVoidedSlab2Factory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W = GetDimension(dimensions,_T("W"));
+   Float64 C1 = GetDimension(dimensions,_T("C1"));
+
+   Float64 top = W - 2*C1;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CVoidedSlab2Factory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const

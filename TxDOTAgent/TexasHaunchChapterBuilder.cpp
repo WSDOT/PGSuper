@@ -107,6 +107,17 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
       return nullptr;
    }
 
+   // Do not generate output if haunch check is disabled
+   GET_IFACE2(pBroker,ILibrary, pLib );
+   GET_IFACE2(pBroker,ISpecification, pSpec );
+   std::_tstring spec_name = pSpec->GetSpecification();
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
+
+   if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+   {
+      return nullptr;
+   }
+
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -270,7 +281,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
    IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
 
    // PINTA here, but we need to predetermine if A's and deflections are non symmetrical so we can add extra rows to our table

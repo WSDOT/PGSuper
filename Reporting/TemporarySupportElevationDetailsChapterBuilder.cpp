@@ -58,6 +58,14 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SupportIndexType nTS = pBridge->GetTemporarySupportCount();
+   if (nTS == 0)
+   {
+      *pPara << _T("No temporary supports modeled") << rptNewLine;
+   }
+
+
    *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("TemporarySupportElevation.png")) << rptNewLine;
 
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
@@ -65,7 +73,6 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
    INIT_UV_PROTOTYPE(rptLengthUnitValue, elev, pDisplayUnits->GetSpanLengthUnit(), false);
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
 
    bool bHasOverlay = false;
    if (pBridge->HasOverlay() && !pBridge->IsFutureOverlay())
@@ -74,8 +81,6 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
    }
 
    bool bHasElevationAdjustment = pBridge->HasTemporarySupportElevationAdjustments();
-
-   SupportIndexType nTS = pBridge->GetTemporarySupportCount();
 
    GET_IFACE2(pBroker, ITempSupport, pTempSupport);
 

@@ -80,6 +80,11 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
    ON_BN_CLICKED(IDC_CHECK_BOTTOM_FLANGE_CLEARANCE, &CSpecDesignPage::OnBnClickedCheckBottomFlangeClearance)
    ON_BN_CLICKED(IDC_CHECK_INCLINDED_GIRDER, &CSpecDesignPage::OnBnClickedCheckInclindedGirder)
    ON_BN_CLICKED(IDC_LL_DEFLECTION, &CSpecDesignPage::OnBnClickedLlDeflection)
+   ON_BN_CLICKED(IDC_CHECK_HANDLING_WEIGHT, &CSpecDesignPage::OnBnClickedCheckHandlingWeight)
+   ON_BN_CLICKED(IDC_FC1, &CSpecDesignPage::OnFcTypeChanged)
+   ON_BN_CLICKED(IDC_FC2, &CSpecDesignPage::OnFcTypeChanged)
+   ON_BN_CLICKED(IDC_DESIGN_A, &CSpecDesignPage::OnDesignA)
+   ON_BN_CLICKED(IDC_USE_90_DAY_STRENGTH, &CSpecDesignPage::OnBnClicked90DayStrength)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -104,6 +109,10 @@ BOOL CSpecDesignPage::OnInitDialog()
       VERIFY(sl07.LoadString(IDS_SLOPE_O7_US));
    }
 
+   CComboBox* pcbHDFT = (CComboBox*)GetDlgItem(IDC_HOLD_DOWN_FORCE_TYPE);
+   pcbHDFT->AddString(_T("Total Hold Down Force"));
+   pcbHDFT->AddString(_T("Hold Down Force per Strand"));
+
    CPropertyPage::OnInitDialog();
 
    OnCheckA();
@@ -117,6 +126,12 @@ BOOL CSpecDesignPage::OnInitDialog()
    OnBnClickedIsSupportLessThan();
 
    OnBnClickedCheckBottomFlangeClearance();
+
+   OnBnClickedLlDeflection();
+
+   OnBnClickedCheckHandlingWeight();
+
+   OnBnClicked90DayStrength();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -152,7 +167,16 @@ void CSpecDesignPage::OnCheckA()
    int list[]={-1};
 
    CheckDesignCtrl(IDC_CHECK_A, IDC_DESIGN_A, list, this);
+
+   OnDesignA();
 }
+
+void CSpecDesignPage::OnDesignA()
+{
+   int list[] = { IDC_A_ROUNDING_EDIT, IDC_A_ROUNDING_UNIT, -1 };
+   CheckDesignCtrl(IDC_DESIGN_A, IDC_A_ROUNDING_CB, list, this);
+}
+
 
 void CSpecDesignPage::OnCheckHauling() 
 {
@@ -166,7 +190,7 @@ void CSpecDesignPage::OnCheckHauling()
 
 void CSpecDesignPage::OnCheckHd() 
 {
-   int list[]={IDC_STATIC_HD,IDC_HOLD_DOWN_FORCE,IDC_HOLD_DOWN_FORCE_UNITS,-1};
+   int list[]={ IDC_HOLD_DOWN_FORCE_TYPE,IDC_HOLD_DOWN_FORCE,IDC_HOLD_DOWN_FORCE_UNITS,IDC_FRICTION_LABEL,IDC_FRICTION,IDC_FRICTION_UNIT,-1};
 
    CheckDesignCtrl(IDC_CHECK_HD, IDC_DESIGN_HD, list, this);
 }
@@ -232,18 +256,11 @@ void CSpecDesignPage::OnBnClickedCheckInclindedGirder()
    BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_INCLINDED_GIRDER);
    GetDlgItem(IDC_INCLINDED_GIRDER_FS_LABEL)->EnableWindow(bEnable);
    GetDlgItem(IDC_INCLINDED_GIRDER_FS)->EnableWindow(bEnable);
-   GetDlgItem(IDC_INCLINDED_GIRDER_BRGPADDEDUCT_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_INCLINDED_GIRDER_BRGPADDEDUCT)->EnableWindow(bEnable);
-   GetDlgItem(IDC_INCLINDED_GIRDER_BRGPADDEDUCT_UNIT)->EnableWindow(bEnable);
 }
 
 BOOL CSpecDesignPage::OnSetActive()
 {
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   int show = ( pDad->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_FC_GROUP)->ShowWindow(show);
-   GetDlgItem(IDC_FC1)->ShowWindow(show);
-   GetDlgItem(IDC_FC2)->ShowWindow(show);
 
    // deal with 2017 crosswalk
    CWnd* pWnd = GetDlgItem(IDC_SSPLITTING);
@@ -253,7 +270,12 @@ BOOL CSpecDesignPage::OnSetActive()
    pWnd->SetWindowText(CString(_T("Confinement Reinforcement (")) + pDad->LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) + _T(")"));
 
    pWnd = GetDlgItem(IDC_FC1);
-   pWnd->SetWindowText(CString(_T("Use f'ci and f'c at the time of loading (")) + pDad->LrfdCw8th(_T("5.14.1.3.2d and 5.14.1.3.3"),_T("5.12.3.4.2d and 5.12.3.4.3")) + _T(")"));
+   pWnd->SetWindowText(CString(_T("Use fc at the time of loading (")) + pDad->LrfdCw8th(_T("5.14.1.3.2d and 5.14.1.3.3"),_T("5.12.3.4.2d and 5.12.3.4.3")) + _T(")"));
+   pWnd->EnableWindow(pDad->m_Entry.GetLossMethod() == pgsTypes::TIME_STEP ? TRUE : FALSE); // only an option for time-step analysis
+
+   pWnd = GetDlgItem(IDC_90_DAY_STRENGTH_LABEL);
+   pWnd->SetWindowText(CString(_T("% of f'c for stress combinations after 90 days for slow curing concretes (")) + pDad->LrfdCw8th(_T("5.14.1.2.5"), _T("5.12.3.2.5")) + _T(")"));
+
 
    return CPropertyPage::OnSetActive();
 }
@@ -263,4 +285,27 @@ void CSpecDesignPage::OnBnClickedLlDeflection()
    BOOL bEnable = IsDlgButtonChecked(IDC_LL_DEFLECTION);
    GetDlgItem(IDC_LL_DEF_STATIC)->EnableWindow(bEnable);
    GetDlgItem(IDC_DEFLECTION_LIMIT)->EnableWindow(bEnable);
+}
+
+void CSpecDesignPage::OnBnClickedCheckHandlingWeight()
+{
+   BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_HANDLING_WEIGHT);
+   GetDlgItem(IDC_HANDLING_WEIGHT)->EnableWindow(bEnable);
+   GetDlgItem(IDC_HANDLING_WEIGHT_UNIT)->EnableWindow(bEnable);
+}
+
+void CSpecDesignPage::OnFcTypeChanged()
+{
+   OnBnClicked90DayStrength();
+}
+
+void CSpecDesignPage::OnBnClicked90DayStrength()
+{
+   BOOL bCorrectFcSetting = IsDlgButtonChecked(IDC_FC2);
+   BOOL bIsUsed = IsDlgButtonChecked(IDC_USE_90_DAY_STRENGTH);
+   BOOL bEnable = (bIsUsed && bCorrectFcSetting);
+
+   GetDlgItem(IDC_USE_90_DAY_STRENGTH)->EnableWindow(bCorrectFcSetting);
+   GetDlgItem(IDC_90_DAY_STRENGTH_FACTOR)->EnableWindow(bEnable);
+   GetDlgItem(IDC_90_DAY_STRENGTH_LABEL)->EnableWindow(bEnable);
 }

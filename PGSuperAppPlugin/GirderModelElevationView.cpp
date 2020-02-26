@@ -435,6 +435,12 @@ void CGirderModelElevationView::UpdateDisplayObjects()
    // clean out all the display objects
    dispMgr->ClearDisplayObjects();
 
+   dispMgr->EnableLBtnSelect(TRUE);
+   dispMgr->EnableRBtnSelect(TRUE);
+   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+
+
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
@@ -690,7 +696,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
 
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
-   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetStartClosure() : pSegment->GetEndClosure());
+   const CClosureJointData* pClosure = (endType == pgsTypes::metStart ? pSegment->GetClosureJoint(pgsTypes::metStart) : pSegment->GetClosureJoint(pgsTypes::metEnd));
    const CPierData2* pPier = nullptr;
    const CTemporarySupportData* pTS = nullptr;
 
@@ -1384,6 +1390,17 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
             for (int i = 0; i < 3; i++)
             {
                pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+               if (strandType == pgsTypes::Temporary)
+               {
+                  IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+                  IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+                  if ((intervalIdx < tsInstallationIntervalIdx && tsInstallationIntervalIdx!=INVALID_INDEX) || (tsRemovalIntervalIdx <= intervalIdx && tsRemovalIntervalIdx != INVALID_INDEX))
+                  {
+                     // if the current interval is before temporary strand installation or if it is after temporary strand removal
+                     // don't draw the temporary strands
+                     continue;
+                  }
+               }
                StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, strandType);
                for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
                {
@@ -1489,6 +1506,8 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
 
    Float64 group_offset = 0;
 
+   IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
+
    for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
@@ -1502,8 +1521,6 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(thisGirderKey,segIdx);
-
-         IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
          Float64 segment_length        = pBridge->GetSegmentLength(segmentKey);
          Float64 start_brg_offset      = pBridge->GetSegmentStartBearingOffset(segmentKey);
@@ -1521,8 +1538,16 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
          EventIndexType erectSegmentEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(segID);
          if ( erectSegmentEventIdx <= eventIdx )
          {
+            bool bIncludeTempStrands = true;
+            IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+            IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+            if (tsInstallationIntervalIdx == INVALID_INDEX || tsRemovalIntervalIdx == INVALID_INDEX || intervalIdx < tsInstallationIntervalIdx || tsRemovalIntervalIdx <= intervalIdx)
+            {
+               bIncludeTempStrands = false;
+            }
+
             CComPtr<IPoint2dCollection> profilePoints;
-            pStrandGeometry->GetStrandCGProfile(segmentKey, true /*include temp strands*/, &profilePoints);
+            pStrandGeometry->GetStrandCGProfile(segmentKey, bIncludeTempStrands, &profilePoints);
 
             profilePoints->Offset(group_offset + running_segment_length - start_offset, 0);
 
@@ -1672,10 +1697,11 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2_NOCHECK(pBroker,ITendonGeometry,pTendonGeometry); // not always used (this is because of the continue statement below)
-   GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder); // not always used (this is because of the continue statement below)
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2_NOCHECK(pBroker, IGirderTendonGeometry, pGirderTendonGeometry); // not always used (this is because of the continue statement below)
+   GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry); // not always used (this is because of the continue statement below)
+   GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder); // not always used (this is because of the continue statement below)
 
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
@@ -1707,7 +1733,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
 
       WebIndexType nWebs = pGirder->GetWebCount(thisGirderKey);
 
-      DuctIndexType nDucts = pTendonGeometry->GetDuctCount(thisGirderKey);
+      DuctIndexType nDucts = pGirderTendonGeometry->GetDuctCount(thisGirderKey);
       for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
       {
          bool bIsTendonInstalled = true;
@@ -1719,7 +1745,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
          }
          
          CComPtr<IPoint2dCollection> ductPoints;
-         pTendonGeometry->GetDuctCenterline(thisGirderKey,ductIdx,&ductPoints); // this is in Girder Coordinates (measured from face of girder)
+         pGirderTendonGeometry->GetDuctCenterline(thisGirderKey,ductIdx,&ductPoints); // this is in Girder Coordinates (measured from face of girder)
          
          // The view is working in Girder Path Coordinates. Need to convert the X values from Girder to Girder Path Cooordinates
 
@@ -1744,20 +1770,59 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
 
             if ( bIsTendonInstalled )
             {
-               BuildLine(pDL, from_point, to_point, TENDON_LINE_COLOR);
+               BuildLine(pDL, from_point, to_point, GIRDER_TENDON_LINE_COLOR);
             }
             else
             {
-               BuildDashLine(pDL, from_point, to_point, DUCT_LINE_COLOR1, DUCT_LINE_COLOR2);
+               BuildDashLine(pDL, from_point, to_point, GIRDER_DUCT_LINE_COLOR1, GIRDER_DUCT_LINE_COLOR2);
             }
 
             from_point = to_point;
-         }
-      }
+         } // next point
+      } // next duct
+
+      SegmentIndexType nSegments = pThisGirder->GetSegmentCount();
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         CSegmentKey segmentKey(thisGirderKey, segIdx);
+         DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+         {
+            CComPtr<IPoint2dCollection> ductPoints;
+            pSegmentTendonGeometry->GetDuctCenterline(segmentKey, ductIdx, &ductPoints); // this is in Segment Coordinates (measured from face of segment)
+
+            // The view is working in Girder Path Coordinates. Need to convert the X values from Segment to Girder Path Cooordinates
+            CollectionIndexType nPoints;
+            ductPoints->get_Count(&nPoints);
+            CComPtr<IPoint2d> from_point;
+            ductPoints->get_Item(0, &from_point);
+            Float64 X, Y;
+            from_point->Location(&X, &Y);
+            X = pPoi->ConvertSegmentCoordinateToGirderCoordinate(segmentKey, X);
+            X = pPoi->ConvertGirderCoordinateToGirderPathCoordinate(thisGirderKey, X);
+            X += group_offset;
+            from_point->Move(X, Y);
+
+            for (CollectionIndexType pntIdx = 1; pntIdx < nPoints; pntIdx++)
+            {
+               CComPtr<IPoint2d> to_point;
+               ductPoints->get_Item(pntIdx, &to_point);
+               to_point->Location(&X, &Y);
+               X = pPoi->ConvertSegmentCoordinateToGirderCoordinate(segmentKey, X);
+               X = pPoi->ConvertGirderCoordinateToGirderPathCoordinate(thisGirderKey, X);
+               X += group_offset;
+               to_point->Move(X, Y);
+
+               BuildLine(pDL, from_point, to_point, SEGMENT_TENDON_LINE_COLOR);
+
+               from_point = to_point;
+            } // next point
+         } // next duct
+      } // next segment
 
       Float64 girder_length = pBridge->GetGirderLayoutLength(thisGirderKey);
       group_offset += girder_length;
-   }
+   } // next group
 }
 
 void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
@@ -2445,6 +2510,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(thisGirderKey,segIdx);
+
          CComPtr<IShape> shape;
          pIGirder->GetSegmentProfile(segmentKey, false, &shape);
 
@@ -2498,6 +2564,8 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
          CSegmentKey segmentKey(thisGirderKey,segIdx);
+
+         const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
 
          Float64 segment_length = pBridge->GetSegmentLength(segmentKey);       // end to end length of segment
 
@@ -2602,7 +2670,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
          Float64 lft_harp, rgt_harp;
          pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
 
-         if ( 0 < Nh )
+         if ( 0 < Nh && pSegment->Strands.GetAdjustableStrandType() != pgsTypes::asStraight)
          {
             // harp locations from end of segment (along top)
             PoiList vPoi;

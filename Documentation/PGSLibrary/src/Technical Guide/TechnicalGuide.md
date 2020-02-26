@@ -18,15 +18,16 @@ Topics
 * @subpage tg_flexural_resistance_factor
 * @subpage tg_girder_spacing
 * @subpage tg_interface_shear
-* @subpage tg_pjack
 * @subpage tg_lightweight_concrete
 * @subpage tg_lldf
 * @subpage tg_live_load
 * @subpage tg_longitudinal_reinforcement
+* @subpage tg_pjack
 * @subpage tg_moment_capacity
 * @subpage tg_prestress_losses
 * @subpage tg_prestress_losses_txdot
 * @subpage tg_prestress_losses_time_step
+* @subpage tg_principal_tensile_stress
 * @subpage tg_section_properties
 * @subpage tg_shear_capacity
 * @subpage tg_simple_spans_made_continuous
@@ -35,3 +36,4 @@ Topics
 * @subpage tg_stability
 * @subpage tg_structural_analysis_models
 * @subpage tg_time_dependent_material_models
+* @subpage tg_uhpc

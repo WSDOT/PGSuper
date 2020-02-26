@@ -76,7 +76,6 @@ public:
    virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) const override;
    virtual bool IsPrismatic(const CSegmentKey& segmentKey) const override;
    virtual bool IsSymmetric(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const override;
    virtual std::_tstring GetImage() const override;
    virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const override;
    virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const override;
@@ -98,6 +97,8 @@ public:
    virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings() const override;
    virtual bool IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const override;
    virtual bool ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const override;
+   virtual pgsTypes::WorkPointLocations GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const override;
+   virtual bool IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation workPointType) const override;
    virtual std::vector<pgsTypes::GirderOrientationType> GetSupportedGirderOrientation() const override;
    virtual bool IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const override;
    virtual pgsTypes::GirderOrientationType ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const override;
@@ -110,6 +111,7 @@ public:
    virtual WebIndexType GetWebCount(const IBeamFactory::Dimensions& dimensions) const override;
    virtual Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const override;
    virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const override;
+   virtual void GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const override;
    virtual bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const override;
    virtual void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const override;
    virtual bool HasLongitudinalJoints() const override;

@@ -158,11 +158,6 @@ void CEditLoadsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 {
    if (!m_IsInitialUpdate)
    {
-      if (lHint == HINT_UNITSCHANGED || lHint == HINT_BRIDGECHANGED)
-      {
-         InsertData();
-      }
-
       if ( lHint == HINT_GIRDERCHANGED )
       {
          CGirderHint* pGirderHint = (CGirderHint*)pHint;
@@ -171,6 +166,10 @@ void CEditLoadsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
             InsertData();
             Sort(m_SortColIdx,false);
          }
+      }
+      else
+      {
+         InsertData();
       }
 
    }

@@ -68,9 +68,6 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
 
@@ -92,35 +89,29 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
       GET_IFACE2(pBroker,IBridge,pBridge);
-      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-      GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-      GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx );
-      for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey, &vGirderKeys);
+      for(const auto& thisGirderKey : vGirderKeys)
       {
-         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-         GirderIndexType firstGdrIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
-         GirderIndexType lastGdrIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGdrIdx);
-         for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-            {
-               CSegmentKey segmentKey(girderKey,segIdx);
+            CSegmentKey segmentKey(thisGirderKey,segIdx);
          
-               if ( 1 < nSegments )
-               {
-                  rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle() );
-                  *pChapter << pTitle;
-                  *pTitle << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
+            if ( 1 < nSegments )
+            {
+               rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle() );
+               *pChapter << pTitle;
+               *pTitle << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
 
-                  rptParagraph* p = new rptParagraph;
-                  *pChapter << p;
-               }
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+            }
 
-               // Artifact does heavy lifting
-               const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
-               pHaulArtifact->BuildHaulingDetailsReport(segmentKey, pChapter, pBroker, pDisplayUnits);
-            } // next segment
-         } // next girder
+            // Artifact does heavy lifting
+            const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
+            pHaulArtifact->BuildHaulingDetailsReport(segmentKey, pChapter, pBroker, pDisplayUnits);
+         } // next segment
       } // next group
    }
 

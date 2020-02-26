@@ -76,8 +76,9 @@ BOOL CAssumedExcessCamberByBridgeDlg::OnInitDialog()
    CEditHaunchDlg* pParent = (CEditHaunchDlg*)GetParent();
    if (!pParent->IsAssumedExcessCamberEnabled())
    {
-      CWnd* pWnd = GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER);
-      pWnd->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER)->EnableWindow(FALSE);
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_LABEL)->EnableWindow(FALSE);  
+      GetDlgItem(IDC_ASSUMED_EXCESS_CAMBER_UNITS)->EnableWindow(FALSE);
    }
    CDialog::OnInitDialog();
 

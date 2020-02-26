@@ -23,9 +23,10 @@
 // HorizShearGrid.cpp : implementation file
 //
 #include "stdafx.h"
-
+#include "resource.h"
 #include <psgLib\HorizShearGrid.h>
 #include <psgLib\ShearSteelPage.h>
+#include "AdditionalInterfaceShearBarDlg.h"
 #include <Units\Measure.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -111,15 +112,19 @@ BOOL CHorizShearGrid::OnRButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFla
 
 BOOL CHorizShearGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt)
 {
-   CShearSteelPage* pdlg = (CShearSteelPage*)GetParent();
-   ASSERT (pdlg);
+   CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
+   ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
 
    ROWCOL nrows = GetRowCount();
 
-   if (nCol==0 && (nRow!=0 && nRow!=nrows))
-      pdlg->OnEnableHorizDelete(true);
+   if (nCol == 0 && (nRow != 0 && nRow != nrows))
+   {
+      pDlg->OnEnableHorizDelete(true);
+   }
    else
-      pdlg->OnEnableHorizDelete(false);
+   {
+      pDlg->OnEnableHorizDelete(false);
+   }
 
    return TRUE;
 }
@@ -127,10 +132,10 @@ BOOL CHorizShearGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFla
 void CHorizShearGrid::OnEditInsertRow()
 {
    // call back to parent for this so things get set up correctly
-   CShearSteelPage* pdlg = (CShearSteelPage*)GetParent();
-   ASSERT (pdlg);
+   CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
+   ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
 
-   pdlg->DoInsertHorizRow();
+   pDlg->DoInsertHorizRow();
 }
 
 void CHorizShearGrid::InsertRow(bool bAppend)
@@ -143,10 +148,14 @@ void CHorizShearGrid::InsertRow(bool bAppend)
 	// if there are no cells selected,
 	// copy the current cell's coordinates
 	CGXRangeList selList;
-	if (CopyRangeList(selList, TRUE))
-		nRow = selList.GetHead()->top;
-	else
-      nRow = bAppend ? GetRowCount()+1 : 0;
+   if (CopyRangeList(selList, TRUE))
+   {
+      nRow = selList.GetHead()->top;
+   }
+   else
+   {
+      nRow = bAppend ? GetRowCount() + 1 : 0;
+   }
 
 	nRow = Max((ROWCOL)1, nRow);
 
@@ -164,8 +173,9 @@ void CHorizShearGrid::InsertRow(bool bAppend)
    if (nrows==1)
    {
       CString strSymmetric, strEnd;
-      CShearSteelPage* pParent = (CShearSteelPage*)GetParent();
-      pParent->GetLastZoneName(strSymmetric, strEnd);
+      CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
+      ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
+      pDlg->GetLastZoneName(strSymmetric, strEnd);
 
       CString lastzlen;
       lastzlen.Format(_T("to %s"), m_IsSymmetrical ? strSymmetric : strEnd);
@@ -185,10 +195,10 @@ void CHorizShearGrid::InsertRow(bool bAppend)
 void CHorizShearGrid::OnEditRemoveRows()
 {
    // call back to parent for this so things get set up correctly
-   CShearSteelPage* pdlg = (CShearSteelPage*)GetParent();
-   ASSERT (pdlg);
+   CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
+   ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
 
-   pdlg->DoRemoveHorizRows();
+   pDlg->DoRemoveHorizRows();
 }
 
 void CHorizShearGrid::DoRemoveRows()
@@ -231,8 +241,9 @@ void CHorizShearGrid::SetSymmetry(bool isSymmetrical)
 
    // Set text in last row
    CString strSymmetric, strEnd;
-   CShearSteelPage* pParent = (CShearSteelPage*)GetParent();
-   pParent->GetLastZoneName(strSymmetric, strEnd);
+   CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
+   ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
+   pDlg->GetLastZoneName(strSymmetric, strEnd);
 
    CString lastzlen;
    lastzlen.Format(_T("to %s"), m_IsSymmetrical ? strSymmetric : strEnd);
@@ -344,12 +355,10 @@ void CHorizShearGrid::SetRowStyle(ROWCOL nRow)
          .SetHorizontalAlignment(DT_RIGHT)
 		);
 
-   CShearSteelPage* pParent = (CShearSteelPage*)GetParent();
-   matRebar::Type type;
-   matRebar::Grade grade;
-   pParent->GetRebarMaterial(&type,&grade);
+   CAdditionalInterfaceShearBarDlg* pDlg = (CAdditionalInterfaceShearBarDlg*)GetParent();
+   ASSERT(pDlg->IsKindOf(RUNTIME_CLASS(CAdditionalInterfaceShearBarDlg)));
    CString strBarSizeChoiceList(_T("None\n"));
-   lrfdRebarIter rebarIter(type,grade,true);
+   lrfdRebarIter rebarIter(pDlg->m_RebarType,pDlg->m_RebarGrade,true);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
       const matRebar* pRebar = rebarIter.GetCurrentRebar();

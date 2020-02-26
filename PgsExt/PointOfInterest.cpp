@@ -32,14 +32,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#if defined _DEBUG
+#if defined _DEBUG || defined _BETA_VERSION
 #define UPDATE_ATTRIBUTES UpdateAttributeString()
 #else
 #define UPDATE_ATTRIBUTES
 #endif
 
-Float64 pgsPointOfInterest::ms_Tol = 1.0e-06;
-
+// this defines the temporal order of the referenced attributes
 static PoiAttributeType gs_RefAttributes[] = { 
    POI_RELEASED_SEGMENT, 
    POI_LIFT_SEGMENT, 
@@ -51,7 +50,7 @@ static PoiAttributeType gs_RefAttributes[] = {
 
 static IndexType gs_nRefAttributes = sizeof(gs_RefAttributes)/sizeof(gs_RefAttributes[0]);
 
-#if defined _DEBUG
+#if defined _DEBUG || defined _BETA_VERSION
 
 static LPCTSTR gs_strRefAttributes[] = { 
    _T("POI_RELEASED_SEGMENT"), 
@@ -118,7 +117,8 @@ m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
-m_bCanMerge(true),
+m_DeckCastingRegionIdx(INVALID_INDEX),
+m_bHasDeckCastingRegion(false),
 m_Attributes(0)
 {
    m_RefAttributes.fill(0);
@@ -140,7 +140,8 @@ m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
-m_bCanMerge(true),
+m_DeckCastingRegionIdx(INVALID_INDEX),
+m_bHasDeckCastingRegion(false),
 m_Attributes(0)
 {
    m_RefAttributes.fill(0);
@@ -174,7 +175,8 @@ m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
-m_bCanMerge(true),
+m_DeckCastingRegionIdx(INVALID_INDEX),
+m_bHasDeckCastingRegion(false),
 m_Attributes(0)
 {
    m_RefAttributes.fill(0);
@@ -207,7 +209,8 @@ m_Xgl(-1),
 m_SpanIdx(INVALID_INDEX),
 m_Xspan(-1),
 m_bHasSpanPoint(false),
-m_bCanMerge(true),
+m_DeckCastingRegionIdx(INVALID_INDEX),
+m_bHasDeckCastingRegion(false),
 m_Attributes(0)
 {
    m_RefAttributes.fill(0);
@@ -237,14 +240,18 @@ bool pgsPointOfInterest::operator<=(const pgsPointOfInterest& rOther) const
 
 bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 {
-   if (m_ID == rOther.m_ID && m_ID != INVALID_ID)
-   {
-      // these are exactly the same POI
-      return false;
-   }
+   // comparing ID alone isn't enough. two POI with the same ID can
+   // have different attributes. the attributes factor into this inequality
+   //if (m_ID == rOther.m_ID && m_ID != INVALID_ID)
+   //{
+   //   // these are exactly the same POI
+   //   return false;
+   //}
 
-   if ( m_SegmentKey.IsEqual(rOther.m_SegmentKey) && IsEqual(m_Xpoi, rOther.m_Xpoi)) // AtSamePlace(rOther))
+   if (AtSamePlace(rOther))
    {
+      // POIs are at the same place. Check the attributes to see if one is before the other
+
       if (HasAttribute(POI_SECTCHANGE_LEFTFACE) && rOther.HasAttribute(POI_SECTCHANGE_RIGHTFACE))
       {
          // At abrupt section changes there will be 2 poi (if the factory modeled them correctly)
@@ -252,19 +259,41 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
          // The poi with POI_SECTCHANGE_LEFTFACE comes before the poi with POI_SECTCHANGE_RIGHTFACE
          return true;
       }
+      else if (HasAttribute(POI_SECTCHANGE_RIGHTFACE) && rOther.HasAttribute(POI_SECTCHANGE_LEFTFACE))
+      {
+         return false;
+      }
 
-      // POIs are at exactly the same location and...
-      // In span model
+      if (HasAttribute(POI_CASTING_BOUNDARY_END) && rOther.HasAttribute(POI_CASTING_BOUNDARY_START))
+      {
+         // At abrupt changes in deck casting sections there will be 2 poi
+         // The poi with POI_CASTING_BOUNDARY_END comes before the poi with POI_CASTING_BOUNDARY_START
+         // e.g. the poi on the left is the one where the region to the left is ending and the poi on 
+         // the right is the one where the next region is starting
+         return true;
+      }
+      else if (HasAttribute(POI_CASTING_BOUNDARY_START) && rOther.HasAttribute(POI_CASTING_BOUNDARY_END))
+      {
+         return false;
+      }
+
+      // Check span ends
       Uint16 thisSpanTenth = IsTenthPoint(POI_SPAN);
       Uint16 otherSpanTenth = rOther.IsTenthPoint(POI_SPAN);
       bool thisSpanCantilever = HasAttribute(POI_SPAN | POI_CANTILEVER);
       bool otherSpanCantilever = rOther.HasAttribute(POI_SPAN | POI_CANTILEVER);
 
       if ( (thisSpanTenth == 11 && otherSpanTenth == 1) || // this poi is at the end of a span and the other is at the start of the span. This poi is less (Span i, 1.0L < Span i+1, 0.0L)
-           (thisSpanCantilever  && otherSpanTenth == 1) ||
-           (thisSpanTenth == 11 && otherSpanCantilever) )
+           (thisSpanCantilever  && otherSpanTenth == 1) || // this poi is on the cantilever side and the other poi is at 0.0L
+           (thisSpanTenth == 11 && otherSpanCantilever) ) // this poi is at 1.0L and the other is on the cantilever side
       {
          return true;
+      }
+      else if ( (thisSpanTenth == 1 && otherSpanTenth == 11) || // this poi is at the start of the span and the other is at the end of the span. This poi is more (Span i, 1.0L < Span i+1, 0.0L)
+                (thisSpanTenth == 1 && otherSpanCantilever) || // this poi is at 0.0L and the other poi is on the cantilever side
+                (thisSpanCantilever && otherSpanTenth == 11)) // this poi is on the cantilever side and the other poi is at 1.0L
+      {
+         return false;
       }
       else
       {
@@ -274,10 +303,15 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
          bool thisErectedCantilever = HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER);
          bool otherErectedCantilever = rOther.HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER);
 
-         if ( (thisErectedCantilever  && otherErectedTenth == 1) ||
-              (thisErectedTenth == 11 && otherErectedCantilever) )
+         if ( (thisErectedCantilever  && otherErectedTenth == 1) || // this poi is on the cantilever side and the other poi is at 0.0L
+              (thisErectedTenth == 11 && otherErectedCantilever) ) // this poi is at 1.0L and the other poi is on the cantilever side
          {
             return true;
+         }
+         else if ((thisErectedTenth == 1 && otherErectedCantilever) || // this poi is at 0.0L and the other poi is on the cantilever side
+                  (thisErectedCantilever && otherErectedTenth == 11) ) // this poi is on the cantilever side and the other poi is at 1.0L
+         {
+            return false;
          }
          else
          {
@@ -287,35 +321,49 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
             bool thisStorageCantilever = HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER);
             bool otherStorageCantilever = rOther.HasAttribute(POI_STORAGE_SEGMENT | POI_CANTILEVER);
 
-            if ( (thisStorageCantilever && otherStorageTenth == 1) ||
-                 (thisSpanTenth == 11   && otherStorageCantilever) )
+            if ( (thisStorageCantilever   && otherStorageTenth == 1) ||
+                 (otherStorageTenth == 11 && otherStorageCantilever) )
             {
                return true;
             }
+            else if ((otherStorageTenth == 1 && thisStorageCantilever) || // this poi is at 0.0L and the other poi is on the cantilever side
+                     (thisStorageCantilever  && otherStorageTenth == 11)) // this poi is on the cantilever side and the other poi is at 1.0L
+            {
+               return false;
+            }
          }
       }
+
+      // all other things being equal, compare the ID
+      return m_ID < rOther.m_ID;
    }
    else
    {
+      // POIs are not at the same location
+      // compare segment keys and location within the segment if equal
       if (m_SegmentKey < rOther.m_SegmentKey)
       {
+         // this segment is before the other
          return true;
       }
-
-      if (rOther.m_SegmentKey < m_SegmentKey)
+      else if (rOther.m_SegmentKey < m_SegmentKey)
       {
+         // this segment is after the other
          return false;
       }
+      
+      // segments are the same, check locations
 
       if (m_Xpoi < rOther.m_Xpoi)
       {
          return true;
       }
-
-      if (rOther.m_Xpoi < m_Xpoi)
+      else if (rOther.m_Xpoi < m_Xpoi)
       {
          return false;
       }
+
+      ATLASSERT(false); // POIs are at the same location... should never get here
    }
 
    return false;
@@ -323,33 +371,15 @@ bool pgsPointOfInterest::operator<(const pgsPointOfInterest& rOther) const
 
 bool pgsPointOfInterest::operator==(const pgsPointOfInterest& rOther) const
 {
-   if (m_ID == rOther.m_ID && m_ID != INVALID_ID)
+   if (this == &rOther)
    {
-      // these are exactly the same POI
+      // POIs are equal if they are the same object
       return true;
    }
 
-   if ( AtSamePlace(rOther) )
-   {
-      if ( m_Attributes != rOther.m_Attributes )
-      {
-         return false;
-      }
-
-      for ( int i = 0; i < 6; i++ )
-      {
-         if ( m_RefAttributes[i] != rOther.m_RefAttributes[i] )
-         {
-            return false;
-         }
-      }
-
-      return true;
-   }
-   else
-   {
-      return false;
-   }
+   // POIs are equal if they are not less than each other
+   // return !(*this < rOther) && !(rOther < *this);
+   return !std::less<>()(*this, rOther) && !std::less<>()(rOther, *this);
 }
 
 bool pgsPointOfInterest::operator!=(const pgsPointOfInterest& rOther) const
@@ -377,6 +407,9 @@ void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi,
    m_bHasSpanPoint = false;
    m_SpanIdx = INVALID_INDEX;
    m_Xspan = -1;
+
+   m_bHasDeckCastingRegion = false;
+   m_DeckCastingRegionIdx = INVALID_INDEX;
 }
 
 void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi)
@@ -399,6 +432,9 @@ void pgsPointOfInterest::SetLocation(const CSegmentKey& segmentKey,Float64 Xpoi)
    m_bHasSpanPoint = false;
    m_SpanIdx = INVALID_INDEX;
    m_Xspan = -1;
+
+   m_bHasDeckCastingRegion = false;
+   m_DeckCastingRegionIdx = INVALID_INDEX;
 }
 
 void pgsPointOfInterest::Offset(Float64 delta)
@@ -429,12 +465,13 @@ void pgsPointOfInterest::Offset(Float64 delta)
    m_SpanIdx = INVALID_INDEX;
    m_Xspan = -1;
 
+   m_bHasDeckCastingRegion = false;
+   m_DeckCastingRegionIdx = INVALID_INDEX;
 }
 
 void pgsPointOfInterest::SetDistFromStart(Float64 Xpoi,bool bRetainAttributes)
 {
-   // once the POI is moved, the other points are no longer
-   // valid
+   // once the POI is moved, the other points are no longer valid
    m_Xpoi = Xpoi;
       
    m_bHasSegmentPathCoordinate = false;
@@ -453,17 +490,15 @@ void pgsPointOfInterest::SetDistFromStart(Float64 Xpoi,bool bRetainAttributes)
    m_SpanIdx = INVALID_INDEX;
    m_Xspan = -1;
 
+   m_bHasDeckCastingRegion = false;
+   m_DeckCastingRegionIdx = INVALID_INDEX;
+
    if (!bRetainAttributes)
    {
-      m_ID = INVALID_ID;
-
-      for (int i = 0; i < 6; i++)
-      {
-         m_RefAttributes[i] = 0;
-      }
+      m_RefAttributes.fill(0);
       m_Attributes = 0;
 
-#if defined _DEBUG 
+#if defined _DEBUG || defined _BETA_VERSION
       m_strAttributes = _T("");
 #endif // _DEBUG
    }
@@ -557,13 +592,27 @@ bool pgsPointOfInterest::HasSpanPoint() const
    return m_bHasSpanPoint;
 }
 
+void pgsPointOfInterest::SetDeckCastingRegion(IndexType deckCastingRegionIdx)
+{
+   m_DeckCastingRegionIdx = deckCastingRegionIdx;
+   m_bHasDeckCastingRegion = true;
+}
+
+IndexType pgsPointOfInterest::GetDeckCastingRegion() const
+{
+   ATLASSERT(m_bHasDeckCastingRegion);
+   return m_DeckCastingRegionIdx;
+}
+
+bool pgsPointOfInterest::HasDeckCastingRegion() const
+{
+   return m_bHasDeckCastingRegion;
+}
+
 void pgsPointOfInterest::ClearAttributes()
 {
    m_Attributes = 0;
-   for ( IndexType i = 0; i < gs_nRefAttributes; i++ )
-   {
-      m_RefAttributes[i] = 0;
-   }
+   m_RefAttributes.fill(0);
    UPDATE_ATTRIBUTES;
 }
 
@@ -587,10 +636,7 @@ void pgsPointOfInterest::SetReferencedAttributes(PoiAttributeType attrib)
    IndexType index = GetIndex(refAttrib);
    if ( attrib == 0 )
    {
-      for ( IndexType i = 0; i < gs_nRefAttributes; i++ )
-      {
-         m_RefAttributes[i] = 0;
-      }
+      m_RefAttributes.fill(0);
    }
    else if ( refAttrib == attrib )
    {
@@ -663,16 +709,6 @@ PoiAttributeType pgsPointOfInterest::GetReference(PoiAttributeType attrib)
    return poiRef;
 }
 
-bool pgsPointOfInterest::CanMerge() const
-{
-   return m_bCanMerge;
-}
-
-void pgsPointOfInterest::CanMerge(bool bCanMerge)
-{
-   m_bCanMerge = bCanMerge;
-}
-
 bool pgsPointOfInterest::IsReferenceAttribute(PoiAttributeType attrib)
 {
    return GetIndex(attrib) == INVALID_INDEX ? false : true;
@@ -680,31 +716,113 @@ bool pgsPointOfInterest::IsReferenceAttribute(PoiAttributeType attrib)
 
 bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
 {
-   if (!IsEqual(m_Xpoi, rOther.m_Xpoi, pgsPointOfInterest::ms_Tol))
+   if (!AtSamePlace(rOther))
    {
-      ATLASSERT(false); // attempting to merge POIs from different locations
+      // POIs aren't at the same place, so they can't be merged
       return false;
    }
 
-   if ( (HasAttribute(POI_SECTCHANGE_LEFTFACE) && rOther.HasAttribute(POI_SECTCHANGE_RIGHTFACE)) 
-        || 
-        (HasAttribute(POI_SECTCHANGE_RIGHTFACE) && rOther.HasAttribute(POI_SECTCHANGE_LEFTFACE))
+   bool bIs10thPoint = (0 < IsTenthPoint(gs_RefAttributes[0/*GetIndex(POI_RELEASED_SEGMENT)*/]) || // if this poi is a 10th point for any reference, it is a 10th point
+                        0 < IsTenthPoint(gs_RefAttributes[1/*GetIndex(POI_LIFT_SEGMENT)*/])     ||
+                        0 < IsTenthPoint(gs_RefAttributes[2/*GetIndex(POI_STORAGE_SEGMENT)*/])  ||
+                        0 < IsTenthPoint(gs_RefAttributes[3/*GetIndex(POI_HAUL_SEGMENT)*/])     ||
+                        0 < IsTenthPoint(gs_RefAttributes[4/*GetIndex(POI_ERECTED_SEGMENT)*/])  ||
+                        0 < IsTenthPoint(gs_RefAttributes[5/*GetIndex(POI_SPAN)*/]));
+
+   bool bIsOther10thPoint = (0 < rOther.IsTenthPoint(gs_RefAttributes[0/*GetIndex(POI_RELEASED_SEGMENT)*/]) || // if this poi is a 10th point for any reference, it is a 10th point
+                             0 < rOther.IsTenthPoint(gs_RefAttributes[1/*GetIndex(POI_LIFT_SEGMENT)*/]) ||
+                             0 < rOther.IsTenthPoint(gs_RefAttributes[2/*GetIndex(POI_STORAGE_SEGMENT)*/]) ||
+                             0 < rOther.IsTenthPoint(gs_RefAttributes[3/*GetIndex(POI_HAUL_SEGMENT)*/]) ||
+                             0 < rOther.IsTenthPoint(gs_RefAttributes[4/*GetIndex(POI_ERECTED_SEGMENT)*/]) ||
+                             0 < rOther.IsTenthPoint(gs_RefAttributes[5/*GetIndex(POI_SPAN)*/]));
+
+   // rOther cannot be merged into this POI if it has any of the following 
+   // attributes because merging would cause rOther to move slightly
+   if ( (rOther.HasAttribute(POI_SUPPORTS) ||
+      rOther.HasAttribute(POI_START_FACE) ||
+      rOther.HasAttribute(POI_END_FACE) ||
+      rOther.HasAttribute(POI_STIRRUP_ZONE) ||
+      rOther.HasAttribute(POI_H) ||
+      rOther.HasAttribute(POI_15H) ||
+      rOther.HasAttribute(POI_CLOSURE))
+      &&
+      (!bIs10thPoint && !bIsOther10thPoint) // merging can happen if both POI are 10th points
       )
    {
-      // can't merge left and right faces together
       return false;
    }
 
-   if ( (HasAttribute(POI_FACEOFSUPPORT) && rOther.HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER)) ||
-        (HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER) && rOther.HasAttribute(POI_FACEOFSUPPORT))
+   if ((HasAttribute(POI_SECTCHANGE_LEFTFACE) && rOther.HasAttribute(POI_SECTCHANGE_RIGHTFACE)) || (HasAttribute(POI_SECTCHANGE_RIGHTFACE) && rOther.HasAttribute(POI_SECTCHANGE_LEFTFACE)))
+   {
+      // left and right faces cannot be merged together. They are on different sides of an abrupt change
+      return false;
+   }
+
+   if ( (HasAttribute(POI_DUCT_START) && rOther.HasAttribute(POI_DUCT_END)) || (HasAttribute(POI_DUCT_END) && rOther.HasAttribute(POI_DUCT_START)))
+   {
+      // POIs for end points of ducts cannot be merged. The POIs are in different ducts
+      return false;
+   }
+
+   if ((HasAttribute(POI_CASTING_BOUNDARY_START) && rOther.HasAttribute(POI_CASTING_BOUNDARY_END)) || (HasAttribute(POI_CASTING_BOUNDARY_END) && rOther.HasAttribute(POI_CASTING_BOUNDARY_START)))
+   {
+      // POIs for end points of deck casting regions cannot be merged. The POIs are in different different casting regions
+      return false;
+   }
+
+   if ((HasAttribute(POI_FACEOFSUPPORT) && rOther.HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER)) ||
+      (HasAttribute(POI_ERECTED_SEGMENT | POI_CANTILEVER) && rOther.HasAttribute(POI_FACEOFSUPPORT))
       )
    {
       // cantilever points and face of support can't be merged (face of support is never on the cantilever)
       return false;
    }
 
+   // If poi is for a concentrated load, diaphragm, or harp point, it does not merge into this POI unless
+   // this poi is a 10th point, concentrated load, diaphragm or hapring point
+   bool bHasAttrubutes = HasAttribute(POI_CONCLOAD | POI_DIAPHRAGM | POI_HARPINGPOINT);
+   bool bOtherHasAttrubutes = rOther.HasAttribute(POI_CONCLOAD | POI_DIAPHRAGM | POI_HARPINGPOINT);
+   if (bOtherHasAttrubutes && !(bIs10thPoint || bHasAttrubutes))
+   {
+      return false;
+   }
+
+   for (int i = 0; i < gs_nRefAttributes; i++)
+   {
+      if ((GetReferencedAttributes(gs_RefAttributes[i]) != 0 && rOther.GetReferencedAttributes(gs_RefAttributes[i]) != 0) && // both poi have the same referenced attribute -AND-
+         ((HasAttribute(gs_RefAttributes[i] | POI_CANTILEVER) && !rOther.HasAttribute(gs_RefAttributes[i] | POI_CANTILEVER)) || // one has the cantilever attribute and the other does not
+         (!HasAttribute(gs_RefAttributes[i] | POI_CANTILEVER) && rOther.HasAttribute(gs_RefAttributes[i] | POI_CANTILEVER))
+            )
+         )
+      {
+         // can't merge an "in-span" point with a cantilever poi... they are on opposite sides of a support
+         return false;
+      }
+   }
+
+   if (GetReferencedAttributes(POI_SPAN) != 0 && rOther.GetReferencedAttributes(POI_SPAN) != 0)
+   {
+      // if the two poi's that are being merged are both span POI, then we have a common
+      // point in adjacent spans. these can't be merged.
+
+      // we want (Span i-1, 1.0L) and (Span i, 0.0L) as seperate POIs
+      // because a POI can't be in two spans
+      return false;
+   }
+
+   // if the two POI's that are being merged are at a critical section and a face of support, they can
+   // be merged, otherwise, they cannot
+   if (
+      (HasAttribute(POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2) && !rOther.HasAttribute(POI_FACEOFSUPPORT)) ||
+      (rOther.HasAttribute(POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2) && !HasAttribute(POI_FACEOFSUPPORT))
+      )
+   { 
+      return false;
+   }
+
+   // if we get this far, rOther can be merged into this POI
    m_Attributes |= rOther.m_Attributes;
-   for ( int i = 0; i < 6; i++ )
+   for ( int i = 0; i < gs_nRefAttributes; i++ )
    {
       m_RefAttributes[i] |= rOther.m_RefAttributes[i];
    }
@@ -712,7 +830,6 @@ bool pgsPointOfInterest::MergeAttributes(const pgsPointOfInterest& rOther)
    UPDATE_ATTRIBUTES;
    return true;
 }
-
 
 bool pgsPointOfInterest::HasAttribute(PoiAttributeType attribute) const
 {
@@ -748,7 +865,7 @@ bool pgsPointOfInterest::HasAttributes() const
       return true;
    }
 
-   for ( int i = 0; i < 6; i++ )
+   for ( int i = 0; i < gs_nRefAttributes; i++ )
    {
       if ( m_RefAttributes[i] != 0 )
       {
@@ -761,34 +878,7 @@ bool pgsPointOfInterest::HasAttributes() const
 
 bool pgsPointOfInterest::AtSamePlace(const pgsPointOfInterest& other) const
 {
-   if ( m_SegmentKey.IsEqual(other.m_SegmentKey) &&
-        IsZero( m_Xpoi - other.m_Xpoi, ms_Tol ) )
-   {
-      return true;
-   }
-
-   return false;
-}
-
-bool pgsPointOfInterest::AtExactSamePlace(const pgsPointOfInterest& other) const
-{
-   if ( m_SegmentKey.IsEqual(other.m_SegmentKey) && IsEqual(m_Xpoi,other.m_Xpoi,1e-14) && !std::less<>()(*this, other) && !std::less<>()(other, *this) )
-   {
-      return true;
-   }
-
-   return false;
-}
-
-
-void pgsPointOfInterest::SetTolerance(Float64 tol)
-{
-   ms_Tol = tol;
-}
-
-Float64 pgsPointOfInterest::GetTolerance()
-{
-   return ms_Tol;
+   return (m_SegmentKey.IsEqual(other.m_SegmentKey) && IsEqual(m_Xpoi, other.m_Xpoi)) ? true : false;
 }
 
 bool pgsPointOfInterest::IsHarpingPoint() const
@@ -859,18 +949,18 @@ void pgsPointOfInterest::MakeCopy(const pgsPointOfInterest& rOther)
    m_Xsp                       = rOther.m_Xsp;
    m_bHasGirderCoordinate      = rOther.m_bHasGirderCoordinate;
    m_Xg                        = rOther.m_Xg;
-   m_bHasGirderPathCoordinate = rOther.m_bHasGirderPathCoordinate;
-   m_Xgp = rOther.m_Xgp;
-   m_bHasGirderlineCoordinate = rOther.m_bHasGirderlineCoordinate;
-   m_Xgl = rOther.m_Xgl;
+   m_bHasGirderPathCoordinate  = rOther.m_bHasGirderPathCoordinate;
+   m_Xgp                       = rOther.m_Xgp;
+   m_bHasGirderlineCoordinate  = rOther.m_bHasGirderlineCoordinate;
+   m_Xgl                       = rOther.m_Xgl;
    m_bHasSpanPoint             = rOther.m_bHasSpanPoint;
    m_SpanIdx                   = rOther.m_SpanIdx;
    m_Xspan                     = rOther.m_Xspan;
-   m_bCanMerge                 = rOther.m_bCanMerge;
-   m_Attributes                = rOther.m_Attributes;
+   m_bHasDeckCastingRegion     = rOther.m_bHasDeckCastingRegion;
+   m_DeckCastingRegionIdx      = rOther.m_DeckCastingRegionIdx;
 
-
-   for ( int i = 0; i < 6; i++ )
+   m_Attributes = rOther.m_Attributes;
+   for ( int i = 0; i < gs_nRefAttributes; i++ )
    {
       m_RefAttributes[i] = rOther.m_RefAttributes[i];
    }
@@ -1170,6 +1260,50 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
       nAttributes++;
    }
 
+   if (HasAttribute(POI_DUCT_START))
+   {
+      if (0 < nAttributes)
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("DS");
+      nAttributes++;
+   }
+
+   if (HasAttribute(POI_DUCT_END))
+   {
+      if (0 < nAttributes)
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("DE");
+      nAttributes++;
+   }
+
+   if (HasAttribute(POI_CASTING_BOUNDARY_START))
+   {
+      if (0 < nAttributes)
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("SDCR");
+      nAttributes++;
+   }
+
+   if (HasAttribute(POI_CASTING_BOUNDARY_END))
+   {
+      if (0 < nAttributes)
+      {
+         strAttrib += _T(", ");
+      }
+
+      strAttrib += _T("EDCR");
+      nAttributes++;
+   }
+
    if ( HasAttribute(POI_INTERMEDIATE_PIER) )
    {
       if ( 0 < nAttributes )
@@ -1275,7 +1409,7 @@ std::_tstring pgsPointOfInterest::GetAttributes(PoiAttributeType reference,bool 
    return strAttrib;
 }
 
-#if defined _DEBUG
+#if defined _DEBUG || defined _BETA_VERSION
 bool pgsPointOfInterest::AssertValid() const
 {
    return true;
@@ -1453,6 +1587,26 @@ void pgsPointOfInterest::UpdateAttributeString()
    if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_SECTCHANGE_LEFTFACE))
    {
       os << _T("POI_SECTCHANGE_LEFTFACE | ");
+   }
+
+   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_DUCT_START))
+   {
+      os << _T("POI_DUCT_START | ");
+   }
+
+   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_DUCT_END))
+   {
+      os << _T("POI_DUCT_END | ");
+   }
+
+   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CASTING_BOUNDARY_START))
+   {
+      os << _T("POI_CASTING_BOUNDARY_START | ");
+   }
+
+   if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_CASTING_BOUNDARY_END))
+   {
+      os << _T("POI_CASTING_BOUNDARY_END | ");
    }
 
    if (sysFlags<PoiAttributeType>::IsSet(m_Attributes, POI_INTERMEDIATE_TEMPSUPPORT))

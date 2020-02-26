@@ -24,6 +24,7 @@
 #include <Beams\Helper.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
+#include <PgsExt\BridgeDescription2.h>
 #include "AgeAdjustedMaterial.h"
 
 
@@ -209,16 +210,16 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
 {
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
-   bool bHasClosure[2] = {
-                           pSegment->GetStartClosure()  != nullptr, 
-                           pSegment->GetEndClosure() != nullptr
+   std::array<bool, 2> bHasClosure = {
+                           pSegment->GetClosureJoint(pgsTypes::metStart)  != nullptr, 
+                           pSegment->GetClosureJoint(pgsTypes::metEnd) != nullptr
                          };
 
    // If this is the first segment of a girder and there is a previous group -OR-
    // if this is the last segment of a girder and there is next group, 
    // then there is a cast-in-place diaphragm between the groups. Use the deck concrete as the closure joint
    // concrete in this case.
-   bool bPierDiaphragm[2] = { 
+   std::array<bool, 2> bPierDiaphragm = { 
                               (pSegment->GetPrevSegment() == nullptr && pGirder->GetGirderGroup()->GetPrevGirderGroup() != nullptr),
                               (pSegment->GetNextSegment() == nullptr && pGirder->GetGirderGroup()->GetNextGirderGroup() != nullptr)   
                             };
@@ -270,11 +271,42 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
          }
          else if ( bPierDiaphragm[endType] )
          {
-            CGirderKey girderKey(segmentKey);
+            // need to get deck casting region index
+            std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
+            const CPierData2* pPier = (endType == etStart ? vPiers.front() : vPiers.back());
+            PierIndexType pierIdx = pPier->GetIndex();
+
+            const auto* pTimelineMgr = pSegment->GetGirder()->GetGirderGroup()->GetBridgeDescription()->GetTimelineManager();
+            EventIndexType castDeckEventIdx = pTimelineMgr->GetCastDeckEventIndex();
+            ATLASSERT(castDeckEventIdx != INVALID_INDEX);
+            const auto* pTimelineEvent = pTimelineMgr->GetEventByIndex(castDeckEventIdx);
+            ATLASSERT(pTimelineEvent && pTimelineEvent->GetCastDeckActivity().IsEnabled());
+            const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
+            IndexType deckCastingRegionIdx = INVALID_INDEX;
+            if (castDeckActivity.GetCastingType() == CCastDeckActivity::Staged)
+            {
+               const auto& regions = castDeckActivity.GetCastingRegions();
+               IndexType nRegions = castDeckActivity.GetCastingRegionCount();
+               for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
+               {
+                  if (regions[regionIdx].m_Type == CCastingRegion::Pier && regions[regionIdx].m_Index == pierIdx)
+                  {
+                     deckCastingRegionIdx = regionIdx;
+                     break;
+                  }
+               }
+
+               ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+            }
+            else
+            {
+               deckCastingRegionIdx = 0;
+            }
+
             CComObject<CAgeAdjustedMaterial>* pDiaphragmMaterial;
             CComObject<CAgeAdjustedMaterial>::CreateInstance(&pDiaphragmMaterial);
             CComPtr<IAgeAdjustedMaterial> diaphragmMaterial = pDiaphragmMaterial;
-            diaphragmMaterial->InitDeck(girderKey,pMaterials);
+            diaphragmMaterial->InitDeck(deckCastingRegionIdx,pMaterials);
 
             pSplicedSegment->put_ClosureJointForegroundMaterial(endType,diaphragmMaterial);
             pSplicedSegment->put_ClosureJointBackgroundMaterial(endType,nullptr);
@@ -363,22 +395,20 @@ void LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey,const CPr
       {
          // there is an abrupt section change
          pgsPointOfInterest poiStartEndBlock1(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart], POI_SECTCHANGE_LEFTFACE);
-         poiStartEndBlock1.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock1) != INVALID_ID);
 
          pgsPointOfInterest poiStartEndBlock2(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart], POI_SECTCHANGE_RIGHTFACE);
-         poiStartEndBlock2.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock2) != INVALID_ID);
       }
       else
       {
          // there is a smooth taper over the transition length
          pgsPointOfInterest poiStartEndBlock1(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart], POI_SECTCHANGE_TRANSITION);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock1) != INVALID_ID);
 
          // end of end block transition (end block is the width of the web)
          pgsPointOfInterest poiStartEndBlock2(segmentKey, pSegment->EndBlockLength[pgsTypes::metStart] + pSegment->EndBlockTransitionLength[pgsTypes::metStart], POI_SECTCHANGE_TRANSITION);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock2) != INVALID_ID);
       }
    }
 
@@ -388,12 +418,10 @@ void LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey,const CPr
       {
          // there is an abrupt section change
          pgsPointOfInterest poiEndEndBlock2(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_LEFTFACE);
-         poiEndEndBlock2.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock2) != INVALID_ID);
 
          pgsPointOfInterest poiEndEndBlock1(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_RIGHTFACE);
-         poiEndEndBlock1.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock1) != INVALID_ID);
       }
       else
       {
@@ -401,11 +429,11 @@ void LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey,const CPr
 
          // end of end block transition (end block is the width of the web)
          pgsPointOfInterest poiEndEndBlock2(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd] - pSegment->EndBlockTransitionLength[pgsTypes::metEnd], POI_SECTCHANGE_TRANSITION);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock2) != INVALID_ID);
 
          // start of end block transition (wide end)
          pgsPointOfInterest poiEndEndBlock1(segmentKey, segmentLength - pSegment->EndBlockLength[pgsTypes::metEnd], POI_SECTCHANGE_TRANSITION);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock1) != INVALID_ID);
       }
    }
 }

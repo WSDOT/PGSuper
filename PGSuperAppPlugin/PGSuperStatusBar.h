@@ -43,10 +43,12 @@ public:
    virtual void GetStatusIndicators(const UINT** lppIDArray,int* pnIDCount) override;
    virtual BOOL SetStatusIndicators(const UINT* lpIDArray, int nIDCount) override;
 
+   int GetProjectCriteriaPaneIndex();
    int GetAnalysisModePaneIndex();
 
    virtual void Reset() override;
 
+   void SetProjectCriteria(LPCTSTR lpszCriteria);
    void SetAnalysisTypeStatusIndicator(pgsTypes::AnalysisType analysisType);
 
 // Overrides
@@ -62,6 +64,7 @@ protected:
 
 
 private:
+   int m_ProjectCriteriaPaneIdx;
    int m_AnalysisModePaneIdx;
 
 	DECLARE_MESSAGE_MAP()

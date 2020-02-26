@@ -63,8 +63,12 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(CReportSpecificatio
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
+   if (nTS == 0)
+   {
+      *pPara << _T("No temporary supports modeled") << rptNewLine;
+   }
 
-   GET_IFACE2(pBroker, ITempSupport, pTempSupport);
+   GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport); // not used if no temp supports
 
    std::array<std::_tstring, 2> strMemberEnd{ _T("Start"),_T("End") };
 

@@ -58,6 +58,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CSpecDesignPage)
 	afx_msg void OnCheckA();
+   afx_msg void OnDesignA();
 	afx_msg void OnCheckHauling();
 	afx_msg void OnCheckHd();
 	afx_msg void OnCheckLifting();
@@ -65,14 +66,17 @@ protected:
 	afx_msg void OnCheckSplitting();
 	afx_msg void OnCheckConfinement();
    afx_msg void OnBnClickedIsSupportLessThan();
-	//}}AFX_MSG
-   afx_msg void OnHelp();
-	DECLARE_MESSAGE_MAP()
-public:
+   afx_msg void OnBnClicked90DayStrength();
    afx_msg void OnBnClickedCheckBottomFlangeClearance();
    afx_msg void OnBnClickedCheckInclindedGirder();
-   virtual BOOL OnSetActive();
    afx_msg void OnBnClickedLlDeflection();
+   afx_msg void OnBnClickedCheckHandlingWeight();
+   //}}AFX_MSG
+   afx_msg void OnHelp();
+   afx_msg void OnFcTypeChanged();
+   DECLARE_MESSAGE_MAP()
+public:
+   virtual BOOL OnSetActive();
 };
 
 //{{AFX_INSERT_LOCATION}}

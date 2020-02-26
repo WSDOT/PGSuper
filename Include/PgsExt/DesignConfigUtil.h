@@ -67,7 +67,10 @@ template<class IteratorType>
 ZoneIndexType GetZoneIndexAtLocation(Float64 location, Float64 girderLength, Float64 startSupportLoc, Float64 endSupportLoc,
                              bool bSymmetrical, IteratorType& rItBegin, IteratorType& rItEnd, ZoneIndexType collSize)
 {
-   ATLASSERT(collSize>0);
+   if (collSize == 0)
+   {
+      return INVALID_INDEX;
+   }
 
    ZoneIndexType zone = 0;
 

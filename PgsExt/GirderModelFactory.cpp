@@ -88,10 +88,6 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
       (*ppModel)->AddRef();
    }
 
-   // This is the same tolerance as used to build LBAM's in CGirderModelManager::BuildLBAM()
-   (*ppModel)->put_ForceEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::Kip));
-   (*ppModel)->put_MomentEquilibriumTolerance(::ConvertToSysUnits(0.25, unitMeasure::KipFeet));
-
    // get all the cross section changes
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList xsPOI;
@@ -105,7 +101,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE,&vPoi);
    ATLASSERT(vPoi.size() == 1);
-   if ( xsPOI.empty() || !vPoi.front().get().AtExactSamePlace(xsPOI.front()) ) // don't add duplicates
+   if ( xsPOI.empty() || vPoi.front().get() != xsPOI.front() ) // don't add duplicates
    {
       xsPOI.insert(xsPOI.begin(),vPoi.front());
    }
@@ -113,7 +109,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    vPoi.clear();
    pPoi->GetPointsOfInterest(segmentKey, POI_END_FACE,&vPoi);
    ATLASSERT(vPoi.size() == 1);
-   if ( !vPoi.front().get().AtExactSamePlace(xsPOI.back()) ) // don't add duplicates
+   if ( vPoi.front().get() != xsPOI.back() ) // don't add duplicates
    {
       xsPOI.push_back(vPoi.front());
    }
@@ -923,8 +919,8 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
          // load is contained on a single member and is all interior
          if (!IsEqual(xStart, xEnd)) // No use creating a load if it's zero length
          {
-         slabDistLoad.Release();
-         slabPadDistLoad.Release();
+            slabDistLoad.Release();
+            slabPadDistLoad.Release();
             slabDistributedLoads->Create(loadID++, mbrIDStart, loadDirFy, xStart, xEnd, wslabStart, wslabEnd, lotMember, &slabDistLoad);
             slabPadDistributedLoads->Create(loadID++, mbrIDStart, loadDirFy, xStart, xEnd, wslabPadStart, wslabPadEnd, lotMember, &slabPadDistLoad);
          }
@@ -985,8 +981,8 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CS
 
             if (!IsEqual(x1, x2)) // No use creating a load if it's zero length
             {
-            slabDistLoad.Release();
-            slabPadDistLoad.Release();
+               slabDistLoad.Release();
+               slabPadDistLoad.Release();
                slabDistributedLoads->Create(loadID++, mbrID, loadDirFy, x1, x2, wsl1, wsl2, lotMember, &slabDistLoad);
                slabPadDistributedLoads->Create(loadID++, mbrID, loadDirFy, x1, x2, wsp1, wsp2, lotMember, &slabPadDistLoad);
             }

@@ -76,13 +76,10 @@ int CLLDFPierGrid::GetColWidth(ROWCOL nCol)
    switch (nCol)
    {
    case 0:
-//      return default_width;
-
+      return (rect.Width())/5;
    case 1:
    case 2:
-   case 3:
-   case 4:
-      return (rect.Width())/5;
+      return (rect.Width())/4;
 
    default:
       return CGXGridWnd::GetColWidth(nCol);
@@ -101,7 +98,7 @@ void CLLDFPierGrid::CustomInit(PierIndexType pierIdx)
 	GetParam( )->EnableUndo(FALSE);
 
    const int num_rows = 1;
-   const int num_cols = 4;
+   const int num_cols = 2;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -121,10 +118,7 @@ void CLLDFPierGrid::CustomInit(PierIndexType pierIdx)
    SetMergeCellsMode(gxnMergeEvalOnDisplay);
 
    SetStyleRange(CGXRange(0,1),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
-   SetStyleRange(CGXRange(0,2),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Strength/Service"));
-   
-   SetStyleRange(CGXRange(0,3),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue/Special Permit Rating"));
-   SetStyleRange(CGXRange(0,4),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue/Special Permit Rating"));
+   SetStyleRange(CGXRange(0,2),CGXStyle().SetMergeCell(GX_MERGE_HORIZONTAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue("Fatigue/Special Permit Rating"));
 
    SetStyleRange(CGXRange(0,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
    SetStyleRange(CGXRange(1,0),CGXStyle().SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE).SetControl(GX_IDS_CTRL_HEADER).SetValue(" "));
@@ -147,29 +141,8 @@ void CLLDFPierGrid::CustomInit(PierIndexType pierIdx)
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
          .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("Reaction")
-		);
-
-	SetStyleRange(CGXRange(1,3), CGXStyle()
-         .SetControl(GX_IDS_CTRL_HEADER)
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-         .SetInterior(::GetSysColor(COLOR_BTNFACE))
 			.SetValue("-M")
 		);
-
-	SetStyleRange(CGXRange(1,4), CGXStyle()
-         .SetControl(GX_IDS_CTRL_HEADER)
-         .SetWrapText(TRUE)
-			.SetEnabled(FALSE)          // disables usage as current cell
-         .SetHorizontalAlignment(DT_CENTER)
-         .SetVerticalAlignment(DT_VCENTER)
-         .SetInterior(::GetSysColor(COLOR_BTNFACE))
-			.SetValue("Reaction")
-		);
-
 
    // make it so that text fits correctly in header row
 	ResizeRowHeightsToFit(CGXRange(0,0,num_rows,num_cols));
@@ -222,24 +195,15 @@ void CLLDFPierGrid::AddGirderRow(GirderIndexType gdr, const CPierData2* pPier)
    else
       SetStyleRange(CGXRange(nRows,1), deadStyle);
 
-   SetStyleRange(CGXRange(nRows,2), CGXStyle()
-      .SetEnabled(TRUE)
-      .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(pPier->GetLLDFReaction(gdr,pgsTypes::ServiceI))); // reaction
 
    // Fatigue
    if ( bEnableNegMoment )
-      SetStyleRange(CGXRange(nRows,3), CGXStyle()
+      SetStyleRange(CGXRange(nRows,2), CGXStyle()
          .SetEnabled(TRUE)
          .SetHorizontalAlignment(DT_RIGHT)
          .SetValue(pPier->GetLLDFNegMoment(gdr,pgsTypes::FatigueI))); // -M
    else
-      SetStyleRange(CGXRange(nRows,3), deadStyle);
-
-   SetStyleRange(CGXRange(nRows,4), CGXStyle()
-      .SetEnabled(TRUE)
-      .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(pPier->GetLLDFReaction(gdr,pgsTypes::FatigueI))); // reaction
+      SetStyleRange(CGXRange(nRows,2), deadStyle);
 
    GetParam()->EnableUndo(TRUE);
 }
@@ -258,11 +222,8 @@ void CLLDFPierGrid::GetGirderRow(GirderIndexType gdr, CPierData2* pPier)
    if ( bEnableNegMoment )
    {
       pPier->SetLLDFNegMoment(gdr, pgsTypes::StrengthI, _tstof(GetCellValue(row,1)));
-      pPier->SetLLDFNegMoment(gdr, pgsTypes::FatigueI, _tstof(GetCellValue(row,3)));
+      pPier->SetLLDFNegMoment(gdr, pgsTypes::FatigueI, _tstof(GetCellValue(row,2)));
    }
-
-   pPier->SetLLDFReaction(gdr, pgsTypes::StrengthI, _tstof(GetCellValue(row,2)));
-   pPier->SetLLDFReaction(gdr, pgsTypes::FatigueI, _tstof(GetCellValue(row,4)));
 }
 
 CString CLLDFPierGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
@@ -535,7 +496,7 @@ void CLLDFPierGrid::SetGirderLLDF(GirderIndexType gdr, Float64 value )
    ROWCOL nrows = this->GetRowCount();
    if (row<=nrows)
    {
-      for (ROWCOL col=1; col<=4; col++)
+      for (ROWCOL col=1; col<=2; col++)
       {
          CGXStyle cellStyle;
          GetStyleRowCol(row, col, cellStyle);
@@ -553,9 +514,9 @@ void CLLDFPierGrid::SetGirderLLDF(GirderIndexType gdr, Float64 value )
 void CLLDFPierGrid::SetGirderLLDF(GirderIndexType gdr, const PierLLDF& rlldf )
 {
    ROWCOL row = ROWCOL(gdr+2); // first two rows are header
-   ATLASSERT(this->GetColCount()==4);
+   ATLASSERT(this->GetColCount()==2);
    const Float64* pdbl = &(rlldf.pgNMService); // pointer to first member in struct
-   for (ROWCOL col=1; col<=4; col++)
+   for (ROWCOL col=1; col<=2; col++)
    {
       CGXStyle cellStyle;
       GetStyleRowCol(row, col, cellStyle);

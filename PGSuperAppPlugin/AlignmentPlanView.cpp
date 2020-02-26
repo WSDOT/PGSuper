@@ -155,7 +155,7 @@ void CAlignmentPlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 void CAlignmentPlanView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint) 
 {
-   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_ALIGNMENT,0);
+   GetFrame()->PostMessage(WM_COMMAND,ID_PROJECT_ALIGNMENT,0);
 }
 
 void CAlignmentPlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
@@ -444,7 +444,7 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
 
    display_list->AddDisplayObject(doBridge);
 
-   // Register an event sink with the alignment object so that we can handle Float64 clicks
+   // Register an event sink with the alignment object so that we can handle double clicks
    // on the alignment differently then a general dbl-click
    CComPtr<iDisplayObject> dispObj;
    doBridge->QueryInterface(IID_iDisplayObject,(void**)&dispObj);

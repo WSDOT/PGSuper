@@ -52,7 +52,7 @@ public:
    CHaunchByBearingDlg m_HaunchByBearingDlg;
    CHaunchBySegmentDlg m_HaunchBySegmentDlg;
 
-// embedded dialogs for different AssExcessCamber layouts
+// embedded dialogs for different AssumedExcessCamber layouts
    CAssumedExcessCamberByBridgeDlg m_AssumedExcessCamberByBridgeDlg;
    CAssumedExcessCamberBySpanDlg  m_AssumedExcessCamberBySpanDlg;
    CAssumedExcessCamberByGirderDlg m_AssumedExcessCamberByGirderDlg;

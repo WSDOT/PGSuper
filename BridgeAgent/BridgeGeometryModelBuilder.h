@@ -23,6 +23,27 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
+// Collection to store girder orientation angle and distance the girder layout line is shifted normal to itself to account 
+// for the work point location and orientation angle.
+struct GirderOrientationShift
+{
+   Float64 m_Orientation;
+   Float64 m_LayoutLineShift; // distance normal to girder layout line
+
+   GirderOrientationShift() :
+      m_Orientation(0.0), m_LayoutLineShift(0.0)
+   {
+      ;
+   }
+
+   GirderOrientationShift(Float64 orientation, Float64 shift) :
+      m_Orientation(orientation), m_LayoutLineShift(shift)
+   {
+      ;
+   }
+};
+typedef std::map<CSegmentKey, GirderOrientationShift>  GirderOrientationCollection;
+
 ///////////////////////////////////////////////////////////////////////////////
 // class CBridgeGeometryModelBuilder
 //
@@ -34,19 +55,20 @@ class CBridgeGeometryModelBuilder
 {
 public:
    CBridgeGeometryModelBuilder();
-   bool BuildBridgeGeometryModel(const CBridgeDescription2* pBridgeDesc,ICogoModel* pCogoModel,IAlignment* pAlignment,IBridgeGeometry* pBridgeGeometry);
+   bool BuildBridgeGeometryModel(const CBridgeDescription2* pBridgeDesc,ICogoModel* pCogoModel,IAlignment* pAlignment,IBridgeGeometry* pBridgeGeometry, GirderOrientationCollection& coll);
 
 protected:
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
    bool LayoutTemporarySupports(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
-   bool LayoutGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
-   bool LayoutUniformGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
-   bool LayoutGeneralGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
+   bool LayoutGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry, GirderOrientationCollection& coll);
+   bool LayoutUniformGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry, GirderOrientationCollection& coll);
+   bool LayoutGeneralGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry, GirderOrientationCollection& coll);
    bool LayoutDiaphragmLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry);
 
    // Resolves segment spacing from however it is input into an array of distances measured from the
    // alignment to the girder line, measured along the support direction.
-   void ResolveSegmentSpacing(IBridgeGeometry* pBridgeGeometry,Float64 alignmentOffset,const CPrecastSegmentData* pSegment,IPoint2dCollection** ppStartPoints,IPoint2dCollection** ppEndPoints);
+   void ResolveSegmentSpacing(IBridgeGeometry* pBridgeGeometry, Float64 alignmentOffset,const CPrecastSegmentData* pSegment,IPoint2dCollection** ppStartPoints,IPoint2dCollection** ppEndPoints);
+   Float64 ComputeGirderOrientation(pgsTypes::GirderOrientationType orientType, const CSplicedGirderData* pGirder, IBridgeGeometry* pBridgeGeometry, IPoint2d* pStartPoint, IPoint2d* pEndPoint);
 
    Float64 GetSkewAngle(IAlignment* pAlignment,Float64 measureStation,IDirection* pMeasureDirection);
    Float64 GetLeftGirderOffset(IAlignment* pAlignment, Float64 alignmentOffset, Float64 measureStation, IDirection* pMeasureDirection, const CGirderSpacing2* pSpacing);

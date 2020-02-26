@@ -37,11 +37,14 @@
 #define ACTIONS_STRESS_ONLY        0x0008
 #define ACTIONS_DEFLECTION_ONLY    0x0010
 #define ACTIONS_X_DEFLECTION_ONLY  0x0020
+#define ACTIONS_LOAD_RATING        0x0040
+#define ACTIONS_REACTION_ONLY      0x0080
 
 #define ACTIONS_MOMENT_SHEAR        ACTIONS_MOMENT_ONLY  | ACTIONS_SHEAR_ONLY
 #define ACTIONS_FORCE_DEFLECTION    ACTIONS_AXIAL_ONLY | ACTIONS_MOMENT_SHEAR | ACTIONS_DEFLECTION_ONLY
 #define ACTIONS_FORCE_STRESS        ACTIONS_AXIAL_ONLY | ACTIONS_MOMENT_SHEAR | ACTIONS_STRESS_ONLY
-#define ACTIONS_ALL                 ACTIONS_AXIAL_ONLY | ACTIONS_MOMENT_SHEAR | ACTIONS_STRESS_ONLY | ACTIONS_DEFLECTION_ONLY 
+#define ACTIONS_ALL                 ACTIONS_AXIAL_ONLY | ACTIONS_MOMENT_SHEAR | ACTIONS_STRESS_ONLY | ACTIONS_DEFLECTION_ONLY | ACTIONS_REACTION_ONLY
+#define ACTIONS_ALL_NO_REACTION     ACTIONS_AXIAL_ONLY | ACTIONS_MOMENT_SHEAR | ACTIONS_STRESS_ONLY | ACTIONS_DEFLECTION_ONLY
 
 class CAnalysisResultsGraphDefinition
 {
@@ -54,7 +57,7 @@ public:
    union LoadType 
    {
       pgsTypes::LimitState         LimitStateType;
-      pgsTypes::ProductForceType             ProductLoadType;
+      pgsTypes::ProductForceType   ProductLoadType;
       LoadingCombinationType       CombinedLoadType;
       pgsTypes::LiveLoadType       LiveLoadType;
    } m_LoadType;
@@ -62,6 +65,8 @@ public:
    std::set<IntervalIndexType> m_IntervalApplicability; // intervals that this graph is applicable to
    int m_ApplicableActions; // 0 = all, 1 = Forces Only, 2 = Stress Only
    VehicleIndexType m_VehicleIndex;
+
+   ActionType m_RatingAction; // only used with rating factor graphs
 
    CAnalysisResultsGraphDefinition();
    
@@ -96,6 +101,9 @@ public:
    // constructor for ultimate forces
    CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LimitState lstype,GraphType lctype,const std::vector<IntervalIndexType>& intervals,int apaction);
    CAnalysisResultsGraphDefinition(IDType id,const std::_tstring& name,pgsTypes::LiveLoadType llType,const std::vector<IntervalIndexType>& intervals,int apaction);
+
+   // constructor for load rating 
+   CAnalysisResultsGraphDefinition(IDType id, const std::_tstring& name, pgsTypes::LimitState lstype, GraphType lctype, ActionType ratingAction, VehicleIndexType vehicleIdx, const std::vector<IntervalIndexType>& intervals);
 
    void AddIntervals(const std::vector<IntervalIndexType>& intervals);
 

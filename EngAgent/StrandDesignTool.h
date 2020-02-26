@@ -45,13 +45,10 @@
 
 struct InitialDesignParameters
 {
-   IntervalIndexType intervalIdx;
-   bool bIncludeLiveLoad;
+   StressCheckTask task;
    std::_tstring strLimitState;
    std::_tstring strStressLocation;
-   pgsTypes::LimitState limit_state;
    pgsTypes::StressLocation stress_location;
-   pgsTypes::StressType stress_type;
    Float64 fmin;
    Float64 fmax;
    Float64 fAllow;
@@ -64,9 +61,9 @@ struct InitialDesignParameters
                            pgsTypes::LimitState limitState,LPCTSTR lpszLimitState,
                            pgsTypes::StressLocation stressLocation,LPCTSTR lpszStressLocation,
                            pgsTypes::StressType stressType) :
-   intervalIdx(intervalIdx),bIncludeLiveLoad(bIncludeLiveLoad),limit_state(limitState),strLimitState(lpszLimitState),
-      stress_location(stressLocation),strStressLocation(lpszStressLocation),
-      stress_type(stressType) {}
+      task(intervalIdx,limitState,stressType,bIncludeLiveLoad),strLimitState(lpszLimitState),
+      stress_location(stressLocation),strStressLocation(lpszStressLocation)
+   {}
 };
 
 typedef Int32 DebondLevelType; // NEED this to be a signed type!
@@ -328,12 +325,12 @@ public:
    Float64 GetMinimumConcreteStrength() const;
    Float64 GetMaximumConcreteStrength() const;
 
-   bool UpdateConcreteStrength(Float64 fcRequired,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation StressLocation);
-   bool UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation StressLocation);
-   bool Bump500(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation);
+   bool UpdateConcreteStrength(Float64 fcRequired, const StressCheckTask& task,pgsTypes::StressLocation StressLocation);
+   bool UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult, const StressCheckTask& task,pgsTypes::StressLocation StressLocation);
+   bool Bump500(const StressCheckTask& task,pgsTypes::StressLocation stressLocation);
    bool UpdateConcreteStrengthForShear(Float64 fcRequired,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState);
 
-   ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,Float64* pfc) const;
+   ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl, const StressCheckTask& task,Float64* pfc) const;
 
    // "A"
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
@@ -458,9 +455,7 @@ private:
    struct DesignState
    {
       Float64                  m_Strength;   // concrete strength (release or final), or number of strands
-      IntervalIndexType        m_IntervalIdx;   // controlling interval
-      pgsTypes::StressType     m_StressType; // stress type (tension or compression) 
-      pgsTypes::LimitState     m_LimitState; // 
+      StressCheckTask          m_Task; // controlling stress checking task
       pgsTypes::StressLocation m_StressLocation;
       Int16                    m_RepeatCount;
 
@@ -468,21 +463,20 @@ private:
       m_RepeatCount(0), m_Strength(0.0)
       {;}
 
-      DesignState(Float64 strength, IntervalIndexType intervalIdx, 
-                       pgsTypes::StressType stressType, pgsTypes::LimitState limitState,
-                       pgsTypes::StressLocation stressLocation):
-      m_RepeatCount(0), m_Strength(strength), m_IntervalIdx(intervalIdx), m_StressType(stressType),
-      m_LimitState(limitState), m_StressLocation(stressLocation)
+      DesignState(Float64 strength, const StressCheckTask& task,  pgsTypes::StressLocation stressLocation):
+      m_RepeatCount(0), m_Strength(strength), m_Task(task), m_StressLocation(stressLocation)
       {;}
 
       bool operator == (const DesignState& rOther) const
       {
          // note that repeat count is not part of operator
+         // also note the bIncludeLiveLoad element of m_Task is not part of operator
+         // that is why we don't do m_Task == rOther.m_Task
          return m_Strength == rOther.m_Strength  &&
-                m_IntervalIdx == rOther.m_IntervalIdx  &&
-                m_StressType == rOther.m_StressType  &&
-                m_LimitState == rOther.m_LimitState  &&
-                m_StressLocation == rOther.m_StressLocation;
+            m_Task.intervalIdx == rOther.m_Task.intervalIdx  &&
+            m_Task.stressType == rOther.m_Task.stressType  &&
+            m_Task.limitState == rOther.m_Task.limitState  &&
+            m_StressLocation == rOther.m_StressLocation;
       }
    };
 
@@ -503,22 +497,20 @@ private:
                                       pgsSegmentDesignArtifact::ConcreteStrengthDesignState::actStress;
       }
       Float64    Strength() const {return m_CurrentState.m_Strength;}
-      IntervalIndexType Interval() const {return m_CurrentState.m_IntervalIdx;}
-      pgsTypes::StressType StressType() const {return m_CurrentState.m_StressType;}
-      pgsTypes::LimitState LimitState() const {return m_CurrentState.m_LimitState;}
+      IntervalIndexType Interval() const {return m_CurrentState.m_Task.intervalIdx;}
+      pgsTypes::StressType StressType() const {return m_CurrentState.m_Task.stressType;}
+      pgsTypes::LimitState LimitState() const {return m_CurrentState.m_Task.limitState;}
       pgsTypes::StressLocation StressLocation() const {return m_CurrentState.m_StressLocation;}
 
       void Init(Float64 strength,IntervalIndexType intervalIdx)
       {
          m_Control=fciInitial;
          m_CurrentState.m_Strength = strength;
-         m_CurrentState.m_IntervalIdx = intervalIdx;
+         m_CurrentState.m_Task.intervalIdx = intervalIdx;
          m_Decreases.clear();
       }
 
-      bool DoUpdate(Float64 strength, IntervalIndexType intervalIdx, 
-                       pgsTypes::StressType stressType, pgsTypes::LimitState limitState,
-                       pgsTypes::StressLocation stressLocation, Float64* pCurrStrength)
+      bool DoUpdate(Float64 strength, const StressCheckTask& task, pgsTypes::StressLocation stressLocation, Float64* pCurrStrength)
       {
          bool retval = false;
          if (m_Control==fciInitial)
@@ -527,7 +519,7 @@ private:
             m_Control = fciSetOnce;
 
             retval = !IsEqual(strength,m_CurrentState.m_Strength);
-            StoreCurrent(strength, intervalIdx, stressType, limitState, stressLocation);
+            StoreCurrent(strength, task, stressLocation);
 
          }
          else if (m_Control==fciSetOnce || m_Control==fciSetDecrease)
@@ -541,10 +533,10 @@ private:
             else if (m_CurrentState.m_Strength < strength)
             {
                // strength is new high - set it
-               StoreCurrent(strength, intervalIdx, stressType, limitState, stressLocation);
+               StoreCurrent(strength, task, stressLocation);
                retval = true;
             }
-            else if ( ConditionsMatchCurrent(intervalIdx, stressType, limitState, stressLocation) )
+            else if ( ConditionsMatchCurrent(task, stressLocation) )
             {
                // Controlling state matches current state. We can potentially store a decrease.
                // Update only if new value is more than 150 psi less than current
@@ -552,7 +544,7 @@ private:
                {
                   // We have a decrease, see if it's been stored before
                   Int16 incr; // note assignment below - a bit tricky
-                  if (m_Control==fciSetDecrease && 0 < (incr=ConditionsMatchDecrease(strength, intervalIdx, stressType, limitState, stressLocation)) )
+                  if (m_Control==fciSetDecrease && 0 < (incr=ConditionsMatchDecrease(strength, task, stressLocation)) )
                   {
                      // This decrease has been tried before for this limit state, which means that it's probably part of a deadlock.
                      // Try a exponentially higher strength, but not more than current value
@@ -578,7 +570,7 @@ private:
                   else
                   {
                      // the first decrease for this limit state. Store it and set state
-                     StoreDecrease(strength, intervalIdx, stressType, limitState, stressLocation);
+                     StoreDecrease(strength, task, stressLocation);
 
                      m_Control = fciSetDecrease; // we have a decrease for comparisons
                      retval = true;
@@ -586,7 +578,7 @@ private:
 
                   if (retval)
                   {
-                     StoreCurrent(strength, intervalIdx, stressType, limitState, stressLocation);
+                     StoreCurrent(strength, task, stressLocation);
                   }
                }
                else
@@ -618,23 +610,21 @@ private:
          ATLASSERT(m_Control!=fciSetShear); // this should only ever happen once
          m_Control=fciSetShear;
 
-         m_CurrentState.m_Strength       = strength;
-         m_CurrentState.m_IntervalIdx    = intervalIdx;
-         m_CurrentState.m_LimitState     = limitState;
+         m_CurrentState.m_Strength = strength;
+         m_CurrentState.m_Task.intervalIdx = intervalIdx;
+         m_CurrentState.m_Task.limitState = limitState;
       }
 
 private:
-      bool ConditionsMatchCurrent(IntervalIndexType intervalIdx, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
+      bool ConditionsMatchCurrent(const StressCheckTask& task, pgsTypes::StressLocation stressLocation)
       {
-         return (m_CurrentState.m_IntervalIdx          == intervalIdx      &&
-                 m_CurrentState.m_LimitState     == limitState &&
-                 m_CurrentState.m_StressType     == stressType &&
+         return (m_CurrentState.m_Task == task &&
                  m_CurrentState.m_StressLocation == stressLocation);
       }
 
-      Int16 ConditionsMatchDecrease(Float64 strength, IntervalIndexType intervalIdx, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
+      Int16 ConditionsMatchDecrease(Float64 strength, const StressCheckTask& task, pgsTypes::StressLocation stressLocation)
       {
-         DesignState local( strength, intervalIdx, stressType, limitState, stressLocation);
+         DesignState local( strength, task, stressLocation);
          DIterator it = std::find(m_Decreases.begin(), m_Decreases.end(), local);
          if (it != m_Decreases.end())
          {
@@ -646,19 +636,17 @@ private:
          }
       }
 
-      void StoreCurrent(Float64 strength, IntervalIndexType intervalIdx, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
+      void StoreCurrent(Float64 strength, const StressCheckTask& task, pgsTypes::StressLocation stressLocation)
       {
          m_CurrentState.m_Strength       = strength;
-         m_CurrentState.m_IntervalIdx    = intervalIdx;
-         m_CurrentState.m_LimitState     = limitState;
-         m_CurrentState.m_StressType     = stressType;
+         m_CurrentState.m_Task = task;
          m_CurrentState.m_StressLocation = stressLocation;
       }
 
-      void StoreDecrease(Float64 strength, IntervalIndexType intervalIdx, pgsTypes::StressType stressType, pgsTypes::LimitState limitState, pgsTypes::StressLocation stressLocation)
+      void StoreDecrease(Float64 strength, const StressCheckTask& task, pgsTypes::StressLocation stressLocation)
       {
          // assumption here is that ConditionsMatchDecrease() returned 0 before this call
-         DesignState local( strength, intervalIdx, stressType, limitState, stressLocation);
+         DesignState local( strength, task, stressLocation);
          local.m_RepeatCount = 1;
          m_Decreases.push_front(local);
       }
@@ -702,6 +690,8 @@ private:
    Float64 m_AllowableStrandSlope;
    bool m_DoDesignForHoldDownForce;
    Float64 m_AllowableHoldDownForce;
+   Float64 m_HoldDownFriction;
+   bool m_bTotalHoldDownForce;
 
    bool AdjustForStrandSlope();
    bool AdjustForHoldDownForce();

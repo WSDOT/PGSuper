@@ -31,7 +31,8 @@ enum ActionType
    actionDeflection, 
    actionXDeflection,
    actionRotation,
-   actionStress
+   actionStress,
+   actionLoadRating
 };
 
 enum GraphType 
@@ -45,6 +46,7 @@ enum GraphType
    graphAllowable, 
    graphCapacity,
    graphMinCapacity,
-   graphDeckShrinkageStress
+   graphDeckShrinkageStress,
+   graphLoadRating
 };
 

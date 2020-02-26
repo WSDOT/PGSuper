@@ -80,63 +80,55 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (segmentKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(segmentKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = (segmentKey.girderIndex == ALL_GIRDERS ? 0 : segmentKey.girderIndex);
-      GirderIndexType lastGirderIdx  = (segmentKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
-      
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+      SegmentIndexType firstSegmentIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
+      SegmentIndexType lastSegmentIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegmentIdx);
+      for ( SegmentIndexType segIdx = firstSegmentIdx; segIdx <= lastSegmentIdx; segIdx++ )
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
-         SegmentIndexType firstSegmentIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
-         SegmentIndexType lastSegmentIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegmentIdx);
-         for ( SegmentIndexType segIdx = firstSegmentIdx; segIdx <= lastSegmentIdx; segIdx++ )
+         CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
+
+         //if ( lossMethod == pgsTypes::TIME_STEP )
+         //{
+         //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+         //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+         //   for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
+         //   {
+         //      CStrandEccTable ecc_table;
+         //      *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
+         //   }
+         //}
+         //else
+         //{
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+            CStrandEccTable ecc_table;
+            *p << ecc_table.Build(pBroker,thisSegmentKey,releaseIntervalIdx,pDisplayUnits) << rptNewLine;
+         //}
+
+         p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+         *pChapter << p;
+         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+         if ( pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross )
          {
-            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
-
-            //if ( lossMethod == pgsTypes::TIME_STEP )
-            //{
-            //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-            //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-            //   for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-            //   {
-            //      CStrandEccTable ecc_table;
-            //      *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
-            //   }
-            //}
-            //else
-            //{
-               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-               CStrandEccTable ecc_table;
-               *p << ecc_table.Build(pBroker,thisSegmentKey,releaseIntervalIdx,pDisplayUnits) << rptNewLine;
-            //}
-
-            p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
-            *pChapter << p;
-            GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-            if ( pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross )
-            {
-               *p << _T("Eccentricities are based on the gross non-composite girder section") << rptNewLine;
-            }
-            else
-            {
-               *p << _T("Eccentricities are based on the net non-composite girder section") << rptNewLine;
-            }
-            *p << _T("Eccentricities measured from neutral axis of non-composite section based on material properties at time of prestress release") << rptNewLine;
-
-            if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing())
-            {
-               *p << _T("Positive ") << Sub2(_T("e"), _T("x")) << _T(" values indicate strands are to the left of the centroid") << rptNewLine;
-            }
-            *p << _T("Positive ") << Sub2(_T("e"), _T("y")) << _T(" values indicate strands are below the centroid") << rptNewLine;
-            *p << rptNewLine;
+            *p << _T("Eccentricities are based on the gross non-composite girder section") << rptNewLine;
          }
-      }
-   }
+         else
+         {
+            *p << _T("Eccentricities are based on the net non-composite girder section") << rptNewLine;
+         }
+         *p << _T("Eccentricities measured from neutral axis of non-composite section based on material properties at time of prestress release") << rptNewLine;
+
+         if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing())
+         {
+            *p << _T("Positive ") << Sub2(_T("e"), _T("x")) << _T(" values indicate strands are to the left of the centroid") << rptNewLine;
+         }
+         *p << _T("Positive ") << Sub2(_T("e"), _T("y")) << _T(" values indicate strands are below the centroid") << rptNewLine;
+         *p << rptNewLine;
+      } // next segment
+   } // next group
 }
 
 void CStrandEccentricities::MakeCopy(const CStrandEccentricities& rOther)

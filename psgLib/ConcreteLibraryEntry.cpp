@@ -69,6 +69,10 @@ CString ConcreteLibraryEntry::GetConcreteType(pgsTypes::ConcreteType type)
       lpszType = _T("Sand lightweight");
       break;
 
+   case pgsTypes::UHPC:
+      lpszType = _T("UHPC");
+      break;
+
    default:
       ATLASSERT(false);
    }
@@ -279,7 +283,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          std::_tstring strType;
          pLoad->Property(_T("Type"),&strType);
-         m_Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromName(strType.c_str());
+         m_Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(strType.c_str());
       }
 
       if(!pLoad->Property(_T("Dw"), &m_Dw))

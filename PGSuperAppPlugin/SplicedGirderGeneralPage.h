@@ -51,6 +51,10 @@ public:
    const matPsStrand* GetStrand();
    pgsTypes::StrandInstallationType GetInstallationType();
 
+   grlibPointMapper::MapMode GetTendonControlMapMode() const;
+
+   CSplicedGirderData* GetGirder();
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
@@ -65,6 +69,7 @@ protected:
 
    CGirderGrid m_GirderGrid;
    CDuctGrid   m_DuctGrid;
+   friend CDuctGrid;
    CDrawTendonsControl m_DrawTendons;
 
 	DECLARE_MESSAGE_MAP()
@@ -76,6 +81,7 @@ public:
    afx_msg void OnInstallationTypeChanged();
    afx_msg void OnConditionFactorTypeChanged();
    afx_msg void OnChangeGirderType();
+   afx_msg void OnSchematicButton();
 
    void OnDuctChanged();
    afx_msg void OnHelp();

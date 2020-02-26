@@ -79,11 +79,6 @@ interface IDistFactorEngineer : IUnknown
    virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
 
    //---------------------------------------------------------------------
-   // Returns the distribution factor for reaction
-   virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
-
-   //---------------------------------------------------------------------
    // Creates a detailed report of the distribution factor computation
    virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
 
@@ -97,11 +92,10 @@ interface IDistFactorEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Get all types of factors
-   virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
-                               Float64* gpM, Float64* gpM1, Float64* gpM2,     // pos moment
-                               Float64* gnM, Float64* gnM1, Float64* gnM2,     // neg moment
-                               Float64* gV,  Float64* gV1,  Float64* gV2,      // shear
-                               Float64* gR,  Float64* gR1,  Float64* gR2 ) = 0;// reaction
+   virtual bool GetDFResultsEx(const CSpanKey& spanKey, pgsTypes::LimitState ls,
+      Float64* gpM, Float64* gpM1, Float64* gpM2,     // pos moment
+      Float64* gnM, Float64* gnM1, Float64* gnM2,     // neg moment
+      Float64* gV, Float64* gV1, Float64* gV2) = 0;      // shear
 
    virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
    virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;

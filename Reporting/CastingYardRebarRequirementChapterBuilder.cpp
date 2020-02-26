@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Allowables.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -122,7 +123,9 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    // need to report for all spec-check intervals after a closure joint
    // is composite with the girder
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there is more than one segment in the girder
-   std::vector<IntervalIndexType> vSpecCheckIntervals = pIntervals->GetSpecCheckIntervals(girderKey);
+
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   std::vector<IntervalIndexType> vSpecCheckIntervals = pStressCheck->GetStressCheckIntervals(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
    {
       CClosureKey closureKey(girderKey,segIdx);
@@ -150,7 +153,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
             // Service III limit state after live load is applied
             pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
-            bool bIsApplicable = pAllowStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension);
+            bool bIsApplicable = pAllowStress->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension));
             if ( bIsApplicable )
             {
                pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
@@ -169,14 +172,14 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
    // Report for Deck
    // need to report for all intervals when post-tensioning occurs after the
    // deck is composite
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    std::set<IntervalIndexType> vIntervals;
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      IntervalIndexType intervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
-      if ( compositeDeckIntervalIdx <= intervalIdx )
+      IntervalIndexType intervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
+      if (lastCompositeDeckIntervalIdx <= intervalIdx )
       {
          vIntervals.insert(intervalIdx);
       }
@@ -254,11 +257,11 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
 
    if (bSimpleTable)
    {
-      (*pPara) << Sub2(_T("Y"), _T("na")) << _T(", the location of the neutral axis, is measured from the top of the closure joint") << rptNewLine;
+      (*pPara) << Sub2(_T("Y"), _T("na")) << _T(", the location of the neutral axis, is measured from the top of the closure joint based on the non-composite girder section") << rptNewLine;
    }
    else
    {
-      (*pPara) << _T("The neutral axis is defined by its location with respect to the top center of the closure joint (") << Sub2(_T("Y"), _T("na")) << _T(") and its slope (Slope NA)") << rptNewLine;
+      (*pPara) << _T("The neutral axis is defined by its location with respect to the top center of the closure joint based on the non-composite girder section (") << Sub2(_T("Y"), _T("na")) << _T(") and its slope (Slope NA)") << rptNewLine;
    }
    (*pPara) << Super(_T("*")) << _T(" to be considered sufficient, reinforcement must be fully developed and lie within the tension area of the section") << rptNewLine;
    (*pPara) << _T("** minimum area of sufficiently bonded reinforcement needed to use the alternative tensile stress limit") << rptNewLine;
@@ -379,10 +382,18 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+   IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
 
    // allowable tension stresses are checked in the Service I limit state before live load is applied and in the
    // Service III limit state after live load is applied
    pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
+
+   GET_IFACE2(pBroker,IDocumentType, pDocType);
+   if (pDocType->IsPGSpliceDocument() && overlayIntervalIdx != INVALID_INDEX && overlayIntervalIdx == intervalIdx && liveLoadIntervalIdx < overlayIntervalIdx)
+   {
+      limitState = pgsTypes::ServiceI;
+   }
+
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
    location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS || poi.GetID() != INVALID_ID);
@@ -400,6 +411,8 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    SegmentIndexType firstSegIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
    SegmentIndexType lastSegIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegIdx );
 
+   StressCheckTask task(intervalIdx, limitState, pgsTypes::Tension);
+
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    for ( SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++ )
    {
@@ -410,7 +423,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
       if ( poi.GetID() == INVALID_ID )
       {
          // reporting for all vPoi
-         nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(intervalIdx,limitState,pgsTypes::Tension);
+         nArtifacts = pSegmentArtifact->GetFlexuralStressArtifactCount(task);
       }
       else
       {
@@ -423,11 +436,11 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
          const pgsFlexuralStressArtifact* pArtifact;
          if ( poi.GetID() == INVALID_ID )
          {
-            pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( intervalIdx,limitState,pgsTypes::Tension,artifactIdx );
+            pArtifact = pSegmentArtifact->GetFlexuralStressArtifact( task,artifactIdx );
          }
          else
          {
-            pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(intervalIdx,limitState,pgsTypes::Tension,poi.GetID());
+            pArtifact = pSegmentArtifact->GetFlexuralStressArtifactAtPoi(task,poi.GetID());
          }
 
          ATLASSERT(pArtifact != nullptr);

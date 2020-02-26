@@ -42,7 +42,9 @@ static char THIS_FILE[] = __FILE__;
 #define AS_STRESS_TENDONS               0x0100
 #define AS_REMOVE_TEMP_SUPPORTS         0x0200
 
-CTimelineEvent::CTimelineEvent()
+CTimelineEvent::CTimelineEvent() :
+m_ConstructSegments(this),
+m_ErectSegments(this)
 {
    m_ID = INVALID_ID;
    m_Day = 0;
@@ -50,7 +52,9 @@ CTimelineEvent::CTimelineEvent()
    m_pTimelineMgr = nullptr;
 }
 
-CTimelineEvent::CTimelineEvent(const CTimelineEvent& rOther)
+CTimelineEvent::CTimelineEvent(const CTimelineEvent& rOther) :
+   m_ConstructSegments(this),
+   m_ErectSegments(this)
 {
    m_pTimelineMgr = nullptr;
    m_ID = INVALID_ID;
@@ -204,6 +208,22 @@ bool CTimelineEvent::operator!=(const CTimelineEvent& rOther) const
    return !operator==(rOther);
 }
 
+void CTimelineEvent::ClearCaches()
+{
+   // only the uncommented activities have caches... we could have do nothing
+   // ClearCaches methods on all activities, but it would be unnecessary overhead
+   // to call them to do nothing
+   //m_ApplyLoads.ClearCaches();
+   m_ErectPiers.ClearCaches();
+   //m_ConstructSegments.ClearCaches();
+   //m_ErectSegments.ClearCaches();
+   m_CastClosureJoints.ClearCaches();
+   //m_CastDeck.ClearCaches();
+   //m_StressTendons.ClearCaches();
+   //m_RemoveTempSupports.ClearCaches();
+   //m_CastLongitudinalJoints.ClearCaches();
+}
+
 void CTimelineEvent::SetTimelineManager(CTimelineManager* pTimelineMgr)
 {
    m_pTimelineMgr = pTimelineMgr;
@@ -274,7 +294,7 @@ Float64 CTimelineEvent::GetDuration() const
 
    if ( m_CastDeck.IsEnabled() )
    {
-      duration = Max(duration,m_CastDeck.GetCuringDuration());
+      duration = Max(duration,m_CastDeck.GetDuration());
    }
 
    if (m_CastLongitudinalJoints.IsEnabled())
@@ -463,7 +483,7 @@ Float64 CTimelineEvent::GetMinElapsedTime() const
 
    if (m_CastDeck.IsEnabled())
    {
-      elapsedTime = Max(elapsedTime, m_CastDeck.GetConcreteAgeAtContinuity());
+      elapsedTime = Max(elapsedTime, m_CastDeck.GetDuration());
    }
 
    if (m_CastLongitudinalJoints.IsEnabled())

@@ -313,8 +313,8 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE  );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // end block transition points
    if (0 < (ebLength + ebTransition))
@@ -323,20 +323,16 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
       {
          // there is an abrupt section change
          pgsPointOfInterest poiStartEndBlock1(segmentKey, ebLength, POI_SECTCHANGE_LEFTFACE);
-         poiStartEndBlock1.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock1) != INVALID_ID);
 
          pgsPointOfInterest poiStartEndBlock2(segmentKey, ebLength, POI_SECTCHANGE_RIGHTFACE);
-         poiStartEndBlock2.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock2) != INVALID_ID);
 
          pgsPointOfInterest poiEndEndBlock1(segmentKey, gdrLength - ebLength, POI_SECTCHANGE_LEFTFACE);
-         poiEndEndBlock1.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock1) != INVALID_ID);
 
          pgsPointOfInterest poiEndEndBlock2(segmentKey, gdrLength - ebLength, POI_SECTCHANGE_RIGHTFACE);
-         poiEndEndBlock2.CanMerge(false);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock2) != INVALID_ID);
       }
       else
       {
@@ -346,10 +342,10 @@ void CIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const C
          pgsPointOfInterest poiEndEndBlock2(segmentKey, gdrLength - ebLength - ebTransition, POI_SECTCHANGE_TRANSITION);
          pgsPointOfInterest poiEndEndBlock1(segmentKey, gdrLength - ebLength, POI_SECTCHANGE_TRANSITION);
 
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock1);
-         pPoiMgr->AddPointOfInterest(poiStartEndBlock2);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock2);
-         pPoiMgr->AddPointOfInterest(poiEndEndBlock1);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock1) != INVALID_ID);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiStartEndBlock2) != INVALID_ID);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock2) != INVALID_ID);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock1) != INVALID_ID);
       }
    }
 }
@@ -724,11 +720,6 @@ bool CIBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CIBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   return 0;
-}
-
 std::_tstring CIBeamFactory::GetImage() const
 {
    return std::_tstring(_T("IBeam.jpg"));
@@ -974,6 +965,26 @@ bool CIBeamFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimension
    return false;
 }
 
+pgsTypes::WorkPointLocations CIBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+
+   if (IsSpreadSpacing(spacingType))
+   {
+      wpls.push_back(pgsTypes::wplBottomGirder);
+   }
+
+   return wpls;
+}
+
+bool CIBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CIBeamFactory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb/*, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal*/ };
@@ -1080,6 +1091,23 @@ Float64 CIBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,p
    Float64 bot = 2*(W3+W4) + T2;
 
    return Max(top,bot);
+}
+
+void CIBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 W1 = GetDimension(dimensions,_T("W1"));
+   Float64 W2 = GetDimension(dimensions,_T("W2"));
+   Float64 W3 = GetDimension(dimensions,_T("W3"));
+   Float64 W4 = GetDimension(dimensions,_T("W4"));
+   Float64 T1 = GetDimension(dimensions,_T("T1"));
+   Float64 T2 = GetDimension(dimensions,_T("T2"));
+
+   Float64 top = 2*(W1+W2) + T1;
+
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CIBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const

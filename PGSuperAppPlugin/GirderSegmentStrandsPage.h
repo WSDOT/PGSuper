@@ -91,6 +91,7 @@ protected:
 
    CPrecastSegmentData* m_pSegment; // holds the strand data for the calling dialog
    CStrandData m_Strands; // holds strand data while editing is occuring (this is used to update the display)
+   CSegmentPTData m_Tendons; // holds strand data while editing is occuring (this is used to update the display)
 
 public:
    afx_msg void OnBnClickedAdd();

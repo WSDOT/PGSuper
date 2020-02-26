@@ -32,12 +32,12 @@
 #include <Reporting\LiveLoadDistributionFactorTable.h>
 
 #include <IFace\Bridge.h>
-
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace\Allowables.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 
@@ -142,9 +142,8 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    }
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -159,15 +158,12 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       p = new rptParagraph;
       *pChapter << p;
 
-      for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+      for(const auto& thisGirderKey : vGirderKeys)
       {
-         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-         GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
-
          rptRcTable* pReleaseLayoutTable = nullptr;
          rptRcTable* pStorageLayoutTable = nullptr;
          rptRcTable* pLayoutTable        = nullptr;
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
          if ( 1 < nSegments )
          {
             pReleaseLayoutTable = rptStyleManager::CreateLayoutTable(nSegments,_T("Segment Stresses at Prestress Release"));
@@ -184,7 +180,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            CSegmentKey segmentKey(thisGirderKey,segIdx);
 
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
@@ -203,17 +199,13 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
                (*pStorageLayoutTable)(0,segIdx) << CCastingYardStressTable().Build(pBroker,segmentKey,storageIntervalIdx,POI_STORAGE_SEGMENT,strTableTitle.GetBuffer(),pDisplayUnits) << rptNewLine;
             }
          }
-      }
-   }
+      } // next girder
+   } // if bDesign
 
    // Bridge Site Results
-   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
-      CGirderKey thisGirderKey(grpIdx,gdrIdx);
-
-      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+      IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       // product stresses in girder
@@ -233,29 +225,19 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
       // stresses in girder
       GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-      bool bAreThereUserLoads = pUDL->DoUserLoadsExist(thisGirderKey);
-      if (bAreThereUserLoads)
+      std::vector<IntervalIndexType> vUserLoadIntervals = pUDL->GetUserDefinedLoadIntervals(girderKey);
+      for (auto intervalIdx : vUserLoadIntervals)
       {
-         std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
-         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-         for ( ; iter != end; iter++ )
+         *p << CUserStressTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits, true/*girder stresses*/) << rptNewLine;
+         if (compositeDeckIntervalIdx <= intervalIdx)
          {
-            IntervalIndexType intervalIdx = *iter;
-            if ( pUDL->DoUserLoadsExist(thisGirderKey,intervalIdx))
-            {
-               *p << CUserStressTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits,true/*girder stresses*/) << rptNewLine;
-               if ( compositeDeckIntervalIdx <= intervalIdx )
-               {
-                  *p << CUserStressTable().Build(pBroker,thisGirderKey,analysisType,intervalIdx,pDisplayUnits,false/*deck stresses*/) << rptNewLine;
-               }
-            }
+            *p << CUserStressTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits, false/*deck stresses*/) << rptNewLine;
          }
       }
 
       // Load Combinations (DC, DW, etc) & Limit States
-
-      std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(thisGirderKey));
+      GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+      std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(thisGirderKey));
       // if we are doing a time-step analysis, we need to report for all intervals from
       // the first prestress release to the end to report all time-dependent effects
       bool bTimeDependentNote = false;
@@ -271,9 +253,6 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
       for (const auto& intervalIdx : vIntervals)
       {
-         IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-         IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-
          p = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << p;
          CString strName;
@@ -327,16 +306,14 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    *pChapter << p;
    p->SetName(_T("Stress due to Prestress"));
    *p << p->GetName() << rptNewLine;
-   GroupIndexType nGroups_Reported = lastGroupIdx - firstGroupIdx + 1;
-   for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
-   {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
+   GroupIndexType nGroups_Reported = vGirderKeys.back().groupIndex - vGirderKeys.front().groupIndex + 1;
 
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+   for(const auto& thisGirderKey : vGirderKeys)
+   {
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
 
          if ( 1 < nGroups_Reported || 0 < nSegments)
          {
@@ -344,11 +321,11 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
             *pChapter << p;
             if (bIsSplicedGirder)
             {
-               *p << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+               *p << _T("Group ") << LABEL_GROUP(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
             }
             else
             {
-               *p << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
+               *p << _T("Span ") << LABEL_SPAN(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex) << rptNewLine;
             }
          }
 
@@ -361,24 +338,19 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
 
    if ( bIsSplicedGirder )
    {
-      GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+      GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       p->SetName(_T("Stresses due to Post-tensioning"));
       *p << p->GetName() << rptNewLine;
-      for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+      for(const auto& thisGirderKey : vGirderKeys)
       {
-         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-         GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
-
-         CGirderKey girderKey(grpIdx,gdrIdx);
-
-         if ( 0 < pTendonGeom->GetDuctCount(girderKey) )
+         if ( 0 < pTendonGeom->GetDuctCount(thisGirderKey) )
          {
             p = new rptParagraph;
             *pChapter << p;
-            *p << CPosttensionStressTable().Build(pBroker,girderKey,bDesign,pDisplayUnits,true /*girder stresses*/) << rptNewLine;
-            *p << CPosttensionStressTable().Build(pBroker,girderKey,bDesign,pDisplayUnits,false/*deck stresses*/) << rptNewLine;
+            *p << CPosttensionStressTable().Build(pBroker,thisGirderKey,bDesign,pDisplayUnits,true /*girder stresses*/) << rptNewLine;
+            *p << CPosttensionStressTable().Build(pBroker,thisGirderKey,bDesign,pDisplayUnits,false/*deck stresses*/) << rptNewLine;
          }
       }
    }

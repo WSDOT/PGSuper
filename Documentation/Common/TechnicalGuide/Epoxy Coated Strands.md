@@ -1,6 +1,6 @@
 Epoxy Coated Strands {#tg_epoxy_coated_strands}
 ======================================
-Grit impregnated epoxy coated strands may be modeled. The recommendatons presented in ["Guidelines for the use of Epoxy-Coated Strand", PCI Journal, July-August 1993](http://www.pci.org/uploadedFiles/Siteroot/Publications/PCI_Journal/1993/July-1993/jl-93-july-august-3.pdf) are used for transfer length and relaxation losses.
+Grit impregnated epoxy coated strands may be modeled. The recommendatons presented in ["Guidelines for the use of Epoxy-Coated Strand", PCI Journal, July-August 1993](https://www.pci.org/PCI_Docs/Publications/PCI%20Journal/1993/July/Guidelines%20for%20the%20Use%20of%20Epoxy-Coated%20Strand.pdf) are used for transfer length and relaxation losses.
 
 Transfer Length
 ---------------

@@ -1767,34 +1767,18 @@ EventIDType CTimelineManager::GetCastDeckEventID() const
 
 int CTimelineManager::SetCastDeckEventByIndex(EventIndexType eventIdx,bool bAdjustTimeline)
 {
-   bool bUpdateAge = false;
-   Float64 age_at_continuity = 7.0;
-   CTimelineEvent* pOldCastDeckEvent = nullptr;
+   EventIndexType currentCastDeckEventIdx = GetCastDeckEventIndex();
 
-   // search for the event where the deck is cast
-   for (auto* pTimelineEvent : m_TimelineEvents)
-   {
-      if ( pTimelineEvent->GetCastDeckActivity().IsEnabled() )
-      {
-         bUpdateAge = true;
-         age_at_continuity = pTimelineEvent->GetCastDeckActivity().GetConcreteAgeAtContinuity();
-         pTimelineEvent->GetCastDeckActivity().Enable(false);
-         pOldCastDeckEvent = pTimelineEvent; // hang onto the event in case the edit needs to be rolled back
-         break;
-      }
-   }
+   CTimelineEvent* pOldCastDeckEvent = m_TimelineEvents[currentCastDeckEventIdx];
+   pOldCastDeckEvent->GetCastDeckActivity().Enable(false);
 
    if ( eventIdx != INVALID_INDEX )
    {
-      CTimelineEvent cast_deck_event = *m_TimelineEvents[eventIdx];
-      cast_deck_event.GetCastDeckActivity().Enable(true);
+      CTimelineEvent new_cast_deck_event = *m_TimelineEvents[eventIdx];
+      new_cast_deck_event.SetCastDeckActivity(pOldCastDeckEvent->GetCastDeckActivity()); // copy the cast deck activity details from the old event to the new event
+      new_cast_deck_event.GetCastDeckActivity().Enable(true);
 
-      if ( bUpdateAge )
-      {
-         cast_deck_event.GetCastDeckActivity().SetConcreteAgeAtContinuity(age_at_continuity);
-      }
-
-      int result = SetEventByIndex(eventIdx,cast_deck_event,bAdjustTimeline);
+      int result = SetEventByIndex(eventIdx, new_cast_deck_event, bAdjustTimeline);
       if ( result != TLM_SUCCESS )
       {
          // there was a problem... roll back the edit
@@ -2451,7 +2435,6 @@ int CTimelineManager::Validate() const
          GirderIDType girderID = pGirder->GetID();
 
          // find out when the first tendon is stressed in this girder
-         EventIndexType firstPTEventIdx = GetEventCount();
          const CPTData* pPTData = pGirder->GetPostTensioning();
          DuctIndexType nDucts = pPTData->GetDuctCount();
          for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -2462,7 +2445,11 @@ int CTimelineManager::Validate() const
                return TLM_STRESS_TENDONS_ACTIVITY_REQUIRED;
             }
 
-            firstPTEventIdx = Min(firstPTEventIdx,GetStressTendonEventIndex(girderID,ductIdx));
+			int result = ValidateDuct(pGirder,ductIdx);
+			if (result != TLM_SUCCESS)
+			{
+				return result;
+			}
          }
 
 
@@ -2520,14 +2507,8 @@ int CTimelineManager::Validate() const
                return TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED;
             }
 
-            // and its supports must be erected prior to the segment being erected...
+            // and its supports must be erected prior to the segment being erected
             EventIndexType erectSegmentEventIdx = GetSegmentErectionEventIndex(segID);
-
-            // and it must be erected before the first tendon is stressed
-            if ( firstPTEventIdx <= erectSegmentEventIdx )
-            {
-               return TLM_STRESS_TENDON_ERROR;
-            }
 
             std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
             for (const auto& pPier : vPiers)
@@ -2554,7 +2535,7 @@ int CTimelineManager::Validate() const
                }
             }
 
-            const CClosureJointData* pClosureJoint = pSegment->GetEndClosure();
+            const CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosureJoint )
             {
                // if there is a closure joint....
@@ -2574,18 +2555,71 @@ int CTimelineManager::Validate() const
                {
                   return TLM_CLOSURE_JOINT_ERROR;
                }
-
-               // must be cast before the first tendon is stressed
-               if ( firstPTEventIdx <= castClosureEventIdx )
-               {
-                  return TLM_STRESS_TENDON_ERROR;
-               }
             }
          } // next segment
       } // next girder
    } // next group
 
    return TLM_SUCCESS;
+}
+
+int CTimelineManager::ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexType ductIdx) const
+{
+	EventIndexType ptEventIdx = GetStressTendonEventIndex(pGirder->GetID(), ductIdx);
+	const CPTData* pPTData = pGirder->GetPostTensioning();
+	const CDuctData* pDuctData = pPTData->GetDuct(ductIdx);
+	SegmentIndexType startSegIdx, endSegIdx;
+	switch (pDuctData->DuctGeometryType)
+	{
+	case CDuctGeometry::Linear:
+		startSegIdx = 0;
+		endSegIdx = pGirder->GetSegmentCount() - 1;
+		break;
+	case CDuctGeometry::Parabolic:
+	{
+		PierIndexType startPierIdx, endPierIdx;
+		pDuctData->ParabolicDuctGeometry.GetRange(&startPierIdx, &endPierIdx);
+		SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
+		SpanIndexType endSpanIdx = (SpanIndexType)(endPierIdx - 1);
+		auto vStartSegments = pGirder->GetSegmentsForSpan(startSpanIdx);
+		auto vEndSegments = pGirder->GetSegmentsForSpan(endSpanIdx);
+		startSegIdx = vStartSegments.front()->GetSegmentKey().segmentIndex;
+		endSegIdx = vEndSegments.back()->GetSegmentKey().segmentIndex;
+        break;
+	}
+	case CDuctGeometry::Offset:
+		ATLASSERT(false); // not fully implemented yet
+		break;
+	default:
+		ATLASSERT(false); // is there a new type
+	}
+
+	for (SegmentIndexType segIdx = startSegIdx; segIdx <= endSegIdx; segIdx++)
+	{
+		SegmentIDType segID = pGirder->GetSegment(segIdx)->GetID();
+		EventIndexType erectSegmentEventIdx = GetSegmentErectionEventIndex(segID);
+		// segment must be erected before its field installed tendon is stressed
+		if (ptEventIdx <= erectSegmentEventIdx)
+		{
+			return TLM_STRESS_TENDON_ERROR;
+		}
+
+		const auto* pClosureJoint = pGirder->GetSegment(segIdx)->GetClosureJoint(pgsTypes::metEnd);
+		if (pClosureJoint && segIdx != endSegIdx)
+		{
+			// if there is a closure at the end of the segment, and this is not the last segment, 
+			// the closure joint must be cast before the tendon crossing it is stressed.
+			// the tendon ends in the last segment, so the tendon doesn't cross the closure joint
+			// at end of the last segment
+			EventIndexType castClosureEventIdx = GetCastClosureJointEventIndex(pClosureJoint);
+			if (ptEventIdx <= castClosureEventIdx)
+			{
+				return TLM_STRESS_TENDON_ERROR;
+			}
+		}
+	}
+
+	return TLM_SUCCESS;
 }
 
 HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
@@ -2601,7 +2635,7 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       Float64 version;
       hr = pStrLoad->get_Version(&version);
 
-      std::vector<CTendonKey> vStressedTendons; // keeps track of the tendons that are stressed (see bug issue below)
+      std::vector<CGirderTendonKey> vStressedTendons; // keeps track of the tendons that are stressed (see bug issue below)
 
       CComVariant var;
       var.vt = VT_INDEX;
@@ -2627,7 +2661,7 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          CStressTendonActivity& stressTendonActivity = pTimelineEvent->GetStressTendonActivity();
          if (stressTendonActivity.IsEnabled())
          {
-            std::vector<CTendonKey> vTendonKeys = stressTendonActivity.GetTendons();
+            std::vector<CGirderTendonKey> vTendonKeys = stressTendonActivity.GetTendons();
             for (const auto& tendonKey : vTendonKeys)
             {
                if (std::find(vStressedTendons.cbegin(), vStressedTendons.cend(), tendonKey) == vStressedTendons.cend())
@@ -2827,6 +2861,11 @@ void CTimelineManager::Sort()
    }
 }
 
+void CTimelineManager::ClearCaches()
+{
+   std::for_each(std::begin(m_TimelineEvents), std::end(m_TimelineEvents), [](auto* pTimelineEvent) {pTimelineEvent->ClearCaches(); });
+}
+
 Float64 g_Day;
 bool SearchMe(CTimelineEvent* pEvent)
 { 
@@ -2900,6 +2939,18 @@ CString CTimelineManager::GetErrorMessage(int errorCode) const
    CString strMsg;
    switch(errorCode)
    {
+   case TLM_OVERLAPS_PREVIOUS_EVENT:
+      strMsg = _T("This event begins before the activities in the previous event have completed.");
+      break;
+
+   case TLM_OVERRUNS_NEXT_EVENT:
+      strMsg = _T("The activities in this event end after the next event begins.");
+      break;
+
+   case TLM_EVENT_NOT_FOUND:
+      strMsg = _T("Event not found");
+      break;
+
    case TLM_CAST_DECK_ACTIVITY_REQUIRED:
       strMsg = _T("The timeline does not include an activity for casting the deck.");
       break;
@@ -3002,7 +3053,7 @@ void CTimelineManager::AssertValid() const
    std::set<SegmentIDType> erectedSegments;
    std::set<SupportIDType> removedTempSupports;
    std::set<SupportIDType> castClosureJoints;
-   std::set<CTendonKey> stressTendons;
+   std::set<CGirderTendonKey> stressTendons;
 
    auto& iter(m_TimelineEvents.cbegin());
    const auto& end(m_TimelineEvents.cend());

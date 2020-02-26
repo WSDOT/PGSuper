@@ -31,6 +31,7 @@
 #include <Reporting\InterfaceShearTable.h>
 #include <Reporting\StrandSlopeCheck.h>
 #include <Reporting\HoldDownForceCheck.h>
+#include <Reporting\PlantHandlingCheck.h>
 #include <Reporting\ConstructabilityCheckTable.h>
 #include <Reporting\CamberTable.h>
 #include <Reporting\GirderDetailingCheck.h>
@@ -122,17 +123,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
 
-   std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
-   IntervalIndexType lastIntervalIdx          = vIntervals.back();
+   IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount() - 1;
    IntervalIndexType tsRemovalIntervalIdx     = pIntervals->GetTemporaryStrandRemovalInterval(CSegmentKey(girderKey,0));
    IntervalIndexType liftingIntervalIdx       = pIntervals->GetLiftSegmentInterval(CSegmentKey(girderKey,0));
    IntervalIndexType haulingIntervalIdx       = pIntervals->GetHaulSegmentInterval(CSegmentKey(girderKey,0));
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(girderKey);
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastGirderTendonStressingInterval(girderKey);
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
-
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Stress Limitations on Prestressing Tendons [") << LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) << _T("]");
@@ -211,37 +209,24 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CContinuityCheck().Build(pChapter,pBroker,girderKey,pDisplayUnits);
 
    // report flexural stresses at various intervals
-   std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-   std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-   for ( ; iter != end; iter++ )
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   std::vector<StressCheckTask> vTasks(pStressCheck->GetStressCheckTasks(girderKey));
+   for (const auto& task : vTasks)
    {
-      IntervalIndexType intervalIdx = *iter;
+      IntervalIndexType intervalIdx = task.intervalIdx;
 
       // skip lifting and hauling... the reporting is different. See below
-      if ( intervalIdx == liftingIntervalIdx || intervalIdx == haulingIntervalIdx )
+      if (intervalIdx == liftingIntervalIdx || intervalIdx == haulingIntervalIdx)
       {
          continue;
       }
 
-      std::vector<pgsTypes::LimitState> vLimitStates(pAllowableConcreteStress->GetStressCheckLimitStates(intervalIdx));
-
-      std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
-      std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());
-      for ( ; lsIter != lsIterEnd; lsIter++ )
-      {
-         pgsTypes::LimitState limitState = *lsIter;
-         if ( pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression) ||
-              pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension)
-            )
-         {
-            CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState,true/*girder stresses*/);
-         }
-      } // next limit state
-   } // next interval
+      CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,task,true/*girder stresses*/);
+   } // next task
 
 
    if ( lastTendonStressingIntervalIdx != INVALID_INDEX &&         // if there are tendons AND
-        compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx // if they are stressed after the deck is composite
+        lastCompositeDeckIntervalIdx <= lastTendonStressingIntervalIdx // if they are stressed after the deck is composite
       )
    {
       rptParagraph* p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
@@ -265,32 +250,39 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       }
 
       // report flexural stresses at various intervals
-      std::vector<IntervalIndexType>::iterator iter = vIntervals.begin();
-      for ( ; iter != end; iter++ )
+      for (const auto& task : vTasks)
       {
-         IntervalIndexType intervalIdx = *iter;
+         IntervalIndexType intervalIdx = task.intervalIdx;
 
          // skipping everything before the deck is composite
-         if ( intervalIdx < compositeDeckIntervalIdx )
+         if (intervalIdx < lastCompositeDeckIntervalIdx)
          {
             continue;
          }
 
-         std::vector<pgsTypes::LimitState> vLimitStates(pAllowableConcreteStress->GetStressCheckLimitStates(intervalIdx));
+         CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,task,false/*deck stresses*/);
+      } // next task
+   }
 
-         std::vector<pgsTypes::LimitState>::iterator lsIter(vLimitStates.begin());
-         std::vector<pgsTypes::LimitState>::iterator lsIterEnd(vLimitStates.end());
-         for ( ; lsIter != lsIterEnd; lsIter++ )
-         {
-            pgsTypes::LimitState limitState = *lsIter;
-            if ( pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Compression) ||
-                 pAllowableConcreteStress->IsStressCheckApplicable(girderKey,intervalIdx,limitState,pgsTypes::Tension)
-               )
-            {
-               CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,limitState,false/*deck stresses*/);
-            }
-         } // next limit state
-      } // next interval
+   // Principle tension stress in webs
+   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   p->SetName(_T("Principal Tensile Stresses in Webs"));
+   *p << p->GetName() << rptNewLine;
+   *pChapter << p;
+
+
+   p = new rptParagraph;
+   *pChapter << p;
+   GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterials);
+   Float64 fc_limit = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
+   Float64 fcSegment = pMaterials->GetSegmentFc28(CSegmentKey(girderKey, 0)); // it's ok to use segment 0 because we know non-pgsplice files have only one segment per girder
+   if (pDocType->IsPGSpliceDocument() || fc_limit < fcSegment)
+   {
+      *p << _T("The requirements of LRFD 5.9.2.3.3 are applicable but have not been evaluted. Use alternative methods to evaluate compliance with these requirements.") << rptNewLine;
+   }
+   else
+   {
+      *p << _T("LRFD 5.9.2.3.3 - Principal Tensile Stresses in Webs limitations are not applicable.") << rptNewLine;
    }
 
    // Flexural Capacity
@@ -466,7 +458,10 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    CStrandSlopeCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Hold Down Force
-   CHoldDownForceCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+   CHoldDownForceCheck().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
+
+   // Plant Handling Weight
+   CPlantHandlingCheck().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
    // Duct size
    CDuctGeometryCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);

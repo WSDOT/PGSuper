@@ -612,8 +612,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       }
 
       Float64 nTsEffective;
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_start, &ecc_y_temporary_start);
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_end,   &ecc_y_temporary_end);
+      pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poiStart, pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_start, &ecc_y_temporary_start);
+      pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poiEnd,   pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_end,   &ecc_y_temporary_end);
 
       Pt *= nTsEffective/Nt;
 
@@ -675,6 +675,110 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
    return equivLoads;
 }
 
+std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivSegmentPostTensionLoads(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
+{
+   std::vector<EquivPretensionLoad> equivLoads;
+
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+   if (nDucts == 0)
+   {
+      return equivLoads;
+   }
+
+   equivLoads.reserve(3 * nDucts);
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType stressingIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
+
+   if (intervalIdx == INVALID_INDEX)
+   {
+      intervalIdx = stressingIntervalIdx;
+   }
+
+   GET_IFACE(IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(segmentKey);
+
+   GET_IFACE(IPosttensionForce, pPTForce);
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 3);
+   const pgsPointOfInterest& poiStart(vPoi[0]);
+   const pgsPointOfInterest& poiMiddle(vPoi[1]);
+   const pgsPointOfInterest& poiEnd(vPoi[2]);
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CSegmentPTData* pPTData = &(pIBridgeDesc->GetPrecastSegmentData(segmentKey)->Tendons);
+   
+
+   // The end points of the parabolic duct can be at different elevations so
+   // create to loads; one for the left half and one for the right half of
+   // the segment. 
+
+   for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      const auto*pDuct = pPTData->GetDuct(ductIdx);
+
+      Float64 Pt = pPTForce->GetSegmentTendonAverageInitialForce(segmentKey, ductIdx);
+
+      Float64 eStart, eMiddle, eEnd;
+      Float64 eccX, eccY;
+      pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poiStart, ductIdx, &eccX, &eccY);
+      eStart = eccY;
+
+      pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poiMiddle, ductIdx, &eccX, &eccY);
+      eMiddle = eccY;
+
+      pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poiEnd, ductIdx, &eccX, &eccY);
+      eEnd = eccY;
+
+      Float64 e = eMiddle - eStart;
+      Float64 wy = (pDuct->DuctGeometryType == CSegmentDuctData::Parabolic) ? 8 * Pt*e / (Ls*Ls) : 0;
+      Float64 Mx = Pt*eStart;
+
+      EquivPretensionLoad leftLoading; // and moment at start
+      leftLoading.Xs = 0;
+      leftLoading.Xe = Ls/2;
+      leftLoading.P = Pt;
+      leftLoading.eye = eStart;
+      leftLoading.eyh = eMiddle;
+      leftLoading.Ls = Ls;
+      leftLoading.Mx = Mx;
+      leftLoading.wy = wy;
+      equivLoads.push_back(leftLoading);
+
+      if (pDuct->DuctGeometryType == CSegmentDuctData::Parabolic)
+      {
+         e = eMiddle - eEnd;
+         wy = 8 * Pt*e / (Ls*Ls);
+         EquivPretensionLoad rightLoading;
+         rightLoading.Xs = Ls / 2;
+         rightLoading.Xe = Ls;
+         rightLoading.P = Pt;
+         rightLoading.eyh = eMiddle;
+         rightLoading.eye = eEnd;
+         rightLoading.Ls = Ls;
+         rightLoading.wy = wy;
+
+         equivLoads.push_back(rightLoading);
+      }
+
+      Mx = Pt*eEnd;
+
+      EquivPretensionLoad endMoment;
+      endMoment.Xs = Ls;
+      endMoment.P = -Pt;
+      endMoment.eye = eEnd;
+      endMoment.Ls = Ls;
+      endMoment.Mx = -Mx;
+
+      equivLoads.push_back(endMoment);
+   }
+
+   return equivLoads;
+}
 
 CAnalysisAgentImp::CamberModelData CAnalysisAgentImp::BuildCamberModel(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig) const
 {
@@ -979,7 +1083,7 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
    GET_IFACE(IPointOfInterest,pPoi);
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
 
    // Create the FEM model
    Float64 E = pConfig->Ec;
@@ -999,7 +1103,7 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
    bool bModelLeftCantilever,bModelRightCantilever;
    pBridge->ModelCantilevers(segmentKey,&bModelLeftCantilever,&bModelRightCantilever);
    pgsDesignHaunchLoadGirderModelFactory factory(slabLoads, g_lcidDesignSlab, g_lcidDesignSlabPad);
-   factory.CreateGirderModel(m_pBroker,castDeckIntervalIdx,segmentKey,left_support_loc,right_support_loc,Ls,E,g_lcidGirder,bModelLeftCantilever,bModelRightCantilever,vPOI,&pModelData->Model,&pModelData->PoiMap);
+   factory.CreateGirderModel(m_pBroker, lastCastDeckIntervalIdx,segmentKey,left_support_loc,right_support_loc,Ls,E,g_lcidGirder,bModelLeftCantilever,bModelRightCantilever,vPOI,&pModelData->Model,&pModelData->PoiMap);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1577,9 +1681,9 @@ void CAnalysisAgentImp::GetMainSpanSlabLoad(const CSegmentKey& segmentKey, std::
    m_pGirderModelManager->GetMainSpanSlabLoad(segmentKey,pSlabLoads);
 }
 
-void CAnalysisAgentImp::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssExcessCamber, std::vector<SlabLoad>* pSlabLoads) const
+void CAnalysisAgentImp::GetDesignMainSpanSlabLoadAdjustment(const CSegmentKey& segmentKey, Float64 Astart, Float64 Aend, Float64 AssumedExcessCamber, std::vector<SlabLoad>* pSlabLoads) const
 {
-   m_pGirderModelManager->GetDesignMainSpanSlabLoadAdjustment(segmentKey,Astart,Aend,AssExcessCamber,pSlabLoads);
+   m_pGirderModelManager->GetDesignMainSpanSlabLoadAdjustment(segmentKey,Astart,Aend,AssumedExcessCamber,pSlabLoads);
 }
 
 bool CAnalysisAgentImp::HasShearKeyLoad(const CGirderKey& girderKey) const
@@ -1700,8 +1804,8 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
    d_inc = GetDeflection(erectionIntervalIdx, _T("Girder_Incremental"), poi, bat, rtCumulative, false);
    r_inc = GetRotation(erectionIntervalIdx, _T("Girder_Incremental"), poi, bat, rtCumulative, false);
 
-   ATLASSERT(IsEqual(dStorage+d_inc,dErected,0.001)); // dStorage+d_inc also needs to deal with support datum change
-   //ATLASSERT(IsEqual(rStorage+r_inc,rErected));
+   ATLASSERT(IsEqual(dStorage+d_inc,dErected));
+   ATLASSERT(IsEqual(rStorage+r_inc,rErected));
 
    if (pConfig != nullptr)
    {
@@ -1724,7 +1828,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
       }
       else
       {
-         Eci_config = pMaterial->GetEconc(pConfig->Fci, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Eci_config = pMaterial->GetEconc(pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey),
             pMaterial->GetSegmentEccK1(segmentKey),
             pMaterial->GetSegmentEccK2(segmentKey));
       }
@@ -1748,7 +1852,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
       }
       else
       {
-         Ec_config = pMaterial->GetEconc(pConfig->Fc, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Ec_config = pMaterial->GetEconc(pConfig->fc28, pMaterial->GetSegmentStrengthDensity(segmentKey),
             pMaterial->GetSegmentEccK1(segmentKey),
             pMaterial->GetSegmentEccK2(segmentKey));
       }
@@ -1973,8 +2077,12 @@ void  CAnalysisAgentImp::GetDesignSlabStressAdjustment(const pgsPointOfInterest&
    // and the input value.
    Float64 M = GetDesignSlabMomentAdjustment(poi,pConfig);
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
    GET_IFACE(ISectionProperties, pSectProp);
    Float64 Cat, Cbtx, Cbty;
@@ -2009,8 +2117,12 @@ void CAnalysisAgentImp::GetDesignSlabPadStressAdjustment(const pgsPointOfInteres
    // and the input value.
    Float64 M = GetDesignSlabPadMomentAdjustment(poi,pConfig);
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
    GET_IFACE(ISectionProperties, pSectProp);
    Float64 Cat, Cbtx, Cbty;
@@ -2293,6 +2405,24 @@ Float64 CAnalysisAgentImp::GetVehicleWeight(pgsTypes::LiveLoadType llType,Vehicl
 //
 std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const
 {
+   if (pfType == pgsTypes::pftPretension)
+   {
+      GET_IFACE(IPointOfInterest, pPoi);
+      std::list<PoiList> sPoi;
+      pPoi->GroupBySegment(vPoi, &sPoi);
+      if (1 < sPoi.size())
+      {
+         std::vector<Float64> vFx;
+         vFx.reserve(vPoi.size());
+         for (const auto& vPoiThisSegment : sPoi)
+         {
+            std::vector<Float64> vFxThisSegment = GetAxial(intervalIdx, pfType, vPoiThisSegment, bat, resultsType);
+            vFx.insert(vFx.end(), vFxThisSegment.begin(), vFxThisSegment.end());
+         }
+         return vFx;
+      }
+   }
+
    USES_CONVERSION;
    InitializeAnalysis(vPoi);
 
@@ -2320,13 +2450,16 @@ std::vector<Float64> CAnalysisAgentImp::GetAxial(IntervalIndexType intervalIdx,p
          if ( pfType == pgsTypes::pftPretension )
          {
             // for elastic analysis, force effects due to pretensioning are always those at release
-            if ( resultsType == rtCumulative )
+            CSegmentKey segmentKey = vPoi.front().get().GetSegmentKey();
+            GET_IFACE(IIntervals, pIntervals);
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+            if ( resultsType == rtIncremental && intervalIdx != releaseIntervalIdx)
             {
-               CSegmentKey segmentKey = vPoi.front().get().GetSegmentKey();
-               GET_IFACE(IIntervals,pIntervals);
-               IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-               intervalIdx = releaseIntervalIdx;
+               // incremental results are zero, except in the release interval
+               results.resize(vPoi.size(), 0.0);
+               return results;
             }
+            intervalIdx = releaseIntervalIdx;
          }
 
          // Post-tensioning is not modeled for linear elastic analysis, so the
@@ -2797,11 +2930,22 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
       {
          IntervalIndexType erectionIntervalIdx = GetErectionInterval(vPoi);
 
-         if ( intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension )
+         if ( intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning)
          {
             // before erection - results are in the segment models
-            // also... pretension erections are always computed from the segment models
+            // also... pretension deflections and segment PT deflections are always computed from the segment models
             deflections = m_pSegmentModelManager->GetDeflection(intervalIdx,pfType,vPoi,resultsType);
+
+            if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftPostTensioning)
+            {
+               // if this is after erection and the loading is PT, we need to get the girder PT
+               // deflection as well... the else block below isn't accessable from here so
+               // we'll just get the values directly
+               std::vector<Float64> girder_pt_deflections;
+               girder_pt_deflections.reserve(vPoi.size());
+               girder_pt_deflections = m_pGirderModelManager->GetDeflection(intervalIdx, pfType, vPoi, bat, resultsType);
+               std::transform(girder_pt_deflections.cbegin(), girder_pt_deflections.cend(), deflections.cbegin(), deflections.begin(), [](const auto& a, const auto& b) {return a + b; });
+            }
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
          {
@@ -2811,6 +2955,28 @@ std::vector<Float64> CAnalysisAgentImp::GetDeflection(IntervalIndexType interval
             std::vector<Float64> Dprev = GetDeflection(intervalIdx-1,pfType,vPoi,bat,rtCumulative);
             std::vector<Float64> Dthis = GetDeflection(intervalIdx,  pfType,vPoi,bat,rtCumulative);
             std::transform(Dthis.cbegin(),Dthis.cend(),Dprev.cbegin(),std::back_inserter(deflections),[](const auto& a, const auto& b) {return a - b;});
+         }
+         else if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftGirder)
+         {
+            // girder deflection is tricky. girder deflection at and after erection is the segment deflection during storage
+            // plus all the incremental deflections that happen thereafter
+            IntervalIndexType storageIntervalIdx = GetStorageInterval(vPoi);
+
+            // Get the storage deflection
+            std::vector<Float64> dStorage = GetDeflection(storageIntervalIdx, pfType, vPoi, bat, resultsType);
+
+            // Get the increment of deflection associated with moving the girder from storage to its erected configuration
+            std::vector<Float64> dInc = m_pGirderModelManager->GetDeflection(erectionIntervalIdx, _T("Girder_Incremental"), vPoi, bat, rtIncremental);
+
+            // Sum to get deflection at erection
+            std::transform(dStorage.cbegin(), dStorage.cend(), dInc.cbegin(), std::back_inserter(deflections), [](const auto& a, const auto& b) {return a + b; });
+
+            // now sum all the incremental deflections that occur after erection, upto and including the specified interval
+            for (IntervalIndexType intIdx = erectionIntervalIdx + 1; intIdx <= intervalIdx; intIdx++)
+            {
+               std::vector<Float64> dInc = m_pGirderModelManager->GetDeflection(intIdx, pfType, vPoi, bat, rtIncremental);
+               std::transform(dInc.cbegin(), dInc.cend(), deflections.cbegin(), deflections.begin(), [](const auto& a, const auto& b) {return a + b; });
+            }
          }
          else
          {
@@ -3059,10 +3225,43 @@ std::vector<Float64> CAnalysisAgentImp::GetRotation(IntervalIndexType intervalId
       {
          IntervalIndexType erectionIntervalIdx = GetErectionInterval(vPoi);
 
-         if ( intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension )
+         if (intervalIdx < erectionIntervalIdx || pfType == pgsTypes::pftPretension || pfType == pgsTypes::pftPostTensioning )
          {
             // before erection - results are in the segment models
             rotations = m_pSegmentModelManager->GetRotation(intervalIdx,pfType,vPoi,resultsType);
+
+            if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftPostTensioning)
+            {
+               // if this is after erection and the loading is PT, we need to get the girder PT
+               // deflection as well... the else block below isn't accessable from here so
+               // we'll just get the values directly
+               std::vector<Float64> girder_pt_rotations;
+               girder_pt_rotations.reserve(vPoi.size());
+               girder_pt_rotations = m_pGirderModelManager->GetRotation(intervalIdx, pfType, vPoi, bat, resultsType);
+               std::transform(girder_pt_rotations.cbegin(), girder_pt_rotations.cend(), rotations.cbegin(), rotations.begin(), [](const auto& a, const auto& b) {return a + b; });
+            }
+         }
+         else if (erectionIntervalIdx <= intervalIdx && pfType == pgsTypes::pftGirder)
+         {
+            // girder deflection is tricky. girder deflection at and after erection is the segment deflection during storage
+            // plus all the incremental deflections that happen thereafter
+            IntervalIndexType storageIntervalIdx = GetStorageInterval(vPoi);
+
+            // Get the storage rotation
+            std::vector<Float64> rStorage = GetRotation(storageIntervalIdx, pfType, vPoi, bat, resultsType);
+
+            // Get the increment of rotation associated with moving the girder from storage to its erected configuration
+            std::vector<Float64> rInc = m_pGirderModelManager->GetRotation(erectionIntervalIdx, _T("Girder_Incremental"), vPoi, bat, rtIncremental);
+
+            // Sum to get rotation at erection
+            std::transform(rStorage.cbegin(), rStorage.cend(), rInc.cbegin(), std::back_inserter(rotations), [](const auto& a, const auto& b) {return a + b;});
+
+            // now sum all the incremental rotations that occur after erection, upto and including the specified interval
+            for (IntervalIndexType intIdx = erectionIntervalIdx + 1; intIdx <= intervalIdx; intIdx++)
+            {
+               std::vector<Float64> rInc = m_pGirderModelManager->GetRotation(intIdx, pfType, vPoi, bat, rtIncremental);
+               std::transform(rInc.cbegin(), rInc.cend(), rotations.cbegin(), rotations.begin(), [](const auto& a, const auto& b) {return a + b;});
+            }
          }
          else if ( intervalIdx == erectionIntervalIdx && resultsType == rtIncremental )
          {
@@ -5104,7 +5303,7 @@ void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,pgsTypes::LimitS
    }
 }
 
-void CAnalysisAgentImp::GetReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax) const
+void CAnalysisAgentImp::GetLSReaction(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pMin,Float64* pMax) const
 {
    try
    {
@@ -5744,13 +5943,20 @@ std::vector<REACTION> CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey
 }
 
 ///////////////////////////
-void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc, const GDRCONFIG* pConfig,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) const
+void CAnalysisAgentImp::GetDesignStress(const StressCheckTask& task,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc, const GDRCONFIG* pConfig,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) const
 {
    // Computes design-time stresses due to external loads
    ATLASSERT(IsGirderStressLocation(loc)); // expecting stress location to be on the girder
 
+   // can't use this method with strength limit states
+   ATLASSERT(!IsStrengthLimitState(task.limitState));
+   ATLASSERT(IsDesignLimitState(task.limitState));
+
    // figure out which stage the girder loading is applied
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx           = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -5758,8 +5964,8 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
-   IntervalIndexType castDeckIntervalIdx          = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType castDeckIntervalIdx          = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType compositeIntervalIdx     = pIntervals->GetLastCompositeInterval();
    IntervalIndexType trafficBarrierIntervalIdx    = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx           = pIntervals->GetOverlayInterval();
@@ -5767,27 +5973,24 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
 
-   if ( intervalIdx == releaseIntervalIdx )
+   if ( task.intervalIdx == releaseIntervalIdx )
    {
-      GetStress(intervalIdx,limitState,poi,bat,false,loc,pMin,pMax);
+      GetStress(task.intervalIdx, task.limitState,poi,bat,false,loc,pMin,pMax);
       *pMax = (IsZero(*pMax) ? 0 : *pMax);
       *pMin = (IsZero(*pMin) ? 0 : *pMin);
       return;
    }
-
-   // can't use this method with strength limit states
-   ATLASSERT( !IsStrengthLimitState(limitState) );
 
    GET_IFACE(ISectionProperties,pSectProp);
 
    // Top of girder
    // original stress coefficients
    Float64 Cat_original, Cbtx_original, Cbty_original;
-   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::TopGirder, nullptr, &Cat_original, &Cbtx_original, &Cbty_original);
+   pSectProp->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::TopGirder, nullptr, &Cat_original, &Cbtx_original, &Cbty_original);
 
    // new stress coefficients using design f'c
    Float64 Cat_new, Cbtx_new, Cbty_new;
-   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat_new, &Cbtx_new, &Cbty_new);
+   pSectProp->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::TopGirder, pConfig, &Cat_new, &Cbtx_new, &Cbty_new);
 
    // scale factor that converts top stress computed with the original stress coefficients to top stress
    // computed with the new stress coefficients
@@ -5796,11 +5999,11 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    // Bottom of girder
    // original stress coefficients
    Float64 Cab_original, Cbbx_original, Cbby_original;
-   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Cab_original, &Cbbx_original, &Cbby_original);
+   pSectProp->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::BottomGirder, nullptr, &Cab_original, &Cbbx_original, &Cbby_original);
 
    // new stress coefficients using design f'c
    Float64 Cab_new, Cbbx_new, Cbby_new;
-   pSectProp->GetStressCoefficients(compositeIntervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab_new, &Cbbx_new, &Cbby_new);
+   pSectProp->GetStressCoefficients(task.intervalIdx, poi, pgsTypes::BottomGirder, pConfig, &Cab_new, &Cbbx_new, &Cbby_new);
 
    // scale factor that converts bottom stress computed with the original stress coefficients to bottom stress
    // computed with the new stress coefficients
@@ -5815,29 +6018,28 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    // Load Factors
    GET_IFACE(ILoadFactors,pLF);
    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
-   ATLASSERT(IsDesignLimitState(limitState));
-   Float64 dc = pLoadFactors->GetDCMax(limitState);
-   Float64 dw = pLoadFactors->GetDWMax(limitState);
-   Float64 ll = pLoadFactors->GetLLIMMax(limitState);
+   Float64 dc = pLoadFactors->GetDCMax(task.limitState);
+   Float64 dw = pLoadFactors->GetDWMax(task.limitState);
+   Float64 ll = pLoadFactors->GetLLIMMax(task.limitState);
 
    Float64 ft,fb;
 
    // Erect Segment (also covers temporary strand removal and diaphragm placement)
-   if (erectSegmentIntervalIdx <= intervalIdx)
+   if (erectSegmentIntervalIdx <= task.intervalIdx)
    {
       GetStress(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &ft, &fb);
       ftop1 = dc*ft;
       fbot1 = dc*fb;
    }
 
-   if (castDiaphragmIntervalIdx <= intervalIdx)
+   if (castDiaphragmIntervalIdx <= task.intervalIdx)
    {
       GetStress(castDiaphragmIntervalIdx,pgsTypes::pftDiaphragm,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop1 += dc*ft;   
       fbot1 += dc*fb;
    }
 
-   if (castLongitudinalJointIntervalIdx != INVALID_INDEX && castLongitudinalJointIntervalIdx <= intervalIdx)
+   if (castLongitudinalJointIntervalIdx != INVALID_INDEX && castLongitudinalJointIntervalIdx <= task.intervalIdx)
    {
       GetStress(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, bat, rtIncremental, pgsTypes::TopGirder, pgsTypes::BottomGirder, &ft, &fb);
       ftop1 += dc*ft;
@@ -5845,7 +6047,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    }
 
    // Casting Deck (non-composite girder carrying deck dead load)
-   if (castDeckIntervalIdx != INVALID_INDEX && castDeckIntervalIdx <= intervalIdx)
+   if (castDeckIntervalIdx != INVALID_INDEX && castDeckIntervalIdx <= task.intervalIdx)
    {
       GetStress(castDeckIntervalIdx, pgsTypes::pftConstruction, poi, bat, rtIncremental, pgsTypes::TopGirder, pgsTypes::BottomGirder, &ft, &fb);
       ftop1 += dc*ft;
@@ -5872,14 +6074,14 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       fbot1 += dc*fb;
    }
 
-   if (castShearKeyIntervalIdx != INVALID_INDEX && castShearKeyIntervalIdx <= intervalIdx)
+   if (castShearKeyIntervalIdx != INVALID_INDEX && castShearKeyIntervalIdx <= task.intervalIdx)
    {
       GetStress(castShearKeyIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtIncremental, pgsTypes::TopGirder, pgsTypes::BottomGirder, &ft, &fb);
       ftop1 += dc*ft;
       fbot1 += dc*fb;
    }
 
-   if ( noncompositeUserLoadIntervalIdx != INVALID_INDEX && noncompositeUserLoadIntervalIdx <= intervalIdx)
+   if ( noncompositeUserLoadIntervalIdx != INVALID_INDEX && noncompositeUserLoadIntervalIdx <= task.intervalIdx)
    {
       GetStress(noncompositeUserLoadIntervalIdx,pgsTypes::pftUserDC,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop1 += dc*ft;   
@@ -5891,7 +6093,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    }
 
    // Composite Section Carrying Superimposed Dead Loads
-   if (trafficBarrierIntervalIdx <= intervalIdx)
+   if (trafficBarrierIntervalIdx <= task.intervalIdx)
    {
       GetStress(trafficBarrierIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental, pgsTypes::TopGirder, pgsTypes::BottomGirder, &ft, &fb);
       ftop2 = dc*k_top*ft;
@@ -5901,7 +6103,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       ftop2 += dc*k_top*ft;
       fbot2 += dc*k_bot*fb;
 
-      if (overlayIntervalIdx != INVALID_INDEX && overlayIntervalIdx <= intervalIdx)
+      if (overlayIntervalIdx != INVALID_INDEX && overlayIntervalIdx <= task.intervalIdx)
       {
          GetStress(overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtIncremental, pgsTypes::TopGirder, pgsTypes::BottomGirder, &ft, &fb);
          ftop2 += dw*k_top*ft;
@@ -5909,16 +6111,16 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       }
    }
 
-   if ( compositeDeckIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= intervalIdx )
+   if ( compositeDeckIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= task.intervalIdx )
    {
       // slab shrinkage stresses
       Float64 ft_ss, fb_ss;
-      GetDeckShrinkageStresses(poi, pConfig->Fc, &ft_ss, &fb_ss);
+      GetDeckShrinkageStresses(poi, pConfig->fc28, &ft_ss, &fb_ss);
       ftop2 += dc*ft_ss;
       fbot2 += dc*fb_ss;
    }
 
-   if (compositeUserLoadIntervalIdx != INVALID_INDEX && compositeUserLoadIntervalIdx <= intervalIdx)
+   if (compositeUserLoadIntervalIdx != INVALID_INDEX && compositeUserLoadIntervalIdx <= task.intervalIdx)
    {
       GetStress(compositeUserLoadIntervalIdx,pgsTypes::pftUserDC,poi,bat,rtIncremental,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft,&fb);
       ftop2 += dc*k_top*ft;   
@@ -5930,7 +6132,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
    }
 
    // Open to traffic, carrying live load
-   if ( liveLoadIntervalIdx <= intervalIdx )
+   if ( liveLoadIntervalIdx <= task.intervalIdx && task.bIncludeLiveLoad)
    {
       ftop3Min = ftop3Max = 0.0;   
       fbot3Min = fbot3Max = 0.0;   
@@ -5940,7 +6142,7 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pGirderMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
 
-      Float64 fc_lldf = pConfig->Fc ;
+      Float64 fc_lldf = pConfig->fc ;
       if ( pGirderMaterial->Concrete.bUserEc )
       {
          fc_lldf = lrfdConcreteUtil::FcFromEc( pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
@@ -5949,23 +6151,16 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,pgsTypes::
       GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
       Float64 gV1, gpM1, gnM1;
       Float64 gV2, gpM2, gnM2;
-      pLLDF->GetDistributionFactors(poi,limitState,fc_lldf,&gpM1,&gnM1,&gV1);
-      pLLDF->GetDistributionFactors(poi,limitState,&gpM2,&gnM2,&gV2);
+      pLLDF->GetDistributionFactors(poi, task.limitState,fc_lldf,&gpM1,&gnM1,&gV1);
+      pLLDF->GetDistributionFactors(poi, task.limitState,&gpM2,&gnM2,&gV2);
       Float64 lldf_adj = gpM1/gpM2; // multiply by design LLDF and divide out the original LLDF
 
       // Deal with different options for application of pedestrian loads
       GET_IFACE(ILiveLoads,pLiveLoads);
-      ILiveLoads::PedestrianLoadApplicationType pedLoadAppType = pLiveLoads->GetPedestrianLoadApplication(limitState==pgsTypes::FatigueI ? pgsTypes::lltFatigue : pgsTypes::lltDesign);
+      ILiveLoads::PedestrianLoadApplicationType pedLoadAppType = pLiveLoads->GetPedestrianLoadApplication(IsFatigueLimitState(task.limitState) ? pgsTypes::lltFatigue : pgsTypes::lltDesign);
 
       Float64 ftMin,ftMax,fbMin,fbMax;
-      if ( limitState == pgsTypes::FatigueI )
-      {
-         GetLiveLoadStress(liveLoadIntervalIdx,pgsTypes::lltFatigue, poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
-      }
-      else
-      {
-         GetLiveLoadStress(liveLoadIntervalIdx,pgsTypes::lltDesign,  poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
-      }
+      GetLiveLoadStress(liveLoadIntervalIdx, IsFatigueLimitState(task.limitState) ? pgsTypes::lltFatigue : pgsTypes::lltDesign, poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMin,&ftMax,&fbMin,&fbMax);
 
       Float64 ftMinPed,ftMaxPed,fbMinPed,fbMaxPed;
       GetLiveLoadStress(liveLoadIntervalIdx,pgsTypes::lltPedestrian,  poi,bat,true,true,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ftMinPed,&ftMaxPed,&fbMinPed,&fbMaxPed);
@@ -6148,8 +6343,10 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
       {
          lrfdCreepCoefficient cc;
          cc.SetRelHumidity( pEnvironment->GetRelHumidity() );
-         cc.SetSurfaceArea( pSectProp->GetSegmentSurfaceArea(segmentKey) );
-         cc.SetVolume( pSectProp->GetSegmentVolume(segmentKey) );
+         Float64 V, S;
+         pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
+         cc.SetVolume(V);
+         cc.SetSurfaceArea( S );
          cc.SetFc(fc);
          cc.SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(),unitMeasure::Day));
 
@@ -6231,8 +6428,10 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
       {
          lrfdCreepCoefficient2005 cc;
          cc.SetRelHumidity( pEnvironment->GetRelHumidity() );
-         cc.SetSurfaceArea( pSectProp->GetSegmentSurfaceArea(segmentKey) );
-         cc.SetVolume( pSectProp->GetSegmentVolume(segmentKey) );
+         Float64 V, S;
+         pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &V, &S);
+         cc.SetVolume( V );
+         cc.SetSurfaceArea(S);
          cc.SetFc(fc);
 
          cc.SetCuringMethodTimeAdjustmentFactor(::ConvertToSysUnits(pSpecEntry->GetCuringMethodTimeAdjustmentFactor(), unitMeasure::Day));
@@ -6564,10 +6763,14 @@ Float64 CAnalysisAgentImp::GetExcessCamberEx(const pgsPointOfInterest& poi,Int16
       ATLASSERT(IsEqual(Emin, Emax)); // no live load so these should be the same
       ATLASSERT(IsEqual(Emin, excess));
 
-      Float64 Dmin, Dmax;
-      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+      GET_IFACE(IPointOfInterest, pPoi);
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
       ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
       // use -1 on interval because we want the deflection immedately before deck casting
+      Float64 Dmin, Dmax;
       GetDeflection(castDeckIntervalIdx-1, pgsTypes::ServiceI, poi, bat, true, false/*exclude live load deflection*/, true/*include elevation adjustments*/, true /*include precamber*/, &Dmin, &Dmax);
       ATLASSERT(IsEqual(Dmin, Dmax)); // no live load so these should be the same
 
@@ -6635,67 +6838,6 @@ Float64 CAnalysisAgentImp::GetExcessCamberRotationEx(const pgsPointOfInterest& p
    }
 }
 
-Float64 CAnalysisAgentImp::GetSidlDeflection(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig) const
-{
-   pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
-
-   GET_IFACE(IBridge,pBridge);
-   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-
-   const CSegmentKey& segmentKey(poi.GetSegmentKey());
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
-   IntervalIndexType nIntervals               = pIntervals->GetIntervalCount();
-
-   // NOTE: No need to validate camber models
-   Float64 delta_trafficbarrier  = 0;
-   Float64 delta_sidewalk        = 0;
-   Float64 delta_overlay         = 0;
-   Float64 delta_diaphragm       = 0;
-   Float64 delta_user            = 0;
-
-   // adjustment factor for fcgdr that is different that current value
-   Float64 k2 = GetDeflectionAdjustmentFactor(poi,pConfig,compositeDeckIntervalIdx);
-
-   delta_diaphragm      = GetDiaphragmDeflection(poi,pConfig);
-   delta_trafficbarrier = k2*GetDeflection(compositeDeckIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtIncremental);
-   delta_sidewalk       = k2*GetDeflection(compositeDeckIntervalIdx, pgsTypes::pftSidewalk,       poi, bat, rtIncremental);
-
-   for ( IntervalIndexType intervalIdx = compositeDeckIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-   {
-      Float64 dUser = GetUserLoadDeflection(intervalIdx,poi,pConfig);
-      delta_user += dUser;
-   }
-
-   if ( !pBridge->IsFutureOverlay() && overlayIntervalIdx != INVALID_INDEX )
-   {
-      delta_overlay = k2*GetDeflection(overlayIntervalIdx,pgsTypes::pftOverlay,poi,bat, rtIncremental);
-   }
-
-   GET_IFACE(IStrandGeometry, pStrandGeom);
-   bool bTempStrands = (0 < pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary, pConfig) && pStrandGeom->GetTemporaryStrandUsage(segmentKey, pConfig) != pgsTypes::ttsPTBeforeShipping);
-
-   Float64 dSIDL;
-   if ( bTempStrands )
-   {
-      dSIDL = delta_trafficbarrier + delta_sidewalk + delta_overlay + delta_user;
-   }
-   else
-   {
-      // for SIP decks, diaphagms are applied before the cast portion of the slab so they don't apply to screed camber
-      if ( deckType == pgsTypes::sdtCompositeSIP )
-      {
-         delta_diaphragm = 0;
-      }
-
-      dSIDL = delta_trafficbarrier + delta_sidewalk + delta_overlay + delta_user + delta_diaphragm;
-   }
-
-   return dSIDL;
-}
 Float64 CAnalysisAgentImp::GetDCamberForGirderSchedule(const pgsPointOfInterest& poi, Int16 time, const GDRCONFIG* pConfig) const
 {
    return GetDCamberForGirderScheduleEx(poi, time, pConfig, true);
@@ -6753,7 +6895,11 @@ Float64 CAnalysisAgentImp::GetDCamberForGirderScheduleEx(const pgsPointOfInteres
          }
          else
          {
-            IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+            GET_IFACE(IPointOfInterest, pPoi);
+            IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+            ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+            IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
             ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
             intervalIdx = castDeckIntervalIdx - 1;
          }
@@ -6809,7 +6955,12 @@ void CAnalysisAgentImp::GetScreedCamberEx(const pgsPointOfInterest& poi, Int16 t
       }
       else
       {
-         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+         GET_IFACE(IPointOfInterest, pPoi);
+         IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+         ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+         IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
+         ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
          intervalIdx = castDeckIntervalIdx - 1;
       }
 
@@ -6968,8 +7119,11 @@ void CAnalysisAgentImp::GetDeckDeflection(const pgsPointOfInterest& poi,const GD
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
    GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
    if (castDeckIntervalIdx == INVALID_INDEX)
    {
@@ -6977,7 +7131,7 @@ void CAnalysisAgentImp::GetDeckDeflection(const pgsPointOfInterest& poi,const GD
 #if defined _DEBUG
       GET_IFACE(IBridge, pBridge);
       pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-      ATLASSERT(deckType == pgsTypes::sdtNone);
+      ATLASSERT(deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtNonstructuralOverlay);
 #endif
       *pSlabDy = 0;
       *pSlabRz = 0;
@@ -7016,7 +7170,7 @@ void CAnalysisAgentImp::GetDeckPanelDeflection(const pgsPointOfInterest& poi,con
    // NOTE: it is assumed that deck panels are placed at the same time the
    // cast-in-place topping is installed.
    GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval();
+   IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
 
    *pDy = GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtIncremental);
    *pRz = GetRotation(castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtIncremental);
@@ -7362,7 +7516,8 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(IntervalIndexType intervalIdx,cons
    return GetStress(intervalIdx,poi,stressLocation,P,ex,ey);
 }
 
-Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,const GDRCONFIG& config,bool bIncludeLiveLoad, pgsTypes::LimitState limitState) const
+
+Float64 CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, const GDRCONFIG& config, bool bIncludeLiveLoad, pgsTypes::LimitState limitState) const
 {
    Float64 f;
    GetDesignStress(intervalIdx, poi, stressLocation, stressLocation, config, bIncludeLiveLoad, limitState, &f, &f);
@@ -7406,17 +7561,18 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx, const pgs
    // NOTE: since we are doing design, the main bridge model may not have temporary strand removal
    // intervals. Use the deck casting interval as the break point for "before temporary strands are removed"
    // and "after temporary strands are removed"
+   IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   bool bIncludeTemporaryStrands = intervalIdx < tsRemovalIntervalIdx ? true : false;
+   bool bIncludeTemporaryStrands = /*tsInstallationIntervalIdx <= intervalIdx &&*/ intervalIdx < tsRemovalIntervalIdx ? true : false;
    if (bIncludeTemporaryStrands)
    {
-      P += pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType, &config);
+      P += pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, tsInstallationIntervalIdx, timeType, &config);
    }
 
    Float64 nSEffective;
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
    Float64 ex, ey;
-   pStrandGeom->GetEccentricity(spType, intervalIdx, poi, bIncludeTemporaryStrands, &config, &nSEffective, &ex, &ey);
+   pStrandGeom->GetEccentricity(spType, bIncludeTemporaryStrands ? tsInstallationIntervalIdx : intervalIdx, poi, bIncludeTemporaryStrands, &config, &nSEffective, &ex, &ey);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
@@ -7560,6 +7716,8 @@ IntervalIndexType GetInterval(const CSegmentKey& segmentKey, pgsTypes::Prestress
 
 void CAnalysisAgentImp::GetPermanentPrestressDeflection(const pgsPointOfInterest& poi, pgsTypes::PrestressDeflectionDatum datum, const GDRCONFIG* pConfig, Float64* pDx, Float64* pDy, Float64* pRz) const
 {
+   // NOTE: this function is not used for time-step analysis, however it that changes in the future
+   // the deflection due to plant installed segment tendons needs to be taken into account
    if (pConfig == nullptr)
    {
       CamberModelData camber_model_data = GetPrestressDeflectionModel(poi.GetSegmentKey(), m_PrestressDeflectionModels);
@@ -8908,12 +9066,12 @@ Float64 CAnalysisAgentImp::GetConcreteStrengthAtTimeOfLoading(const CSegmentKey&
       switch (le)
       {
       case ICamber::leRelease:
-         Fc = pConfig->Fci;
+         Fc = pConfig->fci;
          break;
 
       case ICamber::leDiaphragm:
       case ICamber::leDeck:
-         Fc = pConfig->Fc;
+         Fc = pConfig->fc;
          break;
 
       default:
@@ -9076,36 +9234,19 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
 #if defined _DEBUG
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
-   if ( pPier->HasCantilever() )
+   if ( pPier->GetIndex() == 0 )
    {
-      if ( pPier->GetIndex() == 0 )
-      {
-         ATLASSERT(backGroupIdx == INVALID_INDEX);
-         ATLASSERT(aheadGroupIdx == 0);
-      }
-      else
-      {
-         ATLASSERT(pPier->GetIndex() == pIBridgeDesc->GetPierCount()-1);
-         ATLASSERT(backGroupIdx == pIBridgeDesc->GetGirderGroupCount()-1);
-         ATLASSERT(aheadGroupIdx == INVALID_INDEX);
-      }
+      ATLASSERT(backGroupIdx == INVALID_INDEX);
+      ATLASSERT(aheadGroupIdx == 0);
+   }
+   else if ( pPier->GetIndex() == pIBridgeDesc->GetPierCount()-1 )
+   {
+      ATLASSERT(backGroupIdx == pIBridgeDesc->GetGirderGroupCount()-1);
+      ATLASSERT(aheadGroupIdx == INVALID_INDEX);
    }
    else
    {
-      if ( pPier->GetIndex() == 0 )
-      {
-         ATLASSERT(backGroupIdx == INVALID_INDEX);
-         ATLASSERT(aheadGroupIdx == 0);
-      }
-      else if ( pPier->GetIndex() == pIBridgeDesc->GetPierCount()-1 )
-      {
-         ATLASSERT(backGroupIdx == pIBridgeDesc->GetGirderGroupCount()-1);
-         ATLASSERT(aheadGroupIdx == INVALID_INDEX);
-      }
-      else
-      {
-         ATLASSERT(backGroupIdx == aheadGroupIdx-1);
-      }
+      ATLASSERT(backGroupIdx == aheadGroupIdx-1);
    }
 #endif
 
@@ -9133,7 +9274,6 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
    pgsPointOfInterest vPOI[2];
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval();
    IntervalIndexType constructionLoadIntervalIdx = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
@@ -9175,6 +9315,11 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
    {
       pgsPointOfInterest& poi = vPOI[i];
       ATLASSERT( 0 <= poi.GetID() );
+
+      IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
+
+      IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
       pgsTypes::BridgeAnalysisType bat = pgsTypes::ContinuousSpan;
 
@@ -9302,17 +9447,17 @@ void CAnalysisAgentImp::IsInPrecompressedTensileZone(const pgsPointOfInterest& p
 bool CAnalysisAgentImp::IsDeckPrecompressed(const CGirderKey& girderKey) const
 {
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    if ( compositeDeckIntervalIdx == INVALID_INDEX )
    {
       return false; // this happens when there is not a deck
    }
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
-      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressTendonInterval(girderKey,ductIdx);
+      IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
       if ( compositeDeckIntervalIdx <= stressTendonIntervalIdx )
       {
          // this tendon is stressed after the deck is composite so the deck is considered precompressed
@@ -9400,45 +9545,6 @@ void CAnalysisAgentImp::GetSegmentReactions(const std::vector<CSegmentKey>& segm
    }
 }
 
-void CAnalysisAgentImp::GetSegmentReactions(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64* pRleftMin,Float64* pRleftMax,Float64* pRrightMin,Float64* pRrightMax) const
-{
-   std::vector<CSegmentKey> segmentKeys;
-   segmentKeys.push_back(segmentKey);
-   std::vector<Float64> RleftMin,RleftMax,RrightMin,RrightMax;
-   GetSegmentReactions(segmentKeys,intervalIdx,limitState,bat,&RleftMin,&RleftMax,&RrightMin,&RrightMax);
-   *pRleftMin  = RleftMin.front();
-   *pRleftMax  = RleftMax.front();
-   *pRrightMin = RrightMin.front();
-   *pRrightMax = RrightMax.front();
-}
-
-void CAnalysisAgentImp::GetSegmentReactions(const std::vector<CSegmentKey>& segmentKeys,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pRleftMin,std::vector<Float64>* pRleftMax,std::vector<Float64>* pRrightMin,std::vector<Float64>* pRrightMax) const
-{
-   pRleftMin->reserve(segmentKeys.size());
-   pRleftMax->reserve(segmentKeys.size());
-   pRrightMin->reserve(segmentKeys.size());
-   pRrightMax->reserve(segmentKeys.size());
-
-   GET_IFACE(IIntervals,pIntervals);
-   std::vector<CSegmentKey>::const_iterator segKeyIter(segmentKeys.begin());
-   std::vector<CSegmentKey>::const_iterator segKeyIterEnd(segmentKeys.end());
-   for ( ; segKeyIter != segKeyIterEnd; segKeyIter++ )
-   {
-      const CSegmentKey& segmentKey = *segKeyIter;
-
-      IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-      Float64 RleftMin(0), RleftMax(0), RrightMin(0), RrightMax(0);
-      if ( intervalIdx < erectionIntervalIdx )
-      {
-         m_pSegmentModelManager->GetReaction(segmentKey,intervalIdx,limitState,&RleftMin,&RleftMax,&RrightMin,&RrightMax);
-      }
-
-      pRleftMin->push_back(RleftMin);
-      pRleftMax->push_back(RleftMax);
-      pRrightMin->push_back(RrightMin);
-      pRrightMax->push_back(RrightMax);
-   }
-}
 
 REACTION CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) const
 {
@@ -9508,7 +9614,7 @@ std::vector<REACTION> CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey
       }
       else
       {
-         return m_pGirderModelManager->GetReaction(girderKey, vSupports, intervalIdx, pfType, bat, resultsType);
+         return m_pGirderModelManager->GM_GetReaction(girderKey, vSupports, intervalIdx, pfType, bat, resultsType);
       }
    }
 }
@@ -9590,30 +9696,11 @@ std::vector<REACTION> CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey
    }
    else
    {
-      return m_pGirderModelManager->GetReaction(girderKey,vSupports,intervalIdx,comboType,bat,resultsType);
+      return m_pGirderModelManager->GM_GetReaction(girderKey,vSupports,intervalIdx,comboType,bat,resultsType);
    }
 }
 
-void CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,SupportIndexType supportIdx,pgsTypes::SupportType supportType,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat, bool bIncludeImpact,REACTION* pRmin,REACTION* pRmax) const
-{
-   std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>> vSupports;
-   vSupports.emplace_back(supportIdx, supportType);
-   std::vector<REACTION> Rmin, Rmax;
-   GetReaction(girderKey,vSupports,intervalIdx,limitState,bat,bIncludeImpact,&Rmin,&Rmax);
-
-   ATLASSERT(Rmin.size() == 1);
-   ATLASSERT(Rmax.size() == 1);
-
-   *pRmin = Rmin.front();
-   *pRmax = Rmax.front();
-}
-
-void CAnalysisAgentImp::GetReaction(const CGirderKey& girderKey,const std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>& vSupports,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat, bool bIncludeImpact,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax) const
-{
-   m_pGirderModelManager->GetReaction(girderKey,vSupports,intervalIdx,limitState,bat,bIncludeImpact,pRmin,pRmax);
-}
-
-void CAnalysisAgentImp::GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,REACTION* pRmin,REACTION* pRmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig) const
+void CAnalysisAgentImp::GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,REACTION* pRmin,REACTION* pRmax,AxleConfiguration* pMinAxleConfig,AxleConfiguration* pMaxAxleConfig) const
 {
    std::vector<PierIndexType> vPiers;
    vPiers.push_back(pierIdx);
@@ -9623,7 +9710,7 @@ void CAnalysisAgentImp::GetVehicularLiveLoadReaction(IntervalIndexType intervalI
    std::vector<AxleConfiguration> MinAxleConfig;
    std::vector<AxleConfiguration> MaxAxleConfig;
 
-   GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,&Rmin,&Rmax,pMinAxleConfig ? &MinAxleConfig : nullptr,pMaxAxleConfig ? &MaxAxleConfig : nullptr);
+   GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx,vPiers,girderKey,bat,bIncludeImpact,&Rmin,&Rmax,pMinAxleConfig ? &MinAxleConfig : nullptr,pMaxAxleConfig ? &MaxAxleConfig : nullptr);
 
    *pRmin = Rmin.front();
    *pRmax = Rmax.front();
@@ -9638,12 +9725,13 @@ void CAnalysisAgentImp::GetVehicularLiveLoadReaction(IntervalIndexType intervalI
    }
 }
 
-void CAnalysisAgentImp::GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig) const
+void CAnalysisAgentImp::GetVehicularLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<AxleConfiguration>* pMinAxleConfig,std::vector<AxleConfiguration>* pMaxAxleConfig) const
 {
-   m_pGirderModelManager->GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,pRmin,pRmax,pMinAxleConfig,pMaxAxleConfig);
+   bool bIncludeLLDF = false;
+   m_pGirderModelManager->GM_GetVehicularLiveLoadReaction(intervalIdx,llType,vehicleIdx,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,pRmin,pRmax,pMinAxleConfig,pMaxAxleConfig);
 }
 
-void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,REACTION* pRmin,REACTION* pRmax,VehicleIndexType* pMinVehIdx,VehicleIndexType* pMaxVehIdx) const
+void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,pgsTypes::ForceEffectType fetPrimary,REACTION* pRmin,REACTION* pRmax,VehicleIndexType* pMinVehIdx,VehicleIndexType* pMaxVehIdx) const
 {
    std::vector<PierIndexType> vPiers;
    vPiers.push_back(pierIdx);
@@ -9653,7 +9741,7 @@ void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTyp
    std::vector<VehicleIndexType> vMinVehIdx;
    std::vector<VehicleIndexType> vMaxVehIdx;
 
-   GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,&Rmin,&Rmax,&vMinVehIdx,&vMaxVehIdx);
+   GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,fetPrimary,&Rmin,&Rmax,&vMinVehIdx,&vMaxVehIdx);
 
    *pRmin = Rmin.front();
    *pRmax = Rmax.front();
@@ -9668,45 +9756,22 @@ void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTyp
    }
 }
 
-void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<VehicleIndexType>* pMinVehIdx,std::vector<VehicleIndexType>* pMaxVehIdx) const
+void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,pgsTypes::ForceEffectType fetPrimary,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<VehicleIndexType>* pMinVehIdx,std::vector<VehicleIndexType>* pMaxVehIdx) const
 {
-   m_pGirderModelManager->GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,pRmin,pRmax,pMinVehIdx,pMaxVehIdx);
+   bool bIncludeLLDF = false;
+   m_pGirderModelManager->GM_GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,pRmin,pRmax,pMinVehIdx,pMaxVehIdx);
 }
 
-void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,pgsTypes::ForceEffectType fetDeflection,REACTION* pRmin,REACTION* pRmax,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinVehIdx,VehicleIndexType* pMaxVehIdx) const
+void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,pgsTypes::ForceEffectType fetPrimary,pgsTypes::ForceEffectType fetDeflection,REACTION* pRmin,REACTION* pRmax,Float64* pTmin,Float64* pTmax,VehicleIndexType* pMinVehIdx,VehicleIndexType* pMaxVehIdx) const
 {
-   std::vector<PierIndexType> vPiers;
-   vPiers.push_back(pierIdx);
-
-   std::vector<REACTION> Rmin;
-   std::vector<REACTION> Rmax;
-   std::vector<Float64> Tmin;
-   std::vector<Float64> Tmax;
-   std::vector<VehicleIndexType> vMinVehIdx;
-   std::vector<VehicleIndexType> vMaxVehIdx;
-
-   GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,fetDeflection,&Rmin,&Rmax,&Tmin,&Tmax,&vMinVehIdx,&vMaxVehIdx);
-
-   *pRmin = Rmin.front();
-   *pRmax = Rmax.front();
-
-   *pTmin = Tmin.front();
-   *pTmax = Tmax.front();
-
-   if ( pMinVehIdx )
-   {
-      *pMinVehIdx = vMinVehIdx.front();
-   }
-   
-   if ( pMaxVehIdx )
-   {
-      *pMaxVehIdx = vMaxVehIdx.front();
-   }
+   bool bIncludeLLDF = false;
+   m_pGirderModelManager->GM_GetLiveLoadReaction(intervalIdx,llType,pierIdx,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,fetDeflection,pRmin,pRmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
 }
 
-void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,bool bIncludeLLDF,pgsTypes::ForceEffectType fetPrimary,pgsTypes::ForceEffectType fetDeflection,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<Float64>* pTmin,std::vector<Float64>* pTmax,std::vector<VehicleIndexType>* pMinVehIdx,std::vector<VehicleIndexType>* pMaxVehIdx) const
+void CAnalysisAgentImp::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,pgsTypes::ForceEffectType fetPrimary,pgsTypes::ForceEffectType fetDeflection,std::vector<REACTION>* pRmin,std::vector<REACTION>* pRmax,std::vector<Float64>* pTmin,std::vector<Float64>* pTmax,std::vector<VehicleIndexType>* pMinVehIdx,std::vector<VehicleIndexType>* pMaxVehIdx) const
 {
-   m_pGirderModelManager->GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,fetDeflection,pRmin,pRmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
+   bool bIncludeLLDF = false;
+   m_pGirderModelManager->GM_GetLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,bIncludeLLDF,fetPrimary,fetDeflection,pRmin,pRmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
 }
 
 void CAnalysisAgentImp::GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,PierIndexType pierIdx,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) const
@@ -9725,7 +9790,7 @@ void CAnalysisAgentImp::GetCombinedLiveLoadReaction(IntervalIndexType intervalId
 
 void CAnalysisAgentImp::GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const std::vector<PierIndexType>& vPiers,const CGirderKey& girderKey,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,std::vector<Float64>* pRmin,std::vector<Float64>* pRmax) const
 {
-   m_pGirderModelManager->GetCombinedLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,pRmin,pRmax);
+   m_pGirderModelManager->GM_GetCombinedLiveLoadReaction(intervalIdx,llType,vPiers,girderKey,bat,bIncludeImpact,pRmin,pRmax);
 }
 
 /////////////////////////////////////////////////
@@ -9749,7 +9814,6 @@ std::vector<PierIndexType> CAnalysisAgentImp::GetBearingReactionPiers(IntervalIn
       {
          pgsTypes::BoundaryConditionType bcType = pBridge->GetBoundaryConditionType(pierIdx);
          if ( analysisType == pgsTypes::Simple ||
-              pBridge->HasCantilever(pierIdx) || 
               bcType == pgsTypes::bctHinge || bcType == pgsTypes::bctRoller ||
               (bcType == pgsTypes::bctIntegralAfterDeckHingeAhead && pierIdx == startPierIdx) ||
               (bcType == pgsTypes::bctIntegralBeforeDeckHingeAhead && pierIdx == startPierIdx) ||
@@ -9857,7 +9921,7 @@ Float64 CAnalysisAgentImp::GetDeflectionAdjustmentFactor(const pgsPointOfInteres
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
-   Float64 fc = (intervalIdx < erectionIntervalIdx ? pConfig->Fci : pConfig->Fc);
+   Float64 fc = (intervalIdx < erectionIntervalIdx ? pConfig->fci : pConfig->fc28);
 
    GET_IFACE(ISectionProperties,pSectProp);
 
@@ -9920,18 +9984,18 @@ void CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInteres
    // Envelope mode. In all other modes, Min/Max are the same
    pgsTypes::BridgeAnalysisType bat = GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   Float64 fMin[2], fMax[2];
+   std::array<Float64, 2> fMin, fMax;
    GetStress(serviceLoadIntervalIdx,limitState,poi,bat,false/*without prestress*/,pgsTypes::TopDeck,   &fMin[TOP],&fMax[TOP]);
    GetStress(serviceLoadIntervalIdx,limitState,poi,bat,false/*without prestress*/,pgsTypes::BottomDeck,&fMin[BOT],&fMax[BOT]);
 
    // The section is in tension, does the prestress cause compression?
-   Float64 fPreTension[2];
+   std::array<Float64, 2> fPreTension;
    GetStress(serviceLoadIntervalIdx,poi,pgsTypes::TopDeck,pgsTypes::BottomDeck,false/*don't include live load*/,limitState,INVALID_INDEX/*controlling live load*/,&fPreTension[TOP],&fPreTension[BOT]);
 
-   Float64 fPostTension[2];
+   std::array<Float64, 2> fPostTension;
    GetStress(serviceLoadIntervalIdx,pgsTypes::pftPostTensioning,poi,bat,rtCumulative,pgsTypes::TopDeck,pgsTypes::BottomDeck,&fPostTension[TOP],&fPostTension[BOT]);
 
-   Float64 fPS[2];
+   std::array<Float64, 2> fPS;
    fPS[TOP] = fPreTension[TOP] + fPostTension[TOP];
    fPS[BOT] = fPreTension[BOT] + fPostTension[BOT];
 
@@ -9953,6 +10017,8 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    // This case isn't that special, however, we know that the bottom of the girder is in the PTZ and the top is not. There
    // is no need to do all the analytical work to figure this out.
    GET_IFACE(IBridge,pBridge);
+   bool bModelLeftCantilever, bModelRightCantilever;
+   pBridge->ModelCantilevers(segmentKey, &bModelLeftCantilever, &bModelRightCantilever);
    PierIndexType startPierIdx, endPierIdx;
    pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
    bool bDummy;
@@ -9965,8 +10031,8 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    bool bNegMoment = (bContinuousStart || bIntegralStart || bContinuousEnd || bIntegralEnd);
    if ( startPierIdx == endPierIdx-1 && // the group is only one span long
         pBridge->GetSegmentCount(segmentKey) == 1 && // there one segment in the group
-        !pBridge->HasCantilever(startPierIdx) && // start is not cantilever
-        !pBridge->HasCantilever(endPierIdx) && // end is not cantilever
+        !bModelLeftCantilever && // start is not cantilever
+        !bModelRightCantilever && // end is not cantilever
         !bNegMoment) // no contiuous or integral boundary conditions to cause negative moments
    {
       // we know the answer
@@ -10050,7 +10116,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       Pjack = pStrandGeom->GetPjack(segmentKey,true/*include temp strands*/);
    }
 
-   GET_IFACE(ITendonGeometry,pTendonGeom);
+   GET_IFACE(IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
    if ( IsZero(Pjack) && nDucts == 0 )
    {
@@ -10158,7 +10224,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    pgsTypes::BridgeAnalysisType batBot = GetBridgeAnalysisType(pgsTypes::Maximize);
 
    // Get stresses due to service loads
-   Float64 fMin[2], fMax[2];
+   std::array<Float64, 2> fMin, fMax;
    GetStress(serviceLoadIntervalIdx,limitState,poi,batTop,false/*without prestress*/,pgsTypes::TopGirder,   &fMin[TOP],&fMax[TOP]);
    GetStress(serviceLoadIntervalIdx,limitState,poi,batBot,false/*without prestress*/,pgsTypes::BottomGirder,&fMin[BOT],&fMax[BOT]);
    //if ( fMax <= 0 )
@@ -10167,11 +10233,11 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    //}
 
    // The section is in tension, does the prestress cause compression in the service load interval?
-   Float64 fPreTension[2], fPostTension[2];
+   std::array<Float64, 2> fPreTension, fPostTension;
    if ( pConfig )
    {
-      fPreTension[TOP] = GetDesignStress(serviceLoadIntervalIdx,poi,pgsTypes::TopGirder,   *pConfig,false/*don't include live load*/,limitState);
-      fPreTension[BOT] = GetDesignStress(serviceLoadIntervalIdx,poi,pgsTypes::BottomGirder,*pConfig,false/*don't include live load*/,limitState);
+      fPreTension[TOP] = GetDesignStress(serviceLoadIntervalIdx, poi, pgsTypes::TopGirder, *pConfig, false/*don't include live load*/, limitState);
+      fPreTension[BOT] = GetDesignStress(serviceLoadIntervalIdx, poi, pgsTypes::BottomGirder, *pConfig, false/*don't include live load*/, limitState);
       fPostTension[TOP] = 0; // no post-tensioning for precast girder design
       fPostTension[BOT] = 0; // no post-tensioning for precast girder design
    }
@@ -10182,7 +10248,7 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       GetStress(serviceLoadIntervalIdx,pgsTypes::pftPostTensioning,poi,batTop,rtCumulative,pgsTypes::TopGirder,pgsTypes::BottomGirder,&fPostTension[TOP],&fPostTension[BOT]);
    }
    
-   Float64 fPS[2];
+   std::array<Float64, 2> fPS;
    fPS[TOP] = fPreTension[TOP] + fPostTension[TOP];
    fPS[BOT] = fPreTension[BOT] + fPostTension[BOT];
 
@@ -11002,4 +11068,24 @@ IntervalIndexType CAnalysisAgentImp::GetErectionInterval(const PoiList& vPoi) co
    }
 
    return erectionIntervalIdx;
+}
+
+IntervalIndexType CAnalysisAgentImp::GetStorageInterval(const PoiList& vPoi) const
+{
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IPointOfInterest, pPoi);
+   std::vector<CSegmentKey> vSegments;
+   pPoi->GetSegmentKeys(vPoi, &vSegments);
+   IntervalIndexType storageIntervalIdx;
+   if (vSegments.size() == 1)
+   {
+      storageIntervalIdx = pIntervals->GetStorageInterval(vSegments.front());
+   }
+   else
+   {
+      CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
+      storageIntervalIdx = pIntervals->GetFirstStorageInterval(girderKey);
+   }
+
+   return storageIntervalIdx;
 }

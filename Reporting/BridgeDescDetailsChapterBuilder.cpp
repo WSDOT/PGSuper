@@ -108,77 +108,69 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
+
+         rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         *pChapter<<pHead;
+         if ( nSegments == 1 )
          {
-            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            *pHead << _T("Span ") << LABEL_SPAN(thisSegmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisSegmentKey.girderIndex) << rptNewLine;
+         }
+         else
+         {
+            *pHead << _T("Group ") << LABEL_GROUP(thisSegmentKey.groupIndex) <<  _T(" Girder ") << LABEL_GIRDER(thisSegmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(thisSegmentKey.segmentIndex) << rptNewLine;
+         }
 
-            rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
-            *pChapter<<pHead;
-            if ( nSegments == 1 )
-            {
-               *pHead << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-            }
-            else
-            {
-               *pHead << _T("Group ") << LABEL_GROUP(grpIdx) <<  _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-            }
+         write_deck_width_details(pBroker, pDisplayUnits, pChapter, thisSegmentKey, level);
+         write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, thisSegmentKey, level);
+         write_girder_details( pBroker, pDisplayUnits, pChapter, thisSegmentKey, level);
 
-            write_deck_width_details(pBroker, pDisplayUnits, pChapter, segmentKey, level);
-            write_intermedate_diaphragm_details(pBroker, pDisplayUnits, pChapter, segmentKey, level);
-            write_girder_details( pBroker, pDisplayUnits, pChapter, segmentKey, level);
+         write_handling(pChapter,pBroker,pDisplayUnits, thisSegmentKey);
 
-            write_handling(pChapter,pBroker,pDisplayUnits,segmentKey);
+         if ( !m_bOmitStrandLocations )
+         {
+            CStrandLocations strandLocations;
+            strandLocations.Build(pChapter,pBroker, thisSegmentKey,pDisplayUnits);
 
-            if ( !m_bOmitStrandLocations )
-            {
-               CStrandLocations strandLocations;
-               strandLocations.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
+            CStrandEccentricities strandEccentricities;
+            strandEccentricities.Build(pChapter,pBroker, thisSegmentKey,pDisplayUnits);
+         }
 
-               CStrandEccentricities strandEccentricities;
-               strandEccentricities.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
-            }
+         write_debonding(pChapter, pBroker, pDisplayUnits, thisSegmentKey);
 
-            write_debonding(pChapter, pBroker, pDisplayUnits, segmentKey);
+         write_camber_factors(pChapter, pBroker, pDisplayUnits, thisSegmentKey);
 
-            write_camber_factors(pChapter, pBroker, pDisplayUnits, segmentKey);
+         pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         *pChapter << pHead;
+         *pHead << _T("Transverse Reinforcement Stirrup Zones") << rptNewLine;
 
-            pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
-            *pChapter << pHead;
-            *pHead << _T("Transverse Reinforcement Stirrup Zones") << rptNewLine;
+         CStirrupTable stirrup_table;
+         stirrup_table.Build(pChapter,pBroker, thisSegmentKey,pDisplayUnits);
 
-            CStirrupTable stirrup_table;
-            stirrup_table.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
+         CLongRebarLocations long_rebar_table;
+         long_rebar_table.Build(pChapter,pBroker, thisSegmentKey,pDisplayUnits);
 
-            CLongRebarLocations long_rebar_table;
-            long_rebar_table.Build(pChapter,pBroker,segmentKey,pDisplayUnits);
-
-            pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
-            *pChapter << pHead;
-            *pHead << _T("Materials") << rptNewLine;
+         pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         *pChapter << pHead;
+         *pHead << _T("Materials") << rptNewLine;
 #pragma Reminder("write out concrete details")
-            //write_segment_concrete_details(pBroker,pDisplayUnits,pChapter,level,segmentKey);
-            if ( segIdx != nSegments-1 )
-            {
-               //write_closure_concrete_details(pBroker,pDisplayUnits,pChapter,level,segmentKey);
-            }
-            write_strand_details( pBroker, pDisplayUnits, pChapter, level, segmentKey);
+         //write_segment_concrete_details(pBroker,pDisplayUnits,pChapter,level,thisSegmentKey);
+         if (thisSegmentKey.segmentIndex != nSegments-1 )
+         {
+            //write_closure_concrete_details(pBroker,pDisplayUnits,pChapter,level,thisSegmentKey);
+         }
+         write_strand_details( pBroker, pDisplayUnits, pChapter, level, thisSegmentKey);
 
-	        write_rebar_details( pBroker, pDisplayUnits, pChapter, segmentKey, level);
-         } // next segment
-      } // next girder
-   } // next group
+	      write_rebar_details( pBroker, pDisplayUnits, pChapter, thisSegmentKey, level);
+      } // next segment
+   } // next girder
 
    //write_deck_concrete_details(pBroker,pDisplayUnits,pChapter,level);
 

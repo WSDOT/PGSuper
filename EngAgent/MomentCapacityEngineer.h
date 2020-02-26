@@ -86,20 +86,20 @@ public:
    std::vector<const MOMENTCAPACITYDETAILS*> GetMomentCapacityDetails(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment, const GDRCONFIG* pConfig = nullptr) const;
 
    Float64 GetCrackingMoment(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const;
-   void GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKINGMOMENTDETAILS* pcmd) const;
+   const CRACKINGMOMENTDETAILS* GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const;
    void GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG& config, bool bPositiveMoment, CRACKINGMOMENTDETAILS* pcmd) const;
 
    Float64 GetMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const;
-   void GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, MINMOMENTCAPDETAILS* pmmcd) const;
+   const MINMOMENTCAPDETAILS* GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const;
    void GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG& config, bool bPositiveMoment, MINMOMENTCAPDETAILS* pmmcd) const;
-   std::vector<MINMOMENTCAPDETAILS> GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const;
-   std::vector<CRACKINGMOMENTDETAILS> GetCrackingMomentDetails(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const;
+   std::vector<const MINMOMENTCAPDETAILS*> GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const;
+   std::vector<const CRACKINGMOMENTDETAILS*> GetCrackingMomentDetails(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const;
    std::vector<Float64> GetCrackingMoment(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const;
    std::vector<Float64> GetMinMomentCapacity(IntervalIndexType intervalIdx, const PoiList& vPoi, bool bPositiveMoment) const;
 
-   void GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment, CRACKEDSECTIONDETAILS* pCSD) const;
    Float64 GetIcr(const pgsPointOfInterest& poi, bool bPositiveMoment) const;
-   std::vector<CRACKEDSECTIONDETAILS> GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const;
+   const CRACKEDSECTIONDETAILS* GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const;
+   std::vector<const CRACKEDSECTIONDETAILS*> GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const;
 
 private:
    //------------------------------------------------------------------------
@@ -163,14 +163,17 @@ private:
       Float64 m_GirderLength;
       Float64 m_DistFromStart;
       bool m_bNearMidSpan;
+      bool m_bUHPC;
    };
 
    // GROUP: OPERATIONS
    void CreateStrandMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS) const;
-   void CreateTendonMaterial(const CGirderKey& girderKey,IStressStrain** ppSS) const;
+   void CreateSegmentTendonMaterial(const CSegmentKey& segmentKey, IStressStrain** ppSS) const;
+   void CreateGirderTendonMaterial(const CGirderKey& girderKey, IStressStrain** ppSS) const;
+   void CreateTendonMaterial(const matPsStrand* pTendon, IStressStrain** ppSS) const;
 
-   MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial_strand,const std::vector<Float64>& fpe_pt,const std::vector<Float64>& ept_initial,bool bPositiveMoment) const;
-   void ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const CRACKINGMOMENTDETAILS& cmd,MINMOMENTCAPDETAILS* pmmcd) const;
+   MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial_strand, const std::vector<Float64>& fpe_pt_segment, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& fpe_pt_girder,const std::vector<Float64>& ept_initial_girder,bool bPositiveMoment) const;
+   void ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const CRACKINGMOMENTDETAILS* pcmd,MINMOMENTCAPDETAILS* pmmcd) const;
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const;
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const;
 
@@ -181,7 +184,7 @@ private:
    void ComputeCrackingMoment(Float64 g1,Float64 g2,Float64 g3,Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd) const;
    void GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const;
 
-   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64 eps_initial, const std::vector<Float64>& ept_initial, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, ISize2d** szOffset, Float64* pdt, Float64* pH, Float64* pHaunch, std::map<StrandIndexType, Float64>* pBondFactors) const;
+   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64 eps_initial, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& ept_initial_girder, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, ISize2d** szOffset, Float64* pdt, Float64* pH, Float64* pHaunch, std::map<StrandIndexType, Float64>* pBondFactors) const;
 
    // GROUP: INQUIRY
 
@@ -211,7 +214,7 @@ private:
    // index 0 = Moment Type (Positive = 0, Negative = 1)
    mutable std::map<PoiIDType, MINMOMENTCAPDETAILS> m_NonCompositeMinMomentCapacity[2];
    mutable std::map<PoiIDType, MINMOMENTCAPDETAILS> m_CompositeMinMomentCapacity[2];
-   MINMOMENTCAPDETAILS ValidateMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const;
+   const MINMOMENTCAPDETAILS* ValidateMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const;
    void InvalidateMinMomentCapacity();
 
    using CrackedSectionDetailsContainer = std::map<PoiIDType, CRACKEDSECTIONDETAILS>;

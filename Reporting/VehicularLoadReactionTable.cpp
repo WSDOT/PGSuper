@@ -167,17 +167,18 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       }
    }
 
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+
    // Get POI at start and end of the span
    GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    PoiList vPoi;
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+         CSegmentKey segmentKey(thisGirderKey,segIdx);
          PoiList vSegPoi;
          pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_ERECTED_SEGMENT, &vSegPoi);
          ATLASSERT(vSegPoi.size() == 2);
@@ -223,7 +224,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       {
          REACTION Rmin, Rmax;
          AxleConfiguration maxConfig, minConfig;
-         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, pgsTypes::MaxSimpleContinuousEnvelope,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, pgsTypes::MaxSimpleContinuousEnvelope,  true, &Rmin, &Rmax, &minConfig, &maxConfig );
          (*p_table)(row,col++) << reaction.SetValue( Rmax.Fy );
 
          if ( bReportTruckConfig )
@@ -231,7 +232,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
             CVehicularLoadResultsTable::ReportTruckConfiguration(maxConfig,p_table,row,col++,pDisplayUnits);
          }
 
-         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, pgsTypes::MinSimpleContinuousEnvelope,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, pgsTypes::MinSimpleContinuousEnvelope,  true, &Rmin, &Rmax, &minConfig, &maxConfig );
          (*p_table)(row,col++) << reaction.SetValue( Rmin.Fy );
 
          if ( bReportTruckConfig )
@@ -265,7 +266,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       {
          REACTION Rmin, Rmax;
          AxleConfiguration maxConfig, minConfig;
-         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,  true, false, &Rmin, &Rmax, &minConfig, &maxConfig );
+         pReactions->GetVehicularLiveLoadReaction( intervalIdx, llType, vehicleIdx, pier, thisGirderKey, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan,  true, &Rmin, &Rmax, &minConfig, &maxConfig );
          (*p_table)(row,col++) << reaction.SetValue( Rmax.Fy );
 
          if ( bReportTruckConfig )

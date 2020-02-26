@@ -129,7 +129,14 @@ interface IRoadway : IUnknown
    // the x value is the alignment offset, and the y value is the elevation of the surface
    virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) const = 0;
 
-   virtual Float64 GetCrownPointOffset(Float64 station) const = 0;
+   // returns number of crown points along alignment
+   virtual IndexType GetCrownPointIndexCount(Float64 station) const = 0;
+
+   // returns index of crown point at alignment, PG
+   virtual IndexType GetControllingCrownPointIndex(Float64 station) const = 0;
+
+   // offset for each crown point
+   virtual Float64 GetCrownPointOffset(IndexType crownPointIdx, Float64 station) const = 0;
 };
 
 

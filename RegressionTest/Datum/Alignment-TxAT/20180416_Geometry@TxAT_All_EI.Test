@@ -1,27 +1,27 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   7.78                     1     1    WF66G          63  0.6  270  27.50  14.12  17.00  17.00                                              17  62.0  7.0  8.500  9.500   6.795    -7.467    18234   0.827  0.827   6.825 -4.413 -0.593 -0.763 -5.768 310.16  349.82    5.75    5.50    5.50 
+ 27.83    4   7.78                     1     1    WF66G          63  0.6  270  27.50  14.12  17.00  17.00                                              17  62.0  7.0  8.500  9.500   6.795    -7.467    18234   0.827  0.827   6.827 -4.413 -0.593 -0.763 -5.768 310.16  349.82    5.75    5.50    5.50 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
 Splitting zone check failed.
 Lifting checks failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   7.78                     1     2    WF66G    *      0  0.6  270   0.00   0.00  17.00  17.00                                               0   0.0  0.0  5.000  6.000   6.058    -6.693    15864   0.627  0.798  -10.61 -4.633 -0.642 -0.825 -6.099   0.00    0.00    1.75    5.00    5.00 
+ 27.83    4   7.78                     1     2    WF66G    *      0  0.6  270   0.00   0.00  17.00  17.00                                               0   0.0  0.0  5.000  6.000   6.058    -6.693    15864   0.627  0.798  -10.60 -4.633 -0.642 -0.825 -6.099   0.00    0.00    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
-Tensile stress check failed for Service I Limit State in Interval 11 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 15 Install Overlay
-Compression stress check failed for Service I Limit State in Interval 16 Open to Traffic
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
-Compression stress check failed for Fatigue I Limit State in Interval 16 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
+Tension stress check failed for Service I Limit State in Interval 12 Cast Deck
+Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
+Compression stress check failed for Fatigue I Limit State in Interval 20 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

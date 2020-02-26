@@ -105,117 +105,110 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, len,    pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
 
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-         {
-            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
+         CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
 
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
             
-            const CStrandData* pStrands = pSegmentData->GetStrandData(thisSegmentKey);
+         const CStrandData* pStrands = pSegmentData->GetStrandData(thisSegmentKey);
 
-            // Write out what we have for prestressing in this girder
-            if ( girderKey.groupIndex == ALL_GROUPS || 1 < nSegments)
-            {
-               rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-               *pChapter << pPara;
-
-               if (bIsSplicedGirder)
-               {
-                  (*pPara) << _T("Group ") << LABEL_GROUP(grpIdx) << _T( " Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-               }
-               else
-               {
-                  (*pPara) << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-               }
-            }
-
-            bool harpedAreStraight = pStrandGeom->GetAreHarpedStrandsForcedStraight(thisSegmentKey);
-
-            rptParagraph* pPara = new rptParagraph;
+         // Write out what we have for prestressing in this girder
+         if ( girderKey.groupIndex == ALL_GROUPS || 1 < nSegments)
+         {
+            rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
-            StrandIndexType Ns = pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Straight);
-            StrandIndexType Nh = pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Harped);
-            *pPara << _T("Straight strands: ") << Sub2(_T("N"),_T("s")) << _T(" = ") << Ns << _T(", ") 
-               << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)) << _T(", ")
-               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Straight)) << rptNewLine;
-            *pPara << LABEL_HARP_TYPE(harpedAreStraight) <<_T(" strands: ") << Sub2(_T("N"),_T("h")) << _T(" = ") << Nh << _T(", ") 
-               << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(", ")
-               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Harped)) << rptNewLine;
 
-            if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary ) )
+            if (bIsSplicedGirder)
             {
-               *pPara << _T("Temporary strands: ") << Sub2(_T("N"),_T("t")) << _T(" = ") << pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Temporary) << _T(", ") 
-                  << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Temporary)) << _T(", ")   
-                  << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Temporary)) << rptNewLine;
+               (*pPara) << _T("Group ") << LABEL_GROUP(thisSegmentKey.groupIndex) << _T( " Girder ") << LABEL_GIRDER(thisSegmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(thisSegmentKey.segmentIndex) << rptNewLine;
+            }
+            else
+            {
+               (*pPara) << _T("Span ") << LABEL_SPAN(thisSegmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisSegmentKey.girderIndex) << rptNewLine;
+            }
+         }
 
-               *pPara << rptNewLine;
+         bool harpedAreStraight = pStrandGeom->GetAreHarpedStrandsForcedStraight(thisSegmentKey);
+
+         rptParagraph* pPara = new rptParagraph;
+         *pChapter << pPara;
+         StrandIndexType Ns = pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Straight);
+         StrandIndexType Nh = pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Harped);
+         *pPara << _T("Straight strands: ") << Sub2(_T("N"),_T("s")) << _T(" = ") << Ns << _T(", ") 
+            << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)) << _T(", ")
+            << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Straight)) << rptNewLine;
+         *pPara << LABEL_HARP_TYPE(harpedAreStraight) <<_T(" strands: ") << Sub2(_T("N"),_T("h")) << _T(" = ") << Nh << _T(", ") 
+            << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(", ")
+            << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Harped)) << rptNewLine;
+
+         if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary ) )
+         {
+            *pPara << _T("Temporary strands: ") << Sub2(_T("N"),_T("t")) << _T(" = ") << pStrandGeom->GetStrandCount(thisSegmentKey,pgsTypes::Temporary) << _T(", ") 
+               << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Temporary)) << _T(", ")   
+               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Temporary)) << rptNewLine;
+
+            *pPara << rptNewLine;
                   
-               switch(pStrands->GetTemporaryStrandUsage())
-               {
-               case pgsTypes::ttsPretensioned:
-                  *pPara << _T("Temporary Strands pretensioned with permanent strands") << rptNewLine;
-                  break;
-
-               case pgsTypes::ttsPTBeforeShipping:
-                  *pPara << _T("Temporary Strands post-tensioned immedately before shipping") << rptNewLine;
-                  break;
-
-               case pgsTypes::ttsPTAfterLifting:
-                  *pPara << _T("Temporary Strands post-tensioned immedately after lifting") << rptNewLine;
-                  break;
-
-               case pgsTypes::ttsPTBeforeLifting:
-                  *pPara << _T("Temporary Strands post-tensioned before lifting") << rptNewLine;
-                  break;
-               }
-
-               *pPara << _T("Total permanent strands, N = ") << Ns+Nh << _T(", ") 
-                  << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)+pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(", ")
-                  << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Permanent)) << rptNewLine;
-
-               *pPara << rptNewLine;
-
-               *pPara << _T("Prestress Transfer Length (Permanent) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Permanent) ) << rptNewLine;
-               *pPara << _T("Prestress Transfer Length (Temporary) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Temporary) ) << rptNewLine;
-            }
-            else
+            switch(pStrands->GetTemporaryStrandUsage())
             {
-               *pPara << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetAreaPrestressStrands(thisSegmentKey,releaseIntervalIdx,false)) << rptNewLine;
-               *pPara << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue( pStrandGeom->GetPjack(thisSegmentKey,false)) << rptNewLine;
-               *pPara << _T("Prestress Transfer Length = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Permanent) ) << rptNewLine;
+            case pgsTypes::ttsPretensioned:
+               *pPara << _T("Temporary Strands pretensioned with permanent strands") << rptNewLine;
+               break;
+
+            case pgsTypes::ttsPTBeforeShipping:
+               *pPara << _T("Temporary Strands post-tensioned immedately before shipping") << rptNewLine;
+               break;
+
+            case pgsTypes::ttsPTAfterLifting:
+               *pPara << _T("Temporary Strands post-tensioned immedately after lifting") << rptNewLine;
+               break;
+
+            case pgsTypes::ttsPTBeforeLifting:
+               *pPara << _T("Temporary Strands post-tensioned before lifting") << rptNewLine;
+               break;
             }
 
-            // Write out strand forces and stresses at the various stages of prestress loss
-            pPara = new rptParagraph;
-            *pChapter << pPara;
-            *pPara << CPrestressLossTable(bIsSplicedGirder).Build(pBroker,thisSegmentKey,bIncludeElasticEffects,m_bRating,pDisplayUnits) << rptNewLine;
+            *pPara << _T("Total permanent strands, N = ") << Ns+Nh << _T(", ") 
+               << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Straight)+pStrandGeom->GetPjack(thisSegmentKey,pgsTypes::Harped)) << _T(", ")
+               << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(thisSegmentKey,releaseIntervalIdx,pgsTypes::Permanent)) << rptNewLine;
 
-            pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
-            *pChapter << pPara;
-            *pPara << _T("Time-Dependent Effects = change in strand stress due to creep, shrinkage, and relaxation") << rptNewLine;
-            if (bIncludeElasticEffects)
-            {
-               *pPara << _T("Instantaneous Effects = change in strand stress due to elastic shortening and externally applied loads") << rptNewLine;
-               *pPara << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects - Instantaneous Effects") << rptNewLine;
-            }
-            else
-            {
-               *pPara << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects") << rptNewLine;
-            }
-         } // segIdx
-      } // gdrIdx
-   } // spanIdx
+            *pPara << rptNewLine;
+
+            *pPara << _T("Prestress Transfer Length (Permanent) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Permanent) ) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Temporary) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Temporary) ) << rptNewLine;
+         }
+         else
+         {
+            *pPara << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetAreaPrestressStrands(thisSegmentKey,releaseIntervalIdx,false)) << rptNewLine;
+            *pPara << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue( pStrandGeom->GetPjack(thisSegmentKey,false)) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Permanent) ) << rptNewLine;
+         }
+
+         // Write out strand forces and stresses at the various stages of prestress loss
+         pPara = new rptParagraph;
+         *pChapter << pPara;
+         *pPara << CPrestressLossTable(bIsSplicedGirder).Build(pBroker,thisSegmentKey,bIncludeElasticEffects,m_bRating,pDisplayUnits) << rptNewLine;
+
+         pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+         *pChapter << pPara;
+         *pPara << _T("Time-Dependent Effects = change in strand stress due to creep, shrinkage, and relaxation") << rptNewLine;
+         if (bIncludeElasticEffects)
+         {
+            *pPara << _T("Instantaneous Effects = change in strand stress due to elastic shortening and externally applied loads") << rptNewLine;
+            *pPara << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects - Instantaneous Effects") << rptNewLine;
+         }
+         else
+         {
+            *pPara << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - Time-Dependent Effects") << rptNewLine;
+         }
+      } // segIdx
+   } // gdrIdx
 
    return pChapter;
 }

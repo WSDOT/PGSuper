@@ -204,15 +204,10 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
    write_structural_analysis(     &(*pLayoutTable)(0,2), pBroker, pDisplayUnits);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = Min(girderKey.girderIndex,nGirders-1);
-      CGirderKey thisGirderKey(grpIdx,gdrIdx);
-
       SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
@@ -345,19 +340,21 @@ void write_structural_analysis(rptParagraph* pPara,IBroker* pBroker, IEAFDisplay
 
 void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   ASSERT_SEGMENT_KEY(segmentKey);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Casting Yard Criteria")<<rptNewLine;
+   *pPara << _T("Casting Yard Criteria") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
-   INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
+   INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
    bool do_check, do_design;
    Float64 slope05, slope06, slope07;
@@ -373,15 +370,35 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
       *pPara << _T("Max. Strand slope is not checked") << rptNewLine;
    }
 
-   Float64 f;
-   pSpecEntry->GetHoldDownForce(&do_check, &do_design, &f);
+   Float64 f, fr;
+   int type;
+   pSpecEntry->GetHoldDownForce(&do_check, &do_design, &type, &f, &fr);
    if (do_check)
    {
-      *pPara << _T("Max. hold down force in casting yard = ") << force.SetValue(f) << rptNewLine;
+      if (type == HOLD_DOWN_TOTAL)
+      {
+         *pPara << _T("Total permissible hold down force = ");
+      }
+      else
+      {
+         *pPara << _T("Permissible hold down force per strand = ");
+      }
+      *pPara << force.SetValue(f) << rptNewLine;
+      *pPara << _T("The hold down force includes ") << percentage.SetValue(fr) << _T(" friction") << rptNewLine;
    }
    else
    {
-      *pPara << _T("Max. hold down force in casting yard  is not checked") << rptNewLine;
+      *pPara << _T("Max. hold down force in casting yard is not checked") << rptNewLine;
+   }
+
+   pSpecEntry->GetPlantHandlingWeightLimit(&do_check, &f);
+   if (do_check)
+   {
+      *pPara << _T("Max. girder weight in casting yard = ") << force.SetValue(f) << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("Max. girder weight in casting yard is not checked") << rptNewLine;
    }
 
    int method = pSpecEntry->GetCuringMethod();
@@ -397,20 +414,20 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    {
       ATLASSERT(false); // is there a new curing method
    }
-   
+
    *pPara << _T("1 day of steam or radiant heat curing is equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing") << rptNewLine;
    *pPara << rptNewLine;
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
+   GET_IFACE2(pBroker, IAllowableConcreteStress, pAllowableConcreteStress);
 
-   pgsPointOfInterest poi(segmentKey,0.0);
+   pgsPointOfInterest poi(segmentKey, 0.0);
    // can use TopGirder or BottomGirder to get allowable stress... 
    // we just need to designate that we want the allowable stress for the girder and
    // not the deck
-   Float64 fccy = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, releaseIntervalIdx, pgsTypes::ServiceI);
-   Float64 ftcy = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, false);
-   Float64 ft   = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, releaseIntervalIdx, pgsTypes::ServiceI, true /*with bonded rebar*/); 
-   *pPara << _T("Concrete Stress Limits - Service I (") << LrfdCw8th(_T("5.9.4.1.1"),_T("5.9.2.3.1")) << _T(")") << rptNewLine;
+   Float64 fccy = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(releaseIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression));
+   Float64 ftcy = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(releaseIntervalIdx, pgsTypes::ServiceI,pgsTypes::Tension), false);
+   Float64 ft = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(releaseIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), true /*with bonded rebar*/);
+   *pPara << _T("Concrete Stress Limits - Service I (") << LrfdCw8th(_T("5.9.4.1.1"), _T("5.9.2.3.1")) << _T(")") << rptNewLine;
    *pPara << _T("- Compressive Stress = ") << stress.SetValue(fccy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/o mild rebar) = ") << stress.SetValue(ftcy) << rptNewLine;
    *pPara << _T("- Tensile Stress (w/  mild rebar) = ") << stress.SetValue(ft) << rptNewLine;
@@ -419,7 +436,7 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    if (pSpecEntry->IsSplittingCheckEnabled())
    {
-      if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+      if (lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion())
       {
          *pPara << _T("Splitting zone length: h/") << pSpecEntry->GetSplittingZoneLengthFactor() << rptNewLine;
       }
@@ -430,28 +447,29 @@ void write_casting_yard(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    }
    else
    {
-      if ( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+      if (lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion())
       {
-         *pPara << _T("Splitting checks (") << LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) << _T(") are disabled.") << rptNewLine;
+         *pPara << _T("Splitting checks (") << LrfdCw8th(_T("5.10.10.1"), _T("5.9.4.4.1")) << _T(") are disabled.") << rptNewLine;
       }
       else
       {
-         *pPara << _T("Bursting checks (") << LrfdCw8th(_T("5.10.10.1"),_T("5.9.4.4.1")) << _T(") are disabled.") << rptNewLine;
+         *pPara << _T("Bursting checks (") << LrfdCw8th(_T("5.10.10.1"), _T("5.9.4.4.1")) << _T(") are disabled.") << rptNewLine;
       }
    }
 
    if (pSpecEntry->IsConfinementCheckEnabled())
    {
-      *pPara << _T("Confinement checks (") << LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) << _T(") are enabled.") << rptNewLine;
+      *pPara << _T("Confinement checks (") << LrfdCw8th(_T("5.10.10.2"), _T("5.9.4.4.2")) << _T(") are enabled.") << rptNewLine;
    }
    else
    {
-      *pPara << _T("Confinement checks (") << LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) << _T(") are disabled.") << rptNewLine;
+      *pPara << _T("Confinement checks (") << LrfdCw8th(_T("5.10.10.2"), _T("5.9.4.4.2")) << _T(") are disabled.") << rptNewLine;
    }
 }
 
 void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
+   ASSERT_SEGMENT_KEY(segmentKey);
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Lifting Criteria") << rptNewLine;
@@ -518,6 +536,7 @@ void write_lifting(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDis
 
 void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
+   ASSERT_SEGMENT_KEY(segmentKey);
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Hauling Criteria - WSDOT Method") << rptNewLine;
@@ -622,6 +641,7 @@ void write_wsdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits
 
 void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry, const CSegmentKey& segmentKey)
 {
+   ASSERT_SEGMENT_KEY(segmentKey);
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Hauling Criteria - KDOT Method")<<rptNewLine;
@@ -639,50 +659,36 @@ void write_kdot_hauling(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    *pPara<<_T("- Between Bunk Points = ")<< pSpecEntry->GetInteriorGFactor()<<rptNewLine;
 
    GET_IFACE2(pBroker,IKdotGirderHaulingSpecCriteria,pHauling);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   *pPara << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << rptNewLine;
 
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (segmentKey.groupIndex == ALL_GROUPS ? nGroups-1: firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
+
+   *pPara<<_T("Minimum support location = ")<<dim2.SetValue(pSpecEntry->GetMininumTruckSupportLocation());
+   if (pSpecEntry->GetUseMinTruckSupportLocationFactor())
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = Min(nGirders-2,(segmentKey.girderIndex == ALL_GIRDERS ? 0 : segmentKey.girderIndex));
-      GirderIndexType lastGirderIdx  = Min(nGirders-1,(segmentKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
-      {
-         CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segmentKey.segmentIndex);
-
-         *pPara << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-
-         Float64 segment_length = pBridge->GetSegmentLength(thisSegmentKey);
-
-         *pPara<<_T("Minimum support location = ")<<dim2.SetValue(pSpecEntry->GetMininumTruckSupportLocation());
-         if (pSpecEntry->GetUseMinTruckSupportLocationFactor())
-         {
-            Float64 ml = segment_length * pSpecEntry->GetMinTruckSupportLocationFactor();
-            *pPara<<_T(", or ")<<dim2.SetValue(ml)<<_T(". Whichever is greater.")<<rptNewLine;
-         }
-         else
-         {
-            *pPara<<_T(".")<<rptNewLine;
-         }
-
-         *pPara<<_T("Support location design accuracy = ")<<dim2.SetValue(pSpecEntry->GetTruckSupportLocationAccuracy())<<rptNewLine;
-
-         Float64 fccy = pHauling->GetKdotHaulingAllowableCompressiveConcreteStress(thisSegmentKey);
-         Float64 ftcy = pHauling->GetKdotHaulingAllowableTensileConcreteStress(thisSegmentKey);
-         Float64 ft   = pHauling->GetKdotHaulingWithMildRebarAllowableStress(thisSegmentKey);
-         *pPara<<_T("Concrete Stress Limits - Hauling (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(")")<<rptNewLine;
-         *pPara<<_T("- Compressive Stress = ")<<stress.SetValue(fccy)<<rptNewLine;
-         *pPara<<_T("- Tensile Stress (w/o mild rebar) = ")<<stress.SetValue(ftcy) << rptNewLine;
-         *pPara<<_T("- Tensile Stress (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
-      }
+      Float64 ml = segment_length * pSpecEntry->GetMinTruckSupportLocationFactor();
+      *pPara<<_T(", or ")<<dim2.SetValue(ml)<<_T(". Whichever is greater.")<<rptNewLine;
    }
+   else
+   {
+      *pPara<<_T(".")<<rptNewLine;
+   }
+
+   *pPara<<_T("Support location design accuracy = ")<<dim2.SetValue(pSpecEntry->GetTruckSupportLocationAccuracy())<<rptNewLine;
+
+   Float64 fccy = pHauling->GetKdotHaulingAllowableCompressiveConcreteStress(segmentKey);
+   Float64 ftcy = pHauling->GetKdotHaulingAllowableTensileConcreteStress(segmentKey);
+   Float64 ft   = pHauling->GetKdotHaulingWithMildRebarAllowableStress(segmentKey);
+   *pPara<<_T("Concrete Stress Limits - Hauling (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(")")<<rptNewLine;
+   *pPara<<_T("- Compressive Stress = ")<<stress.SetValue(fccy)<<rptNewLine;
+   *pPara<<_T("- Tensile Stress (w/o mild rebar) = ")<<stress.SetValue(ftcy) << rptNewLine;
+   *pPara<<_T("- Tensile Stress (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
 }
 
 void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
+   ASSERT_SEGMENT_KEY(segmentKey);
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    if ( !pAllowableConcreteStress->CheckTemporaryStresses() )
@@ -705,12 +711,12 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
       INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
       pgsPointOfInterest poi(segmentKey,0.0);
-      Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI);
+      Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
       *pPara<<_T("Compression Stress Limits")<<rptNewLine;
       *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
-      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, false);
-      Float64 ft  = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, tsRemovalIntervalIdx,pgsTypes::ServiceI, true);
+      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension), false);
+      Float64 ft  = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(tsRemovalIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension), true);
       *pPara<<_T("Tension Stress Limits")<<rptNewLine;
       *pPara<<_T("- Service I (w/o mild rebar) = ")<<stress.SetValue(fts) << rptNewLine;
       *pPara<<_T("- Service I (w/  mild rebar) = ")<<stress.SetValue(ft) << rptNewLine;
@@ -719,6 +725,7 @@ void write_temp_strand_removal(rptChapter* pChapter,IBroker* pBroker, IEAFDispla
 
 void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
+   ASSERT_SEGMENT_KEY(segmentKey);
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    if ( !pAllowableConcreteStress->CheckTemporaryStresses() )
@@ -732,7 +739,7 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Deck and Diaphragm Placement Stage (Bridge Site 1) Criteria")<<rptNewLine;
+   *pPara<<_T("Deck and Diaphragm Placement Stage Criteria")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -740,20 +747,21 @@ void write_bridge_site1(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, noncompositeIntervalIdx, pgsTypes::ServiceI);
+   Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(noncompositeIntervalIdx, pgsTypes::ServiceI,pgsTypes::Compression));
    *pPara << _T("Compression Stress Limits") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fcsp) << rptNewLine;
 
-   Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, noncompositeIntervalIdx, pgsTypes::ServiceI, false);
+   Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(noncompositeIntervalIdx, pgsTypes::ServiceI,pgsTypes::Tension), false);
    *pPara << _T("Tension Stress Limits") << rptNewLine;
    *pPara << _T("- Service I = ") << stress.SetValue(fts) << rptNewLine;
 }
 
 void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
+   ASSERT_SEGMENT_KEY(segmentKey);
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Final without Live Load (Bridge Site 2) Criteria")<<rptNewLine;
+   *pPara<<_T("Final without Live Load Criteria")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -781,16 +789,16 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowableConcreteStress);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
    pgsPointOfInterest poi(segmentKey,0.0);
-   Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, compositeIntervalIdx,pgsTypes::ServiceI);
+   Float64 fcsp = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(lastIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression, false/*exclude liveload*/));
    *pPara<<_T("Compression Stress Limits (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(")")<<rptNewLine;
    *pPara<<_T("- Service I = ")<<stress.SetValue(fcsp)<<rptNewLine;
 
    if ( pAllowableConcreteStress->CheckFinalDeadLoadTensionStress() )
    {
-      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, compositeIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension);
+      Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(lastIntervalIdx, pgsTypes::ServiceI,pgsTypes::Tension,false/*exclude liveload*/),false);
       *pPara<<_T("Tension Stress Limits")<<rptNewLine;
       *pPara<<_T("- Service I = ")<<stress.SetValue(fts)<<rptNewLine;
    }
@@ -818,12 +826,13 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
 void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
+   ASSERT_SEGMENT_KEY(segmentKey);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Final with Live Load Stage (Bridge Site 3) Criteria")<<rptNewLine;
+   *pPara<<_T("Final with Live Load Stage Criteria")<<rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -836,23 +845,23 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 
    pgsPointOfInterest poi(segmentKey,0.0);
 
-   Float64 fcsl = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceI);
+   Float64 fcsl = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
    *pPara<<_T("Compression Stress Limits (") << LrfdCw8th(_T("5.9.4.2.1"),_T("5.9.2.3.2a")) << _T(")")<<rptNewLine;
    *pPara<<_T("- Service I (permanent + live load) = ")<<stress.SetValue(fcsl)<<rptNewLine;
 
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
-      Float64 fcsa = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIA);
+      Float64 fcsa = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceIA,pgsTypes::Compression));
       *pPara<<_T("- Service IA (one-half of permanent + live load) = ")<<stress.SetValue(fcsa)<<rptNewLine;
    }
 
-   Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, liveLoadIntervalIdx,pgsTypes::ServiceIII, false,false);
+   Float64 fts = pAllowableConcreteStress->GetSegmentAllowableTensionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension), false,false);
    *pPara<<_T("Tension Stress Limits (") << LrfdCw8th(_T("5.9.4.2.2"),_T("5.9.2.3.2b")) << _T(")")<<rptNewLine;
    *pPara<<_T("- Service III = ")<<stress.SetValue(fts)<<rptNewLine;
 
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      Float64 ftf = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, liveLoadIntervalIdx,pgsTypes::FatigueI);
+      Float64 ftf = pAllowableConcreteStress->GetSegmentAllowableCompressionStress(poi, StressCheckTask(liveLoadIntervalIdx,pgsTypes::FatigueI,pgsTypes::Compression));
       *pPara<<_T("Allowable Compressive Concrete Stresses (5.5.3.1)")<<rptNewLine;
       *pPara<<_T("- Fatigue I = ")<<stress.SetValue(ftf)<<rptNewLine;
    }
@@ -881,10 +890,30 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
    {
       *pPara << straction << rptNewLine;
    }
+
+   if (pSpecEntry->IsSlabOffsetCheckEnabled())
+   {
+      pgsTypes::SlabOffsetRoundingMethod Method;
+      Float64 Tolerance;
+      pSpecEntry->GetRequiredSlabOffsetRoundingParameters(&Method, &Tolerance);
+      if (pgsTypes::sormRoundNearest == Method)
+      {
+         *pPara << _T("Haunch Geometry check is enabled and the Required Slab Offset is rounded to the nearest ") << dim.SetValue(Tolerance) << rptNewLine;
+      }
+      else
+      {
+         *pPara << _T("Haunch Geometry check is enabled and the Required Slab Offset is rounded UP to the nearest ") << dim.SetValue(Tolerance) << rptNewLine;
+      }
+   }
+   else
+   {
+      *pPara << _T("Haunch Geometry check is disabled.") << rptNewLine;
+   }
 }
 
 void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
+   ASSERT_SEGMENT_KEY(segmentKey);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -915,20 +944,21 @@ void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUni
 
 void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey)
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   ASSERT_SEGMENT_KEY(segmentKey);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara<<_T("Shear Capacity Criteria")<<rptNewLine;
+   *pPara << _T("Shear Capacity Criteria") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   switch( pSpecEntry->GetShearCapacityMethod() )
+   switch (pSpecEntry->GetShearCapacityMethod())
    {
    case scmBTEquations:
-      *pPara << _T("Shear capacity computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.4.2"),_T("5.7.3.4.2")) << _T(" (General method)") << rptNewLine;
+      *pPara << _T("Shear capacity computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.4.2"), _T("5.7.3.4.2")) << _T(" (General method)") << rptNewLine;
       break;
 
    case scmVciVcw:
@@ -951,57 +981,67 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
       ATLASSERT(false); // should never get here
    }
 
-   INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),    true );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),    true );
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
-   Float64 fr = pMaterials->GetSegmentShearFr(segmentKey,liveLoadIntervalIdx);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   Float64 fr = pMaterials->GetSegmentShearFr(segmentKey, liveLoadIntervalIdx);
    *pPara << _T("Modulus of rupture = ") << stress.SetValue(fr) << rptNewLine;
 
 
    bool bAfter1999 = lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false;
    std::_tstring strFcCoefficient(bAfter1999 ? _T("0.125") : _T("0.1"));
-   Float64 k1,k2,s1,s2;
-   pSpecEntry->GetMaxStirrupSpacing(&k1,&s1,&k2,&s2);
-   *pPara << _T("Maximum Spacing of Transverse Reinforcement (LRFD ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T(")") << rptNewLine;
-   if ( bAfter1999 )
+   Float64 k1, k2, s1, s2;
+   pSpecEntry->GetMaxStirrupSpacing(&k1, &s1, &k2, &s2);
+   *pPara << _T("Maximum Spacing of Transverse Reinforcement (LRFD ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T(")") << rptNewLine;
+   if (bAfter1999)
    {
-      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("-1: If ") << italic(ON) << Sub2(_T("v"),_T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k1 << Sub2(_T("d"),_T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
-      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("-2: If ") << italic(ON) << Sub2(_T("v"),_T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k2 << Sub2(_T("d"),_T("v")) << symbol(LTE) <<  dim.SetValue(s2) << rptNewLine;
+      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T("-1: If ") << italic(ON) << Sub2(_T("v"), _T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"), _T("max")) << _T(" = ") << k1 << Sub2(_T("d"), _T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
+      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T("-2: If ") << italic(ON) << Sub2(_T("v"), _T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << _T(" then ") << Sub2(_T("S"), _T("max")) << _T(" = ") << k2 << Sub2(_T("d"), _T("v")) << symbol(LTE) << dim.SetValue(s2) << rptNewLine;
    }
    else
    {
-      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("-1: If ") << italic(ON) << Sub2(_T("V"),_T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")) << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k1 << Sub2(_T("d"),_T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
-      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("-2: If ") << italic(ON) << Sub2(_T("V"),_T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v")) << _T(" then ") << Sub2(_T("S"),_T("max")) << _T(" = ") << k2 << Sub2(_T("d"),_T("v")) << symbol(LTE) <<  dim.SetValue(s2) << rptNewLine;
+      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T("-1: If ") << italic(ON) << Sub2(_T("V"), _T("u")) << italic(OFF) << _T(" < ") << strFcCoefficient << RPT_FC << Sub2(_T("b"), _T("v")) << Sub2(_T("d"), _T("v")) << _T(" then ") << Sub2(_T("S"), _T("max")) << _T(" = ") << k1 << Sub2(_T("d"), _T("v")) << symbol(LTE) << dim.SetValue(s1) << rptNewLine;
+      *pPara << _T("Eqn ") << LrfdCw8th(_T("5.8.2.7"), _T("5.7.2.6")) << _T("-2: If ") << italic(ON) << Sub2(_T("V"), _T("u")) << italic(OFF) << _T(" ") << symbol(GTE) << _T(" ") << strFcCoefficient << RPT_FC << Sub2(_T("b"), _T("v")) << Sub2(_T("d"), _T("v")) << _T(" then ") << Sub2(_T("S"), _T("max")) << _T(" = ") << k2 << Sub2(_T("d"), _T("v")) << symbol(LTE) << dim.SetValue(s2) << rptNewLine;
    }
 
    Int16 method = pSpecEntry->GetLongReinfShearMethod();
-   if ( method != WSDOT_METHOD )
+   if (method != WSDOT_METHOD)
    {
-      *pPara << _T("Longitudinal reinforcement requirements computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << rptNewLine;
+      *pPara << _T("Longitudinal reinforcement requirements computed in accordance with LRFD ") << LrfdCw8th(_T("5.8.3.5"), _T("5.7.3.5")) << rptNewLine;
    }
    else
    {
       *pPara << _T("Longitudinal reinforcement requirements computed in accordance with WSDOT Bridge Design Manual") << rptNewLine;
    }
 
-   switch ( pSpecEntry->GetShearFlowMethod() )
+   switch (pSpecEntry->GetShearFlowMethod())
    {
    case sfmLRFD:
-      *pPara << _T("Shear stress at girder/deck interface computed using the LRFD simplified method: ") << Sub2(_T("V"),_T("ui")) << _T(" = ") << _T("V/bd") << rptNewLine;
+      *pPara << _T("Shear stress at girder/deck interface computed using the LRFD simplified method: ") << Sub2(_T("V"), _T("ui")) << _T(" = ") << _T("V/bd") << rptNewLine;
       break;
 
    case sfmClassical:
-      *pPara << _T("Shear stress at girder/deck interface computed using the classical shear flow formula: ") << Sub2(_T("V"),_T("ui")) << _T(" = (") << Sub2(_T("V"),_T("u")) << _T("Q)") << _T("/") << _T("(Ib)") << rptNewLine;
+      *pPara << _T("Shear stress at girder/deck interface computed using the classical shear flow formula: ") << Sub2(_T("V"), _T("ui")) << _T(" = (") << Sub2(_T("V"), _T("u")) << _T("Q)") << _T("/") << _T("(Ib)") << rptNewLine;
       break;
    }
 
-   *pPara << _T("Maximum spacing of interface shear connectors (LRFD ") << LrfdCw8th(_T("5.8.4.2"),_T("5.7.4.5")) << _T("): ") << dim.SetValue(pSpecEntry->GetMaxInterfaceShearConnectorSpacing());
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   *pPara << _T("Maximum spacing of interface shear connectors (LRFD ") << LrfdCw8th(_T("5.8.4.2"), _T("5.7.4.5")) << _T("): ") << dim.SetValue(pSpecEntry->GetMaxInterfaceShearConnectorSpacing());
+   if (lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
    {
       *pPara << _T(", or the depth of the member.");
    }
    *pPara << rptNewLine;
+
+   *pPara << _T("Interface shear compressive force normal to shear plane, Pc, for use in LRFD Eq ") << LrfdCw8th(_T("5.8.4.1-3"), _T("5.7.4.3-3")) << _T(" is ");
+   if (pSpecEntry->UseDeckWeightForPermanentNetCompressiveForce())
+   {
+      *pPara << _T("computed from the deck weight.") << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("conservatively taken to be zero.") << rptNewLine;
+   }
 }
 
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
@@ -1053,7 +1093,8 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
    *pChapter << pPara;
 
    // Loading first
-   pgsTypes::HaunchLoadComputationType hlctype = pSpecEntry->GetHaunchLoadComputationType();
+   GET_IFACE2( pBroker, ISpecification, pSpec );
+   pgsTypes::HaunchLoadComputationType hlctype = pSpec->GetHaunchLoadComputationType();
    if (pgsTypes::hlcZeroCamber==hlctype)
    {
       *pPara<<_T("Haunch dead load is computed assuming that the top of the girder is flat (Zero assumed excess camber)")<<rptNewLine;
@@ -1068,10 +1109,11 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
       ATLASSERT(false); // new method?
    }
 
-   pgsTypes::HaunchAnalysisSectionPropertiesType hpctype = pSpecEntry->GetHaunchAnalysisSectionPropertiesType();
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   pgsTypes::HaunchAnalysisSectionPropertiesType hpctype = pSectProp->GetHaunchAnalysisSectionPropertiesType();
    if (pgsTypes::hspZeroHaunch == hpctype)
    {
-      *pPara << _T("Composite section properties and capacities are computed ignore the haunch depth)") << rptNewLine;
+      *pPara << _T("Composite section properties and capacities are computed ignoring the haunch depth)") << rptNewLine;
    }
    else if (pgsTypes::hspConstFilletDepth == hpctype)
    {
@@ -1086,7 +1128,6 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
       ATLASSERT(false); // new method?
    }
 
-   GET_IFACE2( pBroker, ISpecification, pSpec );
    bool doCamber = pSpec->IsAssumedExcessCamberInputEnabled();
    if (doCamber)
    {

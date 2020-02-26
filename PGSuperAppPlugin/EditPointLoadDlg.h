@@ -87,6 +87,8 @@ private:
    void UpdateSpanList();
    void UpdateGirderList();
 
+   bool HasCantilever(pgsTypes::MemberEndType endType);
+
    void FillEventList();
    EventIndexType CreateEvent();
 

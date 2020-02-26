@@ -24,17 +24,14 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 25.17    7   0.00                     1     4     Slab          22  0.6  270  10.64  10.60   7.75   7.75   2    2.0   18     2    0   2   0   0   0   4.000  5.000   2.726    -2.616     1962   0.324  0.476   2.427 -0.462 -0.060  0.000 -0.522  61.00  181.64    1.75    5.00    5.00 
+ 25.17    7   0.00                     1     4     Slab          24  0.6  270  10.50  10.40   7.75   7.75   4    2.0   18     4    2   0   0   2   0   4.000  9.200   2.892    -2.681     2192   0.322  0.474   2.589 -0.341 -0.048  0.000 -0.388  73.44  213.08    1.75    5.00    5.00 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Tensile stress check failed for Service III Limit State in Interval 16 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Debond arrangement checks failed.
 Splitting zone check failed.
 Confinement zone check failed.
-Hauling checks failed
+Lifting checks failed
 
 

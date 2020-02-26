@@ -341,7 +341,8 @@ Documentation/PGSLibrary/doc/
 Documentation/PGSplice/doc/
 Documentation/PGSuper/doc/
 KDOTExport/Documentation/doc/
-TxDOTAgent/Documentation/doc/
+TxDOTAgent/Documentation/TOGA/doc/
+TxDOTAgent/Documentation/TxCADExport/doc/
 RegressionTest/Current/**/*.dbr
 RegressionTest/Current/**/*.dbp
 RegressionTest/Current/**/*.err
@@ -349,4 +350,3 @@ RegressionTest/Current/**/*.Test
 RegressionTest/SimpleTestResults.txt
 RegressionTest/*.bat
 !RegressionTest/Run*.bat
-!RegressionTest/RegTestMerge.bat

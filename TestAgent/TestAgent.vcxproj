@@ -498,6 +498,8 @@
     </ClCompile>
     <ClCompile Include="TestAgent.cpp" />
     <ClCompile Include="TestAgentImp.cpp" />
+    <ClCompile Include="TestCommandLineInfo.cpp" />
+    <ClCompile Include="TestFileWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="TestAgent.def" />
@@ -513,6 +515,8 @@
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="TestAgent.h" />
     <ClInclude Include="TestAgentImp.h" />
+    <ClInclude Include="TestCommandLineInfo.h" />
+    <ClInclude Include="TestFileWriter.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">

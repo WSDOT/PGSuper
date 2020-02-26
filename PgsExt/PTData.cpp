@@ -188,12 +188,6 @@ void CLinearDuctGeometry::ConvertMeasurementType(CLinearDuctGeometry::Measuremen
          for ( ; iter != end; iter++ )
          {
             PointRecord& record = *iter;
-#if defined _DEBUG
-            if ( iter == m_Points.begin() )
-            {
-               ATLASSERT(IsZero(record.location)); // first record should start at 0
-            }
-#endif
             Xg += record.location;
             record.location = Xg;
          }
@@ -207,12 +201,6 @@ void CLinearDuctGeometry::ConvertMeasurementType(CLinearDuctGeometry::Measuremen
          for ( ; iter != end; iter++ )
          {
             PointRecord& record = *iter;
-#if defined _DEBUG
-            if ( iter == m_Points.begin() )
-            {
-               ATLASSERT(IsZero(record.location)); // first record should start at 0
-            }
-#endif
             Float64 Xg = record.location;
             if ( Xg < 0 )
             {
@@ -226,6 +214,7 @@ void CLinearDuctGeometry::ConvertMeasurementType(CLinearDuctGeometry::Measuremen
             XgPrev = Xg;
          }
       }
+      m_MeasurementType = mt;
    }
 }
 
@@ -389,6 +378,8 @@ void CLinearDuctGeometry::MakeAssignment(const CLinearDuctGeometry& rOther)
 /////////////////////////////////////////////////////////////////////////////////////////////
 CParabolicDuctGeometry::CParabolicDuctGeometry()
 {
+   StartPierIdx = INVALID_INDEX;
+   EndPierIdx = INVALID_INDEX;
 }
 
 CParabolicDuctGeometry::CParabolicDuctGeometry(const CSplicedGirderData* pGirder) :
@@ -415,7 +406,17 @@ CParabolicDuctGeometry& CParabolicDuctGeometry::operator=(const CParabolicDuctGe
 
 bool CParabolicDuctGeometry::operator==(const CParabolicDuctGeometry& rOther) const
 {
+   if (StartPierIdx != rOther.StartPierIdx)
+   {
+      return false;
+   }
+
    if ( StartPoint != rOther.StartPoint )
+   {
+      return false;
+   }
+
+   if (EndPierIdx != rOther.EndPierIdx)
    {
       return false;
    }
@@ -445,8 +446,8 @@ bool CParabolicDuctGeometry::operator!=(const CParabolicDuctGeometry& rOther) co
 
 void CParabolicDuctGeometry::Init()
 {
-   PierIndexType startPierIdx = m_pGirder->GetPierIndex(pgsTypes::metStart);
-   PierIndexType endPierIdx   = m_pGirder->GetPierIndex(pgsTypes::metEnd);
+   StartPierIdx = m_pGirder->GetPierIndex(pgsTypes::metStart);
+   EndPierIdx   = m_pGirder->GetPierIndex(pgsTypes::metEnd);
 
    LowPoints.clear();
    HighPoints.clear();
@@ -455,8 +456,8 @@ void CParabolicDuctGeometry::Init()
    StartPoint.Offset     = gs_DefaultOffset2;
    StartPoint.OffsetType = CDuctGeometry::TopGirder;
 
-   SpanIndexType startSpanIdx = startPierIdx;
-   SpanIndexType endSpanIdx = endPierIdx-1;
+   SpanIndexType startSpanIdx = StartPierIdx;
+   SpanIndexType endSpanIdx = EndPierIdx-1;
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
       Point p;
@@ -466,7 +467,7 @@ void CParabolicDuctGeometry::Init()
       }
       else
       {
-         p.Distance = (spanIdx == startSpanIdx ? -0.6 : spanIdx == endSpanIdx ? -0.4 : -0.5);
+         p.Distance = (spanIdx == startSpanIdx || spanIdx == endSpanIdx ? -0.6 : -0.5);
       }
 
       p.Offset = gs_DefaultOffset2;
@@ -474,7 +475,7 @@ void CParabolicDuctGeometry::Init()
       LowPoints.push_back(p);
    }
 
-   for ( PierIndexType pierIdx = startPierIdx+1; pierIdx < endPierIdx; pierIdx++ )
+   for ( PierIndexType pierIdx = StartPierIdx+1; pierIdx < EndPierIdx; pierIdx++ )
    {
       HighPoint p;
       HighPoints.push_back(p);
@@ -489,108 +490,212 @@ void CParabolicDuctGeometry::Init()
 
 SpanIndexType CParabolicDuctGeometry::GetSpanCount() const
 {
-   return (SpanIndexType)LowPoints.size();
+   SpanIndexType nSpans = (SpanIndexType)LowPoints.size();
+   ATLASSERT(nSpans == (EndPierIdx - StartPierIdx));
+   return nSpans;
 }
 
-void CParabolicDuctGeometry::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
+void CParabolicDuctGeometry::InsertSpan(PierIndexType refPierIdx, pgsTypes::PierFaceType face)
 {
    SpanIndexType spanIdx = (SpanIndexType)refPierIdx;
-   if ( face == pgsTypes::Back && spanIdx != 0 )
+   if (face == pgsTypes::Back && spanIdx != 0)
    {
       spanIdx--;
    }
 
    HighPoint highPoint;
-   if ( 0 < HighPoints.size() )
+   if (0 < HighPoints.size())
    {
-      if ( spanIdx < (SpanIndexType)HighPoints.size() )
+      // there are already some high points so use them as the default
+      if (spanIdx < (SpanIndexType)StartPierIdx)
       {
-         highPoint = HighPoints[spanIdx];
-         HighPoints.insert(HighPoints.begin()+spanIdx,highPoint);
+         HighPoints.insert(HighPoints.begin(), HighPoints.front());
+      }
+      else if ((SpanIndexType)(EndPierIdx - 1) < spanIdx)
+      {
+         HighPoints.push_back(HighPoints.back());
       }
       else
       {
-         HighPoints.push_back(HighPoints.back());
+         // the new span is in the middle of the range so use the adjacent high point as the default
+         highPoint = HighPoints[spanIdx - (SpanIndexType)StartPierIdx];
+         HighPoints.insert(HighPoints.begin() + (spanIdx - (SpanIndexType)StartPierIdx), highPoint);
       }
    }
    else
    {
+      // there aren't any high points so insert the default information
       HighPoints.push_back(highPoint);
    }
 
 
    Point lowPoint;
    ATLASSERT(0 < LowPoints.size()); // there is always 1 low point
-   if ( spanIdx < (SpanIndexType)LowPoints.size() )
+   if (spanIdx < (SpanIndexType)StartPierIdx)
    {
-      lowPoint = LowPoints[spanIdx];
-      LowPoints.insert(LowPoints.begin()+spanIdx,lowPoint);
+      LowPoints.insert(LowPoints.begin(), LowPoints.front());
+   }
+   else if ((SpanIndexType)(EndPierIdx - 1) < spanIdx)
+   {
+      LowPoints.push_back(LowPoints.back());
    }
    else
    {
-      LowPoints.push_back(LowPoints.back());
+      lowPoint = LowPoints[spanIdx - (SpanIndexType)StartPierIdx];
+      LowPoints.insert(LowPoints.begin() + (spanIdx - (SpanIndexType)StartPierIdx), lowPoint);
+   }
+
+   // a span has been inserted between StartPierIdx and EndPierIdx, therefore, the end pier must be incremented
+   if (spanIdx < (SpanIndexType)StartPierIdx)
+   {
+      StartPierIdx--;
+   }
+   else
+   {
+      EndPierIdx++;
    }
 
    PGS_ASSERT_VALID;
 }
 
-void CParabolicDuctGeometry::RemoveSpan(SpanIndexType relSpanIdx,PierIndexType relPierIdx)
+void CParabolicDuctGeometry::RemoveSpan(SpanIndexType spanIdx,PierIndexType pierIdx)
 {
-   SpanIndexType nSpans = (SpanIndexType)LowPoints.size();
-
-   LowPoints.erase(LowPoints.begin()+relSpanIdx);
-
-   if ( nSpans == relPierIdx )
+   SpanIndexType startSpanIdx = (SpanIndexType)StartPierIdx;
+   SpanIndexType endSpanIdx = (SpanIndexType)(EndPierIdx - 1);
+   if (spanIdx < startSpanIdx || endSpanIdx < spanIdx)
    {
-      // end abutment is being removed... just pop off the last high point
+      // new span is not in the range of the tendon so there is nothing to do
+      return;
+   }
+
+   SpanIndexType nSpans = GetSpanCount();
+
+   LowPoints.erase(LowPoints.begin() + (spanIdx - (SpanIndexType)StartPierIdx));
+
+   if ( pierIdx == EndPierIdx )
+   {
+      // the last pier in the range is being removed... just pop off the last high point
       HighPoints.pop_back();
    }
-   else if ( relPierIdx == 0 )
+   else if ( pierIdx == StartPierIdx )
    {
-      // start abutment is being removed, erase the first high point
+      // the first pier in the range being removed, erase the first high point
       HighPoints.erase(HighPoints.begin());
    }
    else
    {
       // an intermedate pier is being removed... remember that the container index is one less than the pier index
-      HighPoints.erase(HighPoints.begin()+relPierIdx-1);
+      HighPoints.erase(HighPoints.begin() + (pierIdx - StartPierIdx - 1));
+   }
+
+   if (spanIdx == (SpanIndexType)StartPierIdx)
+   {
+      // first span is removed, so increment the start
+      StartPierIdx++;
+   }
+   else
+   {
+      EndPierIdx--;
    }
 
    PGS_ASSERT_VALID;
 }
 
-void CParabolicDuctGeometry::SetStartPoint(Float64 dist,Float64 offset,OffsetType offsetType)
+void CParabolicDuctGeometry::SetRange(PierIndexType startPierIdx, PierIndexType endPierIdx)
 {
+   SpanIndexType startSpanIdx = (SpanIndexType)StartPierIdx;
+   SpanIndexType endSpanIdx = (SpanIndexType)(EndPierIdx - 1);
+
+   SpanIndexType newStartSpanIdx = (SpanIndexType)startPierIdx;
+   SpanIndexType newEndSpanIdx = (SpanIndexType)(endPierIdx - 1);
+
+   if (newStartSpanIdx < startSpanIdx)
+   {
+      // add low points at the start
+      SpanIndexType nNewSpans = startSpanIdx - newStartSpanIdx;
+      LowPoints.insert(LowPoints.begin(), nNewSpans, LowPoints.front());
+
+      // add high points at start
+      PierIndexType nNewPiers = nNewSpans;
+      HighPoints.insert(HighPoints.begin(), nNewPiers, (0 < HighPoints.size() ? HighPoints.front() : HighPoint()));
+   }
+   else if(startSpanIdx < newStartSpanIdx)
+   {
+      // remove low points at the start
+      SpanIndexType nRemovedSpans = newStartSpanIdx - startSpanIdx;
+      LowPoints.erase(LowPoints.begin(), LowPoints.begin() + nRemovedSpans);
+
+      // remove high points at start
+      PierIndexType nRemovedPiers = nRemovedSpans;
+      HighPoints.erase(HighPoints.begin(), HighPoints.begin() + nRemovedPiers);
+   }
+
+
+   if (endSpanIdx < newEndSpanIdx)
+   {
+      // add low points at end
+      SpanIndexType nNewSpans = newEndSpanIdx - endSpanIdx;
+      LowPoints.insert(LowPoints.end(), nNewSpans, LowPoints.back());
+
+      // add high points at end
+      PierIndexType nNewPiers = nNewSpans;
+      HighPoints.insert(HighPoints.end(), nNewPiers, (0 < HighPoints.size() ? HighPoints.back() : HighPoint()));
+   }
+   else if (newEndSpanIdx < endSpanIdx)
+   {
+      // remove low points at end
+      SpanIndexType nRemovedSpans = endSpanIdx - newEndSpanIdx;
+      LowPoints.erase(LowPoints.end() - nRemovedSpans, LowPoints.end());
+
+      // move high points at end
+      PierIndexType nRemovedPiers = nRemovedSpans;
+      HighPoints.erase(HighPoints.end() - nRemovedPiers, HighPoints.end());
+   }
+
+   StartPierIdx = startPierIdx;
+   EndPierIdx = endPierIdx;
+
+   PGS_ASSERT_VALID;
+}
+
+void CParabolicDuctGeometry::GetRange(PierIndexType* pStartPierIdx, PierIndexType* pEndPierIdx) const
+{
+   *pStartPierIdx = StartPierIdx;
+   *pEndPierIdx = EndPierIdx;
+}
+
+void CParabolicDuctGeometry::SetStartPoint(PierIndexType pierIdx,Float64 dist,Float64 offset,OffsetType offsetType)
+{
+   StartPierIdx = pierIdx;
    StartPoint.Distance   = dist;
    StartPoint.Offset     = offset;
    StartPoint.OffsetType = offsetType;
 }
 
-void CParabolicDuctGeometry::GetStartPoint(Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const
+void CParabolicDuctGeometry::GetStartPoint(PierIndexType* pPierIdx,Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const
 {
+   *pPierIdx    = StartPierIdx;
    *pDist       = StartPoint.Distance;
    *pOffset     = StartPoint.Offset;
    *pOffsetType = StartPoint.OffsetType;
 }
 
-void CParabolicDuctGeometry::SetLowPoint(SpanIndexType spanIdx,Float64   distLow,Float64   offsetLow,OffsetType lowOffsetType)
+void CParabolicDuctGeometry::SetLowPoint(SpanIndexType spanIdx,Float64 distLow,Float64 offsetLow,OffsetType lowOffsetType)
 {
-   ATLASSERT(m_pGirder->GetPierIndex(pgsTypes::metStart) <= spanIdx && spanIdx < m_pGirder->GetPierIndex(pgsTypes::metEnd));
-   SpanIndexType startSpanIdx = (SpanIndexType)m_pGirder->GetPierIndex(pgsTypes::metStart);
+   ATLASSERT(StartPierIdx <= spanIdx && spanIdx <= EndPierIdx-1);
 
    Point p;
    p.Distance   = distLow;
    p.Offset     = offsetLow;
    p.OffsetType = lowOffsetType;
-   LowPoints[spanIdx-startSpanIdx] = p;
+   LowPoints[spanIdx-(SpanIndexType)StartPierIdx] = p;
 }
 
 void CParabolicDuctGeometry::GetLowPoint(SpanIndexType spanIdx,Float64* pDistLow,Float64 *pOffsetLow,OffsetType *pLowOffsetType) const
 {
-   ATLASSERT(m_pGirder->GetPierIndex(pgsTypes::metStart) <= spanIdx && spanIdx < m_pGirder->GetPierIndex(pgsTypes::metEnd));
-   SpanIndexType startSpanIdx = (SpanIndexType)m_pGirder->GetPierIndex(pgsTypes::metStart);
+   ATLASSERT(StartPierIdx <= spanIdx && spanIdx <= EndPierIdx-1);
 
-   Point p = LowPoints[spanIdx - startSpanIdx];
+   Point p = LowPoints[spanIdx - (SpanIndexType)StartPierIdx];
    *pDistLow       = p.Distance;
    *pOffsetLow     = p.Offset;
    *pLowOffsetType = p.OffsetType;
@@ -601,11 +706,8 @@ void CParabolicDuctGeometry::SetHighPoint(PierIndexType pierIdx,
                      Float64 highOffset,OffsetType highOffsetType,
                      Float64 distRightIP)
 {
-   ATLASSERT(m_pGirder->GetPierIndex(pgsTypes::metStart) < pierIdx && pierIdx < m_pGirder->GetPierIndex(pgsTypes::metEnd));
+   ATLASSERT(StartPierIdx < pierIdx && pierIdx < EndPierIdx);
    ATLASSERT(0 < HighPoints.size());
-
-   PierIndexType startPierIdx = m_pGirder->GetPierIndex(pgsTypes::metStart);
-
 
    HighPoint p;
    p.distLeftIP        = distLeftIP;
@@ -615,7 +717,7 @@ void CParabolicDuctGeometry::SetHighPoint(PierIndexType pierIdx,
 
    p.distRightIP       = distRightIP;
 
-   HighPoints[pierIdx-startPierIdx-1] = p;
+   HighPoints[pierIdx-StartPierIdx-1] = p;
 }
 
 void CParabolicDuctGeometry::GetHighPoint(PierIndexType pierIdx,
@@ -624,11 +726,10 @@ void CParabolicDuctGeometry::GetHighPoint(PierIndexType pierIdx,
                      Float64* distRightIP) const
 {
    ATLASSERT(m_pGirder->GetPierIndex(pgsTypes::metStart) < pierIdx && pierIdx < m_pGirder->GetPierIndex(pgsTypes::metEnd));
+   ATLASSERT(StartPierIdx < pierIdx && pierIdx < EndPierIdx);
    ATLASSERT(0 < HighPoints.size());
 
-   PierIndexType startPierIdx = m_pGirder->GetPierIndex(pgsTypes::metStart);
-
-   HighPoint p = HighPoints[pierIdx-startPierIdx-1];
+   HighPoint p = HighPoints[pierIdx-StartPierIdx-1];
    *distLeftIP        = p.distLeftIP;
 
    *highOffset        = p.highOffset;
@@ -637,15 +738,17 @@ void CParabolicDuctGeometry::GetHighPoint(PierIndexType pierIdx,
    *distRightIP       = p.distRightIP;
 }
 
-void CParabolicDuctGeometry::SetEndPoint(Float64 dist,Float64 offset,OffsetType offsetType)
+void CParabolicDuctGeometry::SetEndPoint(PierIndexType pierIdx,Float64 dist,Float64 offset,OffsetType offsetType)
 {
+   EndPierIdx          = pierIdx;
    EndPoint.Distance   = dist;
    EndPoint.Offset     = offset;
    EndPoint.OffsetType = offsetType;
 }
 
-void CParabolicDuctGeometry::GetEndPoint(Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const
+void CParabolicDuctGeometry::GetEndPoint(PierIndexType* pPierIdx,Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const
 {
+   *pPierIdx    = EndPierIdx;
    *pDist       = EndPoint.Distance;
    *pOffset     = EndPoint.Offset;
    *pOffsetType = EndPoint.OffsetType;
@@ -653,6 +756,8 @@ void CParabolicDuctGeometry::GetEndPoint(Float64 *pDist,Float64 *pOffset,OffsetT
 
 void CParabolicDuctGeometry::MakeCopy(const CParabolicDuctGeometry& rOther)
 {
+   StartPierIdx = rOther.StartPierIdx;
+   EndPierIdx = rOther.EndPierIdx;
    StartPoint = rOther.StartPoint;
    EndPoint   = rOther.EndPoint;
    LowPoints  = rOther.LowPoints;
@@ -671,34 +776,32 @@ HRESULT CParabolicDuctGeometry::Save(IStructuredSave* pStrSave,IProgress* pProgr
 {
    pStrSave->BeginUnit(_T("ParabolicDuctGeometry"),1.0);
 
-   pStrSave->BeginUnit(_T("StartPoint"),1.0);
+   pStrSave->BeginUnit(_T("StartPoint"),2.0);
+   pStrSave->put_Property(_T("StartPier"), CComVariant(StartPierIdx)); // added in version 2
    pStrSave->put_Property(_T("Distance"),CComVariant(StartPoint.Distance));
    pStrSave->put_Property(_T("Offset"),CComVariant(StartPoint.Offset));
    pStrSave->put_Property(_T("OffsetFrom"),GetOffsetTypeProperty(StartPoint.OffsetType));
    pStrSave->EndUnit();
    
-   SpanIndexType nSpans = (SpanIndexType)LowPoints.size();
-   if ( 1 < nSpans )
+   SpanIndexType nSpans = GetSpanCount();
+   for ( SpanIndexType spanIdx = 0; spanIdx < nSpans-1; spanIdx++ )
    {
-      for ( SpanIndexType spanIdx = 0; spanIdx < nSpans-1; spanIdx++ )
-      {
-         Point lowPoint = LowPoints[spanIdx];
-         pStrSave->BeginUnit(_T("LowPoint"),1.0);
-         pStrSave->put_Property(_T("Distance"),CComVariant(lowPoint.Distance));
-         pStrSave->put_Property(_T("Offset"),CComVariant(lowPoint.Offset));
-         pStrSave->put_Property(_T("OffsetFrom"),GetOffsetTypeProperty(lowPoint.OffsetType));
-         pStrSave->EndUnit();
+      Point lowPoint = LowPoints[spanIdx];
+      pStrSave->BeginUnit(_T("LowPoint"),1.0);
+      pStrSave->put_Property(_T("Distance"),CComVariant(lowPoint.Distance));
+      pStrSave->put_Property(_T("Offset"),CComVariant(lowPoint.Offset));
+      pStrSave->put_Property(_T("OffsetFrom"),GetOffsetTypeProperty(lowPoint.OffsetType));
+      pStrSave->EndUnit();
 
-         HighPoint highPoint = HighPoints[spanIdx];
-         pStrSave->BeginUnit(_T("HighPoint"),1.0);
-         pStrSave->put_Property(_T("LeftIPDistance"),CComVariant(highPoint.distLeftIP));
+      HighPoint highPoint = HighPoints[spanIdx];
+      pStrSave->BeginUnit(_T("HighPoint"),1.0);
+      pStrSave->put_Property(_T("LeftIPDistance"),CComVariant(highPoint.distLeftIP));
 
-         pStrSave->put_Property(_T("HighPointOffset"),CComVariant(highPoint.highOffset));
-         pStrSave->put_Property(_T("HighPointOffsetFrom"),GetOffsetTypeProperty(highPoint.highOffsetType));
+      pStrSave->put_Property(_T("HighPointOffset"),CComVariant(highPoint.highOffset));
+      pStrSave->put_Property(_T("HighPointOffsetFrom"),GetOffsetTypeProperty(highPoint.highOffsetType));
 
-         pStrSave->put_Property(_T("RightIPDistance"),CComVariant(highPoint.distRightIP));
-         pStrSave->EndUnit();
-      }
+      pStrSave->put_Property(_T("RightIPDistance"),CComVariant(highPoint.distRightIP));
+      pStrSave->EndUnit();
    }
 
    // last low point
@@ -709,7 +812,8 @@ HRESULT CParabolicDuctGeometry::Save(IStructuredSave* pStrSave,IProgress* pProgr
    pStrSave->put_Property(_T("OffsetFrom"),GetOffsetTypeProperty(lowPoint.OffsetType));
    pStrSave->EndUnit();
 
-   pStrSave->BeginUnit(_T("EndPoint"),1.0);
+   pStrSave->BeginUnit(_T("EndPoint"),2.0);
+   pStrSave->put_Property(_T("EndPier"), CComVariant(EndPierIdx)); // added in version 2
    pStrSave->put_Property(_T("Distance"),CComVariant(EndPoint.Distance));
    pStrSave->put_Property(_T("Offset"),CComVariant(EndPoint.Offset));
    pStrSave->put_Property(_T("OffsetFrom"),GetOffsetTypeProperty(EndPoint.OffsetType));
@@ -727,6 +831,21 @@ HRESULT CParabolicDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
 
    // Start Point
    pStrLoad->BeginUnit(_T("StartPoint"));
+
+   Float64 version;
+   pStrLoad->get_Version(&version);
+
+   if (1 < version)
+   {
+      // added in version 2
+      var.vt = VT_INDEX;
+      pStrLoad->get_Property(_T("StartPier"), &var);
+      StartPierIdx = VARIANT2INDEX(var);
+   }
+   else
+   {
+      StartPierIdx = m_pGirder->GetPierIndex(pgsTypes::metStart);
+   }
 
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("Distance"),&var);
@@ -798,6 +917,21 @@ HRESULT CParabolicDuctGeometry::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
    // End Point
    var.vt = VT_R8;
    pStrLoad->BeginUnit(_T("EndPoint"));
+
+   pStrLoad->get_Version(&version);
+
+   if (1 < version)
+   {
+      // added in version 2
+      var.vt = VT_INDEX;
+      pStrLoad->get_Property(_T("EndPier"), &var);
+      EndPierIdx = VARIANT2INDEX(var);
+   }
+   else
+   {
+      EndPierIdx = m_pGirder->GetPierIndex(pgsTypes::metEnd);
+   }
+
    pStrLoad->get_Property(_T("Distance"),&var);
    EndPoint.Distance = var.dblVal;
 
@@ -827,6 +961,16 @@ void CParabolicDuctGeometry::AssertValid()
       // we don't have low points in a default duct that isn't used.
       ATLASSERT(LowPoints.size() == HighPoints.size()+1);
    }
+
+   // span count should match the pier range
+   ATLASSERT(GetSpanCount() == (EndPierIdx - StartPierIdx));
+
+   // there is one low point per span
+   ATLASSERT(LowPoints.size() == GetSpanCount());
+
+   // Start/End piers must be between the start and end of the girder
+   ATLASSERT(m_pGirder->GetPierIndex(pgsTypes::metStart) <= StartPierIdx && EndPierIdx <= m_pGirder->GetPierIndex(pgsTypes::metEnd));
+
 }
 #endif
 
@@ -904,7 +1048,7 @@ CDuctData::CDuctData()
    pLibNames->EnumDuctNames(&vNames);
    Name = vNames.front();
 
-   pDuctLibEntry = 0;
+   pDuctLibEntry = nullptr;
 
    nStrands = 0;
    bPjCalc = true;
@@ -926,7 +1070,7 @@ CDuctData::CDuctData(const CSplicedGirderData* pGirder)
    pLibNames->EnumDuctNames(&vNames);
    Name = vNames.front();
 
-   pDuctLibEntry = 0;
+   pDuctLibEntry = nullptr;
 
    nStrands = 0;
    bPjCalc = true;
@@ -1267,7 +1411,7 @@ bool CPTData::operator!=(const CPTData& rOther) const
 }
 
 //======================== OPERATIONS =======================================
-void CPTData::SetGirder(CSplicedGirderData* pGirder)
+void CPTData::SetGirder(CSplicedGirderData* pGirder,bool bInit)
 {
    m_pGirder = pGirder;
 
@@ -1276,7 +1420,14 @@ void CPTData::SetGirder(CSplicedGirderData* pGirder)
    for ( ; iter != iterEnd; iter++ )
    {
       CDuctData& duct = *iter;
-      duct.Init(m_pGirder);
+      if (bInit)
+      {
+         duct.Init(m_pGirder);
+      }
+      else
+      {
+         duct.SetGirder(m_pGirder);
+      }
    }
 }
 
@@ -1423,6 +1574,15 @@ void CPTData::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType rmPierTy
    {
       CDuctData& duct = *iter;
       duct.RemoveSpan(spanIdx-startSpanIdx,pierIdx-startPierIdx);
+
+      if (duct.DuctGeometryType == CDuctGeometry::Parabolic && spanIdx == startSpanIdx)
+      {
+         // if the removed span is the same as the start span, then shift the duct because all the spans/piers shift
+         PierIndexType ductStartPierIdx, ductEndPierIdx;
+         duct.ParabolicDuctGeometry.GetRange(&ductStartPierIdx, &ductEndPierIdx);
+         ATLASSERT(0 < ductStartPierIdx && 0 < ductEndPierIdx);
+         duct.ParabolicDuctGeometry.SetRange(ductStartPierIdx - 1, ductEndPierIdx - 1);
+      }
    }
 }
 

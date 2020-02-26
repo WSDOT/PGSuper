@@ -65,8 +65,9 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
    IntervalIndexType erectionIntervalIdx            = pIntervals->GetErectSegmentInterval(segmentKey);
-   IntervalIndexType compositeDeckIntervalIdx       = pIntervals->GetCompositeDeckInterval();
-   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastTendonStressingInterval(segmentKey);
+   IntervalIndexType firstCompositeDeckIntervalIdx  = pIntervals->GetFirstCompositeDeckInterval();
+   IntervalIndexType lastCompositeDeckIntervalIdx   = pIntervals->GetLastCompositeDeckInterval();
+   IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastGirderTendonStressingInterval(segmentKey);
 
    std::_tostringstream os;
    os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(intervalIdx);
@@ -77,7 +78,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    }
    else if ( spType == pgsTypes::sptTransformed )
    {
-      if ( intervalIdx < compositeDeckIntervalIdx )
+      if ( intervalIdx < firstCompositeDeckIntervalIdx )
       {
          os << _T(" - Transformed non-composite properties");
       }
@@ -101,15 +102,15 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
          nCol++;
       }
    }
-   else if ( pBridge->GetDeckType() != pgsTypes::sdtNone && bIsCompositeDeck && compositeDeckIntervalIdx <= intervalIdx)
+   else if ( pBridge->GetDeckType() != pgsTypes::sdtNone && bIsCompositeDeck && lastCompositeDeckIntervalIdx <= intervalIdx)
    {
       if (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite)
       {
-         nCol = (compositeDeckIntervalIdx == intervalIdx ? 13 : 12);
+         nCol = (firstCompositeDeckIntervalIdx == intervalIdx ? 13 : 12);
       }
       else
       {
-         if (lastTendonStressingIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
+         if (lastTendonStressingIntervalIdx != INVALID_INDEX && lastCompositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
          {
             nCol = 18;
          }
@@ -166,7 +167,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    (*xs_table)(0, col++) << COLHDR(RPT_XLEFT_GIRDER, rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*xs_table)(0, col++) << COLHDR(RPT_XRIGHT_GIRDER, rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
-   if ( intervalIdx < compositeDeckIntervalIdx  || (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) )
+   if ( intervalIdx < firstCompositeDeckIntervalIdx  || (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) )
    {
       (*xs_table)(0,col++) << COLHDR(RPT_YTOP_GIRDER, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
       (*xs_table)(0,col++) << COLHDR(RPT_YBOT_GIRDER, rptLengthUnitTag,  pDisplayUnits->GetComponentDimUnit() );
@@ -194,16 +195,16 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       }
    }
 
-   if ( intervalIdx < compositeDeckIntervalIdx ||
+   if ( intervalIdx < firstCompositeDeckIntervalIdx ||
        (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) ||
-       (lastTendonStressingIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
+       (lastTendonStressingIntervalIdx != INVALID_INDEX && lastCompositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
        )
    {
       (*xs_table)(0,col++) << Sub2(_T("k"),_T("t")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Top") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
       (*xs_table)(0,col++) << Sub2(_T("k"),_T("b")) << _T(" (") << rptLengthUnitTag( &pDisplayUnits->GetComponentDimUnit().UnitOfMeasure ) <<_T(")") << rptNewLine << _T("(Bottom") << rptNewLine << _T("kern") << rptNewLine << _T("point)");
    }
 
-   if ( compositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
+   if ( lastCompositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
    {
       (*xs_table)(0,col++) << COLHDR(Sub2(_T("Q"),_T("deck")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit() );
       (*xs_table)(0,col++) << COLHDR(_T("Effective") << rptNewLine << _T("Flange") << rptNewLine << _T("Width"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
@@ -213,7 +214,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
          (*xs_table)(0,col++) << COLHDR(_T("Assumed") << rptNewLine << _T("Haunch") << rptNewLine << _T("Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       }
    }
-   else if ( intervalIdx <= compositeDeckIntervalIdx )
+   else if ( intervalIdx <= firstCompositeDeckIntervalIdx )
    {
       (*xs_table)(0,col++) << COLHDR(_T("Perimeter"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    }
@@ -262,7 +263,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetXleft(spType, intervalIdx, poi));
       (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetXright(spType, intervalIdx, poi));
 
-      if ( intervalIdx < compositeDeckIntervalIdx  || (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) )
+      if ( intervalIdx < firstCompositeDeckIntervalIdx  || (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) )
       {
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetY(spType,intervalIdx,poi,pgsTypes::TopGirder));
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetY(spType,intervalIdx,poi,pgsTypes::BottomGirder));
@@ -288,26 +289,26 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
          }
       }
 
-      if ( (intervalIdx < compositeDeckIntervalIdx) ||
+      if ( (intervalIdx < firstCompositeDeckIntervalIdx) ||
            (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) ||
-           (lastTendonStressingIntervalIdx != INVALID_INDEX && compositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
+           (lastTendonStressingIntervalIdx != INVALID_INDEX && lastCompositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
          )
       {
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetKt(spType,intervalIdx,poi));
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetKb(spType,intervalIdx,poi));
       }
 
-      if ( compositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck  && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed) )
+      if ( firstCompositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck  && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed) )
       {
          (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetQSlab(intervalIdx,poi));
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetEffectiveFlangeWidth(poi));
       }
-      else if ( intervalIdx <= compositeDeckIntervalIdx )
+      else if ( intervalIdx <= firstCompositeDeckIntervalIdx )
       {
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetPerimeter(poi));
       }
 
-      if (compositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck && pgsTypes::hspZeroHaunch != haunchAType && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
+      if (lastCompositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck && pgsTypes::hspZeroHaunch != haunchAType && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
       {
          (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetStructuralHaunchDepth(poi, haunchAType));
       }

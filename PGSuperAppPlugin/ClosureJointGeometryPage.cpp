@@ -47,6 +47,146 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
+
+void CSegmentConnectionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+   ASSERT(lpDrawItemStruct->CtlType == ODT_COMBOBOX);
+
+   CDC dc;
+   dc.Attach(lpDrawItemStruct->hDC);
+
+   COLORREF oldTextColor = dc.GetTextColor();
+   COLORREF oldBkColor = dc.GetBkColor();
+
+   CString lpszText;
+   GetLBText(lpDrawItemStruct->itemID, lpszText);
+
+   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+      (lpDrawItemStruct->itemState & ODS_SELECTED))
+   {
+      dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+      dc.SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_HIGHLIGHT));
+
+      // Tell the parent page to update the girder image
+      CClosureJointGeometryPage* pParent = (CClosureJointGeometryPage*)GetParent();
+      if (pParent->m_bIsPier)
+      {
+         pgsTypes::PierSegmentConnectionType connectionType = (pgsTypes::PierSegmentConnectionType)GetItemData(lpDrawItemStruct->itemID);
+         pParent->UpdateConnectionPicture(connectionType);
+      }
+      else
+      {
+         pgsTypes::TempSupportSegmentConnectionType connectionType = (pgsTypes::TempSupportSegmentConnectionType)GetItemData(lpDrawItemStruct->itemID);
+         pParent->UpdateConnectionPicture(connectionType);
+      }
+   }
+   else
+   {
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_WINDOW));
+   }
+
+   dc.DrawText(lpszText, &lpDrawItemStruct->rcItem, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+   if (lpDrawItemStruct->itemState & ODS_FOCUS)
+   {
+      dc.DrawFocusRect(&lpDrawItemStruct->rcItem);
+   }
+
+   dc.SetTextColor(oldTextColor);
+   dc.SetBkColor(oldBkColor);
+
+   dc.Detach();
+}
+
+
+void CClosureJointBearingOffsetMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+   ASSERT(lpDrawItemStruct->CtlType == ODT_COMBOBOX);
+
+   CDC dc;
+   dc.Attach(lpDrawItemStruct->hDC);
+
+   COLORREF oldTextColor = dc.GetTextColor();
+   COLORREF oldBkColor = dc.GetBkColor();
+
+   CString lpszText;
+   GetLBText(lpDrawItemStruct->itemID, lpszText);
+
+   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+      (lpDrawItemStruct->itemState & ODS_SELECTED))
+   {
+      dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+      dc.SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_HIGHLIGHT));
+
+      // Tell the parent page to update the girder image
+      ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType = (ConnectionLibraryEntry::BearingOffsetMeasurementType)GetItemData(lpDrawItemStruct->itemID);
+      CClosureJointGeometryPage* pParent = (CClosureJointGeometryPage*)GetParent();
+      pParent->UpdateConnectionPicture(brgOffsetType);
+   }
+   else
+   {
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_WINDOW));
+   }
+
+   dc.DrawText(lpszText, &lpDrawItemStruct->rcItem, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+   if (lpDrawItemStruct->itemState & ODS_FOCUS)
+   {
+      dc.DrawFocusRect(&lpDrawItemStruct->rcItem);
+   }
+
+   dc.SetTextColor(oldTextColor);
+   dc.SetBkColor(oldBkColor);
+
+   dc.Detach();
+}
+
+
+void CClosureJointEndDistanceMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+   ASSERT(lpDrawItemStruct->CtlType == ODT_COMBOBOX);
+
+   CDC dc;
+   dc.Attach(lpDrawItemStruct->hDC);
+
+   COLORREF oldTextColor = dc.GetTextColor();
+   COLORREF oldBkColor = dc.GetBkColor();
+
+   CString lpszText;
+   GetLBText(lpDrawItemStruct->itemID, lpszText);
+
+   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+      (lpDrawItemStruct->itemState & ODS_SELECTED))
+   {
+      dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
+      dc.SetBkColor(::GetSysColor(COLOR_HIGHLIGHT));
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_HIGHLIGHT));
+
+      // Tell the parent page to update the girder image
+      ConnectionLibraryEntry::EndDistanceMeasurementType endType = (ConnectionLibraryEntry::EndDistanceMeasurementType)GetItemData(lpDrawItemStruct->itemID);
+      CClosureJointGeometryPage* pParent = (CClosureJointGeometryPage*)GetParent();
+      pParent->UpdateConnectionPicture(endType);
+   }
+   else
+   {
+      dc.FillSolidRect(&lpDrawItemStruct->rcItem, ::GetSysColor(COLOR_WINDOW));
+   }
+
+   dc.DrawText(lpszText, &lpDrawItemStruct->rcItem, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+   if (lpDrawItemStruct->itemState & ODS_FOCUS)
+   {
+      dc.DrawFocusRect(&lpDrawItemStruct->rcItem);
+   }
+
+   dc.SetTextColor(oldTextColor);
+   dc.SetBkColor(oldBkColor);
+
+   dc.Detach();
+}
+
 // CClosureJointGeometryPage dialog
 
 IMPLEMENT_DYNAMIC(CClosureJointGeometryPage, CPropertyPage)
@@ -104,6 +244,10 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
 
 	CPropertyPage::DoDataExchange(pDX);
 
+   DDX_Control(pDX, IDC_CONNECTION_TYPE, m_cbSegmentConnection);
+   DDX_Control(pDX, IDC_BEARING_OFFSET_MEASURE, m_cbBearingOffsetMeasure);
+   DDX_Control(pDX, IDC_END_DISTANCE_MEASURE, m_cbEndDistMeasure);
+   
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
@@ -150,8 +294,8 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
 
          pParent->m_pPier->SetDiaphragmHeight(pgsTypes::Back,m_DiaphragmHeight);
          pParent->m_pPier->SetDiaphragmHeight(pgsTypes::Ahead,m_DiaphragmHeight);
-         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Back,m_DiaphragmWidth/2);
-         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Ahead,m_DiaphragmWidth/2);
+         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Back, m_DiaphragmWidth < 0 ? -1 : m_DiaphragmWidth/2);
+         pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Ahead, m_DiaphragmWidth < 0 ? -1 : m_DiaphragmWidth/2);
          pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Back,ConnectionLibraryEntry::ApplyAtBearingCenterline);
          pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Ahead,ConnectionLibraryEntry::ApplyAtBearingCenterline);
       }
@@ -336,11 +480,11 @@ void CClosureJointGeometryPage::UpdateConnectionPicture()
 {
    CComboBox* pcbEnd   = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
    int curSel = pcbEnd->GetCurSel();
-   ConnectionLibraryEntry::EndDistanceMeasurementType ems = (ConnectionLibraryEntry::EndDistanceMeasurementType)pcbEnd->GetItemData(curSel);
+   ConnectionLibraryEntry::EndDistanceMeasurementType endType = (ConnectionLibraryEntry::EndDistanceMeasurementType)pcbEnd->GetItemData(curSel);
 
    CComboBox* pcbBrg   = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
    curSel = pcbBrg->GetCurSel();
-   ConnectionLibraryEntry::BearingOffsetMeasurementType bms = (ConnectionLibraryEntry::BearingOffsetMeasurementType)pcbBrg->GetItemData(curSel);
+   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType = (ConnectionLibraryEntry::BearingOffsetMeasurementType)pcbBrg->GetItemData(curSel);
 
    CComboBox* pcbConnectionType = (CComboBox*)GetDlgItem(IDC_CONNECTION_TYPE);
    curSel = pcbConnectionType->GetCurSel();
@@ -349,15 +493,91 @@ void CClosureJointGeometryPage::UpdateConnectionPicture()
    if ( m_bIsPier )
    {
       pgsTypes::PierSegmentConnectionType connectionType = (pgsTypes::PierSegmentConnectionType)pcbConnectionType->GetItemData(curSel);
-      strImageName = GetImageName(connectionType,bms,ems);
+      strImageName = GetImageName(connectionType, brgOffsetType, endType);
    }
    else
    {
       pgsTypes::TempSupportSegmentConnectionType connectionType = (pgsTypes::TempSupportSegmentConnectionType)pcbConnectionType->GetItemData(curSel);
-      strImageName = GetImageName(connectionType,bms,ems);
+      strImageName = GetImageName(connectionType, brgOffsetType, endType);
    }
 
 	m_ConnectionPicture.SetImage(strImageName, _T("Metafile") );
+}
+
+void CClosureJointGeometryPage::UpdateConnectionPicture(pgsTypes::TempSupportSegmentConnectionType connectionType)
+{
+   CComboBox* pcbEnd = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
+   int curSel = pcbEnd->GetCurSel();
+   ConnectionLibraryEntry::EndDistanceMeasurementType endType = (ConnectionLibraryEntry::EndDistanceMeasurementType)pcbEnd->GetItemData(curSel);
+
+   CComboBox* pcbBrg = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
+   curSel = pcbBrg->GetCurSel();
+   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType = (ConnectionLibraryEntry::BearingOffsetMeasurementType)pcbBrg->GetItemData(curSel);
+
+   CString strImageName = GetImageName(connectionType, brgOffsetType, endType);
+   m_ConnectionPicture.SetImage(strImageName, _T("Metafile"));
+}
+
+void CClosureJointGeometryPage::UpdateConnectionPicture(pgsTypes::PierSegmentConnectionType connectionType)
+{
+   CComboBox* pcbEnd = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
+   int curSel = pcbEnd->GetCurSel();
+   ConnectionLibraryEntry::EndDistanceMeasurementType endType = (ConnectionLibraryEntry::EndDistanceMeasurementType)pcbEnd->GetItemData(curSel);
+
+   CComboBox* pcbBrg = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
+   curSel = pcbBrg->GetCurSel();
+   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType = (ConnectionLibraryEntry::BearingOffsetMeasurementType)pcbBrg->GetItemData(curSel);
+
+   CString strImageName = GetImageName(connectionType, brgOffsetType, endType);
+   m_ConnectionPicture.SetImage(strImageName, _T("Metafile"));
+}
+
+void CClosureJointGeometryPage::UpdateConnectionPicture(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType)
+{
+   CComboBox* pcbEnd = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
+   int curSel = pcbEnd->GetCurSel();
+   ConnectionLibraryEntry::EndDistanceMeasurementType endType = (ConnectionLibraryEntry::EndDistanceMeasurementType)pcbEnd->GetItemData(curSel);
+
+   CComboBox* pcbConnectionType = (CComboBox*)GetDlgItem(IDC_CONNECTION_TYPE);
+   curSel = pcbConnectionType->GetCurSel();
+
+   CString strImageName;
+   if (m_bIsPier)
+   {
+      pgsTypes::PierSegmentConnectionType connectionType = (pgsTypes::PierSegmentConnectionType)pcbConnectionType->GetItemData(curSel);
+      strImageName = GetImageName(connectionType, brgOffsetType, endType);
+   }
+   else
+   {
+      pgsTypes::TempSupportSegmentConnectionType connectionType = (pgsTypes::TempSupportSegmentConnectionType)pcbConnectionType->GetItemData(curSel);
+      strImageName = GetImageName(connectionType, brgOffsetType, endType);
+   }
+
+   m_ConnectionPicture.SetImage(strImageName, _T("Metafile"));
+}
+
+void CClosureJointGeometryPage::UpdateConnectionPicture(ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+{
+   CComboBox* pcbBrg = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
+   int curSel = pcbBrg->GetCurSel();
+   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType = (ConnectionLibraryEntry::BearingOffsetMeasurementType)pcbBrg->GetItemData(curSel);
+
+   CComboBox* pcbConnectionType = (CComboBox*)GetDlgItem(IDC_CONNECTION_TYPE);
+   curSel = pcbConnectionType->GetCurSel();
+
+   CString strImageName;
+   if (m_bIsPier)
+   {
+      pgsTypes::PierSegmentConnectionType connectionType = (pgsTypes::PierSegmentConnectionType)pcbConnectionType->GetItemData(curSel);
+      strImageName = GetImageName(connectionType, brgOffsetType, endType);
+   }
+   else
+   {
+      pgsTypes::TempSupportSegmentConnectionType connectionType = (pgsTypes::TempSupportSegmentConnectionType)pcbConnectionType->GetItemData(curSel);
+      strImageName = GetImageName(connectionType, brgOffsetType, endType);
+   }
+
+   m_ConnectionPicture.SetImage(strImageName, _T("Metafile"));
 }
 
 void CClosureJointGeometryPage::FillConnectionTypeComboBox()
@@ -452,19 +672,19 @@ CString CClosureJointGeometryPage::GetImageName(pgsTypes::TempSupportSegmentConn
          switch( endType )
          {
          case ConnectionLibraryEntry::FromBearingAlongGirder:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
+            strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromBearingNormalToPier:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
+            strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromPierAlongGirder:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
+            strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
             break;
 
          case ConnectionLibraryEntry::FromPierNormalToPier:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
+            strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
             break;
          }
       }
@@ -473,19 +693,19 @@ CString CClosureJointGeometryPage::GetImageName(pgsTypes::TempSupportSegmentConn
          switch( endType )
          {
          case ConnectionLibraryEntry::FromBearingAlongGirder:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
+            strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromBearingNormalToPier:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
+            strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromPierAlongGirder:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
+            strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
             break;
 
          case ConnectionLibraryEntry::FromPierNormalToPier:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
+            strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
             break;
          }
       }
@@ -509,19 +729,19 @@ CString CClosureJointGeometryPage::GetImageName(pgsTypes::PierSegmentConnectionT
          switch( endType )
          {
          case ConnectionLibraryEntry::FromBearingAlongGirder:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
+            strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromBearingNormalToPier:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
+            strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromPierAlongGirder:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
+            strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
             break;
 
          case ConnectionLibraryEntry::FromPierNormalToPier:
-            strName = _T("CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
+            strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
             break;
          }
       }
@@ -530,26 +750,26 @@ CString CClosureJointGeometryPage::GetImageName(pgsTypes::PierSegmentConnectionT
          switch( endType )
          {
          case ConnectionLibraryEntry::FromBearingAlongGirder:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
+            strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromBearingNormalToPier:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
+            strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
             break;
 
          case ConnectionLibraryEntry::FromPierAlongGirder:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
+            strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
             break;
 
          case ConnectionLibraryEntry::FromPierNormalToPier:
-            strName = _T("CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
+            strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
             break;
          }
       }
    }
    else
    {
-      strName = _T("TS_CONTINUOUS_SEGMENT");
+      strName = _T("PIER_CONTINUOUS_SEGMENT");
    }
 
    return strName;

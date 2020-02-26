@@ -205,14 +205,14 @@ const pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact(
    return &m_DeflectionCheckArtifact[idx];
 }
 
-bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
+bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const
 {
    for (const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      if (artifact.WasWithRebarAllowableStressUsed(intervalIdx, ls, stressLocation, 0) ||
-         artifact.WasWithRebarAllowableStressUsed(intervalIdx, ls, stressLocation, POI_CLOSURE))
+      if (artifact.WasWithRebarAllowableStressUsed(task, stressLocation, 0) ||
+         artifact.WasWithRebarAllowableStressUsed(task, stressLocation, POI_CLOSURE))
       {
          return true;
       }
@@ -220,15 +220,15 @@ bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(IntervalIndexType interv
    return false;
 }
 
-bool pgsGirderArtifact::WasGirderWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+bool pgsGirderArtifact::WasGirderWithRebarAllowableStressUsed(const StressCheckTask& task) const
 {
    for ( const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      if ( artifact.WasSegmentWithRebarAllowableStressUsed(intervalIdx,ls) ||
-           artifact.WasClosureJointWithRebarAllowableStressUsed(intervalIdx,ls,true /*in PTZ*/) ||
-           artifact.WasClosureJointWithRebarAllowableStressUsed(intervalIdx,ls,false /*not in PTZ*/))
+      if ( artifact.WasSegmentWithRebarAllowableStressUsed(task) ||
+           artifact.WasClosureJointWithRebarAllowableStressUsed(task,true /*in PTZ*/) ||
+           artifact.WasClosureJointWithRebarAllowableStressUsed(task,false /*not in PTZ*/))
       {
          return true;
       }
@@ -236,13 +236,13 @@ bool pgsGirderArtifact::WasGirderWithRebarAllowableStressUsed(IntervalIndexType 
    return false;
 }
 
-bool pgsGirderArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
+bool pgsGirderArtifact::WasDeckWithRebarAllowableStressUsed(const StressCheckTask& task) const
 {
    for (const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      if ( artifact.WasDeckWithRebarAllowableStressUsed(intervalIdx,ls) )
+      if ( artifact.WasDeckWithRebarAllowableStressUsed(task) )
       {
          return true;
       }
@@ -250,14 +250,14 @@ bool pgsGirderArtifact::WasDeckWithRebarAllowableStressUsed(IntervalIndexType in
    return false;
 }
 
-bool pgsGirderArtifact::IsWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
+bool pgsGirderArtifact::IsWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const
 {
    for (const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      if ( artifact.IsWithRebarAllowableStressApplicable(intervalIdx,ls,stressLocation,0) ||
-           artifact.IsWithRebarAllowableStressApplicable(intervalIdx,ls,stressLocation,POI_CLOSURE) )
+      if ( artifact.IsWithRebarAllowableStressApplicable(task,stressLocation,0) ||
+           artifact.IsWithRebarAllowableStressApplicable(task,stressLocation,POI_CLOSURE) )
       {
          return true;
       }
@@ -265,15 +265,15 @@ bool pgsGirderArtifact::IsWithRebarAllowableStressApplicable(IntervalIndexType i
    return false;
 }
 
-bool pgsGirderArtifact::IsGirderWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
+bool pgsGirderArtifact::IsGirderWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const
 {
    for (const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      if ( artifact.IsSegmentWithRebarAllowableStressApplicable(intervalIdx,ls) ||
-           artifact.IsClosureJointWithRebarAllowableStressApplicable(intervalIdx,ls,true /*in PTZ*/) ||
-           artifact.IsClosureJointWithRebarAllowableStressApplicable(intervalIdx,ls,false /*not in PTZ*/))
+      if ( artifact.IsSegmentWithRebarAllowableStressApplicable(task) ||
+           artifact.IsClosureJointWithRebarAllowableStressApplicable(task,true /*in PTZ*/) ||
+           artifact.IsClosureJointWithRebarAllowableStressApplicable(task,false /*not in PTZ*/))
       {
          return true;
       }
@@ -281,27 +281,13 @@ bool pgsGirderArtifact::IsGirderWithRebarAllowableStressApplicable(IntervalIndex
    return false;
 }
 
-bool pgsGirderArtifact::IsDeckWithRebarAllowableStressApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressLocation stressLocation) const
+bool pgsGirderArtifact::IsDeckWithRebarAllowableStressApplicable(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const
 {
    for (const auto& item : m_SegmentArtifacts)
    {
       const auto& artifact(item.second);
       ATLASSERT(item.first == artifact.GetSegmentKey());
-      if ( artifact.IsDeckWithRebarAllowableStressApplicable(intervalIdx,ls) )
-      {
-         return true;
-      }
-   }
-   return false;
-}
-
-bool pgsGirderArtifact::IsFlexuralStressCheckApplicable(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,pgsTypes::StressType stressType,pgsTypes::StressLocation stressLocation) const
-{
-   for (const auto& item : m_SegmentArtifacts)
-   {
-      const auto& artifact(item.second);
-      ATLASSERT(item.first == artifact.GetSegmentKey());
-      if ( artifact.IsFlexuralStressCheckApplicable(intervalIdx,ls,stressType,stressLocation) )
+      if ( artifact.IsDeckWithRebarAllowableStressApplicable(task) )
       {
          return true;
       }

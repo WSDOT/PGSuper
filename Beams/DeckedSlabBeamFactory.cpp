@@ -263,8 +263,8 @@ void CDeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroke
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
    pgsPointOfInterest poiEnd(segmentKey,gdrLength,POI_SECTCHANGE_LEFTFACE  );
 
-   pPoiMgr->AddPointOfInterest(poiStart);
-   pPoiMgr->AddPointOfInterest(poiEnd);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
+   VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // put section breaks just on either side of the end blocks/void interface
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -277,21 +277,19 @@ void CDeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroke
    {
       pgsPointOfInterest poiLeftFace1(segmentKey, endBlockLength, POI_SECTCHANGE_LEFTFACE);
       pgsPointOfInterest poiRightFace1(segmentKey, endBlockLength, POI_SECTCHANGE_RIGHTFACE);
-      poiLeftFace1.CanMerge(false);
-      poiRightFace1.CanMerge(false);
       PoiIDType poiID = pPoiMgr->AddPointOfInterest(poiLeftFace1);
+      ATLASSERT(poiID != INVALID_ID);
       poiLeftFace1 = pPoiMgr->GetPointOfInterest(poiID);
       poiRightFace1.SetDistFromStart(poiLeftFace1.GetDistFromStart(),true);
-      pPoiMgr->AddPointOfInterest(poiRightFace1);
+      VERIFY(pPoiMgr->AddPointOfInterest(poiRightFace1) != INVALID_ID);
 
       pgsPointOfInterest poiRightFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_RIGHTFACE);
       pgsPointOfInterest poiLeftFace2(segmentKey, gdrLength - endBlockLength, POI_SECTCHANGE_LEFTFACE);
-      poiRightFace2.CanMerge(false);
-      poiLeftFace2.CanMerge(false);
       poiID = pPoiMgr->AddPointOfInterest(poiRightFace2);
+      ATLASSERT(poiID != INVALID_ID);
       poiRightFace2 = pPoiMgr->GetPointOfInterest(poiID);
       poiLeftFace2.SetDistFromStart(poiRightFace2.GetDistFromStart(),true);
-      pPoiMgr->AddPointOfInterest(poiLeftFace2);
+      VERIFY(pPoiMgr->AddPointOfInterest(poiLeftFace2) != INVALID_ID);
    }
 }
 
@@ -563,31 +561,6 @@ bool CDeckedSlabBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-Float64 CDeckedSlabBeamFactory::GetInternalSurfaceAreaOfVoids(IBroker* pBroker,const CSegmentKey& segmentKey) const
-{
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
-   // void perimeter
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-   const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-   const GirderLibraryEntry::Dimensions& dimensions = pGdrEntry->GetDimensions();
-   Float64 A = GetDimension(dimensions,_T("A"));
-   Float64 B = GetDimension(dimensions,_T("B"));
-   Float64 C = GetDimension(dimensions,_T("C"));
-   Float64 W = GetDimension(dimensions,_T("W"));
-   Float64 Tb = GetDimension(dimensions,_T("Tb"));
-   Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
-
-   Float64 void_perimeter = (A-2*(B+W)) * (C-Tb);
-
-   Float64 void_surface_area = (Lg-2*endBlockLength)*void_perimeter;
-
-   return void_surface_area;
-}
-
 std::_tstring CDeckedSlabBeamFactory::GetImage() const
 {
    return std::_tstring(_T("DeckedSlabBeam.gif"));
@@ -600,6 +573,10 @@ std::_tstring CDeckedSlabBeamFactory::GetSlabDimensionsImage(pgsTypes::Supported
    {
    case pgsTypes::sdtCompositeOverlay:
       strImage = _T("DeckedSlabBeam_Composite.gif");
+      break;
+
+   case pgsTypes::sdtNonstructuralOverlay:
+      strImage = _T("DeckedSlabBeam_NSoverlay.gif");
       break;
 
    case pgsTypes::sdtNone:
@@ -623,6 +600,7 @@ std::_tstring CDeckedSlabBeamFactory::GetPositiveMomentCapacitySchematicImage(pg
       strImage =  _T("+Mn_DeckedSlabBeam_Composite.gif");
       break;
 
+   case pgsTypes::sdtNonstructuralOverlay:
    case pgsTypes::sdtNone:
       strImage =  _T("+Mn_DeckedSlabBeam_Noncomposite.gif");
       break;
@@ -644,6 +622,7 @@ std::_tstring CDeckedSlabBeamFactory::GetNegativeMomentCapacitySchematicImage(pg
       strImage =  _T("-Mn_DeckedSlabBeam_Composite.gif");
       break;
 
+   case pgsTypes::sdtNonstructuralOverlay:
    case pgsTypes::sdtNone:
       strImage =  _T("-Mn_DeckedSlabBeam_Noncomposite.gif");
       break;
@@ -665,6 +644,7 @@ std::_tstring CDeckedSlabBeamFactory::GetShearDimensionsSchematicImage(pgsTypes:
       strImage =  _T("Vn_DeckedSlabBeam_Composite.gif");
       break;
 
+   case pgsTypes::sdtNonstructuralOverlay:
    case pgsTypes::sdtNone:
       strImage =  _T("Vn_DeckedSlabBeam_Noncomposite.gif");
       break;
@@ -796,6 +776,7 @@ pgsTypes::SupportedDeckTypes CDeckedSlabBeamFactory::GetSupportedDeckTypes(pgsTy
    case pgsTypes::sbsUniformAdjacent:
    case pgsTypes::sbsGeneralAdjacent:
       sdt.push_back(pgsTypes::sdtCompositeOverlay);
+      sdt.push_back(pgsTypes::sdtNonstructuralOverlay);
       sdt.push_back(pgsTypes::sdtNone);
       break;
 
@@ -826,9 +807,25 @@ bool CDeckedSlabBeamFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& 
    return false;
 }
 
+pgsTypes::WorkPointLocations CDeckedSlabBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+{
+   pgsTypes::WorkPointLocations wpls;
+   wpls.push_back(pgsTypes::wplTopGirder);
+//   wpls.push_back(pgsTypes::wplBottomGirder);
+
+   return wpls;
+}
+
+bool CDeckedSlabBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+{
+   pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
+   auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
+   return found == sbs.end() ? false : true;
+}
+
 std::vector<pgsTypes::GirderOrientationType> CDeckedSlabBeamFactory::GetSupportedGirderOrientation() const
 {
-   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb,pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal };
+   std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb,pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
@@ -878,7 +875,7 @@ void CDeckedSlabBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimens
 
    Float64 J  = GetDimension(dimensions,_T("Jmax"));
 
-   if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone )
+   if ( sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNone || sdt == pgsTypes::sdtCompositeOverlay || sdt == pgsTypes::sdtNonstructuralOverlay )
    {
       if(sbs == pgsTypes::sbsUniformAdjacent || sbs == pgsTypes::sbsGeneralAdjacent)
       {
@@ -909,6 +906,18 @@ Float64 CDeckedSlabBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& di
 Float64 CDeckedSlabBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("A"));
+}
+
+void CDeckedSlabBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   Float64 A = GetDimension(dimensions, _T("A"));
+   Float64 F = GetDimension(dimensions, _T("F"));
+
+   Float64 top = A - 2 * F;
+   top /= 2.0;
+
+   *pLeftWidth = top;
+   *pRightWidth = top;
 }
 
 bool CDeckedSlabBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const

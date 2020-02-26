@@ -60,16 +60,13 @@ public:
    virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) override;
    virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
    virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) override;
-   virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls) override;
-   virtual Float64 GetReactionDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,Float64 fcgdr) override;
    virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
    virtual std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
    virtual bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) override;
    virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
                                Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
-                               Float64* gV,  Float64* gV1,  Float64* gV2,   // shear
-                               Float64* gR,  Float64* gR1,  Float64* gR2 ) override; // reaction
+                               Float64* gV,  Float64* gV1,  Float64* gV2 ) override;   // shear
    virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
    virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
 

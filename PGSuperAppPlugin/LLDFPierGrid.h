@@ -30,25 +30,24 @@
 //
 
 #include <PgsExt\BridgeDescription2.h>
+#include "LLDFGrid.h"
 
 // local data structures for lldfs
 // TRICKY: Order must be same as grid columns
 struct PierLLDF
 {
    Float64 pgNMService;
-   Float64 pgRService;
    Float64 pgNMFatigue;
-   Float64 pgRFatigue;
 
    PierLLDF():
-      pgNMService(0), pgRService(0), pgNMFatigue(0), pgRFatigue(0)
+      pgNMService(0), pgNMFatigue(0)
    {;}
 };
 
 /////////////////////////////////////////////////////////////////////////////
 // CLLDFPierGrid window
 
-class CLLDFPierGrid : public CGXGridWnd
+class CLLDFPierGrid : public CEnableGrid
 {
 // Construction
 public:

@@ -212,3 +212,87 @@ StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, con
    
    return strandrows;
 }
+
+StrandRowUtil::StrandRowSet StrandRowUtil::GetFullyPopulatedStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+{
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   // Need girder height - strands are measured from top downward
+   Float64 hg = pGirder->GetHeight(midPoi);
+
+   const CSegmentKey&  rsegmentKey = midPoi.GetSegmentKey();
+
+   // Set up a strand fill configuration that fills all possible straight and harped strands
+   GDRCONFIG gdrconfig = pBridge->GetSegmentConfiguration(rsegmentKey);
+   PRESTRESSCONFIG&  rpsconfig = gdrconfig.PrestressConfig;
+
+   StrandIndexType maxss = pStrandGeometry->GetMaxStrands(rsegmentKey, pgsTypes::Straight);
+   ConfigStrandFillVector ssfillvec = pStrandGeometry->ComputeStrandFill(rsegmentKey, pgsTypes::Straight, maxss);
+
+   rpsconfig.SetStrandFill(pgsTypes::Straight, ssfillvec);
+
+   StrandIndexType maxhs = pStrandGeometry->GetMaxStrands(rsegmentKey, pgsTypes::Harped);
+   ConfigStrandFillVector hsfillvec = pStrandGeometry->ComputeStrandFill(rsegmentKey, pgsTypes::Harped, maxhs);
+
+   rpsconfig.SetStrandFill(pgsTypes::Harped, hsfillvec);
+
+   // Want number of strands in each row location. Count number of straight and harped per row
+   StrandRowUtil::StrandRowSet strandrows;
+
+   // Straight
+   CComPtr<IPoint2dCollection> ss_points;
+   pStrandGeometry->GetStrandPositionsEx(midPoi, rpsconfig, pgsTypes::Straight, &ss_points);
+
+   StrandIndexType nss;
+   ss_points->get_Count(&nss);
+
+   for (StrandIndexType iss=0; iss<nss; iss++)
+   {
+      CComPtr<IPoint2d> point;
+      ss_points->get_Item(iss,&point);
+      Float64 Y;
+      point->get_Y(&Y);
+
+      StrandRowUtil::StrandRow srow(Y + hg); // from bottom of girder
+      StrandRowUtil::StrandRowIter srit = strandrows.find(srow);
+      if (srit != strandrows.end())
+      {
+         StrandRowUtil::StrandRow& strandRow(const_cast<StrandRowUtil::StrandRow&>(*srit));
+         strandRow.Count++;
+      }
+      else
+      {
+         strandrows.insert(srow);
+      }
+   }
+
+   // Harped
+   CComPtr<IPoint2dCollection> hs_points;
+   pStrandGeometry->GetStrandPositionsEx(midPoi, rpsconfig, pgsTypes::Harped, &hs_points);
+
+   StrandIndexType nhs;
+   hs_points->get_Count(&nhs);
+
+   for (StrandIndexType ihs=0; ihs<nhs; ihs++)
+   {
+      CComPtr<IPoint2d> point;
+      hs_points->get_Item(ihs,&point);
+      Float64 Y;
+      point->get_Y(&Y);
+
+      StrandRowUtil::StrandRow srow(Y + hg); // from bottom of girder
+      StrandRowUtil::StrandRowIter srit = strandrows.find(srow);
+      if (srit != strandrows.end())
+      {
+         StrandRowUtil::StrandRow& strandRow(const_cast<StrandRowUtil::StrandRow&>(*srit));
+         strandRow.Count++;
+      }
+      else
+      {
+         strandrows.insert(srow);
+      }
+   }
+
+   return strandrows;
+}

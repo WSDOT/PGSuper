@@ -71,6 +71,7 @@ protected:
    CPTData* m_pPTData;
    EventIndexType m_CreateEventIndex;
    EventIndexType m_PrevStressTendonEventIdx;
+   EventIndexType m_LastSegmentErectionEventIdx;
 
    void AddDuct(const CDuctData& duct,EventIndexType stressingEvent);
 

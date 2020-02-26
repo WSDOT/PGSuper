@@ -61,6 +61,8 @@ protected:
 
 // Implementation
 public:
+   void EnableInsertSpanBtn(BOOL bEnable);
+   void EnableInsertTempSupportBtn(BOOL bEnable);
    void EnableRemovePierBtn(BOOL bEnable);
    void EnableRemoveTemporarySupportBtn(BOOL bEnable);
 

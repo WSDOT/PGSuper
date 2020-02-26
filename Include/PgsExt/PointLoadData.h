@@ -166,7 +166,7 @@ public:
    UserLoads::LoadCase   m_LoadCase;
 
    CSpanKey m_SpanKey;
-   bool     m_bLoadOnCantilever[2]; // if true, the load is on the cantilever and not the span itself, use pgsTypes::MemberEndType to access array
+   std::array<bool, 2> m_bLoadOnCantilever; // if true, the load is on the cantilever and not the span itself, use pgsTypes::MemberEndType to access array
    Float64  m_Location;   // measured from CL bearing at start of span
    bool     m_Fractional;
    Float64  m_Magnitude;

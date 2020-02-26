@@ -58,6 +58,7 @@ class txnDeleteSpan : public txnTransaction
 {
 public:
    txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face,pgsTypes::BoundaryConditionType boundaryCondition);
+   txnDeleteSpan(PierIndexType refPierIdx, pgsTypes::PierFaceType face, pgsTypes::PierSegmentConnectionType segmentConnection, EventIndexType castClosureEventIdx);
    ~txnDeleteSpan();
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
@@ -71,6 +72,10 @@ private:
    PierIndexType m_RefPierIdx;
    pgsTypes::PierFaceType m_PierFace;
    pgsTypes::BoundaryConditionType m_BoundaryCondition;
+   pgsTypes::PierSegmentConnectionType m_SegmentConnection;
+   EventIndexType m_CastClosureEventIdx;
+
+   bool m_bIsBoundaryPier;
 
    CBridgeDescription2 m_BridgeDescription;
    SpanIndexType m_StartSpanIdx;

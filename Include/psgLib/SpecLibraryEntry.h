@@ -89,6 +89,10 @@ PSGLIBTPL sysSubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 #define TDM_ACI209    1
 #define TDM_CEBFIP    2
 
+// hold down force type
+#define HOLD_DOWN_TOTAL 0
+#define HOLD_DOWN_PER_STRAND 1
+
 // MISCELLANEOUS
 //
 
@@ -226,12 +230,20 @@ public:
    //  Set/Get maximum allowable force to hold down strand bundles at harp point.
    //  If doCheck is false, then hold down forces do not need to be 
    //  checked and hold down force value is undefined.
-   void GetHoldDownForce(bool* doCheck, bool* doDesign, Float64* force) const;
-   void SetHoldDownForce(bool doCheck, bool doDesign, Float64 force=0.0);
+   void GetHoldDownForce(bool* doCheck, bool* doDesign, int* holdDownForceType,Float64* force,Float64* pFriction) const;
+   void SetHoldDownForce(bool doCheck, bool doDesign, int holdDownForceType=HOLD_DOWN_TOTAL,Float64 force=0.0,Float64 friction=0.0);
+
+   // Set/Get the maximum girder weight for plant handling
+   void GetPlantHandlingWeightLimit(bool* pbDoCheck, Float64* pLimit) const;
+   void SetPlantHandlingWeightLimit(bool bDoCheck, Float64 limit);
 
    // Splitting zone length h/n (h/4 or h/5) per LRFD 5.9.4.4.1 (pre2017: 5.10.10.1)
    void SetSplittingZoneLengthFactor(Float64 n);
    Float64 GetSplittingZoneLengthFactor() const;
+
+   // Set/Get parameter for splitting reinforcement for UHPC
+   void SetUHPCStrengthAtFirstCrack(Float64 f1);
+   Float64 GetUHPCStrengthAtFirstCrack() const;
 
    // Get/Set the parameter that determines if the slab offset ("A" Dimension)
    // is checked
@@ -306,6 +318,8 @@ public:
    // Set/Get concrete strength type
    void SetLimitStateConcreteStrength(pgsTypes::LimitStateConcreteStrength lsFc);
    pgsTypes::LimitStateConcreteStrength GetLimitStateConcreteStrength() const;
+   void Use90DayStrengthForSlowCuringConcrete(bool bUse, Float64 factor);
+   void Use90DayStrengthForSlowCuringConcrete(bool* pbUse, Float64* pfactor) const;
 
    // Set/Get parameters for checking clear space between adjacent bottom flanges
    void CheckBottomFlangeClearance(bool bCheck);
@@ -316,10 +330,12 @@ public:
    // Set/Get parameters for checking maximum inclinations of tilted girders
    void CheckGirderInclination(bool bCheck);
    bool CheckGirderInclination() const;
-   void SetGirderInclinationBrgPadDeduction(Float64 brgPadDeduct);
-   Float64 GetGirderInclinationBrgPadDeduction() const;
    void SetGirderInclinationFactorOfSafety(Float64 fs);
    Float64 GetGirderInclinationFactorOfSafety() const;
+
+   // Set/Get rounding parameters for required slab offset
+   void SetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod method, Float64 tolerance);
+   void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const;
 
    //////////////////////////////////////
    //
@@ -388,31 +404,31 @@ public:
    bool CheckTemporaryStresses() const;
 
    //------------------------------------------------------------------------
-   void CheckBs2Tension(bool bCheck);
-   bool CheckBs2Tension() const;
+   void CheckFinalTensionPermanentLoadStresses(bool bCheck);
+   bool CheckFinalTensionPermanentLoadStresses() const;
 
    //------------------------------------------------------------------------
    // Get the factor * sqrt(f'c) to determine allowable tensile stress in concrete
    // at the bridge site stage 2
-   Float64 GetBs2MaxConcreteTens() const;
+   Float64 GetFinalTensionPermanentLoadsStressFactor() const;
 
    //------------------------------------------------------------------------
    // Set the factor * sqrt(f'c) to determine allowable tensile stress in 
    // concrete at the bridge site stage 2
-   void SetBs2MaxConcreteTens(Float64 stress);
+   void SetFinalTensionPermanentLoadsStressFactor(Float64 stress);
 
    //------------------------------------------------------------------------
    // Get the absolute maximum allowable tensile stress in concrete
    // at the bridge site stage 2
    // If the bool is false, this check is not made and the stress value is 
    // undefined.
-   void GetBs2AbsMaxConcreteTens(bool* doCheck, Float64* stress) const;
+   void GetFinalTensionPermanentLoadStressFactor(bool* doCheck, Float64* stress) const;
 
    //------------------------------------------------------------------------
    // Set the absolute maximum allowable tensile stress in 
    // concrete at the bridge site stage 2
    // If the bool is false, this check is not made and the stress value is undefined.
-   void SetBs2AbsMaxConcreteTens(bool doCheck, Float64 stress);
+   void SetFinalTensionPermanentLoadStressFactor(bool doCheck, Float64 stress);
 
    // Set/Get the maximum allowable concrete compressive stress at the serivce limit state,
    // without live load, as a factor times f'c
@@ -800,6 +816,11 @@ public:
    Int16 GetLiveLoadDistributionMethod() const;
    void SetLiveLoadDistributionMethod(Int16 method);
 
+   // Set/Get a flag indicating if the skew reduction factor for moment LLDF
+   // is to be ignored
+   void IgnoreSkewReductionForMoment(bool bIgnore);
+   bool IgnoreSkewReductionForMoment() const;
+
    // Set/Get decision to impose a lower limit on distribution factors
    // If true, live load distribution factors are never taken less than
    // the number of lanes divided by the number of girders
@@ -823,6 +844,10 @@ public:
    // spacing.
    void SetLLDFGirderSpacingLocation(Float64 fra);
    Float64 GetLLDFGirderSpacingLocation() const;
+
+   // Set/Get rigid method option
+   void UseRigidMethod(bool bUseRigidMethod);
+   bool UseRigidMethod() const;
 
    // Set/Get inclusion of HL93 low boy, tandem vehicle
    void IncludeDualTandem(bool bInclude);
@@ -876,9 +901,22 @@ public:
    void SetShearCapacityMethod(ShearCapacityMethod method);
    ShearCapacityMethod GetShearCapacityMethod() const;
 
+   // Set/Get flag indicating if the net tensile strain computed per LRFD Eq. 5.7.3.4.2-4 should be limited to non-negative numbers
+   void LimitNetTensionStrainToPositiveValues(bool bLimit);
+   bool LimitNetTensionStrainToPositiveValues() const;
+
+   // Set/Get flag indicating if the mininimum stirrup requirement is ignored when choosing
+   // to compute beta by equation 5.7.3.4.2-1 or -2.
+   void IgnoreMiniumStirrupRequirementForBeta(bool bIgnore);
+   bool IgnoreMiniumStirrupRequirementForBeta() const;
+
    // Set/Get the coefficient for computing modulus of rupture for shear capacity analysis
    void SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
    Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
+
+   // Set/Get the UHPC fiber shear strength
+   void SetUHPCFiberShearStrength(Float64 Yffu);
+   Float64 GetUHPCFiberShearStrength() const;
 
    // Set/Get the shear capacity resistance factors
    void SetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type,Float64 phi);
@@ -921,6 +959,13 @@ public:
 
    void SetMaxInterfaceShearConnectionSpacing(Float64 sMax);
    Float64 GetMaxInterfaceShearConnectorSpacing() const;
+
+   // Set/Get parameter that indicates if the weight of cast in place
+   // deck is used for the permanent net compressive force normal to 
+   // the shear plane.
+   // if true, Pc for LRFD5.7.4.3 is computed otherwise it is taken as 0.0.
+   void UseDeckWeightForPermanentNetCompressiveForce(bool bUse);
+   bool UseDeckWeightForPermanentNetCompressiveForce() const;
 
    //////////////////////////////////////
    //
@@ -1199,15 +1244,6 @@ public:
    // live load distribution factors is to be ignored.
    bool IgnoreRangeOfApplicabilityRequirements() const;
 
-
-   
-   //------------------------------------------------------------------------
-   // OBSOLETE: NEED TO BE REMOVED
-   Float64 GetErectionCrackFs() const;
-   void SetErectionCrackFs(Float64 fs);
-   Float64 GetErectionFailFs() const;
-   void SetErectionFailFs(Float64 fs);
-
    // set version of these methods are obsolete and should be removed
    void IgnoreRangeOfApplicabilityRequirements(bool bIgnore);
 
@@ -1233,7 +1269,12 @@ private:
 
    bool    m_DoCheckHoldDown;
    bool    m_DoDesignHoldDown;
+   int     m_HoldDownForceType; // one of the HOLD_DOWN_XXX constants
    Float64 m_HoldDownForce;
+   Float64 m_HoldDownFriction;
+
+   bool m_bCheckHandlingWeightLimit;
+   Float64 m_HandlingWeightLimit;
 
    bool    m_DoCheckSplitting;    // 5.9.4.4 (pre2017: 5.10.10)
    bool    m_DoCheckConfinement;  // 5.9.4.4
@@ -1305,8 +1346,8 @@ private:
    bool    m_DoTensStressHaulingMaxMaxSuper;
    Float64 m_TensStressHaulingMaxMaxSuper;
 
-   Float64  m_HaulingModulusOfRuptureCoefficient[3];
-   Float64  m_LiftingModulusOfRuptureCoefficient[3];
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_HaulingModulusOfRuptureCoefficient;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_LiftingModulusOfRuptureCoefficient;
 
    Float64 m_MinLiftPoint;
    Float64 m_LiftPointAccuracy;
@@ -1367,8 +1408,9 @@ private:
    int     m_Bs3LRFDOverReinforcedMomentCapacity;
    bool    m_bIncludeRebar_Moment;
    bool    m_bIncludeStrand_NegMoment;
-   Float64  m_FlexureModulusOfRuptureCoefficient[3]; // index is pgsTypes::ConcreteType enum
-   Float64  m_ShearModulusOfRuptureCoefficient[3];   // index is pgsTypes::ConcreteType enum
+   std::array<Float64, pgsTypes::ConcreteTypeCount>  m_FlexureModulusOfRuptureCoefficient; // index is pgsTypes::ConcreteType enum
+   std::array<Float64, pgsTypes::ConcreteTypeCount>  m_ShearModulusOfRuptureCoefficient;   // index is pgsTypes::ConcreteType enum
+   bool m_bLimitNetTensionStrainToPositiveValues; // when true, es from LRFD Eq 5.7.3.4.2-4 is taken to be zero if it is computed as a negative value
 
    // Closure Joint Allowable Stresses
    Float64 m_ClosureCompStressAtStressing;
@@ -1432,6 +1474,7 @@ private:
 
    // Live Load Distribution Factors
    int m_LldfMethod;
+   bool m_bIgnoreSkewReductionForMoment;
 
    // Longitudinal reinforcement shear capacity
    int m_LongReinfShearMethod;
@@ -1457,21 +1500,21 @@ private:
    pgsTypes::AnalysisType m_AnalysisType; // this data will be in old library entries (version < 28)
 
    // Concrete limits
-   Float64 m_MaxSlabFc[3];
-   Float64 m_MaxSegmentFci[3];
-   Float64 m_MaxSegmentFc[3];
-   Float64 m_MaxClosureFci[3];
-   Float64 m_MaxClosureFc[3];
-   Float64 m_MaxConcreteUnitWeight[3];
-   Float64 m_MaxConcreteAggSize[3];
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxSlabFc;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxSegmentFci;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxSegmentFc;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxClosureFci;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxClosureFc;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxConcreteUnitWeight;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_MaxConcreteAggSize;
 
    bool m_bUpdateLoadFactors; // true if the load factors are from an old library entry
-   Float64 m_DCmin[6];   // index is one of pgsTypes::LimitState constants (except for CLLIM)
-   Float64 m_DWmin[6];
-   Float64 m_LLIMmin[6];
-   Float64 m_DCmax[6];
-   Float64 m_DWmax[6];
-   Float64 m_LLIMmax[6];
+   std::array<Float64, 6> m_DCmin;   // index is one of pgsTypes::LimitState constants (except for CLLIM)
+   std::array<Float64, 6> m_DWmin;
+   std::array<Float64, 6> m_LLIMmin;
+   std::array<Float64, 6> m_DCmax;
+   std::array<Float64, 6> m_DWmax;
+   std::array<Float64, 6> m_LLIMmax;
 
    // Warning checks
    bool m_DoCheckStirrupSpacingCompatibility;
@@ -1484,9 +1527,10 @@ private:
 
    ShearFlowMethod m_ShearFlowMethod;
    Float64 m_MaxInterfaceShearConnectorSpacing;
+   bool m_bUseDeckWeightForPc;
 
-   Float64 m_StirrupSpacingCoefficient[2];
-   Float64 m_MaxStirrupSpacing[2];
+   std::array<Float64, 2> m_StirrupSpacingCoefficient;
+   std::array<Float64, 2> m_MaxStirrupSpacing;
 
    ShearCapacityMethod m_ShearCapacityMethod;
 
@@ -1505,17 +1549,19 @@ private:
 
    bool m_LimitDistributionFactorsToLanesBeams; 
 
+   bool m_bUseRigidMethod; // if true, the rigid method is always used with Type a, e, and k cross section for exterior beam LLDF
+
    pgsTypes::PrestressTransferComputationType m_PrestressTransferComputationType;
 
-   Float64 m_PhiFlexureTensionPS[3]; // tension controlled, prestressed
-   Float64 m_PhiFlexureTensionRC[3]; // tension controlled, reinforced
-   Float64 m_PhiFlexureTensionSpliced[3]; // tension controlled, spliced girders
-   Float64 m_PhiFlexureCompression[3];
-   Float64 m_PhiShear[3];
-   Float64 m_PhiShearDebonded[3];
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiFlexureTensionPS; // tension controlled, prestressed
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiFlexureTensionRC; // tension controlled, reinforced
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiFlexureTensionSpliced; // tension controlled, spliced girders
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiFlexureCompression;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiShear;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiShearDebonded;
 
-   Float64 m_PhiClosureJointFlexure[3];
-   Float64 m_PhiClosureJointShear[3];
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiClosureJointFlexure;
+   std::array<Float64, pgsTypes::ConcreteTypeCount> m_PhiClosureJointShear;
 
    Int16 m_RelaxationLossMethod;  // method for computing relaxation losses for LRFD 2005 and later, refined method
    Int16 m_FcgpComputationMethod; // method for computing fcgp for losses. only used for txdot 2013
@@ -1527,11 +1573,17 @@ private:
    Float64 m_Cmin;
 
    bool m_bCheckGirderInclination;
-   Float64 m_InclinedGirder_BrgPadDeduction;
    Float64 m_InclinedGirder_FSmax;
 
+   Float64 m_UHPCFiberShearStrength;
+   Float64 m_UHPCStregthAtFirstCrack;
+
+   pgsTypes::SlabOffsetRoundingMethod m_SlabOffsetRoundingMethod;
+   Float64 m_SlabOffsetRoundingTolerance;
 
    pgsTypes::LimitStateConcreteStrength m_LimitStateConcreteStrength;
+   bool m_bUse90DayConcreteStrength;
+   Float64 m_90DayConcreteStrengthFactor;
 
    Float64 m_FinishedElevationTolerance; // tolerance between finished and design roadway surface elevation for no-deck bridges
 };

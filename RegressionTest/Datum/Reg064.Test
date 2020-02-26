@@ -1,11 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     1    Chain          22  0.6  270   3.45   3.45   8.00   8.00                                              5.000  9.000   3.005    -3.065      878   0.451  0.668   1.916 -0.245 -0.024 -0.034 -0.302  61.83  160.70    1.75    5.00    5.00 
+ 40.00    8   0.00  Chain Up Creek     1     1    Chain          22  0.6  270   3.45   3.45   8.00   8.00                                              5.000  9.000   2.999    -3.059      878   0.451  0.668   1.918 -0.244 -0.023 -0.034 -0.301  61.83  160.77    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Lifting checks failed
@@ -14,12 +14,12 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    8   0.00  Chain Up Creek     1     2    Chain          22  0.6  270   3.45   3.45   8.00   8.00                                              5.000  9.000   2.941    -2.975      878   0.407  0.736   1.916 -0.245 -0.024 -0.034 -0.302  61.83  160.70    1.75    5.00    5.00 
+ 40.00    8   0.00  Chain Up Creek     1     2    Chain          22  0.6  270   3.45   3.45   8.00   8.00                                              5.000  9.000   2.934    -2.968      878   0.407  0.736   1.918 -0.244 -0.023 -0.034 -0.301  61.83  160.77    1.75    5.00    5.00 
 
 
 The Specification Check was Not Successful
-Tensile stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tensile stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Splitting zone check failed.
 Lifting checks failed

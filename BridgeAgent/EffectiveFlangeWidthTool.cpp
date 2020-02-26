@@ -350,10 +350,15 @@ STDMETHODIMP CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentEx(IGeneric
    // should only get here if the effective flange width is computed
    ATLASSERT( m_bUseTribWidth == VARIANT_FALSE );
 
-   CSegmentKey segmentKey = GetSegmentKey(gdrID);
+   CSegmentKey segmentKey = GetSegmentKey(gdrID); // always regions with segmentKey.segmentIndex = 0, so this is more like getting a girder key
+   segmentKey.segmentIndex = segIdx;
+   pgsPointOfInterest poi(segmentKey, Xs);
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
    GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
 
    SSMbrIntervalKey key(compositeDeckIntervalIdx,gdrID,segIdx,Xs);
    FWContainer::iterator found = m_EFW.find(key);
@@ -516,7 +521,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
 	            std::_tostringstream os;
 	            os << SEGMENT_LABEL(segmentKey) << _T(": The deck overhang exceeds S/2. The overhang is taken to be equal to S/2 for purposes of computing the effective flange width and the effect of structurally continuous barriers has been ignored. (LRFD 4.6.2.6.1)") << std::endl;
 	            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,os.str().c_str());
-
+	
 	            pStatusCenter->Add(pStatusItem);
 	
 	            wTrib = twLeft + twRight;
@@ -870,14 +875,14 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       if ( IsSpreadSpacing(pIBridgeDesc->GetGirderSpacingType()) )
       {
-         *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder on each side of the component") << rptNewLine;
+         *pPara << _T("Effective flange width is measured at top CL girder and is taken as one-half the distance to the adjacent girder on each side of the component") << rptNewLine;
          *pPara << _T("Left Tributary Width = ") << xdim.SetValue(efw.twLeft*2) << rptNewLine;
          *pPara << _T("Right Tributary Width = ") << xdim.SetValue(efw.twRight*2) << rptNewLine;
          *pPara << _T("Effective Flange Width = ") << xdim.SetValue(efw.effFlangeWidth) << _T(" = ") << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
       }
       else
       {
-         *pPara << _T("Effective flange width is taken as the girder width") << rptNewLine;
+         *pPara << _T("Effective flange width is measured at top CL girder and is taken as the girder width") << rptNewLine;
          *pPara << _T("Effective Flange Width = ") << xdim.SetValue(efw.effFlangeWidth) << _T(" = ") << xdim2.SetValue(efw.effFlangeWidth) << rptNewLine;
       }
    }
@@ -909,7 +914,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
 
    if ( use_tributary_width )
    {
-      *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder on each side of the component") << rptNewLine;
+      *pPara << _T("Effective flange width is measured at top CL girder and is taken as one-half the distance to the adjacent girder on each side of the component") << rptNewLine;
       table = rptStyleManager::CreateDefaultTable(4,_T(""));
    }
    else
@@ -925,7 +930,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonpri
       }
 
       *pPara << rptNewLine;
-      *pPara << _T("Effective flange width is the least of: ") << rptNewLine;
+      *pPara << _T("Effective flange width is measured at top CL girder and is the least of: ") << rptNewLine;
       *pPara << symbol(DOT) << _T(" One-quarter of the effective span length (") << Sub2(_T("w"),_T("1")) << _T(")") << rptNewLine;
       *pPara << symbol(DOT) << _T(" 12 times the average thickness of the slab, plus the greater of the web thickness");
       *pPara << _T(" OR one-half the width of the top flange of the girder (") << Sub2(_T("w"),_T("2")) << _T(")") << rptNewLine;
@@ -1157,7 +1162,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
       {
          if ( 1 < pBridge->GetGirderCount(poi.GetSegmentKey().groupIndex) )
          {
-	         *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width") << rptNewLine;
+	         *pPara << _T("Effective flange width is measured at top CL girder and is taken as one-half the distance to the adjacent girder plus the full overhang width") << rptNewLine;
 	         if ( bLeftGirder )
             {
 	           *pPara << _T("Left Overhang from CL girder = ") << xdim.SetValue(efw.twLeft) << rptNewLine;
@@ -1225,11 +1230,11 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
 
    if ( use_tributary_width )
    {
-       *pPara << _T("Effective flange width is taken as one-half the distance to the adjacent girder plus the full overhang width") << rptNewLine;
+       *pPara << _T("Effective flange width is measured at top CL girder and is taken as one-half the distance to the adjacent girder plus the full overhang width") << rptNewLine;
    }
    else
    {
-      *pPara << _T("Effective flange width is one-half the effective width of the adjacent interior beam, plus the least of: ") << rptNewLine;
+      *pPara << _T("Effective flange width is measured at top CL girder and is one-half the effective width of the adjacent interior beam, plus the least of: ") << rptNewLine;
       *pPara << symbol(DOT) << _T(" One-eights of the effective span length (") << Sub2(_T("w"),_T("1")) << _T(")") << rptNewLine;
       *pPara << symbol(DOT) << _T(" 6 times the average thickness of the slab, plus the greater of one-half the web thickness");
       *pPara << _T(" OR one-quarter the width of the top flange of the girder (") << Sub2(_T("w"),_T("2")) << _T(")") << rptNewLine;

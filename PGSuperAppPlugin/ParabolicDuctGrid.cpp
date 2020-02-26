@@ -43,7 +43,6 @@ GRID_IMPLEMENT_REGISTER(CParabolicDuctGrid, CS_DBLCLKS, 0, 0, 0);
 CParabolicDuctGrid::CParabolicDuctGrid()
 {
 //   RegisterClass();
-   m_pGirder = nullptr;
    m_pCallback = nullptr;
 }
 
@@ -173,12 +172,21 @@ void CParabolicDuctGrid::CustomInit(CParabolicDuctGridCallback* pCallback)
 	this->GetParam( )->EnableUndo(TRUE);
 }
 
+void CParabolicDuctGrid::SetTendonRange(PierIndexType startPierIdx, PierIndexType endPierIdx)
+{
+   m_DuctGeometry.SetRange(startPierIdx, endPierIdx);
+   SetData(m_DuctGeometry);
+}
+
+void CParabolicDuctGrid::GetTendonRange(PierIndexType* pStartPierIdx, PierIndexType* pEndPierIdx) const
+{
+   m_DuctGeometry.GetRange(pStartPierIdx, pEndPierIdx);
+}
+
 CParabolicDuctGeometry CParabolicDuctGrid::GetData()
 {
-   CParabolicDuctGeometry ductGeometry(m_pGirder);
-
-   PierIndexType startPierIdx = m_pGirder->GetPierIndex(pgsTypes::metStart);
-   PierIndexType endPierIdx   = m_pGirder->GetPierIndex(pgsTypes::metEnd);
+   PierIndexType startPierIdx, endPierIdx;
+   m_DuctGeometry.GetRange(&startPierIdx, &endPierIdx);
 
    SpanIndexType startSpanIdx = startPierIdx;
    SpanIndexType endSpanIdx = endPierIdx-1;
@@ -187,12 +195,12 @@ CParabolicDuctGeometry CParabolicDuctGrid::GetData()
    Float64 distance,offset;
    CDuctGeometry::OffsetType offsetType;
    GetRowValues(row++,&distance,&offset,&offsetType);
-   ductGeometry.SetStartPoint(distance,offset,offsetType);
+   m_DuctGeometry.SetStartPoint(startPierIdx,distance,offset,offsetType);
 
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
       GetRowValues(row++,&distance,&offset,&offsetType);
-      ductGeometry.SetLowPoint(spanIdx,distance,offset,offsetType);
+      m_DuctGeometry.SetLowPoint(spanIdx,distance,offset,offsetType);
 
       if ( spanIdx < endSpanIdx )
       {
@@ -210,30 +218,38 @@ CParabolicDuctGeometry CParabolicDuctGrid::GetData()
          Float64 distRightIP;
          GetRowValues(row++,&distRightIP,&dummyOffset,&dummyOffsetType);
 
-         ductGeometry.SetHighPoint(pierIdx,distLeftIP,highOffset,highOffsetType,distRightIP);
+         m_DuctGeometry.SetHighPoint(pierIdx,distLeftIP,highOffset,highOffsetType,distRightIP);
       }
    }
 
    GetRowValues(row++,&distance,&offset,&offsetType);
-   ductGeometry.SetEndPoint(distance,offset,offsetType);
+   m_DuctGeometry.SetEndPoint(endPierIdx,distance,offset,offsetType);
 
-   return ductGeometry;
+   return m_DuctGeometry;
 }
 
 void CParabolicDuctGrid::SetData(const CParabolicDuctGeometry& ductGeometry)
 {
-   m_pGirder = ductGeometry.GetGirder();
+   ROWCOL nRows = GetRowCount();
+   if (0 < nRows)
+   {
+      // remove old data if there is any
+      RemoveRows(1, nRows);
+   }
 
-   PierIndexType startPierIdx = m_pGirder->GetPierIndex(pgsTypes::metStart);
-   PierIndexType endPierIdx   = m_pGirder->GetPierIndex(pgsTypes::metEnd);
+   m_DuctGeometry = ductGeometry;
+
+   PierIndexType startPierIdx, endPierIdx;
+   ductGeometry.GetRange(&startPierIdx, &endPierIdx);
 
    SpanIndexType startSpanIdx = startPierIdx;
    SpanIndexType endSpanIdx   = endPierIdx-1;
 
-   // Start poin
+   // Start point
+   PierIndexType pierIdx;
    Float64 distance,offset;
    CDuctGeometry::OffsetType offsetType;
-   ductGeometry.GetStartPoint(&distance,&offset,&offsetType);
+   ductGeometry.GetStartPoint(&pierIdx,&distance,&offset,&offsetType);
    InsertFirstPoint(startSpanIdx,distance,offset,offsetType);
 
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
@@ -259,7 +275,7 @@ void CParabolicDuctGrid::SetData(const CParabolicDuctGeometry& ductGeometry)
       }
    }
 
-   ductGeometry.GetEndPoint(&distance,&offset,&offsetType);
+   ductGeometry.GetEndPoint(&pierIdx,&distance,&offset,&offsetType);
    InsertLastPoint(endSpanIdx,distance,offset,offsetType);
 }
 
@@ -292,20 +308,29 @@ void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance
       .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
       );
 
-   distance = ::ConvertFromSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   int choice = 0;
+   if (distance < 0)
+   {
+      choice = 1;
+      distance = -100 * distance;
+   }
+   else
+   {
+      choice = 0;
+      distance = ::ConvertFromSysUnits(distance, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   }
+
    SetStyleRange(CGXRange(row,2), CGXStyle()
-      .SetValue(0.0) // always starts at 0.0 (until duct model is upgraded)
-      .SetEnabled(FALSE)
-      .SetInterior(::GetSysColor(COLOR_BTNFACE))
-      .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+      .SetValue(distance)
       );
 
-   SetStyleRange(CGXRange(row,3), CGXStyle()
-      .SetValue(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str())
-      .SetEnabled(FALSE)
-      .SetInterior(::GetSysColor(COLOR_BTNFACE))
-      .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
-      );
+   CString strMeasure;
+   strMeasure.Format(_T("%s\n%s"), pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str(), _T("%"));
+   SetStyleRange(CGXRange(row, 3), CGXStyle()
+      .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
+      .SetChoiceList(strMeasure)
+      .SetValue((long)choice)
+   );
 
    offset = ::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,4), CGXStyle()
@@ -538,20 +563,29 @@ void CParabolicDuctGrid::InsertLastPoint(SpanIndexType spanIdx,Float64 distance,
       .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
       );
 
-   distance = ::ConvertFromSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   SetStyleRange(CGXRange(row,2), CGXStyle()
-      .SetValue(0.0) // always at 0.0 until duct model is upgraded
-      .SetEnabled(FALSE)
-      .SetInterior(::GetSysColor(COLOR_BTNFACE))
-      .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
-      );
+   int choice = 0;
+   if (distance < 0)
+   {
+      choice = 1;
+      distance = -100 * distance;
+   }
+   else
+   {
+      choice = 0;
+      distance = ::ConvertFromSysUnits(distance, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   }
 
-   SetStyleRange(CGXRange(row,3), CGXStyle()
-      .SetValue(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str())
-      .SetEnabled(FALSE)
-      .SetInterior(::GetSysColor(COLOR_BTNFACE))
-      .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
-      );
+   SetStyleRange(CGXRange(row, 2), CGXStyle()
+      .SetValue(distance)
+   );
+
+   CString strMeasure;
+   strMeasure.Format(_T("%s\n%s"), pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str(), _T("%"));
+   SetStyleRange(CGXRange(row, 3), CGXStyle()
+      .SetControl(GX_IDS_CTRL_ZEROBASED_EX)
+      .SetChoiceList(strMeasure)
+      .SetValue((long)choice)
+   );
 
    offset = ::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,4), CGXStyle()
@@ -611,4 +645,14 @@ void CParabolicDuctGrid::GetRowValues(ROWCOL row,Float64* pDistance,Float64* pOf
    *pDistance   = distance;
    *pOffset     = offset;
    *pOffsetType = offsetType;
+}
+
+void CParabolicDuctGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
+{
+   if (m_pCallback)
+   {
+      m_pCallback->OnDuctChanged();
+   }
+
+   __super::OnModifyCell(nRow, nCol);
 }

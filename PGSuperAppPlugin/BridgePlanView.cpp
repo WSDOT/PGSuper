@@ -598,15 +598,15 @@ void CBridgePlanView::BuildDisplayLists()
    bearing_list->SetID(BEARING_DISPLAY_LIST);
    dispMgr->AddDisplayList(bearing_list);
 
+   CComPtr<iDisplayList> slab_list;
+   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&slab_list);
+   slab_list->SetID(SLAB_DISPLAY_LIST);
+   dispMgr->AddDisplayList(slab_list);
+
    CComPtr<iDisplayList> span_list;
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&span_list);
    span_list->SetID(SPAN_DISPLAY_LIST);
    dispMgr->AddDisplayList(span_list);
-
-   CComPtr<iDisplayList> slab_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&slab_list);
-   slab_list->SetID(SLAB_DISPLAY_LIST);
-   dispMgr->AddDisplayList(slab_list);
 
    CComPtr<iDisplayList> north_arrow_list;
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&north_arrow_list);
@@ -704,6 +704,11 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       // Make sure we aren't displaying spans past the end of the bridge
       SpanIndexType nSpans = pBridge->GetSpanCount();
       m_EndSpanIdx = (nSpans <= m_EndSpanIdx ? nSpans-1 : m_EndSpanIdx);
+
+      if (m_EndSpanIdx < m_StartSpanIdx)
+      {
+         m_StartSpanIdx = 0;
+      }
 
       if ( lHint != HINT_BRIDGEVIEWSETTINGSCHANGED )
       {
@@ -1042,7 +1047,7 @@ void CBridgePlanView::UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw)
 
 void CBridgePlanView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint) 
 {
-   GetFrame()->SendMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
+   GetFrame()->PostMessage(WM_COMMAND,ID_PROJECT_BRIDGEDESC,0);
 }
 
 void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
@@ -1187,7 +1192,7 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
       {
          bLeftRight = true;
       }
-      else if ( dispListID == SPAN_DISPLAY_LIST || dispListID == PIER_DISPLAY_LIST || dispListID == SLAB_DISPLAY_LIST )
+      else if ( dispListID == SPAN_DISPLAY_LIST || dispListID == PIER_DISPLAY_LIST || dispListID == TEMPORARY_SUPPORT_DISPLAY_LIST || dispListID == SLAB_DISPLAY_LIST )
       {
          bLeftRight = true;
       }
@@ -1409,9 +1414,9 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    CComPtr<iPolyLineDisplayObject> doAlignment;
    doAlignment.CoCreateInstance(CLSID_PolyLineDisplayObject);
 
-   // Register an event sink with the alignment object so that we can handle Float64 clicks
+   // Register an event sink with the alignment object so that we can handle double clicks
    // on the alignment differently then a general dbl-click
-   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::Bridge);
+   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::BridgePlan);
    CComPtr<iDisplayObjectEvents> events;
    events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
 
@@ -1584,6 +1589,13 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
             SegmentDisplayObjectInfo* pInfo = new SegmentDisplayObjectInfo(segmentKey,SEGMENT_DISPLAY_LIST);
             doSegment->SetItemData((void*)pInfo,true);
             doSegment->SetSelectionType(stAll);
+            
+            if (1 < nSegments)
+            {
+               // for spliced girder bridges, if a segment is selected, clicking a second time on the segments should move the selection
+               // to the next DO which is the entire girder.
+               doSegment->RetainSelection(FALSE);
+            }
 
             CComPtr<iShapeDrawStrategy> shapeDrawStrategy;
             shapeDrawStrategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
@@ -1636,8 +1648,8 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
                label_display_list->AddDisplayObject(doText2);
             }
 
-            // Register an event sink with the segment display object so that we can handle Float64 clicks
-            // on the segment differently then a general Float64 click
+            // Register an event sink with the segment display object so that we can handle double clicks
+            // on the segment differently then a general double click
             CBridgePlanViewSegmentDisplayObjectEvents* pEvents = new CBridgePlanViewSegmentDisplayObjectEvents(segmentKey,pFrame);
             CComPtr<iDisplayObjectEvents> events;
             events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
@@ -1844,8 +1856,8 @@ void CBridgePlanView::BuildGirderDisplayObjects()
             doGirderLine->AddDisplayObject(doSegment);
          }
 
-         // Register an event sink with the girder display object so that we can handle Float64 clicks
-         // on the girder differently then a general Float64 click
+         // Register an event sink with the girder display object so that we can handle double clicks
+         // on the girder differently then a general double click
          CBridgePlanViewGirderDisplayObjectEvents* pEvents = new CBridgePlanViewGirderDisplayObjectEvents(girderKey,nGroups,nGirdersThisGroup,pFrame);
          CComPtr<iDisplayObjectEvents> events;
          events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
@@ -2248,8 +2260,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
          doConnection->SetMaxTipWidth(TOOLTIP_WIDTH);
          doConnection->SetTipDisplayTime(TOOLTIP_DURATION);
 
-         // Register an event sink with the connection text display object so that we can handle Float64 clicks
-         // differently then a general Float64 click
+         // Register an event sink with the connection text display object so that we can handle double clicks
+         // differently then a general double click
          CConnectionDisplayObjectEvents* pEvents = new CConnectionDisplayObjectEvents(pierIdx);
          CComPtr<iDisplayObjectEvents> events;
          events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
@@ -2468,8 +2480,8 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       doCenterLine->SetSelectionType(stAll);
       doCenterLine->SetID(tsID);
 
-      // Register an event sink with the centerline display object so that we can handle Float64 clicks
-      // on the temporary supports differently then a general Float64 click
+      // Register an event sink with the centerline display object so that we can handle double clicks
+      // on the temporary supports differently then a general double click
       CTemporarySupportDisplayObjectEvents* pEvents = new CTemporarySupportDisplayObjectEvents(tsID,pFrame);
       CComPtr<iDisplayObjectEvents> events;
       events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
@@ -2806,8 +2818,8 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
             SegmentDisplayObjectInfo* pInfo = new SegmentDisplayObjectInfo(closureKey,CLOSURE_JOINT_DISPLAY_LIST);
             doClosure->SetItemData((void*)pInfo,true);
 
-            // Register an event sink with the display object so that we can handle Float64 clicks
-            // differently then a general Float64 click
+            // Register an event sink with the display object so that we can handle double clicks
+            // differently then a general double click
             CClosureJointDisplayObjectEvents* pEvents = new CClosureJointDisplayObjectEvents(closureKey,leftSegmentKey,rightSegmentKey,pFrame);
             CComPtr<iDisplayObjectEvents> events;
             events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
@@ -2963,15 +2975,15 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone )
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
       return;
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -2979,85 +2991,110 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    GetDisplayMgr(&dispMgr);
 
    CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(SLAB_DISPLAY_LIST,&display_list);
+   dispMgr->FindDisplayList(SLAB_DISPLAY_LIST, &display_list);
 
    display_list->Clear();
 
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
-   SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
-   CComPtr<IPoint2dCollection> points;
-   pBridge->GetSlabPerimeter(firstSpanIdx,lastSpanIdx,10*(lastSpanIdx-firstSpanIdx+1),pgsTypes::pcGlobal,&points);
+   // setup the display object for the slab. use a composite object
+   // and composite it of the individual deck casting regions
+   CComPtr<iCompositeDisplayObject> doSlab;
+   doSlab.CoCreateInstance(CLSID_CompositeDisplayObject);
+   doSlab->SetSelectionType(stAll);
+   doSlab->SetID(DECK_ID);
+   display_list->AddDisplayObject(doSlab);
 
-   CComPtr<IPolyShape> poly_shape;
-   poly_shape.CoCreateInstance(CLSID_PolyShape);
-   poly_shape->AddPoints(points);
+   // put some item data on the slab object for others to use
+   DeckDisplayObjectInfo* pInfo = new DeckDisplayObjectInfo(DECK_ID, SLAB_DISPLAY_LIST);
+   doSlab->SetItemData((void*)pInfo, true);
 
-
-   CComPtr<iPointDisplayObject> doPnt;
-   doPnt.CoCreateInstance(CLSID_PointDisplayObject);
-   CComPtr<IPoint2d> p;
-   points->get_Item(0,&p);
-   doPnt->SetPosition(p,FALSE,FALSE);
-
-   CComPtr<iShapeDrawStrategy> strategy;
-   strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-   CComQIPtr<IShape> shape(poly_shape);
-   strategy->SetShape(shape);
-   strategy->SetSolidLineColor(DECK_BORDER_COLOR);
-   strategy->SetSolidFillColor(DECK_FILL_COLOR);
-   strategy->DoFill(TRUE);
-   doPnt->SetDrawingStrategy(strategy);
-
-   doPnt->SetSelectionType(stAll);
-   doPnt->SetID(DECK_ID);
-
-   DeckDisplayObjectInfo* pInfo = new DeckDisplayObjectInfo(DECK_ID,SLAB_DISPLAY_LIST);
-   doPnt->SetItemData((void*)pInfo,true);
-
-   CComPtr<iShapeGravityWellStrategy> gravity_well;
-   gravity_well.CoCreateInstance(CLSID_ShapeGravityWellStrategy);
-   gravity_well->SetShape(shape);
-
-   doPnt->SetGravityWellStrategy(gravity_well);
-
+   // deal with events at the composite display object level
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CBridgePlanViewSlabDisplayObjectEvents* pEvents = new CBridgePlanViewSlabDisplayObjectEvents(pDoc, pBroker,m_pFrame,strategy->DoFill());
+   CBridgePlanViewSlabDisplayObjectEvents* pEvents = new CBridgePlanViewSlabDisplayObjectEvents(pDoc, pBroker, m_pFrame, true);
    CComPtr<iDisplayObjectEvents> events;
    events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
 
-   CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doPnt);
+   CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doSlab);
    dispObj->RegisterEventSink(events);
 
+
+   // display object tool tip messages
    CString strMsg1(_T("Double click to edit deck.\nRight click for more options."));
-
    CString strMsg2;
-
-   if ( pDeck->GetDeckType() != pgsTypes::sdtNone )
+   if (pDeck->GetDeckType() != pgsTypes::sdtNone)
    {
       strMsg2.Format(_T("\n\nDeck: %s\nSlab Thickness: %s\nf'c: %s"),
-                     GetDeckTypeName(pDeck->GetDeckType()),
-                     FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
-                     FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
-                     );
+         GetDeckTypeName(pDeck->GetDeckType()),
+         FormatDimension(pDeck->GrossDepth, pDisplayUnits->GetComponentDimUnit()),
+         FormatDimension(pDeck->Concrete.Fc, pDisplayUnits->GetStressUnit())
+      );
    }
 
    CString strMsg3;
    Float64 overlay_weight = pBridge->GetOverlayWeight();
-   if ( pBridge->HasOverlay() )
+   if (pBridge->HasOverlay())
    {
       strMsg3.Format(_T("\n\n%s: %s"),
          pBridge->IsFutureOverlay() ? _T("Future Overlay") : _T("Overlay"),
-         FormatDimension(overlay_weight,pDisplayUnits->GetOverlayWeightUnit()));
+         FormatDimension(overlay_weight, pDisplayUnits->GetOverlayWeightUnit()));
    }
 
-   CString strMsg = strMsg1 + strMsg2 + strMsg3;
+   CString strBaseMsg = strMsg1 + strMsg2 + strMsg3;
 
-   dispObj->SetToolTipText(strMsg);
-   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
-   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+   // build display objects for each deck casting region
+   SpanIndexType nSpans = pBridge->GetSpanCount();
+   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
+   SpanIndexType lastSpanIdx = (m_EndSpanIdx == ALL_SPANS ? nSpans - 1 : m_EndSpanIdx);
 
-   display_list->AddDisplayObject(doPnt);
+   IndexType nRegions = pBridge->GetDeckCastingRegionCount();
+   for(IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
+   {
+      PierIndexType startPierIdx, endPierIdx;
+      Float64 Xstart, Xend;
+      CCastingRegion::RegionType regionType;
+      IndexType sequenceIdx;
+      pBridge->GetDeckCastingRegionLimits(regionIdx, &startPierIdx, &Xstart, &endPierIdx, &Xend, &regionType, &sequenceIdx);
+
+      IndexType nPoints = 10;
+      CComPtr<IPoint2dCollection> points;
+      pBridge->GetDeckCastingRegionPerimeter(regionIdx, firstSpanIdx, lastSpanIdx, nPoints, pgsTypes::pcGlobal, &regionType, &sequenceIdx, nullptr, &points);
+
+      COLORREF deck_fill_color = (regionType == CCastingRegion::Span ? DECK_FILL_POS_MOMENT_REGION_COLOR : DECK_FILL_NEG_MOMENT_REGION_COLOR);
+
+      CComPtr<IPolyShape> poly_shape;
+      poly_shape.CoCreateInstance(CLSID_PolyShape);
+      poly_shape->AddPoints(points);
+
+      CComPtr<iPointDisplayObject> doDeckRegion;
+      doDeckRegion.CoCreateInstance(CLSID_PointDisplayObject);
+      CComPtr<IPoint2d> p;
+      points->get_Item(0, &p);
+      doDeckRegion->SetPosition(p, FALSE, FALSE);
+      doDeckRegion->SetSelectionType(stAll);
+
+      CComPtr<iShapeDrawStrategy> strategy;
+      strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+      CComQIPtr<IShape> shape(poly_shape);
+      strategy->SetShape(shape);
+      strategy->SetSolidLineColor(DECK_BORDER_COLOR);
+      strategy->SetSolidFillColor(deck_fill_color);
+      strategy->DoFill(TRUE);
+      doDeckRegion->SetDrawingStrategy(strategy);
+
+      CComPtr<iShapeGravityWellStrategy> gravity_well;
+      gravity_well.CoCreateInstance(CLSID_ShapeGravityWellStrategy);
+      gravity_well->SetShape(shape);
+
+      doDeckRegion->SetGravityWellStrategy(gravity_well);
+
+      CString strMsg;
+      strMsg.Format(_T("%s\n\nRegion %d\nSequence %d"), strBaseMsg, LABEL_INDEX(regionIdx), LABEL_INDEX(sequenceIdx));
+
+      doDeckRegion->SetToolTipText(strMsg);
+      doDeckRegion->SetMaxTipWidth(TOOLTIP_WIDTH);
+      doDeckRegion->SetTipDisplayTime(TOOLTIP_DURATION);
+
+      doSlab->AddDisplayObject(doDeckRegion);
+   }
 }
 
 void CBridgePlanView::BuildSectionCutDisplayObjects()

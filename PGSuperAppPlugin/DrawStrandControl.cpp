@@ -32,8 +32,7 @@
 
 #include <PgsExt\SplicedGirderData.h>
 #include <IFace\Bridge.h>
-#include <IFace\Intervals.h>
-
+#include <IFace\Project.h>
 #include <IFace\BeamFactory.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
@@ -67,7 +66,7 @@ END_MESSAGE_MAP()
 
 
 // CDrawStrandControl message handlers
-void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CStrandData* pStrands)
+void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CStrandData* pStrands, const CSegmentPTData* pTendons)
 {
    m_Shape[pgsTypes::metStart].Release();
    m_Shape[pgsTypes::metEnd].Release();
@@ -76,6 +75,7 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
 
    m_pSegment = pSegment;
    m_pStrands = pStrands;
+   m_pTendons = pTendons;
 
    m_Xoffset[pgsTypes::metStart] = 0;
    m_Xoffset[pgsTypes::metEnd] = 0;
@@ -105,9 +105,9 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
       m_HgStart = m_pSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic);
       m_HgEnd   = m_pSegment->GetVariationHeight(pgsTypes::sztRightPrismatic);
       m_Hg = Max(m_HgStart,
-         m_pSegment->GetVariationHeight(pgsTypes::sztLeftTapered),
-         m_pSegment->GetVariationHeight(pgsTypes::sztRightTapered),
-         m_HgEnd);
+                 m_pSegment->GetVariationHeight(pgsTypes::sztLeftTapered),
+                 m_pSegment->GetVariationHeight(pgsTypes::sztRightTapered),
+                 m_HgEnd);
       break;
 
    default:
@@ -191,6 +191,13 @@ void CDrawStrandControl::OnPaint()
    // TODO: Add your message handler code here
    // Do not call CWnd::OnPaint() for painting messages
 
+   // setup a clipping region so we don't draw outside of the control boundaries
+   CRect rClient;
+   GetClientRect(&rClient);
+   CRgn rgn;
+   rgn.CreateRectRgnIndirect(&rClient);
+   dc.SelectClipRgn(&rgn);
+
 
    //
    // Set up coordinate mapping
@@ -220,9 +227,6 @@ void CDrawStrandControl::OnPaint()
 
    gpRect2d profileBox;
    profileBox.Set(left, bottom, right, top);
-
-   CRect rClient;
-   GetClientRect(&rClient);
 
    Float64 aspect_ratio = box[pgsTypes::metStart].Width()/m_Hg;
 
@@ -323,7 +327,8 @@ void CDrawStrandControl::OnPaint()
    Draw(&dc,centerMapper,m_BottomFlangeProfile,FALSE);
    DrawShape(&dc,rightMapper,m_Shape[pgsTypes::metEnd]);
 
-   DrawStrands(&dc, leftMapper,centerMapper,rightMapper);
+   DrawStrands(&dc, leftMapper, centerMapper, rightMapper);
+   DrawTendons(&dc, leftMapper, centerMapper, rightMapper);
 
    // Clean up
    dc.SelectObject(pOldPen);
@@ -410,6 +415,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
    CPen errorPen(PS_SOLID, 1, RED);
    CBrush errorBrush(RED);
 
+   // Get the harp point locations and convert them to girder path coordinates
    std::array<Float64, 4> Xs; // harp point locations in segment coordinates
    std::array<Float64, 4> Xgp; // harp point locations in girder path coordinates
    m_pStrands->GetHarpPoints(&Xs[ZoneBreakType::Start], &Xs[ZoneBreakType::LeftBreak], &Xs[ZoneBreakType::RightBreak], &Xs[ZoneBreakType::End]);
@@ -595,6 +601,114 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
             {
                pDC->LineTo(dx, dy);
             }
+         }
+      }
+   }
+}
+
+void CDrawStrandControl::DrawTendons(CDC* pDC, grlibPointMapper& leftMapper, grlibPointMapper& centerMapper, grlibPointMapper& rightMapper)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+
+   const CSegmentKey& segmentKey = m_pSegment->GetSegmentKey();
+   
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
+
+   GET_IFACE2(pBroker, ILibrary, pLibrary);
+   DuctLibrary* pDuctLibrary = pLibrary->GetDuctLibrary();
+
+
+   CPen tendonPen(PS_SOLID, 1, SEGMENT_TENDON_LINE_COLOR);
+   CBrush tendonBrush(SEGMENT_TENDON_FILL_COLOR);
+
+   CPen errorPen(PS_SOLID, 1, RED);
+   CBrush errorBrush(RED);
+
+   WebIndexType nWebs = pGirder->GetWebCount(segmentKey);
+   ATLASSERT(1 <= nWebs && nWebs <= 2); // expecting 1 or 2 webs
+
+   DuctIndexType nDucts = m_pTendons->GetDuctCount();
+   for(DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+   {
+      const auto* pDuct = m_pTendons->GetDuct(ductIdx);
+      const DuctLibraryEntry* pDuctLibEntry = (const DuctLibraryEntry*)pDuctLibrary->GetEntry(pDuct->Name.c_str());
+      Float64 duct_diameter = pDuctLibEntry->GetOD();
+
+      LONG dx, dy;
+
+      //
+      // Draw strands in end cross sections
+      //
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
+         grlibPointMapper* pPointMapper = (end == pgsTypes::metStart ? &leftMapper : &rightMapper);
+
+         pPointMapper->GetAdjustedDeviceExt(&dx, &dy);
+         gpSize2d world_ext = pPointMapper->GetWorldExt();
+         LONG diameter = (LONG)(dy*duct_diameter / world_ext.Dy());
+         LONG radius = diameter / 2;
+
+         CSegmentDuctData::DuctPointType ductPoint = (i == 0 ? CSegmentDuctData::Left : CSegmentDuctData::Right);
+
+         for (WebIndexType webIdx = 0; webIdx < nWebs; webIdx++)
+         {
+            CComPtr<IPoint3d> pnt;
+            pSegmentTendonGeometry->GetSegmentDuctPoint(vPoi[i], m_pSegment, pDuct, &pnt);
+
+            Float64 X, Y;
+            pnt->get_X(&X);
+            pnt->get_Y(&Y);
+
+            if (webIdx != 0)
+            {
+               X *= -1;
+            }
+
+            CPoint point;
+            pPointMapper->WPtoDP(X, Y, &point.x, &point.y);
+            point.Offset(-radius, -radius);
+            CRect rect(point, CSize(diameter, diameter));
+
+            rect.NormalizeRect();
+
+            pDC->SelectObject(&tendonPen);
+            pDC->SelectObject(&tendonBrush);
+            pDC->Ellipse(&rect);
+         } // next web
+      } // next end face
+
+      //
+      // Draw in the segment profile
+      //
+
+      CComPtr<IPoint2dCollection> profile; // profile points in Girder Path Coordinates
+      pSegmentTendonGeometry->GetDuctCenterline(m_pSegment->GetSegmentKey(), m_pSegment, pDuct, &profile);
+
+      CComPtr<IPoint2d> pnt;
+      IndexType nPoints;
+      profile->get_Count(&nPoints);
+      for (IndexType idx = 0; idx < nPoints; idx++)
+      {
+         pnt.Release();
+         profile->get_Item(idx, &pnt);
+         Float64 z, y;
+         pnt->Location(&z, &y);
+
+         centerMapper.WPtoDP(z, y, &dx, &dy);
+         if (idx == 0)
+         {
+            pDC->MoveTo(dx, dy);
+         }
+         else
+         {
+            pDC->LineTo(dx, dy);
          }
       }
    }

@@ -53,6 +53,8 @@ protected:
    CCheckListBox	m_ChList;
 
 protected:
+   void UpdateButtonText();
+
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
    virtual void UpdateGirderComboBox(SpanIndexType spanIdx);

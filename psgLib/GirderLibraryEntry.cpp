@@ -92,14 +92,14 @@ static char THIS_FILE[] = __FILE__;
 // from 25   to 26   Added haunch checking and camber multiplication factors
 // from 26   to 27   Added drag coefficient
 // from 27 to 28, added precamber limit
-#define CURRENT_VERSION 28.0
+// from 28 to 29, added option to print bearing elevations at girder edges
+#define CURRENT_VERSION 29.0
 
 
 // Initialize static class members
 bool GirderLibraryEntry::m_bsInitCLSIDMap = true;
 std::map<std::_tstring, std::_tstring> GirderLibraryEntry::m_CLSIDMap;
 std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> GirderLibraryEntry::ms_ExternalCLSIDTranslators;
-
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) 
@@ -176,6 +176,7 @@ m_MinHaunchAtBearingLines(0.0),
 m_ExcessiveSlabOffsetWarningTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
 m_DragCoefficient(2.2),
 m_PrecamberLimit(80),
+m_DoReportBearingElevationsAtGirderEdges(false),
 m_pCompatibilityData(nullptr)
 {
 	CWaitCursor cursor;
@@ -699,6 +700,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    pSave->Property(_T("DragCoefficient"),m_DragCoefficient); // added version 27
    pSave->Property(_T("PrecamberLimit"), m_PrecamberLimit); // added version 28
+   pSave->Property(_T("DoReportBearingElevationsAtGirderEdges"), m_DoReportBearingElevationsAtGirderEdges); // added version 29
 
    pSave->EndUnit();
 
@@ -2790,6 +2792,14 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if (28 < version)
+      {
+         if (!pLoad->Property(_T("DoReportBearingElevationsAtGirderEdges"), &m_DoReportBearingElevationsAtGirderEdges))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
 
       if(!pLoad->EndUnit())
       {
@@ -3190,6 +3200,12 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Precamber limits are different"), _T(""), _T("")));
+   }
+
+   if (m_DoReportBearingElevationsAtGirderEdges != rOther.m_DoReportBearingElevationsAtGirderEdges)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Options to Report Bearing Elevations at Girder Edges are different"), _T(""), _T("")));
    }
 
    //
@@ -4584,6 +4600,11 @@ Float64 GirderLibraryEntry::GetBeamWidth(pgsTypes::MemberEndType endType) const
    return m_pBeamFactory->GetBeamWidth(m_Dimensions,endType);
 }
 
+void GirderLibraryEntry::GetBeamTopWidth(pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+{
+   m_pBeamFactory->GetBeamTopWidth(m_Dimensions, endType, pLeftWidth, pRightWidth);
+}
+
 void GirderLibraryEntry::SetDiaphragmLayoutRules(const DiaphragmLayoutRules& rules)
 {
    m_DiaphragmLayoutRules = rules;
@@ -4705,6 +4726,7 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
 
    m_DragCoefficient = rOther.m_DragCoefficient;
    m_PrecamberLimit = rOther.m_PrecamberLimit;
+   m_DoReportBearingElevationsAtGirderEdges = rOther.m_DoReportBearingElevationsAtGirderEdges;
 }
 
 void GirderLibraryEntry::MakeAssignment(const GirderLibraryEntry& rOther)
@@ -5305,6 +5327,16 @@ Float64 GirderLibraryEntry::GetPrecamberLimit() const
 bool GirderLibraryEntry::CanPrecamber() const
 {
    return m_pBeamFactory->CanPrecamber();
+}
+
+void GirderLibraryEntry::SetDoReportBearingElevationsAtGirderEdges(bool doit)
+{
+   m_DoReportBearingElevationsAtGirderEdges = doit;
+}
+
+bool GirderLibraryEntry::GetDoReportBearingElevationsAtGirderEdges() const
+{
+   return m_DoReportBearingElevationsAtGirderEdges;
 }
 
 pgsCompatibilityData* GirderLibraryEntry::GetCompatibilityData() const

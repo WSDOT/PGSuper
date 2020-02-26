@@ -109,7 +109,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification
 
    pPara = new rptParagraph();
    (*pChapter) << pPara;
-   *pPara << _T("Web Offset is measured from and normal to the centerline girder") << rptNewLine;
+   *pPara << _T("Web Offset is measured from and normal to the centerline girder at top of girder") << rptNewLine;
    *pPara << _T("Station, Offset, and Elev are given for 10th points between bearings along the girder webs") << rptNewLine;
 
    //
@@ -256,8 +256,9 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
 
    pPara = new rptParagraph();
    (*pChapter) << pPara;
-   *pPara << _T("Design elevations are the deck surface elevations defined by the alignment, profile, and superelevations") << rptNewLine;
-   *pPara << _T("Finished elevations are the top of the finished girder, or overlay if applicable, including the effects of camber") << rptNewLine;
+   *pPara << _T("Offsets are measured from and normal to the left edge, centerline, and right edge of girder at top of girder.") << rptNewLine;
+   *pPara << _T("Design elevations are the deck surface elevations defined by the alignment, profile, and superelevations.") << rptNewLine;
+   *pPara << _T("Finished elevations are the top of the finished girder, or overlay if applicable, including the effects of camber.") << rptNewLine;
 
    GET_IFACE2(pBroker,ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pISpec);

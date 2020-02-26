@@ -102,17 +102,13 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType gdrIdx = (nGirders <= girderKey.girderIndex ? nGirders-1 : girderKey.girderIndex);
-
-      CSegmentKey allSegmentsKey(grpIdx, gdrIdx, ALL_SEGMENTS);
+      CSegmentKey allSegmentsKey(thisGirderKey, ALL_SEGMENTS);
       PoiList vPoi;
       pIPoi->GetPointsOfInterest(allSegmentsKey, poiRefAttribute, &vPoi);
 

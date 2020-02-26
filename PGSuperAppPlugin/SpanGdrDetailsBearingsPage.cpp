@@ -79,12 +79,12 @@ void CSpanGdrDetailsBearingsPage::UpdateLocalData()
    {
       if (brpierdat.m_PierIndex == m_StartPierIdx && (brpierdat.m_BPDType == BearingPierData::bpdAhead || brpierdat.m_BPDType == BearingPierData::bpdCL))
       {
-         m_Bearings[0] = brpierdat.m_BearingsForGirders[gidx];
+         m_Bearings[pgsTypes::metStart] = brpierdat.m_BearingsForGirders[gidx];
          nb++;
       }
       else if (brpierdat.m_PierIndex == m_EndPierIdx && (brpierdat.m_BPDType == BearingPierData::bpdBack || brpierdat.m_BPDType == BearingPierData::bpdCL))
       {
-         m_Bearings[1] = brpierdat.m_BearingsForGirders[gidx];
+         m_Bearings[pgsTypes::metEnd] = brpierdat.m_BearingsForGirders[gidx];
          nb++;
       }
    }
@@ -109,11 +109,11 @@ void CSpanGdrDetailsBearingsPage::SaveData()
             if (m_MyBearingType == pgsTypes::brtPier)
             {
                // copy pier data to all girders in bearing line
-               brpierdat.m_BearingsForGirders.assign(brpierdat.m_BearingsForGirders.size(), m_Bearings[0]);
+               brpierdat.m_BearingsForGirders.assign(brpierdat.m_BearingsForGirders.size(), m_Bearings[pgsTypes::metStart]);
             }
             else
             {
-               brpierdat.m_BearingsForGirders[m_GdrIdx] =  m_Bearings[0];
+               brpierdat.m_BearingsForGirders[m_GdrIdx] =  m_Bearings[pgsTypes::metStart];
             }
          }
          else if (brpierdat.m_PierIndex == m_EndPierIdx && brpierdat.m_BPDType == BearingPierData::bpdBack)
@@ -121,11 +121,11 @@ void CSpanGdrDetailsBearingsPage::SaveData()
             if (m_MyBearingType == pgsTypes::brtPier)
             {
                // copy pier data to all girders in bearing line
-               brpierdat.m_BearingsForGirders.assign(brpierdat.m_BearingsForGirders.size(), m_Bearings[1]);
+               brpierdat.m_BearingsForGirders.assign(brpierdat.m_BearingsForGirders.size(), m_Bearings[pgsTypes::metEnd]);
             }
             else
             {
-               brpierdat.m_BearingsForGirders[m_GdrIdx] =  m_Bearings[1];
+               brpierdat.m_BearingsForGirders[m_GdrIdx] =  m_Bearings[pgsTypes::metEnd];
             }
          }
       }
@@ -193,7 +193,7 @@ void CSpanGdrDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_BRG_TYPE, m_BearingInputData.m_BearingType);
 
    // First line of data
-   CBearingData2& B1Dat = m_Bearings[0];
+   CBearingData2& B1Dat = m_Bearings[pgsTypes::metStart];
 
    DDX_CBIndex(pDX, IDC_BRG_SHAPE_1, (int&)B1Dat.Shape);
    DDX_CBItemData(pDX, IDC_BRG_COUNT_1, B1Dat.BearingCount);
@@ -204,7 +204,7 @@ void CSpanGdrDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag( pDX, IDC_BRG_LENGTH_1, IDC_BRG_LENGTH_UNIT, B1Dat.Length, pDisplayUnits->GetComponentDimUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_BRG_LENGTH_1, B1Dat.Length, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BRG_LENGTH_1, B1Dat.Length, pDisplayUnits->GetComponentDimUnit() );
    if (!(pDX->m_bSaveAndValidate && B1Dat.Shape==bsRound))
    {
       DDX_UnitValueAndTag( pDX, IDC_BRG_WIDTH_1, IDC_BRG_WIDTH_UNIT, B1Dat.Width, pDisplayUnits->GetComponentDimUnit() );
@@ -221,7 +221,7 @@ void CSpanGdrDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    DDV_UnitValueZeroOrMore(pDX, IDC_BRG_SOLEPLATE_1, B1Dat.SolePlateHeight, pDisplayUnits->GetComponentDimUnit() );
 
    // Second line of data
-   CBearingData2& B2Dat = m_Bearings[1];
+   CBearingData2& B2Dat = m_Bearings[pgsTypes::metEnd];
 
    DDX_CBIndex(pDX, IDC_BRG_SHAPE_2, (int&)B2Dat.Shape);
    DDX_CBItemData(pDX, IDC_BRG_COUNT_2, B2Dat.BearingCount);
@@ -232,7 +232,7 @@ void CSpanGdrDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_UnitValueAndTag( pDX, IDC_BRG_LENGTH_2, IDC_BRG_LENGTH_UNIT, B2Dat.Length, pDisplayUnits->GetComponentDimUnit() );
-   DDV_UnitValueGreaterThanZero(pDX, IDC_BRG_LENGTH_2, B2Dat.Length, pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_BRG_LENGTH_2, B2Dat.Length, pDisplayUnits->GetComponentDimUnit() );
    if (!(pDX->m_bSaveAndValidate && B2Dat.Shape==bsRound))
    {
       DDX_UnitValueAndTag( pDX, IDC_BRG_WIDTH_2, IDC_BRG_WIDTH_UNIT, B2Dat.Width, pDisplayUnits->GetComponentDimUnit() );

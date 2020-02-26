@@ -54,6 +54,7 @@
 #include <IFace\DocumentType.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\AgeAdjustedMaterial.h>
+#include <IFace\Allowables.h>
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"

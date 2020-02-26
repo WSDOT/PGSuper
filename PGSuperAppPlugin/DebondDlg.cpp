@@ -169,7 +169,7 @@ BOOL CGirderDescDebondPage::OnSetActive()
 
    if (pParent->m_pSegment->Strands.GetAdjustableStrandType() != pgsTypes::asStraight)
    {
-      note += _T(" Harped strands are not shown.");
+      note += _T("\n  Harped strands are not shown.");
    }
 
    if (bCanDebond)
@@ -260,7 +260,7 @@ void CGirderDescDebondPage::OnPaint()
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
 
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, pgsTypes::hspZeroHaunch, &shape);
+   pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, &shape);
 
    CComQIPtr<IXYPosition> position(shape);
    CComPtr<IPoint2d> lp;

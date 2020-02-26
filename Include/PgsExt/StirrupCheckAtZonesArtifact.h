@@ -189,24 +189,28 @@ public:
    void SetSplittingZoneLengthFactor(Float64 bzlf);
    bool   Passed() const;
 
-   Float64 GetH(pgsTypes::MemberEndType end) const;
-   void SetH(pgsTypes::MemberEndType end,Float64 h);
-   Float64 GetSplittingZoneLength(pgsTypes::MemberEndType end) const;
-   void SetSplittingZoneLength(pgsTypes::MemberEndType end,Float64 bzl);
-   Float64 GetFs(pgsTypes::MemberEndType end) const;
-   void SetFs(pgsTypes::MemberEndType end,Float64 fs);
-   Float64 GetAvs(pgsTypes::MemberEndType end) const;
-   void SetAvs(pgsTypes::MemberEndType end,Float64 avs);
-   Float64 GetAps(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType) const;
-   void SetAps(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType, Float64 aps);
-   Float64 GetFpj(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType) const;
-   void SetFpj(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType, Float64 fpj);
-   Float64 GetLossesAfterTransfer(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType) const;
-   void SetLossesAfterTransfer(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType, Float64 dFpT);
-   Float64 GetSplittingForce(pgsTypes::MemberEndType end,pgsTypes::StrandType strandType) const;
-   Float64 GetTotalSplittingForce(pgsTypes::MemberEndType end) const;
-   Float64 GetSplittingResistance(pgsTypes::MemberEndType end) const;
-   void SetSplittingResistance(pgsTypes::MemberEndType end,Float64 p);
+   Float64 GetH(pgsTypes::MemberEndType endType) const;
+   void SetH(pgsTypes::MemberEndType endType,Float64 h);
+   Float64 GetShearWidth(pgsTypes::MemberEndType endType) const;
+   void SetShearWidth(pgsTypes::MemberEndType endType, Float64 bv);
+   Float64 GetSplittingZoneLength(pgsTypes::MemberEndType endType) const;
+   void SetSplittingZoneLength(pgsTypes::MemberEndType endType,Float64 bzl);
+   Float64 GetFs(pgsTypes::MemberEndType endType) const;
+   void SetFs(pgsTypes::MemberEndType endType,Float64 fs);
+   Float64 GetAvs(pgsTypes::MemberEndType endType) const;
+   void SetAvs(pgsTypes::MemberEndType endType,Float64 avs);
+   Float64 GetAps(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType) const;
+   void SetAps(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType, Float64 aps);
+   Float64 GetFpj(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType) const;
+   void SetFpj(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType, Float64 fpj);
+   Float64 GetLossesAfterTransfer(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType) const;
+   void SetLossesAfterTransfer(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType, Float64 dFpT);
+   Float64 GetSplittingForce(pgsTypes::MemberEndType endType,pgsTypes::StrandType strandType) const;
+   Float64 GetTotalSplittingForce(pgsTypes::MemberEndType endType) const;
+   Float64 GetSplittingResistance(pgsTypes::MemberEndType endType) const;
+   void SetSplittingResistance(pgsTypes::MemberEndType endType,Float64 p);
+   Float64 GetUHPCStrengthAtFirstCrack() const;
+   void SetUHPCStrengthAtFirstCrack(Float64 f1);
    bool Passed(pgsTypes::MemberEndType end) const;
 
    // GROUP: ACCESS
@@ -231,10 +235,12 @@ private:
    bool m_IsApplicable;
    pgsTypes::SplittingDirection m_SplittingDirection;
    Float64 m_SplittingZoneLengthFactor;
+   Float64 m_f1;
 
    // array index is pgsTypes::MemberEndType
-   std::array<Float64,2> m_SplittingZoneLength;
+   std::array<Float64, 2> m_SplittingZoneLength;
    std::array<Float64, 2> m_H;
+   std::array<Float64, 2> m_bv;
    std::array<Float64, 2> m_Avs;
    std::array<std::array<Float64, 3>, 2> m_Aps;  //[endType][strandType]
    std::array<std::array<Float64, 3>, 2> m_Fpj; //[endType][strandType]

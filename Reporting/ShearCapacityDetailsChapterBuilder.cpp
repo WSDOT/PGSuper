@@ -103,14 +103,14 @@ void write_btsummary_table(IBroker* pBroker,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
-                       const std::_tstring& strStageName,pgsTypes::LimitState ls);
+                       const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC);
 
 void write_ex_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
-                    const std::_tstring& strStageName,pgsTypes::LimitState ls);
+                    const std::_tstring& strStageName,pgsTypes::LimitState ls, bool bUHPC);
 
 void write_Vs_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
@@ -133,6 +133,14 @@ void write_Vc_table(IBroker* pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
+
+void write_Vf_table(IBroker* pBroker,
+                    IEAFDisplayUnits* pDisplayUnits,
+                    const PoiList& vPoi,
+                    rptChapter* pChapter,
+                    IntervalIndexType intervalIdx,
+                    const std::_tstring& strStageName, pgsTypes::LimitState ls);
+
 void write_Vci_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
                      const PoiList& vPoi,
@@ -152,14 +160,14 @@ void write_Vn_table(IBroker* pBroker,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
-                    const std::_tstring& strStageName,pgsTypes::LimitState ls);
+                    const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC);
 
 void write_Avs_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
-                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
+                     const std::_tstring& strStageName,pgsTypes::LimitState ls, bool bUHPC);
 
 void write_bar_spacing_table(IBroker* pBroker,
                      IEAFDisplayUnits* pDisplayUnits,
@@ -234,166 +242,148 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
 
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
+   GET_IFACE2(pBroker, IMaterials, pMaterial);
+
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
+   std::_tstring stage_name(pIntervals->GetDescription(intervalIdx));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey, &vGirderKeys);
+   for(const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex));
-      GirderIndexType lastGirderIdx  = Min(nGirders-1,(girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx));
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
+      rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+
+
+      bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
+
+      // vBasicPoi does not contain CS for shear POI
+      PoiList vBasicPoi;
+      pPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), &vBasicPoi);;
+      pPoi->RemovePointsOfInterest(vBasicPoi,POI_BOUNDARY_PIER);
+
+      std::vector<pgsTypes::LimitState> vLimitStates;
+      if ( bDesign )
       {
-         CGirderKey thisGirderKey(grpIdx,gdrIdx);
-
-         IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
-         std::_tstring stage_name( pIntervals->GetDescription(intervalIdx) );
-
-         rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-         *pChapter << pPara;
-
-         bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
-
-         // vBasicPoi does not contain CS for shear POI
-         PoiList vBasicPoi;
-         pPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), &vBasicPoi);;
-         pPoi->RemovePointsOfInterest(vBasicPoi,POI_BOUNDARY_PIER);
-
-         std::vector<pgsTypes::LimitState> vLimitStates;
-         if ( bDesign )
+         vLimitStates.push_back(pgsTypes::StrengthI);
+         if ( bPermit )
          {
-            vLimitStates.push_back(pgsTypes::StrengthI);
-            if ( bPermit )
+            vLimitStates.push_back(pgsTypes::StrengthII);
+         }
+      }
+
+      if ( bRating )
+      {
+         GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_Inventory);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_Operating);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_LegalRoutine);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_LegalSpecial);
+         }
+
+         if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency))
+         {
+            vLimitStates.push_back(pgsTypes::StrengthI_LegalEmergency);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthII_PermitRoutine);
+         }
+
+         if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Special) )
+         {
+            vLimitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
+         }
+      }
+
+      for (const auto& ls : vLimitStates)
+      {
+         PoiList vCSPoi;
+         pPoi->GetCriticalSections(ls, thisGirderKey,&vCSPoi);
+         PoiList vPoi;
+         pPoi->MergePoiLists(vBasicPoi, vCSPoi,&vPoi); // merge, sort, and remove duplicates
+
+         pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(vPoi.front().get().GetSegmentKey());
+         bool bUHPC = (concType == pgsTypes::UHPC) ? true : false;
+
+         if (1 < vLimitStates.size())
+         {
+            rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
+            *pChapter << pParagraph;
+            pParagraph->SetName(GetLimitStateString(ls));
+         }
+
+         write_shear_dimensions_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+
+         if ( shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001 )
+         {
+            write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_fpc_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Fe_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
+            write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
+            write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            if (bUHPC)
             {
-               vLimitStates.push_back(pgsTypes::StrengthII);
+               write_Vf_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
+            }
+            write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+         }
+         else if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
+         {
+            write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
+            write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
+            write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            if (bUHPC)
+            {
+               write_Vf_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
+            }
+            write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+         }
+         else if ( shear_capacity_method == scmVciVcw )
+         {
+            write_fpce_table            (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vci_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_fpc_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vcw_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_theta_table           (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
+            if (bUHPC)
+            {
+               write_Vf_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
             }
          }
 
-         if ( bRating )
-         {
-            GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_Inventory);
-            }
+         write_Vn_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls, bUHPC);
 
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_Operating);
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Routine) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_LegalRoutine);
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Special) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_LegalSpecial);
-            }
-
-            if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency) && pRatingSpec->RateForShear(pgsTypes::lrLegal_Emergency))
-            {
-               vLimitStates.push_back(pgsTypes::StrengthI_LegalEmergency);
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Routine) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthII_PermitRoutine);
-            }
-
-            if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) && pRatingSpec->RateForShear(pgsTypes::lrPermit_Special) )
-            {
-               vLimitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
-            }
-         }
-
-         std::vector<pgsTypes::LimitState>::iterator iter;
-         for ( iter = vLimitStates.begin(); iter != vLimitStates.end(); iter++ )
-         {
-            pgsTypes::LimitState ls = *iter;
-
-            PoiList vCSPoi;
-            pPoi->GetCriticalSections(ls, thisGirderKey,&vCSPoi);
-            PoiList vPoi;
-            pPoi->MergePoiLists(vBasicPoi, vCSPoi,&vPoi); // merge, sort, and remove duplicates
-
-            write_shear_dimensions_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-
-            if ( shear_capacity_method == scmBTTables || shear_capacity_method == scmWSDOT2001 )
-            {
-               write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_fpc_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Fe_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            }
-            else if ( shear_capacity_method == scmBTEquations || shear_capacity_method == scmWSDOT2007 )
-            {
-               write_shear_stress_table    (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_fpo_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_ex_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_btsummary_table       (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vc_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            }
-            else if ( shear_capacity_method == scmVciVcw )
-            {
-               write_fpce_table            (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vci_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_fpc_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vcw_table             (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_theta_table           (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_Vs_table              (pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-            }
-
-            write_Vn_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-
-            if ( bDesign )
-            {
-               write_Avs_table(        pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               write_bar_spacing_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-
-               if ( bPermit )
-               {
-                  write_Avs_table(        pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-                  write_bar_spacing_table(pBroker, pDisplayUnits, vPoi,  pChapter, intervalIdx, stage_name, ls);
-               }
-            }
-         }
-
-         /////////////////////////////////////////////
-         // Horizontal interface shear - only reported for design
-         /////////////////////////////////////////////
-         if ( bDesign )
-         {
-            GET_IFACE2(pBroker,IBridge,pBridge);
-            if ( pBridge->IsCompositeDeck() )
-            {
-               pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-               pPara->SetName(_T("Horizontal Interface Shear"));
-               *pPara << pPara->GetName() << rptNewLine;
-               *pChapter << pPara;
-               CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthI);
-
-               if ( bPermit )
-               {
-                  CInterfaceShearDetails::Build(pBroker, pChapter, thisGirderKey, pDisplayUnits, intervalIdx,  pgsTypes::StrengthII);
-               }
-            }
-         }
-      } // next girder
+         write_Avs_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls, bUHPC);
+         write_bar_spacing_table(pBroker, pDisplayUnits, vPoi, pChapter, intervalIdx, stage_name, ls);
+      }
    } // next group
 
    return pChapter;
@@ -436,11 +426,9 @@ void write_shear_dimensions_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   pParagraph->SetName(GetLimitStateString(ls));
    *pParagraph << _T("Effective Shear Dimensions for ") << GetLimitStateString(ls) << _T(" [From Article ") << LrfdCw8th(_T("5.8.2.7"),_T("5.7.2.6")) << _T("]") << rptNewLine;
    
    CGirderKey girderKey = vPoi.front().get().GetSegmentKey();
-
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -572,11 +560,29 @@ void write_shear_stress_table(IBroker* pBroker,
 
    *pParagraph << rptNewLine;
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
    CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
-   ColumnIndexType nColumns = (nDucts == 0 ? 7 : 9);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+
+   ColumnIndexType nColumns = 7;
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
+   {
+      nColumns++;
+   }
+
+   if (0 < nMaxSegmentDucts)
+   {
+      nColumns++;
+   }
+
+   if (0 < nGirderDucts)
+   {
+      nColumns++;
+   }
 
    CString strTitle;
    strTitle.Format(_T("Factored Shear Stresses for %s"),GetLimitStateString(ls));
@@ -590,15 +596,41 @@ void write_shear_stress_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
+   {
+      pParagraph = new rptParagraph;
+      *pChapter << pParagraph;
+      *pParagraph << Sub2(_T("V"), _T("ps")) << _T(" = Vertical Component of Prestress from Strands") << rptNewLine;
+      if (0 < nMaxSegmentDucts)
+      {
+         *pParagraph << Sub2(_T("V"), _T("pts")) << _T(" = Vertical Component of Prestress from Segment Tendons") << rptNewLine;
+      }
+
+      if (0 < nGirderDucts)
+      {
+         *pParagraph << Sub2(_T("V"), _T("ptg")) << _T(" = Vertical Component of Prestress from Girder Tendons") << rptNewLine;
+      }
+   }
+
+
    ColumnIndexType col = 0;
    (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0,col++) << symbol(phi);
    (*table)(0,col++) << COLHDR(_T("V") << Sub(_T("u")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   
-   if ( 0 < nDucts )
+
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
    {
-      (*table)(0,col++) << COLHDR(_T("V") << Sub(_T("ps")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-      (*table)(0,col++) << COLHDR(_T("V") << Sub(_T("pt")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+      (*table)(0, col++) << COLHDR(_T("V") << Sub(_T("ps")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   }
+   
+   if (0 < nMaxSegmentDucts)
+   {
+      (*table)(0, col++) << COLHDR(_T("V") << Sub(_T("pts")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   }
+
+   if ( 0 < nGirderDucts )
+   {
+      (*table)(0,col++) << COLHDR(_T("V") << Sub(_T("ptg")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
 
    (*table)(0,col++) << COLHDR(_T("V") << Sub(_T("p")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
@@ -632,11 +664,20 @@ void write_shear_stress_table(IBroker* pBroker,
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*table)(row,col++) << scd.Phi;
       (*table)(row,col++) << force.SetValue( scd.Vu );
-      
-      if ( 0 < nDucts )
+
+      if (0 < (nMaxSegmentDucts + nGirderDucts))
       {
-         (*table)(row,col++) << force.SetValue( scd.Vps );
-         (*table)(row,col++) << force.SetValue( scd.Vpt );
+         (*table)(row, col++) << force.SetValue(scd.Vps);
+      }
+
+      if (0 < nMaxSegmentDucts)
+      {
+         (*table)(row, col++) << force.SetValue(scd.VptSegment);
+      }
+
+      if (0 < nGirderDucts)
+      {
+         (*table)(row, col++) << force.SetValue(scd.VptGirder);
       }
 
       (*table)(row,col++) << force.SetValue( scd.Vp );
@@ -685,14 +726,28 @@ void write_fpc_table(IBroker* pBroker,
 
    *pParagraph << rptNewLine;
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi,&vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
    {
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-      ColumnIndexType nCols = (0 == nDucts ? 8 : 10);
+      DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+      DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+
+      ColumnIndexType nCols = 8;
+      if (0 < nMaxSegmentDucts)
+      {
+         nCols += 2;
+      }
+      
+      if (0 < nGirderDucts)
+      {
+         nCols += 2;
+      }
 
       if ( 1 < vGirderKeys.size() )
       {
@@ -712,7 +767,7 @@ void write_fpc_table(IBroker* pBroker,
       ColumnIndexType col = 0;
 
       (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-      if ( 0 == nDucts )
+      if (nMaxSegmentDucts == 0 && nGirderDucts == 0 )
       {
          (*table)(0,col++) << COLHDR(_T("e"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
          (*table)(0,col++) << COLHDR(_T("P"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
@@ -721,8 +776,18 @@ void write_fpc_table(IBroker* pBroker,
       {
          (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("ps")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
          (*table)(0,col++) << COLHDR(Sub2(_T("P"),_T("ps")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
-         (*table)(0,col++) << COLHDR(Sub2(_T("e"),_T("pt")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-         (*table)(0,col++) << COLHDR(Sub2(_T("P"),_T("pt")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
+
+         if (0 < nMaxSegmentDucts)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("pts")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("P"), _T("pts")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+         }
+
+         if (0 < nGirderDucts)
+         {
+            (*table)(0, col++) << COLHDR(Sub2(_T("e"), _T("ptg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+            (*table)(0, col++) << COLHDR(Sub2(_T("P"), _T("ptg")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+         }
       }
       (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
       (*table)(0,col++) << COLHDR(Sub2(_T("I"),_T("g")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit() );
@@ -740,18 +805,15 @@ void write_fpc_table(IBroker* pBroker,
 
       //location.IncludeSpanAndGirder(span == ALL_SPANS);
 
-      GET_IFACE2(pBroker,IBridge,pBridge);
-      
       RowIndexType row = table->GetNumberOfHeaderRows();
 
-      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
       GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+
       for (const pgsPointOfInterest& poi : vPoi)
       {
          col = 0;
 
          const CSegmentKey& segmentKey(poi.GetSegmentKey());
-
          if ( CGirderKey(segmentKey) != girderKey )
          {
             continue;
@@ -769,7 +831,7 @@ void write_fpc_table(IBroker* pBroker,
          pShearCap->GetFpcDetails(poi, nullptr, &fpcd);
 
          (*table)(row,col++) << location.SetValue(POI_SPAN, poi );
-         if ( 0 == nDucts )
+         if (nMaxSegmentDucts == 0 && nGirderDucts == 0)
          {
             (*table)(row,col++) << dim.SetValue( fpcd.eps );
             (*table)(row,col++) << force.SetValue( fpcd.Pps );
@@ -778,8 +840,18 @@ void write_fpc_table(IBroker* pBroker,
          {
             (*table)(row,col++) << dim.SetValue( fpcd.eps );
             (*table)(row,col++) << force.SetValue( fpcd.Pps );
-            (*table)(row,col++) << dim.SetValue( fpcd.ept );
-            (*table)(row,col++) << force.SetValue( fpcd.Ppt );
+
+            if (0 < nMaxSegmentDucts)
+            {
+               (*table)(row, col++) << dim.SetValue(fpcd.eptSegment);
+               (*table)(row, col++) << force.SetValue(fpcd.PptSegment);
+            }
+
+            if (0 < nGirderDucts)
+            {
+               (*table)(row, col++) << dim.SetValue(fpcd.eptGirder);
+               (*table)(row, col++) << force.SetValue(fpcd.PptGirder);
+            }
          }
          (*table)(row,col++) << area.SetValue( fpcd.Ag );
          (*table)(row,col++) << inertia.SetValue( fpcd.Ig );
@@ -942,7 +1014,8 @@ void write_fpo_table(IBroker* pBroker,
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,   pDisplayUnits->GetStressUnit(),    true );
@@ -957,7 +1030,8 @@ void write_fpo_table(IBroker* pBroker,
       GET_IFACE2(pBroker,IMaterials,pMaterial);
       for (const auto& girderKey : vGirderKeys)
       {
-         DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+         DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+         DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
          if ( 1 < vGirderKeys.size() )
          {
@@ -967,11 +1041,6 @@ void write_fpo_table(IBroker* pBroker,
          std::vector<CSegmentKey> vSegmentKeys;
          pPoi->GetSegmentKeys(vPoi, girderKey, &vSegmentKeys);
 
-         if ( 0 < nDucts )
-         {
-            *pParagraph << _T("Strands") << rptNewLine;
-         }
-
          for (const auto& segmentKey : vSegmentKeys)
          {
             if ( 1 < vSegmentKeys.size() )
@@ -979,22 +1048,44 @@ void write_fpo_table(IBroker* pBroker,
                *pParagraph << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
             }
 
+
+            if (0 < (nMaxSegmentDucts + nGirderDucts))
+            {
+               *pParagraph << _T("Strands") << rptNewLine;
+            }
             const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
             Kps = 0.70;
-            *pParagraph << italic(ON) << Sub2(_T("f"),_T("po")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
+
+            if (0 < (nMaxSegmentDucts + nGirderDucts))
+            {
+               *pParagraph << RPT_STRESS(_T("po ps")) << _T(" = 0.70") << RPT_FPU;
+            }
+            else
+            {
+               *pParagraph << RPT_STRESS(_T("po")) << _T(" = 0.70") << RPT_FPU;
+            }
 
             *pParagraph << _T(" = ") << stress.SetValue(Kps*pStrand->GetUltimateStrength()) << rptNewLine;
             
+            if (0 < nMaxSegmentDucts)
+            {
+               *pParagraph << _T("Segment Tendons") << rptNewLine;
+               const matPsStrand* pTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
+               Kpt = 0.70;
+               *pParagraph << RPT_STRESS(_T("po pts")) << _T(" = 0.70") << RPT_FPU;
+               *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
+            }
+
             *pParagraph << rptNewLine;
          }
 
-         if ( 0 < nDucts )
+         if ( 0 < nGirderDucts )
          {
-            *pParagraph << _T("Tendons") << rptNewLine;
-            const matPsStrand* pTendon = pMaterial->GetTendonMaterial(girderKey);
+            *pParagraph << _T("Girder Tendons") << rptNewLine;
+            const matPsStrand* pTendon = pMaterial->GetGirderTendonMaterial(girderKey);
             Kpt = 0.70;
-             *pParagraph << italic(ON) << Sub2(_T("f"),_T("po pt")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
-                         *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
+            *pParagraph << italic(ON) << Sub2(_T("f"),_T("po ptg")) << _T(" = 0.70") << Sub2(_T("f"),_T("pu")) << italic(OFF);
+            *pParagraph << _T(" = ") << stress.SetValue(Kpt*pTendon->GetUltimateStrength()) << rptNewLine;
          }
       }
    }
@@ -1007,8 +1098,19 @@ void write_fpo_table(IBroker* pBroker,
 
       for (const auto& girderKey : vGirderKeys)
       {
-         DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-         ColumnIndexType nCols = (0 == nDucts ? 6 : 9);
+         DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+         DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+
+         ColumnIndexType nCols = 6;
+         if (0 < nMaxSegmentDucts)
+         {
+            nCols += 3;
+         }
+
+         if (0 < nGirderDucts)
+         {
+            nCols += 3;
+         }
 
          rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols);
 
@@ -1021,37 +1123,64 @@ void write_fpo_table(IBroker* pBroker,
 
          ColumnIndexType col = 0;
          (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-         if ( 0 == nDucts )
+         if ( 0 == nMaxSegmentDucts+nGirderDucts )
          {
             (*table)(0,col++) << COLHDR( RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
          else
          {
-            (*table)(0,col++) << COLHDR( italic(ON) << Sub2(_T("f"),_T("pe ps")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-            (*table)(0,col++) << COLHDR( italic(ON) << Sub2(_T("f"),_T("pe pt")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+            (*table)(0, col++) << COLHDR(italic(ON) << Sub2(_T("f"), _T("pe ps")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+
+            if (nMaxSegmentDucts)
+            {
+               (*table)(0, col++) << COLHDR(italic(ON) << Sub2(_T("f"), _T("pe pts")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            }
+
+            if (nGirderDucts)
+            {
+               (*table)(0, col++) << COLHDR(italic(ON) << Sub2(_T("f"), _T("pe ptg")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            }
          }
 
          (*table)(0,col++) << COLHDR( RPT_FPC, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         if ( 0 == nDucts )
+         if ( 0 == (nMaxSegmentDucts + nGirderDucts))
          {
             (*table)(0,col++) << COLHDR( RPT_EP,  rptStressUnitTag, pDisplayUnits->GetModEUnit() );
          }
          else
          {
             (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("ps")),  rptStressUnitTag, pDisplayUnits->GetModEUnit() );
-            (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("pt")),  rptStressUnitTag, pDisplayUnits->GetModEUnit() );
+
+            if (nMaxSegmentDucts)
+            {
+               (*table)(0, col++) << COLHDR(Sub2(_T("E"), _T("pts")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+            }
+
+            if (nGirderDucts)
+            {
+               (*table)(0, col++) << COLHDR(Sub2(_T("E"), _T("ptg")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+            }
          }
          
          (*table)(0,col++) << COLHDR( RPT_EC,  rptStressUnitTag, pDisplayUnits->GetModEUnit() );
 
-         if ( 0 == nDucts )
+         if ( 0 == (nMaxSegmentDucts + nGirderDucts))
          {
             (*table)(0,col++) << COLHDR( RPT_FPO, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
          }
          else
          {
             (*table)(0,col++) << COLHDR( italic(ON) << Sub2(_T("f"),_T("po ps")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-            (*table)(0,col++) << COLHDR( italic(ON) << Sub2(_T("f"),_T("po pt")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+
+            if (nMaxSegmentDucts)
+            {
+               (*table)(0, col++) << COLHDR(italic(ON) << Sub2(_T("f"), _T("po pts")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            }
+
+            if (nGirderDucts)
+            {
+               (*table)(0, col++) << COLHDR(italic(ON) << Sub2(_T("f"), _T("po ptg")) << italic(OFF), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+            }
          }
 
          INIT_UV_PROTOTYPE( rptPointOfInterest,  location, pDisplayUnits->GetSpanLengthUnit(),false );
@@ -1086,26 +1215,41 @@ void write_fpo_table(IBroker* pBroker,
 
             (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
             (*table)(row,col++) << stress.SetValue( scd.fpeps );
-            
-            if ( 0 < nDucts )
+
+            if (0 < nMaxSegmentDucts)
             {
-               (*table)(row,col++) << stress.SetValue( scd.fpept );
+               (*table)(row, col++) << stress.SetValue(scd.fpeptSegment);
+            }
+
+            if (0 < nGirderDucts)
+            {
+               (*table)(row, col++) << stress.SetValue(scd.fpeptGirder);
             }
 
             (*table)(row,col++) << stress.SetValue( scd.fpc );
             (*table)(row,col++) << mod_e.SetValue( scd.Eps );
 
-            if ( 0 < nDucts )
+            if (0 < nMaxSegmentDucts)
             {
-               (*table)(row,col++) << mod_e.SetValue( scd.Ept );
+               (*table)(row, col++) << mod_e.SetValue(scd.EptSegment);
+            }
+
+            if (0 < nGirderDucts)
+            {
+               (*table)(row, col++) << mod_e.SetValue(scd.EptGirder);
             }
 
             (*table)(row,col++) << mod_e.SetValue( scd.Ec );
             (*table)(row,col++) << stress.SetValue( scd.fpops );
 
-            if ( 0 < nDucts )
+            if (0 < nMaxSegmentDucts)
             {
-               (*table)(row,col++) << stress.SetValue( scd.fpopt );
+               (*table)(row, col++) << stress.SetValue(scd.fpoptSegment);
+            }
+
+            if (0 < nGirderDucts)
+            {
+               (*table)(row, col++) << stress.SetValue(scd.fpoptGirder);
             }
 
             row++;
@@ -1143,20 +1287,34 @@ void write_Fe_table(IBroker* pBroker,
    *pParagraph << _T("This calculation is applicable only when ") << symbol(epsilon) << Sub(_T("x")) << _T(" is negative.") << rptNewLine;
    *pParagraph << rptNewLine;
 
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi,&vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
    {
-      if ( 1 < vGirderKeys.size() )
+      if (1 < vGirderKeys.size())
       {
          *pParagraph << _T("Girder ") << LABEL_GIRDER(girderKey.girderIndex) << rptNewLine;
       }
 
-      DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-      ColumnIndexType nCols = (0 == nDucts ? 8 : 10);
+      DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);;
+      DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
+      ColumnIndexType nCols = 8;
+      if (0 < nMaxSegmentDucts)
+      {
+         nCols++;
+      }
+
+      if (0 < nGirderDucts)
+      {
+         nCols++;
+      }
+      
       rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols);
 
       *pParagraph << table << rptNewLine;
@@ -1168,11 +1326,19 @@ void write_Fe_table(IBroker* pBroker,
       (*table)(0,col++) << COLHDR( RPT_AS, rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
       (*table)(0,col++) << COLHDR( RPT_EPS, rptStressUnitTag, pDisplayUnits->GetModEUnit() );
       (*table)(0,col++) << COLHDR( RPT_APS, rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      if ( 0 < nDucts )
+
+      if (0 < nMaxSegmentDucts)
       {
-         (*table)(0,col++) << COLHDR( RPT_EPT, rptStressUnitTag, pDisplayUnits->GetModEUnit() );
-         (*table)(0,col++) << COLHDR( RPT_APT, rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+         (*table)(0, col++) << COLHDR(RPT_EPT << Sub(_T("s")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+         (*table)(0, col++) << COLHDR(RPT_APT << Sub(_T("s")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
       }
+
+      if ( 0 < nGirderDucts )
+      {
+         (*table)(0,col++) << COLHDR( RPT_EPT << Sub(_T("g")), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
+         (*table)(0,col++) << COLHDR( RPT_APT << Sub(_T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+      }
+
       (*table)(0,col++) << COLHDR( RPT_EC, rptStressUnitTag, pDisplayUnits->GetModEUnit() );
       (*table)(0,col++) << COLHDR( RPT_AC, rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
       (*table)(0,col++) << _T("F") << Sub(symbol(epsilon));
@@ -1185,7 +1351,6 @@ void write_Fe_table(IBroker* pBroker,
 
       INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-      GET_IFACE2(pBroker,IBridge,pBridge);
 
       RowIndexType row = table->GetNumberOfHeaderRows();
       GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -1220,11 +1385,19 @@ void write_Fe_table(IBroker* pBroker,
             (*table)(row,col++) << _T("-");
             (*table)(row,col++) << _T("-"); 
             (*table)(row,col++) << _T("-");
-            if ( 0 < nDucts )
+
+            if (0 < nMaxSegmentDucts)
+            {
+               (*table)(row, col++) << _T("-");
+               (*table)(row, col++) << _T("-");
+            }
+
+            if ( 0 < nGirderDucts )
             {
                (*table)(row,col++) << _T("-"); 
                (*table)(row,col++) << _T("-");
             }
+
             (*table)(row,col++) << _T("-"); 
             (*table)(row,col++) << _T("-"); 
             (*table)(row,col++) << _T("-"); 
@@ -1235,10 +1408,17 @@ void write_Fe_table(IBroker* pBroker,
             (*table)(row,col++) << area.SetValue( scd.As );
             (*table)(row,col++) << mod_e.SetValue( scd.Eps );
             (*table)(row,col++) << area.SetValue( scd.Aps );
-            if ( 0 < nDucts )
+
+            if (0 < nMaxSegmentDucts)
             {
-               (*table)(row,col++) << mod_e.SetValue( scd.Ept );
-               (*table)(row,col++) << area.SetValue( scd.Apt );
+               (*table)(row, col++) << mod_e.SetValue(scd.EptSegment);
+               (*table)(row, col++) << area.SetValue(scd.AptSegment);
+            }
+
+            if ( 0 < nGirderDucts )
+            {
+               (*table)(row,col++) << mod_e.SetValue( scd.EptGirder );
+               (*table)(row,col++) << area.SetValue( scd.AptGirder );
             }
             (*table)(row,col++) << mod_e.SetValue( scd.Ec );
             (*table)(row,col++) << area.SetValue( scd.Ac );
@@ -1255,18 +1435,28 @@ void write_ex_table(IBroker* pBroker,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
-                    const std::_tstring& strStageName,pgsTypes::LimitState ls)
+                    const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC)
 {
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter1999 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2000Interims ? true : false );
-   bool bAfter2003 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SecondEditionWith2002Interims ? true : false );
-   bool bAfter2004 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEditionWith2005Interims  ? true : false );
-   bool bAfter2007 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::FourthEditionWith2008Interims ? true : false );
-   bool bAfter2009 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::FifthEdition2010 ? true : false );
-   bool bAfter2016 = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::SeventhEditionWith2016Interims ? true : false );
+   auto specType = pSpecEntry->GetSpecificationType();
+   bool bAfter1999 = ( lrfdVersionMgr::SecondEditionWith2000Interims  <= specType ? true : false );
+   bool bAfter2003 = ( lrfdVersionMgr::SecondEditionWith2002Interims  <= specType ? true : false );
+   bool bAfter2004 = ( lrfdVersionMgr::ThirdEditionWith2005Interims   <= specType ? true : false );
+   bool bAfter2007 = ( lrfdVersionMgr::FourthEditionWith2008Interims  <= specType ? true : false );
+   bool bAfter2009 = ( lrfdVersionMgr::FifthEdition2010               <= specType ? true : false );
+   bool bAfter2016 = ( lrfdVersionMgr::SeventhEditionWith2016Interims <= specType ? true : false );
    ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+
+
+   CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
+
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
+
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    rptParagraph* pParagraph;
 
@@ -1351,6 +1541,11 @@ void write_ex_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
+   if (bUHPC || pSpecEntry->LimitNetTensionStrainToPositiveValues())
+   {
+      *pParagraph << _T("When the computed strain is negative, it is taken as zero (LRFD 5.7.3.4.1)") << rptNewLine;
+   }
+
    if ( !bAfter1999 )
    {
       *pParagraph << Sub2(symbol(epsilon),_T("x")) << _T(" includes ") << Sub2(_T("F"),symbol(epsilon)) << _T(" when applicable") << rptNewLine;
@@ -1371,13 +1566,19 @@ void write_ex_table(IBroker* pBroker,
       nCol += 2;
    }
 
-
-   GET_IFACE2(pBroker,ITendonGeometry,pTendonGeom);
-   CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-   if ( 0 < nDucts )
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
    {
-      nCol += 4;
+      nCol++;
+   }
+
+   if (0 < nMaxSegmentDucts)
+   {
+      nCol += 3;
+   }
+
+   if (0 < nGirderDucts)
+   {
+      nCol += 3;
    }
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
@@ -1392,6 +1593,26 @@ void write_ex_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
+   if (0 < (nMaxSegmentDucts + nGirderDucts))
+   {
+      pParagraph = new rptParagraph;
+      *pChapter << pParagraph;
+      *pParagraph << Sub2(_T("V"), _T("ps")) << _T(" = Vertical Component of Prestress from Strands") << rptNewLine;
+      if (0 < nMaxSegmentDucts)
+      {
+         *pParagraph << Sub2(_T("V"), _T("pts")) << _T(" = Vertical Component of Prestress from Segment Tendons") << rptNewLine;
+         *pParagraph << Sub2(_T("A"), _T("pts")) << _T(" = Area of Segment Tendons") << rptNewLine;
+         *pParagraph << Sub2(_T("E"), _T("pts")) << _T(" = Modulus of Elasticity of Segment Tendons") << rptNewLine;
+      }
+
+      if (0 < nGirderDucts)
+      {
+         *pParagraph << Sub2(_T("V"), _T("ptg")) << _T(" = Vertical Component of Prestress from Girder Tendons") << rptNewLine;
+         *pParagraph << Sub2(_T("A"), _T("ptg")) << _T(" = Area of Girder Tendons") << rptNewLine;
+         *pParagraph << Sub2(_T("E"), _T("ptg")) << _T(" = Modulus of Elasticity of Girder Tendons") << rptNewLine;
+      }
+   }
+
    (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
    if ( bAfter1999  && shear_capacity_method == scmBTTables )
@@ -1405,11 +1626,21 @@ void write_ex_table(IBroker* pBroker,
    if ( bAfter1999 )
    {
       (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("u")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-      if ( 0 < nDucts )
+      if (0 < (nMaxSegmentDucts + nGirderDucts))
       {
-         (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("ps")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-         (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("pt")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+         (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("ps")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
       }
+
+      if (0 < nMaxSegmentDucts)
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("pts")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+      }
+
+      if (0 < nGirderDucts)
+      {
+         (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("ptg")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+      }
+
       (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("p")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
       (*table)(0,col++) << COLHDR( _T("|") << Sub2(_T("V"),_T("u")) << _T(" - ") << Sub2(_T("V"),_T("p")) << _T("|"), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    }
@@ -1424,10 +1655,16 @@ void write_ex_table(IBroker* pBroker,
    (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("ps")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("ps")), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
 
-   if ( 0 < nDucts )
+   if (0 < nMaxSegmentDucts)
    {
-      (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("pt")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("pt")), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
+      (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("pts")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("E"), _T("pts")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
+   }
+
+   if (0 < nGirderDucts)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("ptg")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("E"), _T("ptg")), rptStressUnitTag, pDisplayUnits->GetModEUnit());
    }
 
    (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("ct")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
@@ -1458,7 +1695,7 @@ void write_ex_table(IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote1 = false;
@@ -1509,11 +1746,21 @@ void write_ex_table(IBroker* pBroker,
       if ( bAfter1999 )
       {
          (*table)(row,col++) << shear.SetValue( scd.Vu );
-         if ( 0 < nDucts )
+         if (0 < (nMaxSegmentDucts + nGirderDucts))
          {
-            (*table)(row,col++) << shear.SetValue( scd.Vps );
-            (*table)(row,col++) << shear.SetValue( scd.Vpt );
+            (*table)(row, col++) << shear.SetValue(scd.Vps);
          }
+
+         if (0 < nMaxSegmentDucts)
+         {
+            (*table)(row, col++) << shear.SetValue(scd.VptSegment);
+         }
+
+         if (0 < nGirderDucts)
+         {
+            (*table)(row, col++) << shear.SetValue(scd.VptGirder);
+         }
+
          (*table)(row,col++) << shear.SetValue( scd.Vp );
          (*table)(row,col++) << shear.SetValue( fabs(scd.Vu - scd.Vp) );
       }
@@ -1527,10 +1774,17 @@ void write_ex_table(IBroker* pBroker,
       (*table)(row,col++) << mod_e.SetValue( scd.Es );
       (*table)(row,col++) << area.SetValue( scd.Aps );
       (*table)(row,col++) << mod_e.SetValue( scd.Eps );
-      if ( 0 < nDucts )
+
+      if (0 < nMaxSegmentDucts)
       {
-         (*table)(row,col++) << area.SetValue( scd.Apt );
-         (*table)(row,col++) << mod_e.SetValue( scd.Ept );
+         (*table)(row, col++) << area.SetValue(scd.AptSegment);
+         (*table)(row, col++) << mod_e.SetValue(scd.EptSegment);
+      }
+
+      if ( 0 < nGirderDucts )
+      {
+         (*table)(row,col++) << area.SetValue( scd.AptGirder );
+         (*table)(row,col++) << mod_e.SetValue( scd.EptGirder );
       }
 
       (*table)(row,col++) << area.SetValue( scd.Ac );
@@ -1603,7 +1857,7 @@ void write_btsummary_table(IBroker* pBroker,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
-                       const std::_tstring& strStageName,pgsTypes::LimitState ls)
+                       const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC)
 {
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -1620,7 +1874,7 @@ void write_btsummary_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    CString strTitle;
-   strTitle.Format(_T("Shear Parameters Summary - %s  [%s]"),GetLimitStateString(ls),LrfdCw8th(_T("5.8.3.4.2"),_T("5.7.3.4.2")));
+   strTitle.Format(_T("Shear Parameter Summary - %s  [%s]"),GetLimitStateString(ls),LrfdCw8th(_T("5.8.3.4.2"),_T("5.7.3.4.2")));
    *pParagraph << strTitle << rptNewLine;
 
    pParagraph = new rptParagraph();
@@ -1643,6 +1897,11 @@ void write_btsummary_table(IBroker* pBroker,
       else
       {
          *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SxeEqn.png")) << rptNewLine;
+      }
+
+      if (bUHPC)
+      {
+         *pParagraph << symbol(beta) << _T(" is computed with LRFD Eq. 5.7.3.4.2-1") << rptNewLine;
       }
 
       INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdimu,    pDisplayUnits->GetComponentDimUnit(),    true );
@@ -2008,6 +2267,7 @@ void write_Vc_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                strImage = (IS_US_UNITS(pDisplayUnits) ? _T("VcEquation_NWC_US.png") : _T("VcEquation_NWC_SI.png"));
                break;
 
@@ -2149,6 +2409,117 @@ void write_Vc_table(IBroker* pBroker,
 }
 
 
+void write_Vf_table(IBroker* pBroker,
+   IEAFDisplayUnits* pDisplayUnits,
+   const PoiList& vPoi,
+   rptChapter* pChapter,
+   IntervalIndexType intervalIdx,
+   const std::_tstring& strStageName, pgsTypes::LimitState ls)
+{
+   rptParagraph* pParagraph;
+
+   pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pParagraph;
+
+   *pParagraph << _T("Shear Resistance Provided By Fibers in the Concrete - ") << GetLimitStateString(ls) << rptNewLine;
+
+   pParagraph = new rptParagraph;
+   *pChapter << pParagraph;
+
+   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+
+   GET_IFACE2(pBroker, IMaterials, pMaterial);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   std::vector<CGirderKey> vGirderKeys;
+   pPoi->GetGirderKeys(vPoi, &vGirderKeys);
+   for (const auto& girderKey : vGirderKeys)
+   {
+      if (1 < vGirderKeys.size())
+      {
+         *pParagraph << _T("Girder ") << LABEL_GIRDER(girderKey.girderIndex) << rptNewLine;
+      }
+
+      std::vector<CSegmentKey> vSegmentKeys;
+      pPoi->GetSegmentKeys(vPoi, girderKey, &vSegmentKeys);
+      for (const auto& segmentKey : vSegmentKeys)
+      {
+         ATLASSERT(pMaterial->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC);
+
+         if (1 < vSegmentKeys.size())
+         {
+            *pParagraph << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(" ");
+         }
+
+         std::_tstring strImage(_T("Vf.png"));
+
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strImage) << rptNewLine;
+
+         *pParagraph << rptNewLine;
+      }
+   }
+
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(6);
+
+   //if ( segmentKey.groupIndex == ALL_GROUPS )
+   //{
+   //   table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   //   table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   //}
+
+   *pParagraph << table << rptNewLine;
+
+   ColumnIndexType colIdx = 0;
+
+   (*table)(0, colIdx++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0, colIdx++) << symbol(PSI) << RPT_STRESS(_T("fu"));
+   (*table)(0, colIdx++) << COLHDR(symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit());
+   (*table)(0, colIdx++) << COLHDR(Sub2(_T("b"), _T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*table)(0, colIdx++) << COLHDR(Sub2(_T("d"), _T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+   (*table)(0, colIdx++) << COLHDR(Sub2(_T("V"), _T("f")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+
+   INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptForceUnitValue, shear, pDisplayUnits->GetShearUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+   INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false);
+
+   //location.IncludeSpanAndGirder(span == ALL_SPANS);
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+
+   bool print_footnote = false;
+   RowIndexType row = table->GetNumberOfHeaderRows();
+   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+   for (const pgsPointOfInterest& poi : vPoi)
+   {
+      colIdx = 0;
+
+      // Don't print poi that are inside of a CSS zone
+      if (pPoi->IsInCriticalSectionZone(poi, ls))
+      {
+         continue;
+      }
+
+      const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+      Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
+
+      pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
+
+      SHEARCAPACITYDETAILS scd;
+      pShearCap->GetShearCapacityDetails(ls, intervalIdx, poi, nullptr, &scd);
+
+      (*table)(row, colIdx++) << location.SetValue(POI_SPAN, poi);
+      (*table)(row, colIdx++) << stress.SetValue(scd.FiberStress);
+      (*table)(row, colIdx++) << angle.SetValue(scd.Theta);
+      (*table)(row, colIdx++) << dim.SetValue(scd.bv);
+      (*table)(row, colIdx++) << dim.SetValue(scd.dv);
+      (*table)(row, colIdx++) << shear.SetValue(scd.Vf);
+
+      row++;
+   }
+}
+
 void write_Vci_table(IBroker* pBroker,
                     IEAFDisplayUnits* pDisplayUnits,
                     const PoiList& vPoi,
@@ -2198,6 +2569,7 @@ void write_Vci_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                strImage = _T("Vci_NWC.png");
                break;
 
@@ -2340,6 +2712,7 @@ void write_Vcw_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                strImage = _T("Vcw_NWC.png");
                break;
 
@@ -2477,6 +2850,7 @@ void write_theta_table(IBroker* pBroker,
             switch( concType )
             {
             case pgsTypes::Normal:
+            case pgsTypes::UHPC:
                strImage = _T("cotan_theta_NWC.png");
                break;
 
@@ -2573,7 +2947,7 @@ void write_Vn_table(IBroker* pBroker,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
-                    const std::_tstring& strStageName,pgsTypes::LimitState ls)
+                    const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC)
 {
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
@@ -2590,6 +2964,10 @@ void write_Vn_table(IBroker* pBroker,
    *pChapter << pParagraph;
 
    CollectionIndexType nCol = (shear_capacity_method == scmVciVcw ? 11 : 12);
+   if (bUHPC)
+   {
+      nCol++;
+   }
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol,strName);
 
@@ -2620,6 +2998,11 @@ void write_Vn_table(IBroker* pBroker,
    else
    {
       (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("c")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   }
+
+   if (bUHPC)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("f")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
    }
 
    (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("s")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
@@ -2674,6 +3057,10 @@ void write_Vn_table(IBroker* pBroker,
       if (scd.ShearInRange)
       {
          (*table)(row,col++) << shear.SetValue( scd.Vc );
+         if (bUHPC)
+         {
+            (*table)(row, col++) << shear.SetValue(scd.Vf);
+         }
          (*table)(row,col++) << shear.SetValue( scd.Vs );
          (*table)(row,col++) << shear.SetValue( scd.Vn1 );
       }
@@ -2681,7 +3068,11 @@ void write_Vn_table(IBroker* pBroker,
       {
          print_footnote=true;
          (*table)(row,col++) << _T("*");
-         (*table)(row,col++) << _T("*");
+         if (bUHPC)
+         {
+            (*table)(row, col++) << _T("*");
+         }
+         (*table)(row, col++) << _T("*");
          (*table)(row,col++) << _T("*");
       }
 
@@ -2701,7 +3092,12 @@ void write_Vn_table(IBroker* pBroker,
       *pParagraph << Super(_T("&")) << Sub2(_T("V"),_T("c")) << _T(" = ") << _T("min(") << Sub2(_T("V"),_T("ci")) << _T(",") << Sub2(_T("V"),_T("cw")) << _T(")") << rptNewLine;
    }
 
-   *pParagraph << Super(_T("$")) << Sub2(_T("V"),_T("n1")) << _T(" = ") << Sub2(_T("V"),_T("c")) << _T(" + ") << Sub2(_T("V"),_T("s"));
+   *pParagraph << Super(_T("$")) << Sub2(_T("V"), _T("n1")) << _T(" = ") << Sub2(_T("V"), _T("c"));
+   if (bUHPC)
+   {
+      *pParagraph << _T(" + ") << Sub2(_T("V"), _T("f"));
+   }
+   *pParagraph << _T(" + ") << Sub2(_T("V"), _T("s"));
 
    if ( shear_capacity_method == scmVciVcw )
    {
@@ -2713,7 +3109,8 @@ void write_Vn_table(IBroker* pBroker,
    }
 
 
-   *pParagraph << Super(_T("#")) << Sub2(_T("V"),_T("n2")) << _T(" = ") << _T("0.25") << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v"));
+   std::_tstring strK(bUHPC ? _T("0.18") : _T("0.25"));
+   *pParagraph << Super(_T("#")) << Sub2(_T("V"),_T("n2")) << _T(" = ") << strK << RPT_FC << Sub2(_T("b"),_T("v")) << Sub2(_T("d"),_T("v"));
    if ( shear_capacity_method == scmVciVcw )
    {
       *pParagraph << _T(" [Eqn  ") << LrfdCw8th(_T("5.8.3.3-2"),_T("5.7.3.3-2")) << _T(" with ") << Sub2(_T("V"),_T("p")) << _T(" taken to be 0]") << rptNewLine;
@@ -2735,7 +3132,7 @@ void write_Avs_table(IBroker* pBroker,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
-                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
+                     const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC)
 {
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
@@ -2753,14 +3150,32 @@ void write_Avs_table(IBroker* pBroker,
 
    if ( shear_capacity_method != scmVciVcw )
    {
-      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("RequiredShearReinforcement1.png"));
+      if (bUHPC)
+      {
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_RequiredShearReinforcement1.png"));
+      }
+      else
+      {
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("RequiredShearReinforcement1.png"));
+      }
    }
    else
    {
-      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("RequiredShearReinforcement2.png"));
+      if (bUHPC)
+      {
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_RequiredShearReinforcement2.png"));
+      }
+      else
+      {
+         *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("RequiredShearReinforcement2.png"));
+      }
    }
 
    CollectionIndexType nCol = (shear_capacity_method == scmVciVcw ? 8 : 9);
+   if (bUHPC)
+   {
+      nCol++;
+   }
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
 
@@ -2777,6 +3192,10 @@ void write_Avs_table(IBroker* pBroker,
    (*table)(0,col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("u")) << _T("/") << symbol(phi), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
    (*table)(0,col++) << COLHDR( Sub2(_T("V"),_T("c")), rptForceUnitTag,  pDisplayUnits->GetShearUnit() );
+   if (bUHPC)
+   {
+      (*table)(0, col++) << COLHDR(Sub2(_T("V"), _T("f")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+   }
 
    if ( shear_capacity_method != scmVciVcw )
    {
@@ -2821,6 +3240,11 @@ void write_Avs_table(IBroker* pBroker,
       (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
       (*table)(row,col++) << shear.SetValue( scd.Vu/scd.Phi );
       (*table)(row,col++) << shear.SetValue( scd.Vc );
+
+      if (bUHPC)
+      {
+         (*table)(row, col++) << shear.SetValue(scd.Vf);
+      }
       
       if ( shear_capacity_method != scmVciVcw )
       {
@@ -2839,15 +3263,16 @@ void write_Avs_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
 
-   if ( shear_capacity_method == scmVciVcw )
+   if (shear_capacity_method == scmVciVcw)
    {
-      *pParagraph << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << Sub2(_T("V"),_T("c"));
-      *pParagraph << _T(" [Eqn 5.8.2.4-1 with ") << Sub2(_T("V"),_T("p")) << _T(" taken to be 0]") << rptNewLine;
+      *pParagraph << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"), _T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"), _T("c"));
+      *pParagraph << _T(")");
+      *pParagraph << _T(" [LRFD Eqn 5.8.2.4-1 with ") << Sub2(_T("V"), _T("p")) << _T(" taken to be 0]") << rptNewLine;
    }
    else
    {
-      *pParagraph << _T("* - Transverse reinforcement not required if ") << Sub2(_T("V"),_T("u")) << _T(" < 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
-      *pParagraph  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
+      *pParagraph << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"),_T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
+      *pParagraph  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [LRFD Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
    }
 }
 
@@ -2903,6 +3328,11 @@ void write_bar_spacing_table(IBroker* pBroker,
    if ( 0 < pShearData->ShearZones.size() )
    {
       nLegs = pShearData->ShearZones[0].nVertBars;
+   }
+
+   if (nLegs == 0)
+   {
+      nLegs = 2;
    }
 
    std::_tostringstream os3;
