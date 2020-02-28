@@ -909,7 +909,7 @@ void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 grou
 
          CComPtr<IPoint2d> point;
          point.CoCreateInstance(CLSID_Point2d);
-         point->Move(pierLocation - groupOffset,-sectionHeight);
+         point->Move(pierLocation + groupOffset,-sectionHeight);
 
          // create display object
          CComPtr<iPointDisplayObject> ptDispObj;
@@ -997,7 +997,7 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
 
          CComPtr<IPoint2d> point;
          point.CoCreateInstance(CLSID_Point2d);
-         point->Move(pierLocation-groupOffset,-sectionHeight);
+         point->Move(pierLocation+groupOffset,-sectionHeight);
 
          // create display object
          CComPtr<iPointDisplayObject> ptDispObj;
@@ -1037,7 +1037,7 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, IB
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
 
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
-   Float64 groupOffset;
+   Float64 groupOffset = 0;
    GroupIndexType nGirdersThisGroup = pBridge->GetGirderCount(startGroupIdx);
    GirderIndexType thisGirderIdx = Min(girderKey.girderIndex,nGirdersThisGroup-1);
    VERIFY( pBridge->GetPierLocation(CGirderKey(startGroupIdx,thisGirderIdx),startPierIdx,&groupOffset) );
