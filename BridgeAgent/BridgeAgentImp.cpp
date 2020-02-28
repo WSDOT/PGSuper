@@ -20488,7 +20488,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertSpanPointToPoi(const CSpanKey& spanKe
    else
    {
       pgsTypes::BoundaryConditionType connectionType = GetBoundaryConditionType(pierIdx);
-      bIsContinuous = !(connectionType == pgsTypes::bctHinge || connectionType == pgsTypes::bctRoller);
+      bIsContinuous = IsContinuousBoundaryCondition(connectionType);
    }
 
    // For the first span, the span coordinate system begins at the CL Bearing which is
@@ -20521,7 +20521,7 @@ pgsPointOfInterest CBridgeAgentImp::ConvertSpanPointToPoi(const CSpanKey& spanKe
    //                       |
    //                       +----- CL Bearing (Xspan = 0, Xg = -(End Offset)) (for continuous piers)
 
-   Float64 Xg = (startSpanIdx == 0 || !bIsContinuous) ? endDist : -endOffset;
+   Float64 Xg = (startSpanIdx == 0 || !bIsContinuous || IsInteriorPier(pierIdx)) ? endDist : -endOffset;
 
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx < spanKey.spanIndex; spanIdx++ )
    {
