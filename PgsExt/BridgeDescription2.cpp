@@ -1,5 +1,3 @@
-#include "..\Include\PgsExt\BridgeDescription2.h"
-#include "..\Include\PgsExt\BridgeDescription2.h"
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
 // Copyright © 1999-2020  Washington State Department of Transportation
@@ -1542,6 +1540,32 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       ASSERT(refGroupIdx != INVALID_INDEX);
       CGirderGroupData* pRefGroup = m_GirderGroups[refGroupIdx];
 
+      if (pierFace == pgsTypes::Back)
+      {
+#pragma Reminder("REVIEW: This should probably be contained within the group and girder objects")
+         // the new group is being created before the reference group
+         // the reference group, and all groups downstream will be shifted by one span
+         auto iter = m_GirderGroups.begin() + refGroupIdx;
+         auto end = m_GirderGroups.end();
+         for (; iter != end; iter++)
+         {
+            auto* pGroup(*iter);
+            for (auto* pGirder : pGroup->m_Girders)
+            {
+               DuctIndexType nDucts = pGirder->m_PTData.GetDuctCount();
+               for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+               {
+                  if (pGirder->m_PTData.GetDuct(ductIdx)->DuctGeometryType == CDuctGeometry::Parabolic)
+                  {
+                     // shift all the span data in the ParabolicDuctGeometry by one span
+                     // because we've added a group to the start of the bridge that is one span in length
+                     pGirder->m_PTData.GetDuct(ductIdx)->ParabolicDuctGeometry.Shift(1);
+                  }
+               }
+            }
+         }
+      }
+
       // Get the boundary piers for the new group
       CPierData2* pPrevPier = pNewSpan->GetPrevPier();
       CPierData2* pNextPier = pNewSpan->GetNextPier();
@@ -1751,6 +1775,26 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
 
    // remove the span from the group
    pGroup->RemoveSpan(spanIdx, rmPierType); // this will update the slab offsets and remove the span from the girders in this group
+
+#pragma Reminder("REVIEW: This should probably be contained within the group and girder objects")
+  // span references in all groups after this group need to be updated
+   CGirderGroupData* pDownStationGroup = pGroup->GetNextGirderGroup(); // pNextGroup is already used and we don't want to mess with it so using pDownStationGroup
+   while (pDownStationGroup != nullptr)
+   {
+      for (CSplicedGirderData* pGirder : pDownStationGroup->m_Girders)
+      {
+         DuctIndexType nDucts = pGirder->m_PTData.GetDuctCount();
+         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+         {
+            CDuctData* pDuct = pGirder->m_PTData.GetDuct(ductIdx);
+            if (pDuct->DuctGeometryType == CDuctGeometry::Parabolic)
+            {
+               pDuct->ParabolicDuctGeometry.Shift(-1);
+            }
+         }
+      }
+     pDownStationGroup = pDownStationGroup->GetNextGirderGroup();
+   }
 
    // Remove span and pier from the bridge
    Float64 removedPierStation;

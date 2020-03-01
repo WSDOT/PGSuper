@@ -710,6 +710,23 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          m_StartSpanIdx = 0;
       }
 
+      // Make sure we aren't splitting a group
+      GroupIndexType startGroupIdx = pBridge->GetGirderGroupIndex(m_StartSpanIdx);
+      GroupIndexType startSpanIdx, endSpanIdx;
+      pBridge->GetGirderGroupSpans(startGroupIdx, &startSpanIdx, &endSpanIdx);
+      if (startSpanIdx != m_StartSpanIdx)
+      {
+         m_StartSpanIdx = startSpanIdx;
+      }
+
+      GroupIndexType endGroupIdx = pBridge->GetGirderGroupIndex(m_EndSpanIdx);
+      pBridge->GetGirderGroupSpans(endGroupIdx, &startSpanIdx, &endSpanIdx);
+      if (endSpanIdx != m_EndSpanIdx)
+      {
+         m_EndSpanIdx = endSpanIdx;
+      }
+
+
       if ( lHint != HINT_BRIDGEVIEWSETTINGSCHANGED )
       {
          m_pFrame->InitSpanRange();

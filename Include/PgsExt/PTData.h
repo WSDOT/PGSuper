@@ -209,6 +209,8 @@ public:
    void SetEndPoint(PierIndexType pierIdx,Float64 dist,Float64 offset,OffsetType offsetType);
    void GetEndPoint(PierIndexType* pPierIdx,Float64 *pDist,Float64 *pOffset,OffsetType *pOffsetType) const;
 
+   void Shift(int nSpans);
+
    HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 

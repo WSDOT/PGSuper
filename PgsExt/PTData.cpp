@@ -754,6 +754,14 @@ void CParabolicDuctGeometry::GetEndPoint(PierIndexType* pPierIdx,Float64 *pDist,
    *pOffsetType = EndPoint.OffsetType;
 }
 
+void CParabolicDuctGeometry::Shift(int nSpans)
+{
+   ATLASSERT(nSpans == 1 || nSpans == -1);
+   ATLASSERT(nSpans == -1 ? 0 < StartPierIdx : true);
+   StartPierIdx += nSpans;
+   EndPierIdx += nSpans;
+}
+
 void CParabolicDuctGeometry::MakeCopy(const CParabolicDuctGeometry& rOther)
 {
    StartPierIdx = rOther.StartPierIdx;
