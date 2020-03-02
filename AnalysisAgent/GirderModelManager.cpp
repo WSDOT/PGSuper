@@ -15268,13 +15268,6 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    ATLASSERT(pSlabLoads != nullptr);
    pSlabLoads->clear();
 
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IGirder, pGirder);
-   GET_IFACE(IMaterials,pMaterial);
-   GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE(ISpecification, pSpec );
-   GET_IFACE(IRoadway, pAlignment);
-
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -15285,6 +15278,13 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
    {
       return;
    }
+
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IGirder, pGirder);
+   GET_IFACE(IMaterials,pMaterial);
+   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(ISpecification, pSpec );
+   GET_IFACE(IRoadway, pAlignment);
 
    IndexType deckCastingRegionIdx = 0; // assume region zero to get properties that are common to all castings
    GET_IFACE(IIntervals,pIntervals);

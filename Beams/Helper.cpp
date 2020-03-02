@@ -275,6 +275,11 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
             std::vector<const CPierData2*> vPiers = pSegment->GetPiers();
             const CPierData2* pPier = (endType == etStart ? vPiers.front() : vPiers.back());
             PierIndexType pierIdx = pPier->GetIndex();
+            SpanIndexType spanIdx = (SpanIndexType)(pierIdx);
+            if (endType == etEnd)
+            {
+               spanIdx--;
+            }
 
             const auto* pTimelineMgr = pSegment->GetGirder()->GetGirderGroup()->GetBridgeDescription()->GetTimelineManager();
             EventIndexType castDeckEventIdx = pTimelineMgr->GetCastDeckEventIndex();
@@ -289,7 +294,9 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
                IndexType nRegions = castDeckActivity.GetCastingRegionCount();
                for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
                {
-                  if (regions[regionIdx].m_Type == CCastingRegion::Pier && regions[regionIdx].m_Index == pierIdx)
+                  if ( (regions[regionIdx].m_Type == CCastingRegion::Pier && regions[regionIdx].m_Index == pierIdx) ||
+                       (regions[regionIdx].m_Type == CCastingRegion::Span && regions[regionIdx].m_Index == spanIdx)
+                     )
                   {
                      deckCastingRegionIdx = regionIdx;
                      break;

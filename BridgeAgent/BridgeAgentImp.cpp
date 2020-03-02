@@ -5554,12 +5554,25 @@ void CBridgeAgentImp::LayoutPoiForSlabCastingRegions(const CGirderKey& girderKey
 
    GroupIndexType nGroups = GetGirderGroupCount();
 
+   SpanIndexType startSpanIdx, endSpanIdx;
+   GetGirderGroupSpans(girderKey.groupIndex, &startSpanIdx, &endSpanIdx);
+   
+   PierIndexType startPierIdx, endPierIdx;
+   GetGirderGroupPiers(girderKey.groupIndex, &startPierIdx, &endPierIdx);
+
    // loop over all the casting regions
    const auto& vRegions = castDeckActivity.GetCastingRegions();
    IndexType nRegions = vRegions.size();
    for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
    {
       const auto& region = vRegions[regionIdx];
+
+      if ((region.m_Type == CCastingRegion::Span && (region.m_Index < startSpanIdx || endSpanIdx < region.m_Index)) ||
+         (region.m_Type == CCastingRegion::Pier && (region.m_Index < startPierIdx || endPierIdx < region.m_Index)))
+      {
+         // region is not in this group... skip it and try next region
+         continue;
+      }
 
       // get the location of the region limits
       std::array<PierIndexType, 2> pierIdx; // pier the region is keyed to
