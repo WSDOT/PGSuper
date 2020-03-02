@@ -76,21 +76,21 @@ void CBridgeModelViewController::Restore()
 
 //////////////////////////////////////////
 // IBridgeModelViewController
-void CBridgeModelViewController::GetSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx) const
+void CBridgeModelViewController::GetGroupRange(GroupIndexType* pStartGroupIdx,GroupIndexType* pEndGroupIdx) const
 {
    if (IsOpen())
    {
       CBridgePlanView* pPlanView = m_pFrame->GetBridgePlanView();
-      pPlanView->GetSpanRange(pStartSpanIdx, pEndSpanIdx);
+      pPlanView->GetGroupRange(pStartGroupIdx, pEndGroupIdx);
    }
 }
 
-void CBridgeModelViewController::SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx)
+void CBridgeModelViewController::SetGroupRange(GroupIndexType startGroupIdx, GroupIndexType endGroupIdx)
 {
    if (IsOpen())
    {
       CBridgePlanView* pPlanView = m_pFrame->GetBridgePlanView();
-      pPlanView->SetSpanRange(startSpanIdx, endSpanIdx, false);
+      pPlanView->SetGroupRange(startGroupIdx, endGroupIdx, false);
    }
 }
 

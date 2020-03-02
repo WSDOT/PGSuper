@@ -105,7 +105,7 @@ public:
    CBridgeViewPane* GetUpperView();
    CBridgeViewPane* GetLowerView();
 
-   void InitSpanRange(); // call this method to initialize the span range controls
+   void InitGroupRange(); // call this method to initialize the group range controls
 
    void SetViewMode(ViewMode viewMode);
    ViewMode GetViewMode() const;
@@ -148,8 +148,8 @@ protected:
 	afx_msg void OnInsertSpan();
 	afx_msg void OnInsertPier();
    afx_msg void OnViewModeChanged(UINT nIDC);
-   afx_msg void OnStartSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
-   afx_msg void OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResult);
+   afx_msg void OnStartGroupChanged(NMHDR *pNMHDR, LRESULT *pResult);
+   afx_msg void OnEndGroupChanged(NMHDR *pNMHDR, LRESULT *pResult);
    afx_msg void OnNorth();
    afx_msg void OnUpdateNorth(CCmdUI* pCmdUI);
    afx_msg void OnShowLabels();

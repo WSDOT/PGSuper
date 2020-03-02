@@ -51,6 +51,7 @@
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
+#include <IFace\DocumentType.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <WBFLDManip.h>
@@ -99,8 +100,8 @@ IMPLEMENT_DYNCREATE(CBridgePlanView, CBridgeViewPane)
 
 CBridgePlanView::CBridgePlanView()
 {
-   m_StartSpanIdx = 0;
-   m_EndSpanIdx  = ALL_SPANS;
+   m_StartGroupIdx = 0;
+   m_EndGroupIdx  = ALL_GROUPS;
 }
 
 CBridgePlanView::~CBridgePlanView()
@@ -171,16 +172,16 @@ bool CBridgePlanView::IsAlignmentSelected()
    return false;
 }
 
-void CBridgePlanView::GetSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
+void CBridgePlanView::GetGroupRange(GroupIndexType* pStartGroupIdx,GroupIndexType* pEndGroupIdx)
 {
-   *pStartSpanIdx = m_StartSpanIdx;
-   *pEndSpanIdx   = m_EndSpanIdx;
+   *pStartGroupIdx = m_StartGroupIdx;
+   *pEndGroupIdx   = m_EndGroupIdx;
 }
 
-void CBridgePlanView::SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,bool bUpdate)
+void CBridgePlanView::SetGroupRange(GroupIndexType startGroupIdx,GroupIndexType endGroupIdx,bool bUpdate)
 {
-   m_StartSpanIdx = startSpanIdx;
-   m_EndSpanIdx  = endSpanIdx;
+   m_StartGroupIdx = startGroupIdx;
+   m_EndGroupIdx  = endGroupIdx;
 
    if ( bUpdate )
    {
@@ -514,7 +515,7 @@ void CBridgePlanView::OnInitialUpdate()
    CBridgeViewPane::OnInitialUpdate();
 
    // Causes the child frame window to initalize the span range selection controls
-   m_pFrame->InitSpanRange();
+   m_pFrame->InitGroupRange();
 }
 
 void CBridgePlanView::BuildDisplayLists()
@@ -616,8 +617,8 @@ void CBridgePlanView::BuildDisplayLists()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   m_EndSpanIdx = nSpans-1;
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   m_EndGroupIdx = nGroups - 1;
 
    // OnInitialUpdate eventually calls OnUpdate... OnUpdate calls the
    // following two methods so there isn't any need to call them here
@@ -676,25 +677,25 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 
             SpanIndexType spanIdx = pBridgeHint->PierIdx + (pBridgeHint->PierFace == pgsTypes::Back ? -1 : 0);
-            if ( (m_StartSpanIdx <= spanIdx && spanIdx <= m_EndSpanIdx) || // span in range
-                 (m_EndSpanIdx == nPrevSpans-1 && spanIdx == nSpans-1) || // at end
-                 (m_StartSpanIdx == 0 && spanIdx == INVALID_INDEX) // at start
+            if ( (m_StartGroupIdx <= spanIdx && spanIdx <= m_EndGroupIdx) || // span in range
+                 (m_EndGroupIdx == nPrevSpans-1 && spanIdx == nSpans-1) || // at end
+                 (m_StartGroupIdx == 0 && spanIdx == INVALID_INDEX) // at start
                )
             {
                // new span is in the display range
                if ( pBridgeHint->bAdded )
                {
-                  m_EndSpanIdx++;
+                  m_EndGroupIdx++;
                }
                else
                {
-                  if ( spanIdx == m_StartSpanIdx && spanIdx != 0)
+                  if ( spanIdx == m_StartGroupIdx && spanIdx != 0)
                   {
-                     m_StartSpanIdx++; // span at start of range was removed, so make the range smaller
+                     m_StartGroupIdx++; // span at start of range was removed, so make the range smaller
                   }
                   else
                   {
-                     m_EndSpanIdx--; // span at within or at the end of the range was removed...
+                     m_EndGroupIdx--; // span at within or at the end of the range was removed...
                   }
                }
             }
@@ -702,34 +703,34 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       }
 
       // Make sure we aren't displaying spans past the end of the bridge
-      SpanIndexType nSpans = pBridge->GetSpanCount();
-      m_EndSpanIdx = (nSpans <= m_EndSpanIdx ? nSpans-1 : m_EndSpanIdx);
+      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+      m_EndGroupIdx = (nGroups <= m_EndGroupIdx ? nGroups -1 : m_EndGroupIdx);
 
-      if (m_EndSpanIdx < m_StartSpanIdx)
+      if (m_EndGroupIdx < m_StartGroupIdx)
       {
-         m_StartSpanIdx = 0;
+         m_StartGroupIdx = 0;
       }
 
-      // Make sure we aren't splitting a group
-      GroupIndexType startGroupIdx = pBridge->GetGirderGroupIndex(m_StartSpanIdx);
-      GroupIndexType startSpanIdx, endSpanIdx;
-      pBridge->GetGirderGroupSpans(startGroupIdx, &startSpanIdx, &endSpanIdx);
-      if (startSpanIdx != m_StartSpanIdx)
-      {
-         m_StartSpanIdx = startSpanIdx;
-      }
+      //// Make sure we aren't splitting a group
+      //GroupIndexType startGroupIdx = pBridge->GetGirderGroupIndex(m_StartGroupIdx);
+      //GroupIndexType startSpanIdx, endSpanIdx;
+      //pBridge->GetGirderGroupSpans(startGroupIdx, &startSpanIdx, &endSpanIdx);
+      //if (startSpanIdx != m_StartGroupIdx)
+      //{
+      //   m_StartGroupIdx = startSpanIdx;
+      //}
 
-      GroupIndexType endGroupIdx = pBridge->GetGirderGroupIndex(m_EndSpanIdx);
-      pBridge->GetGirderGroupSpans(endGroupIdx, &startSpanIdx, &endSpanIdx);
-      if (endSpanIdx != m_EndSpanIdx)
-      {
-         m_EndSpanIdx = endSpanIdx;
-      }
+      //GroupIndexType endGroupIdx = pBridge->GetGirderGroupIndex(m_EndGroupIdx);
+      //pBridge->GetGirderGroupSpans(endGroupIdx, &startSpanIdx, &endSpanIdx);
+      //if (endSpanIdx != m_EndGroupIdx)
+      //{
+      //   m_EndGroupIdx = endSpanIdx;
+      //}
 
 
       if ( lHint != HINT_BRIDGEVIEWSETTINGSCHANGED )
       {
-         m_pFrame->InitSpanRange();
+         m_pFrame->InitGroupRange();
       }
 
       UpdateDisplayObjects();
@@ -1356,20 +1357,23 @@ void CBridgePlanView::BuildTitleDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   CString strLabel(pDocType->IsPGSpliceDocument() ? _T("Group") : _T("Span"));
 
    CString strTitle;
-   if ( m_StartSpanIdx == 0 && (m_EndSpanIdx == nSpans-1 || m_EndSpanIdx == ALL_SPANS) )
+   if ( m_StartGroupIdx == 0 && (m_EndGroupIdx == nGroups-1 || m_EndGroupIdx == ALL_GROUPS) )
    {
       strTitle = _T("Plan View");
    }
-   else if ( m_StartSpanIdx == m_EndSpanIdx )
+   else if ( m_StartGroupIdx == m_EndGroupIdx )
    {
-      strTitle.Format(_T("Plan View: Span %d of %d"),LABEL_SPAN(m_StartSpanIdx),nSpans);
+      strTitle.Format(_T("Plan View: %s %d of %d"),strLabel, LABEL_GROUP(m_StartGroupIdx),nGroups);
    }
    else
    {
-      strTitle.Format(_T("Plan View: Span %d - %d of %d"),LABEL_SPAN(m_StartSpanIdx),LABEL_SPAN(m_EndSpanIdx),nSpans);
+      strTitle.Format(_T("Plan View: %s %d - %d of %d"),strLabel,LABEL_GROUP(m_StartGroupIdx),LABEL_GROUP(m_EndGroupIdx),nGroups);
    }
 
    title->SetText(strTitle);
@@ -1395,9 +1399,12 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    // show that part of the alignment from 1/n of the first span length before the start of the bridge
    // to 1/n of the last span length beyond the end of the bridge
    Float64 n = 10;
-   PierIndexType nPiers = pBridge->GetPierCount();
-   PierIndexType startPierIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
-   PierIndexType endPierIdx = (m_EndSpanIdx == ALL_SPANS ? nPiers - 1 : m_EndSpanIdx + 1);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType startGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType endGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
+
+   PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
+   PierIndexType endPierIdx   = pBridge->GetGirderGroupEndPier(endGroupIdx);
 
    Float64 start_station = pBridge->GetPierStation(startPierIdx);
    Float64 end_station = pBridge->GetPierStation(endPierIdx);
@@ -1456,6 +1463,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    IndexType nPoints = 50;
    Float64 station_inc = (end_station - start_station) / (nPoints - 1);
    std::vector<Float64> vStations;
+   PierIndexType nPiers = pBridge->GetPierCount();
    vStations.reserve(nPoints + nPiers);
    Float64 station = start_station;
    for (long i = 0; i < nPoints; i++, station += station_inc)
@@ -1569,14 +1577,12 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   GroupIndexType startGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType endGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
+
+   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      
-      if ( pGroup->GetPierIndex(pgsTypes::metStart) < m_StartSpanIdx || m_EndSpanIdx+1 < pGroup->GetPierIndex(pgsTypes::metEnd) )
-      {
-         continue;
-      }
 
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -1705,7 +1711,7 @@ void CBridgePlanView::BuildLongitudinalJointDisplayObject()
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
 
-      if (pGroup->GetPierIndex(pgsTypes::metStart) < m_StartSpanIdx || m_EndSpanIdx + 1 < pGroup->GetPierIndex(pgsTypes::metEnd))
+      if (pGroup->GetPierIndex(pgsTypes::metStart) < m_StartGroupIdx || m_EndGroupIdx + 1 < pGroup->GetPierIndex(pgsTypes::metEnd))
       {
          continue;
       }
@@ -1794,7 +1800,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       
-      if ( pGroup->GetPierIndex(pgsTypes::metStart) < m_StartSpanIdx || m_EndSpanIdx+1 < pGroup->GetPierIndex(pgsTypes::metEnd) )
+      if ( pGroup->GetPierIndex(pgsTypes::metStart) < m_StartGroupIdx || m_EndGroupIdx+1 < pGroup->GetPierIndex(pgsTypes::metEnd) )
       {
          continue;
       }
@@ -1922,468 +1928,474 @@ void CBridgePlanView::BuildPierDisplayObjects()
    CComPtr<IDocUnitSystem> docUnitSystem;
    pDoc->GetDocUnitSystem(&docUnitSystem);
 
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    PierIndexType nPiers = pBridge->GetPierCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
    Float64 last_station;
-   PierIndexType firstPierIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
-   PierIndexType lastPierIdx  = (m_EndSpanIdx  == ALL_SPANS ? nPiers-1 : m_EndSpanIdx+1);
-   for ( PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++ )
+   GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType lastGroupIdx  = (m_EndGroupIdx  == ALL_GROUPS ? nGroups-1 : m_EndGroupIdx);
+   for ( GroupIndexType groupIdx = firstGroupIdx; groupIdx <= lastGroupIdx; groupIdx++ )
    {
-      const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-
-      CString strPierLabel(pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
-
-      // get station of the pier
-      Float64 station = pPier->GetStation();
-   
-      CComPtr<IDirection> direction;
-      pBridge->GetPierDirection(pierIdx,&direction);
-
-      // skew the pier so it parallels the alignment
-      CComPtr<IAngle> objSkew;
-      pBridge->GetPierSkew(pierIdx,&objSkew);
-      Float64 skew;
-      objSkew->get_Value(&skew);
-
-      // get the pier control points
-      CComPtr<IPoint2d> left,alignment_pt,bridge_pt,right;
-      pBridge->GetPierPoints(pierIdx,pgsTypes::pcGlobal,&left,&alignment_pt,&bridge_pt,&right);
-
-      // create a point display object for the left side of the pier
-      // add a socket to it
-      CComPtr<iPointDisplayObject> doLeft;
-      doLeft.CoCreateInstance(CLSID_PointDisplayObject);
-      doLeft->SetPosition(left,FALSE,FALSE);
-      CComQIPtr<iConnectable> connectable1(doLeft);
-      CComPtr<iSocket> socket1;
-      connectable1->AddSocket(0,left,&socket1);
-
-      // create a point display object for the right side of the pier
-      // add a socket to it
-      CComPtr<iPointDisplayObject> doRight;
-      doRight.CoCreateInstance(CLSID_PointDisplayObject);
-      doRight->SetPosition(right,FALSE,FALSE);
-      CComQIPtr<iConnectable> connectable2(doRight);
-      CComPtr<iSocket> socket2;
-      connectable2->AddSocket(0,right,&socket2);
-
-      // create a line display object for the pier centerline
-      CComPtr<iLineDisplayObject> doCenterLine;
-      doCenterLine.CoCreateInstance(CLSID_LineDisplayObject);
-
-      CString strMsg1;
-      strMsg1.Format(_T("Double click to edit %s %d\nRight click for more options."),strPierLabel,LABEL_PIER(pierIdx));
-
-      CString strMsg2;
-      strMsg2.Format(_T("Station: %s\nDirection: %s\nSkew: %s"),FormatStation(pDisplayUnits->GetStationFormat(),station),FormatDirection(direction),FormatAngle(objSkew));
-
-      CString strConnectionTip;
-      if ( pPier->IsBoundaryPier() )
+      PierIndexType firstPierIdx, lastPierIdx;
+      pBridge->GetGirderGroupPiers(groupIdx, &firstPierIdx, &lastPierIdx);
+      for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++)
       {
-         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetBoundaryConditionType(),bNoDeck));
-      }
-      else
-      {
-         strConnectionTip.Format(_T("Boundary Condition: %s"),CPierData2::AsString(pPier->GetSegmentConnectionType()));
-      }
+         const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
 
-      CString strMsg = strMsg1 + _T("\n\n") + strMsg2 + _T("\n") + strConnectionTip;
+         CString strPierLabel(pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
 
-      CString strModelType( pPier->GetPierModelType() == pgsTypes::pmtIdealized ? _T("Idealized") : _T("Physical"));
-      strMsg += _T("\nModel Type: ") + strModelType;
+         // get station of the pier
+         Float64 station = pPier->GetStation();
 
-      EventIndexType eventIdx = pTimelineMgr->GetPierErectionEventIndex(pierIdx);
+         CComPtr<IDirection> direction;
+         pBridge->GetPierDirection(pierIdx, &direction);
 
-      CString strEvent;
-      if ( eventIdx != INVALID_INDEX )
-      {
-         const CTimelineEvent* pTimelineEventData = pTimelineMgr->GetEventByIndex(eventIdx);
+         // skew the pier so it parallels the alignment
+         CComPtr<IAngle> objSkew;
+         pBridge->GetPierSkew(pierIdx, &objSkew);
+         Float64 skew;
+         objSkew->get_Value(&skew);
 
-         strEvent.Format(_T("Erection Event: Event %d: %s"),LABEL_EVENT(eventIdx),pTimelineEventData->GetDescription());
-      }
-      else
-      {
-         strEvent.Format(_T("Erection Event: Not defined"));
-      }
+         // get the pier control points
+         CComPtr<IPoint2d> left, alignment_pt, bridge_pt, right;
+         pBridge->GetPierPoints(pierIdx, pgsTypes::pcGlobal, &left, &alignment_pt, &bridge_pt, &right);
 
-      strMsg += _T("\n") + strEvent;
+         // create a point display object for the left side of the pier
+         // add a socket to it
+         CComPtr<iPointDisplayObject> doLeft;
+         doLeft.CoCreateInstance(CLSID_PointDisplayObject);
+         doLeft->SetPosition(left, FALSE, FALSE);
+         CComQIPtr<iConnectable> connectable1(doLeft);
+         CComPtr<iSocket> socket1;
+         connectable1->AddSocket(0, left, &socket1);
+
+         // create a point display object for the right side of the pier
+         // add a socket to it
+         CComPtr<iPointDisplayObject> doRight;
+         doRight.CoCreateInstance(CLSID_PointDisplayObject);
+         doRight->SetPosition(right, FALSE, FALSE);
+         CComQIPtr<iConnectable> connectable2(doRight);
+         CComPtr<iSocket> socket2;
+         connectable2->AddSocket(0, right, &socket2);
+
+         // create a line display object for the pier centerline
+         CComPtr<iLineDisplayObject> doCenterLine;
+         doCenterLine.CoCreateInstance(CLSID_LineDisplayObject);
+
+         CString strMsg1;
+         strMsg1.Format(_T("Double click to edit %s %d\nRight click for more options."), strPierLabel, LABEL_PIER(pierIdx));
+
+         CString strMsg2;
+         strMsg2.Format(_T("Station: %s\nDirection: %s\nSkew: %s"), FormatStation(pDisplayUnits->GetStationFormat(), station), FormatDirection(direction), FormatAngle(objSkew));
+
+         CString strConnectionTip;
+         if (pPier->IsBoundaryPier())
+         {
+            strConnectionTip.Format(_T("Boundary Condition: %s"), CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck));
+         }
+         else
+         {
+            strConnectionTip.Format(_T("Boundary Condition: %s"), CPierData2::AsString(pPier->GetSegmentConnectionType()));
+         }
+
+         CString strMsg = strMsg1 + _T("\n\n") + strMsg2 + _T("\n") + strConnectionTip;
+
+         CString strModelType(pPier->GetPierModelType() == pgsTypes::pmtIdealized ? _T("Idealized") : _T("Physical"));
+         strMsg += _T("\nModel Type: ") + strModelType;
+
+         EventIndexType eventIdx = pTimelineMgr->GetPierErectionEventIndex(pierIdx);
+
+         CString strEvent;
+         if (eventIdx != INVALID_INDEX)
+         {
+            const CTimelineEvent* pTimelineEventData = pTimelineMgr->GetEventByIndex(eventIdx);
+
+            strEvent.Format(_T("Erection Event: Event %d: %s"), LABEL_EVENT(eventIdx), pTimelineEventData->GetDescription());
+         }
+         else
+         {
+            strEvent.Format(_T("Erection Event: Not defined"));
+         }
+
+         strMsg += _T("\n") + strEvent;
 
 #if defined _DEBUG
-      CString strDebugMsg;
-      strDebugMsg.Format(_T("\n\nID: %d"),pPier->GetID());
-      strMsg += strDebugMsg;
+         CString strDebugMsg;
+         strDebugMsg.Format(_T("\n\nID: %d"), pPier->GetID());
+         strMsg += strDebugMsg;
 #endif
 
-      doCenterLine->SetToolTipText(strMsg);
-      doCenterLine->SetMaxTipWidth(TOOLTIP_WIDTH);
-      doCenterLine->SetTipDisplayTime(TOOLTIP_DURATION);
+         doCenterLine->SetToolTipText(strMsg);
+         doCenterLine->SetMaxTipWidth(TOOLTIP_WIDTH);
+         doCenterLine->SetTipDisplayTime(TOOLTIP_DURATION);
 
-      doCenterLine->SetID(pierIdx);
-      PierDisplayObjectInfo* pInfo = new PierDisplayObjectInfo(pierIdx,PIER_DISPLAY_LIST);
-      doCenterLine->SetItemData((void*)pInfo,true);
+         doCenterLine->SetID(pierIdx);
+         PierDisplayObjectInfo* pInfo = new PierDisplayObjectInfo(pierIdx, PIER_DISPLAY_LIST);
+         doCenterLine->SetItemData((void*)pInfo, true);
 
-      // get the connectors from the line
-      CComQIPtr<iConnector> connector(doCenterLine);
-      CComQIPtr<iPlug> startPlug, endPlug;
-      connector->GetStartPlug(&startPlug);
-      connector->GetEndPlug(&endPlug);
+         // get the connectors from the line
+         CComQIPtr<iConnector> connector(doCenterLine);
+         CComQIPtr<iPlug> startPlug, endPlug;
+         connector->GetStartPlug(&startPlug);
+         connector->GetEndPlug(&endPlug);
 
-      // connect the line to the points
-      DWORD dwCookie;
-      connectable1->Connect(0,atByID,startPlug,&dwCookie);
-      connectable2->Connect(0,atByID,endPlug,  &dwCookie);
+         // connect the line to the points
+         DWORD dwCookie;
+         connectable1->Connect(0, atByID, startPlug, &dwCookie);
+         connectable2->Connect(0, atByID, endPlug, &dwCookie);
 
-      // Register an event sink with the pier centerline display object so that we can handle dbl-clicks
-      // on the piers differently then a general dbl-click
-      CPierDisplayObjectEvents* pEvents = new CPierDisplayObjectEvents(pierIdx,
-                                                                       pBridgeDesc,
-                                                                       pFrame);
-      CComPtr<iDisplayObjectEvents> events;
-      events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-      CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doCenterLine);
-      dispObj->RegisterEventSink(events);
-
-      // create line drawing strategies... use a compound strategy so
-      // we can draw both the centerline and the pseudo-outline of the pier
-      CComPtr<iCompoundDrawLineStrategy> strategy;
-      strategy.CoCreateInstance(CLSID_CompoundDrawLineStrategy);
-
-      // strategy for pseudo-outline of the pier
-      CComPtr<iExtRectangleDrawLineStrategy> strategy_pier;
-      strategy_pier.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
-      strategy_pier->SetColor(PIER_BORDER_COLOR);
-      strategy_pier->SetFillColor(PIER_FILL_COLOR);
-      strategy_pier->DoFill(TRUE);
-
-      // make the pier outline just a bit wider
-      SpanIndexType prev_span_idx = pierIdx - 1;
-      SpanIndexType next_span_idx = pierIdx == nPiers-1 ? INVALID_INDEX : pierIdx;
-
-      Float64 left_offset = 0;
-      Float64 right_offset = 0;
-
-      if ( pPier->GetPierModelType() == pgsTypes::pmtIdealized )
-      {
-         if ( pPier->GetPrevSpan() )
-         {
-            ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
-            pPier->GetBearingOffset(pgsTypes::Back,&left_offset,&left_brg_offset_measure_type);
-            if ( left_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
-            {
-               left_offset /= cos(skew);
-            }
-         }
-
-         if ( pPier->GetNextSpan() )
-         {
-            ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
-            pPier->GetBearingOffset(pgsTypes::Ahead,&right_offset,&right_brg_offset_measure_type);
-            if ( right_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier )
-            {
-               right_offset /= cos(skew);
-            }
-         }
-      }
-      else
-      {
-         left_offset = pPier->GetXBeamWidth()/2;
-         right_offset = left_offset;
-      }
- 
-      left_offset  = ( IsZero(left_offset)  ? right_offset/2 : left_offset );
-      right_offset = ( IsZero(right_offset) ? left_offset/2  : right_offset );
-
-      if ( pPier->GetPierModelType() == pgsTypes::pmtIdealized )
-      {
-         left_offset *= 1.05;
-         right_offset *= 1.05;
-      }
-
-      strategy_pier->SetLeftOffset(left_offset);
-      strategy_pier->SetRightOffset(right_offset);
-
-      // Draw the piers so that the are wider than the width of the girders... compute the overhang
-      // from the left and right exterior girder
-      GroupIndexType backGroupIdx, aheadGroupIdx;
-      pBridge->GetGirderGroupIndex(pierIdx,&backGroupIdx,&aheadGroupIdx);
-
-      // Left side of pier
-      pgsPointOfInterest backPoi, aheadPoi;
-      if ( backGroupIdx != INVALID_INDEX )
-      {
-         CGirderKey girderKey(backGroupIdx,0);
-         backPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
-      }
-
-      if ( aheadGroupIdx != INVALID_INDEX )
-      {
-         CGirderKey girderKey(aheadGroupIdx,0);
-         aheadPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
-      }
-
-      Float64 back_top_width  = (backGroupIdx  == INVALID_INDEX ? 0 : pGirder->GetTopWidth(backPoi));
-      Float64 back_bot_width  = (backGroupIdx  == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(backPoi));
-      Float64 ahead_top_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(aheadPoi));
-      Float64 ahead_bot_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(aheadPoi));
-      Float64 left_overhang   = Max(back_top_width,back_bot_width,ahead_top_width,ahead_bot_width)/2;
-      left_overhang /= cos(fabs(skew));
-      left_overhang *= 1.10;
-
-      // Right Side of Pier
-      if ( backGroupIdx != INVALID_INDEX )
-      {
-         GirderIndexType nGirders = pBridge->GetGirderCount(backGroupIdx);
-         CGirderKey girderKey(backGroupIdx,nGirders-1);
-         backPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
-      }
-
-      if ( aheadGroupIdx != INVALID_INDEX )
-      {
-         GirderIndexType nGirders = pBridge->GetGirderCount(aheadGroupIdx);
-         CGirderKey girderKey(aheadGroupIdx,nGirders-1);
-         aheadPoi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
-      }
-
-      back_top_width  = (backGroupIdx  == INVALID_INDEX ? 0 : pGirder->GetTopWidth(backPoi));
-      back_bot_width  = (backGroupIdx  == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(backPoi));
-      ahead_top_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(aheadPoi));
-      ahead_bot_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(aheadPoi));
-      Float64 right_overhang = Max(back_top_width,back_bot_width,ahead_top_width,ahead_bot_width)/2;
-      right_overhang /= cos(fabs(skew));
-      right_overhang *= 1.10;
-
-      strategy_pier->SetStartExtension(left_overhang);
-      strategy_pier->SetEndExtension(right_overhang);
-
-      strategy_pier->SetStartSkew(-skew);
-      strategy_pier->SetEndSkew(-skew);
-
-      // this strategy doubles as a gravity well.. get its interface and give it to 
-      // the line display object. this will make the entire pier the clickable part
-      // of the display object
-      strategy_pier->PerimeterGravityWell(TRUE);
-      CComQIPtr<iGravityWellStrategy> gravity_well(strategy_pier);
-      doCenterLine->SetGravityWellStrategy(gravity_well);
-      doCenterLine->SetSelectionType(stAll);
-
-      strategy->AddStrategy(strategy_pier);
-
-      // pier centerline
-      CComPtr<iExtRectangleDrawLineStrategy> strategy_centerline;
-      strategy_centerline.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
-      strategy_centerline->SetColor(BLUE);
-      strategy_centerline->SetLineStyle(lsCenterline);
-      strategy_centerline->SetStartExtension(left_overhang);
-      strategy_centerline->SetEndExtension(right_overhang);
-      strategy->AddStrategy(strategy_centerline);
-
-      doCenterLine->SetDrawLineStrategy(strategy);
-
-      Float64 alignmentOffset = pBridge->GetAlignmentOffset();
-      alignmentOffset /= cos(skew);
-
-      CComPtr<IPoint2d> ahead_point;
-      pAlignment->GetPoint(station,-alignmentOffset,direction,pgsTypes::pcGlobal,&ahead_point);
-
-      CComPtr<IPoint2d> back_point;
-      pAlignment->GetPoint(station,-alignmentOffset,direction,pgsTypes::pcGlobal,&back_point);
-
-      if ( settings & IDB_PV_LABEL_PIERS )
-      {
-         // pier label
-         CComPtr<iTextBlock> doPierName;
-         doPierName.CoCreateInstance(CLSID_TextBlock);
-
-         CString strText;
-         strText.Format(_T("%s %d"),strPierLabel,LABEL_PIER(pierIdx));
-
-         doPierName->SetPosition(ahead_point);
-         doPierName->SetTextAlign(TA_BASELINE | TA_CENTER);
-         doPierName->SetText(strText);
-         doPierName->SetTextColor(BLACK);
-         doPierName->SetBkMode(OPAQUE);
-
-         Float64 dir;
-         direction->get_Value(&dir);
-         long angle = long(1800.*dir/M_PI);
-         angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
-         doPierName->SetAngle(angle);
-         label_display_list->AddDisplayObject(doPierName);
-
-         // pier station
-         CComPtr<iEditableUnitValueTextBlock> doStation;
-         doStation.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
-         doStation->SetUnitSystem(docUnitSystem);
-         doStation->SetDisplayUnitGroupName(_T("Station"));
-         doStation->IsStation(true);
-         doStation->SetValue(station);
-         doStation->SetPosition(back_point);
-         doStation->SetTextAlign(TA_TOP | TA_CENTER);
-         doStation->SetTextColor(BLACK);
-         doStation->SetBkMode(OPAQUE);
-         doStation->SetAngle(angle);
-         doStation->SetSelectionType(stAll);
-         
-         doStation->SetToolTipText(_T("Click to edit"));
-         doStation->SetMaxTipWidth(TOOLTIP_WIDTH);
-         doStation->SetTipDisplayTime(TOOLTIP_DURATION);
-
-         CInplacePierStationEditEvents* pPierStationEvents = new CInplacePierStationEditEvents(pBroker,pierIdx);
-         CComPtr<iDisplayObjectEvents> pierStationEvents;
-         pierStationEvents.Attach((iDisplayObjectEvents*)pPierStationEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-         doStation->RegisterEventSink(pierStationEvents);
-
-         label_display_list->AddDisplayObject(doStation);
-
-         // connection
-         Float64 right_slab_edge_offset = pBridge->GetRightSlabEdgeOffset(pierIdx);
-         CComPtr<IPoint2d> connection_label_point;
-         pAlignment->GetPoint(station,-right_slab_edge_offset/cos(skew),direction,pgsTypes::pcGlobal,&connection_label_point);
-
-         // make the baseline of the connection text parallel to the alignment
-         direction.Release();
-         pAlignment->GetBearing(station,&direction);
-         direction->get_Value(&dir);
-
-         angle = long(1800.*dir/M_PI);
-         angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
-
-         CComPtr<iTextBlock> doConnection;
-         doConnection.CoCreateInstance(CLSID_TextBlock);
-         doConnection->SetSelectionType(stNone);
-         doConnection->SetPosition(connection_label_point);
-         doConnection->SetTextColor(CONNECTION_LABEL_COLOR);
-         doConnection->SetBkMode(TRANSPARENT);
-         doConnection->SetAngle(angle);
-
-         if ( pierIdx == 0 ) // first pier
-         {
-            doConnection->SetTextAlign(TA_TOP | TA_LEFT);
-         }
-         else if ( pierIdx == nPiers-1 ) // last pier
-         {
-            doConnection->SetTextAlign(TA_TOP | TA_RIGHT);
-         }
-         else // intermediate pier
-         {
-            doConnection->SetTextAlign(TA_TOP | TA_CENTER);
-         }
-
-         doConnection->SetText(GetConnectionString(pPier).c_str());
-
-         doConnection->SetToolTipText(GetFullConnectionString(pPier).c_str());
-         doConnection->SetMaxTipWidth(TOOLTIP_WIDTH);
-         doConnection->SetTipDisplayTime(TOOLTIP_DURATION);
-
-         // Register an event sink with the connection text display object so that we can handle double clicks
-         // differently then a general double click
-         CConnectionDisplayObjectEvents* pEvents = new CConnectionDisplayObjectEvents(pierIdx);
+         // Register an event sink with the pier centerline display object so that we can handle dbl-clicks
+         // on the piers differently then a general dbl-click
+         CPierDisplayObjectEvents* pEvents = new CPierDisplayObjectEvents(pierIdx,
+            pBridgeDesc,
+            pFrame);
          CComPtr<iDisplayObjectEvents> events;
          events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
 
-         CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doConnection);
+         CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doCenterLine);
          dispObj->RegisterEventSink(events);
 
-         label_display_list->AddDisplayObject(doConnection);
+         // create line drawing strategies... use a compound strategy so
+         // we can draw both the centerline and the pseudo-outline of the pier
+         CComPtr<iCompoundDrawLineStrategy> strategy;
+         strategy.CoCreateInstance(CLSID_CompoundDrawLineStrategy);
 
-         if ( firstPierIdx < pierIdx )
+         // strategy for pseudo-outline of the pier
+         CComPtr<iExtRectangleDrawLineStrategy> strategy_pier;
+         strategy_pier.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+         strategy_pier->SetColor(PIER_BORDER_COLOR);
+         strategy_pier->SetFillColor(PIER_FILL_COLOR);
+         strategy_pier->DoFill(TRUE);
+
+         // make the pier outline just a bit wider
+         SpanIndexType prev_span_idx = pierIdx - 1;
+         SpanIndexType next_span_idx = pierIdx == nPiers - 1 ? INVALID_INDEX : pierIdx;
+
+         Float64 left_offset = 0;
+         Float64 right_offset = 0;
+
+         if (pPier->GetPierModelType() == pgsTypes::pmtIdealized)
          {
-            ATLASSERT(pierIdx != ALL_PIERS);
-            // label span length
+            if (pPier->GetPrevSpan())
+            {
+               ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
+               pPier->GetBearingOffset(pgsTypes::Back, &left_offset, &left_brg_offset_measure_type);
+               if (left_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier)
+               {
+                  left_offset /= cos(skew);
+               }
+            }
 
-            Float64 span_length = station - last_station;
-
-            CComPtr<IPoint2d> pntInSpan;
-            pAlignment->GetPoint(last_station + span_length/2,0.00,direction,pgsTypes::pcGlobal,&pntInSpan);
-
-            CComPtr<IDirection> dirParallel;
-            pAlignment->GetBearing(last_station + span_length/2,&dirParallel);
-
-            dirParallel->get_Value(&dir);
-            angle = long(1800.*dir/M_PI);
-            angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
-
-            CComPtr<iEditableUnitValueTextBlock> doSpanLength;
-            doSpanLength.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
-            doSpanLength->SetUnitSystem(docUnitSystem);
-            doSpanLength->SetDisplayUnitGroupName(_T("SpanLength"));
-            doSpanLength->SetValue(span_length);
-            doSpanLength->SetPosition(pntInSpan);
-            doSpanLength->SetTextAlign(TA_BASELINE | TA_CENTER);
-            doSpanLength->SetTextColor(BLACK);
-            doSpanLength->SetBkMode(OPAQUE);
-            doSpanLength->SetAngle(angle);
-            doSpanLength->SetSelectionType(stAll);
-
-            doSpanLength->SetToolTipText(_T("Click to edit"));
-            doSpanLength->SetMaxTipWidth(TOOLTIP_WIDTH);
-            doSpanLength->SetTipDisplayTime(TOOLTIP_DURATION);
-
-            // Register an event sink with the text block object so that we can handle change events
-            CInplaceSpanLengthEditEvents* pSpanLengthEvents = new CInplaceSpanLengthEditEvents(pBroker,pierIdx-1);
-            CComPtr<iDisplayObjectEvents> spanLengthEvents;
-            spanLengthEvents.Attach((iDisplayObjectEvents*)pSpanLengthEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-            doSpanLength->RegisterEventSink(spanLengthEvents);
-
-            label_display_list->AddDisplayObject(doSpanLength);
+            if (pPier->GetNextSpan())
+            {
+               ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
+               pPier->GetBearingOffset(pgsTypes::Ahead, &right_offset, &right_brg_offset_measure_type);
+               if (right_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier)
+               {
+                  right_offset /= cos(skew);
+               }
+            }
          }
-      }
+         else
+         {
+            left_offset = pPier->GetXBeamWidth() / 2;
+            right_offset = left_offset;
+         }
 
-      // create a line display object for the pier centerline
-      // this centerline differs from the one created above in that
-      // it is an extension line from the center of the pier to the intersection
-      // with the alignment. This line shows where the centerline of the pier (extended)
-      // intersects the alignment.
-      CComPtr<iLineDisplayObject> doCenterLine2;
-      doCenterLine2.CoCreateInstance(CLSID_LineDisplayObject);
+         left_offset = (IsZero(left_offset) ? right_offset / 2 : left_offset);
+         right_offset = (IsZero(right_offset) ? left_offset / 2 : right_offset);
 
-      // create a point display object for the center of the pier
-      // add a socket to it
-      CComPtr<iPointDisplayObject> doAlignment;
-      doAlignment.CoCreateInstance(CLSID_PointDisplayObject);
-      doAlignment->SetPosition(alignment_pt,FALSE,FALSE);
-      CComQIPtr<iConnectable> connectable3(doAlignment);
-      CComPtr<iSocket> socket3;
-      connectable3->AddSocket(0,alignment_pt,&socket3);
+         if (pPier->GetPierModelType() == pgsTypes::pmtIdealized)
+         {
+            left_offset *= 1.05;
+            right_offset *= 1.05;
+         }
 
-      CComPtr<iPointDisplayObject> doBridge;
-      doBridge.CoCreateInstance(CLSID_PointDisplayObject);
-      doBridge->SetPosition(bridge_pt,FALSE,FALSE);
-      CComQIPtr<iConnectable> connectable4(doBridge);
-      CComPtr<iSocket> socket4;
-      connectable4->AddSocket(0,bridge_pt,&socket4);
+         strategy_pier->SetLeftOffset(left_offset);
+         strategy_pier->SetRightOffset(right_offset);
 
-      // get the connectors from the line
-      CComQIPtr<iConnector> connector2(doCenterLine2);
-      startPlug.Release();
-      endPlug.Release();
-      connector2->GetStartPlug(&startPlug);
-      connector2->GetEndPlug(&endPlug);
+         // Draw the piers so that the are wider than the width of the girders... compute the overhang
+         // from the left and right exterior girder
+         GroupIndexType backGroupIdx, aheadGroupIdx;
+         pBridge->GetGirderGroupIndex(pierIdx, &backGroupIdx, &aheadGroupIdx);
 
-      // connect the line to the points
-      connectable3->Connect(0,atByID,startPlug,&dwCookie);
-      connectable4->Connect(0,atByID,endPlug,  &dwCookie);
+         // Left side of pier
+         pgsPointOfInterest backPoi, aheadPoi;
+         if (backGroupIdx != INVALID_INDEX)
+         {
+            CGirderKey girderKey(backGroupIdx, 0);
+            backPoi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
+         }
 
-      CComPtr<iSimpleDrawLineStrategy> offset_line_strategy;
-      offset_line_strategy.CoCreateInstance(CLSID_SimpleDrawLineStrategy);
-      offset_line_strategy->SetColor(RGB(120,120,120));
-      offset_line_strategy->SetLineStyle(lsCenterline);
+         if (aheadGroupIdx != INVALID_INDEX)
+         {
+            CGirderKey girderKey(aheadGroupIdx, 0);
+            aheadPoi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
+         }
 
-      doCenterLine2->SetDrawLineStrategy(offset_line_strategy);
+         Float64 back_top_width = (backGroupIdx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(backPoi));
+         Float64 back_bot_width = (backGroupIdx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(backPoi));
+         Float64 ahead_top_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(aheadPoi));
+         Float64 ahead_bot_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(aheadPoi));
+         Float64 left_overhang = Max(back_top_width, back_bot_width, ahead_top_width, ahead_bot_width) / 2;
+         left_overhang /= cos(fabs(skew));
+         left_overhang *= 1.10;
+
+         // Right Side of Pier
+         if (backGroupIdx != INVALID_INDEX)
+         {
+            GirderIndexType nGirders = pBridge->GetGirderCount(backGroupIdx);
+            CGirderKey girderKey(backGroupIdx, nGirders - 1);
+            backPoi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
+         }
+
+         if (aheadGroupIdx != INVALID_INDEX)
+         {
+            GirderIndexType nGirders = pBridge->GetGirderCount(aheadGroupIdx);
+            CGirderKey girderKey(aheadGroupIdx, nGirders - 1);
+            aheadPoi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
+         }
+
+         back_top_width = (backGroupIdx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(backPoi));
+         back_bot_width = (backGroupIdx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(backPoi));
+         ahead_top_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetTopWidth(aheadPoi));
+         ahead_bot_width = (aheadGroupIdx == INVALID_INDEX ? 0 : pGirder->GetBottomWidth(aheadPoi));
+         Float64 right_overhang = Max(back_top_width, back_bot_width, ahead_top_width, ahead_bot_width) / 2;
+         right_overhang /= cos(fabs(skew));
+         right_overhang *= 1.10;
+
+         strategy_pier->SetStartExtension(left_overhang);
+         strategy_pier->SetEndExtension(right_overhang);
+
+         strategy_pier->SetStartSkew(-skew);
+         strategy_pier->SetEndSkew(-skew);
+
+         // this strategy doubles as a gravity well.. get its interface and give it to 
+         // the line display object. this will make the entire pier the clickable part
+         // of the display object
+         strategy_pier->PerimeterGravityWell(TRUE);
+         CComQIPtr<iGravityWellStrategy> gravity_well(strategy_pier);
+         doCenterLine->SetGravityWellStrategy(gravity_well);
+         doCenterLine->SetSelectionType(stAll);
+
+         strategy->AddStrategy(strategy_pier);
+
+         // pier centerline
+         CComPtr<iExtRectangleDrawLineStrategy> strategy_centerline;
+         strategy_centerline.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+         strategy_centerline->SetColor(BLUE);
+         strategy_centerline->SetLineStyle(lsCenterline);
+         strategy_centerline->SetStartExtension(left_overhang);
+         strategy_centerline->SetEndExtension(right_overhang);
+         strategy->AddStrategy(strategy_centerline);
+
+         doCenterLine->SetDrawLineStrategy(strategy);
+
+         Float64 alignmentOffset = pBridge->GetAlignmentOffset();
+         alignmentOffset /= cos(skew);
+
+         CComPtr<IPoint2d> ahead_point;
+         pAlignment->GetPoint(station, -alignmentOffset, direction, pgsTypes::pcGlobal, &ahead_point);
+
+         CComPtr<IPoint2d> back_point;
+         pAlignment->GetPoint(station, -alignmentOffset, direction, pgsTypes::pcGlobal, &back_point);
+
+         if (settings & IDB_PV_LABEL_PIERS)
+         {
+            // pier label
+            CComPtr<iTextBlock> doPierName;
+            doPierName.CoCreateInstance(CLSID_TextBlock);
+
+            CString strText;
+            strText.Format(_T("%s %d"), strPierLabel, LABEL_PIER(pierIdx));
+
+            doPierName->SetPosition(ahead_point);
+            doPierName->SetTextAlign(TA_BASELINE | TA_CENTER);
+            doPierName->SetText(strText);
+            doPierName->SetTextColor(BLACK);
+            doPierName->SetBkMode(OPAQUE);
+
+            Float64 dir;
+            direction->get_Value(&dir);
+            long angle = long(1800.*dir / M_PI);
+            angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+            doPierName->SetAngle(angle);
+            label_display_list->AddDisplayObject(doPierName);
+
+            // pier station
+            CComPtr<iEditableUnitValueTextBlock> doStation;
+            doStation.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
+            doStation->SetUnitSystem(docUnitSystem);
+            doStation->SetDisplayUnitGroupName(_T("Station"));
+            doStation->IsStation(true);
+            doStation->SetValue(station);
+            doStation->SetPosition(back_point);
+            doStation->SetTextAlign(TA_TOP | TA_CENTER);
+            doStation->SetTextColor(BLACK);
+            doStation->SetBkMode(OPAQUE);
+            doStation->SetAngle(angle);
+            doStation->SetSelectionType(stAll);
+
+            doStation->SetToolTipText(_T("Click to edit"));
+            doStation->SetMaxTipWidth(TOOLTIP_WIDTH);
+            doStation->SetTipDisplayTime(TOOLTIP_DURATION);
+
+            CInplacePierStationEditEvents* pPierStationEvents = new CInplacePierStationEditEvents(pBroker, pierIdx);
+            CComPtr<iDisplayObjectEvents> pierStationEvents;
+            pierStationEvents.Attach((iDisplayObjectEvents*)pPierStationEvents->GetInterface(&IID_iDisplayObjectEvents));
+
+            doStation->RegisterEventSink(pierStationEvents);
+
+            label_display_list->AddDisplayObject(doStation);
+
+            // connection
+            Float64 right_slab_edge_offset = pBridge->GetRightSlabEdgeOffset(pierIdx);
+            CComPtr<IPoint2d> connection_label_point;
+            pAlignment->GetPoint(station, -right_slab_edge_offset / cos(skew), direction, pgsTypes::pcGlobal, &connection_label_point);
+
+            // make the baseline of the connection text parallel to the alignment
+            direction.Release();
+            pAlignment->GetBearing(station, &direction);
+            direction->get_Value(&dir);
+
+            angle = long(1800.*dir / M_PI);
+            angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+
+            CComPtr<iTextBlock> doConnection;
+            doConnection.CoCreateInstance(CLSID_TextBlock);
+            doConnection->SetSelectionType(stNone);
+            doConnection->SetPosition(connection_label_point);
+            doConnection->SetTextColor(CONNECTION_LABEL_COLOR);
+            doConnection->SetBkMode(TRANSPARENT);
+            doConnection->SetAngle(angle);
+
+            if (pierIdx == 0) // first pier
+            {
+               doConnection->SetTextAlign(TA_TOP | TA_LEFT);
+            }
+            else if (pierIdx == nPiers - 1) // last pier
+            {
+               doConnection->SetTextAlign(TA_TOP | TA_RIGHT);
+            }
+            else // intermediate pier
+            {
+               doConnection->SetTextAlign(TA_TOP | TA_CENTER);
+            }
+
+            doConnection->SetText(GetConnectionString(pPier).c_str());
+
+            doConnection->SetToolTipText(GetFullConnectionString(pPier).c_str());
+            doConnection->SetMaxTipWidth(TOOLTIP_WIDTH);
+            doConnection->SetTipDisplayTime(TOOLTIP_DURATION);
+
+            // Register an event sink with the connection text display object so that we can handle double clicks
+            // differently then a general double click
+            CConnectionDisplayObjectEvents* pEvents = new CConnectionDisplayObjectEvents(pierIdx);
+            CComPtr<iDisplayObjectEvents> events;
+            events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
+
+            CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doConnection);
+            dispObj->RegisterEventSink(events);
+
+            label_display_list->AddDisplayObject(doConnection);
+
+            if (firstPierIdx < pierIdx)
+            {
+               ATLASSERT(pierIdx != ALL_PIERS);
+               // label span length
+
+               Float64 span_length = station - last_station;
+
+               CComPtr<IPoint2d> pntInSpan;
+               pAlignment->GetPoint(last_station + span_length / 2, 0.00, direction, pgsTypes::pcGlobal, &pntInSpan);
+
+               CComPtr<IDirection> dirParallel;
+               pAlignment->GetBearing(last_station + span_length / 2, &dirParallel);
+
+               dirParallel->get_Value(&dir);
+               angle = long(1800.*dir / M_PI);
+               angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+
+               CComPtr<iEditableUnitValueTextBlock> doSpanLength;
+               doSpanLength.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
+               doSpanLength->SetUnitSystem(docUnitSystem);
+               doSpanLength->SetDisplayUnitGroupName(_T("SpanLength"));
+               doSpanLength->SetValue(span_length);
+               doSpanLength->SetPosition(pntInSpan);
+               doSpanLength->SetTextAlign(TA_BASELINE | TA_CENTER);
+               doSpanLength->SetTextColor(BLACK);
+               doSpanLength->SetBkMode(OPAQUE);
+               doSpanLength->SetAngle(angle);
+               doSpanLength->SetSelectionType(stAll);
+
+               doSpanLength->SetToolTipText(_T("Click to edit"));
+               doSpanLength->SetMaxTipWidth(TOOLTIP_WIDTH);
+               doSpanLength->SetTipDisplayTime(TOOLTIP_DURATION);
+
+               // Register an event sink with the text block object so that we can handle change events
+               CInplaceSpanLengthEditEvents* pSpanLengthEvents = new CInplaceSpanLengthEditEvents(pBroker, pierIdx - 1);
+               CComPtr<iDisplayObjectEvents> spanLengthEvents;
+               spanLengthEvents.Attach((iDisplayObjectEvents*)pSpanLengthEvents->GetInterface(&IID_iDisplayObjectEvents));
+
+               doSpanLength->RegisterEventSink(spanLengthEvents);
+
+               label_display_list->AddDisplayObject(doSpanLength);
+            }
+         }
+
+         // create a line display object for the pier centerline
+         // this centerline differs from the one created above in that
+         // it is an extension line from the center of the pier to the intersection
+         // with the alignment. This line shows where the centerline of the pier (extended)
+         // intersects the alignment.
+         CComPtr<iLineDisplayObject> doCenterLine2;
+         doCenterLine2.CoCreateInstance(CLSID_LineDisplayObject);
+
+         // create a point display object for the center of the pier
+         // add a socket to it
+         CComPtr<iPointDisplayObject> doAlignment;
+         doAlignment.CoCreateInstance(CLSID_PointDisplayObject);
+         doAlignment->SetPosition(alignment_pt, FALSE, FALSE);
+         CComQIPtr<iConnectable> connectable3(doAlignment);
+         CComPtr<iSocket> socket3;
+         connectable3->AddSocket(0, alignment_pt, &socket3);
+
+         CComPtr<iPointDisplayObject> doBridge;
+         doBridge.CoCreateInstance(CLSID_PointDisplayObject);
+         doBridge->SetPosition(bridge_pt, FALSE, FALSE);
+         CComQIPtr<iConnectable> connectable4(doBridge);
+         CComPtr<iSocket> socket4;
+         connectable4->AddSocket(0, bridge_pt, &socket4);
+
+         // get the connectors from the line
+         CComQIPtr<iConnector> connector2(doCenterLine2);
+         startPlug.Release();
+         endPlug.Release();
+         connector2->GetStartPlug(&startPlug);
+         connector2->GetEndPlug(&endPlug);
+
+         // connect the line to the points
+         connectable3->Connect(0, atByID, startPlug, &dwCookie);
+         connectable4->Connect(0, atByID, endPlug, &dwCookie);
+
+         CComPtr<iSimpleDrawLineStrategy> offset_line_strategy;
+         offset_line_strategy.CoCreateInstance(CLSID_SimpleDrawLineStrategy);
+         offset_line_strategy->SetColor(RGB(120, 120, 120));
+         offset_line_strategy->SetLineStyle(lsCenterline);
+
+         doCenterLine2->SetDrawLineStrategy(offset_line_strategy);
 
 
-      display_list->AddDisplayObject(doLeft);
-      display_list->AddDisplayObject(doAlignment);
-      display_list->AddDisplayObject(doBridge);
-      display_list->AddDisplayObject(doRight);
-      display_list->AddDisplayObject(doCenterLine);
-      display_list->AddDisplayObject(doCenterLine2);
+         display_list->AddDisplayObject(doLeft);
+         display_list->AddDisplayObject(doAlignment);
+         display_list->AddDisplayObject(doBridge);
+         display_list->AddDisplayObject(doRight);
+         display_list->AddDisplayObject(doCenterLine);
+         display_list->AddDisplayObject(doCenterLine2);
 
-      last_station = station;
-   }
+         last_station = station;
+      } // next pier
+   } // next group
 }
 
 void CBridgePlanView::BuildTemporarySupportDisplayObjects()
@@ -2418,19 +2430,25 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
    CComPtr<IDocUnitSystem> docUnitSystem;
    pDoc->GetDocUnitSystem(&docUnitSystem);
 
-   GET_IFACE2(pBroker,ITempSupport,pTemporarySupport); // only needed if there are temporary supports
-   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IRoadway,pAlignment);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,ITempSupport,pTemporarySupport); // only needed if there are temporary supports
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
+   GET_IFACE2_NOCHECK(pBroker,IRoadway,pAlignment);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
 
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
       const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
 
       SpanIndexType spanIdx = pTS->GetSpan()->GetIndex();
-      if ( spanIdx < m_StartSpanIdx || m_EndSpanIdx < spanIdx )
+      GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
+
+      if (grpIdx < firstGroupIdx || lastGroupIdx < grpIdx)
       {
          continue;
       }
@@ -2581,7 +2599,6 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       Float64 right_offset = 1.05*(brg_offset + support_width);
 
       // need POI at intersection of TS and CL Girder
-      GroupIndexType grpIdx = pBridgeDesc->GetGirderGroup(pTS->GetSpan())->GetIndex();
       pgsPointOfInterest leftPoi = pPoi->GetTemporarySupportPointOfInterest(CGirderKey(grpIdx,0),tsIdx);
       Float64 top_width = pGirder->GetTopWidth(leftPoi);
       Float64 bot_width = pGirder->GetBottomWidth(leftPoi);
@@ -2758,7 +2775,9 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
+   for(GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       GirderIndexType nGirders = pGroup->GetGirderCount();
@@ -2930,61 +2949,66 @@ void CBridgePlanView::BuildSpanDisplayObjects()
 
    display_list->Clear();
 
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
-   SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType lastGroupIdx  = (m_EndGroupIdx  == ALL_GROUPS ? nGroups -1 : m_EndGroupIdx);
+   for ( GroupIndexType groupIdx = firstGroupIdx; groupIdx <= lastGroupIdx; groupIdx++ )
    {
-      CComPtr<IPoint2dCollection> points;
-      pBridge->GetSpanPerimeter(spanIdx,10,pgsTypes::pcGlobal,&points);
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pBridge->GetGirderGroupSpans(groupIdx, &startSpanIdx, &endSpanIdx);
+      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+      {
+         CComPtr<IPoint2dCollection> points;
+         pBridge->GetSpanPerimeter(spanIdx, 10, pgsTypes::pcGlobal, &points);
 
-      CComPtr<IPolyShape> poly_shape;
-      poly_shape.CoCreateInstance(CLSID_PolyShape);
-      poly_shape->AddPoints(points);
+         CComPtr<IPolyShape> poly_shape;
+         poly_shape.CoCreateInstance(CLSID_PolyShape);
+         poly_shape->AddPoints(points);
 
 
-      CComPtr<iPointDisplayObject> doPnt;
-      doPnt.CoCreateInstance(CLSID_PointDisplayObject);
-      CComPtr<IPoint2d> p;
-      points->get_Item(0,&p);
-      doPnt->SetPosition(p,FALSE,FALSE);
+         CComPtr<iPointDisplayObject> doPnt;
+         doPnt.CoCreateInstance(CLSID_PointDisplayObject);
+         CComPtr<IPoint2d> p;
+         points->get_Item(0, &p);
+         doPnt->SetPosition(p, FALSE, FALSE);
 
-      CComPtr<iShapeDrawStrategy> strategy;
-      strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-      CComQIPtr<IShape> shape(poly_shape);
-      strategy->SetShape(shape);
-      strategy->SetSolidLineColor(IsStructuralDeck(deckType) ? DECK_BORDER_COLOR : NONSTRUCTURAL_DECK_BORDER_COLOR);
-      strategy->SetSolidFillColor(IsStructuralDeck(deckType) ? DECK_FILL_COLOR : NONSTRUCTURAL_DECK_FILL_COLOR);
-      strategy->DoFill(TRUE);
-      doPnt->SetDrawingStrategy(strategy);
+         CComPtr<iShapeDrawStrategy> strategy;
+         strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+         CComQIPtr<IShape> shape(poly_shape);
+         strategy->SetShape(shape);
+         strategy->SetSolidLineColor(IsStructuralDeck(deckType) ? DECK_BORDER_COLOR : NONSTRUCTURAL_DECK_BORDER_COLOR);
+         strategy->SetSolidFillColor(IsStructuralDeck(deckType) ? DECK_FILL_COLOR : NONSTRUCTURAL_DECK_FILL_COLOR);
+         strategy->DoFill(TRUE);
+         doPnt->SetDrawingStrategy(strategy);
 
-      doPnt->SetSelectionType(stAll);
-      doPnt->SetID(spanIdx);
+         doPnt->SetSelectionType(stAll);
+         doPnt->SetID(spanIdx);
 
-      SpanDisplayObjectInfo* pInfo = new SpanDisplayObjectInfo(spanIdx,SPAN_DISPLAY_LIST);
-      doPnt->SetItemData((void*)pInfo,true);
+         SpanDisplayObjectInfo* pInfo = new SpanDisplayObjectInfo(spanIdx, SPAN_DISPLAY_LIST);
+         doPnt->SetItemData((void*)pInfo, true);
 
-      CComPtr<iShapeGravityWellStrategy> gravity_well;
-      gravity_well.CoCreateInstance(CLSID_ShapeGravityWellStrategy);
-      gravity_well->SetShape(shape);
+         CComPtr<iShapeGravityWellStrategy> gravity_well;
+         gravity_well.CoCreateInstance(CLSID_ShapeGravityWellStrategy);
+         gravity_well->SetShape(shape);
 
-      doPnt->SetGravityWellStrategy(gravity_well);
+         doPnt->SetGravityWellStrategy(gravity_well);
 
-      CBridgePlanViewSpanDisplayObjectEvents* pEvents = new CBridgePlanViewSpanDisplayObjectEvents(spanIdx,m_pFrame);
-      CComPtr<iDisplayObjectEvents> events;
-      events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
+         CBridgePlanViewSpanDisplayObjectEvents* pEvents = new CBridgePlanViewSpanDisplayObjectEvents(spanIdx, m_pFrame);
+         CComPtr<iDisplayObjectEvents> events;
+         events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
 
-      CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doPnt);
-      dispObj->RegisterEventSink(events);
+         CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doPnt);
+         dispObj->RegisterEventSink(events);
 
-      CString strMsg(_T("Double click to edit span.\nRight click for more options."));
+         CString strMsg(_T("Double click to edit span.\nRight click for more options."));
 
-      dispObj->SetToolTipText(strMsg);
-      dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
-      dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+         dispObj->SetToolTipText(strMsg);
+         dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
+         dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
 
-      display_list->AddDisplayObject(doPnt);
-   }
+         display_list->AddDisplayObject(doPnt);
+      } // next span
+   } // next group
 }
 
 void CBridgePlanView::BuildSlabDisplayObjects()
@@ -3058,60 +3082,66 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    CString strBaseMsg = strMsg1 + strMsg2 + strMsg3;
 
    // build display objects for each deck casting region
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
-   SpanIndexType lastSpanIdx = (m_EndSpanIdx == ALL_SPANS ? nSpans - 1 : m_EndSpanIdx);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
 
    IndexType nRegions = pBridge->GetDeckCastingRegionCount();
    for(IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
    {
-      PierIndexType startPierIdx, endPierIdx;
-      Float64 Xstart, Xend;
-      CCastingRegion::RegionType regionType;
-      IndexType sequenceIdx;
-      pBridge->GetDeckCastingRegionLimits(regionIdx, &startPierIdx, &Xstart, &endPierIdx, &Xend, &regionType, &sequenceIdx);
+      for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+      {
+         SpanIndexType firstSpanIdx, lastSpanIdx;
+         pBridge->GetGirderGroupSpans(grpIdx, &firstSpanIdx, &lastSpanIdx);
 
-      IndexType nPoints = 10;
-      CComPtr<IPoint2dCollection> points;
-      pBridge->GetDeckCastingRegionPerimeter(regionIdx, firstSpanIdx, lastSpanIdx, nPoints, pgsTypes::pcGlobal, &regionType, &sequenceIdx, nullptr, &points);
+         PierIndexType startPierIdx, endPierIdx;
+         Float64 Xstart, Xend;
+         CCastingRegion::RegionType regionType;
+         IndexType sequenceIdx;
+         pBridge->GetDeckCastingRegionLimits(regionIdx, &startPierIdx, &Xstart, &endPierIdx, &Xend, &regionType, &sequenceIdx);
 
-      COLORREF deck_fill_color = (regionType == CCastingRegion::Span ? DECK_FILL_POS_MOMENT_REGION_COLOR : DECK_FILL_NEG_MOMENT_REGION_COLOR);
+         IndexType nPoints = 10;
+         CComPtr<IPoint2dCollection> points;
+         pBridge->GetDeckCastingRegionPerimeter(regionIdx, firstSpanIdx, lastSpanIdx, nPoints, pgsTypes::pcGlobal, &regionType, &sequenceIdx, nullptr, &points);
 
-      CComPtr<IPolyShape> poly_shape;
-      poly_shape.CoCreateInstance(CLSID_PolyShape);
-      poly_shape->AddPoints(points);
+         COLORREF deck_fill_color = (regionType == CCastingRegion::Span ? DECK_FILL_POS_MOMENT_REGION_COLOR : DECK_FILL_NEG_MOMENT_REGION_COLOR);
 
-      CComPtr<iPointDisplayObject> doDeckRegion;
-      doDeckRegion.CoCreateInstance(CLSID_PointDisplayObject);
-      CComPtr<IPoint2d> p;
-      points->get_Item(0, &p);
-      doDeckRegion->SetPosition(p, FALSE, FALSE);
-      doDeckRegion->SetSelectionType(stAll);
+         CComPtr<IPolyShape> poly_shape;
+         poly_shape.CoCreateInstance(CLSID_PolyShape);
+         poly_shape->AddPoints(points);
 
-      CComPtr<iShapeDrawStrategy> strategy;
-      strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-      CComQIPtr<IShape> shape(poly_shape);
-      strategy->SetShape(shape);
-      strategy->SetSolidLineColor(DECK_BORDER_COLOR);
-      strategy->SetSolidFillColor(deck_fill_color);
-      strategy->DoFill(TRUE);
-      doDeckRegion->SetDrawingStrategy(strategy);
+         CComPtr<iPointDisplayObject> doDeckRegion;
+         doDeckRegion.CoCreateInstance(CLSID_PointDisplayObject);
+         CComPtr<IPoint2d> p;
+         points->get_Item(0, &p);
+         doDeckRegion->SetPosition(p, FALSE, FALSE);
+         doDeckRegion->SetSelectionType(stAll);
 
-      CComPtr<iShapeGravityWellStrategy> gravity_well;
-      gravity_well.CoCreateInstance(CLSID_ShapeGravityWellStrategy);
-      gravity_well->SetShape(shape);
+         CComPtr<iShapeDrawStrategy> strategy;
+         strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+         CComQIPtr<IShape> shape(poly_shape);
+         strategy->SetShape(shape);
+         strategy->SetSolidLineColor(DECK_BORDER_COLOR);
+         strategy->SetSolidFillColor(deck_fill_color);
+         strategy->DoFill(TRUE);
+         doDeckRegion->SetDrawingStrategy(strategy);
 
-      doDeckRegion->SetGravityWellStrategy(gravity_well);
+         CComPtr<iShapeGravityWellStrategy> gravity_well;
+         gravity_well.CoCreateInstance(CLSID_ShapeGravityWellStrategy);
+         gravity_well->SetShape(shape);
 
-      CString strMsg;
-      strMsg.Format(_T("%s\n\nRegion %d\nSequence %d"), strBaseMsg, LABEL_INDEX(regionIdx), LABEL_INDEX(sequenceIdx));
+         doDeckRegion->SetGravityWellStrategy(gravity_well);
 
-      doDeckRegion->SetToolTipText(strMsg);
-      doDeckRegion->SetMaxTipWidth(TOOLTIP_WIDTH);
-      doDeckRegion->SetTipDisplayTime(TOOLTIP_DURATION);
+         CString strMsg;
+         strMsg.Format(_T("%s\n\nRegion %d\nSequence %d"), strBaseMsg, LABEL_INDEX(regionIdx), LABEL_INDEX(sequenceIdx));
 
-      doSlab->AddDisplayObject(doDeckRegion);
-   }
+         doDeckRegion->SetToolTipText(strMsg);
+         doDeckRegion->SetMaxTipWidth(TOOLTIP_WIDTH);
+         doDeckRegion->SetTipDisplayTime(TOOLTIP_DURATION);
+
+         doSlab->AddDisplayObject(doDeckRegion);
+      } // next group
+   } // next region
 }
 
 void CBridgePlanView::BuildSectionCutDisplayObjects()
@@ -3153,8 +3183,15 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
    UpdateSectionCut(point_disp,FALSE);
    display_list->AddDisplayObject(disp_obj);
 
-   PierIndexType startPierIdx = (PierIndexType)m_StartSpanIdx;
-   PierIndexType endPierIdx   = (PierIndexType)(m_EndSpanIdx+1);
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
+
+   SpanIndexType startSpanIdx, dummySpanIdx, endSpanIdx;
+   pBridge->GetGirderGroupSpans(firstGroupIdx, &startSpanIdx, &dummySpanIdx);
+   pBridge->GetGirderGroupSpans(lastGroupIdx, &dummySpanIdx, &endSpanIdx);
+   PierIndexType startPierIdx = (PierIndexType)startSpanIdx;
+   PierIndexType endPierIdx   = (PierIndexType)(endSpanIdx+1);
    Float64 first_station = pBridge->GetPierStation(startPierIdx);
    Float64 last_station  = pBridge->GetPierStation(endPierIdx);
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
@@ -3217,109 +3254,113 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-   SpanIndexType firstSpanIdx = (m_StartSpanIdx == ALL_SPANS ? 0 : m_StartSpanIdx);
-   SpanIndexType lastSpanIdx  = (m_EndSpanIdx  == ALL_SPANS ? nSpans-1 : m_EndSpanIdx);
-   for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType lastGroupIdx  = (m_EndGroupIdx  == ALL_GROUPS ? nGroups-1 : m_EndGroupIdx);
+   for(GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
    {
-      GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders-1; gdrIdx++ )
+      SpanIndexType firstSpanIdx, lastSpanIdx;
+      pBridge->GetGirderGroupSpans(grpIdx, &firstSpanIdx, &lastSpanIdx);
+      for ( SpanIndexType spanIdx = firstSpanIdx; spanIdx <= lastSpanIdx; spanIdx++ )
       {
-         CSpanKey spanKey1(spanIdx,gdrIdx);
-         CSpanKey spanKey2(spanIdx,gdrIdx+1);
-
-         std::vector<IntermedateDiaphragm> left_diaphragms  = pBridge->GetCastInPlaceDiaphragms(spanKey1);
-         std::vector<IntermedateDiaphragm> right_diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey2);
-
-         std::vector<IntermedateDiaphragm>::iterator left_iter, right_iter;
-         for ( left_iter = left_diaphragms.begin(), right_iter = right_diaphragms.begin(); 
-               left_iter != left_diaphragms.end() && right_iter != right_diaphragms.end(); 
-               left_iter++, right_iter++ )
+         GirderIndexType nGirders = pBridge->GetGirderCountBySpan(spanIdx);
+         for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders-1; gdrIdx++ )
          {
-            IntermedateDiaphragm left_diaphragm  = *left_iter;
-            IntermedateDiaphragm right_diaphragm = *right_iter;
-            
-            // Only add the diaphragm if it has width
-            if ( !IsZero(left_diaphragm.W) && !IsZero(right_diaphragm.W) )
+            CSpanKey spanKey1(spanIdx,gdrIdx);
+            CSpanKey spanKey2(spanIdx,gdrIdx+1);
+
+            std::vector<IntermedateDiaphragm> left_diaphragms  = pBridge->GetCastInPlaceDiaphragms(spanKey1);
+            std::vector<IntermedateDiaphragm> right_diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey2);
+
+            std::vector<IntermedateDiaphragm>::iterator left_iter, right_iter;
+            for ( left_iter = left_diaphragms.begin(), right_iter = right_diaphragms.begin(); 
+                  left_iter != left_diaphragms.end() && right_iter != right_diaphragms.end(); 
+                  left_iter++, right_iter++ )
             {
-               pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanKey1,left_diaphragm.Location);
+               IntermedateDiaphragm left_diaphragm  = *left_iter;
+               IntermedateDiaphragm right_diaphragm = *right_iter;
+            
+               // Only add the diaphragm if it has width
+               if (!IsZero(left_diaphragm.W) && !IsZero(right_diaphragm.W))
+               {
+                  pgsPointOfInterest poi = pPoi->ConvertSpanPointToPoi(spanKey1, left_diaphragm.Location);
 
-	            Float64 station, offset;
-	            pBridge->GetStationAndOffset(poi,&station,&offset);
-	
-	            CComPtr<IDirection> normal;
-	            pAlignment->GetBearingNormal(station,&normal);
-	            CComPtr<IPoint2d> pntLeft;
-	            pAlignment->GetPoint(station,offset,normal,pgsTypes::pcGlobal,&pntLeft);
-	
-               poi = pPoi->ConvertSpanPointToPoi(spanKey2,right_diaphragm.Location);
-	            pBridge->GetStationAndOffset(poi,&station,&offset);
-	            normal.Release();
-	            pAlignment->GetBearingNormal(station,&normal);
-	            CComPtr<IPoint2d> pntRight;
-	            pAlignment->GetPoint(station,offset,normal,pgsTypes::pcGlobal,&pntRight);
-	
-	            // create a point on the left side of the diaphragm
-	            CComPtr<iPointDisplayObject> doLeft;
-	            doLeft.CoCreateInstance(CLSID_PointDisplayObject);
-	            doLeft->SetPosition(pntLeft,FALSE,FALSE);
-	            CComQIPtr<iConnectable> connectable1(doLeft);
-	            CComPtr<iSocket> socket1;
-	            connectable1->AddSocket(0,pntLeft,&socket1);
-	
-	            // create a point on the right side of the diaphragm
-	            CComPtr<iPointDisplayObject> doRight;
-	            doRight.CoCreateInstance(CLSID_PointDisplayObject);
-	            doRight->SetPosition(pntRight,FALSE,FALSE);
-	            CComQIPtr<iConnectable> connectable2(doRight);
-	            CComPtr<iSocket> socket2;
-	            connectable2->AddSocket(0,pntRight,&socket2);
-	
-	            // create a line for the diaphragm
-	            CComPtr<iLineDisplayObject> doDiaphragmLine;
-	            doDiaphragmLine.CoCreateInstance(CLSID_LineDisplayObject);
-	
-	            CComQIPtr<iConnector> connector(doDiaphragmLine);
-	            CComQIPtr<iPlug> startPlug, endPlug;
-	            connector->GetStartPlug(&startPlug);
-	            connector->GetEndPlug(&endPlug);
-	
-	            // connect the line to the points
-	            DWORD dwCookie;
-	            connectable1->Connect(0,atByID,startPlug,&dwCookie);
-	            connectable2->Connect(0,atByID,endPlug,  &dwCookie);
-	
-	            CComPtr<iExtRectangleDrawLineStrategy> strategy;
-	            strategy.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
-	            strategy->SetColor(DIAPHRAGM_BORDER_COLOR);
-	            strategy->SetFillColor(DIAPHRAGM_FILL_COLOR);
-	            strategy->DoFill(TRUE);
-	
-	            Float64 width = (left_diaphragm.T + right_diaphragm.T)/2;
-	            strategy->SetLeftOffset(width/2);
-	            strategy->SetRightOffset(width/2);
-	
-	            strategy->SetStartExtension(0);
-	            strategy->SetEndExtension(0);
-	
-	            strategy->SetStartSkew(0);
-	            strategy->SetEndSkew(0);
-	
-	            doDiaphragmLine->SetDrawLineStrategy(strategy);
-	
-	            CString strTip;
-	            strTip.Format(_T("%s x %s intermediate diaphragm"),::FormatDimension(left_diaphragm.T,pDisplayUnits->GetComponentDimUnit()),::FormatDimension(left_diaphragm.H,pDisplayUnits->GetComponentDimUnit()));
-	            doDiaphragmLine->SetMaxTipWidth(TOOLTIP_WIDTH);
-	            doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
-	            doDiaphragmLine->SetToolTipText(strTip);
+                  Float64 station, offset;
+                  pBridge->GetStationAndOffset(poi, &station, &offset);
 
-               CComQIPtr<iDisplayObject> dispObj(doDiaphragmLine);
-	            display_list->AddDisplayObject(dispObj);
-	
+                  CComPtr<IDirection> normal;
+                  pAlignment->GetBearingNormal(station, &normal);
+                  CComPtr<IPoint2d> pntLeft;
+                  pAlignment->GetPoint(station, offset, normal, pgsTypes::pcGlobal, &pntLeft);
+
+                  poi = pPoi->ConvertSpanPointToPoi(spanKey2, right_diaphragm.Location);
+                  pBridge->GetStationAndOffset(poi, &station, &offset);
+                  normal.Release();
+                  pAlignment->GetBearingNormal(station, &normal);
+                  CComPtr<IPoint2d> pntRight;
+                  pAlignment->GetPoint(station, offset, normal, pgsTypes::pcGlobal, &pntRight);
+
+                  // create a point on the left side of the diaphragm
+                  CComPtr<iPointDisplayObject> doLeft;
+                  doLeft.CoCreateInstance(CLSID_PointDisplayObject);
+                  doLeft->SetPosition(pntLeft, FALSE, FALSE);
+                  CComQIPtr<iConnectable> connectable1(doLeft);
+                  CComPtr<iSocket> socket1;
+                  connectable1->AddSocket(0, pntLeft, &socket1);
+
+                  // create a point on the right side of the diaphragm
+                  CComPtr<iPointDisplayObject> doRight;
+                  doRight.CoCreateInstance(CLSID_PointDisplayObject);
+                  doRight->SetPosition(pntRight, FALSE, FALSE);
+                  CComQIPtr<iConnectable> connectable2(doRight);
+                  CComPtr<iSocket> socket2;
+                  connectable2->AddSocket(0, pntRight, &socket2);
+
+                  // create a line for the diaphragm
+                  CComPtr<iLineDisplayObject> doDiaphragmLine;
+                  doDiaphragmLine.CoCreateInstance(CLSID_LineDisplayObject);
+
+                  CComQIPtr<iConnector> connector(doDiaphragmLine);
+                  CComQIPtr<iPlug> startPlug, endPlug;
+                  connector->GetStartPlug(&startPlug);
+                  connector->GetEndPlug(&endPlug);
+
+                  // connect the line to the points
+                  DWORD dwCookie;
+                  connectable1->Connect(0, atByID, startPlug, &dwCookie);
+                  connectable2->Connect(0, atByID, endPlug, &dwCookie);
+
+                  CComPtr<iExtRectangleDrawLineStrategy> strategy;
+                  strategy.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+                  strategy->SetColor(DIAPHRAGM_BORDER_COLOR);
+                  strategy->SetFillColor(DIAPHRAGM_FILL_COLOR);
+                  strategy->DoFill(TRUE);
+
+                  Float64 width = (left_diaphragm.T + right_diaphragm.T) / 2;
+                  strategy->SetLeftOffset(width / 2);
+                  strategy->SetRightOffset(width / 2);
+
+                  strategy->SetStartExtension(0);
+                  strategy->SetEndExtension(0);
+
+                  strategy->SetStartSkew(0);
+                  strategy->SetEndSkew(0);
+
+                  doDiaphragmLine->SetDrawLineStrategy(strategy);
+
+                  CString strTip;
+                  strTip.Format(_T("%s x %s intermediate diaphragm"), ::FormatDimension(left_diaphragm.T, pDisplayUnits->GetComponentDimUnit()), ::FormatDimension(left_diaphragm.H, pDisplayUnits->GetComponentDimUnit()));
+                  doDiaphragmLine->SetMaxTipWidth(TOOLTIP_WIDTH);
+                  doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
+                  doDiaphragmLine->SetToolTipText(strTip);
+
+                  CComQIPtr<iDisplayObject> dispObj(doDiaphragmLine);
+                  display_list->AddDisplayObject(dispObj);
+               }
 	         }
          }
-      }
-   }
+      } // next span
+   } // next group
 }
 
 void CBridgePlanView::UpdateDrawingScale()

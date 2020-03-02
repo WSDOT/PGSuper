@@ -78,8 +78,8 @@ private:
    bool m_bIsBoundaryPier;
 
    CBridgeDescription2 m_BridgeDescription;
-   SpanIndexType m_StartSpanIdx;
-   SpanIndexType m_EndSpanIdx;
+   GroupIndexType m_StartGroupIdx;
+   GroupIndexType m_EndGroupIdx;
 
    std::map<CGirderKey,CPTData> m_PTData;
 };

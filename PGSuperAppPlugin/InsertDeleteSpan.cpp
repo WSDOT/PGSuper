@@ -145,8 +145,8 @@ txnDeleteSpan::txnDeleteSpan(const txnDeleteSpan& other)
    m_bIsBoundaryPier = other.m_bIsBoundaryPier;
 
    m_BridgeDescription = other.m_BridgeDescription;
-   m_StartSpanIdx = other.m_StartSpanIdx;
-   m_EndSpanIdx = other.m_EndSpanIdx;
+   m_StartGroupIdx = other.m_StartGroupIdx;
+   m_EndGroupIdx = other.m_EndGroupIdx;
 
    m_PTData = other.m_PTData;;
 }
@@ -187,7 +187,7 @@ bool txnDeleteSpan::Execute()
    GET_IFACE2(pBroker,IViews,pViews);
    CComPtr<IBridgeModelViewController> pViewController;
    pViews->CreateBridgeModelView(&pViewController);
-   pViewController->GetSpanRange(&m_StartSpanIdx,&m_EndSpanIdx);
+   pViewController->GetGroupRange(&m_StartGroupIdx,&m_EndGroupIdx);
 
    // save the span/pier that are going to be deleted for undo
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -284,5 +284,5 @@ void txnDeleteSpan::Undo()
    GET_IFACE2(pBroker, IViews, pViews);
    CComPtr<IBridgeModelViewController> pViewController;
    pViews->CreateBridgeModelView(&pViewController);
-   pViewController->SetSpanRange(m_StartSpanIdx,m_EndSpanIdx);
+   pViewController->SetGroupRange(m_StartGroupIdx,m_EndGroupIdx);
 }

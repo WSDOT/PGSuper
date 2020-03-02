@@ -106,8 +106,8 @@ public:
    bool IsDeckSelected();
    bool IsAlignmentSelected();
 
-   void GetSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
-   void SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,bool bUpdate = true);
+   void GetGroupRange(GroupIndexType* pStartGroupIdx,GroupIndexType* pEndGroupIdx);
+   void SetGroupRange(GroupIndexType startGroupIdx,GroupIndexType endGroupIdx,bool bUpdate = true);
 
    virtual DROPEFFECT CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point);
    virtual void OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point);
@@ -177,7 +177,7 @@ protected:
 
    void Select(const CSelection* pSelection);
 
-   // Range of spans that will be displayed
-   SpanIndexType m_StartSpanIdx;
-   SpanIndexType m_EndSpanIdx;
+   // Range of groups that will be displayed
+   SpanIndexType m_StartGroupIdx;
+   SpanIndexType m_EndGroupIdx;
 };

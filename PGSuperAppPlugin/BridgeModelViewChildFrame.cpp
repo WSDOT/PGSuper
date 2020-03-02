@@ -40,6 +40,7 @@
 #include <IFace\Project.h>
 #include <IFace\EditByUI.h>
 #include <IFace\DrawBridgeSettings.h>
+#include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\ClosureJointData.h>
@@ -119,8 +120,8 @@ BEGIN_MESSAGE_MAP(CBridgeModelViewChildFrame, CSplitChildFrame)
    ON_COMMAND_RANGE(IDM_HINGE,IDM_INTEGRAL_SEGMENT_AT_PIER,OnBoundaryCondition)
    ON_UPDATE_COMMAND_UI_RANGE(IDM_HINGE,IDM_INTEGRAL_SEGMENT_AT_PIER,OnUpdateBoundaryCondition)
 	ON_MESSAGE(WM_HELP, OnCommandHelp)
-   ON_NOTIFY(UDN_DELTAPOS, IDC_START_SPAN_SPIN, &CBridgeModelViewChildFrame::OnStartSpanChanged)
-   ON_NOTIFY(UDN_DELTAPOS, IDC_END_SPAN_SPIN, &CBridgeModelViewChildFrame::OnEndSpanChanged)
+   ON_NOTIFY(UDN_DELTAPOS, IDC_START_GROUP_SPIN, &CBridgeModelViewChildFrame::OnStartGroupChanged)
+   ON_NOTIFY(UDN_DELTAPOS, IDC_END_GROUP_SPIN, &CBridgeModelViewChildFrame::OnEndGroupChanged)
    ON_CONTROL_RANGE(BN_CLICKED,IDC_BRIDGE,IDC_ALIGNMENT,OnViewModeChanged)
    ON_BN_CLICKED(IDC_NORTH, &CBridgeModelViewChildFrame::OnNorth)
    ON_UPDATE_COMMAND_UI(IDC_NORTH, &CBridgeModelViewChildFrame::OnUpdateNorth)
@@ -222,35 +223,49 @@ CBridgeViewPane* CBridgeModelViewChildFrame::GetLowerView()
    return (CBridgeViewPane*)m_SplitterWnd.GetPane(1, 0);
 }
 
-void CBridgeModelViewChildFrame::InitSpanRange()
+void CBridgeModelViewChildFrame::InitGroupRange()
 {
    // Can't get to the broker, and thus the bridge information in OnCreate, so we need a method
    // that can be called later to initalize the span range for viewing
-   CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_SPAN_SPIN);
-   CSpinButtonCtrl* pEndSpinner   = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_SPAN_SPIN);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   CString strType;
+   if (pDocType->IsPGSpliceDocument())
+   {
+      strType = _T("Groups");
+      m_SettingsBar.GetDlgItem(IDC_GROUP_RANGE_LABEL)->SetWindowText(_T("View Groups"));
+   }
+   else
+   {
+      strType = _T("Spans");
+      m_SettingsBar.GetDlgItem(IDC_GROUP_RANGE_LABEL)->SetWindowText(_T("View Spans"));
+   }
+
+   CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_GROUP_SPIN);
+   CSpinButtonCtrl* pEndSpinner   = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_GROUP_SPIN);
+
    GET_IFACE2(pBroker,IBridge,pBridge);
-   SpanIndexType nSpans = pBridge->GetSpanCount();
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    CBridgePlanView* pPlanView = GetBridgePlanView();
 
-   SpanIndexType startSpanIdx, endSpanIdx;
-   pPlanView->GetSpanRange(&startSpanIdx,&endSpanIdx);
+   GroupIndexType startGroupIdx, endGroupIdx;
+   pPlanView->GetGroupRange(&startGroupIdx,&endGroupIdx);
 
-   startSpanIdx = (startSpanIdx == ALL_SPANS ? 0        : startSpanIdx);
-   endSpanIdx   = (endSpanIdx   == ALL_SPANS ? nSpans-1 : endSpanIdx  );
+   startGroupIdx = (startGroupIdx == ALL_GROUPS ? 0         : startGroupIdx);
+   endGroupIdx   = (endGroupIdx   == ALL_GROUPS ? nGroups-1 : endGroupIdx);
 
-   pStartSpinner->SetRange32(1,(int)nSpans);
-   pEndSpinner->SetRange32((int)startSpanIdx+1,(int)nSpans);
+   pStartSpinner->SetRange32(1,(int)nGroups);
+   pEndSpinner->SetRange32(1,(int)nGroups);
 
-   pStartSpinner->SetPos32((int)startSpanIdx+1);
-   pEndSpinner->SetPos32((int)endSpanIdx+1);
+   pStartSpinner->SetPos32((int)startGroupIdx+1);
+   pEndSpinner->SetPos32((int)endGroupIdx+1);
 
    CString str;
-   str.Format(_T("of %d Spans"),nSpans);
-   m_SettingsBar.GetDlgItem(IDC_SPAN_COUNT)->SetWindowText(str);
+   str.Format(_T("of %d %s"),nGroups,strType);
+   m_SettingsBar.GetDlgItem(IDC_GROUP_COUNT)->SetWindowText(str);
 }
 
 void CBridgeModelViewChildFrame::SetViewMode(CBridgeModelViewChildFrame::ViewMode viewMode)
@@ -536,11 +551,14 @@ void CBridgeModelViewChildFrame::GetCutRange(Float64* pMin, Float64* pMax)
 
    GET_IFACE2(pBroker, IBridge, pBridge);
 
-   SpanIndexType startSpanIdx, endSpanIdx;
-   GetBridgePlanView()->GetSpanRange(&startSpanIdx,&endSpanIdx);
+   GroupIndexType startGroupIdx, endGroupIdx;
+   GetBridgePlanView()->GetGroupRange(&startGroupIdx,&endGroupIdx);
 
+   SpanIndexType startSpanIdx, dummySpanIdx, endSpanIdx;
+   pBridge->GetGirderGroupSpans(startGroupIdx, &startSpanIdx, &dummySpanIdx);
+   pBridge->GetGirderGroupSpans(endGroupIdx, &dummySpanIdx, &endSpanIdx);
    PierIndexType startPierIdx = (PierIndexType)startSpanIdx;
-   PierIndexType endPierIdx   = (PierIndexType)(endSpanIdx + 1);
+   PierIndexType endPierIdx = (PierIndexType)(endSpanIdx + 1);
 
    *pMin = pBridge->GetPierStation(startPierIdx);
    *pMax = pBridge->GetPierStation(endPierIdx);
@@ -548,6 +566,7 @@ void CBridgeModelViewChildFrame::GetCutRange(Float64* pMin, Float64* pMax)
    if (startPierIdx == 0)
    {
       // adjust for start cantilever if present
+      SpanIndexType startSpanIdx = (SpanIndexType)startPierIdx;
       GroupIndexType grpIdx = 0;
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       Float64 Lc = 0;
@@ -564,6 +583,7 @@ void CBridgeModelViewChildFrame::GetCutRange(Float64* pMin, Float64* pMax)
    if (endPierIdx == nPiers - 1)
    {
       // adjust for end cantilever if present
+      SpanIndexType endSpanIdx = (SpanIndexType)(endPierIdx - 1);
       GroupIndexType grpIdx = pBridge->GetGirderGroupCount() - 1;
       GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
       Float64 Lc = 0;
@@ -1066,14 +1086,15 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
       }
    }
 }
-void CBridgeModelViewChildFrame::OnStartSpanChanged(NMHDR *pNMHDR, LRESULT *pResult)
+
+void CBridgeModelViewChildFrame::OnStartGroupChanged(NMHDR *pNMHDR, LRESULT *pResult)
 {
    LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
    // TODO: Add your control notification handler code here
    *pResult = 0;
 
 
-   CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_SPAN_SPIN);
+   CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_GROUP_SPIN);
    int start, end;
    pStartSpinner->GetRange32(start,end);
    int newPos = pNMUpDown->iPos + pNMUpDown->iDelta;
@@ -1084,33 +1105,33 @@ void CBridgeModelViewChildFrame::OnStartSpanChanged(NMHDR *pNMHDR, LRESULT *pRes
       return;
    }
 
-   SpanIndexType newStartSpanIdx = newPos - 1;
+   GroupIndexType newStartGroupIdx = newPos - 1;
 
    CBridgePlanView* pPlanView = GetBridgePlanView();
 
-   SpanIndexType startSpanIdx, endSpanIdx;
-   pPlanView->GetSpanRange(&startSpanIdx,&endSpanIdx);
+   GroupIndexType startGroupIdx, endGroupIdx;
+   pPlanView->GetGroupRange(&startGroupIdx,&endGroupIdx);
 
-   CSpinButtonCtrl* pEndSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_SPAN_SPIN);
-   if ( endSpanIdx <= newStartSpanIdx )
+   CSpinButtonCtrl* pEndSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_GROUP_SPIN);
+   if ( endGroupIdx <= newStartGroupIdx )
    {
-      // new start span is greater than end span
+      // new start group is greater than end group
       // force position to be the same
-      endSpanIdx = newStartSpanIdx;
+      endGroupIdx = newStartGroupIdx;
 
-      pEndSpinner->SetPos32((int)endSpanIdx+1);
+      pEndSpinner->SetPos32((int)endGroupIdx+1);
    }
 
-   pPlanView->SetSpanRange(newStartSpanIdx,endSpanIdx);
+   pPlanView->SetGroupRange(newStartGroupIdx,endGroupIdx);
 }
 
-void CBridgeModelViewChildFrame::OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResult)
+void CBridgeModelViewChildFrame::OnEndGroupChanged(NMHDR *pNMHDR, LRESULT *pResult)
 {
    LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
    // TODO: Add your control notification handler code here
    *pResult = 0;
 
-   CSpinButtonCtrl* pEndSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_SPAN_SPIN);
+   CSpinButtonCtrl* pEndSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_GROUP_SPIN);
    int start, end;
    pEndSpinner->GetRange32(start,end);
    int newPos = pNMUpDown->iPos + pNMUpDown->iDelta;
@@ -1121,36 +1142,36 @@ void CBridgeModelViewChildFrame::OnEndSpanChanged(NMHDR *pNMHDR, LRESULT *pResul
       return;
    }
 
-   SpanIndexType newEndSpanIdx = newPos - 1;
+   GroupIndexType newEndGroupIdx = newPos - 1;
 
    CBridgePlanView* pPlanView = GetBridgePlanView();
 
-   SpanIndexType startSpanIdx, endSpanIdx;
-   pPlanView->GetSpanRange(&startSpanIdx,&endSpanIdx);
+   GroupIndexType startGroupIdx, endGroupIdx;
+   pPlanView->GetGroupRange(&startGroupIdx,&endGroupIdx);
    
-   CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_SPAN_SPIN);
-   if ( newEndSpanIdx <= startSpanIdx )
+   CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_GROUP_SPIN);
+   if ( newEndGroupIdx <= startGroupIdx )
    {
-      // new end span is less than start span
+      // new end group is less than start group
       // force position to be the same
-      startSpanIdx = newEndSpanIdx;
+      startGroupIdx = newEndGroupIdx;
 
-      pStartSpinner->SetPos32((int)startSpanIdx+1);
+      pStartSpinner->SetPos32((int)startGroupIdx+1);
    }
 
-   pPlanView->SetSpanRange(startSpanIdx,newEndSpanIdx);
+   pPlanView->SetGroupRange(startGroupIdx,newEndGroupIdx);
 }
 
 void CBridgeModelViewChildFrame::OnViewModeChanged(UINT nIDC)
 {
    int show = (nIDC == IDC_BRIDGE ? SW_SHOW : SW_HIDE);
-   m_SettingsBar.GetDlgItem(IDC_SPAN_RANGE_LABEL)->ShowWindow(show);
-   m_SettingsBar.GetDlgItem(IDC_START_SPAN_SPIN)->ShowWindow(show);
-   m_SettingsBar.GetDlgItem(IDC_START_SPAN_EDIT)->ShowWindow(show);
-   m_SettingsBar.GetDlgItem(IDC_SPAN_RANGE_TO)->ShowWindow(show);
-   m_SettingsBar.GetDlgItem(IDC_END_SPAN_SPIN)->ShowWindow(show);
-   m_SettingsBar.GetDlgItem(IDC_END_SPAN_EDIT)->ShowWindow(show);
-   m_SettingsBar.GetDlgItem(IDC_SPAN_COUNT)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_GROUP_RANGE_LABEL)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_START_GROUP_SPIN)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_START_GROUP_EDIT)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_GROUP_RANGE_TO)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_END_GROUP_SPIN)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_END_GROUP_EDIT)->ShowWindow(show);
+   m_SettingsBar.GetDlgItem(IDC_GROUP_COUNT)->ShowWindow(show);
 
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    if ( nIDC == IDC_BRIDGE )

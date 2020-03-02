@@ -32,8 +32,8 @@ struct __declspec(uuid("{4BC86416-257D-41E8-B4EC-A2BD3AD33050}")) IBridgeModelVi
 interface IBridgeModelViewController : IEAFViewController
 {
    enum ViewMode { Bridge, Alignment };
-   virtual void GetSpanRange(SpanIndexType* pStartSpanIdx, SpanIndexType* pEndSpanIdx) const = 0;
-   virtual void SetSpanRange(SpanIndexType startSpanIdx, SpanIndexType endSpanIdx) = 0;
+   virtual void GetGroupRange(GroupIndexType* pStartGroupIdx, GroupIndexType* pEndGroupIdx) const = 0;
+   virtual void SetGroupRange(GroupIndexType startGroupIdx, GroupIndexType endGroupIdx) = 0;
    virtual Float64 GetCutStation() const = 0;
    virtual void SetCutStation(Float64 station) = 0;
    virtual void SetViewMode(ViewMode mode) = 0;

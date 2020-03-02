@@ -66,8 +66,8 @@ public:
 public:
    // Other methods... Print(bUseDefault/bPrompt), SelectGirder, SelectDeck, SelectAlignment, SelectRailingSystem, Delete, Insert....
    // Set the top/bottom split screen fraction (50/50, 60/40...)
-   virtual void GetSpanRange(SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx) const override;
-   virtual void SetSpanRange(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx) override;
+   virtual void GetGroupRange(GroupIndexType* pStartGroupIdx,GroupIndexType* pEndGroupIdx) const override;
+   virtual void SetGroupRange(GroupIndexType startGroupIdx,GroupIndexType endGroupIdx) override;
    virtual Float64 GetCutStation() const override;
    virtual void SetCutStation(Float64 station) override;
    virtual void SetViewMode(IBridgeModelViewController::ViewMode mode) override;
