@@ -9,8 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -640,7 +639,7 @@ BEGIN
     EDITTEXT        IDC_HAUNCH_FACTOR,33,299,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "% of assumed excess camber when computing haunch dead load",IDC_HAUNCH_FACTOR2,79,303,239,8
     GROUPBOX        "Assumed Excess Camber and Haunch",IDC_STATIC,8,218,364,133
-    LTEXT           "Compute stiffness, stresses, and ultimate capacities using haunch depth assuming:",IDC_STATIC,15,320,288,8
+    LTEXT           "Compute stiffness, stresses, positive moment capacity, and shear capacity using haunch depth assuming:",IDC_STATIC,15,320,288,8
     COMBOBOX        IDC_HAUNCH_COMP_PROPS_CB,15,330,347,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -2930,8 +2929,7 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
-
+#include "grid\gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

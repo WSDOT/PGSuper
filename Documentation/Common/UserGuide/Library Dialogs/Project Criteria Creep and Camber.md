@@ -42,13 +42,15 @@ Excess camber is defined by a parabola fitting the Slab Offset and Assumed Exces
 > TIP: Refer to the Slab Haunch loading section of @ref tg_structural_analysis_models for detailed information about how the slab offset and assumed excess camber dimensions are used for computing the haunch dead load.
 
 #### Composite Section Properties ####
-Select the method used to determine the effects of haunch on composite section properties. Properties include those used when computing section stiffness, stresses, ultimate moment capacities, ultimate shear capacities and live load distribution factors.
+Select the method used to determine the effects of haunch on composite section properties. Properties include those used when computing section stiffness, stresses, moment capacities for positive moment, shear capacities and live load distribution factors.
+
+> NOTE: The actual slab haunch, computed using roadway surface geometry and girder camber, is alway used when computing negative moment capacity.
 
 Method | Description
 -------|------------
 Ignore haunch depth | The haunch is ignored and the slab lies directly on the top of the girder.
 Constant haunch depth equal to the Fillet value | The haunch depth is constant along the girder and equal to the Fillet dimension.
-Variable haunch depth... | Haunch depth varies along the girder, and is defined by a parabola fitting the Slab Offset and Assumed Excess Camber dimensions The top of the girder is assumed to follow a parabolic curve defined by the roadway geometry, slab offsets at the ends of the girder, and the user-input Assumed Excess Camber value. A specification check is performed to insure that the assumed excess camber is within tolerance of the computed excess camber.
+Variable haunch depth... | Haunch depth varies along the girder, and is defined by a parabola fitting the Slab Offset and Assumed Excess Camber dimensions. The top of the girder is assumed to follow a parabolic curve defined by the roadway geometry, slab offsets at the ends of the girder, and the user-input Assumed Excess Camber value. A specification check is performed to insure that the assumed excess camber is within tolerance of the computed excess camber.
 
 > TIP: Refer to @ref tg_section_properties in the Technical Guide for detailed information about haunch depth is used when computing composite section properties.
 
