@@ -73,8 +73,8 @@ CPierData2::CPierData2()
 
    m_Concrete.bHasInitial = false;
    m_Concrete.Fc = ::ConvertToSysUnits(4,unitMeasure::KSI);
-   m_Concrete.StrengthDensity = ::ConvertToSysUnits(0.155,unitMeasure::KipPerFeet3);
-   m_Concrete.WeightDensity = m_Concrete.StrengthDensity;
+   m_Concrete.StrengthDensity = ::ConvertToSysUnits(0.145, unitMeasure::KipPerFeet3); // plan concrete LRFD Table 3.5.1-1
+   m_Concrete.WeightDensity = ::ConvertToSysUnits(0.155, unitMeasure::KipPerFeet3); // 10 kcf allowance for reinforcement (BDM Ch 3).
 
    m_RefColumnIdx = 0;
    m_TransverseOffset = 0;
