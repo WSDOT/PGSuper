@@ -167,13 +167,11 @@ BOOL CConcreteGeneralPage::OnInitDialog()
    if ( pParent->m_bFinalProperties )
    {
       GetDlgItem(IDC_FC_LABEL)->SetWindowText(_T("Strength - f'c"));
-      GetDlgItem(IDC_DS_TITLE)->SetWindowText(_T("Unit Weight (used to compute Ec)"));
       GetDlgItem(IDC_MOD_E)->SetWindowText(_T("Mod. Elasticity, Ec"));
    }
    else
    {
       GetDlgItem(IDC_FC_LABEL)->SetWindowText(_T("Strength - f'ci"));
-      GetDlgItem(IDC_DS_TITLE)->SetWindowText(_T("Unit Weight (used to compute Eci)"));
       GetDlgItem(IDC_MOD_E)->SetWindowText(_T("Mod. Elasticity, Eci"));
    }
 

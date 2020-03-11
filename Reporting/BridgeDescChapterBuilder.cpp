@@ -1331,6 +1331,17 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
    *pPara << pTable << rptNewLine;
 
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << _T("* = Modulus of elasticity was input") << rptNewLine;
+   *pPara << Sub2(_T("w"), _T("c")) << _T(" = unit weight of plain concrete") << rptNewLine;
+   *pPara << Sub2(_T("w"), _T("w")) << _T(" = unit weight of concrete with reinforcement") << rptNewLine;
+   *pPara << Sub2(_T("D"), _T("agg")) << _T(" = maximum aggregate diameter") << rptNewLine;
+   *pPara << RPT_STRESS(_T("ct")) << _T(" = average splitting strength of lightweight concrete") << rptNewLine;
+   *pPara << Sub2(_T("K"), _T("1")) << _T(" = averaging factor for course of aggregate") << rptNewLine;
+   *pPara << Sub2(_T("K"), _T("2")) << _T(" = bounding factor for course of aggregate") << rptNewLine;
+   *pPara << symbol(lambda) << _T(" = concrete density modification factor") << rptNewLine;
+
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
    {
       // Ec with square root, no K values
@@ -1348,26 +1359,24 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_2016.png")) << rptNewLine;
    }
 
-   *pPara << _T("* = Modulus of elasticity was input") << rptNewLine;
-
 
    ColumnIndexType col = 0;
    RowIndexType row = 0;
-   (*pTable)(row,col++) << _T("Element");
-   (*pTable)(row,col++) << _T("Type");
-   (*pTable)(row,col++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,col++) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,col++) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << _T("Element");
+   (*pTable)(row, col++) << _T("Type");
+   (*pTable)(row, col++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if (bUse90dayStrength)
    {
       (*pTable)(row, col++) << COLHDR(RPT_FC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*pTable)(row, col++) << COLHDR(RPT_EC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
-   (*pTable)(row,col++) << COLHDR(Sub2(_T("w"),_T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
-   (*pTable)(row,col++) << COLHDR(Sub2(_T("w"),_T("c")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
-   (*pTable)(row,col++) << COLHDR(Sub2(_T("D"),_T("agg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(row,col++) << COLHDR(RPT_STRESS(_T("ct")),  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << COLHDR(Sub2(_T("w"),_T("c")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row, col++) << COLHDR(Sub2(_T("w"), _T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit());
+   (*pTable)(row, col++) << COLHDR(Sub2(_T("D"),_T("agg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(row, col++) << COLHDR(RPT_STRESS(_T("ct")),  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( bK1 )
    {
       pTable->SetNumberOfHeaderRows(2);
@@ -1377,7 +1386,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       }
 
       pTable->SetColumnSpan(0,col,2);
-      (*pTable)(0,col) << Sub2(_T("E"),_T("c"));
+      (*pTable)(0,col) << _T("MOE");
       (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
 
@@ -1558,17 +1567,8 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable
       }
    }
 
-
-   (*pTable)(row,col++) << density.SetValue( concrete.WeightDensity );
-
-   if ( concrete.bUserEc )
-   {
-      (*pTable)(row,col++) << RPT_NA;
-   }
-   else
-   {
-      (*pTable)(row,col++) << density.SetValue( concrete.StrengthDensity );
-   }
+   (*pTable)(row, col++) << density.SetValue( concrete.StrengthDensity );
+   (*pTable)(row, col++) << density.SetValue( concrete.WeightDensity );
 
    (*pTable)(row,col++) << cmpdim.SetValue( concrete.MaxAggregateSize );
 

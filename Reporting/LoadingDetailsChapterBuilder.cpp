@@ -512,7 +512,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
       Float64 deck_density = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx, castDeckIntervalIdx);
       Float64 deck_unit_weight = deck_density; // *unitSysUnitsMgr::GetGravitationalAcceleration();
-      *pNotePara << _T("Unit weight of ") << strDeckName << _T(" material is ") << density.SetValue(deck_unit_weight);
+      *pNotePara << strDeckName << _T("unit weight with reinforcement = ") << density.SetValue(deck_unit_weight);
 
       pPara = new rptParagraph;
       *pChapter << pPara;

@@ -8,7 +8,7 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
-#include "grid/gxresrc.h"
+#include "grid/gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -140,10 +140,10 @@ BEGIN
     LTEXT           "Strength - f'c",IDC_FC_LABEL,22,28,41,8
     EDITTEXT        IDC_FC,135,22,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_FC_UNIT,195,28,28,8
-    LTEXT           "Unit Weight\n(used to compute Ec)",IDC_DS_TITLE,22,41,122,18
+    LTEXT           "Unit Weight",IDC_DS_TITLE,22,43,107,8
     EDITTEXT        IDC_DS,135,40,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "Static",IDC_DS_UNIT,195,46,28,8
-    LTEXT           "Unit Weight with Reinforcement\n(used to compute dead load)",IDC_STATIC,22,60,101,16
+    LTEXT           "Static",IDC_DS_UNIT,195,43,28,8
+    LTEXT           "Unit Weight with Reinforcement",IDC_STATIC,22,62,101,8
     EDITTEXT        IDC_DW,135,59,55,14,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "Static",IDC_DW_UNIT,195,62,28,8
     CONTROL         "Mod. Elasticity, Ec",IDC_MOD_E,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,81,74,10
@@ -546,6 +546,11 @@ BEGIN
     0
 END
 
+IDD_CONCRETE_DETAILS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -585,7 +590,7 @@ LANGUAGE 9, 1
 #endif
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid/gxres.rc"               // Objective Grid resources
+#include "grid/gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
