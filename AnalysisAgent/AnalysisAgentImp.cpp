@@ -1828,7 +1828,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
       }
       else
       {
-         Eci_config = pMaterial->GetEconc(pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Eci_config = pMaterial->GetEconc(pConfig->ConcType,pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey),
             pMaterial->GetSegmentEccK1(segmentKey),
             pMaterial->GetSegmentEccK2(segmentKey));
       }
@@ -1852,7 +1852,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
       }
       else
       {
-         Ec_config = pMaterial->GetEconc(pConfig->fc28, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Ec_config = pMaterial->GetEconc(pConfig->ConcType, pConfig->fc28, pMaterial->GetSegmentStrengthDensity(segmentKey),
             pMaterial->GetSegmentEccK1(segmentKey),
             pMaterial->GetSegmentEccK2(segmentKey));
       }
@@ -6145,7 +6145,7 @@ void CAnalysisAgentImp::GetDesignStress(const StressCheckTask& task,const pgsPoi
       Float64 fc_lldf = pConfig->fc ;
       if ( pGirderMaterial->Concrete.bUserEc )
       {
-         fc_lldf = lrfdConcreteUtil::FcFromEc( pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
+         fc_lldf = lrfdConcreteUtil::FcFromEc( (matConcrete::Type)pGirderMaterial->Concrete.Type, pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
       }
 
       GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
@@ -9936,7 +9936,7 @@ Float64 CAnalysisAgentImp::GetDeflectionAdjustmentFactor(const pgsPointOfInteres
 
    GET_IFACE(IMaterials,pMaterials);
    Float64 Ec = pMaterials->GetSegmentEc(poi.GetSegmentKey(),intervalIdx);
-   Float64 Ec_adjusted = (pConfig->bUserEc ? pConfig->Ec : pMaterials->GetEconc(fc,pMaterials->GetSegmentStrengthDensity(poi.GetSegmentKey()),
+   Float64 Ec_adjusted = (pConfig->bUserEc ? pConfig->Ec : pMaterials->GetEconc(pConfig->ConcType, fc,pMaterials->GetSegmentStrengthDensity(poi.GetSegmentKey()),
                                                                                pMaterials->GetSegmentEccK1(poi.GetSegmentKey()),
                                                                                pMaterials->GetSegmentEccK2(poi.GetSegmentKey())));
    Float64 EI = IsZero(Iy) ? 0 : Ec*(Ix*Iy-Ixy*Ixy)/Iy;

@@ -770,7 +770,7 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
       strK1.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->Concrete.EcK1);
       strK2.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->Concrete.EcK2);
 
-      strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
+      strEc = CConcreteDetailsDlg::UpdateEc(pParent->m_BridgeDesc.GetDeckDescription()->Concrete.Type,strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }

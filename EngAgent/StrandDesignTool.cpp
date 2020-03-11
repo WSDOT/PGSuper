@@ -169,7 +169,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    ifc = Max(slab_fc, ifc);
 
    matConcreteEx conc(_T("Design Concrete"), ifc, pGirderMaterial->Concrete.StrengthDensity, 
-                      pGirderMaterial->Concrete.WeightDensity, lrfdConcreteUtil::ModE(ifc,  pGirderMaterial->Concrete.StrengthDensity, false ),
+                      pGirderMaterial->Concrete.WeightDensity, lrfdConcreteUtil::ModE((matConcrete::Type)(pGirderMaterial->Concrete.Type),ifc,  pGirderMaterial->Concrete.StrengthDensity, false ),
                       0.0,0.0); // we don't need the modulus of rupture for shear or flexur. Just use 0.0
    conc.SetMaxAggregateSize(pGirderMaterial->Concrete.MaxAggregateSize);
    conc.SetType((matConcrete::Type)pGirderMaterial->Concrete.Type);

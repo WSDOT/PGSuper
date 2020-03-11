@@ -210,7 +210,7 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
       }
       else
       {
-         Ec = pMaterial->GetEconc(haulConfig.GdrConfig.fc, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Ec = pMaterial->GetEconc(pMaterial->GetSegmentConcreteType(segmentKey),haulConfig.GdrConfig.fc, pMaterial->GetSegmentStrengthDensity(segmentKey),
                                                            pMaterial->GetSegmentEccK1(segmentKey),
                                                            pMaterial->GetSegmentEccK2(segmentKey));
       }

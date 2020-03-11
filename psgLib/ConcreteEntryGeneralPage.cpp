@@ -53,6 +53,8 @@ CConcreteEntryGeneralPage::CConcreteEntryGeneralPage(): CPropertyPage(IDD_CONCRE
 
    m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
    m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
+
+   lrfdConcreteUtil::GetUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
 }
 
 
@@ -264,14 +266,23 @@ void CConcreteEntryGeneralPage::OnOK()
 
    if ( !m_bErrorInDDX && !IsDensityInRange(m_Ds,m_Type))
    {
-      AfxMessageBox(m_Type == pgsTypes::Normal || m_Type == pgsTypes::UHPC ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE, MB_OK | MB_ICONINFORMATION);
+      AfxMessageBox(m_Type == pgsTypes::Normal? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE, MB_OK | MB_ICONINFORMATION);
+   }
+
+   if (!m_bErrorInDDX && !IsStrengthInRange(m_Fc, m_Type))
+   {
+      AfxMessageBox(_T("The concrete strength is not in the normal range for UHPC.\nThe concrete will be treated as UHPC."));
    }
 }
 
 bool CConcreteEntryGeneralPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
    CEAFApp* pApp = EAFGetApp();
-   if ( type == pgsTypes::Normal || type == pgsTypes::UHPC)
+   if ( type == pgsTypes::UHPC )
+   {
+      return true; // no density range for UHPC
+   }
+   else if ( type == pgsTypes::Normal )
    {
       return IsLE(m_MinNWCDensity,density);
    }
@@ -281,6 +292,17 @@ bool CConcreteEntryGeneralPage::IsDensityInRange(Float64 density,pgsTypes::Concr
    }
 }
 
+bool CConcreteEntryGeneralPage::IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type)
+{
+   if (type == pgsTypes::UHPC)
+   {
+      return InRange(m_MinFcUHPC, fc, m_MaxFcUHPC);
+   }
+   else
+   {
+      return true; // no range limit for other concrete types
+   }
+}
 #ifdef _DEBUG
 void CConcreteEntryGeneralPage::AssertValid() const
 {

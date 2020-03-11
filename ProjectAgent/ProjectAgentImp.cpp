@@ -5291,12 +5291,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
             if ( !pSegment->Material.Concrete.bUserEci )
             {
-               pSegment->Material.Concrete.Eci = lrfdConcreteUtil::ModE(pSegment->Material.Concrete.Fci,pSegment->Material.Concrete.StrengthDensity,false);
+               pSegment->Material.Concrete.Eci = lrfdConcreteUtil::ModE((matConcrete::Type)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fci,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
             if ( !pSegment->Material.Concrete.bUserEc )
             {
-               pSegment->Material.Concrete.Ec = lrfdConcreteUtil::ModE(pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
+               pSegment->Material.Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
             if ( bAfter2015 && pSegment->Material.Concrete.Type == pgsTypes::AllLightweight )
@@ -5309,12 +5309,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
             {
                if ( !pClosureJoint->GetConcrete().bUserEci )
                {
-                  pClosureJoint->GetConcrete().Eci = lrfdConcreteUtil::ModE(pClosureJoint->GetConcrete().Fci,pClosureJoint->GetConcrete().StrengthDensity,false);
+                  pClosureJoint->GetConcrete().Eci = lrfdConcreteUtil::ModE((matConcrete::Type)(pClosureJoint->GetConcrete().Type),pClosureJoint->GetConcrete().Fci,pClosureJoint->GetConcrete().StrengthDensity,false);
                }
 
                if ( !pClosureJoint->GetConcrete().bUserEc )
                {
-                  pClosureJoint->GetConcrete().Ec = lrfdConcreteUtil::ModE(pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
+                  pClosureJoint->GetConcrete().Ec = lrfdConcreteUtil::ModE((matConcrete::Type)(pClosureJoint->GetConcrete().Type), pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
                }
 
                if ( bAfter2015 && pClosureJoint->GetConcrete().Type == pgsTypes::AllLightweight )
@@ -5331,12 +5331,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
    {
       if ( !pDeck->Concrete.bUserEci )
       {
-         pDeck->Concrete.Eci = lrfdConcreteUtil::ModE(pDeck->Concrete.Fci,pDeck->Concrete.StrengthDensity,false);
+         pDeck->Concrete.Eci = lrfdConcreteUtil::ModE((matConcrete::Type)(pDeck->Concrete.Type),pDeck->Concrete.Fci,pDeck->Concrete.StrengthDensity,false);
       }
 
       if ( !pDeck->Concrete.bUserEc )
       {
-         pDeck->Concrete.Ec = lrfdConcreteUtil::ModE(pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
+         pDeck->Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)(pDeck->Concrete.Type), pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
       }
 
       if ( bAfter2015 && pDeck->Concrete.Type == pgsTypes::AllLightweight )

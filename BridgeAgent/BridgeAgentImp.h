@@ -600,15 +600,14 @@ public:
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu) const override;
    virtual std::_tstring GetDeckRebarName() const override;
    virtual void GetDeckRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade) const override;
-   virtual Float64 GetNWCDensityLimit() const override;
-   virtual Float64 GetLWCDensityLimit() const override;
    virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const override;
    virtual Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const override;
    virtual Float64 GetSegmentFlexureFrCoefficient(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentShearFrCoefficient(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetClosureJointFlexureFrCoefficient(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointShearFrCoefficient(const CClosureKey& closureKey) const override;
-   virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const override;
+   virtual Float64 GetEconc(pgsTypes::ConcreteType type, Float64 fc,Float64 density,Float64 K1,Float64 K2) const override;
+   virtual bool HasUHPC() const override;
 
 // ILongRebarGeometry
 public:

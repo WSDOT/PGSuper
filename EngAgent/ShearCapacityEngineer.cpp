@@ -602,7 +602,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       }
       else
       {
-         pscd->Ec = pMaterial->GetEconc(pscd->fc,
+         pscd->Ec = pMaterial->GetEconc(pMaterial->GetSegmentConcreteType(segmentKey),pscd->fc,
                                         pMaterial->GetSegmentStrengthDensity(segmentKey),
                                         pMaterial->GetSegmentEccK1(segmentKey),
                                         pMaterial->GetSegmentEccK2(segmentKey));

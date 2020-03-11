@@ -106,7 +106,7 @@ void CConcreteManager::ValidateConcrete() const
       }
       else
       {
-         modE = lrfdConcreteUtil::ModE(pDeck->Concrete.Fc,
+         modE = lrfdConcreteUtil::ModE((matConcrete::Type)pDeck->Concrete.Type,pDeck->Concrete.Fc,
             pDeck->Concrete.StrengthDensity,
             false /* ignore LRFD range checks */);
 
@@ -172,7 +172,7 @@ void CConcreteManager::ValidateConcrete() const
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE(pLeftRailingSystem->Concrete.Fc, 
+      modE = lrfdConcreteUtil::ModE((matConcrete::Type)pLeftRailingSystem->Concrete.Type,pLeftRailingSystem->Concrete.Fc, 
                                     pLeftRailingSystem->Concrete.StrengthDensity, 
                                     false /* ignore LRFD range checks */ );
 
@@ -192,7 +192,7 @@ void CConcreteManager::ValidateConcrete() const
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE(pRightRailingSystem->Concrete.Fc, 
+      modE = lrfdConcreteUtil::ModE((matConcrete::Type)pRightRailingSystem->Concrete.Type,pRightRailingSystem->Concrete.Fc, 
                                     pRightRailingSystem->Concrete.StrengthDensity, 
                                     false /* ignore LRFD range checks */ );
 
@@ -280,7 +280,7 @@ void CConcreteManager::ValidateConcrete() const
       }
       else
       {
-         modE = lrfdConcreteUtil::ModE(LJConcrete.Fc,
+         modE = lrfdConcreteUtil::ModE((matConcrete::Type)LJConcrete.Type,LJConcrete.Fc,
             LJConcrete.StrengthDensity,
             false /* ignore LRFD range checks */);
 
@@ -329,7 +329,7 @@ void CConcreteManager::ValidateConcrete() const
          }
          else
          {
-            modE = lrfdConcreteUtil::ModE( concrete.Fc, 
+            modE = lrfdConcreteUtil::ModE( (matConcrete::Type)concrete.Type, concrete.Fc, 
                                            concrete.StrengthDensity, 
                                            false /* ignore LRFD range checks */ );
 
@@ -932,7 +932,11 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
 
 bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type) const
 {
-   if ( type == pgsTypes::Normal || type == pgsTypes::UHPC)
+   if (type == pgsTypes::UHPC)
+   {
+      return true; // there isn't a desnity limit for UHPC
+   }
+   else if ( type == pgsTypes::Normal)
    {
       return ( GetNWCDensityLimit() <= density );
    }
@@ -1008,7 +1012,7 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE( concrete.Fci, 
+      modE = lrfdConcreteUtil::ModE( (matConcrete::Type)concrete.Type,concrete.Fci, 
                                      concrete.StrengthDensity, 
                                      false /* ignore LRFD range checks */ );
 
@@ -1042,7 +1046,7 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE( concrete.Fc, 
+      modE = lrfdConcreteUtil::ModE( (matConcrete::Type)concrete.Type,concrete.Fc, 
                                      concrete.StrengthDensity, 
                                      false /* ignore LRFD range checks */ );
 
@@ -1819,10 +1823,66 @@ Float64 CConcreteManager::GetShearModRupture(Float64 fc,pgsTypes::ConcreteType t
    return lrfdConcreteUtil::ModRupture( fc, GetShearFrCoefficient(type) );
 }
 
-Float64 CConcreteManager::GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const
+Float64 CConcreteManager::GetEconc(pgsTypes::ConcreteType type, Float64 fc,Float64 density,Float64 K1,Float64 K2) const
 {
-   return K1*K2*lrfdConcreteUtil::ModE(fc,density, false ); // ignore LRFD limits
+   return K1*K2*lrfdConcreteUtil::ModE((matConcrete::Type)type, fc,density, false ); // ignore LRFD limits
 }
+
+bool CConcreteManager::HasUHPC() const
+{
+   ValidateConcrete();
+   ValidateSegmentConcrete();
+   for (auto& item : m_pSegmentConcrete)
+   {
+      if (item.second->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   for (auto& item : m_pClosureConcrete)
+   {
+      if (item.second->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   ValidateDeckConcrete();
+   for (auto& item : m_pvDeckConcrete)
+   {
+      if (item->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   ValidateLongitudinalJointConcrete();
+   if (m_pLongitudinalJointConcrete->GetType() == matConcrete::UHPC)
+   {
+      return true;
+   }
+
+   ValidateRailingSystemConcrete();
+   for (auto& item : m_pRailingConcrete)
+   {
+      if (item->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   for (auto& item : m_pPierConcrete)
+   {
+      if (item.second->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
 
 Float64 CConcreteManager::GetShearFrCoefficient(pgsTypes::ConcreteType type) const
 {

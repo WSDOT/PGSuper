@@ -458,7 +458,7 @@ lrfdLiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(
       else
       {
          GET_IFACE(IMaterials,pMaterial);
-         Float64 Ecgdr = pMaterial->GetEconc(fcgdr,
+         Float64 Ecgdr = pMaterial->GetEconc(pMaterial->GetSegmentConcreteType(segmentKey),fcgdr,
                                              pMaterial->GetSegmentStrengthDensity(segmentKey),
                                              pMaterial->GetSegmentEccK1(segmentKey),
                                              pMaterial->GetSegmentEccK2(segmentKey)

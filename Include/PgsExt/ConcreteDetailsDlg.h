@@ -42,7 +42,7 @@ public:
 	CConcreteDetailsDlg(bool bFinalProperties,bool bEnableComputeTimeParameters = true,bool bEnableCopyFromLibrary = true,CWnd* pParent = nullptr,UINT iSelectPage=0);
 
    // text strings to in in display units... Ec comes out in display units
-   static CString UpdateEc(const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2);
+   static CString UpdateEc(pgsTypes::ConcreteType type,const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2);
 
 // Dialog Data
 	//{{AFX_DATA(CConcreteDetailsDlg)

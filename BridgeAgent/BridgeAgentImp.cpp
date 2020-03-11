@@ -12727,7 +12727,7 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
          }
          else
          {
-            E = GetEconc(pConfig->fci, GetSegmentStrengthDensity(segmentKey), GetSegmentEccK1(segmentKey), GetSegmentEccK2(segmentKey));
+            E = GetEconc(pConfig->ConcType, pConfig->fci, GetSegmentStrengthDensity(segmentKey), GetSegmentEccK1(segmentKey), GetSegmentEccK2(segmentKey));
          }
       }
       else
@@ -12738,7 +12738,7 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
          }
          else
          {
-            E = GetEconc(pConfig->fc, GetSegmentStrengthDensity(segmentKey), GetSegmentEccK1(segmentKey), GetSegmentEccK2(segmentKey));
+            E = GetEconc(pConfig->ConcType, pConfig->fc, GetSegmentStrengthDensity(segmentKey), GetSegmentEccK1(segmentKey), GetSegmentEccK2(segmentKey));
          }
       }
    }
@@ -12771,7 +12771,7 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
    }
    else
    {
-      E = lrfdConcreteUtil::ModE( trialFc, pMaterial->Concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
+      E = lrfdConcreteUtil::ModE( (matConcrete::Type)pMaterial->Concrete.Type, trialFc, pMaterial->Concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
 
       if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
@@ -12818,7 +12818,7 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
    }
    else
    {
-      E = lrfdConcreteUtil::ModE( trialFc, concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
+      E = lrfdConcreteUtil::ModE( (matConcrete::Type)concrete.Type, trialFc, concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
 
       if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
       {
@@ -13708,16 +13708,6 @@ void CBridgeAgentImp::GetDeckRebarMaterial(matRebar::Type* pType,matRebar::Grade
    (*pGrade) = pDeck->DeckRebarData.TopRebarGrade;
 }
 
-Float64 CBridgeAgentImp::GetNWCDensityLimit() const
-{
-   return m_ConcreteManager.GetNWCDensityLimit();
-}
-
-Float64 CBridgeAgentImp::GetLWCDensityLimit() const
-{
-   return m_ConcreteManager.GetLWCDensityLimit();
-}
-
 Float64 CBridgeAgentImp::GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const
 {
    return m_ConcreteManager.GetFlexureModRupture(fc,type);
@@ -13748,9 +13738,14 @@ Float64 CBridgeAgentImp::GetClosureJointShearFrCoefficient(const CClosureKey& cl
    return m_ConcreteManager.GetClosureJointShearFrCoefficient(closureKey);
 }
 
-Float64 CBridgeAgentImp::GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const
+Float64 CBridgeAgentImp::GetEconc(pgsTypes::ConcreteType type, Float64 fc,Float64 density,Float64 K1,Float64 K2) const
 {
-   return m_ConcreteManager.GetEconc(fc,density,K1,K2);
+   return m_ConcreteManager.GetEconc(type, fc,density,K1,K2);
+}
+
+bool CBridgeAgentImp::HasUHPC() const
+{
+   return m_ConcreteManager.HasUHPC();
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -27317,7 +27312,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
       }
       else
       {
-         Float64 Eci = GetEconc(handlingConfig.GdrConfig.fci, GetSegmentStrengthDensity(segmentKey),
+         Float64 Eci = GetEconc(handlingConfig.GdrConfig.ConcType,handlingConfig.GdrConfig.fci, GetSegmentStrengthDensity(segmentKey),
                                                           GetSegmentEccK1(segmentKey),
                                                           GetSegmentEccK2(segmentKey));
          concrete.SetE(Eci);
@@ -27602,7 +27597,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
       }
       else
       {
-         Float64 Ec = GetEconc(handlingConfig.GdrConfig.fc, GetSegmentStrengthDensity(segmentKey),
+         Float64 Ec = GetEconc(handlingConfig.GdrConfig.ConcType,handlingConfig.GdrConfig.fc, GetSegmentStrengthDensity(segmentKey),
                                                         GetSegmentEccK1(segmentKey),
                                                         GetSegmentEccK2(segmentKey));
          concrete.SetE(Ec);

@@ -577,7 +577,7 @@ void CGirderSegmentGeneralPage::UpdateEci()
       strK1.Format(_T("%f"),pSegment->Material.Concrete.EcK1);
       strK2.Format(_T("%f"),pSegment->Material.Concrete.EcK2);
 
-      CString strEci = CConcreteDetailsDlg::UpdateEc(strFci,strDensity,strK1,strK2);
+      CString strEci = CConcreteDetailsDlg::UpdateEc(pSegment->Material.Concrete.Type,strFci,strDensity,strK1,strK2);
       m_ctrlEci.SetWindowText(strEci);
    }
 }
@@ -663,7 +663,7 @@ void CGirderSegmentGeneralPage::UpdateEc()
       strK1.Format(_T("%f"),pSegment->Material.Concrete.EcK1);
       strK2.Format(_T("%f"),pSegment->Material.Concrete.EcK2);
 
-      CString strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
+      CString strEc = CConcreteDetailsDlg::UpdateEc(pSegment->Material.Concrete.Type,strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }

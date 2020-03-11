@@ -481,7 +481,7 @@ void CClosureJointGeneralPage::UpdateEci()
       strK1.Format(_T("%f"),pParent->m_ClosureJoint.GetConcrete().EcK1);
       strK2.Format(_T("%f"),pParent->m_ClosureJoint.GetConcrete().EcK2);
 
-      CString strEci = CConcreteDetailsDlg::UpdateEc(strFci,strDensity,strK1,strK2);
+      CString strEci = CConcreteDetailsDlg::UpdateEc(pParent->m_ClosureJoint.GetConcrete().Type,strFci,strDensity,strK1,strK2);
       m_ctrlEci.SetWindowText(strEci);
    }
 }
@@ -565,7 +565,7 @@ void CClosureJointGeneralPage::UpdateEc()
       strK1.Format(_T("%f"),pParent->m_ClosureJoint.GetConcrete().EcK1);
       strK2.Format(_T("%f"),pParent->m_ClosureJoint.GetConcrete().EcK2);
 
-      CString strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
+      CString strEc = CConcreteDetailsDlg::UpdateEc(pParent->m_ClosureJoint.GetConcrete().Type,strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }

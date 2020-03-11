@@ -1359,6 +1359,12 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_2016.png")) << rptNewLine;
    }
 
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   if (pMaterials->HasUHPC())
+   {
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_UHPC.png")) << _T(" for UHPC") << rptNewLine;
+   }
+
 
    ColumnIndexType col = 0;
    RowIndexType row = 0;
@@ -1418,7 +1424,6 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    row = pTable->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

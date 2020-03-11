@@ -132,7 +132,7 @@ void CConcreteDetailsDlg::Init()
    }
 }
 
-CString CConcreteDetailsDlg::UpdateEc(const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2)
+CString CConcreteDetailsDlg::UpdateEc(pgsTypes::ConcreteType type, const CString& strFc,const CString& strDensity,const CString& strK1,const CString& strK2)
 {
    CString strEc;
    Float64 fc, density, k1,k2;
@@ -154,7 +154,7 @@ CString CConcreteDetailsDlg::UpdateEc(const CString& strFc,const CString& strDen
          fc       = ::ConvertToSysUnits(fc,      stress_unit);
          density  = ::ConvertToSysUnits(density, density_unit);
 
-         ec = k1*k2*lrfdConcreteUtil::ModE(fc,density,false);
+         ec = k1*k2*lrfdConcreteUtil::ModE((matConcrete::Type)type,fc,density,false);
 
          strEc.Format(_T("%s"),FormatDimension(ec,pDisplayUnits->GetModEUnit(),false));
    }

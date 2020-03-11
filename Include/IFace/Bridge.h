@@ -907,10 +907,6 @@ interface IMaterials : IUnknown
    virtual std::_tstring GetDeckRebarName() const = 0;
    virtual void GetDeckRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade) const = 0;
 
-   // Density limits for normal and light weight concrete
-   virtual Float64 GetNWCDensityLimit() const = 0; // returns the minimum density for normal weight concrete
-   virtual Float64 GetLWCDensityLimit() const = 0; // returns the maximum density for lightweight concrete
-
    // Material Properties Calcluations
    virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const = 0;
    virtual Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const = 0;
@@ -920,7 +916,10 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointFlexureFrCoefficient(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointShearFrCoefficient(const CClosureKey& closureKey) const = 0;
 
-   virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const = 0;
+   virtual Float64 GetEconc(pgsTypes::ConcreteType type,Float64 fc,Float64 density,Float64 K1,Float64 K2) const = 0;
+
+   // Returns true if there is UHPC concrete used in the model
+   virtual bool HasUHPC() const = 0;
 };
 
 /*****************************************************************************

@@ -356,7 +356,7 @@ void pgsSegmentDesignArtifact::SetConcreteStrength(Float64 fc)
    if (!m_IsUserEc)
    {
       Float64 density = m_Concrete.GetDensity();
-      Float64 Ec = lrfdConcreteUtil::ModE(fc,density,false);
+      Float64 Ec = lrfdConcreteUtil::ModE(m_Concrete.GetType(),fc,density,false);
       m_Concrete.SetE(Ec);
    }
 }
@@ -493,7 +493,7 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    }
    else
    {
-      config.Eci = lrfdConcreteUtil::ModE( config.fci, m_Concrete.GetDensity(), false);
+      config.Eci = lrfdConcreteUtil::ModE( (matConcrete::Type)config.ConcType, config.fci, m_Concrete.GetDensity(), false);
    }
 
    config.bUserEc  = m_IsUserEc;
@@ -503,7 +503,7 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
    }
    else
    {
-      config.Ec = lrfdConcreteUtil::ModE( config.fc, m_Concrete.GetDensity(), false);
+      config.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)config.ConcType, config.fc, m_Concrete.GetDensity(), false);
    }
 
    config.SlabOffset[pgsTypes::metStart] = GetSlabOffset(pgsTypes::metStart);
@@ -1086,7 +1086,7 @@ void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, 
    pSegmentData->Material.Concrete.Fci = GetReleaseStrength();
    if (!pSegmentData->Material.Concrete.bUserEci)
    {
-      pSegmentData->Material.Concrete.Eci = lrfdConcreteUtil::ModE( pSegmentData->Material.Concrete.Fci, 
+      pSegmentData->Material.Concrete.Eci = lrfdConcreteUtil::ModE( (matConcrete::Type)pSegmentData->Material.Concrete.Type,pSegmentData->Material.Concrete.Fci, 
                                                              pSegmentData->Material.Concrete.StrengthDensity, 
                                                              false  ); // ignore LRFD range checks 
       pSegmentData->Material.Concrete.Eci *= (pSegmentData->Material.Concrete.EcK1*pSegmentData->Material.Concrete.EcK2);
@@ -1095,7 +1095,7 @@ void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, 
    pSegmentData->Material.Concrete.Fc  = GetConcreteStrength();
    if (!pSegmentData->Material.Concrete.bUserEc)
    {
-      pSegmentData->Material.Concrete.Ec = lrfdConcreteUtil::ModE( pSegmentData->Material.Concrete.Fc, 
+      pSegmentData->Material.Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)pSegmentData->Material.Concrete.Type, pSegmentData->Material.Concrete.Fc,
                                                             pSegmentData->Material.Concrete.StrengthDensity, 
                                                             false );// ignore LRFD range checks 
       pSegmentData->Material.Concrete.Ec *= (pSegmentData->Material.Concrete.EcK1*pSegmentData->Material.Concrete.EcK2);
@@ -1148,7 +1148,7 @@ void pgsSegmentDesignArtifact::ModSegmentDataForShearDesign(IBroker* pBroker, CP
       pSegmentData->Material.Concrete.Fc = GetConcreteStrength();
       if ( !pSegmentData->Material.Concrete.bUserEc )
       {
-         pSegmentData->Material.Concrete.Ec = lrfdConcreteUtil::ModE( pSegmentData->Material.Concrete.Fc, 
+         pSegmentData->Material.Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)pSegmentData->Material.Concrete.Type, pSegmentData->Material.Concrete.Fc,
                                                                pSegmentData->Material.Concrete.StrengthDensity, 
                                                                false );// ignore LRFD range checks 
          pSegmentData->Material.Concrete.Ec *= (pSegmentData->Material.Concrete.EcK1*pSegmentData->Material.Concrete.EcK2);
