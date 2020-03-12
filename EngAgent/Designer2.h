@@ -469,7 +469,7 @@ private:
    void DesignSlabOffset(IProgress* pProgress) const;
    void DesignMidZoneFinalConcrete(IProgress* pProgress) const;
    void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress) const;
-   void DesignEndZone(bool firstTime, arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress) const;
+   void DesignEndZone(bool firstTime, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress) const;
    void DesignForShipping(IProgress* pProgress) const;
    bool CheckShippingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
 
@@ -480,7 +480,7 @@ private:
                                          Float64* pEccTens, Float64* pEccComp, Float64* pFeTop, Float64* pFeBot, IProgress* pProgress) const;
    bool CheckLiftingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
 
-   void DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const;
+   void DesignEndZoneDebonding(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const;
    std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress) const;
    std::vector<DebondLevelType> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress) const;
    std::vector<DebondLevelType> DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail = true) const;

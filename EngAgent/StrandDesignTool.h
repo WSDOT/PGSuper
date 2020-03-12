@@ -675,7 +675,9 @@ private:
    ConcreteStrengthController m_FciControl;
    ConcreteStrengthController m_FcControl;
 
+   Float64 m_MinFci;
    Float64 m_MaxFci;
+   Float64 m_MinFc;
    Float64 m_MaxFc;
 
    // store whether release strength required additional rebar

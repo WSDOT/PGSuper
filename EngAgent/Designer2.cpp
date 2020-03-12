@@ -960,9 +960,7 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   // There are a few cases were we don't design
-   // 1) Time Step analysis
-   // 2) Strands are defined using the individual strand model
+   // We don't design for time-step analysis
    GET_IFACE(ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
@@ -1000,7 +998,7 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    }
 
    // we don't want events to fire so we'll hold events and then cancel any pending events
-   // when design is done. Use auto class so we do it exeption safely.
+   // when design is done. Use auto class so we do it exception safely.
    GET_IFACE(IEvents,pEvents);
    GET_IFACE(ILiveLoads,pLiveLoads);
    AutoDesign myAutoDes(pEvents, pLiveLoads);
@@ -5797,7 +5795,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
    pArtifact->SetDebondSectionSpacingLimit(dds);
 }
 
-void pgsDesigner2::DesignEndZone(bool firstPass, arDesignOptions options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const
+void pgsDesigner2::DesignEndZone(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const
 {
    // At this point we either have harping or debonding maximized in the end-zones
    // The concrete strength for lifting will control over this case
@@ -5851,7 +5849,7 @@ void pgsDesigner2::DesignEndZone(bool firstPass, arDesignOptions options, pgsSeg
    }
 }
 
-void pgsDesigner2::DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const
+void pgsDesigner2::DesignEndZoneDebonding(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const
 {
    LOG(_T("Entering DesignEndZoneDebonding"));
 

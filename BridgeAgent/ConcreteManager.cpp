@@ -1858,7 +1858,7 @@ bool CConcreteManager::HasUHPC() const
    }
 
    ValidateLongitudinalJointConcrete();
-   if (m_pLongitudinalJointConcrete->GetType() == matConcrete::UHPC)
+   if (m_pLongitudinalJointConcrete != nullptr && m_pLongitudinalJointConcrete->GetType() == matConcrete::UHPC)
    {
       return true;
    }

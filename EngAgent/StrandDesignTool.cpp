@@ -125,9 +125,6 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
 
    m_DesignOptions = pArtif->GetDesignOptions();
 
-   m_MaxFc  = m_DesignOptions.maxFc;
-   m_MaxFci = m_DesignOptions.maxFci;
-
    m_StrandFillType = m_DesignOptions.doStrandFillType;
 
    m_HarpedRatio = DefaultHarpedRatio;
@@ -142,7 +139,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
-   const CGirderMaterial* pGirderMaterial = pSegmentData->GetSegmentMaterial(m_SegmentKey);
+   const CGirderMaterial* pSegmentMaterial = pSegmentData->GetSegmentMaterial(m_SegmentKey);
 
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
    m_pGirderEntry = pGroup->GetGirder(m_SegmentKey.girderIndex)->GetGirderLibraryEntry();
@@ -161,31 +158,66 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
       m_pRaisedStraightStrandDesignTool.reset();
    }
 
-   // Initialize concrete type with a minimum strength
-   Float64 slab_fc = pDeck->Concrete.Fc;
+   // Initialize concrete strength range
+   LOG(_T("Initializing concrete strength range"));
+   if (pSegmentMaterial->Concrete.Type == pgsTypes::UHPC)
+   {
+      LOG(_T("UHPC Concrete"));
+      // somewhat arbitrary values
+      // Graybeal "Compression Response of Rapid-Strengthing Ultra-High Performance Concrete Formulation" FHWA Publication: FHWA-HRT-12-064
+      // Sets limits of f'c of 14-26ksi
+      m_MinFci = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
+      m_MaxFci = ::ConvertToSysUnits(14.0, unitMeasure::KSI);
+      m_MinFc = ::ConvertToSysUnits(14.0, unitMeasure::KSI);
+      m_MaxFc = ::ConvertToSysUnits(26.0, unitMeasure::KSI);
+   }
+   else
+   {
+      LOG(_T("Conventional Concrete"));
+      GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+      m_MinFci = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(28.0, unitMeasure::MPa) : ::ConvertToSysUnits(4.0, unitMeasure::KSI); // minimum per LRFD 5.4.2.1
+      m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
+      m_MinFc = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(34.5, unitMeasure::MPa) : ::ConvertToSysUnits(5.0, unitMeasure::KSI); // agreed by wsdot and txdot
+      m_MaxFc = m_DesignOptions.maxFc;// this is from the design strategy defined in the girder
+   }
+
+   if (m_MinFc < m_MaxFci)
+   {
+      // can't have fci greater than fc
+      m_MinFc = m_MaxFci;
+   }
+
+   LOG(_T("fci = ") << ::ConvertFromSysUnits(m_MinFci, unitMeasure::KSI) << _T(" ksi - ") << ::ConvertFromSysUnits(m_MaxFci, unitMeasure::KSI) << _T(" ksi"));
+   LOG(_T("fc  = ") << ::ConvertFromSysUnits(m_MinFc,  unitMeasure::KSI) << _T(" ksi - ") << ::ConvertFromSysUnits(m_MaxFc,  unitMeasure::KSI) << _T(" ksi"));
 
    // Set concrete strength 
    Float64 ifc = GetMinimumConcreteStrength();
-   ifc = Max(slab_fc, ifc);
 
-   matConcreteEx conc(_T("Design Concrete"), ifc, pGirderMaterial->Concrete.StrengthDensity, 
-                      pGirderMaterial->Concrete.WeightDensity, lrfdConcreteUtil::ModE((matConcrete::Type)(pGirderMaterial->Concrete.Type),ifc,  pGirderMaterial->Concrete.StrengthDensity, false ),
+   // Initialize concrete type with a minimum strength
+   if (::IsStructuralDeck(pDeck->GetDeckType()))
+   {
+      Float64 slab_fc = pDeck->Concrete.Fc;
+      ifc = Max(slab_fc, ifc);
+   }
+
+   matConcreteEx conc(_T("Design Concrete"), ifc, pSegmentMaterial->Concrete.StrengthDensity, 
+                      pSegmentMaterial->Concrete.WeightDensity, lrfdConcreteUtil::ModE((matConcrete::Type)(pSegmentMaterial->Concrete.Type),ifc,  pSegmentMaterial->Concrete.StrengthDensity, false ),
                       0.0,0.0); // we don't need the modulus of rupture for shear or flexur. Just use 0.0
-   conc.SetMaxAggregateSize(pGirderMaterial->Concrete.MaxAggregateSize);
-   conc.SetType((matConcrete::Type)pGirderMaterial->Concrete.Type);
-   conc.HasAggSplittingStrength(pGirderMaterial->Concrete.bHasFct);
-   conc.SetAggSplittingStrength(pGirderMaterial->Concrete.Fct);
+   conc.SetMaxAggregateSize(pSegmentMaterial->Concrete.MaxAggregateSize);
+   conc.SetType((matConcrete::Type)pSegmentMaterial->Concrete.Type);
+   conc.HasAggSplittingStrength(pSegmentMaterial->Concrete.bHasFct);
+   conc.SetAggSplittingStrength(pSegmentMaterial->Concrete.Fct);
 
    m_pArtifact->SetConcrete(conc);
 
-   if (pGirderMaterial->Concrete.bUserEc)
+   if (pSegmentMaterial->Concrete.bUserEc)
    {
-      m_pArtifact->SetUserEc(pGirderMaterial->Concrete.Ec);
+      m_pArtifact->SetUserEc(pSegmentMaterial->Concrete.Ec);
    }
 
-   if (pGirderMaterial->Concrete.bUserEci)
+   if (pSegmentMaterial->Concrete.bUserEci)
    {
-      m_pArtifact->SetUserEci(pGirderMaterial->Concrete.Eci);
+      m_pArtifact->SetUserEci(pSegmentMaterial->Concrete.Eci);
    }
 
 
@@ -3096,9 +3128,7 @@ void pgsStrandDesignTool::SetMinimumFinalMidZoneEccentricity(Float64 ecc)
 
 Float64 pgsStrandDesignTool::GetMinimumReleaseStrength() const
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   return IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(28.0,unitMeasure::MPa) 
-                                     : ::ConvertToSysUnits( 4.0,unitMeasure::KSI); // minimum per LRFD 5.4.2.1
+   return m_MinFci;
 }
 
 Float64 pgsStrandDesignTool::GetMaximumReleaseStrength() const
@@ -3109,9 +3139,7 @@ Float64 pgsStrandDesignTool::GetMaximumReleaseStrength() const
 
 Float64 pgsStrandDesignTool::GetMinimumConcreteStrength() const
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   return IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(34.5,unitMeasure::MPa) 
-                                     : ::ConvertToSysUnits( 5.0,unitMeasure::KSI); // agreed by wsdot and txdot
+   return m_MinFc;
 }
 
 Float64 pgsStrandDesignTool::GetMaximumConcreteStrength() const
