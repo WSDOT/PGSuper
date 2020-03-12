@@ -90,7 +90,7 @@ public:
 
 protected:
    virtual void OnOK() override;
-   pgsTypes::ConcreteType GetConreteType();
+   pgsTypes::ConcreteType GetConcreteType();
    bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
    bool IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type);
 };

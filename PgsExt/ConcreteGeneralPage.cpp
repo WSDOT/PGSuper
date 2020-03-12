@@ -285,7 +285,8 @@ void CConcreteGeneralPage::UpdateEc()
       strK1.Format(_T("%f"),pParent->m_AASHTO.m_EccK1);
       strK2.Format(_T("%f"),pParent->m_AASHTO.m_EccK2);
 
-      CString strEc = CConcreteDetailsDlg::UpdateEc(pParent->m_General.m_Type,strFc,strDensity,strK1,strK2);
+      pgsTypes::ConcreteType type = GetConcreteType();
+      CString strEc = CConcreteDetailsDlg::UpdateEc(type,strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }
@@ -355,7 +356,7 @@ void CConcreteGeneralPage::OnCopyMaterial()
    }
 }
 
-pgsTypes::ConcreteType CConcreteGeneralPage::GetConreteType()
+pgsTypes::ConcreteType CConcreteGeneralPage::GetConcreteType()
 {
    CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
    pgsTypes::ConcreteType type = (pgsTypes::ConcreteType)pcbConcreteType->GetItemData(pcbConcreteType->GetCurSel());
@@ -364,11 +365,9 @@ pgsTypes::ConcreteType CConcreteGeneralPage::GetConreteType()
 
 void CConcreteGeneralPage::OnConcreteType()
 {
-   CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
-   pgsTypes::ConcreteType type = (pgsTypes::ConcreteType)pcbConcreteType->GetItemData(pcbConcreteType->GetCurSel());
-
    GetDlgItem(IDC_DS)->Invalidate();
    GetDlgItem(IDC_DW)->Invalidate();
+   UpdateEc();
 }
 
 HBRUSH CConcreteGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
@@ -405,7 +404,7 @@ HBRUSH CConcreteGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
             Float64 value;
             DDX_UnitValue(&dx, IDC_DS, value, pDisplayUnits->GetDensityUnit() );
 
-            if ( !IsDensityInRange(value,GetConreteType()) )
+            if ( !IsDensityInRange(value,GetConcreteType()) )
             {
                pDC->SetTextColor( RED );
             }

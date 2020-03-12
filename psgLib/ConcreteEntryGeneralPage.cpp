@@ -199,11 +199,6 @@ pgsTypes::ConcreteType CConcreteEntryGeneralPage::GetConreteType()
 
 void CConcreteEntryGeneralPage::OnConcreteType()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CComboBox* pcbConcreteType = (CComboBox*)GetDlgItem(IDC_CONCRETE_TYPE);
-   pgsTypes::ConcreteType type = (pgsTypes::ConcreteType)pcbConcreteType->GetItemData(pcbConcreteType->GetCurSel());
-
    GetDlgItem(IDC_DS)->Invalidate();
    GetDlgItem(IDC_DW)->Invalidate();
 }

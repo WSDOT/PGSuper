@@ -424,7 +424,8 @@ void CConcreteManager::ValidateConcrete() const
             //THROW_UNWIND(strMsg.c_str(),-1);
          }
 
-         if (fcMax < fc28)
+         pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)pDeckConcrete->GetType();
+         if (fcMax < fc28 && slabConcreteType != pgsTypes::UHPC)
          {
             std::_tostringstream os;
             os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
@@ -435,9 +436,8 @@ void CConcreteManager::ValidateConcrete() const
             pStatusCenter->Add(pStatusItem);
          }
 
-         pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)pDeckConcrete->GetType();
          Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
-         if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) )
+         if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) && slabConcreteType != pgsTypes::UHPC )
          {
             std::_tostringstream os;
             os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc,pDisplayUnits->GetStressUnit());
@@ -480,7 +480,7 @@ void CConcreteManager::ValidateConcrete() const
          if ( !IsConcreteDensityInRange(strength_density, slabConcreteType) )
          {
             std::_tostringstream os;
-            if (m_pvDeckConcrete[regionIdx]->GetType() == pgsTypes::Normal )
+            if (slabConcreteType == pgsTypes::Normal )
             {
                os << _T("Deck concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
             }
@@ -535,7 +535,8 @@ void CConcreteManager::ValidateConcrete() const
          //THROW_UNWIND(strMsg.c_str(),-1);
       }
 
-      if (fcMax < fc28)
+      pgsTypes::ConcreteType jointConcreteType = (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType();
+      if (fcMax < fc28 && jointConcreteType != pgsTypes::UHPC)
       {
          std::_tostringstream os;
          os << _T("Longitudinal joint strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
@@ -546,7 +547,6 @@ void CConcreteManager::ValidateConcrete() const
          pStatusCenter->Add(pStatusItem);
       }
 
-      pgsTypes::ConcreteType jointConcreteType = (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType();
       //Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
       //if (max_slab_fc < fc28 && !IsEqual(max_slab_fc, fc28))
       //{
@@ -589,10 +589,10 @@ void CConcreteManager::ValidateConcrete() const
          pStatusCenter->Add(pStatusItem);
       }
 
-      if (!IsConcreteDensityInRange(strength_density, (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType()))
+      if (!IsConcreteDensityInRange(strength_density, jointConcreteType))
       {
          std::_tostringstream os;
-         if (m_pLongitudinalJointConcrete->GetType() == pgsTypes::Normal)
+         if (jointConcreteType == pgsTypes::Normal)
          {
             os << _T("Longitudinal joint concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
          }
@@ -824,7 +824,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
    }
 
 
-   if (fcMax < fc28)
+   if (fcMax < fc28 && concreteType != pgsTypes::UHPC)
    {
       std::_tostringstream os;
       os << strLabel << _T(" strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
@@ -835,7 +835,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fci < fci && !IsEqual(max_fci,fci,::ConvertToSysUnits(0.001,unitMeasure::KSI)) )
+   if (  max_fci < fci && !IsEqual(max_fci,fci,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::UHPC )
    {
       std::_tostringstream os;
       os << strLabel << _T(": Initial concrete strength (") << (LPCTSTR)::FormatDimension(fci,pDisplayUnits->GetStressUnit()) <<  _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fci,pDisplayUnits->GetStressUnit());
@@ -846,7 +846,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fc < fc28 && !IsEqual(max_fc,fc28,::ConvertToSysUnits(0.001,unitMeasure::KSI)) )
+   if (  max_fc < fc28 && !IsEqual(max_fc,fc28,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::UHPC )
    {
       std::_tostringstream os;
       os << strLabel << _T(": Concrete strength (") << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fc,pDisplayUnits->GetStressUnit());
@@ -885,7 +885,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
    if ( !IsConcreteDensityInRange(pConcrete->GetStrengthDensity(), concreteType) )
    {
       std::_tostringstream os;
-      if ( concreteType == pgsTypes::Normal || concreteType == pgsTypes::UHPC)
+      if ( concreteType == pgsTypes::Normal)
       {
          os << strLabel << _T(": concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
       }
