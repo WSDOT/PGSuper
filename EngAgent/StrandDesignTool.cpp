@@ -181,12 +181,6 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
       m_MaxFc = m_DesignOptions.maxFc;// this is from the design strategy defined in the girder
    }
 
-   if (m_MinFc < m_MaxFci)
-   {
-      // can't have fci greater than fc
-      m_MinFc = m_MaxFci;
-   }
-
    LOG(_T("fci = ") << ::ConvertFromSysUnits(m_MinFci, unitMeasure::KSI) << _T(" ksi - ") << ::ConvertFromSysUnits(m_MaxFci, unitMeasure::KSI) << _T(" ksi"));
    LOG(_T("fc  = ") << ::ConvertFromSysUnits(m_MinFc,  unitMeasure::KSI) << _T(" ksi - ") << ::ConvertFromSysUnits(m_MaxFc,  unitMeasure::KSI) << _T(" ksi"));
 
