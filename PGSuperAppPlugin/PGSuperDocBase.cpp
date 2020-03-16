@@ -305,7 +305,6 @@ END_MESSAGE_MAP()
 // CPGSDocBase construction/destruction
 
 CPGSDocBase::CPGSDocBase():
-m_DesignSlabOffset(sodSlabOffsetandAssumedExcessCamberDesign),
 m_bAutoCalcEnabled(true)
 {
 	EnableAutomation();

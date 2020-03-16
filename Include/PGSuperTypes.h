@@ -1362,32 +1362,32 @@ struct HANDLINGCONFIG
 
 enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded,
                             dtDesignFullyBondedRaised, dtDesignForDebondingRaised }; // raised straight strands
+enum arConcreteDesignType { cdPreserveStrength, cdDesignForMinStrength };
 enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping, ftDirectFill }; // direct fill used for raised straight
-enum arSlabOffsetDesignType { sodNoSlabOffsetDesign, sodSlabOffsetandAssumedExcessCamberDesign }; 
-enum arDesignStirrupLayoutType { slLayoutStirrups, slRetainExistingLayout };
+enum arSlabOffsetDesignType { sodPreserveHaunch, sodDesignHaunch, sodDefault }; 
+enum arShearDesignType { sdtNoDesign, sdtLayoutStirrups, sdtRetainExistingLayout };
 
 struct arDesignOptions
 {
    arFlexuralDesignType doDesignForFlexure;
+   arConcreteDesignType doDesignConcreteStrength;
+   arDesignStrandFillType doStrandFillType;
+   bool doForceHarpedStrandsStraight;
    arSlabOffsetDesignType doDesignSlabOffset;
+   arShearDesignType doDesignForShear;
    bool doDesignLifting;
    bool doDesignHauling;
    bool doDesignSlope;
    bool doDesignHoldDown;
 
-   arDesignStrandFillType doStrandFillType;
-   bool doForceHarpedStrandsStraight;
-
+   // max concrete strength for this option
    Float64 maxFci;
    Float64 maxFc;
 
-   bool doDesignForShear;
 
-   arDesignStirrupLayoutType doDesignStirrupLayout;
-
-   arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(sodNoSlabOffsetDesign), doDesignLifting(false), doDesignHauling(false),
-                      doDesignSlope(false), doDesignHoldDown(false), doDesignForShear(false), 
-                      doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups),
+   arDesignOptions(): doDesignConcreteStrength(cdDesignForMinStrength),doDesignForFlexure(dtNoDesign), doDesignSlabOffset(sodPreserveHaunch), doDesignLifting(false), doDesignHauling(false),
+                      doDesignSlope(false), doDesignHoldDown(false), 
+                      doStrandFillType(ftMinimizeHarping), doDesignForShear(sdtLayoutStirrups),
                       doForceHarpedStrandsStraight(false),
                       maxFci(0.0),
                       maxFc(0.0)

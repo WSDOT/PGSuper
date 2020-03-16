@@ -2464,20 +2464,6 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
 
    Float64 loc = 0.0;
 
-   // get design options from spec. Do shear and flexure
-   GET_IFACE(ISpecification,pSpecification);
-   std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(segmentKey);
-   IndexType do_cnt = des_options_coll.size();
-   IndexType do_idx = 1;
-
-   // Add shear design to options
-   for (auto& des_options : des_options_coll)
-   {
-      des_options.doDesignForShear = true;
-      des_options.doDesignStirrupLayout = slLayoutStirrups; // always layout zones from scratch
-   }
-
-
    GET_IFACE(IArtifact,pIArtifact);
    const pgsGirderDesignArtifact* pGirderDesignArtifact = nullptr;
    const pgsSegmentDesignArtifact* pArtifact = nullptr;
@@ -2489,7 +2475,7 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
 
    try
    {
-      pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey,des_options_coll);
+      pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey,true/*design for flexure*/, sodDefault/*use default haunch design method*/, cdDesignForMinStrength, sdtLayoutStirrups);
       if ( pGirderDesignArtifact )
       {
          pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
@@ -3221,27 +3207,15 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
          bool designSucceeded = true;
          if (txInfo.m_TxRunType == CTestCommandLineInfo::txrDesign || txInfo.m_TxRunType == CTestCommandLineInfo::txrDesignShear)
          {
-            // get design options from library entry. 
-            GET_IFACE(ISpecification, pSpecification);
-
-            std::vector<arDesignOptions> des_options_coll = pSpecification->GetDesignOptions(segmentKey);
-            IndexType do_cnt = des_options_coll.size();
-            IndexType do_idx = 1;
-
-            // Add command line settings to options
-            for (std::vector<arDesignOptions>::iterator it = des_options_coll.begin(); it != des_options_coll.end(); it++)
+            arShearDesignType shearDesignType;
+            if (txInfo.m_TxRunType == CTestCommandLineInfo::txrDesignShear)
             {
-               arDesignOptions& des_options = *it;
-
-               // Set up for shear design. 
-               des_options.doDesignForShear = txInfo.m_TxRunType == CTestCommandLineInfo::txrDesignShear;
-               if (des_options.doDesignForShear)
-               {
-                  // If stirrup zones are not symmetrical in test file, design using existing layout
-                  GET_IFACE(IStirrupGeometry, pStirrupGeom);
-                  bool are_symm = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey);
-                  des_options.doDesignStirrupLayout = are_symm ? slLayoutStirrups : slRetainExistingLayout;
-               }
+               GET_IFACE(IStirrupGeometry, pStirrupGeom);
+               shearDesignType = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey) ? sdtLayoutStirrups : sdtRetainExistingLayout;
+            }
+            else
+            {
+               shearDesignType = sdtNoDesign;
             }
 
             GET_IFACE(IArtifact, pIArtifact);
@@ -3250,7 +3224,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
             try
             {
                // Design the girder
-               pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey, des_options_coll);
+               pGirderDesignArtifact = pIArtifact->CreateDesignArtifact(segmentKey, true/*design for flexure*/, sodDefault/*use default haunch design method*/, cdDesignForMinStrength, shearDesignType);
                pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segmentKey.segmentIndex);
                ATLASSERT(segmentKey.IsEqual(pArtifact->GetSegmentKey()));
 
@@ -3361,7 +3335,7 @@ void CTestAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSeg
 
    const arDesignOptions& design_options = pArtifact->GetDesignOptions();
 
-   if (design_options.doDesignForFlexure != dtNoDesign && design_options.doDesignSlabOffset != sodNoSlabOffsetDesign)
+   if (design_options.doDesignForFlexure != dtNoDesign && design_options.doDesignSlabOffset != sodPreserveHaunch)
    {
       pgsTypes::SlabOffsetType slabOffsetType = pIBridgeDesc->GetSlabOffsetType();
 

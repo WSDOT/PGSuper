@@ -34,6 +34,8 @@
 #include <PsgLib\GirderLibraryEntry.h>
 #include <EAF\EAFDocument.h>
 
+#include <MFCTools\AutoRegistry.h>
+#include "PGSuperBaseAppPlugin.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -45,22 +47,17 @@ static char THIS_FILE[] = __FILE__;
 // CDesignGirderDlg dialog
 
 
-CDesignGirderDlg::CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, arSlabOffsetDesignType designA, 
-                                   IBroker* pBroker, CWnd* pParent /*=nullptr*/)
+CDesignGirderDlg::CDesignGirderDlg(const CGirderKey& girderKey, IBroker* pBroker, arSlabOffsetDesignType haunchDesignType, CWnd* pParent /*=nullptr*/)
 	: CDialog(CDesignGirderDlg::IDD, pParent),
-   m_EnableA(enableA),
-   m_DesignSlabOffset(designA)
-   , m_DesignRadioNum(0)
-   , m_StartWithCurrentStirrupLayout(FALSE)
+   m_GirderKey(girderKey),
+   m_DesignRadioNum(0)
 {
    m_pBroker = pBroker;
 
 	//{{AFX_DATA_INIT(CDesignGirderDlg)
-   m_Group = grpIdx;
-	m_Girder = gdrIdx;
-	m_DesignForFlexure = TRUE;
-	m_DesignForShear = TRUE;
-	//}}AFX_DATA_INIT
+   //}}AFX_DATA_INIT
+
+   m_HaunchDesignType = haunchDesignType;
 
    m_strToolTip = "Eugène Freyssinet\r\nFather of Prestressed Concrete";
 }
@@ -70,18 +67,14 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
    //{{AFX_DATA_MAP(CDesignGirderDlg)
-   DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_Girder);
-   DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Group);
-   DDX_CBEnum(pDX, IDC_DESIGN_A, (int&)m_DesignSlabOffset);
-   DDX_Check(pDX, IDC_DESIGN_FLEXURE, m_DesignForFlexure);
-   DDX_Check(pDX, IDC_DESIGN_SHEAR, m_DesignForShear);
+   DDX_CBIndex(pDX, IDC_SPAN, m_GirderKey.groupIndex);
+   DDX_CBIndex(pDX, IDC_GIRDER, m_GirderKey.girderIndex);
    DDX_Radio(pDX, IDC_RADIO_SINGLE, m_DesignRadioNum);
-   DDX_Check(pDX, IDC_START_WITH_LAYOUT, m_StartWithCurrentStirrupLayout);
    //}}AFX_DATA_MAP
 
    if (pDX->m_bSaveAndValidate)
    {
-      if (m_DesignForFlexure==FALSE && m_DesignForShear==FALSE)
+      if (DesignForFlexure()==FALSE && DesignForShear()==FALSE)
       {
          ::AfxMessageBox(_T("No design requested. Please select Flexural and/or Shear design."),MB_OK | MB_ICONWARNING);
          pDX->Fail();
@@ -92,8 +85,7 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
       {
          // Single girder
          std::vector<CGirderKey> list_of_one;
-         CGirderKey girderKey(m_Group, m_Girder);
-         list_of_one.push_back(girderKey);
+         list_of_one.push_back(m_GirderKey);
          m_GirderKeys = list_of_one;
       }
       else
@@ -105,12 +97,6 @@ void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
             pDX->Fail();
          }
       }
-
-      if (m_DesignForFlexure==FALSE)
-      {
-         // No A design if no flexure design
-         m_DesignSlabOffset = sodNoSlabOffsetDesign;
-      }
    }
 }
 
@@ -121,6 +107,7 @@ BEGIN_MESSAGE_MAP(CDesignGirderDlg, CDialog)
 	ON_CBN_SELCHANGE(IDC_SPAN, OnSpanChanged)
 	ON_BN_CLICKED(IDC_DESIGN_FLEXURE, OnDesignFlexure)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
+   ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_SELECT_GIRDERS, &CDesignGirderDlg::OnBnClickedSelectGirders)
    ON_BN_CLICKED(IDC_RADIO_SINGLE, &CDesignGirderDlg::OnBnClickedRadio)
@@ -133,35 +120,174 @@ END_MESSAGE_MAP()
 
 BOOL CDesignGirderDlg::OnInitDialog() 
 {
+   // set up default design options
+   GET_IFACE(IBridge, pBridge);
+   GET_IFACE(ISpecification, pSpec);
+   m_bEnableHaunchDesign = pSpec->IsSlabOffsetDesignEnabled() && IsStructuralDeck(pBridge->GetDeckType()) ? TRUE : FALSE;
+
    // Load up the combo boxes with span and girder information
-   GET_IFACE(IBridge,pBridge);
 
    CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
    CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 
-   SpanIndexType cSpan = pBridge->GetSpanCount();
-   for ( SpanIndexType i = 0; i < cSpan; i++ )
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      CString strSpan;
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(i));
-      pSpanBox->AddString(strSpan);
+      CString strGroup;
+      strGroup.Format(_T("Span %d"),LABEL_GROUP(grpIdx));
+      pSpanBox->AddString(strGroup);
    }
 
-   pSpanBox->SetCurSel((int)m_Group);
-   UpdateGirderComboBox(m_Group);
+   pSpanBox->SetCurSel((int)m_GirderKey.groupIndex);
+   UpdateGirderComboBox(m_GirderKey.groupIndex);
 
-   CButton* pA= (CButton*)GetDlgItem( IDC_DESIGN_A );
-   pA->EnableWindow(m_EnableA?TRUE:FALSE);
+   CComboBox* pcbDesignHaunch = (CComboBox*)GetDlgItem( IDC_DESIGN_HAUNCH );
+   pcbDesignHaunch->AddString(_T("Preserve haunch geometry"));
+   pcbDesignHaunch->AddString(_T("Design haunch geometry"));
+   pcbDesignHaunch->EnableWindow(m_bEnableHaunchDesign);
+
+   CComboBox* pcbDesignConcrete = (CComboBox*)GetDlgItem(IDC_DESIGN_CONCRETE_STRENGTH);
+   pcbDesignConcrete->AddString(_T("Design for minimum concrete strength"));
+   pcbDesignConcrete->AddString(_T("Preserve concrete strength during design"));
 
 	CDialog::OnInitDialog();
 
    EnableToolTips(TRUE);
 
+   // Initialize controls
+   bool bDesignFlexure;
+   arSlabOffsetDesignType haunchDesignType;
+   arConcreteDesignType concreteDesignType;
+   arShearDesignType shearDesignType;
+   LoadSettings(bDesignFlexure, haunchDesignType, concreteDesignType, shearDesignType);
+   
+   CheckDlgButton(IDC_DESIGN_FLEXURE, bDesignFlexure ? BST_CHECKED : BST_UNCHECKED);
+   
+   CComboBox* pcbHaunch = (CComboBox*)GetDlgItem(IDC_DESIGN_HAUNCH);
+   pcbHaunch->SetCurSel(m_HaunchDesignType == sodDefault ? (haunchDesignType == sodPreserveHaunch ? 0 : 1) : m_HaunchDesignType);
+
+   CComboBox* pcbConcrete = (CComboBox*)GetDlgItem(IDC_DESIGN_CONCRETE_STRENGTH);
+   pcbConcrete->SetCurSel(concreteDesignType == cdDesignForMinStrength ? 0 : 1);
+   if (shearDesignType == sdtNoDesign)
+   {
+      CheckDlgButton(IDC_DESIGN_SHEAR, BST_UNCHECKED);
+      CheckDlgButton(IDC_START_WITH_LAYOUT, BST_CHECKED);
+   }
+   else
+   {
+      CheckDlgButton(IDC_DESIGN_SHEAR, BST_CHECKED);
+      CheckDlgButton(IDC_START_WITH_LAYOUT, shearDesignType == sdtRetainExistingLayout ? BST_CHECKED : BST_UNCHECKED);
+   }
+
+   // Update UI elements
+   OnDesignFlexure();
    OnBnClickedRadio();
    OnBnClickedDesignShear();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CDesignGirderDlg::OnDestroy()
+{
+   SaveSettings();
+}
+
+void CDesignGirderDlg::LoadSettings(bool& bDesignFlexure, arSlabOffsetDesignType& haunchDesignType, arConcreteDesignType& concreteDesignType, arShearDesignType& shearDesignType)
+{
+   // loads last settings from the registry
+   CEAFDocument* pDoc = EAFGetDocument();
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+
+   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
+
+   // Flexure and stirrup design defaults for design dialog.
+   // Default is to design flexure and not shear.
+   // If the string is not Off, then assume it is on.
+   CString strDefaultDesignFlexure = pApp->GetLocalMachineString(_T("Settings"), _T("DesignFlexure"), _T("On"));
+   CString strDesignFlexure = pApp->GetProfileString(_T("Settings"), _T("DesignFlexure"), strDefaultDesignFlexure);
+   bDesignFlexure = (strDesignFlexure.CompareNoCase(_T("On")) == 0) ? true : false;
+
+   CString strDefaultHaunchDesign = pApp->GetLocalMachineString(_T("Settings"), _T("HaunchDesign"), _T("On"));
+   CString strHaunchDesign = pApp->GetProfileStringW(_T("Settings"), _T("HaunchDesign"), strDefaultHaunchDesign);
+   haunchDesignType = (strHaunchDesign.CompareNoCase(_T("On")) == 0) ? sodDesignHaunch : sodPreserveHaunch;
+
+   CString strDefaultDesignWithFixedConcreteStrength = pApp->GetLocalMachineString(_T("Settings"), _T("PreserveConcreteStrength"), _T("Off"));
+   CString strDesignWithFixedConcreteStrength = pApp->GetProfileString(_T("Settings"), _T("PreserveConcreteStrength"), strDefaultDesignWithFixedConcreteStrength);
+   concreteDesignType = (strDesignWithFixedConcreteStrength.CompareNoCase(_T("Off")) == 0) ? cdDesignForMinStrength : cdPreserveStrength;
+
+   CString strDefaultDesignShear = pApp->GetLocalMachineString(_T("Settings"), _T("DesignShear"), _T("Off"));
+   CString strDesignShear = pApp->GetProfileString(_T("Settings"), _T("DesignShear"), strDefaultDesignShear);
+   bool bDesignShear = (strDesignShear.CompareNoCase(_T("Off")) == 0) ? false : true;
+
+   CString strDefaultDesignStirrupsFromScratch = pApp->GetLocalMachineString(_T("Settings"), _T("DesignStirrupsFromScratch"), _T("On"));
+   CString strDesignStirrupsFromScratch = pApp->GetProfileString(_T("Settings"), _T("DesignStirrupsFromScratch"), strDefaultDesignStirrupsFromScratch);
+   bool bStirrupsFromScratch = (strDesignStirrupsFromScratch.CompareNoCase(_T("Off")) == 0) ? false : true;
+   if (bDesignShear)
+   {
+      shearDesignType = (bStirrupsFromScratch ? sdtLayoutStirrups : sdtRetainExistingLayout);
+   }
+   else
+   {
+      shearDesignType = sdtNoDesign;
+   }
+}
+
+void CDesignGirderDlg::SaveSettings()
+{
+   // saves current settings to the registry
+   CEAFDocument* pDoc = EAFGetDocument();
+   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
+   CComPtr<IEAFAppPlugin> pAppPlugin;
+   pTemplate->GetPlugin(&pAppPlugin);
+   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+
+   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
+
+   VERIFY(pApp->WriteProfileString(_T("Settings"), _T("DesignFlexure"), DesignForFlexure() ? _T("On") : _T("Off")));
+   VERIFY(pApp->WriteProfileString(_T("Settings"), _T("HaunchDesign"), DesignHaunch() ? _T("On") : _T("Off")));
+   VERIFY(pApp->WriteProfileString(_T("Settings"), _T("PreserveConcreteStrength"), PreserveConcreteStrength() ? _T("On") : _T("Off")));
+   VERIFY(pApp->WriteProfileString(_T("Settings"), _T("DesignShear"), DesignForShear() ? _T("On") : _T("Off")));
+   VERIFY(pApp->WriteProfileString(_T("Settings"), _T("DesignStirrupsFromScratch"), DesignWithCurrentStirrups() ? _T("On") : _T("Off")));
+}
+
+BOOL CDesignGirderDlg::DesignForFlexure()
+{
+   return IsDlgButtonChecked(IDC_DESIGN_FLEXURE) == BST_CHECKED;
+}
+
+BOOL CDesignGirderDlg::DesignHaunch()
+{
+   CComboBox* pcbDesignHaunch = (CComboBox*)GetDlgItem(IDC_DESIGN_HAUNCH);
+   if (m_bEnableHaunchDesign)
+   {
+      return pcbDesignHaunch->GetCurSel() == 0 ? FALSE : TRUE;
+   }
+   else
+   {
+      return FALSE;
+   }
+}
+
+BOOL CDesignGirderDlg::PreserveConcreteStrength()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DESIGN_CONCRETE_STRENGTH);
+   return pCB->GetCurSel() == 0 ? FALSE : TRUE;
+}
+
+BOOL CDesignGirderDlg::DesignForShear()
+{
+   return IsDlgButtonChecked(IDC_DESIGN_SHEAR) == BST_CHECKED;
+}
+
+BOOL CDesignGirderDlg::DesignWithCurrentStirrups()
+{
+   return IsDlgButtonChecked(IDC_START_WITH_LAYOUT) == BST_CHECKED;
 }
 
 void CDesignGirderDlg::OnHelp() 
@@ -193,14 +319,16 @@ void CDesignGirderDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
       pGdrBox->AddString( strGdr );
    }
 
-   if ( pGdrBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR )
+   if (pGdrBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
+   {
       pGdrBox->SetCurSel(0);
+   }
 }
 
 void CDesignGirderDlg::OnDesignFlexure() 
 {
-   // enable A design only if flexure is on
-   UpdateADimCtrl();
+   UpdateDesignHaunchCtrl();
+   UpdateConcreteDesignCtrl();
 }
 
 BOOL CDesignGirderDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
@@ -243,8 +371,6 @@ void CDesignGirderDlg::OnBnClickedSelectGirders()
       CString msg;
       msg.Format(_T("Select Girders\n(%d Selected)"), m_GirderKeys.size());
       GetDlgItem(IDC_SELECT_GIRDERS)->SetWindowText(msg);
-
-      UpdateADimCtrl();
    }
 }
 
@@ -258,30 +384,29 @@ void CDesignGirderDlg::OnBnClickedRadio()
 
    GetDlgItem(IDC_SELECT_GIRDERS)->EnableWindow(enab_mpl);
 
-   UpdateADimCtrl();
-
    if ( enab_mpl && m_GirderKeys.size() == 0 )
    {
       OnBnClickedSelectGirders();
    }
 }
 
-void CDesignGirderDlg::UpdateADimCtrl()
+void CDesignGirderDlg::UpdateDesignHaunchCtrl()
 {
-   if (m_EnableA)
+   if (m_bEnableHaunchDesign)
    {
-      // only enable A if flexure is selected
-      CButton* pAFlex = (CButton*)GetDlgItem( IDC_DESIGN_FLEXURE );
-      BOOL flexure_checked = (pAFlex->GetCheck()==1) ? TRUE:FALSE;
-
-      CButton* pA= (CButton*)GetDlgItem( IDC_DESIGN_A );
-      pA->EnableWindow(flexure_checked);
+      CWnd* pWnd = GetDlgItem( IDC_DESIGN_HAUNCH );
+      pWnd->EnableWindow(IsDlgButtonChecked(IDC_DESIGN_FLEXURE) == BST_CHECKED);
    }
+}
+
+void CDesignGirderDlg::UpdateConcreteDesignCtrl()
+{
+   CWnd* pWnd = GetDlgItem(IDC_DESIGN_CONCRETE_STRENGTH);
+   pWnd->EnableWindow(IsDlgButtonChecked(IDC_DESIGN_FLEXURE) == BST_CHECKED);
 }
 
 void CDesignGirderDlg::OnBnClickedDesignShear()
 {
    BOOL bEnable = IsDlgButtonChecked(IDC_DESIGN_SHEAR) == BST_CHECKED;
-
    GetDlgItem( IDC_START_WITH_LAYOUT )->EnableWindow(bEnable);
 }

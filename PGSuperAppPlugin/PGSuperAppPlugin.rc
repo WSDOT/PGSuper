@@ -12,7 +12,8 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
+#include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -690,7 +691,7 @@ BEGIN
         MENUITEM "Edit Sti&rrups...",           ID_EDIT_STIRRUPS
         MENUITEM SEPARATOR
         MENUITEM "Design Girder",               ID_GIRDERVIEW_DESIGNGIRDERDIRECT
-        MENUITEM "Design Girder (don't change Haunch Geometry)", ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET
+        MENUITEM "Design Girder (preserve haunch geometry)", ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET
         MENUITEM SEPARATOR
         MENUITEM "Add Poi&nt Load...",          ID_ADD_POINT_LOAD_CTX
         MENUITEM "Add &Distributed Load...",    ID_ADD_DISTRIBUTED_LOAD_CTX
@@ -719,7 +720,7 @@ BEGIN
         MENUITEM "Edit Girder...",              ID_EDIT_GIRDER
         MENUITEM SEPARATOR
         MENUITEM "Design Girder",               ID_PROJECT_DESIGNGIRDERDIRECT
-        MENUITEM "Design Girder (don't change Haunch Geometry)", ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET
+        MENUITEM "Design Girder (preserve haunch geometry)", ID_PROJECT_DESIGNGIRDERDIRECT_PRESERVEHAUNCH
         MENUITEM SEPARATOR
         MENUITEM "View Girder",                 ID_VIEW_GIRDER
         MENUITEM SEPARATOR
@@ -1206,29 +1207,30 @@ BEGIN
     PUSHBUTTON      "Help",ID_HELP,276,94,50,14
 END
 
-IDD_DESIGN_GIRDER DIALOGEX 0, 0, 328, 283
+IDD_DESIGN_GIRDER DIALOGEX 0, 0, 313, 301
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Girder Designer"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    LTEXT           "The Girder Designer uses current bridge layout and project criteria information to determine an optimal design for the selected girder(s)",IDC_STATIC,8,10,179,30
+    GROUPBOX        "Select Girder(s) to be Designed",IDC_STATIC,7,40,180,93
     CONTROL         "Design a Single Girder",IDC_RADIO_SINGLE,"Button",BS_AUTORADIOBUTTON | WS_GROUP,13,54,86,10
     COMBOBOX        IDC_SPAN,33,67,67,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_GIRDER,110,67,67,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Design Multiple Girders",IDC_RADIO_MULTIPLE,"Button",BS_AUTORADIOBUTTON,13,86,88,10
     PUSHBUTTON      "Select Girders\n(0 Selected)",IDC_SELECT_GIRDERS,66,101,78,23,BS_MULTILINE
+    GROUPBOX        "Design Options",IDC_STATIC,7,139,299,97
     CONTROL         "Design For Flexure",IDC_DESIGN_FLEXURE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,154,153,10
-    CONTROL         "Design For Shear",IDC_DESIGN_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,188,94,10
-    DEFPUSHBUTTON   "Run Design",IDOK,70,262,64,14
-    PUSHBUTTON      "Cancel",IDCANCEL,217,262,50,14
-    PUSHBUTTON      "Help",IDC_HELPME,271,262,50,14
-    GROUPBOX        "Select Girder(s) to be Designed",IDC_STATIC,7,40,180,93
-    GROUPBOX        "Design Options",IDC_STATIC,7,139,301,81
-    LTEXT           "The Girder Designer uses current bridge layout and project criteria information to determine an optimal design for the selected girder(s)",IDC_STATIC,8,10,179,30
-    LTEXT           "Notes:\n- A successful design attempt does not guarantee compliance with all criteria.  Always run a Spec Check Report to review your final design.",IDC_STATIC,7,225,314,31
-    CONTROL         IDB_GIRDERDESIGNER,IDC_PICTURE,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE | SS_REALSIZEIMAGE | SS_SUNKEN | WS_BORDER,212,13,97,116
+    COMBOBOX        IDC_DESIGN_HAUNCH,30,168,177,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_DESIGN_CONCRETE_STRENGTH,30,185,177,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Design For Shear",IDC_DESIGN_SHEAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,205,94,10
     CONTROL         "Start with Current Stirrup Layout",IDC_START_WITH_LAYOUT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,203,115,10
-    COMBOBOX        IDC_DESIGN_A,30,168,177,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,220,115,10
+    CONTROL         IDB_GIRDERDESIGNER,IDC_PICTURE,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE | SS_REALSIZEIMAGE | SS_SUNKEN | WS_BORDER,209,10,97,116
+    LTEXT           "Notes:\n- A successful design attempt does not guarantee compliance with all criteria.  Always run a Spec Check Report to review your final design.",IDC_STATIC,7,241,299,31
+    DEFPUSHBUTTON   "Run Design",IDOK,70,280,64,14
+    PUSHBUTTON      "Cancel",IDCANCEL,202,280,50,14
+    PUSHBUTTON      "Help",IDC_HELPME,256,280,50,14
 END
 
 IDD_GIRDERDESC_LIFTING_PAGE DIALOGEX 0, 0, 390, 224
@@ -3807,6 +3809,14 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+    IDD_DESIGN_GIRDER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 306
+        TOPMARGIN, 10
+        BOTTOMMARGIN, 294
+    END
+
     IDD_LLDF, DIALOG
     BEGIN
     END
@@ -4152,17 +4162,6 @@ BEGIN
 0x6148, 0x7072, 0x6465, "\000" 
     IDC_ADJUSTABLE_COMBO, 0x403, 9, 0
 0x7453, 0x6172, 0x6769, 0x7468, "\000" 
-    0
-END
-
-IDD_DESIGN_GIRDER DLGINIT
-BEGIN
-    IDC_DESIGN_A, 0x403, 30, 0
-0x6f44, 0x4e20, 0x746f, 0x4320, 0x6168, 0x676e, 0x2065, 0x6148, 0x6e75, 
-0x6863, 0x4720, 0x6f65, 0x656d, 0x7274, 0x0079, 
-    IDC_DESIGN_A, 0x403, 23, 0
-0x6544, 0x6973, 0x6e67, 0x4820, 0x7561, 0x636e, 0x2068, 0x6547, 0x6d6f, 
-0x7465, 0x7972, "\000" 
     0
 END
 

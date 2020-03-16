@@ -160,25 +160,36 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
 
    // Initialize concrete strength range
    LOG(_T("Initializing concrete strength range"));
-   if (pSegmentMaterial->Concrete.Type == pgsTypes::UHPC)
+   if (m_DesignOptions.doDesignConcreteStrength == cdPreserveStrength)
    {
-      LOG(_T("UHPC Concrete"));
-      // somewhat arbitrary values
-      // Graybeal "Compression Response of Rapid-Strengthing Ultra-High Performance Concrete Formulation" FHWA Publication: FHWA-HRT-12-064
-      // Sets limits of f'c of 14-26ksi
-      m_MinFci = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
-      m_MaxFci = ::ConvertToSysUnits(14.0, unitMeasure::KSI);
-      m_MinFc = ::ConvertToSysUnits(14.0, unitMeasure::KSI);
-      m_MaxFc = ::ConvertToSysUnits(26.0, unitMeasure::KSI);
+      LOG(_T("Concrete strengths are fixed"));
+      m_MinFci = pSegmentMaterial->Concrete.Fci;
+      m_MaxFci = pSegmentMaterial->Concrete.Fci;
+      m_MinFc = pSegmentMaterial->Concrete.Fc;
+      m_MaxFc = pSegmentMaterial->Concrete.Fc;
    }
    else
    {
-      LOG(_T("Conventional Concrete"));
-      GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
-      m_MinFci = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(28.0, unitMeasure::MPa) : ::ConvertToSysUnits(4.0, unitMeasure::KSI); // minimum per LRFD 5.4.2.1
-      m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
-      m_MinFc = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(34.5, unitMeasure::MPa) : ::ConvertToSysUnits(5.0, unitMeasure::KSI); // agreed by wsdot and txdot
-      m_MaxFc = m_DesignOptions.maxFc;// this is from the design strategy defined in the girder
+      if (pSegmentMaterial->Concrete.Type == pgsTypes::UHPC)
+      {
+         LOG(_T("UHPC Concrete"));
+         // somewhat arbitrary values
+         // Graybeal "Compression Response of Rapid-Strengthing Ultra-High Performance Concrete Formulation" FHWA Publication: FHWA-HRT-12-064
+         // Sets limits of f'c of 14-26ksi
+         m_MinFci = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
+         m_MaxFci = ::ConvertToSysUnits(14.0, unitMeasure::KSI);
+         m_MinFc = ::ConvertToSysUnits(14.0, unitMeasure::KSI);
+         m_MaxFc = ::ConvertToSysUnits(26.0, unitMeasure::KSI);
+      }
+      else
+      {
+         LOG(_T("Conventional Concrete"));
+         GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+         m_MinFci = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(28.0, unitMeasure::MPa) : ::ConvertToSysUnits(4.0, unitMeasure::KSI); // minimum per LRFD 5.4.2.1
+         m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
+         m_MinFc = IS_SI_UNITS(pDisplayUnits) ? ::ConvertToSysUnits(34.5, unitMeasure::MPa) : ::ConvertToSysUnits(5.0, unitMeasure::KSI); // agreed by wsdot and txdot
+         m_MaxFc = m_DesignOptions.maxFc;// this is from the design strategy defined in the girder
+      }
    }
 
    LOG(_T("fci = ") << ::ConvertFromSysUnits(m_MinFci, unitMeasure::KSI) << _T(" ksi - ") << ::ConvertFromSysUnits(m_MaxFci, unitMeasure::KSI) << _T(" ksi"));
@@ -230,7 +241,7 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    Float64 tSlab = pBridge->GetGrossSlabDepth( pgsPointOfInterest(m_SegmentKey,0.00) );
    m_AbsoluteMinimumSlabOffset = tSlab;
 
-   if ( pBridge->GetDeckType() == pgsTypes::sdtNone || m_DesignOptions.doDesignSlabOffset == sodNoSlabOffsetDesign )
+   if ( IsNonstructuralDeck(pBridge->GetDeckType()) || m_DesignOptions.doDesignSlabOffset == sodPreserveHaunch )
    {
       // if there is no deck, set the artifact value to the current value
       PierIndexType startPierIdx, endPierIdx;
@@ -259,8 +270,8 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
 
    // Set initial design for AssumedExcessCamber here. Design is only for haunch load determination
    GET_IFACE_NOCHECK(ISpecification,pSpec);
-   m_bIsDesignExcessCamber = sodSlabOffsetandAssumedExcessCamberDesign == m_DesignOptions.doDesignSlabOffset &&
-                                                       pSpec->IsAssumedExcessCamberForLoad();
+   m_bIsDesignExcessCamber = ((m_DesignOptions.doDesignSlabOffset == sodDesignHaunch) && pSpec->IsAssumedExcessCamberForLoad()) ? true : false;
+
    // don't let tolerance be impossible
    if (m_bIsDesignExcessCamber)
    {

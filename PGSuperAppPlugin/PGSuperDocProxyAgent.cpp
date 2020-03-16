@@ -1315,7 +1315,7 @@ bool CPGSuperDocProxyAgent::EditBearings()
 // IDesign
 void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey)
 {
-   arSlabOffsetDesignType designSlabOffset = bDesignSlabOffset ? sodSlabOffsetandAssumedExcessCamberDesign : sodNoSlabOffsetDesign;
+   arSlabOffsetDesignType designSlabOffset = bDesignSlabOffset ? sodDesignHaunch : sodPreserveHaunch;
 
    ((CPGSuperDoc*)m_pMyDocument)->DesignGirder(bPrompt,designSlabOffset,girderKey);
 }

@@ -1153,15 +1153,15 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       GetConfinementZoneLengths(segmentKey, pGdr, segment_length, &zoneFactor, &startd, &endd, &startConfinementZl, &endConfinementZl);
 
       // Use shear design tool to control stirrup design
+      ATLASSERT(options.doDesignForShear != sdtNoDesign);
       m_ShearDesignTool.Initialize(m_pBroker, this, m_StatusGroupID, &artifact, startConfinementZl, endConfinementZl,
-                                   bPermit, options.doDesignStirrupLayout==slLayoutStirrups);
+                                   bPermit, options.doDesignForShear == sdtLayoutStirrups);
 
       // clear outcome codes
       m_DesignerOutcome.Reset();
 
       // don't do anything if nothing is asked
-      if (options.doDesignForFlexure==dtNoDesign && 
-          !options.doDesignForShear)
+      if (options.doDesignForFlexure==dtNoDesign && options.doDesignForShear == sdtNoDesign)
       {
          artifact.SetOutcome(pgsSegmentDesignArtifact::NoDesignRequested);
          girderDesignArtifact.AddSegmentDesignArtifact(segIdx,artifact);
@@ -1332,7 +1332,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
                }
             }
 
-            if (options.doDesignSlabOffset != sodNoSlabOffsetDesign)
+            if (options.doDesignSlabOffset != sodPreserveHaunch)
             {
                pProgress->UpdateMessage(_T("Designing Slab Offset Outer Loop"));
 
@@ -1392,14 +1392,14 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
             m_DesignerOutcome.Reset();
          }
 
-         if (options.doDesignForShear)
+         if (options.doDesignForShear != sdtNoDesign)
          {
             //
             // Refine stirrup design
             // 
             pProgress->UpdateMessage(_T("Designing Shear Stirrups"));
 
-            DesignShear(&artifact, options.doDesignStirrupLayout==slLayoutStirrups, options.doDesignForFlexure!=dtNoDesign);
+            DesignShear(&artifact, options.doDesignForShear == sdtLayoutStirrups, options.doDesignForFlexure!=dtNoDesign);
 
             if ( m_DesignerOutcome.WasDesignAborted() )
             {
@@ -1425,7 +1425,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
          return;
       }
 
-      if (artifact.GetDesignOptions().doDesignSlabOffset != sodNoSlabOffsetDesign)
+      if (artifact.GetDesignOptions().doDesignSlabOffset != sodPreserveHaunch)
       {
          LOG(_T("Final Slab Offset before rounding (Start) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metStart),unitMeasure::Inch) << _T(" in and (End) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in"));
          Float64 start_offset = RoundSlabOffsetValue(pSpec, artifact.GetSlabOffset(pgsTypes::metStart));
@@ -6129,7 +6129,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
    Int16 cIter = 0;
    Int16 nFutileAttempts=0;
    Int16 nIterMax = 40;
-   Int16 nIterEarlyStage = (options.doDesignSlabOffset != sodNoSlabOffsetDesign) ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
+   Int16 nIterEarlyStage = (options.doDesignSlabOffset != sodPreserveHaunch) ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
    StrandIndexType Ns, Nh, Nt;
    Float64 fc, fci, start_slab_offset, end_slab_offset;
 
@@ -6291,7 +6291,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          }
       }
 
-      if (options.doDesignSlabOffset != sodNoSlabOffsetDesign)
+      if (options.doDesignSlabOffset != sodPreserveHaunch)
       {
          pProgress->UpdateMessage(_T("Designing Slab Offset - inner loop"));
          DesignSlabOffset( pProgress );

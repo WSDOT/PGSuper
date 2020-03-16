@@ -2,11 +2,11 @@ Design {#ug_design}
 ==============================================
 This chapter describes the Girder Designer, which provides automated girder design capabilities.
 
-If you know everything about your structure at the beginning of a project all you have to do is verify it satisfies the LRFD Bridge Design Specification. However, when designing a new structure, life isn't quite so simple. It is your job as the designer to determine many of the attributes of your bridge and its precast-prestressed girders. This is where the Girder Designer comes in.
+If you know everything about your structure at the beginning of a project all you have to do is verify it satisfies the design requirements. However, when designing a new structure, life isn't quite so simple. It is your job as the designer to determine many of the attributes of your bridge and its precast-prestressed girders. This is where the Girder Designer comes in.
 
 > NOTE: The Girder Designer is not available when losses are computed by the Time-Step method.
 
-Given a general bridge configuration, girder type, framing plan, and material information, the Girder Designer can make a really good estimate at what the other input parameters should be, including number and configuration of prestressing strands, jacking force, concrete strengths, transverse reinforcement and other bridge data. The Girder Designer can evaluate temporary construction conditions including stability during lifting girders from the casting bed and hauling them to the bridge site.
+Given a general bridge configuration, girder type, framing plan, and material information, the Girder Designer can make a really good estimate at what the other input parameters should be, including number and configuration of prestressing strands, jacking force, concrete strength, transverse reinforcement and other bridge data. The Girder Designer can evaluate temporary construction conditions including stability during lifting girders from the casting bed and hauling them to the bridge site.
 
 The flow chart below outlines the typical design process.
 ![](DesignFlowchart.bmp)

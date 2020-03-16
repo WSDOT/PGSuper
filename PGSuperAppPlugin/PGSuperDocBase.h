@@ -331,8 +331,6 @@ protected:
 
    CSelection m_Selection;
 
-   arSlabOffsetDesignType m_DesignSlabOffset;
-
    // callback IDs for any status callbacks we register
    StatusCallbackIDType m_scidInformationalError;
    StatusGroupIDType m_StatusGroupID;

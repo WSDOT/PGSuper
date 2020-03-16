@@ -9343,7 +9343,7 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       option.maxFci = fci_max;
       option.maxFc  = fc_max;
 
-      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled() ? sodSlabOffsetandAssumedExcessCamberDesign : sodNoSlabOffsetDesign; // option same as in 2.9x versions
+      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled() ? sodDesignHaunch : sodPreserveHaunch; // option same as in 2.9x versions
       option.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
       option.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
 

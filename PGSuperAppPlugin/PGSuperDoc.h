@@ -58,23 +58,12 @@ public:
 	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
-   void DesignGirder(bool bPrompt,arSlabOffsetDesignType designSlabOffset,const CGirderKey& girderKey);
-
-   virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) override;
-   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) override;
-   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) override;
-
-   // flags for design dialog
-   bool IsDesignFlexureEnabled() const;
-   void EnableDesignFlexure( bool bEnable );
-
-   bool IsDesignShearEnabled() const;
-   void EnableDesignShear( bool bEnable );
-
-   bool IsDesignStirrupsFromScratchEnabled() const;
-   void EnableDesignStirrupsFromScratch( bool bEnable );
-
+   virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) override;
+   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey, int nPage) override;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage) override;
    virtual UINT GetStandardToolbarResourceID() override;
+
+   void DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOffset, const CGirderKey& girderKey);
 
    CPGSuperComponentInfoManager* GetComponentInfoManager() { return &m_ComponentInfoManager; }
 
@@ -87,24 +76,16 @@ protected:
 	afx_msg void OnEditGirder();
 	afx_msg void OnProjectDesignGirder();
 	afx_msg void OnProjectDesignGirderDirect();
-   afx_msg void OnUpdateProjectDesignGirderDirect(CCmdUI* pCmdUI);
-	afx_msg void OnProjectDesignGirderDirectHoldSlabOffset();
-   afx_msg void OnUpdateProjectDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI);
+	afx_msg void OnProjectDesignGirderDirectPreserveHaunch();
+   afx_msg void OnUpdateProjectDesignGirderDirectPreserveHaunch(CCmdUI* pCmdUI);
    afx_msg void OnProjectAnalysis();
    //}}AFX_MSG
 
    CPGSuperComponentInfoManager m_ComponentInfoManager;
 
-   bool m_bDesignFlexureEnabled;
-   bool m_bDesignShearEnabled;
-   bool m_bDesignStirrupsFromScratchEnabled;
-
-   void DoDesignGirder(const std::vector<CGirderKey>& girderKeys, arSlabOffsetDesignType designADim);
+   void DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType);
 
    virtual CPGSuperPluginMgrBase* CreatePluginManager() override { return new CPGSuperPluginMgr(); }
-
-   virtual void LoadDocumentSettings() override;
-   virtual void SaveDocumentSettings() override;
 
    virtual CATID GetAgentCategoryID() override { return CATID_PGSuperAgent; }
    virtual CATID GetExtensionAgentCategoryID() override { return CATID_PGSuperExtensionAgent; }

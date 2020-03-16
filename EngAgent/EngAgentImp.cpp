@@ -4077,46 +4077,84 @@ const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(const CGirderKey& girde
    return FindRatingArtifact(girderKey,ratingType,vehicleIdx);
 }
 
-const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& designOptions) const
+const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderKey& girderKey, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType) const
 {
-   std::map<CGirderKey,pgsGirderDesignArtifact>::size_type cRemove = m_DesignArtifacts.erase(girderKey);
-   ATLASSERT( cRemove == 0 || cRemove == 1 );
-
-   // Tricky: Set to gross sections and prismatic haunch if needed
-   GET_IFACE_NOCHECK(IBridge,pBridge);
-   GET_IFACE(ISectionProperties,pSectProp);
-
-   bool doTrans  = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed;
-   bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType());
-
-   // Use the class below to temporarly set transformed and prismatic haunch properties in library and then reset them back
-   DesignOverrider overrider(doTrans, doHaunch, m_pBroker);
-
-   pgsGirderDesignArtifact gdrDesignArtifact = m_Designer.Design(girderKey,designOptions);
-
-   // NOTE: girder artifact should have an overall outcome for the design of all segments
-   // we want to know if design was cancelled... all segment artifacts will have the DesignCancelled
-   // outcome so we just have to check the first artifact
-   SegmentIndexType segIdx = 0;
-   pgsSegmentDesignArtifact* pSegmentDesignArtifact = gdrDesignArtifact.GetSegmentDesignArtifact(segIdx);
-   if ( pSegmentDesignArtifact->GetOutcome() == pgsSegmentDesignArtifact::DesignCancelled )
+   if (bDesignFlexure || shearDesignType != sdtNoDesign)
    {
+      std::map<CGirderKey, pgsGirderDesignArtifact>::size_type cRemove = m_DesignArtifacts.erase(girderKey);
+      ATLASSERT(cRemove == 0 || cRemove == 1);
+
+
+      // A girder can have multiple design strategies, but only one strategy is needed if we are designing for shear only
+      GET_IFACE(ISpecification, pSpecification);
+      std::vector<arDesignOptions> designOptions = pSpecification->GetDesignOptions(girderKey); // gets the design options and parameters for the specific type of girder (generally from the Project Criteria and Girder Library Entry)
+      if (bDesignFlexure == false && shearDesignType != sdtNoDesign && 1 < designOptions.size())
+      {
+         designOptions.erase(designOptions.begin() + 1, designOptions.end());
+         ATLASSERT(designOptions.size() == 1);
+      }
+
+      // Modify the options based on the overrides provided in the function arguements
+      for (auto& options : designOptions)
+      {
+         if (bDesignFlexure)
+         {
+            if (haunchDesignType != sodDefault)
+            {
+               options.doDesignSlabOffset = haunchDesignType;
+            }
+            options.doDesignConcreteStrength = concreteDesignType;
+         }
+         else
+         {
+            options.doDesignForFlexure = dtNoDesign;
+         }
+
+         options.doDesignForShear = shearDesignType;
+      }
+
+
+      // Tricky: Set to gross sections and prismatic haunch if needed
+      GET_IFACE_NOCHECK(IBridge, pBridge);
+      GET_IFACE(ISectionProperties, pSectProp);
+
+      bool doTrans = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed;
+      bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType());
+
+      // Use the class below to temporarly set transformed and prismatic haunch properties in library and then reset them back
+      DesignOverrider overrider(doTrans, doHaunch, m_pBroker);
+
+      pgsGirderDesignArtifact gdrDesignArtifact = m_Designer.Design(girderKey, designOptions);
+
+      // NOTE: girder artifact should have an overall outcome for the design of all segments
+      // we want to know if design was cancelled... all segment artifacts will have the DesignCancelled
+      // outcome so we just have to check the first artifact
+      SegmentIndexType segIdx = 0;
+      pgsSegmentDesignArtifact* pSegmentDesignArtifact = gdrDesignArtifact.GetSegmentDesignArtifact(segIdx);
+      if (pSegmentDesignArtifact->GetOutcome() == pgsSegmentDesignArtifact::DesignCancelled)
+      {
+         return nullptr;
+      }
+
+      // Write notes if section properties were tweaked for design
+      if (doTrans)
+      {
+         pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnTransformedSectionsSetToGross);
+      }
+
+      if (doHaunch)
+      {
+         pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnParabolicHaunchSetToConstant);
+      }
+
+      auto retval = m_DesignArtifacts.insert(std::make_pair(girderKey, gdrDesignArtifact));
+      return &((*retval.first).second);
+   }
+   else
+   {
+      ATLASSERT(false); // design wasn't specified (bDesignFlexure and bDesignShear are both false)
       return nullptr;
    }
-
-   // Write notes if section properties were tweaked for design
-   if (doTrans)
-   {
-      pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnTransformedSectionsSetToGross);
-   }
-
-   if (doHaunch)
-   {
-      pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnParabolicHaunchSetToConstant);
-   }
-
-   auto retval = m_DesignArtifacts.insert(std::make_pair(girderKey,gdrDesignArtifact));
-   return &((*retval.first).second);
 }
 
 const pgsGirderDesignArtifact* CEngAgentImp::GetDesignArtifact(const CGirderKey& girderKey) const

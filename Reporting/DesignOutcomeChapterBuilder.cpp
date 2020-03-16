@@ -604,7 +604,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       row++;
 
       GET_IFACE2(pBroker,IBridge,pBridge);
-      if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset != sodNoSlabOffsetDesign) )
+      if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset != sodPreserveHaunch) )
       {
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -634,7 +634,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
             row++;
          }
 
-         if ( options.doDesignSlabOffset==sodSlabOffsetandAssumedExcessCamberDesign && pSpec->IsAssumedExcessCamberForLoad() )
+         if ( options.doDesignSlabOffset==sodDesignHaunch && pSpec->IsAssumedExcessCamberForLoad() )
          {
             (*pTable)(row,0) << _T("Assumed Excess Camber");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetAssumedExcessCamber() );
@@ -1419,13 +1419,13 @@ void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexTyp
          didHauling = true;
       }
 
-      if (options.doDesignSlabOffset != sodNoSlabOffsetDesign)
+      if (options.doDesignSlabOffset != sodPreserveHaunch)
       {
          didSlabOffset = true;
 
          GET_IFACE2(pBroker,ISpecification,pSpec);
 
-         if (options.doDesignSlabOffset == sodSlabOffsetandAssumedExcessCamberDesign && pSpec->IsAssumedExcessCamberInputEnabled())
+         if (options.doDesignSlabOffset == sodDesignHaunch && pSpec->IsAssumedExcessCamberInputEnabled())
          {
             didAssumedExcessCamber = true;
          }
