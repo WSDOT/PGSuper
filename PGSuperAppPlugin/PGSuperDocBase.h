@@ -137,6 +137,68 @@ public:
 	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
+   IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
+   bool UnregisterBridgePlanViewCallback(IDType ID);
+   const std::map<IDType, IBridgePlanViewEventCallback*>& GetBridgePlanViewCallbacks();
+
+   IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
+   bool UnregisterBridgeSectionViewCallback(IDType ID);
+   const std::map<IDType, IBridgeSectionViewEventCallback*>& GetBridgeSectionViewCallbacks();
+
+   IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback);
+   bool UnregisterAlignmentPlanViewCallback(IDType ID);
+   const std::map<IDType, IAlignmentPlanViewEventCallback*>& GetAlignmentPlanViewCallbacks();
+
+   IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback);
+   bool UnregisterAlignmentProfileViewCallback(IDType ID);
+   const std::map<IDType, IAlignmentProfileViewEventCallback*>& GetAlignmentProfileViewCallbacks();
+
+   IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
+   bool UnregisterGirderElevationViewCallback(IDType ID);
+   const std::map<IDType, IGirderElevationViewEventCallback*>& GetGirderElevationViewCallbacks();
+
+   IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
+   bool UnregisterGirderSectionViewCallback(IDType ID);
+   const std::map<IDType, IGirderSectionViewEventCallback*>& GetGirderSectionViewCallbacks();
+
+   IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
+   bool UnregisterEditPierCallback(IDType ID);
+   const std::map<IDType, IEditPierCallback*>& GetEditPierCallbacks();
+
+   IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback);
+   bool UnregisterEditTemporarySupportCallback(IDType ID);
+   const std::map<IDType, IEditTemporarySupportCallback*>& GetEditTemporarySupportCallbacks();
+
+   IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
+   bool UnregisterEditSpanCallback(IDType ID);
+   const std::map<IDType, IEditSpanCallback*>& GetEditSpanCallbacks();
+
+   IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback, ICopyGirderPropertiesCallback* pCopyCallback);
+   bool UnregisterEditGirderCallback(IDType ID);
+   const std::map<IDType, IEditGirderCallback*>& GetEditGirderCallbacks();
+   const std::map<IDType, ICopyGirderPropertiesCallback*>& GetCopyGirderPropertiesCallbacks();
+
+   IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback, ICopyGirderPropertiesCallback* pCopyCallback);
+   bool UnregisterEditSplicedGirderCallback(IDType ID);
+   const std::map<IDType, IEditSplicedGirderCallback*>& GetEditSplicedGirderCallbacks();
+   const std::map<IDType, ICopyGirderPropertiesCallback*>& GetCopySplicedGirderPropertiesCallbacks();
+
+   IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback);
+   bool UnregisterEditSegmentCallback(IDType ID);
+   const std::map<IDType, IEditSegmentCallback*>& GetEditSegmentCallbacks();
+
+   IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback);
+   bool UnregisterEditClosureJointCallback(IDType ID);
+   const std::map<IDType, IEditClosureJointCallback*>& GetEditClosureJointCallbacks();
+
+   IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
+   bool UnregisterEditBridgeCallback(IDType ID);
+   const std::map<IDType, IEditBridgeCallback*>& GetEditBridgeCallbacks();
+
+   IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback);
+   bool UnregisterEditLoadRatingOptionsCallback(IDType ID);
+   const std::map<IDType, IEditLoadRatingOptionsCallback*>& GetEditLoadRatingOptionsCallbacks();
+
    // ISupportLibraryManager
    virtual CollectionIndexType GetNumberOfLibraryManagers() const override;
    virtual libLibraryManager* GetLibraryManager(CollectionIndexType num) override;
@@ -202,81 +264,23 @@ public:
    UINT GetGirderEditorSettings() const;
    void SetGirderEditorSettings(UINT settings, BOOL bNotify = TRUE);
 
-   // called when the UI Hints have been reset
-   virtual void ResetUIHints() override;
-
-   bool ShowProjectPropertiesOnNewProject();
-   void ShowProjectPropertiesOnNewProject(bool bShow);
 
    BOOL UpdateTemplates();
 
-   IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
-   bool UnregisterBridgePlanViewCallback(IDType ID);
-   const std::map<IDType,IBridgePlanViewEventCallback*>& GetBridgePlanViewCallbacks();
-
-   IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
-   bool UnregisterBridgeSectionViewCallback(IDType ID);
-   const std::map<IDType,IBridgeSectionViewEventCallback*>& GetBridgeSectionViewCallbacks();
-
-   IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback);
-   bool UnregisterAlignmentPlanViewCallback(IDType ID);
-   const std::map<IDType,IAlignmentPlanViewEventCallback*>& GetAlignmentPlanViewCallbacks();
-
-   IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback);
-   bool UnregisterAlignmentProfileViewCallback(IDType ID);
-   const std::map<IDType,IAlignmentProfileViewEventCallback*>& GetAlignmentProfileViewCallbacks();
-
-   IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
-   bool UnregisterGirderElevationViewCallback(IDType ID);
-   const std::map<IDType,IGirderElevationViewEventCallback*>& GetGirderElevationViewCallbacks();
-
-   IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
-   bool UnregisterGirderSectionViewCallback(IDType ID);
-   const std::map<IDType,IGirderSectionViewEventCallback*>& GetGirderSectionViewCallbacks();
-
-   IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
-   bool UnregisterEditPierCallback(IDType ID);
-   const std::map<IDType,IEditPierCallback*>& GetEditPierCallbacks();
-
-   IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback);
-   bool UnregisterEditTemporarySupportCallback(IDType ID);
-   const std::map<IDType,IEditTemporarySupportCallback*>& GetEditTemporarySupportCallbacks();
-
-   IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
-   bool UnregisterEditSpanCallback(IDType ID);
-   const std::map<IDType,IEditSpanCallback*>& GetEditSpanCallbacks();
-
-   IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
-   bool UnregisterEditGirderCallback(IDType ID);
-   const std::map<IDType,IEditGirderCallback*>& GetEditGirderCallbacks();
-   const std::map<IDType,ICopyGirderPropertiesCallback*>& GetCopyGirderPropertiesCallbacks();
-
-   IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
-   bool UnregisterEditSplicedGirderCallback(IDType ID);
-   const std::map<IDType,IEditSplicedGirderCallback*>& GetEditSplicedGirderCallbacks();
-   const std::map<IDType,ICopyGirderPropertiesCallback*>& GetCopySplicedGirderPropertiesCallbacks();
-
-   IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback);
-   bool UnregisterEditSegmentCallback(IDType ID);
-   const std::map<IDType,IEditSegmentCallback*>& GetEditSegmentCallbacks();
-
-   IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback);
-   bool UnregisterEditClosureJointCallback(IDType ID);
-   const std::map<IDType,IEditClosureJointCallback*>& GetEditClosureJointCallbacks();
-
-   IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
-   bool UnregisterEditBridgeCallback(IDType ID);
-   const std::map<IDType,IEditBridgeCallback*>& GetEditBridgeCallbacks();
-
-   IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback);
-   bool UnregisterEditLoadRatingOptionsCallback(IDType ID);
-   const std::map<IDType,IEditLoadRatingOptionsCallback*>& GetEditLoadRatingOptionsCallbacks();
+   long GetReportViewKey();
 
    virtual UINT GetStandardToolbarResourceID() = 0;
 
-   long GetReportViewKey();
-
 protected:
+   // Override default behavior
+   virtual void ResetUIHints(bool bPrompt = TRUE) override;
+
+   // called when the UI Hints have been reset
+   virtual void OnUIHintsReset() override;
+
+
+   bool ShowProjectPropertiesOnNewProject();
+   void ShowProjectPropertiesOnNewProject(bool bShow);
 
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 

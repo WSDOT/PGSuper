@@ -4853,10 +4853,27 @@ void CPGSDocBase::SetGirderEditorSettings(UINT settings,BOOL bNotify)
    }
 }
 
-void CPGSDocBase::ResetUIHints()
+void CPGSDocBase::ResetUIHints(bool bPrompt)
 {
-   __super::ResetUIHints();
-   m_pPGSuperDocProxyAgent->OnResetHints();
+   // this overrides the base class version because
+   // we want to customize the prompt
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CString strText;
+   strText = _T("Reset all user interface hints and warnings?");
+   int result = AfxMessageBox(strText, MB_YESNO);
+   if (result == IDNO)
+   {
+      return;
+   }
+
+   __super::ResetUIHints(false);
+}
+
+void CPGSDocBase::OnUIHintsReset()
+{
+   __super::OnUIHintsReset();
+   m_pPGSuperDocProxyAgent->OnUIHintsReset();
 }
 
 bool CPGSDocBase::ShowProjectPropertiesOnNewProject()

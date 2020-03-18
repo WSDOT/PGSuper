@@ -539,9 +539,9 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
    }
 }
 
-void CPGSuperDocProxyAgent::OnResetHints()
+void CPGSuperDocProxyAgent::OnUIHintsReset()
 {
-   Fire_OnHintsReset();
+   Fire_OnUIHintsReset();
 }
 
 //////////////////////////////////////////////////////////

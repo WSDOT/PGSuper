@@ -30,7 +30,7 @@ public:
 
 //IExtendUIEventSink : IUnknown
 public:
-	HRESULT Fire_OnHintsReset()
+	HRESULT Fire_OnUIHintsReset()
 	{
 		T* pT = (T*)this;
 		pT->Lock();
