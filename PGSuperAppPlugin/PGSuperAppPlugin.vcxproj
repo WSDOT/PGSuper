@@ -543,6 +543,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="BridgeDescFramingPage.cpp" />
     <ClCompile Include="BridgeDescGeneralPage.cpp" />
     <ClCompile Include="DrawDeckRegionControl.cpp" />
+    <ClCompile Include="FileSaveWarningDlg.cpp" />
     <ClCompile Include="GirderDescGeneralPage.cpp" />
     <ClCompile Include="BridgeDescLiftingPage.cpp" />
     <ClCompile Include="BridgeDescLongitudinalRebar.cpp" />
@@ -973,6 +974,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="BridgeDescFramingPage.h" />
     <ClInclude Include="BridgeDescGeneralPage.h" />
     <ClInclude Include="DrawDeckRegionControl.h" />
+    <ClInclude Include="FileSaveWarningDlg.h" />
     <ClInclude Include="GirderDescGeneralPage.h" />
     <ClInclude Include="BridgeDescLiftingPage.h" />
     <ClInclude Include="BridgeDescLongitudinalRebar.h" />

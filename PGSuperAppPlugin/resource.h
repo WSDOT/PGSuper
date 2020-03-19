@@ -190,6 +190,7 @@
 #define IDD_SELECT_BOUNDARY_CONDITION   392
 #define IDI_ICON1                       395
 #define IDI_RW_CS                       395
+#define IDD_FILESAVEWARNINGDLG          401
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDR_PGSPLICE_TEMPLATE_ICON      501
 #define IDD_ABOUTBOX                    999
@@ -392,7 +393,7 @@
 #define IDC_SS_TITLE                    1190
 #define IDC_USER_CUT                    1191
 #define IDC_HS_TITLE                    1192
-#define IDC_DESIGN_HAUNCH                    1193
+#define IDC_DESIGN_HAUNCH               1193
 #define IDC_TEMP_TITLE                  1194
 #define IDC_DESIGN_CONCRETE             1194
 #define IDC_DESIGN_CONCRETE_STRENGTH    1194
@@ -1230,6 +1231,7 @@
 #define IDC_STRANDS                     1904
 #define IDC_EDIT_BEARINGS               1904
 #define IDC_DECK_EVENT_DETAILS          1904
+#define IDC_HELP                        1904
 #define IDC_LABELS                      1905
 #define IDC_BUTTON2                     1905
 #define IDC_LOAD_LOCATION_NOTE          1906
@@ -1283,6 +1285,7 @@
 #define IDC_CHECK1                      1925
 #define IDC_STRANDS_CG                  1925
 #define IDC_BRG_RECESS_LENGTH           1925
+#define IDC_DONT_WARN                   1925
 #define IDC_STRANDS_CG2                 1926
 #define IDC_SECTION_CG                  1926
 #define IDC_EDIT1                       1926
@@ -1329,6 +1332,7 @@
 #define IDC_NUMSEGMENTS_COMBO           1961
 #define IDC_REGION_BOUNDARY             1961
 #define IDC_START_PIER                  1961
+#define IDC_DEFAULT_OPTIONS             1961
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_X2_MEASURE                  1962
 #define IDC_RIDGEPT_COMBO               1962
@@ -1390,6 +1394,8 @@
 #define IDC_HG_END                      2023
 #define IDC_INSTALLATION_TIME           2025
 #define IDC_WORKPOINT_STATIC            2026
+#define IDC_RB_COPY                     2027
+#define IDC_RB_DONT_COPY                2028
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1545,9 +1551,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        401
+#define _APS_NEXT_RESOURCE_VALUE        404
 #define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         2027
-#define _APS_NEXT_SYMED_VALUE           113
+#define _APS_NEXT_CONTROL_VALUE         2029
+#define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

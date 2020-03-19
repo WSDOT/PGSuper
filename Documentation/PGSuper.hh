@@ -162,6 +162,8 @@
 
 #define IDH_PLUGINS                             3810
 
+#define IDH_FILE_COMPATIBILITY_WARNING          3811
+
 #define IDH_GENERATE_STRANDS                    3900
 #define IDH_STRAND_LOCATION                     3901
 
@@ -196,4 +198,5 @@
 #define IDH_APPLY_LOADS                5007
 #define IDH_REMOVE_TEMPORARY_SUPPORTS  5008
 #define IDH_CAST_INTERMEDIATE_DIAPHRAGMS 5009
+
 

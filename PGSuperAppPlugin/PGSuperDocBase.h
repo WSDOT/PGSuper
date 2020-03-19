@@ -70,6 +70,77 @@ class CCopyGirderDlg;
 class pgsSegmentDesignArtifact;
 class CPGSuperDocProxyAgent;
 
+// A simple class to keep track of state information
+// for file compatibility
+class CFileCompatibilityState
+{
+public:
+   CFileCompatibilityState() { ResetFlags(); }
+
+   // Set/Get version of application that was used to when saving a file (after version 2.1)
+   void SetApplicationVersion(LPCTSTR lpszAppVersion) { m_strAppVersion = lpszAppVersion; }
+   const CString& GetApplicationVersion() const { return m_strAppVersion; }
+
+   // Set this flag if the application used to save this file was version 2.1 or earlier
+   void SetPreVersion21Flag() { m_bPreVersion21File = true;  }
+
+   // Call when a new file is created
+   void NewFileCreated() { ResetFlags(); m_strFilePath.Empty();  m_bNewFromTemplate = true; }
+
+   // Call when a file was opened. Keeps track of orginal filename and if the file was creaetd from a template
+   void FileOpened(LPCTSTR lpszFilePath) { ResetFlags(); m_strFilePath = lpszFilePath; m_bNewFromTemplate = false;  }
+
+   // Call when a file is saved. Updates the file name and the version of the application when saved
+   void FileSaved(LPCTSTR lpszFilePath, LPCTSTR lpszAppVersion) { ResetFlags();  m_strFilePath = lpszFilePath; m_strAppVersion = lpszAppVersion; }
+
+   // Call at the begining of the file saving process. Call with true of the file is unnamed (e.g. a new file that hasn't been saved or a Save As)
+   void Saving(bool bUnnamed) { m_bUnnamed = bUnnamed; }
+
+   // Returns the file name that will be used when making a copy of the original file
+   CString GetCopyFileName() const 
+   { 
+      CString strFile(m_strFilePath); 
+      auto pos = strFile.ReverseFind(_T('.')); 
+      if (m_bPreVersion21File)
+      {
+         strFile.Insert(pos, CString(_T("(2.1)")));
+      }
+      else
+      {
+         strFile.Insert(pos, CString(_T("(")) + m_strAppVersion + CString(_T(")")));
+      }
+      return strFile;
+   }
+
+   // Returns true if the user should be warned that the file format is going to change
+   // lpszPathName is name of file that is going to be saved
+   // lpszCurrentAppVersion is the application version of the application right now
+   bool PromptToMakeCopy(LPCTSTR lpszPathName,LPCTSTR lpszCurrentAppVersion)
+   {
+      return (((m_bUnnamed && m_strFilePath == CString(lpszPathName)) // this is a Save As and the file name isn't changing
+         || // OR
+         (m_bUnnamed == false) // this is not a save as
+         ||
+         (m_bNewFromTemplate == false)) // this is not a new file created from a template
+         &&
+         (m_bPreVersion21File || m_strAppVersion != CString(lpszCurrentAppVersion))); // current application is newer than application used to create the file
+   }
+
+private:
+   void ResetFlags()
+   {
+      m_bPreVersion21File = false;
+      m_bUnnamed = false;
+      m_bNewFromTemplate = false;
+   }
+
+   CString m_strFilePath;
+   CString m_strAppVersion;
+   bool m_bPreVersion21File; // while was created with Version 2.1 or earlier
+   bool m_bUnnamed;
+   bool m_bNewFromTemplate;
+};
+
 /*--------------------------------------------------------------------*/
 class CPGSDocBase : public CEAFBrokerDocument, 
                     public CEAFAutoCalcDocMixin,  // mix-in class for auto-calc capabilities
@@ -117,6 +188,7 @@ public:
 	public:
 	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName) override;
    virtual void OnCloseDocument() override;
+   virtual BOOL DoSave(LPCTSTR lpszPathName, BOOL bReplace = TRUE) override;
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
 	//}}AFX_VIRTUAL
 
@@ -249,8 +321,7 @@ public:
    void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType face);
    void DeleteSpan(SpanIndexType spanIdx);
    void DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pierRemoveType);
-   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,IndexType eventIdx);
-
+   void InsertSpan(PierIndexType refPierIdx, pgsTypes::PierFaceType pierFace, Float64 spanLength, bool bCreateNewGroup, EventIndexType eventIdx);
 
    // set/get view settings for bridge model editor
    UINT GetBridgeEditorSettings() const;
@@ -287,6 +358,8 @@ protected:
    bool m_bSelectingGirder;
    bool m_bSelectingSegment;
    bool m_bClearingSelection;
+
+   CFileCompatibilityState m_FileCompatibilityState;
 
    IDType m_CallbackID;
    // View Notification Callbacks
@@ -363,6 +436,7 @@ protected:
    virtual Float64 GetRootNodeVersion() override;
 
    virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
+   virtual BOOL SaveTheDocument(LPCTSTR lpszPathName) override;
    virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
 
    virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;

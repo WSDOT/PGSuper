@@ -32,6 +32,7 @@
 #define UIHINT_SAME_GIRDER_NAME           0x0008
 #define UIHINT_TIMELINE_IS_READONLY       0x0010
 #define UIHINT_FAVORITES_MENU             0x0020
+#define UIHINT_FILESAVEWARNING            0x0040
 
 // This file contains all the hints sets to the views
 // in the OnUpdate method.

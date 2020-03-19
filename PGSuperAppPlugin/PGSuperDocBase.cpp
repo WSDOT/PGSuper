@@ -143,6 +143,7 @@
 #include "EditHaunchDlg.h"
 #include "EditBearingDlg.h"
 #include "SelectBoundaryConditionDlg.h"
+#include "FileSaveWarningDlg.h"
 
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
@@ -1929,6 +1930,8 @@ BOOL CPGSDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
    }
 
    InitProjectProperties();
+
+   m_FileCompatibilityState.NewFileCreated();
    return TRUE;
 }
 
@@ -1937,6 +1940,14 @@ void CPGSDocBase::OnCloseDocument()
    CEAFBrokerDocument::OnCloseDocument();
 
    CBeamFamilyManager::Reset();
+}
+
+BOOL CPGSDocBase::DoSave(LPCTSTR lpszPathName, BOOL bReplace)
+{
+   // this is the start of the saving process....
+   m_FileCompatibilityState.Saving(lpszPathName == nullptr ? true : false);
+
+   return __super::DoSave(lpszPathName, bReplace);
 }
 
 void CPGSDocBase::InitProjectProperties()
@@ -2112,6 +2123,9 @@ BOOL CPGSDocBase::OpenTheDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
+   // A new file was opened
+   m_FileCompatibilityState.FileOpened(lpszPathName);
+
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    m_DocUnitSystem->put_UnitMode( IS_US_UNITS(pDisplayUnits) ? umUS : umSI );
   
@@ -2201,13 +2215,95 @@ Float64 CPGSDocBase::GetRootNodeVersion()
    return FILE_VERSION;
 }
 
+BOOL CPGSDocBase::SaveTheDocument(LPCTSTR lpszPathName)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CString strAppVersion = pApp->GetVersion(true);
+
+   bool bMakeCopy = false;
+   CString strCopyFileName = m_FileCompatibilityState.GetCopyFileName();
+   Uint32 hintSettings = GetUIHintSettings();
+   
+   if (sysFlags<Uint32>::IsClear(hintSettings, UIHINT_FILESAVEWARNING))
+   {
+      // if the hint flag is clear, that means we want to warn if appropreate
+      if ( m_FileCompatibilityState.PromptToMakeCopy(lpszPathName,strAppVersion) )
+      {
+         CFileSaveWarningDlg dlg(GetRootNodeName(),lpszPathName, strCopyFileName, m_FileCompatibilityState.GetApplicationVersion(),strAppVersion,EAFGetMainFrame());
+         auto result = dlg.DoModal();
+         if (result == IDCANCEL)
+         {
+            // user cancelled the save
+            return FALSE;
+         }
+
+         if (dlg.m_bDontWarn)
+         {
+            // the don't warn me again flag was set...
+
+            // update the hint settings
+            sysFlags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
+            SetUIHintSettings(hintSettings);
+
+            // Save the default option to the registry
+            CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+            CComPtr<IEAFAppPlugin> pAppPlugin;
+            pTemplate->GetPlugin(&pAppPlugin);
+            CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+            CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
+            pApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
+
+            // make or don't make copy based on default option
+            bMakeCopy = (dlg.m_DefaultCopyOption == FSW_COPY ? true : false);
+         }
+         else if(dlg.m_CopyOption == FSW_COPY)
+         {
+            bMakeCopy = true;
+         }
+      }
+   }
+   else
+   {
+      // we aren't prompting because the "don't show me again" is enabled.... 
+      // get the default action from the registry
+      CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+      CComPtr<IEAFAppPlugin> pAppPlugin;
+      pTemplate->GetPlugin(&pAppPlugin);
+      CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+      CAutoRegistry autoReg(pPGSBase->GetAppName());
+      CWinApp* pApp = AfxGetApp();
+      int value = pApp->GetProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), FSW_COPY);
+      bMakeCopy = (value == FSW_COPY ? true : false);
+   }
+
+   if (bMakeCopy)
+   {
+      BOOL bSuccess = ::CopyFile(lpszPathName, strCopyFileName, FALSE);
+      if (!bSuccess && AfxMessageBox(_T("Unable to make a copy of the original file. Would you like to proceed with saving the file?"),MB_YESNO) == IDNO)
+      {
+         return FALSE;
+      }
+   }
+
+   BOOL bResult = __super::SaveTheDocument(lpszPathName);
+   if (bResult)
+   {
+      // there was a successful save, update the file compatibility state
+      m_FileCompatibilityState.FileSaved(lpszPathName, strAppVersion);
+   }
+   return bResult;
+}
+
 HRESULT CPGSDocBase::WriteTheDocument(IStructuredSave* pStrSave)
 {
    // before the standard broker document persistence, write out the version
    // number of the application that created this document
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
-   HRESULT hr = pStrSave->put_Property(_T("Version"),CComVariant(pApp->GetVersion(true)));
+   CString strAppVersion = pApp->GetVersion(true);
+
+   HRESULT hr = pStrSave->put_Property(_T("Version"),CComVariant(strAppVersion));
    if ( FAILED(hr) )
    {
       return hr;
@@ -2225,6 +2321,7 @@ HRESULT CPGSDocBase::WriteTheDocument(IStructuredSave* pStrSave)
 
 HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
 {
+   USES_CONVERSION;
    Float64 version;
    HRESULT hr = pStrLoad->get_Version(&version);
    if ( FAILED(hr) )
@@ -2241,15 +2338,17 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
       {
          return hr;
       }
+      m_FileCompatibilityState.SetApplicationVersion(OLE2T(var.bstrVal));
 
    #if defined _DEBUG
-      TRACE(_T("Loading data saved with PGSuper Version %s\n"),CComBSTR(var.bstrVal));
+      TRACE(_T("Loading data saved with PGSuper Version %s\n"), m_FileCompatibilityState.GetApplicationVersion());
    }
    else
    {
       TRACE(_T("Loading data saved with PGSuper Version 2.1 or earlier\n"));
    #endif
-   } // clses the bracket for if ( 1.0 < version )
+      m_FileCompatibilityState.SetPreVersion21Flag();
+   } // colses the bracket for if ( 1.0 < version )
 
    return CEAFBrokerDocument::LoadTheDocument(pStrLoad);
 }
@@ -4360,15 +4459,20 @@ void CPGSDocBase::PopulateGraphMenu()
 void CPGSDocBase::LoadDocumentSettings()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CEAFBrokerDocument::LoadDocumentSettings();
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
    CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
+   {
+      CWinApp* pApp = AfxGetApp();
+      CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
+      CEAFBrokerDocument::LoadDocumentSettings();
+   }
+
    CEAFApp* pApp = EAFGetApp();
-   CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
+   CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
 
    CString strAutoCalcDefault = pApp->GetLocalMachineString(_T("Settings"),_T("AutoCalc"), _T("On"));
    CString strAutoCalc = pApp->GetProfileString(_T("Settings"),_T("AutoCalc"),strAutoCalcDefault);

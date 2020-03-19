@@ -12,8 +12,7 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -422,7 +421,7 @@ BEGIN
     BEGIN
         MENUITEM "Turn &AutoCalc On",           EAFID_TOGGLE_AUTOCALC
         MENUITEM "&Toolbars...",                ID_VIEW_TOOLBAR
-        MENUITEM "&Hints...",                   EAFID_OPTIONS_HINTS
+        MENUITEM "&Hints and Warnings...",      EAFID_OPTIONS_HINTS
         MENUITEM "&Labels...",                  ID_OPTIONS_LABELS
         MENUITEM "&Reporting...",               EAFID_OPTIONS_REPORTING
     END
@@ -576,7 +575,7 @@ BEGIN
     BEGIN
         MENUITEM "Turn &AutoCalc On",           EAFID_TOGGLE_AUTOCALC,MFT_STRING,MFS_ENABLED
         MENUITEM "&Toolbars...",                ID_VIEW_TOOLBAR,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Hints...",                   EAFID_OPTIONS_HINTS,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Hints and Warnings...",      EAFID_OPTIONS_HINTS,MFT_STRING,MFS_ENABLED
         MENUITEM "&Labels...",                  ID_OPTIONS_LABELS,MFT_STRING,MFS_ENABLED
         MENUITEM "&Reporting...",               EAFID_OPTIONS_REPORTING,MFT_STRING,MFS_ENABLED
     END
@@ -3761,6 +3760,23 @@ BEGIN
     COMBOBOX        IDC_BOUNDARY_CONDITIONS,7,34,295,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | WS_TABSTOP
 END
 
+IDD_FILESAVEWARNINGDLG DIALOGEX 0, 0, 309, 132
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "File Save Warning"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "The file you are about to save was created with PGSuper Version 4.1.5. Once saved with Version 5.0.0 you will not be able to open it with an older vesion.",IDC_LABEL,7,7,295,24
+    CONTROL         "Make copy of oringal file before saving (MyFile.4.1.5.pgs)",IDC_RB_COPY,
+                    "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,7,36,288,10
+    CONTROL         "Don't make a copy of the original file",IDC_RB_DONT_COPY,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,49,132,10
+    CONTROL         "Don't show me this warning",IDC_DONT_WARN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,71,103,10
+    COMBOBOX        IDC_DEFAULT_OPTIONS,7,83,263,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,143,111,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,197,111,50,14
+    PUSHBUTTON      "Help",IDC_HELP,252,111,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3944,6 +3960,14 @@ BEGIN
         RIGHTMARGIN, 473
         TOPMARGIN, 7
         BOTTOMMARGIN, 251
+    END
+
+    IDD_FILESAVEWARNINGDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 125
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -4453,6 +4477,11 @@ BEGIN
 END
 
 IDD_LLDF AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_FILESAVEWARNINGDLG AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

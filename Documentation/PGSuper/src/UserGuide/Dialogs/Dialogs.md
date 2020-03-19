@@ -24,6 +24,7 @@ PGSuper Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_environmental
 * @subpage ug_dialogs_erect_piers
 * @subpage ug_dialogs_erect_segments
+* @subpage ug_dialogs_file_compatibility_warning
 * @subpage ug_dialogs_girder_designer
 * @subpage ug_dialogs_girder_details
 * @subpage ug_dialogs_girder_view_section_cut

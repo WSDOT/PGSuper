@@ -812,6 +812,9 @@
     <ClCompile Include="SegmentTendonGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FileSaveWarningDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -1723,6 +1726,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SegmentTendonGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSaveWarningDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
