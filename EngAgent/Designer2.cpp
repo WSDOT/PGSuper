@@ -1153,9 +1153,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       GetConfinementZoneLengths(segmentKey, pGdr, segment_length, &zoneFactor, &startd, &endd, &startConfinementZl, &endConfinementZl);
 
       // Use shear design tool to control stirrup design
-      ATLASSERT(options.doDesignForShear != sdtNoDesign);
-      m_ShearDesignTool.Initialize(m_pBroker, this, m_StatusGroupID, &artifact, startConfinementZl, endConfinementZl,
-                                   bPermit, options.doDesignForShear == sdtLayoutStirrups);
+      m_ShearDesignTool.Initialize(m_pBroker, this, m_StatusGroupID, &artifact, startConfinementZl, endConfinementZl, bPermit, options.doDesignForShear == sdtLayoutStirrups);
 
       // clear outcome codes
       m_DesignerOutcome.Reset();

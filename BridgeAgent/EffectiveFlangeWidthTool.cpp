@@ -658,7 +658,6 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             }
 
             // amount to be added to tributary width
-            ATLASSERT( !IsZero(Ab) );
             ATLASSERT( !IsZero(ts) );
             wAdd = Ab/(2*ts);
          }
