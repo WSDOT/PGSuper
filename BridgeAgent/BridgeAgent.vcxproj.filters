@@ -99,9 +99,6 @@
     <ClInclude Include="CLSID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\IFace\DesignOverrides.h">
-      <Filter>IFace</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="BridgeAgent.def" />
