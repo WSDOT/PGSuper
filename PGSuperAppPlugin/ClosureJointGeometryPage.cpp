@@ -228,6 +228,7 @@ void CClosureJointGeometryPage::Init(const CPierData2* pPierData)
    pPierData->GetBearingOffset(pgsTypes::Ahead,&m_BearingOffset,&m_BearingOffsetMeasurementType);
 
    m_DiaphragmWidth = pPierData->GetDiaphragmWidth(pgsTypes::Back) + pPierData->GetDiaphragmWidth(pgsTypes::Ahead);
+   m_DiaphragmWidth = Max(m_DiaphragmWidth, -1.0);
    m_DiaphragmHeight = pPierData->GetDiaphragmHeight(pgsTypes::Back);
 
    const CClosureJointData* pClosureJoint = pPierData->GetClosureJoint(0);
