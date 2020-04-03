@@ -279,8 +279,9 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
       nCols += 2; // for fatigue limit state LLDF
 
+   
    std::_tostringstream os;
-   os << _T("Pier ") << LABEL_PIER(pierIdx) << _T(", Distribution Factors");
+   os << LABEL_PIER_EX(pBridge->IsAbutment(pierIdx),pierIdx) << _T(", Distribution Factors");
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nCols,os.str().c_str());
    *pBody << pTable;

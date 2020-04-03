@@ -767,8 +767,9 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pPierData->GetStation());
 
-   CString strPierLabel;
-   strPierLabel.Format(_T("%s %d"),pPierData->IsAbutment() ? _T("Abut") : _T("Pier"),LABEL_PIER(pPierData->GetIndex()));
+   CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
+
+   CString strPierLabel = pParent->GetPierLabel(pPierData->IsAbutment(), pPierData->GetIndex());
 
    ROWCOL col = 0;
 
@@ -952,14 +953,15 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
             else
             {
                startRow = GetPierRow(pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetIndex());
-               strStartSupportLabel.Format(_T("%s %d"), pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetIndex()));
+               // parent builds label
+               strStartSupportLabel = pParent->GetPierLabel(pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->IsAbutment(),pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetIndex());
                startStation = pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetStation();
             }
          }
          else
          {
             startRow = GetPierRow(pGirder->GetPier(pgsTypes::metStart)->GetIndex());
-            strStartSupportLabel.Format(_T("%s %d"), pGirder->GetPier(pgsTypes::metStart)->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pGirder->GetPier(pgsTypes::metStart)->GetIndex()));
+            strStartSupportLabel = pParent->GetPierLabel(pGirder->GetPier(pgsTypes::metStart)->IsAbutment(), pGirder->GetPier(pgsTypes::metStart)->GetIndex());
             startStation = pGirder->GetPier(pgsTypes::metStart)->GetStation();
          }
 
@@ -984,14 +986,14 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
             else
             {
                endRow = GetPierRow(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetIndex());
-               strEndSupportLabel.Format(_T("%s %d"), pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetIndex()));
+               strEndSupportLabel = pParent->GetPierLabel(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->IsAbutment(),pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetIndex());
                endStation = pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetStation();
             }
          }
          else
          {
             endRow = GetPierRow(pGirder->GetPier(pgsTypes::metEnd)->GetIndex());
-            strEndSupportLabel.Format(_T("%s %d"), pGirder->GetPier(pgsTypes::metEnd)->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pGirder->GetPier(pgsTypes::metEnd)->GetIndex()));
+            strEndSupportLabel = pParent->GetPierLabel(pGirder->GetPier(pgsTypes::metEnd)->IsAbutment(), pGirder->GetPier(pgsTypes::metEnd)->GetIndex());
             endStation = pGirder->GetPier(pgsTypes::metEnd)->GetStation();
          }
 
@@ -1071,11 +1073,8 @@ void CBridgeDescFramingGrid::FillSpanColumn()
       ROWCOL nextPierRow = GetPierRow(pNextPier->GetIndex());
 
       // create prev and next pier labels
-      CString strPrevPierLabel;
-      strPrevPierLabel.Format(_T("%s %d"), pPrevPier->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pPrevPier->GetIndex()));
-
-      CString strNextPierLabel;
-      strNextPierLabel.Format(_T("%s %d"), pNextPier->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pNextPier->GetIndex()));
+      CString strPrevPierLabel = pParent->GetPierLabel(pPrevPier->IsAbutment(),pPrevPier->GetIndex());
+      CString strNextPierLabel = pParent->GetPierLabel(pNextPier->IsAbutment(),pNextPier->GetIndex());
 
       // label prev pier
       SetStyleRange(CGXRange(prevPierRow,col), CGXStyle()
@@ -1278,6 +1277,10 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       if ( FAILED(hr) )
       {
 			SetWarningText (_T("Invalid Station Value"));
+         DisplayWarningText();
+         // Don't let focus move outside of grid. See Mantis 1090
+         SetFocus();
+
          return FALSE;
       }
       else
@@ -1296,11 +1299,19 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       if (result == VALIDATE_INVALID)
       {
 			SetWarningText (_T("Orientation is invalid"));
+         DisplayWarningText();
+         // Don't let focus move outside of grid. See Mantis 1090
+         SetFocus();
+
          return FALSE;
       }
       else if ( result == VALIDATE_SKEW_ANGLE )
       {
 		   SetWarningText (_T("Skew angle must be less than 88 deg"));
+         DisplayWarningText();
+         // Don't let focus move outside of grid. See Mantis 1090
+         SetFocus();
+
          return FALSE;
       }
    }

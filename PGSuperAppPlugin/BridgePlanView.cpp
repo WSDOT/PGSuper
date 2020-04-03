@@ -1360,7 +1360,7 @@ void CBridgePlanView::BuildTitleDisplayObjects()
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    GET_IFACE2(pBroker, IDocumentType, pDocType);
-   CString strLabel(pDocType->IsPGSpliceDocument() ? _T("Group") : _T("Span"));
+   bool isPGSuper = pDocType->IsPGSuperDocument();
 
    CString strTitle;
    if ( m_StartGroupIdx == 0 && (m_EndGroupIdx == nGroups-1 || m_EndGroupIdx == ALL_GROUPS) )
@@ -1369,11 +1369,25 @@ void CBridgePlanView::BuildTitleDisplayObjects()
    }
    else if ( m_StartGroupIdx == m_EndGroupIdx )
    {
-      strTitle.Format(_T("Plan View: %s %d of %d"),strLabel, LABEL_GROUP(m_StartGroupIdx),nGroups);
+      if (isPGSuper)
+      {
+         strTitle.Format(_T("Plan View: Span %s"), LABEL_SPAN(m_StartGroupIdx));
+      }
+      else
+      {
+         strTitle.Format(_T("Plan View: Group %d"), LABEL_GROUP(m_StartGroupIdx));
+      }
    }
    else
    {
-      strTitle.Format(_T("Plan View: %s %d - %d of %d"),strLabel,LABEL_GROUP(m_StartGroupIdx),LABEL_GROUP(m_EndGroupIdx),nGroups);
+      if (isPGSuper)
+      {
+         strTitle.Format(_T("Plan View: Spans %s - %s"), LABEL_SPAN(m_StartGroupIdx), LABEL_SPAN(m_EndGroupIdx));
+      }
+      else
+      {
+         strTitle.Format(_T("Plan View: Groups %d - %d"), LABEL_GROUP(m_StartGroupIdx), LABEL_GROUP(m_EndGroupIdx));
+      }
    }
 
    title->SetText(strTitle);
@@ -1942,8 +1956,6 @@ void CBridgePlanView::BuildPierDisplayObjects()
       {
          const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
 
-         CString strPierLabel(pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
-
          // get station of the pier
          Float64 station = pPier->GetStation();
 
@@ -1983,7 +1995,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
          doCenterLine.CoCreateInstance(CLSID_LineDisplayObject);
 
          CString strMsg1;
-         strMsg1.Format(_T("Double click to edit %s %d\nRight click for more options."), strPierLabel, LABEL_PIER(pierIdx));
+         strMsg1.Format(_T("Double click to edit %s\nRight click for more options."), LABEL_PIER_EX(pPier->IsAbutment(),pierIdx));
 
          CString strMsg2;
          strMsg2.Format(_T("Station: %s\nDirection: %s\nSkew: %s"), FormatStation(pDisplayUnits->GetStationFormat(), station), FormatDirection(direction), FormatAngle(objSkew));
@@ -2207,7 +2219,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
             doPierName.CoCreateInstance(CLSID_TextBlock);
 
             CString strText;
-            strText.Format(_T("%s %d"), strPierLabel, LABEL_PIER(pierIdx));
+            strText.Format(_T("%s"), LABEL_PIER_EX(pPier->IsAbutment(),pierIdx));
 
             doPierName->SetPosition(ahead_point);
             doPierName->SetTextAlign(TA_BASELINE | TA_CENTER);

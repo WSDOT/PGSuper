@@ -50,6 +50,10 @@ public:
    CBridgeDescFramingGrid m_Grid;
    Float64 m_AlignmentOffset;
 
+   pgsTypes::DisplayEndSupportType m_DisplayStartSupportType;
+   pgsTypes::DisplayEndSupportType m_DisplayEndSupportType;
+   PierIndexType m_StartingPierNumber;
+
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CBridgeDescFramingPage)
@@ -66,6 +70,8 @@ public:
    void EnableRemovePierBtn(BOOL bEnable);
    void EnableRemoveTemporarySupportBtn(BOOL bEnable);
 
+   CString GetPierLabel(bool isAbutment, PierIndexType pierIdx);
+
 protected:
    // Generated message map functions
 	//{{AFX_MSG(CBridgeDescFramingPage)
@@ -80,6 +86,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
    afx_msg void OnOrientPiers();
+   afx_msg void OnCbnSelchangeStartCb();
+   afx_msg void OnCbnSelchangeEndCb();
+   afx_msg void OnEnUpdateStartpierno();
 };
 
 //{{AFX_INSERT_LOCATION}}

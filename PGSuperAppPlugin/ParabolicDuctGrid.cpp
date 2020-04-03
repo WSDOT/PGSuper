@@ -289,7 +289,7 @@ void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance
    InsertRows(row,1);
 
    CString strSpanLabel;
-   strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(spanIdx));
+   strSpanLabel.Format(_T("Span %s"),LABEL_SPAN(spanIdx));
    SetStyleRange(CGXRange(row,0),CGXStyle()
       .SetValue(strSpanLabel)
       .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
@@ -355,7 +355,7 @@ void CParabolicDuctGrid::InsertLowPoint(SpanIndexType spanIdx,Float64 distance,F
    InsertRows(row,1);
 
    CString strSpanLabel;
-   strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(spanIdx));
+   strSpanLabel.Format(_T("Span %s"),LABEL_SPAN(spanIdx));
    SetStyleRange(CGXRange(row,0),CGXStyle()
       .SetValue(strSpanLabel)
       .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
@@ -422,7 +422,7 @@ void CParabolicDuctGrid::InsertInflectionPoint(SpanIndexType spanIdx,Float64 dis
    InsertRows(row,1);
 
    CString strSpanLabel;
-   strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(spanIdx));
+   strSpanLabel.Format(_T("Span %s"),LABEL_SPAN(spanIdx));
    SetStyleRange(CGXRange(row,0),CGXStyle()
       .SetValue(strSpanLabel)
       .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
@@ -491,7 +491,7 @@ void CParabolicDuctGrid::InsertHighPoint(PierIndexType pierIdx,Float64 offset,CD
 
 
    CString strPierLabel;
-   strPierLabel.Format(_T("Pier %d"),LABEL_PIER(pierIdx));
+   strPierLabel.Format(_T("Pier %s"),LABEL_PIER(pierIdx));
    SetStyleRange(CGXRange(row,0), CGXStyle()
       .SetValue(strPierLabel)
       .SetHorizontalAlignment(DT_LEFT)
@@ -545,7 +545,7 @@ void CParabolicDuctGrid::InsertLastPoint(SpanIndexType spanIdx,Float64 distance,
    InsertRows(row,1);
 
    CString strSpanLabel;
-   strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(spanIdx));
+   strSpanLabel.Format(_T("Span %s"),LABEL_SPAN(spanIdx));
    SetStyleRange(CGXRange(row,0),CGXStyle()
       .SetValue(strSpanLabel)
       .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)

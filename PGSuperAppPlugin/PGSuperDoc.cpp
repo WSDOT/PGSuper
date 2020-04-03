@@ -451,7 +451,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
          if (pArtifact->GetSegmentDesignArtifact(0)->GetOutcome() == pgsSegmentDesignArtifact::DesignNotSupported_Strands)
          {
             CString strMsg;
-            strMsg.Format(_T("The design of Span %d Girder %s failed because the strand definition type is not supported for design."), LABEL_SPAN(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex));
+            strMsg.Format(_T("The design of Span %s Girder %s failed because the strand definition type is not supported for design."), LABEL_SPAN(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex));
             if (1 < myGirderKeys.size())
             {
                strMsg += _T("\nThe design of the remaining girders will skipped.");

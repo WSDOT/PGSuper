@@ -275,7 +275,7 @@ BOOL CPierLocationPage::OnInitDialog()
    GetDlgItem(IDC_LINE_GROUP)->SetWindowText(strGroupLabel);
 
    CString strPierLabel;
-   strPierLabel.Format(_T("%s %d"),strPierType,LABEL_PIER(m_PierIdx));
+   strPierLabel.Format(_T("%s"),LABEL_PIER_EX(pParent->m_pPier->IsAbutment(), m_PierIdx));
    GetDlgItem(IDC_PIER_LABEL)->SetWindowText(strPierLabel);
 
    CString strStationLocation;
@@ -412,14 +412,11 @@ void CPierLocationPage::UpdateMoveOptionList()
    pOptions->ResetContent();
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
-   CString strName = (pParent->m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
-
 
    CWnd* pMove = GetDlgItem(IDC_MOVE_LABEL);
    CString strMove;
-   strMove.Format(_T("Move %s %d from %s to %s"),
-                  strName,
-                  LABEL_PIER(m_PierIdx),
+   strMove.Format(_T("Move %s from %s to %s"),
+                  LABEL_PIER_EX(pParent->m_pPier->IsAbutment(), m_PierIdx),
                   FormatStation(pDisplayUnits->GetStationFormat(),m_FromStation),
                   FormatStation(pDisplayUnits->GetStationFormat(),toStation)
                   );
@@ -437,7 +434,7 @@ void CPierLocationPage::UpdateMoveOptionList()
         m_PrevPierStation < toStation && toStation < m_NextPierStation ) // can't move pier beyond adjacent piers
    {
       options[nOptions] = pgsTypes::AdjustAdjacentSpans;
-      strOptions[nOptions++].Format(_T("Adjust the length of Spans %d and %d"),
+      strOptions[nOptions++].Format(_T("Adjust the length of Spans %s and %s"),
                                     LABEL_SPAN(m_PierIdx),LABEL_SPAN(m_PierIdx+1));
    }
 
@@ -447,12 +444,12 @@ void CPierLocationPage::UpdateMoveOptionList()
       options[nOptions] = pgsTypes::AdjustNextSpan;
       if ( m_nSpans == 1 )
       {
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving %s %d"),
-                                       LABEL_SPAN(m_PierIdx),strName,LABEL_SPAN(m_PierIdx));
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %s by moving %s"),
+                                       LABEL_SPAN(m_PierIdx), LABEL_PIER_EX(pParent->m_pPier->IsAbutment(), m_PierIdx));
       }
       else
       {
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d, retain length of all other spans"),
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %s, retain length of all other spans"),
                                        LABEL_SPAN(m_PierIdx));
       }
    }
@@ -462,12 +459,12 @@ void CPierLocationPage::UpdateMoveOptionList()
       options[nOptions] = pgsTypes::AdjustPrevSpan;
       if ( m_nSpans == 1 )
       {
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d by moving %s %d"),
-                                       LABEL_SPAN(m_PierIdx-1),strName,LABEL_SPAN(m_PierIdx));
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %s by moving %s"),
+                                       LABEL_SPAN(m_PierIdx-1), LABEL_PIER_EX(pParent->m_pPier->IsAbutment(), m_PierIdx));
       }
       else
       {
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d, retain length of all other spans"),
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %s, retain length of all other spans"),
                                        LABEL_SPAN(m_PierIdx-1));
       }
    }
@@ -477,7 +474,7 @@ void CPierLocationPage::UpdateMoveOptionList()
       {
          // adjust length of previous span only
          options[nOptions] = pgsTypes::AdjustPrevSpan;
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d, retain length of all other spans"),
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %s, retain length of all other spans"),
                                        LABEL_SPAN(m_PierIdx-1));
       }
 
@@ -485,7 +482,7 @@ void CPierLocationPage::UpdateMoveOptionList()
       {
          // adjust length of next span only
          options[nOptions] = pgsTypes::AdjustNextSpan;
-         strOptions[nOptions++].Format(_T("Adjust the length of Span %d, retain length of all other spans"),
+         strOptions[nOptions++].Format(_T("Adjust the length of Span %s, retain length of all other spans"),
                                        LABEL_SPAN(m_PierIdx));
       }
    }

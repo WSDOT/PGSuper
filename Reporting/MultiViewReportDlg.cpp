@@ -158,14 +158,21 @@ BOOL CMultiViewReportDlg::OnInitDialog()
 
    GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
-   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
 
    // fill up the span box
    CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       CString strLabel;
-      strLabel.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
+      if (bIsPGSuper)
+      {
+         strLabel.Format(_T("Span %s"), LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         strLabel.Format(_T("Group %d"), LABEL_GROUP(grpIdx));
+      }
+
       pSpanBox->AddString(strLabel);
    }
    pSpanBox->SetCurSel((int)m_GirderKey.groupIndex);

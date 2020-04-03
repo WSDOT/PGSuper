@@ -173,7 +173,8 @@ void CCopyGirderDlg::FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool
    cbGroup.ResetContent();
 
    CString strGroupLabel;
-   if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
+   bool isPGSuper = EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
+   if ( isPGSuper )
    {
       strGroupLabel = _T("Span");
    }
@@ -197,7 +198,14 @@ void CCopyGirderDlg::FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       CString str;
-      str.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
+      if (isPGSuper)
+      {
+         str.Format(_T("%s %s"), strGroupLabel, LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         str.Format(_T("%s %d"), strGroupLabel, LABEL_GROUP(grpIdx));
+      }
 
       int idx = cbGroup.AddString(str);
       cbGroup.SetItemData(idx,grpIdx);

@@ -342,7 +342,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(CComPtr<I
             }
 
             CString strBackLabel;
-            strBackLabel.Format(_T("%s %d Back"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
+            strBackLabel.Format(_T("%s Back"), LABEL_PIER_EX(pierIdx == 0 || pierIdx == nPiers - 1 , pierIdx));
             pBackTable = MakeTable(strBackLabel,pDisplayUnits,bHasOverlay,bHasPrecamberBack, false);
             (*pPara) << pBackTable << rptNewLine;
             ADD_TABLE_NOTE;
@@ -361,7 +361,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(CComPtr<I
             }
 
             CString strAheadLabel;
-            strAheadLabel.Format(_T("%s %d Ahead"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
+            strAheadLabel.Format(_T("%s Ahead"), LABEL_PIER_EX(pierIdx == 0 || pierIdx == nPiers - 1 ,pierIdx));
             pAheadTable = MakeTable(strAheadLabel,pDisplayUnits,bHasOverlay,bHasPrecamberAhead,false);
             (*pPara) << pAheadTable << rptNewLine;
             ADD_TABLE_NOTE;
@@ -398,7 +398,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(CComPtr<I
          }
 
          CString strLabel;
-         strLabel.Format(_T("Pier %d"), LABEL_PIER(pierIdx));
+         strLabel.Format(_T("%s"), LABEL_PIER_EX(false, pierIdx));
          rptRcTable* pTable = nullptr;
          pTable = MakeTable(strLabel,pDisplayUnits,bHasOverlay,bHasPrecamberBack,false);
          (*pPara) << pTable << rptNewLine;
@@ -592,7 +592,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildGirderEdgesTables(CComPt
             }
 
             CString strBackLabel;
-            strBackLabel.Format(_T("%s %d Back"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
+            strBackLabel.Format(_T("%s Back"), LABEL_PIER_EX(pierIdx == 0 || pierIdx == nPiers - 1, pierIdx));
             pBackTable = MakeTable(strBackLabel,pDisplayUnits,bHasOverlay,bHasPrecamberBack,true);
             (*pPara) << pBackTable << rptNewLine;
             ADD_TABLE_NOTE;
@@ -611,7 +611,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildGirderEdgesTables(CComPt
             }
 
             CString strAheadLabel;
-            strAheadLabel.Format(_T("%s %d Ahead"), pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
+            strAheadLabel.Format(_T("%s Ahead"), LABEL_PIER_EX(pierIdx == 0 || pierIdx == nPiers - 1, pierIdx));
             pAheadTable = MakeTable(strAheadLabel,pDisplayUnits,bHasOverlay,bHasPrecamberAhead,true);
             (*pPara) << pAheadTable << rptNewLine;
             ADD_TABLE_NOTE;
@@ -648,7 +648,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildGirderEdgesTables(CComPt
          }
 
          CString strLabel;
-         strLabel.Format(_T("Pier %d"), LABEL_PIER(pierIdx));
+         strLabel.Format(_T("%s"), LABEL_PIER_EX(false, pierIdx));
          rptRcTable* pTable = nullptr;
          pTable = MakeTable(strLabel,pDisplayUnits,bHasOverlay,bHasPrecamberBack,true);
          (*pPara) << pTable << rptNewLine;

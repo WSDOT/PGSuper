@@ -200,7 +200,7 @@ BOOL CEditMomentLoadDlg::OnInitDialog()
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
    {
       CString str;
-      str.Format(_T("Span %d"), LABEL_SPAN(spanIdx));
+      str.Format(_T("Span %s"), LABEL_SPAN(spanIdx));
       m_SpanCB.AddString(str);
    }
 

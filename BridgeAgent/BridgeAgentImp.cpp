@@ -1070,7 +1070,7 @@ void CBridgeAgentImp::ValidatePointLoads()
          if(nSpans <= pPointLoad->m_SpanKey.spanIndex)
          {
             CString strMsg;
-            strMsg.Format(_T("Span %d for point load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex),nSpans);
+            strMsg.Format(_T("Span %s for point load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex),nSpans);
             pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,pPointLoad->m_SpanKey);
             pStatusCenter->Add(pStatusItem);
             continue; // break out of this cycle
@@ -1137,15 +1137,15 @@ void CBridgeAgentImp::ValidatePointLoads()
             {
                if (pPointLoad->m_bLoadOnCantilever[pgsTypes::metStart])
                {
-                  strSpan.Format(_T("Span %d Start Cantilever"), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex));
+                  strSpan.Format(_T("Span %s Start Cantilever"), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex));
                }
                else if (pPointLoad->m_bLoadOnCantilever[pgsTypes::metEnd])
                {
-                  strSpan.Format(_T("Span %d End Cantilever"), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex));
+                  strSpan.Format(_T("Span %s End Cantilever"), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex));
                }
                else
                {
-                  strSpan.Format(_T("Span %d"), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex));
+                  strSpan.Format(_T("Span %s"), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex));
                }
             }
 
@@ -1349,7 +1349,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
          if(nSpans <= pDistLoad->m_SpanKey.spanIndex)
          {
             CString strMsg;
-            strMsg.Format(_T("Span %d for Distributed load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(pDistLoad->m_SpanKey.spanIndex),nSpans);
+            strMsg.Format(_T("Span %s for Distributed load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(pDistLoad->m_SpanKey.spanIndex),nSpans);
             pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,pDistLoad->m_SpanKey);
             pStatusCenter->Add(pStatusItem);
             continue; // break out of this cycle
@@ -1413,7 +1413,7 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             }
             else
             {
-               strSpan.Format(_T("Span %d"), LABEL_SPAN(pDistLoad->m_SpanKey.spanIndex));
+               strSpan.Format(_T("Span %s"), LABEL_SPAN(pDistLoad->m_SpanKey.spanIndex));
             }
 
             CString strGirder;
@@ -1611,7 +1611,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
          if(nSpans <= pMomentLoad->m_SpanKey.spanIndex)
          {
             CString strMsg;
-            strMsg.Format(_T("Span %d for moment load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(pMomentLoad->m_SpanKey.spanIndex),nSpans);
+            strMsg.Format(_T("Span %s for moment load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(pMomentLoad->m_SpanKey.spanIndex),nSpans);
             pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,pMomentLoad->m_SpanKey);
             pStatusCenter->Add(pStatusItem);
             continue; // break out of this cycle
@@ -1661,7 +1661,7 @@ void CBridgeAgentImp::ValidateMomentLoads()
          }
          else
          {
-            strSpan.Format(_T("Span %d"), LABEL_SPAN(pMomentLoad->m_SpanKey.spanIndex));
+            strSpan.Format(_T("Span %s"), LABEL_SPAN(pMomentLoad->m_SpanKey.spanIndex));
          }
 
          CString strGirder;
@@ -4109,11 +4109,11 @@ bool CBridgeAgentImp::LayoutGirdersPass2()
                CString msg;
                if (bIsParabolic)
                {
-                  msg.Format(_T("The assumed excess camber for span %d, girder %s is larger than the haunch depth at mid span. The girder will intrude into the bottom of the slab. For analysis purposes, the haunch depth will be assumed to be zero."), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+                  msg.Format(_T("The assumed excess camber for span %s, girder %s is larger than the haunch depth at mid span. The girder will intrude into the bottom of the slab. For analysis purposes, the haunch depth will be assumed to be zero."), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
                }
                else
                {
-                  msg.Format(_T("The girder top chord for span %d, girder %s intrudes into the bottom of the slab at mid-span."), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+                  msg.Format(_T("The girder top chord for span %s, girder %s intrudes into the bottom of the slab at mid-span."), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
                }
                pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Deck, msg);
                pStatusCenter->Add(pStatusItem);
@@ -4270,7 +4270,7 @@ void CBridgeAgentImp::ValidateGirders()
                {
                   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
                   CString strMsg;
-                  strMsg.Format(_T("The bearings on the ahead side of %s %d for Girder %s, are wider than the bottom of the girder."),(pPier->IsAbutment()?_T("Abutment"):_T("Pier")),LABEL_PIER(pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
+                  strMsg.Format(_T("The bearings on the ahead side of %s for Girder %s, are wider than the bottom of the girder."),LABEL_PIER_EX(pPier->IsAbutment(),pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
                   std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Bearings,strMsg);
                   pStatusCenter->Add(pStatusItem.release());
                }
@@ -4301,7 +4301,7 @@ void CBridgeAgentImp::ValidateGirders()
                {
                   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
                   CString strMsg;
-                  strMsg.Format(_T("The bearings on the back side of %s %d for Girder %s, are wider than the bottom of the girder."),(pPier->IsAbutment()?_T("Abutment"):_T("Pier")),LABEL_PIER(pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
+                  strMsg.Format(_T("The bearings on the back side of %s for Girder %s, are wider than the bottom of the girder."),LABEL_PIER_EX(pPier->IsAbutment(),pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
                   std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Bearings,strMsg);
                   pStatusCenter->Add(pStatusItem.release());
                }
@@ -11980,6 +11980,14 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
    return GetBearingElevationDetails_Generic(pierIdx, face, CBridgeAgentImp::batGirderEdges);
 }
 
+void CBridgeAgentImp::GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   pBridgeDesc->GetPierDisplaySettings(pStartPierType, pEndPierType, pStartPierNumber);
+}
+
 std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails_Generic(PierIndexType pierIdx, pgsTypes::PierFaceType face, CBridgeAgentImp::BearingElevLocType locType) const
 {
    PierIndexType nPiers = GetPierCount();
@@ -14113,7 +14121,7 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryZoneCount(const CSegmentKey& segmentKey
                   CString strMsg;
                   if ( 1 == nSegments )
                   {
-                     strMsg.Format(_T("Span %d, %s %s: %s is shorter than the stirrup layout. For symmetrical stirrup zones, the zones beyond mid-point are ignored"),LABEL_SPAN(segmentKey.groupIndex),strGirderLabel,LABEL_GIRDER(segmentKey.girderIndex),strGirderLabel);
+                     strMsg.Format(_T("Span %s, %s %s: %s is shorter than the stirrup layout. For symmetrical stirrup zones, the zones beyond mid-point are ignored"),LABEL_SPAN(segmentKey.groupIndex),strGirderLabel,LABEL_GIRDER(segmentKey.girderIndex),strGirderLabel);
                   }
                   else
                   {
@@ -14144,7 +14152,7 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryZoneCount(const CSegmentKey& segmentKey
                   CString strMsg;
                   if ( 1 == nSegments )
                   {
-                     strMsg.Format(_T("Span %d, %s %s: %s is shorter than the stirrup layout. Stirrups zones beyond the end of the %s are ignored"),LABEL_SPAN(segmentKey.groupIndex),strGirderLabel,LABEL_GIRDER(segmentKey.girderIndex),strGirderLabel,strGirderLabel);
+                     strMsg.Format(_T("Span %s, %s %s: %s is shorter than the stirrup layout. Stirrups zones beyond the end of the %s are ignored"),LABEL_SPAN(segmentKey.groupIndex),strGirderLabel,LABEL_GIRDER(segmentKey.girderIndex),strGirderLabel,strGirderLabel);
                   }
                   else
                   {

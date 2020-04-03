@@ -173,16 +173,23 @@ bool CEffectivePrestressGraphBuilder::UpdateNow()
 void CEffectivePrestressGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx, DuctType ductType, DuctIndexType ductIdx)
 {
    CString strGraphSubTitle;
+   GET_IFACE(IDocumentType,pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
    if ( ductIdx == INVALID_INDEX )
    {
-      GET_IFACE(IDocumentType,pDocType);
-      CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
-
       bool bPermanent = ((CEffectivePrestressGraphController*)m_pGraphController)->IsPermanentStrands();
-      strGraphSubTitle.Format(_T("%s %d Girder %s %s Strands"),strGroupLabel,LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),(bPermanent ? _T("Permanent") : _T("Temporary")));
+      if (isPGSuper)
+      {
+         strGraphSubTitle.Format(_T("Span %s Girder %s %s Strands"), LABEL_SPAN(grpIdx), LABEL_GIRDER(gdrIdx), (bPermanent ? _T("Permanent") : _T("Temporary")));
+      }
+      else
+      {
+         strGraphSubTitle.Format(_T("Group %d Girder %s %s Strands"), LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), (bPermanent ? _T("Permanent") : _T("Temporary")));
+      }
    }
    else
    {
+      ATLASSERT(!isPGSuper);
       if (ductType == Segment)
       {
          strGraphSubTitle.Format(_T("Group %d Girder %s Segment Tendon %d"), LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_DUCT(ductIdx));

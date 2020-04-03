@@ -335,7 +335,7 @@ CString CApplyLoadsDlg::GetLocation(const CSpanKey& spanKey)
    if ( spanKey.spanIndex == ALL_SPANS )
       strSpan = _T("All Spans");
    else
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(spanKey.spanIndex));
+      strSpan.Format(_T("Span %s"),LABEL_SPAN(spanKey.spanIndex));
 
    CString strGirder;
    if ( spanKey.girderIndex == ALL_GIRDERS )

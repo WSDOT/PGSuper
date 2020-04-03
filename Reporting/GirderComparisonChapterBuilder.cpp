@@ -28,6 +28,7 @@
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\DocumentType.h>
 
 #include <Material\PsStrand.h>
 
@@ -47,12 +48,12 @@ CLASS
 ****************************************************************************/
 
 
-void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
+void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -79,18 +80,20 @@ rptChapter* CGirderComparisonChapterBuilder::Build(CReportSpecification* pRptSpe
    GroupIndexType grpIdx = pSpec->GetSpan();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bPGSuper = pDocType->IsPGSuperDocument();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   girders(pChapter,pBroker,pDisplayUnits,grpIdx);
-   if (prestressing(pChapter,pBroker,pDisplayUnits,grpIdx))
+   girders(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
+   if (prestressing(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper))
    {
-      debonding(pChapter,pBroker,pDisplayUnits,grpIdx);
+      debonding(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
    }
 
-   material(pChapter,pBroker,pDisplayUnits,grpIdx);
-   stirrups(pChapter,pBroker,pDisplayUnits,grpIdx);
-   handling(pChapter,pBroker,pDisplayUnits,grpIdx);
+   material(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
+   stirrups(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
+   handling(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
 
    return pChapter;
 }
@@ -119,11 +122,18 @@ CChapterBuilder* CGirderComparisonChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Girder Types for Span ")<< LABEL_GROUP(grpIdx) << rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Girder Types for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   {
+      *pHead << _T("Girder Types for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -155,7 +165,7 @@ void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUni
 }
 
 // return true if debonding exists
-bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    bool was_debonding = false;
 
@@ -172,7 +182,14 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
 
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Prestressing Strands for Span ")<< LABEL_GROUP(grpIdx) <<rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Prestressing Strands for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   {
+      *pHead << _T("Prestressing Strands for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
 
 
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
@@ -449,7 +466,7 @@ DebondComparison::DebondStatus DebondComparison::Init(SpanIndexType span, Girder
       return IsDebonding;
 }
 
-void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
@@ -468,7 +485,15 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
 
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Debonding of Prestressing Strands for Span ")<< LABEL_GROUP(grpIdx) <<rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Debonding of Prestressing Strands for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   {
+      *pHead << _T("Debonding of Prestressing Strands for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
+
 
    if (status==DebondComparison::NonSymmetricDebonding)
    {
@@ -566,7 +591,7 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
 
 }
 
-void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -575,7 +600,14 @@ void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Girder Concrete for Span ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Girder Concrete for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   {
+      *pHead << _T("Girder Concrete for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDisplayUnits->GetStressUnit(),        false );
@@ -612,7 +644,7 @@ void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
 }
 
-void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -630,13 +662,20 @@ void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara <<bold(ON)<<_T("Span ") << LABEL_GROUP(grpIdx) << _T(", Girder ")<<LABEL_GIRDER(gdrIdx)<<bold(OFF);
+      if (bPGSuper)
+      {
+         *pPara << bold(ON) << _T("Span ") << LABEL_SPAN(grpIdx) << _T(", Girder ") << LABEL_GIRDER(gdrIdx) << bold(OFF);
+      }
+      else
+      {
+         *pPara << bold(ON) << _T("Group ") << LABEL_GROUP(grpIdx) << _T(", Girder ") << LABEL_GIRDER(gdrIdx) << bold(OFF);
+      }
       
       stirr_table.Build(pChapter,pBroker,thisSegmentKey,pDisplayUnits);
    }
 }
 
-void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
    GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
@@ -646,7 +685,15 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Lifting and Shipping Locations for Span ")<< LABEL_GROUP(grpIdx)<<rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Lifting and Shipping Locations for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   if (bPGSuper)
+   {
+      *pHead << _T("Lifting and Shipping Locations for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false );
 

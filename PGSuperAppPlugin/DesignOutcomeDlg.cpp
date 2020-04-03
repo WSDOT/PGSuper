@@ -279,7 +279,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
       for (std::vector<CGirderKey>::const_iterator it=m_GirderKeys.begin(); it!=m_GirderKeys.end(); it++)
       {
          CString str;
-         str.Format(_T("Span %d, Girder %s"), LABEL_SPAN(it->groupIndex), LABEL_GIRDER(it->girderIndex));
+         str.Format(_T("Span %s, Girder %s"), LABEL_SPAN(it->groupIndex), LABEL_GIRDER(it->girderIndex));
          m_ADesignFromCombo.AddString(str);
 
          m_ADesignCheckBox.SetCheck(BST_CHECKED);
@@ -393,11 +393,11 @@ void CDesignOutcomeDlg::OnCbnSelchangeDesignaFrom()
          m_ADesignToCombo.AddString(_T("the entire bridge"));
 
          CString str2;
-         str2.Format(_T("all girders in Span %d"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex));
+         str2.Format(_T("all girders in Span %s"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex));
          m_ADesignToCombo.AddString(str2);
 
          CString str;
-         str.Format(_T("Span %d, Girder %s Only"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex), LABEL_GIRDER(m_GirderKeys[cursel].girderIndex));
+         str.Format(_T("Span %s, Girder %s Only"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex), LABEL_GIRDER(m_GirderKeys[cursel].girderIndex));
          m_ADesignToCombo.AddString(str);
 
          m_ADesignToCombo.SetCurSel(tosel);

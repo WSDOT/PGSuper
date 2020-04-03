@@ -342,14 +342,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          continue;
       }
 
-      if ( pBridge->IsAbutment(pierIdx) )
-      {
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
-      }
-      else
-      {
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
-      }
+      (*pTable)(row,col++) << LABEL_PIER_EX(pBridge->IsAbutment(pierIdx),pierIdx);
 
       (*pTable)(row,col++) << reaction.SetValue( vMaxReaction[i] );
       (*pTable)(row,col++) << rotation.SetValue( vMaxReaction_Rotation[i] );
@@ -406,14 +399,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          continue;
       }      
 
-      if ( pBridge->IsAbutment(pierIdx) )
-      {
-         (*pTable)(row,col++) << _T("Abutment ") << LABEL_PIER(pierIdx);
-      }
-      else
-      {
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
-      }
+      (*pTable)(row,col++) << LABEL_PIER_EX(pBridge->IsAbutment(pierIdx),pierIdx);
 
       CSegmentKey segmentKey = pBridge->GetSegmentAtPier(pierIdx,girderKey);
 

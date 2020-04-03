@@ -109,14 +109,8 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++, row++ )
    {
       ColumnIndexType col = 0;
-      if ( pierIdx == 0 || pierIdx == nPiers-1 )
-      {
-         (*pTable)(row,col++) << _T("Abut ") << LABEL_PIER(pierIdx);
-      }
-      else
-      {
-         (*pTable)(row,col++) << _T("Pier ") << LABEL_PIER(pierIdx);
-      }
+      bool isAbut = (pierIdx == 0 || pierIdx == nPiers - 1);
+      (*pTable)(row,col++) << LABEL_PIER_EX(isAbut,pierIdx);
 
       if ( pBridge->IsInteriorPier(pierIdx) )
       {

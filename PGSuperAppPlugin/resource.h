@@ -1292,6 +1292,7 @@
 #define IDC_BRG_SPACING_STATIC          1926
 #define IDC_VIEW_TEMPLATE_EDIT          1926
 #define IDC_TIME_BETWEEN_CASTING        1926
+#define IDC_STARTPIERNO                 1926
 #define IDC_BRG_RECESS_LENGTH_UNIT      1927
 #define IDC_BEARING_GRID                1928
 #define IDC_BRG1_STATIC                 1928
@@ -1332,12 +1333,14 @@
 #define IDC_NUMSEGMENTS_COMBO           1961
 #define IDC_REGION_BOUNDARY             1961
 #define IDC_START_PIER                  1961
+#define IDC_START_CB                    1961
 #define IDC_DEFAULT_OPTIONS             1961
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_X2_MEASURE                  1962
 #define IDC_RIDGEPT_COMBO               1962
 #define IDC_START_PIER2                 1962
 #define IDC_END_PIER                    1962
+#define IDC_END_CB                      1962
 #define IDI_STRANDS                     1963
 #define IDC_X3_MEASURE                  1963
 #define IDC_VIEW_TEMPLATE_COMBO         1963

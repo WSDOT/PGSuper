@@ -211,14 +211,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       col = 0;
       const pgsPointOfInterest& poi = vPoi[pier-startPierIdx];
 
-      if ( pPier->IsAbutment() )
-      {
-         (*p_table)(row,col++) << _T("Abut ") << LABEL_PIER(pier);
-      }
-      else
-      {
-         (*p_table)(row,col++) << _T("Pier ") << LABEL_PIER(pier);
-      }
+      (*p_table)(row,col++) << LABEL_PIER_EX(pPier->IsAbutment(), pier);
 
       if ( analysisType == pgsTypes::Envelope )
       {

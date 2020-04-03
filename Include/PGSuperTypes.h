@@ -236,6 +236,14 @@ typedef struct pgsTypes
       pmtPhysical   // pier is modeled with a physical description
    } PierModelType;
 
+   // Bridge models can begin and/or end with a pier or an abutment starting with an arbitrary number (e.g., Pier 3)
+   // This enum indicates what type of permanent support is at either end of the bridge
+   typedef enum DisplayEndSupportType
+   {
+      desAbutment,
+      desPier
+   } DisplayEndSupportType;
+
    typedef enum TopFlangeThickeningType
    {
       tftNone, // top flange is not thickened

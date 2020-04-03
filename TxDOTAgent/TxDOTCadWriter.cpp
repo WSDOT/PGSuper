@@ -239,7 +239,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    }
 
 	// SPAN NUMBER
-   rDataExporter.WriteIntToCell(1, _T("SpanNum"), m_RowNum, LABEL_SPAN(segmentKey.groupIndex));
+   rDataExporter.WriteStringToCell(1, _T("SpanNum"), m_RowNum, LABEL_SPAN(segmentKey.groupIndex));
 
 	// GIRDER NUMBER
    rDataExporter.WriteStringToCell(1, _T("GdrNum"), m_RowNum, LABEL_GIRDER(segmentKey.girderIndex));
@@ -424,7 +424,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    if (writer.GetTotalNumDebonds() > 0 && are_harped_bent)
    {
       CString msg;
-      msg.Format(_T("Warning: Beam %s in span %2d has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.\n"), LABEL_GIRDER(gdrIdx), (int)LABEL_SPAN(spanIdx));
+      msg.Format(_T("Warning: Beam %s in span %s has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.\n"), LABEL_GIRDER(gdrIdx), LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++m_RowNum, msg);
    }
 
@@ -503,26 +503,26 @@ Uint32 TxDOTDebondWriter::WriteDebondDataData(CTxDataExporter& rDataExporter, Ui
    if (m_OutCome==SectionMismatch)
    {
       CString msg;
-      msg.Format(_T("Warning: Irregular, Non-standard debonding increments used for girder %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+      msg.Format(_T("Warning: Irregular, Non-standard debonding increments used for girder %s in span %s. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++currRow, msg);
    }
    if (m_OutCome==SectionsNotSymmetrical)
    {
       CString msg;
-      msg.Format(_T("Warning: Debonding is not symmetrical for girder %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+      msg.Format(_T("Warning: Debonding is not symmetrical for girder %s in span %s. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++currRow, msg);
    }
    else if (m_OutCome==TooManySections)
    {
       CString msg;
-      msg.Format(_T("Warning: The number of debonded sections exceeds ten for girder %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+      msg.Format(_T("Warning: The number of debonded sections exceeds ten for girder %s in span %s. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++currRow, msg);
    }
    else if (m_OutCome==NonStandardSection)
    {
       Float64 spac = ::ConvertFromSysUnits(m_SectionSpacing , unitMeasure::Feet );
       CString msg;
-      msg.Format( _T("Warning: Non-standard debonding increment of %6.3f ft used  for girder %s in span %2d. \n"),spac,LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+      msg.Format( _T("Warning: Non-standard debonding increment of %6.3f ft used  for girder %s in span %s. \n"),spac,LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++currRow, msg);
    }
 

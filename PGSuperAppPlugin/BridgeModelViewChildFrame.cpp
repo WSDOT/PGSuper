@@ -231,8 +231,9 @@ void CBridgeModelViewChildFrame::InitGroupRange()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
    CString strType;
-   if (pDocType->IsPGSpliceDocument())
+   if (!isPGSuper)
    {
       strType = _T("Groups");
       m_SettingsBar.GetDlgItem(IDC_GROUP_RANGE_LABEL)->SetWindowText(_T("View Groups"));
@@ -251,20 +252,45 @@ void CBridgeModelViewChildFrame::InitGroupRange()
 
    CBridgePlanView* pPlanView = GetBridgePlanView();
 
+   // indexes here are from 0 to nGroups-1
    GroupIndexType startGroupIdx, endGroupIdx;
    pPlanView->GetGroupRange(&startGroupIdx,&endGroupIdx);
 
    startGroupIdx = (startGroupIdx == ALL_GROUPS ? 0         : startGroupIdx);
    endGroupIdx   = (endGroupIdx   == ALL_GROUPS ? nGroups-1 : endGroupIdx);
 
-   pStartSpinner->SetRange32(1,(int)nGroups);
-   pEndSpinner->SetRange32(1,(int)nGroups);
+   // convert from starting display span #
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GroupIndexType displayStartingGroupNum;
+   if (isPGSuper)
+   {
+      displayStartingGroupNum = pBridgeDesc->GetDisplayStartingPierNumber();
+   }
+   else
+   {
+      displayStartingGroupNum = 1;
+   }
 
-   pStartSpinner->SetPos32((int)startGroupIdx+1);
-   pEndSpinner->SetPos32((int)endGroupIdx+1);
+   GroupIndexType startDisplayIndx = startGroupIdx + displayStartingGroupNum;
+   GroupIndexType endDisplayIndx   = endGroupIdx + displayStartingGroupNum;
+
+   pStartSpinner->SetRange32(startDisplayIndx,(int)nGroups - 1 + displayStartingGroupNum);
+   pEndSpinner->SetRange32(startDisplayIndx,(int)nGroups - 1 + displayStartingGroupNum);
+
+   pStartSpinner->SetPos32((int)startDisplayIndx);
+   pEndSpinner->SetPos32((int)endDisplayIndx);
 
    CString str;
-   str.Format(_T("of %d %s"),nGroups,strType);
+   if (pDocType->IsPGSpliceDocument())
+   {
+      str.Format(_T("of %d Groups"), nGroups);
+   }
+   else
+   {
+      str.Format(_T("of (%d - %d)"), startDisplayIndx, endDisplayIndx);
+   }
+
    m_SettingsBar.GetDlgItem(IDC_GROUP_COUNT)->SetWindowText(str);
 }
 
@@ -1090,9 +1116,14 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
 void CBridgeModelViewChildFrame::OnStartGroupChanged(NMHDR *pNMHDR, LRESULT *pResult)
 {
    LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
-   // TODO: Add your control notification handler code here
    *pResult = 0;
 
+   // convert from starting display span #
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   PierIndexType displayStartingPierNum = pBridgeDesc->GetDisplayStartingPierNumber();
 
    CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_GROUP_SPIN);
    int start, end;
@@ -1105,7 +1136,7 @@ void CBridgeModelViewChildFrame::OnStartGroupChanged(NMHDR *pNMHDR, LRESULT *pRe
       return;
    }
 
-   GroupIndexType newStartGroupIdx = newPos - 1;
+   GroupIndexType newStartGroupIdx = newPos - displayStartingPierNum; // from display index to internal
 
    CBridgePlanView* pPlanView = GetBridgePlanView();
 
@@ -1119,7 +1150,7 @@ void CBridgeModelViewChildFrame::OnStartGroupChanged(NMHDR *pNMHDR, LRESULT *pRe
       // force position to be the same
       endGroupIdx = newStartGroupIdx;
 
-      pEndSpinner->SetPos32((int)endGroupIdx+1);
+      pEndSpinner->SetPos32((int)endGroupIdx + displayStartingPierNum);
    }
 
    pPlanView->SetGroupRange(newStartGroupIdx,endGroupIdx);
@@ -1128,8 +1159,14 @@ void CBridgeModelViewChildFrame::OnStartGroupChanged(NMHDR *pNMHDR, LRESULT *pRe
 void CBridgeModelViewChildFrame::OnEndGroupChanged(NMHDR *pNMHDR, LRESULT *pResult)
 {
    LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
-   // TODO: Add your control notification handler code here
    *pResult = 0;
+
+   // convert from starting display span #
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   PierIndexType displayStartingPierNum = pBridgeDesc->GetDisplayStartingPierNumber();
 
    CSpinButtonCtrl* pEndSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_GROUP_SPIN);
    int start, end;
@@ -1142,7 +1179,7 @@ void CBridgeModelViewChildFrame::OnEndGroupChanged(NMHDR *pNMHDR, LRESULT *pResu
       return;
    }
 
-   GroupIndexType newEndGroupIdx = newPos - 1;
+   GroupIndexType newEndGroupIdx = newPos - displayStartingPierNum; // convert from display to internal indices
 
    CBridgePlanView* pPlanView = GetBridgePlanView();
 

@@ -145,7 +145,7 @@ void CHaunchSegmentGrid::CustomInit(GroupIndexType grpIdx)
          if (pierIdx == 0 || pierIdx == nPiers - 1)
          {
             CString strLabel;
-            strLabel.Format(_T("Abut. %d"), LABEL_PIER(pierIdx));
+            strLabel.Format(_T("%s"), LABEL_PIER_EX(true,pierIdx));
             SetStyleRange(CGXRange(0, col), CGXStyle()
             .SetHorizontalAlignment(DT_CENTER)
             .SetVerticalAlignment(DT_TOP)
@@ -163,7 +163,7 @@ void CHaunchSegmentGrid::CustomInit(GroupIndexType grpIdx)
          else
          {
             CString strLabel;
-            strLabel.Format(_T("Pier %d"), LABEL_PIER(pierIdx));
+            strLabel.Format(_T("%s"), LABEL_PIER_EX(false, pierIdx));
             SetStyleRange(CGXRange(0, col, 0, col+1), CGXStyle()
                .SetHorizontalAlignment(DT_CENTER)
                .SetVerticalAlignment(DT_TOP)
@@ -222,7 +222,7 @@ void CHaunchSegmentGrid::CustomInit(GroupIndexType grpIdx)
             if (pPier)
             {
                CString strLabel;
-               strLabel.Format(_T("%s %d"), pPier->IsAbutment() ? _T("Abut.") : _T("Pier"),LABEL_PIER(pPier->GetIndex()));
+               strLabel.Format(_T("%s"), LABEL_PIER_EX(pPier->IsAbutment(),pPier->GetIndex()));
 
                SetStyleRange(CGXRange(1, col), CGXStyle()
                   .SetHorizontalAlignment(DT_CENTER)

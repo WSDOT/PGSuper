@@ -155,7 +155,7 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
       strDescription.Format(_T("Location: Closure Joint for Group %d Girder %s at Temporary Support %d (%s)"),
          LABEL_GROUP(grpIdx),
          LABEL_GIRDER(gdrIdx),
-         LABEL_PIER(pClosure->GetTemporarySupport()->GetIndex()),
+         LABEL_TEMPORARY_SUPPORT(pClosure->GetTemporarySupport()->GetIndex()),
          FormatStation(pDisplayUnits->GetStationFormat(),station)
          );
       GetDlgItem(IDC_LOCATION)->SetWindowText(strDescription);
@@ -166,7 +166,7 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
    {
       Float64 station = pClosure->GetPier()->GetStation();
       CString strDescription;
-      strDescription.Format(_T("Location: Closure Joint for Group %d Girder %s at Pier %d (%s)"),
+      strDescription.Format(_T("Location: Closure Joint for Group %d Girder %s at Pier %s (%s)"),
          LABEL_GROUP(grpIdx),
          LABEL_GIRDER(gdrIdx),
          LABEL_PIER(pClosure->GetPier()->GetIndex()),

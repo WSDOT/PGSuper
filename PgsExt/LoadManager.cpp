@@ -853,7 +853,7 @@ CString CLoadManager::FixBadLoads()
          }
          else
          {
-            strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(iter->m_SpanKey.spanIndex));
+            strSpanLabel.Format(_T("Span %s"),LABEL_SPAN(iter->m_SpanKey.spanIndex));
          }
 
          CString strGirderLabel;
@@ -886,7 +886,7 @@ CString CLoadManager::FixBadLoads()
          }
          else
          {
-            strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(iter->m_SpanKey.spanIndex));
+            strSpanLabel.Format(_T("Span %s"),LABEL_SPAN(iter->m_SpanKey.spanIndex));
          }
 
          CString strGirderLabel;
@@ -919,7 +919,7 @@ CString CLoadManager::FixBadLoads()
          }
          else
          {
-            strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(iter->m_SpanKey.spanIndex));
+            strSpanLabel.Format(_T("Span %s"),LABEL_SPAN(iter->m_SpanKey.spanIndex));
          }
 
          CString strGirderLabel;

@@ -163,7 +163,7 @@ strLabel.Replace(_T("</sub>"),_T(""));
    CString strLabel1;
    if ( pDocType->IsPGSuperDocument() )
    {
-      strLabel1.Format(_T("Location from Start of Span %d Girder %s, %s"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),
+      strLabel1.Format(_T("Location from Start of Span %s Girder %s, %s"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),
          ::FormatDimension(poi.GetDistFromStart(),pDisplayUnits->GetSpanLengthUnit()));
    }
    else
@@ -190,7 +190,7 @@ strLabel.Replace(_T("</sub>"),_T(""));
       CSpanKey spanKey;
       Float64 Xspan;
       pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
-      strLabel3.Format(_T("Location from Start of Span %d, %s"),LABEL_SPAN(spanKey.spanIndex),::FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
+      strLabel3.Format(_T("Location from Start of Span %s, %s"),LABEL_SPAN(spanKey.spanIndex),::FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
 
       std::_tstring strAttr = poi.GetAttributes(POI_SPAN, false);
       if (!strAttr.empty())

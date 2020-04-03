@@ -50,7 +50,7 @@ CGirderDescDlg::CGirderDescDlg(const CBridgeDescription2* pBridgeDesc,const CSeg
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
    CString strTitle;
-   strTitle.Format(_T("Girder Details for Span %d, Girder %s"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
+   strTitle.Format(_T("Girder Details for Span %s, Girder %s"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
    SetTitle(strTitle);
 
    Init(pBridgeDesc,segmentKey);

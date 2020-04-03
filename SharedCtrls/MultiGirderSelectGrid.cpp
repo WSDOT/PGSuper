@@ -211,12 +211,18 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
    // top row labels
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
-   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
 
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
       CString lbl;
-      lbl.Format(_T("%s %d"), strGroupLabel, LABEL_GROUP(grpIdx));
+      if (bIsPGSuper)
+      {
+         lbl.Format(_T("Span %s"), LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         lbl.Format(_T("Group %d"), LABEL_GROUP(grpIdx));
+      }
 
 	   SetStyleRange(CGXRange(0,ROWCOL(grpIdx+1)), CGXStyle()
             .SetWrapText(TRUE)

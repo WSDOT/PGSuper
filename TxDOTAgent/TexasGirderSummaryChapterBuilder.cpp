@@ -374,21 +374,19 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,0) << _T("Traffic Barrier Weight (per girder)");
    (*pTable)(row++,1) << fpl.SetValue( -pProductLoads->GetTrafficBarrierLoad(segmentKey) );
 
-   std::_tstring strPierLabel(pPrevPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
    Float64 brgOffset, endDistance;
    ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
    ConnectionLibraryEntry::EndDistanceMeasurementType endDistanceMeasure;
    pPrevPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
    pPrevPier->GetGirderEndDistance(pgsTypes::Ahead,&endDistance,&endDistanceMeasure);
-   (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(pPrevPier->GetIndex());
+   (*pTable)(row,0) << _T("Connection Geometry at ") << LABEL_PIER_EX(pPrevPier->IsAbutment(),pPrevPier->GetIndex());
    (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pPrevPier->IsAbutment(),false) << rptNewLine;
    (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pPrevPier->IsAbutment(),false);
    row++;
 
-   strPierLabel = (pNextPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
    pNextPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
    pNextPier->GetGirderEndDistance(pgsTypes::Back,&endDistance,&endDistanceMeasure);
-   (*pTable)(row,0) << _T("Connection Geometry at ") << strPierLabel.c_str() << _T(" ") << LABEL_PIER(pNextPier->GetIndex());
+   (*pTable)(row,0) << _T("Connection Geometry at ") << LABEL_PIER_EX(pNextPier->IsAbutment(), pNextPier->GetIndex());
    (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pNextPier->IsAbutment(),false) << rptNewLine;
    (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pNextPier->IsAbutment(),false);
    row++;

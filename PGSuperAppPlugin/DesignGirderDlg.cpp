@@ -133,9 +133,9 @@ BOOL CDesignGirderDlg::OnInitDialog()
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
-      CString strGroup;
-      strGroup.Format(_T("Span %d"),LABEL_GROUP(grpIdx));
-      pSpanBox->AddString(strGroup);
+      CString strSpan;
+      strSpan.Format(_T("Span %s"),LABEL_SPAN(grpIdx));
+      pSpanBox->AddString(strSpan);
    }
 
    pSpanBox->SetCurSel((int)m_GirderKey.groupIndex);

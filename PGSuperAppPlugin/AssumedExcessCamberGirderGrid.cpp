@@ -110,7 +110,7 @@ void CAssumedExcessCamberGirderGrid::CustomInit()
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
    {
       CString strLabel;
-      strLabel.Format(_T("Span %d\n(%s)"), LABEL_SPAN(spanIdx),  m_pUnit->UnitOfMeasure.UnitTag().c_str());
+      strLabel.Format(_T("Span %s\n(%s)"), LABEL_SPAN(spanIdx),  m_pUnit->UnitOfMeasure.UnitTag().c_str());
 
 	   SetStyleRange(CGXRange(0,col++), CGXStyle()
             .SetHorizontalAlignment(DT_CENTER)

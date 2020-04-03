@@ -846,7 +846,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
    if ( outcome == pgsSegmentDesignArtifact::Success)
    {
       *pParagraph << rptNewLine << color(Green)
-                  << _T("The design for Span ") << LABEL_GROUP(segmentKey.groupIndex)
+                  << _T("The design for Span ") << LABEL_SPAN(segmentKey.groupIndex)
                   << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
                   << _T(" was successful.") 
                   << color(Black)
@@ -857,7 +857,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
             outcome == pgsSegmentDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionHauling)
    {
       *pParagraph << rptNewLine << color(OrangeRed)
-                  << _T("The design for Span ") << LABEL_GROUP(segmentKey.groupIndex)
+                  << _T("The design for Span ") << LABEL_SPAN(segmentKey.groupIndex)
                   << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
                   << _T(" failed.")
                   << color(Black);
@@ -900,7 +900,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
    *pChapter << pParagraph;
 
    *pParagraph << rptNewLine << color(Red)
-               << _T("The design attempt for Span ") << LABEL_GROUP(segmentKey.groupIndex)
+               << _T("The design attempt for Span ") << LABEL_SPAN(segmentKey.groupIndex)
                << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
                << _T(" failed.") 
                << color(Black)
@@ -1251,7 +1251,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
       row = 0;
 
-      (*pTable)(row++,col) << _T("Span ") << LABEL_GROUP(girderKey.groupIndex) <<rptNewLine<<_T("Girder ")<<LABEL_GIRDER(girderKey.girderIndex);
+      (*pTable)(row++,col) << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) <<rptNewLine<<_T("Girder ")<<LABEL_GIRDER(girderKey.girderIndex);
 
       const pgsGirderDesignArtifact* pGirderDesignArtifact = pArtifacts[idx++];
       const pgsSegmentDesignArtifact* pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segIdx);

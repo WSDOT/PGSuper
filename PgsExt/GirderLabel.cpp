@@ -1,3 +1,4 @@
+#include "..\Include\PgsExt\GirderLabel.h"
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
 // Copyright © 1999-2020  Washington State Department of Transportation
@@ -22,6 +23,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 
+#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\TemporarySupportData.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -130,7 +132,6 @@ pgsGirderLabel::~pgsGirderLabel(void)
 {
 }
 
-
 LPCTSTR GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbutment,bool bAbbreviation)
 {
    switch( type )
@@ -214,9 +215,7 @@ LPCTSTR GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasu
 CString GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits)
 {
    CString strLabel;
-   strLabel.Format(_T("%s %d, %s"),(pPier->IsAbutment() ? _T("Abutment") : _T("Pier")),
-                                   LABEL_PIER(pPier->GetIndex()),
-                                   FormatStation(pDisplayUnits->GetStationFormat(),pPier->GetStation()));
+   strLabel.Format(_T("%s, %s"),LABEL_PIER_EX(pPier->IsAbutment(),pPier->GetIndex()), FormatStation(pDisplayUnits->GetStationFormat(),pPier->GetStation()));
 
    return strLabel;
 }
@@ -456,4 +455,89 @@ LPCTSTR GetStressTypeString(pgsTypes::StressType type)
       ATLASSERT(false);
       return _T("Error in StressType");
    }
+}
+
+pgsTypes::DisplayEndSupportType pgsPierLabel::m_DisplayStartSupportType = pgsTypes::desAbutment;
+pgsTypes::DisplayEndSupportType pgsPierLabel::m_DisplayEndSupportType = pgsTypes::desAbutment;
+PierIndexType pgsPierLabel::m_StartingPierNumber = 1;
+
+pgsPierLabel::pgsPierLabel()
+{
+   ;
+}
+
+pgsPierLabel::~pgsPierLabel()
+{
+   ;
+}
+
+
+std::_tstring pgsPierLabel::GetPierLabel(PierIndexType pierIdx)
+{
+   std::_tostringstream os;
+   os << pierIdx+m_StartingPierNumber;
+   return os.str();
+}
+
+std::_tstring pgsPierLabel::GetPierLabelEx(bool bIsAbutment, PierIndexType pierIdx)
+{
+   return CreatePierLabel(bIsAbutment, pierIdx, m_DisplayStartSupportType, m_DisplayEndSupportType, m_StartingPierNumber);
+}
+
+std::_tstring pgsPierLabel::GetPierTypeLabelEx(bool bIsAbutment, PierIndexType pierIdx)
+{
+   std::_tostringstream os;
+   if (bIsAbutment)
+   {
+      if (0 == pierIdx && m_DisplayStartSupportType==pgsTypes::desAbutment || 0 != pierIdx && m_DisplayEndSupportType==pgsTypes::desAbutment)
+      {
+         os << _T("Abutment ");
+      }
+      else
+      {
+         os << _T("Pier ");
+      }
+   }
+   else
+   {
+      os << _T("Pier ");
+   }
+
+   return os.str();
+}
+
+void pgsPierLabel::SetPierLabelSettings(pgsTypes::DisplayEndSupportType displayStartSupportType, pgsTypes::DisplayEndSupportType displayEndSupportType, PierIndexType startingPierNumber)
+{
+   m_DisplayStartSupportType = displayStartSupportType;
+   m_DisplayEndSupportType = displayEndSupportType;
+   m_StartingPierNumber = startingPierNumber;
+}
+
+std::_tstring pgsPierLabel::CreatePierLabel(bool bIsAbutment, PierIndexType pierIdx, pgsTypes::DisplayEndSupportType displayStartSupportType, pgsTypes::DisplayEndSupportType displayEndSupportType, PierIndexType startingPierNumber)
+{
+   std::_tostringstream os;
+   if (bIsAbutment)
+   {
+      if (0 == pierIdx && displayStartSupportType==pgsTypes::desAbutment || 0 != pierIdx && displayEndSupportType==pgsTypes::desAbutment)
+      {
+         os << _T("Abutment ") << pierIdx + startingPierNumber;
+      }
+      else
+      {
+         os << _T("Pier ") << pierIdx + startingPierNumber;
+      }
+   }
+   else
+   {
+      os << _T("Pier ") << pierIdx + startingPierNumber;
+   }
+   return os.str();
+}
+
+std::_tstring pgsPierLabel::CreatePierLabel(const CBridgeDescription2 & bridgeDescr, PierIndexType pierIdx)
+{
+   ATLASSERT(pierIdx < bridgeDescr.GetPierCount());
+   const CPierData2* pPier = bridgeDescr.GetPier(pierIdx);
+   bool isAbut = pPier->IsAbutment();
+   return CreatePierLabel(isAbut, pierIdx, bridgeDescr.GetDisplayStartSupportType(), bridgeDescr.GetDisplayEndSupportType(), bridgeDescr.GetDisplayStartingPierNumber());
 }

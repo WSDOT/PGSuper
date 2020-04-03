@@ -155,9 +155,7 @@ void CPierDetailsDlg::Init(const CBridgeDescription2* pBridge,PierIndexType pier
 
    // Set dialog title
    CString strTitle;
-   strTitle.Format(_T("%s %d Details"),
-      m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"),
-      LABEL_PIER(pierIdx));
+   strTitle.Format(_T("%s Details"), LABEL_PIER_EX(m_pPier->IsAbutment(), pierIdx));
    
    SetTitle(strTitle);
 }

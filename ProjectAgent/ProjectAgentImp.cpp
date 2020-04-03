@@ -6099,10 +6099,9 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
                pPier->SetBoundaryConditionType(newBC);
 
                CString strMsg;
-               strMsg.Format(_T("The \"%s\" boundary condition at %s %d is not compatible with the bridge model. The boundary condition has been changed to \"%s\"."), 
+               strMsg.Format(_T("The \"%s\" boundary condition at %s is not compatible with the bridge model. The boundary condition has been changed to \"%s\"."), 
                   CPierData2::AsString(bc),
-                  (pPier->IsAbutment() ? _T("Abutment") : _T("Pier")),
-                  LABEL_PIER(pPier->GetIndex()),
+                  LABEL_PIER_EX(pPier->IsAbutment(), pPier->GetIndex()),
                   CPierData2::AsString(newBC,true)
                   );
                GET_IFACE(IEAFStatusCenter, pStatusCenter);
@@ -6151,6 +6150,9 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
    // make sure default bearing data is as up to date as possible
    UpgradeBearingData();
+
+   // Set pier labelling. This data is also in the BridgeAgent, but we use static members in the pgsPierLabel class for performance
+   pgsPierLabel::SetPierLabelSettings(m_BridgeDescription.GetDisplayStartSupportType(), m_BridgeDescription.GetDisplayEndSupportType(), m_BridgeDescription.GetDisplayStartingPierNumber());
 
    Fire_BridgeChanged();
 

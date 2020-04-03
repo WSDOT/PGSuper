@@ -339,7 +339,8 @@ void CConcretePropertyGraphController::FillGroupControl()
    pcbGroup->ResetContent();
 
    GET_IFACE(IDocumentType,pDocType);
-   CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
+   bool isPGSuper = pDocType->IsPGSuperDocument();
+   CString strGroupLabel( isPGSuper ? _T("Span") : _T("Group"));
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridge = pIBridgeDesc->GetBridgeDescription();
@@ -347,7 +348,15 @@ void CConcretePropertyGraphController::FillGroupControl()
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       CString strGroup;
-      strGroup.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
+      if (isPGSuper)
+      {
+         strGroup.Format(_T("%s %s"), strGroupLabel, LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         strGroup.Format(_T("%s %d"), strGroupLabel, LABEL_GROUP(grpIdx));
+      }
+
       pcbGroup->AddString(strGroup);
    }
 

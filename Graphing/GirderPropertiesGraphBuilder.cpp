@@ -288,8 +288,14 @@ void CGirderPropertiesGraphBuilder::UpdateGraphTitle(const CGirderKey& girderKey
    else
    {
       GET_IFACE(IDocumentType,pDocType);
-      CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
-      strGraphTitle.Format(_T("%s %d Girder %s - %s - Interval %d: %s"),strGroupLabel,LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
+      if (pDocType->IsPGSuperDocument())
+      {
+         strGraphTitle.Format(_T("Span %s Girder %s - %s - Interval %d: %s"), LABEL_SPAN(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), GetPropertyLabel(propertyType), LABEL_INTERVAL(intervalIdx), strInterval);
+      }
+      else
+      {
+         strGraphTitle.Format(_T("Group %d Girder %s - %s - Interval %d: %s"), LABEL_GROUP(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), GetPropertyLabel(propertyType), LABEL_INTERVAL(intervalIdx), strInterval);
+      }
    }
    
    m_Graph.SetTitle(strGraphTitle);

@@ -304,7 +304,15 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
 
-         (*pTable)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         if (bIsPGSplice)
+         {
+            (*pTable)(row, 0) << location.SetValue(POI_ERECTED_SEGMENT, poi);
+         }
+         else
+         {
+            (*pTable)(row, 0) << location.SetValue(POI_SPAN, poi);
+         }
+
          (*pTable)(row,1) << stress.SetValue(bonded_details.fps);
          (*pTable)(row,2) << stress.SetValue(bonded_details.fpe);
          (*pTable)(row,3) << length.SetValue(bonded_details.db);

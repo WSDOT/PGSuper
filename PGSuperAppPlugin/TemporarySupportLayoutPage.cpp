@@ -127,7 +127,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       {
          pDX->PrepareEditCtrl(IDC_STATION);
          CString strMsg;
-         strMsg.Format(_T("Temporary support cannot be at the same location as %s %d"),pBridgeDesc->GetPier(pierIdx)->IsAbutment() ? _T("Abutment") : _T("Pier"),LABEL_PIER(pierIdx));
+         strMsg.Format(_T("Temporary support cannot be at the same location as %s"),LABEL_PIER_EX(pBridgeDesc->GetPier(pierIdx)->IsAbutment(),pierIdx));
          AfxMessageBox(strMsg,MB_OK | MB_ICONSTOP);
          pDX->Fail();
       }

@@ -158,7 +158,8 @@ bool CTestAgentImp::RunTest(long type,
    sysAutoVariable<bool> bIsTesting(&m_bIsTesting, true);
 
    // use run unit tests with numeric labeling
-   pgsAutoLabel auto_label;
+   pgsAutoGirderLabel auto_label;
+   pgsAutoPierLabel auto_plabel;
 
    // turn off diagnostics
    DIAG_WARNPOPUP(FALSE);
@@ -371,7 +372,8 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
                             const std::_tstring& poiFileName)
 {
    sysAutoVariable<bool> bIsTesting(&m_bIsTesting, true);
-   pgsAutoLabel auto_label;
+   pgsAutoGirderLabel auto_label;
+   pgsAutoPierLabel auto_plabel;
 
    // turn off diagnostics
    DIAG_WARNPOPUP(FALSE);
@@ -2945,7 +2947,8 @@ void CTestAgentImp::ProcessTestReport(const CTestCommandLineInfo& rCmdInfo)
 
    ASSERT(rCmdInfo.m_DoTxCadReport);
 
-   pgsAutoLabel auto_label;
+   pgsAutoGirderLabel auto_label;
+   pgsAutoPierLabel auto_plabel;
 
 
    if (rCmdInfo.m_TxGirder != TXALLGIRDERS && 
@@ -3200,7 +3203,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
          CSegmentKey segmentKey(span, girder, 0);
 
          CString strMessage;
-         strMessage.Format(_T("Creating Test report for Span %d, Girder %s"), LABEL_SPAN(span), LABEL_GIRDER(girder));
+         strMessage.Format(_T("Creating Test report for Span %s, Girder %s"), LABEL_SPAN(span), LABEL_GIRDER(girder));
          pProgress->UpdateMessage(strMessage);
 
          // See if we need to run a design

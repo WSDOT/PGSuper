@@ -193,7 +193,7 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
 	   ppiergrid->Create(0, CRect(0,0,1,1), &m_LldfTabWnd, m_LldfTabWnd.GetNextID());
 
       CString pier_name;
-      pier_name.Format(_T("Pier %d"), LABEL_PIER(ispan));
+      pier_name.Format(_T("%s"), LABEL_PIER_EX(ispan==0, ispan));
    	m_LldfTabWnd.AttachWnd(ppiergrid, pier_name);
 
       ppiergrid->CustomInit(ispan);
@@ -206,7 +206,7 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
 	   pgrid->Create(0, CRect(0,0,1,1), &m_LldfTabWnd, m_LldfTabWnd.GetNextID());
 
       CString span_name;
-      span_name.Format(_T("Span %d"), LABEL_SPAN(ispan));
+      span_name.Format(_T("Span %s"), LABEL_SPAN(ispan));
    	m_LldfTabWnd.AttachWnd(pgrid, span_name);
 
       bool bNegMoments = pBridge->ProcessNegativeMoments(ispan);
@@ -222,7 +222,7 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
 	pgrid->Create(0, CRect(0,0,1,1), &m_LldfTabWnd, m_LldfTabWnd.GetNextID());
 
    CString pier_name;
-   pier_name.Format(_T("Pier %d"), LABEL_PIER(nspans));
+   pier_name.Format(_T("%s"), LABEL_PIER_EX(true,nspans));
    m_LldfTabWnd.AttachWnd(pgrid, pier_name);
 
    pgrid->CustomInit(nspans);

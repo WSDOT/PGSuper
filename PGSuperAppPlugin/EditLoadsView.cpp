@@ -416,15 +416,15 @@ void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
    {
       if ( ptLoad.m_bLoadOnCantilever[pgsTypes::metStart] )
       {
-         strSpan.Format(_T("Span %d Start Cantilever"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
+         strSpan.Format(_T("Span %s Start Cantilever"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
       }
       else if ( ptLoad.m_bLoadOnCantilever[pgsTypes::metEnd] )
       {
-         strSpan.Format(_T("Span %d End Cantilever"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
+         strSpan.Format(_T("Span %s End Cantilever"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
       }
       else
       {
-         strSpan.Format(_T("Span %d"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
+         strSpan.Format(_T("Span %s"),LABEL_SPAN(ptLoad.m_SpanKey.spanIndex));
       }
    }
 
@@ -483,7 +483,7 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
    }
    else
    {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_SpanKey.spanIndex));
+      strSpan.Format(_T("Span %s"),LABEL_SPAN(load.m_SpanKey.spanIndex));
    }
 
    CString strGirder;
@@ -546,7 +546,7 @@ void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& load)
    }
    else
    {
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(load.m_SpanKey.spanIndex));
+      strSpan.Format(_T("Span %s"),LABEL_SPAN(load.m_SpanKey.spanIndex));
    }
 
    CString strGirder;

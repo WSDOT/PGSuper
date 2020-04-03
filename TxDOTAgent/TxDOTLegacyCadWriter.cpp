@@ -326,7 +326,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 
 	/* 1. SPAN NUMBER */
 	TCHAR	spanNumber[5+1];
-	_stprintf_s(spanNumber, sizeof(spanNumber)/sizeof(TCHAR), _T("%d"), (int)LABEL_SPAN(segmentKey.groupIndex));
+	_stprintf_s(spanNumber, sizeof(spanNumber)/sizeof(TCHAR), _T("%s"), LABEL_SPAN(segmentKey.groupIndex));
 
 	/* 1. GIRDER NUMBER */
 	TCHAR  beamNumber[5+1];
@@ -736,7 +736,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 
    if (writer.GetTotalNumDebonds() > 0 && are_harped_bent)
    {
-      _ftprintf(fp, _T("Warning: Beam %s in span %2d has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.\n"), LABEL_GIRDER(gdrIdx), (int)LABEL_SPAN(spanIdx));
+      _ftprintf(fp, _T("Warning: Beam %s in span %s has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.\n"), LABEL_GIRDER(gdrIdx), LABEL_SPAN(spanIdx));
    }
 
    return S_OK;
@@ -861,16 +861,16 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int
    // lastly write any information
    if (m_OutCome==SectionMismatch || m_OutCome==SectionsNotSymmetrical)
    {
-	   _ftprintf(fp, _T("Warning: Irregular, Non-standard debonding increments used for beam %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+	   _ftprintf(fp, _T("Warning: Irregular, Non-standard debonding increments used for beam %s in span %s. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
    }
    else if (m_OutCome==TooManySections)
    {
-	   _ftprintf(fp, _T("Warning: The number of debonded sections exceeds ten for beam %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+	   _ftprintf(fp, _T("Warning: The number of debonded sections exceeds ten for beam %s in span %s. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
    }
    else if (m_OutCome==NonStandardSection)
    {
       Float64 spac = ::ConvertFromSysUnits(m_SectionSpacing , unitMeasure::Feet );
-	   _ftprintf(fp, _T("Warning: Non-standard debonding increment of %6.3f ft used  for beam %s in span %2d. \n"),spac,LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+	   _ftprintf(fp, _T("Warning: Non-standard debonding increment of %6.3f ft used  for beam %s in span %s. \n"),spac,LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
    }
 }
 

@@ -172,7 +172,7 @@ void CErectSegmentsDlg::FillLists()
             CString label;
             if ( pDocType->IsPGSuperDocument() )
             {
-               label.Format(_T("Span %d, Girder %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx));
+               label.Format(_T("Span %s, Girder %s"),LABEL_SPAN(grpIdx),LABEL_GIRDER(gdrIdx));
             }
             else
             {

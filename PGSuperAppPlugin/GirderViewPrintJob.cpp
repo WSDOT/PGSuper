@@ -107,7 +107,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
       if ( girderKey.groupIndex == ALL_GROUPS )
          title.Format(_T("Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());  
       else
-         title.Format(_T("Span %d Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GROUP(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());
+         title.Format(_T("Span %s Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_SPAN(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());
    }
    else
    {

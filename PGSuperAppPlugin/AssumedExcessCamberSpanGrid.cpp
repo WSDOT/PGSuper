@@ -206,7 +206,7 @@ void CAssumedExcessCamberSpanGrid::FillGrid()
       SetRowStyle(row);
 
       CString strLabel;
-      strLabel.Format(_T("Span %d"), LABEL_SPAN(spanIdx));
+      strLabel.Format(_T("Span %s"), LABEL_SPAN(spanIdx));
       SetStyleRange(CGXRange(row, 0), CGXStyle().SetValue(strLabel).SetItemDataPtr((void*)spanIdx));
       SetStyleRange(CGXRange(row, 1), CGXStyle()
          .SetReadOnly(FALSE)

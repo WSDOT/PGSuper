@@ -1,7 +1,7 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  42.91    6   6.89                     1     1    WF95P    *      6  0.6  270  42.14  41.75   9.06   9.06   2    3.9    6     2    2   0   0   0   0   5.004  8.184   8.184     8.184    12943   0.888  0.888   0.067 -0.649  0.000 -0.168 -0.817   5.82   52.22    0.00    0.00    0.00 
-Warning: Non-standard debonding increment of  6.070 ft used  for beam 1 in span  1. 
+Warning: Non-standard debonding increment of  6.070 ft used  for beam 1 in span 1. 
 
 
 The Specification Check was Not Successful
@@ -27,7 +27,7 @@ Duct Size check failed for Duct 3.
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  42.91    6   6.89                     1     2    WF95P    *      6  0.6  270  42.14  41.75   9.06   9.06   2    3.9    6     2    2   0   0   0   0   5.004  8.184   8.184     8.184    10464   0.591  0.735   0.067 -0.537  0.000 -0.168 -0.705   5.82   53.31    0.00    0.00    0.00 
-Warning: Non-standard debonding increment of  6.070 ft used  for beam 2 in span  1. 
+Warning: Non-standard debonding increment of  6.070 ft used  for beam 2 in span 1. 
 
 
 The Specification Check was Not Successful

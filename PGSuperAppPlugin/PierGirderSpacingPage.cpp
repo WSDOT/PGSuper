@@ -335,7 +335,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       MoveAheadGroup();
    
       CString strTxt;
-      strTxt.Format(_T("Ahead side of %s %d = Start of Span %d"), IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Ahead]->GetIndex()));
+      strTxt.Format(_T("Ahead side of %s = Start of Span %s"), LABEL_PIER_EX(IsAbutment(),pParent->m_pPier->GetIndex()), LABEL_SPAN(pParent->m_pSpan[pgsTypes::Ahead]->GetIndex()));
       GetDlgItem(IDC_AHEADGROUP)->SetWindowText(strTxt);
 
       // Don't need the copy button
@@ -347,7 +347,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       HideAheadGroup();
 
       CString strTxt;
-      strTxt.Format(_T("Back side of %s %d = End of Span %d"),IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Back]->GetIndex()));
+      strTxt.Format(_T("Back side of %s = End of Span %s"), LABEL_PIER_EX(IsAbutment(), pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Back]->GetIndex()));
       GetDlgItem(IDC_BACKGROUP)->SetWindowText(strTxt);
 
       // Don't need the copy button
@@ -363,10 +363,10 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       ATLASSERT(m_SpacingTypeMode == Both);
 
       CString strTxt;
-      strTxt.Format(_T("Back side of %s %d = End of Span %d"),IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Back]->GetIndex()));
+      strTxt.Format(_T("Back side of %s = End of Span %s"),LABEL_PIER_EX(IsAbutment(), pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Back]->GetIndex()));
       GetDlgItem(IDC_BACKGROUP)->SetWindowText(strTxt);
 
-      strTxt.Format(_T("Ahead side of %s %d = Start of Span %d"),IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Ahead]->GetIndex()));
+      strTxt.Format(_T("Ahead side of %s = Start of Span %s"),LABEL_PIER_EX(IsAbutment(),pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Ahead]->GetIndex()));
       GetDlgItem(IDC_AHEADGROUP)->SetWindowText(strTxt);
    }
 

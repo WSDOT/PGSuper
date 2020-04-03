@@ -318,7 +318,7 @@ void CGirderSpacingGrid::UpdateGrid()
    } // group loop
 
    CString strPier;
-   strPier.Format(_T("Pier %d"), LABEL_PIER(m_PierIdx) );
+   strPier.Format(_T("%s"), pgsPierLabel::CreatePierLabel(*(m_pGirderGroup->GetBridgeDescription()), m_PierIdx).c_str() );
 
    SetStyleRange(CGXRange(0,0), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)

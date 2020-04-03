@@ -61,7 +61,7 @@ txnTransaction* txnEditTemporarySupportStation::CreateClone() const
 std::_tstring txnEditTemporarySupportStation::Name() const
 {
    std::_tostringstream os;
-   os << "Edit Station of Temporary Support " << LABEL_PIER(m_TsIdx);
+   os << "Edit Station of Temporary Support " << LABEL_TEMPORARY_SUPPORT(m_TsIdx);
    return os.str();
 }
 

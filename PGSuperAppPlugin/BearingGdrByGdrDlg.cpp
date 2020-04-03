@@ -76,7 +76,7 @@ BOOL CBearingGdrByGdrDlg::OnInitDialog()
 	   pgrid->Create(0, CRect(0,0,1,1), &m_GirderTabWnd, m_GirderTabWnd.GetNextID());
 
       CString span_name;
-      span_name.Format(_T("Span %d"), LABEL_SPAN(ispan));
+      span_name.Format(_T("Span %s"), LABEL_SPAN(ispan));
    	m_GirderTabWnd.AttachWnd(pgrid, span_name);
 
       pgrid->CustomInit(ispan);

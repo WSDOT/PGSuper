@@ -212,6 +212,17 @@ public:
    // Moves a pier to a new location. Span lengths are adjusted according to moveOption
    bool MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption);
 
+   // Internally all bridges start at abutment(0) and end at an abutment(nspans). However, the UI allows a bridge
+   // to start with abitrary pier numbering. The functions below support this capability
+   void SetPierDisplaySettings(pgsTypes::DisplayEndSupportType startPierType, pgsTypes::DisplayEndSupportType endPierType, PierIndexType startPierNumber);
+   void GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const;
+   PierIndexType GetDisplayStartingPierNumber() const;  // pier number at start of bridge for display purposes
+   void SetDisplayStartingPierNumber(PierIndexType);
+   pgsTypes::DisplayEndSupportType GetDisplayStartSupportType() const; // type of support and start of bridge
+   void SetDisplayStartSupportType(pgsTypes::DisplayEndSupportType);
+   pgsTypes::DisplayEndSupportType GetDisplayEndSupportType() const; // type of support and end of bridge
+   void SetDisplayEndSupportType(pgsTypes::DisplayEndSupportType);
+
    // =================================================================================
    // Temporary Supports
    // =================================================================================
@@ -503,6 +514,10 @@ private:
    std::vector<CSpanData2*> m_Spans;
    std::vector<CTemporarySupportData*> m_TemporarySupports;
    std::vector<CGirderGroupData*> m_GirderGroups;
+
+   pgsTypes::DisplayEndSupportType m_DisplayStartSupportType;
+   pgsTypes::DisplayEndSupportType m_DisplayEndSupportType;
+   PierIndexType m_StartingPierNumber;
 
    Float64 m_AlignmentOffset; // offset from Alignment to CL Bridge (< 0 = right of alignment)
 

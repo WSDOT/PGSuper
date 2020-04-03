@@ -3938,7 +3938,7 @@ void CPGSDocBase::OnEditPier()
       for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
       {
          CString strItem;
-         strItem.Format(_T("%s %d\n"), (pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier")), LABEL_PIER(pierIdx));
+         strItem.Format(_T("%s\n"), LABEL_PIER_EX(pierIdx == 0 || pierIdx == nPiers - 1, pierIdx));
 
          strItems += strItem;
       }
@@ -3987,7 +3987,7 @@ void CPGSDocBase::OnEditSpan()
       for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
       {
          CString strItem;
-         strItem.Format(_T("Span %d\n"),LABEL_SPAN(spanIdx));
+         strItem.Format(_T("Span %s\n"),LABEL_SPAN(spanIdx));
 
          strItems += strItem;
       }
@@ -4025,7 +4025,7 @@ void CPGSDocBase::DeletePier(PierIndexType pierIdx)
    PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
    CString strTitle;
-   strTitle.Format(_T("Deleting Pier %d"),LABEL_PIER(pierIdx));
+   strTitle.Format(_T("Deleting Pier %s"),LABEL_PIER(pierIdx));
    dlg.m_strTitle = strTitle;
 
    CString strLabel;
@@ -4039,11 +4039,11 @@ void CPGSDocBase::DeletePier(PierIndexType pierIdx)
    }
    else if ( pierIdx == nPiers-1)
    {
-      strItems.Format(_T("Span %d\n"),LABEL_SPAN(pierIdx-1));
+      strItems.Format(_T("Span %s\n"),LABEL_SPAN(pierIdx-1));
    }
    else
    {
-      strItems.Format(_T("Span %d\nSpan %d\n"),LABEL_SPAN(pierIdx-1),LABEL_SPAN(pierIdx));
+      strItems.Format(_T("Span %s\nSpan %s\n"),LABEL_SPAN(pierIdx-1),LABEL_SPAN(pierIdx));
    }
 
    dlg.m_strItems = strItems;
@@ -4079,11 +4079,8 @@ void CPGSDocBase::DeleteSpan(SpanIndexType spanIdx)
    PierIndexType prevPierIdx = (PierIndexType)spanIdx;
    PierIndexType nextPierIdx = prevPierIdx + 1;
 
-   CString strPier1Label = pBridgeDesc->GetPier(prevPierIdx)->IsAbutment() ? _T("Abutment") : _T("Pier");
-   CString strPier2Label = pBridgeDesc->GetPier(nextPierIdx)->IsAbutment() ? _T("Abutment") : _T("Pier");
-
    CString strTitle;
-   strTitle.Format(_T("Deleting Span %d"),LABEL_SPAN(spanIdx));
+   strTitle.Format(_T("Deleting Span %s"),LABEL_SPAN(spanIdx));
    dlg.m_strTitle = strTitle;
 
    CString strLabel;
@@ -4091,7 +4088,7 @@ void CPGSDocBase::DeleteSpan(SpanIndexType spanIdx)
    dlg.m_strLabel = strLabel;
 
    CString strItems;
-   strItems.Format(_T("%s %d\n%s %d"),strPier1Label,LABEL_PIER(prevPierIdx),strPier2Label,LABEL_PIER(nextPierIdx));
+   strItems.Format(_T("%s\n%s"),LABEL_PIER_EX(pBridgeDesc->GetPier(prevPierIdx)->IsAbutment(),prevPierIdx),LABEL_PIER_EX(pBridgeDesc->GetPier(nextPierIdx)->IsAbutment(), nextPierIdx));
    dlg.m_strItems = strItems;
    if ( dlg.DoModal() == IDOK )
    {
@@ -4148,7 +4145,7 @@ void CPGSDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
    {
       PierIndexType nPiers = pBridgeDesc->GetPierCount();
       CString strLabel;
-      strLabel.Format(_T("Delete Pier %d"),LABEL_PIER(m_Selection.PierIdx));
+      strLabel.Format(_T("Delete Pier %s"),LABEL_PIER(m_Selection.PierIdx));
 
       pCmdUI->SetText(strLabel);
       pCmdUI->Enable(TRUE);
@@ -4157,7 +4154,7 @@ void CPGSDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
    {
       // only span is selected
       CString strLabel;
-      strLabel.Format(_T("Delete Span %d"),LABEL_SPAN(m_Selection.SpanIdx));
+      strLabel.Format(_T("Delete Span %s"),LABEL_SPAN(m_Selection.SpanIdx));
       pCmdUI->SetText(strLabel);
       pCmdUI->Enable(TRUE);
    }
@@ -4196,7 +4193,7 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
             // the boundary conditions of the pier will become invalid, select a new bc
             SpanIndexType deleteSpanIdx = (SpanIndexType)(deleteSpanOnPierFace == pgsTypes::Back ? deletePierIdx - 1 : deletePierIdx);
             CString strPrompt;
-            strPrompt.Format(_T("Removing Span %d and Pier %d will make the boundary condition of Pier %d invalid.\r\nSelect a valid boundary condition."), LABEL_SPAN(deleteSpanIdx), LABEL_PIER(deletePierIdx), LABEL_PIER(pierIdx));
+            strPrompt.Format(_T("Removing Span %s and Pier %s will make the boundary condition of Pier %s invalid.\r\nSelect a valid boundary condition."), LABEL_SPAN(deleteSpanIdx), LABEL_PIER(deletePierIdx), LABEL_PIER(pierIdx));
 
             CSelectBoundaryConditionDlg dlg;
             dlg.m_strPrompt = strPrompt;

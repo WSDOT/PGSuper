@@ -111,14 +111,12 @@ BOOL CInsertSpanDlg::OnInitDialog()
    {
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
 
-      CString strType(pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
-
       CString strItem;
-      strItem.Format(_T("Before %s %d\n"),strType,LABEL_PIER(pierIdx));
+      strItem.Format(_T("Before %s\n"),LABEL_PIER_EX(pPier->IsAbutment(),pierIdx));
       m_Keys.emplace_back(pierIdx,pgsTypes::Back);
       pcbPiers->AddString(strItem);
 
-      strItem.Format(_T("After %s %d\n"),strType,LABEL_PIER(pierIdx));
+      strItem.Format(_T("After %s\n"),LABEL_PIER_EX(pPier->IsAbutment(),pierIdx));
       m_Keys.emplace_back(pierIdx,pgsTypes::Ahead);
       pcbPiers->AddString(strItem);
    }

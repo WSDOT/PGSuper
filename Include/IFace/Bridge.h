@@ -668,6 +668,10 @@ interface IBridge : IUnknown
 
    // Compute bearing elevation data for each girder along bearing line at edges of girder bottom. Will return two values 0=Left, 1=Right
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
+
+   // Internally, all bridges start and Abutment 0 and end and abutment n-1. However, users can chose to start at a different pier or abutment
+   // for display purposes. This is carried through the UI and reporting
+   virtual void GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const = 0;
 };
 
 /*****************************************************************************

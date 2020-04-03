@@ -122,7 +122,7 @@ BOOL CLLDFFillDlg::OnInitDialog()
    m_SpanCB.AddString(_T("All"));
    for (SpanIndexType ispan=0; ispan<nspans; ispan++)
    {
-      str.Format(_T("%d"),LABEL_SPAN(ispan));
+      str.Format(_T("%s"),LABEL_SPAN(ispan));
       m_SpanCB.AddString(str);
    }
 
@@ -132,7 +132,7 @@ BOOL CLLDFFillDlg::OnInitDialog()
    m_PierCB.AddString(_T("All"));
    for (PierIndexType pierIdx = 0; pierIdx <= nspans; pierIdx++)
    {
-      str.Format(_T("%d"),LABEL_PIER(pierIdx));
+      str.Format(_T("%s"),LABEL_PIER(pierIdx));
       m_PierCB.AddString(str);
    }
 

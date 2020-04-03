@@ -494,7 +494,7 @@ void CPierConnectionsPage::FillBearingOffsetComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
    pCB->ResetContent();
 
-   CString strType(m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   CString strType = pgsPierLabel::GetPierTypeLabelEx(m_pPier->IsAbutment(), m_pPier->GetIndex()).c_str();
 
    CString strLabel;
    strLabel.Format(_T("Normal to %s Line"),strType);
@@ -517,7 +517,7 @@ void CPierConnectionsPage::FillEndDistanceComboBox()
    idx = pCB->AddString(_T("Measured from and Normal to CL Bearing"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingNormalToPier));
 
-   CString strType(m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   CString strType = pgsPierLabel::GetPierTypeLabelEx(m_pPier->IsAbutment(), m_pPier->GetIndex()).c_str();
 
    CString strLabel;
    strLabel.Format(_T("Measured from %s Line, Along Girder"),strType);

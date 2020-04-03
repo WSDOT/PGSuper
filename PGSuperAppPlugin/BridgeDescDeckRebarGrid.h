@@ -98,6 +98,10 @@ private:
 
    void UpdateCutoff(ROWCOL nRow,const CPierData2* pPier);
 
+   std::_tstring CreatePierLabel(const CBridgeDescription2& bridgeDescr, PierIndexType pierIdx);
+   PierIndexType GetPierIndexFromString(const CBridgeDescription2& bridgeDescr, const CString& string);
+
+
    BOOL m_bEnableTopMat;
    BOOL m_bEnableBottomMat;
    IndexType m_nContinuousPiers;

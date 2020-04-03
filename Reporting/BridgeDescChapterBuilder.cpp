@@ -2057,18 +2057,9 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
       bool bAbutment = pPier->IsAbutment();
-      if ( bAbutment )
-      {
-         (*pLayoutTable)(row1,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
-         (*pDiaphragmTable)(row2,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
-         (*pConnectionTable)(row3,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
-      }
-      else
-      {
-         (*pLayoutTable)(row1,0) << _T("Pier ") << LABEL_PIER(pierIdx);
-         (*pDiaphragmTable)(row2,0) << _T("Pier ") << LABEL_PIER(pierIdx);
-         (*pConnectionTable)(row3,0) << _T("Pier ") << LABEL_PIER(pierIdx);
-      }
+      (*pLayoutTable)(row1,0)     <<  LABEL_PIER_EX(bAbutment,pierIdx);
+      (*pDiaphragmTable)(row2,0)  <<  LABEL_PIER_EX(bAbutment,pierIdx);
+      (*pConnectionTable)(row3,0) <<  LABEL_PIER_EX(bAbutment, pierIdx);
 
       (*pLayoutTable)(row1,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
       (*pLayoutTable)(row1,2) << RPT_BEARING(OLE2T(bstrBearing));
@@ -2513,7 +2504,7 @@ void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
       const CPierData2* pPier = pBridgeDesc->GetGirderGroup(grpIdx)->GetPier(pgsTypes::metStart);
       const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(0);
       const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Ahead);
-      (*pTable)(row,0) << _T("Pier ") << LABEL_PIER(pPier->GetIndex());
+      (*pTable)(row,0) << LABEL_PIER_EX(pPier->IsAbutment(), pPier->GetIndex());
       write_girder_spacing(pBroker,pDisplayUnits,pTable,pSpacing,row,1);
 
       row++;
@@ -2647,7 +2638,7 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       GirderIndexType nGirders = pGroup->GetGirderCount();
 
-      (*pTable)(row,0) << LABEL_GROUP(grpIdx);
+      (*pTable)(row,0) << LABEL_SPAN(grpIdx);
       (*pTable)(row,1) << nGirders;
 
       if ( 1 < nGirders )
@@ -2837,14 +2828,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                if (pPier)
                {
                   PierIndexType pierIdx = pPier->GetIndex();
-                  if (pPier->IsAbutment())
-                  {
-                     (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Abutment ") << LABEL_PIER(pierIdx);
-                  }
-                  else
-                  {
-                     (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Pier ") << LABEL_PIER(pierIdx);
-                  }
+                  (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at ") << LABEL_PIER_EX(pPier->IsAbutment(), pierIdx);
                }
                else
                {

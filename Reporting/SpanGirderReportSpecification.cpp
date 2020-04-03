@@ -274,10 +274,17 @@ std::_tstring CGirderReportSpecification::GetReportTitle() const
 {
    GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
-   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
 
    CString msg;
-   msg.Format(_T("%s - %s %d Girder %s"),GetReportName().c_str(),strGroupLabel,LABEL_GROUP(m_GirderKey.groupIndex),LABEL_GIRDER(m_GirderKey.girderIndex));
+   if (bIsPGSuper)
+   {
+      msg.Format(_T("%s - Span %s Girder %s"), GetReportName().c_str(), LABEL_SPAN(m_GirderKey.groupIndex), LABEL_GIRDER(m_GirderKey.girderIndex));
+   }
+   else
+   {
+      msg.Format(_T("%s - Group %d Girder %s"), GetReportName().c_str(), LABEL_GROUP(m_GirderKey.groupIndex), LABEL_GIRDER(m_GirderKey.girderIndex));
+   }
+
    return std::_tstring(msg);
 }
 

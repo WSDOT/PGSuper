@@ -198,7 +198,6 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 
    GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
-   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
 
    // Fill up the span and girder combo boxes
    if ( m_Mode == SpanAndChapters || m_Mode == SpanGirderAndChapters )
@@ -210,7 +209,15 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       for ( GroupIndexType i = 0; i < cGroups; i++ )
       {
          CString strGroup;
-         strGroup.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(i));
+         if (bIsPGSuper)
+         {
+            strGroup.Format(_T("Span %s"), LABEL_SPAN(i));
+         }
+         else
+         {
+            strGroup.Format(_T("Group %d"), LABEL_GROUP(i));
+         }
+
          pGroupBox->AddString(strGroup);
       }
       pGroupBox->SetCurSel((int)m_Group);
@@ -227,7 +234,15 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 
       CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
       CString str;
-      str.Format(_T("Select a %s"),strGroupLabel);
+      if (bIsPGSuper)
+      {
+         str = _T("Select a Span");
+      }
+      else
+      {
+         str = _T("Select a Group");
+      }
+
       pGroupBox->SetWindowText(str);
    }
    else if ( m_Mode == GirderAndChapters )

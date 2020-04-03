@@ -3345,7 +3345,7 @@ void CSpecAgentImp::ValidateHaulTruck(const CPrecastSegmentData* pSegment) const
       }
       else
       {
-         strMsg.Format(_T("The haul truck is not defined for Span %d Girder %s"), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+         strMsg.Format(_T("The haul truck is not defined for Span %s Girder %s"), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
       }
 
       pgsSegmentRelatedStatusItem* pStatusItem = new pgsHaulTruckStatusItem(m_StatusGroupID, m_scidHaulTruckError, strMsg, segmentKey);

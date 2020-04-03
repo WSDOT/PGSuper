@@ -28,6 +28,7 @@
 #include <EAF\EAFUtilities.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Bridge.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -82,6 +83,9 @@ rptChapter* CDistributionFactorDetailsChapterBuilder::Build(CReportSpecification
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
+
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -101,7 +105,15 @@ rptChapter* CDistributionFactorDetailsChapterBuilder::Build(CReportSpecification
             pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << pPara;
             std::_tostringstream os;
-            os << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
+            if (isPGSuper)
+            {
+               os << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
+            }
+            else
+            {
+               os << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx);
+            }
+
             pPara->SetName( os.str().c_str() );
             (*pPara) << pPara->GetName() << rptNewLine;
          }

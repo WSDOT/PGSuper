@@ -472,16 +472,9 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
 
       ROWCOL col = _STARTCOL;
 
-      // row index
-      CString crow;
-      if (row == 1 || row == numRows)
-      {
-         crow.Format(_T("Abutment %d"), PierNo);
-      }
-      else
-      {
-         crow.Format(_T("Pier %d"), PierNo);
-      }
+      // row label
+      bool isAbut = (row == 1 || row == numRows);
+      CString crow = pgsPierLabel::GetPierLabelEx(isAbut, hp.m_PierIndex).c_str();
 
       if (row == 1 || row == numRows || hp.m_BPDType==BearingPierData::bpdCL) // single row title
       {
