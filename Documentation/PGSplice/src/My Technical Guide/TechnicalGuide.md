@@ -30,6 +30,7 @@ Topics
 * @subpage tg_principal_tensile_stress
 * @subpage tg_section_properties
 * @subpage tg_shear_capacity
+* @subpage tg_sign_convention
 * @subpage tg_slab_offset
 * @subpage tg_splitting_zone_checks
 * @subpage tg_stability

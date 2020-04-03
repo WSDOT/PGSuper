@@ -267,7 +267,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       {
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetY(spType,intervalIdx,poi,pgsTypes::TopGirder));
          (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetY(spType,intervalIdx,poi,pgsTypes::BottomGirder));
-         (*xs_table)(row,col++) << l3.SetValue(-pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::TopGirder));
+         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::TopGirder));
          (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::BottomGirder));
       }
       else
@@ -280,12 +280,12 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
             (*xs_table)(row,col++) << l1.SetValue(pSectProp->GetY(spType,intervalIdx,poi,pgsTypes::BottomDeck));
          }
 
-         (*xs_table)(row,col++) << l3.SetValue(-pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::TopGirder));
+         (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::TopGirder));
          (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::BottomGirder));
          if ( bIsCompositeDeck )
          {
-            (*xs_table)(row,col++) << l3.SetValue(-pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::TopDeck));
-            (*xs_table)(row,col++) << l3.SetValue(-pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::BottomDeck));
+            (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::TopDeck));
+            (*xs_table)(row,col++) << l3.SetValue(pSectProp->GetS(spType,intervalIdx,poi,pgsTypes::BottomDeck));
          }
       }
 
