@@ -104,9 +104,17 @@ void CCrownSlopePage::DoDataExchange(CDataExchange* pDX)
    // Grid owns a pointer to our roadway data
    if ( pDX->m_bSaveAndValidate )
    {
-      if (!m_Grid.SortCrossSections(false) )
+      ROWCOL badRow;
+      if (!m_Grid.IsGridDataValid(&badRow))
       {
-         AfxMessageBox(_T("Invalid cross section parameters. Are there duplicate stations?"));
+         CString str;
+         str.Format(_T("Invalid data in grid template %d"), badRow);
+         AfxMessageBox(str, MB_OK | MB_ICONWARNING);
+         pDX->Fail();
+      }
+      else if (!m_Grid.SortCrossSections(false) )
+      {
+         AfxMessageBox(_T("Invalid cross section parameters. Are there duplicate stations?"), MB_OK | MB_ICONWARNING);
          pDX->Fail();
       }
    }
@@ -121,13 +129,17 @@ BEGIN_MESSAGE_MAP(CCrownSlopePage, CPropertyPage)
    ON_MESSAGE(WM_KICKIDLE, OnKickIdle)
 	ON_WM_PAINT()
 	ON_BN_CLICKED(IDC_ADD, OnAdd)
+   ON_UPDATE_COMMAND_UI(IDC_ADD, &CCrownSlopePage::OnUpdateAdd)
 	ON_BN_CLICKED(IDC_REMOVE, OnRemove)
    ON_UPDATE_COMMAND_UI(IDC_REMOVE, &CCrownSlopePage::OnUpdateRemove)
 	ON_BN_CLICKED(IDC_SORT, OnSort)
+   ON_UPDATE_COMMAND_UI(IDC_SORT, &CCrownSlopePage::OnUpdateSort)
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_HELP, OnHelp)
    ON_CBN_SELCHANGE(IDC_NUMSEGMENTS_COMBO, &CCrownSlopePage::OnCbnSelchangeNumsegmentsCombo)
+   ON_UPDATE_COMMAND_UI(IDC_NUMSEGMENTS_COMBO, &CCrownSlopePage::OnUpdateAdd)
    ON_CBN_SELCHANGE(IDC_RIDGEPT_COMBO, &CCrownSlopePage::OnCbnSelchangeRidgeptCombo)
+   ON_UPDATE_COMMAND_UI(IDC_RIDGEPT_COMBO, &CCrownSlopePage::OnUpdateAdd)
    ON_NOTIFY(UDN_DELTAPOS, IDC_VIEW_TEMPLATE_SPIN, &CCrownSlopePage::OnDeltaposViewTemplateSpin)
 END_MESSAGE_MAP()
 
@@ -146,7 +158,10 @@ void CCrownSlopePage::OnGridTemplateClicked(IndexType templIdx)
 
 void CCrownSlopePage::OnAdd()
 {
-   m_Grid.AppendRow();
+   if (!m_Grid.AppendRow())
+   {
+      return;
+   }
 
    UpdateNumSegsCtrl();
    UpdateRidgeptData();
@@ -176,13 +191,23 @@ void CCrownSlopePage::OnRemove()
 
 void CCrownSlopePage::OnSort() 
 {
-   if (!m_Grid.SortCrossSections(true))
+   ROWCOL badRow;
+   if (m_Grid.IsGridDataValid(&badRow))
    {
-      ::AfxMessageBox(_T("Each template must have a unique Station"),MB_OK | MB_ICONWARNING); 
+      if (!m_Grid.SortCrossSections(true))
+      {
+         ::AfxMessageBox(_T("Each template must have a unique Station"), MB_OK | MB_ICONWARNING);
+      }
+      else
+      {
+         OnChange();
+      }
    }
    else
    {
-      OnChange();
+      CString msg;
+      msg.Format(_T("Data error in grid template %d. Cannot sort."), badRow);
+      ::AfxMessageBox(msg, MB_OK | MB_ICONWARNING);
    }
 }
 
@@ -328,12 +353,11 @@ int CCrownSlopePage::GetTemplateCount()
    return m_Grid.GetRowCount() - 1;
 }
 
-RoadwaySectionTemplate CCrownSlopePage::GetSelectedTemplate()
+bool CCrownSlopePage::GetSelectedTemplate(RoadwaySectionTemplate* pTemplate)
 {
    // Create a default if we fail
-   RoadwaySectionTemplate templ;
-   templ.LeftSlope = 0.0;
-   templ.RightSlope = 0.0;
+   pTemplate->LeftSlope = 0.0;
+   pTemplate->RightSlope = 0.0;
 
    if (m_SelectedTemplate != INVALID_INDEX)
    {
@@ -341,16 +365,22 @@ RoadwaySectionTemplate CCrownSlopePage::GetSelectedTemplate()
       {
          if (m_RoadwaySectionData.RoadwaySectionTemplates.size() > m_SelectedTemplate)
          {
-            return m_RoadwaySectionData.RoadwaySectionTemplates[m_SelectedTemplate];
+            *pTemplate = m_RoadwaySectionData.RoadwaySectionTemplates[m_SelectedTemplate];
+            return true;
          }
          else
          {
             ATLASSERT(m_RoadwaySectionData.RoadwaySectionTemplates.empty() ? TRUE : FALSE); // combo showing something it should not
+            return false;
          }
+      }
+      else
+      {
+         return false;
       }
    }
 
-   return templ;
+   return true;
 }
 
 gpRect2d CCrownSlopePage::GetRidgePointBounds()
@@ -384,8 +414,16 @@ void CCrownSlopePage::OnPaint()
    pWnd->Invalidate();
    pWnd->UpdateWindow();
 
-   RoadwaySectionTemplate currTempl = GetSelectedTemplate();
    m_DrawnRidgePoints.clear();
+
+   RoadwaySectionTemplate currTempl; 
+   if (!GetSelectedTemplate(&currTempl))
+   {
+      CString str(_T("Data Error in Grid. Cannot Draw Section"));
+      CSize tsiz = pDC->GetTextExtent(str);
+      pDC->TextOut(redit.CenterPoint().x - tsiz.cx/2, redit.CenterPoint().y-tsiz.cy/2, str);
+      return;
+   }
 
    if (currTempl.SegmentDataVec.empty())
    {
@@ -599,9 +637,22 @@ void CCrownSlopePage::UpdateViewSpinner()
    OnChange();
 }
 
+void CCrownSlopePage::OnUpdateAdd(CCmdUI * pCmdUI)
+{
+   ROWCOL badRow;
+   pCmdUI->Enable( m_Grid.IsGridDataValid(&badRow));
+}
+
 void CCrownSlopePage::OnUpdateRemove(CCmdUI * pCmdUI)
 {
-   pCmdUI->Enable(m_Grid.IsRowSelected());
+   ROWCOL badRow;
+   pCmdUI->Enable(m_Grid.IsRowSelected() && !m_Grid.IsGridEmpty() && m_Grid.IsGridDataValid(&badRow));
+}
+
+void CCrownSlopePage::OnUpdateSort(CCmdUI * pCmdUI)
+{
+   ROWCOL badRow;
+   pCmdUI->Enable(!m_Grid.IsGridEmpty() && m_Grid.IsGridDataValid(&badRow));
 }
 
 LRESULT CCrownSlopePage::OnKickIdle(WPARAM, LPARAM)

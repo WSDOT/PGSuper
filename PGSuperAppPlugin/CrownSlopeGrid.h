@@ -71,10 +71,11 @@ protected:
 public:
    // custom stuff for grid
    void CustomInit();
-   void AppendRow();
+   bool AppendRow();
    void RemoveRows();
    bool IsRowSelected();
    bool IsGridEmpty();
+   bool IsGridDataValid(ROWCOL* pBadRow);
 
    void UpdateGridSizeAndHeaders(const RoadwaySectionData& data);
 
@@ -86,7 +87,7 @@ public:
    void SetRowData(ROWCOL nRow,const RoadwaySectionTemplate& data);
 
    // virtual overrides for grid
-   BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol) override;
+   virtual BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol) override;
    virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol) override;
    virtual void OnMovedCurrentCell(ROWCOL nRow, ROWCOL nCol) override;
 
@@ -95,7 +96,6 @@ private:
    void SetRowStyle(ROWCOL nRow);
    void InitRowData(ROWCOL row);
 
-   bool m_IsACellInvalid;
    std::set<ROWCOL> m_LengthCols;
    std::set<ROWCOL> m_SlopeCols;
 
