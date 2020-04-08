@@ -86,17 +86,22 @@ BEGIN_MESSAGE_MAP(CCrownSlopeGrid, CGXGridWnd)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
-void CCrownSlopeGrid::AppendRow()
+bool CCrownSlopeGrid::AppendRow()
 {
-	ROWCOL nRow = 0;
-   nRow = GetRowCount()+1;
+	ROWCOL nRow = GetRowCount()+1;
 
-	InsertRows(nRow, 1);
+   if (!InsertRows(nRow, 1))
+   {
+      return false;
+   }
+
    SetRowStyle(nRow);
    InitRowData(nRow);
    SetCurrentCell(nRow, GetLeftCol(), GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
 	ScrollCellInView(nRow, GetLeftCol());
 	Invalidate();
+
+   return true;
 }
 
 void CCrownSlopeGrid::RemoveRows()
@@ -137,6 +142,25 @@ bool CCrownSlopeGrid::IsGridEmpty()
 {
    ROWCOL nrows = GetRowCount();
    return nrows == 1;
+}
+
+bool CCrownSlopeGrid::IsGridDataValid(ROWCOL * pBadRow)
+{
+   if (!IsGridEmpty())
+   {
+      ROWCOL nrows = GetRowCount();
+      for (ROWCOL irow = 2; irow <= nrows; irow++)
+      {
+         RoadwaySectionTemplate data;
+         if (!GetRowData(irow, data))
+         {
+            *pBadRow = irow;
+            return false;
+         }
+      }
+   }
+
+   return true;
 }
 
 void CCrownSlopeGrid::InitRowData(ROWCOL row)
@@ -420,9 +444,6 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
    HRESULT hr = station->FromString(CComBSTR(strStation),unit_mode);
    if (FAILED(hr))
    {
-      CString msg;
-      msg.Format(_T("Invalid station data for template %d"), nRow-1);
-      ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
       return false;
    }
 
@@ -435,9 +456,6 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
    data.LeftSlope = 0.0;
    if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.LeftSlope))
 	{
-      CString msg;
-      msg.Format(_T("Leftmost slope value not a number for template %d"), nRow-1);
-      ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
       return false;
 	}
 
@@ -447,46 +465,37 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
    for (IndexType ns = 0; ns < nsegments; ns++)
    {
       RoadwaySegmentData seg;
-      strVal = GetCellValue(nRow,col++);
+      strVal = GetCellValue(nRow,col);
       Float64 length = 0.0;
       if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &length))
 	   {
-         CString msg;
-         msg.Format(_T("Length value not a number for template %d"), nRow-1);
-         ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
          return false;
 	   }
 
       if (length < 0.0)
       {
-         CString msg;
-         msg.Format(_T("A segment length is less than zero for template %d"), nRow-1);
-         ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
          return false;
       }
 
       seg.Length = ::ConvertToSysUnits(length,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
-      strVal = GetCellValue(nRow,col++);
+      col++;
+      strVal = GetCellValue(nRow,col);
       seg.Slope = 0.0;
       if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &seg.Slope))
 	   {
-         CString msg;
-         msg.Format(_T("A slope value is not a number for template %d"), nRow-1);
-         ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
          return false;
 	   }
 
       data.SegmentDataVec.push_back(seg);
+
+      col++;
    }
 
    strVal = GetCellValue(nRow,col);
    data.RightSlope = 0.0;
    if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.RightSlope))
 	{
-      CString msg;
-      msg.Format(_T("Rightmost slope value not a number for template %d"), nRow-1);
-      ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
       return false;
 	}
 
@@ -512,8 +521,10 @@ void CCrownSlopeGrid::InitRoadwaySectionData(bool updateHeader)
 
    for(const auto& templ : m_pRoadwaySectionData->RoadwaySectionTemplates)
    {
-      AppendRow();
+      if (AppendRow())
+      {
       SetRowData(GetRowCount(), templ);
+   }
    }
 
    GetParam()->EnableUndo(TRUE);
@@ -580,77 +591,98 @@ bool CCrownSlopeGrid::SortCrossSections(bool doUpdateGrid)
 
 BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 {
-   if (m_IsACellInvalid)
-   {
-      return FALSE;
-   }
-   else
-   {
-      return CGXGridWnd::OnValidateCell(nRow, nCol);
-   }
-}
-
-// validate input
-void CCrownSlopeGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
-{
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
 
-   // set up styles
-   CGXStyle valid_style;
-   CGXStyle error_style;
-   valid_style.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
-   error_style.SetTextColor(RGB(255,0,0));
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
-   bool is_valid(true);
+   Float64 bogus;
+
    if (nCol == 1)
    {
       CString strStation = GetCellValue(nRow, 1);
-
-      GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-      UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
       CComPtr<IStation> station;
       station.CoCreateInstance(CLSID_Station);
       HRESULT hr = station->FromString(CComBSTR(strStation), unit_mode);
       if (FAILED(hr))
       {
-         is_valid = false;
+         CString msg;
+         msg.Format(_T("Invalid station data for template %d"), nRow - 1);
+         SetWarningText(msg);
+         return FALSE;
+      }
+   }
+   else if (nCol == 2)
+   {
+      CString strVal = GetCellValue(nRow, 2);
+      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &bogus))
+      {
+         CString msg;
+         msg.Format(_T("Leftmost slope value not a number for template %d"), nRow - 1);
+         SetWarningText(msg);
+         return FALSE;
       }
    }
    else
    {
-      // only validate slope and length data on the fly
-      bool docheck = m_SlopeCols.find(nCol) != m_SlopeCols.end() || m_LengthCols.find(nCol) != m_LengthCols.end();
+      ROWCOL numcols = GetColCount();
 
-      if (docheck)
+      if (nCol == numcols)
       {
-         CString s;
-         CGXControl* pControl = GetControl(nRow, nCol);
-         pControl->GetCurrentText(s);
-
-         if (nCol > 1 && !s.IsEmpty())
+         // rightmost column
+         CString strVal = GetCellValue(nRow, nCol);
+         if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &bogus))
          {
-            Float64 dbl;
-            if (!sysTokenizer::ParseDouble(s, &dbl))
+            CString msg;
+            msg.Format(_T("Rightmost slope value not a number for template %d"), nRow - 1);
+            ::AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            return FALSE;
+         }
+      }
+      else
+      {
+         if (nCol % 2 != 0) // odd cols are length
+         {
+            CString strVal = GetCellValue(nRow, nCol);
+            Float64 length;
+            if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &length))
             {
-               is_valid = false;
+               CString msg;
+               msg.Format(_T("Length value not a number for template %d"), nRow - 1);
+               SetWarningText(msg);
+               return FALSE;
+            }
+
+            if (length < 0.0)
+         {
+               CString msg;
+               msg.Format(_T("A segment length is less than zero for template %d"), nRow - 1);
+               SetWarningText(msg);
+               return FALSE;
+            }
+         }
+         else // even cols have slope
+            {
+            CString strVal = GetCellValue(nRow, nCol);
+            if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &bogus))
+            {
+               CString msg;
+               msg.Format(_T("A slope value is not a number for template %d"), nRow - 1);
+               SetWarningText(msg);
+               return FALSE;
             }
          }
       }
    }
 
-   // set the styles
-   CGXRange range(nRow, nCol);
-   SetStyleRange(range,  (is_valid  ? valid_style : error_style) );
+   return CGXGridWnd::OnValidateCell(nRow, nCol);
+}
 
-   m_IsACellInvalid = !is_valid;
-
-   if (is_valid)
-   {
+void CCrownSlopeGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
+{
       // tell parent to draw template if we have valid data
+   CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
       pParent->OnChange(); 
-   }
-
-   CGXGridWnd::OnModifyCell(nRow, nCol);
 }
 
 void CCrownSlopeGrid::OnMovedCurrentCell(ROWCOL nRow, ROWCOL nCol)

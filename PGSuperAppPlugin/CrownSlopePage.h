@@ -70,6 +70,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CCrownSlopePage)
 	afx_msg void OnAdd();
+   afx_msg void OnUpdateAdd(CCmdUI* pCmdUI);
 	afx_msg void OnRemove();
 	afx_msg void OnSort();
 	afx_msg void OnPaint();
@@ -77,6 +78,7 @@ protected:
    afx_msg void OnCbnSelchangeNumsegmentsCombo();
    afx_msg void OnCbnSelchangeRidgeptCombo();
    afx_msg void OnUpdateRemove(CCmdUI* pCmdUI);
+   afx_msg void OnUpdateSort(CCmdUI* pCmdUI);
 	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
 
 	//}}AFX_MSG
@@ -100,7 +102,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    // tools for drawing section
-   RoadwaySectionTemplate GetSelectedTemplate();
+   bool GetSelectedTemplate(RoadwaySectionTemplate* pTemplate);
    gpRect2d GetRidgePointBounds();
    std::vector<gpPoint2d> m_DrawnRidgePoints;
 public:
