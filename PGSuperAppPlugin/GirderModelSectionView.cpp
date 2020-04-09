@@ -1122,9 +1122,10 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
    Float64 Xleft = pSectProp->GetXleft(intervalIdx, poi);
    Float64 Xright = pSectProp->GetXright(intervalIdx, poi);
    Float64 Yb = pSectProp->GetY(intervalIdx, poi, pgsTypes::BottomGirder);
-   Float64 Hg = pSectProp->GetHg(intervalIdx, poi);
-
-   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+   Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi); 
+   // NOTE: release interval is correct for Hg. We are using the girder section coordinates
+   // with Y=0 at the top of the non-composite girder. To get the elevation of the CG
+   // go down Hg and then up Yb, or with the sign convention Yb-Hg
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(__uuidof(Point2d));
