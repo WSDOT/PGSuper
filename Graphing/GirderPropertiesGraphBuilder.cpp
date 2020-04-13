@@ -235,7 +235,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       const unitmgtLengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new LengthTool(heightUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Elevation (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("Elevation from top of non-composite girder (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
