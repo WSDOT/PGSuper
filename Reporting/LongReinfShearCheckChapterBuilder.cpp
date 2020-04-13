@@ -207,13 +207,6 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,CRe
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
 
-   INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),      false );
-   INIT_UV_PROTOTYPE( rptStressUnitValue,    stress,   pDisplayUnits->GetStressUnit(),          false );
-   INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),         false );
-   INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,      pDisplayUnits->GetComponentDimUnit(),    false );
-
-   //location.IncludeSpanAndGirder(span == ALL_SPANS);
-
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
@@ -424,6 +417,7 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   location.IncludeSpanAndGirder(1 < nSegments);
 
    GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
@@ -607,6 +601,7 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   location.IncludeSpanAndGirder(1 < nSegments);
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -688,6 +683,7 @@ void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   location.IncludeSpanAndGirder(1 < nSegments);
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {

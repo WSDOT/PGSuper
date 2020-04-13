@@ -152,6 +152,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   location.IncludeSpanAndGirder(1 < nSegments);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
