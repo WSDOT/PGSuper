@@ -169,7 +169,7 @@ rptChapter* CSplittingZoneDetailsChapterBuilder::Build(CReportSpecification* pRp
             if (bTempStrands)
             {
                (*pPara) << strName << _T(" Force at PSXFR: P = ") << Sub2(_T("P"), _T("perm")) << _T(" + ") << Sub2(_T("P"), _T("temp")) << rptNewLine;
-               (*pPara) << Sub2(_T("P"), _T("perm")) << _T(" = 0.04A") << Sub2(_T("A"),_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
+               (*pPara) << Sub2(_T("P"), _T("perm")) << _T(" = 0.04(") << Sub2(_T("A"),_T("ps")) << _T(")(") << RPT_FPJ << _T(" - ");
 
                if (bInitialRelaxation)
                {
