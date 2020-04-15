@@ -1501,7 +1501,7 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
       GET_IFACE(IBridge,pBridge);
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType intervalIdx;
-      if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+      if ( IsStructuralDeck(pBridge->GetDeckType()) )
       {
          IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
          intervalIdx = compositeIntervalIdx - 1;
