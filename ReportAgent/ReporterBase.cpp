@@ -98,6 +98,8 @@
 
 #include <Reporting\PierReactionChapterBuilder.h>
 
+#include <Reporting\PrincipalTensionStressDetailsChapterBuilder.h>
+
 #include <IReportManager.h>
 #include <IFace\Project.h>
 
@@ -169,6 +171,7 @@ void CReporterBase::CreateDetailsReport()
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
+   
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingSeatElevationsChapterBuilder2) );
@@ -190,11 +193,12 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLossesChapterBuilder) ); 
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCastingYardRebarRequirementChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CMomentCapacityDetailsChapterBuilder) );
-   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(true, false)));
-   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CHorizontalInterfaceShearCapacityDetailsChapterBuilder(true, false)));
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(true, false)));
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CHorizontalInterfaceShearCapacityDetailsChapterBuilder(true, false)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CStirrupDetailingCheckChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCritSectionChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLongReinfShearCheckChapterBuilder(true,false)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPrincipalTensionStressDetailsChapterBuilder));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSplittingZoneDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );

@@ -150,6 +150,7 @@ public:
    virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const override;
    virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const override;
    virtual Float64 GetGirderTendonAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const override;
+
 // IAllowableConcreteStress
 public:
    virtual Float64 GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const override;
@@ -194,6 +195,11 @@ public:
 
    virtual bool CheckTemporaryStresses() const override;
    virtual bool CheckFinalDeadLoadTensionStress() const override;
+
+   virtual Float64 GetAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey) const override;
+   virtual Float64 GetAllowablePrincipalWebTensionStress(const pgsPointOfInterest& poi) const override;
+   virtual Float64 GetAllowablePrincipalWebTensionStressCoefficient() const override;
 
 // ITransverseReinforcementSpec
 public:
@@ -347,6 +353,8 @@ public:
    virtual Float64 GetGirderTendonAreaLimit(const CGirderKey& girderKey) const override;
    virtual Float64 GetGirderTendonDuctSizeLimit(const CGirderKey& girderKey) const override;
    virtual Float64 GetTendonAreaLimit(pgsTypes::StrandInstallationType installationType) const override;
+   virtual Float64 GetSegmentDuctDeductionFactor(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const override;
+   virtual Float64 GetGirderDuctDeductionFactor(const CGirderKey& girderKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx) const override;
 
 private:
    DECLARE_EAF_AGENT_DATA;
@@ -360,6 +368,7 @@ private:
    const SpecLibraryEntry* GetSpec() const;
 
    Float64 GetRadiusOfCurvatureLimit(pgsTypes::DuctType ductType) const;
+   Float64 GetDuctDeductFactor(IntervalIndexType intervalIdx, IntervalIndexType groutDuctIntervalIdx) const;
 
    bool IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls) const;
    void ValidateHaulTruck(const CPrecastSegmentData* pSegment) const;

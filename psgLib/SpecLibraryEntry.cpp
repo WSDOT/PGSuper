@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 75.0 
+#define CURRENT_VERSION 76.0 
 
 /****************************************************************************
 CLASS
@@ -268,7 +268,9 @@ m_HaulingCamberMultiplier(1.0),
 m_FinishedElevationTolerance(::ConvertToSysUnits(1.00,unitMeasure::Inch)),
 m_SlabOffsetRoundingMethod(pgsTypes::sormRoundNearest),
 m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
-m_UHPCFiberShearStrength(::ConvertToSysUnits(0.75,unitMeasure::KSI))
+m_UHPCFiberShearStrength(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
+m_PrincipalTensileStressMethod(pgsTypes::ptsmLRFD),
+m_PrincipalTensileStressCoefficient(::ConvertToSysUnits(0.110,unitMeasure::SqrtKSI))
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -680,6 +682,11 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Bs3TensStressServSc"),    m_Bs3TensStressServSc);   
    pSave->Property(_T("Bs3DoTensStressServScMax"), m_Bs3DoTensStressServScMax);
    pSave->Property(_T("Bs3TensStressServScMax"), m_Bs3TensStressServScMax);
+
+   // added in version 76
+   pSave->Property(_T("PrincipalTensileStressMethod"), m_PrincipalTensileStressMethod);
+   pSave->Property(_T("PrincipalTensileStressCoefficient"), m_PrincipalTensileStressCoefficient);
+
 
    // removed in version 29
    // pSave->Property(_T("Bs3IgnoreRangeOfApplicability"), m_Bs3IgnoreRangeOfApplicability);
@@ -2374,6 +2381,22 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if(!pLoad->Property(_T("Bs3TensStressServScMax"), &m_Bs3TensStressServScMax))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (75 < version)
+         {
+            // added in version 76
+            Int16 value;
+            if (!pLoad->Property(_T("PrincipalTensileStressMethod"), &value))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+            m_PrincipalTensileStressMethod = (pgsTypes::PrincipalTensileStressMethod)value;
+
+            if (!pLoad->Property(_T("PrincipalTensileStressCoefficient"), &m_PrincipalTensileStressCoefficient))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
          }
       }
 
@@ -4578,6 +4601,12 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Stress Limits for Temporary Loading Conditions are different"),_T(""),_T("")));
    }
 
+   if (m_PrincipalTensileStressMethod != rOther.m_PrincipalTensileStressMethod || !::IsEqual(m_PrincipalTensileStressCoefficient, rOther.m_PrincipalTensileStressCoefficient))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Principal Tensile Stress in Web parameters are different"), _T(""), _T("")));
+   }
+
    //
    // Closure Joints Tab
    //
@@ -6129,6 +6158,18 @@ Float64 SpecLibraryEntry::GetFatigueCompressionStressFactor() const
 void SpecLibraryEntry::SetFatigueCompressionStressFactor(Float64 stress)
 {
    m_Bs3CompStressService1A = stress;
+}
+
+void SpecLibraryEntry::SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient)
+{
+   m_PrincipalTensileStressMethod = principalTensileStressMethod;
+   m_PrincipalTensileStressCoefficient = principalTensionCoefficient;
+}
+
+void SpecLibraryEntry::GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient) const
+{
+   *pPrincipalTensileStressMethod = m_PrincipalTensileStressMethod;
+   *pPrincipalTensionCoefficient = m_PrincipalTensileStressCoefficient;
 }
 
 Float64 SpecLibraryEntry::GetFinalTensionStressFactor(int exposureCondition) const
@@ -7685,6 +7726,9 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_Bs3TensStressServScMax     = rOther.m_Bs3TensStressServScMax;
    m_Bs3IgnoreRangeOfApplicability = rOther.m_Bs3IgnoreRangeOfApplicability;
    m_Bs3LRFDOverReinforcedMomentCapacity = rOther.m_Bs3LRFDOverReinforcedMomentCapacity;
+
+   m_PrincipalTensileStressMethod = rOther.m_PrincipalTensileStressMethod;
+   m_PrincipalTensileStressCoefficient = rOther.m_PrincipalTensileStressCoefficient;
 
    m_FlexureModulusOfRuptureCoefficient = rOther.m_FlexureModulusOfRuptureCoefficient;
    m_ShearModulusOfRuptureCoefficient = rOther.m_ShearModulusOfRuptureCoefficient;

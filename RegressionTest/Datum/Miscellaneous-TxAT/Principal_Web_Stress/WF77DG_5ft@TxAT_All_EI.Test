@@ -1,0 +1,30 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 37.33    7   0.75                     1     1    WF77D    *     52  0.6  270  40.32  21.11   1.50   1.50                                              7.500 10.100   4.125    -5.170    15328   0.539  0.539   4.269 -0.396 -0.595 -0.734 -1.725 173.29  313.53   10.00   16.47   16.47 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 37.33    7   0.75                     1     2    WF77D    *     52  0.6  270  40.32  21.11   1.50   1.50                                              7.500 10.100   4.071    -5.216    15349   0.511  0.652   4.147 -0.505 -0.581 -0.715 -1.801 173.29  304.53   10.00   16.47   16.47 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 37.33    7   0.75                     1     4    WF77D    *     52  0.6  270  39.80  20.77   1.50   1.50                                              7.500 10.100   3.767    -4.682    14131   0.511  0.652   4.185 -0.515 -0.593  0.000 -1.108 174.70  338.02   10.00   16.47   16.47 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+

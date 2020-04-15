@@ -456,6 +456,10 @@ public:
    Float64 GetFatigueCompressionStressFactor() const;
    void SetFatigueCompressionStressFactor(Float64 stress);
 
+   // Set/Get the method and tensile stress limit coefficient for principal tensile stress in webs
+   void SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient);
+   void GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient) const;
+
    //////////////////////////////////////
    //
    // Closure Joints
@@ -1411,6 +1415,9 @@ private:
    std::array<Float64, pgsTypes::ConcreteTypeCount>  m_FlexureModulusOfRuptureCoefficient; // index is pgsTypes::ConcreteType enum
    std::array<Float64, pgsTypes::ConcreteTypeCount>  m_ShearModulusOfRuptureCoefficient;   // index is pgsTypes::ConcreteType enum
    bool m_bLimitNetTensionStrainToPositiveValues; // when true, es from LRFD Eq 5.7.3.4.2-4 is taken to be zero if it is computed as a negative value
+
+   pgsTypes::PrincipalTensileStressMethod m_PrincipalTensileStressMethod;
+   Float64 m_PrincipalTensileStressCoefficient;
 
    // Closure Joint Allowable Stresses
    Float64 m_ClosureCompStressAtStressing;

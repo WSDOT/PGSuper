@@ -330,6 +330,11 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    {
       DDV_UnitValueGreaterThanZero(pDX, IDC_AFTER_DECK_TENSION_MAX,m_Entry.m_Bs1TensStressMax, pDisplayUnits->Stress );
    }
+
+   // Principal Tension Stress in Webs
+   DDX_UnitValueAndTag(pDX, IDC_PRINCIPAL_TENSION, IDC_PRINCIPAL_TENSION_UNIT, m_Entry.m_PrincipalTensileStressCoefficient, pDisplayUnits->SqrtPressure);
+   DDX_Text(pDX, IDC_PRINCIPAL_TENSION_UNIT, fcTag);
+   DDX_CBEnum(pDX, IDC_PRINCIPAL_TENSION_METHOD, m_Entry.m_PrincipalTensileStressMethod);
 }
 
 void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)

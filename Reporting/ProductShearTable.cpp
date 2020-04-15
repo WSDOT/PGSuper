@@ -130,6 +130,11 @@ rptRcTable* CProductShearTable::Build(IBroker* pBroker,const CGirderKey& girderK
       PoiList vPoi;
       pIPoi->GetPointsOfInterest(allSegmentsKey, poiRefAttribute, &vPoi);
 
+      PoiList csPois;
+      pIPoi->GetCriticalSections(pgsTypes::StrengthI, thisGirderKey, &csPois);
+      pIPoi->MergePoiLists(vPoi, csPois, &vPoi);
+
+
       // Get the results for this span (it is faster to get them as a vector rather than individually)
       std::vector<sysSectionValue> segment;
       std::vector<sysSectionValue> girder;

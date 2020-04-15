@@ -1956,6 +1956,56 @@ bool CSpecAgentImp::CheckFinalDeadLoadTensionStress() const
    return pSpec->CheckFinalTensionPermanentLoadStresses();
 }
 
+Float64 CSpecAgentImp::GetAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey) const
+{
+   Float64 k = GetAllowablePrincipalWebTensionStressCoefficient();
+
+   Float64 lambda, fc;
+   GET_IFACE(IMaterials, pMaterials);
+   lambda = pMaterials->GetSegmentLambda(segmentKey);
+   fc = pMaterials->GetSegmentFc28(segmentKey);
+
+   Float64 f = k*lambda*sqrt(fc);
+   return f;
+}
+
+Float64 CSpecAgentImp::GetAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey) const
+{
+   Float64 k = GetAllowablePrincipalWebTensionStressCoefficient();
+
+   Float64 lambda, fc;
+   GET_IFACE(IMaterials, pMaterials);
+
+   lambda = pMaterials->GetClosureJointLambda(closureKey);
+   fc = pMaterials->GetClosureJointFc28(closureKey);
+
+   Float64 f = k*lambda*sqrt(fc);
+   return f;
+}
+
+Float64 CSpecAgentImp::GetAllowablePrincipalWebTensionStress(const pgsPointOfInterest& poi) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   CClosureKey closureKey;
+   if (pPoi->IsInClosureJoint(poi, &closureKey))
+   {
+      return GetAllowableClosureJointPrincipalWebTensionStress(closureKey);
+   }
+   else
+   {
+      return GetAllowableSegmentPrincipalWebTensionStress(poi.GetSegmentKey());
+   }
+}
+
+Float64 CSpecAgentImp::GetAllowablePrincipalWebTensionStressCoefficient() const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   pgsTypes::PrincipalTensileStressMethod method;
+   Float64 coefficient;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient);
+   return coefficient;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // ITransverseReinforcementSpec
 //
@@ -3300,6 +3350,22 @@ Float64 CSpecAgentImp::GetTendonAreaLimit(pgsTypes::StrandInstallationType insta
    return (installationType == pgsTypes::sitPush ? pushRatio : pullRatio);
 }
 
+Float64 CSpecAgentImp::GetSegmentDuctDeductionFactor(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
+{
+   // assumed ducts are grouted and cured in the interval following their installation and stressing
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType groutDuctIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey) + 1;
+   return GetDuctDeductFactor(intervalIdx, groutDuctIntervalIdx);
+}
+
+Float64 CSpecAgentImp::GetGirderDuctDeductionFactor(const CGirderKey& girderKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx) const
+{
+   // assumed ducts are grouted and cured in the interval following their installation and stressing
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType groutDuctIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx) + 1;
+   return GetDuctDeductFactor(intervalIdx, groutDuctIntervalIdx);
+}
+
 ////////////////////
 // Private methods
 
@@ -3364,4 +3430,32 @@ void CSpecAgentImp::Invalidate()
    // remove our items from the status center
    GET_IFACE(IEAFStatusCenter, pStatusCenter);
    pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
+}
+
+Float64 CSpecAgentImp::GetDuctDeductFactor(IntervalIndexType intervalIdx, IntervalIndexType groutDuctIntervalIdx) const
+{
+   Float64 deduct_factor;
+   if (lrfdVersionMgr::SecondEditionWith2003Interims <= lrfdVersionMgr::GetVersion())
+   {
+      if (intervalIdx < groutDuctIntervalIdx)
+      {
+         deduct_factor = 0.50;
+      }
+      else
+      {
+         deduct_factor = 0.25;
+      }
+   }
+   else
+   {
+      if (intervalIdx < groutDuctIntervalIdx)
+      {
+         deduct_factor = 1.00;
+      }
+      else
+      {
+         deduct_factor = 0.50;
+      }
+   }
+   return deduct_factor;
 }

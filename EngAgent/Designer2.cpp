@@ -48,6 +48,7 @@
 #include "PsForceEng.h"
 #include "GirderHandlingChecker.h"
 #include "GirderLiftingChecker.h"
+#include "PrincipalWebStressEngineer.h"
 #include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\StabilityAnalysisPoint.h>
 #include <PgsExt\EngUtil.h>
@@ -898,6 +899,9 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
 
       pProgress->UpdateMessage(_T("Checking debonding"));
       CheckDebonding(segmentKey, pSegmentArtifact->GetDebondArtifact());
+
+      pProgress->UpdateMessage(_T("Checking principal tension stress in webs"));
+      CheckPrincipalTensionStressInWebs(segmentKey, pSegmentArtifact->GetPrincipalTensionStressArtifact());
    } // next segment
 
    pProgress->UpdateMessage(_T("Checking constructability"));
@@ -4588,6 +4592,60 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
    }
 }
 
+void pgsDesigner2::GetShearPointsOfInterest(bool bDesign,const CSegmentKey& segmentKey,pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,PoiList& vPoi) const
+{
+   if (bDesign)
+   {
+      vPoi = m_ShearDesignTool.GetDesignPoi();
+   }
+   else
+   {
+      GET_IFACE(IPointOfInterest, pPoi);
+      PoiList pois;
+      pPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &pois);
+
+      PoiList csPoi;
+      pPoi->GetCriticalSections(limitState, segmentKey, &csPoi); // this gets all CS for the girderline
+      // only keep CS poi on this segment
+      for (const auto& poi : csPoi)
+      {
+         if (poi.get().GetSegmentKey() == segmentKey)
+         {
+            pois.emplace_back(poi);
+         }
+      }
+
+      PoiList morePoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_FACEOFSUPPORT | POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | POI_DEBOND, &morePoi, POIFIND_OR);
+      pois.insert(std::end(pois), std::begin(morePoi), std::end(morePoi));
+
+      // if closures can take any load, add it to the list of poi
+      GET_IFACE_NOCHECK(IIntervals, pIntervals);
+      GET_IFACE(IBridge, pBridge);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
+      if (segmentKey.segmentIndex < nSegments - 1 && pIntervals->GetCompositeClosureJointInterval(segmentKey) <= intervalIdx)
+      {
+         PoiList vCJPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_CLOSURE, &vCJPoi);
+         pois.insert(std::end(pois), std::begin(vCJPoi), std::end(vCJPoi));
+      }
+
+
+      // these poi are for the WSDOT summary report. They are traditional location for reporting shear checks
+      morePoi.clear();
+      pPoi->GetPointsOfInterest(segmentKey, POI_H | POI_15H, &morePoi, POIFIND_OR);
+      pois.insert(pois.end(), morePoi.begin(), morePoi.end());
+
+      pPoi->SortPoiList(&pois); // sort and remove duplicates
+
+      // remove all POI from the container that are outside of the CL Bearings...
+      // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
+      Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
+      Float64 endDist = pBridge->GetSegmentStartEndDistance(segmentKey);
+      std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(segmentKey, endDist, endDist + segmentSpanLength));
+   }
+}
+
 void pgsDesigner2::CheckShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsGirderArtifact* pGirderArtifact) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -4618,47 +4676,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    // InitShearCheck causes the critical section for shear POI to be created...
    // Get the POI here so the CS poi are in the list
    PoiList vPoi;
-   if ( bDesign )
-   {
-      vPoi = m_ShearDesignTool.GetDesignPoi();
-   }
-   else
-   {
-      GET_IFACE(IPointOfInterest, pPoi);
-      PoiList pois;
-      pPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &pois);
-      PoiList csPoi;
-      pPoi->GetPointsOfInterest(segmentKey, limitState == pgsTypes::StrengthII ? POI_CRITSECTSHEAR2 : POI_CRITSECTSHEAR1, &csPoi);
-      pois.insert(std::end(pois),std::begin(csPoi),std::end(csPoi));
-      PoiList morePoi;
-      pPoi->GetPointsOfInterest(segmentKey, POI_FACEOFSUPPORT | POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | POI_DEBOND, &morePoi, POIFIND_OR);
-      pois.insert(std::end(pois),std::begin(morePoi),std::end(morePoi)); 
-
-      // if closures can take any load, add it to the list of poi
-      GET_IFACE_NOCHECK(IIntervals,pIntervals);
-      GET_IFACE(IBridge,pBridge);
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
-      if ( segmentKey.segmentIndex < nSegments-1 && pIntervals->GetCompositeClosureJointInterval(segmentKey) <= intervalIdx )
-      {
-         PoiList vCJPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_CLOSURE, &vCJPoi);
-         pois.insert(std::end(pois),std::begin(vCJPoi),std::end(vCJPoi));
-      }
-
-
-      // these poi are for the WSDOT summary report. They are traditional location for reporting shear checks
-      morePoi.clear();
-      pPoi->GetPointsOfInterest(segmentKey, POI_H | POI_15H, &morePoi, POIFIND_OR);
-      pois.insert(pois.end(),morePoi.begin(),morePoi.end()); 
-      
-      pPoi->SortPoiList(&pois); // sort and remove duplicates
-
-      // remove all POI from the container that are outside of the CL Bearings...
-      // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
-      Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
-      Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
-      std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(segmentKey,endDist,endDist+segmentSpanLength));
-   }
+   GetShearPointsOfInterest(bDesign, segmentKey, limitState, intervalIdx, vPoi);
 
    ATLASSERT(pStirrupArtifact != nullptr);
    GET_IFACE(IMaterials,pMaterials);
@@ -5791,6 +5809,75 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
 
    pArtifact->SetMinDebondSectionSpacing(lmin_section);
    pArtifact->SetDebondSectionSpacingLimit(dds);
+}
+
+void pgsDesigner2::CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentKey, pgsPrincipalTensionStressArtifact* pArtifact) const
+{
+   // First determine of this check is applicable... 
+
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017)
+   {
+      // this requirement was added in LRFD 8th Edition, 2017... so any spec before this
+      // the requirement is not applicable
+      pArtifact->SetApplicablity(pgsPrincipalTensionStressArtifact::Specification);
+      return;
+   }
+
+   // This is always applicable if there is post-tensioning
+   // If there isn't post-tensioning, it is only applicable if fc28 > 10 ksi
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
+
+   DuctIndexType nDucts = nSegmentDucts + nGirderDucts;
+
+   if (nDucts == 0)
+   {
+      // no post-tensioning, check fc
+      GET_IFACE(IMaterials, pMaterials);
+      Float64 fc = pMaterials->GetSegmentFc28(segmentKey);
+      Float64 fc10 = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
+      pArtifact->SetApplicablity(fc10 < fc ? pgsPrincipalTensionStressArtifact::Applicable : pgsPrincipalTensionStressArtifact::ConcreteStrength); // no PT so only applicable if fc > 10 ksi
+   }
+   else
+   {
+      // this is PT
+      pArtifact->SetApplicablity(pgsPrincipalTensionStressArtifact::Applicable);
+   }
+
+   if (!pArtifact->IsApplicable())
+   {
+      // if the check isn't appicable, leave now
+      return;
+
+   }
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
+
+   // Get points of interest for the check
+   PoiList vPoi;
+   GetShearPointsOfInterest(false/*not design*/, segmentKey, pgsTypes::StrengthI, intervalIdx, vPoi);
+   // NOTE: even though this is a ServiceIII check, we need to get the shear POI for StrengthI because
+   // shear is a strength limit state check. This prinicpal tension check was added to LRFD in 8th Edition.
+   // Prior to 8th edition, the critical section was changed so that it is no longer a function of the
+   // limit state. As such, we can safely use the StrengthI limit state value.
+
+   // don't check POIs that are in critical section zones
+   GET_IFACE(IPointOfInterest, pPoi);
+   PoiList vPois;
+   for (const auto& poiRef : vPoi)
+   {
+      if (!pPoi->IsInCriticalSectionZone(poiRef.get(), pgsTypes::StrengthI))
+      {
+         vPois.emplace_back(poiRef);
+      }
+   }
+
+   pgsPrincipalWebStressEngineer engineer(m_pBroker,m_StatusGroupID);
+   engineer.Check(vPois, pArtifact);
 }
 
 void pgsDesigner2::DesignEndZone(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const

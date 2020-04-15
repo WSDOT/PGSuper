@@ -458,6 +458,7 @@ private:
    void CheckPlantHandlingWeightLimit(const CSegmentKey& segmentKey, pgsPlantHandlingWeightArtifact* pArtifact) const;
    void CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmentStabilityArtifact* pArtifact) const;
    void CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifact* pArtifact) const;
+   void CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentKey, pgsPrincipalTensionStressArtifact* pArtifact) const;
 
    void CheckConstructability(const CGirderKey& girderKey,pgsConstructabilityArtifact* pArtifact) const;
 
@@ -547,6 +548,8 @@ private:
    void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const pgsPointOfInterest& poi,const StressCheckTask& task) const;
 
    void GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const stbLiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc) const;
+
+   void GetShearPointsOfInterest(bool bDesign, const CSegmentKey& segmentKey, pgsTypes::LimitState limitState, IntervalIndexType intervalIdx, PoiList& vPoi) const;
 
    friend pgsLoadRater;
 

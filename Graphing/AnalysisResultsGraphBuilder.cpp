@@ -50,6 +50,7 @@
 #include <IFace\Artifact.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Selection.h>
+#include <IFace\PrincipalWebStress.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
@@ -329,51 +330,51 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
 
    // girder self-weight
    std::vector<IntervalIndexType> intervals( AddTSRemovalIntervals(erectSegmentIntervalIdx,vInitialIntervals,vTempSupportRemovalIntervals) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftGirder), pgsTypes::pftGirder, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY));
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftGirder), pgsTypes::pftGirder, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION));
    
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPretension), pgsTypes::pftPretension, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY));
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPretension), pgsTypes::pftPretension, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION));
 
    intervals.clear();
    intervals = AddTSRemovalIntervals(firstCastDeckIntervalIdx,vDeckAndDiaphragmIntervals,vTempSupportRemovalIntervals);
    GET_IFACE(IUserDefinedLoadData,pUserLoads);
    if ( !IsZero(pUserLoads->GetConstructionLoad()) )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftConstruction), pgsTypes::pftConstruction,  vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftConstruction), pgsTypes::pftConstruction,  vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
    }
 
-   CAnalysisResultsGraphDefinition diaphragmGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm), pgsTypes::pftDiaphragm, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY);
+   CAnalysisResultsGraphDefinition diaphragmGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm), pgsTypes::pftDiaphragm, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION);
    diaphragmGraphDef.AddIntervals(vTempSupportRemovalIntervals);
    m_pGraphDefinitions->AddGraphDefinition(diaphragmGraphDef);
 
    // slab dead load
    if (pBridge->GetDeckType() != pgsTypes::sdtNone)
    {
-      CAnalysisResultsGraphDefinition slabGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSlab), pgsTypes::pftSlab, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY);
+      CAnalysisResultsGraphDefinition slabGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSlab), pgsTypes::pftSlab, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION);
       slabGraphDef.AddIntervals(vTempSupportRemovalIntervals);
       m_pGraphDefinitions->AddGraphDefinition(slabGraphDef);
 
-      CAnalysisResultsGraphDefinition haunchGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad), pgsTypes::pftSlabPad, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY);
+      CAnalysisResultsGraphDefinition haunchGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad), pgsTypes::pftSlabPad, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION);
       haunchGraphDef.AddIntervals(vTempSupportRemovalIntervals);
       m_pGraphDefinitions->AddGraphDefinition(haunchGraphDef);
    }
 
    if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
    {
-      CAnalysisResultsGraphDefinition slabPanelGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel), pgsTypes::pftSlabPanel, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY);
+      CAnalysisResultsGraphDefinition slabPanelGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel), pgsTypes::pftSlabPanel, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION);
       slabPanelGraphDef.AddIntervals(vTempSupportRemovalIntervals);
       m_pGraphDefinitions->AddGraphDefinition( slabPanelGraphDef );
    }
 
    if (bShearKey)
    {
-      CAnalysisResultsGraphDefinition shearKeyGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftShearKey), pgsTypes::pftShearKey, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY);
+      CAnalysisResultsGraphDefinition shearKeyGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftShearKey), pgsTypes::pftShearKey, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION);
       shearKeyGraphDef.AddIntervals(vTempSupportRemovalIntervals);
       m_pGraphDefinitions->AddGraphDefinition(shearKeyGraphDef);
    }
 
    if (bLongitudinalJoint)
    {
-      CAnalysisResultsGraphDefinition shearKeyGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint), pgsTypes::pftLongitudinalJoint, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY);
+      CAnalysisResultsGraphDefinition shearKeyGraphDef(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint), pgsTypes::pftLongitudinalJoint, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION);
       shearKeyGraphDef.AddIntervals(vTempSupportRemovalIntervals);
       m_pGraphDefinitions->AddGraphDefinition(shearKeyGraphDef);
    }
@@ -388,19 +389,19 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), pgsTypes::pftPostTensioning, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSecondaryEffects),      pgsTypes::pftSecondaryEffects,      vAllIntervals, ACTIONS_FORCE_STRESS | ACTIONS_X_DEFLECTION_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), pgsTypes::pftPostTensioning, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSecondaryEffects),      pgsTypes::pftSecondaryEffects,      vAllIntervals, ACTIONS_FORCE_STRESS | ACTIONS_X_DEFLECTION) );
    }
 
 
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), pgsTypes::pftTrafficBarrier, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), pgsTypes::pftTrafficBarrier, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
 
    if ( bSidewalk )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), pgsTypes::pftSidewalk, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), pgsTypes::pftSidewalk, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
    }
 
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), pgsTypes::pftOverlay, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), pgsTypes::pftOverlay, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
 
 
    GET_IFACE(ILibrary,pLib);
@@ -408,15 +409,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftCreep),      pgsTypes::pftCreep,      vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage),  pgsTypes::pftShrinkage,  vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), pgsTypes::pftRelaxation, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftCreep),      pgsTypes::pftCreep,      vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage),  pgsTypes::pftShrinkage,  vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), pgsTypes::pftRelaxation, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
    }
 
    // User Defined Static Loads
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftUserDC),   pgsTypes::pftUserDC,   vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftUserDW),   pgsTypes::pftUserDW,   vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM), pgsTypes::pftUserLLIM, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftUserDC),   pgsTypes::pftUserDC,   vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftUserDW),   pgsTypes::pftUserDW,   vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM), pgsTypes::pftUserLLIM, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
 
 
    ////////////////////////////////////////////////////////
@@ -708,20 +709,20 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    }
 
    // Combined Results
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDC), lcDC, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDW), lcDW, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDC), lcDC, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcDW), lcDW, vAllIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
 
    if ( pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcCR), lcCR, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcSH), lcSH, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcRE), lcRE, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcPS), lcPS, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcCR), lcCR, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcSH), lcSH, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcRE), lcRE, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetLoadCombinationName(lcPS), lcPS, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
    }
 
    if ( bPedLoading )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("PL"),   pgsTypes::lltPedestrian, vLiveLoadIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("PL"),   pgsTypes::lltPedestrian, vLiveLoadIntervals,  ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
    }
 
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("LL+IM (Design)"), pgsTypes::lltDesign, vLiveLoadIntervals, ACTIONS_ALL) );
@@ -762,20 +763,20 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    }
 
    // Limit States and Capacities
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I (Design)"), pgsTypes::ServiceI, vAllIntervals, ACTIONS_ALL_NO_REACTION | ACTIONS_X_DEFLECTION_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I (Design)"), pgsTypes::ServiceI, vAllIntervals, ACTIONS_ALL_NO_REACTION | ACTIONS_X_DEFLECTION) );
    
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service IA (Design)"), pgsTypes::ServiceIA, vLiveLoadIntervals, ACTIONS_STRESS_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service IA (Design)"), pgsTypes::ServiceIA, vLiveLoadIntervals, ACTIONS_STRESS) );
    }
 
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III (Design)"),          pgsTypes::ServiceIII,               vLiveLoadIntervals,  ACTIONS_STRESS_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III (Design)"),          pgsTypes::ServiceIII,               vLiveLoadIntervals,  ACTIONS_STRESS | ACTIONS_SHEAR) );
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Design)"),           pgsTypes::StrengthI,                vLiveLoadIntervals,  ACTIONS_MOMENT_SHEAR) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design)"),  pgsTypes::StrengthI, graphCapacity, vLiveLoadIntervals,  ACTIONS_SHEAR_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design)"),  pgsTypes::StrengthI, graphCapacity, vLiveLoadIntervals,  ACTIONS_SHEAR) );
    
    if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Fatigue I"), pgsTypes::FatigueI, vLiveLoadIntervals, ACTIONS_STRESS_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Fatigue I"), pgsTypes::FatigueI, vLiveLoadIntervals, ACTIONS_STRESS) );
    }
 
    GET_IFACE(ILimitStateForces,pLimitStateForces);
@@ -784,56 +785,56 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    if ( bStrII )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II (Permit)"),          pgsTypes::StrengthII,               vLiveLoadIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Permit)"), pgsTypes::StrengthII,graphCapacity, vLiveLoadIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Permit)"), pgsTypes::StrengthII,graphCapacity, vLiveLoadIntervals,  ACTIONS_SHEAR) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Design Rating, Inventory)"),           pgsTypes::StrengthI_Inventory,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design Rating, Inventory)"),  pgsTypes::StrengthI_Inventory, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design Rating, Inventory)"),  pgsTypes::StrengthI_Inventory, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Design Rating, Operating)"),           pgsTypes::StrengthI_Operating,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design Rating, Operating)"),  pgsTypes::StrengthI_Operating, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Design Rating, Operating)"),  pgsTypes::StrengthI_Operating, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Routine)"),           pgsTypes::StrengthI_LegalRoutine,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Legal Rating, Routine)"),  pgsTypes::StrengthI_LegalRoutine, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity (Legal Rating, Routine)"),  pgsTypes::StrengthI_LegalRoutine, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR) );
    }
 
    if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special))
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Special)"), pgsTypes::StrengthI_LegalSpecial, vLoadRatingIntervals, ACTIONS_MOMENT_SHEAR));
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity, (Legal Rating, Special)"), pgsTypes::StrengthI_LegalSpecial, graphCapacity, vLoadRatingIntervals, ACTIONS_SHEAR_ONLY));
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity, (Legal Rating, Special)"), pgsTypes::StrengthI_LegalSpecial, graphCapacity, vLoadRatingIntervals, ACTIONS_SHEAR));
    }
 
    if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I (Legal Rating, Emergency)"), pgsTypes::StrengthI_LegalEmergency, vLoadRatingIntervals, ACTIONS_MOMENT_SHEAR));
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity, (Legal Rating, Emergency)"), pgsTypes::StrengthI_LegalEmergency, graphCapacity, vLoadRatingIntervals, ACTIONS_SHEAR_ONLY));
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength I Capacity, (Legal Rating, Emergency)"), pgsTypes::StrengthI_LegalEmergency, graphCapacity, vLoadRatingIntervals, ACTIONS_SHEAR));
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II (Routine Permit Rating)"),           pgsTypes::StrengthII_PermitRoutine,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Routine Permit Rating)"),  pgsTypes::StrengthII_PermitRoutine, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Routine Permit Rating)"),  pgsTypes::StrengthII_PermitRoutine, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR) );
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II (Special Permit Rating)"),           pgsTypes::StrengthII_PermitSpecial,                 vLoadRatingIntervals,  ACTIONS_MOMENT_SHEAR) );
-      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Special Permit Rating)"),  pgsTypes::StrengthII_PermitSpecial, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR_ONLY) );
+      m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Strength II Capacity (Special Permit Rating)"),  pgsTypes::StrengthII_PermitSpecial, graphCapacity,  vLoadRatingIntervals,  ACTIONS_SHEAR) );
    }
 
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Moment Capacity"),      pgsTypes::StrengthI, graphCapacity,    vLiveLoadIntervals,  ACTIONS_MOMENT_ONLY) );
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Min Moment Capacity"),  pgsTypes::StrengthI, graphMinCapacity, vLiveLoadIntervals,  ACTIONS_MOMENT_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Moment Capacity"),      pgsTypes::StrengthI, graphCapacity,    vLiveLoadIntervals,  ACTIONS_MOMENT) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Min Moment Capacity"),  pgsTypes::StrengthI, graphMinCapacity, vLiveLoadIntervals,  ACTIONS_MOMENT) );
 
    // Demand and Allowable
-   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Demand (Design)"),     pgsTypes::ServiceI,  graphDemand,    vAllIntervals,ACTIONS_STRESS_ONLY | ACTIONS_DEFLECTION_ONLY | ACTIONS_X_DEFLECTION_ONLY) );
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Demand (Design)"),     pgsTypes::ServiceI,  graphDemand,    vAllIntervals,ACTIONS_STRESS | ACTIONS_DEFLECTION | ACTIONS_X_DEFLECTION) );
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service I Limit (Design)"),  pgsTypes::ServiceI,  graphAllowable, vSpecCheckIntervals) );
    
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
@@ -844,7 +845,12 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
 
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Demand (Design)"),   pgsTypes::ServiceIII,graphDemand,    vLiveLoadIntervals) );
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Limit (Design)"),pgsTypes::ServiceIII,graphAllowable, vLiveLoadIntervals) );
+
    
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Web Shear Stress (Design)"), pgsTypes::ServiceIII, graphWebShearStress, vLiveLoadIntervals, ACTIONS_WEB_STRESS));
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Principal Stress Demand (Design)"), pgsTypes::ServiceIII, graphPrincipalWebStressDemand, vLiveLoadIntervals, ACTIONS_WEB_STRESS));
+   m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Service III Principal Stress Limit (Design)"), pgsTypes::ServiceIII, graphPrincipalWebStressLimit, vLiveLoadIntervals, ACTIONS_WEB_STRESS));
+
    if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Fatigue I Demand"),    pgsTypes::FatigueI, graphDemand,    vLiveLoadIntervals) );
@@ -980,7 +986,8 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
       break;
       }
    case actionStress:
-      {
+   case actionPrincipalWebStress:
+   {
       const unitmgtStressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
@@ -1067,6 +1074,9 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
       break;
    case actionLoadRating:
       strAction = _T("Rating Factor");
+      break;
+   case actionPrincipalWebStress:
+      strAction = _T("Principal Web Stress");
       break;
    default:
       ASSERT(0);
@@ -1453,6 +1463,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                break;
             }
 
+            case graphWebShearStress:
+            case graphPrincipalWebStressDemand:
+            case graphPrincipalWebStressLimit:
+            {
+               ATLASSERT(actionType == actionPrincipalWebStress);
+               PrincipalWebStressGraph(selectedGraphIdx, graphDef, intervalIdx, vPoi, xVals);
+               break;
+            }
+
             default:
                ASSERT(false); // should never get here
             } // end switch-case
@@ -1461,7 +1480,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    } // next group
 }
 
-void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAnalysisResultsGraphDefinition& graphDef, ActionType actionType, IntervalIndexType intervalIdx, bool bIsFinalShear, IndexType* pDataSeriesID, pgsTypes::BridgeAnalysisType* pBAT, pgsTypes::StressLocation* pStressLocation, IndexType* pAnalysisTypeCount)
+void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAnalysisResultsGraphDefinition& graphDef, ActionType actionType, IntervalIndexType intervalIdx, bool bIsFinalShear, std::array<IndexType, 4>* pDataSeriesID, std::array<pgsTypes::BridgeAnalysisType, 4>* pBat, std::array<pgsTypes::StressLocation,4>* pStressLocations, IndexType* pAnalysisTypeCount)
 {
    CGirderKey girderKey(m_pGraphController->GetGirderKey());
    if (girderKey.groupIndex == ALL_GROUPS)
@@ -1487,21 +1506,21 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAn
       if (analysisType == pgsTypes::Envelope)
       {
          *pAnalysisTypeCount = 2;
-         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, penStyle, penWeight, c);
-         pDataSeriesID[1] = m_Graph.CreateDataSeries(_T(""), penStyle, penWeight, c);
+         (*pDataSeriesID)[0] = m_Graph.CreateDataSeries(strDataLabel, penStyle, penWeight, c);
+         (*pDataSeriesID)[1] = m_Graph.CreateDataSeries(_T(""), penStyle, penWeight, c);
 
-         pBAT[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
-         pBAT[1] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
-         ATLASSERT(pBAT[0] == pgsTypes::MinSimpleContinuousEnvelope);
-         ATLASSERT(pBAT[1] == pgsTypes::MaxSimpleContinuousEnvelope);
+         (*pBat)[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
+         (*pBat)[1] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+         ATLASSERT((*pBat)[0] == pgsTypes::MinSimpleContinuousEnvelope);
+         ATLASSERT((*pBat)[1] == pgsTypes::MaxSimpleContinuousEnvelope);
       }
       else
       {
          *pAnalysisTypeCount = 1;
-         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, penStyle, penWeight, c);
+         (*pDataSeriesID)[0] = m_Graph.CreateDataSeries(strDataLabel, penStyle, penWeight, c);
 
-         pBAT[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
-         ATLASSERT(pBAT[0] == (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+         (*pBat)[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+         ATLASSERT((*pBat)[0] == (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
       }
    }
    else if (actionType == actionAxial ||
@@ -1516,30 +1535,30 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAn
       if (analysisType == pgsTypes::Envelope)
       {
          *pAnalysisTypeCount = 2;
-         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
-         pDataSeriesID[1] = m_Graph.CreateDataSeries(_T(""), PS_SOLID, penWeight, c);
+         (*pDataSeriesID)[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
+         (*pDataSeriesID)[1] = m_Graph.CreateDataSeries(_T(""), PS_SOLID, penWeight, c);
 
-         pBAT[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
-         pBAT[1] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+         (*pBat)[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
+         (*pBat)[1] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
 
-         ATLASSERT(pBAT[0] == pgsTypes::MinSimpleContinuousEnvelope);
-         ATLASSERT(pBAT[1] == pgsTypes::MaxSimpleContinuousEnvelope);
+         ATLASSERT((*pBat)[0] == pgsTypes::MinSimpleContinuousEnvelope);
+         ATLASSERT((*pBat)[1] == pgsTypes::MaxSimpleContinuousEnvelope);
       }
       else
       {
          *pAnalysisTypeCount = 1;
-         pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
+         (*pDataSeriesID)[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
 
-         pBAT[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
-         ATLASSERT(pBAT[0] == (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+         (*pBat)[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+         ATLASSERT((*pBat)[0] == (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
       }
    }
-   else if (actionType == actionStress)
+   else if (actionType == actionStress || actionType == actionPrincipalWebStress)
    {
       // for stresses
-      CString strStressLabel[4] = { _T(" - Bottom Girder"), _T(" - Top Girder"), _T(" - Bottom Deck"), _T(" - Top Deck") };
-      int penStyle[4] = { PS_STRESS_BOTTOM_GIRDER,PS_STRESS_TOP_GIRDER,PS_STRESS_BOTTOM_DECK,PS_STRESS_TOP_DECK };
-      pgsTypes::BridgeAnalysisType bat[4] = { pgsTypes::MaxSimpleContinuousEnvelope, pgsTypes::MinSimpleContinuousEnvelope, pgsTypes::MinSimpleContinuousEnvelope, pgsTypes::MinSimpleContinuousEnvelope };
+      std::array<CString, 4> strStressLabel = { _T(" - Bottom Girder"), _T(" - Top Girder"), _T(" - Bottom Deck"), _T(" - Top Deck") };
+      std::array<int, 4> penStyle = { PS_STRESS_BOTTOM_GIRDER,PS_STRESS_TOP_GIRDER,PS_STRESS_BOTTOM_DECK,PS_STRESS_TOP_DECK };
+      std::array<pgsTypes::BridgeAnalysisType, 4> bat = { pgsTypes::MaxSimpleContinuousEnvelope, pgsTypes::MinSimpleContinuousEnvelope, pgsTypes::MinSimpleContinuousEnvelope, pgsTypes::MinSimpleContinuousEnvelope };
 
       *pAnalysisTypeCount = 0;
       for (int i = 0; i < 4; i++)
@@ -1556,16 +1575,16 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAn
                strStressDataLabel += strStressLabel[stressLocation];
             }
 
-            pDataSeriesID[*pAnalysisTypeCount] = m_Graph.CreateDataSeries(strStressDataLabel, penStyle[stressLocation], penWeight, c);
-            pStressLocation[*pAnalysisTypeCount] = stressLocation;
+            (*pDataSeriesID)[*pAnalysisTypeCount] = m_Graph.CreateDataSeries(strStressDataLabel, penStyle[stressLocation], penWeight, c);
+            (*pStressLocations)[*pAnalysisTypeCount] = stressLocation;
 
             if (analysisType == pgsTypes::Envelope)
             {
-               pBAT[*pAnalysisTypeCount] = bat[stressLocation];
+               (*pBat)[*pAnalysisTypeCount] = bat[stressLocation];
             }
             else
             {
-               pBAT[*pAnalysisTypeCount] = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+               (*pBat)[*pAnalysisTypeCount] = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
             }
 
             (*pAnalysisTypeCount)++;
@@ -1575,11 +1594,11 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAn
    else if (actionType == actionLoadRating)
    {
       *pAnalysisTypeCount = 1;
-      pDataSeriesID[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
+      (*pDataSeriesID)[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
 
       GET_IFACE(IProductForces, pProductForces);
-      pBAT[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
-      ATLASSERT(pBAT[0] == (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
+      (*pBat)[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+      ATLASSERT((*pBat)[0] == (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
    }
    else
    {
@@ -1597,11 +1616,11 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
    // Product forces
    GET_IFACE(IProductForces2,pForces);
 
-   IndexType data_series_id[4];
-   pgsTypes::BridgeAnalysisType bat[4];
-   pgsTypes::StressLocation stressLocation[4];
+   std::array<IndexType, 4> data_series_id;
+   std::array<pgsTypes::BridgeAnalysisType, 4> bat;
+   std::array<pgsTypes::StressLocation, 4> stressLocation;
    IndexType nAnalysisTypes;
-   InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,bIsFinalShear,data_series_id,bat,stressLocation,&nAnalysisTypes);
+   InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,bIsFinalShear,&data_series_id,&bat,&stressLocation,&nAnalysisTypes);
 
    for ( IndexType analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
@@ -1665,6 +1684,7 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
             }
             break;
          }
+      case actionPrincipalWebStress: // should not get here
       case actionLoadRating: // should not get here
       default:
          ATLASSERT(false);
@@ -1683,11 +1703,11 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
    
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
-   IndexType data_series_id[4];
-   pgsTypes::BridgeAnalysisType bat[4];
-   pgsTypes::StressLocation stressLocation[4];
+   std::array<IndexType, 4> data_series_id;
+   std::array<pgsTypes::BridgeAnalysisType, 4> bat;
+   std::array<pgsTypes::StressLocation, 4> stressLocation;
    IndexType nAnalysisTypes;
-   InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,bIsFinalShear,data_series_id,bat,stressLocation,&nAnalysisTypes);
+   InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,bIsFinalShear,&data_series_id,&bat,&stressLocation,&nAnalysisTypes);
 
    for ( IndexType analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
@@ -1758,6 +1778,7 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
          break;
          }
 
+      case actionPrincipalWebStress: // should not get here
       case actionLoadRating: // should not get here
       default:
          ATLASSERT(false);
@@ -1817,7 +1838,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
    IndexType min_deck_capacity_series = m_Graph.CreateDataSeries(_T(""),PS_DOT,penWeight,c);
 
    // data series for stresses
-   IndexType stress_max[4], stress_min[4];
+   std::array<IndexType, 4> stress_max, stress_min;
    stress_max[pgsTypes::TopGirder]    = m_Graph.CreateDataSeries(strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Top Girder")),   PS_STRESS_TOP_GIRDER,   penWeight,c);
    stress_min[pgsTypes::TopGirder]    = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_TOP_GIRDER,   penWeight,c);
    stress_max[pgsTypes::BottomGirder] = m_Graph.CreateDataSeries(strDataLabel + (strDataLabel.IsEmpty() ? _T("") : _T(" - Bottom Girder")),PS_STRESS_BOTTOM_GIRDER,penWeight,c);
@@ -2108,6 +2129,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
       break;
       }
 
+   case actionPrincipalWebStress: // should not get here
    case actionLoadRating: // should not get here
    default:
          ATLASSERT(false);
@@ -2175,7 +2197,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
    }
 
    // data series for stresses
-   IndexType stress_max[4], stress_min[4];
+   std::array<IndexType, 4> stress_max, stress_min;
    stress_max[pgsTypes::TopGirder]    = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP_GIRDER,   penWeight,c);
    stress_min[pgsTypes::TopGirder]    = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_TOP_GIRDER,   penWeight,c);
    stress_max[pgsTypes::BottomGirder] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM_GIRDER,penWeight,c);
@@ -2334,6 +2356,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
          } // next stress location
       break;
       }
+   case actionPrincipalWebStress: // should not get here
    case actionLoadRating: // should not get here
    default:
          ATLASSERT(false);
@@ -2393,7 +2416,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
    }
 
    // data series for stresses
-   IndexType stress_max[4], stress_min[4];
+   std::array<IndexType, 4> stress_max, stress_min;
    stress_max[pgsTypes::TopGirder]    = m_Graph.CreateDataSeries(strDataLabel+_T(" - Top Girder"),   PS_STRESS_TOP_GIRDER,   penWeight,c);
    stress_min[pgsTypes::TopGirder]    = m_Graph.CreateDataSeries(_T(""),                             PS_STRESS_TOP_GIRDER,   penWeight,c);
    stress_max[pgsTypes::BottomGirder] = m_Graph.CreateDataSeries(strDataLabel+_T(" - Bottom Girder"),PS_STRESS_BOTTOM_GIRDER,penWeight,c);
@@ -2689,6 +2712,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
          } // next stress location
       break;
       }
+   case actionPrincipalWebStress: // should not get here
    case actionLoadRating: // should not get here
    default:
          ATLASSERT(false);
@@ -2877,11 +2901,11 @@ void CAnalysisResultsGraphBuilder::ProductReactionGraph(IndexType graphIdx,const
 
    GET_IFACE(IReactions,pReactions);
 
-   IndexType data_series_id[4];
-   pgsTypes::BridgeAnalysisType bat[4];
-   pgsTypes::StressLocation stressLocation[4];
+   std::array<IndexType, 4> data_series_id;
+   std::array<pgsTypes::BridgeAnalysisType, 4> bat;
+   std::array<pgsTypes::StressLocation, 4> stressLocation;
    IndexType nAnalysisTypes;
-   InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,false,data_series_id,bat,stressLocation,&nAnalysisTypes);
+   InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,false,&data_series_id,&bat,&stressLocation,&nAnalysisTypes);
 
    for ( IndexType analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
@@ -2976,11 +3000,11 @@ void CAnalysisResultsGraphBuilder::CombinedReactionGraph(IndexType graphIdx,cons
 
    GET_IFACE(IReactions,pReactions);
 
-   IndexType data_series_id[4];
-   pgsTypes::BridgeAnalysisType bat[4];
-   pgsTypes::StressLocation stressLocation[4];
+   std::array<IndexType, 4> data_series_id;
+   std::array<pgsTypes::BridgeAnalysisType, 4> bat;
+   std::array<pgsTypes::StressLocation, 4> stressLocation;
    IndexType nAnalysisTypes;
-   InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,false,data_series_id,bat,stressLocation,&nAnalysisTypes);
+   InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,false,&data_series_id,&bat,&stressLocation,&nAnalysisTypes);
 
    for ( IndexType analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
@@ -3470,6 +3494,83 @@ void CAnalysisResultsGraphBuilder::RatingFactorGraph(IndexType graphIdx, const C
          RF = (10 < RF ? 10 : RF);
          Float64 x = *xIter;
          AddGraphPoint(data_series, x, RF);
+      }
+   }
+}
+
+void CAnalysisResultsGraphBuilder::PrincipalWebStressGraph(IndexType graphIdx, const CAnalysisResultsGraphDefinition& graphDef, IntervalIndexType intervalIdx, const PoiList& vPoi, const std::vector<Float64>& xVals)
+{
+   pgsTypes::LimitState limitState(graphDef.m_LoadType.LimitStateType);
+
+   ATLASSERT(limitState == pgsTypes::ServiceIII);
+
+
+   GET_IFACE(IArtifact, pArtifact);
+   GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
+   CSegmentKey segmentKey;
+
+   const pgsPrincipalTensionStressArtifact* pPrincipalStressArtifact = nullptr;
+   pPrincipalStressArtifact = pArtifact->GetSegmentArtifact(vPoi.front().get().GetSegmentKey())->GetPrincipalTensionStressArtifact();
+   if (pPrincipalStressArtifact->IsApplicable())
+   {
+      const auto* pDetails = pPrincipalWebStress->GetPrincipalWebStressDetails(pPrincipalStressArtifact->GetPrincipalTensionStressArtifact(0)->GetPointOfInterest());
+      const auto& vWebSections = pDetails->WebSections;
+      pPrincipalStressArtifact = nullptr;
+
+      int penWeight = GRAPH_PEN_WEIGHT;
+      std::vector<IndexType> vDataSeries;
+      if (graphDef.m_GraphType == graphPrincipalWebStressLimit)
+      {
+         CString strDataLabel(GetDataLabel(graphIdx, graphDef, intervalIdx));
+         COLORREF c(GetGraphColor(graphIdx, intervalIdx));
+         IndexType data_series = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
+         vDataSeries.push_back(data_series);
+      }
+      else
+      {
+         IndexType idx = 0;
+         for (const auto& webSection : vWebSections)
+         {
+            COLORREF c(GetGraphColor(graphIdx + idx++, intervalIdx));
+            IndexType data_series = m_Graph.CreateDataSeries(webSection.strLocation.c_str(), PS_SOLID, penWeight, c);
+            vDataSeries.push_back(data_series);
+         }
+      }
+
+      auto i(vPoi.begin());
+      auto end(vPoi.end());
+      auto xIter(xVals.begin());
+      for (; i != end; i++, xIter++)
+      {
+         const pgsPointOfInterest& poi = *i;
+         CSegmentKey thisSegmentKey(poi.GetSegmentKey());
+         if (!segmentKey.IsEqual(thisSegmentKey))
+         {
+            segmentKey = thisSegmentKey;
+            pPrincipalStressArtifact = pArtifact->GetSegmentArtifact(segmentKey)->GetPrincipalTensionStressArtifact();
+         }
+
+         const auto* pSectionArtifact = pPrincipalStressArtifact->GetPrincipalTensionStressArtifactAtPoi(poi.GetID());
+         if (pSectionArtifact)
+         {
+            if (graphDef.m_GraphType == graphPrincipalWebStressLimit)
+            {
+               Float64 x = *xIter;
+               AddGraphPoint(vDataSeries.front(), x, pSectionArtifact->GetStressLimit());
+            }
+            else
+            {
+               const auto* pDetails = pPrincipalWebStress->GetPrincipalWebStressDetails(pSectionArtifact->GetPointOfInterest());
+               const auto& vWebSections = pDetails->WebSections;
+
+               IndexType data_series = 0;
+               for (const auto& webSection : vWebSections)
+               {
+                  Float64 x = *xIter;
+                  AddGraphPoint(vDataSeries[data_series++], x, graphDef.m_GraphType == graphPrincipalWebStressDemand ? webSection.fmax : webSection.t);
+               }
+            }
+         }
       }
    }
 }

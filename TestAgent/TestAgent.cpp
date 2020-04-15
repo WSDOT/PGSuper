@@ -49,6 +49,7 @@
 #include <IFace\TestFileExport.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\DocumentType.h>
+#include <IFace\PrincipalWebStress.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

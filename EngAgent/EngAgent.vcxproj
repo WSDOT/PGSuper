@@ -528,6 +528,7 @@
     <ClCompile Include="KdotGirderHaulingChecker.cpp" />
     <ClCompile Include="LoadRater.cpp" />
     <ClCompile Include="MomentCapacityEngineer.cpp" />
+    <ClCompile Include="PrincipalWebStressEngineer.cpp" />
     <ClCompile Include="PsForceEng.cpp" />
     <ClCompile Include="RaisedStraightStrandDesignTool.cpp" />
     <ClCompile Include="ShearCapacityEngineer.cpp" />
@@ -558,6 +559,7 @@
     <ClInclude Include="..\Include\IFace\DistributionFactors.h" />
     <ClInclude Include="..\Include\IFace\MomentCapacity.h" />
     <ClInclude Include="..\Include\IFace\PrestressForce.h" />
+    <ClInclude Include="..\Include\IFace\PrincipalWebStress.h" />
     <ClInclude Include="..\Include\IFace\ShearCapacity.h" />
     <ClInclude Include="AlternativeTensileStressCalculator.h" />
     <ClInclude Include="CLSID.h" />
@@ -570,6 +572,7 @@
     <ClInclude Include="KdotGirderHaulingChecker.h" />
     <ClInclude Include="LoadRater.h" />
     <ClInclude Include="MomentCapacityEngineer.h" />
+    <ClInclude Include="PrincipalWebStressEngineer.h" />
     <ClInclude Include="PsForceEng.h" />
     <ClInclude Include="RaisedStraightStrandDesignTool.h" />
     <ClInclude Include="Resource.h" />

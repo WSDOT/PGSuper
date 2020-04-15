@@ -73,8 +73,8 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
 	: CDialog(CSectionViewDialog::IDD, pParent)
 {
    m_pGirderEntry = pEntry;
-   m_IsEnd = isEnd;
-   m_DrawNumbers = true;
+   m_bIsEnd = isEnd;
+   m_bDrawNumbers = true;
 
    // assume 0.6" diameter
    m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch);
@@ -118,6 +118,14 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    m_ShapeProps->get_Ybottom(&Yb);
    m_Hg = Yt + Yb;
 
+   Float64 Xl, Xr;
+   m_ShapeProps->get_Xleft(&Xl);
+   m_ShapeProps->get_Xright(&Xr);
+   m_Wg = Xl + Xr;
+   m_bDrawWebSections = true;
+   gdrSection->GetWebSections(&m_Y, &m_W, &m_Desc);
+
+
 	//{{AFX_DATA_INIT(CSectionViewDialog)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
@@ -141,6 +149,7 @@ BEGIN_MESSAGE_MAP(CSectionViewDialog, CDialog)
 	//}}AFX_MSG_MAP
 
    ON_BN_CLICKED(IDC_SHOWS,OnClickNumbers)
+   ON_BN_CLICKED(IDC_WEB_SECTIONS, OnClickWebSections)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -193,7 +202,12 @@ void CSectionViewDialog::OnPaint()
    mapper.SetDeviceOrg(csize.cx/2 + 2*BORDER + rProps.Width(),/*rProps.Height() +*/ csize.cy + 2*BORDER);
 
    DrawShape(&dc,mapper);
-   DrawStrands(&dc,mapper,m_IsEnd);
+   DrawStrands(&dc,mapper,m_bIsEnd);
+
+   if (m_bDrawWebSections)
+   {
+      DrawWebSections(&dc, mapper);
+   }
 
 // strand mover - bounds drawn in red
 #ifdef _DEBUG
@@ -424,7 +438,7 @@ StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mappe
 
    index += strandInc;
 
-   if (m_DrawNumbers)
+   if (m_bDrawNumbers)
    {
       PrintNumber(pDC, Mapper, gpPoint2d(x, y), index);
    }
@@ -442,13 +456,47 @@ StrandIndexType CSectionViewDialog::DrawStrand(CDC* pDC, grlibPointMapper& Mappe
       index += strandInc;
 
       gpPoint2d np(-x,y);
-      if (m_DrawNumbers)
+      if (m_bDrawNumbers)
       {
          PrintNumber(pDC, Mapper, np, index);
       }
    }
 
    return index;
+}
+
+void CSectionViewDialog::DrawWebSections(CDC* pDC, grlibPointMapper& Mapper)
+{
+   USES_CONVERSION;
+   CPen pen(1, PS_DASH, BROWN);
+   CPen* pOldPen = pDC->SelectObject(&pen);
+
+   CFont font;
+   font.CreatePointFont(80, _T("Arial"), pDC);
+   CFont* pOldFont = pDC->SelectObject(&font);
+
+   auto old_align = pDC->SetTextAlign(TA_CENTER | TA_BOTTOM);
+
+   IndexType nItems;
+   m_Y->get_Count(&nItems);
+   for (IndexType i = 0; i < nItems; i++)
+   {
+      Float64 Yg;
+      m_Y->get_Item(i, &Yg);
+      LONG x, y;
+      Mapper.WPtoDP(-m_Wg / 2, Yg, &x, &y);
+      pDC->MoveTo(x, y);
+      Mapper.WPtoDP(m_Wg / 2, Yg, &x, &y);
+      pDC->LineTo(x, y);
+
+      Mapper.WPtoDP(0, Yg, &x, &y);
+      CComBSTR bstrDesc;
+      m_Desc->get_Item(i, &bstrDesc);
+      pDC->TextOut(x, y, OLE2T(bstrDesc));
+   }
+   pDC->SelectObject(pOldPen);
+   pDC->SelectObject(pOldFont);
+   pDC->SetTextAlign(old_align);
 }
 
 void CSectionViewDialog::OnSize(UINT nType, int cx, int cy) 
@@ -510,7 +558,10 @@ BOOL CSectionViewDialog::OnInitDialog()
    CDialog::OnInitDialog();
 	
    CButton* pBtn = (CButton*)GetDlgItem(IDC_SHOWS);
-   pBtn->SetCheck(TRUE);
+   pBtn->SetCheck(m_bDrawNumbers ? BST_CHECKED : BST_UNCHECKED);
+
+   pBtn = (CButton*)GetDlgItem(IDC_WEB_SECTIONS);
+   pBtn->SetCheck(m_bDrawWebSections ? BST_CHECKED : BST_UNCHECKED);
 
    // label for harped or adj straight
    CString hlbl;
@@ -559,7 +610,13 @@ BOOL CSectionViewDialog::OnInitDialog()
 
 void CSectionViewDialog::OnClickNumbers()
 {
-   m_DrawNumbers = !m_DrawNumbers;
+   m_bDrawNumbers = !m_bDrawNumbers;
+   Invalidate();
+}
+
+void CSectionViewDialog::OnClickWebSections()
+{
+   m_bDrawWebSections = !m_bDrawWebSections;
    Invalidate();
 }
 

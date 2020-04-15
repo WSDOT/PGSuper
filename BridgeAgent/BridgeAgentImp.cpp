@@ -20413,6 +20413,7 @@ const pgsPointOfInterest& CBridgeAgentImp::GetNextPointOfInterest(PoiIDType poiI
 
 void CBridgeAgentImp::GetCriticalSections(pgsTypes::LimitState limitState,const CGirderKey& girderKey,PoiList* pPoiList) const
 {
+   ASSERT_GIRDER_KEY(girderKey);
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -21553,10 +21554,9 @@ bool CBridgeAgentImp::IsInBoundaryPierDiaphragm(const pgsPointOfInterest& poi) c
 
 bool CBridgeAgentImp::IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState) const
 {
-   ATLASSERT(IsStrengthLimitState(limitState));
-   PoiAttributeType csAttribute = (IsStrengthILimitState(limitState) ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
-
-   GET_IFACE(ILibrary,pLib);
+   PoiAttributeType csAttribute;
+   
+   GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
@@ -21565,6 +21565,11 @@ bool CBridgeAgentImp::IsInCriticalSectionZone(const pgsPointOfInterest& poi,pgsT
    if ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
    {
       csAttribute = POI_CRITSECTSHEAR1;
+   }
+   else
+   {
+      ATLASSERT(IsStrengthLimitState(limitState));
+      csAttribute = (IsStrengthILimitState(limitState) ? POI_CRITSECTSHEAR1 : POI_CRITSECTSHEAR2);
    }
 
    if ( poi.HasAttribute(csAttribute) )
@@ -22699,6 +22704,109 @@ Float64 CBridgeAgentImp::GetQSlab(IntervalIndexType intervalIdx, const pgsPointO
    }
 
    return Qslab;
+}
+
+Float64 CBridgeAgentImp::GetQ(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Yclip) const
+{
+   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
+   return GetQ(sectPropType, intervalIdx, poi, Yclip);
+}
+
+Float64 CBridgeAgentImp::GetQ(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Yclip) const
+{
+   // Yclip is in girder section coordinate (Y=0 at top of plane girder and negative downwards)
+  const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
+
+   auto found = props.Q.find(Yclip);
+   if (found != props.Q.end())
+   {
+      return found->second;
+   }
+
+   Float64 Q = 0;
+
+   Float64 Ytop = -props.YtopGirder; // negative to put into girder section coordinates
+
+   // create the clipping line
+   CComPtr<ILine2d> clipping_line;
+   clipping_line.CoCreateInstance(CLSID_Line2d);
+
+   CComPtr<IPoint2d> pnt;
+   CComPtr<IVector2d> v;
+   clipping_line->GetExplicit(&pnt, &v);
+
+   pnt->put_Y(Yclip); // elevation of clipping line is Yclip
+
+   // the area is clipped away on the left side of the line, the right side area is the clipped shape
+   // when Yclip < Ytop, the clipping line is below the CG of the section
+   // so we want the line running left to right (direction = 0) so the right side of the line
+   // is the "bottom flange" side of the beam... otherwise, we want the line going the opposite
+   // direction (direction = M_PI) so the area is the "top flange" side of the beam
+   v->put_Direction(Yclip < Ytop ? 0 : M_PI);
+
+   clipping_line->SetExplicit(pnt, v);
+
+   // get MOE for girder
+   CComQIPtr<ICompositeSectionEx> compSection(props.Section);
+   CComPtr<ICompositeSectionItemEx> gdrSectionItem;
+   compSection->get_Item(props.GirderShapeIndex, &gdrSectionItem);
+   Float64 Efg_gdr, Ebg_gdr;
+   gdrSectionItem->get_Efg(&Efg_gdr);
+   gdrSectionItem->get_Ebg(&Ebg_gdr);
+   Float64 Egdr = Efg_gdr - Ebg_gdr;
+
+   // clip all the pieces of the composite section
+   IndexType nSections;
+   compSection->get_Count(&nSections);
+   for (IndexType i = 0; i < nSections; i++)
+   {
+      CComPtr<ICompositeSectionItemEx> sectionItem;
+      compSection->get_Item(i, &sectionItem);
+
+      VARIANT_BOOL vbIsStructural;
+      sectionItem->get_Structural(&vbIsStructural);
+
+      Float64 Efg, Ebg;
+      sectionItem->get_Efg(&Efg);
+      sectionItem->get_Ebg(&Ebg);
+      Float64 E = Efg - Ebg;
+
+      if (vbIsStructural == VARIANT_TRUE)
+      {
+         CComPtr<IShape> shape;
+         sectionItem->get_Shape(&shape);
+
+         CComPtr<IShape> clipped_shape;
+         shape->ClipWithLine(clipping_line, &clipped_shape);
+
+         if (clipped_shape)
+         {
+            CComPtr<IShapeProperties> shape_props;
+            clipped_shape->get_ShapeProperties(&shape_props);
+
+            Float64 clipped_area;
+            shape_props->get_Area(&clipped_area);
+            clipped_area = IsZero(clipped_area) ? 0 : clipped_area;
+
+            if (0 < clipped_area)
+            {
+               CComPtr<IPoint2d> cg_clipped_area;
+               shape_props->get_Centroid(&cg_clipped_area);
+
+               Float64 Yclipped_area;
+               cg_clipped_area->get_Y(&Yclipped_area);
+
+               Q += E*clipped_area*fabs(Ytop - Yclipped_area);
+            }
+         }
+      }
+   }
+
+   Q /= Egdr;
+
+   props.Q.emplace(Yclip, Q);
+
+   return Q;
 }
 
 Float64 CBridgeAgentImp::GetAcBottomHalf(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
@@ -25495,6 +25603,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    Float64 duct_deduction = 0;
    if ( IsOnGirder(poi) )
    {
+      GET_IFACE_NOCHECK(IDuctLimits, pDuctLimits);
       GET_IFACE(IGirderTendonGeometry, pGirderTendonGeom);
       for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
       {
@@ -25510,30 +25619,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
 
             if (::InRange(Ybot, y, Ytop))
             {
-               Float64 deduct_factor;
-               if (bAfter2002)
-               {
-                  if (intervalIdx < groutDuctIntervalIdx)
-                  {
-                     deduct_factor = 0.50;
-                  }
-                  else
-                  {
-                     deduct_factor = 0.25;
-                  }
-               }
-               else
-               {
-                  if (intervalIdx < groutDuctIntervalIdx)
-                  {
-                     deduct_factor = 1.00;
-                  }
-                  else
-                  {
-                     deduct_factor = 0.50;
-                  }
-               }
-
+               Float64 deduct_factor = pDuctLimits->GetGirderDuctDeductionFactor(girderKey, ductIdx, intervalIdx);
                Float64 dia = GetOutsideDiameter(girderKey, ductIdx);
                duct_deduction = Max(duct_deduction, deduct_factor*dia);
             }
@@ -25546,6 +25632,8 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
          if (pSegmentTendonGeometry->IsOnDuct(poi))
          {
             // assumes ducts are grouted and cured in the interval following their installation and stressing
+            Float64 deduct_factor = pDuctLimits->GetSegmentDuctDeductionFactor(segmentKey, intervalIdx);
+
             IntervalIndexType groutDuctIntervalIdx = GetStressSegmentTendonInterval(segmentKey);
             for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
             {
@@ -25556,30 +25644,6 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
 
                if (::InRange(Ybot, y, Ytop))
                {
-                  Float64 deduct_factor;
-                  if (bAfter2002)
-                  {
-                     if (intervalIdx < groutDuctIntervalIdx)
-                     {
-                        deduct_factor = 0.50;
-                     }
-                     else
-                     {
-                        deduct_factor = 0.25;
-                     }
-                  }
-                  else
-                  {
-                     if (intervalIdx < groutDuctIntervalIdx)
-                     {
-                        deduct_factor = 1.00;
-                     }
-                     else
-                     {
-                        deduct_factor = 0.50;
-                     }
-                  }
-
                   Float64 dia = GetOutsideDiameter(segmentKey, ductIdx);
                   duct_deduction = Max(duct_deduction, deduct_factor*dia);
                }
@@ -27907,6 +27971,42 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    }
 }
 
+std::vector<std::tuple<Float64, Float64, std::_tstring>> CBridgeAgentImp::GetWebSections(const pgsPointOfInterest& poi) const
+{
+   USES_CONVERSION;
+   std::vector<std::tuple<Float64, Float64, std::_tstring>> web_flange_intersections;
+
+   CComPtr<IGirderSection> girder_section;
+   GetGirderSection(poi, &girder_section);
+
+   CComPtr<IDblArray> Y;
+   CComPtr<IDblArray> W;
+   CComPtr<IBstrArray> Description;
+   girder_section->GetWebSections(&Y, &W, &Description);
+
+   IndexType nY, nW, nD;
+   Y->get_Count(&nY);
+   W->get_Count(&nW);
+   Description->get_Count(&nD);
+   ATLASSERT(nY == nW);
+   ATLASSERT(nY == nD);
+
+   for (IndexType i = 0; i < nY; i++)
+   {
+      Float64 y;
+      Float64 w;
+      CComBSTR bstrDesc;
+      Y->get_Item(i, &y);
+      W->get_Item(i, &w);
+      Description->get_Item(i, &bstrDesc);
+
+      web_flange_intersections.emplace_back(y, w, OLE2T(bstrDesc));
+   }
+
+   std::sort(web_flange_intersections.begin(), web_flange_intersections.end(), std::greater<>());
+   return web_flange_intersections;
+}
+
 void CBridgeAgentImp::GetSegmentBottomFlangeProfile(const CSegmentKey& segmentKey,bool bIncludeClosure,IPoint2dCollection** points) const
 {
    GroupIndexType grpIdx = segmentKey.groupIndex;
@@ -28803,11 +28903,6 @@ void CBridgeAgentImp::GetGirderDuctPoint(const CGirderKey& girderKey,Float64 Xg,
       pnt->Move(x, y);
 
       pnt.CopyTo(ppPoint);
-   }
-   else
-   {
-      ATLASSERT(false); // this point isn't on the duct... why are you asking for it?
-      *ppPoint = nullptr;
    }
 }
 

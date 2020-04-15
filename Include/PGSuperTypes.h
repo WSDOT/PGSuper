@@ -814,6 +814,12 @@ typedef struct pgsTypes
       dcrbParallelToPier // deck casting region boundaries are parallel to their reference pier
    } DeckCastingRegionBoundary;
 
+   typedef enum PrincipalTensileStressMethod
+   {
+      ptsmLRFD,
+      ptsmNCHRP
+   } PrincipalTensileStressMethod;
+
 } pgsTypes;
 
 //-----------------------------------------------------------------------------

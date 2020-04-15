@@ -303,7 +303,7 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
 
    int penWeight = GRAPH_PEN_WEIGHT;
 
-   IndexType dataSeries[4];
+   std::array<IndexType, 4> dataSeries;
    dataSeries[pgsTypes::TopDeck]         = m_Graph.CreateDataSeries(_T("Top of Deck"),     PS_SOLID, penWeight, ORANGE);
    dataSeries[pgsTypes::BottomDeck]      = m_Graph.CreateDataSeries(_T("Bottom of Deck"),  PS_SOLID, penWeight, RED);
    dataSeries[pgsTypes::TopGirder]       = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID, penWeight, GREEN);

@@ -138,6 +138,38 @@ struct MINMOMENTCAPDETAILS
    Float64 Mu;
 };
 
+struct PRINCIPALTENSIONWEBSECTIONDETAILS
+{
+   PRINCIPALTENSIONWEBSECTIONDETAILS(LPCTSTR lpszLocation, Float64 YwebSection, Float64 fTop, Float64 fBot, Float64 fpcx, Float64 Vu,Float64 Qnc, Float64 Qc, Float64 bw, bool bAdjusted, Float64 t, Float64 fmax) :
+      strLocation(lpszLocation), fTop(fTop), fBot(fBot), fpcx(fpcx), YwebSection(YwebSection),Vu(Vu), Qnc(Qnc), Qc(Qc), bw(bw), bIsShearWidthAdjustedForTendon(bAdjusted), t(t), fmax(fmax)
+   {
+   }
+
+   std::_tstring strLocation; // description of web section
+   Float64 YwebSection; // elevation of web section in girder section coordinates
+   Float64 fTop; // Service III stress at top of non-composite girder, including prestress, for computing maximum fpcx
+   Float64 fBot; // Service III stress at bottom of non-composite girder, including prestress, for computing maximum fpcx
+   Float64 fpcx; // maximum axial stress at evaluation point
+   Float64 Vu;  // Service III shear on composite section if NCHRP method, Vu for LRFD method
+   Float64 Qnc; // first moment of area of the non-composite section about the evaluation point
+   Float64 Qc; // first moment of area of the composite section about the evaluation point
+   Float64 bw; // shear width at the evaluation point
+   bool bIsShearWidthAdjustedForTendon;
+   Float64 t; // shear stress at the evaluation point
+   Float64 fmax; // maximum principal stress at the evaluation point
+};
+
+struct PRINCIPALSTRESSINWEBDETAILS
+{
+   Float64 Hg; // height of non-composite girder
+   Float64 Vp; // Vertical component of prestress
+
+   Float64 Vnc; // Service III shear on non-composite section
+   Float64 Inc; // moment of inertia of non-composite section
+   Float64 Ic; // moment of inertia of composite section
+   std::vector<PRINCIPALTENSIONWEBSECTIONDETAILS> WebSections; // points along the web height where principal tension is evaluted
+};
+
 struct SHEARCAPACITYDETAILS
 {
    SHEARCAPACITYDETAILS()

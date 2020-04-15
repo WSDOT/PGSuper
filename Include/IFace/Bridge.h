@@ -24,6 +24,7 @@
 #define INCLUDED_IFACE_BRIDGE_H_
 
 #include <vector>
+#include <functional>
 
 #include <PGSuperTypes.h>
 #include <Details.h>
@@ -1391,6 +1392,8 @@ interface ISectionProperties : IUnknown
 
    virtual Float64 GetQSlab(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetQSlab(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,Float64 fc) const = 0;
+   virtual Float64 GetQ(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Yclip) const = 0;
+   virtual Float64 GetQ(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Yclip) const = 0;
    virtual Float64 GetAcBottomHalf(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0; // for Fig. 5.7.3.4.2-3
    virtual Float64 GetAcTopHalf(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0; // for Fig. 5.7.3.4.2-3
 
@@ -1857,6 +1860,10 @@ interface IGirder : public IUnknown
    virtual const stbGirder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const = 0;
    virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
    virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const = 0;
+
+   // Returns the elevation of web-flange intersections that are included in principal web shear checks
+   // The key is the elevation in girder section coordinates and the value is descriptive text
+   virtual std::vector<std::tuple<Float64, Float64, std::_tstring>> GetWebSections(const pgsPointOfInterest& poi) const = 0;
 };
 
 /*****************************************************************************

@@ -211,6 +211,7 @@ m_ShearCapEngineer(nullptr,0),
 m_bAreDistFactorEngineersValidated(false)
 {
    m_pMomentCapacityEngineer = std::make_unique<pgsMomentCapacityEngineer>(nullptr, 0);
+   m_pPrincipalWebStressEngineer = std::make_unique<pgsPrincipalWebStressEngineer>(nullptr, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -233,7 +234,15 @@ void CEngAgentImp::InvalidateAll()
 #if defined _USE_MULTITHREADING
    m_ThreadManager.CreateThread(CEngAgentImp::DeleteMomentCapacityEngineer, (LPVOID)(pOldEng));
 #else
-   CEngAgentImp::DeleteMomentCapacityEngineer((LPVOID)(pOldCache));
+   CEngAgentImp::DeleteMomentCapacityEngineer((LPVOID)(pOldEng));
+#endif
+
+   pgsPrincipalWebStressEngineer* pOld = m_pPrincipalWebStressEngineer.release();
+   m_pPrincipalWebStressEngineer = std::make_unique<pgsPrincipalWebStressEngineer>(m_pBroker, m_StatusGroupID);
+#if defined _USE_MULTITHREADING
+   m_ThreadManager.CreateThread(CEngAgentImp::DeletePrincipalWebStressEngineer, (LPVOID)(pOld));
+#else
+   CEngAgentImp::DeletePrincipalWebStressEngineer((LPVOID)(pOld));
 #endif
 }
 
@@ -243,6 +252,15 @@ UINT CEngAgentImp::DeleteMomentCapacityEngineer(LPVOID pParam)
    pgsMomentCapacityEngineer* pEng = (pgsMomentCapacityEngineer*)pParam;
    delete pEng;
    WATCH(_T("End: DeleteMomentCapacityEngineer"));
+   return 0;
+}
+
+UINT CEngAgentImp::DeletePrincipalWebStressEngineer(LPVOID pParam)
+{
+   WATCH(_T("Begin: DeletePrincipalWebStressEngineer"));
+   pgsPrincipalWebStressEngineer* pEng = (pgsPrincipalWebStressEngineer*)pParam;
+   delete pEng;
+   WATCH(_T("End: DeletePrincipalWebStressEngineer"));
    return 0;
 }
 
@@ -494,6 +512,8 @@ void CEngAgentImp::InvalidateShearCritSection()
 //-----------------------------------------------------------------------------
 const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTypes::LimitState limitState,const CGirderKey& girderKey, const GDRCONFIG* pConfig) const
 {
+   ASSERT_GIRDER_KEY(girderKey);
+
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -550,6 +570,8 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    //
    // * = critical section location
    // # = location between FOS and critical section (critial section zones)
+
+   ASSERT_GIRDER_KEY(girderKey);
 
    std::vector<CRITSECTDETAILS> vcsDetails;
 
@@ -928,16 +950,17 @@ STDMETHODIMP CEngAgentImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   pBrokerInit->RegInterface( IID_ILosses,                      this );
-   pBrokerInit->RegInterface( IID_IPretensionForce,             this );
-   pBrokerInit->RegInterface( IID_IPosttensionForce,            this );
-   pBrokerInit->RegInterface( IID_ILiveLoadDistributionFactors, this );
-   pBrokerInit->RegInterface( IID_IMomentCapacity,              this );
-   pBrokerInit->RegInterface( IID_IShearCapacity,               this );
-   pBrokerInit->RegInterface( IID_IGirderHaunch,                this );
-   pBrokerInit->RegInterface( IID_IFabricationOptimization,     this );
-   pBrokerInit->RegInterface( IID_IArtifact,                    this );
-   pBrokerInit->RegInterface( IID_ICrackedSection,              this );
+   pBrokerInit->RegInterface(IID_ILosses,                      this);
+   pBrokerInit->RegInterface(IID_IPretensionForce,             this);
+   pBrokerInit->RegInterface(IID_IPosttensionForce,            this);
+   pBrokerInit->RegInterface(IID_ILiveLoadDistributionFactors, this);
+   pBrokerInit->RegInterface(IID_IMomentCapacity,              this);
+   pBrokerInit->RegInterface(IID_IShearCapacity,               this);
+   pBrokerInit->RegInterface(IID_IPrincipalWebStress,          this);
+   pBrokerInit->RegInterface(IID_IGirderHaunch,                this);
+   pBrokerInit->RegInterface(IID_IFabricationOptimization,     this);
+   pBrokerInit->RegInterface(IID_IArtifact,                    this);
+   pBrokerInit->RegInterface(IID_ICrackedSection,              this);
 
     return S_OK;
 }
@@ -950,12 +973,14 @@ STDMETHODIMP CEngAgentImp::Init()
    m_PsForceEngineer.SetBroker(m_pBroker);
    m_pMomentCapacityEngineer->SetBroker(m_pBroker);
    m_ShearCapEngineer.SetBroker(m_pBroker);
+   m_pPrincipalWebStressEngineer->SetBroker(m_pBroker);
    m_Designer.SetBroker(m_pBroker);
    m_LoadRater.SetBroker(m_pBroker);
 
    m_Designer.SetStatusGroupID(m_StatusGroupID);
    m_PsForceEngineer.SetStatusGroupID(m_StatusGroupID);
    m_pMomentCapacityEngineer->SetStatusGroupID(m_StatusGroupID);
+   m_pPrincipalWebStressEngineer->SetStatusGroupID(m_StatusGroupID);
    m_ShearCapEngineer.SetStatusGroupID(m_StatusGroupID);
 
    // regiter the callback ID's we will be using
@@ -3609,6 +3634,13 @@ void CEngAgentImp::ClearDesignCriticalSections() const
    {
       m_DesignCritSectionDetails[idx].clear();
    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// IPrincipalWebStress
+const PRINCIPALSTRESSINWEBDETAILS* CEngAgentImp::GetPrincipalWebStressDetails(const pgsPointOfInterest& poi) const
+{
+   return m_pPrincipalWebStressEngineer->GetPrincipalStressInWeb(poi);
 }
 
 /////////////////////////////////////////////////////////////////////////////

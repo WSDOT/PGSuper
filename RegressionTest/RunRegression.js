@@ -24,7 +24,7 @@ var startTime = startDate.getTime();
 
 // hack for convenience:
 // set up drives so pickings' and brice's machines work without command line options
-var PGSuperDrive = "C:";
+var PGSuperDrive = "F:";
 var objNet = new ActiveXObject( "WScript.Network" );
 var machine = objNet.ComputerName;
 machine = machine.toUpperCase();

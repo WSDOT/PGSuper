@@ -489,6 +489,7 @@ void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, COb
    CGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
 
    GET_IFACE(IIntervals, pIntervals);
+   m_LiveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    m_LoadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
    if ( 
@@ -548,6 +549,11 @@ std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
    vActions.push_back(actionStress);
    vActions.push_back(actionReaction);
 
+   if (m_LiveLoadIntervalIdx <= GetInterval())
+   {
+      vActions.push_back(actionPrincipalWebStress);
+   }
+
    if (GetInterval() == m_LoadRatingIntervalIdx && GetGraphMode() == Loading)
    {
       // rating factors are only applicable for "By Loading" results the interval when load rating occurs
@@ -580,7 +586,8 @@ LPCTSTR CAnalysisResultsGraphController::GetActionName(ActionType action) const
       _T("Deflection X"),
       _T("Rotation"),
       _T("Stress"),
-      _T("Rating Factor")
+      _T("Rating Factor"),
+      _T("Principal Web Stress")
    };
 
 #if defined _DEBUG
@@ -595,6 +602,7 @@ LPCTSTR CAnalysisResultsGraphController::GetActionName(ActionType action) const
    case actionRotation:
    case actionStress:
    case actionLoadRating:
+   case actionPrincipalWebStress:
       break;
    default:
       ATLASSERT(false); // is there a new action type?
@@ -893,7 +901,7 @@ bool IsCumulativeOnlyGraphType(GraphType graphType)
 
 void CAnalysisResultsGraphController::UpdateResultsType()
 {
-   if (GetActionType() == actionLoadRating)
+   if (GetActionType() == actionLoadRating || GetActionType() == actionPrincipalWebStress)
    {
       GetDlgItem(IDC_INCREMENTAL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_CUMULATIVE)->ShowWindow(SW_HIDE);
@@ -1043,7 +1051,7 @@ void CAnalysisResultsGraphController::UpdateAnalysisType()
    }
 }
 
-IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval()
+IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval() const
 {
    GET_IFACE(IIntervals,pIntervals);
    CGirderKey girderKey(GetGirderKey());
@@ -1055,7 +1063,7 @@ IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval()
    return pIntervals->GetFirstPrestressReleaseInterval(girderKey);
 }
 
-IntervalIndexType CAnalysisResultsGraphController::GetLastInterval()
+IntervalIndexType CAnalysisResultsGraphController::GetLastInterval() const
 {
    GET_IFACE(IIntervals,pIntervals);
    return pIntervals->GetIntervalCount() - 1;

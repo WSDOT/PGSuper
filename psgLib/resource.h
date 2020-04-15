@@ -429,6 +429,7 @@
 #define IDC_AFTER_DECK_TENSION_MAX_UNIT 1108
 #define IDC_TS_TENSION_WITH_REBAR       1109
 #define IDC_CURING_METHOD               1110
+#define IDC_PRINCIPAL_TENSION           1110
 #define IDC_FINAL                       1112
 #define IDC_SHIPPING1_TAG               1113
 #define IDC_BEFORE_TEMP_STRAND_REMOVAL  1113
@@ -489,6 +490,7 @@
 #define IDC_ADD_STRAIGHT_STRAND         1142
 #define IDC_TS_TENSION_WITH_REBAR_UNIT  1142
 #define IDC_APPEND_STRAIGHT_STRAND      1143
+#define IDC_PRINCIPAL_TENSION_UNIT      1143
 #define IDC_ADD_TEMPORARY_STRAND        1144
 #define IDC_APPLY_DR_TO_BEAM            1144
 #define IDC_APPEND_TEMPORARY_STRAND     1145
@@ -880,6 +882,7 @@
 #define IDC_HAUNCH_COMP_CB              1441
 #define IDC_WIND_TYPE                   1441
 #define IDC_HOLD_DOWN_FORCE_TYPE        1441
+#define IDC_PRINCIPAL_TENSION_METHOD    1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_CF_TYPE                     1442
 #define IDC_HAUNCH_COMP_CB2             1442
@@ -902,6 +905,7 @@
 #define IDC_DUAL_TANDEM                 1444
 #define IDC_USE_DECK_FOR_PC             1444
 #define IDC_INCLUDE_STRAND_FOR_NEG_MOMENT 1444
+#define IDC_WEB_SECTIONS                1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
@@ -1371,6 +1375,9 @@
 #define IDC_UHPC_FIBER_SHEAR_STRENGTH_UNIT 1713
 #define IDC_UHPC_F1                     1714
 #define IDC_UHPC_F1_UNIT                1715
+#define IDC_PRINCIPAL_TENSION_GROUP     1716
+#define IDC_PRINCIPAL_TENSION_LABEL     1717
+#define IDC_PRINCIPAL_TENSION_METHOD_LABEL 1718
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1402,9 +1409,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        327
+#define _APS_NEXT_RESOURCE_VALUE        328
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1716
+#define _APS_NEXT_CONTROL_VALUE         1719
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

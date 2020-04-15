@@ -220,6 +220,11 @@ interface IAllowableConcreteStress : IUnknown
 
    // returns true if tension stresses due to final dead load are to be evaluated
    virtual bool CheckFinalDeadLoadTensionStress() const = 0;
+
+   virtual Float64 GetAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey) const = 0;
+   virtual Float64 GetAllowablePrincipalWebTensionStress(const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetAllowablePrincipalWebTensionStressCoefficient() const = 0;
 };
 
 
@@ -269,5 +274,8 @@ interface IDuctLimits : IUnknown
    virtual Float64 GetGirderTendonDuctSizeLimit(const CGirderKey& girderKey) const = 0;
 
    virtual Float64 GetTendonAreaLimit(pgsTypes::StrandInstallationType installationType) const = 0;
+
+   virtual Float64 GetSegmentDuctDeductionFactor(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const = 0;
+   virtual Float64 GetGirderDuctDeductionFactor(const CGirderKey& girderKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx) const = 0;
 };
 

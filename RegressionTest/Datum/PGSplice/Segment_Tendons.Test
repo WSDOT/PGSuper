@@ -15,6 +15,7 @@ Tension stress check failed for Service I Limit State in Interval 25 Install Rai
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Segment 2
 Tension stress check failed for Service I Limit State in Interval 25 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Deck
+Principal tension stress in webs stress check failed for Segment 2
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
@@ -55,6 +56,7 @@ Tension stress check failed for Service I Limit State in Interval 25 Install Rai
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Segment 2
 Tension stress check failed for Service I Limit State in Interval 25 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 32 Load Rating for Deck
+Principal tension stress in webs stress check failed for Segment 2
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State

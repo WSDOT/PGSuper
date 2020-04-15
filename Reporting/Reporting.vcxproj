@@ -542,6 +542,8 @@
     <ClCompile Include="PrestressLossTable.cpp" />
     <ClCompile Include="PrestressRotationTable.cpp" />
     <ClCompile Include="PretensionStressTable.cpp" />
+    <ClCompile Include="PrincipalTensionStressCheckTable.cpp" />
+    <ClCompile Include="PrincipalTensionStressDetailsChapterBuilder.cpp" />
     <ClCompile Include="ProductAxialTable.cpp" />
     <ClCompile Include="ProductDisplacementsTable.cpp" />
     <ClCompile Include="ProductForcesChapterBuilder.cpp" />
@@ -723,6 +725,8 @@
     <ClInclude Include="..\Include\Reporting\PrestressLossTable.h" />
     <ClInclude Include="..\Include\Reporting\PrestressRotationTable.h" />
     <ClInclude Include="..\Include\Reporting\PretensionStressTable.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalTensionStressCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalTensionStressDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ProductAxialTable.h" />
     <ClInclude Include="..\Include\Reporting\ProductDisplacementsTable.h" />
     <ClInclude Include="..\Include\Reporting\ProductForcesChapterBuilder.h" />

@@ -509,6 +509,10 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
          pIPoi->SortPoiList(&vPoi);
       }
 
+      PoiList csPois;
+      pIPoi->GetCriticalSections(pgsTypes::StrengthI, thisGirderKey, &csPois);
+      pIPoi->MergePoiLists(vPoi, csPois, &vPoi);
+
       std::vector<Float64> segment;
       std::vector<Float64> girder;
       if ( bSegments )

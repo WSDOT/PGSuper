@@ -43,7 +43,7 @@
 #include <Reporting\ContinuityCheck.h>
 #include <Reporting\DuctSizeCheckTable.h>
 #include <Reporting\DuctGeometryCheckTable.h>
-
+#include <Reporting\PrincipalTensionStressCheckTable.h>
 #include <Reporting\RatingSummaryTable.h>
 
 #include <MathEx.h>
@@ -264,27 +264,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       } // next task
    }
 
-   // Principle tension stress in webs
-   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   p->SetName(_T("Principal Tensile Stresses in Webs"));
-   *p << p->GetName() << rptNewLine;
-   *pChapter << p;
-
-
-   p = new rptParagraph;
-   *pChapter << p;
-   GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterials);
-   Float64 fc_limit = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
-   Float64 fcSegment = pMaterials->GetSegmentFc28(CSegmentKey(girderKey, 0)); // it's ok to use segment 0 because we know non-pgsplice files have only one segment per girder
-   if (pDocType->IsPGSpliceDocument() || fc_limit < fcSegment)
-   {
-      *p << _T("The requirements of LRFD 5.9.2.3.3 are applicable but have not been evaluted. Use alternative methods to evaluate compliance with these requirements.") << rptNewLine;
-   }
-   else
-   {
-      *p << _T("LRFD 5.9.2.3.3 - Principal Tensile Stresses in Webs limitations are not applicable.") << rptNewLine;
-   }
-
    // Flexural Capacity
    p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    p->SetName(_T("Ultimate Moment Capacity"));
@@ -404,6 +383,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
          CInterfaceShearTable().Build(pBroker,pChapter,pGirderArtifact,pDisplayUnits,lastIntervalIdx,pgsTypes::StrengthII);
       }
    }
+
+   // Principle tension stress in webs
+   CPrincipalTensionStressCheckTable().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
    if (pSpecEntry->IsSplittingCheckEnabled())
    {

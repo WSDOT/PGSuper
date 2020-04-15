@@ -39,4 +39,6 @@
 #include <PgsExt\HandlingData.h>
 #include <PgsExt\StrandSlopeArtifact.h>
 #include <PgsExt\StrandStressArtifact.h>
+#include <PgsExt\PrincipalTensionStressArtifact.h>
 #include <PgsExt\GirderLabel.h>
+#include <PgsExt\CapacityToDemand.h>
