@@ -818,8 +818,8 @@ void CGirderModelChildFrame::UpdateBar()
    ASSERT(pwndCutLocation);
    
    CEAFDocument* pDoc = EAFGetDocument();
-   bool isPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
-   CString strGroupLabel( isPGSuper ? _T("Span") : _T("Group") );
+   BOOL bIsPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
+   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group") );
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -841,7 +841,7 @@ void CGirderModelChildFrame::UpdateBar()
 
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
-      if (isPGSuper)
+      if (bIsPGSuper)
       {
          strLabel.Format(_T("%s %s"), strGroupLabel, LABEL_SPAN(grpIdx));
       }
