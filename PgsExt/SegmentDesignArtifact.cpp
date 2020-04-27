@@ -155,7 +155,7 @@ arFlexuralDesignType pgsSegmentDesignArtifact::GetDoDesignFlexure() const
 
 bool pgsSegmentDesignArtifact::GetDoDesignShear() const
 {
-   return m_DesignOptions.doDesignForShear;
+   return m_DesignOptions.doDesignForShear != sdtNoDesign;
 }
 
 void pgsSegmentDesignArtifact::SetNumStraightStrands(StrandIndexType Ns)
