@@ -372,7 +372,7 @@ void CConcreteGeneralPage::OnConcreteType()
 
 HBRUSH CConcreteGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-   HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+   HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
 
    if ( pWnd->GetDlgCtrlID() == IDC_DS && 0 < pWnd->GetWindowTextLength())
    {

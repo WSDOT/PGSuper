@@ -53,7 +53,7 @@ CSpecDesignPage::CSpecDesignPage(CWnd* pParent /*=nullptr*/)
 
 void CSpecDesignPage::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+   CPropertyPage::DoDataExchange(pDX);
 
    // dad is a friend of the entry. use him to transfer data.
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();

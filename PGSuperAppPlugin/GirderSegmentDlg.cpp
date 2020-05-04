@@ -406,7 +406,7 @@ LRESULT CGirderSegmentDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 
 	ASSERT_VALID(this);
 
-	CPropertyPage* pPage = GetPage(GetActiveIndex());
+	auto* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
 	if( pPage != nullptr )

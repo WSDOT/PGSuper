@@ -739,7 +739,7 @@ ConfigStrandFillVector CGirderDescDebondPage::ComputeStrandFillVector(pgsTypes::
 
 HBRUSH CGirderDescDebondPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-   HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+   HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
    int ID = pWnd->GetDlgCtrlID();
    switch( ID )
    {

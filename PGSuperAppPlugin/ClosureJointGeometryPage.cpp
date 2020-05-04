@@ -654,7 +654,7 @@ void CClosureJointGeometryPage::FillEndDistanceComboBox()
 
 HBRUSH CClosureJointGeometryPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
 {
-   HBRUSH hBrush = CDialog::OnCtlColor(pDC,pWnd,nCtlColor);
+   HBRUSH hBrush = CPropertyPage::OnCtlColor(pDC,pWnd,nCtlColor);
    if ( pWnd->GetDlgCtrlID() == IDC_CONNECTION_MF )
    {
       return m_WhiteBrush;

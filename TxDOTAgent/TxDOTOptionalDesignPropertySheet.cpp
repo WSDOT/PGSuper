@@ -74,7 +74,8 @@ void CTxDOTOptionalDesignPropertySheet::OnSize(UINT nType, int cx, int cy)
       pTab->MoveWindow(0, 0, cx, cy);
    }
 
-   CPropertyPage* pPage = GetActivePage();
+   CWnd* pPage = GetActivePage();
+
    if (pPage!=nullptr && ::IsWindow(pPage->m_hWnd))
    {
       CRect rc;

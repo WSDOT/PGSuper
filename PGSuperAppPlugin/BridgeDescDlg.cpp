@@ -232,7 +232,7 @@ LRESULT CBridgeDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 
 	ASSERT_VALID(this);
 
-	CPropertyPage* pPage = GetPage(GetActiveIndex());
+   auto* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
 	if( pPage != nullptr )
@@ -284,8 +284,8 @@ void CBridgeDescDlg::DoDataExchange(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       // force the active page to update its data
-   	CPropertyPage* pPage = GetPage(GetActiveIndex());
-      if ( !pPage->UpdateData(TRUE) )
+      auto* pPage = GetPage(GetActiveIndex());
+      if ( pPage && !pPage->UpdateData(TRUE) )
       {
          pDX->Fail();
       }
