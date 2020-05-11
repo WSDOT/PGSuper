@@ -813,6 +813,9 @@
     <ClInclude Include="..\Include\PgsExt\PrincipalTensionStressArtifact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\ISummaryRatingArtifact.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bitmap2.bmp">

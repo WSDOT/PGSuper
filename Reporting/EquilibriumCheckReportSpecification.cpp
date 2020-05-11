@@ -62,6 +62,29 @@ HRESULT CEquilibriumCheckReportSpecification::Validate() const
    return S_OK;
 }
 
+std::_tstring CEquilibriumCheckReportSpecification::GetReportContextString() const
+{
+   CGirderKey girderKey = m_Poi.GetSegmentKey();
+   if ( girderKey.groupIndex != ALL_SPANS && girderKey.girderIndex != ALL_GIRDERS )
+   {
+      CComPtr<IBroker> pBroker;
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      rptPoi.SetValue(POI_SPAN,m_Poi);
+      rptPoi.PrefixAttributes(false); // put the attributes after the location
+      rptPoi.IncludeSpanAndGirder(true);
+      CString strLabel;
+      strLabel.Format(_T("%s"), rptPoi.AsString().c_str());
+      // remove the HTML tags
+      strLabel.Replace(_T("<sub>"),_T(""));
+      strLabel.Replace(_T("</sub>"),_T(""));
+
+      return std::_tstring(strLabel);
+   }
+
+   return std::_tstring();
+}
+
 pgsPointOfInterest CEquilibriumCheckReportSpecification::GetPOI() const
 {
    return m_Poi;

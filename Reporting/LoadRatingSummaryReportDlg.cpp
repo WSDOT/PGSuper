@@ -20,11 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// LoadRatingReportDlg.cpp : implementation file
+// LoadRatingSummaryReportDlg.cpp : implementation file
 //
 
 #include "stdafx.h"
-#include <Reporting\LoadRatingReportDlg.h>
+#include <Reporting\LoadRatingSummaryReportDlg.h>
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include "..\Documentation\PGSuper.hh"
 
@@ -45,72 +45,35 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// CLoadRatingReportDlg dialog
+// CLoadRatingSummaryReportDlg dialog
 
-IMPLEMENT_DYNAMIC(CLoadRatingReportDlg, CDialog)
+IMPLEMENT_DYNAMIC(CLoadRatingSummaryReportDlg, CDialog)
 
-CLoadRatingReportDlg::CLoadRatingReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CLoadRatingSummaryReportDlg::CLoadRatingSummaryReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
-   m_GirderLine = 0;
    m_Girder = 0;
-   m_Span = 0;
    m_bReportAtAllPoi = false;
 
    m_pBroker = pBroker;
 
+   m_pGrid = new CMultiGirderSelectGrid();
    m_RadioNum = 0;
 }
 
-CLoadRatingReportDlg::~CLoadRatingReportDlg()
+CLoadRatingSummaryReportDlg::~CLoadRatingSummaryReportDlg()
 {
+   delete m_pGrid;
 }
 
-void CLoadRatingReportDlg::SetGirderKey(const CGirderKey& girderKey)
-{
-   m_GirderLine = girderKey.girderIndex;
-   m_Girder = girderKey.girderIndex;
-
-   if (girderKey.groupIndex == ALL_GROUPS)
-   {
-      m_RadioNum = 0; // girderline
-      m_Span = 0;
-   }
-   else
-   {
-      m_RadioNum = 1;
-      m_Span = girderKey.groupIndex;
-   }
-
-}
-
-CGirderKey CLoadRatingReportDlg::GetGirderKey() const
-{
-   if (IsSingleGirderLineSelected())
-   {
-      return CGirderKey(ALL_GROUPS, m_GirderLine);
-   }
-   else
-   {
-      return CGirderKey(m_Span, m_Girder);
-   }
-}
-
-bool CLoadRatingReportDlg::IsSingleGirderLineSelected() const
-{
-   return m_RadioNum == 0;
-}
-
-void CLoadRatingReportDlg::DoDataExchange(CDataExchange* pDX)
+void CLoadRatingSummaryReportDlg::DoDataExchange(CDataExchange* pDX)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	CDialog::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_LIST, m_ChList);
 
-   DDX_CBIndex(pDX, IDC_GIRDERLINE, (int&)m_GirderLine);
    DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_Girder);
-   DDX_CBIndex(pDX, IDC_SPAN, (int&)m_Span);
    DDX_Radio(pDX, IDC_RADIO_GIRDERLINE, m_RadioNum);
 
    int idx = (m_bReportAtAllPoi ? 1 : 0);
@@ -142,28 +105,57 @@ void CLoadRatingReportDlg::DoDataExchange(CDataExchange* pDX)
          AfxMessageBox(IDS_E_NOCHAPTERS);
          pDX->Fail();
       }
+
+      // Girders
+      m_GirderKeys.clear();
+      if (m_RadioNum == 0)
+      {
+         // make list of all girders along girder line
+         CComPtr<IBroker> pBroker;
+         EAFGetBroker(&pBroker);
+         GET_IFACE2(pBroker, IBridge, pBridge);
+         GroupIndexType ngrps = pBridge->GetGirderGroupCount();
+         for (GroupIndexType igrp = 0; igrp < ngrps; igrp++)
+         {
+            m_GirderKeys.push_back(CGirderKey(igrp, m_Girder));
+         }
+
+         m_bIsSingleGirderLineSelected = true;
+      }
+      else
+      {
+         m_GirderKeys = m_pGrid->GetData();
+         if (m_GirderKeys.empty())
+         {
+            pDX->PrepareCtrl(IDC_SELECT_GRID);
+            AfxMessageBox(IDS_E_NOGIRDERS);
+            pDX->Fail();
+         }
+
+         m_bIsSingleGirderLineSelected = false;
+      }
    }
 }
 
-BEGIN_MESSAGE_MAP(CLoadRatingReportDlg, CDialog)
+BEGIN_MESSAGE_MAP(CLoadRatingSummaryReportDlg, CDialog)
 	ON_COMMAND(IDHELP, OnHelp)
-   ON_BN_CLICKED(IDC_RADIO_GIRDERLINE, &CLoadRatingReportDlg::OnBnClickedRadio)
-   ON_BN_CLICKED(IDC_RADIO_INDIV_GIRDER, &CLoadRatingReportDlg::OnBnClickedRadio)
-   ON_CBN_SELCHANGE(IDC_SPAN, &CLoadRatingReportDlg::OnCbnSelchangeSpan)
+   ON_BN_CLICKED(IDC_SELECT_ALL, &CLoadRatingSummaryReportDlg::OnBnClickedSelectAll)
+   ON_BN_CLICKED(IDC_CLEAR_ALL, &CLoadRatingSummaryReportDlg::OnBnClickedClearAll)
+   ON_BN_CLICKED(IDC_RADIO_GIRDERLINE, &CLoadRatingSummaryReportDlg::OnBnClickedRadio)
+   ON_BN_CLICKED(IDC_RADIO_INDIV_GIRDER, &CLoadRatingSummaryReportDlg::OnBnClickedRadio)
    ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
-// CLoadRatingReportDlg message handlers
-void CLoadRatingReportDlg::UpdateGirderLineComboBox()
+// CLoadRatingSummaryReportDlg message handlers
+void CLoadRatingSummaryReportDlg::UpdateGirderComboBox()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   GET_IFACE( IBridge, pBridge );
 
-   CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDERLINE);
-
+   CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pGdrBox->GetCurSel();
    pGdrBox->ResetContent();
 
-   GET_IFACE( IBridge, pBridge );
    GirderIndexType cGirders = 0;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType i = 0; i < nGroups; i++ )
@@ -174,7 +166,7 @@ void CLoadRatingReportDlg::UpdateGirderLineComboBox()
    for ( GirderIndexType j = 0; j < cGirders; j++ )
    {
       CString strGdr;
-      strGdr.Format( _T("Girderline %s"), LABEL_GIRDER(j));
+      strGdr.Format( _T("Girder %s"), LABEL_GIRDER(j));
       pGdrBox->AddString( strGdr );
    }
 
@@ -184,105 +176,7 @@ void CLoadRatingReportDlg::UpdateGirderLineComboBox()
    }
 }
 
-void CLoadRatingReportDlg::UpdateSpanComboBox()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_SPAN);
-
-   Uint16 curSel = pBox->GetCurSel();
-   pBox->ResetContent();
-
-   GET_IFACE( IBridge, pBridge );
-   GirderIndexType cGirders = 0;
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   for ( GroupIndexType i = 0; i < nGroups; i++ )
-   {
-      CString strSpan = pgsGirderLabel::GetGroupLabel(i).c_str();
-      pBox->AddString( strSpan );
-   }
-
-   if ( pBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR )
-   {
-      pBox->SetCurSel(0);
-   }
-}
-
-void CLoadRatingReportDlg::UpdateGirderComboBox()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CComboBox* pSpanBox = (CComboBox*)GetDlgItem(IDC_SPAN);
-   CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
-
-   Uint16 curSpanSel = pSpanBox->GetCurSel();
-   if (curSpanSel == CB_ERR)
-   {
-      ATLASSERT(0); // span should always be selected before calling us
-      curSpanSel = 0;
-   }
-
-   GET_IFACE( IBridge, pBridge );
-   GirderIndexType nGirders = pBridge->GetGirderCount( GroupIndexType(curSpanSel) );
-
-   Uint16 curGdrSel = pGdrBox->GetCurSel();
-   pGdrBox->ResetContent();
-
-   for ( GirderIndexType ig = 0; ig < nGirders; ig++ )
-   {
-      CString strGdr;
-      strGdr.Format( _T("Girder %s"), LABEL_GIRDER(ig));
-      pGdrBox->AddString( strGdr );
-   }
-
-   if ( pGdrBox->SetCurSel(curGdrSel == CB_ERR ? 0 : curGdrSel) == CB_ERR )
-   {
-      pGdrBox->SetCurSel(0);
-   }
-}
-
-BOOL CLoadRatingReportDlg::OnInitDialog()
-{
-   CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
-   pwndTitle->SetWindowText(m_RptDesc.GetReportName());
-
-   UpdateSpanComboBox();
-   UpdateGirderComboBox();
-   UpdateGirderLineComboBox();
-
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_POI);
-   pCB->AddString(_T("Report at controlling and 10th points"));
-   pCB->AddString(_T("Report at all points"));
-
-   // load settings from registry. may be overridden by spec
-   LoadSettings();
-
-   if ( m_pInitRptSpec )
-   {
-      InitFromRptSpec();
-   }
-
-   CDialog::OnInitDialog();
-
-   UpdateChapterList();
-
-   if ( m_pInitRptSpec )
-   {
-      InitChapterListFromSpec();
-   }
-
-   OnBnClickedRadio();
-
-   return TRUE;  // return TRUE unless you set the focus to a control
-   // EXCEPTION: OCX Property Pages should return FALSE
-}
-
-void CLoadRatingReportDlg::OnHelp() 
-{
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_LOADRATING_REPORT );
-}
-
-void CLoadRatingReportDlg::UpdateChapterList()
+void CLoadRatingSummaryReportDlg::UpdateChapterList()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -310,7 +204,85 @@ void CLoadRatingReportDlg::UpdateChapterList()
    m_ChList.SetCurSel(-1);
 }
 
-void CLoadRatingReportDlg::ClearChapterCheckMarks()
+BOOL CLoadRatingSummaryReportDlg::OnInitDialog()
+{
+   if (!m_GirderKeys.empty())
+   {
+      m_Girder = m_GirderKeys.front().girderIndex;
+   }
+
+ 	m_pGrid->SubclassDlgItem(IDC_SELECT_GRID, this);
+
+   CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
+   pwndTitle->SetWindowText(m_RptDesc.GetReportName());
+
+   UpdateGirderComboBox();
+
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_POI);
+   pCB->AddString(_T("Report at controlling and 10th points"));
+   pCB->AddString(_T("Report at all points"));
+
+   // load settings from registry. may be overridden by spec
+   LoadSettings();
+
+   if ( m_pInitRptSpec )
+   {
+      InitFromRptSpec();
+   }
+
+   CDialog::OnInitDialog();
+
+   UpdateChapterList();
+
+   if ( m_pInitRptSpec )
+   {
+      InitChapterListFromSpec();
+   }
+
+   // need list of groups/girders
+   GET_IFACE( IBridge, pBridge );
+   GroupGirderOnCollection coll;
+   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+      std::vector<bool> gdrson;
+      gdrson.assign(nGirders, false); // set all to false
+
+      coll.push_back(gdrson);
+   }
+
+   // set selected girders
+   std::vector<CGirderKey>::iterator iter(m_GirderKeys.begin());
+   std::vector<CGirderKey>::iterator end(m_GirderKeys.end());
+   for ( ; iter != end; iter++ )
+   {
+      CGirderKey& girderKey(*iter);
+
+      if (girderKey.groupIndex < nGroups && girderKey.groupIndex != ALL_GROUPS)
+      {
+         std::vector<bool>& rgdrson = coll[girderKey.groupIndex];
+         if (girderKey.girderIndex < (GirderIndexType)rgdrson.size())
+         {
+            rgdrson[girderKey.girderIndex] = true;
+         }
+      }
+   }
+
+   m_pGrid->CustomInit(coll,pgsGirderLabel::GetGirderLabel);
+
+   OnBnClickedRadio();
+
+   return TRUE;  // return TRUE unless you set the focus to a control
+   // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CLoadRatingSummaryReportDlg::OnHelp() 
+{
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_LOADRATING_SUMMARY_REPORT );
+}
+
+void CLoadRatingSummaryReportDlg::ClearChapterCheckMarks()
 {
    int cChapters = m_ChList.GetCount();
    for ( int ch = 0; ch < cChapters; ch++ )
@@ -319,7 +291,7 @@ void CLoadRatingReportDlg::ClearChapterCheckMarks()
    }
 }
 
-void CLoadRatingReportDlg::InitChapterListFromSpec()
+void CLoadRatingSummaryReportDlg::InitChapterListFromSpec()
 {
    ClearChapterCheckMarks();
    std::vector<CChapterInfo> chInfo = m_pInitRptSpec->GetChapterInfo();
@@ -341,60 +313,51 @@ void CLoadRatingReportDlg::InitChapterListFromSpec()
    }
 }
 
-void CLoadRatingReportDlg::InitFromRptSpec()
+void CLoadRatingSummaryReportDlg::InitFromRptSpec()
 {
    std::shared_ptr<CLoadRatingReportSpecificationBase> pRptSpec = std::dynamic_pointer_cast<CLoadRatingReportSpecificationBase>(m_pInitRptSpec);
 
-   std::vector<CGirderKey> girderKeys = pRptSpec->GetGirderKeys();
-   bool bIsSingleGirderLineSelected = girderKeys.size() == 1 && girderKeys.front().groupIndex == ALL_GROUPS;
+   m_GirderKeys = pRptSpec->GetGirderKeys();
+   m_bIsSingleGirderLineSelected = m_GirderKeys.size() == 1 && m_GirderKeys.front().groupIndex == ALL_GROUPS;
 
-   if (bIsSingleGirderLineSelected)
+   if (m_bIsSingleGirderLineSelected && !m_GirderKeys.empty())
    {
-      m_Girder = girderKeys.front().girderIndex;
-      m_GirderLine = girderKeys.front().girderIndex;
-      m_Span = 0;
-      m_RadioNum = 0;
+      m_Girder = m_GirderKeys.front().girderIndex;
    }
-   else
-   {
-      if (!girderKeys.empty())
-      {
-         m_Girder = girderKeys.front().girderIndex;
-         m_Span = girderKeys.front().groupIndex;
-         m_RadioNum = 1; // only option where a single girder is selected
-      }
-      else
-      {
-         m_Girder = 0;
-         m_Span = 0;
-         m_RadioNum = 0;
-      }
-   }
+
+   m_RadioNum = m_bIsSingleGirderLineSelected ? 0 : 1;
 
    m_bReportAtAllPoi = pRptSpec->ReportAtAllPointsOfInterest();
 }
 
-void CLoadRatingReportDlg::OnBnClickedRadio()
+void CLoadRatingSummaryReportDlg::OnBnClickedSelectAll()
+{
+   m_pGrid->SetAllValues(true);
+}
+
+void CLoadRatingSummaryReportDlg::OnBnClickedClearAll()
+{
+   m_pGrid->SetAllValues(false);
+}
+
+void CLoadRatingSummaryReportDlg::OnBnClickedRadio()
 {
    BOOL enab_gl = IsDlgButtonChecked(IDC_RADIO_GIRDERLINE) == BST_CHECKED ? TRUE : FALSE;
    BOOL enab_mg = enab_gl ? FALSE : TRUE;
 
-   GetDlgItem(IDC_GIRDERLINE)->EnableWindow(enab_gl);
-   GetDlgItem(IDC_GIRDER)->EnableWindow(enab_mg);
-   GetDlgItem(IDC_SPAN)->EnableWindow(enab_mg);
+   GetDlgItem(IDC_GIRDER)->EnableWindow(enab_gl);
+
+   m_pGrid->Enable(enab_mg==TRUE);
+   GetDlgItem(IDC_SELECT_ALL)->EnableWindow(enab_mg);
+   GetDlgItem(IDC_CLEAR_ALL)->EnableWindow(enab_mg);
 }
 
-void CLoadRatingReportDlg::OnCbnSelchangeSpan()
-{
-   UpdateGirderComboBox();
-}
-
-void CLoadRatingReportDlg::OnDestroy()
+void CLoadRatingSummaryReportDlg::OnDestroy()
 {
    SaveSettings();
 }
 
-void CLoadRatingReportDlg::LoadSettings()
+void CLoadRatingSummaryReportDlg::LoadSettings()
 {
    // loads last settings from the registry
    CEAFDocument* pDoc = EAFGetDocument();
@@ -406,7 +369,7 @@ void CLoadRatingReportDlg::LoadSettings()
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
 
-   CString strSelectionType = pApp->GetProfileString(_T("Settings"), _T("LoadRatingReportLoc"), _T("Girderline"));
+   CString strSelectionType = pApp->GetProfileString(_T("Settings"), _T("LoadRatingSummaryReportLoc"), _T("Girderline"));
    if (_T("Girderline") == strSelectionType)
    {
       m_RadioNum = 0;
@@ -417,7 +380,7 @@ void CLoadRatingReportDlg::LoadSettings()
    }
 }
 
-void CLoadRatingReportDlg::SaveSettings()
+void CLoadRatingSummaryReportDlg::SaveSettings()
 {
    // save settings to registry
    CEAFDocument* pDoc = EAFGetDocument();
@@ -430,5 +393,5 @@ void CLoadRatingReportDlg::SaveSettings()
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
 
    CString strSelectionType = m_RadioNum == 0 ? _T("Girderline") : _T("Selection");
-   pApp->WriteProfileString(_T("Settings"), _T("LoadRatingReportLoc"), strSelectionType);
+   pApp->WriteProfileString(_T("Settings"), _T("LoadRatingSummaryReportLoc"), strSelectionType);
 }

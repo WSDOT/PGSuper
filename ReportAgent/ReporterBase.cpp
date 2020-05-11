@@ -119,6 +119,7 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateBridgeGeometryReport();
    CreateDetailsReport();
    CreateLoadRatingReport();
+   CreateLoadRatingSummaryReport();
    CreateBearingDesignReport();
    CreateBridgeAnalysisReport();
    CreateHaulingReport();
@@ -251,6 +252,29 @@ void CReporterBase::CreateLoadRatingReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCrackedSectionDetailsChapterBuilder(false)) );
+   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+}
+
+void CReporterBase::CreateLoadRatingSummaryReport()
+{
+   GET_IFACE(IReportManager,pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pLoadRatingRptSpecBuilder(std::make_shared<CLoadRatingSummaryReportSpecificationBuilder>(m_pBroker) );
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Load Rating Summary Report")));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pLoadRatingRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingDetailsChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingReactionsChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(false,true,true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(false,true,true)) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 }
 

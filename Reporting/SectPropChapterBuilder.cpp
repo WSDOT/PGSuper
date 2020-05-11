@@ -70,18 +70,27 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   CGirderKey girderKey;
+   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
 
+   CComPtr<IBroker> pBroker;
+   std::vector<CGirderKey> girderKeys;
    if ( pGdrRptSpec )
    {
       pGdrRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrRptSpec->GetGirderKey();
+      girderKeys.push_back(pGdrRptSpec->GetGirderKey());
    }
    else if ( pGdrLineRptSpec)
    {
       pGdrLineRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrLineRptSpec->GetGirderKey();
+      GET_IFACE2(pBroker,IBridge,pBridge);
+
+      CGirderKey girderKey = pGdrLineRptSpec->GetGirderKey();
+      pBridge->GetGirderline(girderKey, &girderKeys);
+   }
+   else if ( pMultiGirderRptSpec)
+   {
+      pMultiGirderRptSpec->GetBroker(&pBroker);
+      girderKeys = pMultiGirderRptSpec->GetGirderKeys();
    }
    else
    {
@@ -239,14 +248,12 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       }
    }
 
-   std::vector<CGirderKey> vGirderKeys;
-   pBridge->GetGirderline(girderKey, &vGirderKeys);
 
    if ( !m_SimplifiedVersion )
    {
       GET_IFACE2(pBroker, IPointOfInterest,   pPoi);
       GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-      for (const auto& thisGirderKey : vGirderKeys)
+      for (const auto& thisGirderKey : girderKeys)
       {
          const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
          PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
@@ -285,7 +292,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       bComposite = true;
    }
 
-   for (const auto& thisGirderKey : vGirderKeys)
+   for (const auto& thisGirderKey : girderKeys)
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
       const CSplicedGirderData* pSplicedGirder = pGroup->GetGirder(thisGirderKey.girderIndex);

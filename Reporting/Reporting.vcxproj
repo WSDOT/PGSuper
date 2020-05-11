@@ -513,6 +513,7 @@
     <ClCompile Include="LoadRatingReactionsChapterBuilder.cpp" />
     <ClCompile Include="LoadRatingReportDlg.cpp" />
     <ClCompile Include="LoadRatingReportSpecificationBuilder.cpp" />
+    <ClCompile Include="LoadRatingSummaryReportDlg.cpp" />
     <ClCompile Include="LongitudinalReinforcementForShearLoadRatingChapterBuilder.cpp" />
     <ClCompile Include="LongRebarLocations.cpp" />
     <ClCompile Include="LongReinfShearCheck.cpp" />
@@ -697,6 +698,7 @@
     <ClInclude Include="..\Include\Reporting\LoadRatingReactionsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LoadRatingSummaryReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\LongitudinalReinforcementForShearLoadRatingChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LongRebarLocations.h" />
     <ClInclude Include="..\Include\Reporting\LongReinfShearCheck.h" />

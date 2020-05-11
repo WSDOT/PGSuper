@@ -39,6 +39,7 @@ protected:
    void CreateBridgeGeometryReport();
    void CreateDetailsReport();
    void CreateLoadRatingReport();
+   void CreateLoadRatingSummaryReport();
    void CreateBearingDesignReport();
 
    void CreateBridgeAnalysisReport();

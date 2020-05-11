@@ -29,6 +29,7 @@
 
 #include "GirderHandlingChecker.h"
 #include "GirderLiftingChecker.h"
+#include "SummaryRatingArtifactImpl.h"
 
 #include <IFace\BeamFactory.h>
 #include <IFace\StatusCenter.h>
@@ -4107,6 +4108,13 @@ const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(const CGirderKey& girde
 {
    ValidateRatingArtifacts(girderKey,ratingType,vehicleIdx);
    return FindRatingArtifact(girderKey,ratingType,vehicleIdx);
+}
+
+std::shared_ptr<const pgsISummaryRatingArtifact> CEngAgentImp::GetSummaryRatingArtifact(const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx) const
+{
+   std::shared_ptr<const pgsISummaryRatingArtifact> ptr(std::make_shared<pgsSummaryRatingArtifactImpl>(girderKeys, ratingType, vehicleIdx, m_pBroker, this));
+
+   return ptr;
 }
 
 const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderKey& girderKey, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType) const

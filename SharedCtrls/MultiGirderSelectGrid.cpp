@@ -295,6 +295,42 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
 	GetParam( )->EnableUndo(TRUE);
 }
 
+void CMultiGirderSelectGrid::Enable(bool bEnable)
+{
+	GetParam()->EnableUndo(FALSE);
+   GetParam()->SetLockReadOnly(FALSE);
+
+   CGXStyle style;
+   CGXRange range;
+   if ( bEnable )
+   {
+      style.SetEnabled(TRUE)
+         .SetReadOnly(FALSE)
+         .SetInterior(::GetSysColor(COLOR_WINDOW));
+//           .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+
+      range = CGXRange(1,1,GetRowCount(),GetColCount());
+      SetStyleRange(range,style);
+
+	   GetParam()->EnableSelection((WORD) (GX_SELFULL));
+   }
+   else
+   {
+      style.SetEnabled(FALSE)
+           .SetReadOnly(TRUE)
+           .SetInterior(::GetSysColor(COLOR_BTNFACE));
+//           .SetTextColor(::GetSysColor(COLOR_GRAYTEXT));
+
+      range = CGXRange(0,0,GetRowCount(),GetColCount());
+      SetStyleRange(range,style);
+
+	   GetParam()->EnableSelection((WORD) (GX_SELNONE));
+   }
+
+   GetParam()->SetLockReadOnly(TRUE);
+   GetParam()->EnableUndo(FALSE);
+}
+
 bool CMultiGirderSelectGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 {
     if (IsCurrentCell(nRow, nCol) && IsActiveCurrentCell())

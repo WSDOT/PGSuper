@@ -145,6 +145,17 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
 
+   // write location
+   std::_tstring strloc = pRptSpec->GetReportContextString();
+   if (!strloc.empty())
+   {
+      *pPara << _T("For ") << strloc << rptNewLine;
+   }
+   else
+   {
+      *pPara << rptNewLine;
+   }
+
    // Determine if the report spec has span/girder information
    std::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = std::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
    std::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = std::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
@@ -156,33 +167,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
    if ( pGirderRptSpec != nullptr )
    {
       girderKey = pGirderRptSpec->GetGirderKey();
-      GroupIndexType grpIdx  = girderKey.groupIndex;
-      GirderIndexType gdrIdx = girderKey.girderIndex;
-
-      if ( grpIdx != INVALID_INDEX && gdrIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine;
-         *pPara << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-      }
-      else if( grpIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine;
-         *pPara << _T("Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
-      }
-      else if ( gdrIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine;
-         *pPara << _T("Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-      }
    }
    else if ( pSpanRptSpec != nullptr )
    {
-      SpanIndexType spanIdx = pSpanRptSpec->GetSpan();
-      if ( spanIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine;
-         *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
-      }
    }
    else if ( pGirderLineRptSpec != nullptr )
    {
@@ -190,8 +177,6 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
       GirderIndexType gdrIdx = pGirderLineRptSpec->GetGirderIndex();
       girderKey.girderIndex = gdrIdx;
       ATLASSERT(gdrIdx != INVALID_INDEX);
-      *pPara << _T("For") << rptNewLine;
-      *pPara << _T("Girder Line ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
    }
    else
    {

@@ -102,7 +102,10 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    ColumnIndexType nColumns = (bComposite ? 3 : 2);
 
-   rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(nColumns,_T("Section Properties"));
+   std::_tstring str(_T("Section Properties - "));
+   str += pgsGirderLabel::GetSegmentLabel(segmentKey);
+
+   rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(nColumns,str.c_str());
 
    (*xs_table)(0,0) << _T("");
 

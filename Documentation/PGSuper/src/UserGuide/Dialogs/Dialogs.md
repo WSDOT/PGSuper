@@ -37,6 +37,8 @@ PGSuper Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_load_factors
 * @subpage ug_dialogs_load_modifiers
 * @subpage ug_dialogs_load_rating_options
+* @subpage ug_dialogs_loadrating_report_options
+* @subpage ug_dialogs_loadrating_summary_report_options
 * @subpage ug_dialogs_loads_view
 * @subpage ug_dialogs_moment_load
 * @subpage ug_dialogs_pier_description

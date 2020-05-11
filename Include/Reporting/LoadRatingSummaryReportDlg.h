@@ -27,33 +27,29 @@
 
 #include "SharedCTrls\MultiGirderSelectGrid.h" 
 
-// CLoadRatingReportDlg dialog
+// CLoadRatingSummaryReportDlg dialog
 
-class CLoadRatingReportDlg : public CDialog
+class CLoadRatingSummaryReportDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CLoadRatingReportDlg)
+	DECLARE_DYNAMIC(CLoadRatingSummaryReportDlg)
 
 public:
-	CLoadRatingReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_LOADRATINGREPORT,CWnd* pParent = nullptr);   // standard constructor
-	virtual ~CLoadRatingReportDlg();
+	CLoadRatingSummaryReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_LOADRATINGSUMMARYREPORT,CWnd* pParent = nullptr);   // standard constructor
+	virtual ~CLoadRatingSummaryReportDlg();
 
 // Dialog Data
 	enum { IDD = IDD_LOADRATINGREPORT };
 
    bool m_bReportAtAllPoi;
    std::vector<std::_tstring> m_ChapterList;
-
-   void SetGirderKey(const CGirderKey& girderKey);
-   CGirderKey GetGirderKey() const;
-   bool IsSingleGirderLineSelected() const;
+   std::vector<CGirderKey> m_GirderKeys;
+   bool m_bIsSingleGirderLineSelected;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
    virtual void UpdateChapterList();
    virtual void UpdateGirderComboBox();
-   virtual void UpdateGirderLineComboBox();
-   virtual void UpdateSpanComboBox();
 
    virtual void ClearChapterCheckMarks();
    virtual void InitChapterListFromSpec();
@@ -67,22 +63,22 @@ protected:
    std::shared_ptr<CReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
 private:
+   CMultiGirderSelectGrid* m_pGrid;
    int m_RadioNum;
    GirderIndexType m_Girder;
-   GirderIndexType m_GirderLine;
-   SpanIndexType m_Span;
 
 public:
 	// Generated message map functions
 	//{{AFX_MSG(CReportDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnHelp();
+   afx_msg void OnBnClickedSelectAll();
+   afx_msg void OnBnClickedClearAll();
    afx_msg void OnBnClickedRadio();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
-   afx_msg void OnCbnSelchangeSpan();
-   afx_msg void OnDestroy(); 
+   afx_msg void OnDestroy();
 
 private:
    void LoadSettings();

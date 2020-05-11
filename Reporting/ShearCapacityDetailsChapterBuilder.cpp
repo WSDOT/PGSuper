@@ -261,6 +261,11 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
       rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
+      if (vGirderKeys.size() > 1)
+      {
+         // report where we are if more than one girder in report
+         *pPara << pgsGirderLabel::GetGirderLabel(thisGirderKey) << rptNewLine;
+      }
 
       bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
 

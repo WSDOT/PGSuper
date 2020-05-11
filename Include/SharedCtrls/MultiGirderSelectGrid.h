@@ -77,6 +77,7 @@ protected:
 public:
    // custom stuff for grid
    void CustomInit(const GroupGirderOnCollection& groupGirderOnCollection, std::_tstring(*pGetGirderLabel)(GirderIndexType));
+   void Enable(bool bEnable);
 
    bool GetCellValue(ROWCOL nRow, ROWCOL nCol);
    void SetAllValues(bool val);

@@ -66,12 +66,12 @@ std::_tstring pgsGirderLabel::GetGirderLabel(GirderIndexType gdrIdx)
    return strLabel;
 }
 
-std::_tstring pgsGirderLabel::GetGirderLabel(const CGirderKey& girderKey)
+std::_tstring pgsGirderLabel::GetGirderLabel(const CGirderKey& girderKey, bool forceSpan)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
-   if ( pDocType->IsPGSuperDocument() )
+   GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
+   if ( forceSpan || pDocType->IsPGSuperDocument() )
    {
       std::_tostringstream os;
       os << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) << _T(", Girder ") << LABEL_GIRDER(girderKey.girderIndex);
@@ -85,12 +85,12 @@ std::_tstring pgsGirderLabel::GetGirderLabel(const CGirderKey& girderKey)
    }
 }
 
-std::_tstring pgsGirderLabel::GetSegmentLabel(const CSegmentKey& segmentKey)
+std::_tstring pgsGirderLabel::GetSegmentLabel(const CSegmentKey& segmentKey, bool forceSpan)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
-   if ( pDocType->IsPGSuperDocument() )
+   GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
+   if ( forceSpan || pDocType->IsPGSuperDocument() )
    {
       ATLASSERT(segmentKey.segmentIndex == 0);
       std::_tostringstream os;
@@ -104,6 +104,27 @@ std::_tstring pgsGirderLabel::GetSegmentLabel(const CSegmentKey& segmentKey)
       return os.str();
    }
 }
+
+std::_tstring pgsGirderLabel::GetGroupLabel(GroupIndexType grpIdx, bool forceSpan)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
+   if ( forceSpan || pDocType->IsPGSuperDocument() )
+   {
+      std::_tostringstream os;
+      os << _T("Span ") << LABEL_SPAN(grpIdx);
+      return os.str();
+   }
+   else
+   {
+      std::_tostringstream os;
+      os << _T("Group ") << LABEL_GROUP(grpIdx);
+      return os.str();
+   }
+}
+
+
 
 std::_tstring pgsGirderLabel::GetClosureLabel(const CClosureKey& closureKey)
 {

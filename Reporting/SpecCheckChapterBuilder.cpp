@@ -503,6 +503,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       return pChapter;
    }
 
+   std::vector<CGirderKey> girderKeys{ girderKey }; // needed for rating summary tables
+
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -511,7 +513,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       (*pPara) << pPara->GetName() << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
-      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker, girderKey, CRatingSummaryTable::Design ) << rptNewLine;
+      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker, girderKeys, CRatingSummaryTable::Design ) << rptNewLine;
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
@@ -525,14 +527,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Routine);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Routine);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
          }
 
          bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Routine,&bMustCloseBridge);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKeys, pgsTypes::lrLegal_Routine,&bMustCloseBridge);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
@@ -545,14 +547,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Special);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Special);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
          }
 
          bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Special,&bMustCloseBridge);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKeys, pgsTypes::lrLegal_Special,&bMustCloseBridge);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
@@ -565,14 +567,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Emergency);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Emergency);
          if (pTable)
          {
             (*pPara) << pTable << rptNewLine;
          }
 
          bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Emergency, &bMustCloseBridge);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKeys, pgsTypes::lrLegal_Emergency, &bMustCloseBridge);
          if (pTable)
          {
             (*pPara) << pTable << rptNewLine;
@@ -596,7 +598,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrPermit_Routine);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrPermit_Routine);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
@@ -605,7 +607,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrPermit_Special);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrPermit_Special);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;

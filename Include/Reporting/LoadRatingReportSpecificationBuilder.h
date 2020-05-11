@@ -28,8 +28,10 @@
 #include <ReportManager\ReportManager.h>
 #include <WBFLCore.h>
 
+/////////////////// Full load rating report ///////////////////
+
 class REPORTINGCLASS CLoadRatingReportSpecificationBuilder :
-   public CGirderLineReportSpecificationBuilder
+   public CBrokerReportSpecificationBuilder
 {
 public:
    CLoadRatingReportSpecificationBuilder(IBroker* pBroker);
@@ -39,18 +41,87 @@ public:
    virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };
 
+////////////// Summary Load Rating Report //////////////////////
 
-class REPORTINGCLASS CLoadRatingReportSpecification :
-   public CGirderLineReportSpecification
+class REPORTINGCLASS CLoadRatingSummaryReportSpecificationBuilder :
+   public CBrokerReportSpecificationBuilder
 {
 public:
-   CLoadRatingReportSpecification(LPCTSTR strReportName, IBroker* pBroker, GirderIndexType gdrIdx,bool bReportForAllPoi);
-   CLoadRatingReportSpecification(const CLoadRatingReportSpecification& other);
-   ~CLoadRatingReportSpecification(void);
+   CLoadRatingSummaryReportSpecificationBuilder(IBroker* pBroker);
+   ~CLoadRatingSummaryReportSpecificationBuilder(void);
+
+   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
+};
+
+// Base class for LoadRatingReportSpecs
+class REPORTINGCLASS CLoadRatingReportSpecificationBase
+{
+public:
+   CLoadRatingReportSpecificationBase(bool bReportForAllPoi);
 
    void ReportAtAllPointsOfInterest(bool bReportAtAllPoi);
    bool ReportAtAllPointsOfInterest() const;
 
+   virtual std::vector<CGirderKey> GetGirderKeys() const = 0;
+
 protected:
    bool m_bReportAtAllPoi;
+
+private:
+   CLoadRatingReportSpecificationBase();
+};
+
+
+// Single girder selection reports
+class REPORTINGCLASS CGirderLoadRatingReportSpecification :
+   public CLoadRatingReportSpecificationBase, public CGirderReportSpecification
+{
+public:
+   CGirderLoadRatingReportSpecification(LPCTSTR strReportName, IBroker* pBroker, const CGirderKey& gdrKey, bool bReportForAllPoi);
+   ~CGirderLoadRatingReportSpecification(void);
+
+   std::vector<CGirderKey> GetGirderKeys() const override;
+
+protected:
+
+private:
+   CGirderLoadRatingReportSpecification();
+};
+
+// Single girderline selection reports
+class REPORTINGCLASS CGirderLineLoadRatingReportSpecification :
+   public CLoadRatingReportSpecificationBase, public CGirderLineReportSpecification
+{
+public:
+   CGirderLineLoadRatingReportSpecification(LPCTSTR strReportName, IBroker* pBroker, GirderIndexType gdrIdx, bool bReportForAllPoi);
+   ~CGirderLineLoadRatingReportSpecification(void);
+
+   std::vector<CGirderKey> GetGirderKeys() const override;
+
+protected:
+
+private:
+   CGirderLineLoadRatingReportSpecification();
+};
+
+// Multi girder selection reports
+class REPORTINGCLASS CMultiGirderLoadRatingReportSpecification :
+   public CLoadRatingReportSpecificationBase, public CMultiGirderReportSpecification
+{
+public:
+   CMultiGirderLoadRatingReportSpecification(LPCTSTR strReportName, IBroker* pBroker, const std::vector<CGirderKey>& gdrKeys, bool bReportForAllPoi);
+   ~CMultiGirderLoadRatingReportSpecification(void);
+
+   bool IsSingleGirderLineReport() const;
+
+   std::vector<CGirderKey> GetGirderKeys() const override;
+
+   virtual HRESULT Validate() const override;
+   virtual std::_tstring GetReportContextString() const override;
+
+protected:
+
+private:
+   CMultiGirderLoadRatingReportSpecification();
 };

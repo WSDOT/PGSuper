@@ -113,7 +113,7 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
 #if defined _DEBUG || defined _BETA_VERSION
    pTSRptBuilder->IncludeTimingChapter();
 #endif
-   pTSRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pTSRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pTSRptBuilder->GetName())) );
    pTSRptBuilder->SetReportSpecificationBuilder( pRptSpecBuilder );
    pTSRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTemporarySupportReactionChapterBuilder(true)) );
    pRptMgr->AddReportBuilder( pTSRptBuilder.release() );

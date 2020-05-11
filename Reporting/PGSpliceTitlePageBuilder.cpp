@@ -79,50 +79,16 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
 
-   // Determine if the report spec has span/girder information
-   std::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = std::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
-   std::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = std::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
-   std::shared_ptr<CGirderLineReportSpecification> pGirderLineRptSpec = std::dynamic_pointer_cast<CGirderLineReportSpecification,CReportSpecification>(pRptSpec);
-
-   if ( pGirderRptSpec != nullptr )
+   // write location 
+   std::_tstring strloc = pRptSpec->GetReportContextString();
+   if (!strloc.empty())
    {
-      const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
-      GroupIndexType grpIdx  = girderKey.groupIndex;
-      GirderIndexType gdrIdx = girderKey.girderIndex;
-
-      if ( grpIdx != INVALID_INDEX && gdrIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine << rptNewLine;
-         *pPara << _T("Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-      }
-      else if( grpIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine << rptNewLine;
-         *pPara << _T("Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
-      }
-      else if ( gdrIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine << rptNewLine;
-         *pPara << _T("Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-      }
+      *pPara << _T("For ") << strloc << rptNewLine;
    }
-   else if ( pSpanRptSpec != nullptr )
+   else
    {
-      SpanIndexType spanIdx = pSpanRptSpec->GetSpan();
-      if ( spanIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine << rptNewLine;
-         *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
-      }
+      *pPara << rptNewLine;
    }
-   else if ( pGirderLineRptSpec != nullptr )
-   {
-      GirderIndexType gdrIdx = pGirderLineRptSpec->GetGirderIndex();
-      ATLASSERT(gdrIdx != INVALID_INDEX);
-      *pPara << _T("For") << rptNewLine << rptNewLine;
-      *pPara << _T("Girder Line ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-   }
-   *pPara << rptNewLine;
 
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());

@@ -61,8 +61,10 @@ class PGSEXTCLASS pgsGirderLabel
 {
 public:
    static std::_tstring GetGirderLabel(GirderIndexType gdrIdx);
-   static std::_tstring GetGirderLabel(const CGirderKey& girderKey);
-   static std::_tstring GetSegmentLabel(const CSegmentKey& segmentKey);
+   // Can force "Span" regardless of document type if desired
+   static std::_tstring GetGirderLabel(const CGirderKey& girderKey, bool forceSpan=false);
+   static std::_tstring GetSegmentLabel(const CSegmentKey& segmentKey, bool forceSpan=false);
+   static std::_tstring GetGroupLabel(GroupIndexType grpIdx, bool forceSpan=false);
    static std::_tstring GetClosureLabel(const CClosureKey& closureKey);
    static bool UseAlphaLabel();
    static bool UseAlphaLabel(bool bUseAlpha);

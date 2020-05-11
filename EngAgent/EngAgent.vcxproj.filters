@@ -55,6 +55,9 @@
     <ClCompile Include="PrincipalWebStressEngineer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SummaryRatingArtifactImpl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\MomentCapacity.h">
