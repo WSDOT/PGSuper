@@ -83,6 +83,7 @@ struct BearingCriteria;
 //
 class pgsLibraryEntryDifferenceItem;
 class CSpecMainSheet;
+class CSpecPropertySheet;
 class SpecLibraryEntry;
 class SpecLibraryEntryObserver;
 #pragma warning(disable:4231)
@@ -157,6 +158,8 @@ class PSGLIBCLASS SpecLibraryEntry : public WBFL::Library::LibraryEntry, public 
 {
    // the dialog is our friend.
    friend CSpecMainSheet;
+   friend CSpecPropertySheet;
+public:
 
 public:
    SpecLibraryEntry();

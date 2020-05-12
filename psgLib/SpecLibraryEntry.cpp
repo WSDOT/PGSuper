@@ -67,7 +67,7 @@ SpecLibraryEntry& SpecLibraryEntry::operator=(const SpecLibraryEntry& rOther)
    return *this;
 }
 
-
+#include "SpecPropertySheet.h"
 bool SpecLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -80,8 +80,11 @@ bool SpecLibraryEntry::Edit(bool allowEditing,int nPage)
       tmp.AddRef();
    }
 
-   CSpecMainSheet dlg(tmp, IDS_SPEC_SHEET, allowEditing);
-   dlg.SetActivePage(nPage);
+   //CSpecMainSheet dlg(tmp, IDS_SPEC_SHEET, allowEditing);
+   //dlg.SetActivePage(nPage);
+   //INT_PTR i = dlg.DoModal();
+
+   CSpecPropertySheet dlg(tmp, IDS_SPEC_SHEET, allowEditing);
    INT_PTR i = dlg.DoModal();
 
    if ( 0 < GetRefCount() )

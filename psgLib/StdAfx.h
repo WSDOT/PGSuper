@@ -32,8 +32,6 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include <PGSuperAll.h>
-
 #ifndef _AFX_NO_OLE_SUPPORT
 #include <afxole.h>         // MFC OLE classes
 #include <afxodlgs.h>       // MFC OLE dialog classes
@@ -68,6 +66,8 @@
 #include <LibraryFw\LibraryFw.h>
 #include <afxdlgs.h>
 #include <afxwin.h>
+#include <afxpropertypage.h>
+#include <afxpropertysheet.h>
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFHelp.h>
@@ -76,6 +76,7 @@
 
 #include <Reporter/Reporter.h>
 
+#include <PGSuperAll.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.

@@ -78,6 +78,7 @@
 //
 class pgsLibraryEntryDifferenceItem;
 class CSpecMainSheet;
+class CSpecPropertySheet;
 
 
 /*****************************************************************************
@@ -101,6 +102,8 @@ class SpecLibraryEntryImpl
 {
    // the dialog is our friend.
    friend CSpecMainSheet;
+   friend CSpecPropertySheet;
+
 public:
    SpecLibraryEntryImpl();
    SpecLibraryEntryImpl(const SpecLibraryEntryImpl& rOther) = default;
