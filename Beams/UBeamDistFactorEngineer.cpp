@@ -187,8 +187,6 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       //////////////////////////////////////////////////////
       // Moments
       //////////////////////////////////////////////////////
-      GET_IFACE(ISpecification, pSpec);
-      GET_IFACE(ILibrary, pLibrary);
       if (pSpecEntry->IgnoreSkewReductionForMoment())
       {
          (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;

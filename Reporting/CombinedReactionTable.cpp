@@ -49,7 +49,7 @@ CLASS
 
 // Function to report rows for combined pedestrian result
 inline void CombineReportPedResult(ILiveLoads::PedestrianLoadApplicationType appType,
-                              rptRcTable* pTable, rptForceSectionValue& reaction,
+                              rptRcTable* pTable, ReactionUnitValueTool& reaction,
                               RowIndexType row, ColumnIndexType& pedCol,
                               Float64 llMin, Float64 llMax, Float64 pedMin, Float64 pedMax)
 {
@@ -171,8 +171,12 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false );
 
+   // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
+   ReactionUnitValueTool reaction(tableType, reactu);
+
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -214,8 +218,8 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
 
    *p << p_table;
 
-   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
@@ -229,9 +233,19 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
 
       IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
-     (*p_table)(row,0) << reactionLocation.PierLabel;
+      const CBearingData2* pbd = pIBridgeDesc->GetBearingData(reactionLocation.PierIdx, (reactionLocation.Face==rftBack? pgsTypes::Back : pgsTypes::Ahead), girderKey.girderIndex);
+      IndexType numBearings = pbd->BearingCount;
 
-      ColumnIndexType col = 1;
+      reaction.SetNumBearings(numBearings); // class will dump per-bearing reaction if applicable:
+
+      ColumnIndexType col = 0;
+      (*p_table)(row,col) << reactionLocation.PierLabel;
+      if (tableType == BearingReactionsTable && numBearings > 1) // add second line for per-bearing value
+      {
+         (*p_table)(row, col) << _T(" - Total") << rptNewLine << _T("Per Bearing");
+      }
+      col++;
+
       if ( analysisType == pgsTypes::Envelope )
       {
          (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction( intervalIdx, lcDC, reactionLocation, maxBAT, rtIncremental ) );
@@ -346,12 +360,15 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false );
 
+   // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
+   ReactionUnitValueTool reaction(BearingReactionsTable, reactu);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
@@ -388,8 +405,8 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
                                  true,bDesign,bPermit,bPedLoading,bRating,false,includeImpact,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
-   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
    // Compute start column for pedestrian-combined columns if needed
    ColumnIndexType startPedCol(INVALID_INDEX);
@@ -415,9 +432,19 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-     (*p_table)(row,0) << reactionLocation.PierLabel;
+      const CBearingData2* pbd = pIBridgeDesc->GetBearingData(reactionLocation.PierIdx, (reactionLocation.Face==rftBack? pgsTypes::Back : pgsTypes::Ahead), girderKey.girderIndex);
+      IndexType numBearings = pbd->BearingCount;
 
-      ColumnIndexType col = 1;
+      reaction.SetNumBearings(numBearings); // class will dump per-bearing reaction if applicable:
+
+      ColumnIndexType col = 0;
+      (*p_table)(row,col) << reactionLocation.PierLabel;
+      if (numBearings > 1) // add second line for per-bearing value
+      {
+         (*p_table)(row, col) << _T(" - Total") << rptNewLine << _T("Per Bearing");
+      }
+      col++;
+
       ColumnIndexType pedCol = startPedCol;
 
       if ( analysisType == pgsTypes::Envelope )
@@ -696,13 +723,17 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
 
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false );
+
+   // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
+   ReactionUnitValueTool reaction(BearingReactionsTable, reactu);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
    bool bPermit = pLsForces->IsStrengthIIApplicable(girderKey);
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
@@ -718,8 +749,8 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
                              true,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
-   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
@@ -731,10 +762,20 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
    ReactionLocationIter iter(Locations);
    for (iter.First(); !iter.IsDone(); iter.Next())
    {
-      ColumnIndexType col = 0;
       const ReactionLocation& reactionLocation( iter.CurrentItem() );
 
-     (*p_table)(row,col++) << reactionLocation.PierLabel;
+      const CBearingData2* pbd = pIBridgeDesc->GetBearingData(reactionLocation.PierIdx, (reactionLocation.Face==rftBack? pgsTypes::Back : pgsTypes::Ahead), girderKey.girderIndex);
+      IndexType numBearings = pbd->BearingCount;
+
+      reaction.SetNumBearings(numBearings); // class will dump per-bearing reaction if applicable:
+
+      ColumnIndexType col = 0;
+      (*p_table)(row,col) << reactionLocation.PierLabel;
+      if (numBearings > 1) // add second line for per-bearing value
+      {
+         (*p_table)(row, col) << _T(" - Total") << rptNewLine << _T("Per Bearing");
+      }
+      col++;
 
       if ( analysisType == pgsTypes::Envelope )
       {
