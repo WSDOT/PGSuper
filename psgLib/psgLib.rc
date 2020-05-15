@@ -391,7 +391,7 @@ BEGIN
     LTEXT           "You must correct all errors before the girder data is accepted.",IDC_STATIC,7,20,192,8
 END
 
-IDD_SPEC_DESCR DIALOGEX 0, 0, 355, 298
+IDD_SPEC_DESCR DIALOGEX 0, 0, 355, 270
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -399,20 +399,22 @@ BEGIN
     LTEXT           "Entry Name: ",IDC_STATIC,7,16,42,8
     LTEXT           "Static",IDC_NAME,89,16,259,8
     LTEXT           "Description",IDC_STATIC,7,28,46,8
-    EDITTEXT        IDC_EDIT_DESCRIPTION,7,37,341,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN
-    GROUPBOX        "Design Criteria Basis",IDC_STATIC,7,88,341,68
-    LTEXT           "Use this design criteria along with provisions from the\nAASHTO LRFD Bridge Design Specifications",IDC_STATIC,21,105,177,21
-    COMBOBOX        IDC_SPECIFICATION,17,129,237,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Use Constants and Equations from the Following Version of the Selected Specification:",IDC_STATIC,7,168,341,37
+    EDITTEXT        IDC_EDIT_DESCRIPTION,7,37,341,31,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN
+    GROUPBOX        "Basis",IDC_STATIC,7,74,341,60
+    LTEXT           "Use this criteria along with provisions from the AASHTO LRFD Bridge Design Specifications",IDC_STATIC,17,86,288,8
+    COMBOBOX        IDC_SPECIFICATION,17,99,237,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Always use the most recent edition of the AASHTO LRFD Bridge Design Specifications",IDC_USE_CURRENT_VERSION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,117,289,10
+    GROUPBOX        "Use Constants and Equations from the Following Version of the Selected Specification:",IDC_STATIC,7,140,341,37
     CONTROL         "SI Units Version (Note: SI not available after 2006)",IDC_SPEC_UNITS_SI,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,14,180,174,10
-    CONTROL         "US Units Version",IDC_SPEC_UNITS_US,"Button",BS_AUTORADIOBUTTON,14,192,69,10
-    GROUPBOX        "Section Properties",IDC_STATIC,7,215,341,76
-    CONTROL         "Gross",IDC_GROSS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,231,34,10
-    CONTROL         "Transformed",IDC_TRANSFORMED,"Button",BS_AUTORADIOBUTTON,15,247,55,10
-    LTEXT           "Compute effective flange width",IDC_STATIC,94,232,98,8
-    COMBOBOX        IDC_EFF_FLANGE_WIDTH,197,231,142,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CTEXT           "NOTE: Note: The slab haunch can be included in composite section properties. See settings on the Creep and Camber tab",IDC_STATIC,21,265,318,20,WS_BORDER
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP,14,153,174,10
+    CONTROL         "US Units Version",IDC_SPEC_UNITS_US,"Button",BS_AUTORADIOBUTTON,14,164,69,10
+    GROUPBOX        "Section Properties",IDC_STATIC,7,187,341,76
+    CONTROL         "Gross",IDC_GROSS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,203,34,10
+    CONTROL         "Transformed",IDC_TRANSFORMED,"Button",BS_AUTORADIOBUTTON,15,216,55,10
+    LTEXT           "Compute effective flange width",IDC_STATIC,94,204,98,8
+    COMBOBOX        IDC_EFF_FLANGE_WIDTH,197,203,142,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "NOTE:\nThe slab haunch can be included in composite section properties. See settings on the Creep and Camber tab",IDC_STATIC,21,232,318,26,WS_BORDER
 END
 
 IDD_WSDOT_HAULING DIALOGEX 0, 0, 447, 390
@@ -2049,7 +2051,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 348
         TOPMARGIN, 7
-        BOTTOMMARGIN, 291
+        BOTTOMMARGIN, 263
     END
 
     IDD_WSDOT_HAULING, DIALOG

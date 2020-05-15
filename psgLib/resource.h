@@ -906,6 +906,7 @@
 #define IDC_USE_DECK_FOR_PC             1444
 #define IDC_INCLUDE_STRAND_FOR_NEG_MOMENT 1444
 #define IDC_WEB_SECTIONS                1444
+#define IDC_USE_CURRENT_VERSION         1444
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445

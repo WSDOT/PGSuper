@@ -8,7 +8,7 @@ Item | Description
 ------|-------------------------------------------------------------------
 Entry Name | Each Design Criteria Entry must have a unique name. The name may contain any characters and can be up to 32 characters in length.
 Description | Provide a description for the Project Criteria Entry.
-Criteria Basis | Select the version of the LRFD Specifications that you would like to use along with the provisions described by the current Project Criteria Entry.
+Criteria Basis | Select the version of the LRFD Specifications that you would like to use along with the provisions described by the current Project Criteria Entry. Checking the box causes the most recent edition of the AASHTO LRFD Bridge Design Specifications that are supported by the software to be used. When new editions of the specifications are implemented, the project criteria will automatically update to that edition.
 Use Constants and Equations from the Following Version of the Selected Specification | All of the LRFD Specifications prior to the 4th Edition 2007 are available in SI and US units. Selection of the SI version of the Specifications means that SI-specific constants will be used when evaluating specification equations.
 Section Properties | Select either Gross or Transformed for the section properties that will in the analysis
 Compute effective flange width | Select a method for computing the effective flange width.

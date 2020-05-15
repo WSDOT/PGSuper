@@ -195,6 +195,9 @@ public:
 
    pgsTypes::AnalysisType GetAnalysisType() const;
 
+   void UseCurrentSpecification(bool bUseCurrent);
+   bool UseCurrentSpecification() const;
+
    // Set/Get specification type we are based on
    void SetSpecificationType(lrfdVersionMgr::Version type);
    lrfdVersionMgr::Version GetSpecificationType() const;
@@ -1259,6 +1262,7 @@ protected:
 private:
 
    // general
+   bool m_bUseCurrentSpecification;
    lrfdVersionMgr::Version m_SpecificationType;
    lrfdVersionMgr::Units m_SpecificationUnits;
    std::_tstring m_Description;

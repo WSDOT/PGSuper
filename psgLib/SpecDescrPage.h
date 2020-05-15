@@ -67,6 +67,10 @@ protected:
    afx_msg void OnHelp();
 	DECLARE_MESSAGE_MAP()
 
+   CCacheComboBox m_cbSpecification;
+
+public:
+   afx_msg void OnBnClickedUseCurrentVersion();
 };
 
 //{{AFX_INSERT_LOCATION}}

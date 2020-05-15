@@ -117,6 +117,7 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
 {
    // specification type
    DDX_CBItemData(pDX,IDC_SPECIFICATION,m_Entry.m_SpecificationType);
+   DDX_Check_Bool(pDX, IDC_USE_CURRENT_VERSION, m_Entry.m_bUseCurrentSpecification);
 
    // Section Properties
    DDX_RadioEnum(pDX,IDC_GROSS,m_Entry.m_SectionPropertyMode);

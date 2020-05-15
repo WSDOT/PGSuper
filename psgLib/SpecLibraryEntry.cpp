@@ -49,7 +49,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 76.0 
+#define CURRENT_VERSION 77.0 
 
 /****************************************************************************
 CLASS
@@ -61,7 +61,8 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 SpecLibraryEntry::SpecLibraryEntry() :
-m_SpecificationType(lrfdVersionMgr::SeventhEditionWith2016Interims),
+m_bUseCurrentSpecification(true),
+m_SpecificationType(lrfdVersionMgr::EighthEdition2017),
 m_SpecificationUnits(lrfdVersionMgr::US),
 m_SectionPropertyMode(pgsTypes::spmGross),
 m_DoCheckStrandSlope(true),
@@ -495,6 +496,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Name"),this->GetName().c_str());
    pSave->Property(_T("Description"), this->GetDescription(false).c_str());
 
+   pSave->Property(_T("UseCurrentSpecification"), m_bUseCurrentSpecification); // added in version 77
    pSave->Property(_T("SpecificationType"),lrfdVersionMgr::GetVersionString(m_SpecificationType,true));
 
    if (m_SpecificationUnits==lrfdVersionMgr::SI)
@@ -1070,6 +1072,22 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if (76 < version)
+      {
+         // added in version 77
+         if (!pLoad->Property(_T("UseCurrentSpecification"), &m_bUseCurrentSpecification))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+      else
+      {
+         // if loading an older file, set this to false because it wasn't an option
+         // and we don't want to change the specification.
+         // the default for new entires is true so we have to force the value to false here
+         m_bUseCurrentSpecification = false;
       }
 
       std::_tstring tmp;
@@ -4406,10 +4424,10 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
    }
 
-   if ( m_SpecificationType != rOther.m_SpecificationType )
+   if ( m_bUseCurrentSpecification != rOther.m_bUseCurrentSpecification || m_SpecificationType != rOther.m_SpecificationType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Design Criteria Basis"),lrfdVersionMgr::GetVersionString(m_SpecificationType),lrfdVersionMgr::GetVersionString(rOther.m_SpecificationType)));
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Basis is different"),lrfdVersionMgr::GetVersionString(m_SpecificationType),lrfdVersionMgr::GetVersionString(rOther.m_SpecificationType)));
    }
 
    if ( lrfdVersionMgr::ThirdEditionWith2006Interims < m_SpecificationType && m_SpecificationUnits != rOther.m_SpecificationUnits )
@@ -5284,6 +5302,15 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
 }
 
 //======================== ACCESS     =======================================
+void SpecLibraryEntry::UseCurrentSpecification(bool bUseCurrent)
+{
+   m_bUseCurrentSpecification = bUseCurrent;
+}
+
+bool SpecLibraryEntry::UseCurrentSpecification() const
+{
+   return m_bUseCurrentSpecification;
+}
 
 void SpecLibraryEntry::SetSpecificationType(lrfdVersionMgr::Version type)
 {
@@ -5292,7 +5319,14 @@ void SpecLibraryEntry::SetSpecificationType(lrfdVersionMgr::Version type)
 
 lrfdVersionMgr::Version SpecLibraryEntry::GetSpecificationType() const
 {
-   return m_SpecificationType;
+   if (m_bUseCurrentSpecification)
+   {
+      return (lrfdVersionMgr::Version)((int)lrfdVersionMgr::LastVersion - 1);
+   }
+   else
+   {
+      return m_SpecificationType;
+   }
 }
 
 void SpecLibraryEntry::SetSpecificationUnits(lrfdVersionMgr::Units units)
@@ -7613,6 +7647,7 @@ Float64 SpecLibraryEntry::GetFinishedElevationTolerance() const
 //======================== OPERATIONS =======================================
 void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 {
+   m_bUseCurrentSpecification = rOther.m_bUseCurrentSpecification;
    m_SpecificationType          = rOther.m_SpecificationType;
    m_SpecificationUnits         = rOther.m_SpecificationUnits;
    m_Description.erase();
