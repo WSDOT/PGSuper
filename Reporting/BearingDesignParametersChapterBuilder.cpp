@@ -368,9 +368,6 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    *pChapter << p;
 
    pTable = rptStyleManager::CreateDefaultTable(8,_T("Bearing Recess Geometry"));
-   *p << pTable << rptNewLine;
-   *p << _T("* W is maximum of input bearing length and recess length") << rptNewLine;
-   *p << rptRcImage( std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.gif")) << rptNewLine;
 
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
@@ -388,6 +385,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    (*pTable)(0,col++) << Sub2(_T("D"),_T("2"));
 
    row = pTable->GetNumberOfHeaderRows();
+
+   bool bNeedTaperedSolePlate = false; // if bearing recess slope exceeds 0.01 rad, a tapered bearing plate is required per LRFD 14.8.2
 
    for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
@@ -435,6 +434,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       Float64 slope3 = slope1 + slope2;
       (*pTable)(row,col++) << scalar.SetValue(slope3);
 
+      bNeedTaperedSolePlate = 0.01 < fabs(slope3); // see lrfd 14.8.2
+
       Float64 W = max(pbd->RecessLength, pbd->Length); // don't allow recess to be shorter than bearing
       Float64 D = pbd->RecessHeight;
       Float64 D1 = D + W*slope3/2;
@@ -447,6 +448,15 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
       row++;
    }
+
+   *p << pTable << rptNewLine;
+   *p << _T("* W is maximum of input bearing length and recess length") << rptNewLine;
+
+   if (bNeedTaperedSolePlate)
+   {
+      *p << Bold(_T("The inclination of the underside of the girder to the horizontal exceeds 0.01 rad. Per LRFD 14.8.2 a tapered sole plate shall be used in order to provide a level surface.")) << rptNewLine;
+   }
+   *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.gif")) << rptNewLine;
 
    return pChapter;
 }
