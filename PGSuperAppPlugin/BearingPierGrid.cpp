@@ -75,7 +75,6 @@ void BearingInputData::CopyToBridgeDescription(CBridgeDescription2* pBridgeDesc)
          {
             ATLASSERT(BearingPierData::bpdCL == bpd.m_BPDType);
 
-            bd.Length /= 2.0; // split in half
             pPier->SetBearingData(pgsTypes::Ahead, bd);
             pPier->SetBearingData(pgsTypes::Back, bd);
          }
@@ -110,7 +109,6 @@ void BearingInputData::CopyToBridgeDescription(CBridgeDescription2* pBridgeDesc)
             {
                ATLASSERT(BearingPierData::bpdCL == bpd.m_BPDType);
 
-               bd.Length /= 2.0; // split in half
                pPier->SetBearingData(ig, pgsTypes::Ahead, bd);
                pPier->SetBearingData(ig, pgsTypes::Back,  bd);
             }
