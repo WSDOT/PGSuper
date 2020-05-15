@@ -6482,10 +6482,9 @@ Float64 CGirderModelManager::GetBearingProductReaction(IntervalIndexType interva
    ATLASSERT( found != vPiers.end() ); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
 #endif
    
-   GET_IFACE(IBridge,pBridge);
-
    if ( location.Face == rftMid )
    {
+      GET_IFACE(IBridge, pBridge);
       ATLASSERT(pBridge->IsInteriorPier(location.PierIdx));
       std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>> vSupports;
       vSupports.emplace_back(location.PierIdx,pgsTypes::stPier);
@@ -6496,18 +6495,9 @@ Float64 CGirderModelManager::GetBearingProductReaction(IntervalIndexType interva
    }
    else
    {
-      ATLASSERT(pBridge->IsBoundaryPier(location.PierIdx));
-      SupportIDType supportID;
-      if (pBridge->IsAbutment(location.PierIdx))
-      {
-         supportID = GetPierID(location.PierIdx);
-      }
-      else
-      {
-         SupportIDType backID, aheadID;
-         GetPierTemporarySupportIDs(location.PierIdx, &backID, &aheadID);
-         supportID = (location.Face == rftBack ? backID : aheadID);
-      }
+      SupportIDType backID, aheadID;
+      GetPierSupportIDs(location, &backID, &aheadID);
+      SupportIDType supportID = (location.Face == rftBack ? backID : aheadID);
 
       REACTION reaction = GetBearingReaction(intervalIdx, pfType, supportID, location.GirderKey, bat, resultsType);
       return reaction.Fy;
@@ -6528,9 +6518,9 @@ void CGirderModelManager::GetBearingLiveLoadReaction(IntervalIndexType intervalI
    ATLASSERT( found != vPiers.end() ); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
 #endif
    
-   GET_IFACE(IBridge,pBridge);
    if ( location.Face == rftMid )
    {
+      GET_IFACE(IBridge, pBridge);
       ATLASSERT(pBridge->IsInteriorPier(location.PierIdx));
 
       REACTION Rmin,Rmax;
@@ -6541,18 +6531,9 @@ void CGirderModelManager::GetBearingLiveLoadReaction(IntervalIndexType intervalI
    }
    else
    {
-      ATLASSERT(pBridge->IsBoundaryPier(location.PierIdx));
-      SupportIDType supportID;
-      if (pBridge->IsAbutment(location.PierIdx))
-      {
-         supportID = GetPierID(location.PierIdx);
-      }
-      else
-      {
-         SupportIDType backID, aheadID;
-         GetPierTemporarySupportIDs(location.PierIdx, &backID, &aheadID);
-         supportID = (location.Face == rftBack ? backID : aheadID);
-      }
+      SupportIDType backID, aheadID;
+      GetPierSupportIDs(location, &backID, &aheadID);
+      SupportIDType supportID = (location.Face == rftBack ? backID : aheadID);
 
       m_LBAMPoi->Clear();
       m_LBAMPoi->Add(supportID);
@@ -6820,19 +6801,9 @@ void CGirderModelManager::GetBearingCombinedLiveLoadReaction(IntervalIndexType i
    }
    else
    {
-      GET_IFACE(IBridge,pBridge);
-      ATLASSERT(pBridge->IsBoundaryPier(location.PierIdx));
-      SupportIDType supportID;
-      if (pBridge->IsAbutment(location.PierIdx))
-      {
-         supportID = GetPierID(location.PierIdx);
-      }
-      else
-      {
-         SupportIDType backID, aheadID;
-         GetPierTemporarySupportIDs(location.PierIdx, &backID, &aheadID);
-         supportID = (location.Face == rftBack ? backID : aheadID);
-      }
+      SupportIDType backID, aheadID;
+      GetPierSupportIDs(location, &backID, &aheadID);
+      SupportIDType supportID = (location.Face == rftBack ? backID : aheadID);
 
       m_LBAMPoi->Clear();
       m_LBAMPoi->Add(supportID);
@@ -12774,6 +12745,35 @@ void CGirderModelManager::GetPierTemporarySupportIDs(PierIndexType pierIdx,Suppo
    *pAheadID = -((SupportIDType)pierIdx*10000);
 }
 
+void CGirderModelManager::GetPierSupportIDs(const ReactionLocation& location, SupportIDType* pBackID, SupportIDType* pAheadID) const
+{
+   GET_IFACE(IBridge, pBridge);
+   ATLASSERT(pBridge->IsBoundaryPier(location.PierIdx)); // must be a boundary pier
+   if (pBridge->IsAbutment(location.PierIdx))
+   {
+      *pBackID = GetPierID(location.PierIdx);
+      *pAheadID = *pBackID;
+   }
+   else
+   {
+      SupportIDType backID, aheadID;
+      GetPierTemporarySupportIDs(location.PierIdx, &backID, &aheadID);
+
+      PierIDType pierID = GetPierID(location.PierIdx);
+
+      CSegmentKey backSegmentKey, aheadSegmentKey;
+      pBridge->GetSegmentsAtPier(location.PierIdx, location.GirderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
+
+      Float64 left_brg_offset = pBridge->GetSegmentEndBearingOffset(backSegmentKey);
+      Float64 left_end_dist = pBridge->GetSegmentEndEndDistance(backSegmentKey);
+
+      Float64 right_brg_offset = pBridge->GetSegmentStartBearingOffset(aheadSegmentKey);
+      Float64 right_end_dist = pBridge->GetSegmentStartEndDistance(aheadSegmentKey);
+
+      *pBackID = IsZero(left_brg_offset + left_end_dist) ? pierID : backID;
+      *pAheadID = IsZero(right_brg_offset + right_end_dist) ? pierID : aheadID;
+   }
+}
 
 //////////////////////////////////////////////////
 // LLDF Support Methods

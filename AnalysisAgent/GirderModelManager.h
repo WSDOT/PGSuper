@@ -422,7 +422,14 @@ private:
    SupportIDType GetPierID(PierIndexType pierIdx) const;
    SupportIDType GetTemporarySupportID(SupportIndexType tsIdx) const;
    SupportIndexType GetTemporarySupportIndex(SupportIDType tsID) const;
+
+   // Returns the temporary support IDs used in the LBAM model. Not all permanent piers use these temporary
+   // supports so the LBAM model is not guarenteed to have temporary supports with these IDs. 
+   // Use GetPierSupportIDs to get the IDs need to get data from the LBAM
    void GetPierTemporarySupportIDs(PierIndexType pierIdx,SupportIDType* pBackID,SupportIDType* pAheadID) const;
+
+   // Gets the correct support IDs for getting reaction data from the LBAM 
+   void GetPierSupportIDs(const ReactionLocation& location, SupportIDType* pBackID, SupportIDType* pAheadID) const;
 
    void GetEngine(CGirderModelData* pModelData,bool bContinuous,ILBAMAnalysisEngine** pEngine) const;
    PoiIDType AddPointOfInterest(CGirderModelData* pModelData,const pgsPointOfInterest& poi) const;
