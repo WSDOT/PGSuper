@@ -35,6 +35,8 @@
 #include <EAF\EAFApp.h>
 #include <psgLib\LibraryEntryDifferenceItem.h>
 
+#include <boost\algorithm\string\replace.hpp>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -491,7 +493,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("SpecificationLibraryEntry"), CURRENT_VERSION);
    pSave->Property(_T("Name"),this->GetName().c_str());
-   pSave->Property(_T("Description"),this->GetDescription().c_str());
+   pSave->Property(_T("Description"), this->GetDescription(false).c_str());
 
    pSave->Property(_T("SpecificationType"),lrfdVersionMgr::GetVersionString(m_SpecificationType,true));
 
@@ -5309,9 +5311,21 @@ void SpecLibraryEntry::SetDescription(LPCTSTR name)
    m_Description = name;
 }
 
-std::_tstring SpecLibraryEntry::GetDescription() const
+std::_tstring SpecLibraryEntry::GetDescription(bool bApplySymbolSubstitution) const
 {
-   return m_Description;
+   if (bApplySymbolSubstitution)
+   {
+      std::_tstring description(m_Description);
+      std::_tstring strSubstitute(lrfdVersionMgr::GetCodeString());
+      strSubstitute += _T(", ");
+      strSubstitute += lrfdVersionMgr::GetVersionString();
+      boost::replace_all(description,_T("%BDS%"), strSubstitute);
+      return description;
+   }
+   else
+   {
+      return m_Description;
+   }
 }
 
 void SpecLibraryEntry::SetSectionPropertyMode(pgsTypes::SectionPropertyMode spMode)

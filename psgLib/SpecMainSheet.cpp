@@ -151,7 +151,7 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
       m_Name = m_Entry.GetName().c_str();
 	   DDX_Text(pDX, IDC_NAME, m_Name);
 
-      m_Description = m_Entry.GetDescription().c_str();
+      m_Description = m_Entry.GetDescription(false).c_str();
 	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
 
       // spec units

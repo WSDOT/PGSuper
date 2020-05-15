@@ -205,7 +205,7 @@ public:
 
    // Set/Get string to describe specification
    void SetDescription(LPCTSTR name);
-   std::_tstring GetDescription() const;
+   std::_tstring GetDescription(bool bApplySymbolSubstitution=true) const;
 
    // Set/Get the method of computing section properties
    void SetSectionPropertyMode(pgsTypes::SectionPropertyMode mode);
