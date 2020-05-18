@@ -80,6 +80,7 @@ public:
       StrandsReqdForLongReinfShearAndFlexureTurnedOff,
       NoDevelopmentLengthForLongReinfShear,
       NoStrandDevelopmentLengthForLongReinfShear,
+      RebarForceExceedsPretensionForceForLongReinfShear,
       MaxIterExceeded,
       GirderLiftingConcreteStrength,
       GirderLiftingStability,
