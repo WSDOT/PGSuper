@@ -244,11 +244,11 @@ struct SHEARCAPACITYDETAILS
    Float64 Vc;
    Float64 Vs;
    Float64 Vf; // capacity of UHPC fibers
-   Float64 Vn1;  // [E5.8.3.3-1]
-   Float64 Vn2;  // [E5.8.3.3-2]
+   Float64 Vn1;  // [Eqn 5.8.3.3-1]
+   Float64 Vn2;  // [Eqn 5.8.3.3-2]
    Float64 Vn;   // Nominal shear resistance
    Float64 pVn;  // Factored nominal shear resistance
-   Float64 VuLimit; // Limiting Vu where stirrups are required [E5.8.2.4-1]
+   Float64 VuLimit; // Limiting Vu where stirrups are required [Eqn 5.8.2.4-1]
    bool bStirrupsReqd; // If true, stirrups and/or Vf from fibers is required LRFD 5.7.2.3-1
    Int16 Equation; // Equation used to comupte ex (Only applicable after LRFD 1999)
    Float64 vfc_tbl;
@@ -265,6 +265,13 @@ struct SHEARCAPACITYDETAILS
    pgsTypes::ConcreteType ConcreteType;
    bool bHasFct;
    Float64 fct;
+
+   // LRFD 9th Edition
+   Float64 bw; // web width without any deductions
+   Float64 duct_diameter; // diameter of largest duct in section
+   Float64 delta; // duct diamter correction factor
+   Float64 lambda_duct; // shear strength reduction factor
+
 };
 
 // fpc - strand stress for shear capacity calculation

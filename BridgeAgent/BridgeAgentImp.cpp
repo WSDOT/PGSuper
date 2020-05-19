@@ -25541,7 +25541,7 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
 
    // Deduct for duct diameter. See LRFD C5.7.2.8 and 5.7.2.8 (pre2017: 5.8.2.9 and C5.8.2.9)
    // the method for determining if the shear width should be adjusted for the presense
-   // of a duct, and the amount of duct to reduce the shear width, changed in LRFD 2nd Edition, 2003 interims
+   // of a duct, and the amount of duct to reduce the shear width, changed in LRFD 2nd Edition, 2000 interims
    //
    IntervalIndexType intervalIdx = GetIntervalCount() - 1;
 
@@ -25551,10 +25551,10 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfter2002 = ( lrfdVersionMgr::SecondEditionWith2003Interims <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfter2000 = ( lrfdVersionMgr::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationType() ? true : false );
 
    // Limits of deduction for ducts is between the tensile and compression resultant
-   // (limit is within dv for LRFD before 2003... see below)
+   // (limit is within dv for LRFD before 2000... see below)
 
    // get moment capacity details
    GET_IFACE(IMomentCapacity,pMomentCapacity);
@@ -25564,8 +25564,10 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    Float64 Ytop = struct_slab_h - pCapDet->dc; // compression resultant (from top of bare girder in Girder Section Coordinates)
    Float64 Ybot = struct_slab_h - pCapDet->de; // tension resultant (from top of bare girder in Girder Section Coordinates)
 
-   if ( !bAfter2002 )
+   if ( !bAfter2000 )
    {
+      // before LRFD 2000, duct had to be within dv
+
       // determine top and bottom of "dv"
       // we have to compute dv here otherwise we get recursion with the shear capacity engineer
       Float64 de = pCapDet->de_shear; // see PCI BDM 8.4.1.2
@@ -25609,9 +25611,6 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
       {
          if (pGirderTendonGeom->IsOnDuct(poi, ductIdx))
          {
-            // assumed ducts are grouted and cured in the interval following their installation and stressing
-            IntervalIndexType groutDuctIntervalIdx = GetStressGirderTendonInterval(girderKey, ductIdx) + 1;
-
             CComPtr<IPoint2d> point;
             GetGirderDuctPoint(poi, ductIdx, &point); // in Girder Section Coordinates
             Float64 y;
@@ -25634,7 +25633,6 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
             // assumes ducts are grouted and cured in the interval following their installation and stressing
             Float64 deduct_factor = pDuctLimits->GetSegmentDuctDeductionFactor(segmentKey, intervalIdx);
 
-            IntervalIndexType groutDuctIntervalIdx = GetStressSegmentTendonInterval(segmentKey);
             for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
             {
                CComPtr<IPoint2d> point;

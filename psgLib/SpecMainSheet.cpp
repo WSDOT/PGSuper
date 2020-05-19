@@ -1143,6 +1143,30 @@ void CSpecMainSheet::ExchangeStrandData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_PUSH_METHOD, m_Entry.m_DuctAreaPushRatio);
    DDX_Text(pDX,IDC_PULL_METHOD, m_Entry.m_DuctAreaPullRatio);
    DDX_Text(pDX,IDC_DUCT_SIZE_RATIO, m_Entry.m_DuctDiameterRatio);
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (lrfdVersionMgr::NinthEdition2020 <= m_Entry.m_SpecificationType)
+      {
+         if (0.70 < m_Entry.m_DuctDiameterRatio)
+         {
+            // if the ratio is more than 0.7, lambda_duct becomes negative
+            pDX->PrepareEditCtrl(IDC_DUCT_SIZE_RATIO);
+            AfxMessageBox(_T("The ratio of the outside duct diameter to the least gross concrete thickness at the duct cannot exceed 0.7"), MB_ICONEXCLAMATION | MB_OK);
+            pDX->Fail();
+         }
+      }
+      else
+      {
+         if ( !(m_Entry.m_DuctDiameterRatio < 1.0) )
+         {
+            // duct diameter can't be greater than web
+            pDX->PrepareEditCtrl(IDC_DUCT_SIZE_RATIO);
+            AfxMessageBox(_T("The ratio of the outside duct diameter to the least gross concrete thickness at the duct must be less than 1.0"), MB_ICONEXCLAMATION | MB_OK);
+            pDX->Fail();
+         }
+      }
+   }
 }
 
 void CSpecMainSheet::ExchangeLimitsData(CDataExchange* pDX)
