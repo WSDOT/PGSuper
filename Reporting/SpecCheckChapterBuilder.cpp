@@ -404,8 +404,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Lifting
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
    {
+      // starting with 9th edition, stability checks are manditory so always report the outcome
       p = new rptParagraph;
       p->SetName(_T("Lifting"));
       *pChapter << p;
@@ -415,8 +416,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Hauling
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
    {
+      // starting with 9th edition, stability checks are manditory so always report the outcome
       p = new rptParagraph;
       p->SetName(_T("Hauling"));
       *pChapter << p;

@@ -77,53 +77,59 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   if (!pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
-      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
+      GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      GET_IFACE2(pBroker, IGirder, pGirder);
+
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      std::vector<CGirderKey> vGirderKeys;
+      pBridge->GetGirderline(girderKey, &vGirderKeys);
+      for (const auto& thisGirderKey : vGirderKeys)
+      {
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            CSegmentKey thisSegmentKey(thisGirderKey, segIdx);
+
+            if (1 < nSegments)
+            {
+               rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+               *pChapter << pTitle;
+               *pTitle << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+
+               rptParagraph* p = new rptParagraph;
+               *pChapter << p;
+            }
+
+            const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
+            const stbIGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
+            const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
+            const stbLiftingResults& results = pArtifact->GetLiftingResults();
+
+            Float64 Ll, Lr;
+            pStabilityProblem->GetSupportLocations(&Ll, &Lr);
+            stbLiftingStabilityReporter reporter;
+            reporter.BuildDetailsChapter(pStabilityModel, pStabilityProblem, &results, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
+         } // next segment
+      } // next group
+   }
+   else
+   {
+      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pTitle;
-      *pTitle << _T("Details for Check for Lifting In Casting Yard [5.5.4.3][") << LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) << _T("]")<<rptNewLine;
+      *pTitle << _T("Details for Check for Lifting In Casting Yard");
+      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+      {
+         *pTitle << _T(" [5.5.4.3]");
+      }
+      *pTitle << rptNewLine;
 
       rptParagraph* p = new rptParagraph;
       *pChapter << p;
 
-      *p <<color(Red)<<_T("Lifting analysis disabled in Project Criteria. No analysis performed.")<<color(Black)<<rptNewLine;
-      return pChapter;
+      *p << color(Red) << _T("Lifting analysis disabled in Project Criteria. No analysis performed.") << color(Black) << rptNewLine;
    }
-
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   std::vector<CGirderKey> vGirderKeys;
-   pBridge->GetGirderline(girderKey, &vGirderKeys);
-   for(const auto& thisGirderKey : vGirderKeys)
-   {
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-      {
-         CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
-
-         if ( 1 < nSegments )
-         {
-            rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
-            *pChapter << pTitle;
-            *pTitle << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-
-            rptParagraph* p = new rptParagraph;
-            *pChapter << p;
-         }
-
-         const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
-         const stbIGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
-         const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
-         const stbLiftingResults& results = pArtifact->GetLiftingResults();
-
-         Float64 Ll, Lr;
-         pStabilityProblem->GetSupportLocations(&Ll,&Lr);
-         stbLiftingStabilityReporter reporter;
-         reporter.BuildDetailsChapter(pStabilityModel,pStabilityProblem,&results,pChapter,_T("Location from<BR/>Left Pick Point"),Ll);
-      } // next segment
-   } // next group
 
    return pChapter;
 }

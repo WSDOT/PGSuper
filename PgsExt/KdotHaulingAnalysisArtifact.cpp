@@ -498,6 +498,11 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
       return;
    }
 
+   if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   {
+      *p << color(Red) << _T("KDOT method does not evaluate stability. Stability analysis is required per LRFD 5.5.4.3.") << color(Black) << rptNewLine;
+   }
+
    Float64 loh = this->GetLeadingOverhang();
    Float64 toh = this->GetTrailingOverhang();
    Float64 min_oh = Min(loh, toh);

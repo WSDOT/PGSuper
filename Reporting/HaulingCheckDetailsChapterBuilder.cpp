@@ -72,35 +72,24 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
 
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
-      *pChapter << pTitle;
-      *pTitle << _T("Details for Check for Hauling to Bridge Site [5.5.4.3]") << LrfdCw8th(_T("[5.9.4.1]"),_T("[5.9.2.3.1]"))<<rptNewLine;
+      GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-      rptParagraph* p = new rptParagraph;
-      *pChapter << p;
-
-      *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria. No analysis performed.")<<color(Black)<<rptNewLine;
-   }
-   else
-   {
-      GET_IFACE2(pBroker,IArtifact,pArtifacts);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker, IBridge, pBridge);
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(girderKey, &vGirderKeys);
-      for(const auto& thisGirderKey : vGirderKeys)
+      for (const auto& thisGirderKey : vGirderKeys)
       {
          SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
-            CSegmentKey segmentKey(thisGirderKey,segIdx);
-         
-            if ( 1 < nSegments )
+            CSegmentKey segmentKey(thisGirderKey, segIdx);
+
+            if (1 < nSegments)
             {
-               rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle() );
+               rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pTitle;
                *pTitle << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
 
@@ -113,6 +102,22 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
             pHaulArtifact->BuildHaulingDetailsReport(segmentKey, pChapter, pBroker, pDisplayUnits);
          } // next segment
       } // next group
+   }
+   else
+   {
+      rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pTitle;
+      *pTitle << _T("Details for Check for Hauling to Bridge Site");
+      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+      {
+         *pTitle << _T(" [5.5.4.3]");
+      }
+      *pTitle << rptNewLine;
+
+      rptParagraph* p = new rptParagraph;
+      *pChapter << p;
+
+      *p << color(Red) << _T("Hauling analysis disabled in Project Criteria. No analysis performed.") << color(Black) << rptNewLine;
    }
 
 
