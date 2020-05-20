@@ -22,7 +22,7 @@ CFileSaveWarningDlg::CFileSaveWarningDlg(LPCTSTR lpszAppName, LPCTSTR lpszFileNa
    WORD cbBuf = _MAX_PATH;
 
    ::GetFileTitle(lpszFileName, title, cbBuf);
-   m_strLabel.Format(_T("The current project file (%s) was created with %s version %s. Once saved it will be converted to version %s and cannot be opened with version %s."),title,lpszAppName,strOldVersion,strCurrentVersion,strOldVersion);
+   m_strLabel.Format(_T("The current project file (%s) was created with %s version %s. Once saved it will be converted to version %s and cannot be opened with an earlier version."),title,lpszAppName,strOldVersion,strCurrentVersion);
 }
 
 CFileSaveWarningDlg::~CFileSaveWarningDlg()
