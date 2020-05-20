@@ -76,6 +76,7 @@ static void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable
 static void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row);
 static void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 
 /****************************************************************************
 CLASS
@@ -134,6 +135,7 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    //write_crown_data( pBroker, pDisplayUnits, pChapter, level);
    write_bridge_data( pBroker, pDisplayUnits, pChapter, level);
    write_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level);
+   write_friction_loss_data( pBroker, pDisplayUnits, pChapter, level);
    write_pier_data( pBroker, pDisplayUnits, pChapter, level);
    write_bearing_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_span_data( pBroker, pDisplayUnits, pChapter, level);
@@ -1882,6 +1884,62 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    }
 
    (*pTable)(row,col++) << cmpdim.SetValue( concrete.MaxAggregateSize );
+}
+
+void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
+{
+   // Only write for spliced girders
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   if (!pDocType->IsPGSpliceDocument())
+   {
+      return;
+   }
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptPerLengthUnitValue, pldim, pDisplayUnits->GetPerLengthUnit(), false );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+   rptParagraph* pPara;
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   // Setup the table
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Post-Tensioning Friction Loss Parameters"));
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   *pPara << pTable << rptNewLine;
+
+   (*pTable)(0,1) << COLHDR(_T("Anchor Set"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0,2) << COLHDR(_T("Wobble Friction Coefficient"),rptPerLengthUnitTag,pDisplayUnits->GetPerLengthUnit());
+   (*pTable)(0,3) << _T("Coefficient of Friction");
+   (*pTable)(1, 0) << _T("Temporary Strands");
+   (*pTable)(2, 0) << _T("Tendons");
+
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   Float64 Dset, wobble, friction;
+   pLossParams->GetTemporaryStrandPostTensionParameters(&Dset,&wobble,&friction);
+   (*pTable)(1, 1) << cmpdim.SetValue(Dset);
+   (*pTable)(1, 2) << pldim.SetValue(wobble);
+   (*pTable)(1, 3) << scalar.SetValue(friction);
+
+   pLossParams->GetTendonPostTensionParameters(&Dset,&wobble,&friction);
+   (*pTable)(2, 1) << cmpdim.SetValue(Dset);
+   (*pTable)(2, 2) << pldim.SetValue(wobble);
+   (*pTable)(2, 3) << scalar.SetValue(friction);
+
+   pPara = new rptParagraph;
+   pPara->SetStyleName(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Time Step Analysis - Time Dependent Effects");
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   *pPara << _T("Creep Effects are ") << (pLossParams->IgnoreCreepEffects()         ? _T("Ignored") : _T("Considered")) << rptNewLine;
+   *pPara << _T("Shrinkage Effects are ") << (pLossParams->IgnoreShrinkageEffects() ? _T("Ignored") : _T("Considered")) << rptNewLine;
+   *pPara << _T("Relaxation Effects are ") << (pLossParams->IgnoreRelaxationEffects()         ? _T("ignored") : _T("Considered")) << rptNewLine;
 }
 
 void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
