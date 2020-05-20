@@ -1904,16 +1904,16 @@ void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
    *pChapter << pPara;
 
    // Setup the table
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Post-Tensioning Friction Loss Parameters"));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Post-Tensioning Anchor Set and Friction Loss Parameters"));
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    *pPara << pTable << rptNewLine;
 
-   (*pTable)(0,1) << COLHDR(_T("Anchor Set"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pTable)(0,2) << COLHDR(_T("Wobble Friction Coefficient"),rptPerLengthUnitTag,pDisplayUnits->GetPerLengthUnit());
-   (*pTable)(0,3) << _T("Coefficient of Friction");
+   (*pTable)(0,1) << COLHDR(symbol(DELTA) << Sub(_T("set")) << rptNewLine << _T("Anchor Set"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0,2) << COLHDR(Sub(_T("K")) << rptNewLine << _T("Wobble Friction Coefficient"),rptPerLengthUnitTag,pDisplayUnits->GetPerLengthUnit());
+   (*pTable)(0,3) << symbol(mu) << rptNewLine <<_T("Coefficient of Friction");
    (*pTable)(1, 0) << _T("Temporary Strands");
    (*pTable)(2, 0) << _T("Tendons");
 
