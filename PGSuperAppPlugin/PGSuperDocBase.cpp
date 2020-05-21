@@ -1421,10 +1421,16 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //
    // Copy the updated template into the source tree
    //
+   //LPWSTR path;
+   //HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &path);
+   //CString strAppData;
+
    //CString templateFileName(strTemplate);
-   //templateFileName.Replace(_T("C:\\Users\\bricer\\AppData\\Roaming\\PGSuperV3\\WorkgroupTemplates"), _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\AASHTO"));
-   //templateFileName.Replace(_T("C:\\Users\\bricer\\AppData\\Roaming\\PGSuperV3\\WorkgroupTemplates"), _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\WSDOT"));
-   //templateFileName.Replace(_T("C:\\Users\\bricer\\AppData\\Roaming\\PGSplice\\WorkgroupTemplates"), _T("F:\\ARP\\PGSuper\\Configurations\\PGSplice\\WSDOT"));
+   //strAppData.Format(_T("%s\\PGSuperV3\\WorkgroupTemplates"), path);
+   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\AASHTO"));
+   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\WSDOT"));
+   //strAppData.Format(_T("%s\\PGSplice\\WorkgroupTemplates"), path);
+   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSplice\\WSDOT"));
    //CEAFBrokerDocument::SaveTheDocument(templateFileName);
 }
 
