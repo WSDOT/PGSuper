@@ -1653,7 +1653,7 @@ BEGIN
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC,23,125,154,18
 END
 
-IDD_SPEC_GIRDER DIALOGEX 0, 0, 469, 458
+IDD_SPEC_GIRDER DIALOGEX 0, 0, 469, 490
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Prestressed Elements"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -1735,12 +1735,16 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,229,372,78,10
     EDITTEXT        IDC_AFTER_DECK_TENSION_MAX,310,370,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,355,372,25,8
-    GROUPBOX        "Principal Tensile Stress in Webs (5.9.2.3.3)",IDC_PRINCIPAL_TENSION_GROUP,7,394,455,57
+    GROUPBOX        "Principal Tensile Stress in Webs (LRFD 5.9.2.3.3)",IDC_PRINCIPAL_TENSION_GROUP,7,397,455,86
     LTEXT           "Tensile Stress",IDC_PRINCIPAL_TENSION_LABEL,17,413,45,8
     EDITTEXT        IDC_PRINCIPAL_TENSION,71,410,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_PRINCIPAL_TENSION_UNIT,114,413,79,8
     LTEXT           "Compute flexural shear stress for principal tensile stress in webs check using",IDC_PRINCIPAL_TENSION_METHOD_LABEL,17,432,245,8
     COMBOBOX        IDC_PRINCIPAL_TENSION_METHOD,265,430,178,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "At sections where internal tendons cross within",IDC_PRINCIPAL_TENSION_LABEL2,17,452,152,8
+    EDITTEXT        IDC_TENDON_NEARNESS_FACTOR,171,449,40,14,ES_AUTOHSCROLL
+    LTEXT           "is being checked, the provisions of LRFD 5.7.2.1 shall apply",IDC_PRINCIPAL_TENSION_LABEL4,18,464,191,8
+    LTEXT           "diameters of the depth at which the maximum principal tension",IDC_PRINCIPAL_TENSION_LABEL3,215,452,200,8
 END
 
 IDD_SPEC_DEAD_LOADS DIALOGEX 0, 0, 379, 154
@@ -2287,7 +2291,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 462
         TOPMARGIN, 7
-        BOTTOMMARGIN, 451
+        BOTTOMMARGIN, 483
     END
 
     IDD_SPEC_DEAD_LOADS, DIALOG

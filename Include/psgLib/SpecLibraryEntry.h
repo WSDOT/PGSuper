@@ -460,8 +460,8 @@ public:
    void SetFatigueCompressionStressFactor(Float64 stress);
 
    // Set/Get the method and tensile stress limit coefficient for principal tensile stress in webs
-   void SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient);
-   void GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient) const;
+   void SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient,Float64 ductFactor);
+   void GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctFactor) const;
 
    //////////////////////////////////////
    //
@@ -1422,6 +1422,7 @@ private:
 
    pgsTypes::PrincipalTensileStressMethod m_PrincipalTensileStressMethod;
    Float64 m_PrincipalTensileStressCoefficient;
+   Float64 m_PrincipalTensileStressTendonNearnessFactor; // used to define if a tendon is "near" the section being evaluated... This is a number of outside duct diameters from section
 
    // Closure Joint Allowable Stresses
    Float64 m_ClosureCompStressAtStressing;

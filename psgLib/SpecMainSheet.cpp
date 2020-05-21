@@ -336,6 +336,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_PRINCIPAL_TENSION, IDC_PRINCIPAL_TENSION_UNIT, m_Entry.m_PrincipalTensileStressCoefficient, pDisplayUnits->SqrtPressure);
    DDX_Text(pDX, IDC_PRINCIPAL_TENSION_UNIT, fcTag);
    DDX_CBEnum(pDX, IDC_PRINCIPAL_TENSION_METHOD, m_Entry.m_PrincipalTensileStressMethod);
+   DDX_Text(pDX, IDC_TENDON_NEARNESS_FACTOR, m_Entry.m_PrincipalTensileStressTendonNearnessFactor);
 }
 
 void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)

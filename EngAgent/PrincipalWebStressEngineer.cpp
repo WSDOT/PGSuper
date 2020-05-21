@@ -148,7 +148,8 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
 
    pgsTypes::PrincipalTensileStressMethod method;
    Float64 coefficient;
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient);
+   Float64 ductDiameterFactor;
+   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -215,11 +216,6 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    // sort so the elevations where principal tension stress is computed downwards from the top of the girder
    std::sort(vWebFlangeInterfaces.begin(), vWebFlangeInterfaces.end(), std::greater<>());
 
-   Float64 duct_range_factor = 1.0; // parameter used to determine if a web elevation is "near", or in range, of a duct
-                                    // we take "near" to mean the web elevation is within +/-duct_range_factor*OD of the centerline of the duct
-                                    // with duct_range_factor equal to 1.0, "near" beams 1 radius above or below the outside circle of the duct
-                                    // so the total range is 2*OD, centered on the the duct point
-
    for (const auto& wfInterface : vWebFlangeInterfaces)
    {
       auto YwebSection = std::get<0>(wfInterface); // this is in girder section coordinates
@@ -277,7 +273,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
             Float64 Yduct;
             pntDuct->get_Y(&Yduct);
 
-            if (::InRange(Yduct - duct_range_factor*OD, YwebSection, Yduct + duct_range_factor*OD))
+            if (::InRange(Yduct - ductDiameterFactor*OD, YwebSection, Yduct + ductDiameterFactor*OD))
             {
                // the duct is near. compute the deduction for this duct
                bNearSegmentDuct = true;
@@ -301,7 +297,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
             Float64 Yduct;
             pntDuct->get_Y(&Yduct);
 
-            if (::InRange(Yduct - duct_range_factor*OD, YwebSection, Yduct + duct_range_factor*OD))
+            if (::InRange(Yduct - ductDiameterFactor*OD, YwebSection, Yduct + ductDiameterFactor*OD))
             {
                // the duct is near. compute the deduction for this duct
                bNearGirderDuct = true;

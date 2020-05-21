@@ -273,7 +273,8 @@ m_SlabOffsetRoundingMethod(pgsTypes::sormRoundNearest),
 m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
 m_UHPCFiberShearStrength(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
 m_PrincipalTensileStressMethod(pgsTypes::ptsmLRFD),
-m_PrincipalTensileStressCoefficient(::ConvertToSysUnits(0.110,unitMeasure::SqrtKSI))
+m_PrincipalTensileStressCoefficient(::ConvertToSysUnits(0.110,unitMeasure::SqrtKSI)),
+m_PrincipalTensileStressTendonNearnessFactor(1.5)
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -690,6 +691,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    // added in version 76
    pSave->Property(_T("PrincipalTensileStressMethod"), m_PrincipalTensileStressMethod);
    pSave->Property(_T("PrincipalTensileStressCoefficient"), m_PrincipalTensileStressCoefficient);
+   pSave->Property(_T("PrincipalTensileStressTendonNearnessFactor"), m_PrincipalTensileStressTendonNearnessFactor); // added in version 77
 
 
    // removed in version 29
@@ -2416,6 +2418,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             if (!pLoad->Property(_T("PrincipalTensileStressCoefficient"), &m_PrincipalTensileStressCoefficient))
             {
                THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+
+            if (76 < version)
+            {
+               // added in version 77
+               if (!pLoad->Property(_T("PrincipalTensileStressTendonNearnessFactor"), &m_PrincipalTensileStressTendonNearnessFactor))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
             }
          }
       }
@@ -4621,7 +4632,9 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Stress Limits for Temporary Loading Conditions are different"),_T(""),_T("")));
    }
 
-   if (m_PrincipalTensileStressMethod != rOther.m_PrincipalTensileStressMethod || !::IsEqual(m_PrincipalTensileStressCoefficient, rOther.m_PrincipalTensileStressCoefficient))
+   if (m_PrincipalTensileStressMethod != rOther.m_PrincipalTensileStressMethod || 
+      !::IsEqual(m_PrincipalTensileStressCoefficient, rOther.m_PrincipalTensileStressCoefficient) ||
+      !::IsEqual(m_PrincipalTensileStressTendonNearnessFactor,rOther.m_PrincipalTensileStressTendonNearnessFactor))
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Principal Tensile Stress in Web parameters are different"), _T(""), _T("")));
@@ -6208,16 +6221,18 @@ void SpecLibraryEntry::SetFatigueCompressionStressFactor(Float64 stress)
    m_Bs3CompStressService1A = stress;
 }
 
-void SpecLibraryEntry::SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient)
+void SpecLibraryEntry::SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient,Float64 ductFactor)
 {
    m_PrincipalTensileStressMethod = principalTensileStressMethod;
    m_PrincipalTensileStressCoefficient = principalTensionCoefficient;
+   m_PrincipalTensileStressTendonNearnessFactor = ductFactor;
 }
 
-void SpecLibraryEntry::GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient) const
+void SpecLibraryEntry::GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctFactor) const
 {
    *pPrincipalTensileStressMethod = m_PrincipalTensileStressMethod;
    *pPrincipalTensionCoefficient = m_PrincipalTensileStressCoefficient;
+   *pDuctFactor = m_PrincipalTensileStressTendonNearnessFactor;
 }
 
 Float64 SpecLibraryEntry::GetFinalTensionStressFactor(int exposureCondition) const
@@ -7778,6 +7793,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_PrincipalTensileStressMethod = rOther.m_PrincipalTensileStressMethod;
    m_PrincipalTensileStressCoefficient = rOther.m_PrincipalTensileStressCoefficient;
+   m_PrincipalTensileStressTendonNearnessFactor = rOther.m_PrincipalTensileStressTendonNearnessFactor;
 
    m_FlexureModulusOfRuptureCoefficient = rOther.m_FlexureModulusOfRuptureCoefficient;
    m_ShearModulusOfRuptureCoefficient = rOther.m_ShearModulusOfRuptureCoefficient;

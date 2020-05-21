@@ -20,7 +20,7 @@ The Service III load factors are applied to the load components used in the NCHR
 
 Shear stress is computed using gross section properties (Q and I for the gross concrete section).
 
-At sections where internal tendons cross near the depth at which the maximum principal tension is being checked, the provisions of LRFD 5.7.2.1 are applied to adjust the web width for the precense of a grouted tendon. We take "near the depth at which the maximum principal tension is being checked" to mean the section being check is within one outside duct diameter from the center of the duct.
+At sections where internal tendons cross near the depth at which the maximum principal tension is being checked, the provisions of LRFD 5.7.2.1 are applied to adjust the web width for the precense of a grouted tendon. "Near the depth at which the maximum principal tension is being checked" is defined by as multiple of outside duct diameters, k(OD), from the center of the duct.
 ![](Near_Tendon.png)
 
 Axial Stress

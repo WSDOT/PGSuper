@@ -2002,7 +2002,8 @@ Float64 CSpecAgentImp::GetAllowablePrincipalWebTensionStressCoefficient() const
    const SpecLibraryEntry* pSpec = GetSpec();
    pgsTypes::PrincipalTensileStressMethod method;
    Float64 coefficient;
-   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient);
+   Float64 ductDiameterFactor;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor);
    return coefficient;
 }
 

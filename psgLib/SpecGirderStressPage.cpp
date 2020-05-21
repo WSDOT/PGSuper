@@ -128,6 +128,11 @@ BOOL CSpecGirderStressPage::OnSetActive()
    GetDlgItem(IDC_PRINCIPAL_TENSION_METHOD_LABEL)->ShowWindow(nShow);
    GetDlgItem(IDC_PRINCIPAL_TENSION_METHOD)->ShowWindow(nShow);
 
+   GetDlgItem(IDC_PRINCIPAL_TENSION_LABEL2)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_TENSION_LABEL3)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_TENSION_LABEL4)->ShowWindow(nShow);
+   GetDlgItem(IDC_TENDON_NEARNESS_FACTOR)->ShowWindow(nShow);
+
    return CPropertyPage::OnSetActive();
 }
 

@@ -51,7 +51,7 @@ Check the "Evaluate stress limits for temporary loading conditions" to cause str
 Parameters for evaluating girder stresses immediately after temporary strands are removed.
 
 Item | Description
------|----------------
+-----|------------
 Compressive Stress | Enter the coefficient for the compressive stress limit
 Tensile stress - In areas other than the precompressed tensile zone | Enter the coefficient for the tensile stress limit. Check the "But not greater than" box to establish an upper limit on the tensile stress limit.
 Tensile stress - In areas with sufficient bonded reinforcement | Enter the coefficient for the tensile stress limit.
@@ -64,7 +64,7 @@ Tensile stress - In areas with sufficient bonded reinforcement | Enter the coeff
 Parameters for evaluating girder stresses immediately after deck placement.
 
 Item | Description
------|----------------
+-----|------------
 Compressive Stress | Enter the coefficient for the compressive stress limit
 Tensile stress | Enter the coefficient for the tensile stress limit. Check the "But not greater than" box to establish an upper limit on the tensile stress limit.
 
@@ -73,7 +73,8 @@ Principal Tensile Stress in Webs (LRFD 5.9.2.3.3)
 These requirements were first introduced in the AASHTO LRFD Bridge Design Specifications, 8th Edition 2017. See @ref tg_principal_tensile_stress in the @ref technical_guide for more information.
 
 Item | Description
------|-------------------------------------------
+-----|------------
 Tensile Stress | Enter the coefficient for the tensile stress limit.
 Compute flexural shear stress... | Select the method for computing flexural shear stress in the webs. Options are AASHTO LRFD Equation 5.9.2.3.3-1 and NCHRP Report 849 Equation 3.8. The AASHTO equation computes the shear stress by applying the Service III shear force to the composite section. The NCHRP equation computes shear stress by applying loading to the non-composite and composite sections as appropreate and summing the resulting stresses.
+At sections where internal tendons cross... | Enter the number of outside duct diameters away from the centerline of a duct used to determine of the tendon is "near" the section being checked and the provisions of LRFD 5.7.2.1 are applied. LRFD 5.7.2.1 specifies reductions in effective web width in the precense of ducts.
 

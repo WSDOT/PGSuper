@@ -155,8 +155,9 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
    pgsTypes::PrincipalTensileStressMethod method;
    Float64 coefficient;
+   Float64 ductDiameterFactor;
 
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient);
+   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor);
    GET_IFACE2(pBroker, IAllowableConcreteStress, pAllowables);
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
