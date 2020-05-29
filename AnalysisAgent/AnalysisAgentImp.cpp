@@ -512,6 +512,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       equivLoads.push_back(endMoment);
 
       // debonding
+      PoiList vDebondPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_DEBOND, &vDebondPoi);
       std::vector<RowIndexType> vRows = pStrandGeom->GetRowsWithDebonding(segmentKey, pgsTypes::Straight, pConfig);
       for (const auto& rowIdx : vRows)
       {
@@ -526,11 +528,29 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
             Float64 Xend = Xstart + Lstrand;
 
             Float64 PsDebond = nStrands*Ps / Ns;
-            pgsPointOfInterest startPoi(pPoi->GetPointOfInterest(segmentKey, Xstart));
+            auto found = std::find_if(std::cbegin(vDebondPoi), std::cend(vDebondPoi), [Xstart](const pgsPointOfInterest& poi) {return IsEqual(poi.GetDistFromStart(), Xstart); });
+            pgsPointOfInterest startPoi;
+            if (found == std::cend(vDebondPoi))
+            {
+               startPoi.SetLocation(segmentKey, Xstart);
+            }
+            else
+            {
+               startPoi = *found;
+            }
             ATLASSERT(pConfig == nullptr ? startPoi.GetID() != INVALID_ID : true);
             ATLASSERT(pConfig == nullptr ? startPoi.HasAttribute(POI_DEBOND) : true);
 
-            pgsPointOfInterest endPoi(pPoi->GetPointOfInterest(segmentKey, Xend));
+            found = std::find_if(std::cbegin(vDebondPoi), std::cend(vDebondPoi), [Xend](const pgsPointOfInterest& poi) {return IsEqual(poi.GetDistFromStart(), Xend); });
+            pgsPointOfInterest endPoi;
+            if (found == std::cend(vDebondPoi))
+            {
+               endPoi.SetLocation(segmentKey, Xend);
+            }
+            else
+            {
+               endPoi = *found;
+            }
             ATLASSERT(pConfig == nullptr ? endPoi.GetID() != INVALID_ID : true);
             ATLASSERT(pConfig == nullptr ? endPoi.HasAttribute(POI_DEBOND) : true);
 
