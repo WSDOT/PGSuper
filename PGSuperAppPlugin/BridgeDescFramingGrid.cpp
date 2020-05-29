@@ -77,7 +77,8 @@ GRID_IMPLEMENT_REGISTER(CBridgeDescFramingGrid, CS_DBLCLKS, 0, 0, 0);
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingGrid
 
-CBridgeDescFramingGrid::CBridgeDescFramingGrid()
+CBridgeDescFramingGrid::CBridgeDescFramingGrid():
+   m_bDoValidate(true)
 {
 //   RegisterClass();
    HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
@@ -96,6 +97,7 @@ BEGIN_MESSAGE_MAP(CBridgeDescFramingGrid, CGXGridWnd)
 	//{{AFX_MSG_MAP(CBridgeDescFramingGrid)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
+   ON_WM_KILLFOCUS()
 END_MESSAGE_MAP()
 
 std::vector<Float64> CBridgeDescFramingGrid::GetSpanLengths()
@@ -260,6 +262,11 @@ void CBridgeDescFramingGrid::OnChangedSelection(const CGXRange* pChangedRect,BOO
    pParent->EnableRemoveTemporarySupportBtn(EnableRemoveTemporarySupportBtn());
 
    CGXGridWnd::OnChangedSelection(pChangedRect,bIsDragging,bKey);
+}
+
+void CBridgeDescFramingGrid::SetDoNotValidateCells()
+{
+   m_bDoValidate = false;
 }
 
 void CBridgeDescFramingGrid::InsertRow()
@@ -1262,6 +1269,12 @@ void CBridgeDescFramingGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
 // validate input
 BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 {
+   if (!m_bDoValidate)
+   {
+      // User hit Cancel button - just let any input errors go
+      return TRUE;
+   }
+
 	CString s;
 	CGXControl* pControl = GetControl(nRow, nCol);
 	pControl->GetCurrentText(s);
@@ -1670,4 +1683,18 @@ void CBridgeDescFramingGrid::DeleteTransactions(std::map<IndexType,std::vector<t
          delete pTxn;
       }
    }
+}
+
+void CBridgeDescFramingGrid::OnKillFocus(CWnd* pNewWnd)
+{
+   CWnd* pParent = GetParent();
+   CWnd* pGpParent = pParent->GetParent();
+   CWnd* pcancel = pGpParent->GetDlgItem(IDCANCEL);
+   if (pNewWnd == pcancel)
+   {
+      // do not validate cell values if user hits Cancel
+      m_bDoValidate = false;
+   }
+
+   CGXGridWnd::OnKillFocus(pNewWnd);
 }

@@ -89,6 +89,7 @@ public:
    afx_msg void OnCbnSelchangeStartCb();
    afx_msg void OnCbnSelchangeEndCb();
    afx_msg void OnEnUpdateStartpierno();
+   virtual void OnCancel();
 };
 
 //{{AFX_INSERT_LOCATION}}

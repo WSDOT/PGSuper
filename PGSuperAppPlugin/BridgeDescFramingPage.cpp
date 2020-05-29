@@ -421,3 +421,12 @@ void CBridgeDescFramingPage::OnEnUpdateStartpierno()
       throw;
    }
 }
+
+void CBridgeDescFramingPage::OnCancel()
+{
+   // Tricky: tell grid not to validate cells if dialog is cancelling. This fixed a bug where
+   //         users were forced to input valid grid data in order to cancel the dialog
+   m_Grid.SetDoNotValidateCells();
+
+   CPropertyPage::OnCancel();
+}
