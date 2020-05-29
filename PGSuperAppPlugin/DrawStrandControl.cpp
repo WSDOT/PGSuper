@@ -631,7 +631,6 @@ void CDrawStrandControl::DrawTendons(CDC* pDC, grlibPointMapper& leftMapper, grl
    CBrush errorBrush(RED);
 
    WebIndexType nWebs = pGirder->GetWebCount(segmentKey);
-   ATLASSERT(1 <= nWebs && nWebs <= 2); // expecting 1 or 2 webs
 
    DuctIndexType nDucts = m_pTendons->GetDuctCount();
    for(DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
