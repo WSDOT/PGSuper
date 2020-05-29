@@ -1487,7 +1487,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
@@ -1686,7 +1686,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    {
       bSkipToNextRow = false;
 
-      if ( row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
@@ -1866,7 +1866,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
@@ -1999,7 +1999,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
@@ -2122,7 +2122,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
