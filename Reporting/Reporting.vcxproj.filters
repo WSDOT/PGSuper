@@ -517,8 +517,9 @@
     <ClCompile Include="PrincipalTensionStressDetailsChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LoadRatingSummaryReportDlg.cpp" />
-    <ClCompile Include="..\INCLUDE\REPORTING\LOADRATINGSUMMARYREPORTDLG.CPP" />
+    <ClCompile Include="LoadRatingSummaryReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h">
