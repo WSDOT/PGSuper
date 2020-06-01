@@ -334,7 +334,12 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             *pChapter << pPara;
          }
       }
+
+      ReportEquivPretensionLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
+      ReportEquivSegmentPostTensioningLoads(pChapter, bRating, pBridge, pDisplayUnits, girderKey);
+
    } // girderkey
+
 
    bool bPermit;
    ReportLiveLoad(pChapter,bDesign,bRating,pRatingSpec,bPermit);
