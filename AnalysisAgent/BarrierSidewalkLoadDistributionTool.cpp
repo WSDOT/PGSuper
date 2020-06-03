@@ -525,7 +525,7 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
          if ( m_DistType == pgsTypes::tbdMatingSurface )
          {
             // get intersections for each mating surface
-            MatingSurfaceIndexType nMatingSurfaces = m_pIGirder->GetNumberOfMatingSurfaces(segmentKey); 
+            MatingSurfaceIndexType nMatingSurfaces = m_pIGirder->GetMatingSurfaceCount(segmentKey); 
             for (MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++)
             {
                Float64 offset = -1.0 * m_pIGirder->GetMatingSurfaceLocation(mid_poi, msIdx);

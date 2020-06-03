@@ -414,7 +414,7 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
    // the profile chord reference line passes through the deck at this station and offset
    Float64 Y_girder_ref_line_left_bearing = pAlignment->GetElevation(station,offset);
 
-   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
+   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetMatingSurfaceCount(segmentKey);
 
    Float64 girder_top_slope = pGdr->GetTransverseTopFlangeSlope(segmentKey);
 
@@ -571,7 +571,7 @@ Float64 pgsDesigner2::GetSectionGirderOrientationEffect(const pgsPointOfInterest
    GET_IFACE(IGirder,pGdr);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
-   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
+   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetMatingSurfaceCount(segmentKey);
 
    Float64 girder_orientation = pGdr->GetOrientation(segmentKey);
 
@@ -3716,7 +3716,7 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi) cons
       Float64 top_flange_width = pGdr->GetTopFlangeWidth(poi);
       Float64 panel_support    = pDeck->PanelSupport;
 
-      MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
+      MatingSurfaceIndexType nMatingSurfaces = pGdr->GetMatingSurfaceCount(segmentKey);
       Float64 wMating = 0; // sum of mating surface widths... less deck panel support width
       for ( MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++ )
       {
@@ -4981,9 +4981,9 @@ void pgsDesigner2::CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmen
    Float64 minWeb       = DBL_MAX;
 
    GET_IFACE(IGirder,pGdr);
-   FlangeIndexType nTopFlanges = pGdr->GetNumberOfTopFlanges(segmentKey);
+   FlangeIndexType nTopFlanges = pGdr->GetTopFlangeCount(segmentKey);
    WebIndexType    nWebs       = pGdr->GetWebCount(segmentKey);
-   FlangeIndexType nBotFlanges = pGdr->GetNumberOfBottomFlanges(segmentKey);
+   FlangeIndexType nBotFlanges = pGdr->GetBottomFlangeCount(segmentKey);
 
    if ( nTopFlanges != 0 || nWebs != 0 || nBotFlanges != 0 )
    {

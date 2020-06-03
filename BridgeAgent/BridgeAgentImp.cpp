@@ -25100,7 +25100,7 @@ bool CBridgeAgentImp::IsSymmetric(IntervalIndexType intervalIdx,const CGirderKey
    return true;
 }
 
-MatingSurfaceIndexType CBridgeAgentImp::GetNumberOfMatingSurfaces(const CGirderKey& girderKey) const
+MatingSurfaceIndexType CBridgeAgentImp::GetMatingSurfaceCount(const CGirderKey& girderKey) const
 {
    VALIDATE( BRIDGE );
 
@@ -25157,7 +25157,7 @@ bool CBridgeAgentImp::GetMatingSurfaceProfile(const pgsPointOfInterest& poi, Mat
    return bHasMSProfile;
 }
 
-FlangeIndexType CBridgeAgentImp::GetNumberOfTopFlanges(const CGirderKey& girderKey) const
+FlangeIndexType CBridgeAgentImp::GetTopFlangeCount(const CGirderKey& girderKey) const
 {
    VALIDATE( BRIDGE );
 
@@ -25306,7 +25306,7 @@ Float64 CBridgeAgentImp::GetTopFlangeThickening(const CPrecastSegmentData* pSegm
 
 Float64 CBridgeAgentImp::GetTopFlangeWidth(const pgsPointOfInterest& poi) const
 {
-   MatingSurfaceIndexType nMS = GetNumberOfMatingSurfaces(poi.GetSegmentKey());
+   MatingSurfaceIndexType nMS = GetMatingSurfaceCount(poi.GetSegmentKey());
    Float64 wtf = 0;
    for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMS; msIdx++ )
    {
@@ -25347,7 +25347,7 @@ Float64 CBridgeAgentImp::GetTopWidth(const pgsPointOfInterest& poi,Float64* pLef
    return width;
 }
 
-FlangeIndexType CBridgeAgentImp::GetNumberOfBottomFlanges(const CGirderKey& girderKey) const
+FlangeIndexType CBridgeAgentImp::GetBottomFlangeCount(const CGirderKey& girderKey) const
 {
    VALIDATE( BRIDGE );
 
@@ -25674,7 +25674,7 @@ Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi) c
 
    if ( pDeck->GetDeckType() == pgsTypes::sdtCompositeCIP || pDeck->GetDeckType() == pgsTypes::sdtCompositeOverlay )
    {
-      MatingSurfaceIndexType nMatingSurfaces = GetNumberOfMatingSurfaces(segmentKey);
+      MatingSurfaceIndexType nMatingSurfaces = GetMatingSurfaceCount(segmentKey);
       for ( MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++ )
       {
          wMating += GetMatingSurfaceWidth(poi,i);
@@ -25684,7 +25684,7 @@ Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi) c
    {
       // SIP Deck Panel System... Area beneath the deck panesl aren't part of the
       // shear transfer area
-      MatingSurfaceIndexType nMatingSurfaces = GetNumberOfMatingSurfaces(segmentKey);
+      MatingSurfaceIndexType nMatingSurfaces = GetMatingSurfaceCount(segmentKey);
       Float64 panel_support = pDeck->PanelSupport;
       for ( MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++ )
       {

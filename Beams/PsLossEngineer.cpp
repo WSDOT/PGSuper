@@ -3173,7 +3173,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *pAslab = pSectProp->GetGrossDeckArea(poi);
 
    Float64 wTop = 0;
-   FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
+   FlangeIndexType nFlanges = pGirder->GetTopFlangeCount(segmentKey);
    for ( FlangeIndexType flangeIdx = 0; flangeIdx < nFlanges; flangeIdx++ )
    {
       Float64 wtf = pGirder->GetTopFlangeWidth(poi,flangeIdx);

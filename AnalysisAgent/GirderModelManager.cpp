@@ -15478,7 +15478,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          Float64 panel_width = trib_slab_width; // start with tributary width
 
          // deduct width of mating surfaces
-         MatingSurfaceIndexType nMatingSurfaces = pGirder->GetNumberOfMatingSurfaces(segmentKey);
+         MatingSurfaceIndexType nMatingSurfaces = pGirder->GetMatingSurfaceCount(segmentKey);
          for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++ )
          {
             panel_width -= pGirder->GetMatingSurfaceWidth(poi,msIdx);
@@ -15509,7 +15509,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          else if ( pDeck->OverhangTaper[side] == pgsTypes::dotBottomTopFlange )
          {
             // deck overhang tapers to the bottom of the top flange
-            FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
+            FlangeIndexType nFlanges = pGirder->GetTopFlangeCount(segmentKey);
             Float64 flange_thickness;
             if ( nFlanges == 0 )
             {
@@ -15566,7 +15566,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          Float64 panel_width = w;
 
          // deduct width of mating surfaces
-         MatingSurfaceIndexType nMatingSurfaces = pGirder->GetNumberOfMatingSurfaces(segmentKey);
+         MatingSurfaceIndexType nMatingSurfaces = pGirder->GetMatingSurfaceCount(segmentKey);
          for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++ )
          {
             panel_width -= pGirder->GetMatingSurfaceWidth(poi,msIdx);
@@ -15607,8 +15607,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
       // mating surface
       Float64 mating_surface_width = 0;
-      MatingSurfaceIndexType nMatingSurfaces = pGirder->GetNumberOfMatingSurfaces(segmentKey);
-      ATLASSERT( nMatingSurfaces == pGirder->GetNumberOfMatingSurfaces(segmentKey) );
+      MatingSurfaceIndexType nMatingSurfaces = pGirder->GetMatingSurfaceCount(segmentKey);
+      ATLASSERT( nMatingSurfaces == pGirder->GetMatingSurfaceCount(segmentKey) );
       for ( MatingSurfaceIndexType matingSurfaceIdx = 0; matingSurfaceIdx < nMatingSurfaces; matingSurfaceIdx++ )
       {
          mating_surface_width += pGirder->GetMatingSurfaceWidth(poi,matingSurfaceIdx);

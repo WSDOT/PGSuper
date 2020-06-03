@@ -1079,11 +1079,11 @@ public:
    virtual bool    IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey) const override;
    virtual bool    IsSymmetricSegment(const CSegmentKey& segmentKey) const override;
    virtual bool    IsSymmetric(IntervalIndexType intervalIdx,const CGirderKey& girderKey) const override; 
-   virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey) const override;
+   virtual MatingSurfaceIndexType  GetMatingSurfaceCount(const CGirderKey& girderKey) const override;
    virtual Float64 GetMatingSurfaceLocation(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly = false) const override;
    virtual Float64 GetMatingSurfaceWidth(const pgsPointOfInterest& poi,MatingSurfaceIndexType msIdx, bool bGirderOnly = false) const override;
    virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, bool bGirderOnly, IPoint2dCollection** ppPoints) const override;
-   virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey) const override;
+   virtual FlangeIndexType GetTopFlangeCount(const CGirderKey& girderKey) const override;
    virtual Float64 GetTopFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
    virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
    virtual Float64 GetTopFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
@@ -1096,7 +1096,7 @@ public:
    virtual Float64 GetTopFlangeThickening(const CPrecastSegmentData* pSegment, Float64 Xs) const override;
    virtual Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopWidth(const pgsPointOfInterest& poi, Float64* pLeft=nullptr, Float64* pRight=nullptr) const override;
-   virtual FlangeIndexType GetNumberOfBottomFlanges(const CGirderKey& girderKey) const override;
+   virtual FlangeIndexType GetBottomFlangeCount(const CGirderKey& girderKey) const override;
    virtual Float64 GetBottomFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
    virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
    virtual Float64 GetBottomFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;

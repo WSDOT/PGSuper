@@ -1618,8 +1618,8 @@ interface IGirder : public IUnknown
    // as the left end and right end of the girder is the same (same debonding, symmetric harp points, etc)
    virtual bool    IsSymmetric(IntervalIndexType intervalIdx,const CGirderKey& girderKey) const = 0; 
 
-   // Returns teh number of mating surfaces
-   virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey) const = 0;
+   // Returns the number of mating surfaces
+   virtual MatingSurfaceIndexType  GetMatingSurfaceCount(const CGirderKey& girderKey) const = 0;
 
    // Location of mating surface, measured from the CL girder. < 0 if left of CL.
    // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
@@ -1634,7 +1634,7 @@ interface IGirder : public IUnknown
    virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, bool bGirderOnly, IPoint2dCollection** ppPoints) const = 0;
 
    // Returns the number of top flanges
-   virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey) const = 0;
+   virtual FlangeIndexType GetTopFlangeCount(const CGirderKey& girderKey) const = 0;
 
    // Returns the location of the center of a top flange measured from the CL girder. < 0 if left of CL.
    virtual Float64 GetTopFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const = 0;
@@ -1674,7 +1674,7 @@ interface IGirder : public IUnknown
    virtual Float64 GetTopFlangeThickening(const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
 
    // Returns the number of bottom flanges
-   virtual FlangeIndexType GetNumberOfBottomFlanges(const CGirderKey& girderKey) const = 0;
+   virtual FlangeIndexType GetBottomFlangeCount(const CGirderKey& girderKey) const = 0;
 
    // Returns the location of the center of a bottom flange measured from the CL girder. < 0 if left of CL.
    virtual Float64 GetBottomFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const = 0;

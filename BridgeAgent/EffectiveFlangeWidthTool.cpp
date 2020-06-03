@@ -927,7 +927,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IGirder,pGirder);
-   MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(segmentKey);
+   MatingSurfaceIndexType nWebs = pGirder->GetMatingSurfaceCount(segmentKey);
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -1072,7 +1072,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
 void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    GET_IFACE2(pBroker,IGirder,pGirder);
-   MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(segmentKey);
+   MatingSurfaceIndexType nWebs = pGirder->GetMatingSurfaceCount(segmentKey);
 
    if ( nWebs == 1 )
    {
