@@ -534,53 +534,90 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
             // The largest skew angle (theta) in the BRIDGE SYSTEM where (theta)
             // is the angle of a bearing line measured relative to a normal to
             // the centerline of a longitudial component
-            if ( !m_bMaxSkewAngleComputed )
+            if (!m_bMaxSkewAngleComputed)
             {
                // the max skew angle for the BRIDGE SYSTEM only needs to be
                // computed once. Compute it and cache it
-	            Float64 maxSkew = 0;
-	            PierIndexType nPiers = pBridge->GetPierCount();
-	            for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
-	            {
-	               CComPtr<IDirection> pierDirection;
-	               pBridge->GetPierDirection(pierIdx,&pierDirection);
-      	
-	               SpanIndexType spanIndex = pierIdx;
-	               if ( nPiers-1 == pierIdx ) // at the last pier... use the previous span index
-                  {
-	                  spanIndex -= 1;
-                  }
-      	
-                  GroupIndexType groupIdx = pBridge->GetGirderGroupIndex(spanIndex);
-	               GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
-	               for ( GirderIndexType gdr = 0; gdr < nGirders; gdr++ )
-	               {
-	                  CComPtr<IDirection> girderDirection;
-      		
-	                  SegmentIndexType segIdx = 0;
-	                  pBridge->GetSegmentBearing(segmentKey,&girderDirection);
-      		
-	                  CComPtr<IDirection> girderNormal;
-	                  girderDirection->Increment(CComVariant(PI_OVER_2),&girderNormal);
+               Float64 maxSkew = 0;
+               PierIndexType nPiers = pBridge->GetPierCount();
+               for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+               {
+                  CComPtr<IDirection> pierDirection;
+                  pBridge->GetPierDirection(pierIdx, &pierDirection);
 
-                     CComPtr<IAngle> angle;
-	                  girderNormal->AngleBetween(pierDirection,&angle);
-      	
-	                  Float64 angle_value;
-	                  angle->get_Value(&angle_value);
-      	
-	                  if ( M_PI < angle_value )
+                  SpanIndexType spanIndex = pierIdx;
+                  if (nPiers - 1 == pierIdx) // at the last pier... use the previous span index
+                  {
+                     spanIndex -= 1;
+                  }
+
+                  bool bIsBoundaryPier = pBridge->IsBoundaryPier(pierIdx);
+
+                  GroupIndexType groupIdx = pBridge->GetGirderGroupIndex(spanIndex);
+                  GirderIndexType nGirders = pBridge->GetGirderCount(groupIdx);
+                  for (GirderIndexType gdr = 0; gdr < nGirders; gdr++)
+                  {
+                     std::vector<CSegmentKey> vSegmentKeys;
+                     if (bIsBoundaryPier)
                      {
-	                     angle_value = TWO_PI - angle_value;
+                        CSegmentKey backSegmentKey, aheadSegmentKey;
+                        pBridge->GetSegmentsAtPier(pierIdx, gdr, &backSegmentKey, &aheadSegmentKey);
+                        if (backSegmentKey.segmentIndex != INVALID_INDEX)
+                        {
+                           vSegmentKeys.push_back(backSegmentKey);
+                        }
+
+                        if (aheadSegmentKey.segmentIndex != INVALID_INDEX)
+                        {
+                           vSegmentKeys.push_back(aheadSegmentKey);
+                        }
                      }
-      	
-	                  maxSkew = Max(maxSkew,angle_value);
-	               }
-	            }
+                     else
+                     {
+                        pgsTypes::PierSegmentConnectionType bc = pBridge->GetPierSegmentConnectionType(pierIdx);
+                        if (IsSegmentContinuousOverPier(bc))
+                        {
+                           vSegmentKeys.emplace_back(pBridge->GetSegmentAtPier(pierIdx, CGirderKey(groupIdx, gdr)));
+                        }
+                        else
+                        {
+                           CSegmentKey backSegmentKey, aheadSegmentKey;
+                           pBridge->GetSegmentsAtPier(pierIdx, gdr, &backSegmentKey, &aheadSegmentKey);
+                           ATLASSERT(backSegmentKey.segmentIndex != INVALID_INDEX);
+                           ATLASSERT(aheadSegmentKey.segmentIndex != INVALID_INDEX);
+                           vSegmentKeys.push_back(backSegmentKey);
+                           vSegmentKeys.push_back(aheadSegmentKey);
+                        }
+                     }
+
+
+                     for (const auto& thisSegmentKey : vSegmentKeys)
+                     {
+                        CComPtr<IDirection> girderDirection;
+                        pBridge->GetSegmentBearing(thisSegmentKey, &girderDirection);
+
+                        CComPtr<IDirection> girderNormal;
+                        girderDirection->Increment(CComVariant(PI_OVER_2), &girderNormal);
+
+                        CComPtr<IAngle> angle;
+                        girderNormal->AngleBetween(pierDirection, &angle);
+
+                        Float64 angle_value;
+                        angle->get_Value(&angle_value);
+
+                        if (M_PI < angle_value)
+                        {
+                           angle_value = TWO_PI - angle_value;
+                        }
+
+                        maxSkew = Max(maxSkew, angle_value);
+                     }
+                  }
+               }
                m_bMaxSkewAngleComputed = true;
                m_MaxSkewAngle = maxSkew;
             }
-   	
+
 	         if ( 75.*M_PI/180. < m_MaxSkewAngle )
 	         {
 	            // skew is too large
