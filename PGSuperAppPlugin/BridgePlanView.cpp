@@ -1250,20 +1250,21 @@ void CBridgePlanView::SetModelToWorldSpacingMapping()
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IRoadway, pAlignment);
 
-   PierIndexType nPiers = pBridge->GetPierCount();
+   PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(m_StartGroupIdx);
+   PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(m_EndGroupIdx == ALL_GROUPS ? pBridge->GetPierCount() - 1 : m_EndGroupIdx);
    
    // get point on alignment at first pier
    CComPtr<IDirection> dir;
-   Float64 station = pBridge->GetPierStation(0);
-   pBridge->GetPierDirection(0, &dir);
+   Float64 station = pBridge->GetPierStation(startPierIdx);
+   pBridge->GetPierDirection(startPierIdx, &dir);
    CComPtr<IPoint2d> rotation_center;
    pAlignment->GetPoint(station, 0.00, dir, pgsTypes::pcGlobal, &rotation_center);
 
    // get point on alignment at last pier
    CComPtr<IPoint2d> end_point;
    dir.Release();
-   station = pBridge->GetPierStation(nPiers - 1);
-   pBridge->GetPierDirection(nPiers - 1, &dir);
+   station = pBridge->GetPierStation(endPierIdx);
+   pBridge->GetPierDirection(endPierIdx, &dir);
    pAlignment->GetPoint(station, 0.00, dir, pgsTypes::pcGlobal, &end_point);
 
    // get the direction of the line from the start of the bridge to the end
