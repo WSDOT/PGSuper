@@ -117,13 +117,19 @@ public:
    // lpszCurrentAppVersion is the application version of the application right now
    bool PromptToMakeCopy(LPCTSTR lpszPathName,LPCTSTR lpszCurrentAppVersion)
    {
-      return (((m_bUnnamed && m_strFilePath == CString(lpszPathName)) // this is a Save As and the file name isn't changing
-         || // OR
-         (m_bUnnamed == false) // this is not a save as
-         ||
-         (m_bNewFromTemplate == false)) // this is not a new file created from a template
-         &&
-         (m_bPreVersion21File || m_strAppVersion != CString(lpszCurrentAppVersion))); // current application is newer than application used to create the file
+      bool bDifferentVersion = m_bPreVersion21File || m_strAppVersion != CString(lpszCurrentAppVersion) ? true : false;
+
+      if (m_bUnnamed && bDifferentVersion)
+      {
+         return m_strFilePath == CString(lpszPathName); // this is a Save As and the file name isn't changing
+      }
+
+      if ((m_bUnnamed == false || m_bNewFromTemplate == false) && bDifferentVersion)
+      {
+         return true; // this is a save, but not for a new file
+      }
+
+      return false;
    }
 
 private:

@@ -55,7 +55,7 @@ BOOL CFileSaveWarningDlg::OnInitDialog()
    WORD cbBuf = _MAX_PATH;
    ::GetFileTitle(m_strCopyFileName, title, cbBuf);
    CString str;
-   str.Format(_T("Make copy of original file before saving. %s"), title);
+   str.Format(_T("Make copy of original file before saving.\r\n%s"), title);
    CWnd* pRB = GetDlgItem(IDC_RB_COPY);
    pRB->SetWindowText(str);
 
