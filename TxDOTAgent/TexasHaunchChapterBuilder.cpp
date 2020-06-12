@@ -420,7 +420,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          if (bFirst)
             (*pTable)(row,0) << _T("X (") << disp.GetUnitTag() << _T(") ");
 
-         val = ::CeilOff(Xstart, xyzToler);
+         val = ::CeilOffTol(Xstart, xyzToler);
 
          (*pTable)(row,col) << disp.SetValue( val );
          row++;
@@ -428,7 +428,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          if (bFirst)
             (*pTable)(row,0) << _T("Y (") << disp.GetUnitTag() << _T(") ");
 
-         val = ::CeilOff(Xstart+height, xyzToler);
+         val = ::CeilOffTol(Xstart+height, xyzToler);
 
          (*pTable)(row,col) << disp.SetValue( val );
          row++;
@@ -439,7 +439,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          if (bFirst)
             (*pTable)(row,0) << _T("X Start (") << disp.GetUnitTag() << _T(") ");
 
-         val = ::CeilOff(Xstart, xyzToler);
+         val = ::CeilOffTol(Xstart, xyzToler);
 
          (*pTable)(row,col) << disp.SetValue( val );
          row++;
@@ -447,7 +447,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          if (bFirst)
             (*pTable)(row,0) << _T("X End (") << disp.GetUnitTag() << _T(") ");
 
-         val = ::CeilOff(Xend, xyzToler);
+         val = ::CeilOffTol(Xend, xyzToler);
 
          (*pTable)(row,col) << disp.SetValue( val );
          row++;
@@ -455,7 +455,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          if (bFirst)
             (*pTable)(row,0) << _T("Y Start (") << disp.GetUnitTag() << _T(") ");
 
-         val = ::CeilOff(Xstart+height, xyzToler);
+         val = ::CeilOffTol(Xstart+height, xyzToler);
 
          (*pTable)(row,col) << disp.SetValue( val );
          row++;
@@ -463,7 +463,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
          if (bFirst)
             (*pTable)(row,0) << _T("Y End (") << disp.GetUnitTag() << _T(") ");
 
-         val = ::CeilOff(Xend+height, xyzToler);
+         val = ::CeilOffTol(Xend+height, xyzToler);
 
          (*pTable)(row,col) << disp.SetValue( val );
          row++;
@@ -473,7 +473,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       if (bFirst)
          (*pTable)(row,0) << _T("Z (") << disp.GetUnitTag() << _T(") ");
 
-      val = ::CeilOff(Z, xyzToler);
+      val = ::CeilOffTol(Z, xyzToler);
 
       (*pTable)(row,col) << disp.SetValue( val );
       row++;

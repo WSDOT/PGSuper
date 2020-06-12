@@ -167,7 +167,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    Float64 fc_reqd  = pGirderArtifact->GetRequiredGirderConcreteStrength();
    if ( 0 <= fci_reqd )
    {
-      Float64 fci_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+      Float64 fci_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOffTol(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
       *p << _T("Required ") << RPT_FCI << _T(" = ") << stress_u.SetValue(fci_reqd);
       *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fci_rounded) << rptNewLine;
    }
@@ -189,7 +189,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( 0 <= fc_reqd )
    {
-      Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+      Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOffTol(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
       *p << _T("Required ") << RPT_FC  << _T(" = ") << stress_u.SetValue(fc_reqd);
       *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fc_rounded) << rptNewLine;
    }
@@ -240,7 +240,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       Float64 fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength();
       if ( 0 <= fc_reqd )
       {
-         Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+         Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOffTol(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
          *p << _T("Required ") << RPT_FC  << _T(" = ") << stress_u.SetValue(fc_reqd);
          *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fc_rounded) << rptNewLine;
       }
