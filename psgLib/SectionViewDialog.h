@@ -72,6 +72,9 @@ protected:
    CComPtr<IDblArray> m_W;
    CComPtr<IBstrArray> m_Desc;
 
+   bool m_bDrawWebWidthProjections;
+   CComPtr<IUnkArray> m_WebWidthProjections;
+
 #ifdef _DEBUG
    std::vector< CComPtr<IShape> > m_RegionShapes; // for debugging the strandmover
 #endif
@@ -82,6 +85,7 @@ protected:
    void DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool isEnd);
    StrandIndexType DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index,StrandIndexType strandInc=1);
    void DrawWebSections(CDC* pDC, grlibPointMapper& Mapper);
+   void DrawWebWidthProjections(CDC* pDC, grlibPointMapper& Mapper);
 
 
 	// Generated message map functions
@@ -95,6 +99,8 @@ protected:
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnClickNumbers();
     afx_msg void OnClickWebSections();
+public:
+   afx_msg void OnBnClickedShowWebWidthProjections();
 };
 
 //{{AFX_INSERT_LOCATION}}

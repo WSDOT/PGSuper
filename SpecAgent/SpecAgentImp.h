@@ -322,12 +322,17 @@ public:
 
 // IDebondLimits
 public:
+   virtual bool CheckMaxDebondedStrands(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) const override;
-   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) const override;
+   virtual void GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pNS, bool* pbCheckMax, Float64* pMaxFraction) const override;
    virtual void GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) const override;
-   virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey) const override;
+   virtual void GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey, Float64* pndb, bool* pbUseMinDistance, Float64* pMinDistance) const override;
+   virtual Float64 GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey) const override;
+   virtual bool CheckDebondingSymmetry(const CSegmentKey& segmentKey) const override;
+   virtual bool CheckAdjacentDebonding(const CSegmentKey& segmentKey) const override;
+   virtual bool CheckDebondingInWebWidthProjections(const CSegmentKey& segmentKey) const override;
+   virtual bool IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, RowIndexType rowIdx) const override;
 
 // IResistanceFactors
 public:

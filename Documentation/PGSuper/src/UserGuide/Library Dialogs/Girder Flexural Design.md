@@ -2,31 +2,45 @@ Flexural Design {#ug_library_dialogs_girder_flexural_design}
 ==============================================
 Parameters that control the flexural design of this girder type are defined on this tab. Parameters include debonding limits, location of debonding sections, and the strategies that are to be used for service limit state design.
 
-Debonding Strand Limits (5.9.4.3.3 (*pre-2017: 5.11.4.3*))
+Debonded Strands (5.9.4.3.3 (*pre-2017: 5.11.4.3*))
 ----------------------------------
-These parameters are used to check and design debonded sections to ensure that local stress concentrations at debond locations are excessive
+These parameters establish limitations on strand debonding.
 
-Item | Description
-------|---------
-Maximum total debonded strands | Enter this value as a percentage of the total number of permanent strands
-Maximum debonded strands per row | Enter this value as a percentage of the number of permanent strands in a row
-Maximum debonded strands per section | These values limit the number of strands that can be debonded at a given longitudinal location. Enter both a total number and a percentage of the total number of debonded strands. The number of debonded strands will be limited to the greater of the two values.
+> NOTE: Debonding requirements were significantly changed in the AASHTO LRFD Bridge Design Specifications, 9th Edition, 2020. The parameters defined in this section can be configured to reflect LRFD 8th Edition and earlier, LRFD 9th Edition and later, and many Owner/Agency requirements that deviate from AASHTO LRFD. See examples of parameters below.
 
-Criteria for Debond Distances
------------------------------
-These parameters relate to the location of sections where debonding begins and terminates along the length of precast elements.
+> NOTE: The flexural design algorithm does not attempt to position debonded strands to satisfy the requirements of LRFD 9th Edition 5.9.4.3.3 Requirements E, 4th bullet of Requirement I, 1st bullet of Requirement J, or 1st bullet of Requirement K, though these requirements are evaluated in the specification check. Careful selection of the debondable strands when defining strand grids will result in better design outcomes.
 
-Item | Description
-------|------------
-<<<<<<< HEAD
-Maximum Debond Length | The maximum distance from the end of a precast element to any given debonded section cannot exceed lesser of: <ul><li>half the length of the precast element minus the strand development length computed per LRFD 5.9.4.3.3 (*pre-2017: 5.11.4.3*)</li><li>a specified percentage of the overall length of the precast element</li><li>a specified length</li></ul>
-Minimum distance between debond sections | The minimum distance between adjacent debond sections.
-Default Debond Length | This value is used for design, and as an initial value in the debonding grid. This value cannot be less than the minimum length specified above.
-=======
-Maximum Debond Length | The maximum distance from the end of a precast element to the farthest debonded section (at mid-length) cannot exceed lesser of: <ul><li>half the length of the precast element minus the strand development length computed per LRFD 5.9.4.3.3 (*pre-2017: 5.11.4.3*)</li><li>a specified percentage of the overall length of the precast element</li><li>a specified length</li></ul>. This value is used by the automated design algorithm only
-Minimum distance between debond sections | The minimum distance between adjacent debond sections. As a rule of thumb, this length should typically be longer than the prestress transfer length. This criteria is evaluated by the spec checker and will result in a spec check fail if violated.
-Default Debond Length | This value is used for design, and as an initial value in the debonding grid. The value cannot be less than the minimum length specified above.
->>>>>>> version-5.0
+Item | Description | LRFD 9th Edition 5.9.4.3.3 Requirement | LRFD 8th Edition 5.9.4.3.3 Paragraph
+-----|-------------|----------------------------------------|-------------------------------------
+Maximum total debonded strands | When checked, limits the total number of debonded strands as a percentage of the total number of strands. A limit of 25% was recommended in LRFD 8th Edition and earlier. The limit was removed in LRFD 9th Edition because research shows a greater number of strands can be debonded. | - | 2
+Maximum debonded strands per row | Enter this value as a percentage of the number of permanent strands in a row. | A | 3
+Maximum debonded strands per section | These values limit the number of strands that can be debonded at a given longitudinal location. Starting with LRFD 9th Edition, there is a maximum number of debonded strands per section for girders with 10 or fewer strands and a maximum number for all other cases. In LRFD 8th Edition and earlier, the limit on the number of strands that could be debonded was a number of strands (4) but the total number of debonded strands was constrained to a percentage of the total number of strands (40%). The 8th Edition and 9th Edition requirements can be modeled. | B | 4
+Longitudinal spacing of debonding termination locations ... | Enter the minimum distance between debonding termination locations as a number of strand diameters. Optionally, a minimum distance can be specified. This distance should not be less than the prestress transfer length. | C | -
+Check for debonding symmetry about vertical centerline and longitudinal termination locations | When checked, the debonding arrangement is evaluted to ensure debonded strands are symmetrically distributed about the vertical centerline of the cross section of the member and debonding is terminated symmetrically at the same longitudinal section. See note below. | D | 5
+Check for alternating bonded and debonded strands | When checked, the debonding arrangement is evaluated to ensure bonded and debonded strands locations are alternated both horizontally and vertically. See note below. | E
+Maximum Debond Length | The maximum distance from the end of a precast element to the farthest debond termination location cannot exceed lesser of: <ul><li>half the length of the precast element minus the strand development length</li><li>a specified percentage of the overall length of the precast element (optional)</li><li>a specified length (optional)</li></ul> This requirement is evaluated regardless of boundary conditions. | G
+Check for debonded strands in horizontal web limits or web width projections | When checked, the arrangement of debonded strands is evaluted to ensure strands are bonded within the horizontal limits of the web (Requirement I, first and second bullets - See LRFD Figure C5.9.4.3.3-1) or within the web width projection (Requirement J, second bullet - See LRFD Figure C5.9.4.3.3-2).| I and J | -
+
+> NOTE: LRFD 9th Edition, 5.9.4.3.3 Requirement D is not evaluated, regardless of the setting described above, when the **Define Individual Strands** method is used to define the pretensioning in a precast member. You will need to evaluate compliance with this requirement by other means.
+
+> NOTE: LRFD 9th Edition, 5.9.4.3.3 Requirement E, the requirement is to alternate bonded and debonded strand locations both horizontally and vertically. In order to do this, 50% of the strands must be deboned. This is not the intent of the requirement. The intent is to ensure debonded strands are not adjacent to one another, horizontally or vertically. This requirement is evaluated by checking the adjacentcy of debonded strands.
+
+> NOTE: LRFD 9th Edition, 5.9.4.3.3 Requirement F, (LRFD 8th Edition, 5.9.4.3.3, paragraph 1) a value of k=2.0 is always used when determining the development length of debonded strands.
+
+> NOTE: LRFD 9th Edition, 5.9.4.3.3 Requirement H is not evaluated. LRFD 5.12.3.3.9a does not permit debonded strands to be used for positive moment connections at continuity diaphramgs. 
+
+> NOTE: For girder sections where LRFD 9th Edition, 5.9.4.3.3 Requirements I and J are applicable, the horizontal limits of the web and the web width projection are shown graphically on the girder cross section in the Girder Library.
+
+> NOTE: LRFD 9th Edition, 5.9.4.3.3 Requirement I fourth bullet, Requirement J first bullet, and Requirement K first bullet are not evaluated.
+
+> NOTE: LRFD 8th Edition, 6th paragraph and LRFD 9th Edition Requirement I third bullet, Requirement J third bullet, and Requirement K second bullet are always evaluated. Only outer-most (exterior) strands in exterior webs or stems are evaluated for LRFD 8th Edition. For LRFD 9th Edition, when Requirement K is applicable, the outer-most strand in each stem or web is evaluated.
+
+### Parameters for LRFD 8th Edition and earlier
+![](.\Debond8.png)
+
+### Parameters for LRFD 9th Edition and later
+![](.\Debond9.png)
+
 
 Prestressing Optimization Strategies for the Automated Girder Designer
 -----------------------------------------------------------------------

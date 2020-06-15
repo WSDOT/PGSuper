@@ -1084,7 +1084,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
 
    GET_IFACE_NOCHECK(ISpecification, pSpec);
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IGirder,pGdr);
+   GET_IFACE_NOCHECK(IGirder, pGdr);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    // Design each segment in the girder
@@ -1126,6 +1126,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       // initialize temporary top strand usage type
       // we prefer pretensioned TTS so set it to that
       // however if there is precamber, TTS must be post-tensioned
+
       artifact.SetTemporaryStrandUsage(IsZero(pGdr->GetPrecamber(segmentKey)) ? pgsTypes::ttsPretensioned : pgsTypes::ttsPTBeforeLifting);
 
 
@@ -5653,105 +5654,189 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    }
 }
 
-void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifact* pArtifact) const
+void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifact* pArtifact) const
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IStrandGeometry,pStrandGeometry);
-   GET_IFACE(IDebondLimits,pDebondLimits);
+   GET_IFACE(IStrandGeometry, pStrandGeometry);
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   GET_IFACE(IProgress,pProgress);
+
+   // Get total number of straight strands below half height. Never include harped strands in count
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   pgsTypes::AdjustableStrandType adjustable_strand_type = pSegment->Strands.GetAdjustableStrandType();
+   pgsTypes::StrandType strand_type = adjustable_strand_type == pgsTypes::asHarped ? pgsTypes::Straight : pgsTypes::Permanent;
+
+   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey, strand_type, pgsTypes::dbetEither);
+   pArtifact->SetNumDebondedStrands(nDebonded);
+
+   if (nDebonded == 0)
+   {
+      return;
+   }
+
+   GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IDebondLimits, pDebondLimits);
+   GET_IFACE(IProgress, pProgress);
+   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IGirder, pGirder);
 
    CEAFAutoProgress ap(pProgress);
-   pProgress->UpdateMessage( _T("Checking debonding requirements") );
+   pProgress->UpdateMessage(_T("Checking debonding requirements"));
 
-   Float64 maxFra = pDebondLimits->GetMaxDebondedStrands(segmentKey);
-   pArtifact->AddMaxDebondStrandsAtSection(pDebondLimits->GetMaxNumDebondedStrandsPerSection(segmentKey),
-                                           pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey));
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_0L | POI_10L, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
+   std::array<pgsPointOfInterest, 2> poi{ vPoi.front(),vPoi.back() };
+
+   StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, strand_type);
+
+   // +--------------+--------+------------------+-------------+
+   // | Beam         | # Webs | # Bottom Flanges | Requirement |
+   // +--------------+--------+------------------+-------------+
+   // | I-Beams      |    1   |        1         |     I       |
+   // | U-Beams      |    2   |        1         |     J       |
+   // | Voided Slabs |    0   |        0         |     K       |
+   // | Double Tee   |    2   |        0         |     K       |
+   // +--------------+--------+------------------+-------------+
+   WebIndexType nWebs = pGirder->GetWebCount(segmentKey);
+   FlangeIndexType nFlanges = pGirder->GetBottomFlangeCount(segmentKey);
+   if (nWebs == 1 && nFlanges == 1)
+   {
+      // single-web flanged sections
+      // (I-beams, bulb-tees, and inverted-tees)
+      // Requirement I apply
+      pArtifact->SetSection(pgsDebondArtifact::I);
+   }
+   else if (1 < nWebs && nFlanges == 1)
+   {
+      // multi-web sections having bottom flanges
+      // (voided slab, box beams, and U-beams)
+      // Requirement J apply
+      pArtifact->SetSection(pgsDebondArtifact::J);
+   }
+   else
+   {
+      // all other sections
+      // Requirement K apply
+      ATLASSERT(0 <= nWebs && nFlanges == 0);
+      pArtifact->SetSection(pgsDebondArtifact::K);
+   }
+
+
+   StrandIndexType nMax10orLess, nMax;
+   bool bCheckMaxPerSection;
+   Float64 fraMaxPerSection;
+   pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey, &nMax10orLess, &nMax, &bCheckMaxPerSection, &fraMaxPerSection);
+   pArtifact->AddMaxDebondStrandsAtSection(nStrands <= 10 ? nMax10orLess : nMax, bCheckMaxPerSection, fraMaxPerSection);
 
    Float64 maxFraPerRow = pDebondLimits->GetMaxDebondedStrandsPerRow(segmentKey);
 
-   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-   pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
-
-   // Get total number of straight strands below half height. Never include harped strands in count
-   pgsTypes::StrandType strand_type = adj_type == pgsTypes::asHarped ? pgsTypes::Straight : pgsTypes::Permanent;
-   pgsPointOfInterest poi(segmentKey,0); // we can use a dummy poi here because we are getting rows for straight strands
-
-   StrandIndexType nStrands = pStrandGeometry->GetNumStrandsBottomHalf(poi, strand_type);
-
    // Only straight strands can be debonded
    // Total number of debonded strands
-   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
-   Float64 fra = (nStrands == 0 ? 0 : (Float64)nDebonded/(Float64)nStrands);
-
-   pArtifact->SetMaxFraDebondedStrands(maxFra);
-   pArtifact->SetFraDebondedStrands(fra);
-   pArtifact->SetNumDebondedStrands(nDebonded);
+   pArtifact->CheckMaxFraDebondedStrands(pDebondLimits->CheckMaxDebondedStrands(segmentKey));
+   Float64 fraDebonded = (nStrands == 0 ? 0 : (Float64)nDebonded / (Float64)nStrands);
+   pArtifact->SetFraDebondedStrands(fraDebonded);
+   if (pArtifact->CheckMaxFraDebondedStrands())
+   {
+      Float64 maxFra = pDebondLimits->GetMaxDebondedStrands(segmentKey);
+      pArtifact->SetMaxFraDebondedStrands(maxFra);
+   }
 
    // If adjustable strands are straight, we will need to match up rows in order to get a total for each row
-   bool doCheckAdj(false);
-   if (pgsTypes::asHarped != adj_type)
+   bool bCheckAdjustableStrands(false);
+   if (adjustable_strand_type != pgsTypes::asHarped)
    {
-      if (pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped) > 0)
+      if (0 < pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped))
       {
-         doCheckAdj = true;
+         bCheckAdjustableStrands = true;
       }
    }
 
    // Number of debonded strands in row
-   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
-   for ( RowIndexType row = 0; row < nRows; row++ )
+   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(poi[pgsTypes::metStart], pgsTypes::Straight);
+   for (RowIndexType rowIdx = 0; rowIdx < nRows; rowIdx++)
    {
-      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi,row,pgsTypes::Straight);
+      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
 
-      if (doCheckAdj)
+      if (bCheckAdjustableStrands)
       {
          // In order to determine all strands in row - we need to add in any adjustable straight stands that might be in this row.
-         Float64 row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi, row, pgsTypes::Straight);
+         Float64 row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
 
-         RowIndexType nAdjRows = pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Harped);
-         for (RowIndexType adjrow = 0; adjrow < nAdjRows; adjrow++)
+         RowIndexType nAdjustableStrandRows = pStrandGeometry->GetNumRowsWithStrand(poi[pgsTypes::metStart], pgsTypes::Harped);
+         for (RowIndexType adjustableStrandRowIdx = 0; adjustableStrandRowIdx < nAdjustableStrandRows; adjustableStrandRowIdx++)
          {
-            Float64 adj_row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi, adjrow, pgsTypes::Harped);
+            Float64 adjustable_strand_row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi[pgsTypes::metStart], adjustableStrandRowIdx, pgsTypes::Harped);
 
-            if (IsEqual(adj_row_elev, row_elev, gs_rowToler))
+            if (IsEqual(adjustable_strand_row_elev, row_elev, gs_rowToler))
             {
-               StrandIndexType nAdjStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi, adjrow, pgsTypes::Harped);
-               nStrandsInRow += nAdjStrandsInRow;
+               StrandIndexType nAdjustableStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi[pgsTypes::metStart], adjustableStrandRowIdx, pgsTypes::Harped);
+               nStrandsInRow += nAdjustableStrandsInRow;
                break;
             }
          }
       }
 
-      StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(poi,row,pgsTypes::Straight);
-      fra = (nStrandsInRow == 0 ? 0 : (Float64)nDebondStrandsInRow/(Float64)nStrandsInRow);
-      bool bExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(poi,row,pgsTypes::Straight);
+      StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
+      Float64 fra = (nStrandsInRow == 0 ? 0 : (Float64)nDebondStrandsInRow / (Float64)nStrandsInRow);
       pArtifact->AddNumStrandsInRow(nStrandsInRow);
       pArtifact->AddNumDebondedStrandsInRow(nDebondStrandsInRow);
       pArtifact->AddFraDebondedStrandsInRow(fra);
       pArtifact->AddMaxFraDebondedStrandsInRow(maxFraPerRow);
-      pArtifact->AddIsExteriorStrandDebondedInRow(bExteriorStrandDebonded);
+
+      // LRFD 9th Edition, 5.9.4.3.3, Requirement I, J, K (exterior strands in row must be debonded)
+      if (pDebondLimits->IsExteriorStrandBondingRequiredInRow(segmentKey, pgsTypes::metStart, rowIdx))
+      {
+         if (pArtifact->GetSection() == pgsDebondArtifact::K && lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::NinthEdition2020)
+         {
+            // this is a multi-web, no flange section - LRFD 9th Edition, 5.9.4.3.3 Requirement K applies. Exterior strands in each web need to be bonded
+            if (nWebs == 0)
+            {
+               // this is a solid slab
+               bool bIsExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
+               pArtifact->SetExtriorStrandBondState(rowIdx, bIsExteriorStrandDebonded ? pgsDebondArtifact::Debonded : pgsDebondArtifact::Bonded);
+            }
+            else
+            {
+               for (WebIndexType webIdx = 0; webIdx < nWebs; webIdx++)
+               {
+                  bool bIsExteriorStrandDebonded = pStrandGeometry->IsExteriorWebStrandDebondedInRow(poi[pgsTypes::metStart], webIdx, rowIdx, pgsTypes::Straight);
+                  pArtifact->SetExtriorStrandBondState(rowIdx, bIsExteriorStrandDebonded ? pgsDebondArtifact::Debonded : pgsDebondArtifact::Bonded, webIdx);
+               }
+            }
+         }
+         else
+         {
+            bool bIsExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
+            pArtifact->SetExtriorStrandBondState(rowIdx, bIsExteriorStrandDebonded ? pgsDebondArtifact::Debonded : pgsDebondArtifact::Bonded);
+         }
+      }
+      else
+      {
+         // exterior strands are not required to be bonded in this row
+         // this requirement was first introduced in LRFD 9th edition for I-Beams (5.9.4.3.3 Requirement I)
+         ATLASSERT(lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion());
+         pArtifact->SetExtriorStrandBondState(rowIdx, pgsDebondArtifact::None);
+      }
    }
 
    // Number of debonded strands at a section and section lengths
-   Float64 L = pBridge->GetSegmentLength( segmentKey );
-   Float64 L2 = L/2.0;
+   Float64 L = pBridge->GetSegmentLength(segmentKey);
+   Float64 L2 = L / 2.0;
 
    Float64 lmin_section = Float64_Max;
    Float64 lmax_debond_length = 0.0;
 
    // left end
-   StrandIndexType nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetStart);
+   StrandIndexType nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetStart);
    Float64 prev_location = 0.0;
-   SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
-   for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+   SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey, pgsTypes::metStart, pgsTypes::Straight);
+   for (SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++)
    {
-      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
-      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nDebondedEnd);
-      Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
-      pArtifact->AddDebondSection(location,nDebondedStrands,fraDebondedStrands);
+      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey, pgsTypes::metStart, sectionIdx, pgsTypes::Straight);
+      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands / (Float64)nDebondedEnd);
+      Float64 location = pStrandGeometry->GetDebondSection(segmentKey, pgsTypes::metStart, sectionIdx, pgsTypes::Straight);
+      pArtifact->AddDebondSection(location, nDebondedStrands, fraDebondedStrands);
 
-      if ( location < 0 || L2 < location )
+      if (location < 0 || L2 < location)
       {
          ATLASSERT(false);
          continue; // bond occurs after mid-girder... skip this one
@@ -5759,23 +5844,23 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
 
       Float64 section_len = location - prev_location;
       lmin_section = Min(lmin_section, section_len);
-         
+
       lmax_debond_length = Max(lmax_debond_length, location);
 
       prev_location = location;
    }
 
    // right end
-   nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEnd);
-   nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
-   for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+   nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEnd);
+   nSections = pStrandGeometry->GetNumDebondSections(segmentKey, pgsTypes::metEnd, pgsTypes::Straight);
+   for (SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++)
    {
-      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metEnd,sectionIdx,pgsTypes::Straight);
-      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nDebondedEnd);
-      Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metEnd,sectionIdx,pgsTypes::Straight);
-      pArtifact->AddDebondSection(location,nDebondedStrands,fraDebondedStrands);
+      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey, pgsTypes::metEnd, sectionIdx, pgsTypes::Straight);
+      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands / (Float64)nDebondedEnd);
+      Float64 location = pStrandGeometry->GetDebondSection(segmentKey, pgsTypes::metEnd, sectionIdx, pgsTypes::Straight);
+      pArtifact->AddDebondSection(location, nDebondedStrands, fraDebondedStrands);
 
-      if ( location < L2 || L < location )
+      if (location < L2 || L < location)
       {
          ATLASSERT(false);
          continue; // bond occurs after the end of the girder... skip this one
@@ -5808,7 +5893,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
    pArtifact->SetMaxDebondLength(lmax_debond_length);
    pArtifact->SetDebondLengthLimit(dll, control);
 
-   Float64 dds = pDebondLimits->GetMinDebondSectionDistance(segmentKey);
+   Float64 dds = pDebondLimits->GetMinDistanceBetweenDebondSections(segmentKey);
 
    if (lmin_section == Float64_Max)
    {
@@ -5817,6 +5902,252 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
 
    pArtifact->SetMinDebondSectionSpacing(lmin_section);
    pArtifact->SetDebondSectionSpacingLimit(dds);
+
+   // LRFD 5.9.4.3.3, 9th Edition, Requirement D
+   // If one of the built-in strand models are used, strands are forced to be symmetric and satisfy the requirement
+   // Symmetry is not enforced for direct strand input and it is not checked
+   pArtifact->CheckDebondingSymmetry(pDebondLimits->CheckDebondingSymmetry(segmentKey)); // Is checking symmetry enabled?
+   pArtifact->IsDebondingSymmetrical(pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput ? DEBOND_SYMMETRY_NA : DEBOND_SYMMETRY_TRUE); // the result is either NA or TRUE
+
+   // LRFD 5.9.4.3.3, 9th Edition, Requirement E
+   if (pDebondLimits->CheckAdjacentDebonding(segmentKey))
+   {
+      pArtifact->CheckAdjacentDebonding(true);
+      std::vector<RowIndexType> vRowsWithDebonding = pStrandGeometry->GetRowsWithDebonding(segmentKey, pgsTypes::Straight);
+      if (1 < vRowsWithDebonding.size())
+      {
+         // loop over all the rows with debonding, working two rows at a time
+         auto iter = vRowsWithDebonding.begin() + 1;
+         auto end = vRowsWithDebonding.end();
+         for (; iter != end; iter++)
+         {
+            RowIndexType prevRowIdx = *(iter - 1);  // row i-1
+            RowIndexType thisRowIdx = *iter;        // row i
+
+            bool bCompareVertically = true;
+            if (prevRowIdx + 1 != thisRowIdx)
+            {
+               // there is a row with all bonded strands between rows with debonded strands
+               // rows with debonding are not adjacent so don't compare verticially
+               bCompareVertically = false;
+            }
+
+
+            // create records for each strand, left to right
+            // the record is the horizontal position, the debonding state and strand index of the strand at this position on the previous row,
+            // and the debonding state and strand index of the strand at this position in this row
+            const int debonded = 0; // stand is debonded
+            const int bonded = 1; // strand is bonded
+            const int none = -1; // there isn't a strand vertically above or below the strand a this position
+
+            for (int i = 0; i < 2; i++)
+            {
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+
+               std::map<Float64, std::tuple<StrandIndexType, int, StrandIndexType, int>> debondRecords; // key = horizontal position, value = strand index and debond state in prev row, strand index and debond state in this row
+
+               // evaluate previous row
+               std::vector<StrandIndexType> vStrandsPrevRow = pStrandGeometry->GetStrandsInRow(poi[endType], prevRowIdx, pgsTypes::Straight);
+               for (auto strandIdx : vStrandsPrevRow)
+               {
+                  CComPtr<IPoint2d> pnt;
+                  pStrandGeometry->GetStrandPosition(poi[endType], strandIdx, pgsTypes::Straight, &pnt);
+                  Float64 x;
+                  pnt->get_X(&x);
+                  bool bIsDebonded = pStrandGeometry->IsStrandDebonded(poi[endType], strandIdx, pgsTypes::Straight);
+                  debondRecords.emplace(x, std::make_tuple(strandIdx, bIsDebonded ? debonded : bonded, INVALID_INDEX, none));
+               }
+
+               // evalute current row
+               std::vector<StrandIndexType> vStrandsThisRow = pStrandGeometry->GetStrandsInRow(poi[endType], thisRowIdx, pgsTypes::Straight);
+               for (auto strandIdx : vStrandsThisRow)
+               {
+                  CComPtr<IPoint2d> pnt;
+                  pStrandGeometry->GetStrandPosition(poi[endType], strandIdx, pgsTypes::Straight, &pnt);
+                  Float64 x;
+                  pnt->get_X(&x);
+                  bool bIsDebonded = pStrandGeometry->IsStrandDebonded(poi[endType], strandIdx, pgsTypes::Straight);
+
+                  auto found = debondRecords.find(x);
+                  if (found != debondRecords.end())
+                  {
+                     // this is a strand at this position in the previous row... update the strand record
+                     std::get<2>(found->second) = strandIdx;
+                     std::get<3>(found->second) = bIsDebonded ? debonded : bonded;
+                  }
+                  else
+                  {
+                     // this is not a strand at this position in the previous row... create a new strand record
+                     debondRecords.emplace(x, std::make_tuple(INVALID_INDEX, none, strandIdx, bIsDebonded ? debonded : bonded));
+                  }
+               }
+
+               // now that we have the strand records, analyze them to make sure adjacent strands are not debonded
+               auto iter = debondRecords.begin();
+               std::pair<Float64, std::tuple<StrandIndexType, int, StrandIndexType, int>> prevItem = *iter;
+               iter++;
+               auto end = debondRecords.end();
+               for (; iter != end; iter++)
+               {
+                  std::pair<Float64, std::tuple<StrandIndexType, int, StrandIndexType, int>> thisItem = *iter;
+                  if (bCompareVertically && (std::get<1>(prevItem.second) == debonded && std::get<3>(prevItem.second) == debonded))
+                  {
+                     // adjacent rows are being compared for vertical adjacency and the strands in both rows are debonded
+                     pArtifact->AddAdjacentDebondedStrands(endType, std::get<0>(prevItem.second), std::get<2>(prevItem.second));
+                  }
+
+                  if (std::get<1>(prevItem.second) == debonded && std::get<1>(thisItem.second) == debonded)
+                  {
+                     // adjacent strands horizontally are debonded
+                     pArtifact->AddAdjacentDebondedStrands(endType, std::get<0>(prevItem.second), std::get<0>(thisItem.second));
+                  }
+
+                  prevItem = thisItem;
+               }
+            }
+         }
+      }
+      else
+      {
+         // zero or one row have debonding.... if it's zero the loop doesn't do anything
+         // if there is one, the we are just checking if horizontally adjacent strands are debonded
+         for (int i = 0; i < 2; i++)
+         {
+            pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+            for (auto rowIdx : vRowsWithDebonding)
+            {
+               std::vector<StrandIndexType> vStrandsThisRow = pStrandGeometry->GetStrandsInRow(poi[endType], rowIdx, pgsTypes::Straight);
+
+               // sort the indexes based on the x-position of the strand, sorting left to right (need to compare adjacent strands, not adjacent strand indices)
+               std::sort(std::begin(vStrandsThisRow), std::end(vStrandsThisRow), [poi, endType, pStrandGeometry](auto strandIdx1, auto strandIdx2) {CComPtr<IPoint2d> pnt1, pnt2;
+               pStrandGeometry->GetStrandPosition(poi[endType], strandIdx1, pgsTypes::Straight, &pnt1);
+               pStrandGeometry->GetStrandPosition(poi[endType], strandIdx2, pgsTypes::Straight, &pnt2);
+               Float64 x1, x2;
+               pnt1->get_X(&x1);
+               pnt2->get_X(&x2);
+               return x1 < x2; }
+               );
+
+#if defined _DEBUG
+               Float64 X = -Float64_Max; // make sure strand indices represent strands left to right in order
+#endif
+
+               StrandIndexType prevStrandIdx = INVALID_INDEX;
+               bool bWasPreviousStrandDebonded = false;
+               for (auto strandIdx : vStrandsThisRow)
+               {
+#if defined _DEBUG
+                  CComPtr<IPoint2d> pnt;
+                  pStrandGeometry->GetStrandPosition(poi[endType], strandIdx, pgsTypes::Straight, &pnt);
+                  Float64 x;
+                  pnt->get_X(&x);
+                  ATLASSERT(X < x); // make sure strands are ordered left to right
+                  X = x;
+#endif
+
+                  bool bIsDebonded = pStrandGeometry->IsStrandDebonded(poi[endType], strandIdx, pgsTypes::Straight);
+                  if (bIsDebonded && bWasPreviousStrandDebonded)
+                  {
+                     pArtifact->AddAdjacentDebondedStrands(endType, prevStrandIdx, strandIdx);
+                  }
+                  bWasPreviousStrandDebonded = bIsDebonded;
+                  prevStrandIdx = strandIdx;
+               }
+            }
+         }
+      }
+   }
+   else
+   {
+      pArtifact->CheckAdjacentDebonding(false);
+   }
+
+
+   if(pDebondLimits->CheckDebondingInWebWidthProjections(segmentKey))
+   {
+      pArtifact->CheckDebondingInWebWidthProjection(true); // need to check with Spec/Girder for this
+      IndexType nRegions = 0;
+      std::vector<RowIndexType> vRowsWithDebonding = pStrandGeometry->GetRowsWithDebonding(segmentKey, pgsTypes::Straight);
+
+      // get strand diameter/radius so we can create a bounding box for a strand point
+      GET_IFACE(IMaterials, pMaterials);
+      const auto* pStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+      Float64 d_strand = pStrand->GetNominalDiameter();
+      Float64 r_strand = 0.5*d_strand;
+
+      CComPtr<IRect2d> strandRect;
+      strandRect.CoCreateInstance(CLSID_Rect2d);
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+         Float64 fra, ratio;
+         std::vector<CComPtr<IRect2d>> vRegions = pStrandGeometry->GetWebWidthProjectionsForDebonding(segmentKey, endType, &fra, &ratio);
+         if (pArtifact->GetSection() == pgsDebondArtifact::I)
+         {
+            // only applicable to Requirement I cross sections
+            ATLASSERT(IsEqual(fraDebonded, fra));
+            pArtifact->SetBottomFlangeToWebWidthRatio(endType, ratio);
+         }
+
+         auto n = vRegions.size();
+         if (0 < n)
+         {
+            nRegions += n;
+
+            for (auto rowIdx : vRowsWithDebonding)
+            {
+               std::vector<StrandIndexType> vStrandsThisRow = pStrandGeometry->GetStrandsInRow(poi[endType], rowIdx, pgsTypes::Straight);
+               for (auto strandIdx : vStrandsThisRow)
+               {
+                  // we are checking to see if there are debonded strands in the web width projection region... no need to check bonded strands
+                  if (pStrandGeometry->IsStrandDebonded(poi[endType], strandIdx, pgsTypes::Straight))
+                  {
+                     // strand is debonded... get its location
+                     CComPtr<IPoint2d> pnt;
+                     pStrandGeometry->GetStrandPosition(poi[endType], strandIdx, pgsTypes::Straight, &pnt);
+
+                     Float64 x, y;
+                     pnt->Location(&x, &y);
+
+                     // the entire strand must be contained within the region... set the strand rectangle so cover
+                     // the strand (this is the strand's bounding box)
+                     strandRect->SetBounds(x - r_strand, x + r_strand, y - r_strand, y + r_strand);
+
+                     // check if the strand is within on of the regions
+                     for (auto rect : vRegions)
+                     {
+                        VARIANT_BOOL vbResult;
+                        rect->ContainsRect(strandRect, &vbResult);
+                        if (vbResult == VARIANT_TRUE)
+                        {
+                           // a debonded strand is in the web width projection region, record it
+                           pArtifact->AddDebondedStrandInWebWidthProjection(endType, strandIdx);
+                           break; // no need to check other regions, break out of the loop
+                        }
+                     } // next region
+                  } // if debonded
+               } // next trand
+            } // next row
+         } // if there are regions
+      } // next end
+
+      if (nRegions == 0)
+      {
+         // if there aren't any web width projection regions, then this check is not applicable
+         // (think about double-tee beams... the check may be enabled in the criteria,
+         // but double-tee beams fall under Requirement K of 5.9.4.3.3 where the web width projection
+         // is not a requirement
+         pArtifact->CheckDebondingInWebWidthProjection(false); 
+      }
+   } // if evaluated
+   else
+   {
+      pArtifact->CheckDebondingInWebWidthProjection(false);
+   }
+
+   // NOTE: Requirement I, check for debonding furthest from vertical centerline, is not evaluated
+   // NOTE: Requirement J and K, check uniformity of debond spacing, is not evaluated
+   // NOTE: Requirement J, check debonding from vertical centerline outward (from notation in Fig C5.9.4.3.3-2), is not evaluated
 }
 
 void pgsDesigner2::CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentKey, pgsPrincipalTensionStressArtifact* pArtifact) const

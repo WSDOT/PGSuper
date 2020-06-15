@@ -3544,8 +3544,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
          Float64 leftEnd, rightEnd;
          GetMidZoneBoundaries(&leftEnd, &rightEnd);
 
-         GET_IFACE(IStrandGeometry,pStrandGeometry);
-         Float64 db_incr = pStrandGeometry->GetDefaultDebondLength(m_SegmentKey);
+         GET_IFACE(IDebondLimits,pDebondLimits);
+         Float64 db_incr = pDebondLimits->GetMinDistanceBetweenDebondSections(m_SegmentKey);
       
          Int16 nincs = (Int16)floor((leftEnd + 1.0e-05)/db_incr); // we know both locs are equidistant from ends
 
@@ -3613,7 +3613,6 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
    else
    {
       // Mid zone for debonding is envelope of girderLength/2 - dev length, and user-input limits
-      GET_IFACE(IStrandGeometry, pStrandGeometry);
       GET_IFACE(ISegmentData,pSegmentData);
       GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
@@ -3669,7 +3668,8 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       LOG(_T("Raw MZ end length = ")<< ::ConvertFromSysUnits(mz_end_len,unitMeasure::Inch)<<_T(" in"));
       LOG(_T("Girder length = ")<< ::ConvertFromSysUnits(m_SegmentLength,unitMeasure::Inch)<<_T(" in"));
  
-      Float64 db_incr = pStrandGeometry->GetDefaultDebondLength(m_SegmentKey);
+      GET_IFACE(IDebondLimits, pDebondLimits);
+      Float64 db_incr = pDebondLimits->GetMinDistanceBetweenDebondSections(m_SegmentKey);
       LOG(_T("Debond spacing increment = ")<< ::ConvertFromSysUnits(db_incr,unitMeasure::Inch)<<_T(" in"));
    
       if (mz_end_len < db_incr)
@@ -3864,15 +3864,23 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
    // debonding limit rules from the specification
    // First get the rules
 
+   bool bCheckMaxPercentTotal = pDebondLimits->CheckMaxDebondedStrands(m_SegmentKey);
    Float64 db_max_percent_total = pDebondLimits->GetMaxDebondedStrands(m_SegmentKey);
    Float64 db_max_percent_row   = pDebondLimits->GetMaxDebondedStrandsPerRow(m_SegmentKey);
-   m_MaxPercentDebondSection    = pDebondLimits->GetMaxDebondedStrandsPerSection(m_SegmentKey);
-   m_MaxDebondSection           = pDebondLimits->GetMaxNumDebondedStrandsPerSection(m_SegmentKey);
 
-   LOG(_T("db_max_percent_total = ")<<db_max_percent_total);
+   pDebondLimits->GetMaxDebondedStrandsPerSection(m_SegmentKey, &m_MaxDebondSection10orLess, &m_MaxDebondSection, &m_bCheckMaxFraAtSection, &m_MaxPercentDebondSection);
+
+   if (bCheckMaxPercentTotal)
+   {
+      LOG(_T("db_max_percent_total = ") << db_max_percent_total);
+   }
    LOG(_T("db_max_percent_row = ")<<db_max_percent_row);
-   LOG(_T("m_MaxPercentDebondSection = ")<<m_MaxPercentDebondSection);
-   LOG(_T("m_MaxDebondSection = ")<<m_MaxDebondSection);
+   LOG(_T("m_MaxDebondSection10orLess = ") << m_MaxDebondSection10orLess);
+   LOG(_T("m_MaxDebondSection = ") << m_MaxDebondSection);
+   if (m_bCheckMaxFraAtSection)
+   {
+      LOG(_T("m_MaxPercentDebondSection = ") << m_MaxPercentDebondSection);
+   }
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
@@ -4011,13 +4019,10 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
    // that can be created
    TempLevelList temp_levels;
 
-   // max total number that can be debonded
-   StrandIndexType max_debondable_strands = (StrandIndexType)floor(max_ss * db_max_percent_total);
-
    // Set queue of possible strands to be debonded 
    std::vector<StrandPair>::iterator db_iter = debondable_list.begin();
 
-   Int16 num_debonded=0;
+   Int16 num_debonded = 0;
 
    // Simulate filling all straight strands and debond when possible
    LOG(_T("Build row information and debond levels"));
@@ -4068,7 +4073,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
             LOG(_T("Debonding of strands ")<<db_iter->first<<_T(",")<<db_iter->second<<_T(" cannot occur until more strands are added in fill order."));
             break;
          }
-         else if ( db_max_percent_total < percent_of_total )
+         else if (bCheckMaxPercentTotal /*only do this if checking*/ && (db_max_percent_total < percent_of_total) )
          {
             // not enough total straight strands yet. continue
             // break from inner loop because we need more strands
@@ -4406,7 +4411,7 @@ DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrand
          {
             // Have enough strands to work at this level, see if we have room section-wise
             StrandIndexType num_debonded = rlevel.StrandsDebonded.size();
-            StrandIndexType max_debonds_at_section = Max(m_MaxDebondSection, StrandIndexType(num_debonded*m_MaxPercentDebondSection) );
+            StrandIndexType max_debonds_at_section = Max(numStrands < 10 ? m_MaxDebondSection10orLess : m_MaxDebondSection, m_bCheckMaxFraAtSection ? StrandIndexType(num_debonded*m_MaxPercentDebondSection) : 0 );
 
             // allow int to floor
             SectionIndexType leading_sections_required = (num_debonded == 0 ? 0 : SectionIndexType((num_debonded-1)/max_debonds_at_section));
@@ -4497,7 +4502,8 @@ bool pgsStrandDesignTool::SmoothDebondLevelsAtSections(std::vector<DebondLevelTy
    DebondLevelType debond_level_at_girder_end = rDebondLevelsAtSections[0];
    StrandIndexType num_debonded = m_DebondLevels[debond_level_at_girder_end].StrandsDebonded.size();
 
-   StrandIndexType max_db_term_at_section = Max(m_MaxDebondSection, StrandIndexType(floor(num_debonded*m_MaxPercentDebondSection)));
+   StrandIndexType numStrands = GetNumPermanentStrands();
+   StrandIndexType max_db_term_at_section = Max(numStrands < 10 ? m_MaxDebondSection10orLess : m_MaxDebondSection, m_bCheckMaxFraAtSection ? StrandIndexType(num_debonded*m_MaxPercentDebondSection) : 0);
    LOG(_T("Max allowable debond terminations at a section = ")<<max_db_term_at_section);
 
    // iterate from mid-girder toward end
@@ -4682,8 +4688,8 @@ Float64 pgsStrandDesignTool::ComputePrestressForcePerStrand(const GDRCONFIG& ful
    for (const StrandIndexType& sindex : lvl.StrandsDebonded)
    {
       DEBONDCONFIG dbconfig;
-      dbconfig.DebondLength[0] = dblength;
-      dbconfig.DebondLength[1] = dblength;
+      dbconfig.DebondLength[pgsTypes::metStart] = dblength;
+      dbconfig.DebondLength[pgsTypes::metEnd] = dblength;
       dbconfig.strandIdx = sindex;
 
       config.PrestressConfig.Debond[pgsTypes::Straight].push_back(dbconfig);

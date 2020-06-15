@@ -43,6 +43,10 @@
 // MISCELLANEOUS
 //
 
+#define DEBOND_SYMMETRY_FALSE 0
+#define DEBOND_SYMMETRY_TRUE 1
+#define DEBOND_SYMMETRY_NA 2
+
 /*****************************************************************************
 CLASS 
    pgsDebondArtifact
@@ -61,25 +65,33 @@ class PGSEXTCLASS pgsDebondArtifact
 {
 public:
    // GROUP: LIFECYCLE
+   enum State
+   {
+      Bonded, // strand is bonded
+      Debonded, // strand is debonded
+      None // state is not applicable to this strand
+   };
 
-   //------------------------------------------------------------------------
-   // Default constructor
+   // enum that indicates the type of section and which requirement (I, J, or K) is applicable
+   enum Section
+   {
+      I,
+      J,
+      K
+   };
+
    pgsDebondArtifact();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsDebondArtifact(const pgsDebondArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
+   pgsDebondArtifact(const pgsDebondArtifact& rOther) = default;
    virtual ~pgsDebondArtifact();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsDebondArtifact& operator = (const pgsDebondArtifact& rOther);
+   pgsDebondArtifact& operator= (const pgsDebondArtifact& rOther) = default;
 
-   // GROUP: OPERATIONS
+   void SetSection(Section section);
+   Section GetSection() const;
+
+   void CheckMaxFraDebondedStrands(bool bCheck);
+   bool CheckMaxFraDebondedStrands() const;
+      
    Float64 GetMaxFraDebondedStrands() const;
    void SetMaxFraDebondedStrands(Float64 fra);
 
@@ -98,11 +110,11 @@ public:
    std::vector<Float64> GetMaxFraDebondedStrandsInRow() const;
    void AddMaxFraDebondedStrandsInRow(Float64 maxFra);
 
-   std::vector<bool> GetIsExteriorStrandDebondedInRow() const;
-   void AddIsExteriorStrandDebondedInRow(bool bExteriorStrandDebonded);
+   const std::set<std::tuple<RowIndexType,State,WebIndexType>>& GetExteriorStrandBondState() const;
+   void SetExtriorStrandBondState(RowIndexType rowIdx,State state,WebIndexType webIdx = INVALID_INDEX);
 
-   void AddMaxDebondStrandsAtSection(StrandIndexType nStrands,Float64 fra);
-   void GetMaxDebondStrandsAtSection(StrandIndexType* nStrands,Float64* fra) const;
+   void AddMaxDebondStrandsAtSection(StrandIndexType nStrands,bool bCheck,Float64 fra);
+   void GetMaxDebondStrandsAtSection(StrandIndexType* nStrands,bool* pbCheck, Float64* fra) const;
 
    void AddDebondSection(Float64 location,StrandIndexType nStrandsDebonded,Float64 fraStrandsDebonded);
    void GetDebondSection(SectionIndexType idx,Float64* location,StrandIndexType* nStrandsDebonded,Float64* fraStrandsDebonded) const;
@@ -123,47 +135,63 @@ public:
    Float64 GetDebondSectionSpacingLimit() const;
    void SetDebondSectionSpacingLimit(Float64 spacing);
 
-   // GROUP: ACCESS
-   
+   // LRFD 9th Edition, 5.9.4.3.3 Item D
+   void CheckDebondingSymmetry(bool bCheck);
+   bool CheckDebondingSymmetry() const;
+   void IsDebondingSymmetrical(Uint16 symm);
+   Uint16 IsDebondingSymmetrical() const;
+
+   // LRFD 9th Edition, 5.9.4.3.3, Item E
+   void CheckAdjacentDebonding(bool bCheck);
+   bool CheckAdjacentDebonding() const;
+   void AddAdjacentDebondedStrands(pgsTypes::MemberEndType endType,StrandIndexType strandIdx1, StrandIndexType strandIdx2);
+   IndexType GetAdjacentDebondedStrandsCount(pgsTypes::MemberEndType endType) const;
+   void GetAdjacentDebondedStrands(pgsTypes::MemberEndType endType, IndexType idx, StrandIndexType* pStrandIdx1, StrandIndexType* pStrandIdx2) const;
+   bool PassedAdjacentDebondedStrands(pgsTypes::MemberEndType endType) const;
+   bool PassedAdjacentDebondedStrands() const;
+
+   // LRFD 9th Edition, 5.9.4.3.3, Item I and J - strands must be bonded within web width projections
+   void SetBottomFlangeToWebWidthRatio(pgsTypes::MemberEndType endType,Float64 ratio);
+   Float64 GetBottomFlangeToWebWidthRatio(pgsTypes::MemberEndType endType) const; // only valid for Item I
+   void CheckDebondingInWebWidthProjection(bool bCheck);
+   bool CheckDebondingInWebWidthProjection() const;
+   void AddDebondedStrandInWebWidthProjection(pgsTypes::MemberEndType endType, StrandIndexType strandIdx);
+   const std::vector<StrandIndexType>& GetDebondedStrandsInWebWidthProjection(pgsTypes::MemberEndType endType) const;
+   bool PassedBondedStrandsInWebWidthProjection(pgsTypes::MemberEndType endType) const;
+   bool PassedBondedStrandsInWebWidthProjection() const;
+
    bool Passed() const;
+   bool PassedDebondingSymmetry() const;
+   bool PassedDebondLength() const;
+   bool PassedDebondTerminationSectionLocation() const;
    bool RowPassed(CollectionIndexType rowIndex) const;
    bool SectionPassed(CollectionIndexType sectionIndex) const;
 
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsDebondArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsDebondArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 private:
-   // GROUP: DATA MEMBERS
-   StrandIndexType m_nDebondedStrands;
+   Section m_Section;
+
+   bool m_bCheckMaxFraDebondedStrands;
    Float64 m_FraDebondedStrands;
    Float64 m_MaxFraDebondedStrands;
+
+   StrandIndexType m_nDebondedStrands;
    std::vector<StrandIndexType>  m_nStrandsInRow;
    std::vector<StrandIndexType>  m_nDebondedStrandsInRow;
    std::vector<Float64> m_FraDebondedStrandsInRow;
    std::vector<Float64> m_MaxFraDebondedStrandsInRow;
-   std::vector<bool>    m_IsExteriorStrandDebonded;
+   std::set<std::tuple<RowIndexType,State,WebIndexType>> m_ExteriorStrandBondState; // one entry per row
 
-   struct Section
+   struct DebondTerminationSection
    {
+      DebondTerminationSection(Float64 l, StrandIndexType n, Float64 f) :Location(l), nDebonded(n), fraDebonded(f) {}
       Float64 Location;
       StrandIndexType nDebonded;
       Float64 fraDebonded;
    };
 
-   std::vector<Section> m_Sections;
+   std::vector<DebondTerminationSection> m_Sections;
 
    Float64 m_MaxDebondLength;
    Float64 m_DebondLengthLimit;
@@ -172,8 +200,19 @@ private:
    Float64 m_MinDebondSectionSpacing;
    Float64 m_DebondSectionSpacingLimit;
 
+   bool m_bCheckDebondingSymmetry;
+   Uint16 m_IsDebondingSymmetrical;
+
+   bool m_bCheckAdjacentDebonding;
+   std::array<std::vector<std::pair<StrandIndexType, StrandIndexType>>, 2> m_AdjacentStrands;
+
+   std::array<Float64, 2> m_bf_bw_ratio{-1,-1};
+   bool m_bCheckDebondingInWebWidthProjection;
+   std::array<std::vector<StrandIndexType>, 2> m_DebondedStrandsInWebWidthProjection;
+
    // Allowable
    StrandIndexType m_nMaxDebondedAtSection;
+   bool m_bCheckMaxFraDebondedStrandsPerSection;
    Float64 m_fraMaxDebondedAtSection;
 };
 

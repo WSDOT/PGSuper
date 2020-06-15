@@ -2,6 +2,8 @@ Define Individual Strands {#ug_dialogs_girder_define_individual_strands}
 ==============================================
 Define each strand individually, ignoring the strand locations defined in the Girder Library. Asymmetric strand arrangements can be defined with this option.
 
+> NOTE: LRFD 9th Edition 5.9.4.3.3, Requirment D is not evaluated when this option is used.
+
 Item | Description
 -----|----------------
 Strand Grid | Strand rows are defined in this grid. See below for details.

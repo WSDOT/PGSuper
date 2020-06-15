@@ -614,27 +614,34 @@ public:
    void ConfigureTemporaryStrandGrid(Float64 HgStart,Float64 HgEnd,IStrandGrid* pStartGrid,IStrandGrid* pEndGrid) const;
 
    bool CanDebondStraightStrands() const;
-   void CanDebondStraightStrands(bool bCanDebond);
 
    // Limits and criteria for debonding
    // Most of these were taken from the SpecLibraryEntry for Version 13
+   bool CheckMaxTotalFractionDebondedStrands() const;
+   void CheckMaxTotalFractionDebondedStrands(bool bCheck);
    void SetMaxTotalFractionDebondedStrands(Float64 fraction);
    Float64 GetMaxTotalFractionDebondedStrands() const;
 
    void SetMaxFractionDebondedStrandsPerRow(Float64 fraction);
    Float64 GetMaxFractionDebondedStrandsPerRow() const;
 
-   void SetMaxDebondedStrandsPerSection(StrandIndexType number, Float64 fraction);
-   void GetMaxDebondedStrandsPerSection(StrandIndexType* pNumber, Float64* pFraction) const;
+   void SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType number, bool bCheck,Float64 fraction);
+   void GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pNumber, bool* pbCheck, Float64* pFraction) const;
 
    void  SetMaxDebondedLength(bool useSpanFraction, Float64 spanFraction, bool useHardDistance, Float64 hardDistance);
    void  GetMaxDebondedLength(bool* pUseSpanFraction, Float64* pSpanFraction, bool* pUseHardDistance, Float64* pHardDistance)const;
 
-   void SetMinDebondSectionLength(Float64 fraction);
-   Float64 GetMinDebondSectionLength() const;
+   void SetMinDistanceBetweenDebondSections(Float64 ndb,bool bCheck,Float64 minDistance);
+   void GetMinDistanceBetweenDebondSections(Float64* pndb,bool* pbCheck,Float64* pMinDistance) const;
 
-   Float64 GetDefaultDebondSectionLength() const;
-   void SetDefaultDebondSectionLength(Float64 l);
+   void CheckDebondingSymmetry(bool bCheck);
+   bool CheckDebondingSymmetry() const;
+
+   void CheckAdjacentDebonding(bool bCheck);
+   bool CheckAdjacentDebonding() const;
+
+   void CheckDebondingInWebWidthProjections(bool bCheck);
+   bool CheckDebondingInWebWidthProjections() const;
 
    //------------------------------------------------------------------------
    void SetDiaphragmLayoutRules(const DiaphragmLayoutRules& rules);
@@ -754,13 +761,19 @@ private:
 
    // version 13
    // debond limits
+   bool m_bCheckMaxDebondStrands; 
    Float64 m_MaxDebondStrands;
    Float64 m_MaxDebondStrandsPerRow;
+   StrandIndexType m_MaxNumDebondedStrandsPerSection10orLess;
    StrandIndexType  m_MaxNumDebondedStrandsPerSection;
+   bool m_bCheckMaxNumDebondedStrandsPerSection;
    Float64 m_MaxDebondedStrandsPerSection;
+   Float64 m_MinDebondLengthDB; // distance between debond sections as a multiple of strand diameters
+   bool m_bCheckMinDebondLength; // if true, m_MinDebondLength is the minimum distance between debond sections (compared to multiple of strand diameters)
    Float64 m_MinDebondLength;
-   Float64 m_DefaultDebondLength;
-
+   bool m_bCheckDebondingSymmetry;
+   bool m_bCheckAdjacentDebonding;
+   bool m_bCheckDebondingInWebWidthProjections;
    Float64 m_MaxDebondLengthBySpanFraction; // if negative, value not used
    Float64 m_MaxDebondLengthByHardDistance; // if negative, value not used
 

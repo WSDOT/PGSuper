@@ -1120,6 +1120,8 @@
 #define IDC_RIGID_METHOD                1557
 #define IDC_BEARING_ELEVS               1557
 #define IDC_LIMIT_STRAIN                1557
+#define IDC_SHOW_WEB_WIDTH_PROJECTIOS   1557
+#define IDC_SHOW_WEB_WIDTH_PROJECTIONS  1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
 #define IDC_DEBOND_RAISE_CHECK          1558
@@ -1233,6 +1235,7 @@
 #define IDC_CLEARANCE                   1598
 #define IDC_HRC                         1598
 #define IDC_CROWN_SLOPE                 1598
+#define IDC_MIN_DISTANCE_DB             1598
 #define IDC_LF_MIDDLE2                  1599
 #define IDC_CLEARANCE_UNIT              1599
 #define IDC_LF_MIDDLE1_LABEL            1600
@@ -1371,6 +1374,7 @@
 #define IDC_CHECK3                      1710
 #define IDC_USE_90_DAY_STRENGTH         1710
 #define IDC_IGNORE_SKEW_REDUCTION       1710
+#define IDC_CHECK_MAX_TOTAL_STRANDS     1710
 #define IDC_90_DAY_STRENGTH_LABEL       1711
 #define IDC_UHPC_FIBER_SHEAR_STRENGTH   1712
 #define IDC_UHPC_FIBER_SHEAR_STRENGTH_UNIT 1713
@@ -1382,10 +1386,20 @@
 #define IDC_LIFTING_GROUP               1719
 #define IDC_HAULING_GROUP               1720
 #define IDC_PRINCIPAL_TENSION_LABEL2    1721
+#define IDC_MAX_TOTAL_STRANDS_UNIT      1721
 #define IDC_PRINCIPAL_TENSION_LABEL3    1722
+#define IDC_MAX_NUM_PER_SECTION_10_OR_LESS 1722
 #define IDC_PRINCIPAL_TENSION_METHOD_LABEL4 1723
 #define IDC_PRINCIPAL_TENSION_LABEL4    1723
+#define IDC_CHECK_MAX_FRACTION_PER_SECTION 1723
 #define IDC_TENDON_NEARNESS_FACTOR      1724
+#define IDC_MAX_FRACTION_PER_SECTION_UNIT 1724
+#define IDC_CHECK_MIN_DISTANCE          1725
+#define IDC_CHECK4                      1726
+#define IDC_CHECK_DEBONDING_SYMMETRY    1726
+#define IDC_CHECK5                      1727
+#define IDC_CHECK_ADJACENT_STRANDS      1727
+#define IDC_CHECK_WEB_WIDTH_PROJECTIONS 1728
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1419,7 +1433,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        328
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1721
+#define _APS_NEXT_CONTROL_VALUE         1729
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

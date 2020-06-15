@@ -18436,6 +18436,90 @@ bool CBridgeAgentImp::IsExteriorStrandDebondedInRow(const pgsPointOfInterest& po
    return bExteriorDebonded == VARIANT_FALSE ? false : true;
 }
 
+bool CBridgeAgentImp::IsExteriorWebStrandDebondedInRow(const pgsPointOfInterest& poi, WebIndexType webIdx, RowIndexType rowIdx, pgsTypes::StrandType strandType) const
+{
+   VALIDATE(GIRDER);
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   ATLASSERT(strandType != pgsTypes::Permanent);
+
+   // LRFD 9th Edition, 5.9.4.3.3 - Item K - multiple-webs and no bottom flange
+   WebIndexType nWebs = GetWebCount(segmentKey);
+   ATLASSERT(lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion());
+   ATLASSERT(1 < nWebs);
+   ATLASSERT(0 == GetBottomFlangeCount(segmentKey));
+
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+
+   CComPtr<IStrandModel> strandModel;
+   girder->get_StrandModel(&strandModel);
+
+   if (strandType != pgsTypes::Straight)
+   {
+      // only straight strands can be debonded
+      return false;
+   }
+
+   ATLASSERT(strandType == pgsTypes::Straight);
+   CComPtr<IIndexArray> arrStrands;
+   strandModel->GetStrandsInRow(Straight, poi.GetDistFromStart(), rowIdx, &arrStrands);
+
+   // find the exterior strands in each web
+   Float64 Xweb = GetWebLocation(poi, webIdx);
+   Float64 Tweb = GetWebThickness(poi, webIdx);
+   Float64 XwebMin = Xweb - Tweb / 2; // left side of web
+   Float64 XwebMax = Xweb + Tweb / 2; // right side of web
+
+   Float64 Xmin = Float64_Max; // position of left most strand in web
+   Float64 Xmax = -Float64_Max; // position of right most strand in web
+   const int Debonded = 0;
+   const int Bonded = 1;
+   int XminState = Bonded; // bond state of left most strand in web
+   int XmaxState = Bonded; // bond state of right most strand in web
+
+   CComPtr<IPoint2dCollection> pntStrands;
+   strandModel->GetStrandPositions(Straight, poi.GetDistFromStart(), &pntStrands);
+
+   // loop over all strands in web
+   IndexType nItems;
+   arrStrands->get_Count(&nItems);
+   for (IndexType itemIdx = 0; itemIdx < nItems; itemIdx++)
+   {
+      StrandIndexType strandIdx;
+      arrStrands->get_Item(itemIdx, &strandIdx);
+
+      CComPtr<IPoint2d> pnt;
+      pntStrands->get_Item(strandIdx, &pnt);
+
+      Float64 Xstrand;
+      pnt->get_X(&Xstrand);
+
+      if (InRange(XwebMin, Xstrand, XwebMax))
+      {
+         // strand is in this web;
+         if (Xstrand < Xmin)
+         {
+            Xmin = Xstrand;
+            XminState = IsStrandDebonded(poi, strandIdx, pgsTypes::Straight) ? Debonded : Bonded;
+         }
+
+         if (Xmax < Xstrand)
+         {
+            Xmax = Xstrand;
+            XmaxState = IsStrandDebonded(poi, strandIdx, pgsTypes::Straight) ? Debonded : Bonded;
+         }
+      }
+   }
+
+   ATLASSERT(InRange(XwebMin, Xmin, XwebMax));
+   ATLASSERT(InRange(XwebMin, Xmax, XwebMax));
+
+   return XminState == Debonded || XmaxState == Debonded ? true : false;
+}
+
 Float64 CBridgeAgentImp::GetUnadjustedStrandRowElevation(const pgsPointOfInterest & poi, RowIndexType rowIdx, pgsTypes::StrandType strandType) const
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
@@ -18722,13 +18806,6 @@ void CBridgeAgentImp::ListDebondableStrands(LPCTSTR strGirderName,const ConfigSt
 }
 
 //-----------------------------------------------------------------------------
-Float64 CBridgeAgentImp::GetDefaultDebondLength(const CSegmentKey& segmentKey) const
-{
-   const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
-   return pGirderEntry->GetDefaultDebondSectionLength();
-}
-
-//-----------------------------------------------------------------------------
 std::vector<RowIndexType> CBridgeAgentImp::GetRowsWithDebonding(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
@@ -18810,6 +18887,66 @@ void CBridgeAgentImp::GetDebondConfigurationByRow(const CSegmentKey& segmentKey,
       *pCgY = 0;
       *pnStrands = 0;
    }
+}
+
+std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebonding(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, Float64* pFraDebonded, Float64* pBottomFlangeToWebWidthRatio) const
+{
+   PoiList vPoi;
+   GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | (endType == pgsTypes::metStart ? POI_0L : POI_10L), &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+
+   *pFraDebonded = -1; // -1 indicates invalid value
+   *pBottomFlangeToWebWidthRatio = -1; // -1 indicates invalid value
+
+   const pgsPointOfInterest& poi(vPoi.front());
+   CComPtr<IGirderSection> girder_section;
+   GetGirderSection(poi, &girder_section);
+
+   IndexType nWebs = GetWebCount(segmentKey);
+   IndexType nFlanges = GetBottomFlangeCount(segmentKey);
+   if (nWebs == 1 && nFlanges == 1)
+   {
+      // this is a single web flanged section (9th Edition, LRFD 5.9.4.3.3, Item I)
+      // We need to check the debonding ratio to see if the web width projection applies
+      StrandIndexType nStrands = GetStrandCount(segmentKey, pgsTypes::Permanent);
+      StrandIndexType nDebonded = GetNumDebondedStrands(segmentKey, pgsTypes::Permanent, pgsTypes::dbetEither);
+      Float64 fra = (nStrands == 0 ? 0 : (Float64)nDebonded / (Float64)nStrands);
+      *pFraDebonded = fra;
+      
+      // also need to check the bottom flange to web width ratio
+      Float64 bf = GetBottomFlangeWidth(poi);
+      Float64 bw = GetBottomFlangeThickness(poi, 0);
+      Float64 ratio = bf / bw;
+      *pBottomFlangeToWebWidthRatio = ratio;
+
+      if (::IsLE(fra,0.25) && ::IsLE(ratio,4.0))
+      {
+         // 9th Edition, LRFD 5.9.4.3.3, Item I
+         // 25% or fewer of the strands are debonded and the bottom flange to web width
+         // ratio does not exceed 4... strands may be debonded in the web width projectio
+         return std::vector<CComPtr<IRect2d>>();
+      }
+   }
+
+   CComQIPtr<IPrestressedGirderSection> psg_section(girder_section);
+
+   std::vector<CComPtr<IRect2d>> vRegions;
+   CComPtr<IUnkArray> arrUnk;
+   HRESULT hr = psg_section->GetWebWidthProjectionsForDebonding(&arrUnk);
+   if (SUCCEEDED(hr) && arrUnk)
+   {
+      CComPtr<IEnumUnkArray> enumElements;
+      arrUnk->get__EnumElements(&enumElements);
+      CComPtr<IUnknown> unk;
+      while (enumElements->Next(1, &unk, nullptr) != S_FALSE)
+      {
+         CComQIPtr<IRect2d> rect(unk);
+         vRegions.push_back(rect);
+         unk.Release();
+      };
+   }
+
+   return vRegions;
 }
 
 //-----------------------------------------------------------------------------
@@ -27980,7 +28117,8 @@ std::vector<std::tuple<Float64, Float64, std::_tstring>> CBridgeAgentImp::GetWeb
    CComPtr<IDblArray> Y;
    CComPtr<IDblArray> W;
    CComPtr<IBstrArray> Description;
-   girder_section->GetWebSections(&Y, &W, &Description);
+   CComQIPtr<IPrestressedGirderSection> psgSection(girder_section);
+   psgSection->GetWebSections(&Y, &W, &Description);
 
    IndexType nY, nW, nD;
    Y->get_Count(&nY);
@@ -32958,7 +33096,14 @@ StrandIndexType CBridgeAgentImp::GetNextNumPermanentStrands(LPCTSTR strGirderNam
    return nextNum;
 }
 
-bool CBridgeAgentImp::ComputePermanentStrandIndices(LPCTSTR strGirderName,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strType, IIndexArray** permIndices) const
+void CBridgeAgentImp::ComputePermanentStrandIndices(const CSegmentKey& segmentKey, pgsTypes::StrandType strType, IIndexArray** permIndices) const
+{
+   const GirderLibraryEntry* pGdrEntry = GetGirderLibraryEntry(segmentKey);
+   auto config = GetSegmentConfiguration(segmentKey);
+   ComputePermanentStrandIndices(pGdrEntry->GetName().c_str(), config.PrestressConfig, strType, permIndices);
+}
+
+void CBridgeAgentImp::ComputePermanentStrandIndices(LPCTSTR strGirderName,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strType, IIndexArray** permIndices) const
 {
    CComPtr<IIndexArray> permStrands;  // array index = permanent strand for each strand of type
    permStrands.CoCreateInstance(CLSID_IndexArray);
@@ -33050,7 +33195,6 @@ bool CBridgeAgentImp::ComputePermanentStrandIndices(LPCTSTR strGirderName,const 
    }
 
    permStrands.CopyTo(permIndices);
-   return true;
 }
 
 bool CBridgeAgentImp::IsValidNumStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type,StrandIndexType curNum) const

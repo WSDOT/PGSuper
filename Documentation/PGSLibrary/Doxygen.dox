@@ -936,7 +936,8 @@ EXAMPLE_RECURSIVE      = NO
 IMAGE_PATH             = src/UserGuide \
                          ../Common/TechnicalGuide \
                          "../PGSplice/src/Technical Guide" \
-                         "../PGSuper/src/Technical Guide"
+                         "../PGSuper/src/Technical Guide" \
+                         "../PGSuper/src/UserGuide/Library Dialogs"
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

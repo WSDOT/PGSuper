@@ -499,7 +499,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       ly += 4;
 
       CString strLabel;
-      strLabel.Format(_T("%d"),permIdx+1);
+      strLabel.Format(_T("%d"),LABEL_INDEX(permIdx));
       pDC->TextOut(lx,ly,strLabel);
    }
 
@@ -631,7 +631,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
          ly += 4;
 
          CString strLabel;
-         strLabel.Format(_T("%d"), permIdx + 1);
+         strLabel.Format(_T("%d"), LABEL_INDEX(permIdx));
          pDC->TextOut(lx, ly, strLabel);
       }
    }

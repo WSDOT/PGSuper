@@ -71,19 +71,9 @@ typedef Int32 DebondLevelType; // NEED this to be a signed type!
 static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
 {
    std::_tostringstream os;
-   for (std::vector<DebondLevelType>::const_iterator it=rvec.begin(); it!=rvec.end(); it++)
-   {
-      os<<*it<<", ";
-   }
-
-   std::_tstring str(os.str());
-   DebondLevelType n = (DebondLevelType)str.size();
-   if (0 < n)
-   {
-      str.erase(n-2,2); // get rid of trailing ", "
-   }
-
-   return str;
+   std::for_each(std::cbegin(rvec), std::prev(std::cend(rvec)), [&os](const auto& value) {os << value << _T(", "); });
+   os << rvec.back();
+   return os.str();
 }
 
 // FORWARD DECLARATIONS
@@ -430,11 +420,11 @@ private:
    Float64 m_HgEnd;
 
    // values cached for performance
-   Float64 m_Aps[3]; // area of straight, harped, and temporary strand (use pgsTypes::StrandType enum)
+   std::array<Float64, 3> m_Aps; // area of straight, harped, and temporary strand (use pgsTypes::StrandType enum)
    Float64 m_SegmentLength;
    Float64 m_SpanLength;
    Float64 m_StartConnectionLength;
-   Float64 m_XFerLength[3];
+   std::array<Float64, 3> m_XFerLength;
 
    // mid-zone locations
    Float64 m_lftMz;
@@ -752,9 +742,12 @@ private:
    // debond section spacings
    SectionIndexType m_NumDebondSections;
    Float64 m_DebondSectionLength;
+   
    // limits at sections
-   Float64 m_MaxPercentDebondSection;
+   StrandIndexType m_MaxDebondSection10orLess;
    StrandIndexType   m_MaxDebondSection;
+   bool m_bCheckMaxFraAtSection;
+   Float64 m_MaxPercentDebondSection;
 
    // maximum debond levels due to physical contrants at any section
    std::vector<DebondLevelType> m_MaxPhysicalDebondLevels;

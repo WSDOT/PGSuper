@@ -348,17 +348,32 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      *pPara << _T("Maximum number of debonded strands = ") << pGdrEntry->GetMaxTotalFractionDebondedStrands()*100 << _T("% of total number of strands") << rptNewLine;
+      if (pGdrEntry->CheckMaxTotalFractionDebondedStrands())
+      {
+         *pPara << _T("Maximum number of debonded strands = ") << pGdrEntry->GetMaxTotalFractionDebondedStrands() * 100 << _T("% of total number of strands") << rptNewLine;
+      }
       *pPara << _T("Maximum number of debonded strands per row = ") << pGdrEntry->GetMaxFractionDebondedStrandsPerRow()*100 << _T("% of strands in any row") << rptNewLine;
 
-      StrandIndexType nMax;
+      StrandIndexType nDebonded10orLess, nDebonded;
+      bool bCheckMax;
       Float64 fMax;
+      pGdrEntry->GetMaxDebondedStrandsPerSection(&nDebonded10orLess,&nDebonded,&bCheckMax,&fMax);   
+      *pPara << _T("Maximum number of debonded strands per section. For 10 or fewer total strands ") << nDebonded10orLess << _T(" otherwise ") << nDebonded << _T(" strands");
+      if (bCheckMax)
+      {
+         *pPara << _T(" but not more than ") << fMax * 100 << _T("% of strands debonded at any section");
+      }
+      *pPara << rptNewLine;
 
-      pGdrEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);   
-      *pPara << _T("Maximum number of debonded strands per section. The greater of ") << nMax << _T(" strands or ") << fMax*100 << _T("% of strands debonded at any section") << rptNewLine;
-
-      fMax = pGdrEntry->GetMinDebondSectionLength();
-      *pPara << _T("Maximum distance between debond sections = ")<<cmpdim.SetValue(fMax)<< rptNewLine;
+      Float64 ndb, minDist;
+      bool bMinDist;
+      pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
+      *pPara << _T("Longitudinal spacing of debonding termnation sections = ") << ndb << Sub2(_T("d"), _T("b"));
+      if (bMinDist)
+      {
+         *pPara << _T(" but not less than ") << cmpdim.SetValue(minDist) << rptNewLine;
+      }
+      *pPara << rptNewLine;
 
       bool useSpanFraction, useHardDistance;
       Float64 spanFraction, hardDistance;

@@ -242,12 +242,29 @@ DEFINE_GUID(IID_IDebondLimits,
 0x34c607ab, 0x62d4, 0x43a6, 0xab, 0x8a, 0x6c, 0xc6, 0x6b, 0xc8, 0xc9, 0x32);
 interface IDebondLimits : IUnknown
 {
+   virtual bool CheckMaxDebondedStrands(const CSegmentKey& segmentKey) const = 0; // returns true if Max Debonded Strands is to be checked
    virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) const = 0;  // % of total
    virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) const = 0; // % of total in row
-   virtual Float64 GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) const = 0; // % of total debonded
-   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) const = 0;
+   virtual void GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey,StrandIndexType* p10orLess,StrandIndexType* pNS,bool* pbCheckMax,Float64* pMaxFraction) const = 0;
    virtual void    GetMaxDebondLength(const CSegmentKey& segmentKey,Float64* pLen, pgsTypes::DebondLengthControl* pControl) const = 0;
-   virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey) const = 0;
+
+   // Get the criteria for determining the minimum distance between termination of debond sections
+   virtual void GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey, Float64* pndb, bool* pbUseMinDistance, Float64* pMinDistance) const = 0;
+
+   // Returns the minimum distance between the termination of debond sections
+   virtual Float64 GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey) const = 0;
+
+   // returns true if we are checking for debonding symmetry
+   virtual bool CheckDebondingSymmetry(const CSegmentKey& segmentKey) const = 0;
+
+   // returns true if we are checking for adjacent debonded strands
+   virtual bool CheckAdjacentDebonding(const CSegmentKey& segmentKey) const = 0;
+
+   // returns true if we are checking for debonded strands within the web width projections
+   virtual bool CheckDebondingInWebWidthProjections(const CSegmentKey& segmentKey) const = 0;
+
+   // Returns the true if the exterior strands in the specified row are required to be bonded
+   virtual bool IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, RowIndexType rowIdx) const = 0;
 };
 
 

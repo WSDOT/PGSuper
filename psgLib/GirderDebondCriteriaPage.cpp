@@ -77,6 +77,9 @@ BEGIN_MESSAGE_MAP(CGirderDebondCriteriaPage, CPropertyPage)
    ON_BN_CLICKED(IDC_STRAIGHT_DESIGN_CHECK, &CGirderDebondCriteriaPage::OnBnClickedStraightDesignCheck)
    ON_BN_CLICKED(IDC_DEBOND_DESIGN_CHECK, &CGirderDebondCriteriaPage::OnBnClickedDebondDesignCheck)
    ON_BN_CLICKED(IDC_HARPED_DESIGN_CHECK, &CGirderDebondCriteriaPage::OnBnClickedHarpedDesignCheck)
+   ON_BN_CLICKED(IDC_CHECK_MAX_TOTAL_STRANDS, &CGirderDebondCriteriaPage::OnClickedCheckMaxTotalStrands)
+   ON_BN_CLICKED(IDC_CHECK_MAX_FRACTION_PER_SECTION, &CGirderDebondCriteriaPage::OnBnClickedCheckMaxFractionPerSection)
+   ON_BN_CLICKED(IDC_CHECK_MIN_DISTANCE, &CGirderDebondCriteriaPage::OnBnClickedCheckMinDistance)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -90,10 +93,6 @@ BOOL CGirderDebondCriteriaPage::OnInitDialog()
    if ( pParent->IsSplicedGirder() )
    {
       // Design strategies don't apply to spliced girders.. Hide the UI elements
-      GetDlgItem(IDC_DEFAULT_DISTANCE_LABEL)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_DEFAULT_DISTANCE)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_DEFAULT_DISTANCE_UNIT)->ShowWindow(SW_HIDE);
-
       GetDlgItem(IDC_DESIGN_STRATEGY_GROUP)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_DESIGN_STRATEGY_NOTE)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_FCI_LABEL)->ShowWindow(SW_HIDE);
@@ -116,6 +115,10 @@ BOOL CGirderDebondCriteriaPage::OnInitDialog()
       GetDlgItem(IDC_HARPED_FC)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_HARPED_UNITS)->ShowWindow(SW_HIDE);
    }
+
+   OnClickedCheckMaxTotalStrands();
+   OnBnClickedCheckMaxFractionPerSection();
+   OnBnClickedCheckMinDistance();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -226,4 +229,31 @@ void CGirderDebondCriteriaPage::OnBnClickedDebondDesignCheck()
 void CGirderDebondCriteriaPage::OnBnClickedHarpedDesignCheck()
 {
    UpdateDesignCheckBoxes();
+}
+
+
+void CGirderDebondCriteriaPage::OnClickedCheckMaxTotalStrands()
+{
+   // TODO: Add your control notification handler code here
+   BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_MAX_TOTAL_STRANDS) == BST_CHECKED ? TRUE : FALSE;
+   GetDlgItem(IDC_MAX_TOTAL_STRANDS)->EnableWindow(bEnable);
+   //GetDlgItem(IDC_MAX_TOTAL_STRANDS_UNIT)->EnableWindow(bEnable);
+}
+
+
+void CGirderDebondCriteriaPage::OnBnClickedCheckMaxFractionPerSection()
+{
+   // TODO: Add your control notification handler code here
+   BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_MAX_FRACTION_PER_SECTION) == BST_CHECKED ? TRUE : FALSE;
+   GetDlgItem(IDC_MAX_FRACTION_PER_SECTION)->EnableWindow(bEnable);
+   //GetDlgItem(IDC_MAX_FRACTION_PER_SECTION_UNIT)->EnableWindow(bEnable);
+}
+
+
+void CGirderDebondCriteriaPage::OnBnClickedCheckMinDistance()
+{
+   // TODO: Add your control notification handler code here
+   BOOL bEnable = IsDlgButtonChecked(IDC_CHECK_MIN_DISTANCE) == BST_CHECKED ? TRUE : FALSE;
+   GetDlgItem(IDC_MIN_DISTANCE)->EnableWindow(bEnable);
+   //GetDlgItem(IDC_MIN_DISTANCE_UNIT)->EnableWindow(bEnable);
 }

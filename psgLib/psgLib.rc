@@ -880,12 +880,14 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,383,372,50,14
     LTEXT           "Section Properties",IDC_SECTION_PROPERTIES,7,7,72,118
-    CONTROL         "Show Numbering",IDC_SHOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,130,70,10
+    CONTROL         "Show Strand Numbers",IDC_SHOWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,130,87,10
     LTEXT           "Debondable Strands",IDC_DB,7,143,66,8
     LTEXT           "Straight Strands",IDC_SS,7,157,51,8
     LTEXT           "Harped Strands",IDC_HS,7,171,70,8
     LTEXT           "Temporary Strands",IDC_TS,7,184,60,8
     CONTROL         "Show Web Sections",IDC_WEB_SECTIONS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,201,81,10
+    CONTROL         "Show Web Width Projections",IDC_SHOW_WEB_WIDTH_PROJECTIONS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,214,109,10
 END
 
 IDD_STRAND_DEFINITION DIALOGEX 0, 0, 310, 183
@@ -1348,61 +1350,70 @@ BEGIN
     DEFPUSHBUTTON   "Close",IDOK,463,289,50,14
 END
 
-IDD_GIRDER_DEBOND_CRITERIA DIALOGEX 0, 0, 466, 339
+IDD_GIRDER_DEBOND_CRITERIA DIALOGEX 0, 0, 471, 308
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Flexural Design"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Debonding Strand Limits (LRFD 5.9.4.3.3)",IDC_GDEBOND_LIMITS,7,7,452,79
-    LTEXT           "Maximum total debonded strands ",IDC_STATIC,15,20,106,8
+    GROUPBOX        "Debonded Strands (LRFD 5.9.4.3.3)",IDC_GDEBOND_LIMITS,7,7,457,165
+    CONTROL         "Maximum total debonded strands",IDC_CHECK_MAX_TOTAL_STRANDS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,22,124,10
     EDITTEXT        IDC_MAX_TOTAL_STRANDS,145,20,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(% of total permanent strands)",IDC_STATIC,191,20,94,8
+    LTEXT           "(% of total permanent strands)",IDC_MAX_TOTAL_STRANDS_UNIT,190,24,94,8
     LTEXT           "Maximum debonded strands per row",IDC_STATIC,15,36,114,8
     EDITTEXT        IDC_MAX_STRANDS_PER_ROW,145,36,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(% of total permanent strands in a row) ",IDC_STATIC,191,36,122,8
-    LTEXT           "Maximum debonded strands per section.",IDC_STATIC,15,53,176,8
-    LTEXT           "The greater of:",IDC_STATIC,16,68,48,8
-    EDITTEXT        IDC_MAX_NUM_PER_SECTION,67,65,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "strands , or",IDC_STATIC,109,68,36,8
-    EDITTEXT        IDC_MAX_FRACTION_PER_SECTION,145,65,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(% of all debonded strands)",IDC_STATIC,191,68,86,8
-    GROUPBOX        "Critiera for Debond Distances",IDC_DEBOND_CRITERIA_GROUP,7,93,452,102
-    LTEXT           "Maximum debonded length is the lesser of the half-girder length minus maximum development length (LRFD 5.9.4.3.3), and the  following:",IDC_DEBOND_CRITERIA_NOTE,17,108,235,19
-    CONTROL         "",IDC_CHECK_MAX_LENGTH_FRACTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,130,10,8
-    EDITTEXT        IDC_MAX_LENGTH_FRACTION,31,127,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(% of the girder length)",IDC_MAX_LENGTH_FRACTION_UNIT,77,127,71,8
-    CONTROL         "",IDC_CHECK_MAX_LENGTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,152,130,10,8
-    EDITTEXT        IDC_MAX_LENGTH,165,127,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(units)",IDC_MAX_LENGTH_UNIT,211,127,20,8
-    LTEXT           "Minimum distance between debond sections",IDC_MIN_DISTANCE_LABEL,16,146,140,8
-    EDITTEXT        IDC_MIN_DISTANCE,165,146,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(units)",IDC_MIN_DISTANCE_UNIT,211,146,20,8
-    LTEXT           "Default distance between debond sections\n(Used for locating debond sections during design)",IDC_DEFAULT_DISTANCE_LABEL,15,165,148,25
-    EDITTEXT        IDC_DEFAULT_DISTANCE,165,165,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "(units)",IDC_DEFAULT_DISTANCE_UNIT,211,165,20,8
-    GROUPBOX        "Prestressing Optimization Strategies for Automated Girder Designer",IDC_DESIGN_STRATEGY_GROUP,7,207,452,125
-    LTEXT           "Select the prestress optimization design strategies, and associated concrete strength limits, to be run for automated design of this girder type. Strategies are attempted in the order shown below until a successful design is found.",IDC_DESIGN_STRATEGY_NOTE,14,221,405,20
-    CTEXT           "Release Strength Limit (f'ci)",IDC_FCI_LABEL,142,246,55,17
-    CTEXT           "Final Strength Limit (f'c)",IDC_FC_LABEL,202,246,54,17
+    LTEXT           "Maximum debonded strands per section. For 10 or fewer total strands",IDC_STATIC,15,53,218,8
+    EDITTEXT        IDC_MAX_NUM_PER_SECTION_10_OR_LESS,234,49,40,14,ES_AUTOHSCROLL
+    LTEXT           "strands, otherwise",IDC_STATIC,276,52,58,8
+    EDITTEXT        IDC_MAX_NUM_PER_SECTION,337,50,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "strands",IDC_STATIC,381,53,24,8
+    CONTROL         "but not greater than",IDC_CHECK_MAX_FRACTION_PER_SECTION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,39,69,78,10
+    EDITTEXT        IDC_MAX_FRACTION_PER_SECTION,117,67,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(% of all debonded strands)",IDC_MAX_FRACTION_PER_SECTION_UNIT,160,70,86,8
+    LTEXT           "Longitudinal spacing of debonding termination locations shall be at least",IDC_MIN_DISTANCE_LABEL,16,89,226,8
+    EDITTEXT        IDC_MIN_DISTANCE_DB,246,86,24,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "db apart,",IDC_STATIC,271,89,29,8
+    CONTROL         "but not less than",IDC_CHECK_MIN_DISTANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,303,88,65,10
+    EDITTEXT        IDC_MIN_DISTANCE,370,86,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(units)",IDC_MIN_DISTANCE_UNIT,415,88,20,8
+    CONTROL         "Check for debonding symmetry about vertical centerline and longitudinal termination locations",IDC_CHECK_DEBONDING_SYMMETRY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,103,307,10
+    CONTROL         "Check for alternating bonded and debonded strands",IDC_CHECK_ADJACENT_STRANDS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,115,180,10
+    LTEXT           "Maximum debonded length is the lesser of the half-girder length minus maximum development length, and the  following:",IDC_DEBOND_CRITERIA_NOTE,17,127,379,10
+    CONTROL         "",IDC_CHECK_MAX_LENGTH_FRACTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,40,141,10,8
+    EDITTEXT        IDC_MAX_LENGTH_FRACTION,53,138,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(% of the girder length)",IDC_MAX_LENGTH_FRACTION_UNIT,99,141,71,8
+    CONTROL         "",IDC_CHECK_MAX_LENGTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,141,10,8
+    EDITTEXT        IDC_MAX_LENGTH,187,138,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "(units)",IDC_MAX_LENGTH_UNIT,233,141,20,8
+    CONTROL         "Check for debonded strands in horizontal web limits or web width projections",IDC_CHECK_WEB_WIDTH_PROJECTIONS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,156,255,10
+    GROUPBOX        "Prestressing Optimization Strategies for Automated Girder Designer",IDC_DESIGN_STRATEGY_GROUP,7,176,457,125
+    LTEXT           "Select the prestress optimization design strategies, and associated concrete strength limits, to be run for automated design of this girder type. Strategies are attempted in the order shown below until a successful design is found.",IDC_DESIGN_STRATEGY_NOTE,14,190,405,20
+    CTEXT           "Release Strength Limit (f'ci)",IDC_FCI_LABEL,142,216,55,17
+    CTEXT           "Final Strength Limit (f'c)",IDC_FC_LABEL,202,216,54,17
     CONTROL         "Straight strands without debonding",IDC_STRAIGHT_DESIGN_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,269,125,10
-    EDITTEXT        IDC_STRAIGHT_FCI,149,265,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_STRAIGHT_FC,209,265,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "units",IDC_STRAIGHT_UNITS,253,271,16,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,238,125,10
+    EDITTEXT        IDC_STRAIGHT_FCI,149,235,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_STRAIGHT_FC,209,235,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "units",IDC_STRAIGHT_UNITS,253,240,16,8
     CONTROL         "If necessary, add raised adjustable straight strands",IDC_STRAIGHT_RAISE_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,278,269,174,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,278,238,174,10
     CONTROL         "Straight strands with debonding",IDC_DEBOND_DESIGN_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,288,115,10
-    EDITTEXT        IDC_DEBOND_FCI,150,285,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_DEBOND_FC,210,285,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "units",IDC_DEBOND_UNITS,254,290,16,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,257,115,10
+    EDITTEXT        IDC_DEBOND_FCI,150,254,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_DEBOND_FC,210,254,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "units",IDC_DEBOND_UNITS,254,259,16,8
     CONTROL         "If necessary, add raised adjustable straight strands",IDC_DEBOND_RAISE_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,278,289,174,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,278,259,174,10
     CONTROL         "Harped and straight strands",IDC_HARPED_DESIGN_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,306,103,10
-    EDITTEXT        IDC_HARPED_FCI,150,305,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    EDITTEXT        IDC_HARPED_FC,210,305,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
-    LTEXT           "units",IDC_HARPED_UNITS,254,308,16,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,275,103,10
+    EDITTEXT        IDC_HARPED_FCI,150,275,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    EDITTEXT        IDC_HARPED_FC,210,275,40,14,ES_AUTOHSCROLL,WS_EX_RIGHT
+    LTEXT           "units",IDC_HARPED_UNITS,254,278,16,8
 END
 
 IDD_RATING_DESCR DIALOGEX 0, 0, 355, 214
@@ -2218,9 +2229,9 @@ BEGIN
     IDD_GIRDER_DEBOND_CRITERIA, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 459
+        RIGHTMARGIN, 464
         TOPMARGIN, 7
-        BOTTOMMARGIN, 332
+        BOTTOMMARGIN, 301
     END
 
     IDD_RATING_DESCR, DIALOG

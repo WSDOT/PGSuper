@@ -3052,10 +3052,15 @@ void CSpecAgentImp::GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInter
 
 /////////////////////////////////////////////////////////////////////
 // IDebondLimits
+bool CSpecAgentImp::CheckMaxDebondedStrands(const CSegmentKey& segmentKey) const
+{
+   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+   return pGirderEntry->CheckMaxTotalFractionDebondedStrands();
+}
+
 Float64 CSpecAgentImp::GetMaxDebondedStrands(const CSegmentKey& segmentKey) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-
    return pGirderEntry->GetMaxTotalFractionDebondedStrands();
 }
 
@@ -3065,26 +3070,10 @@ Float64 CSpecAgentImp::GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey
    return pGirderEntry->GetMaxFractionDebondedStrandsPerRow();
 }
 
-Float64 CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) const
+void CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pNS, bool* pbCheckMax, Float64* pMaxFraction) const
 {
-   StrandIndexType nMax;
-   Float64 fMax;
-
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-   pGirderEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);
-
-   return fMax;
-}
-
-StrandIndexType CSpecAgentImp::GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) const
-{
-   StrandIndexType nMax;
-   Float64 fMax;
-
-   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-   pGirderEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);
-
-   return nMax;
+   pGirderEntry->GetMaxDebondedStrandsPerSection(p10orLess,pNS,pbCheckMax,pMaxFraction);
 }
 
 void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) const
@@ -3138,10 +3127,101 @@ void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* p
    *pLen = min_len>0.0 ? min_len : 0.0; // don't return less than zero
 }
 
-Float64 CSpecAgentImp::GetMinDebondSectionDistance(const CSegmentKey& segmentKey) const
+void CSpecAgentImp::GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey, Float64* pndb, bool* pbUseMinDistance, Float64* pMinDistance) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-   return pGirderEntry->GetMinDebondSectionLength();
+   pGirderEntry->GetMinDistanceBetweenDebondSections(pndb, pbUseMinDistance, pMinDistance);
+}
+
+Float64 CSpecAgentImp::GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey) const
+{
+   Float64 ndb, minDist;
+   bool bMinDist;
+   GetMinDistanceBetweenDebondSections(segmentKey, &ndb, &bMinDist, &minDist);
+
+   GET_IFACE(IMaterials, pMaterials);
+   const auto* pStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
+   Float64 db = pStrand->GetNominalDiameter();
+   Float64 debond_dist = ndb*db;
+   if (bMinDist)
+   {
+      debond_dist = Max(debond_dist, minDist);
+   }
+   return debond_dist;
+}
+
+bool CSpecAgentImp::CheckDebondingSymmetry(const CSegmentKey& segmentKey) const
+{
+   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+   return pGirderEntry->CheckDebondingSymmetry();
+}
+
+bool CSpecAgentImp::CheckAdjacentDebonding(const CSegmentKey& segmentKey) const
+{
+   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+   return pGirderEntry->CheckAdjacentDebonding();
+}
+
+bool CSpecAgentImp::CheckDebondingInWebWidthProjections(const CSegmentKey& segmentKey) const
+{
+   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+   return pGirderEntry->CheckDebondingInWebWidthProjections();
+}
+
+#if defined _DEBUG
+#include <initguid.h>
+#include <Plugins\BeamFamilyCLSID.h>
+#endif
+bool CSpecAgentImp::IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, RowIndexType rowIdx) const
+{
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020)
+   {
+      // exterior strands in each row are required to be bonded
+      return true;
+   }
+
+   // Beginning with LRFD 9th Edition, 5.9.4.3.3, third bullet point of Item I, only the rows within the full width portion of the bottom flange
+   // need to have the exterior strands debonded.
+   GET_IFACE(IPointOfInterest, pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | (endType == pgsTypes::metStart ? POI_0L : POI_10L), &vPoi);
+   const pgsPointOfInterest& poi(vPoi.front());
+
+   GET_IFACE(IGirder, pGirder);
+   WebIndexType nWebs = pGirder->GetWebCount(segmentKey);
+   FlangeIndexType nFlanges = pGirder->GetBottomFlangeCount(segmentKey);
+
+   if(nWebs == 1 && nFlanges == 1)
+   {
+      // this is a single web flanged girder
+#if defined _DEBUG
+      const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+      CComPtr<IBeamFactory> factory;
+      pGirderEntry->GetBeamFactory(&factory);
+
+      auto clsid = factory->GetFamilyCLSID();
+      ATLASSERT(clsid == CLSID_WFBeamFamily || clsid == CLSID_DeckBulbTeeBeamFamily || clsid == CLSID_SplicedIBeamFamily);
+      // if this assert fires, is there a new family for single web flanged girders?
+#endif
+      Float64 Hg = pGirder->GetHeight(poi);
+      Float64 bf = pGirder->GetMinBottomFlangeThickness(poi);
+      Float64 ybf = -(Hg - bf); // elevation to top of full width section of bottom flange in girder section coordinates (0,0 at top center, negative downwards)
+
+      GET_IFACE(IStrandGeometry, pStrandGeometry);
+      auto vStrands = pStrandGeometry->GetStrandsInRow(poi, rowIdx, pgsTypes::Straight);
+      ATLASSERT(0 < vStrands.size());
+      CComPtr<IPoint2d> pnt;
+      pStrandGeometry->GetStrandPosition(poi, vStrands.front(), pgsTypes::Straight, &pnt);
+      Float64 y;
+      pnt->get_Y(&y);
+
+      return (y < ybf) ? true : false;
+      // strand row is below top of full width section of bottom flange so the exterior strands must be bonded
+   }
+   else
+   {
+      return true;
+   }
 }
 
 /////////////////////////////////////////////////////////////////////

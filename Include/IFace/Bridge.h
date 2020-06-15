@@ -1150,7 +1150,8 @@ interface IStrandGeometry : IUnknown
    virtual StrandIndexType GetPreviousNumPermanentStrands(const CSegmentKey& segmentKey,StrandIndexType curNum) const = 0;
    virtual StrandIndexType GetPreviousNumPermanentStrands(LPCTSTR strGirderName,StrandIndexType curNum) const = 0;
    // Compute strand Indices as in girder library for given filled strands
-   virtual bool ComputePermanentStrandIndices(LPCTSTR strGirderName,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strType, IIndexArray** permIndices) const = 0;
+   virtual void ComputePermanentStrandIndices(const CSegmentKey& segmentKey, pgsTypes::StrandType strType, IIndexArray** permIndices) const = 0;
+   virtual void ComputePermanentStrandIndices(LPCTSTR strGirderName,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strType, IIndexArray** permIndices) const = 0;
 
    // Functions to compute ordered strand filling for straight/harped/temporary fill orders
    virtual bool IsValidNumStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type,StrandIndexType curNum) const = 0;
@@ -1231,7 +1232,13 @@ interface IStrandGeometry : IUnknown
    virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
    virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) const = 0;
    virtual StrandIndexType GetNumDebondedStrandsInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
+
+   // returns true if one of the exterior strands in the specified row is debonded at the poi
    virtual bool IsExteriorStrandDebondedInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
+
+   // returns true if one of the exterior strands in the specified row and web is debonded at the poi. this method should only be used for multi-web
+   // sections without bottom flanges (such as double T, triple tees, and channel beams).
+   virtual bool IsExteriorWebStrandDebondedInRow(const pgsPointOfInterest& poi, WebIndexType webIdx,RowIndexType rowIdx, pgsTypes::StrandType strandType) const = 0;
    virtual Float64 GetUnadjustedStrandRowElevation(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
 
    virtual bool HasDebonding(const CSegmentKey& segmentKey) const = 0;
@@ -1254,7 +1261,6 @@ interface IStrandGeometry : IUnknown
    // returns long array of the same length as GetStrandPositions. 0==not debondable
    virtual void ListDebondableStrands(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rFillArray,pgsTypes::StrandType strandType, IIndexArray** list) const = 0;
    virtual void ListDebondableStrands(LPCTSTR strGirderName,const ConfigStrandFillVector& rFillArray,pgsTypes::StrandType strandType, IIndexArray** list) const = 0; 
-   virtual Float64 GetDefaultDebondLength(const CSegmentKey& segmentKey) const = 0;
 
    // Returns the indicies of rows that have debonding
    virtual std::vector<RowIndexType> GetRowsWithDebonding(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
@@ -1266,6 +1272,12 @@ interface IStrandGeometry : IUnknown
    // Lstrand is the length of the bonded strands, and nStrands is the number of debonded strands for
    // this configuration
    virtual void GetDebondConfigurationByRow(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, RowIndexType rowIdx, IndexType configIdx, const GDRCONFIG* pConfig, Float64* pXstart, Float64* pLstrand, Float64* pCgX, Float64* pCgY, StrandIndexType* pnStrands) const = 0;
+
+   // Returns a vector of rectangular regions represententing web width projections within which strands must be bonded per LRFD 9th Edition, 5.9.4.3.3, Items I and J.
+   // If LRFD 5.9.4.3.3 Item I applies (Single web, flange section, eg. I-Beam), the fraction of debonded strands is stored in pFraDebonded and the bottom flange to web width ratio is stored in pBottomFlangeToWebWidthRatio, otherwise
+   // these parameters are invalid
+   // Strands must be completely within the region for the "most be bonded" requirement to apply
+   virtual std::vector<CComPtr<IRect2d>> GetWebWidthProjectionsForDebonding(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType,Float64* pFraDebonded,Float64* pBottomFlangeToWebWidthRatio) const = 0;
 
    // Functions to compute harped strand offsets based on available measurement types
    // Absolute offset is distance that raw strand grid locations are to be moved.

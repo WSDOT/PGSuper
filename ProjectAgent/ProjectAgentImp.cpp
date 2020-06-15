@@ -11310,24 +11310,36 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 
             ValidateStrands(segmentKey,pSegment,fromLibrary);
    
+            // make sure debond data is consistent with design algorithim
             Float64 xfer_length = pPrestress->GetXferLength(segmentKey,pgsTypes::Permanent);
-            Float64 min_xfer = pGdrEntry->GetMinDebondSectionLength(); 
+            Float64 ndb, minDist;
+            bool bMinDist;
+            pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
 
-            if (::IsLT(min_xfer,xfer_length,0.001))
+            bool bTooSmall = ndb < 60.0 ? true : false;
+            if (bMinDist)
+            {
+               bTooSmall &= ::IsLT(minDist, xfer_length, 0.001) ? true : false;
+            }
+
+            if (bTooSmall)
             {
                std::_tostringstream os;
                SegmentIndexType nSegments = pGirder->GetSegmentCount();
                if ( 1 < nSegments )
                {
-                  os << _T("Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << _T(": The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
+                  os << _T("Group ") << LABEL_GROUP(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(" Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex);
                }
                else
                {
-                  os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex) << _T(": The minimum debond section length in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
+                  os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex);
                }
+               os << _T(": The minimum longitudinal spacing of debonding termiation locations in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
                AddSegmentStatusItem(segmentKey, os.str() );
             }
 
+
+            ////
             if (splicedBeamFactory)
             {
                auto found = std::find(std::begin(variations), std::end(variations), pSegment->GetVariationType());

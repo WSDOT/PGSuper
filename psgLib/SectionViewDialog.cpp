@@ -90,8 +90,8 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    gdrSection.QueryInterface(&m_pShape);
    ATLASSERT(m_pShape != nullptr);
 
-// only use strandmover view for debugging
 #ifdef _DEBUG
+   // only use strandmover view for debugging
    CComPtr<IStrandMover> strand_mover;
    pFactory->CreateStrandMover(dimensions, -1,
                                IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0,
@@ -123,7 +123,21 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    m_ShapeProps->get_Xright(&Xr);
    m_Wg = Xl + Xr;
    m_bDrawWebSections = true;
-   gdrSection->GetWebSections(&m_Y, &m_W, &m_Desc);
+
+   CComQIPtr<IPrestressedGirderSection> psgSection(gdrSection);
+   psgSection->GetWebSections(&m_Y, &m_W, &m_Desc);
+
+
+   HRESULT hr = psgSection->GetWebWidthProjectionsForDebonding(&m_WebWidthProjections);
+   if (SUCCEEDED(hr) && m_WebWidthProjections)
+   {
+      m_bDrawWebWidthProjections = true;
+   }
+   else
+   {
+      // there aren't any web width projections to show
+      m_bDrawWebWidthProjections = false;
+   }
 
 
 	//{{AFX_DATA_INIT(CSectionViewDialog)
@@ -150,10 +164,25 @@ BEGIN_MESSAGE_MAP(CSectionViewDialog, CDialog)
 
    ON_BN_CLICKED(IDC_SHOWS,OnClickNumbers)
    ON_BN_CLICKED(IDC_WEB_SECTIONS, OnClickWebSections)
+   ON_BN_CLICKED(IDC_SHOW_WEB_WIDTH_PROJECTIONS, &CSectionViewDialog::OnBnClickedShowWebWidthProjections)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSectionViewDialog message handlers
+
+HWND hwndOK;
+inline BOOL CALLBACK ChildWindowRect(HWND hwnd, LPARAM lParam)
+{
+   if (hwnd == hwndOK)
+      return TRUE;
+
+   RECT r;
+   ::GetClientRect(hwnd, &r);
+
+   CRect* pRect = (CRect*)lParam;
+   pRect->UnionRect(pRect, &r);
+   return TRUE;
+}
 
 void CSectionViewDialog::OnPaint() 
 {
@@ -161,6 +190,7 @@ void CSectionViewDialog::OnPaint()
 	
 	// Do not call CDialog::OnPaint() for painting messages
    CWnd* pBtn = GetDlgItem(IDOK);
+   hwndOK = pBtn->GetSafeHwnd();
    CRect rBtn;
    pBtn->GetWindowRect(&rBtn);
 
@@ -168,18 +198,16 @@ void CSectionViewDialog::OnPaint()
    GetWindowRect(&dRect);
    int bottom_dlg_to_top_of_button = dRect.bottom - rBtn.top;
 
-   CWnd* pProps = GetDlgItem(IDC_SECTION_PROPERTIES);
-   CRect rProps;
-   pProps->GetClientRect(&rProps);
+   CRect childRect(0,0,0,0);
+   EnumChildWindows(GetSafeHwnd(), ChildWindowRect, (LPARAM)&childRect);
 
    CRect cr;
    GetClientRect(&cr);
    CSize csize = cr.Size();
    csize.cy -= bottom_dlg_to_top_of_button;
-   //csize.cy -= rProps.Height();
    csize.cy -= 3*BORDER;
    csize.cx -= 3*BORDER;
-   csize.cx -= rProps.Width();
+   csize.cx -= childRect.Width();
 
 
    CComPtr<IRect2d> bbox;
@@ -199,7 +227,7 @@ void CSectionViewDialog::OnPaint()
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(csize.cx,csize.cy);
-   mapper.SetDeviceOrg(csize.cx/2 + 2*BORDER + rProps.Width(),/*rProps.Height() +*/ csize.cy + 2*BORDER);
+   mapper.SetDeviceOrg(csize.cx / 2 + 2 * BORDER + childRect.Width(), csize.cy + 2 * BORDER);
 
    DrawShape(&dc,mapper);
    DrawStrands(&dc,mapper,m_bIsEnd);
@@ -209,13 +237,15 @@ void CSectionViewDialog::OnPaint()
       DrawWebSections(&dc, mapper);
    }
 
-// strand mover - bounds drawn in red
-#ifdef _DEBUG
-   CBrush shape_brush(HS_FDIAGONAL, RGB(255,0,0));
-   CBrush* pOldBrush = dc.SelectObject(&shape_brush);
+   if (m_bDrawWebWidthProjections)
+   {
+      DrawWebWidthProjections(&dc, mapper);
+   }
 
-   //org.Y() -= (top-bottom);
-   //mapper.SetWorldOrg(org);
+#ifdef _DEBUG
+   // strand mover bounds
+   CBrush shape_brush(HS_FDIAGONAL, GREEN);
+   CBrush* pOldBrush = dc.SelectObject(&shape_brush);
 
    for ( const auto& shape : m_RegionShapes)
    {
@@ -499,6 +529,44 @@ void CSectionViewDialog::DrawWebSections(CDC* pDC, grlibPointMapper& Mapper)
    pDC->SetTextAlign(old_align);
 }
 
+void CSectionViewDialog::DrawWebWidthProjections(CDC* pDC, grlibPointMapper& Mapper)
+{
+   if (m_WebWidthProjections)
+   {
+      CBrush shape_brush(HS_BDIAGONAL, RED);
+      CBrush* pOldBrush = pDC->SelectObject(&shape_brush);
+
+      CComPtr<IEnumUnkArray> enumElements;
+      m_WebWidthProjections->get__EnumElements(&enumElements);
+      CComPtr<IUnknown> unk;
+      while (enumElements->Next(1, &unk, nullptr) != S_FALSE)
+      {
+         CComQIPtr<IRect2d> rect(unk);
+
+         CComPtr<IPoint2d> pnt;
+         rect->get_TopLeft(&pnt);
+
+         Float64 x, y;
+         pnt->Location(&x, &y);
+
+         LONG Xtl, Ytl;
+         Mapper.WPtoDP(x, y, &Xtl, &Ytl);
+
+         pnt.Release();
+         rect->get_BottomRight(&pnt);
+         pnt->Location(&x, &y);
+         LONG Xbr, Ybr;
+         Mapper.WPtoDP(x, y, &Xbr, &Ybr);
+
+         pDC->Rectangle(Xtl, Ytl, Xbr, Ybr);
+
+         unk.Release();
+      }
+
+      pDC->SelectObject(pOldBrush);
+   }
+}
+
 void CSectionViewDialog::OnSize(UINT nType, int cx, int cy) 
 {
 	CDialog::OnSize(nType, cx, cy);
@@ -563,6 +631,14 @@ BOOL CSectionViewDialog::OnInitDialog()
    pBtn = (CButton*)GetDlgItem(IDC_WEB_SECTIONS);
    pBtn->SetCheck(m_bDrawWebSections ? BST_CHECKED : BST_UNCHECKED);
 
+   pBtn = (CButton*)GetDlgItem(IDC_SHOW_WEB_WIDTH_PROJECTIONS);
+   pBtn->SetCheck(m_bDrawWebWidthProjections ? BST_CHECKED : BST_UNCHECKED);
+
+   if (m_WebWidthProjections == nullptr)
+   {
+      GetDlgItem(IDC_SHOW_WEB_WIDTH_PROJECTIONS)->EnableWindow(FALSE);
+   }
+
    // label for harped or adj straight
    CString hlbl;
    hlbl.Format(_T("%s Strands"), LABEL_HARP_TYPE(m_pGirderEntry->GetAdjustableStrandType()!=pgsTypes::asHarped));
@@ -617,6 +693,12 @@ void CSectionViewDialog::OnClickNumbers()
 void CSectionViewDialog::OnClickWebSections()
 {
    m_bDrawWebSections = !m_bDrawWebSections;
+   Invalidate();
+}
+
+void CSectionViewDialog::OnBnClickedShowWebWidthProjections()
+{
+   m_bDrawWebWidthProjections = !m_bDrawWebWidthProjections;
    Invalidate();
 }
 

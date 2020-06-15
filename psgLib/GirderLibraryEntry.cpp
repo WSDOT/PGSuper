@@ -161,14 +161,21 @@ m_LongitudinalBarType(matRebar::A615),
 m_LongitudinalBarGrade(matRebar::Grade60),
 m_bOddNumberOfHarpedStrands(true),
 m_AdjustableStrandType(pgsTypes::asHarped), // Adjustable strand type - harp was only option before 21
-// debonding criteria - use aashto defaults
+// debonding criteria
+m_bCheckMaxDebondStrands(false),
 m_MaxDebondStrands(0.25),
-m_MaxDebondStrandsPerRow(0.40),
-m_MaxNumDebondedStrandsPerSection(4),
+m_MaxDebondStrandsPerRow(0.45), // changed from 40% to 45% in LRFD 9th Edition
+m_MaxNumDebondedStrandsPerSection10orLess(4),
+m_MaxNumDebondedStrandsPerSection(6),
+m_bCheckMaxNumDebondedStrandsPerSection(false),
 m_MaxDebondedStrandsPerSection(0.40),
+m_MinDebondLengthDB(60),
+m_bCheckMinDebondLength(false),
 m_MinDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)), // not aashto, but reasonable
-m_DefaultDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)),
-m_MaxDebondLengthBySpanFraction(-1.0), // 
+m_bCheckDebondingSymmetry(true),
+m_bCheckAdjacentDebonding(true),
+m_bCheckDebondingInWebWidthProjections(true),
+m_MaxDebondLengthBySpanFraction(0.20), //  LRFD 9th Edition, default to 20%
 m_MaxDebondLengthByHardDistance(-1.0),
 m_MinFilletValue(::ConvertToSysUnits(0.75,unitMeasure::Inch)),
 m_DoCheckMinHaunchAtBearingLines(false),
@@ -445,14 +452,21 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    //pSave->Property(_T("TopFlangeShearBarSpacing"), m_TopFlangeShearBarSpacing);
 
    // debond criteria - added in version 13
-   pSave->BeginUnit(_T("DebondingCritia"), 1.0);
-
+   pSave->BeginUnit(_T("DebondingCritia"), 2.0);
+   pSave->Property(_T("CheckMaxDebondedStrands"), m_bCheckMaxDebondStrands); // added in version 2 of this data block
    pSave->Property(_T("MaxDebondStrands"),               m_MaxDebondStrands);
    pSave->Property(_T("MaxDebondStrandsPerRow"),         m_MaxDebondStrandsPerRow);
+   pSave->Property(_T("MaxNumDebondedStrandsPerSection10orLess"), m_MaxNumDebondedStrandsPerSection10orLess); // added in version 2
    pSave->Property(_T("MaxNumDebondedStrandsPerSection"),m_MaxNumDebondedStrandsPerSection);
+   pSave->Property(_T("CheckMaxDebondedStrandsPerSection"), m_bCheckMaxNumDebondedStrandsPerSection); // added in version 2
    pSave->Property(_T("MaxDebondedStrandsPerSection"),   m_MaxDebondedStrandsPerSection);
+   pSave->Property(_T("MinDebondLengthDB"), m_MinDebondLengthDB); // added in version 2
+   pSave->Property(_T("CheckMinDebondLength"), m_bCheckMinDebondLength); // added in version 2
    pSave->Property(_T("MinDebondLength"),                m_MinDebondLength);
-   pSave->Property(_T("DefaultDebondLength"),            m_DefaultDebondLength);
+   //pSave->Property(_T("DefaultDebondLength"),            m_DefaultDebondLength); // removed in version 2 of this data block
+   pSave->Property(_T("CheckDebondingSymmetry"), m_bCheckDebondingSymmetry); // added in version 2
+   pSave->Property(_T("CheckAdjacentDebonding"), m_bCheckAdjacentDebonding); // added in version 2
+   pSave->Property(_T("CheckDebondingInWebWidthProjections"), m_bCheckDebondingInWebWidthProjections); // added in version 2
    pSave->Property(_T("MaxDebondLengthBySpanFraction"),  m_MaxDebondLengthBySpanFraction);
    pSave->Property(_T("MaxDebondLengthByHardDistance"),  m_MaxDebondLengthByHardDistance);
 
@@ -1413,50 +1427,125 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          Float64 local_vers = pLoad->GetVersion();
          
-            if (local_vers!=1.0)
+         if (1 < local_vers)
+         {
+            // added in vesion 2
+            if (!pLoad->Property(_T("CheckMaxDebondedStrands"), &m_bCheckMaxDebondStrands))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
+         else
+         {
+            m_bCheckMaxDebondStrands = true; // this check was not optional in LRFD 8th edition and earlier... set it to true so it gets checked
+         }
+
+         if ( !pLoad->Property(_T("MaxDebondStrands"),               &m_MaxDebondStrands))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if ( !pLoad->Property(_T("MaxDebondStrandsPerRow"),         &m_MaxDebondStrandsPerRow))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (1 < local_vers)
+         {
+            // added in version 2
+            if (!pLoad->Property(_T("MaxNumDebondedStrandsPerSection10orLess"), &m_MaxNumDebondedStrandsPerSection10orLess))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
+
+         if ( !pLoad->Property(_T("MaxNumDebondedStrandsPerSection"),&m_MaxNumDebondedStrandsPerSection))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (1 < local_vers)
+         {
+            // added in version 2
+            if (!pLoad->Property(_T("CheckMaxDebondedStrandsPerSection"), &m_bCheckMaxNumDebondedStrandsPerSection))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
+         else
+         {
+            m_MaxNumDebondedStrandsPerSection10orLess = m_MaxNumDebondedStrandsPerSection; // make same for older files where there was only one parameter
+            m_bCheckMaxNumDebondedStrandsPerSection = true; // this check was not optional in LRFD 8th edition and earlier... set it to true so it gets checked
+         }
+
+         if ( !pLoad->Property(_T("MaxDebondedStrandsPerSection"),   &m_MaxDebondedStrandsPerSection))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (1 < local_vers)
+         {
+            if (!pLoad->Property(_T("MinDebondLengthDB"), &m_MinDebondLengthDB))
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            if ( !pLoad->Property(_T("MaxDebondStrands"),               &m_MaxDebondStrands))
+            if (!pLoad->Property(_T("CheckMinDebondLength"), &m_bCheckMinDebondLength))
             {
-               THROW_LOAD(BadVersion,pLoad);
+               THROW_LOAD(InvalidFileFormat,pLoad);
+            }
+         }
+         else
+         {
+            m_bCheckMinDebondLength = true; // this was not an optional check earlier so when opening old files, enable it
+         }
+
+         if ( !pLoad->Property(_T("MinDebondLength"),                &m_MinDebondLength))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (local_vers < 2)
+         {
+            // removed in version 2 so just load and discard value
+            Float64 dummy;
+            pLoad->Property(_T("DefaultDebondLength"), &dummy);
+         }
+
+         if (1 < local_vers)
+         {
+            // added in version 2
+            if (!pLoad->Property(_T("CheckDebondingSymmetry"), &m_bCheckDebondingSymmetry))
+            {
+               THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            if ( !pLoad->Property(_T("MaxDebondStrandsPerRow"),         &m_MaxDebondStrandsPerRow))
+            if (!pLoad->Property(_T("CheckAdjacentDebonding"), &m_bCheckAdjacentDebonding))
             {
-               THROW_LOAD(BadVersion,pLoad);
+               THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            if ( !pLoad->Property(_T("MaxNumDebondedStrandsPerSection"),&m_MaxNumDebondedStrandsPerSection))
+            if (!pLoad->Property(_T("CheckDebondingInWebWidthProjections"), &m_bCheckDebondingInWebWidthProjections))
             {
-               THROW_LOAD(BadVersion,pLoad);
+               THROW_LOAD(InvalidFileFormat, pLoad);
             }
+         }
+         else
+         {
+            m_bCheckDebondingSymmetry = false; // was not a requirement before LRFD 9th edition... set to false so this isn't checked for files created before version 2 of this data block
+            m_bCheckAdjacentDebonding = false; // was not a requirement before LRFD 9th edition... set to false so this isn't checked for files created before version 2 of this data block
+            m_bCheckDebondingInWebWidthProjections = false; // was not a requirement before LRFD 9th edition... set to false so this isn't check for files created before version 2 of this data block
+         }
 
-            if ( !pLoad->Property(_T("MaxDebondedStrandsPerSection"),   &m_MaxDebondedStrandsPerSection))
-            {
-               THROW_LOAD(BadVersion,pLoad);
-            }
+         if ( !pLoad->Property(_T("MaxDebondLengthBySpanFraction"),  &m_MaxDebondLengthBySpanFraction))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
-            if ( !pLoad->Property(_T("MinDebondLength"),                &m_MinDebondLength))
-            {
-               THROW_LOAD(BadVersion,pLoad);
-            }
-
-            if ( !pLoad->Property(_T("DefaultDebondLength"),            &m_DefaultDebondLength))
-            {
-               THROW_LOAD(BadVersion,pLoad);
-            }
-
-            if ( !pLoad->Property(_T("MaxDebondLengthBySpanFraction"),  &m_MaxDebondLengthBySpanFraction))
-            {
-               THROW_LOAD(BadVersion,pLoad);
-            }
-
-            if ( !pLoad->Property(_T("MaxDebondLengthByHardDistance"),  &m_MaxDebondLengthByHardDistance))
-            {
-               THROW_LOAD(BadVersion,pLoad);
-            }
+         if ( !pLoad->Property(_T("MaxDebondLengthByHardDistance"),  &m_MaxDebondLengthByHardDistance))
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
 
          if ( !pLoad->EndUnit())
          {
@@ -3080,26 +3169,29 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    //
    // Flexure Design Tab (Debonding Tab for spliced girders)
    //
-   if ( !::IsEqual(m_MaxDebondStrands,      rOther.m_MaxDebondStrands)                ||
+   if  (m_bCheckMaxDebondStrands != rOther.m_bCheckMaxDebondStrands ||
+        (m_bCheckMaxDebondStrands && !::IsEqual(m_MaxDebondStrands,      rOther.m_MaxDebondStrands))                ||
         !::IsEqual(m_MaxDebondStrandsPerRow,rOther.m_MaxDebondStrandsPerRow)          ||
+      m_MaxNumDebondedStrandsPerSection10orLess != rOther.m_MaxNumDebondedStrandsPerSection10orLess ||
         m_MaxNumDebondedStrandsPerSection != rOther.m_MaxNumDebondedStrandsPerSection ||
-        !::IsEqual(m_MaxDebondedStrandsPerSection,rOther.m_MaxDebondedStrandsPerSection) )
+      m_bCheckMaxNumDebondedStrandsPerSection != rOther.m_bCheckMaxNumDebondedStrandsPerSection ||
+        (m_bCheckMaxNumDebondedStrandsPerSection && !::IsEqual(m_MaxDebondedStrandsPerSection,rOther.m_MaxDebondedStrandsPerSection))  ||
+      !::IsEqual(m_MinDebondLengthDB, rOther.m_MinDebondLengthDB) ||
+      m_bCheckMinDebondLength != rOther.m_bCheckMinDebondLength ||
+      (m_bCheckMinDebondLength && !::IsEqual(m_MinDebondLength, rOther.m_MinDebondLength)) ||
+      !::IsEqual(m_MaxDebondLengthBySpanFraction, rOther.m_MaxDebondLengthBySpanFraction) ||
+      !::IsEqual(m_MaxDebondLengthByHardDistance, rOther.m_MaxDebondLengthByHardDistance) ||
+      m_bCheckDebondingSymmetry != rOther.m_bCheckDebondingSymmetry ||
+      m_bCheckAdjacentDebonding != rOther.m_bCheckAdjacentDebonding ||
+      m_bCheckDebondingInWebWidthProjections != rOther.m_bCheckDebondingInWebWidthProjections
+      )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Debonding Strand Limits are different"),_T(""),_T("")));
    }
-   
+
    if ( !bSplicedGirder )
    {
-      if ( !::IsEqual(m_MinDebondLength,               rOther.m_MinDebondLength)                 ||
-           !::IsEqual(m_DefaultDebondLength,           rOther.m_DefaultDebondLength)             ||
-           !::IsEqual(m_MaxDebondLengthBySpanFraction, rOther.m_MaxDebondLengthBySpanFraction)   ||
-           !::IsEqual(m_MaxDebondLengthByHardDistance, rOther.m_MaxDebondLengthByHardDistance) )
-      {
-         RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Criteria for Debond Distances are different"),_T(""),_T("")));
-      }
-
       if ( m_PrestressDesignStrategies != rOther.m_PrestressDesignStrategies )
       {
          RETURN_ON_DIFFERENCE;
@@ -4666,12 +4758,19 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_EndAdjustment            = rOther.m_EndAdjustment;
    m_StraightAdjustment       = rOther.m_StraightAdjustment;
 
+   m_bCheckMaxDebondStrands = rOther.m_bCheckMaxDebondStrands;
    m_MaxDebondStrands                       = rOther.m_MaxDebondStrands;
    m_MaxDebondStrandsPerRow                 = rOther.m_MaxDebondStrandsPerRow;
+   m_MaxNumDebondedStrandsPerSection10orLess = rOther.m_MaxNumDebondedStrandsPerSection10orLess;
    m_MaxNumDebondedStrandsPerSection        = rOther.m_MaxNumDebondedStrandsPerSection;
+   m_bCheckMaxNumDebondedStrandsPerSection = rOther.m_bCheckMaxNumDebondedStrandsPerSection;
    m_MaxDebondedStrandsPerSection           = rOther.m_MaxDebondedStrandsPerSection;
+   m_MinDebondLengthDB = rOther.m_MinDebondLengthDB;
+   m_bCheckMinDebondLength = rOther.m_bCheckMinDebondLength;
    m_MinDebondLength                        = rOther.m_MinDebondLength;
-   m_DefaultDebondLength                    = rOther.m_DefaultDebondLength;
+   m_bCheckDebondingSymmetry = rOther.m_bCheckDebondingSymmetry;
+   m_bCheckAdjacentDebonding = rOther.m_bCheckAdjacentDebonding;
+   m_bCheckDebondingInWebWidthProjections = rOther.m_bCheckDebondingInWebWidthProjections;
    m_MaxDebondLengthBySpanFraction          = rOther.m_MaxDebondLengthBySpanFraction;
    m_MaxDebondLengthByHardDistance          = rOther.m_MaxDebondLengthByHardDistance;
 
@@ -4907,6 +5006,16 @@ bool GirderLibraryEntry::CanDebondStraightStrands() const
    return false;
 }
 
+bool GirderLibraryEntry::CheckMaxTotalFractionDebondedStrands() const
+{
+   return m_bCheckMaxDebondStrands;
+}
+
+void GirderLibraryEntry::CheckMaxTotalFractionDebondedStrands(bool bCheck)
+{
+   m_bCheckMaxDebondStrands = bCheck;
+}
+
 Float64 GirderLibraryEntry::GetMaxTotalFractionDebondedStrands() const
 {
    return m_MaxDebondStrands;
@@ -4914,7 +5023,7 @@ Float64 GirderLibraryEntry::GetMaxTotalFractionDebondedStrands() const
 
 void GirderLibraryEntry::SetMaxTotalFractionDebondedStrands(Float64 fraction) 
 {
-   ATLASSERT(fraction>=0.0 && fraction<=1.0);
+   ATLASSERT(0.0 <= fraction && fraction <= 1.0);
    m_MaxDebondStrands = fraction;
 }
 
@@ -4925,21 +5034,25 @@ Float64 GirderLibraryEntry::GetMaxFractionDebondedStrandsPerRow() const
 
 void GirderLibraryEntry::SetMaxFractionDebondedStrandsPerRow(Float64 fraction)
 {
-   ATLASSERT(fraction>=0.0 && fraction<=1.0);
+   ATLASSERT(0.0 <= fraction && fraction <= 1.0);
    m_MaxDebondStrandsPerRow = fraction;
 }
 
-void  GirderLibraryEntry::GetMaxDebondedStrandsPerSection(StrandIndexType* pNumber, Float64* pFraction) const
+void  GirderLibraryEntry::GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pNumber, bool* pbCheck, Float64* pFraction) const
 {
+   *p10orLess = m_MaxNumDebondedStrandsPerSection10orLess;
    *pNumber = m_MaxNumDebondedStrandsPerSection;
+   *pbCheck = m_bCheckMaxNumDebondedStrandsPerSection;
    *pFraction = m_MaxDebondedStrandsPerSection;
 }
 
-void GirderLibraryEntry::SetMaxDebondedStrandsPerSection(StrandIndexType number, Float64 fraction)
+void GirderLibraryEntry::SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType number, bool bCheck,Float64 fraction)
 {
-   ATLASSERT(fraction>=0.0 && fraction<=1.0);
+   ATLASSERT(0.0 <= fraction && fraction <= 1.0);
 
+   m_MaxNumDebondedStrandsPerSection10orLess = n10orLess;
    m_MaxNumDebondedStrandsPerSection = number;
+   m_bCheckMaxNumDebondedStrandsPerSection = bCheck;
    m_MaxDebondedStrandsPerSection    = fraction;
 }
 
@@ -4979,26 +5092,48 @@ void GirderLibraryEntry::SetMaxDebondedLength(bool useSpanFraction, Float64 span
    }
 }
 
-Float64 GirderLibraryEntry::GetMinDebondSectionLength() const
+void GirderLibraryEntry::SetMinDistanceBetweenDebondSections(Float64 ndb, bool bCheck, Float64 minDistance)
 {
-   return m_MinDebondLength;
+   m_MinDebondLengthDB = ndb;
+   m_bCheckMinDebondLength = bCheck;
+   m_MinDebondLength = minDistance;
 }
 
-void GirderLibraryEntry::SetMinDebondSectionLength(Float64 fraction)
+void GirderLibraryEntry::GetMinDistanceBetweenDebondSections(Float64* pndb, bool* pbCheck, Float64* pMinDistance) const
 {
-   ATLASSERT(fraction>=0.0);
-   m_MinDebondLength=fraction;
+   *pndb = m_MinDebondLengthDB;
+   *pbCheck = m_bCheckMinDebondLength;
+   *pMinDistance = m_MinDebondLength;
 }
 
-void GirderLibraryEntry::SetDefaultDebondSectionLength(Float64 l)
+void GirderLibraryEntry::CheckDebondingSymmetry(bool bCheck)
 {
-   ATLASSERT(l>=0.0);
-   m_DefaultDebondLength=l;
+   m_bCheckDebondingSymmetry = bCheck;
 }
 
-Float64 GirderLibraryEntry::GetDefaultDebondSectionLength() const
+bool GirderLibraryEntry::CheckDebondingSymmetry() const
 {
-   return m_DefaultDebondLength;
+   return m_bCheckDebondingSymmetry;
+}
+
+void GirderLibraryEntry::CheckAdjacentDebonding(bool bCheck)
+{
+   m_bCheckAdjacentDebonding = bCheck;
+}
+
+bool GirderLibraryEntry::CheckAdjacentDebonding() const
+{
+   return m_bCheckAdjacentDebonding;
+}
+
+void GirderLibraryEntry::CheckDebondingInWebWidthProjections(bool bCheck)
+{
+   m_bCheckDebondingInWebWidthProjections = bCheck;
+}
+
+bool GirderLibraryEntry::CheckDebondingInWebWidthProjections() const
+{
+   return m_bCheckDebondingInWebWidthProjections;
 }
 
 bool GirderLibraryEntry::IsEqual(IPoint2dCollection* points1,IPoint2dCollection* points2) const

@@ -694,27 +694,24 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
+   DDX_Check_Bool(pDX, IDC_CHECK_MAX_TOTAL_STRANDS, m_Entry.m_bCheckMaxDebondStrands);
    DDX_Percentage(pDX,IDC_MAX_TOTAL_STRANDS, m_Entry.m_MaxDebondStrands);
    DDX_Percentage(pDX,IDC_MAX_STRANDS_PER_ROW, m_Entry.m_MaxDebondStrandsPerRow);
 
- 	DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION, m_Entry.m_MaxNumDebondedStrandsPerSection);
+   DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION_10_OR_LESS, m_Entry.m_MaxNumDebondedStrandsPerSection10orLess);
+   DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION, m_Entry.m_MaxNumDebondedStrandsPerSection);
+   DDX_Check_Bool(pDX, IDC_CHECK_MAX_FRACTION_PER_SECTION, m_Entry.m_bCheckMaxNumDebondedStrandsPerSection);
    DDX_Percentage(pDX,IDC_MAX_FRACTION_PER_SECTION, m_Entry.m_MaxDebondedStrandsPerSection);
 
+   DDX_Text(pDX, IDC_MIN_DISTANCE_DB, m_Entry.m_MinDebondLengthDB);
+   DDV_GreaterThanZero(pDX, IDC_MIN_DISTANCE_DB, m_Entry.m_MinDebondLengthDB);
+   DDX_Check_Bool(pDX, IDC_CHECK_MIN_DISTANCE, m_Entry.m_bCheckMinDebondLength);
    DDX_UnitValueAndTag(pDX, IDC_MIN_DISTANCE, IDC_MIN_DISTANCE_UNIT, m_Entry.m_MinDebondLength, pDisplayUnits->SpanLength);
    DDV_UnitValueGreaterThanZero( pDX, IDC_MIN_DISTANCE,m_Entry.m_MinDebondLength, pDisplayUnits->SpanLength);
 
-   DDX_UnitValueAndTag(pDX, IDC_DEFAULT_DISTANCE, IDC_DEFAULT_DISTANCE_UNIT, m_Entry.m_DefaultDebondLength, pDisplayUnits->SpanLength);
-   DDV_UnitValueGreaterThanZero( pDX, IDC_DEFAULT_DISTANCE,m_Entry.m_DefaultDebondLength, pDisplayUnits->SpanLength);
-
-   if (!IsSplicedGirder())
-   {
-      // only applicable to regular pretensioned girders... we don't do design for spliced girders
-      if (m_Entry.m_DefaultDebondLength < m_Entry.m_MinDebondLength)
-      {
-         ::AfxMessageBox(_T("Error - The default debond length cannot be less than the minimum debond length"));
-         pDX->Fail();
-      }
-   }
+   DDX_Check_Bool(pDX, IDC_CHECK_DEBONDING_SYMMETRY, m_Entry.m_bCheckDebondingSymmetry);
+   DDX_Check_Bool(pDX, IDC_CHECK_ADJACENT_STRANDS, m_Entry.m_bCheckAdjacentDebonding);
+   DDX_Check_Bool(pDX, IDC_CHECK_WEB_WIDTH_PROJECTIONS, m_Entry.m_bCheckDebondingInWebWidthProjections);
 
    // items with check enable boxes are tricky
    if ( !pDX->m_bSaveAndValidate )

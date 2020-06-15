@@ -7,6 +7,7 @@
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Debond arrangement checks failed.
 Splitting zone check failed.
 Lifting checks failed
 Hauling checks failed
@@ -22,6 +23,7 @@ Slab Offset ("A" Dimension) check failed
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Debond arrangement checks failed.
 Splitting zone check failed.
 Lifting checks failed
 Hauling checks failed
@@ -37,6 +39,7 @@ Slab Offset ("A" Dimension) check failed
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Debond arrangement checks failed.
 Splitting zone check failed.
 Lifting checks failed
 Hauling checks failed

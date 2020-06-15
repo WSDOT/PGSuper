@@ -12,9 +12,9 @@ There are two basic types of permanent strands.
    * Harped strands are draped at the girders harping points. Harping (draping) is created by the difference in vertical adjustment between the strand group at the girder ends and harping points.
    * Adjustable Straight Strands are straight along the entire length of the girder. The entire group can be vertically adjusted. Adjustable Straight Strands located above the girder's upper kern location can be used by the automated design algorithm to alleviate girder end stresses.
 
-> Permanent strands are placed and tensioned at casting time and remain in the girder for its lifetime. 
-> Adjustable strands are bonded along the entire length of the girder. 
-> Individual straight strands can be debonded only if the "allow debonding" option is selected for the strands in question.
+> NOTE: Permanent strands are placed and tensioned at casting time and remain in the girder for its lifetime. Adjustable strands are bonded along the entire length of the girder. Individual straight strands can be debonded only if the "allow debonding" option is selected for the strands in question.
+
+> NOTE: The flexural design algorithm does not attempt to position debonded strands to satisfy the requirements of LRFD 9th Edition 5.9.4.3.3 Requirements E, 4th bullet of Requirement I, 1st bullet of Requirement J, or 1st bullet of Requirement K, though these requirements are evaluated in the specification check. Careful selection of the debondable strands when defining strand grids will result in better design outcomes.
 
 Adjustable Strand Settings
 --------------------------

@@ -2019,7 +2019,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50045, "<<loc<<", "<< QUIET(::ConvertFromSysUnits(scd.Vs , unitMeasure::Newton)) <<     ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
       {
-         resultsFile << bridgeId << ", " << pid << ", 50054a, " << loc << ", " << QUIET(scd.lambda_duct) << ", 15, " << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << ", " << pid << ", 50045a, " << loc << ", " << QUIET(scd.lambda_duct) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       }
       resultsFile<<bridgeId<<", "<<pid<<", 50046, "<<loc<<", "<< QUIET(::ConvertFromSysUnits(scd.Vp , unitMeasure::Newton)) <<     ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50047, "<<loc<<", "<< QUIET(::ConvertFromSysUnits(scd.bv, unitMeasure::Millimeter)) <<  ", 15, "<<SEGMENT(segmentKey)<<std::endl;
