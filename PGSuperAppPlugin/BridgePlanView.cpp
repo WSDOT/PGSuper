@@ -843,12 +843,10 @@ void CBridgePlanView::UpdateSegmentTooltips()
             const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
             const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
 
-            StrandIndexType Ns = pSegment->Strands.GetStrandCount(pgsTypes::Straight);
-            StrandIndexType Nh = pSegment->Strands.GetStrandCount(pgsTypes::Harped);
-            StrandIndexType Nt = pSegment->Strands.GetStrandCount(pgsTypes::Temporary);
-            StrandIndexType Nsd_Start = pSegment->Strands.GetDebondCount(pgsTypes::Straight, pgsTypes::metStart, pGirder->GetGirderLibraryEntry());
-            StrandIndexType Nsd_End = pSegment->Strands.GetDebondCount(pgsTypes::Straight, pgsTypes::metEnd, pGirder->GetGirderLibraryEntry());
-            StrandIndexType Nsd = Nsd_Start + Nsd_End;
+            StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
+            StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped);
+            StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary);
+            StrandIndexType Nsd = pStrandGeom->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither);
 
             std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 
