@@ -858,19 +858,20 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,96,74,50,14
 END
 
-IDD_LIBRARY_ENTRY_CONFLICT DIALOGEX 0, 0, 498, 253
+IDD_LIBRARY_ENTRY_CONFLICT DIALOGEX 0, 0, 499, 282
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Library Entry Conflict"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "Overwrite With Master",IDC_OVERWRITE,355,231,80,14
-    PUSHBUTTON      "Rename Entry",IDC_RENAME_ENTRY,301,231,50,14
-    LTEXT           "A conflict occurred while reading the library entries. An entry in the project library has the same name as an entry in the Master Library, but not the same data values.",IDC_CONFLICT_TOP,7,7,484,16
-    PUSHBUTTON      "Help",ID_HELP,441,231,50,14
-    LTEXT           "The entry name is %s in the %s",IDC_ENTRY_TEXT,7,28,484,11
-    LTEXT           "You must resolve this before the rest of the project file can be loaded. Please choose if you would like to rename the project entry and retain its values, or overwrite the project entry with values from the Master Library.",IDC_CONFLICT_BOTTOM,7,44,484,21
-    CONTROL         "",IDC_CONFLICT_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,82,484,141
-    LTEXT           "Differences",IDC_STATIC,7,70,37,8
+    LTEXT           "A conflict occurred while reading the library entries. An entry in the project library has the same name as an entry in the Master Library, but not the same data values.",IDC_CONFLICT_TOP,7,7,485,16
+    LTEXT           "The entry name is %s in the %s",IDC_ENTRY_TEXT,7,28,485,11
+    LTEXT           "Publisher %s, Confiugration %s",IDC_CONFIGURATION_TEXT,7,44,485,8
+    LTEXT           "You must resolve this before the rest of the project file can be loaded. Please choose if you would like to rename the project entry and retain its values, or overwrite the project entry with values from the Master Library.",IDC_CONFLICT_BOTTOM,7,64,485,21
+    LTEXT           "Differences",IDC_STATIC,7,90,37,8
+    CONTROL         "",IDC_CONFLICT_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,102,485,141
+    PUSHBUTTON      "Rename Entry",IDC_RENAME_ENTRY,301,260,50,14
+    DEFPUSHBUTTON   "Overwrite With Master",IDC_OVERWRITE,355,260,80,14
+    PUSHBUTTON      "Help",ID_HELP,442,260,50,14
 END
 
 IDD_SECTIONVIEW DIALOGEX 0, 0, 440, 393
@@ -2123,9 +2124,9 @@ BEGIN
     IDD_LIBRARY_ENTRY_CONFLICT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 491
+        RIGHTMARGIN, 492
         TOPMARGIN, 7
-        BOTTOMMARGIN, 245
+        BOTTOMMARGIN, 274
     END
 
     IDD_SECTIONVIEW, DIALOG
@@ -2825,6 +2826,11 @@ BEGIN
 END
 
 IDD_SECTIONVIEW AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_LIBRARY_ENTRY_CONFLICT AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

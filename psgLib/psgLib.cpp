@@ -185,7 +185,7 @@ std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib)
 }
 
 template <class EntryType, class LibType>
-bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, const LibType& projectLib, const std::_tstring& libName, const EntryType& dummy, bool isImported,bool bForceUpdate)
+bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, const LibType& projectLib, const std::_tstring& publisher, const std::_tstring& configuration, const std::_tstring& libName, const EntryType& dummy, bool isImported,bool bForceUpdate)
 {
    // loop over entries in project library and check to see if names are the same
    libKeyListType project_keys;
@@ -229,7 +229,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
             }
             else
             {
-               res = psglibResolveLibraryEntryConflict(name,libName,master_keys,isImported,vDifferences,bMustRename,&new_name);
+               res = psglibResolveLibraryEntryConflict(publisher,configuration,name,libName,master_keys,isImported,vDifferences,bMustRename,&new_name);
             }
 
             std::for_each(vDifferences.begin(),vDifferences.end(),pgsDeleteLibraryEntryConflictItem);
@@ -284,52 +284,56 @@ bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLi
    // match and the entries are the same, no problem. If the entry names match and the entries are
    // different, we have a conflict
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConcreteLibrary()), projectMgr.GetConcreteLibrary(), _T("Concrete Library"), ConcreteLibraryEntry(),isImported,bForceUpdate))
+   std::_tstring strServer, strConfiguration, strLibFile;
+   pMasterMgr->GetMasterLibraryInfo(strServer, strConfiguration, strLibFile);
+
+
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConcreteLibrary()), projectMgr.GetConcreteLibrary(), strServer, strConfiguration, _T("Concrete Library"), ConcreteLibraryEntry(),isImported,bForceUpdate))
      {
         return false;
      }
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConnectionLibrary()), projectMgr.GetConnectionLibrary(), _T("Connection Library"), ConnectionLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetConnectionLibrary()), projectMgr.GetConnectionLibrary(), strServer, strConfiguration, _T("Connection Library"), ConnectionLibraryEntry(),isImported,bForceUpdate))
      {
         return false;
      }
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetGirderLibrary()),  projectMgr.GetGirderLibrary(), _T("Girder Library"), GirderLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetGirderLibrary()),  projectMgr.GetGirderLibrary(), strServer, strConfiguration, _T("Girder Library"), GirderLibraryEntry(),isImported,bForceUpdate))
      {
         return false;
      }
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetDiaphragmLayoutLibrary()), projectMgr.GetDiaphragmLayoutLibrary(), _T("Diaphragm Library"), DiaphragmLayoutEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetDiaphragmLayoutLibrary()), projectMgr.GetDiaphragmLayoutLibrary(), strServer, strConfiguration, _T("Diaphragm Library"), DiaphragmLayoutEntry(),isImported,bForceUpdate))
      {
         return false;
      }
 
-     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetTrafficBarrierLibrary()), projectMgr.GetTrafficBarrierLibrary(), _T("Traffic Barrier Library"), TrafficBarrierEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, &(pMasterMgr->GetTrafficBarrierLibrary()), projectMgr.GetTrafficBarrierLibrary(), strServer, strConfiguration, _T("Traffic Barrier Library"), TrafficBarrierEntry(),isImported,bForceUpdate))
      {
         return false;
      }
 
-     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetSpecLibrary(), *(projectMgr.GetSpecLibrary()), _T("Project Criteria Library"), SpecLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetSpecLibrary(), *(projectMgr.GetSpecLibrary()), strServer, strConfiguration, _T("Project Criteria Library"), SpecLibraryEntry(),isImported,bForceUpdate))
      {
         return false;
      }
 
-     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetLiveLoadLibrary(), *(projectMgr.GetLiveLoadLibrary()), _T("User Defined Live Load Library"), LiveLoadLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetLiveLoadLibrary(), *(projectMgr.GetLiveLoadLibrary()), strServer, strConfiguration, _T("User Defined Live Load Library"), LiveLoadLibraryEntry(),isImported,bForceUpdate))
      {
         return false;
      }
 
-     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetRatingLibrary(), *(projectMgr.GetRatingLibrary()), _T("Rating Criteria Library"), RatingLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetRatingLibrary(), *(projectMgr.GetRatingLibrary()), strServer, strConfiguration, _T("Rating Criteria Library"), RatingLibraryEntry(),isImported,bForceUpdate))
      {
         return false;
      }
 
-     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetDuctLibrary(), *(projectMgr.GetDuctLibrary()), _T("Duct Library"), DuctLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetDuctLibrary(), *(projectMgr.GetDuctLibrary()), strServer, strConfiguration, _T("Duct Library"), DuctLibraryEntry(),isImported,bForceUpdate))
      {
         return false;
      }
 
-     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetHaulTruckLibrary(), *(projectMgr.GetHaulTruckLibrary()), _T("Haul Truck Library"), HaulTruckLibraryEntry(),isImported,bForceUpdate))
+     if (!do_deal_with_library_conflicts( pList, pMasterMgr->GetHaulTruckLibrary(), *(projectMgr.GetHaulTruckLibrary()), strServer, strConfiguration, _T("Haul Truck Library"), HaulTruckLibraryEntry(),isImported,bForceUpdate))
      {
         return false;
      }
@@ -437,11 +441,11 @@ void pgsDeleteLibraryEntryConflictItem(pgsLibraryEntryDifferenceItem* pItem)
    delete pItem;
 }
 
-LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,std::_tstring* pNewName)
+LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,std::_tstring* pNewName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CLibraryEntryConflict dlg(entryName,libName, keylists, isImported, vDifferences, bMustRename);
+   CLibraryEntryConflict dlg(strPublisher, strConfiguration, entryName,libName, keylists, isImported, vDifferences, bMustRename);
    dlg.DoModal();
 
    CLibraryEntryConflict::OutCome outcom = dlg.m_OutCome;

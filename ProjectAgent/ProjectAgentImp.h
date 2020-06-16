@@ -519,7 +519,7 @@ public:
    virtual DuctLibrary*            GetDuctLibrary() override;
    virtual HaulTruckLibrary*       GetHaulTruckLibrary() override;
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const override;
-   virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const override;
+   virtual void GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib, sysTime& time) const override;
    virtual RatingLibrary* GetRatingLibrary() override;
    virtual const RatingLibrary* GetRatingLibrary() const override;
    virtual const RatingLibraryEntry* GetRatingEntry( LPCTSTR lpszName ) const override;

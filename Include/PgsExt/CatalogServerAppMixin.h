@@ -56,17 +56,18 @@ public:
    virtual HRESULT OnFinalConstruct();
    virtual void OnFinalRelease();
 
-   CString GetMasterLibraryFile();
-   CString GetCachedMasterLibraryFile();
-   void GetTemplateFolders(CString& strWorkgroupFolder);
+   CString GetMasterLibraryFile() const;
+   const CString& GetCachedMasterLibraryFile() const;
+   void GetTemplateFolders(CString& strWorkgroupFolder) const;
 
    void SetCacheUpdateFrequency(CacheUpdateFrequency frequence);
-   CacheUpdateFrequency GetCacheUpdateFrequency();
+   CacheUpdateFrequency GetCacheUpdateFrequency() const;
 
    void SetSharedResourceType(SharedResourceType resType);
-   SharedResourceType GetSharedResourceType();
+   SharedResourceType GetSharedResourceType() const;
 
    CString GetMasterLibraryPublisher() const;
+   const CString& GetConfigurationName() const;
 
 protected:
    IDType m_CallbackID; // BridgeLink configuration interface callback ID
@@ -84,14 +85,14 @@ protected:
 
    CString m_UserTemplateFolder;
 
-   virtual LPCTSTR GetCatalogServerKey();
-   virtual LPCTSTR GetPublisherKey();
-   virtual LPCTSTR GetMasterLibraryCacheKey();
-   virtual LPCTSTR GetMasterLibraryURLKey();
-   virtual LPCTSTR GetWorkgroupTemplatesCacheKey();
+   virtual LPCTSTR GetCatalogServerKey() const;
+   virtual LPCTSTR GetPublisherKey() const;
+   virtual LPCTSTR GetMasterLibraryCacheKey() const;
+   virtual LPCTSTR GetMasterLibraryURLKey() const;
+   virtual LPCTSTR GetWorkgroupTemplatesCacheKey() const;
 
-   virtual CString GetDefaultMasterLibraryFile();
-   virtual CString GetDefaultWorkgroupTemplateFolder();
+   virtual CString GetDefaultMasterLibraryFile() const;
+   virtual CString GetDefaultWorkgroupTemplateFolder() const;
 
    // call these from Init and Terminate
    virtual void DefaultInit(IEAFAppPlugin* pAppPlugin);
@@ -108,20 +109,20 @@ protected:
    virtual void SaveRegistryOptions();
    virtual void SaveRegistryCatalogServers();
 
-   bool IsTimeToUpdateCache();
-   bool AreUpdatesPending();
+   bool IsTimeToUpdateCache() const;
+   bool AreUpdatesPending() const;
 
 
    void UpdateCache(); // only updates if needed
    bool DoCacheUpdate(); // always does the update
-   sysDate GetLastCacheUpdateDate();
+   sysDate GetLastCacheUpdateDate() const;
    void SetLastCacheUpdateDate(const sysDate& date);
    void RestoreLibraryAndTemplatesToDefault();
    void DeleteCache(LPCTSTR pstrCache);
    void RecursiveDelete(LPCTSTR pstr);
    
-   virtual CString GetCacheFolder();
-   virtual CString GetSaveCacheFolder();
+   virtual CString GetCacheFolder() const;
+   virtual CString GetSaveCacheFolder() const;
 
    const CCatalogServers* GetCatalogServers() const;
 

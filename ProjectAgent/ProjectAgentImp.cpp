@@ -9713,9 +9713,9 @@ std::vector<libEntryUsageRecord> CProjectAgentImp::GetLibraryUsageRecords() cons
    return m_pLibMgr->GetInUseLibraryEntries();
 }
 
-void CProjectAgentImp::GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const
+void CProjectAgentImp::GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,sysTime& time) const
 {
-   m_pLibMgr->GetMasterLibraryInfo(strPublisher,strMasterLib);
+   m_pLibMgr->GetMasterLibraryInfo(strServer,strConfiguration,strMasterLib);
    time = m_pLibMgr->GetTimeStamp();
 }
 

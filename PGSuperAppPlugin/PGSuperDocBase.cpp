@@ -3139,12 +3139,13 @@ bool CPGSDocBase::LoadMasterLibrary()
    pTemplate->GetPlugin(&pAppPlugin);
    CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
-   CString strMasterLibaryFile = pPGSuper->GetCachedMasterLibraryFile();
 
-   std::_tstring strPublisher = pPGSuper->GetMasterLibraryPublisher();
-   std::_tstring strMasterLibFile = pPGSuper->GetMasterLibraryFile();
+   const auto& strPublisher = pPGSuper->GetMasterLibraryPublisher();
+   const auto& strConfiguration = pPGSuper->GetConfigurationName();
+   const auto& strMasterLibFile = pPGSuper->GetMasterLibraryFile();
 
-   m_LibMgr.SetMasterLibraryInfo(strPublisher.c_str(),strMasterLibFile.c_str());
+   const auto& strMasterLibaryFile = pPGSuper->GetCachedMasterLibraryFile();
+   m_LibMgr.SetMasterLibraryInfo(strPublisher,strConfiguration,strMasterLibFile);
 
    return DoLoadMasterLibrary(strMasterLibaryFile);
 }

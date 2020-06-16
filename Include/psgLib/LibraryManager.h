@@ -131,8 +131,8 @@ public:
 
    virtual bool LoadMe(sysIStructuredLoad* pLoad);
 
-   void SetMasterLibraryInfo(LPCTSTR strPublisher,LPCTSTR strLibFile);
-   void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strLibFile) const;
+   void SetMasterLibraryInfo(LPCTSTR strPublisher,LPCTSTR strConfiguration,LPCTSTR strLibFile);
+   void GetMasterLibraryInfo(std::_tstring& strServer,std::_tstring& strConfiguration,std::_tstring& strLibFile) const;
 
    // GROUP: INQUIRY
 
@@ -158,7 +158,8 @@ private:
    CollectionIndexType m_DuctLibIdx;
    CollectionIndexType m_HaulTruckLibIdx;
 
-   std::_tstring m_strPublisher;
+   std::_tstring m_strServer;
+   std::_tstring m_strConfiguration;
    std::_tstring m_strLibFile;
 
    // GROUP: LIFECYCLE

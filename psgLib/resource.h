@@ -1400,6 +1400,7 @@
 #define IDC_CHECK5                      1727
 #define IDC_CHECK_ADJACENT_STRANDS      1727
 #define IDC_CHECK_WEB_WIDTH_PROJECTIONS 1728
+#define IDC_CONFIGURATION_TEXT          1729
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1431,9 +1432,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        328
+#define _APS_NEXT_RESOURCE_VALUE        329
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1729
+#define _APS_NEXT_CONTROL_VALUE         1730
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -953,10 +953,11 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
    if (strURL.IsEmpty())
       strURL = strMasterLibaryFile;
 
+   CString strPublisher = pApp->GetProfileString(_T("Options"), _T("Publisher"));
    CString strServer   = pApp->GetProfileString(_T("Options"),_T("CatalogServer"));
 
    m_LibMgr.SetName( _T("TOGA PGSuper Library") );
-   m_LibMgr.SetMasterLibraryInfo(strServer,strURL);
+   m_LibMgr.SetMasterLibraryInfo(strPublisher, strServer,strURL);
 
    CComBSTR bpath(strMasterLibaryFile);
 
