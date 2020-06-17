@@ -1566,7 +1566,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    tsDetails.Deck.Ea  = EaDeck;
 
    // deck rebar
-   if ((bIsInClosure && compositeClosureIntervalIdx <= intervalIdx && compositeDeckIntervalIdx <= intervalIdx) || (!bIsInClosure && compositeDeckIntervalIdx <= intervalIdx) )
+   // NOTE: EDeck can be zero when the deck is composite if the duration of curing time is zero. The deck strength and modulus always start at zero and grow with the time function
+   if (!IsZero(EDeck) && ((bIsInClosure && compositeClosureIntervalIdx <= intervalIdx && compositeDeckIntervalIdx <= intervalIdx) || (!bIsInClosure && compositeDeckIntervalIdx <= intervalIdx)) )
    {
       // poi is at a closure joint and both the deck and the closure joint are coomposite
       // or the poi is at any other location and the deck is composite 
@@ -1601,7 +1602,9 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    {
       TIME_STEP_REBAR tsRebar;
 
-      if ( (bIsInClosure && (intervalIdx < compositeClosureIntervalIdx)) // POI is in a closure and the closure is not yet composite with the girder
+      if ( IsZero(EGirder) 
+            ||
+          (bIsInClosure && (intervalIdx < compositeClosureIntervalIdx)) // POI is in a closure and the closure is not yet composite with the girder
             || // -OR-
            (intervalIdx < releaseIntervalIdx) // POI is in a segment and it is before the prestress is released
          )
