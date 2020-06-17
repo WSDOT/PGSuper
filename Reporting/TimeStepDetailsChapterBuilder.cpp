@@ -1014,9 +1014,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
    rowIdx = pTable->GetNumberOfHeaderRows();
    colIdx = 0;
    (*pTable)(rowIdx,colIdx++) << _T("Girder");
-   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Girder.eci << _T(")(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T(") = ") << force.SetValue(tsDetails.Girder.PrCreep);
-   (*pTable)(rowIdx,colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Girder.rci) << _T(")(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << momI.SetValue(tsDetails.Girder.In) << _T(") = ") << moment.SetValue(tsDetails.Girder.MrCreep);
-   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Girder.Shrinkage.esi << _T(")(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T(") = ") << force.SetValue(tsDetails.Girder.PrShrinkage);
+   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Girder.eci*1e6 << _T(")(") << Super2(_T("10"),_T("-6")) << _T(")(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T(") = ") << force.SetValue(tsDetails.Girder.PrCreep);
+   (*pTable)(rowIdx,colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Girder.rci*1e6) << _T(")(") << Super2(_T("10"), _T("-6")) << _T(")(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << momI.SetValue(tsDetails.Girder.In) << _T(") = ") << moment.SetValue(tsDetails.Girder.MrCreep);
+   (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Girder.Shrinkage.esi*1e6 << _T(")(") << Super2(_T("10"), _T("-6")) << _T(")(") << modE.SetValue(tsDetails.Girder.E) << _T(")(") << area.SetValue(tsDetails.Girder.An) << _T(") = ") << force.SetValue(tsDetails.Girder.PrShrinkage);
    (*pTable)(rowIdx,colIdx++) << _T("");
    (*pTable)(rowIdx,colIdx++) << _T("");
    (*pTable)(rowIdx,colIdx++) << _T("");
@@ -1026,9 +1026,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
       rowIdx++;
       colIdx = 0;
       (*pTable)(rowIdx, colIdx++) << _T("Deck");
-      (*pTable)(rowIdx, colIdx++) << _T("-(") << tsDetails.Deck.eci << _T(")(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(") = ") << force.SetValue(tsDetails.Deck.PrCreep);
-      (*pTable)(rowIdx, colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Deck.rci) << _T(")(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << momI.SetValue(tsDetails.Deck.In) << _T(") = ") << moment.SetValue(tsDetails.Deck.MrCreep);
-      (*pTable)(rowIdx, colIdx++) << _T("-(") << tsDetails.Deck.Shrinkage.esi << _T(")(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(") = ") << force.SetValue(tsDetails.Deck.PrShrinkage);
+      (*pTable)(rowIdx, colIdx++) << _T("-(") << tsDetails.Deck.eci*1e6 << _T(")(") << Super2(_T("10"), _T("-6")) << _T(")(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(") = ") << force.SetValue(tsDetails.Deck.PrCreep);
+      (*pTable)(rowIdx, colIdx++) << _T("-(") << curvature.SetValue(tsDetails.Deck.rci*1e6) << _T(")(") << Super2(_T("10"), _T("-6")) << _T(")(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << momI.SetValue(tsDetails.Deck.In) << _T(") = ") << moment.SetValue(tsDetails.Deck.MrCreep);
+      (*pTable)(rowIdx, colIdx++) << _T("-(") << tsDetails.Deck.Shrinkage.esi*1e6 << _T(")(") << Super2(_T("10"), _T("-6")) << _T(")(") << modE.SetValue(tsDetails.Deck.E) << _T(")(") << area.SetValue(tsDetails.Deck.An) << _T(") = ") << force.SetValue(tsDetails.Deck.PrShrinkage);
       (*pTable)(rowIdx, colIdx++) << _T("");
       (*pTable)(rowIdx, colIdx++) << _T("");
       (*pTable)(rowIdx, colIdx++) << _T("");
@@ -1056,7 +1056,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
-      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Strands[strandType].er << _T(")(") << modE.SetValue(tsDetails.Strands[strandType].E) << _T(")(") << area.SetValue(tsDetails.Strands[strandType].As) << _T(") = ") << force.SetValue(tsDetails.Strands[strandType].PrRelaxation);
+      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.Strands[strandType].er*1e6 << _T(")(") << Super2(_T("10"), _T("-6")) << _T(")(") << modE.SetValue(tsDetails.Strands[strandType].E) << _T(")(") << area.SetValue(tsDetails.Strands[strandType].As) << _T(") = ") << force.SetValue(tsDetails.Strands[strandType].PrRelaxation);
       (*pTable)(rowIdx,colIdx++) << _T("");
    }
 
@@ -1070,7 +1070,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
       (*pTable)(rowIdx, colIdx++) << _T("");
       (*pTable)(rowIdx, colIdx++) << _T("");
       (*pTable)(rowIdx, colIdx++) << _T("");
-      (*pTable)(rowIdx, colIdx++) << _T("-(") << tsDetails.SegmentTendons[tendonIdx].er << _T(")(") << modE.SetValue(tsDetails.SegmentTendons[tendonIdx].E) << _T(")(") << area.SetValue(tsDetails.SegmentTendons[tendonIdx].As) << _T(") = ") << force.SetValue(tsDetails.SegmentTendons[tendonIdx].PrRelaxation);
+      (*pTable)(rowIdx, colIdx++) << _T("-(") << tsDetails.SegmentTendons[tendonIdx].er*1e6 << _T(")(") << Super2(_T("10"), _T("-6")) << _T(")(") << modE.SetValue(tsDetails.SegmentTendons[tendonIdx].E) << _T(")(") << area.SetValue(tsDetails.SegmentTendons[tendonIdx].As) << _T(") = ") << force.SetValue(tsDetails.SegmentTendons[tendonIdx].PrRelaxation);
       (*pTable)(rowIdx, colIdx++) << _T("");
    }
 
@@ -1084,7 +1084,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
       (*pTable)(rowIdx,colIdx++) << _T("");
-      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.GirderTendons[tendonIdx].er << _T(")(") << modE.SetValue(tsDetails.GirderTendons[tendonIdx].E) << _T(")(") << area.SetValue(tsDetails.GirderTendons[tendonIdx].As) << _T(") = ") << force.SetValue(tsDetails.GirderTendons[tendonIdx].PrRelaxation);
+      (*pTable)(rowIdx,colIdx++) << _T("-(") << tsDetails.GirderTendons[tendonIdx].er*1e6 << _T(")(") << Super2(_T("10"), _T("-6")) << _T(")(") << modE.SetValue(tsDetails.GirderTendons[tendonIdx].E) << _T(")(") << area.SetValue(tsDetails.GirderTendons[tendonIdx].As) << _T(") = ") << force.SetValue(tsDetails.GirderTendons[tendonIdx].PrRelaxation);
       (*pTable)(rowIdx,colIdx++) << _T("");
    }
 
