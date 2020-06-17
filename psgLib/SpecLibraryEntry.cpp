@@ -4409,6 +4409,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       }
    }
 
+   // sometimes the user may toggle between several loss methods. if they select time step and change the time dependent model
+   // and then change to a different method, the time dependent model is saved in its last state. This makes the default time dependent
+   // model be the last used value. Change it to the true default value here
+   if (m_LossMethod != LOSSES_TIME_STEP)
+   {
+      m_TimeDependentModel = TDM_AASHTO;
+   }
+
    return true;
 }
 

@@ -9853,10 +9853,16 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
    UpdateStrandMaterial();
    VerifyRebarGrade();
 
-   // analysis type must be continuous if the spec is using the time step loss method
-   if ( m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP && m_AnalysisType != pgsTypes::Continuous )
+   if ( m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP)
    {
+      // analysis type must be continuous if the spec is using the time step loss method
       m_AnalysisType = pgsTypes::Continuous;
+
+      // future overlay is not a valid wearing surface type for time step loss method
+      if (m_BridgeDescription.GetDeckDescription()->WearingSurface == pgsTypes::wstFutureOverlay)
+      {
+         m_BridgeDescription.GetDeckDescription()->WearingSurface = pgsTypes::wstOverlay;
+      }
    }
 
    if ( m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP )

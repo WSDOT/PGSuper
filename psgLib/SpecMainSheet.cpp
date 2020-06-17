@@ -972,7 +972,7 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
 
    int map_size = sizeof(map)/sizeof(int);
 
-   DDX_CBEnum(pDX,IDC_TIME_DEPENDENT_MODEL,m_Entry.m_TimeDependentModel);
+   DDX_CBItemData(pDX,IDC_TIME_DEPENDENT_MODEL,m_Entry.m_TimeDependentModel);
 
    if ( pDX->m_bSaveAndValidate )
    {

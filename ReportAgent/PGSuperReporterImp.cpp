@@ -253,7 +253,12 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    std::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
-      VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder),TEXT("Creep Coefficient Details")));
+      auto pChBuilder = pRptBuilder->GetChapterBuilder(TEXT("Shrinkage Strain Details"));
+      if (pChBuilder == nullptr)
+      {
+         // chapter wasn't previously added
+         VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShrinkageStrainChapterBuilder), TEXT("Creep Coefficient Details")/*this is the name of the chapter after which the shrinkage strain chapter will be added*/));
+      }
    }
    else
    {
