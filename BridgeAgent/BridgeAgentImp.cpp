@@ -3494,7 +3494,13 @@ void CBridgeAgentImp::NoDeckEdgePoint(GroupIndexType grpIdx,SegmentIndexType seg
 
    CComPtr<IGirderSection> girder_section;
    pgsPointOfInterest poi = GetPointOfInterest(segmentKey, location); // want to get a real poi
-   GetGirderSection(poi, &girder_section);
+   HRESULT hr = GetGirderSection(poi, &girder_section);
+   ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return;
+   }
+
    Float64 wLeft, wRight;
    CComQIPtr<IAsymmetricSection> asymmetric(girder_section);
    if (asymmetric)
@@ -3512,7 +3518,7 @@ void CBridgeAgentImp::NoDeckEdgePoint(GroupIndexType grpIdx,SegmentIndexType seg
    Float64 offset = (side == qcbLeft ? wLeft : -wRight); // offset from girder line to edge of girder
 
    CComPtr<ISuperstructureMember> ssmbr;
-   HRESULT hr = m_Bridge->get_SuperstructureMember(::GetSuperstructureMemberID(grpIdx,gdrIdx),&ssmbr);
+   hr = m_Bridge->get_SuperstructureMember(::GetSuperstructureMemberID(grpIdx,gdrIdx),&ssmbr);
    ATLASSERT(SUCCEEDED(hr));
 
    CComPtr<ISuperstructureMemberSegment> segment;
@@ -7234,6 +7240,10 @@ bool CBridgeAgentImp::IsAsymmetricGirder(const CGirderKey& girderKey) const
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return false;
+   }
 
    CComQIPtr<IAsymmetricSection> asymmetricSection(girder_section);
    if (asymmetricSection == nullptr)
@@ -7256,6 +7266,10 @@ bool CBridgeAgentImp::HasAsymmetricGirders() const
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return false;
+   }
 
    CComQIPtr<IAsymmetricSection> asymmetricSection(girder_section);
    if (asymmetricSection == nullptr )
@@ -17486,7 +17500,12 @@ void CBridgeAgentImp::GetHarpedStrandControlHeights(const CSegmentKey& segmentKe
 Float64 CBridgeAgentImp::GetSplittingZoneHeight(const pgsPointOfInterest& poi) const
 {
    CComPtr<IGirderSection> girder_section;
-   GetGirderSection(poi, &girder_section);
+   HRESULT hr = GetGirderSection(poi, &girder_section);
+   ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    CComQIPtr<IPrestressedGirderSection> psg_section(girder_section);
 
@@ -17503,7 +17522,12 @@ pgsTypes::SplittingDirection CBridgeAgentImp::GetSplittingDirection(const CGirde
    CComPtr<IGirderSection> girder_section;
    pgsPointOfInterest poi = GetPointOfInterest(segmentKey,0.00);
    ATLASSERT(poi.GetID() != INVALID_ID);
-   GetGirderSection(poi, &girder_section);
+   HRESULT hr = GetGirderSection(poi, &girder_section);
+   ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return pgsTypes::sdVertical;
+   }
 
    CComQIPtr<IPrestressedGirderSection> psg_section(girder_section);
    SplittingDirection splitDir;
@@ -18900,7 +18924,12 @@ std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebondin
 
    const pgsPointOfInterest& poi(vPoi.front());
    CComPtr<IGirderSection> girder_section;
-   GetGirderSection(poi, &girder_section);
+   HRESULT hr = GetGirderSection(poi, &girder_section);
+   ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return std::vector<CComPtr<IRect2d>>();
+   }
 
    IndexType nWebs = GetWebCount(segmentKey);
    IndexType nFlanges = GetBottomFlangeCount(segmentKey);
@@ -18932,7 +18961,7 @@ std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebondin
 
    std::vector<CComPtr<IRect2d>> vRegions;
    CComPtr<IUnkArray> arrUnk;
-   HRESULT hr = psg_section->GetWebWidthProjectionsForDebonding(&arrUnk);
+   hr = psg_section->GetWebWidthProjectionsForDebonding(&arrUnk);
    if (SUCCEEDED(hr) && arrUnk)
    {
       CComPtr<IEnumUnkArray> enumElements;
@@ -23739,6 +23768,10 @@ void CBridgeAgentImp::GetSlabAnalysisShape(IntervalIndexType intervalIdx, const 
    CComPtr<IGirderSection> gdrsection;
    HRESULT hr = GetGirderSection(poi, &gdrsection);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return;
+   }
 
    // use tool to cut shape
    SectionBias sectionBias = GetSectionBias(poi);
@@ -25247,6 +25280,10 @@ MatingSurfaceIndexType CBridgeAgentImp::GetMatingSurfaceCount(const CGirderKey& 
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    FlangeIndexType count;
    girder_section->get_MatingSurfaceCount(&count);
@@ -25261,6 +25298,10 @@ Float64 CBridgeAgentImp::GetMatingSurfaceLocation(const pgsPointOfInterest& poi,
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 location;
    girder_section->get_MatingSurfaceLocation(msIdx,bGirderOnly ? VARIANT_TRUE : VARIANT_FALSE, &location);
@@ -25275,6 +25316,10 @@ Float64 CBridgeAgentImp::GetMatingSurfaceWidth(const pgsPointOfInterest& poi,Mat
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 width;
    girder_section->get_MatingSurfaceWidth(msIdx,bGirderOnly ? VARIANT_TRUE : VARIANT_FALSE, &width);
@@ -25289,6 +25334,10 @@ bool CBridgeAgentImp::GetMatingSurfaceProfile(const pgsPointOfInterest& poi, Mat
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return false;
+   }
 
    bool bHasMSProfile = (FAILED(girder_section->get_MatingSurfaceProfile(msIdx, bGirderOnly ? VARIANT_TRUE : VARIANT_FALSE, ppPoints)) || *ppPoints == nullptr) ? false : true;
    return bHasMSProfile;
@@ -25303,6 +25352,10 @@ FlangeIndexType CBridgeAgentImp::GetTopFlangeCount(const CGirderKey& girderKey) 
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    FlangeIndexType nFlanges;
    girder_section->get_TopFlangeCount(&nFlanges);
@@ -25316,6 +25369,10 @@ Float64 CBridgeAgentImp::GetTopFlangeLocation(const pgsPointOfInterest& poi,Flan
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 location;
    girder_section->get_TopFlangeLocation(flangeIdx,&location);
@@ -25329,6 +25386,10 @@ Float64 CBridgeAgentImp::GetTopFlangeWidth(const pgsPointOfInterest& poi,FlangeI
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 width;
    girder_section->get_TopFlangeWidth(flangeIdx,&width);
@@ -25342,6 +25403,10 @@ Float64 CBridgeAgentImp::GetTopFlangeThickness(const pgsPointOfInterest& poi,Fla
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 thickness;
    girder_section->get_TopFlangeThickness(flangeIdx,&thickness);
@@ -25355,6 +25420,10 @@ Float64 CBridgeAgentImp::GetTopFlangeSpacing(const pgsPointOfInterest& poi,Flang
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 spacing;
    girder_section->get_TopFlangeSpacing(flangeIdx,&spacing);
@@ -25462,6 +25531,10 @@ Float64 CBridgeAgentImp::GetTopWidth(const pgsPointOfInterest& poi,Float64* pLef
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 width;
    girder_section->get_TopWidth(&width);
@@ -25494,6 +25567,10 @@ FlangeIndexType CBridgeAgentImp::GetBottomFlangeCount(const CGirderKey& girderKe
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    FlangeIndexType nFlanges;
    girder_section->get_BottomFlangeCount(&nFlanges);
@@ -25507,6 +25584,10 @@ Float64 CBridgeAgentImp::GetBottomFlangeLocation(const pgsPointOfInterest& poi,F
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 location;
    girder_section->get_BottomFlangeLocation(flangeIdx,&location);
@@ -25520,6 +25601,10 @@ Float64 CBridgeAgentImp::GetBottomFlangeWidth(const pgsPointOfInterest& poi,Flan
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 width;
    girder_section->get_BottomFlangeWidth(flangeIdx,&width);
@@ -25533,6 +25618,10 @@ Float64 CBridgeAgentImp::GetBottomFlangeThickness(const pgsPointOfInterest& poi,
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 thickness;
    girder_section->get_BottomFlangeThickness(flangeIdx,&thickness);
@@ -25546,6 +25635,10 @@ Float64 CBridgeAgentImp::GetBottomFlangeSpacing(const pgsPointOfInterest& poi,Fl
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 spacing;
    girder_section->get_BottomFlangeSpacing(flangeIdx,&spacing);
@@ -25559,6 +25652,10 @@ Float64 CBridgeAgentImp::GetBottomFlangeWidth(const pgsPointOfInterest& poi) con
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 width = 0;
    FlangeIndexType nFlanges;
@@ -25580,6 +25677,10 @@ Float64 CBridgeAgentImp::GetBottomWidth(const pgsPointOfInterest& poi) const
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 width;
    girder_section->get_BottomWidth(&width);
@@ -25594,6 +25695,10 @@ Float64 CBridgeAgentImp::GetMinWebWidth(const pgsPointOfInterest& poi) const
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 width;
    girder_section->get_MinWebThickness(&width);
@@ -25619,6 +25724,10 @@ Float64 CBridgeAgentImp::GetMinTopFlangeThickness(const pgsPointOfInterest& poi)
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 ttf;
    girder_section->get_MinTopFlangeThickness(&ttf);
@@ -25632,6 +25741,10 @@ Float64 CBridgeAgentImp::GetMinBottomFlangeThickness(const pgsPointOfInterest& p
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 tbf;
    girder_section->get_MinBottomFlangeThickness(&tbf);
@@ -25645,6 +25758,10 @@ Float64 CBridgeAgentImp::GetHeight(const pgsPointOfInterest& poi) const
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 height;
    girder_section->get_NominalHeight(&height);
@@ -25659,6 +25776,10 @@ Float64 CBridgeAgentImp::GetShearWidth(const pgsPointOfInterest& poi) const
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 shear_width;
    girder_section->get_ShearWidth(&shear_width);
@@ -25803,6 +25924,10 @@ Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi) c
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
    Float64 wMating = 0; // sum of mating surface widths... less deck panel support width
@@ -25875,6 +26000,10 @@ WebIndexType CBridgeAgentImp::GetWebCount(const CGirderKey& girderKey) const
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    WebIndexType count;
    girder_section->get_WebCount(&count);
@@ -25889,6 +26018,10 @@ Float64 CBridgeAgentImp::GetWebLocation(const pgsPointOfInterest& poi,WebIndexTy
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 location;
    girder_section->get_WebLocation(webIdx,&location);
@@ -25903,6 +26036,10 @@ Float64 CBridgeAgentImp::GetWebSpacing(const pgsPointOfInterest& poi,WebIndexTyp
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 spacing;
    girder_section->get_WebSpacing(spaceIdx,&spacing);
@@ -25917,6 +26054,10 @@ Float64 CBridgeAgentImp::GetWebThickness(const pgsPointOfInterest& poi,WebIndexT
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 thickness;
    girder_section->get_WebThickness(webIdx,&thickness);
@@ -25933,6 +26074,10 @@ Float64 CBridgeAgentImp::GetCL2ExteriorWebDistance(const pgsPointOfInterest& poi
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    GET_IFACE(IBarriers,         pBarriers);
    pgsTypes::TrafficBarrierOrientation side = pBarriers->GetNearestBarrier(segmentKey);
@@ -25951,6 +26096,10 @@ Float64 CBridgeAgentImp::GetWebWidth(const pgsPointOfInterest& poi) const
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 shear_width;
    girder_section->get_ShearWidth(&shear_width);
@@ -28112,7 +28261,12 @@ std::vector<std::tuple<Float64, Float64, std::_tstring>> CBridgeAgentImp::GetWeb
    std::vector<std::tuple<Float64, Float64, std::_tstring>> web_flange_intersections;
 
    CComPtr<IGirderSection> girder_section;
-   GetGirderSection(poi, &girder_section);
+   HRESULT hr = GetGirderSection(poi, &girder_section);
+   ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return web_flange_intersections;
+   }
 
    CComPtr<IDblArray> Y;
    CComPtr<IDblArray> W;
@@ -31897,6 +32051,11 @@ HRESULT CBridgeAgentImp::GetGirderSection(const pgsPointOfInterest& poi,IGirderS
 
       IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
       const SectProp& sectProps = GetSectionProperties(releaseIntervalIdx, thePoi, pgsTypes::sptGross);
+      if (sectProps.Section == nullptr)
+      {
+         return E_FAIL;
+      }
+
       CComQIPtr<ICompositeSectionEx> composite(sectProps.Section);
       CComPtr<ICompositeSectionItemEx> item;
       composite->get_Item(sectProps.GirderShapeIndex, &item);
@@ -36240,6 +36399,10 @@ Float64 CBridgeAgentImp::GetOverallHeight(const pgsPointOfInterest& poi) const
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
+   if (FAILED(hr))
+   {
+      return 0;
+   }
 
    Float64 height;
    girder_section->get_OverallHeight(&height);
