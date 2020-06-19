@@ -268,7 +268,7 @@ UINT CEngAgentImp::DeletePrincipalWebStressEngineer(LPVOID pParam)
 //-----------------------------------------------------------------------------
 void CEngAgentImp::InvalidateHaunch()
 {
-   m_SLABOFFSETDETAILS.clear();
+   m_SlabOffsetDetails.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -3656,15 +3656,15 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey) const
 
 const SLABOFFSETDETAILS& CEngAgentImp::GetSlabOffsetDetails(const CSegmentKey& segmentKey) const
 {
-   auto found = m_SLABOFFSETDETAILS.find(segmentKey);
+   auto found = m_SlabOffsetDetails.find(segmentKey);
 
-   if ( found == m_SLABOFFSETDETAILS.end() )
+   if ( found == m_SlabOffsetDetails.end() )
    {
       // not found
       SLABOFFSETDETAILS details;
       m_Designer.GetSlabOffsetDetails(segmentKey,nullptr,&details);
 
-      auto result = m_SLABOFFSETDETAILS.insert( std::make_pair(segmentKey,details) );
+      auto result = m_SlabOffsetDetails.insert( std::make_pair(segmentKey,details) );
       ATLASSERT(result.second == true);
       found = result.first;
    }

@@ -483,7 +483,7 @@ private:
    std::vector<CRITSECTDETAILS> CalculateShearCritSection(pgsTypes::LimitState limitState,const CGirderKey& girderKey, const GDRCONFIG* pConfig = nullptr) const;
    void InvalidateShearCritSection();
 
-   mutable std::map<CSegmentKey,SLABOFFSETDETAILS> m_SLABOFFSETDETAILS;
+   mutable std::map<CSegmentKey,SLABOFFSETDETAILS> m_SlabOffsetDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
    mutable std::map<CSegmentKey, std::map<Float64,stbLiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;
