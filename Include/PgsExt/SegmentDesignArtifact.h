@@ -341,7 +341,7 @@ private:
    DebondConfigCollection m_SsDebondInfo;
 
    Float64 m_Fci;
-   Float64 m_SlabOffset[2]; // "A" dimension at start and end of girder
+   std::array<Float64, 2> m_SlabOffset; // "A" dimension at start and end of girder
    Float64 m_AssumedExcessCamber;
    Float64 m_LiftLocLeft;
    Float64 m_LiftLocRight;
