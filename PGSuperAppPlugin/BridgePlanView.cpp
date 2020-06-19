@@ -579,15 +579,15 @@ void CBridgePlanView::BuildDisplayLists()
    diaphragm_list->SetID(DIAPHRAGM_DISPLAY_LIST);
    dispMgr->AddDisplayList(diaphragm_list);
 
+   CComPtr<iDisplayList> closure_joint_list;
+   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&closure_joint_list);
+   closure_joint_list->SetID(CLOSURE_JOINT_DISPLAY_LIST);
+   dispMgr->AddDisplayList(closure_joint_list);
+
    CComPtr<iDisplayList> pier_list;
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&pier_list);
    pier_list->SetID(PIER_DISPLAY_LIST);
    dispMgr->AddDisplayList(pier_list);
-
-   CComPtr<iDisplayList> closure_joint_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&closure_joint_list);
-   closure_joint_list->SetID(CLOSURE_JOINT_DISPLAY_LIST);
-   dispMgr->AddDisplayList(closure_joint_list);
 
    CComPtr<iDisplayList> temporary_support_list;
    ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&temporary_support_list);
