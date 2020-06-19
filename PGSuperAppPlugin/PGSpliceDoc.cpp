@@ -305,7 +305,7 @@ void CPGSpliceDoc::OnEditClosureJoint()
             for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
             {
                const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-               if ( pPier->GetClosureJoint(dlg.m_GirderIdx) )
+               if ( pPier->IsInteriorPier() && pPier->GetClosureJoint(dlg.m_GirderIdx) )
                {
                   dlg.m_PierIdx = pPier->GetIndex();
                   break;
