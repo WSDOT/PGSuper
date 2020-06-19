@@ -257,7 +257,15 @@ BOOL CTemporarySupportLayoutPage::OnInitDialog()
    m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
    m_InitialSlabOffsetType = m_SlabOffsetType;
 
-   pParent->m_pTS->GetSlabOffset(&m_SlabOffset[pgsTypes::Back], &m_SlabOffset[pgsTypes::Ahead]);
+   if (pParent->m_pTS->HasSlabOffset())
+   {
+      pParent->m_pTS->GetSlabOffset(&m_SlabOffset[pgsTypes::Back], &m_SlabOffset[pgsTypes::Ahead]);
+   }
+   else
+   {
+      m_SlabOffset[pgsTypes::Back] = pParent->m_BridgeDesc.GetSlabOffset();
+      m_SlabOffset[pgsTypes::Ahead] = m_SlabOffset[pgsTypes::Back];
+   }
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TS_TYPE);
    pCB->SetItemData(pCB->AddString(_T("Erection Tower")), (DWORD_PTR)pgsTypes::ErectionTower);
