@@ -10106,11 +10106,6 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(cons
          }
          else
          {
-#if defined _DEBUG
-            GET_IFACE(IDocumentType,pDocType);
-            ATLASSERT(pDocType->IsPGSuperDocument());
-            ATLASSERT(nSegments == 1);
-#endif
             // locate the diaphragm -/+ from cl girder
             location1 = girder_length/2 - rule.Location;
             location2 = girder_length/2 + rule.Location;
