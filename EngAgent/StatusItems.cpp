@@ -53,7 +53,7 @@ m_pBroker(pBroker)
 {
 }
 
-eafTypes::StatusSeverityType pgsLiveLoadStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsLiveLoadStatusCallback::GetSeverity() const
 {
    return eafTypes::statusWarning;
 }
@@ -87,7 +87,7 @@ m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsLiftingSupportLocationStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsLiftingSupportLocationStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -124,7 +124,7 @@ m_pBroker(pBroker)
 {
 }
 
-eafTypes::StatusSeverityType pgsHaulTruckStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsHaulTruckStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }
@@ -160,7 +160,7 @@ m_pBroker(pBroker)
 {
 }
 
-eafTypes::StatusSeverityType pgsBunkPointLocationStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsBunkPointLocationStatusCallback::GetSeverity() const
 {
    return eafTypes::statusWarning;
 }

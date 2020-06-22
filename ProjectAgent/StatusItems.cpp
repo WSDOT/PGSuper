@@ -49,7 +49,7 @@ pgsRebarStrengthStatusCallback::pgsRebarStrengthStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsRebarStrengthStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsRebarStrengthStatusCallback::GetSeverity() const
 {
    return eafTypes::statusWarning;
 }

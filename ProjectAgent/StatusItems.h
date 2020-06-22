@@ -42,6 +42,6 @@ class pgsRebarStrengthStatusCallback : public iStatusCallback
 {
 public:
    pgsRebarStrengthStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 };

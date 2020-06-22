@@ -43,7 +43,7 @@ class PGSEXTCLASS pgsRefinedAnalysisStatusCallback : public iStatusCallback
 {
 public:
    pgsRefinedAnalysisStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
@@ -64,7 +64,7 @@ class PGSEXTCLASS pgsInstallationErrorStatusCallback : public iStatusCallback
 {
 public:
    pgsInstallationErrorStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 };
 
@@ -83,7 +83,7 @@ class PGSEXTCLASS pgsUnknownErrorStatusCallback : public iStatusCallback
 {
 public:
    pgsUnknownErrorStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 };
 
@@ -100,7 +100,7 @@ class PGSEXTCLASS pgsInformationalStatusCallback : public iStatusCallback
 {
 public:
    pgsInformationalStatusCallback(eafTypes::StatusSeverityType severity,UINT helpID=0);
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
@@ -120,7 +120,7 @@ class PGSEXTCLASS pgsProjectCriteriaStatusCallback : public iStatusCallback
 {
 public:
    pgsProjectCriteriaStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
@@ -145,7 +145,7 @@ class PGSEXTCLASS pgsGirderDescriptionStatusCallback : public iStatusCallback
 {
 public:
    pgsGirderDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
@@ -165,7 +165,7 @@ class PGSEXTCLASS pgsStructuralAnalysisTypeStatusCallback : public iStatusCallba
 {
 public:
    pgsStructuralAnalysisTypeStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 };
 
@@ -185,7 +185,7 @@ class PGSEXTCLASS pgsBridgeDescriptionStatusCallback : public iStatusCallback
 {
 public:
    pgsBridgeDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
@@ -206,7 +206,7 @@ class PGSEXTCLASS pgsLldfWarningStatusCallback : public iStatusCallback
 {
 public:
    pgsLldfWarningStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
@@ -226,7 +226,7 @@ class PGSEXTCLASS pgsEffectiveFlangeWidthStatusCallback : public iStatusCallback
 {
 public:
    pgsEffectiveFlangeWidthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
@@ -249,7 +249,7 @@ class PGSEXTCLASS pgsTimelineStatusCallback : public iStatusCallback
 {
 public:
    pgsTimelineStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() override;
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:

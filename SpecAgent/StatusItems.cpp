@@ -59,7 +59,7 @@ m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsHaulTruckStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsHaulTruckStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }

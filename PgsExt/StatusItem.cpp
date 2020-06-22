@@ -63,7 +63,7 @@ m_pBroker(pBroker)
 {
 }
 
-eafTypes::StatusSeverityType pgsRefinedAnalysisStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsRefinedAnalysisStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }
@@ -152,7 +152,7 @@ pgsInstallationErrorStatusCallback::pgsInstallationErrorStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }
@@ -201,7 +201,7 @@ pgsUnknownErrorStatusCallback::pgsUnknownErrorStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsUnknownErrorStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsUnknownErrorStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }
@@ -242,7 +242,7 @@ m_Severity(severity), m_HelpID(helpID)
 {
 }
 
-eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -284,7 +284,7 @@ m_pBroker(pBroker)
    m_HelpID = 0;
 }
 
-eafTypes::StatusSeverityType pgsProjectCriteriaStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsProjectCriteriaStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }
@@ -357,7 +357,7 @@ m_pBroker(pBroker), m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -410,7 +410,7 @@ pgsStructuralAnalysisTypeStatusCallback::pgsStructuralAnalysisTypeStatusCallback
 {
 }
 
-eafTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverity() const
 {
    return eafTypes::statusWarning;
 }
@@ -452,7 +452,7 @@ m_pBroker(pBroker), m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -590,7 +590,7 @@ m_pBroker(pBroker)
 {
 }
 
-eafTypes::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity() const
 {
    return eafTypes::statusInformation;
 }
@@ -637,7 +637,7 @@ m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -680,16 +680,18 @@ pgsTimelineStatusCallback::pgsTimelineStatusCallback(IBroker* pBroker, eafTypes:
 {
 }
 
-eafTypes::StatusSeverityType pgsTimelineStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsTimelineStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
 void pgsTimelineStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsTimelineStatusItem* pItem = dynamic_cast<pgsTimelineStatusItem*>(pStatusItem);
    ATLASSERT(pItem != nullptr);
+
+   CString str(pItem->GetDescription());
+   AfxMessageBox(str, MB_ICONEXCLAMATION);
 
    GET_IFACE(IEditByUI, pEdit);
 
