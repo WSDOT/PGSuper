@@ -307,10 +307,18 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    {
       CEAFApp* pApp = EAFGetApp();
       WINDOWPLACEMENT wp;
-      if (pApp->ReadWindowPlacement(CString("Settings"),CString("DesignOutcome"),&wp))
+      if (pApp->ReadWindowPlacement(CString("Window Positions"),CString("DesignOutcome"),&wp))
       {
-         CRect rect(wp.rcNormalPosition);
-         SetWindowPos(nullptr,0,0,rect.Size().cx,rect.Size().cy,SWP_NOMOVE);
+         CWnd* pDesktop = GetDesktopWindow();
+         //CRect rDesktop;
+         //pDesktop->GetWindowRect(&rDesktop); // this is the size of one monitor.... use GetSystemMetrics to get the entire desktop
+         CRect rDesktop(0, 0, GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
+         CRect rDlg(wp.rcNormalPosition);
+         if (rDesktop.PtInRect(rDlg.TopLeft()) && rDesktop.PtInRect(rDlg.BottomRight()))
+         {
+            // if dialog is within the desktop area, set its position... otherwise the default position will be sued
+            SetWindowPos(NULL, wp.rcNormalPosition.left, wp.rcNormalPosition.top, wp.rcNormalPosition.right - wp.rcNormalPosition.left, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top, 0);
+         }
       }
    }
 
@@ -350,7 +358,7 @@ void CDesignOutcomeDlg::CleanUp()
       {
          wp.flags = 0;
          wp.showCmd = SW_SHOWNORMAL;
-         pApp->WriteWindowPlacement(CString("Settings"),CString("DesignOutcome"),&wp);
+         pApp->WriteWindowPlacement(CString("Window Positions"),CString("DesignOutcome"),&wp);
       }
    }
 }
