@@ -37,6 +37,7 @@
 
 #include <Reporting\BridgeDescChapterBuilder.h>
 #include <Reporting\BridgeDescDetailsChapterBuilder.h>
+#include <Reporting\TimelineChapterBuilder.h>
 #include <Reporting\IntervalChapterBuilder.h>
 #include <Reporting\SectPropChapterBuilder.h>
 #include <Reporting\SpanDataChapterBuilder.h>
@@ -128,6 +129,7 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateDistributionFactorSummaryReport();
    CreateTimeStepDetailsReport();
    CreatePierReactionsReport();
+   CreateTimelineReport();
 
 #if defined _DEBUG || defined _BETA_VERSION
    // these are just some testing/debugging reports
@@ -177,7 +179,8 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingSeatElevationsChapterBuilder2) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTimelineChapterBuilder));
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
@@ -492,6 +495,19 @@ void CReporterBase::CreatePierReactionsReport()
    pRptBuilder->SetReportSpecificationBuilder( pRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPierReactionChapterBuilder(true)) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
+}
+
+void CReporterBase::CreateTimelineReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CBrokerReportSpecificationBuilder>(m_pBroker));
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Timeline Manager Report"), true)); // hidden report
+   //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
+   pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTimelineChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
 }
 
 HRESULT CReporterBase::OnSpecificationChanged()

@@ -225,6 +225,10 @@ CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
+pgsInformationalStatusItem::~pgsInformationalStatusItem()
+{
+}
+
 bool pgsInformationalStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsInformationalStatusItem* other = dynamic_cast<pgsInformationalStatusItem*>(pOther);

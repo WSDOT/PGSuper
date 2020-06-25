@@ -815,6 +815,9 @@
     <ClCompile Include="FileSaveWarningDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TimelineReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -1729,6 +1732,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileSaveWarningDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TimelineReportDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

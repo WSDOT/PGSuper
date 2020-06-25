@@ -216,19 +216,18 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       int result = pTimelineMgr->Validate();
       if (result != TLM_SUCCESS)
       {
-         if (result == TLM_STRONGBACK_ERECTION_ERROR)
+         if (sysFlags<Uint32>::IsSet(result,TLM_STRONGBACK_ERECTION_ERROR))
          {
             pDX->PrepareCtrl(IDC_ERECTION_EVENT);
-            CString strMsg = pTimelineMgr->GetErrorMessage(result);
+            CString strMsg = pTimelineMgr->GetErrorMessage(result).c_str();
             strMsg += _T("\r\n\r\nPlease correct the temporary support erection event.");
             AfxMessageBox(strMsg, MB_ICONEXCLAMATION);
             pDX->Fail();
          }
-         else
+         else if (sysFlags<Uint32>::IsSet(result, TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR))
          {
-            ATLASSERT(result == TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR);
             pDX->PrepareCtrl(IDC_REMOVAL_EVENT);
-            CString strMsg = pTimelineMgr->GetErrorMessage(result);
+            CString strMsg = pTimelineMgr->GetErrorMessage(result).c_str();
             strMsg += _T("\r\n\r\nPlease correct the temporary support removal event.");
             AfxMessageBox(strMsg, MB_ICONEXCLAMATION);
             pDX->Fail();
@@ -289,7 +288,7 @@ BOOL CTemporarySupportLayoutPage::OnInitDialog()
       int idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotSegment, false));
       pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotSegment);
 
-      pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, false));
+      idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, false));
       pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBearingLine);
    }
    pCB->SetCurSel(m_InitialSlabOffsetType == pgsTypes::sotSegment ? 0 : 1);

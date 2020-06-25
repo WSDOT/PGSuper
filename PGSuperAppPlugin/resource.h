@@ -76,6 +76,7 @@
 #define IDD_EDIT_POINTLOAD              206
 #define IDD_EDIT_DISTRIBUTEDLOAD        207
 #define IDD_EDIT_LOADS                  208
+#define IDD_TIMELINE_REPORT             209
 #define IDR_EDITLOADS                   210
 #define IDI_EDIT_LOADS                  211
 #define IDR_LOADS_CTX                   212
@@ -1232,6 +1233,7 @@
 #define IDC_EDIT_BEARINGS               1904
 #define IDC_DECK_EVENT_DETAILS          1904
 #define IDC_HELP                        1904
+#define IDC_VIEW_TIMELINE_SUMMARY       1904
 #define IDC_LABELS                      1905
 #define IDC_BUTTON2                     1905
 #define IDC_LOAD_LOCATION_NOTE          1906
@@ -1554,7 +1556,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        404
+#define _APS_NEXT_RESOURCE_VALUE        405
 #define _APS_NEXT_COMMAND_VALUE         37001
 #define _APS_NEXT_CONTROL_VALUE         2029
 #define _APS_NEXT_SYMED_VALUE           115

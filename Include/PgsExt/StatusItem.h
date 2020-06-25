@@ -92,6 +92,7 @@ class PGSEXTCLASS pgsInformationalStatusItem : public CEAFStatusItem
 {
 public:
    pgsInformationalStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   ~pgsInformationalStatusItem();
    bool IsEqual(CEAFStatusItem* pOther);
 
 };

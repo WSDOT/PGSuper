@@ -724,6 +724,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="StructuralAnalysisMethodDlg.cpp" />
     <ClCompile Include="SupportDrawStrategyImpl.cpp" />
     <ClCompile Include="SegmentTendonGrid.cpp" />
+    <ClCompile Include="TimelineReportDlg.cpp" />
     <ClCompile Include="TrafficBarrierDisplayObjectEvents.cpp" />
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="ActivityGrid.cpp" />
@@ -1172,6 +1173,7 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="SupportDrawStrategy.h" />
     <ClInclude Include="SupportDrawStrategyImpl.h" />
     <ClInclude Include="SegmentTendonGrid.h" />
+    <ClInclude Include="TimelineReportDlg.h" />
     <ClInclude Include="TrafficBarrierDisplayObjectEvents.h" />
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="ActivityGrid.h" />

@@ -28,6 +28,9 @@
 class CPierData2;
 class CTemporarySupportData;
 class CBridgeDescription2;
+class CPointLoadData;
+class CDistributedLoadData;
+class CMomentLoadData;
 interface IEAFDisplayUnits;
 
 #include <PsgLib\ConnectionLibraryEntry.h>
@@ -141,6 +144,10 @@ LPCTSTR PGSEXTFUNC GetBearingOffsetMeasureString(ConnectionLibraryEntry::Bearing
 
 CString PGSEXTFUNC GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits);
 CString PGSEXTFUNC GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits);
+
+CString PGSEXTFUNC GetLoadDescription(const CPointLoadData* pLoad);
+CString PGSEXTFUNC GetLoadDescription(const CDistributedLoadData* pLoad);
+CString PGSEXTFUNC GetLoadDescription(const CMomentLoadData* pLoad);
 
 CString PGSEXTFUNC ConcreteDescription(const CConcreteMaterial& concrete);
 

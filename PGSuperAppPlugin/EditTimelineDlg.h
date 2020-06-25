@@ -52,4 +52,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
    friend CTimelineGrid;
+public:
+   afx_msg void OnBnClickedViewTimelineSummary();
 };

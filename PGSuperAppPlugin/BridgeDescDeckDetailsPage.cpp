@@ -1333,7 +1333,7 @@ void CBridgeDescDeckDetailsPage::OnDeckEventChanged()
          }
          else
          {
-            CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result);
+            CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result).c_str();
 
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
@@ -1407,7 +1407,7 @@ void CBridgeDescDeckDetailsPage::OnOverlayEventChanged()
             }
             else
             {
-               CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result);;
+               CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result).c_str();
                CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
                CString strMsg;

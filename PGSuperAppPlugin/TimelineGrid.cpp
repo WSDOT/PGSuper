@@ -331,7 +331,7 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
          }
          else
          {
-            CString strProblem = pParent->m_TimelineManager.GetErrorMessage(result);
+            CString strProblem = pParent->m_TimelineManager.GetErrorMessage(result).c_str();
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
             CString strMsg;

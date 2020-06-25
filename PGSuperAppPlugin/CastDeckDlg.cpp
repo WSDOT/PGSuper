@@ -127,7 +127,7 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
       int result = m_TimelineMgr.ValidateEvent(m_TimelineMgr.GetEventByIndex(m_EventIndex));
       if (result != TLM_SUCCESS)
       {
-         CString strProblem = m_TimelineMgr.GetErrorMessage(result);
+         CString strProblem = m_TimelineMgr.GetErrorMessage(result).c_str();
          CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
          CString strMsg;
          strMsg.Format(_T("%s\n\n%s"), strProblem, strRemedy);

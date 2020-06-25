@@ -55,7 +55,7 @@
 #define TLM_LOAD_RATING_ERROR                            0x00400000 // load rating occurs before bridge is open to traffic
 #define TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR         0x00800000 // intermediate diaphragm are cast after the deck is cast (must occur before)
 
-#define TLM_SUCCESS                                      0xffffffff // event was successfully added
+#define TLM_SUCCESS                                      0x00000000 // event was successfully added
 
 class CBridgeDescription2;
 class CLoadManager;
@@ -263,9 +263,9 @@ public:
    EventIndexType FindUserLoadEventIndex(LoadIDType loadID) const;
    EventIDType FindUserLoadEventID(LoadIDType loadID) const;
 
-   int Validate() const;
-   int ValidateEvent(const CTimelineEvent* pTimelineEvent) const;
-   CString GetErrorMessage(int errorCode) const;
+   Uint32 Validate() const;
+   Uint32 ValidateEvent(const CTimelineEvent* pTimelineEvent) const;
+   std::_tstring GetErrorMessage(Uint32 errorCode) const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
@@ -276,13 +276,27 @@ protected:
    void Sort();
 
    void ClearCaches();
+   void ClearValidationCaches() const;
 
-   int ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexType ductIdx) const;
+   Uint32 ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexType ductIdx) const;
 
 
    std::vector<CTimelineEvent*> m_TimelineEvents; // owns the timeline events... will be deleted in the destructor
    const CBridgeDescription2* m_pBridgeDesc;
    const CLoadManager* m_pLoadManager;
+
+   // caches for error information from the last time Validate was called
+   mutable std::vector<SupportIndexType> m_RemoveTemporarySupportsActivityError; // TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED
+   mutable std::vector<std::pair<PierIndexType,SupportIndexType>> m_ErectPiersActivityError; // TLM_ERECT_PIERS_ACTIVITY_REQUIRED
+   mutable std::vector<SupportIndexType> m_StrongBackErectionError; // TLM_STRONGBACK_ERECTION_ERROR
+   mutable std::vector<CSegmentKey> m_ConstructSegmentActivityError; // TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED
+   mutable std::vector<CSegmentKey> m_ErectSegmentActivityError; // TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED
+   mutable std::vector<CSegmentKey> m_SegmentErectionError; // TLM_SEGMENT_ERECTION_ERROR
+   mutable std::vector<SupportIndexType> m_TemporarySupportRemovalError; // TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR
+   mutable std::vector<CClosureKey> m_CastClosureJointActivityError; // TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED
+   mutable std::vector<CClosureKey> m_ClosureJointError; // TLM_CLOSURE_JOINT_ERROR
+   mutable std::vector<CGirderTendonKey> m_StressTendonsActivityError; // TLM_STRESS_TENDONS_ACTIVITY_REQUIRED
+   mutable std::vector<CGirderTendonKey> m_StressTendonError; // TLM_STRESS_TENDON_ERROR
 
    static EventIDType ms_ID;
 

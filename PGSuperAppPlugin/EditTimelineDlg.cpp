@@ -26,8 +26,11 @@
 #include "PGSuperAppPlugin.h"
 #include "EditTimelineDlg.h"
 #include "TimelineEventDlg.h"
+#include "TimelineReportDlg.h"
 #include <EAF\EAFDocument.h>
 #include <IFace\Project.h>
+
+#include <IReportManager.h>
 
 
 #ifdef _DEBUG
@@ -61,7 +64,7 @@ void CEditTimelineDlg::DoDataExchange(CDataExchange* pDX)
       if ( result != TLM_SUCCESS )
       {
          pDX->PrepareCtrl(IDC_GRID);
-         CString strMsg = m_TimelineManager.GetErrorMessage(result);
+         CString strMsg = m_TimelineManager.GetErrorMessage(result).c_str();
          strMsg += _T("\r\n\r\nPlease correct the timeline.");
          AfxMessageBox(strMsg,MB_ICONEXCLAMATION);
          pDX->Fail();
@@ -74,6 +77,7 @@ BEGIN_MESSAGE_MAP(CEditTimelineDlg, CDialog)
    ON_BN_CLICKED(IDC_ADD, &CEditTimelineDlg::OnAddEvent)
    ON_BN_CLICKED(IDC_REMOVE, &CEditTimelineDlg::OnRemoveEvent)
    ON_BN_CLICKED(ID_HELP, &CEditTimelineDlg::OnHelp)
+   ON_BN_CLICKED(IDC_VIEW_TIMELINE_SUMMARY, &CEditTimelineDlg::OnBnClickedViewTimelineSummary)
 END_MESSAGE_MAP()
 
 
@@ -124,7 +128,7 @@ void CEditTimelineDlg::OnAddEvent()
          }
          else
          {
-            CString strProblem = m_TimelineManager.GetErrorMessage(result);
+            CString strProblem = m_TimelineManager.GetErrorMessage(result).c_str();
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
             CString strMsg;
@@ -151,4 +155,20 @@ void CEditTimelineDlg::OnRemoveEvent()
 void CEditTimelineDlg::OnHelp()
 {
    EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_TIMELINE_MANAGER);
+}
+
+
+void CEditTimelineDlg::OnBnClickedViewTimelineSummary()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IReportManager, pReportMgr);
+   CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Timeline Manager Report"));
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+
+   std::shared_ptr<CBrokerReportSpecification> pBrokerRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CReportSpecification>(pRptSpec);
+
+   CTimelineReportDlg dlg(pBrokerRptSpec);
+   dlg.DoModal();
 }

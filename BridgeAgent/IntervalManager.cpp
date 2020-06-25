@@ -93,7 +93,7 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
    int result = pTimelineMgr->Validate();
    if (result != TLM_SUCCESS)
    {
-      CString strError = pTimelineMgr->GetErrorMessage(result);
+      CString strError = pTimelineMgr->GetErrorMessage(result).c_str();
 
       strError += _T("\nUse the timeline manager to correct the error.");
       GET_IFACE(IEAFStatusCenter, pStatusCenter);
@@ -102,7 +102,6 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
       pStatusCenter->Add(pStatusItem);
 
       strError += _T("\n\nSee the Status Center for details");
-      THROW_UNWIND(strError, -1);
    }
 
    GET_IFACE(IDocumentType,pDocType);

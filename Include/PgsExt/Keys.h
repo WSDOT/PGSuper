@@ -67,7 +67,7 @@ public:
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 };
 
-typedef CSegmentKey CClosureKey;
+using CClosureKey = CSegmentKey;
 
 class PGSEXTCLASS CSpanKey
 {

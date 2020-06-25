@@ -76,16 +76,10 @@ void CClosureJointGeneralPage::DoDataExchange(CDataExchange* pDX)
       int result = pParent->m_TimelineMgr.Validate();
       if (result != TLM_SUCCESS)
       {
-         // get the default error message
-         CString strError = pParent->m_TimelineMgr.GetErrorMessage(result);
-
-         // update the error message for this context
-         strError.Replace(_T("A"), _T("This"));
-         strError.Replace(_T("has been"), _T("is"));
-         strError.Replace(_T("have been"), _T("are"));
-         strError.Append(_T("\r\nUpdate the Installation Event"));
-
-         AfxMessageBox(strError, MB_OK | MB_ICONERROR);
+         auto strError = pParent->m_TimelineMgr.GetErrorMessage(result);
+         CString strMsg;
+         strMsg.Format(_T("%s"), strError.c_str());
+         AfxMessageBox(strMsg, MB_OK | MB_ICONERROR);
          pDX->PrepareCtrl(IDC_EVENT);
          pDX->Fail();
       }

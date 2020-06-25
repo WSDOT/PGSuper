@@ -59,4 +59,5 @@ protected:
    void CreatePointOfInterestReport();
 
    void CreatePierReactionsReport();
+   void CreateTimelineReport();
 };

@@ -22,46 +22,49 @@
 
 #pragma once
 
-#include <PgsExt\ApplyLoadActivity.h>
-#include <PgsExt\TimelineManager.h>
-#include <PgsExt\TimelineItemListBox.h>
 
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
+#include "resource.h"
+#include <Reporting\BrokerReportSpecification.h>
 
-// CApplyLoadsDlg dialog
+/////////////////////////////////////////////////////////////////////////////
+// CTimelineReportDlg dialog
 
-class CApplyLoadsDlg : public CDialog
+class CTimelineReportDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CApplyLoadsDlg)
-
+// Construction
 public:
-	CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = nullptr);   // standard constructor
-	virtual ~CApplyLoadsDlg();
+   CTimelineReportDlg(std::shared_ptr<CBrokerReportSpecification>& pRptSpec, CWnd* pParent=nullptr);
 
 // Dialog Data
-	enum { IDD = IDD_APPLYLOADS };
-   
-   CTimelineManager m_TimelineMgr;
-   EventIndexType m_EventIndex;
-   
-protected:
-   void InitalizeCheckBox(CDataExchange* pDX,EventIndexType eventIdx,UINT nIDC);
+	//{{AFX_DATA(CTimelineReportDlg)
+	enum { IDD = IDD_TIMELINE_REPORT };
+	//}}AFX_DATA
+
+// Operations
+
+// Overrides
+	// ClassWizard generated virtual function overrides
+	//{{AFX_VIRTUAL(CTimelineReportDlg)
+	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	//}}AFX_VIRTUAL
 
-   CTimelineItemListBox m_lbSource;
-   CTimelineItemListBox m_lbTarget;
+// Implementation
+protected:
+   std::shared_ptr<CBrokerReportSpecification> m_pRptSpec;
+   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 
-   BOOL m_bReadOnly;
-
-   void FillLists();
-   CString GetLocation(const CSpanKey& spanKey);
-
+	// Generated message map functions
+	//{{AFX_MSG(CDesignOutcomeDlg)
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnPrint();
+	virtual void OnOK();
+	virtual BOOL OnInitDialog();
+	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-public:
-   virtual BOOL OnInitDialog();
-   afx_msg void OnMoveToTargetList();
-   afx_msg void OnMoveToSourceList();
-   afx_msg void OnHelp();
+
+   void CleanUp();
 };
+
+//{{AFX_INSERT_LOCATION}}
+// Microsoft Visual C++ will insert additional declarations immediately before the previous line.

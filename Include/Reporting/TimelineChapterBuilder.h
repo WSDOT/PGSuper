@@ -22,46 +22,37 @@
 
 #pragma once
 
-#include <PgsExt\ApplyLoadActivity.h>
-#include <PgsExt\TimelineManager.h>
-#include <PgsExt\TimelineItemListBox.h>
+#include <Reporting\ReportingExp.h>
+#include <Reporter\Chapter.h>
+#include <Reporting\PGSuperChapterBuilder.h>
 
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
 
-// CApplyLoadsDlg dialog
+/*****************************************************************************
+CLASS 
+   CTimelineChapterBuilder
 
-class CApplyLoadsDlg : public CDialog
+   Chapter builder for reporting construction event timeline
+*****************************************************************************/
+
+class REPORTINGCLASS CTimelineChapterBuilder : public CPGSuperChapterBuilder
 {
-	DECLARE_DYNAMIC(CApplyLoadsDlg)
-
 public:
-	CApplyLoadsDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bReadOnly,CWnd* pParent = nullptr);   // standard constructor
-	virtual ~CApplyLoadsDlg();
+   CTimelineChapterBuilder(bool bSelect = true);
 
-// Dialog Data
-	enum { IDD = IDD_APPLYLOADS };
+   //------------------------------------------------------------------------
+   virtual LPCTSTR GetName() const;
    
-   CTimelineManager m_TimelineMgr;
-   EventIndexType m_EventIndex;
-   
+
+   //------------------------------------------------------------------------
+   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+
+   //------------------------------------------------------------------------
+   virtual CChapterBuilder* Clone() const;
+
 protected:
-   void InitalizeCheckBox(CDataExchange* pDX,EventIndexType eventIdx,UINT nIDC);
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-   CTimelineItemListBox m_lbSource;
-   CTimelineItemListBox m_lbTarget;
-
-   BOOL m_bReadOnly;
-
-   void FillLists();
-   CString GetLocation(const CSpanKey& spanKey);
-
-	DECLARE_MESSAGE_MAP()
-public:
-   virtual BOOL OnInitDialog();
-   afx_msg void OnMoveToTargetList();
-   afx_msg void OnMoveToSourceList();
-   afx_msg void OnHelp();
+private:
+   // Prevent accidental copying and assignment
+   CTimelineChapterBuilder(const CTimelineChapterBuilder&) = delete;
+   CTimelineChapterBuilder& operator=(const CTimelineChapterBuilder&) = delete;
 };

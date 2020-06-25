@@ -285,6 +285,7 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
    if ( pDX->m_bSaveAndValidate )
    {
       // copy the page local data to the bridge model on the property sheet
+      bool bCheckTimeline = false;
       if ( m_bIsPier )
       {
          CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
@@ -299,6 +300,8 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Ahead, m_DiaphragmWidth < 0 ? -1 : m_DiaphragmWidth/2);
          pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Back,ConnectionLibraryEntry::ApplyAtBearingCenterline);
          pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Ahead,ConnectionLibraryEntry::ApplyAtBearingCenterline);
+
+         bCheckTimeline = ::IsSegmentContinuousOverPier(pParent->m_pPier->GetSegmentConnectionType()) ? false : true;
       }
       else
       {
@@ -306,17 +309,23 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
 
          pParent->m_pTS->SetGirderEndDistance(m_EndDistance,m_EndDistanceMeasurementType);
          pParent->m_pTS->SetBearingOffset(m_BearingOffset,m_BearingOffsetMeasurementType);
+
+         bCheckTimeline = pParent->m_pTS->GetConnectionType() == pgsTypes::tsctClosureJoint ? true : false;
       }
 
-      CTimelineManager* pTimelineMgr = GetTimelineManager();
-      int result = pTimelineMgr->Validate();
-      if ( result != TLM_SUCCESS )
+      if (bCheckTimeline)
       {
-         pDX->PrepareCtrl(IDC_EVENT);
-         CString strMsg = pTimelineMgr->GetErrorMessage(result);
-         strMsg += _T("\r\n\r\nPlease correct the closure joint installation event.");
-         AfxMessageBox(strMsg,MB_ICONEXCLAMATION);
-         pDX->Fail();
+         CTimelineManager* pTimelineMgr = GetTimelineManager();
+         int result = pTimelineMgr->Validate();
+         if (sysFlags<Uint32>::IsSet(result, TLM_CLOSURE_JOINT_ERROR))
+         {
+            pDX->PrepareCtrl(IDC_EVENT);
+            auto strError = pTimelineMgr->GetErrorMessage(result);
+            CString strMsg;
+            strMsg.Format(_T("%s\r\n\r\nPlease correct the closure joint installation event."), strError.c_str());
+            AfxMessageBox(strMsg, MB_OK | MB_ICONERROR);
+            pDX->Fail();
+         }
       }
    }
 }
@@ -361,6 +370,8 @@ BOOL CClosureJointGeometryPage::OnInitDialog()
          EventIndexType eventIdx = pParent->m_BridgeDesc.GetTimelineManager()->GetCastClosureJointEventIndex(m_ClosureID);
          pcbEvent->SetCurSel((int)eventIdx);
       }
+
+      GetDlgItem(IDC_EVENT_NOTE)->SetWindowText(_T("NOTE: Changes to the Installation Event apply to all closure joints at this pier."));
    }
    else
    {
@@ -392,6 +403,8 @@ BOOL CClosureJointGeometryPage::OnInitDialog()
       GetDlgItem(IDC_WIDTH)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_WIDTH_UNIT)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_DIAPHRAGM_NOTE)->ShowWindow(SW_HIDE);
+
+      GetDlgItem(IDC_EVENT_NOTE)->SetWindowText(_T("NOTE: Changes to the Installation Event apply to all closure joints at this temporary support."));
    }
 
    OnConnectionTypeChanged();

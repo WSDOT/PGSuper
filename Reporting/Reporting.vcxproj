@@ -594,6 +594,7 @@
     <ClCompile Include="TemporarySupportReactionChapterBuilder.cpp" />
     <ClCompile Include="GirderTendonGeometryChapterBuilder.cpp" />
     <ClCompile Include="TendonStressCheckTable.cpp" />
+    <ClCompile Include="TimelineChapterBuilder.cpp" />
     <ClCompile Include="TimeStepCamberChapterBuilder.cpp" />
     <ClCompile Include="TimeStepDetailsChapterBuilder.cpp" />
     <ClCompile Include="TimeStepDetailsDlg.cpp" />
@@ -769,6 +770,7 @@
     <ClInclude Include="..\Include\Reporting\TemporarySupportReactionChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\GirderTendonGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TendonStressCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\TimelineChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepCamberChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepDetailsReportSpecification.h" />

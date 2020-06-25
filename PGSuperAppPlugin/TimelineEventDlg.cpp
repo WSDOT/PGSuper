@@ -77,7 +77,7 @@ bool CTimelineEventDlg::UpdateTimelineManager(const CTimelineManager& timelineMg
    if ( result != TLM_SUCCESS )
    {
       // The event that was changed doesn't fit... as the user what to do about it
-      CString strProblem = timelineMgr.GetErrorMessage(result);
+      CString strProblem = timelineMgr.GetErrorMessage(result).c_str();
       CString strRemedy(_T("The timeline will be adjusted to accomodate this event."));
 
       CString strMsg;
