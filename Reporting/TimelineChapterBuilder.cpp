@@ -25,6 +25,7 @@
 #include <Reporting\BrokerReportSpecification.h>
 
 #include <IFace\Project.h>
+#include <IFace\DocumentType.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\TimelineManager.h>
@@ -65,6 +66,8 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoadData, pUserDefinedLoads);
+
+   GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const auto* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -120,7 +123,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       const auto& constructSegmentActivity = pTimelineEvent->GetConstructSegmentsActivity();
       if (constructSegmentActivity.IsEnabled())
       {
-         (*pEventTable)(row, col) << _T("Construct Segments");
+         (*pEventTable)(row, col) << (pDocType->IsPGSuperDocument() ? _T("Construct Girders") : _T("Construct Segments"));
          const auto& segments = constructSegmentActivity.GetSegments();
          for (const auto& segmentID : segments)
          {
@@ -162,7 +165,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       const auto& erectSegmentsActivity = pTimelineEvent->GetErectSegmentsActivity();
       if (erectSegmentsActivity.IsEnabled())
       {
-         (*pEventTable)(row, col) << _T("Erect Segments");
+         (*pEventTable)(row, col) << (pDocType->IsPGSuperDocument() ? _T("Erect Girders") : _T("Erect Segments"));
          const auto& segments = erectSegmentsActivity.GetSegments();
          for (const auto& segmentID : segments)
          {

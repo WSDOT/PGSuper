@@ -520,7 +520,9 @@
     <ClCompile Include="LoadRatingSummaryReportDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TimelineChapterBuilder.cpp" />
+    <ClCompile Include="TimelineChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h">
