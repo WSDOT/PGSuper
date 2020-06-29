@@ -39,6 +39,19 @@
 #define EBD_DECKREBAR      4
 #define EBD_ENVIRONMENT    5
 
+// Pier Editing
+#define EPD_GENERAL        0
+#define EPD_LAYOUT         1
+#define EPD_SPACING        2
+#define EPD_CONNECTION     3
+#define EPD_BEARINGS       4
+
+// Span Editing
+#define ESD_GENERAL        0
+#define ESD_CONNECTION     1
+#define ESD_SPACING        2
+
+
 // PGSuper Edit Girder Details Pages
 #define EGD_GENERAL        0
 #define EGD_CONCRETE       EGD_GENERAL

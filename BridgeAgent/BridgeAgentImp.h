@@ -162,6 +162,7 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidDistributedLoadWarning;
    StatusCallbackIDType m_scidMomentLoadWarning;
    StatusCallbackIDType m_scidZeroOverlayWarning;
+   StatusCallbackIDType m_scidConnectionGeometryWarning;
 
 // IAgent
 public:

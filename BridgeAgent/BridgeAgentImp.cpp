@@ -258,9 +258,6 @@ Float64 GetDevLengthAdjustment(Float64 bonded_length, Float64 dev_length, Float6
 
 
 
-// floating tolerance
-static const Float64 TOL=1.0e-04;
-
 // Function to choose confinement bars from primary and additional
 static void ChooseConfinementBars(Float64 requiredZoneLength, 
                                   Float64 primSpc, Float64 primZonL, matRebar::Size primSize,
@@ -273,11 +270,11 @@ static void ChooseConfinementBars(Float64 requiredZoneLength,
    *pSpacing = 0.0;
 
    // methods must have bars and non-zero spacing just to be in the running
-   bool is_prim = primSize!=matRebar::bsNone && primSpc>0.0;
-   bool is_addl = addlSize!=matRebar::bsNone && addlSpc>0.0;
+   bool is_prim = primSize != matRebar::bsNone && 0.0 < primSpc;
+   bool is_addl = addlSize != matRebar::bsNone && 0.0 < addlSpc;
 
    // Both must meet required zone length to qualify for a run-off
-   if (is_prim && is_addl && primZonL+TOL > requiredZoneLength && addlZonL+TOL > requiredZoneLength)
+   if (is_prim && is_addl && IsLT(requiredZoneLength,primZonL) && IsLT(requiredZoneLength,addlZonL))
    {
       // both meet zone length req. choose smallest spacing
       if (primSpc < addlSpc)
@@ -293,13 +290,13 @@ static void ChooseConfinementBars(Float64 requiredZoneLength,
          *pSpacing = addlSpc;
       }
    }
-   else if (is_prim && primZonL+TOL > requiredZoneLength)
+   else if (is_prim && IsLT(requiredZoneLength,primZonL))
    {
       *pSize = primSize;
       *pProvidedZoneLength = primZonL;
       *pSpacing = primSpc;
    }
-   else if (is_addl && addlZonL+TOL > requiredZoneLength)
+   else if (is_addl && IsLT(requiredZoneLength,addlZonL))
    {
       *pSize = addlSize;
       *pProvidedZoneLength = addlZonL;
@@ -1071,8 +1068,8 @@ void CBridgeAgentImp::ValidatePointLoads()
          {
             CString strMsg;
             strMsg.Format(_T("Span %s for point load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(pPointLoad->m_SpanKey.spanIndex),nSpans);
-            pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,pPointLoad->m_SpanKey);
-            pStatusCenter->Add(pStatusItem);
+            std::unique_ptr<pgsPointLoadStatusItem> pStatusItem = std::make_unique<pgsPointLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,pPointLoad->m_SpanKey);
+            pStatusCenter->Add(pStatusItem.release());
             continue; // break out of this cycle
          }
          else
@@ -1103,8 +1100,8 @@ void CBridgeAgentImp::ValidatePointLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Girder %s for point load is out of range. Max girder number is %s. This load will be ignored."), LABEL_GIRDER(pPointLoad->m_SpanKey.girderIndex), LABEL_GIRDER(nGirders-1));
-               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,pPointLoad->m_SpanKey);
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsPointLoadStatusItem> pStatusItem = std::make_unique<pgsPointLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,pPointLoad->m_SpanKey);
+               pStatusCenter->Add(pStatusItem.release());
                continue;
             }
             else
@@ -1179,8 +1176,8 @@ void CBridgeAgentImp::ValidatePointLoads()
 
                CString strMsg;
                strMsg.Format(_T("Magnitude of point load is zero - %s"),strLabel);
-               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsPointLoadStatusItem> pStatusItem = std::make_unique<pgsPointLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
+               pStatusCenter->Add(pStatusItem.release());
             }
 
             upl.m_Magnitude = pPointLoad->m_Magnitude;
@@ -1193,8 +1190,8 @@ void CBridgeAgentImp::ValidatePointLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored. - %s"), strLabel);
-               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsPointLoadStatusItem> pStatusItem = std::make_unique<pgsPointLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
+               pStatusCenter->Add(pStatusItem.release());
                continue;
             }
 
@@ -1202,8 +1199,8 @@ void CBridgeAgentImp::ValidatePointLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Load is located on span cantilever, however span is not cantilevered. This load will be ignored. - %s"),strLabel);
-               pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsPointLoadStatusItem> pStatusItem = std::make_unique<pgsPointLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
+               pStatusCenter->Add(pStatusItem.release());
                continue;
             }
 
@@ -1228,8 +1225,8 @@ void CBridgeAgentImp::ValidatePointLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Fractional location value for point load is out of range. Value must range from 0.0 to 1.0. This load will be ignored. - %s"),strLabel);
-                  pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsPointLoadStatusItem> pStatusItem = std::make_unique<pgsPointLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
+                  pStatusCenter->Add(pStatusItem.release());
                   continue;
                }
             }
@@ -1245,8 +1242,8 @@ void CBridgeAgentImp::ValidatePointLoads()
                   {
                      CString strMsg;
                      strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to start cantilever length. This load will be ignored. - %s"),strLabel);
-                     pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
-                     pStatusCenter->Add(pStatusItem);
+                     std::unique_ptr<pgsPointLoadStatusItem> pStatusItem = std::make_unique<pgsPointLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
+                     pStatusCenter->Add(pStatusItem.release());
                      continue;
                   }
                }
@@ -1260,8 +1257,8 @@ void CBridgeAgentImp::ValidatePointLoads()
                   {
                      CString strMsg;
                      strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to end cantilever length. This load will be ignored. - %s"),strLabel);
-                     pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
-                     pStatusCenter->Add(pStatusItem);
+                     std::unique_ptr<pgsPointLoadStatusItem> pStatusItem = std::make_unique<pgsPointLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
+                     pStatusCenter->Add(pStatusItem.release());
                      continue;
                   }
                }
@@ -1275,8 +1272,8 @@ void CBridgeAgentImp::ValidatePointLoads()
                   {
                      CString strMsg;
                      strMsg.Format(_T("Location value for point load is out of range. Value must range from 0.0 to span length. This load will be ignored. - %s"),strLabel);
-                     pgsPointLoadStatusItem* pStatusItem = new pgsPointLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
-                     pStatusCenter->Add(pStatusItem);
+                     std::unique_ptr<pgsPointLoadStatusItem> pStatusItem = std::make_unique<pgsPointLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidPointLoadWarning,strMsg,thisSpanKey);
+                     pStatusCenter->Add(pStatusItem.release());
                      continue;
                   }
                }
@@ -1350,8 +1347,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
          {
             CString strMsg;
             strMsg.Format(_T("Span %s for Distributed load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(pDistLoad->m_SpanKey.spanIndex),nSpans);
-            pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,pDistLoad->m_SpanKey);
-            pStatusCenter->Add(pStatusItem);
+            std::unique_ptr<pgsDistributedLoadStatusItem> pStatusItem = std::make_unique<pgsDistributedLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,pDistLoad->m_SpanKey);
+            pStatusCenter->Add(pStatusItem.release());
             continue; // break out of this cycle
          }
          else
@@ -1382,8 +1379,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Girder %s for Distributed load is out of range. Max girder number is %s. This load will be ignored."), LABEL_GIRDER(pDistLoad->m_SpanKey.girderIndex), LABEL_GIRDER(nGirders-1));
-               pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,pDistLoad->m_SpanKey);
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsDistributedLoadStatusItem> pStatusItem = std::make_unique<pgsDistributedLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,pDistLoad->m_SpanKey);
+               pStatusCenter->Add(pStatusItem.release());
                continue;
             }
             else
@@ -1453,8 +1450,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Magnitude of Distributed load is zero - %s"),strLabel);
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsDistributedLoadStatusItem> pStatusItem = std::make_unique<pgsDistributedLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
+                  pStatusCenter->Add(pStatusItem.release());
                }
 
                // uniform load
@@ -1471,8 +1468,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Magnitude of Distributed load is zero - %s"), strLabel);
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsDistributedLoadStatusItem> pStatusItem = std::make_unique<pgsDistributedLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
+                  pStatusCenter->Add(pStatusItem.release());
                }
 
                upl.m_WStart = pDistLoad->m_WStart;
@@ -1483,8 +1480,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Start locaton of distributed load is greater than end location. This load will be ignored. - %s"),strLabel);
-                  pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,103,strMsg,thisSpanKey);
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsDistributedLoadStatusItem> pStatusItem = std::make_unique<pgsDistributedLoadStatusItem>(loadIdx,m_LoadStatusGroupID,103,strMsg,thisSpanKey);
+                  pStatusCenter->Add(pStatusItem.release());
                   continue;
                }
 
@@ -1500,15 +1497,15 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                   {
                      CString strMsg;
                      strMsg.Format(_T("Fractional location value for Distributed load is out of range. Value must range from 0.0 to 1.0. This load will be ignored. - %s"),strLabel);
-                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
-                     pStatusCenter->Add(pStatusItem);
+                     std::unique_ptr<pgsDistributedLoadStatusItem> pStatusItem = std::make_unique<pgsDistributedLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
+                     pStatusCenter->Add(pStatusItem.release());
                      continue;
                   }
                }
                else
                {
-                  if( 0.0 <= pDistLoad->m_StartLocation && pDistLoad->m_StartLocation <= span_length &&
-                      0.0 <= pDistLoad->m_EndLocation   && pDistLoad->m_EndLocation   <= span_length+TOL)
+                  if( InRange(0.0,pDistLoad->m_StartLocation,span_length) &&
+                      InRange(0.0,pDistLoad->m_EndLocation,span_length))
                   {
                      upl.m_StartLocation = pDistLoad->m_StartLocation;
 
@@ -1527,8 +1524,8 @@ void CBridgeAgentImp::ValidateDistributedLoads()
                   {
                      CString strMsg;
                      strMsg.Format(_T("Location value for Distributed load is out of range. Value must range from 0.0 to span length. This load will be ignored. - %s"),strLabel);
-                     pgsDistributedLoadStatusItem* pStatusItem = new pgsDistributedLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
-                     pStatusCenter->Add(pStatusItem);
+                     std::unique_ptr<pgsDistributedLoadStatusItem> pStatusItem = std::make_unique<pgsDistributedLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidDistributedLoadWarning,strMsg,thisSpanKey);
+                     pStatusCenter->Add(pStatusItem.release());
                      continue;
                   }
                }
@@ -1612,8 +1609,8 @@ void CBridgeAgentImp::ValidateMomentLoads()
          {
             CString strMsg;
             strMsg.Format(_T("Span %s for moment load is out of range. Max span number is %d. This load will be ignored."), LABEL_SPAN(pMomentLoad->m_SpanKey.spanIndex),nSpans);
-            pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,pMomentLoad->m_SpanKey);
-            pStatusCenter->Add(pStatusItem);
+            std::unique_ptr<pgsMomentLoadStatusItem> pStatusItem = std::make_unique<pgsMomentLoadStatusItem>(loadIdx, m_LoadStatusGroupID, m_scidMomentLoadWarning, strMsg, pMomentLoad->m_SpanKey);
+            pStatusCenter->Add(pStatusItem.release());
             continue; // break out of this cycle
          }
          else
@@ -1644,8 +1641,8 @@ void CBridgeAgentImp::ValidateMomentLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Girder %s for moment load is out of range. Max girder number is %s. This load will be ignored."), LABEL_GIRDER(pMomentLoad->m_SpanKey.girderIndex), LABEL_GIRDER(nGirders-1));
-               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,pMomentLoad->m_SpanKey);
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsMomentLoadStatusItem> pStatusItem = std::make_unique<pgsMomentLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,pMomentLoad->m_SpanKey);
+               pStatusCenter->Add(pStatusItem.release());
                continue;
             }
             else
@@ -1705,8 +1702,8 @@ void CBridgeAgentImp::ValidateMomentLoads()
             {
                CString strMsg;
                strMsg.Format(_T("Magnitude of moment load is zero - %s"),strLabel);
-               pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,thisSpanKey);
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsMomentLoadStatusItem> pStatusItem = std::make_unique<pgsMomentLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,thisSpanKey);
+               pStatusCenter->Add(pStatusItem.release());
             }
 
             upl.m_Magnitude = pMomentLoad->m_Magnitude;
@@ -1723,8 +1720,8 @@ void CBridgeAgentImp::ValidateMomentLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Fractional location value for moment load is out of range. Value must range from 0.0 to 1.0. This load will be ignored. - %s"),strLabel);
-                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,thisSpanKey);
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsMomentLoadStatusItem> pStatusItem = std::make_unique<pgsMomentLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,thisSpanKey);
+                  pStatusCenter->Add(pStatusItem.release());
                   continue;
                }
             }
@@ -1738,8 +1735,8 @@ void CBridgeAgentImp::ValidateMomentLoads()
                {
                   CString strMsg;
                   strMsg.Format(_T("Location value for moment load is out of range. Value must range from 0.0 to span length. This load will be ignored. - %s"),strLabel);
-                  pgsMomentLoadStatusItem* pStatusItem = new pgsMomentLoadStatusItem(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,thisSpanKey);
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsMomentLoadStatusItem> pStatusItem = std::make_unique<pgsMomentLoadStatusItem>(loadIdx,m_LoadStatusGroupID,m_scidMomentLoadWarning,strMsg,thisSpanKey);
+                  pStatusCenter->Add(pStatusItem.release());
                   continue;
                }
             }
@@ -1787,7 +1784,8 @@ void CBridgeAgentImp::ValidateMomentLoads()
 
 void CBridgeAgentImp::ValidateSegmentOrientation(const CSegmentKey& segmentKey) const
 {
-   VALIDATE_POINTS_OF_INTEREST(segmentKey); // calls VALIDATE(GIRDER);
+   //VALIDATE_POINTS_OF_INTEREST(segmentKey); // calls VALIDATE(GIRDER);
+   VALIDATE(GIRDER);
 
    // Orientation was cached by geometry model builder
    Float64 orientation = 0.0;
@@ -2125,9 +2123,9 @@ bool CBridgeAgentImp::BuildCogoModel()
                std::_tostringstream os;
                os << _T("The central angle of horizontal curve ") << curveID << _T(" is 0 or 180 degrees. Horizontal curve was modeled as a single point at the PI location.");
                std::_tstring strMsg = os.str();
-               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
+               std::unique_ptr<pgsAlignmentDescriptionStatusItem> pStatusItem = std::make_unique<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               pStatusCenter->Add(p_status_item);
+               pStatusCenter->Add(pStatusItem.release());
                
                alignment->AddEx(pi);
 
@@ -2190,9 +2188,9 @@ bool CBridgeAgentImp::BuildCogoModel()
                      os << _T("Horizontal curve ") << (curveIdx+1) << _T(" begins before curve ") << (curveIdx) << _T(" ends. Curve ") << (curveIdx+1) << _T(" has been adjusted.");
                      std::_tstring strMsg = os.str();
                      
-                     pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,0,strMsg.c_str());
+                     std::unique_ptr<pgsAlignmentDescriptionStatusItem> pStatusItem = std::make_unique<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID,m_scidAlignmentWarning,0,strMsg.c_str());
                      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-                     pStatusCenter->Add(p_status_item);
+                     pStatusCenter->Add(pStatusItem.release());
 
                      strMsg += std::_tstring(_T("\nSee Status Center for Details"));
                   }
@@ -2202,9 +2200,9 @@ bool CBridgeAgentImp::BuildCogoModel()
                      os << _T("Horizontal curve ") << (curveIdx+1) << _T(" begins before curve ") << (curveIdx) << _T(" ends. Correct the curve data before proceeding");
                      std::_tstring strMsg = os.str();
                      
-                     pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
+                     std::unique_ptr<pgsAlignmentDescriptionStatusItem> pStatusItem = std::make_unique<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
                      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-                     pStatusCenter->Add(p_status_item);
+                     pStatusCenter->Add(pStatusItem.release());
 
                      strMsg += std::_tstring(_T("\nSee Status Center for Details"));
                   }
@@ -2231,9 +2229,9 @@ bool CBridgeAgentImp::BuildCogoModel()
                os << _T("The horizontal curve was ignored.");
 
                std::_tstring strMsg = os.str();
-               pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
+               std::unique_ptr<pgsAlignmentDescriptionStatusItem> pStatusItem = std::make_unique<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID,m_scidAlignmentError,0,strMsg.c_str());
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               pStatusCenter->Add(p_status_item);
+               pStatusCenter->Add(pStatusItem.release());
 
                continue;
             }
@@ -2388,9 +2386,9 @@ bool CBridgeAgentImp::BuildCogoModel()
             os << _T("Vertical curve ") << curveID << _T(" is a zero length curve.");
             std::_tstring strMsg = os.str();
 
-            pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
+            std::unique_ptr<pgsAlignmentDescriptionStatusItem> pStatusItem = std::make_unique<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            pStatusCenter->Add(p_status_item);
+            pStatusCenter->Add(pStatusItem.release());
          }
 
          // add a vertical curve
@@ -2423,9 +2421,9 @@ bool CBridgeAgentImp::BuildCogoModel()
 
             std::_tstring strMsg = os.str();
 
-            pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentError,1,strMsg.c_str());
+            std::unique_ptr<pgsAlignmentDescriptionStatusItem> pStatusItem = std::make_unique<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID,m_scidAlignmentError,1,strMsg.c_str());
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            pStatusCenter->Add(p_status_item);
+            pStatusCenter->Add(pStatusItem.release());
 
             strMsg += std::_tstring(_T("\nSee Status Center for Details"));
 //            THROW_UNWIND(strMsg.c_str(),-1);
@@ -2450,9 +2448,9 @@ bool CBridgeAgentImp::BuildCogoModel()
             os << _T("Entry and exit grades are the same on curve ") << curveID;
             std::_tstring strMsg = os.str();
 
-            pgsAlignmentDescriptionStatusItem* p_status_item = new pgsAlignmentDescriptionStatusItem(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
+            std::unique_ptr<pgsAlignmentDescriptionStatusItem> pStatusItem = std::make_unique<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID,m_scidAlignmentWarning,1,strMsg.c_str());
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            pStatusCenter->Add(p_status_item);
+            pStatusCenter->Add(pStatusItem.release());
          }
 
          pbg_station   = pvi_station;
@@ -2635,8 +2633,8 @@ bool CBridgeAgentImp::BuildBridgeModel()
    {
       GET_IFACE(IEAFStatusCenter, pStatusCenter);
       CString strMsg(_T("Girder dimensions are not compatible."));
-      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::General, strMsg);
-      pStatusCenter->Add(pStatusItem);
+      std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::General, strMsg);
+      pStatusCenter->Add(pStatusItem.release());
 
       strMsg += _T("\nSee Status Center for Details");
       THROW_UNWIND(strMsg,-1);
@@ -4121,8 +4119,8 @@ bool CBridgeAgentImp::LayoutGirdersPass2()
                {
                   msg.Format(_T("The girder top chord for span %s, girder %s intrudes into the bottom of the slab at mid-span."), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
                }
-               pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Deck, msg);
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Deck, msg);
+               pStatusCenter->Add(pStatusItem.release());
             }
          }
       }
@@ -4176,8 +4174,8 @@ void CBridgeAgentImp::ValidateGirders()
                {
                   CString strMsg;
                   strMsg.Format(_T("%s: Temporary strands are not in the top half of the girder"), SEGMENT_LABEL(CSegmentKey(grpIdx, gdrIdx, segIdx)));
-                  pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidInformationalWarning, strMsg);
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsInformationalStatusItem> pStatusItem = std::make_unique<pgsInformationalStatusItem>(m_StatusGroupID, m_scidInformationalWarning, strMsg);
+                  pStatusCenter->Add(pStatusItem.release());
                   break;
                }
 
@@ -4215,8 +4213,8 @@ void CBridgeAgentImp::ValidateGirders()
                if ((start_slope != Float64_Max && 0.0 < start_slope) || (end_slope != Float64_Max && end_slope < 0.0))
                {
                   std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Strand drape is upside down");
-                  pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
+                  pStatusCenter->Add(pStatusItem.release());
                }
             }
 
@@ -4225,8 +4223,8 @@ void CBridgeAgentImp::ValidateGirders()
             if ( !pSegment->AreSegmentVariationsValid(framing_length) )
             {
                std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Segment variation dimensions are invalid.");
-               pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+               pStatusCenter->Add(pStatusItem.release());
 
                //strMsg += _T("See Status Center for Details");
                //THROW_UNWIND(os.str().c_str(),XREASON_INVALID_SEGMENT_VARIATION);
@@ -4238,8 +4236,51 @@ void CBridgeAgentImp::ValidateGirders()
                GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither) > 0)
             {
                std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Has a mix of Harped and Debonded strands. Specification checks for debond constructability may be innacurate.");
-               pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
+               pStatusCenter->Add(pStatusItem.release());
+            }
+
+            // validate connection geometry (segment end must be at or into continuous diaphragms)
+            std::array<Float64, 2> brg_offset, end_distance;
+            GetSegmentBearingOffset(segmentKey, &brg_offset[pgsTypes::metStart], &brg_offset[pgsTypes::metEnd]);
+            GetSegmentEndDistance(segmentKey, &end_distance[pgsTypes::metStart], &end_distance[pgsTypes::metEnd]);
+            for (int i = 0; i < 2; i++)
+            {
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+               pgsTypes::PierFaceType pierFace = (endType == pgsTypes::metStart ? pgsTypes::Ahead : pgsTypes::Back);
+               const CPierData2* pPier;
+               const CTemporarySupportData* pTS;
+               pSegment->GetSupport(endType, &pPier, &pTS);
+
+               if (pPier && (pPier->IsInteriorPier() || IsContinuousBoundaryCondition(pierFace,pPier->GetBoundaryConditionType())))
+               {
+                  PierIndexType pierIdx = pPier->GetIndex();
+                  Float64 diaphragm_width, diaphragm_height;
+                  GetPierDiaphragmSize(pierIdx, pierFace, &diaphragm_width, &diaphragm_height);
+
+                  //           CL Brg        CL Pier      CL Brg
+                  //             |         :   |   :        |
+                  // ------------|-----+   :   |   :   +----|---------------
+                  //             |     |   :   |   :   |    |
+                  //             |     |   :   |   :   |    |
+                  // ------------|-----+   :   |   :   +----|---------------
+                  //             |     |   :   |   :
+                  //             |     |   :   |   :<--Face of diaphragm
+                  //             |     |   :   |   :
+                  //             |     |<----->------- CLpier_to_end_of_segment - MUST BE <= diaphragm_width OTHERWISE THE SEGMENT ISN'T CONNECTED TO THE DIAPHRAGM
+                  //             |     |   :<->------- diaphragm_width (per side)
+                  //             |<--->|-------------- end_distance
+                  //             |<----------->------- brg_offset
+
+                  Float64 CLpier_to_end_of_segment = brg_offset[endType] - end_distance[endType];
+                  if (diaphragm_width < CLpier_to_end_of_segment)
+                  {
+                     CString strMsg;
+                     strMsg.Format(_T("%s end of %s does not engage continuity diaphragm at Pier %s"), endType == pgsTypes::metStart ? _T("Start") : _T("End"), SEGMENT_LABEL(segmentKey),LABEL_PIER(pierIdx));
+                     std::unique_ptr<pgsConnectionGeometryStatusItem> pStatusItem = std::make_unique<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg);
+                     pStatusCenter->Add(pStatusItem.release());
+                  }
+               }
             }
          } // segment loop
 
@@ -4272,7 +4313,7 @@ void CBridgeAgentImp::ValidateGirders()
 
                Float64 botWidth = this->GetBottomWidth(vPoi.front());
 
-               if ((botWidth + TOLERANCE) < bearingWidth)
+               if (IsLT(botWidth,bearingWidth))
                {
                   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
                   CString strMsg;
@@ -4303,7 +4344,7 @@ void CBridgeAgentImp::ValidateGirders()
 
                Float64 botWidth = this->GetBottomWidth(vPoi.front());
 
-               if ((botWidth + TOLERANCE) < bearingWidth)
+               if (IsLT(botWidth,bearingWidth))
                {
                   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
                   CString strMsg;
@@ -5095,10 +5136,8 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float6
          << _T(" are located outside of the bearings. You can fix this by increasing the segment length, or")
          << _T(" by changing the harping point location in the girder library entry.")<<std::endl;
 
-      pgsBridgeDescriptionStatusItem* pStatusItem = 
-         new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
-
-      pStatusCenter->Add(pStatusItem);
+      std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
+      pStatusCenter->Add(pStatusItem.release());
    }
 
    VERIFY(m_pPoiMgr->AddPointOfInterest(poiHP1) != INVALID_ID);
@@ -5309,14 +5348,33 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
    if ( pPier )
    {
       // this is a pier at the start of this segment
+      PierIndexType pierIdx = pPier->GetIndex();
       Float64 XsCLPier;
-      GetPierLocation(pPier->GetIndex(),segmentKey,&XsCLPier); // location of CL pier in segment coordinates
+      GetPierLocation(pierIdx,segmentKey,&XsCLPier); // location of CL pier in segment coordinates
       Float64 XsCLBrg = XsCLPier + start_brg_offset; // location of CL brg in segment coordinates
       Float64 Hg = GetHeight(pgsPointOfInterest(segmentKey,XsCLBrg));
 
-      // NOTE: Assuming that the support is symmetric about the CL Bearing
-      // Distance from CL Brg to face of support is taken to be support_width/2
-      Float64 support_width = GetSegmentStartSupportWidth(segmentKey);
+      Float64 right_support_width; // support width on right side of CL Pier
+      if (pPier->IsInteriorPier() || ::IsContinuousBoundaryConditionAheadSide(pPier->GetBoundaryConditionType()))
+      {
+         // if the pier is continuous, the face of support is the face of the diaphragm
+         Float64 diaphragm_height;
+         GetPierDiaphragmSize(pierIdx, pgsTypes::Ahead, &right_support_width, &diaphragm_height);
+
+         right_support_width -= start_brg_offset;
+         if (right_support_width < 0)
+         {
+            // negative means the FOS is not on the girder (which is weird)
+            right_support_width = 0;
+         }
+      }
+      else
+      {
+         // NOTE: Assuming that the support is symmetric about the CL Bearing
+         // Distance from CL Brg to face of support is taken to be support_width/2
+         Float64 support_width = GetSegmentStartSupportWidth(segmentKey); // this is based on the bearing size
+         right_support_width = support_width / 2;
+      }
 
       // If "H" from the end of the girder is at the point of bearing
       // make sure there isn't any "noise" in the data
@@ -5328,32 +5386,32 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       Float64 Xs, Xsp, Xg, Xgp;
 
       // POI between FOS and 1.5H for purposes of computing critical section
-      Xs  = start_end_dist + /*support_width/2 +*/ 0.75*Hg; // support width was not used in Version 2.x
+      Xs  = start_end_dist + /*right_support_width +*/ 0.75*Hg; // support width was not used in Version 2.x
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_075h( segmentKey, Xs, Xsp, Xg, Xgp);
       VERIFY(m_pPoiMgr->AddPointOfInterest(poi_075h) != INVALID_ID);
 
-      Xs  = start_end_dist + support_width/2 + Hg;
+      Xs  = start_end_dist + right_support_width + Hg;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_h( segmentKey, Xs, Xsp, Xg, Xgp, POI_H);
       VERIFY(m_pPoiMgr->AddPointOfInterest(poi_h) != INVALID_ID);
 
-      Xs  = start_end_dist + support_width/2 + 1.5*Hg;
+      Xs  = start_end_dist + right_support_width + 1.5*Hg;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_15h( segmentKey, Xs, Xsp, Xg, Xgp, POI_15H);
       VERIFY(m_pPoiMgr->AddPointOfInterest(poi_15h) != INVALID_ID);
 
-      Xs  = start_end_dist + support_width/2;
+      Xs = start_end_dist + right_support_width;
       Xsp = Xs + start_offset;
       Xgp = segmentOffset + Xsp;
-      Xg  = Xgp - first_segment_start_offset;
-      pgsPointOfInterest poi_fos( segmentKey, Xs, Xsp, Xg, Xgp, POI_FACEOFSUPPORT);
+      Xg = Xgp - first_segment_start_offset;
+      pgsPointOfInterest poi_fos(segmentKey, Xs, Xsp, Xg, Xgp, POI_FACEOFSUPPORT);
       VERIFY(m_pPoiMgr->AddPointOfInterest(poi_fos) != INVALID_ID);
    }
 
@@ -5361,14 +5419,34 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
    if ( pPier )
    {
       // this is a pier at the end of this segment
+      PierIndexType pierIdx = pPier->GetIndex();
       Float64 XsCLPier;
-      GetPierLocation(pPier->GetIndex(),segmentKey,&XsCLPier); // CL pier in segment coordinates
+      GetPierLocation(pierIdx,segmentKey,&XsCLPier); // CL pier in segment coordinates
       Float64 XsCLBrg = XsCLPier - end_brg_offset; // CL brg in segment coordinates
       ATLASSERT( ::IsLE(XsCLBrg,segment_length) );
 
       Float64 Hg = GetHeight(pgsPointOfInterest(segmentKey,XsCLBrg));
 
-      Float64 support_width = GetSegmentEndSupportWidth(segmentKey);
+      Float64 left_support_width;
+      if (pPier->IsInteriorPier() || ::IsContinuousBoundaryConditionBackSide(pPier->GetBoundaryConditionType()))
+      {
+         // if the pier is continuous, the face of support is the face of the diaphragm
+         Float64 diaphragm_height;
+         GetPierDiaphragmSize(pierIdx, pgsTypes::Back, &left_support_width, &diaphragm_height);
+
+         left_support_width -= end_brg_offset;
+         if (left_support_width < 0)
+         {
+            // negative means the FOS is not on the girder (which is weird)
+            left_support_width = 0;
+         }
+      }
+      else
+      {
+         Float64 support_width = GetSegmentEndSupportWidth(segmentKey);
+         left_support_width = support_width / 2; // support width on left side of CL Pier
+      }
+
 
       // If "H" from the end of the girder is at the point of bearing
       // make sure there isn't any "noise" in the data
@@ -5379,28 +5457,28 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
 
       Float64 Xs, Xsp, Xg, Xgp;
       // add a POI at 0.75H for purposes of computing critical section
-      Xs  = segment_length - (end_end_dist + /*support_width/2 +*/ 0.75*Hg); // support width was not used in Version 2.x
+      Xs  = segment_length - (end_end_dist + /*left_support_width +*/ 0.75*Hg); // support width was not used in Version 2.x
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_075h( segmentKey, Xs, Xsp, Xg, Xgp);
       VERIFY(m_pPoiMgr->AddPointOfInterest(poi_075h) != INVALID_ID);
 
-      Xs  = segment_length - (end_end_dist + support_width/2 + Hg);
+      Xs  = segment_length - (end_end_dist + left_support_width + Hg);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_h( segmentKey, Xs, Xsp, Xg, Xgp, POI_H);
       VERIFY(m_pPoiMgr->AddPointOfInterest(poi_h) != INVALID_ID);
 
-      Xs  = segment_length - (end_end_dist + support_width/2 + 1.5*Hg);
+      Xs  = segment_length - (end_end_dist + left_support_width + 1.5*Hg);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
       pgsPointOfInterest poi_15h( segmentKey, Xs, Xsp, Xg, Xgp, POI_15H);
       VERIFY(m_pPoiMgr->AddPointOfInterest(poi_15h) != INVALID_ID);
 
-      Xs  = segment_length - (end_end_dist + support_width/2);
+      Xs  = segment_length - (end_end_dist + left_support_width);
       Xsp = Xs + start_offset;
       Xgp = Xsp + segmentOffset;
       Xg  = Xgp - first_segment_start_offset;
@@ -5887,9 +5965,12 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
       for ( ; iter != iterEnd; iter++ )
       {
          const CPierData2* pPier = *iter;
+         ATLASSERT(pPier->IsInteriorPier());
+
+         PierIndexType pierIdx = pPier->GetIndex();
 
          Float64 Xpoi;
-         VERIFY(GetPierLocation(pPier->GetIndex(),segmentKey,&Xpoi));
+         VERIFY(GetPierLocation(pierIdx,segmentKey,&Xpoi));
          pgsPointOfInterest poi(segmentKey,Xpoi,POI_INTERMEDIATE_PIER);
          VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
 
@@ -6000,8 +6081,9 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
          VERIFY(m_pPoiMgr->AddPointOfInterest(right_25H) != INVALID_ID);
 
          // Add POIs for face of support
-         Float64 left_support_width  = pPier->GetSupportWidth(segmentKey.girderIndex, pgsTypes::Back);
-         Float64 right_support_width = pPier->GetSupportWidth(segmentKey.girderIndex, pgsTypes::Ahead);
+         Float64 left_support_width, right_support_width, diaphragm_height;
+         GetPierDiaphragmSize(pierIdx, pgsTypes::Back, &left_support_width, &diaphragm_height);
+         GetPierDiaphragmSize(pierIdx, pgsTypes::Ahead, &right_support_width, &diaphragm_height);
 
          pgsPointOfInterest leftFOS(segmentKey,Xpoi - left_support_width,POI_FACEOFSUPPORT);
          VERIFY(m_pPoiMgr->AddPointOfInterest(leftFOS) != INVALID_ID);
@@ -6310,6 +6392,7 @@ STDMETHODIMP CBridgeAgentImp::Init()
    m_scidDistributedLoadWarning   = pStatusCenter->RegisterCallback(new pgsDistributedLoadStatusCallback(m_pBroker,eafTypes::statusInformation));
    m_scidMomentLoadWarning        = pStatusCenter->RegisterCallback(new pgsMomentLoadStatusCallback(m_pBroker,eafTypes::statusInformation));
    m_scidZeroOverlayWarning       = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusInformation));
+   m_scidConnectionGeometryWarning = pStatusCenter->RegisterCallback(new pgsConnectionGeometryStatusCallback(m_pBroker,eafTypes::statusWarning));
 
    m_IntervalManager.Init(m_pBroker, m_StatusGroupID);
 
@@ -9902,8 +9985,8 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetPrecastDiaphragms(const CS
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
          std::_tstring str(_T("An interior diaphragm is located off the precast element. The diaphragm load will not be applied. Check the diaphragm rules."));
 
-         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,str.c_str());
-         pStatusCenter->Add(pStatusItem);
+         std::unique_ptr<pgsInformationalStatusItem> pStatusItem = std::make_unique<pgsInformationalStatusItem>(m_StatusGroupID,m_scidInformationalWarning,str.c_str());
+         pStatusCenter->Add(pStatusItem.release());
          break;
       }
 
@@ -10121,8 +10204,8 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(cons
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
          std::_tstring str(_T("An interior diaphragm is located outside of the span length. The diaphragm load will not be applied. Check the diaphragm rules for this girder."));
 
-         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,str.c_str());
-         pStatusCenter->Add(pStatusItem);
+         std::unique_ptr<pgsInformationalStatusItem> pStatusItem = std::make_unique<pgsInformationalStatusItem>(m_StatusGroupID,m_scidInformationalWarning,str.c_str());
+         pStatusCenter->Add(pStatusItem.release());
          break;
       }
 
@@ -14136,8 +14219,8 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryZoneCount(const CSegmentKey& segmentKey
                   {
                      strMsg.Format(_T("Group %d Girder %s Segment %d: %s is shorter than the stirrup layout. For symmetrical stirrup zones, the zones beyond mid-point are ignored"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),strGirderLabel);
                   }
-                  pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,EGD_STIRRUPS,m_StatusGroupID,m_scidGirderDescriptionInform,strMsg);
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,EGD_STIRRUPS,m_StatusGroupID,m_scidGirderDescriptionInform,strMsg);
+                  pStatusCenter->Add(pStatusItem.release());
                }
                return 2*(zoneIdx+1)-1;
             }
@@ -14167,8 +14250,8 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryZoneCount(const CSegmentKey& segmentKey
                   {
                      strMsg.Format(_T("Group %d Girder %s Segment %d: %s is shorter than the stirrup layout. Stirrup zones beyond the end of the %s are ignored"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),strGirderLabel,strGirderLabel);
                   }
-                  pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,EGD_STIRRUPS,m_StatusGroupID,m_scidGirderDescriptionInform,strMsg);
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,EGD_STIRRUPS,m_StatusGroupID,m_scidGirderDescriptionInform,strMsg);
+                  pStatusCenter->Add(pStatusItem.release());
                }
                return (zoneIdx+1);
             }
@@ -14975,7 +15058,7 @@ void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, 
          primZonL = ezloc;
       }
 
-      if (requiredZoneLength < ezloc + TOL)
+      if (IsGT(requiredZoneLength,ezloc))
       {
          break; // actual zone length exceeds required - we are done
       }
@@ -15032,7 +15115,7 @@ void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, F
          primZonL = ezloc;
       }
 
-      if (requiredZoneLength < ezloc + TOL)
+      if (IsGT(requiredZoneLength,ezloc))
       {
          break; // actual zone length exceeds required - we are done
       }
@@ -15076,7 +15159,7 @@ bool CBridgeAgentImp::AreStirrupZoneLengthsCombatible(const CGirderKey& girderKe
          Float64 nStirrups;
          GetPrimaryVertStirrupBarInfo(segmentKey,zoneIdx,&barSize,&nStirrups,&spacing);
 
-         if (barSize != matRebar::bsNone && TOLERANCE < spacing)
+         if (barSize != matRebar::bsNone && IsGT(0.0,spacing))
          {
             // If spacings fit within 1%, then pass. Otherwise fail
             Float64 nFSpaces = zoneLength / spacing;
@@ -16799,12 +16882,18 @@ Float64 CBridgeAgentImp::GetSuperstructureDepth(PierIndexType pierIdx) const
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
             // we need a poi on the segment to get the segment height
-            PoiList vPoi;
-            GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_10L, &vPoi);
-            ATLASSERT(vPoi.size() == 1 && segmentKey == vPoi.front().get().GetSegmentKey());
+            //PoiList vPoi;
+            //GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_10L, &vPoi);
+            //ATLASSERT(vPoi.size() == 1 && segmentKey == vPoi.front().get().GetSegmentKey());
+            //const pgsPointOfInterest& poi(vPoi.front());
+            // this method is getting called during POI validation so it causes recursion.. use a dummy POI
+            Float64 Ls = GetSegmentLength(segmentKey);
+            Float64 brgOffset = GetSegmentStartBearingOffset(segmentKey);
+            Float64 endDist = GetSegmentStartEndDistance(segmentKey);
+            pgsPointOfInterest segmentEndPoi(segmentKey, Ls - brgOffset + endDist);
 
             IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-            Float64 Hg = GetHg(releaseIntervalIdx,vPoi.front());
+            Float64 Hg = GetHg(releaseIntervalIdx, segmentEndPoi);
 
             SegmentIndexType nSegments = pBackGroup->GetGirder(gdrIdx)->GetSegmentCount();
             Float64 slabOffset = pBackGroup->GetGirder(gdrIdx)->GetSegment(nSegments-1)->GetSlabOffset(pgsTypes::metEnd);
@@ -16824,12 +16913,18 @@ Float64 CBridgeAgentImp::GetSuperstructureDepth(PierIndexType pierIdx) const
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
             // we need a poi on the segment to get the segment height
-            PoiList vPoi;
-            GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L, &vPoi);
-            ATLASSERT(vPoi.size() == 1 && segmentKey == vPoi.front().get().GetSegmentKey());
+            //PoiList vPoi;
+            //GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L, &vPoi);
+            //ATLASSERT(vPoi.size() == 1 && segmentKey == vPoi.front().get().GetSegmentKey());
+            //const pgsPointOfInterest& poi(vPoi.front());
+            // this method is getting called during POI validation so it causes recursion.. use a dummy POI
+
+            Float64 brgOffset = GetSegmentStartBearingOffset(segmentKey);
+            Float64 endDist = GetSegmentStartEndDistance(segmentKey);
+            pgsPointOfInterest segmentEndPoi(segmentKey, brgOffset - endDist);
 
             IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-            Float64 Hg = GetHg(releaseIntervalIdx, vPoi.front());
+            Float64 Hg = GetHg(releaseIntervalIdx, segmentEndPoi);
 
             Float64 slabOffset = pAheadGroup->GetGirder(gdrIdx)->GetSegment(0)->GetSlabOffset(pgsTypes::metStart);
 
@@ -25967,11 +26062,10 @@ Float64 CBridgeAgentImp::GetShearInterfaceWidth(const pgsPointOfInterest& poi) c
          CString strMsg;
          strMsg.Format(_T("%s, Deck panel support width exceeds half the width of the supporting flange. An interface shear width of 0.0 will be used"),GIRDER_LABEL(segmentKey));
 
-         pgsBridgeDescriptionStatusItem* pStatusItem = 
-            new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Deck,strMsg);
+         std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Deck,strMsg);
 
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
-         pStatusCenter->Add(pStatusItem);
+         pStatusCenter->Add(pStatusItem.release());
 
       }
    }
@@ -32588,9 +32682,8 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                os << SEGMENT_LABEL(segmentKey)
                   << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than the nominal diameter of the bar (See LRFD 5.10.3.1.2)") << std::endl;
 
-               pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
-
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
+               pStatusCenter->Add(pStatusItem.release());
             }
             else if ( clear < 1.33*max_aggregate_size )
             {
@@ -32598,9 +32691,8 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                os << SEGMENT_LABEL(segmentKey)
                   << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than 1.33 times the maximum size of the coarse aggregate (See LRFD 5.10.3.1.2)") << std::endl;
 
-               pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
-
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
+               pStatusCenter->Add(pStatusItem.release());
             }
             else if ( clear < ::ConvertToSysUnits(1.0,unitMeasure::Inch) )
             {
@@ -32608,9 +32700,8 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                os << SEGMENT_LABEL(segmentKey)
                   << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than 1.0 inch (See LRFD 5.10.3.1.2)") << std::endl;
 
-               pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
-
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,EGD_LONG_REINF,m_StatusGroupID,m_scidGirderDescriptionWarning,os.str().c_str());
+               pStatusCenter->Add(pStatusItem.release());
             }
          }
 
@@ -32900,8 +32991,8 @@ void CBridgeAgentImp::LayoutClosureJointRebar(const CClosureKey& closureKey)
             os << CLOSURE_LABEL(closureKey)
                << _T(": bars in row ") << LABEL_INDEX(idx) << _T(" are outside of the girder section. These bars will be ignored.") << std::endl;
 
-            pgsGirderDescriptionStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(closureKey, EGD_LONG_REINF, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str());
-            pStatusCenter->Add(pStatusItem);
+            std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(closureKey, EGD_LONG_REINF, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str());
+            pStatusCenter->Add(pStatusItem.release());
 
             continue;
          }
@@ -32940,9 +33031,9 @@ void CBridgeAgentImp::CheckBridge()
    if ( HasOverlay() && IsZero(GetOverlayWeight()) )
    {
       CString strMsg(_T("An overlay is specified, but the overlay load is zero."));
-      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidZeroOverlayWarning,strMsg);
+      std::unique_ptr<pgsInformationalStatusItem> pStatusItem = std::make_unique<pgsInformationalStatusItem>(m_StatusGroupID,m_scidZeroOverlayWarning,strMsg);
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      pStatusCenter->Add(pStatusItem);
+      pStatusCenter->Add(pStatusItem.release());
    }
 
    // make sure all girders have positive lengths
@@ -32968,10 +33059,8 @@ void CBridgeAgentImp::CheckBridge()
                std::_tostringstream os;
                os << SEGMENT_LABEL(segmentKey) << _T(" does not have a positive length.") << std::endl;
 
-               pgsBridgeDescriptionStatusItem* pStatusItem = 
-                  new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
-
-               pStatusCenter->Add(pStatusItem);
+               std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,os.str().c_str());
+               pStatusCenter->Add(pStatusItem.release());
             }
 
 
@@ -32986,10 +33075,8 @@ void CBridgeAgentImp::CheckBridge()
                   os << _T("Closure joint length for Group ") << LABEL_GROUP(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << _T(" at the end of Segment ") << LABEL_SEGMENT(segIdx)
                      << _T(" must be greater than zero.") << std::endl;
 
-                  pgsBridgeDescriptionStatusItem* pStatusItem = 
-                     new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::Framing,os.str().c_str());
-
-                  pStatusCenter->Add(pStatusItem);
+                  std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::Framing,os.str().c_str());
+                  pStatusCenter->Add(pStatusItem.release());
                }
             }
          } // next segment
@@ -33033,10 +33120,8 @@ void CBridgeAgentImp::CheckBridge()
          std::_tostringstream os;
          os << _T("Abutment/Pier/Temporary Support line ") << LABEL_PIER(pierLineIdx-1) << _T(" intersects with abutment/pier/temporary support line ") << LABEL_PIER(pierLineIdx) << _T(". This is invalid framing geometry.") << std::endl;
 
-         pgsBridgeDescriptionStatusItem* pStatusItem =
-            new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::Framing, os.str().c_str());
-
-         pStatusCenter->Add(pStatusItem);
+         std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::Framing, os.str().c_str());
+         pStatusCenter->Add(pStatusItem.release());
       }
 
       pntLeft1 = pntLeft2;
@@ -33067,10 +33152,8 @@ void CBridgeAgentImp::CheckBridge()
          std::_tostringstream os;
          os << _T("Deck Casting region ") << LABEL_INDEX(regionIdx) << _T(" has a length of zero. Revise deck casting regions.") << std::endl;
 
-         pgsBridgeDescriptionStatusItem* pStatusItem =
-            new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::DeckCasting, os.str().c_str());
-
-         pStatusCenter->Add(pStatusItem);
+         std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::DeckCasting, os.str().c_str());
+         pStatusCenter->Add(pStatusItem.release());
       }
 
       if (regionIdx == 0)
@@ -33085,10 +33168,8 @@ void CBridgeAgentImp::CheckBridge()
             std::_tostringstream os;
             os << _T("Deck Casting regions ") << LABEL_INDEX(regionIdx-1) << _T(" and ") << LABEL_INDEX(regionIdx) << _T(" do not share a common boundary. Revise deck casting regions.") << std::endl;
 
-            pgsBridgeDescriptionStatusItem* pStatusItem =
-               new pgsBridgeDescriptionStatusItem(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::DeckCasting, os.str().c_str());
-
-            pStatusCenter->Add(pStatusItem);
+            std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::DeckCasting, os.str().c_str());
+            pStatusCenter->Add(pStatusItem.release());
          }
 
          XbLast = XbEnd;

@@ -257,3 +257,28 @@ private:
    IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };
+
+
+///////////////////////////
+// status for connection geometry
+class PGSEXTCLASS pgsConnectionGeometryStatusItem : public CEAFStatusItem
+{
+public:
+   pgsConnectionGeometryStatusItem(StatusGroupIDType statusGroupID, StatusCallbackIDType callbackID, PierIndexType pierIdx, LPCTSTR strDescription);
+   bool IsEqual(CEAFStatusItem* pOther);
+
+   PierIndexType m_PierIdx;
+};
+
+
+class PGSEXTCLASS pgsConnectionGeometryStatusCallback : public iStatusCallback
+{
+public:
+   pgsConnectionGeometryStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity = eafTypes::statusWarning);
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+
+private:
+   IBroker* m_pBroker;
+   eafTypes::StatusSeverityType m_Severity;
+};

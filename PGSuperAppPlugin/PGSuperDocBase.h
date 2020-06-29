@@ -50,14 +50,6 @@
 
 #define PGSUPER_DOCUMENT_ROOT_NODE_VERSION 3.0
 
-#define EPD_GENERAL        0
-#define EPD_CONNECTION     1
-#define EPD_SPACING        2
-
-#define ESD_GENERAL        0
-#define ESD_CONNECTION     1
-#define ESD_SPACING        2
-
 #define VS_GIRDER_ELEVATION   0
 #define VS_GIRDER_SECTION     1
 

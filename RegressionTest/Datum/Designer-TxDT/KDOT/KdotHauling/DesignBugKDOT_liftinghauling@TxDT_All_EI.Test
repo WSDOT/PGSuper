@@ -51,8 +51,8 @@ Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Ultimate vertical shear capacity check failed for Strength II Limit State
 Lifting checks failed
@@ -72,10 +72,10 @@ Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -91,10 +91,10 @@ Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Ultimate vertical shear capacity check failed for Strength II Limit State
 Lifting checks failed
 Minimum fillet value exceeded for bridge check failed
 

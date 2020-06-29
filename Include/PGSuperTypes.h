@@ -2158,6 +2158,21 @@ inline bool IsContinuousBoundaryCondition(pgsTypes::BoundaryConditionType bc)
    }
 }
 
+inline bool IsContinuousBoundaryConditionAheadSide(pgsTypes::BoundaryConditionType bc)
+{
+   return IsContinuousBoundaryCondition(bc) || bc == pgsTypes::bctIntegralBeforeDeckHingeBack || bc == pgsTypes::bctIntegralAfterDeckHingeBack;
+}
+
+inline bool IsContinuousBoundaryConditionBackSide(pgsTypes::BoundaryConditionType bc)
+{
+   return IsContinuousBoundaryCondition(bc) || bc == pgsTypes::bctIntegralBeforeDeckHingeAhead || bc == pgsTypes::bctIntegralAfterDeckHingeAhead;
+}
+
+inline bool IsContinuousBoundaryCondition(pgsTypes::PierFaceType pierFace, pgsTypes::BoundaryConditionType bc)
+{
+   return (pierFace == pgsTypes::Ahead ? IsContinuousBoundaryConditionAheadSide(bc) : IsContinuousBoundaryConditionBackSide(bc));
+}
+
 inline bool IsParabolicVariation(pgsTypes::SegmentVariationType variationType)
 {
    return (variationType == pgsTypes::svtParabolic || variationType == pgsTypes::svtDoubleParabolic ? true : false);

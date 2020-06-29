@@ -707,3 +707,64 @@ void pgsTimelineStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       pStatusCenter->RemoveByID(id);
    }
 }
+
+
+//////////////////////////////////////////////////////////
+pgsConnectionGeometryStatusItem::pgsConnectionGeometryStatusItem(StatusGroupIDType statusGroupID, StatusCallbackIDType callbackID, PierIndexType pierIdx, LPCTSTR strDescription) :
+   CEAFStatusItem(statusGroupID, callbackID, strDescription),
+   m_PierIdx(pierIdx)
+{
+}
+
+bool pgsConnectionGeometryStatusItem::IsEqual(CEAFStatusItem* pOther)
+{
+   pgsConnectionGeometryStatusItem* other = dynamic_cast<pgsConnectionGeometryStatusItem*>(pOther);
+   if (!other)
+   {
+      return false;
+   }
+
+
+   if (CString(this->GetDescription()) != CString(other->GetDescription()))
+   {
+      return false;
+   }
+
+   if (m_PierIdx != other->m_PierIdx)
+   {
+      return false;
+   }
+
+   return true;
+}
+
+
+pgsConnectionGeometryStatusCallback::pgsConnectionGeometryStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity) :
+   m_pBroker(pBroker), m_Severity(severity)
+{
+}
+
+eafTypes::StatusSeverityType pgsConnectionGeometryStatusCallback::GetSeverity() const
+{
+   return m_Severity;
+}
+
+void pgsConnectionGeometryStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+{
+   pgsConnectionGeometryStatusItem* pItem = dynamic_cast<pgsConnectionGeometryStatusItem*>(pStatusItem);
+   ATLASSERT(pItem != nullptr);
+
+   CString str;
+   str.Format(_T("%s\r\nPrecast elements must engage pier diaphragms to make the continuity connection. There is a gap between the end of this element and the diaphragm. Update the connection geometry and the diaphragm dimensions."),pItem->GetDescription());
+   AfxMessageBox(str, MB_ICONEXCLAMATION);
+
+   GET_IFACE(IEditByUI, pEdit);
+
+   if (pEdit->EditPierDescription(pItem->m_PierIdx,EPD_CONNECTION))
+   {
+      // assume that edit took care of status
+      StatusItemIDType id = pItem->GetID();
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      pStatusCenter->RemoveByID(id);
+   }
+}
