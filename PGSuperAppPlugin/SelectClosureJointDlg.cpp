@@ -50,6 +50,9 @@ CSelectClosureJointDlg::CSelectClosureJointDlg(const CBridgeDescription2* pBridg
 {   
    m_pBridgeDesc = pBridgeDesc;
 
+   m_PierIdx = INVALID_INDEX;
+   m_TempSupportID = INVALID_ID;
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);

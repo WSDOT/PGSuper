@@ -280,8 +280,25 @@ void CPGSpliceDoc::OnEditClosureJoint()
       // ask to use which one to edit
       CSelectClosureJointDlg dlg(pBridgeDesc);
       dlg.m_GirderIdx     = selection.GirderIdx == INVALID_INDEX ? 0 : selection.GirderIdx;
-      dlg.m_PierIdx       = selection.PierIdx;
-      dlg.m_TempSupportID = selection.tsID;
+
+      if (selection.Type == CSelection::Pier)
+      {
+         // current selection is a pier... make sure it has a closure joint
+         const CPierData2* pPier = pBridgeDesc->GetPier(selection.PierIdx);
+         if (pPier && pPier->IsInteriorPier() && pPier->GetClosureJoint(dlg.m_GirderIdx))
+         {
+            dlg.m_PierIdx = pPier->GetIndex();
+         }
+      }
+      else if (selection.Type == CSelection::TemporarySupport)
+      {
+         // current selection is a temporary support... make sure it has a closure joint
+         const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(selection.tsID);
+         if (pTS && pTS->GetClosureJoint(dlg.m_GirderIdx))
+         {
+            dlg.m_TempSupportID = pTS->GetID();
+         }
+      }
 
       if ( dlg.m_PierIdx == INVALID_INDEX && dlg.m_TempSupportID == INVALID_ID )
       {
