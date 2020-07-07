@@ -35,6 +35,7 @@ class ATL_NO_VTABLE CBulbTeeDistFactorEngineer :
    public CComObjectRootEx<CComSingleThreadModel>,
 //   public CComRefCountTracer<CBulbTeeDistFactorEngineer,CComObjectRootEx<CComSingleThreadModel> >,
    public CComCoClass<CBulbTeeDistFactorEngineer, &CLSID_BulbTeeDistFactorEngineer>,
+   public IBulbTeeDistFactorEngineer,
    public IDistFactorEngineer
 {
 public:
@@ -43,13 +44,16 @@ public:
 	{
 	}
 
-   void Init(/*bool treatAsWsDotI*/);
-
 DECLARE_REGISTRY_RESOURCEID(IDR_BULBTEEDISTFACTORENGINEER)
 
 BEGIN_COM_MAP(CBulbTeeDistFactorEngineer)
+   COM_INTERFACE_ENTRY(IBulbTeeDistFactorEngineer)
    COM_INTERFACE_ENTRY(IDistFactorEngineer)
 END_COM_MAP()
+
+public:
+   // IBulbTeeDistFactorEngineer
+   void Init(/*bool treatAsWsDotI*/);
 
 public:
    // IDistFactorEngineer

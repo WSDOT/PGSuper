@@ -22,6 +22,8 @@
 
 #pragma once
 
+interface IShape;
+
 DEFINE_GUID(CLSID_StrandMoverImpl, 0x5D6AFD91, 0x84F4, 0x4755, 0x9A, 0xF7, 0xB7, 0x60, 0x11, 0x4A, 0x45, 0x51);
 struct __declspec(uuid("{5D6AFD91-84F4-4755-9AF7-B760114A4551}")) StramdMoverImpl;
 
