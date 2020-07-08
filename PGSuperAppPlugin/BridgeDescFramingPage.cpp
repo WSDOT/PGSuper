@@ -300,9 +300,10 @@ void CBridgeDescFramingPage::OnLayoutBySpanLengths()
 
    CSpanLengthDlg dlg;
    dlg.m_SpanLengths = spanLengths;
+   dlg.m_PierIdx = m_StartingPierNumber-1;
    if ( dlg.DoModal() == IDOK )
    {
-      m_Grid.SetSpanLengths(dlg.m_SpanLengths,dlg.m_PierIdx);
+      m_Grid.SetSpanLengths(dlg.m_SpanLengths,dlg.m_PierIdx - m_StartingPierNumber + 1);
    }
 }
 

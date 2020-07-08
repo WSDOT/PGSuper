@@ -62,7 +62,7 @@ void CSpanLengthDlg::DoDataExchange(CDataExchange* pDX)
       m_Grid.FillGrid(m_SpanLengths);
    }
 
-   DDX_CBIndex(pDX,IDC_PIER,m_PierIdx);
+   DDX_CBItemData(pDX,IDC_PIER,m_PierIdx);
 }
 
 
@@ -79,14 +79,14 @@ BOOL CSpanLengthDlg::OnInitDialog()
 	m_Grid.SubclassDlgItem(IDC_GRID, this);
    m_Grid.CustomInit();
 
-   m_PierIdx = 0;
    PierIndexType nPiers = m_SpanLengths.size() + 1;
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_PIER);
    for ( PierIndexType i = 0; i < nPiers; i++ )
    {
       CString strValue;
-      strValue.Format(_T("%d"),i+1);
-      pCB->AddString(strValue);
+      strValue.Format(_T("%s"),LABEL_PIER(i));
+      int idx = pCB->AddString(strValue);
+      pCB->SetItemData(idx, (DWORD_PTR)(m_PierIdx+i));
    }
 
 	CDialog::OnInitDialog();
