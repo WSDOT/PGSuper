@@ -14,13 +14,14 @@ Topics
 * @subpage tg_epoxy_coated_strands
 * @subpage tg_example_calculations
 * @subpage tg_fabrication_optimization
-* @subpage tg_limit_states
+* @subpage tg_face_of_support
 * @subpage tg_fatigue
 * @subpage tg_flexural_resistance_factor
 * @subpage tg_girder_spacing
 * @subpage tg_interface_shear
 * @subpage tg_lateral_deflections
 * @subpage tg_lightweight_concrete
+* @subpage tg_limit_states
 * @subpage tg_lldf
 * @subpage tg_live_load
 * @subpage tg_live_load_deflection

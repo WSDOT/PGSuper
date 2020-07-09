@@ -269,7 +269,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
       (*pTable)(row++,1) << _T("Length of Span");
 
       (*pTable)(row,0) << _T("FoS");
-      (*pTable)(row++,1) << _T("Face of Support");
+      (*pTable)(row++,1) << _T("Face of Support in final bridge configuration");
 
       (*pTable)(row, 0) << _T("ST");
       (*pTable)(row++, 1) << _T("Section Transitions");

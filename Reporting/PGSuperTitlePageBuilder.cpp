@@ -416,7 +416,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
       (*pTable)(row++, 1) << _T("Point of prestress transfer");
 
       (*pTable)(row, 0) << _T("FoS");
-      (*pTable)(row++, 1) << _T("Face of Support");
+      (*pTable)(row++, 1) << _T("Face of Support in final bridge configuration");
 
       (*pTable)(row, 0) << _T("ST");
       (*pTable)(row++, 1) << _T("Section Transitions");

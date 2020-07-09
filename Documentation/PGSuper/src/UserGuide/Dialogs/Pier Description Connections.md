@@ -25,12 +25,9 @@ Integral on back side; Hinged on ahead side | Integral on back side of pier and 
 Integral on back side after deck placement; Hinged on ahead side | Integral on back side of pier and hinged on ahead side. See Integral after deck placement and Hinge boundary conditions.
 Integral on back side before deck placement; Hinged on ahead side | Integral on back side of pier and hinged on ahead side. See Integral before deck placement and Hinge boundary conditions.
 
-
-Connection Definition
----------------------
+### Girder Connection Properties ###
 Define the geometry of the connection. Press [Copy Connection Geometry from Library] to copy pre-defined connection geometry from the library.
 
-### Girder Connection Properties ###
 Define the geometric parameters that locate the centerline of bearing and ends of girders. The schematic image illustrates how the dimensions are measured.
 
 Item | Description
@@ -38,11 +35,8 @@ Item | Description
 Bearing Offset | Distance from the abutment/pier line to the centerline of bearing line. Use the drop down list to define how this dimension is measured.
 End Distance | Distance from the centerline of bearing line to the nearest end of the girder. Use the drop down list to define how this dimension is measured.
 
-> Note: The face of support for various shear releated computations is located one-half of the bearing length from the centerline bearing.
+### Pier Diaphragm Dimensions ###
 
-
-Diaphragm
------------
 Defines the geometry of a cast in place diaphragm.
 
 Item | Description
@@ -51,3 +45,9 @@ Diaphragm Height | Height of the diaphragm. Enter the keyword "Compute" to have 
 Diaphragm Width | Cross sectional width of the diaphragm. Enter the keyword "Compute" to have this value computed based on the girder size and connection geometry.
 Load Application | Use the drop down list to define how the weight of the diaphragm is applied to the model.
 Distance from CL Bearing to C.G. of Diaphragm | If "Apply weight of diaphragm to girder" is selected for the load application option, this parameter defines the distance from the CL Bearing to the center of gravity of the diaphragm. This is the moment arm for the diaphragm dead load. If the moment arm exceeds the girder end distance, an equivalent force and moment will be applied at the end of the segment.
+
+> NOTE: See @ref tg_computing_pier_diaphragm_dimensions for more information about automatically computed diaphragm dimensions.
+
+### Face of Support ###
+The face of support for various shear releated computations is based on the connection and diaphragm geometry as well as the boundary conditions. See @ref tg_face_of_support for more information.
+
