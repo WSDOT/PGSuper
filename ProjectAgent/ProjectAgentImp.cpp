@@ -7927,6 +7927,26 @@ void CProjectAgentImp::SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::Pier
    }
 }
 
+void CProjectAgentImp::SetBoundaryCondition(SupportIndexType tsIdx, pgsTypes::TemporarySupportType supportType)
+{
+   CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(tsIdx);
+   if (pTS->GetSupportType() != supportType)
+   {
+      pTS->SetSupportType(supportType);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetBoundaryCondition(SupportIndexType tsIdx, pgsTypes::TempSupportSegmentConnectionType connectionType, EventIndexType castClosureEventIdx)
+{
+   CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(tsIdx);
+   if (pTS->GetConnectionType() != connectionType)
+   {
+      pTS->SetConnectionType(connectionType, castClosureEventIdx);
+      Fire_BridgeChanged();
+   }
+}
+
 void CProjectAgentImp::DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan)
 {
    ATLASSERT( 1 < m_BridgeDescription.GetSpanCount() );

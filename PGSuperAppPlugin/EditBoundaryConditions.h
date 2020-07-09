@@ -30,8 +30,14 @@
 class txnEditBoundaryConditions : public txnTransaction
 {
 public:
+   // pier boundary conditions
    txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::BoundaryConditionType oldBC,pgsTypes::BoundaryConditionType newBC);
    txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType oldBC,EventIndexType oldEventIdx,pgsTypes::PierSegmentConnectionType newBC,EventIndexType newEventIdx);
+
+   // temporary support boundary conditions
+   txnEditBoundaryConditions(SupportIndexType tsIdx, pgsTypes::TemporarySupportType oldBC, pgsTypes::TemporarySupportType newBC);
+   txnEditBoundaryConditions(SupportIndexType tsIdx, pgsTypes::TemporarySupportType oldSupportType, pgsTypes::TempSupportSegmentConnectionType oldConnectionType, EventIndexType oldEventIdx, pgsTypes::TemporarySupportType newSupportType, pgsTypes::TempSupportSegmentConnectionType newConnectionType, EventIndexType newEventIdx);
+
    virtual std::_tstring Name() const;
    virtual txnTransaction* CreateClone() const;
    virtual bool Execute();
@@ -41,11 +47,14 @@ public:
 
 private:
    bool DoExecute(int i);
+   bool m_bIsPier; // true if pier, false if temporary support
    bool m_bIsBoundaryPier;
-   PierIndexType m_PierIdx;
-   pgsTypes::BoundaryConditionType m_BoundaryConditionType[2];
-   pgsTypes::PierSegmentConnectionType m_SegmentConnectionType[2];
-   EventIndexType m_CastClosureJointEventIdx[2];
+   IndexType m_Index;
+   std::array<pgsTypes::BoundaryConditionType, 2> m_BoundaryConditionType;
+   std::array<pgsTypes::PierSegmentConnectionType, 2> m_PierSegmentConnectionType;
+   std::array<pgsTypes::TemporarySupportType, 2> m_SupportType;
+   std::array<pgsTypes::TempSupportSegmentConnectionType, 2> m_TemporarySupportSegmentConnectionType;
+   std::array<EventIndexType, 2> m_CastClosureJointEventIdx;
 };
 
 #endif // INCLUDED_EDITBOUNDARYCONDITIONS_H_

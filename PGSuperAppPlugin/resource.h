@@ -1551,13 +1551,15 @@
 #define ID_ADD_MOMENT_LOAD_CTX          36999
 #define ID_PROJECT_BARRIER              37000
 #define ID_EDIT_BEARING                 37001
+#define IDM_ERECTION_TOWER              37002
+#define IDM_STRONG_BACK                 37003
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        405
-#define _APS_NEXT_COMMAND_VALUE         37001
+#define _APS_NEXT_COMMAND_VALUE         37004
 #define _APS_NEXT_CONTROL_VALUE         2029
 #define _APS_NEXT_SYMED_VALUE           115
 #endif

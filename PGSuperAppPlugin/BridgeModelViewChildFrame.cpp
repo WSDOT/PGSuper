@@ -119,7 +119,9 @@ BEGIN_MESSAGE_MAP(CBridgeModelViewChildFrame, CSplitChildFrame)
 	//}}AFX_MSG_MAP
    ON_COMMAND_RANGE(IDM_HINGE,IDM_INTEGRAL_SEGMENT_AT_PIER,OnBoundaryCondition)
    ON_UPDATE_COMMAND_UI_RANGE(IDM_HINGE,IDM_INTEGRAL_SEGMENT_AT_PIER,OnUpdateBoundaryCondition)
-	ON_MESSAGE(WM_HELP, OnCommandHelp)
+   ON_COMMAND_RANGE(IDM_ERECTION_TOWER,IDM_STRONG_BACK,OnTemporarySupportType)
+   ON_UPDATE_COMMAND_UI_RANGE(IDM_ERECTION_TOWER, IDM_STRONG_BACK, OnUpdateTemporarySupportType)
+   ON_MESSAGE(WM_HELP, OnCommandHelp)
    ON_NOTIFY(UDN_DELTAPOS, IDC_START_GROUP_SPIN, &CBridgeModelViewChildFrame::OnStartGroupChanged)
    ON_NOTIFY(UDN_DELTAPOS, IDC_END_GROUP_SPIN, &CBridgeModelViewChildFrame::OnEndGroupChanged)
    ON_CONTROL_RANGE(BN_CLICKED,IDC_BRIDGE,IDC_ALIGNMENT,OnViewModeChanged)
@@ -948,12 +950,77 @@ void CBridgeModelViewChildFrame::OnInsertPier()
    }
 }
 
+EventIndexType GetDefaultCastClosureJointEvent(IBridgeDescription* pIBridgeDesc,const CGirderGroupData* pGroup)
+{
+   // A new closure joint is being created. We need to supply the bridge model with the event index
+   // for when the closure joint is cast. Since the user wasn't prompted (this is a response
+   // handler for a right-click context menu) the first-best guess is to use the closure casting
+   // event for another closure joint in this girder.
+
+   GroupIndexType grpIdx = pGroup->GetIndex();
+
+   EventIndexType newClosureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(grpIdx, 0);
+   if (newClosureEventIdx == INVALID_INDEX)
+   {
+      // there isn't another closure joint in this group with a valid event index
+      // the next best guess is to use the event just before the event when the first 
+      // tendon is installed.
+      EventIndexType eventIdx = INVALID_INDEX;
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+      {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         CGirderKey girderKey(pGirder->GetGirderKey());
+         const CPTData* pPT = pGirder->GetPostTensioning();
+         DuctIndexType nDucts = pPT->GetDuctCount();
+         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+         {
+            EventIndexType stressTendonEventIdx = pIBridgeDesc->GetStressTendonEventIndex(girderKey, ductIdx);
+            eventIdx = Min(eventIdx, stressTendonEventIdx);
+         }
+      }
+
+      if (eventIdx != INVALID_INDEX)
+      {
+         newClosureEventIdx = eventIdx - 1;
+      }
+   }
+
+   if (newClosureEventIdx == INVALID_INDEX)
+   {
+      // the last best guess is to cast the closure when the segments are installed
+      EventIndexType eventIdx = 0;
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+      {
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+         SegmentIndexType nSegments = pGirder->GetSegmentCount();
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+            CSegmentKey segmentKey(pSegment->GetSegmentKey());
+            EventIndexType erectSegmentEventIdx = pIBridgeDesc->GetSegmentErectionEventIndex(segmentKey);
+            eventIdx = Max(eventIdx, erectSegmentEventIdx);
+         }
+      }
+
+      if (eventIdx != INVALID_INDEX)
+      {
+         newClosureEventIdx = eventIdx;
+      }
+   }
+
+   // if this fires then there is a use case that hasn't been considered
+   ATLASSERT(newClosureEventIdx != INVALID_INDEX);
+
+   return newClosureEventIdx;
+}
+
 void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
 {
-#pragma Reminder("UPDATE: need to deal with InteriorPier... this is for BoundaryPier")
-   PierIndexType pierIdx;
    CBridgePlanView* pView = GetBridgePlanView();
-	if ( pView->GetSelectedPier(&pierIdx) )
+   PierIndexType pierIdx;
+   if ( pView->GetSelectedPier(&pierIdx) )
    {
       pgsTypes::BoundaryConditionType newBoundaryConditionType;
       pgsTypes::PierSegmentConnectionType newSegmentConnectionType;
@@ -1008,73 +1075,63 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
             // for when the closure joint is cast. Since the user wasn't prompted (this is a response
             // handler for a right-click context menu) the first-best guess is to use the closure casting
             // event for another closure joint in this girder.
-
-            newClosureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(grpIdx,0);
-            if ( newClosureEventIdx == INVALID_INDEX )
-            {
-               // there isn't another closure joint in this group with a valid event index
-               // the next best guess is to use the event just before the event when the first 
-               // tendon is installed.
-               EventIndexType eventIdx = INVALID_INDEX;
-               GirderIndexType nGirders = pGroup->GetGirderCount();
-               for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-               {
-                  const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-                  CGirderKey girderKey(pGirder->GetGirderKey());
-                  const CPTData* pPT = pGirder->GetPostTensioning();
-                  DuctIndexType nDucts = pPT->GetDuctCount();
-                  for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
-                  {
-                     EventIndexType stressTendonEventIdx = pIBridgeDesc->GetStressTendonEventIndex(girderKey,ductIdx);
-                     eventIdx = Min(eventIdx,stressTendonEventIdx);
-                  }
-               }
-
-               if ( eventIdx != INVALID_INDEX )
-               {
-                  newClosureEventIdx = eventIdx-1;
-               }
-            }
-
-            if ( newClosureEventIdx == INVALID_INDEX )
-            {
-               // the last best guess is to cast the closure when the segments are installed
-               EventIndexType eventIdx = 0;
-               GirderIndexType nGirders = pGroup->GetGirderCount();
-               for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
-               {
-                  const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-                  SegmentIndexType nSegments = pGirder->GetSegmentCount();
-                  for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-                  {
-                     const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
-                     CSegmentKey segmentKey(pSegment->GetSegmentKey());
-                     EventIndexType erectSegmentEventIdx = pIBridgeDesc->GetSegmentErectionEventIndex(segmentKey);
-                     eventIdx = Max(eventIdx,erectSegmentEventIdx);
-                  }
-               }
-
-               if ( eventIdx != INVALID_INDEX )
-               {
-                  newClosureEventIdx = eventIdx;
-               }
-            }
-
-            // if this fires then there is a use case that hasn't been considered
-            ATLASSERT(newClosureEventIdx != INVALID_INDEX);
+            newClosureEventIdx = GetDefaultCastClosureJointEvent(pIBridgeDesc, pGroup);
          }
 
          pTxn = new txnEditBoundaryConditions(pierIdx,oldConnectionType,oldClosureEventIdx,newSegmentConnectionType,newClosureEventIdx);
       }
       txnTxnManager::GetInstance()->Execute(pTxn);
    }
+
+   SupportIndexType tsIdx;
+   if (pView->GetSelectedTemporarySupport(&tsIdx))
+   {
+      pgsTypes::TempSupportSegmentConnectionType newConnectionType;
+      switch (nIDC)
+      {
+      case IDM_CONTINUOUS_CLOSURE:  newConnectionType = pgsTypes::tsctClosureJoint;         break;
+      case IDM_CONTINUOUS_SEGMENT:  newConnectionType = pgsTypes::tsctContinuousSegment;    break;
+      default: ATLASSERT(false); // is there a new connection type?
+      }
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      txnEditBoundaryConditions* pTxn;
+
+      const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
+      pgsTypes::TemporarySupportType supportType = pTS->GetSupportType();
+      pgsTypes::TempSupportSegmentConnectionType oldConnectionType = pTS->GetConnectionType();
+      EventIndexType oldClosureEventIdx = INVALID_INDEX;
+      EventIndexType newClosureEventIdx = INVALID_INDEX;
+      const CGirderGroupData* pGroup = pTS->GetSpan()->GetPier(pgsTypes::metStart)->GetGirderGroup(pgsTypes::Ahead);
+      GroupIndexType grpIdx = pGroup->GetIndex();
+      if (oldConnectionType == pgsTypes::tsctClosureJoint)
+      {
+         IndexType closureIdx = pTS->GetClosureJoint(0)->GetIndex();
+         oldClosureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(grpIdx, closureIdx);
+      }
+
+      if (newConnectionType == pgsTypes::tsctClosureJoint)
+      {
+         // A new closure joint is being created. We need to supply the bridge model with the event index
+         // for when the closure joint is cast. Since the user wasn't prompted (this is a response
+         // handler for a right-click context menu) the first-best guess is to use the closure casting
+         // event for another closure joint in this girder.
+         newClosureEventIdx = GetDefaultCastClosureJointEvent(pIBridgeDesc, pGroup);
+      }
+
+      pTxn = new txnEditBoundaryConditions(tsIdx, supportType, oldConnectionType, oldClosureEventIdx, supportType, newConnectionType, newClosureEventIdx);
+      txnTxnManager::GetInstance()->Execute(pTxn);
+   }
 }
 
 void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
 {
-   PierIndexType pierIdx;
    CBridgePlanView* pView = GetBridgePlanView();
-	if ( pView->GetSelectedPier(&pierIdx) )
+   PierIndexType pierIdx;
+   if ( pView->GetSelectedPier(&pierIdx) )
    {
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
@@ -1109,6 +1166,104 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
             case IDM_INTEGRAL_SEGMENT_AT_PIER:       pCmdUI->SetCheck(segmentConnectionType == pgsTypes::psctIntegralSegment);       break;
             default: ATLASSERT(false); // is there a new connection type?
          }
+      }
+   }
+
+   SupportIndexType tsIdx;
+   if (pView->GetSelectedTemporarySupport(&tsIdx))
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
+      pgsTypes::TempSupportSegmentConnectionType segmentConnectionType = pTS->GetConnectionType();
+      switch (pCmdUI->m_nID)
+      {
+      case IDM_CONTINUOUS_CLOSURE: pCmdUI->SetCheck(segmentConnectionType == pgsTypes::tsctClosureJoint); break;
+      case IDM_CONTINUOUS_SEGMENT: pCmdUI->SetCheck(segmentConnectionType == pgsTypes::tsctContinuousSegment); break;
+      default: ATLASSERT(false); // is there a new connection type?
+      }
+   }
+}
+
+void CBridgeModelViewChildFrame::OnTemporarySupportType(UINT nIDC)
+{
+   CBridgePlanView* pView = GetBridgePlanView();
+   SupportIndexType tsIdx;
+   if (pView->GetSelectedTemporarySupport(&tsIdx))
+   {
+      pgsTypes::TemporarySupportType newSupportType;
+      switch (nIDC)
+      {
+      case IDM_ERECTION_TOWER:  newSupportType = pgsTypes::ErectionTower;         break;
+      case IDM_STRONG_BACK:  newSupportType = pgsTypes::StrongBack;    break;
+      default: ATLASSERT(false); // is there a new connection type?
+      }
+
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
+
+      txnEditBoundaryConditions* pTxn;
+      pgsTypes::TemporarySupportType oldSupportType = pTS->GetSupportType();
+      pgsTypes::TempSupportSegmentConnectionType oldConnectionType = pTS->GetConnectionType();
+      if (oldConnectionType == pgsTypes::tsctClosureJoint)
+      {
+         // if there is a closure joint we can toggle between erection tower and strong back
+         pTxn = new txnEditBoundaryConditions(tsIdx, oldSupportType, newSupportType);
+      }
+      else
+      {
+         pgsTypes::TempSupportSegmentConnectionType newConnectionType;
+         switch (nIDC)
+         {
+         case IDM_ERECTION_TOWER: newConnectionType = oldConnectionType; break;
+         case IDM_STRONG_BACK: newConnectionType = pgsTypes::tsctClosureJoint; break; // strong backs must hae a closure joint type connection
+         default: ATLASSERT(false); // is there a new type?
+         }
+
+         EventIndexType oldClosureEventIdx = INVALID_INDEX;
+         EventIndexType newClosureEventIdx = INVALID_INDEX;
+         const CGirderGroupData* pGroup = pTS->GetSpan()->GetPier(pgsTypes::metStart)->GetGirderGroup(pgsTypes::Ahead);
+         GroupIndexType grpIdx = pGroup->GetIndex();
+         if (oldConnectionType == pgsTypes::tsctClosureJoint)
+         {
+            IndexType closureIdx = pTS->GetClosureJoint(0)->GetIndex();
+            oldClosureEventIdx = pIBridgeDesc->GetCastClosureJointEventIndex(grpIdx, closureIdx);
+         }
+
+         if (newConnectionType == pgsTypes::tsctClosureJoint)
+         {
+            // A new closure joint is being created. We need to supply the bridge model with the event index
+            // for when the closure joint is cast. Since the user wasn't prompted (this is a response
+            // handler for a right-click context menu) the first-best guess is to use the closure casting
+            // event for another closure joint in this girder.
+            newClosureEventIdx = GetDefaultCastClosureJointEvent(pIBridgeDesc, pGroup);
+         }
+
+         pTxn = new txnEditBoundaryConditions(tsIdx, oldSupportType, oldConnectionType, oldClosureEventIdx, newSupportType, newConnectionType, newClosureEventIdx);
+      }
+      txnTxnManager::GetInstance()->Execute(pTxn);
+   }
+}
+
+void CBridgeModelViewChildFrame::OnUpdateTemporarySupportType(CCmdUI* pCmdUI)
+{
+   CBridgePlanView* pView = GetBridgePlanView();
+   SupportIndexType tsIdx;
+   if (pView->GetSelectedTemporarySupport(&tsIdx))
+   {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
+      pgsTypes::TemporarySupportType type = pTS->GetSupportType();
+      switch (pCmdUI->m_nID)
+      {
+      case IDM_ERECTION_TOWER: pCmdUI->SetCheck(type == pgsTypes::ErectionTower); break;
+      case IDM_STRONG_BACK: pCmdUI->SetCheck(type == pgsTypes::StrongBack); break;
+      default: ATLASSERT(false); // is there a new connection type?
       }
    }
 }

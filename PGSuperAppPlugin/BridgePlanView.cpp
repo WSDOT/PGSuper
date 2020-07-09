@@ -491,6 +491,36 @@ void CBridgePlanView::SelectAlignment(bool bSelect)
    }
 }
 
+bool CBridgePlanView::GetSelectedTemporarySupport(SupportIndexType* ptsIdx)
+{
+   CComPtr<iDisplayMgr> dispMgr;
+   GetDisplayMgr(&dispMgr);
+
+   DisplayObjectContainer displayObjects;
+   dispMgr->GetSelectedObjects(&displayObjects);
+
+   ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1);
+
+   if (displayObjects.size() == 0)
+   {
+      return false;
+   }
+
+   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+
+   TemporarySupportDisplayObjectInfo* pInfo;
+   pDO->GetItemData((void**)&pInfo);
+
+   if (pInfo == nullptr || pInfo->DisplayListID != TEMPORARY_SUPPORT_DISPLAY_LIST)
+   {
+      return false;
+   }
+
+   *ptsIdx = pInfo->tsIdx;
+
+   return true;
+}
+
 void CBridgePlanView::SelectTemporarySupport(SupportIDType tsID,bool bSelect)
 {
    CComPtr<iDisplayMgr> dispMgr;
@@ -2526,9 +2556,12 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       doCenterLine->SetSelectionType(stAll);
       doCenterLine->SetID(tsID);
 
+      TemporarySupportDisplayObjectInfo* pInfo = new TemporarySupportDisplayObjectInfo(tsIdx, TEMPORARY_SUPPORT_DISPLAY_LIST);
+      doCenterLine->SetItemData((void*)pInfo, true);
+
       // Register an event sink with the centerline display object so that we can handle double clicks
       // on the temporary supports differently then a general double click
-      CTemporarySupportDisplayObjectEvents* pEvents = new CTemporarySupportDisplayObjectEvents(tsID,pFrame);
+      CTemporarySupportDisplayObjectEvents* pEvents = new CTemporarySupportDisplayObjectEvents(pTS,pFrame);
       CComPtr<iDisplayObjectEvents> events;
       events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
 

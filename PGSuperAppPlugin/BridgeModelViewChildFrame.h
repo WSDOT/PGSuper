@@ -164,6 +164,8 @@ protected:
    afx_msg void OnUpdateSchematic(CCmdUI* pCmdUI);
    afx_msg void OnBoundaryCondition(UINT nIDC);
    afx_msg void OnUpdateBoundaryCondition(CCmdUI* pCmdUI);
+   afx_msg void OnTemporarySupportType(UINT nIDC);
+   afx_msg void OnUpdateTemporarySupportType(CCmdUI* pCmdUI);
    afx_msg LRESULT OnCommandHelp(WPARAM, LPARAM lParam);
    //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

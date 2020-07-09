@@ -35,10 +35,10 @@
 class CTemporarySupportDisplayObjectEvents : public CCmdTarget
 {
 public:
-	CTemporarySupportDisplayObjectEvents(SupportIDType tsID,CBridgeModelViewChildFrame* pFrame);
+	CTemporarySupportDisplayObjectEvents(const CTemporarySupportData* pTS,CBridgeModelViewChildFrame* pFrame);
 
 protected:
-   SupportIndexType m_tsID;
+   const CTemporarySupportData* m_pTS;
    CBridgeModelViewChildFrame* m_pFrame;
 
    const CTemporarySupportData* m_pPrevTS;
