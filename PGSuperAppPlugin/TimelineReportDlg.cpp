@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimelineReportDlg dialog
-CTimelineReportDlg::CTimelineReportDlg(std::shared_ptr<CBrokerReportSpecification>& pRptSpec, CWnd* pParent /*=nullptr*/)
+CTimelineReportDlg::CTimelineReportDlg(std::shared_ptr<CTimelineManagerReportSpecification>& pRptSpec, CWnd* pParent /*=nullptr*/)
 	: CDialog(CTimelineReportDlg::IDD, pParent), m_pRptSpec(pRptSpec)
 {
 	//{{AFX_DATA_INIT(CTimelineReportDlg)
@@ -92,7 +92,7 @@ BOOL CTimelineReportDlg::OnInitDialog()
    CComPtr<IBroker> pBroker;
    m_pRptSpec->GetBroker(&pBroker);
 
-   std::shared_ptr<CReportSpecification> pRptSpec = std::dynamic_pointer_cast<CReportSpecification, CBrokerReportSpecification>(m_pRptSpec);
+   std::shared_ptr<CReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CTimelineManagerReportSpecification>(m_pRptSpec);
 
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
    std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;

@@ -28,6 +28,7 @@
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <Reporting\BridgeAnalysisReportSpecificationBuilder.h>
+#include <Reporting\TimelineManagerReportSpecificationBuilder.h>
 
 #include <Reporting\AlignmentChapterBuilder.h>
 #include <Reporting\DeckElevationChapterBuilder.h>
@@ -501,7 +502,7 @@ void CReporterBase::CreateTimelineReport()
 {
    GET_IFACE(IReportManager, pRptMgr);
 
-   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CBrokerReportSpecificationBuilder>(m_pBroker));
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CTimelineManagerReportSpecificationBuilder>(m_pBroker));
 
    std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Timeline Manager Report"), true)); // hidden report
    //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report

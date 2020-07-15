@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\TimelineChapterBuilder.h>
 #include <Reporting\BrokerReportSpecification.h>
+#include <Reporting\TimelineManagerReportSpecification.h>
 
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
@@ -52,7 +53,11 @@ LPCTSTR CTimelineChapterBuilder::GetName() const
 rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
    CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   CTimelineManagerReportSpecification* pTimelineMgrRptSpec = dynamic_cast<CTimelineManagerReportSpecification*>(pRptSpec);
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+
+   CComPtr<IBroker> pBroker;
+   pBrokerRptSpec->GetBroker(&pBroker);
 
    CGirderKey girderKey;
    if (pGirderRptSpec)
@@ -60,18 +65,22 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       girderKey = pGirderRptSpec->GetGirderKey();
    }
 
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
-
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoadData, pUserDefinedLoads);
-
    GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const auto* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const auto* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+
+   const CTimelineManager* pTimelineMgr;
+   if (pTimelineMgrRptSpec)
+   {
+      pTimelineMgr = pTimelineMgrRptSpec->GetTimelineManager();
+   }
+   else
+   {
+      pTimelineMgr = pIBridgeDesc->GetTimelineManager();
+   }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;

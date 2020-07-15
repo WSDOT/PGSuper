@@ -20,51 +20,39 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#pragma once
-
-
-#include "resource.h"
+#include "stdafx.h"
 #include <Reporting\TimelineManagerReportSpecification.h>
 
-/////////////////////////////////////////////////////////////////////////////
-// CTimelineReportDlg dialog
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-class CTimelineReportDlg : public CDialog
+CTimelineManagerReportSpecification::CTimelineManagerReportSpecification(LPCTSTR strReportName, IBroker* pBroker) :
+   CBrokerReportSpecification(strReportName,pBroker)
 {
-// Construction
-public:
-   CTimelineReportDlg(std::shared_ptr<CTimelineManagerReportSpecification>& pRptSpec, CWnd* pParent=nullptr);
+   m_pTimelineMgr = nullptr;
+}
 
-// Dialog Data
-	//{{AFX_DATA(CTimelineReportDlg)
-	enum { IDD = IDD_TIMELINE_REPORT };
-	//}}AFX_DATA
+CTimelineManagerReportSpecification::~CTimelineManagerReportSpecification(void)
+{
+}
 
-// Operations
+void CTimelineManagerReportSpecification::SetTimelineManager(const CTimelineManager* pTimelineMgr)
+{
+   m_pTimelineMgr = pTimelineMgr;
+}
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CTimelineReportDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+const CTimelineManager* CTimelineManagerReportSpecification::GetTimelineManager() const
+{
+   return m_pTimelineMgr;
+}
 
-// Implementation
-protected:
-   std::shared_ptr<CTimelineManagerReportSpecification> m_pRptSpec;
-   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+HRESULT CTimelineManagerReportSpecification::Validate() const
+{
+   if (!m_pTimelineMgr)
+      return E_FAIL;
 
-	// Generated message map functions
-	//{{AFX_MSG(CDesignOutcomeDlg)
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnPrint();
-	virtual void OnOK();
-	virtual BOOL OnInitDialog();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
-   void CleanUp();
-};
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
+   return CBrokerReportSpecification::Validate();
+}

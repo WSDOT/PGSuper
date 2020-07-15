@@ -31,6 +31,7 @@
 #include <IFace\Project.h>
 
 #include <IReportManager.h>
+#include <Reporting\TimelineManagerReportSpecification.h>
 
 
 #ifdef _DEBUG
@@ -157,7 +158,6 @@ void CEditTimelineDlg::OnHelp()
    EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_TIMELINE_MANAGER);
 }
 
-
 void CEditTimelineDlg::OnBnClickedViewTimelineSummary()
 {
    CComPtr<IBroker> pBroker;
@@ -167,8 +167,8 @@ void CEditTimelineDlg::OnBnClickedViewTimelineSummary()
    std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
 
-   std::shared_ptr<CBrokerReportSpecification> pBrokerRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CReportSpecification>(pRptSpec);
-
-   CTimelineReportDlg dlg(pBrokerRptSpec);
+   std::shared_ptr<CTimelineManagerReportSpecification> pTimelineMgrRptSpec = std::dynamic_pointer_cast<CTimelineManagerReportSpecification, CReportSpecification>(pRptSpec);
+   pTimelineMgrRptSpec->SetTimelineManager(&m_TimelineManager);
+   CTimelineReportDlg dlg(pTimelineMgrRptSpec);
    dlg.DoModal();
 }
