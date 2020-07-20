@@ -288,7 +288,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    Float64 kt = pSectProp->GetKt(releaseIntervalIdx, pois);
 
-   StrandIndexType numRaisedStraightStrands = GetNumRaisedStraightStrands(pStrandGeometry, segmentKey, pois, kt);
+   StrandIndexType numRaisedStraightStrands = GetNumRaisedStraightStrands(pBroker, segmentKey);
 
    std::_tstring bridgeName = pProjectProperties->GetBridgeName();
    // Max length of name is 16 chars
@@ -360,9 +360,10 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 
 	/* 4. STRAND PATTERN */
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+   txcwStrandLayoutType strandLayout = GetStrandLayoutType(pBroker, girderKey);
 
    TCHAR  strandPat[5+1]; 
-   bool do_write_ns_data = !IsTxDOTStandardStrands( isHarpedDesign, pStrands->GetStrandDefinitionType(), segmentKey, pBroker );
+   bool do_write_ns_data = !IsTxDOTStandardStrands( strandLayout, pStrands->GetStrandDefinitionType(), segmentKey, pBroker );
    if (do_write_ns_data)
    {
 	   _tcscpy_s(strandPat, sizeof(strandPat)/sizeof(TCHAR), _T("*"));

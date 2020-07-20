@@ -139,7 +139,8 @@ inline StrandIndexType GetNumRaisedStraightStrands(IStrandGeometry * pStrandGeom
    return numRaisedStraightStrands;
 }
 
-static bool IsTxDOTStandardStrands(bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
+// Legacy TxDOT algo for determining strand fill type. Not really useful for our purposes, but this is how it's always been done...
+static bool IsTxStandardStrands(bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 
@@ -413,7 +414,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    TCHAR  strandPat[5+1]; 
-   bool do_write_ns_data = !IsTxDOTStandardStrands( isHarpedDesign, pStrands->GetStrandDefinitionType(), segmentKey, pBroker );
+   bool do_write_ns_data = !IsTxStandardStrands( isHarpedDesign, pStrands->GetStrandDefinitionType(), segmentKey, pBroker );
    if (do_write_ns_data)
    {
 	   _tcscpy_s(strandPat, sizeof(strandPat)/sizeof(TCHAR), _T("*"));

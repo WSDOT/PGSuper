@@ -30,6 +30,7 @@
 
 // Utility class for structuring debond data
 #include <PgsExt\DebondUtil.h>
+#include "TxDOTOptionalDesignUtilities.h"
 
 // LOCAL INCLUDES
 //
@@ -61,16 +62,11 @@ public:
       m_RowNum(0), m_NonStandardCnt(0)
    {;}
 
-   // Determine what type of strand layout we have
-   enum txcwStrandLayout { tslStraight, tslHarped, tslDebondedIBeam, tslMixed };
-
    // Non-standard string can either be put into a separate table (excel) or integrated into the main table (txt)
    enum txcwNsTableLayout { ttlnTwoTables, ttlnSingleTable };
 
-   txcwStrandLayout GetStrandLayoutType(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys);
-
    // Main External function to write the file
-   int WriteCADDataToFile(CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, txcwStrandLayout strandLayout, txcwNsTableLayout tableLayout);
+   int WriteCADDataToFile(CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, txcwStrandLayoutType strandLayout, txcwNsTableLayout tableLayout, bool isIBeam);
 
 private:
    Uint32 m_RowNum;

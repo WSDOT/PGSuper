@@ -28,12 +28,16 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\DebondUtil.h>
 #include <PsgLib\GirderLibraryEntry.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <IFace\Intervals.h>
+#include <IFace\Project.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
 
 // local function
 
@@ -368,111 +372,241 @@ std::list<ColumnIndexType> ComputeTableCols(const std::vector<CGirderKey>& girde
    return final_blocks;
 }
 
-bool IsTxDOTStandardStrands(bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
+
+StrandIndexType GetNumRaisedStraightStrands(IBroker* pBroker, const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   GET_IFACE2(pBroker, ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker, IIntervals,pIntervals);
 
+   PoiList vPoi;
+   pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
+	ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& pmid(vPoi.back());
+
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   Float64 kt = pSectProp->GetKt(releaseIntervalIdx, pmid);
+
+   StrandIndexType numRaisedStraightStrands = 0;
+   if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) && 0 < pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped))
+   {
+
+      CComPtr<IPoint2dCollection> pPoints;
+      pStrandGeometry->GetStrandPositions(pmid, pgsTypes::Harped, &pPoints);
+      StrandIndexType Ns;
+      pPoints->get_Count(&Ns);
+      StrandIndexType strandIdx;
+      for (strandIdx = 0; strandIdx < Ns; strandIdx++)
+      {
+         CComPtr<IPoint2d> strand_point;
+         pPoints->get_Item(strandIdx, &strand_point);
+
+         Float64 y;
+         strand_point->get_Y(&y); // measured in Girder Section Coordinates
+         y *= -1.0;
+         if (y < kt)
+         {
+            numRaisedStraightStrands++; // above the kern
+         }
+      }
+   }
+
+   return numRaisedStraightStrands;
+}
+
+bool IsIBeam(IBroker * pBroker, const CGirderKey & girderKey)
+{
+   // IGirders are treated differently than others
+   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   std::_tstring girderFamily = pBridgeDesc->GetGirderFamilyName();
+   return girderFamily == _T("I-Beam");
+}
+
+bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
+{
+
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
    StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
    StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    StrandIndexType nperm = ns + nh;
+
+   bool isIBeam = IsIBeam(pBroker, segmentKey);
 
    if (nperm == 0)
    {
       return false; // no strands, not standard
    }
-   else if (sdtType == CStrandData::sdtTotal)
+   else
    {
-      // strands filled using library order. always standard
-      return true;
-   }
-   else if (sdtType == CStrandData::sdtStraightHarped)
-   {
-      // check if strands entered straight/harped match library order. then standard
-      StrandIndexType tns, tnh;
-      if (pStrandGeometry->ComputeNumPermanentStrands(nperm, segmentKey, &tns, &tnh))
+      if (isIBeam && strandLayoutType != tslStraight && strandLayoutType != tslHarped)
       {
-         if (tns == ns && tnh == nh)
+         // IGirders can only have straight or harped designs
+         return false;
+      }
+      else if (!isIBeam && strandLayoutType == tslHarped)
+      {
+         // only I Beams have harped strands in TxDOT
+         return false;
+      }
+      else if (strandLayoutType == tslRaisedStraight || strandLayoutType == tslMixedHarpedRaised || strandLayoutType == tslMixedHarpedDebonded)
+      {
+         // these layouts are never standard
+         return false;
+      }
+
+      // we've settled on strand layout type. now check if strands are filled in a standard manner
+      if (sdtType == CStrandData::sdtTotal)
+      {
+         // strands filled using library order. always standard
+         return true;
+      }
+      else if (sdtType == CStrandData::sdtStraightHarped)
+      {
+         // check if strands entered straight/harped match library order. then standard
+         StrandIndexType tns, tnh;
+         if (pStrandGeometry->ComputeNumPermanentStrands(nperm, segmentKey, &tns, &tnh))
          {
-            return true;
+            if (tns == ns && tnh == nh)
+            {
+               return true;
+            }
          }
       }
-   }
 
-   if (isHarpedDesign)
-   {
-      // standard harped designs must be filled using library order
-      return false;
+      if (strandLayoutType == tslHarped)
+      {
+         // standard harped designs must be filled using library order
+         return false;
+      }
+      else if (sdtType == CStrandData::sdtDirectSelection)
+      {
+         // This is the hard one. We have a straight design. In order to be standard;
+         // the bottom half of the girder must be filled filling each row completely from the bottom up.
+         GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest);
+         PoiList vPoi;
+         pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+         const pgsPointOfInterest& pmid(vPoi.back());
+
+         // Get list of strand rows filled by current project
+         StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, pmid);
+
+         // Get list of strand rows for case with all possible permanent strands filled
+         StrandRowUtil::StrandRowSet popstrandrows = StrandRowUtil::GetFullyPopulatedStrandRowSet(pBroker, pmid);
+
+         bool isStandard(true);
+         bool oneBelow(false); // at least one row must be below mid-height
+         RowIndexType numPartiallyFilledRows = 0; // we can have one partially filled row only
+         StrandRowUtil::StrandRowIter itstr = strandrows.begin();
+         StrandRowUtil::StrandRowIter itpopstr = popstrandrows.begin();
+         while (itstr != strandrows.end())
+         {
+            if (!IsEqual(itstr->Elevation, itpopstr->Elevation))
+            {
+               // can't skip possible rows - rows must be continuously filled from bottom
+               isStandard = false;
+               break;
+            }
+            else if (itstr->Count != itpopstr->Count)
+            {
+               // a partially filled row
+               if (++numPartiallyFilledRows > 1)
+               {
+                  // can only have one partially filled row below half height
+                  isStandard = false;
+                  break;
+               }
+            }
+            else // (itstr->Count == itpopstr->Count) // by default
+            {
+               // a fully filled row
+               if (numPartiallyFilledRows > 0)
+               {
+                  // cannot have a fully filled row above a partially filled row
+                  isStandard = false;
+                  break;
+               }
+            }
+
+            oneBelow = true;
+            itstr++;
+            itpopstr++;
+         }
+
+         return isStandard;
+      }
+      else
+      {
+         return false; // myriad of other cases fall through the cracks
+      }
    }
-   else if (sdtType == CStrandData::sdtDirectSelection)
+}
+
+txcwStrandLayoutType GetStrandLayoutType(IBroker* pBroker, const CGirderKey& girderKey)
+{
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+
+   CSegmentKey segmentKey(girderKey, 0);
+
+   bool isDebond = pStrandGeometry->HasDebonding(segmentKey);
+   bool isRaised = GetNumRaisedStraightStrands(pBroker, segmentKey) > 0;
+
+   bool isHarped = false; // only true if there are bent harped strands
+   if (0 < pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped))
    {
-      // This is the hard one. We have a straight design, possibly with raised strands. In order to be standard;
-      // the bottom half of the girder must be filled filling each row completely from the bottom up.
-   	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+      // check that eccentricity is same at ends and mid-girder
+      GET_IFACE2(pBroker, IIntervals,pIntervals);
+      IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+      GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
       PoiList vPoi;
-      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
-	   ATLASSERT(vPoi.size() == 1);
-      const pgsPointOfInterest& pmid(vPoi.back());
+      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& pois(vPoi.front());
+      vPoi.clear();
+      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      const pgsPointOfInterest& pmid(vPoi.front());
 
-      // Get list of strand rows filled by current project
-      StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, pmid);
-
-      // Get list of strand rows for case with all possible permanent strands filled
-      StrandRowUtil::StrandRowSet popstrandrows = StrandRowUtil::GetFullyPopulatedStrandRowSet(pBroker, pmid);
-
-      // Only consider strands in the bottom half of the girder (raised strands are standard)
-      GET_IFACE2(pBroker,IGirder,pGirder);
-      Float64 hg2 = pGirder->GetHeight(pmid) / 2.0;
-
-      bool isStandard(true);
-      bool oneBelow(false); // at least one row must be below mid-height
-      RowIndexType numPartiallyFilledRows = 0; // we can have one partially filled row only
-      StrandRowUtil::StrandRowIter itstr = strandrows.begin();
-      StrandRowUtil::StrandRowIter itpopstr = popstrandrows.begin();
-      while (itstr != strandrows.end())
+      Float64 nEff;
+      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pois, pgsTypes::Harped, &nEff);
+      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid, pgsTypes::Harped, &nEff);
+      if (!IsEqual(hs_ecc_end, hs_ecc_mid))
       {
-         if (itstr->Elevation >= hg2)
-         {
-            // row is above half height. we are done and stardard if at least one row is below mid-height
-            isStandard = oneBelow;
-            break;
-         }
-         else if (!IsEqual(itstr->Elevation, itpopstr->Elevation))
-         {
-            // can't skip possible rows when we are below half height - rows must be continuously filled from bottom
-            isStandard = false;
-            break;
-         }
-         else if (itstr->Count != itpopstr->Count)
-         {
-            // a partially filled row
-            if (++numPartiallyFilledRows > 1)
-            {
-               // can only have one partially filled row below half height
-               isStandard = false;
-               break;
-            }
-         }
-         else // (itstr->Count == itpopstr->Count) // by default
-         {
-            // a fully filled row
-            if (numPartiallyFilledRows > 0)
-            {
-               // cannot have a fully filled row above a partially filled row
-               isStandard = false;
-               break;
-            }
-         }
-
-         oneBelow = true;
-         itstr++;
-         itpopstr++;
+         isHarped = true;
       }
+   }
 
-      return isStandard;
+
+   if (isHarped)
+   {
+      if (isRaised)
+      {
+         return tslMixedHarpedRaised;
+      }
+      else if (isHarped && isDebond)
+      {
+         return tslMixedHarpedDebonded;
+      }
+      else
+      {
+         return tslHarped;
+      }
+   }
+   else if (isDebond) 
+   {
+      return tslDebondedStraight;
+   }
+   else if (isRaised)
+   {
+      return tslRaisedStraight;
    }
    else
    {
-      return false; // myriad of other cases fall through the cracks
+      return tslStraight;
    }
 }
 

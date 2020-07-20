@@ -178,15 +178,33 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
    TxDOTCadWriter cadWriter;
 
    // Get strand layout and do some error checking
-   TxDOTCadWriter::txcwStrandLayout strand_layout = cadWriter.GetStrandLayoutType(pBroker, girderKeys);
-   if (strand_layout == TxDOTCadWriter::tslMixed)
+   bool isIBeam = IsIBeam(pBroker, girderKeys.front());
+
+   bool isStraight(false), isHarped(false), isDebonded(false), isRaised(false);
+   for (auto& key : girderKeys)
    {
-      ::AfxMessageBox(_T("Error: The list of girders selected for export have a mix of straight and harped strands. CAD export cannot continue."));
-      return E_FAIL;
+      txcwStrandLayoutType strand_layout = GetStrandLayoutType(pBroker, key);
+
+      isStraight |= strand_layout==tslStraight         || strand_layout == tslDebondedStraight || strand_layout == tslRaisedStraight;
+      isHarped   |= strand_layout==tslHarped           || strand_layout==tslMixedHarpedRaised  || strand_layout==tslMixedHarpedDebonded;
+      isDebonded |= strand_layout==tslDebondedStraight || strand_layout==tslMixedHarpedDebonded;
+      isRaised   |= strand_layout == tslRaisedStraight   || strand_layout == tslMixedHarpedRaised;
    }
-   else if (strand_layout == TxDOTCadWriter::tslDebondedIBeam)
+
+   // TxDOT always treats I-Beams as harped
+   if (isIBeam)
+   {
+      isHarped = true;
+   }
+
+   if (isIBeam && isDebonded)
    {
       ::AfxMessageBox(_T("Error: The list of girders selected for export contains an I Beam with debonded strands. This is an invalid strand layout for CAD export. CAD export cannot continue."));
+      return E_FAIL;
+   }
+   else if (isHarped && isDebonded)
+   {
+      ::AfxMessageBox(_T("Error: The list of girders selected for export have a mix of harped and debonded strands. CAD export cannot continue."));
       return E_FAIL;
    }
 
@@ -216,7 +234,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
       // Determine which template file to open
       CString templateFolder = this->GetExcelTemplateFolderLocation();
       CString templateName;
-      if (strand_layout == TxDOTCadWriter::tslHarped)
+      if (isHarped)
       {
          templateName = templateFolder + _T("CADExport-Harped.xltx");
       }
@@ -253,7 +271,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
 
       // Main table
       std::vector<std::_tstring> cols;
-      if (strand_layout == TxDOTCadWriter::tslHarped)
+      if (isHarped)
       {
          cols = std::vector<std::_tstring>({ _T("StructureName"),_T("SpanNum"),_T("GdrNum"),_T("GdrType"),_T("NonStd"),_T("NStot"),_T("Size"),_T("Strength"),_T("eCL"),_T("eEnd"),_T("B_1"),
                                             _T("NH"),_T("ToEnd"),_T("B_2"),_T("FCI"),_T("FC"),_T("B_3"),_T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear"),_T("NSArrangement") });
@@ -336,7 +354,9 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
          {
             CGirderKey& girderKey(*it);
 
-	         if (CAD_SUCCESS != cadWriter.WriteCADDataToFile(*pExporter, pBroker, girderKey, strand_layout, table_layout) )
+            txcwStrandLayoutType strand_layout = GetStrandLayoutType(pBroker, girderKey);
+
+	         if (CAD_SUCCESS != cadWriter.WriteCADDataToFile(*pExporter, pBroker, girderKey, strand_layout, table_layout, isIBeam) )
             {
 		         AfxMessageBox (_T("Warning: An error occured while writing to File"));
                pExporter->Fail();
