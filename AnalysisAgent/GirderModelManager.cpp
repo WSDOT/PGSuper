@@ -7934,7 +7934,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             //                           |         |         |
             //                           |         +------------- Permanent pier
             //                           |                   |
-            //      Temporary Supports---+-------------------+
+            //                           +-------------------+--- Dummy Temporary Supports
             //
             // o indicates member end release.
 
@@ -8065,9 +8065,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                ssms->Add(right_pier_diaphragm_ssm);
             }
 
-            //
             // Create dummy temporary supports at the CL Bearing
-            //
             CComPtr<ISpans> spans;
             pModel->get_Spans(&spans);
 
@@ -8081,7 +8079,9 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             GetPierTemporarySupportIDs(pierIdx,&backID,&aheadID);
 
             // Temporary support at CL bearing on left side of pier
-            if ( !IsZero(left_end_dist+left_end_offset) )
+            // if the left end disance or offset is zero, the end of the beam is at the CL Pier
+            // so we don't need the temporary support
+            if ( !IsZero(left_end_dist+left_end_offset) && !IsZero(left_end_offset) )
             {
                // CLBearing is not at the CL Pier... create a dummy temporary support
                CComPtr<ISpan> objSpan;
@@ -8143,7 +8143,9 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             }
 
             // Temporary support CL Bearing on right side of pier
-            if (!IsZero(right_end_dist + right_end_offset))
+            // if the right end disance or offset is zero, the end of the beam is at the CL Pier
+            // so we don't need the temporary support
+            if (!IsZero(right_end_dist+right_end_offset) && !IsZero(right_end_offset))
             {
                CComPtr<ISpan> objSpan;
                spans->get_Item(spanIdx + 1, &objSpan);
