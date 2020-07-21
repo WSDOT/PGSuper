@@ -9,7 +9,8 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
+#include "grid\gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -66,8 +67,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 5,1,0,0
- PRODUCTVERSION 5,1,0,0
+ FILEVERSION 6,0,0,0
+ PRODUCTVERSION 6,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -85,12 +86,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "psgLib DLL"
-            VALUE "FileVersion", "5.1.0.0"
+            VALUE "FileVersion", "6.0.0.0"
             VALUE "InternalName", "psgLib"
             VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "psgLib.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "5.1.0.0"
+            VALUE "ProductVersion", "6.0.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -2964,7 +2965,8 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
+#include "grid\gxres.rc"               // Objective Grid resources
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
