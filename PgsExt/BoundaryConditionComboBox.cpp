@@ -108,7 +108,7 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    // and the text color is appropriate values, Erase
    // the rect by filling it with the background color.
    DWORD dwRop = SRCCOPY;
-   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+   if ((lpDrawItemStruct->itemAction & ODA_SELECT) &&
        (lpDrawItemStruct->itemState  & ODS_SELECTED))
    {
       dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));

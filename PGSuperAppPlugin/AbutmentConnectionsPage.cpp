@@ -53,7 +53,7 @@ void CAbutmentBearingOffsetMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItem
    CString lpszText;
    GetLBText(lpDrawItemStruct->itemID, lpszText);
 
-   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+   if ((lpDrawItemStruct->itemAction & ODA_SELECT) &&
       (lpDrawItemStruct->itemState & ODS_SELECTED))
    {
       dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
@@ -96,7 +96,7 @@ void CAbutmentEndDistanceMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemSt
    CString lpszText;
    GetLBText(lpDrawItemStruct->itemID, lpszText);
 
-   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+   if ((lpDrawItemStruct->itemAction & ODA_SELECT) &&
       (lpDrawItemStruct->itemState & ODS_SELECTED))
    {
       dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));

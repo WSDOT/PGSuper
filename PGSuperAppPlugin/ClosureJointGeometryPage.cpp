@@ -61,7 +61,7 @@ void CSegmentConnectionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    CString lpszText;
    GetLBText(lpDrawItemStruct->itemID, lpszText);
 
-   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+   if ((lpDrawItemStruct->itemAction & ODA_SELECT) &&
       (lpDrawItemStruct->itemState & ODS_SELECTED))
    {
       dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
@@ -113,7 +113,7 @@ void CClosureJointBearingOffsetMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDraw
    CString lpszText;
    GetLBText(lpDrawItemStruct->itemID, lpszText);
 
-   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+   if ((lpDrawItemStruct->itemAction & ODA_SELECT) &&
       (lpDrawItemStruct->itemState & ODS_SELECTED))
    {
       dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
@@ -157,7 +157,7 @@ void CClosureJointEndDistanceMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawIt
    CString lpszText;
    GetLBText(lpDrawItemStruct->itemID, lpszText);
 
-   if ((lpDrawItemStruct->itemAction | ODA_SELECT) &&
+   if ((lpDrawItemStruct->itemAction & ODA_SELECT) &&
       (lpDrawItemStruct->itemState & ODS_SELECTED))
    {
       dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
