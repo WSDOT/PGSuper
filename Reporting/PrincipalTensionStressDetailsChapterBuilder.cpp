@@ -65,8 +65,6 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
    rptParagraph* pPara = new rptParagraph;
@@ -84,6 +82,8 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
       *pPara << _T("Principal tensile stresses in webs are not limited for the ") << lrfdVersionMgr::GetCodeString() << _T(", ") << lrfdVersionMgr::GetVersionString() << rptNewLine;
       return pChapter;
    }
+
+   GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    bool bApplicable = false;
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
