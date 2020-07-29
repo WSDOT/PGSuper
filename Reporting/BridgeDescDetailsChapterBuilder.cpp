@@ -270,7 +270,7 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
       if ( pUnit )
       {
          const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
-         rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 8, false);
+         rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
          cmpdim.SetFormat(length_unit.Format);
          cmpdim.SetWidth(length_unit.Width);
          cmpdim.SetPrecision(length_unit.Precision);
@@ -286,7 +286,7 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    if (IsTopWidthSpacing(pBridgeDesc->GetGirderSpacingType()))
    {
       const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
-      rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure, length_unit.Tol, true, !bUnitsSI, 8, false);
+      rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure, length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
       cmpdim.SetFormat(length_unit.Format);
       cmpdim.SetWidth(length_unit.Width);
       cmpdim.SetPrecision(length_unit.Precision);

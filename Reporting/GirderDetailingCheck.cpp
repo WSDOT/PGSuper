@@ -285,7 +285,7 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
    *pChapter << pPara;
    *pPara << _T("Stirrup Layout Geometry Check") << rptNewLine;
 
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,  IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, true );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,  IS_US_UNITS(pDisplayUnits), 8, RoundOff, pDisplayUnits->GetComponentDimUnit(), true, true );
    rptRcScalar scalar;
 
    GET_IFACE2(pBroker,IBridge,pBridge);

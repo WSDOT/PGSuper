@@ -184,8 +184,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  angle,          pDisplayUnits->GetAngleUnit(),         true );
    INIT_UV_PROTOTYPE( rptMomentPerAngleUnitValue, spring,   pDisplayUnits->GetMomentPerAngleUnit(), true );
 
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,      IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetComponentDimUnit(), true, true );
-   INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength,   IS_US_UNITS(pDisplayUnits), 8, pDisplayUnits->GetSpanLengthUnit(),   true, true );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,      IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetComponentDimUnit(), true, true );
+   INIT_FRACTIONAL_LENGTH_PROTOTYPE( glength,   IS_US_UNITS(pDisplayUnits), 8, RoundOff, pDisplayUnits->GetSpanLengthUnit(),   true, true );
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
