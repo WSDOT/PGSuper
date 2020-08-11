@@ -55,7 +55,7 @@ void CGirderComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
    CString lpszText;
    GetLBText(lpDrawItemStruct->itemID,lpszText);
 
-   if ( (lpDrawItemStruct->itemAction & ODA_SELECT) &&
+   if ( (lpDrawItemStruct->itemAction | ODA_SELECT) &&
         (lpDrawItemStruct->itemState & ODS_SELECTED) )
    {
       dc.SetTextColor(::GetSysColor(COLOR_HIGHLIGHTTEXT));
