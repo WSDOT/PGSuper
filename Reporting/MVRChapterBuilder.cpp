@@ -205,7 +205,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    }
 
    // Bridge Site Results
-   bool bAreThereUserLoads = pUDL->DoUserLoadsExist(girderKey);
+   std::vector<IntervalIndexType> vUserLoadIntervals = pUDL->GetUserDefinedLoadIntervals(girderKey);
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType lastIntervalIdx = nIntervals-1;
@@ -235,18 +235,10 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       *p << LIVELOAD_PER_LANE << rptNewLine;
       LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
 
-      if (bAreThereUserLoads)
+      for(auto intervalIdx : vUserLoadIntervals)
       {
-         std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-         std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-         for ( ; iter != end; iter++ )
-         {
-            IntervalIndexType intervalIdx = *iter;
-            if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
-            {
-               *p << CUserAxialTable().Build(pBroker, girderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
-            }
-         }
+         ATLASSERT(pUDL->DoUserLoadsExist(girderKey, intervalIdx));
+         *p << CUserAxialTable().Build(pBroker, girderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
       }
    }
 
@@ -263,18 +255,10 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    *p << LIVELOAD_PER_LANE << rptNewLine;
    LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
 
-   if (bAreThereUserLoads)
+   for(auto intervalIdx : vUserLoadIntervals)
    {
-      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-      for ( ; iter != end; iter++ )
-      {
-         IntervalIndexType intervalIdx = *iter;
-         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
-         {
-            *p << CUserMomentsTable().Build(pBroker, girderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
-         }
-      }
+     ATLASSERT( pUDL->DoUserLoadsExist(girderKey,intervalIdx) );
+     *p << CUserMomentsTable().Build(pBroker, girderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
    }
 
    // Product Shears
@@ -292,19 +276,10 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
    *p << rptNewLine;
 
-   if (bAreThereUserLoads)
+   for(auto intervalIdx : vUserLoadIntervals)
    {
-      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-      for ( ; iter != end; iter++ )
-      {
-         IntervalIndexType intervalIdx = *iter;
-
-         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
-         {
-            *p << CUserShearTable().Build(pBroker, girderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
-         }
-      }
+      ATLASSERT(pUDL->DoUserLoadsExist(girderKey, intervalIdx));
+      *p << CUserShearTable().Build(pBroker, girderKey,analysisType,intervalIdx,pDisplayUnits) << rptNewLine;
    }
 
    // Product Reactions
@@ -339,21 +314,13 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
    }
 
-   if (bAreThereUserLoads)
+   for (auto intervalIdx : vUserLoadIntervals)
    {
-      std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-      std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-      for ( ; iter != end; iter++ )
+      ATLASSERT(pUDL->DoUserLoadsExist(girderKey, intervalIdx));
+      *p << CUserReactionTable().Build(pBroker, girderKey,analysisType,PierReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
+      if( 0 < vPiers.size() )
       {
-         IntervalIndexType intervalIdx = *iter;
-         if ( pUDL->DoUserLoadsExist(girderKey,intervalIdx) )
-         {
-            *p << CUserReactionTable().Build(pBroker, girderKey,analysisType,PierReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
-            if( 0 < vPiers.size() )
-            {
-               *p << CUserReactionTable().Build(pBroker, girderKey,analysisType,BearingReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
-            }
-         }
+         *p << CUserReactionTable().Build(pBroker, girderKey,analysisType,BearingReactionsTable,intervalIdx,pDisplayUnits) << rptNewLine;
       }
    }
 
@@ -375,20 +342,11 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          *p << rptNewLine;
          LiveLoadTableFooter(pBroker, p, thisGirderKey, bDesign, bRating);
 
-         if (bAreThereUserLoads)
-         {
-            std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-            std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-            for (; iter != end; iter++)
-            {
-               IntervalIndexType intervalIdx = *iter;
-
-               if (pUDL->DoUserLoadsExist(thisGirderKey, intervalIdx))
+         for (auto intervalIdx : vUserLoadIntervals)
                {
+            ATLASSERT(pUDL->DoUserLoadsExist(thisGirderKey, intervalIdx));
                   *p << CUserDeflectionsTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits) << rptNewLine;
                }
-            }
-         }
 
          // Product Rotations
          p = new rptParagraph;
@@ -404,20 +362,11 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          *p << rptNewLine;
          LiveLoadTableFooter(pBroker, p, thisGirderKey, bDesign, bRating);
 
-         if (bAreThereUserLoads)
-         {
-            std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
-            std::vector<IntervalIndexType>::iterator end(vIntervals.end());
-            for (; iter != end; iter++)
-            {
-               IntervalIndexType intervalIdx = *iter;
-
-               if (pUDL->DoUserLoadsExist(thisGirderKey, intervalIdx))
+         for (auto intervalIdx : vUserLoadIntervals)
                {
+            ATLASSERT(pUDL->DoUserLoadsExist(thisGirderKey, intervalIdx));
                   *p << CUserRotationTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits) << rptNewLine;
                }
-            }
-         }
 
          if (pSpecEntry->GetDoEvaluateLLDeflection())
          {
@@ -452,6 +401,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(firstReleaseIntervalIdx));
       // when we go to C++ 11, use the std::itoa algorithm
    }
+
    for (const auto& intervalIdx : vIntervals)
    {
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
