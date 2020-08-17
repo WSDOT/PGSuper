@@ -392,8 +392,8 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
       Float64 Dcreep2 = pCamber->GetCreepDeflection(erectedPoi, ICamber::cpDiaphragmToDeck, constructionRate, pgsTypes::pddErected);
       Float64 Duser1 = pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftUserDC, erectedPoi, bat, rtCumulative, false)
          + pProduct->GetDeflection(castDeckIntervalIdx, pgsTypes::pftUserDW, erectedPoi, bat, rtCumulative, false);
-      Float64 Duser2 = pProduct->GetDeflection(compositeDeckIntervalIdx, pgsTypes::pftUserDC, erectedPoi, bat, rtCumulative, false)
-         + pProduct->GetDeflection(compositeDeckIntervalIdx, pgsTypes::pftUserDW, erectedPoi, bat, rtCumulative, false);
+      Float64 Duser2 = pProduct->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftUserDC, erectedPoi, bat, rtCumulative, false)
+         + pProduct->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftUserDW, erectedPoi, bat, rtCumulative, false);
       Duser2 -= Duser1; // Duser2 is cumulative and it includes Duser1... remove Duser1
       Float64 Dbarrier = pProduct->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, erectedPoi, bat, rtCumulative, false);
       Float64 Dsidewalk = pProduct->GetDeflection(railingSystemIntervalIdx, pgsTypes::pftSidewalk, erectedPoi, bat, rtCumulative, false);
