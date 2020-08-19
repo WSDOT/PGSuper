@@ -660,11 +660,11 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
    }
    else if (lHint == 0 || lHint == HINT_BRIDGECHANGED || lHint == HINT_GIRDERCHANGED || lHint == HINT_UNITSCHANGED )
    {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
       if (lHint == HINT_BRIDGECHANGED)
       {
          // If the bridge changed, make sure the girder key is still valid
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker, IBridge, pBridge);
          GroupIndexType nGroups = pBridge->GetGirderGroupCount();
          if (nGroups <= m_GirderKey.groupIndex)
@@ -680,7 +680,9 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
       }
 
       UpdateCutRange();
-      m_cutPoi = GetCutPointOfInterest(m_cutPoi.GetDistFromStart());
+      GET_IFACE2(pBroker,IPointOfInterest, pPoi);
+      Float64 Xgp = pPoi->ConvertPoiToGirderPathCoordinate(m_cutPoi);
+      m_cutPoi = GetCutPointOfInterest(Xgp);
       FillEventComboBox();
       UpdateBar();
    }
