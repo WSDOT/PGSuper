@@ -100,8 +100,7 @@ protected:
    void ConfigureGirderShape(const CPrecastSegmentData* pSegment, const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const;
    virtual void DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const;
 
-   virtual bool ExcludeExteriorBeamShearKeys() const = 0;
-   virtual bool UseOverallWidth() const = 0;
+   virtual bool ExcludeExteriorBeamShearKeys(const IBeamFactory::Dimensions& dimensions) const = 0;
 };
 
 #endif //__BOXBEAMFACTORYIMPL_H_

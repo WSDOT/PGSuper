@@ -267,7 +267,15 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          dim_iter++, unit_iter++ )
    {
       const unitLength* pUnit = *unit_iter;
-      if ( pUnit )
+      if ( pUnit == (const unitLength*)BFDIMUNITBOOLEAN)
+      {
+         (*pTable)(0,1) << (*dim_iter).first.c_str() << ((*dim_iter).second==0 ? _T(" = False") : _T(" = True")) << rptNewLine;
+      }
+      else if ( pUnit == (const unitLength*)BFDIMUNITSCALAR)
+      {
+         (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << (*dim_iter).second << rptNewLine;
+      }
+      else
       {
          const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
          rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
@@ -276,10 +284,6 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          cmpdim.SetPrecision(length_unit.Precision);
 
          (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << cmpdim.SetValue( (*dim_iter).second ) << rptNewLine;
-      }
-      else
-      {
-         (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << (*dim_iter).second << rptNewLine;
       }
    }
 

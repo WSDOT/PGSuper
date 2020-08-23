@@ -91,7 +91,7 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    // SI Units
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H 
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W
-   m_DimUnits[0].emplace_back(nullptr);                     // Number of Voids
+   m_DimUnits[0].emplace_back((const unitLength*)BFDIMUNITSCALAR);// Number of Voids
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
@@ -107,7 +107,7 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    // US Units
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H 
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W
-   m_DimUnits[1].emplace_back(nullptr);               // Number of Voids
+   m_DimUnits[1].emplace_back((const unitLength*)BFDIMUNITSCALAR);// Number of Voids
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1

@@ -3500,18 +3500,7 @@ void CBridgeAgentImp::NoDeckEdgePoint(GroupIndexType grpIdx,SegmentIndexType seg
    }
 
    Float64 wLeft, wRight;
-   CComQIPtr<IAsymmetricSection> asymmetric(girder_section);
-   if (asymmetric)
-   {
-      asymmetric->GetTopWidth(&wLeft, &wRight);
-   }
-   else
-   {
-      Float64 width;
-      girder_section->get_TopWidth(&width);
-      wLeft = width / 2;
-      wRight = wLeft;
-   }
+   girder_section->get_TopWidth(&wLeft, &wRight);
 
    Float64 offset = (side == qcbLeft ? wLeft : -wRight); // offset from girder line to edge of girder
 
@@ -25626,22 +25615,15 @@ Float64 CBridgeAgentImp::GetTopWidth(const pgsPointOfInterest& poi,Float64* pLef
       return 0;
    }
 
-   Float64 width;
-   girder_section->get_TopWidth(&width);
+   Float64 wleft, wright;
+   girder_section->get_TopWidth(&wleft, &wright);
+
+   Float64 width = wleft + wright;
 
    if (pLeft && pRight)
    {
-      CComQIPtr<IAsymmetricSection> asymmetricSection(girder_section);
-      if (asymmetricSection)
-      {
-         asymmetricSection->GetTopWidth(pLeft, pRight);
-         ATLASSERT(IsEqual(*pLeft + *pRight, width));
-      }
-      else
-      {
-         *pLeft = width / 2;
-         *pRight = width / 2;
-      }
+      *pLeft = wleft;
+      *pRight = wright;
    }
 
    return width;
@@ -25760,7 +25742,7 @@ Float64 CBridgeAgentImp::GetBottomFlangeWidth(const pgsPointOfInterest& poi) con
    return width;
 }
 
-Float64 CBridgeAgentImp::GetBottomWidth(const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetBottomWidth(const pgsPointOfInterest& poi, Float64* pLeft, Float64* pRight) const
 {
    VALIDATE( BRIDGE );
 
@@ -25772,10 +25754,16 @@ Float64 CBridgeAgentImp::GetBottomWidth(const pgsPointOfInterest& poi) const
       return 0;
    }
 
-   Float64 width;
-   girder_section->get_BottomWidth(&width);
+   Float64 wleft, wright;
+   girder_section->get_BottomWidth(&wleft, &wright);
 
-   return width;
+   if (pLeft != nullptr && pRight != nullptr)
+   {
+      *pLeft = wleft;
+      *pRight = wright;
+   }
+
+   return wleft + wright;
 }
 
 Float64 CBridgeAgentImp::GetMinWebWidth(const pgsPointOfInterest& poi) const

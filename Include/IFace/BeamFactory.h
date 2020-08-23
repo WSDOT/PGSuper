@@ -72,6 +72,9 @@ interface IBeamFactoryCLSIDTranslator : public IUnknown
    virtual bool TranslateCLSID(LPCTSTR oldCLSID,LPCTSTR* newCLSID) = 0;
 };
 
+// Note that we play a game here to allow scalars and booleans into the system if the values are: 
+#define BFDIMUNITSCALAR 0  // The dimension is a scalar.
+#define BFDIMUNITBOOLEAN 1 // The dimension is a boolean.
 
 /*****************************************************************************
 INTERFACE
@@ -163,7 +166,10 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // Returns a vector of length unit objects representing the units of measure of each
-   // dimenions. If an item in the vector is nullptr, the dimension is a scalar.
+   // dimension. 
+   // Note that we play a game here to allow scalars and booleans into the system if the values are: 
+   // (const unitLength*) BFDIMUNITSCALAR : The dimension is a scalar.
+   // (const unitLength*) BFDIMUNITBOOLEAN: // The dimension is a boolean.
    virtual const std::vector<const unitLength*>& GetDimensionUnits(bool bSIUnits) const = 0;
 
    //---------------------------------------------------------------------------------

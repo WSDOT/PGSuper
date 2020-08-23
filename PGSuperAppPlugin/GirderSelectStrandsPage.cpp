@@ -431,11 +431,12 @@ void CGirderSelectStrandsPage::OnPaint()
    position->put_LocatorPoint(lpBottomCenter,lp);
 
    // Anchor bottom of drawing at bottom center of section shape
-   Float64 bottom_width;
-   gdrSection->get_BottomWidth(&bottom_width);
+   Float64 wleft, wright;
+   gdrSection->get_BottomWidth(&wleft, &wright);
+   Float64 bottom_width = wleft + wright;
 
-   Float64 top_width;
-   gdrSection->get_TopWidth(&top_width);
+   gdrSection->get_TopWidth(&wleft, &wright);
+   Float64 top_width = wleft + wright;
 
    Float64 height;
    gdrSection->get_OverallHeight(&height);

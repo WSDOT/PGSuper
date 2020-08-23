@@ -5766,9 +5766,11 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          GirderLibraryEntry::Dimensions dimensions = pEntry->GetDimensions();
          CComPtr<IGirderSection> gdrSection;
          beamFactory->CreateGirderSection(nullptr,0,dimensions,-1,-1,&gdrSection);
-         Float64 topWidth, botWidth;
-         gdrSection->get_TopWidth(&topWidth);
-         gdrSection->get_BottomWidth(&botWidth);
+         Float64 wleft, wright;
+         gdrSection->get_TopWidth(&wleft, &wright);
+         Float64 topWidth = wleft + wright;
+         gdrSection->get_BottomWidth(&wleft, &wright);
+         Float64 botWidth = wleft + wright;
          Float64 width = Max(topWidth,botWidth);
          Float64 jointWidth = m_BridgeDescription.GetGirderSpacing() - width;
          jointWidth = IsZero(jointWidth) ? 0 : jointWidth;

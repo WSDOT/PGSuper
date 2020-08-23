@@ -703,16 +703,14 @@ void CBoxBeamFactoryImpl::ConfigureGirderShape(const CPrecastSegmentData* pSegme
    DimensionBeam(dimensions, pBeam);
 
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
-   if (segmentKey.girderIndex == 0 && ExcludeExteriorBeamShearKeys())
+   if (segmentKey.girderIndex == 0 && ExcludeExteriorBeamShearKeys(dimensions))
    {
       pBeam->put_LeftBlockOut(VARIANT_FALSE);
    }
 
    const CGirderGroupData* pGroup = pSegment->GetGirder()->GetGirderGroup();
-   if (segmentKey.girderIndex == pGroup->GetGirderCount() - 1 && ExcludeExteriorBeamShearKeys())
+   if (segmentKey.girderIndex == pGroup->GetGirderCount() - 1 && ExcludeExteriorBeamShearKeys(dimensions))
    {
       pBeam->put_RightBlockOut(VARIANT_FALSE);
    }
-
-   pBeam->put_UseOverallWidth(UseOverallWidth() ? VARIANT_TRUE : VARIANT_FALSE);
 }

@@ -205,7 +205,13 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
          Float64 value = _tstof(strValue);
 
          const unitLength* pUnit = *unit_iter;
-         if (pUnit != nullptr)
+
+         if (pUnit == (const unitLength*)BFDIMUNITBOOLEAN)
+         {
+            value = value != 0 ? 1 : 0;
+         }
+
+         if (pUnit != (const unitLength*)BFDIMUNITSCALAR && pUnit != (const unitLength*)BFDIMUNITBOOLEAN)
          {
             value = ::ConvertToSysUnits(value, *pUnit);
          }
@@ -237,21 +243,31 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
       for ( ; name_iter != name_iter_end; name_iter++, unit_iter++ )
       {
          auto name = *name_iter;
+         VERIFY(m_GirderDimensionsPage.m_Grid.SetValueRange(CGXRange(nRow, 0), name.c_str()));
 
          Float64 value = m_Entry.GetDimension(name);
 
          const unitLength* pUnit = *unit_iter;
-         if ( pUnit != nullptr )
+         if (pUnit == (const unitLength*)BFDIMUNITBOOLEAN)
          {
-            value = ::ConvertFromSysUnits(value,*pUnit);
+            ATLASSERT((LONG)value == 0 || (LONG)value == 1);
+            VERIFY(m_GirderDimensionsPage.m_Grid.SetStyleRange(CGXRange(nRow, 1), CGXStyle().SetControl(GX_IDS_CTRL_CHECKBOX3D).SetHorizontalAlignment(DT_CENTER)));
+            VERIFY(m_GirderDimensionsPage.m_Grid.SetValueRange(CGXRange(nRow, 1), (LONG)value));
+         }
+         else
+         {
+            if (pUnit != (const unitLength*)BFDIMUNITSCALAR)
+            {
+               value = ::ConvertFromSysUnits(value, *pUnit);
 
-            name += _T(" (");
-            name += pUnit->UnitTag();
-            name += _T(")");
+               name += _T(" (");
+               name += pUnit->UnitTag();
+               name += _T(")");
+            }
+
+            VERIFY(m_GirderDimensionsPage.m_Grid.SetValueRange(CGXRange(nRow, 1), value));
          }
 
-         VERIFY(m_GirderDimensionsPage.m_Grid.SetValueRange(CGXRange(nRow, 0), name.c_str() ));
-         VERIFY(m_GirderDimensionsPage.m_Grid.SetValueRange(CGXRange(nRow, 1), value ));
          nRow++;
       }
 

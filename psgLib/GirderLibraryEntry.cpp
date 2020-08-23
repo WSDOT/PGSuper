@@ -3390,18 +3390,17 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       return;
    }
 
-   Float64 botwidth;
-   gdrSection->get_BottomWidth(&botwidth);
-   if (IsZero(botwidth))
+   Float64 lftwidth, rgtwidth;
+   gdrSection->get_BottomWidth(&lftwidth,&rgtwidth);
+   if (IsZero(lftwidth + rgtwidth))
    {
       pvec->push_back(GirderEntryDataError(BottomFlangeWidthIsZero,
          _T("The width of the girder bottom flange must be greater than zero.")));
       return;
    }
 
-   Float64 topwidth;
-   gdrSection->get_TopWidth(&topwidth);
-   if (IsZero(topwidth))
+   gdrSection->get_TopWidth(&lftwidth,&rgtwidth);
+   if (IsZero(lftwidth + rgtwidth))
    {
       pvec->push_back(GirderEntryDataError(TopFlangeWidthIsZero,
          _T("The width of the girder must be greater than zero.")));

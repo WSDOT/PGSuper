@@ -185,8 +185,10 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
          pgsPointOfInterest poi(segmentKey,Xs);
          GET_IFACE(IGirder,pGirder);
 
-         Float64 topWidth = pGirder->GetTopWidth(poi);
-         Float64 botWidth = pGirder->GetBottomWidth(poi);
+         Float64 topWidth, leftTopWidth, rightTopWidth;
+         Float64 botWidth, leftBotWidth, rightBotWidth;
+         topWidth = pGirder->GetTopWidth(poi, &leftTopWidth, &rightTopWidth);
+         botWidth = pGirder->GetBottomWidth(poi, &leftBotWidth, &rightBotWidth);
 
          CComPtr<ISuperstructureMember> ssMbr;
          bridge->get_SuperstructureMember(gdrID,&ssMbr);
@@ -198,14 +200,13 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
          GirderIndexType nGirders = pGroup->GetGirderCount();
 
          Float64 width;
-         if ( locationType == ltLeftExteriorGirder || locationType == ltRightExteriorGirder )
+         if ( locationType == ltLeftExteriorGirder )
          {
-            // exterior girder
-
+            // Exterior Girder
             // for exterior girders, the deck only goes to the edge of the top flange on the exterior side
             // on the interior side, the width is the governing of the top and bottom widths.
 
-            // squint really hard and you'll see a box beam here that has a bottom width greater than
+            // squint really hard below and you'll see a box beam here that has a bottom width greater than
             // the top width.
 
             //     w top/2    w bot/2
@@ -219,10 +220,16 @@ STDMETHODIMP CEffectiveFlangeWidthTool::TributaryFlangeWidthBySegmentEx(IGeneric
             //    ||              ||  |
             //    ||              ||  |
             //  ======================|
-            width = topWidth/2 + Max(topWidth,botWidth)/2;
+
+            width = leftTopWidth + Max(rightTopWidth,rightBotWidth);
+         }
+         else if (locationType == ltRightExteriorGirder)
+         {
+            width = rightTopWidth + Max(leftTopWidth,leftBotWidth);
          }
          else
          {
+            // interior girder
             width = Max(topWidth,botWidth);
          }
 

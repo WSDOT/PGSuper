@@ -1106,7 +1106,7 @@ public:
    virtual Float64 GetBottomFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
    virtual Float64 GetBottomFlangeSpacing(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const override;
    virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi) const override;
-   virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi) const override;
+   virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi, Float64* pLeft=nullptr, Float64* pRight=nullptr) const override;
    virtual Float64 GetMinWebWidth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetWebThicknessAtDuct(const pgsPointOfInterest& poi,DuctIndexType ductIdx) const override;
    virtual Float64 GetMinTopFlangeThickness(const pgsPointOfInterest& poi) const override;

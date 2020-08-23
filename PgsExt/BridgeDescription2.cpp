@@ -3867,17 +3867,21 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                   CComPtr<IGirderSection> gdrSection;
                   factory->CreateGirderSection(nullptr,INVALID_ID,m_pGirderLibraryEntry->GetDimensions(),-1,-1,&gdrSection);
 
-                  Float64 Wtf;
-                  gdrSection->get_TopWidth(&Wtf);
+                  // Width is max of top and bottom.
+                  Float64 Width, wleft, wrght;
+                  gdrSection->get_TopWidth(&wleft,&wrght);
+                  Width = wleft + wrght;
+                  gdrSection->get_BottomWidth(&wleft,&wrght);
+                  Width = max(Width, wleft + wrght);
 
                   if ( 1 < nGirders )
                   {
-                     Float64 w = s*(nGirders-1) + nGirders*Wtf;
+                     Float64 w = s*(nGirders-1) + nGirders*Width;
                      max_spacing_width = Max(max_spacing_width,w);
                   }
                   else
                   {
-                     max_spacing_width = Max(max_spacing_width,Wtf);
+                     max_spacing_width = Max(max_spacing_width,Width);
                   }
                }
                else
@@ -3913,10 +3917,13 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                         CComPtr<IGirderSection> gdrSection;
                         factory->CreateGirderSection(nullptr,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
 
-                        Float64 Wtf;
-                        gdrSection->get_TopWidth(&Wtf);
+                        Float64 Width, wleft, wrght;
+                        gdrSection->get_TopWidth(&wleft,&wrght);
+                        Width = wleft + wrght;
+                        gdrSection->get_BottomWidth(&wleft,&wrght);
+                        Width = max(Width, wleft + wrght);
 
-                        w += Wtf;
+                        w += Width;
                      } // next girder
 
                      if ( 1 < nGirders )
@@ -3960,9 +3967,13 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                      CComPtr<IGirderSection> gdrSection;
                      factory->CreateGirderSection(nullptr,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
 
-                     Float64 Wtf;
-                     gdrSection->get_TopWidth(&Wtf);
-                     w += Wtf;
+                     Float64 Width, wleft, wrght;
+                     gdrSection->get_TopWidth(&wleft,&wrght);
+                     Width = wleft + wrght;
+                     gdrSection->get_BottomWidth(&wleft,&wrght);
+                     Width = max(Width, wleft + wrght);
+
+                     w += Width;
                      if ( gdrIdx < nGirders-1 )
                      {
                         w += s;

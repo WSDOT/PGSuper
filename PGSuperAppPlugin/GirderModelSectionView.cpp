@@ -540,7 +540,6 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    // sockets for top flange dimension lines
    boxSlab->get_TopCenter(&pntTC);
-   pntTC->Offset(0.5*(wLeft - wRight), 0); // now pntTC is at the centerline girder
 
    pntTC->Offset(-wLeft,0); // move pntTC to left edge and create a socket
    connectable->AddSocket(SOCKET_TL,pntTC,&socketTL);
@@ -1534,7 +1533,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    Float64 Yt = pSectProp->GetY(intervalIdx, poi, intervalIdx < compositeIntervalIdx ? pgsTypes::TopGirder : pgsTypes::TopDeck);
    Float64 Yb = pSectProp->GetY(intervalIdx, poi, pgsTypes::BottomGirder);
    Float64 Xl = pSectProp->GetXleft(intervalIdx, poi);
-   Float64 Xr = pSectProp->GetXright(intervalIdx, poi);
+   // Xr is measured at top width of girder
+   Float64 Xr = (twLeft + twRight) - Xl;
 
    CString strDim;
    CComPtr<iTextBlock> textBlock;

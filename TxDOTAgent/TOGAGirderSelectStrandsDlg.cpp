@@ -251,8 +251,9 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
    position->put_LocatorPoint(lpBottomCenter,lp);
 
    // Anchor bottom of drawing at bottom center of section shape
-   Float64 bottom_width;
-   gdrSection->get_BottomWidth(&bottom_width);
+   Float64 wleft, wright;
+   gdrSection->get_BottomWidth(&wleft, &wright);
+   Float64 bottom_width = wleft + wright;
 
    CComPtr<IRect2d> shape_box;
    shape->get_BoundingBox(&shape_box);

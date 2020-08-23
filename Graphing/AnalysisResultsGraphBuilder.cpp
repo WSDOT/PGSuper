@@ -3506,7 +3506,7 @@ void CAnalysisResultsGraphBuilder::PrincipalWebStressGraph(IndexType graphIdx, c
 
 
    GET_IFACE(IArtifact, pArtifact);
-   GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
+   GET_IFACE_NOCHECK(IPrincipalWebStress, pPrincipalWebStress);
    CSegmentKey segmentKey;
 
    const pgsPrincipalTensionStressArtifact* pPrincipalStressArtifact = nullptr;

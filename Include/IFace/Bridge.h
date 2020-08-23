@@ -1698,7 +1698,7 @@ interface IGirder : public IUnknown
    virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi) const = 0;
 
    // Returns the total width of the bottom of a girder
-   virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi, Float64* pLeft=nullptr, Float64* pRight=nullptr) const = 0;
 
    // Returns the thickness of a top flange
    virtual Float64 GetBottomFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const = 0;

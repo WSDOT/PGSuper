@@ -43,7 +43,7 @@ CPrincipalTensionStressDetailsChapterBuilder::CPrincipalTensionStressDetailsChap
 
 LPCTSTR CPrincipalTensionStressDetailsChapterBuilder::GetName() const
 {
-   return TEXT("Principal Tension Streses in Webs Details");
+   return TEXT("Principal Tension Stresses in Webs Details");
 }
 
 rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecification* pRptSpec, Uint16 level) const

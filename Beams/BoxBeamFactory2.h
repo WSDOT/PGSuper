@@ -74,8 +74,7 @@ public:
    virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const override;
 
 protected:
-   virtual bool ExcludeExteriorBeamShearKeys() const override { return true; }
-   virtual bool UseOverallWidth() const override { return true; }
+   virtual bool ExcludeExteriorBeamShearKeys(const IBeamFactory::Dimensions& dimensions) const override { return true; }
    virtual void DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const override;
 
 private:
