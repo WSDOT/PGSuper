@@ -450,7 +450,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
 
       if (bAfter8thEdition)
       {
-         *p << _T("Requirement H") << rptNewLine;
+         *p << _T("Requirement H - Not evaluated: LRFD 5.12.3.3.9a does not permit debonded strands to be used for positive moment connections at continuity diaphragms") << rptNewLine;
       }
 
       if (bAfter8thEdition)
@@ -469,7 +469,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
             *p << _T("Requirement J, first bullet - Uniformly distributed debonded strands between webs.") << rptNewLine;
             if (!bReqIJK)
             {
-               *p << _T("Requirement J, second bullet - Strands shall be bonded with 1.0 times the web width projection.") << rptNewLine;
+               *p << _T("Requirement J, second bullet - Strands shall be bonded within 1.0 times the web width projection.") << rptNewLine;
             }
             break;
 
