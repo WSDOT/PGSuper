@@ -188,7 +188,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
    else
    {
       (*pTable)(0, col++) << COLHDR(Sub2(_T("I"), _T("nc")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
-      (*pTable)(0, col++) << COLHDR(Sub2(_T("I"), _T("c")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+      (*pTable)(0, col++) << COLHDR(Sub2(_T("I"), _T("cmp")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
    }
    (*pTable)(0, col++) << COLHDR(Sub2(_T("H"), _T("g")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*pTable)(0, col++) << _T("Web") << rptNewLine << _T("Location");
@@ -204,9 +204,9 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
    else
    {
       (*pTable)(0, col++) << COLHDR(Sub2(_T("V"), _T("nc")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
-      (*pTable)(0, col++) << COLHDR(Sub2(_T("V"), _T("c")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
+      (*pTable)(0, col++) << COLHDR(Sub2(_T("V"), _T("cmp")), rptForceUnitTag, pDisplayUnits->GetShearUnit());
       (*pTable)(0, col++) << COLHDR(Sub2(_T("Q"), _T("nc")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
-      (*pTable)(0, col++) << COLHDR(Sub2(_T("Q"), _T("c")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
+      (*pTable)(0, col++) << COLHDR(Sub2(_T("Q"), _T("cmp")), rptLength3UnitTag, pDisplayUnits->GetSectModulusUnit());
    }
    (*pTable)(0, col++) << COLHDR(Sub2(_T("b"), _T("w")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    (*pTable)(0, col++) << COLHDR(symbol(tau), rptStressUnitTag, pDisplayUnits->GetStressUnit());
