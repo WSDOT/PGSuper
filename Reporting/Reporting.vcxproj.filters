@@ -523,8 +523,12 @@
     <ClCompile Include="TimelineChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TimelineManagerReportSpecification.cpp" />
-    <ClCompile Include="TimelineManagerReportSpecificationBuilder.cpp" />
+    <ClCompile Include="TimelineManagerReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TimelineManagerReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h">
