@@ -6074,14 +6074,18 @@ void CBridgeAgentImp::LayoutPoiForPiers(const CSegmentKey& segmentKey)
          GetPierDiaphragmSize(pierIdx, pgsTypes::Back, &left_support_width, &diaphragm_height);
          GetPierDiaphragmSize(pierIdx, pgsTypes::Ahead, &right_support_width, &diaphragm_height);
 
-         pgsPointOfInterest leftFOS(segmentKey,Xpoi - left_support_width,POI_FACEOFSUPPORT);
+         // if the diaphragm has zero width, the left and right side FOS are at the same location
+         // and merge into a single POI. However, it is assumed throughout the code that the
+         // diaphragm has a width so there is a left and right FOS POI. To make this assumption true,
+         // we provide a small offset for zero width diaphragms so there will be left and right
+         // FOS POIs
+         Float64 offset = (IsZero(left_support_width) && IsZero(right_support_width) ? 0.001 : 0);
+
+         pgsPointOfInterest leftFOS(segmentKey, Xpoi - left_support_width - offset, POI_FACEOFSUPPORT);
          VERIFY(m_pPoiMgr->AddPointOfInterest(leftFOS) != INVALID_ID);
 
-         if ( !IsZero(left_support_width) && !IsZero(right_support_width) )
-         {
-            pgsPointOfInterest rightFOS(segmentKey,Xpoi + right_support_width,POI_FACEOFSUPPORT);
-            VERIFY(m_pPoiMgr->AddPointOfInterest(rightFOS) != INVALID_ID);
-         }
+         pgsPointOfInterest rightFOS(segmentKey, Xpoi + right_support_width + offset, POI_FACEOFSUPPORT);
+         VERIFY(m_pPoiMgr->AddPointOfInterest(rightFOS) != INVALID_ID);
       } // next pier
    }
 
