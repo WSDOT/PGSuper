@@ -81,7 +81,7 @@ BOOL CSpecGirderStressPage::OnInitDialog()
 {
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_PRINCIPAL_TENSION_METHOD);
    pcb->AddString(_T("AASHTO LRFD Equation 5.9.2.3.3-1"));
-   pcb->AddString(_T("NCHRP Report 849 Equation 3.8"));
+   pcb->AddString(_T("WSDOT BDM\\NCHRP Report 849 Equation 3.8"));
 
    CPropertyPage::OnInitDialog();
 
