@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\CastingYardRebarRequirementChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
+#include <WBFLGenericBridgeTools\GeneralSectionDetailsTable.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
@@ -302,6 +303,7 @@ rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(IBroker* pBr
    strTitle.Format(_T("Reinforcement required for tension stress limit, Interval %d - %s, [%s]"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx), LrfdCw8th(_T("C5.9.4.1.2"), _T("C5.9.2.3.1b")));
 
    ColumnIndexType nColumns = (bSimpleTable ? 8 : 19);
+   nColumns++; // for tension force details
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns, strTitle);
 
    pTable->SetNumberOfHeaderRows(1);
@@ -360,11 +362,15 @@ rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(IBroker* pBr
       (*pTable)(1, col++) << COLHDR(Sub2(_T("y"), _T("br")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(1, col++) << COLHDR(RPT_STRESS(_T("br")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
-      pTable->SetRowSpan(0, col, 2); // At
-      pTable->SetRowSpan(0, col+1, 2); // T
-      pTable->SetRowSpan(0, col+2, 2); // As Provided
-      pTable->SetRowSpan(0, col+3, 2); // As Required
+      ColumnIndexType colOffset = 0;
+      pTable->SetRowSpan(0, col + colOffset, 2); colOffset++; // Tension Force Details
+      pTable->SetRowSpan(0, col + colOffset, 2); colOffset++; // At
+      pTable->SetRowSpan(0, col + colOffset, 2); colOffset++; // T
+      pTable->SetRowSpan(0, col + colOffset, 2); colOffset++; // As Provided
+      pTable->SetRowSpan(0, col + colOffset, 2); colOffset++; // As Required
    }
+
+   (*pTable)(0, col++) << _T("Tension Force Details");
 
    (*pTable)(0, col++) << COLHDR(Sub2(_T("A"), _T("t")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
    (*pTable)(0, col++) << COLHDR(_T("T"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
@@ -487,6 +493,16 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
             (*pTable)(row, col++) << dim.SetValue(requirements.pntBottomRight.X());
             (*pTable)(row, col++) << dim.SetValue(requirements.pntBottomRight.Y());
             (*pTable)(row, col++) << stress.SetValue(requirements.pntBottomRight.Z());
+         }
+
+         if (requirements.tensionForceSolution)
+         {
+            rptRcTable* pDetailsTable = CreateGeneralSectionDetailsTable(requirements.tensionForceSolution, requirements.Ytg, bSimpleTable, pDisplayUnits);
+            (*pTable)(row, col++) << pDetailsTable;
+         }
+         else
+         {
+            (*pTable)(row, col++) << _T("-");
          }
 
          (*pTable)(row, col++) << area.SetValue(requirements.AreaTension);
