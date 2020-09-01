@@ -900,7 +900,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                // added int version 16
                var.vt = VT_I4;
                hr = pStrLoad->get_Property(_T("ColumnFixity"),&var);
-               m_ColumnFixity = (pgsTypes::ColumnFixityType)var.lVal;
+               m_ColumnFixity = (pgsTypes::ColumnLongitudinalBaseFixityType)var.lVal;
 
                // NOTE: during the original implemention of v3 (PGSplice)
                // I thought we could model the longitudinal base fixity of the pier
@@ -910,7 +910,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                // pin at the base of the column. For this reason, the UI has been
                // changed to allow only fixed columns and we are forcing the bridge
                // model to use only fixed base columns as well.
-               if ( m_ColumnFixity == pgsTypes::cftPinned )
+               if (m_ColumnFixity == pgsTypes::cftPinned)
                {
                   m_ColumnFixity = pgsTypes::cftFixed;
                }
@@ -2118,12 +2118,12 @@ Float64 CPierData2::GetXBeamLength() const
    return L;
 }
 
-void CPierData2::SetColumnFixity(pgsTypes::ColumnFixityType fixityType)
+void CPierData2::SetColumnFixity(pgsTypes::ColumnLongitudinalBaseFixityType fixityType)
 {
    m_ColumnFixity = fixityType;
 }
 
-pgsTypes::ColumnFixityType CPierData2::GetColumnFixity() const
+pgsTypes::ColumnLongitudinalBaseFixityType CPierData2::GetColumnFixity() const
 {
    return m_ColumnFixity;
 }

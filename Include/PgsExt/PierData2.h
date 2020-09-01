@@ -243,8 +243,8 @@ public:
    /////////////////////////////////////////////////////////////////////
 
    // Set/Get the column fixity for the longitudinal bridge analysis
-   void SetColumnFixity(pgsTypes::ColumnFixityType fixityType);
-   pgsTypes::ColumnFixityType GetColumnFixity() const;
+   void SetColumnFixity(pgsTypes::ColumnLongitudinalBaseFixityType fixityType);
+   pgsTypes::ColumnLongitudinalBaseFixityType GetColumnFixity() const;
 
    // removes all but one column from the pier model (there is minimum of one column per pier)
    void RemoveColumns();
@@ -360,7 +360,7 @@ private:
    Float64 m_XBeamWidth;
 
    // Column Dimensions and Layout
-   pgsTypes::ColumnFixityType m_ColumnFixity;
+   pgsTypes::ColumnLongitudinalBaseFixityType m_ColumnFixity;
    std::vector<Float64> m_ColumnSpacing;
    std::vector<CColumnData> m_Columns;
 

@@ -44,7 +44,7 @@ m_pPier(pPier)
    m_D1 = ::ConvertToSysUnits(4.0,unitMeasure::Feet);
    m_D2 = m_D1;
 
-   m_TransverseFixity = pgsTypes::cftFixed;
+   m_TransverseFixity = pgsTypes::ctftTopFixedBottomFixed;
 }
 
 CColumnData::CColumnData(const CColumnData& rOther)
@@ -158,7 +158,7 @@ HRESULT CColumnData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       {
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("TransverseFixity"),&var);
-         m_TransverseFixity = (pgsTypes::ColumnFixityType)var.lVal;
+         m_TransverseFixity = (pgsTypes::ColumnTransverseFixityType)var.lVal;
       }
 
       hr = pStrLoad->EndUnit(); // Column
@@ -257,12 +257,12 @@ void CColumnData::GetColumnDimensions(Float64* pD1,Float64* pD2) const
    *pD2 = m_D2;
 }
 
-void CColumnData::SetTransverseFixity(pgsTypes::ColumnFixityType columnFixity)
+void CColumnData::SetTransverseFixity(pgsTypes::ColumnTransverseFixityType columnFixity)
 {
    m_TransverseFixity = columnFixity;
 }
 
-pgsTypes::ColumnFixityType CColumnData::GetTransverseFixity() const
+pgsTypes::ColumnTransverseFixityType CColumnData::GetTransverseFixity() const
 {
    return m_TransverseFixity;
 }

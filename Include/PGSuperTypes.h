@@ -185,11 +185,18 @@ typedef struct pgsTypes
       stTemporary
    } SupportType;
 
-   typedef enum ColumnFixityType
+   typedef enum ColumnTransverseFixityType
+   {
+      ctftTopFixedBottomFixed,
+      ctftTopFixedBottomPinned,
+      ctftTopPinnedBottomFixed
+   } ColumnTransverseFixityType;
+
+   typedef enum ColumnLongitudinalBaseFixityType
    {
       cftFixed,
       cftPinned
-   } ColumnFixityType;
+   } ColumnLongitudinalBaseFixityType;
 
    typedef enum TemporarySupportType
    {

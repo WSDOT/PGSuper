@@ -7439,8 +7439,8 @@ void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bCon
       }
       objSupport->put_TopRelease(bReleaseTop);
 
-      pgsTypes::ColumnFixityType fixityType = pPier->GetColumnFixity();
-      objSupport->put_BoundaryCondition(fixityType == pgsTypes::cftFixed ? bcFixed : bcPinned);
+      pgsTypes::ColumnLongitudinalBaseFixityType fixityType = pPier->GetColumnFixity();
+      objSupport->put_BoundaryCondition(fixityType == pgsTypes::cftPinned ? bcPinned : bcFixed);
 
       GET_IFACE(IBridge,pBridge);
       PierIndexType pierIdx = pPier->GetIndex();
