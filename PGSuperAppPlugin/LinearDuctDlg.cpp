@@ -17,6 +17,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+static Float64 gs_Millimeter = ::ConvertToSysUnits(1.0, unitMeasure::Millimeter);
 
 void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeometry& ductGeometry)
 {
@@ -104,6 +105,8 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
          
          Xg_Last = Xg;
       }
+
+      Xg = ::IsEqual(Xg, Lg, gs_Millimeter) ? Lg : Xg;
 
       if ( ::IsLT(Lg,Xg) )
       {
