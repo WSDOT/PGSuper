@@ -78,7 +78,12 @@ HRESULT CTxDOTCadExporter::FinalConstruct()
    }
    else
    {
-      strDefaultLocation = str + CString(_T("\\TxCadExport\\"));
+      // make sure we have a trailing backslash
+      if (_T('\\') != strDefaultLocation.GetAt(strDefaultLocation.GetLength() - 1))
+      {
+         strDefaultLocation += _T("\\");
+      }
+      strDefaultLocation = str + CString(_T("TxCadExport\\"));
    }
 
    // Get the user's setting, using the local machine setting as the default if not present
