@@ -504,13 +504,23 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    // Set up sockets so dimension lines can plug into the girder shape
    CComPtr<IRect2d> boxGirder, boxSlab;
+
+   CComQIPtr<ICompositeShape> composite(shape);
+   IndexType nShapes;
+   composite->get_Count(&nShapes);
+   CComPtr<ICompositeShapeItem> girderShapeItem;
+   composite->get_Item(0, &girderShapeItem); // basic girder is always first in composite
+   CComPtr<IShape> girderShape;
+   girderShapeItem->get_Shape(&girderShape);
+   girderShape->get_BoundingBox(&boxGirder);
+
    CComPtr<IPoint2d> pntTC, pntBC; // top and bottom center
    Float64 wLeft, wRight;
    if (eventIdx <= castDeckEventIdx || IsNonstructuralDeck(deckType))
    {
       GET_IFACE2(pBroker, IGirder, pGirder);
       pGirder->GetTopWidth(poi,&wLeft,&wRight);
-      shape->get_BoundingBox(&boxGirder);
+
       boxSlab = boxGirder;
    }
    else
@@ -518,15 +528,6 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       Float64 top_width = pSectProps->GetTributaryFlangeWidth(poi);
       wLeft = top_width / 2;
       wRight = wLeft;
-
-      CComQIPtr<ICompositeShape> composite(shape);
-      IndexType nShapes;
-      composite->get_Count(&nShapes);
-      CComPtr<ICompositeShapeItem> girderShapeItem;
-      composite->get_Item(0,&girderShapeItem); // basic girder is always first in composite
-      CComPtr<IShape> girderShape;
-      girderShapeItem->get_Shape(&girderShape);
-      girderShape->get_BoundingBox(&boxGirder);
 
       CComPtr<ICompositeShapeItem> slabShapeItem;
       composite->get_Item(nShapes-1,&slabShapeItem); // slab is always last in composite
@@ -561,13 +562,6 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    connectable->AddSocket(SOCKET_TC,pntTC,&socketTC);
 
    // sockets for bottom flange dimension line
-
-   CComQIPtr<ICompositeShape> composite(shape);
-   CComPtr<ICompositeShapeItem> girderShapeItem;
-   composite->get_Item(0, &girderShapeItem); // basic girder is always first in composite
-   CComPtr<IShape> girderShape;
-   girderShapeItem->get_Shape(&girderShape);
-
    CComQIPtr<IGirderSection> section(girderShape);
    FlangeIndexType nBottomFlanges, nWebs;
    section->get_BottomFlangeCount(&nBottomFlanges);
