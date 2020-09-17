@@ -1750,14 +1750,11 @@ void CBridgePlanView::BuildLongitudinalJointDisplayObject()
    GET_IFACE2_NOCHECK(pBroker, IGirder, pIGirder);
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+   GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
+   for (GroupIndexType groupIdx = firstGroupIdx; groupIdx <= lastGroupIdx; groupIdx++)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-
-      if (pGroup->GetPierIndex(pgsTypes::metStart) < m_StartGroupIdx || m_EndGroupIdx + 1 < pGroup->GetPierIndex(pgsTypes::metEnd))
-      {
-         continue;
-      }
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(groupIdx);
 
       GirderIndexType nGirders = pGroup->GetGirderCount();
       for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders-1; gdrIdx++)
@@ -1766,12 +1763,12 @@ void CBridgePlanView::BuildLongitudinalJointDisplayObject()
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
-            CSegmentKey leftSegmentKey(grpIdx, gdrIdx, segIdx);
-            CSegmentKey rightSegmentKey(grpIdx, gdrIdx+1, segIdx);
+            CSegmentKey leftSegmentKey(groupIdx, gdrIdx, segIdx);
+            CSegmentKey rightSegmentKey(groupIdx, gdrIdx+1, segIdx);
 
             const int left = 0;
             const int right = 1;
-            CComPtr<IPoint2d> pntEnd1Left[2], pntEnd1[2], pntEnd1Right[2], pntEnd2Right[2], pntEnd2[2], pntEnd2Left[2];
+            std::array<CComPtr<IPoint2d>, 2> pntEnd1Left, pntEnd1, pntEnd1Right, pntEnd2Right, pntEnd2, pntEnd2Left;
             pIGirder->GetSegmentPlanPoints(leftSegmentKey, pgsTypes::pcGlobal, &pntEnd1Left[left], &pntEnd1[left], &pntEnd1Right[left], &pntEnd2Right[left], &pntEnd2[left], &pntEnd2Left[left]);
             pIGirder->GetSegmentPlanPoints(rightSegmentKey, pgsTypes::pcGlobal, &pntEnd1Left[right], &pntEnd1[right], &pntEnd1Right[right], &pntEnd2Right[right], &pntEnd2[right], &pntEnd2Left[right]);
 
@@ -1839,14 +1836,11 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+   GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
+   for (GroupIndexType groupIdx = firstGroupIdx; groupIdx <= lastGroupIdx; groupIdx++)
    {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
-      
-      if ( pGroup->GetPierIndex(pgsTypes::metStart) < m_StartGroupIdx || m_EndGroupIdx+1 < pGroup->GetPierIndex(pgsTypes::metEnd) )
-      {
-         continue;
-      }
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(groupIdx);
 
       GirderIndexType nGirdersThisGroup = pGroup->GetGirderCount();
 
@@ -1856,7 +1850,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
          doGirderLine.CoCreateInstance(CLSID_CompositeDisplayObject);
          doGirderLine->SetSelectionType(stAll);
 
-         CGirderKey girderKey(grpIdx,gdrIdx);
+         CGirderKey girderKey(groupIdx,gdrIdx);
 
          IDType ID = m_NextGirderID++;
          m_GirderIDs.insert( std::make_pair(girderKey,ID) );
@@ -1870,7 +1864,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
-            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
+            CSegmentKey segmentKey(groupIdx,gdrIdx,segIdx);
             std::map<CSegmentKey,IDType>::iterator found = m_SegmentIDs.find(segmentKey);
             ASSERT(found != m_SegmentIDs.end() );
 
@@ -2777,16 +2771,6 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
          doConnection->SetMaxTipWidth(TOOLTIP_WIDTH);
          doConnection->SetTipDisplayTime(TOOLTIP_DURATION);
 
-#pragma Reminder("TODO: Need connection display object for temporary supports")
-         //// Register an event sink with the connection text display object so that we can handle dbl-clicks
-         //// differently then a general dbl-click
-         //CConnectionDisplayObjectEvents* pEvents = new CConnectionDisplayObjectEvents(pierIdx);
-
-         //IUnknown* unk = pEvents->GetInterface(&IID_iDisplayObjectEvents);
-         //CComQIPtr<iDisplayObjectEvents,&IID_iDisplayObjectEvents> events(unk);
-         //CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doConnection);
-         //dispObj->RegisterEventSink(events);
-
          label_display_list->AddDisplayObject(doConnection);
       }
    }
@@ -2867,7 +2851,7 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
             // array index is pgsTypes::Back = back side of closure, pgsTypes::Ahead = ahead side of closure
             // we want left segment (back) end 2 and right segment (ahead) end 1 points to 
             // build the display object
-            CComPtr<IPoint2d> pntSupport1[2],pntEnd1[2],pntBrg1[2],pntBrg2[2],pntEnd2[2],pntSupport2[2];
+            std::array<CComPtr<IPoint2d>, 2> pntSupport1,pntEnd1,pntBrg1,pntBrg2,pntEnd2,pntSupport2;
             pIGirder->GetSegmentEndPoints(leftSegmentKey,  pgsTypes::pcGlobal,&pntSupport1[pgsTypes::Back], &pntEnd1[pgsTypes::Back], &pntBrg1[pgsTypes::Back], &pntBrg2[pgsTypes::Back], &pntEnd2[pgsTypes::Back], &pntSupport2[pgsTypes::Back]);
             pIGirder->GetSegmentEndPoints(rightSegmentKey, pgsTypes::pcGlobal,&pntSupport1[pgsTypes::Ahead],&pntEnd1[pgsTypes::Ahead],&pntBrg1[pgsTypes::Ahead],&pntBrg2[pgsTypes::Ahead],&pntEnd2[pgsTypes::Ahead],&pntSupport2[pgsTypes::Ahead]);
 
@@ -3681,7 +3665,7 @@ void CBridgePlanView::Select(const CSelection* pSelection)
       break;
 
    case CSelection::Girder:
-      SelectGirder(CSegmentKey(pSelection->GroupIdx, pSelection->GirderIdx, INVALID_INDEX), true);
+      SelectGirder(CGirderKey(pSelection->GroupIdx, pSelection->GirderIdx), true);
       break;
 
    case CSelection::Segment:
