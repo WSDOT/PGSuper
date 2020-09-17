@@ -226,7 +226,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
 
       // Get Midspan poi
       PoiList vPoi;
-      pIPOI->GetPointsOfInterest(CSegmentKey(girderKey, 0), POI_5L | POI_ERECTED_SEGMENT,&vPoi);
+      pIPOI->GetPointsOfInterest(CSegmentKey(girderKey, 0), POI_5L | POI_SPAN, &vPoi);
       ATLASSERT(vPoi.size() == 1);
       const pgsPointOfInterest& poi(vPoi.front());
 

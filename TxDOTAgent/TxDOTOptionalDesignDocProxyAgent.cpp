@@ -406,7 +406,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       // Our model is always prismatic - max's will occur at mid-span poi
       GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
       PoiList vPOI;
-      pIPoi->GetPointsOfInterest(origSegmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPOI);
+      pIPoi->GetPointsOfInterest(origSegmentKey, POI_5L | POI_SPAN, &vPOI);
       ATLASSERT( vPOI.size() == 1 );
       const pgsPointOfInterest& orig_ms_poi = vPOI.front();
 
@@ -590,7 +590,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
    
       // mid span in fab model
       vPOI.clear(); // recycle list
-      pIPoi->GetPointsOfInterest(fabrSegmentKey, POI_5L | POI_ERECTED_SEGMENT,&vPOI);
+      pIPoi->GetPointsOfInterest(fabrSegmentKey, POI_5L | POI_SPAN,&vPOI);
       ATLASSERT( vPOI.size() == 1 );
       pgsPointOfInterest fabr_ms_poi = vPOI.front();
 

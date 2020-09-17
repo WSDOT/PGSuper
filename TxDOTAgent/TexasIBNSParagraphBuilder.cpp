@@ -422,7 +422,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
             rbEjectPage = false;
             // Nonstandard strands table
             PoiList vPoi;
-            pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+            pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
             ATLASSERT(vPoi.size()==1);
             const pgsPointOfInterest& pmid(vPoi.front());
 
@@ -549,7 +549,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       const pgsPointOfInterest& pmidrel(vPoiRel.front());
 
 
-      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoiEre);
+      pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoiEre);
       ATLASSERT(vPoiEre.size()==1);
       const pgsPointOfInterest& pmidere(vPoiEre.back());
 

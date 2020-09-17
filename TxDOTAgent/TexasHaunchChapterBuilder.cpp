@@ -302,7 +302,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
 
       // Get Midspan poi and take averages at 0.2, 0.3 points to compute quarter point reactions
       PoiList vPoi;
-      pIPOI->GetPointsOfInterest(segmentKey, POI_2L | POI_3L | POI_7L | POI_8L | POI_ERECTED_SEGMENT, &vPoi);
+      pIPOI->GetPointsOfInterest(segmentKey, POI_2L | POI_3L | POI_7L | POI_8L | POI_SPAN, &vPoi);
       ATLASSERT(vPoi.size()==4);
       const pgsPointOfInterest& poi_2 = vPoi[0];
       const pgsPointOfInterest& poi_3 = vPoi[1];
