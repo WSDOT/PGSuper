@@ -795,6 +795,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
    GET_IFACE2(pBroker, IGirder, pIGirder);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -915,8 +916,8 @@ void CBridgePlanView::UpdateSegmentTooltips()
                PierIndexType startPierIdx, endPierIdx;
                pBridge->GetGirderGroupPiers(segmentKey.groupIndex, &startPierIdx, &endPierIdx);
 
-               Float64 startOffset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart);
-               Float64 endOffset   = pBridge->GetSlabOffset(segmentKey,pgsTypes::metEnd);
+               Float64 startOffset = pBridge->GetSlabOffset(segmentKey, pgsTypes::metStart);
+               Float64 endOffset = pBridge->GetSlabOffset(segmentKey, pgsTypes::metEnd);
 
                strMsg5.Format(_T("\n\nSlab Offset\nStart: %s\nEnd: %s"),
                   FormatDimension(startOffset, pDisplayUnits->GetComponentDimUnit()),
@@ -951,7 +952,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
             {
                const CSplicedGirderData* pSplicedGirder = pIBridgeDesc->GetGirder(segmentKey);
                Float64 wLeft, wRight;
-               Float64 topWidthStart = pSplicedGirder->GetTopWidth(pgsTypes::metStart,&wLeft,&wRight);
+               Float64 topWidthStart = pSplicedGirder->GetTopWidth(pgsTypes::metStart, &wLeft, &wRight);
                Float64 topWidthEnd = pSplicedGirder->GetTopWidth(pgsTypes::metEnd, &wLeft, &wRight);
 
                CString strTopWidth;
@@ -966,6 +967,27 @@ void CBridgePlanView::UpdateSegmentTooltips()
                strMsg += strTopWidth;
             }
 
+            SegmentIDType segmentID = pSegment->GetID();
+            EventIndexType constructionEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segmentID);
+            EventIndexType erectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(segmentID);
+            const CTimelineEvent* pConstructionEvent = nullptr;
+            const CTimelineEvent* pErectionEvent = nullptr;
+            if (constructionEventIdx != INVALID_INDEX)
+            {
+               pConstructionEvent = pTimelineMgr->GetEventByIndex(constructionEventIdx);
+            }
+            if (erectionEventIdx != INVALID_INDEX)
+            {
+               pErectionEvent = pTimelineMgr->GetEventByIndex(erectionEventIdx);
+            }
+            CString strEvents;
+            strEvents.Format(_T("\n\nConstruction: Event %d, %s\nErection: Event %d, %s"),
+               LABEL_EVENT(constructionEventIdx),
+               pConstructionEvent == nullptr ? _T("Construction event not defined") : pConstructionEvent->GetDescription(),
+               LABEL_EVENT(erectionEventIdx),
+               pErectionEvent == nullptr ? _T("Erection event not defined") : pErectionEvent->GetDescription()
+               );
+            strMsg += strEvents;
 #if defined _DEBUG
             CString strSegID;
             strSegID.Format(_T("\n\nGirder ID: %d\nSegment ID: %d"),girderID,ID);
@@ -993,6 +1015,7 @@ void CBridgePlanView::UpdateClosureJointTooltips()
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -1028,16 +1051,25 @@ void CBridgePlanView::UpdateClosureJointTooltips()
             display_list->FindDisplayObject(ID,&pDO);
             ATLASSERT(pDO != nullptr);
 
+            EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosureJoint);
+            const CTimelineEvent* pEvent = nullptr;
+            if (eventIdx != INVALID_INDEX)
+            {
+               pEvent = pTimelineMgr->GetEventByIndex(eventIdx);
+            }
+
             CString strMsg1(_T("Double click to edit.\nRight click for more options."));
 
             Float64 fc  = pClosureJoint->GetConcrete().Fc;
             Float64 fci = pClosureJoint->GetConcrete().Fci;
 
             CString strMsg2;
-            strMsg2.Format(_T("\n\n%s\nf'ci: %s\nf'c: %s"),
+            strMsg2.Format(_T("\n\n%s\nf'ci: %s\nf'c: %s\n\nInstallation: Event %d, %s"),
                            lrfdConcreteUtil::GetTypeName((matConcrete::Type)pClosureJoint->GetConcrete().Type,true).c_str(),
                            FormatDimension(fci,pDisplayUnits->GetStressUnit()),
-                           FormatDimension(fc, pDisplayUnits->GetStressUnit())
+                           FormatDimension(fc, pDisplayUnits->GetStressUnit()),
+                           LABEL_EVENT(eventIdx),
+                           pEvent == nullptr ? _T("Installation event not defined") : pEvent->GetDescription()
                            );
 
             CString strMsg = strMsg1 + strMsg2;
@@ -2045,11 +2077,11 @@ void CBridgePlanView::BuildPierDisplayObjects()
          {
             const CTimelineEvent* pTimelineEventData = pTimelineMgr->GetEventByIndex(eventIdx);
 
-            strEvent.Format(_T("Erection Event: Event %d: %s"), LABEL_EVENT(eventIdx), pTimelineEventData->GetDescription());
+            strEvent.Format(_T("Erection: Event %d: %s"), LABEL_EVENT(eventIdx), pTimelineEventData->GetDescription());
          }
          else
          {
-            strEvent.Format(_T("Erection Event: Not defined"));
+            strEvent.Format(_T("Erection: Erection event not defined"));
          }
 
          strMsg += _T("\n") + strEvent;
@@ -2577,16 +2609,16 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       strMsg1.Format(_T("Double click to edit Temporary Support %d\nRight click for more options."),LABEL_TEMPORARY_SUPPORT(tsIdx));
 
       CString strMsg2;
-      strMsg2.Format(_T("Type: %s\nStation: %s\nDirection: %s\nSkew: %s\nConnection Type: %s\nErection Event: Event: %d %s\nRemoval Event: Event: %d %s"),
+      strMsg2.Format(_T("Type: %s\nStation: %s\nDirection: %s\nSkew: %s\nConnection Type: %s\nErection: Event %d, %s\nRemoval: Event %d, %s"),
                      tsSupportType == pgsTypes::ErectionTower ? _T("Erection Tower") : _T("Strong Back"),
                      FormatStation(pDisplayUnits->GetStationFormat(),station),
                      FormatDirection(direction),
                      FormatAngle(objSkew),
                      segConnectionType == pgsTypes::tsctClosureJoint ? _T("Closure Joint") : _T("Continuous Segment"),
                      LABEL_EVENT(erectionEventIdx),
-                     pErectionEvent == nullptr ? _T("Erection stage not defined") : pErectionEvent->GetDescription(),
+                     pErectionEvent == nullptr ? _T("Erection event not defined") : pErectionEvent->GetDescription(),
                      LABEL_EVENT(removalEventIdx),
-                     pRemovalEvent ==  nullptr ? _T("Removal stage not defined") : pRemovalEvent->GetDescription());
+                     pRemovalEvent ==  nullptr ? _T("Removal event not defined") : pRemovalEvent->GetDescription());
 
       CString strMsg = strMsg1 + _T("\n\n") + strMsg2 + _T("\n");
 
