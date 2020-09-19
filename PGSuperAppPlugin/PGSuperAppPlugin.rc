@@ -12,8 +12,7 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -2826,16 +2825,17 @@ BEGIN
     LTEXT           "and ends at",IDC_STATIC,118,9,39,8
     COMBOBOX        IDC_END_PIER,160,7,58,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Custom1",IDC_POINT_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,24,302,161
-    LTEXT           "Start/End: Location of start/end of tendon from the start/end pier.",IDC_STATIC,318,26,280,8
-    LTEXT           "Low: Distance from Start point or previous high point. Measured as distance or percentage of the distance between high points. Distance from End in last span.",IDC_STATIC,318,39,280,17
-    LTEXT           "IP: Location of inflection point measured from high point. Measured as distance or percentage of distance between high and low points.",IDC_STATIC,318,61,280,17
-    LTEXT           "High: High point at centerline pier",IDC_STATIC,318,83,280,8
+    LTEXT           "Start: Start of tendon location measured from the start of the first span.",IDC_STATIC,318,26,280,8
+    LTEXT           "Low: Distance from Start point or previous High point. Measured as distance or percentage of the distance between high points. Distance from End in last span.",IDC_STATIC,318,38,280,17
+    LTEXT           "IP: Location of inflection point measured from High point. Measured as distance or percentage of distance between High and Low points.",IDC_STATIC,318,60,280,17
+    LTEXT           "High: High point at centerline pier",IDC_STATIC,318,82,280,8
     CONTROL         "Schematic",IDC_SCHEMATIC,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,6,188,16,16
     LTEXT           "Toggle schematic view",IDC_STATIC,25,192,72,8
     LTEXT           "Custom1",IDC_TENDONS,7,204,594,58,NOT WS_GROUP | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,442,267,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,495,267,50,14
     PUSHBUTTON      "Help",ID_HELP,552,267,50,14
+    LTEXT           "End: End of tendon location measured from the end of the last span.",IDC_STATIC,318,94,280,8
 END
 
 IDD_OFFSET_DUCT DIALOGEX 0, 0, 316, 180
