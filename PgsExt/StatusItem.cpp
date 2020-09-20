@@ -380,11 +380,11 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    {
       GET_IFACE(IEditByUI,pEdit);
 
-      if (pEdit->EditSegmentDescription(pItem->m_SegmentKey,pItem->m_Page))
+      if (pItem->m_SegmentKey.segmentIndex == INVALID_INDEX ? pEdit->EditGirderDescription(pItem->m_SegmentKey, pItem->m_Page) : pEdit->EditSegmentDescription(pItem->m_SegmentKey, pItem->m_Page))
       {
          // assume that edit took care of status
          StatusItemIDType id = pItem->GetID();
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         GET_IFACE(IEAFStatusCenter, pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }

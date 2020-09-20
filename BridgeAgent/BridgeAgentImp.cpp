@@ -34857,12 +34857,12 @@ bool CBridgeAgentImp::CreateTendons(const CPrecastSegmentData* pSegment, ISupers
       CComPtr<ITendonCollection> webTendons;
       if (pDuctData->DuctGeometryType == CSegmentDuctData::Parabolic)
       {
-         CreateParabolicTendon(segmentKey, pSSMbrSegment, pDuctData, &webTendons);
+         CreateParabolicTendon(segmentKey, ductIdx, pSSMbrSegment, pDuctData, &webTendons);
       }
       else
       {
          ATLASSERT(pDuctData->DuctGeometryType == CSegmentDuctData::Linear); // fired? is there a new duct type
-         CreateLinearTendon(segmentKey, pSSMbrSegment, pDuctData, &webTendons);
+         CreateLinearTendon(segmentKey, ductIdx, pSSMbrSegment, pDuctData, &webTendons);
       }
 
       // create tendon material
@@ -34909,7 +34909,7 @@ bool CBridgeAgentImp::CreateTendons(const CPrecastSegmentData* pSegment, ISupers
    return true;
 }
 
-void CBridgeAgentImp::CreateParabolicTendon(const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment, const CSegmentDuctData* pDuctGeometry, ITendonCollection** ppTendons) const
+void CBridgeAgentImp::CreateParabolicTendon(const CSegmentKey& segmentKey, DuctIndexType ductIdx, ISuperstructureMemberSegment* pSSMbrSegment, const CSegmentDuctData* pDuctGeometry, ITendonCollection** ppTendons) const
 {
    ATLASSERT(pDuctGeometry->DuctGeometryType == CSegmentDuctData::Parabolic);
 
@@ -34993,7 +34993,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CSegmentKey& segmentKey, ISupe
    tendons.CopyTo(ppTendons);
 }
 
-void CBridgeAgentImp::CreateLinearTendon(const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment, const CSegmentDuctData* pDuctGeometry, ITendonCollection** ppTendons) const
+void CBridgeAgentImp::CreateLinearTendon(const CSegmentKey& segmentKey, DuctIndexType ductIdx, ISuperstructureMemberSegment* pSSMbrSegment, const CSegmentDuctData* pDuctGeometry, ITendonCollection** ppTendons) const
 {
    ATLASSERT(pDuctGeometry->DuctGeometryType == CSegmentDuctData::Linear);
    CComPtr<ITendonCollection> tendons;
@@ -35084,15 +35084,15 @@ bool CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
       switch (pDuctData->DuctGeometryType)
       {
       case CDuctGeometry::Parabolic:
-         CreateParabolicTendon(girderKey,pSSMbr,pDuctData->ParabolicDuctGeometry,&webTendons);
+         CreateParabolicTendon(girderKey,ductIdx,pSSMbr,pDuctData->ParabolicDuctGeometry,&webTendons);
          break;
 
       case CDuctGeometry::Linear:
-         CreateLinearTendon(girderKey,pSSMbr,pDuctData->LinearDuctGeometry,&webTendons);
+         CreateLinearTendon(girderKey, ductIdx, pSSMbr,pDuctData->LinearDuctGeometry,&webTendons);
          break;
 
       case CDuctGeometry::Offset:
-         CreateOffsetTendon(girderKey,pSSMbr,pDuctData->OffsetDuctGeometry,tendons,&webTendons);
+         CreateOffsetTendon(girderKey, ductIdx, pSSMbr,pDuctData->OffsetDuctGeometry,tendons,&webTendons);
          break;
       }
 
@@ -35152,7 +35152,7 @@ bool CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
    return true;
 }
 
-void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,const CParabolicDuctGeometry& ductGeometry,ITendonCollection** ppTendons) const
+void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctIndexType ductIdx, ISuperstructureMember* pSSMbr,const CParabolicDuctGeometry& ductGeometry,ITendonCollection** ppTendons) const
 {
    CComPtr<ITendonCollection> tendons;
    tendons.CoCreateInstance(CLSID_TendonCollection);
@@ -35585,7 +35585,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey,ISuperst
    tendons.CopyTo(ppTendons);
 }
 
-void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,const CLinearDuctGeometry& ductGeometry,ITendonCollection** ppTendons) const
+void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey, DuctIndexType ductIdx, ISuperstructureMember* pSSMbr,const CLinearDuctGeometry& ductGeometry,ITendonCollection** ppTendons) const
 {
    CComPtr<ITendonCollection> tendons;
    tendons.CoCreateInstance(CLSID_TendonCollection);
@@ -35660,6 +35660,16 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstruc
             zEnd = zStart + location;
          }
 
+         if (Lg < zEnd)
+         {
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            CString strMsg;
+            strMsg.Format(_T("%s, Tendon %d: Point %d is beyond the end of the girder. This point has been ignored. Correct tendon definition."),LABEL_GIRDER(girderKey),LABEL_DUCT(ductIdx),LABEL_INDEX(pointIdx));
+            std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey,ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionWarning, strMsg);
+            pStatusCenter->Add(pStatusItem.release());
+            continue; // skip to next point
+         }
+
          Float64 yEnd = ConvertDuctOffsetToDuctElevation(girderKey,nullptr,zEnd,offset,offsetType);
 
          CComPtr<IPoint3d> pntStart;
@@ -35696,8 +35706,9 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey,ISuperstruc
    tendons.CopyTo(ppTendons);
 }
 
-void CBridgeAgentImp::CreateOffsetTendon(const CGirderKey& girderKey,ISuperstructureMember* pSSMbr,const COffsetDuctGeometry& ductGeometry,ITendonCollection* refTendons,ITendonCollection** ppTendons) const
+void CBridgeAgentImp::CreateOffsetTendon(const CGirderKey& girderKey, DuctIndexType ductIdx, ISuperstructureMember* pSSMbr,const COffsetDuctGeometry& ductGeometry,ITendonCollection* refTendons,ITendonCollection** ppTendons) const
 {
+   ATLASSERT(false); // this option isn't fully supported so it should be called.
    CComPtr<ITendonCollection> tendons;
    tendons.CoCreateInstance(CLSID_TendonCollection);
 
