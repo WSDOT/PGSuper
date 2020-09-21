@@ -8275,7 +8275,8 @@ void CGirderModelManager::GetLBAMBoundaryConditions(bool bContinuous,const CTime
       // "drop in" segments start and end in the same span (pier segments straddle a pier),
       // don't have any interior supports, and are supported by strong backs at each end
       bool bIsDropIn = pSegment->IsDropIn();
-      if ( pTS->GetSupportType() == pgsTypes::ErectionTower || bIsDropIn )
+      bool bIsPropped = pSegment->IsPropped();
+      if ( pTS->GetSupportType() == pgsTypes::ErectionTower || bIsDropIn || bIsPropped)
       {
          CClosureKey closureKey(pClosure->GetClosureKey());
          GET_IFACE(IIntervals,pIntervals);

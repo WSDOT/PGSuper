@@ -575,6 +575,29 @@ bool CPrecastSegmentData::IsDropIn() const
    return false;
 }
 
+bool CPrecastSegmentData::IsPropped() const
+{
+   std::vector<const CPierData2*> vPiers(GetPiers());
+   std::vector<const CTemporarySupportData*> vTS(GetTemporarySupports());
+   IndexType nPiers = vPiers.size();
+   IndexType nTS = vTS.size();
+   if (nPiers == 2 && nTS == 1)
+   {
+      const CPierData2* pPier1;
+      const CTemporarySupportData* pTS1;
+      GetSupport(pgsTypes::metStart, &pPier1, &pTS1);
+
+      const CPierData2* pPier2;
+      const CTemporarySupportData* pTS2;
+      GetSupport(pgsTypes::metEnd, &pPier2, &pTS2);
+
+      const CTemporarySupportData* pTS = (pTS1 == nullptr ? pTS2 : pTS1);
+      ATLASSERT(pTS);
+      return pTS->GetSupportType() == pgsTypes::StrongBack ? true : false;
+   }
+   return false;
+}
+
 CSegmentKey CPrecastSegmentData::GetSegmentKey() const
 {
    CSegmentKey segmentKey(INVALID_INDEX,INVALID_INDEX,GetIndex());
