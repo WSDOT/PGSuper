@@ -12130,6 +12130,8 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          poi = GetPierPointOfInterest(girderKey, pierIdx);
       }
 
+      Float64 grossSlabDepth = GetGrossSlabDepth();
+
       // girder slope angles
       Float64 girderOrientation = GetOrientation(segmentKey);
       girderOrientation = IsZero(girderOrientation) ? 0 : girderOrientation;
@@ -12306,6 +12308,8 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          elevDetails.Offset = offset;
 
          elevDetails.FinishedGradeElevation = GetElevation(station, offset);
+
+         elevDetails.GrossSlabDepth = grossSlabDepth;
 
          elevDetails.Hg = Hg * girderHeightAdjustment;
 

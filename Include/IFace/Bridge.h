@@ -123,6 +123,7 @@ struct BearingElevationDetails
    Float64 Offset; // offset where the elevations are computed
    Float64 FinishedGradeElevation; // final design surface elevation at Station and Offset (top of overlay if overlay built with bridge, top of deck for no overlay or future overlay)
    Float64 OverlayDepth; // depth of overlay (future overlays not considered)
+   Float64 GrossSlabDepth;
    Float64 SlabOffset;
    Float64 Hg; // adjusted for girder orientation
    Float64 BrgRecess;
