@@ -63,6 +63,8 @@ public:
    Float64 ServiceIII_SH;
    Float64 ServiceIII_PS;
    Float64 AllowableTensionCoefficient;
+   bool bLimitTensileStress;
+   Float64 MaxTensileStress;
    bool    bRateForShear;
 
    txnDesignRatingData();
@@ -102,6 +104,8 @@ public:
    Float64 ServiceIII_SH;
    Float64 ServiceIII_PS;
    Float64 AllowableTensionCoefficient;
+   bool bLimitTensileStress;
+   Float64 MaxTensileStress;
    bool    bRateForStress;
    bool    bRateForShear;
    bool    bExcludeLaneLoad;
@@ -151,6 +155,8 @@ public:
 
    bool    bRateForStress;
    Float64 AllowableTensionCoefficient;
+   bool bLimitTensileStress;
+   Float64 MaxTensileStress;
 
    bool    bRateForShear;
    bool    bCheckReinforcementYielding;

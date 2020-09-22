@@ -228,6 +228,7 @@
 #define IDC_SERVICE_IA_DW               1018
 #define IDC_AFTER_XFER                  1018
 #define IDC_AHEAD_DIAPHRAGM_OFFSET      1018
+#define IDC_TENSION_MAX                 1019
 #define IDC_STRENGTH_I_DW_MIN           1020
 #define IDC_STRENGTH_I_DW_MAX           1021
 #define IDC_STRENGTH_II_DW_MIN          1022
@@ -291,8 +292,11 @@
 #define IDC_OLAY_WEIGHT_UNIT            1098
 #define IDC_FCI                         1099
 #define IDC_OLAY_DEPTH                  1101
+#define IDC_CHECK_TENSION_MAX           1101
 #define IDC_FCI_UNIT                    1102
 #define IDC_OLAY_DEPTH_UNIT             1102
+#define IDC_RELEASE_TENSION_MAX_UNIT    1102
+#define IDC_TENSION_MAX_UNIT            1102
 #define IDD_PIER_LAYOUT                 1112
 #define IDC_STRAND_SIZE                 1112
 #define IDC_FINAL                       1112

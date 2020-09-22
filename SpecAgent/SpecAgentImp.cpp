@@ -863,9 +863,17 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
    }
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
-   Float64 x = pRatingSpec->GetAllowableTensionCoefficient(ratingType);
+   bool bCheckMax;
+   Float64 fmax;
+   Float64 x = pRatingSpec->GetAllowableTensionCoefficient(ratingType,&bCheckMax,&fmax);
 
    Float64 fallow = x*lambda*sqrt(fc);
+
+   if (bCheckMax)
+   {
+      fallow = Min(fallow, fmax);
+   }
+
    return fallow;
 }
 

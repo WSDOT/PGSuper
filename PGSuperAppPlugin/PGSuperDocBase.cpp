@@ -1417,6 +1417,16 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //FrictionCoefficient = 0.2;
    //pLossParameters->SetTendonPostTensionParameters(Dset, WobbleFriction, FrictionCoefficient);
 
+   // Updates all load rating specs to include max tensile stress limit
+   //GET_IFACE(IRatingSpecification, pRatingSpec);
+   //for (int i = 0; i < pgsTypes::lrLoadRatingTypeCount; i++)
+   //{
+   //   pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+   //   bool bLimit;
+   //   Float64 max;
+   //   Float64 coefficient = pRatingSpec->GetAllowableTensionCoefficient(ratingType, &bLimit, &max);
+   //   pRatingSpec->SetAllowableTensionCoefficient(ratingType, coefficient, true, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   //}
 
    //
    // Copy the updated template into the source tree
@@ -1426,11 +1436,16 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //CString strAppData;
 
    //CString templateFileName(strTemplate);
+
+   //// for PGSuper templates
    //strAppData.Format(_T("%s\\PGSuperV3\\WorkgroupTemplates"), path);
    //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\AASHTO"));
    //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\WSDOT"));
+
+   //// for PGSplice templates
    //strAppData.Format(_T("%s\\PGSplice\\WorkgroupTemplates"), path);
    //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSplice\\WSDOT"));
+
    //CEAFBrokerDocument::SaveTheDocument(templateFileName);
 }
 
@@ -2807,7 +2822,7 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Design.ServiceIII_SH          = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Inventory);
    oldData.m_Design.ServiceIII_PS          = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceIII_Inventory);
 
-   oldData.m_Design.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrDesign_Inventory);
+   oldData.m_Design.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrDesign_Inventory,&oldData.m_Design.bLimitTensileStress,&oldData.m_Design.MaxTensileStress);
    oldData.m_Design.bRateForShear = pSpec->RateForShear(pgsTypes::lrDesign_Inventory);
 
    GET_IFACE(ILiveLoads,pLiveLoads);
@@ -2837,7 +2852,7 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Legal.ServiceIII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
    oldData.m_Legal.ServiceIII_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceIII_LegalSpecial);
 
-   oldData.m_Legal.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine);
+   oldData.m_Legal.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine, &oldData.m_Legal.bLimitTensileStress, &oldData.m_Legal.MaxTensileStress);
    oldData.m_Legal.bRateForShear    = pSpec->RateForShear(pgsTypes::lrLegal_Routine);
    oldData.m_Legal.bExcludeLaneLoad = pSpec->ExcludeLegalLoadLaneLoading();
 
@@ -2894,7 +2909,7 @@ void CPGSDocBase::OnRatingSpec()
 
    oldData.m_Permit.bRateForShear = pSpec->RateForShear(pgsTypes::lrPermit_Routine);
    oldData.m_Permit.bRateForStress = pSpec->RateForStress(pgsTypes::lrPermit_Routine);
-   oldData.m_Permit.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrPermit_Routine);
+   oldData.m_Permit.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrPermit_Routine, &oldData.m_Permit.bLimitTensileStress, &oldData.m_Permit.MaxTensileStress);
    oldData.m_Permit.bCheckReinforcementYielding = pSpec->CheckYieldStress(pgsTypes::lrPermit_Routine);
    oldData.m_Permit.YieldStressCoefficient = pSpec->GetYieldStressLimitCoefficient();
    oldData.m_Permit.SpecialPermitType = pSpec->GetSpecialPermitType();

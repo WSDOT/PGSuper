@@ -70,13 +70,10 @@ void CDesignRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_SERVICE_III_SH,m_Data.ServiceIII_SH);
    DDX_Text(pDX,IDC_SERVICE_III_PS,m_Data.ServiceIII_PS);
 
-   DDX_Check_Bool(pDX,IDC_RATE_FOR_SHEAR,m_Data.bRateForShear);
-
    CComPtr<IBroker> broker;
    EAFGetBroker(&broker);
    GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
-
    CString tag;
    if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
    {
@@ -87,12 +84,18 @@ void CDesignRatingPage::DoDataExchange(CDataExchange* pDX)
       tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
    DDX_Text(pDX,IDC_ALLOWABLE_TENSION_UNIT,tag);
+
+   DDX_Check_Bool(pDX, IDC_CHECK_TENSION_MAX, m_Data.bLimitTensileStress);
+   DDX_UnitValueAndTag(pDX, IDC_TENSION_MAX, IDC_TENSION_MAX_UNIT, m_Data.MaxTensileStress, pDisplayUnits->GetStressUnit());
+
+   DDX_Check_Bool(pDX, IDC_RATE_FOR_SHEAR, m_Data.bRateForShear);
 }
 
 
 BEGIN_MESSAGE_MAP(CDesignRatingPage, CPropertyPage)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	ON_COMMAND(ID_HELP, OnHelp)
+   ON_BN_CLICKED(IDC_CHECK_TENSION_MAX, &CDesignRatingPage::OnMaxTensionStressChanged)
 END_MESSAGE_MAP()
 
 
@@ -160,10 +163,23 @@ BOOL CDesignRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
    return FALSE;
 }
 
+void CDesignRatingPage::OnMaxTensionStressChanged()
+{
+   BOOL bEnable = FALSE;
+   if (IsDlgButtonChecked(IDC_CHECK_TENSION_MAX))
+   {
+      bEnable = TRUE;
+   }
+   GetDlgItem(IDC_TENSION_MAX)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TENSION_MAX_UNIT)->EnableWindow(bEnable);
+}
+
 BOOL CDesignRatingPage::OnSetActive()
 {
    if ( !CPropertyPage::OnSetActive() )
       return FALSE;
+
+   OnMaxTensionStressChanged();
 
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
    CComPtr<IBroker> broker;

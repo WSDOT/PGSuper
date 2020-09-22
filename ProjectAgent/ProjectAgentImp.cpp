@@ -379,13 +379,13 @@ CProjectAgentImp::CProjectAgentImp()
    m_gPS[pgsTypes::ServiceIII_PermitSpecial] = 1.00;
    m_gLL[pgsTypes::ServiceIII_PermitSpecial] = COMPUTE_LLDF;
 
-   m_AllowableTensionCoefficient[pgsTypes::lrDesign_Inventory] = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
-   m_AllowableTensionCoefficient[pgsTypes::lrDesign_Operating] = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
-   m_AllowableTensionCoefficient[pgsTypes::lrLegal_Routine]    = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
-   m_AllowableTensionCoefficient[pgsTypes::lrLegal_Special] = ::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI);
-   m_AllowableTensionCoefficient[pgsTypes::lrLegal_Emergency] = ::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI);
-   m_AllowableTensionCoefficient[pgsTypes::lrPermit_Routine]   = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
-   m_AllowableTensionCoefficient[pgsTypes::lrPermit_Special]   = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
+   m_AllowableTensileStress[pgsTypes::lrDesign_Inventory] = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrDesign_Operating] = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrLegal_Routine]    = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrLegal_Special]    = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrLegal_Emergency]  = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrPermit_Routine]   = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrPermit_Special]   = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
 
    m_bCheckYieldStress[pgsTypes::lrDesign_Inventory] = false;
    m_bCheckYieldStress[pgsTypes::lrDesign_Operating] = false;
@@ -617,7 +617,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("ADTT"),CComVariant(pObj->m_ADTT));
       pSave->put_Property(_T("IncludePedestrianLiveLoad"),CComVariant(pObj->m_bIncludePedestrianLiveLoad));
 
-      pSave->BeginUnit(_T("DesignInventoryRating"),4.0);
+      pSave->BeginUnit(_T("DesignInventoryRating"),5.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrDesign_Inventory]));
       pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[pgsTypes::StrengthI_Inventory]));
       pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[pgsTypes::StrengthI_Inventory]));
@@ -633,11 +633,16 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[pgsTypes::ServiceIII_Inventory]));
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[pgsTypes::ServiceIII_Inventory]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_Inventory]));
-      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Inventory]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Inventory].coefficient));
+      pSave->put_Property(_T("LimitTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Inventory].bLimitStress)); // added in version 5
+      if (pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Inventory].bLimitStress)
+      {
+         pSave->put_Property(_T("MaxTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Inventory].fMax)); // added in version 5
+      }
       pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrDesign_Inventory]));
       pSave->EndUnit(); // DesignInventoryRating
 
-      pSave->BeginUnit(_T("DesignOperatingRating"),4.0);
+      pSave->BeginUnit(_T("DesignOperatingRating"),5.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrDesign_Operating]));
       pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[pgsTypes::StrengthI_Operating]));
       pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[pgsTypes::StrengthI_Operating]));
@@ -653,11 +658,16 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[pgsTypes::ServiceIII_Operating]));
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[pgsTypes::ServiceIII_Operating]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_Operating]));
-      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Operating]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Operating].coefficient));
+      pSave->put_Property(_T("LimitTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Operating].bLimitStress)); // added in version 5
+      if (pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Operating].bLimitStress)
+      {
+         pSave->put_Property(_T("MaxTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Operating].fMax)); // added in version 5
+      }
       pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrDesign_Operating]));
       pSave->EndUnit(); // DesignOperatingRating
 
-      pSave->BeginUnit(_T("LegalRoutineRating"),4.0);
+      pSave->BeginUnit(_T("LegalRoutineRating"),5.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrLegal_Routine]));
       pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[pgsTypes::StrengthI_LegalRoutine]));
       pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[pgsTypes::StrengthI_LegalRoutine]));
@@ -673,13 +683,18 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[pgsTypes::ServiceIII_LegalRoutine]));
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[pgsTypes::ServiceIII_LegalRoutine]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_LegalRoutine]));
-      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Routine]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Routine].coefficient));
+      pSave->put_Property(_T("LimitTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Routine].bLimitStress)); // added in version 5
+      if (pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Routine].bLimitStress)
+      {
+         pSave->put_Property(_T("MaxTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Routine].fMax)); // added in version 5
+      }
       pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrLegal_Routine]));
       pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrLegal_Routine]));
       pSave->put_Property(_T("ExcludeLegalLoadLaneLoading"),CComVariant(pObj->m_bExcludeLegalLoadLaneLoading));
       pSave->EndUnit(); // LegalRoutineRating
 
-      pSave->BeginUnit(_T("LegalSpecialRating"),4.0);
+      pSave->BeginUnit(_T("LegalSpecialRating"),5.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrLegal_Special]));
       pSave->put_Property(_T("DC_StrengthI"),CComVariant(pObj->m_gDC[pgsTypes::StrengthI_LegalSpecial]));
       pSave->put_Property(_T("DW_StrengthI"),CComVariant(pObj->m_gDW[pgsTypes::StrengthI_LegalSpecial]));
@@ -695,13 +710,18 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RE_ServiceIII"),CComVariant(pObj->m_gRE[pgsTypes::ServiceIII_LegalSpecial]));
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[pgsTypes::ServiceIII_LegalSpecial]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_LegalSpecial]));
-      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Special]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Special].coefficient));
+      pSave->put_Property(_T("LimitTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Special].bLimitStress)); // added in version 5
+      if (pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Special].bLimitStress)
+      {
+         pSave->put_Property(_T("MaxTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Special].fMax)); // added in version 5
+      }
       pSave->put_Property(_T("RateForShear"),CComVariant(pObj->m_bRateForShear[pgsTypes::lrLegal_Special]));
       pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrLegal_Special]));
       pSave->EndUnit(); // LegalSpecialRating
 
       // added in version 2
-      pSave->BeginUnit(_T("LegalEmergencyRating"), 4.0);
+      pSave->BeginUnit(_T("LegalEmergencyRating"), 5.0);
       pSave->put_Property(_T("Enabled"), CComVariant(pObj->m_bEnableRating[pgsTypes::lrLegal_Emergency]));
       pSave->put_Property(_T("DC_StrengthI"), CComVariant(pObj->m_gDC[pgsTypes::StrengthI_LegalEmergency]));
       pSave->put_Property(_T("DW_StrengthI"), CComVariant(pObj->m_gDW[pgsTypes::StrengthI_LegalEmergency]));
@@ -717,12 +737,17 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RE_ServiceIII"), CComVariant(pObj->m_gRE[pgsTypes::ServiceIII_LegalEmergency]));
       pSave->put_Property(_T("PS_ServiceIII"), CComVariant(pObj->m_gPS[pgsTypes::ServiceIII_LegalEmergency]));
       pSave->put_Property(_T("LL_ServiceIII"), CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_LegalEmergency]));
-      pSave->put_Property(_T("AllowableTensionCoefficient"), CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Emergency]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Emergency].coefficient));
+      pSave->put_Property(_T("LimitTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Emergency].bLimitStress)); // added in version 5
+      if (pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Emergency].bLimitStress)
+      {
+         pSave->put_Property(_T("MaxTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Emergency].fMax)); // added in version 5
+      }
       pSave->put_Property(_T("RateForShear"), CComVariant(pObj->m_bRateForShear[pgsTypes::lrLegal_Emergency]));
       pSave->put_Property(_T("RateForStress"), CComVariant(pObj->m_bRateForStress[pgsTypes::lrLegal_Emergency]));
       pSave->EndUnit(); // LegalEmergencyRating
 
-      pSave->BeginUnit(_T("PermitRoutineRating"),5.0);
+      pSave->BeginUnit(_T("PermitRoutineRating"),6.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Routine]));
       pSave->put_Property(_T("DC_StrengthII"),CComVariant(pObj->m_gDC[pgsTypes::StrengthII_PermitRoutine]));
       pSave->put_Property(_T("DW_StrengthII"),CComVariant(pObj->m_gDW[pgsTypes::StrengthII_PermitRoutine]));
@@ -748,7 +773,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[pgsTypes::ServiceIII_PermitRoutine]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_PermitRoutine]));
       pSave->put_Property(_T("CheckYieldStress"),CComVariant(pObj->m_bCheckYieldStress[pgsTypes::lrPermit_Routine]));
-      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrPermit_Routine]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Routine].coefficient));
+      pSave->put_Property(_T("LimitTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Routine].bLimitStress)); // added in version 6
+      if (pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Routine].bLimitStress)
+      {
+         pSave->put_Property(_T("MaxTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Routine].fMax)); // added in version 6
+      }
       // End of added in version 5
 
       pSave->put_Property(_T("AllowableYieldStressCoefficient"),CComVariant(pObj->m_AllowableYieldStressCoefficient));
@@ -756,7 +786,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("RateForStress"),CComVariant(pObj->m_bRateForStress[pgsTypes::lrPermit_Routine]));
       pSave->EndUnit(); // PermitRoutineRating
 
-      pSave->BeginUnit(_T("PermitSpecialRating"),5.0);
+      pSave->BeginUnit(_T("PermitSpecialRating"),6.0);
       pSave->put_Property(_T("Enabled"),CComVariant(pObj->m_bEnableRating[pgsTypes::lrPermit_Special]));
       pSave->put_Property(_T("DC_StrengthII"),CComVariant(pObj->m_gDC[pgsTypes::StrengthII_PermitSpecial]));
       pSave->put_Property(_T("DW_StrengthII"),CComVariant(pObj->m_gDW[pgsTypes::StrengthII_PermitSpecial]));
@@ -783,7 +813,12 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
       pSave->put_Property(_T("PS_ServiceIII"),CComVariant(pObj->m_gPS[pgsTypes::ServiceIII_PermitSpecial]));
       pSave->put_Property(_T("LL_ServiceIII"),CComVariant(pObj->m_gLL[pgsTypes::ServiceIII_PermitSpecial]));
       pSave->put_Property(_T("CheckYieldStress"),CComVariant(pObj->m_bCheckYieldStress[pgsTypes::lrPermit_Special]));
-      pSave->put_Property(_T("AllowableTensionCoefficient"),CComVariant(pObj->m_AllowableTensionCoefficient[pgsTypes::lrPermit_Special]));
+      pSave->put_Property(_T("AllowableTensionCoefficient"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Special].coefficient));
+      pSave->put_Property(_T("LimitTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Special].bLimitStress)); // added in version 6
+      if (pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Special].bLimitStress)
+      {
+         pSave->put_Property(_T("MaxTensionStress"), CComVariant(pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Special].fMax)); // added in version 6
+      }
       // End of added in version 5
 
       pSave->put_Property(_T("SpecialPermitType"),CComVariant(pObj->m_SpecialPermitType));
@@ -939,7 +974,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          pObj->m_gLL[pgsTypes::ServiceIII_Inventory+indexOffset] = var.dblVal;
 
          pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
-         pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Inventory] = var.dblVal;
+         pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Inventory].coefficient = var.dblVal;
+         if (4 < version)
+         {
+            // added in version 5
+            var.vt = VT_BOOL;
+            pLoad->get_Property(_T("LimitTensionStress"), &var);
+            pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Inventory].bLimitStress = (var.boolVal == VARIANT_TRUE ? true : false);
+            if (pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Inventory].bLimitStress)
+            {
+               var.vt = VT_R8;
+               pLoad->get_Property(_T("MaxTensionStress"), &var);
+               pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Inventory].fMax = var.dblVal;
+            }
+         }
 
          var.vt = VT_BOOL;
          pLoad->get_Property(_T("RateForShear"),&var);
@@ -1022,7 +1070,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          pObj->m_gLL[pgsTypes::ServiceIII_Operating+indexOffset] = var.dblVal;
 
          pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
-         pObj->m_AllowableTensionCoefficient[pgsTypes::lrDesign_Operating] = var.dblVal;
+         pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Operating].coefficient = var.dblVal;
+         if (4 < version)
+         {
+            // added in version 5
+            var.vt = VT_BOOL;
+            pLoad->get_Property(_T("LimitTensionStress"), &var);
+            pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Operating].bLimitStress = (var.boolVal == VARIANT_TRUE ? true : false);
+            if (pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Operating].bLimitStress)
+            {
+               var.vt = VT_R8;
+               pLoad->get_Property(_T("MaxTensionStress"), &var);
+               pObj->m_AllowableTensileStress[pgsTypes::lrDesign_Operating].fMax = var.dblVal;
+            }
+         }
 
          var.vt = VT_BOOL;
          pLoad->get_Property(_T("RateForShear"),&var);
@@ -1117,7 +1178,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          }
 
          pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
-         pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Routine] = var.dblVal;
+         pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Routine].coefficient = var.dblVal;
+         if (4 < version)
+         {
+            // added in version 5
+            var.vt = VT_BOOL;
+            pLoad->get_Property(_T("LimitTensionStress"), &var);
+            pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Routine].bLimitStress = (var.boolVal == VARIANT_TRUE ? true : false);
+            if (pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Routine].bLimitStress)
+            {
+               var.vt = VT_R8;
+               pLoad->get_Property(_T("MaxTensionStress"), &var);
+               pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Routine].fMax = var.dblVal;
+            }
+         }
 
          var.vt = VT_BOOL;
          pLoad->get_Property(_T("RateForShear"),&var);
@@ -1219,7 +1293,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
          }
 
          pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
-         pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Special] = var.dblVal;
+         pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Special].coefficient = var.dblVal;
+         if (4 < version)
+         {
+            // added in version 5
+            var.vt = VT_BOOL;
+            pLoad->get_Property(_T("LimitTensionStress"), &var);
+            pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Special].bLimitStress = (var.boolVal == VARIANT_TRUE ? true : false);
+            if (pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Special].bLimitStress)
+            {
+               var.vt = VT_R8;
+               pLoad->get_Property(_T("MaxTensionStress"), &var);
+               pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Special].fMax = var.dblVal;
+            }
+         }
 
          var.vt = VT_BOOL;
          pLoad->get_Property(_T("RateForShear"),&var);
@@ -1238,6 +1325,9 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
             //////////////////////////////////////////////////////
             {
                pLoad->BeginUnit(_T("LegalEmergencyRating"));
+
+               Float64 version;
+               pLoad->get_Version(&version);
 
                var.vt = VT_BOOL;
                pLoad->get_Property(_T("Enabled"), &var);
@@ -1287,7 +1377,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
                pObj->m_gLL[pgsTypes::ServiceIII_LegalEmergency] = var.dblVal;
 
                pLoad->get_Property(_T("AllowableTensionCoefficient"), &var);
-               pObj->m_AllowableTensionCoefficient[pgsTypes::lrLegal_Emergency] = var.dblVal;
+               pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Emergency].coefficient = var.dblVal;
+               if (4 < version)
+               {
+                  // added in version 5
+                  var.vt = VT_BOOL;
+                  pLoad->get_Property(_T("LimitTensionStress"), &var);
+                  pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Emergency].bLimitStress = (var.boolVal == VARIANT_TRUE ? true : false);
+                  if (pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Emergency].bLimitStress)
+                  {
+                     var.vt = VT_R8;
+                     pLoad->get_Property(_T("MaxTensionStress"), &var);
+                     pObj->m_AllowableTensileStress[pgsTypes::lrLegal_Emergency].fMax = var.dblVal;
+                  }
+               }
 
                var.vt = VT_BOOL;
                pLoad->get_Property(_T("RateForShear"), &var);
@@ -1415,7 +1518,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
             var.vt = VT_R8;
             pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
-            pObj->m_AllowableTensionCoefficient[pgsTypes::lrPermit_Routine] = var.dblVal;
+            pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Routine].coefficient = var.dblVal;
+            if (5 < version)
+            {
+               // added in version 6
+               var.vt = VT_BOOL;
+               pLoad->get_Property(_T("LimitTensionStress"), &var);
+               pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Routine].bLimitStress = (var.boolVal == VARIANT_TRUE ? true : false);
+               if (pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Routine].bLimitStress)
+               {
+                  var.vt = VT_R8;
+                  pLoad->get_Property(_T("MaxTensionStress"), &var);
+                  pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Routine].fMax = var.dblVal;
+               }
+            }
          }
 
          pLoad->get_Property(_T("AllowableYieldStressCoefficient"),&var);
@@ -1554,7 +1670,20 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
             var.vt = VT_R8;
             pLoad->get_Property(_T("AllowableTensionCoefficient"),&var);
-            pObj->m_AllowableTensionCoefficient[pgsTypes::lrPermit_Special] = var.dblVal;
+            pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Special].coefficient = var.dblVal;
+            if (5 < version)
+            {
+               // added in version 6
+               var.vt = VT_BOOL;
+               pLoad->get_Property(_T("LimitTensionStress"), &var);
+               pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Special].bLimitStress = (var.boolVal == VARIANT_TRUE ? true : false);
+               if (pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Special].bLimitStress)
+               {
+                  var.vt = VT_R8;
+                  pLoad->get_Property(_T("MaxTensionStress"), &var);
+                  pObj->m_AllowableTensileStress[pgsTypes::lrPermit_Special].fMax = var.dblVal;
+               }
+            }
          }
 
          var.vt = VT_I4;
@@ -8943,18 +9072,21 @@ Float64 CProjectAgentImp::GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::Sp
    return gLL; // this will return < 0 if gLL is a function of axle weight and load combination poi
 }
 
-void CProjectAgentImp::SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t)
+void CProjectAgentImp::SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t,bool bLimitStress,Float64 fmax)
 {
-   if ( !IsEqual(m_AllowableTensionCoefficient[ratingType],t) )
+   TensionStressParams params(t, bLimitStress, fmax);
+   if(m_AllowableTensileStress[ratingType] != params)
    {
-      m_AllowableTensionCoefficient[ratingType] = t;
+      m_AllowableTensileStress[ratingType] = params;
       RatingSpecificationChanged(true);
    }
 }
 
-Float64 CProjectAgentImp::GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) const
+Float64 CProjectAgentImp::GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,bool* pbLimitStress,Float64* pfmax) const
 {
-   return m_AllowableTensionCoefficient[ratingType];
+   *pbLimitStress = m_AllowableTensileStress[ratingType].bLimitStress;
+   *pfmax = m_AllowableTensileStress[ratingType].fMax;
+   return m_AllowableTensileStress[ratingType].coefficient;
 }
 
 void CProjectAgentImp::RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress)

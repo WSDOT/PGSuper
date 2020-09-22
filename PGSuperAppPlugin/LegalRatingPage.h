@@ -50,6 +50,8 @@ protected:
 
    CString m_strTip; // buffer that holds the tooltip text
    afx_msg void OnHelp();
+   afx_msg void OnRateForStressChanged();
+   afx_msg void OnMaxTensionStressChanged();
 
 	DECLARE_MESSAGE_MAP()
 public:

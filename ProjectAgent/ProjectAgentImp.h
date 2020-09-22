@@ -462,8 +462,8 @@ public:
    virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL) override;
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) const override;
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) const override;
-   virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t) override;
-   virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) const override;
+   virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType, Float64 t, bool bLimitStress, Float64 fMax) override;
+   virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType, bool* pbLimitStress, Float64* pfMax) const override;
    virtual void RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress) override;
    virtual bool RateForStress(pgsTypes::LoadRatingType ratingType) const override;
    virtual void RateForShear(pgsTypes::LoadRatingType ratingType,bool bRateForShear) override;
@@ -743,7 +743,29 @@ private:
    std::array<Float64, pgsTypes::LimitStateCount> m_gPS;
    std::array<Float64, pgsTypes::LimitStateCount> m_gLL;
 
-   std::array<Float64, pgsTypes::lrLoadRatingTypeCount> m_AllowableTensionCoefficient; // index is load rating type
+   struct TensionStressParams
+   {
+      Float64 coefficient;
+      bool bLimitStress;
+      Float64 fMax;
+      TensionStressParams() {}
+      TensionStressParams(Float64 a, bool b, Float64 c) : coefficient(a), bLimitStress(b), fMax(c) {}
+      bool operator==(const TensionStressParams& other) const
+      {
+         if (!IsEqual(coefficient, other.coefficient) || bLimitStress != other.bLimitStress)
+            return false;
+
+         if (bLimitStress && !IsEqual(fMax, other.fMax))
+            return false;
+
+         return true;
+      }
+      bool operator!=(const TensionStressParams& other) const
+      {
+         return !operator==(other);
+      }
+   };
+   std::array<TensionStressParams, pgsTypes::lrLoadRatingTypeCount> m_AllowableTensileStress; // index is load rating type
    std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bCheckYieldStress; // index is load rating type
    std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bRateForStress; // index is load rating type
    std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bRateForShear; // index is load rating type

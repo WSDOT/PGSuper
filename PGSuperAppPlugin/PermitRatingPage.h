@@ -59,4 +59,5 @@ public:
 
    pgsTypes::SpecialPermitType GetSpecialPermitType();
    afx_msg void OnRateForStressChanged();
+   afx_msg void OnMaxTensionStressChanged();
 };

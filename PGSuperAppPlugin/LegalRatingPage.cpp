@@ -149,12 +149,17 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
       tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
    DDX_Text(pDX,IDC_ALLOWABLE_TENSION_UNIT,tag);
+
+   DDX_Check_Bool(pDX, IDC_CHECK_TENSION_MAX, m_Data.bLimitTensileStress);
+   DDX_UnitValueAndTag(pDX, IDC_TENSION_MAX, IDC_TENSION_MAX_UNIT, m_Data.MaxTensileStress, pDisplayUnits->GetStressUnit());
 }
 
 
 BEGIN_MESSAGE_MAP(CLegalRatingPage, CPropertyPage)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	ON_COMMAND(ID_HELP, OnHelp)
+   ON_BN_CLICKED(IDC_RATE_FOR_STRESS, &CLegalRatingPage::OnRateForStressChanged)
+   ON_BN_CLICKED(IDC_CHECK_TENSION_MAX, &CLegalRatingPage::OnMaxTensionStressChanged)
 END_MESSAGE_MAP()
 
 
@@ -295,10 +300,42 @@ BOOL CLegalRatingPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
    return FALSE;
 }
 
+
+void CLegalRatingPage::OnRateForStressChanged()
+{
+   BOOL bEnable = FALSE;
+   if (IsDlgButtonChecked(IDC_RATE_FOR_STRESS))
+   {
+      bEnable = TRUE;
+   }
+
+   GetDlgItem(IDC_ALLOWABLE_TENSION_LABEL)->EnableWindow(bEnable);
+   GetDlgItem(IDC_ALLOWABLE_TENSION)->EnableWindow(bEnable);
+   GetDlgItem(IDC_ALLOWABLE_TENSION_UNIT)->EnableWindow(bEnable);
+   GetDlgItem(IDC_CHECK_TENSION_MAX)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TENSION_MAX)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TENSION_MAX_UNIT)->EnableWindow(bEnable);
+
+   OnMaxTensionStressChanged();
+}
+
+void CLegalRatingPage::OnMaxTensionStressChanged()
+{
+   BOOL bEnable = FALSE;
+   if (IsDlgButtonChecked(IDC_CHECK_TENSION_MAX) && GetDlgItem(IDC_CHECK_TENSION_MAX)->IsWindowEnabled())
+   {
+      bEnable = TRUE;
+   }
+   GetDlgItem(IDC_TENSION_MAX)->EnableWindow(bEnable);
+   GetDlgItem(IDC_TENSION_MAX_UNIT)->EnableWindow(bEnable);
+}
+
 BOOL CLegalRatingPage::OnSetActive()
 {
    if ( !CPropertyPage::OnSetActive() )
       return FALSE;
+
+   OnRateForStressChanged();
 
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
    CComPtr<IBroker> broker;
