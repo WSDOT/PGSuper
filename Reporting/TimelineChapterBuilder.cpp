@@ -89,6 +89,8 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    rptRcTable* pEventTable = rptStyleManager::CreateDefaultTable(6);
    *pPara << pEventTable << rptNewLine;
 
+   pEventTable->EnableRowStriping(false);
+
    ColumnIndexType col = 0;
    (*pEventTable)(0,col++) << _T("Event");
    (*pEventTable)(0, col++) << _T("Occurance") << rptNewLine << _T("(Days)");

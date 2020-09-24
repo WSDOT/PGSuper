@@ -373,12 +373,18 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
       (*pTable)(0,1) << _T("Description");
 
       row = 1;
-      CString strSeverityType[] = { _T("Info"), _T("Warning"), _T("Error") };
+      CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
       for ( CollectionIndexType i = 0; i < nItems; i++ )
       {
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 
          eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
+
+         // Set text and cell background
+         rptRiStyle::FontColor colors[] = {rptRiStyle::LightGreen, rptRiStyle::Yellow, rptRiStyle::Red };
+         rptRiStyle::FontColor color = colors[severity];
+         (*pTable)(row, 0) << new rptRcBgColor(color);
+         (*pTable)(row, 0).SetFillBackGroundColor(color);
 
          (*pTable)(row,0) << strSeverityType[severity];
          (*pTable)(row++,1) << pItem->GetDescription();

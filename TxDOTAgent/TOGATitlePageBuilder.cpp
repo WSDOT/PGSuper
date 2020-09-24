@@ -189,7 +189,7 @@ rptChapter* CTOGATitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& 
       std::set<std::_tstring> messages;
 
       row = 1;
-      CString strSeverityType[] = { _T("Info"), _T("Warning"), _T("Error") };
+      CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
       for ( CollectionIndexType i = 0; i < nItems; i++ )
       {
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
@@ -205,6 +205,12 @@ rptChapter* CTOGATitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& 
          if (it.second) // no dup's
          {
             eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
+
+            // Set text and cell background
+            rptRiStyle::FontColor colors[] = {rptRiStyle::LightGreen, rptRiStyle::Yellow, rptRiStyle::Red };
+            rptRiStyle::FontColor color = colors[severity];
+            (*pTable)(row, 0) << new rptRcBgColor(color);
+            (*pTable)(row, 0).SetFillBackGroundColor(color);
 
             (*pTable)(row,0) << strSeverityType[severity];
             (*pTable)(row++,1) << msg;
