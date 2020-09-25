@@ -8,7 +8,8 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include "afxres.h"
-#include "grid/gxresrc.h"
+#include "grid/gxresrc.h"
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -62,8 +63,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 6,0,0,1
- PRODUCTVERSION 6,0,0,1
+ FILEVERSION 6,0,0,2
+ PRODUCTVERSION 6,0,0,2
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -81,12 +82,12 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PgsExt DLL"
-            VALUE "FileVersion", "6.0.0.1"
+            VALUE "FileVersion", "6.0.0.2"
             VALUE "InternalName", "PgsExt"
             VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "6.0.0.1"
+            VALUE "ProductVersion", "6.0.0.2"
         END
     END
     BLOCK "VarFileInfo"
@@ -590,7 +591,8 @@ LANGUAGE 9, 1
 #endif
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid/gxres.rc"               // Objective Grid resources
+#include "grid/gxres.rc"               // Objective Grid resources
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
