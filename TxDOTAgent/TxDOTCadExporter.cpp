@@ -79,9 +79,9 @@ HRESULT CTxDOTCadExporter::FinalConstruct()
    else
    {
       // make sure we have a trailing backslash
-      if (_T('\\') != strDefaultLocation.GetAt(strDefaultLocation.GetLength() - 1))
+      if (_T('\\') != str.GetAt(str.GetLength() - 1))
       {
-         strDefaultLocation += _T("\\");
+         str += _T("\\");
       }
       strDefaultLocation = str + CString(_T("TxCadExport\\"));
    }
