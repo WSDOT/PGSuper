@@ -28,6 +28,8 @@
 
 #include <IFace\BeamFamily.h>
 
+#include <IFace\BeamFactory.h>
+
 #include <EAF\EAFDisplayUnits.h>
 #include <LRFD\LiveLoadDistributionFactorBase.h>
 
@@ -37,7 +39,6 @@
 #include <IFace\AgeAdjustedMaterial.h>
 
 class rptParagraph;
-interface IBeamFactory;
 class pgsPoiMgr;
 
 void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
@@ -59,6 +60,9 @@ bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float
 bool BEAMSFUNC IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const IBeamFactory* pFactory, pgsTypes::SupportedBeamSpacing spacingType);
 
 void BEAMSFUNC LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, pgsPoiMgr* pPoiMgr);
+
+
+IBeamFactory::Dimensions BEAMSFUNC ConvertIBeamDimensions(const IBeamFactory::Dimensions& dimensions);
 
 /////////////////////////////////////////////////////////////////////////////
 // IBeamFamilyImpl

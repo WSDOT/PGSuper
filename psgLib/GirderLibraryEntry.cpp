@@ -27,6 +27,8 @@
 #include <System\IStructuredLoad.h>
 #include <System\XStructuredLoad.h>
 
+#include <Beams\Helper.h>
+
 #include <IFace\BeamFactory.h>
 
 #include <psgLib\BeamFamilyManager.h>
@@ -2960,6 +2962,8 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
    m_pBeamFactory.Release();
    HRESULT hr = ::CoCreateInstance(clsid,nullptr,CLSCTX_ALL,IID_IBeamFactory,(void**)&m_pBeamFactory);
 
+   m_Dimensions.clear();
+
    Float64 value;
    if(!pLoad->Property(_T("D1"), &value))
    {
@@ -3052,11 +3056,36 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
 
    m_Dimensions.push_back(Dimension(_T("T2"),value));
 
-   // C1 was added at a later date
+   // These dimensions were added later
    m_Dimensions.push_back(Dimension(_T("C1"), 0.0));
    m_Dimensions.push_back(Dimension(_T("EndBlockWidth"),0.0));
    m_Dimensions.push_back(Dimension(_T("EndBlockLength"),0.0));
    m_Dimensions.push_back(Dimension(_T("EndBlockTransition"),0.0));
+
+   // This is the expected order of the dimensions for the conversion method
+   // The dimensions are alphabetical, except for the last 3 (EndBlock...)
+   // Sort the container, except for the last 3 elements, using the dimension name as the sort key
+   //m_DimNames.emplace_back(_T("C1"));
+   //m_DimNames.emplace_back(_T("D1"));
+   //m_DimNames.emplace_back(_T("D2"));
+   //m_DimNames.emplace_back(_T("D3"));
+   //m_DimNames.emplace_back(_T("D4"));
+   //m_DimNames.emplace_back(_T("D5"));
+   //m_DimNames.emplace_back(_T("D6"));
+   //m_DimNames.emplace_back(_T("D7"));
+   //m_DimNames.emplace_back(_T("T1"));
+   //m_DimNames.emplace_back(_T("T2"));
+   //m_DimNames.emplace_back(_T("W1"));
+   //m_DimNames.emplace_back(_T("W2"));
+   //m_DimNames.emplace_back(_T("W3"));
+   //m_DimNames.emplace_back(_T("W4"));
+   //m_DimNames.emplace_back(_T("EndBlockWidth"));
+   //m_DimNames.emplace_back(_T("EndBlockLength"));
+   //m_DimNames.emplace_back(_T("EndBlockTransition"));
+
+   std::sort(std::begin(m_Dimensions), std::end(m_Dimensions) - 3, [](const auto& a, const auto& b) {return a.first < b.first; });
+
+   m_Dimensions = ConvertIBeamDimensions(m_Dimensions);
 }
 
 bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName) const
