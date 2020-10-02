@@ -2010,6 +2010,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
       for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++)
       {
          const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
+         PierIDType pierID = pPier->GetID();
 
          // get station of the pier
          Float64 station = pPier->GetStation();
@@ -2070,7 +2071,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
          CString strModelType(pPier->GetPierModelType() == pgsTypes::pmtIdealized ? _T("Idealized") : _T("Physical"));
          strMsg += _T("\nModel Type: ") + strModelType;
 
-         EventIndexType eventIdx = pTimelineMgr->GetPierErectionEventIndex(pierIdx);
+         EventIndexType eventIdx = pTimelineMgr->GetPierErectionEventIndex(pierID);
 
          CString strEvent;
          if (eventIdx != INVALID_INDEX)
