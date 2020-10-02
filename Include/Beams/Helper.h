@@ -62,8 +62,6 @@ bool BEAMSFUNC IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const I
 void BEAMSFUNC LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, pgsPoiMgr* pPoiMgr);
 
 
-IBeamFactory::Dimensions BEAMSFUNC ConvertIBeamDimensions(const IBeamFactory::Dimensions& dimensions);
-
 /////////////////////////////////////////////////////////////////////////////
 // IBeamFamilyImpl
 class BEAMSCLASS IBeamFamilyImpl :

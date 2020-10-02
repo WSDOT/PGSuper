@@ -27,8 +27,6 @@
 #include <System\IStructuredLoad.h>
 #include <System\XStructuredLoad.h>
 
-#include <Beams\Helper.h>
-
 #include <IFace\BeamFactory.h>
 
 #include <psgLib\BeamFamilyManager.h>
@@ -113,6 +111,7 @@ inline bool CompareDimensions(const GirderLibraryEntry::Dimension& d1,const Gird
 {
    return (d1.first == d2.first && ::IsEqual(d1.second,d2.second));
 }
+
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -3085,7 +3084,7 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
 
    std::sort(std::begin(m_Dimensions), std::end(m_Dimensions) - 3, [](const auto& a, const auto& b) {return a.first < b.first; });
 
-   m_Dimensions = ConvertIBeamDimensions(m_Dimensions);
+   m_Dimensions = ConvertIBeamDimensions<GirderLibraryEntry::Dimensions>(m_Dimensions);
 }
 
 bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName) const
