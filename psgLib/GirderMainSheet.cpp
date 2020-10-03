@@ -265,6 +265,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
                name += _T(")");
             }
 
+            VERIFY(m_GirderDimensionsPage.m_Grid.SetValueRange(CGXRange(nRow, 0), name.c_str()));
             VERIFY(m_GirderDimensionsPage.m_Grid.SetValueRange(CGXRange(nRow, 1), value));
          }
 
