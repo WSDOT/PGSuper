@@ -484,11 +484,10 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    Float64 ebWidth,ebLength,ebTransition;
    GetDimensions(dimensions,d1,d2,d3,d4,d5,d6,h,w1,w2,w3,w4,w5,t1,t2,c1,ebWidth,ebLength,ebTransition);
 
-   if ( d1 <= 0.0 )
+   if ( d1 < 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][D1];
       std::_tostringstream os;
-      os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
+      os << _T("D1 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -509,11 +508,10 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
       return false;
    }
 
-   if ( d4 <= 0.0 )
+   if ( d4 < 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][D4];
       std::_tostringstream os;
-      os << _T("D4 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
+      os << _T("D4 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -621,7 +619,7 @@ bool CIBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimension
    if ( d6 < c1 )
    {
       std::_tostringstream os;
-      os << _T("C1 must be greater than D6") << std::ends;
+      os << _T("C1 must be less than D6") << std::ends;
       *strErrMsg = os.str();
       return false;
    }   
