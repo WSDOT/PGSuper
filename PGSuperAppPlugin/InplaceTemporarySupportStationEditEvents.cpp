@@ -49,22 +49,49 @@ void CInplaceTemporarySupportStationEditEvents::Handle_OnChanged(iDisplayObject*
    Float64 old_station = pTextBlock->GetValue();
    Float64 new_station = pTextBlock->GetEditedValue();
 
-   if ( IsEqual(old_station,new_station) )
+   if (IsEqual(old_station, new_station))
       return;
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    Float64 startStation = pBridge->GetPierStation(0);
-   Float64 endStation = pBridge->GetPierStation(nPiers-1);
-   if ( new_station <= startStation || endStation <= new_station )
+   Float64 endStation = pBridge->GetPierStation(nPiers - 1);
+   if (new_station <= startStation || endStation <= new_station)
    {
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       CString strMsg;
-      strMsg.Format(_T("Station %s is not on the bridge"),::FormatStation(pDisplayUnits->GetStationFormat(),new_station));
-      AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
+      strMsg.Format(_T("Station %s is not on the bridge"), ::FormatStation(pDisplayUnits->GetStationFormat(), new_station));
+      AfxMessageBox(strMsg, MB_OK | MB_ICONEXCLAMATION);
       return;
+   }
+
+   for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+   {
+      Float64 station = pBridge->GetPierStation(pierIdx);
+      if (IsEqual(new_station, station))
+      {
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         CString strMsg;
+         strMsg.Format(_T("Cannot move temporary support to station %s. %s is at that location."), ::FormatStation(pDisplayUnits->GetStationFormat(), new_station),LABEL_PIER_EX(pBridge->IsAbutment(pierIdx),pierIdx));
+         AfxMessageBox(strMsg, MB_OK | MB_ICONEXCLAMATION);
+         return;
+      }
+   }
+
+   SupportIndexType nTS = pBridge->GetTemporarySupportCount();
+   for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
+   {
+      Float64 station = pBridge->GetTemporarySupportStation(tsIdx);
+      if (IsEqual(new_station, station))
+      {
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         CString strMsg;
+         strMsg.Format(_T("Cannot move temporary support to station %s. Temporary Support %d is at that location."), ::FormatStation(pDisplayUnits->GetStationFormat(), new_station), LABEL_TEMPORARY_SUPPORT(tsIdx));
+         AfxMessageBox(strMsg, MB_OK | MB_ICONEXCLAMATION);
+         return;
+      }
    }
 
    txnEditTemporarySupportStation* pTxn = new txnEditTemporarySupportStation(m_TSIdx,old_station,new_station);

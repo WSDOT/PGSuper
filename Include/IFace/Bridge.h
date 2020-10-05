@@ -658,6 +658,8 @@ interface IBridge : IUnknown
 
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const = 0;
 
+   virtual Float64 GetTemporarySupportStation(SupportIndexType tsIdx) const = 0;
+
    // returns true if any of the temporary supports have non-zero elevation adjustments
    virtual bool HasTemporarySupportElevationAdjustments() const = 0;
 

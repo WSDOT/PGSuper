@@ -12006,6 +12006,15 @@ pgsTypes::TemporarySupportType CBridgeAgentImp::GetTemporarySupportType(SupportI
    return pTS->GetSupportType();
 }
 
+Float64 CBridgeAgentImp::GetTemporarySupportStation(SupportIndexType tsIdx) const
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
+
+   return pTS->GetStation();
+}
+
 pgsTypes::TempSupportSegmentConnectionType CBridgeAgentImp::GetSegmentConnectionTypeAtTemporarySupport(SupportIndexType tsIdx) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
