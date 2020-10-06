@@ -3837,6 +3837,26 @@ bool CBridgeDescription2::IsStable() const
    return true;
 }
 
+bool CBridgeDescription2::IsValidSpan(SpanIndexType spanIdx) const
+{
+   return 0.0 < m_Spans[spanIdx]->GetSpanLength() ? true : false;
+}
+
+bool CBridgeDescription2::IsValidLayout() const
+{
+   for (const auto *pSpan : m_Spans)
+   {
+      if (!IsValidSpan(pSpan->GetIndex()))  return false;
+   }
+
+   return true;
+}
+
+bool CBridgeDescription2::IsValidBridge() const
+{
+   return IsValidLayout();
+}
+
 Float64 CBridgeDescription2::GetBridgeWidth() const
 {
    const CDeckDescription2* pDeck = GetDeckDescription();

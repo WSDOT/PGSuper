@@ -1064,7 +1064,6 @@ void CBridgeDescFramingGrid::FillSpanColumn()
    CBridgeDescDlg* pDlg = (CBridgeDescDlg*)(pParent->GetParent());
    ASSERT( pDlg->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg) ) );
 
-   bool bIsValidBridge = true;
    pParent->EnableInsertSpanBtn(TRUE);
    pParent->EnableInsertTempSupportBtn(TRUE);
 
@@ -1123,10 +1122,6 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 
       // fill in all rows between prev and next pier with span length
       Float64 spanLength = pNextPier->GetStation() - pPrevPier->GetStation();
-      if (spanLength <= 0)
-      {
-         bIsValidBridge = false;
-      }
       CString strSpanLength;
       strSpanLength.Format(_T("%s"),FormatDimension(spanLength,pDisplayUnits->GetSpanLengthUnit()));
       for (ROWCOL row = prevPierRow + 1; row < nextPierRow; row++)
@@ -1139,8 +1134,6 @@ void CBridgeDescFramingGrid::FillSpanColumn()
             .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
             .SetInterior(::GetSysColor(COLOR_BTNFACE))
             .SetTextColor(spanLength <= 0 ? RED : ::GetSysColor(COLOR_WINDOWTEXT))
-            .SetReadOnly(TRUE)
-            .SetEnabled(FALSE)
             .SetValue(strSpanLength)
          );
       }
@@ -1179,7 +1172,7 @@ void CBridgeDescFramingGrid::FillSpanColumn()
       );
    }
 
-   if (!bIsValidBridge)
+   if (!pDlg->m_BridgeDesc.IsValidLayout())
    {
       // disable edit buttons because bridge is not valid
       pParent->EnableInsertSpanBtn(FALSE);
@@ -1205,20 +1198,13 @@ void CBridgeDescFramingGrid::FillSpanColumn()
          ROWCOL prevPierRow = GetPierRow(pPrevPier->GetIndex());
          ROWCOL nextPierRow = GetPierRow(pNextPier->GetIndex());
 
-         SetStyleRange(CGXRange(prevPierRow, col + 1), CGXStyle()
-            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-            .SetEnabled(FALSE)
-         );
-
-         SetStyleRange(CGXRange(prevPierRow+1, col + 1), CGXStyle()
-            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-            .SetEnabled(FALSE)
-         );
-
-         SetStyleRange(CGXRange(nextPierRow, col + 1), CGXStyle()
-            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-            .SetEnabled(FALSE)
-         );
+         for (ROWCOL r = prevPierRow; r <= nextPierRow; r++)
+         {
+            SetStyleRange(CGXRange(r, col + 1), CGXStyle()
+               .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+               .SetEnabled(FALSE)
+            );
+         }
       }
    }
 
@@ -1337,6 +1323,7 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    if ( nCol == 1 || nCol == 2 )
    {
       // Pier or temporary support station or orientation changed... 
+
       CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
       ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
 
@@ -1346,33 +1333,43 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       PierIndexType pierIdx = GetPierIndex(nRow);
       if ( pierIdx != INVALID_INDEX )
       {
+         // it was the pier that changed
          CPierData2* pPierData = GetPierRowData(nRow);
          FillPierRow(nRow,pPierData); // updates station and orientation formatting
       }
       else
       {
-         SupportIndexType currTsIdx = GetTemporarySupportIndex(nRow);
-         CTemporarySupportData tsData = GetTemporarySupportRowData(nRow);
-         if ( tsData.GetStation() <= pDlg->m_BridgeDesc.GetPier(0)->GetStation() ||
-              pDlg->m_BridgeDesc.GetPier(pDlg->m_BridgeDesc.GetPierCount()-1)->GetStation() <= tsData.GetStation() )
-         {
-            // new station is not on the bridge
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-            CString strStation = FormatStation(pDisplayUnits->GetStationFormat(), tsData.GetStation());
-            m_sWarningText.Format(_T("Station %s is not on the bridge"), strStation);
-            return FALSE;
-         }
+         // it was the temporary support that changed
 
-         SupportIndexType newTsIdx = pDlg->m_BridgeDesc.SetTemporarySupportByIndex(currTsIdx, tsData);
-         // temporary support station could have changed... if so, update the grid for all temporary support
-         // rows from where the ts used to be to where it is now
-         for (SupportIndexType tsIdx = Min(newTsIdx, currTsIdx); tsIdx <= Max(newTsIdx, currTsIdx); tsIdx++)
+         if (pDlg->m_BridgeDesc.IsValidBridge())
          {
-            const CTemporarySupportData* pTS = pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx);
-            ROWCOL tsRow = GetTemporarySupportRow(tsIdx);
-            FillTemporarySupportRow(tsRow, pTS); // updates station and orientation formatting
+            // temporary support station could have changed... update all temporary support rows
+            // from where the ts used to be to where it is now
+
+            SupportIndexType currTsIdx = GetTemporarySupportIndex(nRow);
+            CTemporarySupportData tsData = GetTemporarySupportRowData(nRow);
+
+            if (tsData.GetStation() <= pDlg->m_BridgeDesc.GetPier(0)->GetStation() || pDlg->m_BridgeDesc.GetPier(pDlg->m_BridgeDesc.GetPierCount() - 1)->GetStation() <= tsData.GetStation())
+            {
+               // new station is not on the bridge
+               CComPtr<IBroker> pBroker;
+               EAFGetBroker(&pBroker);
+               GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+               CString strStation = FormatStation(pDisplayUnits->GetStationFormat(), tsData.GetStation());
+               m_sWarningText.Format(_T("Station %s is not on the bridge"), strStation);
+               return FALSE;
+            }
+
+            // update the bridge model with the new tempoary support data. the bridge model will give us back
+            // the new index of the temporary support (the TS could have moved so it might have a new index)
+            // Update all the temporary support rows in the grid based on the updated bridge model
+            SupportIndexType newTsIdx = pDlg->m_BridgeDesc.SetTemporarySupportByIndex(currTsIdx, tsData);
+            for (SupportIndexType tsIdx = Min(newTsIdx, currTsIdx); tsIdx <= Max(newTsIdx, currTsIdx); tsIdx++)
+            {
+               const CTemporarySupportData* pTS = pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx);
+               ROWCOL tsRow = GetTemporarySupportRow(tsIdx);
+               FillTemporarySupportRow(tsRow, pTS); // updates station and orientation formatting
+            }
          }
       }
 
