@@ -161,7 +161,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
 
-   pgsTypes::SectionPropertyType spType = pgsTypes::sptGross; // Section properties are based on gross concrete section (LRFD 5.9.2.3.3)
+   pgsTypes::SectionPropertyType spType = pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed;
 
    GET_IFACE(IPointOfInterest, pPoi);
    bool bInClosureJoint = false;
