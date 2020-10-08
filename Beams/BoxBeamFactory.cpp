@@ -178,31 +178,55 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( H5 < 0.0 )
    {
       std::_tostringstream os;
-      os << _T("H5 must be a positive value") << std::ends;
+      os << _T("H5 must be zero or greater") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
-   if ( H6 <= 0.0 )
+   if ( H5 == 0.0 && W1 > 0.0)
    {
       std::_tostringstream os;
-      os << _T("H6 must be a positive value") << std::ends;
+      os << _T("W1 must be zero if H5 is zero") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
-   if ( H7 <= 0.0 )
-   {
-      std::_tostringstream os;
-      os << _T("H7 must be a positive value") << std::ends;
-      *strErrMsg = os.str();
-      return false;
-   }
-
-   if ( W1 <= 0.0 )
+   if ( W1 < 0.0 )
    {
       std::_tostringstream os;
       os << _T("W1 must be a positive value") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( H6 < 0.0 )
+   {
+      std::_tostringstream os;
+      os << _T("H6 must be zero or greater") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( H6 == 0.0 && W4 > 0.0)
+   {
+      std::_tostringstream os;
+      os << _T("W4 must be zero if H6 is zero") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( W4 < 0.0 )
+   {
+      std::_tostringstream os;
+      os << _T("W4 must be a positive value") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( H7 < 0.0 )
+   {
+      std::_tostringstream os;
+      os << _T("H7 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -223,10 +247,10 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       return false;
    }
 
-   if ( W4 < 0.0 )
+   if ( W4 <= 0.0 && H6 > 0.0 )
    {
       std::_tostringstream os;
-      os << _T("W4 must be a positive value") << std::ends;
+      os << _T("W4 must be a positive value if H6 is positive") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
