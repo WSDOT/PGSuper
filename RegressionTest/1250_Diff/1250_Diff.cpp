@@ -76,12 +76,12 @@ private:
 
 };
 
-int main(int argc, TCHAR* argv[])
+int _tmain(int argc, _TCHAR* argv[])
 {
    std::_tcout<< _T("NCRHP 12-50 File Diff Engine...")<<std::endl;
    if (argc<3)
    {
-      std::_tcout<< _T("Syntax is..\n")<<std::endl;
+      std::_tcout<< _T("No optoins selected. Syntax is..\n")<<std::endl;
       std::_tcout<< _T("1250_Diff datumFile testFile <percentDiff> <ZeroTolerance>")<<std::endl;
       std::_tcout<< _T("Report ID's to Ignore are read from 'ignore.txt'")<<std::endl;
       return 1;
@@ -181,8 +181,8 @@ int main(int argc, TCHAR* argv[])
       switch (state)
       {
          case StateManager::ReadTD:
-            std = std::getline(datum_file, lined);
-            stt = std::getline(test_file, linet);
+            std = !std::getline(datum_file, lined).eof();
+            stt = !std::getline(test_file, linet).eof();
             line_num++;
             break;
 
@@ -335,7 +335,7 @@ bool StateManager::CompareLines( std::_tstring& lineD, std::_tstring& lineT)
 {
 
    // break each string into tokens
-   LPCTSTR delims[] = {_T(","),_T(" "), 0};
+   LPCTSTR delims[] = {_T(","), 0};
    sysTokenizer tokizerd(delims);
    tokizerd.push_back(lineD);
    sysTokenizer tokizert(delims);
@@ -351,12 +351,12 @@ bool StateManager::CompareLines( std::_tstring& lineD, std::_tstring& lineT)
    }
 
    // check if this is even a 12-50 file
-   if (npd==7 || npd==6)
+   if (npd==7 || npd==6 || npd==9 || npd==8)
    {
       // Not all input files in the test suite have BridgeID's. If there is no bridge id, the parser will pick up
-      // six tokens
-      int rpt_id_loc = (npd==7) ? 2 : 1;
-      int value_loc  = (npd==7) ? 4 : 3;
+      // six tokens. others my have extra trailing zeros to make 9
+      int rpt_id_loc = (npd>6) ? 2 : 1;
+      int value_loc  = (npd>6) ? 4 : 3;
 
       // 12 - 50 file. compare tokens
       for (sysTokenizer::size_type i=0; i<npd; i++)
@@ -381,35 +381,38 @@ bool StateManager::CompareLines( std::_tstring& lineD, std::_tstring& lineT)
          else if (i==value_loc)
          {
             // the result is the only value we use the floating point compare on
-            double dd, dt;
-            if (!sysTokenizer::ParseDouble(sd.c_str(), &dd) )
+            if (sd != st)
             {
-               std::_tcout <<_T(" ****** Error Parsing Double ***********")<<std::endl;
-               return false;
-            }
-
-            if (!sysTokenizer::ParseDouble(st.c_str(), &dt) )
-            {
-               std::_tcout <<_T(" ****** Error Parsing Double ***********")<<std::endl;
-               return false;
-            }
-
-            // zero tolerance check first
-            if (fabs(dd) > m_ZeroTol && fabs(dt) > m_ZeroTol)
-            {
-               if (dd != 0.0)
+               double dd, dt;
+               if (!sysTokenizer::ParseDouble(sd.c_str(), &dd))
                {
-                  // percent difference
-                  double pdiff = (fabs(dd-dt))/fabs(dd);
-
-                  if (pdiff > m_PercentDiff)
-                     return false;
-               }
-               else
-               {
+                  std::_tcout << _T(" ****** Error Parsing Double ***********") << std::endl;
                   return false;
                }
-               
+
+               if (!sysTokenizer::ParseDouble(st.c_str(), &dt))
+               {
+                  std::_tcout << _T(" ****** Error Parsing Double ***********") << std::endl;
+                  return false;
+               }
+
+               // zero tolerance check first
+               if (fabs(dd) > m_ZeroTol && fabs(dt) > m_ZeroTol)
+               {
+                  if (dd != 0.0)
+                  {
+                     // percent difference
+                     double pdiff = (fabs(dd - dt)) / fabs(dd);
+
+                     if (pdiff > m_PercentDiff)
+                        return false;
+                  }
+                  else
+                  {
+                     return false;
+                  }
+
+               }
             }
          }
          else
