@@ -75,6 +75,7 @@ These requirements were first introduced in the AASHTO LRFD Bridge Design Specif
 Item | Description
 -----|------------
 Tensile Stress | Enter the coefficient for the tensile stress limit.
+Check when f'c exceeds | Principal web stress requirements will only be checked for non-post tensioned beams when f'c is greater than or equal to the input value. Use the keyword "All" to ensure that principal web stresses are always checked. Post tensioned beams will always be checked.
 Compute flexural shear stress... | Select the method for computing flexural shear stress in the webs. Options are AASHTO LRFD Equation 5.9.2.3.3-1 and WSDOT BDM/NCHRP Report 849 Equation 3.8. The AASHTO equation computes the shear stress by applying the Service III shear force to the composite section. The WSDOT/NCHRP equation computes shear stress by applying loading to the non-composite and composite sections as appropreate and summing the resulting stresses.
 At sections where internal tendons cross... | Enter the number of outside duct diameters away from the centerline of a duct used to determine of the tendon is "near" the section being checked and the provisions of LRFD 5.7.2.1 are applied. LRFD 5.7.2.1 specifies reductions in effective web width in the precense of ducts.
 

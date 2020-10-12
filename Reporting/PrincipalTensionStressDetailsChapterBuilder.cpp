@@ -150,9 +150,8 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
    std::_tstring specName = pSpec->GetSpecification();
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
    pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient;
-   Float64 ductDiameterFactor;
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor);
+   Float64 coefficient, ductDiameterFactor, principalTensileStressFcThreshold;
+   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor, &principalTensileStressFcThreshold);
 
    *pPara << _T("Y = elevation in web where principal stress is computed, measured downwards from top centerline of non-composite girder.") << rptNewLine;
    *pPara << RPT_STRESS(_T("top")) << _T(" and ") << RPT_STRESS(_T("bot")) << _T(" Service III stress including effective prestress.") << rptNewLine;

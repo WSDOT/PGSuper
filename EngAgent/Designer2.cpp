@@ -6177,8 +6177,12 @@ void pgsDesigner2::CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentK
       // no post-tensioning, check fc
       GET_IFACE(IMaterials, pMaterials);
       Float64 fc = pMaterials->GetSegmentFc28(segmentKey);
-      Float64 fc10 = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
-      pArtifact->SetApplicablity(fc10 < fc ? pgsPrincipalTensionStressArtifact::Applicable : pgsPrincipalTensionStressArtifact::ConcreteStrength); // no PT so only applicable if fc > 10 ksi
+
+      // threshold f'c for performing principal stress check
+      GET_IFACE(IAllowableConcreteStress, pAllowable );
+      Float64 principalTensileStressFcThreshold = pAllowable->GetprincipalTensileStressFcThreshold();
+
+      pArtifact->SetApplicablity(principalTensileStressFcThreshold < fc ? pgsPrincipalTensionStressArtifact::Applicable : pgsPrincipalTensionStressArtifact::ConcreteStrength); // no PT so only applicable if fc > 10 ksi
    }
    else
    {

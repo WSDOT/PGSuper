@@ -200,6 +200,7 @@ public:
    virtual Float64 GetAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey) const override;
    virtual Float64 GetAllowablePrincipalWebTensionStress(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetAllowablePrincipalWebTensionStressCoefficient() const override;
+   virtual Float64 GetprincipalTensileStressFcThreshold() const override;
 
 // ITransverseReinforcementSpec
 public:

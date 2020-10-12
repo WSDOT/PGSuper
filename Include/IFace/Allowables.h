@@ -225,6 +225,7 @@ interface IAllowableConcreteStress : IUnknown
    virtual Float64 GetAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetAllowablePrincipalWebTensionStress(const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetAllowablePrincipalWebTensionStressCoefficient() const = 0;
+   virtual Float64 GetprincipalTensileStressFcThreshold() const = 0;
 };
 
 

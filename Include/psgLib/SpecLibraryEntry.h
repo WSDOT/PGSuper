@@ -460,8 +460,8 @@ public:
    void SetFatigueCompressionStressFactor(Float64 stress);
 
    // Set/Get the method and tensile stress limit coefficient for principal tensile stress in webs
-   void SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient,Float64 ductFactor);
-   void GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctFactor) const;
+   void SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient, Float64 ductFactor, Float64 principalTensileStressFcThreshold);
+   void GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctFactor, Float64* principalTensileStressFcThreshold) const;
 
    //////////////////////////////////////
    //
@@ -1423,6 +1423,7 @@ private:
    pgsTypes::PrincipalTensileStressMethod m_PrincipalTensileStressMethod;
    Float64 m_PrincipalTensileStressCoefficient;
    Float64 m_PrincipalTensileStressTendonNearnessFactor; // used to define if a tendon is "near" the section being evaluated... This is a number of outside duct diameters from section
+   Float64 m_PrincipalTensileStressFcThreshold; // minimum f'c to trigger principal stress check for non-post tensioned beams
 
    // Closure Joint Allowable Stresses
    Float64 m_ClosureCompStressAtStressing;

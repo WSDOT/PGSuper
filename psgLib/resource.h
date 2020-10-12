@@ -392,6 +392,7 @@
 #define IDC_SERVICE_COMPRESSION         1086
 #define IDC_PT_AT_JACKING_SR            1087
 #define IDC_RELEASE_COMPRESSION2        1087
+#define IDC_PRINCIPAL_FC_THRESHOLD      1087
 #define IDC_HE_COMP_STRESS_HANDLING     1088
 #define IDC_PS_AFTER_LOSSES_SR          1088
 #define IDC_PS_AFTER_ALL_LOSSES_SR      1088
@@ -1224,8 +1225,11 @@
 #define IDC_AFTER_DECK_TENSION_LABEL    1593
 #define IDC_LF_MIDDLE4_LABEL            1594
 #define IDC_S                           1594
+#define IDC_PRINCIPAL_LABELC            1594
+#define IDC_PRINCIPAL_LABELFC           1594
 #define IDC_LF_MIDDLE4                  1595
 #define IDC_S_LABEL                     1595
+#define IDC_PRINCIPAL_FC_THRESHOLD_UNIT 1595
 #define IDC_LF_MIDDLE3_LABEL            1596
 #define IDC_BETA_SC_LABEL               1596
 #define IDC_LF_MIDDLE3                  1597

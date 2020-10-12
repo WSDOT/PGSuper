@@ -49,7 +49,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 77.0 
+#define CURRENT_VERSION 78.0 
 
 /****************************************************************************
 CLASS
@@ -274,7 +274,8 @@ m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
 m_UHPCFiberShearStrength(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
 m_PrincipalTensileStressMethod(pgsTypes::ptsmLRFD),
 m_PrincipalTensileStressCoefficient(::ConvertToSysUnits(0.110,unitMeasure::SqrtKSI)),
-m_PrincipalTensileStressTendonNearnessFactor(1.5)
+m_PrincipalTensileStressTendonNearnessFactor(1.5),
+m_PrincipalTensileStressFcThreshold(::ConvertToSysUnits(10.0,unitMeasure::KSI))
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -692,7 +693,7 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("PrincipalTensileStressMethod"), m_PrincipalTensileStressMethod);
    pSave->Property(_T("PrincipalTensileStressCoefficient"), m_PrincipalTensileStressCoefficient);
    pSave->Property(_T("PrincipalTensileStressTendonNearnessFactor"), m_PrincipalTensileStressTendonNearnessFactor); // added in version 77
-
+   pSave->Property(_T("PrincipalTensileStressFcThreshold"), m_PrincipalTensileStressFcThreshold); // added in version 78
 
    // removed in version 29
    // pSave->Property(_T("Bs3IgnoreRangeOfApplicability"), m_Bs3IgnoreRangeOfApplicability);
@@ -2424,6 +2425,15 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             {
                // added in version 77
                if (!pLoad->Property(_T("PrincipalTensileStressTendonNearnessFactor"), &m_PrincipalTensileStressTendonNearnessFactor))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
+            }
+
+            if (77 < version)
+            {
+               // added in version 78
+               if (!pLoad->Property(_T("PrincipalTensileStressFcThreshold"), &m_PrincipalTensileStressFcThreshold))
                {
                   THROW_LOAD(InvalidFileFormat, pLoad);
                }
@@ -4642,7 +4652,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
 
    if (m_PrincipalTensileStressMethod != rOther.m_PrincipalTensileStressMethod || 
       !::IsEqual(m_PrincipalTensileStressCoefficient, rOther.m_PrincipalTensileStressCoefficient) ||
-      !::IsEqual(m_PrincipalTensileStressTendonNearnessFactor,rOther.m_PrincipalTensileStressTendonNearnessFactor))
+      !::IsEqual(m_PrincipalTensileStressTendonNearnessFactor,rOther.m_PrincipalTensileStressTendonNearnessFactor) ||
+      !::IsEqual(m_PrincipalTensileStressFcThreshold,rOther.m_PrincipalTensileStressFcThreshold))
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Principal Tensile Stress in Web parameters are different"), _T(""), _T("")));
@@ -6229,18 +6240,22 @@ void SpecLibraryEntry::SetFatigueCompressionStressFactor(Float64 stress)
    m_Bs3CompStressService1A = stress;
 }
 
-void SpecLibraryEntry::SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient,Float64 ductFactor)
+void SpecLibraryEntry::SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient,Float64 ductFactor,Float64 principalTensileStressFcThreshold)
 {
    m_PrincipalTensileStressMethod = principalTensileStressMethod;
    m_PrincipalTensileStressCoefficient = principalTensionCoefficient;
    m_PrincipalTensileStressTendonNearnessFactor = ductFactor;
+   m_PrincipalTensileStressFcThreshold = principalTensileStressFcThreshold;
 }
 
-void SpecLibraryEntry::GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctFactor) const
+void SpecLibraryEntry::GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctFactor,Float64* principalTensileStressFcThreshold) const
 {
    *pPrincipalTensileStressMethod = m_PrincipalTensileStressMethod;
    *pPrincipalTensionCoefficient = m_PrincipalTensileStressCoefficient;
    *pDuctFactor = m_PrincipalTensileStressTendonNearnessFactor;
+
+   // note that magic value of -1 means "all" in library. Return zero to our clients, which means any f'c
+   *principalTensileStressFcThreshold = m_PrincipalTensileStressFcThreshold==-1.0 ? 0.0 : m_PrincipalTensileStressFcThreshold;
 }
 
 Float64 SpecLibraryEntry::GetFinalTensionStressFactor(int exposureCondition) const
@@ -7802,6 +7817,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_PrincipalTensileStressMethod = rOther.m_PrincipalTensileStressMethod;
    m_PrincipalTensileStressCoefficient = rOther.m_PrincipalTensileStressCoefficient;
    m_PrincipalTensileStressTendonNearnessFactor = rOther.m_PrincipalTensileStressTendonNearnessFactor;
+   m_PrincipalTensileStressFcThreshold = rOther.m_PrincipalTensileStressFcThreshold;
 
    m_FlexureModulusOfRuptureCoefficient = rOther.m_FlexureModulusOfRuptureCoefficient;
    m_ShearModulusOfRuptureCoefficient = rOther.m_ShearModulusOfRuptureCoefficient;

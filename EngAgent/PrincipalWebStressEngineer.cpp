@@ -147,9 +147,8 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
 
    pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient;
-   Float64 ductDiameterFactor;
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor);
+   Float64 coefficient, ductDiameterFactor, principalTensileStressFcThreshold;
+   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&principalTensileStressFcThreshold);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);

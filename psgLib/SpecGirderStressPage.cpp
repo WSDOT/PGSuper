@@ -133,6 +133,10 @@ BOOL CSpecGirderStressPage::OnSetActive()
    GetDlgItem(IDC_PRINCIPAL_TENSION_LABEL4)->ShowWindow(nShow);
    GetDlgItem(IDC_TENDON_NEARNESS_FACTOR)->ShowWindow(nShow);
 
+   GetDlgItem(IDC_PRINCIPAL_LABELFC)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_FC_THRESHOLD)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_FC_THRESHOLD_UNIT)->ShowWindow(nShow);
+
    return CPropertyPage::OnSetActive();
 }
 

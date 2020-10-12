@@ -2009,10 +2009,18 @@ Float64 CSpecAgentImp::GetAllowablePrincipalWebTensionStressCoefficient() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient;
-   Float64 ductDiameterFactor;
-   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor);
+   Float64 coefficient, ductDiameterFactor, principalTensileStressFcThreshold;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&principalTensileStressFcThreshold);
    return coefficient;
+}
+
+Float64 CSpecAgentImp::GetprincipalTensileStressFcThreshold() const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   pgsTypes::PrincipalTensileStressMethod method;
+   Float64 coefficient, ductDiameterFactor, principalTensileStressFcThreshold;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&principalTensileStressFcThreshold);
+   return principalTensileStressFcThreshold;
 }
 
 /////////////////////////////////////////////////////////////////////////////

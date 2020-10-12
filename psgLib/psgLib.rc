@@ -9,8 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1758,6 +1757,9 @@ BEGIN
     EDITTEXT        IDC_TENDON_NEARNESS_FACTOR,171,449,40,14,ES_AUTOHSCROLL
     LTEXT           "is being checked, the provisions of LRFD 5.7.2.1 shall apply",IDC_PRINCIPAL_TENSION_LABEL4,18,464,191,8
     LTEXT           "diameters of the depth at which the maximum principal tension",IDC_PRINCIPAL_TENSION_LABEL3,215,452,200,8
+    LTEXT           "Check web principal stress when f'c exceeds",IDC_PRINCIPAL_LABELFC,215,413,142,8
+    EDITTEXT        IDC_PRINCIPAL_FC_THRESHOLD,363,410,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "KSI",IDC_PRINCIPAL_FC_THRESHOLD_UNIT,405,413,12,8
 END
 
 IDD_SPEC_DEAD_LOADS DIALOGEX 0, 0, 379, 154
@@ -2965,8 +2967,7 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
-
+#include "grid\gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 
