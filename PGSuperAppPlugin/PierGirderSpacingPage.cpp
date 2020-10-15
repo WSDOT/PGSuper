@@ -500,6 +500,8 @@ void CPierGirderSpacingPage::FillGirderSpacingMeasurementComboBox(int nIDC, Conn
    item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem);
    pSpacingType->SetItemData(idx,item_data);
 
+   // if the bearing offset is measured along the CL girder, the girder spacing cannot be measured at the CL bearing
+   // this is because there would not be a unique CL bearing line common to all girders if the girders are not parallel to one another
    if (bearingMeasure!=ConnectionLibraryEntry::AlongGirder)
    {
       idx = pSpacingType->AddString(_T("Measured at and along the CL bearing"));
