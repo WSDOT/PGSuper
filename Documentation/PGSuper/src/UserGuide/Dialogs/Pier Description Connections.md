@@ -35,6 +35,8 @@ Item | Description
 Bearing Offset | Distance from the abutment/pier line to the centerline of bearing line. Use the drop down list to define how this dimension is measured.
 End Distance | Distance from the centerline of bearing line to the nearest end of the girder. Use the drop down list to define how this dimension is measured.
 
+> NOTE: The bearing offset cannot be measured along the centerline of girder when girder spacing is measured at the centerline bearing. In the general case, girders are not parallel and this will result in a unique bearing location relative to the centerline pier and there would not be a single, continuous bearing line through the bearing points for all girders.
+
 ### Pier Diaphragm Dimensions ###
 
 Defines the geometry of a cast in place diaphragm.

@@ -13,6 +13,9 @@ Item | Description
 Bearing Offset | The bearing offset is the distance from the pier or abutment reference line to the point of bearing on the girder (See schematic). The bearing offset may be measured normal to the pier or abutment reference line or along the centerline of the girder. The centerline of bearing is always parallel to the pier or abutment reference line.
 End Distance | The girder end distance locates the end of the girder and can be measured by the following: <ul><li>From the Abutment/Pier Line, along the centerline of the girder</li><li>From the Abutment/Pier Line, normal to the Abutment/Pier Line</li><li>From the bearing, along the centerline of the girder</li><li>From, and normal to, the bearing centerline</li></ul>
 
+> NOTE: The bearing offset cannot be measured along the centerline of girder when girder spacing is measured at the centerline bearing. In the general case, girders are not parallel and this will result in a unique bearing location relative to the centerline pier and there would not be a single, continuous bearing line through the bearing points for all girders.
+
+
 > Note that at intermediate piers the value of End Distance can never be larger than the Bearing Offset. However, if there is a large skew, it is still possible to input valid library entry values, but have the bearings located off of the girder. For example: In the figure below, with a Bearing Offset = 9" measured along alignment; and End Distance = 9" measured from and normal to the Abutment/Pier Line. For this case a zero skew would place the bearing at the end of the girder, a valid condition. However, any non-zero skew would cause the bearing to be beyond the end of the girder - negative cantilever - Not Good:
 > ![](BearingEndDistanceError.gif)
 > PGSuper will issue an error message when this condition occurs. The issue can be fixed by increasing the end distance, or reducing the girder skew angle.

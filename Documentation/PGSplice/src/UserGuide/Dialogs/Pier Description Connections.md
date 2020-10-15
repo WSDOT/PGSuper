@@ -33,6 +33,8 @@ Item | Description
 Bearing Offset | Distance from the pier line to the centerline bearing. Use the drop down list to select how this parameter is measured.
 End Distance | Locates the end of the segments. Use the drop down list to select how this parameter is measured
 
+> NOTE: The bearing offset cannot be measured along the centerline of girder when girder spacing is measured at the centerline bearing. In the general case, girders are not parallel and this will result in a unique bearing location relative to the centerline pier and there would not be a single, continuous bearing line through the bearing points for all girders.
+
 Diaphragm
 ------------
 Define the cross section of the diaphragm at this pier.
