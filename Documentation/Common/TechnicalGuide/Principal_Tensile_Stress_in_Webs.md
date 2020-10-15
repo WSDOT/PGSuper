@@ -18,8 +18,6 @@ The LRFD shear stress equation applies the total Service III shear force to the 
 
 The Service III load factors are applied to the load components used in the NCHRP equation.
 
-Shear stress is computed using gross section properties (Q and I for the gross concrete section).
-
 At sections where internal tendons cross near the depth at which the maximum principal tension is being checked, the provisions of LRFD 5.7.2.1 are applied to adjust the web width for the precense of a grouted tendon. "Near the depth at which the maximum principal tension is being checked" is defined by as multiple of outside duct diameters, k(OD), from the center of the duct.
 ![](Near_Tendon.png)
 
