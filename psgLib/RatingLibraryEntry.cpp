@@ -30,13 +30,15 @@
 #include <EAF\EAFApp.h>
 #include <psgLib\LibraryEntryDifferenceItem.h>
 
+#include <boost\algorithm\string\replace.hpp>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define CURRENT_VERSION 2.0
+#define CURRENT_VERSION 3.0
 
 CLiveLoadFactorModel::CLiveLoadFactorModel()
 {
@@ -2268,6 +2270,7 @@ CString RatingLibraryEntry::GetSpecialPermitType(pgsTypes::SpecialPermitType per
 }
 
 RatingLibraryEntry::RatingLibraryEntry() :
+m_bUseCurrentSpecification(true),
 m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims),
 m_bAlwaysRate(false)
 {
@@ -2400,7 +2403,8 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->BeginUnit(_T("RatingLibraryEntry"), CURRENT_VERSION);
 
    pSave->Property(_T("Name"), GetName().c_str());
-   pSave->Property(_T("Description"), GetDescription().c_str());
+   pSave->Property(_T("Description"), GetDescription(false).c_str());
+   pSave->Property(_T("UseCurrentSpecification"), m_bUseCurrentSpecification); // added in version 3
    pSave->Property(_T("SpecificationVersion"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion,true));
 
    pSave->Property(_T("AlwaysRate"),m_bAlwaysRate);
@@ -2537,6 +2541,19 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
    }
 
    SetDescription(name.c_str());
+
+   if (2 < version)
+   {
+      // Added in version 3
+      if (!pLoad->Property(_T("UseCurrentSpecification"), &m_bUseCurrentSpecification))
+      {
+         THROW_LOAD(InvalidFileFormat, pLoad);
+      }
+   }
+   else
+   {
+      m_bUseCurrentSpecification = false;
+   }
 
    std::_tstring strSpecVersion;
    if( !pLoad->Property(_T("SpecificationVersion"),&strSpecVersion) )
@@ -2817,10 +2834,10 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
    }
 
-   if ( m_SpecificationVersion != rOther.m_SpecificationVersion )
+   if (m_bUseCurrentSpecification != rOther.m_bUseCurrentSpecification || m_SpecificationVersion != rOther.m_SpecificationVersion)
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Rating Criteria Basis"),lrfrVersionMgr::GetVersionString(m_SpecificationVersion),lrfrVersionMgr::GetVersionString(rOther.m_SpecificationVersion)));
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Rating Criteria Basis"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion), lrfrVersionMgr::GetVersionString(rOther.m_SpecificationVersion)));
    }
 
    if ( m_bAlwaysRate != rOther.m_bAlwaysRate )
@@ -2924,9 +2941,31 @@ void RatingLibraryEntry::SetDescription(LPCTSTR name)
    m_Description = name;
 }
 
-std::_tstring RatingLibraryEntry::GetDescription() const
+std::_tstring RatingLibraryEntry::GetDescription(bool bApplySymbolSubstitution) const
 {
-   return m_Description;
+   if (bApplySymbolSubstitution)
+   {
+      std::_tstring description(m_Description);
+      std::_tstring strSubstitute(lrfrVersionMgr::GetCodeString());
+      strSubstitute += _T(", ");
+      strSubstitute += lrfrVersionMgr::GetVersionString();
+      boost::replace_all(description, _T("%MBE%"), strSubstitute);
+      return description;
+   }
+   else
+   {
+      return m_Description;
+   }
+}
+
+void RatingLibraryEntry::UseCurrentSpecification(bool bUseCurrent)
+{
+   m_bUseCurrentSpecification = bUseCurrent;
+}
+
+bool RatingLibraryEntry::UseCurrentSpecification() const
+{
+   return m_bUseCurrentSpecification;
 }
 
 void RatingLibraryEntry::SetSpecificationVersion(lrfrVersionMgr::Version version)

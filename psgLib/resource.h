@@ -892,7 +892,7 @@
 #define IDC_NWC_NOTE                    1443
 #define IDC_HAUNCH_FACTOR               1443
 #define IDC_CHECK1                      1444
-#define IDC_ALWAYS_RATE                 1444
+#define IDC_ALWAYS_RATE                 1445
 #define IDC_IS_VARIABLE_AXLE_TRUCK      1444
 #define IDC_HAS_AGG_STRENGTH            1444
 #define IDC_STRAND_EXTENSIONS           1444
@@ -1436,7 +1436,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        329
+#define _APS_NEXT_RESOURCE_VALUE        330
 #define _APS_NEXT_COMMAND_VALUE         36881
 #define _APS_NEXT_CONTROL_VALUE         1730
 #define _APS_NEXT_SYMED_VALUE           101

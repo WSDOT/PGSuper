@@ -1427,8 +1427,10 @@ BEGIN
     LTEXT           "Description",IDC_STATIC,7,28,46,8
     EDITTEXT        IDC_EDIT_DESCRIPTION,7,37,341,47,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN
     GROUPBOX        "Rating Criteria Basis",IDC_STATIC,7,88,341,63
-    COMBOBOX        IDC_SPECIFICATION,17,129,237,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Use this rating criteria along with provisions from the\nAASHTO Manual for Bridge Evaluation",IDC_STATIC,21,105,316,21
+    LTEXT           "Use this rating criteria along with provisions from the AASHTO Manual for Bridge Evaluation",IDC_STATIC,19,105,316,8
+    COMBOBOX        IDC_SPECIFICATION,17,116,237,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Always use the most recent edition of AASHTO's The Manual for Bridge Evaluation",IDC_USE_CURRENT_VERSION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,135,276,10
     GROUPBOX        "Options",IDC_STATIC,7,155,341,52
     CONTROL         "Always load rate when performing a specification check",IDC_ALWAYS_RATE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,173,191,10
@@ -2834,6 +2836,11 @@ BEGIN
 END
 
 IDD_LIBRARY_ENTRY_CONFLICT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_RATING_DESCR AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

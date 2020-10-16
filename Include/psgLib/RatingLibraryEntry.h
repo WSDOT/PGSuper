@@ -245,7 +245,10 @@ public:
    virtual HICON GetIcon() const;
 
    void SetDescription(LPCTSTR name);
-   std::_tstring GetDescription() const;
+   std::_tstring GetDescription(bool bApplySymbolSubstitution = true) const;
+
+   void UseCurrentSpecification(bool bUseCurrent);
+   bool UseCurrentSpecification() const;
 
    void SetSpecificationVersion(lrfrVersionMgr::Version version);
    lrfrVersionMgr::Version GetSpecificationVersion() const;
@@ -279,6 +282,7 @@ protected:
 private:
 
    // general
+   bool m_bUseCurrentSpecification;
    lrfrVersionMgr::Version m_SpecificationVersion;
    std::_tstring m_Description;
 
