@@ -454,7 +454,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    if (bNeedTaperedSolePlate)
    {
+      *p << bgcolor(rptRiStyle::Yellow);
       *p << Bold(_T("The inclination of the underside of the girder to the horizontal exceeds 0.01 rad. Per LRFD 14.8.2 a tapered sole plate shall be used in order to provide a level surface.")) << rptNewLine;
+      *p << bgcolor(rptRiStyle::White);
    }
    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.gif")) << rptNewLine;
 
