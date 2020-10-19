@@ -1667,12 +1667,12 @@ BEGIN
     LTEXT           "In areas without sufficient bonded reinforcement",IDC_STATIC,23,125,154,18
 END
 
-IDD_SPEC_GIRDER DIALOGEX 0, 0, 469, 490
+IDD_SPEC_GIRDER DIALOGEX 0, 0, 561, 490
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Prestressed Elements"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1)",IDC_GTEMP,7,7,455,77
+    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1)",IDC_GTEMP,7,7,547,77
     LTEXT           "Compressive Stress",IDC_STATIC,15,22,68,8
     EDITTEXT        IDC_RELEASE_COMPRESSION,86,20,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'ci",IDC_STATIC,129,22,19,8
@@ -1687,7 +1687,7 @@ BEGIN
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC,22,68,147,8
     EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,176,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,221,68,79,8
-    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2)",IDC_GPERM,7,87,455,120
+    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2)",IDC_GPERM,7,87,547,120
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,104,204,8
     EDITTEXT        IDC_SERVICE_COMPRESSION,274,100,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'c",IDC_STATIC,318,103,8,8
@@ -1717,11 +1717,11 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,308,191,79,10
     EDITTEXT        IDC_SEVERE_SERVICE_III_TENSION_MAX,388,189,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "MPa",IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT,430,191,18,8
-    GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,210,455,25
+    GROUPBOX        "Stress Limits for Fatigue Limit State (LRFD 5.5.3.1)",IDC_FATIGUE_GROUP,7,210,547,25
     LTEXT           "Service IA (Live Load Plus One-Half of Permanent Loads)",IDC_FATIGUE_LABEL,16,220,216,8
     EDITTEXT        IDC_FATIGUE_COMPRESSION,233,217,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "f'c",IDC_STATIC,277,220,13,8
-    GROUPBOX        "Stress Limits for Temporary Loading Conditions (PGSuper Only)",IDC_STATIC,7,238,455,154
+    GROUPBOX        "Stress Limits for Temporary Loading Conditions (PGSuper Only)",IDC_STATIC,7,238,547,154
     CONTROL         "Evaluate stress limits for temporary loading conditions",IDC_CHECK_TEMPORARY_STRESSES,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,21,251,188,10
     GROUPBOX        "Stress Limits immediately after Temporary Strand Removal",IDC_TEMP_STRAND_REMOVAL_GROUP,20,263,386,79
@@ -1749,7 +1749,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,229,372,78,10
     EDITTEXT        IDC_AFTER_DECK_TENSION_MAX,310,370,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "MPa",IDC_AFTER_DECK_TENSION_MAX_UNIT,355,372,25,8
-    GROUPBOX        "Principal Tensile Stress in Webs (LRFD 5.9.2.3.3)",IDC_PRINCIPAL_TENSION_GROUP,7,397,455,86
+    GROUPBOX        "Principal Tensile Stress in Webs (LRFD 5.9.2.3.3)",IDC_PRINCIPAL_TENSION_GROUP,7,397,547,86
     LTEXT           "Tensile Stress",IDC_PRINCIPAL_TENSION_LABEL,17,413,45,8
     EDITTEXT        IDC_PRINCIPAL_TENSION,71,410,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'c (MPa))",IDC_PRINCIPAL_TENSION_UNIT,114,413,79,8
@@ -1759,9 +1759,9 @@ BEGIN
     EDITTEXT        IDC_TENDON_NEARNESS_FACTOR,171,449,40,14,ES_AUTOHSCROLL
     LTEXT           "is being checked, the provisions of LRFD 5.7.2.1 shall apply",IDC_PRINCIPAL_TENSION_LABEL4,18,464,191,8
     LTEXT           "diameters of the depth at which the maximum principal tension",IDC_PRINCIPAL_TENSION_LABEL3,215,452,200,8
-    LTEXT           "Check web principal stress when f'c exceeds",IDC_PRINCIPAL_LABELFC,215,413,142,8
-    EDITTEXT        IDC_PRINCIPAL_FC_THRESHOLD,363,410,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "KSI",IDC_PRINCIPAL_FC_THRESHOLD_UNIT,405,413,12,8
+    LTEXT           "Check web principal stress in structures without post-tensioning when f'c exceeds value, or use keyword ""All"" ",IDC_PRINCIPAL_LABELFC,202,408,199,17
+    EDITTEXT        IDC_PRINCIPAL_FC_THRESHOLD,403,410,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
+    LTEXT           "KSI",IDC_PRINCIPAL_FC_THRESHOLD_UNIT,445,413,12,8
 END
 
 IDD_SPEC_DEAD_LOADS DIALOGEX 0, 0, 379, 154
@@ -2306,7 +2306,7 @@ BEGIN
     IDD_SPEC_GIRDER, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 462
+        RIGHTMARGIN, 554
         TOPMARGIN, 7
         BOTTOMMARGIN, 483
     END
