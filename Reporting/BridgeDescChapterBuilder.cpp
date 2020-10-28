@@ -839,10 +839,13 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
          }
       }
 
-      pnt.Release();
-      pRoadway->GetCurvePoint(hcIdx, cptPI, pgsTypes::pcGlobal, &pnt);
-      pnt->Location(&x, &y);
-      (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+      if (!IsZero(hc_data.Radius))
+      {
+         pnt.Release();
+         pRoadway->GetCurvePoint(hcIdx, cptPI, pgsTypes::pcGlobal, &pnt);
+         pnt->Location(&x, &y);
+         (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+      }
 
       if (IsZero(hc_data.Radius))
       {

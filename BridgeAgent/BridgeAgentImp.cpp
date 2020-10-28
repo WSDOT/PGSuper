@@ -2070,10 +2070,13 @@ bool CBridgeAgentImp::BuildCogoModel()
             if (!IsZero(distance,tolerance))
             {
                locate->ByDistDir(pbt, pi_station - prev_curve_ST_station, CComVariant(back_tangent), 0.00, &pi);
-               ATLASSERT(pi->SameLocation(pbt) == VARIANT_FALSE);
-               // add the PI
-               points->AddEx(curveID, pi);
-               alignment->AddEx(pi);
+               
+               if (pi->SameLocation(pbt) == S_FALSE )
+               {
+                  // add the PI
+                  points->AddEx(curveID, pi);
+                  alignment->AddEx(pi);
+               }
             }
 
             Float64 fwd_tangent = curve_data.FwdTangent;
