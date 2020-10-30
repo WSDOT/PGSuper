@@ -70,6 +70,9 @@ std::_tstring CTimeStepDetailsReportSpecification::GetReportContextString() cons
       CString strLabel;
       strLabel.Format(_T("%s"), rptPoi.AsString().c_str());
 
+      strLabel.Replace(_T("<sub>"), _T(""));
+      strLabel.Replace(_T("</sub>"), _T(""));
+
       return std::_tstring(strLabel);
    }
 
