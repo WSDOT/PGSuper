@@ -18,3 +18,11 @@ For example, the equation for the shear, multiple lane distribution factor equat
 
 ### Exterior Shear in Adjacent U Beams and Voided Slabs (type f, g) ###
 This is similar to the lever rule inheritance case above. For beam types f and g, the distribution factor equations for shear in exterior beams is g<sub>exterior</sub>=eg<sub>interior</sub>. However, if I or J exceed the range of applicability, the moment equation will be used to compute ginterior. The question is whether to compute e based on the shear equation, or e based on exterior moment. Our interpretation is: if I or J is out of range, use the exterior moment equation directly to compute the exterior beam distribution factor for shear.
+
+### Live Load Distribution for Reactions, Deflections, and Rotations ###
+Live load reactions, deflections, and rotations are destributed uniformly to all girders in a span. The distribution factor is the product of the multiple presence factor and the number of design lanes divided by the number of girders
+
+> LLDF = (MPF)(Number of Lanes)/(Number of Girders)
+
+> Live Load Reaction, Deflection, or Rotation per girder = (LLDF)(Single Lane Live Load Reaction, Deflection, or Rotation per LRFD 3.6.1.2)
+

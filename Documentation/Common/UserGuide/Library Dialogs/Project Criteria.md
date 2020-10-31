@@ -15,4 +15,5 @@ Project Criteria {#ug_library_dialogs_project_criteria}
 * @subpage ug_library_dialogs_project_criteria_creep_and_camber
 * @subpage ug_library_dialogs_project_criteria_losses
 * @subpage ug_library_dialogs_project_criteria_limits_and_warnings
+* @subpage ug_library_dialogs_project_criteria_bearings
 

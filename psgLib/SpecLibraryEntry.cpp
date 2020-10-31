@@ -49,7 +49,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 78.0 
+#define CURRENT_VERSION 79.0 
 
 /****************************************************************************
 CLASS
@@ -275,7 +275,10 @@ m_UHPCFiberShearStrength(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
 m_PrincipalTensileStressMethod(pgsTypes::ptsmLRFD),
 m_PrincipalTensileStressCoefficient(::ConvertToSysUnits(0.110,unitMeasure::SqrtKSI)),
 m_PrincipalTensileStressTendonNearnessFactor(1.5),
-m_PrincipalTensileStressFcThreshold(::ConvertToSysUnits(10.0,unitMeasure::KSI))
+m_PrincipalTensileStressFcThreshold(::ConvertToSysUnits(10.0,unitMeasure::KSI)),
+m_bAlertTaperedSolePlateRequirement(true),
+m_TaperedSolePlateInclinationThreshold(0.01),
+m_bUseImpactForBearingReactions(false)
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -1039,6 +1042,13 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    // added in version 73
    pSave->Property(_T("SlabOffsetRoundingMethod"), (long)m_SlabOffsetRoundingMethod);
    pSave->Property(_T("SlabOffsetRoundingTolerance"), m_SlabOffsetRoundingTolerance);
+
+   // added in version 79
+   pSave->BeginUnit(_T("Bearings"), 1.0);
+      pSave->Property(_T("AlertTaperedSolePlateRequirement"), m_bAlertTaperedSolePlateRequirement);
+      pSave->Property(_T("TaperedSolePlaneInclinationThreshold"), m_TaperedSolePlateInclinationThreshold);
+      pSave->Property(_T("UseImpactForBearingReactions"), m_bUseImpactForBearingReactions);
+   pSave->EndUnit(); // Bearings
 
    pSave->EndUnit();
 
@@ -4402,6 +4412,35 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_SlabOffsetRoundingTolerance = m_SpecificationUnits == lrfdVersionMgr::US ? ::ConvertToSysUnits(0.25, unitMeasure::Inch) : ::ConvertToSysUnits(5.0,unitMeasure::Millimeter);
       }
 
+      // Bearings was added in verison 79
+      if (78 < version)
+      {
+         if (!pLoad->BeginUnit(_T("Bearings")))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("AlertTaperedSolePlateRequirement"), &m_bAlertTaperedSolePlateRequirement))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+         
+         if (!pLoad->Property(_T("TaperedSolePlaneInclinationThreshold"), &m_TaperedSolePlateInclinationThreshold))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("UseImpactForBearingReactions"), &m_bUseImpactForBearingReactions))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+         
+         if (!pLoad->EndUnit()) // Bearings
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
       if(!pLoad->EndUnit())
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -5293,11 +5332,32 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Required slab offset rounding tolerance values are different"), _T(""), _T("")));
    }
 
+
+   // bearing reactions
+   if (m_bAlertTaperedSolePlateRequirement != rOther.m_bAlertTaperedSolePlateRequirement)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Alert tapered sole plate requirement are different"), _T(""), _T("")));
+   }
+
+   if (m_bAlertTaperedSolePlateRequirement && !::IsEqual(m_TaperedSolePlateInclinationThreshold, rOther.m_TaperedSolePlateInclinationThreshold))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Tapered Sole Plate inclination thresholds are different"), _T(""), _T("")));
+   }
+
+   if (m_bUseImpactForBearingReactions != rOther.m_bUseImpactForBearingReactions)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Bearing reactions dynamic load allowances are different"), _T(""), _T("")));
+   }
+      
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
+
 
    // Don't compare the placehold values for abandonded parameters
    //if ( m_LossMethod == 3 /*this is the old LOSSES_GENERAL_LUMPSUM that existed prior to version 50*/ )
@@ -7676,6 +7736,36 @@ Float64 SpecLibraryEntry::GetFinishedElevationTolerance() const
    return m_FinishedElevationTolerance;
 }
 
+void SpecLibraryEntry::AlertTaperedSolePlateRequirement(bool bAlert)
+{
+   m_bAlertTaperedSolePlateRequirement = bAlert;
+}
+
+bool SpecLibraryEntry::AlertTaperedSolePlateRequirement() const
+{
+   return m_bAlertTaperedSolePlateRequirement;
+}
+
+void SpecLibraryEntry::SetTaperedSolePlateInclinationThreshold(Float64 threshold)
+{
+   m_TaperedSolePlateInclinationThreshold = threshold;
+}
+
+Float64 SpecLibraryEntry::GetTaperedSolePlateInclinationThreshold() const
+{
+   return m_TaperedSolePlateInclinationThreshold;
+}
+
+void SpecLibraryEntry::UseImpactForBearingReactions(bool bUse)
+{
+   m_bUseImpactForBearingReactions = bUse;
+}
+
+bool SpecLibraryEntry::UseImpactForBearingReactions() const
+{
+   return m_bUseImpactForBearingReactions;
+}
+
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -8007,6 +8097,11 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_SlabOffsetRoundingMethod = rOther.m_SlabOffsetRoundingMethod;
    m_SlabOffsetRoundingTolerance = rOther.m_SlabOffsetRoundingTolerance;
+
+
+   m_bAlertTaperedSolePlateRequirement = rOther.m_bAlertTaperedSolePlateRequirement;
+   m_TaperedSolePlateInclinationThreshold = rOther.m_TaperedSolePlateInclinationThreshold;
+   m_bUseImpactForBearingReactions = rOther.m_bUseImpactForBearingReactions;
 }
 
 void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)

@@ -91,6 +91,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
 
+   bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
+
    // Don't create much of report if no simple span ends
    std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx,girderKey);
    bool doFinalLoads = (0 < vPiers.size() ? true : false);
@@ -103,11 +105,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    // Product Reactions
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
-   *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable,true,true,false,true,pDisplayUnits) << rptNewLine;
+   *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable, bIncludeImpact,true,false,true,pDisplayUnits) << rptNewLine;
 
    if( doFinalLoads )
    {
-      *p << LIVELOAD_PER_LANE << rptNewLine;
+      *p << (bIncludeImpact ? LIVELOAD_PER_LANE : LIVELOAD_PER_LANE_NO_IMPACT) << rptNewLine;
 
       if (bPedestrian)
       {
@@ -158,13 +160,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    }
 
    // Combined reactions
-   CCombinedReactionTable().BuildForBearingDesign(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,pSpec->GetAnalysisType());
+   CCombinedReactionTable().BuildForBearingDesign(pBroker,pChapter,girderKey,pDisplayUnits,intervalIdx,pSpec->GetAnalysisType(),bIncludeImpact);
 
    // Product Rotations
    p = new rptParagraph;
    *pChapter << p;
-   *p << CProductRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),false,true,true,true,true,pDisplayUnits) << rptNewLine;
-   *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
+   *p << CProductRotationTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(), bIncludeImpact,true,true,true,true,pDisplayUnits) << rptNewLine;
+   *p << (bIncludeImpact ? LIVELOAD_PER_GIRDER : LIVELOAD_PER_GIRDER_NO_IMPACT) << rptNewLine;
 
    if (bPedestrian)
    {
@@ -234,7 +236,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9,_T("Corresponding Live Load Bearing Reactions and Rotations"));
    *p << pTable << rptNewLine;
-   *p << LIVELOAD_PER_GIRDER_NO_IMPACT << rptNewLine;
+   *p << (bIncludeImpact ? LIVELOAD_PER_GIRDER : LIVELOAD_PER_GIRDER_NO_IMPACT) << rptNewLine;
 
    pTable->SetNumberOfHeaderRows(2);
 
@@ -292,20 +294,20 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       {
          // reactions and corresponding rotations
          Float64 Rmin, Rmax, Tmin, Tmax;
-         pBearingDesign->GetBearingLiveLoadReaction( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MaxSimpleContinuousEnvelope, false, true, &Rmin, &Rmax, &Tmin, &Tmax);
+         pBearingDesign->GetBearingLiveLoadReaction( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MaxSimpleContinuousEnvelope, bIncludeImpact, true, &Rmin, &Rmax, &Tmin, &Tmax);
          vMaxReaction.push_back(Rmax);
          vMaxReaction_Rotation.push_back(Tmax);
 
-         pBearingDesign->GetBearingLiveLoadReaction( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MinSimpleContinuousEnvelope, false, true, &Rmin, &Rmax, &Tmin, &Tmax);
+         pBearingDesign->GetBearingLiveLoadReaction( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MinSimpleContinuousEnvelope, bIncludeImpact, true, &Rmin, &Rmax, &Tmin, &Tmax);
          vMinReaction.push_back(Rmin);
          vMinReaction_Rotation.push_back(Tmin);
 
          // rotations and corresponding reactions
-         pBearingDesign->GetBearingLiveLoadRotation( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MaxSimpleContinuousEnvelope, false, true, &Tmin, &Tmax, &Rmin, &Rmax);
+         pBearingDesign->GetBearingLiveLoadRotation( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MaxSimpleContinuousEnvelope, bIncludeImpact, true, &Tmin, &Tmax, &Rmin, &Rmax);
          vMaxRotation.push_back(Tmax);
          vMaxRotation_Reaction.push_back(Rmax);
 
-         pBearingDesign->GetBearingLiveLoadRotation( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MinSimpleContinuousEnvelope, false, true, &Tmin, &Tmax, &Rmin, &Rmax);
+         pBearingDesign->GetBearingLiveLoadRotation( intervalIdx, location, pgsTypes::lltDesign, pgsTypes::MinSimpleContinuousEnvelope, bIncludeImpact, true, &Tmin, &Tmax, &Rmin, &Rmax);
          vMinRotation.push_back(Tmin);
          vMinRotation_Reaction.push_back(Rmin);
       }
@@ -314,13 +316,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          pgsTypes::BridgeAnalysisType bat = analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan;
 
          Float64 Rmin, Rmax, Tmin, Tmax;
-         pBearingDesign->GetBearingLiveLoadReaction( intervalIdx, location, pgsTypes::lltDesign, bat, false, true, &Rmin, &Rmax, &Tmin, &Tmax);
+         pBearingDesign->GetBearingLiveLoadReaction( intervalIdx, location, pgsTypes::lltDesign, bat, bIncludeImpact, true, &Rmin, &Rmax, &Tmin, &Tmax);
          vMinReaction.push_back(Rmin);
          vMinReaction_Rotation.push_back(Tmin);
          vMaxReaction.push_back(Rmax);
          vMaxReaction_Rotation.push_back(Tmax);
 
-         pBearingDesign->GetBearingLiveLoadRotation( intervalIdx, location, pgsTypes::lltDesign, bat, false, true, &Tmin, &Tmax, &Rmin, &Rmax);
+         pBearingDesign->GetBearingLiveLoadRotation( intervalIdx, location, pgsTypes::lltDesign, bat, bIncludeImpact, true, &Tmin, &Tmax, &Rmin, &Rmax);
          vMinRotation.push_back(Tmin);
          vMinRotation_Reaction.push_back(Rmin);
          vMaxRotation.push_back(Tmax);
@@ -386,7 +388,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    row = pTable->GetNumberOfHeaderRows();
 
-   bool bNeedTaperedSolePlate = false; // if bearing recess slope exceeds 0.01 rad, a tapered bearing plate is required per LRFD 14.8.2
+   bool bCheckTaperedSolePlate;
+   Float64 taperedSolePlateThreshold;
+   pSpec->GetTaperedSolePlateRequirements(&bCheckTaperedSolePlate, &taperedSolePlateThreshold);
+   bool bNeedTaperedSolePlate = false; // if bearing recess slope exceeds "taperedSolePlateThreshold", a tapered bearing plate is required per LRFD 14.8.2
 
    for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
@@ -434,7 +439,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       Float64 slope3 = slope1 + slope2;
       (*pTable)(row,col++) << scalar.SetValue(slope3);
 
-      bNeedTaperedSolePlate = 0.01 < fabs(slope3); // see lrfd 14.8.2
+      bNeedTaperedSolePlate = taperedSolePlateThreshold < fabs(slope3); // see lrfd 14.8.2
 
       Float64 W = max(pbd->RecessLength, pbd->Length); // don't allow recess to be shorter than bearing
       Float64 D = pbd->RecessHeight;
@@ -452,10 +457,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    *p << pTable << rptNewLine;
    *p << _T("* W is maximum of input bearing length and recess length") << rptNewLine;
 
-   if (bNeedTaperedSolePlate)
+   if (bCheckTaperedSolePlate && bNeedTaperedSolePlate)
    {
       *p << bgcolor(rptRiStyle::Yellow);
-      *p << Bold(_T("The inclination of the underside of the girder to the horizontal exceeds 0.01 rad. Per LRFD 14.8.2 a tapered sole plate shall be used in order to provide a level surface.")) << rptNewLine;
+      *p << _T("The inclination of the underside of the girder to the horizontal exceeds ") << taperedSolePlateThreshold << _T(" rad. Per LRFD 14.8.2 a tapered sole plate shall be used in order to provide a level surface.") << rptNewLine;
       *p << bgcolor(rptRiStyle::White);
    }
    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.gif")) << rptNewLine;

@@ -9448,6 +9448,12 @@ void CProjectAgentImp::GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOff
    m_pSpecEntry->GetRequiredSlabOffsetRoundingParameters(pMethod, pTolerance);
 }
 
+void CProjectAgentImp::GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const
+{
+   *pbCheckTaperedSolePlate = m_pSpecEntry->AlertTaperedSolePlateRequirement();
+   *pTaperedSolePlateThreshold = m_pSpecEntry->GetTaperedSolePlateInclinationThreshold();
+}
+
 Uint16 CProjectAgentImp::GetMomentCapacityMethod() const
 {
    return m_pSpecEntry->GetLRFDOverreinforcedMomentCapacity() == true ? LRFD_METHOD : WSDOT_METHOD;

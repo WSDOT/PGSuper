@@ -1993,6 +1993,22 @@ BEGIN
     LTEXT           "This input generally isn't used. In the AASHTO LRFD 1st Edition, 1994, Article 5.8.4 required a minimum of four bars corssed the interface plane with the deck. Extra bars where commonly added to the top flange",IDC_STATIC,7,107,295,47
 END
 
+IDD_SPEC_BEARINGS DIALOGEX 0, 0, 379, 114
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD | WS_CAPTION | WS_SYSMENU
+CAPTION "Bearings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Dynamic Load Allowance [LRFD 14.4.1]",IDC_STATIC,7,7,365,43
+    CONTROL         "Include dynamic load allowance (impact) when computing bearing reactions and rotations",IDC_BEARING_REACTION_IMPACT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,26,300,10
+    GROUPBOX        "Tapered Sole Plates [LRFD 14.8.2]",IDC_STATIC,7,52,365,55
+    CONTROL         "Alert if tapered sole plates are required",IDC_TAPERED_SOLE_PLATE_REQUIRED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,69,142,10
+    LTEXT           "Alert when the inclination of the underside of the girder to the horizontal exceeds",IDC_STATIC,27,86,262,8
+    EDITTEXT        IDC_TAPERED_SOLE_PLATE_THRESHOLD,293,84,40,14,ES_AUTOHSCROLL
+    LTEXT           "rad",IDC_STATIC,339,86,12,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2373,6 +2389,14 @@ BEGIN
         RIGHTMARGIN, 302
         TOPMARGIN, 7
         BOTTOMMARGIN, 206
+    END
+
+    IDD_SPEC_BEARINGS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 372
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 107
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2841,6 +2865,11 @@ BEGIN
 END
 
 IDD_RATING_DESCR AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_SPEC_BEARINGS AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

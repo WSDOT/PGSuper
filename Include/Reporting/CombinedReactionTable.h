@@ -72,27 +72,28 @@ public:
    //------------------------------------------------------------------------
    // Builds the combined results table
    // bDesign and bRating are only considered for intervalIdx = live load interval index
-   virtual void Build(IBroker* pBroker, rptChapter* pChapter,
-                      const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
-                      IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
-                      bool bDesign,bool bRating) const;
+   void Build(IBroker* pBroker, rptChapter* pChapter,
+              const CGirderKey& girderKey,
+              IEAFDisplayUnits* pDisplayUnits,
+              IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+              bool bDesign,bool bRating) const;
 
    //------------------------------------------------------------------------
    // Builds the live load results table
    // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
-   virtual void BuildLiveLoad(IBroker* pBroker, rptChapter* pChapter,
-                      const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
-                      pgsTypes::AnalysisType analysisType, 
-                      bool includeImpact, bool bDesign,bool bRating) const;
+   void BuildLiveLoad(IBroker* pBroker, rptChapter* pChapter,
+              const CGirderKey& girderKey,
+              IEAFDisplayUnits* pDisplayUnits,
+              pgsTypes::AnalysisType analysisType, 
+              bool bIncludeImpact, bool bDesign,bool bRating) const;
+
 
    //------------------------------------------------------------------------
    // Builds tables for bearing design
-   virtual void BuildForBearingDesign(IBroker* pBroker, rptChapter* pChapter,
-                      const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
-                      IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType) const;
+   void BuildForBearingDesign(IBroker* pBroker, rptChapter* pChapter,
+              const CGirderKey& girderKey,
+              IEAFDisplayUnits* pDisplayUnits,
+              IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,bool bIncludeImpact) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -102,17 +103,17 @@ protected:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   virtual void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
-                      const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
-                      IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
-                      bool bDesign=true,bool bRating=true) const;
+   void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+              const CGirderKey& girderKey,
+              IEAFDisplayUnits* pDisplayUnits,
+              IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
+              bool bDesign=true,bool bRating=true) const;
 
-   virtual void BuildBearingLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
-                      const CGirderKey& girderKey,bool includeImpact,
-                      IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
-                      pgsTypes::AnalysisType analysisType,
-                      bool bDesign=true,bool bRating=true) const;
+   void BuildBearingLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+              const CGirderKey& girderKey,bool bIncludeImpact,
+              IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+              pgsTypes::AnalysisType analysisType,
+              bool bDesign=true,bool bRating=true) const;
 
    //------------------------------------------------------------------------
    void MakeCopy(const CCombinedReactionTable& rOther);

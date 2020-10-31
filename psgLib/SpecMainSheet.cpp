@@ -97,6 +97,8 @@ void CSpecMainSheet::Init()
    m_SpecLiveLoadsPage.m_psp.dwFlags |= PSP_HASHELP;
    m_SpecGirderStressPage.m_psp.dwFlags    |= PSP_HASHELP;
 
+   m_SpecBearingsPage.m_psp.dwFlags |= PSP_HASHELP;
+
    AddPage(&m_SpecDescrPage);
    AddPage(&m_SpecDesignPage);
    AddPage(&m_SpecGirderStressPage);
@@ -111,6 +113,7 @@ void CSpecMainSheet::Init()
    AddPage(&m_SpecCreepPage);
    AddPage(&m_SpecLossPage);
    AddPage(&m_SpecLimitsPage);
+   AddPage(&m_SpecBearingsPage);
 }
 
 void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
@@ -1412,6 +1415,14 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    // Roadway elevations
    DDX_UnitValueAndTag(pDX, IDC_ELEVATION_TOLERANCE, IDC_ELEVATION_TOLERANCE_UNIT, m_Entry.m_FinishedElevationTolerance, pDisplayUnits->ComponentDim);
    DDV_UnitValueZeroOrMore(pDX, IDC_ELEVATION_TOLERANCE, m_Entry.m_FinishedElevationTolerance, pDisplayUnits->ComponentDim);
+}
+
+void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
+{
+   DDX_Check_Bool(pDX, IDC_TAPERED_SOLE_PLATE_REQUIRED, m_Entry.m_bAlertTaperedSolePlateRequirement);
+   DDX_Text(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_TaperedSolePlateInclinationThreshold);
+   DDV_LimitOrMore(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_TaperedSolePlateInclinationThreshold, 0.0);
+   DDX_Check_Bool(pDX, IDC_BEARING_REACTION_IMPACT, m_Entry.m_bUseImpactForBearingReactions);
 }
 
 BOOL CSpecMainSheet::OnInitDialog() 

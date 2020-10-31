@@ -69,6 +69,7 @@ void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUn
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_deflections(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
+void write_bearings(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_rating_criteria(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const RatingLibraryEntry* pRatingEntry);
 void write_load_factors(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,LPCTSTR lpszName,const CLiveLoadFactorModel& model);
 
@@ -260,6 +261,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
       write_losses(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_strand_stress(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_deflections(pChapter, pBroker, pDisplayUnits, pSpecEntry);
+      write_bearings(pChapter, pBroker, pDisplayUnits, pSpecEntry);
 
       if ( bRating )
       {
@@ -1317,6 +1319,34 @@ void write_deflections(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* 
    {
       *pPara << _T("Live Load Deflection Limit not evaluated") << rptNewLine;
    }
+}
+
+void write_bearings(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Bearing Design Parameters Criteria") << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   *pPara << _T("Tapered Sole Plate requirements of LRFD 14.8.2 are ");
+   if (!pSpecEntry->AlertTaperedSolePlateRequirement())
+   {
+      *pPara << _T("not ");
+   }
+   *pPara << _T("evaluated.") << rptNewLine;
+   if (pSpecEntry->AlertTaperedSolePlateRequirement())
+   {
+      *pPara << _T("Tapered Sole Plates are required when the inclination of the underside of the girder to the horizontal exceeds ") << pSpecEntry->GetTaperedSolePlateInclinationThreshold() << _T(" rad.") << rptNewLine;
+   }
+
+   *pPara << _T("Dynamic load allowance is ");
+   if (!pSpecEntry->UseImpactForBearingReactions())
+   {
+      *pPara << _T("not ");
+   }
+   *pPara << _T("included in live load reactions and rotations.") << rptNewLine;
 }
 
 void write_rating_criteria(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const RatingLibraryEntry* pRatingEntry)

@@ -112,6 +112,7 @@
 #define IDD_GIRDER_HAUNCH_CAMBER        311
 #define IDD_HAUL_TRUCK                  312
 #define IDD_EDIT_ADDITIONAL_INTERFACE_STEEL 324
+#define IDD_SPEC_BEARINGS               330
 #define IDC_IMPACT_USAGE                411
 #define IDC_D1                          1001
 #define IDC_W1                          1002
@@ -892,7 +893,6 @@
 #define IDC_NWC_NOTE                    1443
 #define IDC_HAUNCH_FACTOR               1443
 #define IDC_CHECK1                      1444
-#define IDC_ALWAYS_RATE                 1445
 #define IDC_IS_VARIABLE_AXLE_TRUCK      1444
 #define IDC_HAS_AGG_STRENGTH            1444
 #define IDC_STRAND_EXTENSIONS           1444
@@ -908,6 +908,9 @@
 #define IDC_INCLUDE_STRAND_FOR_NEG_MOMENT 1444
 #define IDC_WEB_SECTIONS                1444
 #define IDC_USE_CURRENT_VERSION         1444
+#define IDC_SOLE_PLATE_REQUIRED         1444
+#define IDC_TAPERED_SOLE_PLATE_REQUIRED 1444
+#define IDC_ALWAYS_RATE                 1445
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
@@ -1123,6 +1126,7 @@
 #define IDC_LIMIT_STRAIN                1557
 #define IDC_SHOW_WEB_WIDTH_PROJECTIOS   1557
 #define IDC_SHOW_WEB_WIDTH_PROJECTIONS  1557
+#define IDC_BEARING_REACTION_IMPACT     1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
 #define IDC_DEBOND_RAISE_CHECK          1558
@@ -1134,6 +1138,7 @@
 #define IDC_CHECK_PT_AT_JACKING         1559
 #define IDC_FC1                         1559
 #define IDC_CAMBER1                     1559
+#define IDC_BEARING_LLDF1               1559
 #define IDC_SMAX                        1560
 #define IDC_TRANSFORMED                 1560
 #define IDC_SMAX_UNIT                   1561
@@ -1405,6 +1410,8 @@
 #define IDC_CHECK_ADJACENT_STRANDS      1727
 #define IDC_CHECK_WEB_WIDTH_PROJECTIONS 1728
 #define IDC_CONFIGURATION_TEXT          1729
+#define IDC_TAPERED_SOLE_PLATE_THRESHOLD 1730
+#define IDC_BEARING_LLDF2               1731
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1436,9 +1443,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        330
+#define _APS_NEXT_RESOURCE_VALUE        332
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1730
+#define _APS_NEXT_CONTROL_VALUE         1732
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

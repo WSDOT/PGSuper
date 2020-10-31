@@ -912,11 +912,6 @@ public:
    void LimitNetTensionStrainToPositiveValues(bool bLimit);
    bool LimitNetTensionStrainToPositiveValues() const;
 
-   // Set/Get flag indicating if the mininimum stirrup requirement is ignored when choosing
-   // to compute beta by equation 5.7.3.4.2-1 or -2.
-   void IgnoreMiniumStirrupRequirementForBeta(bool bIgnore);
-   bool IgnoreMiniumStirrupRequirementForBeta() const;
-
    // Set/Get the coefficient for computing modulus of rupture for shear capacity analysis
    void SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
    Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
@@ -1235,6 +1230,17 @@ public:
    void SetFinishedElevationTolerance(Float64 tol);
    Float64 GetFinishedElevationTolerance() const;
 
+   //////////////////////////////////////
+   //
+   // Bearings Parameters
+   //
+   //////////////////////////////////////
+   void AlertTaperedSolePlateRequirement(bool bAlert);
+   bool AlertTaperedSolePlateRequirement() const;
+   void SetTaperedSolePlateInclinationThreshold(Float64 threshold);
+   Float64 GetTaperedSolePlateInclinationThreshold() const;
+   void UseImpactForBearingReactions(bool bUse);
+   bool UseImpactForBearingReactions() const;
 
    ////////////////////////////////////////
    //
@@ -1599,6 +1605,11 @@ private:
    Float64 m_90DayConcreteStrengthFactor;
 
    Float64 m_FinishedElevationTolerance; // tolerance between finished and design roadway surface elevation for no-deck bridges
+
+   // bearing reactions
+   bool m_bAlertTaperedSolePlateRequirement;
+   Float64 m_TaperedSolePlateInclinationThreshold;
+   bool m_bUseImpactForBearingReactions;
 };
 
 #endif // INCLUDED_PSGLIB_SPECLIBRARYENTRY_H_

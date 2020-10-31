@@ -96,6 +96,7 @@ interface ILiveLoadDistributionFactors : IUnknown
 
    // returns mpf(#lanes/#beams)
    virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey) const = 0;
+   virtual Float64 GetDeflectionDistFactorEx(const CSpanKey& spanKey, Float64* pMPF, Uint32* pnLanes, GirderIndexType* pnGirders) const = 0;
 };
 
 #endif // INCLUDED_IFACE_DISTRIBUTIONFACTORS_H_

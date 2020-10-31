@@ -540,6 +540,8 @@ interface ISpecification : IUnknown
 
    // Rounding method for required slab offset value
    virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const = 0;
+
+   virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const = 0;
 };
 
 /*****************************************************************************

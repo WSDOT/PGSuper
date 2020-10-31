@@ -302,14 +302,14 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx, girderKey);
    if( 0 < vPiers.size() )
    {
-      *p << CProductReactionTable().Build(pBroker, girderKey,analysisType,BearingReactionsTable,true,bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
+      *p << CProductReactionTable().Build(pBroker, girderKey,analysisType,BearingReactionsTable,pBearingDesign->BearingLiveLoadReactionsIncludeImpact(),bDesign,bRating,bIndicateControllingLoad,pDisplayUnits) << rptNewLine;
 
       if ( bPedestrian )
       {
          *p << _T("$ Pedestrian values are per girder") << rptNewLine;
       }
 
-      *p << LIVELOAD_PER_LANE << rptNewLine;
+      *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE_NO_IMPACT : LIVELOAD_PER_LANE) << rptNewLine;
       *p << rptNewLine;
       LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
    }
@@ -351,14 +351,14 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          // Product Rotations
          p = new rptParagraph;
          *pChapter << p;
-         *p << CProductRotationTable().Build(pBroker, thisGirderKey, analysisType, true, false, bDesign, bRating, bIndicateControllingLoad, pDisplayUnits) << rptNewLine;
+         *p << CProductRotationTable().Build(pBroker, thisGirderKey, analysisType, pBearingDesign->BearingLiveLoadReactionsIncludeImpact(), false, bDesign, bRating, bIndicateControllingLoad, pDisplayUnits) << rptNewLine;
 
          if (bPedestrian)
          {
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
          }
 
-         *p << LIVELOAD_PER_LANE << rptNewLine;
+         *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE_NO_IMPACT : LIVELOAD_PER_LANE) << rptNewLine;
          *p << rptNewLine;
          LiveLoadTableFooter(pBroker, p, thisGirderKey, bDesign, bRating);
 

@@ -880,6 +880,9 @@ DEFINE_GUID(IID_IBearingDesign,
 0xdacec889, 0x2b86, 0x46e9, 0x8b, 0x47, 0x8, 0x75, 0xbc, 0x9b, 0x19, 0xa5);
 interface IBearingDesign : IUnknown
 {
+   // Returns true if live load reactions on bearings include impact
+   virtual bool BearingLiveLoadReactionsIncludeImpact() const = 0;
+
    // Returns a list of piers where bearing reactions are available
    virtual std::vector<PierIndexType> GetBearingReactionPiers(IntervalIndexType intervalIdx,const CGirderKey& girderKey) const = 0;
 

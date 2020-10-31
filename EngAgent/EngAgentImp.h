@@ -314,6 +314,7 @@ public:
                        Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
                        Float64* gV,  Float64* gV1,  Float64* gV2) const;   // shear
    virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey) const override;
+   virtual Float64 GetDeflectionDistFactorEx(const CSpanKey& spanKey, Float64* pMPF, Uint32* pnLanes, GirderIndexType* pnGirders) const override;
 
 // IMomentCapacity
 public:

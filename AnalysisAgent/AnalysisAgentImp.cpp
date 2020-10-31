@@ -9815,6 +9815,14 @@ void CAnalysisAgentImp::GetCombinedLiveLoadReaction(IntervalIndexType intervalId
 
 /////////////////////////////////////////////////
 // IBearingDesign
+bool CAnalysisAgentImp::BearingLiveLoadReactionsIncludeImpact() const
+{
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   return pSpecEntry->UseImpactForBearingReactions();
+}
+
 std::vector<PierIndexType> CAnalysisAgentImp::GetBearingReactionPiers(IntervalIndexType intervalIdx,const CGirderKey& girderKey) const
 {
    std::vector<PierIndexType> vPiers;

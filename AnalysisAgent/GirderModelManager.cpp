@@ -6512,10 +6512,10 @@ void CGirderModelManager::GetBearingLiveLoadReaction(IntervalIndexType intervalI
    ASSERT_GIRDER_KEY(location.GirderKey);
 
 #if defined _DEBUG
-   GET_IFACE(IBearingDesign,pBearingDesign);
-   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx,location.GirderKey);
-   std::vector<PierIndexType>::iterator found = std::find(vPiers.begin(),vPiers.end(),location.PierIdx);
-   ATLASSERT( found != vPiers.end() ); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
+   GET_IFACE(IBearingDesign, pBearingDesign);
+   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx, location.GirderKey);
+   std::vector<PierIndexType>::iterator found = std::find(vPiers.begin(), vPiers.end(), location.PierIdx);
+   ATLASSERT(found != vPiers.end()); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
 #endif
    
    if ( location.Face == rftMid )
@@ -6525,7 +6525,7 @@ void CGirderModelManager::GetBearingLiveLoadReaction(IntervalIndexType intervalI
 
       REACTION Rmin,Rmax;
       // get maximum vertical (Fy) reaction with corresponding rotation (Mz = Rz)
-      GM_GetLiveLoadReaction(intervalIdx,llType,location.PierIdx,location.GirderKey,bat,bIncludeImpact,bIncludeLLDF,pgsTypes::fetFy,pgsTypes::fetRz,&Rmin,&Rmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
+      GM_GetLiveLoadReaction(intervalIdx, llType, location.PierIdx, location.GirderKey, bat, bIncludeImpact, bIncludeLLDF, pgsTypes::fetFy, pgsTypes::fetRz, &Rmin, &Rmax, pTmin, pTmax, pMinVehIdx, pMaxVehIdx);
       *pRmin = Rmin.Fy;
       *pRmax = Rmax.Fy;
    }
@@ -6553,10 +6553,10 @@ void CGirderModelManager::GetBearingLiveLoadRotation(IntervalIndexType intervalI
    ASSERT_GIRDER_KEY(location.GirderKey);
 
 #if defined _DEBUG
-   GET_IFACE(IBearingDesign,pBearingDesign);
-   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx,location.GirderKey);
-   std::vector<PierIndexType>::iterator found = std::find(vPiers.begin(),vPiers.end(),location.PierIdx);
-   ATLASSERT( found != vPiers.end() ); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
+   GET_IFACE(IBearingDesign, pBearingDesign);
+   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx, location.GirderKey);
+   std::vector<PierIndexType>::iterator found = std::find(vPiers.begin(), vPiers.end(), location.PierIdx);
+   ATLASSERT(found != vPiers.end()); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
 #endif
 
    if ( location.Face == rftMid )
@@ -6564,7 +6564,7 @@ void CGirderModelManager::GetBearingLiveLoadRotation(IntervalIndexType intervalI
       GET_IFACE(IProductForces,pForces);
       // rotation is the same on both sides of the pier
       pgsTypes::PierFaceType pierFace = pgsTypes::Back;
-      pForces->GetLiveLoadRotation(intervalIdx,llType,location.PierIdx,location.GirderKey,pierFace,bat,bIncludeImpact,bIncludeLLDF,pTmin,pTmax,pRmin,pRmax,pMinVehIdx,pMaxVehIdx);
+      pForces->GetLiveLoadRotation(intervalIdx, llType, location.PierIdx, location.GirderKey, pierFace, bat, bIncludeImpact, bIncludeLLDF, pTmin, pTmax, pRmin, pRmax, pMinVehIdx, pMaxVehIdx);
    }
    else
    {
@@ -14315,17 +14315,16 @@ void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::Me
 
    const pgsPointOfInterest& poi(vPoi.front());
 
-   Float64 gpmstr, gnmstr, gvstr;
    Float64 gpmfat, gnmfat, gvfat;
-   pLLDF->GetDistributionFactors(poi, pgsTypes::StrengthI, &gpmstr, &gnmstr, &gvstr);
    pLLDF->GetDistributionFactors(poi, pgsTypes::FatigueI, &gpmfat, &gnmfat, &gvfat);
 
    Float64 gpM = 99999999;
    Float64 gnM = 99999999;
    Float64 gV  = 99999999;
-   Float64 gR  = gvstr; 
+   Float64 gR  = pLLDF->GetDeflectionDistFactor(spanKey); // uniform distribution for reactions
    Float64 gF  = gvfat;
-   Float64 gD  = pLLDF->GetDeflectionDistFactor(spanKey);
+   Float64 gD  = gR; // uniform distribution for deflections (same as reactions)
+
 
    GET_IFACE(IBridge,pBridge);
 

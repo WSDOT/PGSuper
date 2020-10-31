@@ -151,6 +151,7 @@
 #define IDH_PRETENSIONING                       3754
 #define IDH_SPLICED_GIRDER_GENERAL              3755
 #define IDH_HAUL_TRUCK_DIALOG                   3756
+#define IDH_PROJECT_CRITERIA_BEARINGS           3757
 
 #define IDH_SELECT_LIVELOAD			  	         3790
 

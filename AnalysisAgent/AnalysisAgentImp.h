@@ -377,6 +377,8 @@ public:
 
 // IBearingDesign
 public:
+   virtual bool BearingLiveLoadReactionsIncludeImpact() const override;
+
    virtual std::vector<PierIndexType> GetBearingReactionPiers(IntervalIndexType intervalIdx,const CGirderKey& girderKey) const override;
 
    virtual Float64 GetBearingProductReaction(IntervalIndexType intervalIdx,const ReactionLocation& location,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) const override;

@@ -3248,6 +3248,36 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          }
       } while ( pSpan );
    }
+
+   rptParagraph* pPara;
+   pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   (*pChapter) << pPara;
+   (*pPara) << _T("Live Load Distribution Factors - Reactions, Deflections, and Rotations") << rptNewLine;
+
+   pPara = new rptParagraph;
+   (*pChapter) << pPara;
+
+   Float64 mpf;
+   Uint32 nLanes;
+   GirderIndexType nGirders;
+   GET_IFACE(IBridge, pBridge);
+   SpanIndexType startSpanIdx = pBridge->GetGirderGroupStartSpan(girderKey.groupIndex);
+   SpanIndexType endSpanIdx = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
+
+   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+   {
+      CSpanKey spanKey(spanIdx, girderKey.girderIndex);
+      Float64 lldf = GetDeflectionDistFactorEx(spanKey, &mpf, &nLanes, &nGirders);
+
+      if (startSpanIdx != endSpanIdx)
+      {
+         *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      }
+      (*pPara) << _T("Number of Design Lanes (nLanes) = ") << nLanes << rptNewLine;
+      (*pPara) << _T("Number of Girders (nGirders) = ") << nGirders << rptNewLine;
+      (*pPara) << _T("Multiple Presense Factor (mpf) = ") << mpf << rptNewLine;
+      (*pPara) << _T("Distribution Factor = (mpf)*(nLanes)/(nGirders) = ") << lldf << rptNewLine;
+   }
 }
 
 bool CEngAgentImp::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState limitState,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) const
@@ -3283,7 +3313,15 @@ bool CEngAgentImp::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState l
 
 Float64 CEngAgentImp::GetDeflectionDistFactor(const CSpanKey& spanKey) const
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   Float64 mpf;
+   Uint32 nLanes;
+   GirderIndexType nGirders;
+   return GetDeflectionDistFactorEx(spanKey, &mpf, &nLanes, &nGirders);
+}
+
+Float64 CEngAgentImp::GetDeflectionDistFactorEx(const CSpanKey& spanKey,Float64* pMPF,Uint32* pnLanes,GirderIndexType* pnGirders) const
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
@@ -3291,7 +3329,11 @@ Float64 CEngAgentImp::GetDeflectionDistFactor(const CSpanKey& spanKey) const
    GirderIndexType nGirders = pGroup->GetGirderCount();
    Uint32 nLanes = GetNumberOfDesignLanes(spanKey.spanIndex);
    Float64 mpf = lrfdUtility::GetMultiplePresenceFactor(nLanes);
-   Float64 gD = mpf*nLanes/nGirders;
+   Float64 gD = mpf*nLanes / nGirders;
+
+   *pMPF = mpf;
+   *pnLanes = nLanes;
+   *pnGirders = nGirders;
 
    return gD;
 }
