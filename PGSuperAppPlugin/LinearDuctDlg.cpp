@@ -170,6 +170,7 @@ BOOL CLinearDuctDlg::OnInitDialog()
    m_DrawTendons.SubclassDlgItem(IDC_TENDONS, this);
    m_DrawTendons.CustomInit(m_pGirderlineDlg->GetGirder()->GetGirderKey(), m_pGirderlineDlg->GetGirder(), &m_PTData);
    m_DrawTendons.SetDuct(m_DuctIdx);
+   m_DrawTendons.DrawAllDucts(true);
    m_DrawTendons.SetMapMode(m_pGirderlineDlg->GetTendonControlMapMode());
 
    CComboBox* pcbLocation = (CComboBox*)GetDlgItem(IDC_LOCATION);

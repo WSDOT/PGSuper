@@ -43,6 +43,10 @@ public:
    void SetDuct(DuctIndexType ductIdx);
    DuctIndexType GetDuct() const;
 
+   // If true, all ducts are drawn. The duct identifed with SetDuct will be drawn in the duct color and all others will be in a backgroudn color
+   void DrawAllDucts(bool bDrawAll);
+   bool DrawAllDucts() const;
+
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
    afx_msg void OnPaint();
 
@@ -53,6 +57,7 @@ protected:
    CGirderKey m_GirderKey;
    DuctIndexType m_DuctIdx; // index of the duct to be drawn... Use ALL_DUCTS to draw all ducts
 
+   bool m_bDrawAllDucts;
    grlibPointMapper::MapMode m_MapMode;
 
    void DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape);
