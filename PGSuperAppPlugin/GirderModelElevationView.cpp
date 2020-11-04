@@ -2572,55 +2572,17 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
          poiStart = pPoi->GetPointOfInterest(segmentKey,0.00);
          poiEnd   = pPoi->GetPointOfInterest(segmentKey,segment_length);
 
+         SegmentIDType segID = pSegment->GetID();
+         EventIndexType erectSegmentEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(segID);
+         bool bIsErected = (erectSegmentEventIdx <= eventIdx ? true : false);
+         
          //
          // Top Dimension Lines
          //
 
-         // segment length measure to end of segment
-         Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
-         Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
-
-         from_point->put_X(group_offset + Xgs);
-         from_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
-
-         to_point->put_X(group_offset + Xge);
-         to_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
-
-         from_point->get_X(&x1);
-         to_point->get_X(&x2);
-
-         dimLine.Release();
-         BuildDimensionLine(pDL, from_point, to_point, x2-x1,&dimLine);
-         dimLine->SetWitnessLength(twip_offset);
-
-         if ( 1 < nSegments )
+         if (bIsErected)
          {
-            // segment length measured to CL of closure joint
-            if ( segIdx == 0 )
-            {
-               poiStart = pPoi->GetPointOfInterest(segmentKey,0.00);
-            }
-            else
-            {
-               CSegmentKey prevSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
-               PoiList vPoi;
-               pPoi->GetPointsOfInterest(prevSegmentKey, POI_CLOSURE, &vPoi);
-               ATLASSERT(vPoi.size() == 1);
-               poiStart = vPoi.front();
-            }
-
-            if ( segIdx < nSegments-1 )
-            {
-               PoiList vPoi;
-               pPoi->GetPointsOfInterest(segmentKey, POI_CLOSURE, &vPoi);
-               ATLASSERT(vPoi.size() == 1);
-               poiEnd = vPoi.front();
-            }
-            else
-            {
-               poiEnd = pPoi->GetPointOfInterest(segmentKey,segment_length);
-            }
-
+            // segment length measure to end of segment
             Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
             Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
 
@@ -2634,134 +2596,64 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
             to_point->get_X(&x2);
 
             dimLine.Release();
-            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
-            dimLine->SetWitnessLength(3*twip_offset/2);
-         }
+            BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+            dimLine->SetWitnessLength(twip_offset);
+
+            if ( 1 < nSegments )
+            {
+               // segment length measured to CL of closure joint
+               if ( segIdx == 0 )
+               {
+                  poiStart = pPoi->GetPointOfInterest(segmentKey,0.00);
+               }
+               else
+               {
+                  CSegmentKey prevSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex-1);
+                  PoiList vPoi;
+                  pPoi->GetPointsOfInterest(prevSegmentKey, POI_CLOSURE, &vPoi);
+                  ATLASSERT(vPoi.size() == 1);
+                  poiStart = vPoi.front();
+               }
+
+               if ( segIdx < nSegments-1 )
+               {
+                  PoiList vPoi;
+                  pPoi->GetPointsOfInterest(segmentKey, POI_CLOSURE, &vPoi);
+                  ATLASSERT(vPoi.size() == 1);
+                  poiEnd = vPoi.front();
+               }
+               else
+               {
+                  poiEnd = pPoi->GetPointOfInterest(segmentKey,segment_length);
+               }
+
+               Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+               Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+
+               from_point->put_X(group_offset + Xgs);
+               from_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
+
+               to_point->put_X(group_offset + Xge);
+               to_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
+
+               from_point->get_X(&x1);
+               to_point->get_X(&x2);
+
+               dimLine.Release();
+               BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+               dimLine->SetWitnessLength(3*twip_offset/2);
+            }
 
          //
          // Bottom Dimension Lines
          //
 
-         // CL Brg to CL Brg
-         PoiList vPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_ERECTED_SEGMENT, &vPoi);
-         ATLASSERT(vPoi.size() == 2);
-         poiStart = vPoi.front();
-         poiEnd = vPoi.back();
-
-         Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
-         Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
-
-         from_point->put_X(group_offset + Xgs);
-         from_point->put_Y(-HgEnds-bottomPrecamberAdjustment);
-
-         to_point->put_X(group_offset + Xge);
-         to_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
-
-         from_point->get_X(&x1);
-         to_point->get_X(&x2);
-
-         dimLine.Release();
-         BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
-         dimLine->SetWitnessLength(-twip_offset);
-
-         StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
-
-         Float64 lft_harp, rgt_harp;
-         pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
-
-         if ( 0 < Nh && pSegment->Strands.GetAdjustableStrandType() != pgsTypes::asStraight)
-         {
-            // harp locations from end of segment (along top)
+            // CL Brg to CL Brg
             PoiList vPoi;
-            pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi);
-            ATLASSERT(vPoi.size() <= 2);
-            Float64 Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,0.0);
-            Float64 Xgs = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
-            Float64 Xge = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.front());
-
-            from_point->put_X(group_offset + Xgs);
-            from_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
-
-            to_point->put_X(group_offset + Xge);
-            to_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
-
-            from_point->get_X(&x1);
-            to_point->get_X(&x2);
-
-            dimLine.Release();
-            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
-            dimLine->SetWitnessLength(twip_offset/2);
-
-            Xgs = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.back());
-            Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,segment_length);
-            Xge = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
-
-            from_point->put_X(group_offset + Xgs);
-            from_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
-
-            to_point->put_X(group_offset + Xge);
-            to_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
-
-            from_point->get_X(&x1);
-            to_point->get_X(&x2);
-
-            dimLine.Release();
-            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
-            dimLine->SetWitnessLength(twip_offset/2);
-
-            // harp locations from cl bearing (along bottom)
-            Float64 end_dist = pBridge->GetSegmentStartEndDistance(segmentKey);
-            Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,end_dist);
-            Xgs = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
-            Xge = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.front());
-
-            from_point->put_X(group_offset + Xgs);
-            from_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
-
-            to_point->put_X(group_offset + Xge);
-            to_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
-
-            from_point->get_X(&x1);
-            to_point->get_X(&x2);
-
-            dimLine.Release();
-            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
-            dimLine->SetWitnessLength(-twip_offset/2);
-
-            end_dist = pBridge->GetSegmentEndEndDistance(segmentKey);
-            Xgs = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.back());
-            Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey,segment_length-end_dist);
-            Xge = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey,Xsp);
-
-            from_point->put_X(group_offset + Xgs);
-            from_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
-
-            to_point->put_X(group_offset + Xge);
-            to_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
-
-            from_point->get_X(&x1);
-            to_point->get_X(&x2);
-
-            dimLine.Release();
-            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
-            dimLine->SetWitnessLength(-twip_offset/2);
-         }
-
-         // Cantilevers         
-         bool bStartCantilever, bEndCantilever;
-         pBridge->ModelCantilevers(segmentKey,&bStartCantilever,&bEndCantilever);
-         if ( bStartCantilever )
-         {
-            vPoi.clear();
-            pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
-            ATLASSERT(vPoi.size() == 1);
+            pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_ERECTED_SEGMENT, &vPoi);
+            ATLASSERT(vPoi.size() == 2);
             poiStart = vPoi.front();
-
-            vPoi.clear();
-            pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
-            ATLASSERT(vPoi.size() == 1);
-            poiEnd = vPoi.front();
+            poiEnd = vPoi.back();
 
             Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
             Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
@@ -2776,40 +2668,155 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
             to_point->get_X(&x2);
 
             dimLine.Release();
-            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+            BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
             dimLine->SetWitnessLength(-twip_offset);
-         }
 
-         if ( bEndCantilever )
-         {
-            vPoi.clear();
-            pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vPoi);
-            ATLASSERT(vPoi.size() == 1);
-            poiStart = vPoi.front();
+            StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
 
-            vPoi.clear();
-            pPoi->GetPointsOfInterest(segmentKey, POI_END_FACE, &vPoi);
-            ATLASSERT(vPoi.size() == 1);
-            poiEnd = vPoi.front();
+            Float64 lft_harp, rgt_harp;
+            pStrandGeometry->GetHarpingPointLocations(segmentKey, &lft_harp, &rgt_harp);
 
-            Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
-            Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+            if (0 < Nh && pSegment->Strands.GetAdjustableStrandType() != pgsTypes::asStraight)
+            {
+               // harp locations from end of segment (along top)
+               PoiList vPoi;
+               pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi);
+               ATLASSERT(vPoi.size() <= 2);
+               Float64 Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey, 0.0);
+               Float64 Xgs = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp);
+               Float64 Xge = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.front());
 
-            from_point->put_X(group_offset + Xgs);
-            from_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+               from_point->put_X(group_offset + Xgs);
+               from_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
 
-            to_point->put_X(group_offset + Xge);
-            to_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+               to_point->put_X(group_offset + Xge);
+               to_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
 
-            from_point->get_X(&x1);
-            to_point->get_X(&x2);
+               from_point->get_X(&x1);
+               to_point->get_X(&x2);
 
-            dimLine.Release();
-            BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
-            dimLine->SetWitnessLength(-twip_offset);
-         }
+               dimLine.Release();
+               BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+               dimLine->SetWitnessLength(twip_offset / 2);
 
-      } // next segment
+               Xgs = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.back());
+               Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey, segment_length);
+               Xge = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp);
+
+               from_point->put_X(group_offset + Xgs);
+               from_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
+
+               to_point->put_X(group_offset + Xge);
+               to_point->put_Y(topPrecamberAdjustment + topFlangeThickeningAdjustment);
+
+               from_point->get_X(&x1);
+               to_point->get_X(&x2);
+
+               dimLine.Release();
+               BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+               dimLine->SetWitnessLength(twip_offset / 2);
+
+               // harp locations from cl bearing (along bottom)
+               Float64 end_dist = pBridge->GetSegmentStartEndDistance(segmentKey);
+               Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey, end_dist);
+               Xgs = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp);
+               Xge = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.front());
+
+               from_point->put_X(group_offset + Xgs);
+               from_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+
+               to_point->put_X(group_offset + Xge);
+               to_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+
+               from_point->get_X(&x1);
+               to_point->get_X(&x2);
+
+               dimLine.Release();
+               BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+               dimLine->SetWitnessLength(-twip_offset / 2);
+
+               end_dist = pBridge->GetSegmentEndEndDistance(segmentKey);
+               Xgs = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.back());
+               Xsp = pPoi->ConvertSegmentCoordinateToSegmentPathCoordinate(segmentKey, segment_length - end_dist);
+               Xge = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(segmentKey, Xsp);
+
+               from_point->put_X(group_offset + Xgs);
+               from_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+
+               to_point->put_X(group_offset + Xge);
+               to_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+
+               from_point->get_X(&x1);
+               to_point->get_X(&x2);
+
+               dimLine.Release();
+               BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+               dimLine->SetWitnessLength(-twip_offset / 2);
+            }
+
+            // Cantilevers         
+            bool bStartCantilever, bEndCantilever;
+            pBridge->ModelCantilevers(segmentKey,&bStartCantilever,&bEndCantilever);
+            if ( bStartCantilever )
+            {
+               vPoi.clear();
+               pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
+               ATLASSERT(vPoi.size() == 1);
+               poiStart = vPoi.front();
+
+               vPoi.clear();
+               pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
+               ATLASSERT(vPoi.size() == 1);
+               poiEnd = vPoi.front();
+
+               Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+               Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+
+               from_point->put_X(group_offset + Xgs);
+               from_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+
+               to_point->put_X(group_offset + Xge);
+               to_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+
+               from_point->get_X(&x1);
+               to_point->get_X(&x2);
+
+               dimLine.Release();
+               BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+               dimLine->SetWitnessLength(-twip_offset);
+            }
+
+            if ( bEndCantilever )
+            {
+               vPoi.clear();
+               pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vPoi);
+               ATLASSERT(vPoi.size() == 1);
+               poiStart = vPoi.front();
+
+               vPoi.clear();
+               pPoi->GetPointsOfInterest(segmentKey, POI_END_FACE, &vPoi);
+               ATLASSERT(vPoi.size() == 1);
+               poiEnd = vPoi.front();
+
+               Xgs = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+               Xge = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+
+               from_point->put_X(group_offset + Xgs);
+               from_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+
+               to_point->put_X(group_offset + Xge);
+               to_point->put_Y(-HgEnds - bottomPrecamberAdjustment);
+
+               from_point->get_X(&x1);
+               to_point->get_X(&x2);
+
+               dimLine.Release();
+               BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+               dimLine->SetWitnessLength(-twip_offset);
+            }
+
+         } // next segment
+      }
 
       if ( 1 < nSegments )
       {
