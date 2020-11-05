@@ -342,7 +342,7 @@ int CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** p
    }
    else
    {
-      const CDeckPoint& prevDeckPoint = m_DeckPoints[m_DeckPointIdx];
+      const CDeckPoint& prevDeckPoint = m_DeckPoints[m_DeckPointIdx-1];
       prevTransition = (bLeft ? prevDeckPoint.LeftTransitionType : prevDeckPoint.RightTransitionType);
    }
 
@@ -354,11 +354,11 @@ int CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** p
    }
    else
    {
-      // compute a tangent direction using the last point and the current point
+      // compute a tangent direction using the point before the start of the spline and the current point (which is at the start of the spline)
       CollectionIndexType nPathElements;
       pPath->get_Count(&nPathElements);
       CComPtr<IPathElement> path_element;
-      pPath->get_Item(nPathElements-1,&path_element);
+      pPath->get_Item(nPathElements-2,&path_element); // the point at the start of the spline is the last point in the container... we want the point that's before the start of the spline
 
       PathElementType type;
       path_element->get_Type(&type);
