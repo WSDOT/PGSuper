@@ -80,7 +80,7 @@
 
 #include <algorithm>
 #include <cctype>
-
+#include <numeric>
 #include <afxext.h>
 
 #include <boost\foreach.hpp> // for BOOST_REVERSE_FOREACH
@@ -314,6 +314,25 @@ static void ChooseConfinementBars(Float64 requiredZoneLength,
       *pProvidedZoneLength = primZonL;
       *pSpacing = primSpc;
    }
+}
+
+std::array<Float64, 4> ResolveFractionalDistance(const std::array<Float64, 4>& X, Float64 L)
+{
+   std::array<Float64, 4> result;
+   for (int i = 0; i < 4; i++)
+   {
+      if (X[i] < 0)
+      {
+         ATLASSERT(-1.0 <= X[i] && X[i] <= 0.0);
+         result[i] = -X[i] * L;
+      }
+      else
+      {
+         result[i] = X[i];
+      }
+   }
+
+   return result;
 }
 
 /////////////////////////////////////////////////////////
@@ -28652,35 +28671,14 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
       }
       else
       {
-         Float64 left_prismatic_length = pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic);
-         Float64 left_taper_length = pSegment->GetVariationLength(pgsTypes::sztLeftTapered);
-         Float64 right_taper_length = pSegment->GetVariationLength(pgsTypes::sztRightTapered);
-         Float64 right_prismatic_length = pSegment->GetVariationLength(pgsTypes::sztRightPrismatic);
+         std::array<Float64, 4> variation_length{
+         pSegment->GetVariationLength(pgsTypes::sztLeftPrismatic),
+         pSegment->GetVariationLength(pgsTypes::sztLeftTapered),
+         pSegment->GetVariationLength(pgsTypes::sztRightTapered),
+         pSegment->GetVariationLength(pgsTypes::sztRightPrismatic) };
 
-         // deal with fractional measure (fraction measures are < 0)
-         if (left_prismatic_length < 0)
-         {
-            ATLASSERT(-1.0 <= left_prismatic_length && left_prismatic_length <= 0.0);
-            left_prismatic_length *= -segment_length;
-         }
-
-         if (left_taper_length < 0)
-         {
-            ATLASSERT(-1.0 <= left_taper_length && left_taper_length <= 0.0);
-            left_taper_length *= -segment_length;
-         }
-
-         if (right_taper_length < 0)
-         {
-            ATLASSERT(-1.0 <= right_taper_length && right_taper_length <= 0.0);
-            right_taper_length *= -segment_length;
-         }
-
-         if (right_prismatic_length < 0)
-         {
-            ATLASSERT(-1.0 <= right_prismatic_length && right_prismatic_length <= 0.0);
-            right_prismatic_length *= -segment_length;
-         }
+         // deal with fractional measure
+         ResolveFractionalDistance(variation_length, segment_length);
 
          Float64 h1, h2, h3, h4;
          if (bGirderProfile)
@@ -28700,11 +28698,11 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             h4 = pSegment->GetVariationBottomFlangeDepth(pgsTypes::sztRightTapered);
          }
 
-         if (0 < left_prismatic_length)
+         if (0 < variation_length[pgsTypes::sztLeftPrismatic])
          {
             // create a prismatic segment
             mathLinFunc2d func(0.0, h1);
-            xEnd = xStart + (variation_type == pgsTypes::svtNone ? segment_length / 2 : left_prismatic_length);
+            xEnd = xStart + (variation_type == pgsTypes::svtNone ? segment_length / 2 : variation_length[pgsTypes::sztLeftPrismatic]);
             pCompositeFunction->AddFunction(xStart, xEnd, func);
             slopeParabola = 0;
             xStart = xEnd;
@@ -28713,7 +28711,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
          if (variation_type == pgsTypes::svtLinear)
          {
             // create a linear taper segment
-            Float64 taper_length = segment_length - left_prismatic_length - right_prismatic_length;
+            Float64 taper_length = segment_length - variation_length[pgsTypes::sztLeftPrismatic] - variation_length[pgsTypes::sztRightPrismatic];
             Float64 slope = (h2 - h1) / taper_length;
             Float64 b = h1 - slope*xStart;
 
@@ -28726,16 +28724,16 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
          else if (variation_type == pgsTypes::svtDoubleLinear)
          {
             // create a linear taper for left side of segment
-            Float64 slope = (h3 - h1) / left_taper_length;
+            Float64 slope = (h3 - h1) / variation_length[pgsTypes::sztLeftTapered];
             Float64 b = h1 - slope*xStart;
 
             mathLinFunc2d left_func(slope, b);
-            xEnd = xStart + left_taper_length;
+            xEnd = xStart + variation_length[pgsTypes::sztLeftTapered];
             pCompositeFunction->AddFunction(xStart, xEnd, left_func);
             xStart = xEnd;
 
             // create a linear segment between left and right tapers
-            Float64 taper_length = segment_length - left_prismatic_length - left_taper_length - right_prismatic_length - right_taper_length;
+            Float64 taper_length = segment_length - std::accumulate(std::begin(variation_length), std::end(variation_length), 0.0);
             slope = (h4 - h3) / taper_length;
             b = h3 - slope*xStart;
 
@@ -28745,11 +28743,11 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             xStart = xEnd;
 
             // create a linear taper for right side of segment
-            slope = (h2 - h4) / right_taper_length;
+            slope = (h2 - h4) / variation_length[pgsTypes::sztRightTapered];
             b = h4 - slope*xStart;
 
             mathLinFunc2d right_func(slope, b);
-            xEnd = xStart + right_taper_length;
+            xEnd = xStart + variation_length[pgsTypes::sztRightTapered];
             pCompositeFunction->AddFunction(xStart, xEnd, right_func);
             xStart = xEnd;
             slopeParabola = slope;
@@ -28780,14 +28778,14 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             }
 
             if (
-               0 < right_prismatic_length || // parabola ends in this segment -OR-
+               0 < variation_length[pgsTypes::sztRightPrismatic] || // parabola ends in this segment -OR-
                segIdx == nSegments - 1 || // this is the last segment (parabola ends here) -OR-
                0 < next_segment_left_prismatic_length || // next segment starts with prismatic section -OR-
                (pNextSegment->GetVariationType() == pgsTypes::svtNone || pNextSegment->GetVariationType() == pgsTypes::svtLinear || pNextSegment->GetVariationType() == pgsTypes::svtDoubleLinear) // next segment is linear 
                )
             {
                // parabola ends in this segment
-               Float64 xParabolaEnd = xStart + segment_length - right_prismatic_length;
+               Float64 xParabolaEnd = xStart + segment_length - variation_length[pgsTypes::sztRightPrismatic];
                Float64 yParabolaEnd = h2;
 
                if (yParabolaEnd < yParabolaStart)
@@ -28818,12 +28816,12 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             if (!bParabola)
             {
                // not currently in a parabola, based the start point on this segment
-               xParabolaStart = xSegmentStart + left_prismatic_length;
+               xParabolaStart = xSegmentStart + variation_length[pgsTypes::sztLeftPrismatic];
                yParabolaStart = h1;
             }
 
 #pragma Reminder("BUG: Assuming slope at start is zero, but it may not be if tangent to a linear segment")
-            xParabolaEnd = xSegmentStart + left_prismatic_length + left_taper_length;
+            xParabolaEnd = xSegmentStart + variation_length[pgsTypes::sztLeftPrismatic] + variation_length[pgsTypes::sztLeftTapered];
             yParabolaEnd = h3;
             mathPolynomial2d func_left_parabola;
             if (yParabolaEnd < yParabolaStart)
@@ -28838,14 +28836,14 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             pCompositeFunction->AddFunction(xParabolaStart, xParabolaEnd, func_left_parabola);
 
             // parabola on right side of this segment starts here
-            xParabolaStart = xSegmentStart + segment_length - right_prismatic_length - right_taper_length;
+            xParabolaStart = xSegmentStart + segment_length - variation_length[pgsTypes::sztRightPrismatic] - variation_length[pgsTypes::sztRightTapered];
             yParabolaStart = h4;
             bParabola = true;
 
             if (!IsZero(xParabolaStart - xParabolaEnd))
             {
                // create a line segment between parabolas
-               Float64 taper_length = segment_length - left_prismatic_length - left_taper_length - right_prismatic_length - right_taper_length;
+               Float64 taper_length = segment_length - std::accumulate(std::begin(variation_length), std::end(variation_length), 0.0);
                Float64 slope = -(h4 - h3) / taper_length;
                Float64 b = h3 - slope*xParabolaEnd;
 
@@ -28859,13 +28857,13 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
             // 2) right prismatic section length > 0
             // 3) next segment is not parabolic
             const CPrecastSegmentData* pNextSegment = (segIdx == nSegments - 1 ? nullptr : pGirder->GetSegment(segIdx + 1));
-            if (0 < right_prismatic_length ||
+            if (0 < variation_length[pgsTypes::sztRightPrismatic] ||
                segIdx == nSegments - 1 ||
                (pNextSegment->GetVariationType() == pgsTypes::svtNone || pNextSegment->GetVariationType() == pgsTypes::svtLinear || pNextSegment->GetVariationType() == pgsTypes::svtDoubleLinear) // next segment is linear 
                )
             {
                bParabola = false;
-               xParabolaEnd = xSegmentStart + segment_length - right_prismatic_length;
+               xParabolaEnd = xSegmentStart + segment_length - variation_length[pgsTypes::sztRightPrismatic];
                yParabolaEnd = h2;
 
 
@@ -28906,7 +28904,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
                         if (IsZero(next_segment_left_prismatic_length))
                         {
                            Float64 dist = next_segment_length - next_segment_left_prismatic_length - next_segment_right_prismatic_length;
-                           slopeParabola = -(pNextSegment->GetVariationHeight(pgsTypes::sztRightPrismatic) - pNextSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic)) / dist;
+                           slopeParabola = (pNextSegment->GetVariationHeight(pgsTypes::sztRightPrismatic) - pNextSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic)) / dist;
                         }
                      }
                      else if (pNextSegment->GetVariationType() == pgsTypes::svtDoubleLinear)
@@ -28914,7 +28912,7 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
                         if (IsZero(next_segment_left_prismatic_length))
                         {
                            Float64 dist = next_segment_left_tapered_length;
-                           slopeParabola = -(pNextSegment->GetVariationHeight(pgsTypes::sztLeftTapered) - pNextSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic)) / dist;
+                           slopeParabola = (pNextSegment->GetVariationHeight(pgsTypes::sztLeftTapered) - pNextSegment->GetVariationHeight(pgsTypes::sztLeftPrismatic)) / dist;
                         }
                      }
                   }
@@ -28937,14 +28935,14 @@ std::shared_ptr<mathFunction2d> CBridgeAgentImp::CreateGirderProfile(const CSpli
                bParabola = true;
             }
 
-            xStart = xSegmentStart + segment_length - right_prismatic_length;
+            xStart = xSegmentStart + segment_length - variation_length[pgsTypes::sztRightPrismatic];
          }
 
-         if (0 < right_prismatic_length)
+         if (0 < variation_length[pgsTypes::sztRightPrismatic])
          {
             // create a prismatic segment
             mathLinFunc2d func(0.0, h2);
-            xEnd = xStart + (variation_type == pgsTypes::svtNone ? segment_length / 2 : right_prismatic_length);
+            xEnd = xStart + (variation_type == pgsTypes::svtNone ? segment_length / 2 : variation_length[pgsTypes::sztRightPrismatic]);
             pCompositeFunction->AddFunction(xStart, xEnd, func);
             slopeParabola = 0;
             xStart = xEnd;
