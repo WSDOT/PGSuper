@@ -2913,20 +2913,14 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
 void RatingLibraryEntry::MakeCopy(const RatingLibraryEntry& rOther)
 {
    m_Description          = rOther.m_Description;
+   m_bUseCurrentSpecification = rOther.m_bUseCurrentSpecification;
    m_SpecificationVersion = rOther.m_SpecificationVersion;
    m_bAlwaysRate          = rOther.m_bAlwaysRate;
 
-   for ( int i = 0; i < 6; i++ )
-   {
-      m_LiveLoadFactorModels[i]  = rOther.m_LiveLoadFactorModels[i];
-      m_LiveLoadFactorModels2[i] = rOther.m_LiveLoadFactorModels2[i];
-   }
-
-   for ( int i = 0; i < 3; i++ )
-   {
-      m_SpecialPermitLiveLoadFactorModels[i]  = rOther.m_SpecialPermitLiveLoadFactorModels[i];
-      m_SpecialPermitLiveLoadFactorModels2[i] = rOther.m_SpecialPermitLiveLoadFactorModels2[i];
-   }
+   m_LiveLoadFactorModels  = rOther.m_LiveLoadFactorModels;
+   m_LiveLoadFactorModels2 = rOther.m_LiveLoadFactorModels2;
+   m_SpecialPermitLiveLoadFactorModels  = rOther.m_SpecialPermitLiveLoadFactorModels;
+   m_SpecialPermitLiveLoadFactorModels2 = rOther.m_SpecialPermitLiveLoadFactorModels2;
 }
 
 void RatingLibraryEntry::MakeAssignment(const RatingLibraryEntry& rOther)
@@ -2975,7 +2969,14 @@ void RatingLibraryEntry::SetSpecificationVersion(lrfrVersionMgr::Version version
 
 lrfrVersionMgr::Version RatingLibraryEntry::GetSpecificationVersion() const
 {
-   return m_SpecificationVersion;
+   if (m_bUseCurrentSpecification)
+   {
+      return (lrfrVersionMgr::Version)((int)lrfrVersionMgr::LastVersion - 1);
+   }
+   else
+   {
+      return m_SpecificationVersion;
+   }
 }
 
 void RatingLibraryEntry::AlwaysLoadRate(bool bAlways)
