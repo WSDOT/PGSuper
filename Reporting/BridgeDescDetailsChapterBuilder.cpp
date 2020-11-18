@@ -778,21 +778,10 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    const matRebar* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,matRebar::bs3);
    const matRebar* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,matRebar::bs3);
 
-   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(pDeckRebar == nullptr ? 2 : 3);
-   *pPara << pLayoutTable << rptNewLine;
-
-   ColumnIndexType nCols = pLayoutTable->GetNumberOfColumns();
-   for ( ColumnIndexType col = 0; col < nCols; col++ )
-   {
-      pLayoutTable->SetColumnStyle(col,_T("BottomAlignCellStyle"));
-   }
-
-   ColumnIndexType layoutColumn = 0;
-
    if ( pDeckRebar )
    {
       rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Deck Reinforcing Material"));
-      (*pLayoutTable)(0,layoutColumn++) << pTable;
+      *pPara << pTable << rptNewLine;
 
       RowIndexType row = 0;
 
@@ -811,7 +800,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    if ( pShearRebar )
    {
       rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Transverse Reinforcing Material (Stirrups, Confinement, and Horizontal Interface Shear Bars)"));
-      (*pLayoutTable)(0,layoutColumn++) << pTable;
+      *pPara << pTable << rptNewLine;
 
       RowIndexType row = 0;
 
@@ -830,7 +819,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    if ( pLongRebar )
    {
       rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Longitudinal Girder Reinforcing Material"));
-      (*pLayoutTable)(0,layoutColumn++) << pTable;
+      *pPara << pTable << rptNewLine;
 
       RowIndexType row = 0;
 
