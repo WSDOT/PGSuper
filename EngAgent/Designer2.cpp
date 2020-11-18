@@ -5672,6 +5672,14 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
       return;
    }
 
+   GET_IFACE(ISegmentData, pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+   CComPtr<IIndexArray> arrayPermStrandIndex;
+   if (pStrands->GetStrandDefinitionType() != CStrandData::sdtDirectStrandInput)
+   {
+      pStrandGeometry->ComputePermanentStrandIndices(segmentKey, strand_type, &arrayPermStrandIndex);
+   }
+
    GET_IFACE(IBridge, pBridge);
    GET_IFACE(IDebondLimits, pDebondLimits);
    GET_IFACE(IProgress, pProgress);
@@ -5687,6 +5695,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    std::array<pgsPointOfInterest, 2> poi{ vPoi.front(),vPoi.back() };
 
    StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, strand_type);
+   StrandIndexType nPermStrands = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Permanent);
 
    // +--------------+--------+------------------+-------------+
    // | Beam         | # Webs | # Bottom Flanges | Requirement |
@@ -5732,7 +5741,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    // Only straight strands can be debonded
    // Total number of debonded strands
    pArtifact->CheckMaxFraDebondedStrands(pDebondLimits->CheckMaxDebondedStrands(segmentKey));
-   Float64 fraDebonded = (nStrands == 0 ? 0 : (Float64)nDebonded / (Float64)nStrands);
+   Float64 fraDebonded = (nStrands == 0 ? 0 : (Float64)nDebonded / (Float64)nPermStrands);
    pArtifact->SetFraDebondedStrands(fraDebonded);
    if (pArtifact->CheckMaxFraDebondedStrands())
    {
@@ -5993,13 +6002,25 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
                   if (bCompareVertically && (std::get<1>(prevItem.second) == debonded && std::get<3>(prevItem.second) == debonded))
                   {
                      // adjacent rows are being compared for vertical adjacency and the strands in both rows are debonded
-                     pArtifact->AddAdjacentDebondedStrands(endType, std::get<0>(prevItem.second), std::get<2>(prevItem.second));
+                     StrandIndexType permStrandIdx1(std::get<0>(prevItem.second)), permStrandIdx2(std::get<2>(prevItem.second));
+                     if (arrayPermStrandIndex)
+                     {
+                        arrayPermStrandIndex->get_Item(std::get<0>(prevItem.second), &permStrandIdx1);
+                        arrayPermStrandIndex->get_Item(std::get<2>(prevItem.second), &permStrandIdx2);
+                     }
+                     pArtifact->AddAdjacentDebondedStrands(endType, permStrandIdx1, permStrandIdx2);
                   }
 
                   if (std::get<1>(prevItem.second) == debonded && std::get<1>(thisItem.second) == debonded)
                   {
                      // adjacent strands horizontally are debonded
-                     pArtifact->AddAdjacentDebondedStrands(endType, std::get<0>(prevItem.second), std::get<0>(thisItem.second));
+                     StrandIndexType permStrandIdx1(std::get<0>(prevItem.second)), permStrandIdx2(std::get<0>(thisItem.second));
+                     if (arrayPermStrandIndex)
+                     {
+                        arrayPermStrandIndex->get_Item(std::get<0>(prevItem.second), &permStrandIdx1);
+                        arrayPermStrandIndex->get_Item(std::get<0>(thisItem.second), &permStrandIdx2);
+                     }
+                     pArtifact->AddAdjacentDebondedStrands(endType, permStrandIdx1, permStrandIdx2);
                   }
 
                   prevItem = thisItem;
@@ -6048,7 +6069,13 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
                   bool bIsDebonded = pStrandGeometry->IsStrandDebonded(poi[endType], strandIdx, pgsTypes::Straight);
                   if (bIsDebonded && bWasPreviousStrandDebonded)
                   {
-                     pArtifact->AddAdjacentDebondedStrands(endType, prevStrandIdx, strandIdx);
+                     StrandIndexType permStrandIdx1(prevStrandIdx), permStrandIdx2(strandIdx);
+                     if (arrayPermStrandIndex)
+                     {
+                        arrayPermStrandIndex->get_Item(prevStrandIdx, &permStrandIdx1);
+                        arrayPermStrandIndex->get_Item(strandIdx, &permStrandIdx2);
+                     }
+                     pArtifact->AddAdjacentDebondedStrands(endType, permStrandIdx1, permStrandIdx2);
                   }
                   bWasPreviousStrandDebonded = bIsDebonded;
                   prevStrandIdx = strandIdx;
@@ -6121,7 +6148,12 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
                         if (vbResult == VARIANT_TRUE)
                         {
                            // a debonded strand is in the web width projection region, record it
-                           pArtifact->AddDebondedStrandInWebWidthProjection(endType, strandIdx);
+                           StrandIndexType permStrandIdx(strandIdx);
+                           if (arrayPermStrandIndex)
+                           {
+                              arrayPermStrandIndex->get_Item(strandIdx,&permStrandIdx);
+                           }
+                           pArtifact->AddDebondedStrandInWebWidthProjection(endType, permStrandIdx);
                            break; // no need to check other regions, break out of the loop
                         }
                      } // next region

@@ -90,6 +90,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
    // report debonding checks
    INIT_UV_PROTOTYPE(rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, loc2, pDisplayUnits->GetSpanLengthUnit(), true);
+   INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
    rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << p;
@@ -121,8 +122,8 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       // Max fraction for debonded strands.... not an LRFD requirement in 9th Edition
       if (pDebondArtifact->CheckMaxFraDebondedStrands())
       {
-         Float64 fraction = 100.0*pDebondArtifact->GetFraDebondedStrands();
-         Float64 limit = 100.0*pDebondArtifact->GetMaxFraDebondedStrands();
+         Float64 fraction = pDebondArtifact->GetFraDebondedStrands();
+         Float64 limit = pDebondArtifact->GetMaxFraDebondedStrands();
 
          StrandIndexType ndb = pDebondArtifact->GetNumDebondedStrands();
          StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Permanent);
@@ -132,13 +133,11 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
             *p << Bold(_T("Warning: "));
          }
 
-         *p << fraction << _T("% (") << ndb << _T(" of ") << ns << _T(") strands are debonded. The number of debonded strands should not exceed ") << limit << _T("%.") << rptNewLine;
+         *p << percentage.SetValue(fraction) << _T(" (") << ndb << _T(" of ") << ns << _T(") strands are debonded. The number of debonded strands should not exceed ");
+         *p << percentage.SetValue(limit) << _T(".") << rptNewLine;
       }
       *p << rptNewLine;
 
-
-      CComPtr<IIndexArray> arrayPermStrandIndex;
-      pStrandGeometry->ComputePermanentStrandIndices(segmentKey, pgsTypes::Straight, &arrayPermStrandIndex);
 
       // Requirement A
       if (bAfter8thEdition)
@@ -201,7 +200,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       *p << _T("Debonding shall not be terminated for more than ") << nDebonded << _T(" strands in any given section. When a total of ten or fewer strands are debonded, debonding shall not be terminated for more than ") << nDebonded10orLess << _T(" strands in any given section");
       if (bCheckMax)
       {
-         *p << _T(", but not more than ") << fraMax * 100 << _T("% of all strands may be debonded");
+         *p << _T(", but not more than ") << percentage.SetValue(fraMax) << _T(" of all strands may be debonded");
       }
       *p << _T(".") << rptNewLine;      
       *p << Build2(pDebondArtifact, pDisplayUnits) << rptNewLine;
@@ -281,11 +280,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
                   StrandIndexType strandIdx1, strandIdx2;
                   pDebondArtifact->GetAdjacentDebondedStrands(pgsTypes::metStart, idx, &strandIdx1, &strandIdx2);
 
-                  StrandIndexType permStrandIdx1, permStrandIdx2;
-                  arrayPermStrandIndex->get_Item(strandIdx1, &permStrandIdx1);
-                  arrayPermStrandIndex->get_Item(strandIdx2, &permStrandIdx2);
-
-                  *p << _T("(") << LABEL_INDEX(permStrandIdx1) << _T(", ") << LABEL_INDEX(permStrandIdx2) << _T(")") << rptNewLine;
+                  *p << _T("(") << LABEL_INDEX(strandIdx1) << _T(", ") << LABEL_INDEX(strandIdx2) << _T(")") << rptNewLine;
                }
                *p << rptNewLine;
             }
@@ -361,10 +356,10 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
             if (pDebondArtifact->GetSection() == pgsDebondArtifact::I)
             {
                *p << _T("Bond all strands within the horizontal limits of the web when the total number of debonded strands exceeds 25 percent or when the bottom flange to web width ratio, ") << Sub2(_T("b"),_T("f")) << _T("/") << Sub2(_T("b"),_T("w")) << _T(", exceeds 4.") << rptNewLine;
-               Float64 fraction = 100.0*pDebondArtifact->GetFraDebondedStrands();
+               Float64 fraction = pDebondArtifact->GetFraDebondedStrands();
                Float64 ratio_start = pDebondArtifact->GetBottomFlangeToWebWidthRatio(pgsTypes::metStart);
                Float64 ratio_end   = pDebondArtifact->GetBottomFlangeToWebWidthRatio(pgsTypes::metEnd);
-               *p << _T("Debonding = ") << fraction << _T("%, ") << Sub2(_T("b"), _T("f")) << _T("/") << Sub2(_T("b"), _T("w")) << _T(" = ") << ratio_start <<_T(" at start, and = ") << ratio_end << _T(" at end of member.") << rptNewLine;
+               *p << _T("Debonding = ") << percentage.SetValue(fraction) << _T(", ") << Sub2(_T("b"), _T("f")) << _T("/") << Sub2(_T("b"), _T("w")) << _T(" = ") << ratio_start <<_T(" at start, and = ") << ratio_end << _T(" at end of member.") << rptNewLine;
             }
             else
             {
@@ -405,15 +400,11 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
                      }
 
                      // the following two lines write a comma separated list
-                     std::for_each(std::cbegin(vStrands), std::prev(std::cend(vStrands)), [&p,&arrayPermStrandIndex](const auto& strandIdx) 
+                     std::for_each(std::cbegin(vStrands), std::prev(std::cend(vStrands)), [&p](const auto& strandIdx) 
                      { 
-                        StrandIndexType permStrandIdx;
-                        arrayPermStrandIndex->get_Item(strandIdx, &permStrandIdx);
-                        *p << LABEL_INDEX(permStrandIdx) << _T(", "); 
+                        *p << LABEL_INDEX(strandIdx) << _T(", "); 
                      });
-                     StrandIndexType permStrandIdx;
-                     arrayPermStrandIndex->get_Item(vStrands.back(), &permStrandIdx);
-                     *p << LABEL_INDEX(permStrandIdx) << rptNewLine;
+                     *p << LABEL_INDEX(vStrands.back()) << rptNewLine;
                   } // if strands
                } // member end (i)
             } // if passed
@@ -486,6 +477,8 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
 
 rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, bool bAfter8thEdition, IEAFDisplayUnits* pDisplayUnits) const
 {
+   INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
+
    ColumnIndexType nCols = 7;
    if (bAfter8thEdition && pDebondArtifact->GetSection() == pgsDebondArtifact::I)
    {
@@ -502,7 +495,7 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, 
    (*table)(0, col++) << _T("Outer-most") << rptNewLine << _T("Strand") << rptNewLine << _T("Bonded") << Super(_T("*"));
    if (bAfter8thEdition && pDebondArtifact->GetSection() == pgsDebondArtifact::I)
    {
-      (*table)(0, col++) << _T("Row in full-width section of web");
+      (*table)(0, col++) << _T("Row in full-width section of flange");
    }
    (*table)(0, col++) << _T("Status");
 
@@ -517,6 +510,7 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, 
    std::vector<Float64> vMaxFra = pDebondArtifact->GetMaxFraDebondedStrandsInRow();
    const std::set<std::tuple<RowIndexType, pgsDebondArtifact::State, WebIndexType>>& exteriorStrandDebondState = pDebondArtifact->GetExteriorStrandBondState();
 
+
    std::array<std::_tstring, 2> strYesNo{ _T("Yes"), _T("No") };
 
    auto iter = vFra.begin();
@@ -528,8 +522,8 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, 
       (*table)(table_row, col++) << LABEL_INDEX(rowIdx);
       (*table)(table_row, col++) << nStrandsInRow[rowIdx];
       (*table)(table_row, col++) << nDebondedStrandsInRow[rowIdx];
-      (*table)(table_row, col++) << vFra[rowIdx] * 100. << _T("%");
-      (*table)(table_row, col++) << vMaxFra[rowIdx] * 100. << _T("%");
+      (*table)(table_row, col++) << percentage.SetValue(vFra[rowIdx]);
+      (*table)(table_row, col++) << percentage.SetValue(vMaxFra[rowIdx]);
 
       bool bInFullWidthSectionOfFlange = true;
       auto nDebondStatesForThisRow = std::count_if(std::cbegin(exteriorStrandDebondState), std::cend(exteriorStrandDebondState), [rowIdx](const auto& item) {return std::get<0>(item) == rowIdx; });
