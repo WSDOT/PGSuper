@@ -1613,14 +1613,17 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
    ActionType actionType  = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
    ResultsType resultsType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetResultsType();
 
-   // Product forces
-   GET_IFACE(IProductForces2,pForces);
-
    std::array<IndexType, 4> data_series_id;
    std::array<pgsTypes::BridgeAnalysisType, 4> bat;
    std::array<pgsTypes::StressLocation, 4> stressLocation;
    IndexType nAnalysisTypes;
-   InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,bIsFinalShear,&data_series_id,&bat,&stressLocation,&nAnalysisTypes);
+   InitializeGraph(graphIdx, graphDef, actionType, intervalIdx, bIsFinalShear, &data_series_id, &bat, &stressLocation, &nAnalysisTypes);
+
+   if (nAnalysisTypes == 0)
+      return;
+
+   // Product forces
+   GET_IFACE(IProductForces2,pForces);
 
    for ( IndexType analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
@@ -1695,7 +1698,6 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
 void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const PoiList& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear)
 {
    // Combined forces
-   GET_IFACE(ICombinedForces2,pForces);
    LoadingCombinationType combination_type(graphDef.m_LoadType.CombinedLoadType);
 
    ActionType actionType  = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
@@ -1708,6 +1710,11 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
    std::array<pgsTypes::StressLocation, 4> stressLocation;
    IndexType nAnalysisTypes;
    InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,bIsFinalShear,&data_series_id,&bat,&stressLocation,&nAnalysisTypes);
+
+   if (nAnalysisTypes == 0)
+      return;
+
+   GET_IFACE(ICombinedForces2, pForces);
 
    for ( IndexType analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
