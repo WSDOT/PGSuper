@@ -23793,6 +23793,13 @@ void CBridgeAgentImp::GetSegmentSectionShape(IntervalIndexType intervalIdx, cons
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
    SectProp sectProps = GetSectionProperties(intervalIdx, poi, sectPropType);
+   if (sectProps.Section == nullptr)
+   {
+      // if the POI isn't at a location with concrete yet (like at a pier diaphragm before it is cast), the section object is null
+      // there isn't a shape to get in this case so set the return value pointer to null and return
+      *ppShape = nullptr;
+      return;
+   }
 
    CComQIPtr<ICompositeSectionEx> compositeSection(sectProps.Section);
    ATLASSERT(compositeSection != nullptr);
