@@ -164,13 +164,6 @@ const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::GetMomentCapacityDetails
    const MOMENTCAPACITYDETAILS* pMCD = nullptr;
    if ( pConfig == nullptr )
    {
-#if defined _DEBUG
-      // Mu is only considered once live load is applied to the structure
-      GET_IFACE(IIntervals, pIntervals);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-      ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
-#endif
-
       if (poi.GetID() == INVALID_ID)
       {
          // compute but don't cache since poiID is the key
@@ -272,12 +265,6 @@ Float64 pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexType intervalI
 
 const CRACKINGMOMENTDETAILS* pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-#if defined _DEBUG
-   // Mu is only considered once live load is applied to the structure
-   GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
-#endif
    ATLASSERT(poi.GetID() != INVALID_ID);
 
    return ValidateCrackingMoments(intervalIdx, poi, bPositiveMoment);
@@ -323,13 +310,6 @@ Float64 pgsMomentCapacityEngineer::GetMinMomentCapacity(IntervalIndexType interv
 
 const MINMOMENTCAPDETAILS* pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-#if defined _DEBUG
-   // Mu is only considered once live load is applied to the structure
-   GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
-#endif
-
    return ValidateMinMomentCapacity(intervalIdx, poi, bPositiveMoment);
 }
 
