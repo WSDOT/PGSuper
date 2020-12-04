@@ -14,17 +14,17 @@ Temporary | Use the drop down list to select the material and size of temporary 
 Strand Details
 ---------------
 
-Item                         | Description                                                                                                                     
------------------------------|---------------------------------------------------------------------------------------------------------------------------------
- Adjustable Strands          | Select the adjustable strand type                                                                                               
- Strand definition type      | Select the method for defining strands. (See Strand Definition Types below)                                                
- [Select Strands...]         | Open the Select Strands window                                                                                                  
- [Define Strand Rows...]     | Open the Define Strand Rows window                                                                                              
- [Define Individual Rows...] | Open the Define Individual Strands window                                                                                       
- Number of Straight Strands  | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.  
- Number of Harped Strands    | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.  
- Number of Temporary Strands | Enter the number of temporary strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed. 
- Temporary Installation      | Use the drop down list to select when the temporary strands are installed.                                                      
+Item                            | Description                                                                                                                     
+--------------------------------|---------------------------------------------------------------------------------------------------------------------------------
+ Adjustable Strands             | Select the adjustable strand type                                                                                               
+ Strand definition type         | Select the method for defining strands. (See Strand Definition Types below)                                                
+ [Select Strands...]            | Open the Select Strands window                                                                                                  
+ [Define Strand Rows...]        | Open the Define Strand Rows window                                                                                              
+ [Define Individual Strands...] | Open the Define Individual Strands window                                                                                       
+ Number of Straight Strands     | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.  
+ Number of Harped Strands       | Enter the number of straight strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed.  
+ Number of Temporary Strands    | Enter the number of temporary strands. Check the Pjack box and enter a value, otherwise the maximum jacking force will assumed. 
+ Temporary Installation         | Use the drop down list to select when the temporary strands are installed.                                                      
 
 Vertical Location of Harped Strands
 -----------------------------------
