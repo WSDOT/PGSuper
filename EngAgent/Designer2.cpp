@@ -5831,7 +5831,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    Float64 L = pBridge->GetSegmentLength(segmentKey);
    Float64 L2 = L / 2.0;
 
-   Float64 lmin_section = Float64_Max;
+   std::array<Float64, 2> lmin_section{ Float64_Max,Float64_Max };
    Float64 lmax_debond_length = 0.0;
 
    // left end
@@ -5851,8 +5851,8 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
          continue; // bond occurs after mid-girder... skip this one
       }
 
-      Float64 section_len = location - prev_location;
-      lmin_section = Min(lmin_section, section_len);
+      Float64 section_len = fabs(location - prev_location);
+      lmin_section[pgsTypes::metStart] = Min(lmin_section[pgsTypes::metStart], section_len);
 
       lmax_debond_length = Max(lmax_debond_length, location);
 
@@ -5883,10 +5883,10 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
       }
       else
       {
-         section_len = location - prev_location;
+         section_len = fabs(location - prev_location);
       }
 
-      lmin_section = Min(lmin_section, section_len);
+      lmin_section[pgsTypes::metEnd] = Min(lmin_section[pgsTypes::metEnd], section_len);
 
 
       Float64 debond_length = L - location;
@@ -5894,6 +5894,10 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
 
       prev_location = location;
    }
+
+   lmin_section[pgsTypes::metStart] = lmin_section[pgsTypes::metStart] == Float64_Max ? 0 : lmin_section[pgsTypes::metStart];
+   lmin_section[pgsTypes::metEnd] = lmin_section[pgsTypes::metEnd] == Float64_Max ? 0 : lmin_section[pgsTypes::metEnd];
+   pArtifact->SetMinDebondSectionSpacing(Min(lmin_section[pgsTypes::metStart], lmin_section[pgsTypes::metEnd]));
 
    Float64 dll;
    pgsTypes::DebondLengthControl control;
@@ -5903,13 +5907,6 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    pArtifact->SetDebondLengthLimit(dll, control);
 
    Float64 dds = pDebondLimits->GetMinDistanceBetweenDebondSections(segmentKey);
-
-   if (lmin_section == Float64_Max)
-   {
-      lmin_section = 0.0;
-   }
-
-   pArtifact->SetMinDebondSectionSpacing(lmin_section);
    pArtifact->SetDebondSectionSpacingLimit(dds);
 
    // LRFD 5.9.4.3.3, 9th Edition, Requirement D
