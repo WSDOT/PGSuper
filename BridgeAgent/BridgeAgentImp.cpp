@@ -1803,7 +1803,6 @@ void CBridgeAgentImp::ValidateMomentLoads()
 
 void CBridgeAgentImp::ValidateSegmentOrientation(const CSegmentKey& segmentKey) const
 {
-   //VALIDATE_POINTS_OF_INTEREST(segmentKey); // calls VALIDATE(GIRDER);
    VALIDATE(GIRDER);
 
    // Orientation was cached by geometry model builder
@@ -16510,7 +16509,7 @@ void CBridgeAgentImp::GetTemporaryStrandCG(IntervalIndexType intervalIdx, const 
 
    if (pConfig == nullptr)
    {
-      VALIDATE(BRIDGE);
+      VALIDATE(GIRDER);
 
       CComPtr<IPrecastGirder> girder;
       GetGirder(poi, &girder);
@@ -17355,6 +17354,7 @@ void CBridgeAgentImp::GridPositionToStrandPosition(const CSegmentKey& segmentKey
 
 StrandIndexType CBridgeAgentImp::GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
 {
+   VALIDATE(GIRDER);
    StrandIndexType nStrands(0);
    if (pConfig == nullptr)
    {
