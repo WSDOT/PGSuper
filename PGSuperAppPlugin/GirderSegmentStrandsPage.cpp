@@ -115,7 +115,7 @@ void CGirderSegmentStrandsPage::Init(CPrecastSegmentData* pSegment)
    m_Strands = m_pSegment->Strands;
    m_Tendons = m_pSegment->Tendons;
 
-   if (m_Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if (m_Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       m_pGrid = std::make_unique<CPointStrandGrid>();
    }
@@ -335,7 +335,7 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    EnableToolTips(TRUE);
    EnableRemoveButton(FALSE); // start off with the button disabled... it will get enabled when a row in the grid is selected
 
-   if (m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if (m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       m_StrandSpacingImage.ShowWindow(SW_HIDE);
       GetDlgItem(IDC_SPACING_LABEL)->ShowWindow(SW_HIDE);
@@ -493,7 +493,7 @@ void CGirderSegmentStrandsPage::UpdateStrandControls()
 
 void CGirderSegmentStrandsPage::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput ? IDH_GIRDER_STRAND_ROW_INPUT : IDH_GIRDER_INDIVIDUAL_STRAND_INPUT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput ? IDH_GIRDER_STRAND_ROW_INPUT : IDH_GIRDER_INDIVIDUAL_STRAND_INPUT );
 }
 
 void CGirderSegmentStrandsPage::OnEpoxyChanged()

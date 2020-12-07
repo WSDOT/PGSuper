@@ -117,7 +117,7 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
 
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
-   if( m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput || m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if( m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput || m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       AddAdditionalPropertyPages( false, false );
    }
@@ -393,7 +393,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
-   if (m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
+   if (m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)
    {
       // first get in girderdata format
       const CDirectStrandFillCollection* pDirectFillData(nullptr);

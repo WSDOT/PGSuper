@@ -292,7 +292,7 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CPrecastSegmentData* pSegment = m_Girder.GetSegment(m_SegmentKey.segmentIndex);
-   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
+   if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)
    {
       // first get in girderdata format
       const CDirectStrandFillCollection* pDirectFillData(nullptr);

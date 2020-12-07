@@ -441,7 +441,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
       Xgp[i] = pPoi->ConvertSegmentPathCoordinateToGirderPathCoordinate(m_pSegment->GetSegmentKey(), Xgp[i]);
    }
 
-   CStrandData::StrandDefinitionType strandDefinitionType = m_pStrands->GetStrandDefinitionType();
+   pgsTypes::StrandDefinitionType strandDefinitionType = m_pStrands->GetStrandDefinitionType();
 
    std::array<StrandIndexType, 3> strandIdx{ 0,0,0 };
    const auto& strandRows = m_pStrands->GetStrandRows();
@@ -449,7 +449,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
    for( const auto& strandRow : strandRows)
    {
       GridIndexType nGridPoints = 0;
-      if (strandDefinitionType == CStrandData::sdtDirectStrandInput)
+      if (strandDefinitionType == pgsTypes::sdtDirectStrandInput)
       {
          // direct strand input is for individual strands so there is only one point to draw
          nGridPoints = 1;
@@ -464,7 +464,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
       }
 
       Float64 Xi = strandRow.m_Z; // distance from CL Girder to strand 
-      if (m_pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectRowInput)
+      if (m_pStrands->GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput)
       {
          // strands are in rows so Z (aka Xi) is the inner row spacing
          // divide it by 2 to get distance from CL to strand
@@ -485,7 +485,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
          Float64 X = Xi + gridPointIdx*strandRow.m_Spacing;
 
          StrandIndexType nStrandsPerGridPoint = 1;
-         if (strandDefinitionType == CStrandData::sdtDirectRowInput && !IsZero(strandRow.m_Z))
+         if (strandDefinitionType == pgsTypes::sdtDirectRowInput && !IsZero(strandRow.m_Z))
          {
             nStrandsPerGridPoint = 2;
          }
@@ -513,7 +513,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
                rect.InflateRect(minStrandSize.cx - rect.Width(), minStrandSize.cy - rect.Height());
             }
 
-            if (strandDefinitionType == CStrandData::sdtDirectRowInput && ( (IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z)) || (3 <= strandRow.m_nStrands && IsZero(strandRow.m_Spacing)) ) )
+            if (strandDefinitionType == pgsTypes::sdtDirectRowInput && ( (IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z)) || (3 <= strandRow.m_nStrands && IsZero(strandRow.m_Spacing)) ) )
             {
                // Z must be zero if nStrands is odd... it's not, so use the error color
                // spacing cannot be zero if there is 3 or more strands
@@ -543,7 +543,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
 
             pDC->Ellipse(&rect);
 
-            if (strandDefinitionType == CStrandData::sdtDirectRowInput)
+            if (strandDefinitionType == pgsTypes::sdtDirectRowInput)
             {
                // strands are in rows, so draw the mirrored strand
                pPointMapper->WPtoDP(-X - m_Xoffset[end], Y[zoneBreak], &point.x, &point.y);
@@ -563,7 +563,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
          //
          // Draw in strands segment profile
          //
-         if (strandDefinitionType == CStrandData::sdtDirectRowInput && ((IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z))))
+         if (strandDefinitionType == pgsTypes::sdtDirectRowInput && ((IsOdd(strandRow.m_nStrands) && !IsZero(strandRow.m_Z)) || (IsEven(strandRow.m_nStrands) && IsZero(strandRow.m_Z))))
          {
             // m_Z must be zero if nStrands is odd
             pDC->SelectObject(&errorPen);

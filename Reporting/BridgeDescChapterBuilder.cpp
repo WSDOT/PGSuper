@@ -2946,23 +2946,23 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          }
 
          CString strFillType;
-         if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtTotal)
+         if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtTotal)
          {
             strFillType = "Sequence of Permanent Strands";
          }
-         else if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtStraightHarped)
+         else if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtStraightHarped)
          {
             strFillType = "Sequence of Straight/Harped Strands";
          }
-         else if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
+         else if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)
          {
             strFillType = "Non-Sequential, Direct Fill";
          }
-         else if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput)
+         else if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput)
          {
             strFillType = "Direct Input Strand Rows";
          }
-         else if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+         else if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
          {
             strFillType = "Direct Input Strands";
          }

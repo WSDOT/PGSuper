@@ -23,11 +23,12 @@
 #include "StdAfx.h"
 #include <Reporting\OptimizedFabricationChapterBuilder.h>
 
-
 #include <IFace\Constructability.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+
+#include <PgsExt\SplicedGirderData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -103,6 +104,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    }
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -137,6 +139,11 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
          continue;
       }
 
+      if (pBridgeDesc->GetPrecastSegmentData(segmentKey)->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
+      {
+         *pPara << _T("Fabrication optimization analysis cannot be performed when strands are defined with the Individual Strand method.") << rptNewLine;
+         continue;
+      }
 
       FABRICATIONOPTIMIZATIONDETAILS details;
       pFabOp->GetFabricationOptimizationDetails(segmentKey,&details);

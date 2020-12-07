@@ -33,6 +33,7 @@
 #include <Material\PsStrand.h>
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\Helpers.h>
 
 #include <Lrfd\RebarPool.h>
 
@@ -199,58 +200,68 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(bTempStrands ? 12 : 9,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(bTempStrands ? 13 : 10,_T(""));
    *pPara << p_table << rptNewLine;
 
    p_table->SetNumberOfHeaderRows(3);
 
-   p_table->SetRowSpan(0,0,3);
-   (*p_table)(0,0) << _T("Girder");
+   ColumnIndexType col = 0;
+   p_table->SetRowSpan(0,col,3);
+   (*p_table)(0,col++) << _T("Girder");
 
-   p_table->SetColumnSpan(0,1,8);
-   (*p_table)(0,1) << _T("Permanent Strands");
+   p_table->SetRowSpan(0, col, 3);
+   (*p_table)(0, col++) << _T("Strand Definition");
 
-   p_table->SetRowSpan(1,1,2);
-   (*p_table)(1,1) << _T("Material");
+   p_table->SetColumnSpan(0, col, 8);
+   (*p_table)(0, col) << _T("Permanent Strands");
 
-   p_table->SetColumnSpan(1,2,2);
-   (*p_table)(1,2) << _T("Straight");
-   (*p_table)(2,2) << _T("#");
-   (*p_table)(2,3) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+   p_table->SetRowSpan(1, col, 2);
+   (*p_table)(1, col++) << _T("Material");
 
-   p_table->SetColumnSpan(1,4,5);
-   (*p_table)(1,4) << _T("Adjustable Strands");
-   (*p_table)(2,4) << _T("Type");
-   (*p_table)(2,5) << _T("#");
-   (*p_table)(2,6) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
-   (*p_table)(2,7) << COLHDR(_T("Girder End")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(2,8)<< COLHDR(_T("Harping Pt")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   p_table->SetColumnSpan(1, col, 2);
+   (*p_table)(1, col) << _T("Straight");
+   (*p_table)(2, col++) << _T("#");
+   (*p_table)(2, col++) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+
+   p_table->SetColumnSpan(1, col, 5);
+   (*p_table)(1, col) << _T("Adjustable Strands");
+   (*p_table)(2, col++) << _T("Type");
+   (*p_table)(2, col++) << _T("#");
+   (*p_table)(2, col++) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+   (*p_table)(2, col++) << COLHDR(_T("Girder End")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(2, col++)<< COLHDR(_T("Harping Pt")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    if ( bTempStrands )
    {
-      p_table->SetColumnSpan(0,9,3);
-      (*p_table)(0,9) << _T("Temporary Strands");
+      p_table->SetColumnSpan(0, col, 3);
+      (*p_table)(0, col) << _T("Temporary Strands");
 
-      p_table->SetRowSpan(1,9,2);
-      (*p_table)(1,9) << _T("Material");
+      p_table->SetRowSpan(1, col, 2);
+      (*p_table)(1, col++) << _T("Material");
 
-      p_table->SetRowSpan(1,10,2);
-      (*p_table)(1,10) << _T("#");
+      p_table->SetRowSpan(1, col, 2);
+      (*p_table)(1, col++) << _T("#");
 
-      p_table->SetRowSpan(1,11,2);
-      (*p_table)(1,11) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+      p_table->SetRowSpan(1, col, 2);
+      (*p_table)(1, col++) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
    }
 
    GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
+      col = 0;
+
       CSegmentKey segmentKey(grpIdx,gdrIdx,0);
 
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-      ColumnIndexType col = 0;
       (*p_table)(row,col++) << LABEL_GIRDER(gdrIdx);
+
+      auto adjustableStrandType = pStrands->GetAdjustableStrandType();
+      auto strandDefinitionType = pStrands->GetStrandDefinitionType();
+      (*p_table)(row, col++) << GetStrandDefinitionType(strandDefinitionType, adjustableStrandType);
+
       (*p_table)(row,col++) << pStrands->GetStrandMaterial(pgsTypes::Straight)->GetName();
 
       (*p_table)(row,col) << pStrands->GetStrandCount(pgsTypes::Straight);
@@ -279,16 +290,25 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       (*p_table)(row,col++) << pStrands->GetStrandCount(pgsTypes::Harped);
       (*p_table)(row,col++) << force.SetValue(pStrands->GetPjack(pgsTypes::Harped));
 
-      ConfigStrandFillVector confvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
+      if (strandDefinitionType == pgsTypes::sdtTotal || strandDefinitionType == pgsTypes::sdtStraightHarped || strandDefinitionType == pgsTypes::sdtDirectSelection)
+      {
+         ConfigStrandFillVector confvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
 
-      // convert to absolute adjustment
-      Float64 adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, pgsTypes::metStart, confvec, 
-                                                                           pStrands->GetHarpStrandOffsetMeasurementAtEnd(), pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
-      (*p_table)(row,col++) << dim.SetValue(adjustment);
+         // convert to absolute adjustment
+         Float64 adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, pgsTypes::metStart, confvec,
+            pStrands->GetHarpStrandOffsetMeasurementAtEnd(), pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+         (*p_table)(row, col++) << dim.SetValue(adjustment);
 
-      adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, pgsTypes::metStart, confvec, 
-                                                                  pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint(), pStrands->GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd));
-      (*p_table)(row,col++) << dim.SetValue(adjustment);
+         adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, pgsTypes::metStart, confvec,
+            pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint(), pStrands->GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd));
+         (*p_table)(row, col++) << dim.SetValue(adjustment);
+      }
+      else
+      {
+         ATLASSERT(strandDefinitionType == pgsTypes::sdtDirectRowInput || strandDefinitionType == pgsTypes::sdtDirectStrandInput);
+         (*p_table)(row, col++) << _T("");
+         (*p_table)(row, col++) << _T("");
+      }
 
       if ( bTempStrands )
       {
@@ -725,7 +745,7 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
       CSegmentKey segmentKey(grpIdx,gdrIdx,0);
-#pragma Reminder("UPDATE: assuming precast girder")
+#pragma Reminder("UPDATE: assuming precast girder bridge")
 
       col = 0;
 

@@ -113,13 +113,13 @@ interface IEditByUI : IUnknown
    virtual UINT GetLibToolBarID() = 0;
    virtual UINT GetHelpToolBarID() = 0;
 
-   // NOTE: Strand fill type must be CStrandData::sdtDirectSelection before entering this dialog
+   // NOTE: Strand fill type must be pgsTypes::sdtDirectSelection before entering this dialog
    virtual bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey) = 0;
 
-   // NOTE: Strand fill type must be CStrandData::sdtDirectRowInput before entering this dialog
+   // NOTE: Strand fill type must be pgsTypes::sdtDirectRowInput before entering this dialog
    virtual bool EditDirectRowInputPrestressing(const CSegmentKey& segmentKey) = 0;
 
-   // NOTE: Strand fill type must be CStrandData::sdtDirectStrandInput before entering this dialog
+   // NOTE: Strand fill type must be pgsTypes::sdtDirectStrandInput before entering this dialog
    virtual bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey) = 0;
 
    virtual void AddPointLoad(const CPointLoadData& loadData) = 0;

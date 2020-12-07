@@ -295,8 +295,20 @@ typedef struct pgsTypes
 
    typedef enum StressLocation { BottomGirder, TopGirder, BottomDeck, TopDeck } StressLocation;
 
+   // defines the method used for defining the pretensioned strands
+   typedef enum StrandDefinitionType {
+      sdtTotal, // input is total number of permanent strands
+      sdtStraightHarped, // input is number of harped and number of straight strands
+      sdtDirectSelection, // input is a fill array of strand positions in the girder strand grid
+      sdtDirectRowInput, // input is direct row input by user. horizontal rows of strands are defined. the strand grid in the girder library is ignored
+      sdtDirectStrandInput // input is direct input of individual strands by the user. the strand grid in the girder library is ignored
+   } StrandDefinitionType;
+
+   
    // Note that Permanent was added below when input for total permanent strands was added in 12/06
    typedef enum StrandType { Straight, Harped, Temporary, Permanent } StrandType;
+
+
    typedef enum AnalysisType { Simple, Continuous, Envelope } AnalysisType;
 
    // Adjustable strands can be straight or harped. In library only; they can be either

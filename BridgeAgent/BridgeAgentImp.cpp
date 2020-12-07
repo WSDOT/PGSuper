@@ -2976,7 +2976,7 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
    Float64 Lg;
    girder->get_GirderLength(&Lg);
 
-   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       // direct strand input defines each strand individually,
       // for this we use a strand point model
@@ -3091,7 +3091,7 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
       strandGridModel->get_HarpedStrandGridHP(etEnd, &harpGrdHP[etEnd]);
       strandGridModel->get_TemporaryStrandGrid(etEnd, &tempGrd[etEnd]);
 
-      if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput)
+      if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput)
       {
          // Not using the strand grid in the library... create the strand grid based on user input
          std::array<Float64, 4> Z;
@@ -4500,10 +4500,10 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
                 strandGridModel->ClearStraightStrandDebonding();
 
                // Fill strands
-               CStrandData::StrandDefinitionType strandDefinitionType = pSegment->Strands.GetStrandDefinitionType();
-               if (strandDefinitionType == CStrandData::sdtTotal ||
-                  strandDefinitionType == CStrandData::sdtStraightHarped ||
-                  strandDefinitionType == CStrandData::sdtDirectRowInput)
+               pgsTypes::StrandDefinitionType strandDefinitionType = pSegment->Strands.GetStrandDefinitionType();
+               if (strandDefinitionType == pgsTypes::sdtTotal ||
+                  strandDefinitionType == pgsTypes::sdtStraightHarped ||
+                  strandDefinitionType == pgsTypes::sdtDirectRowInput)
                {
                   // Continuous fill
                   CContinuousStrandFiller* pfiller = GetContinuousStrandFiller(segmentKey);
@@ -4516,7 +4516,7 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
                   hr = pfiller->SetTemporaryContinuousFill(strandGridModel, pSegment->Strands.GetStrandCount(pgsTypes::Temporary));
                   ATLASSERT(SUCCEEDED(hr));
                }
-               else if (strandDefinitionType == CStrandData::sdtDirectSelection)
+               else if (strandDefinitionType == pgsTypes::sdtDirectSelection)
                {
                   // Direct fill
                   CDirectStrandFiller* pfiller = GetDirectStrandFiller(segmentKey);
@@ -4534,7 +4534,7 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
                   ATLASSERT(false); // is there a new fill type?
                }
 
-               if (strandDefinitionType != CStrandData::sdtDirectRowInput)
+               if (strandDefinitionType != pgsTypes::sdtDirectRowInput)
                {
                   // Apply harped strand pattern offsets.
                   // Get fill array for harped and convert to ConfigStrandFillVector
@@ -4593,7 +4593,7 @@ void CBridgeAgentImp::UpdatePrestressing(GroupIndexType groupIdx,GirderIndexType
             {
                CComQIPtr<IStrandPointModel> strandPointModel(strandModel);
                ATLASSERT(strandPointModel);
-               ATLASSERT(pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput);
+               ATLASSERT(pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput);
 
                Float64 Lg = GetSegmentLength(segmentKey);
 
@@ -9719,7 +9719,7 @@ GDRCONFIG CBridgeAgentImp::GetSegmentConfiguration(const CSegmentKey& segmentKey
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
 
-   ATLASSERT(pStrands->GetStrandDefinitionType() != CStrandData::sdtDirectStrandInput);
+   ATLASSERT(pStrands->GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput);
 
    CComPtr<IStrandModel> strandModel;
    girder->get_StrandModel(&strandModel);
@@ -15658,7 +15658,7 @@ void CBridgeAgentImp::GetStrandProfile(const CPrecastSegmentData* pSegment, cons
 {
    // This method gives a strand profile for "what-if" cases
    ATLASSERT(strandType != pgsTypes::Permanent);
-   ATLASSERT(pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectRowInput || pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput);
+   ATLASSERT(pStrands->GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput || pStrands->GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput);
 
    CComPtr<IPoint2dCollection> profile;
    profile.CoCreateInstance(CLSID_Point2dCollection);
@@ -17386,6 +17386,7 @@ StrandIndexType CBridgeAgentImp::GetStrandCount(const CSegmentKey& segmentKey,pg
 
 StrandIndexType CBridgeAgentImp::GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const
 {
+   VALIDATE(GIRDER);
    CComPtr<IPrecastGirder> girder;
    GetGirder(segmentKey,&girder);
 
@@ -17537,7 +17538,7 @@ Float64 CBridgeAgentImp::GetPjack(const CSegmentKey& segmentKey,pgsTypes::Strand
       const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
       if (strandType == pgsTypes::Permanent)
       {
-         if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtTotal)
+         if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtTotal)
          {
             Pj = pSegment->Strands.GetPjack(pgsTypes::Permanent);
          }
@@ -18218,7 +18219,7 @@ StrandIndexType CBridgeAgentImp::GetNumExtendedStrands(const CSegmentKey& segmen
 
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       const auto& strandRows = pSegment->Strands.GetStrandRows();
       for (const auto& strandRow : strandRows)
@@ -18245,7 +18246,7 @@ bool CBridgeAgentImp::IsExtendedStrand(const CSegmentKey& segmentKey,pgsTypes::M
 
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       ATLASSERT(pConfig == nullptr);
       const auto& strandRows = pSegment->Strands.GetStrandRows();
@@ -18302,7 +18303,7 @@ bool CBridgeAgentImp::IsStrandDebonded(const CSegmentKey& segmentKey,StrandIndex
 
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const auto* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       ATLASSERT(pConfig == nullptr);
       const auto& strandRows = pSegment->Strands.GetStrandRows();

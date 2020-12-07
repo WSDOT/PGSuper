@@ -6368,7 +6368,7 @@ STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
 
 void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSegmentData* pSegment,bool fromLibrary)
 {
-   if ( pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput || pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput )
+   if ( pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput || pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput )
    {
       // user defined strands don't use strand information from the library
       return;
@@ -6410,7 +6410,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
    // There are many, many ways that strand data can get hosed if a library entry is changed for an existing project. 
    // If strands no longer fit as original, zero them out and inform user.
    bool clean = true;
-   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection )
+   if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection )
    {
       // Direct Fill
       bool vst = IsValidStraightStrandFill(pSegment->Strands.GetDirectStrandFillStraight(), pGirderEntry);
@@ -6488,7 +6488,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
    }
    else
    {
-      if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtTotal )
+      if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtTotal )
       {
          // make sure number of strands fits library
          StrandIndexType ns, nh;
@@ -6504,7 +6504,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
             pSegment->Strands.ResetPrestressData();
          }
       }
-      else if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtStraightHarped ) // input is by straight/harped
+      else if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtStraightHarped ) // input is by straight/harped
       {
          bool vst = pGirderEntry->IsValidNumberOfStraightStrands(pSegment->Strands.GetStrandCount(pgsTypes::Straight));
          bool vhp = pGirderEntry->IsValidNumberOfHarpedStrands(pSegment->Strands.GetStrandCount(pgsTypes::Harped));

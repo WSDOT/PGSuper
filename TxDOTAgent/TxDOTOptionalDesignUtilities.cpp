@@ -425,7 +425,7 @@ bool IsIBeam(IBroker * pBroker, const CGirderKey & girderKey)
    return girderFamily == _T("I-Beam");
 }
 
-bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
+bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
 {
 
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
@@ -458,12 +458,12 @@ bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, CStrandData::
       }
 
       // we've settled on strand layout type. now check if strands are filled in a standard manner
-      if (sdtType == CStrandData::sdtTotal)
+      if (sdtType == pgsTypes::sdtTotal)
       {
          // strands filled using library order. always standard
          return true;
       }
-      else if (sdtType == CStrandData::sdtStraightHarped)
+      else if (sdtType == pgsTypes::sdtStraightHarped)
       {
          // check if strands entered straight/harped match library order. then standard
          StrandIndexType tns, tnh;
@@ -481,7 +481,7 @@ bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, CStrandData::
          // standard harped designs must be filled using library order
          return false;
       }
-      else if (sdtType == CStrandData::sdtDirectSelection)
+      else if (sdtType == pgsTypes::sdtDirectSelection)
       {
          // This is the hard one. We have a straight design. In order to be standard;
          // the bottom half of the girder must be filled filling each row completely from the bottom up.

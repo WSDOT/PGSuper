@@ -127,13 +127,13 @@ private:
    LldfRangeOfApplicabilityAction m_OldRoa;
 };
 
-bool CanDesign(CStrandData::StrandDefinitionType type)
+bool CanDesign(pgsTypes::StrandDefinitionType type)
 {
    // we can only design for these strand definition types
    // Techincally, we should not design for sdtDirectionSelection, however the designer does work. The "gotcha" is that the
    // strand defintion type gets changed to sdtStraightHarped when it should not... design should not change the strand definition type
    // but since sdtDirectSelection has been a valid choice for a long time and it does work, we'll let it go
-   return (type == CStrandData::sdtTotal || type == CStrandData::sdtStraightHarped || type == CStrandData::sdtDirectSelection) ? true : false;
+   return (type == pgsTypes::sdtTotal || type == pgsTypes::sdtStraightHarped || type == pgsTypes::sdtDirectSelection) ? true : false;
 }
 
 /****************************************************************************
@@ -1948,7 +1948,7 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    std::vector<pgsTypes::StrandType> strandTypes;
-   if ( pStrands->GetStrandDefinitionType() == CStrandData::sdtTotal )
+   if ( pStrands->GetStrandDefinitionType() == pgsTypes::sdtTotal )
    {
       strandTypes.push_back(pgsTypes::Permanent);
    }
@@ -5675,7 +5675,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    GET_IFACE(ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    CComPtr<IIndexArray> arrayPermStrandIndex;
-   if (pStrands->GetStrandDefinitionType() != CStrandData::sdtDirectStrandInput)
+   if (pStrands->GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput)
    {
       pStrandGeometry->ComputePermanentStrandIndices(segmentKey, strand_type, &arrayPermStrandIndex);
    }
@@ -5913,7 +5913,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    // If one of the built-in strand models are used, strands are forced to be symmetric and satisfy the requirement
    // Symmetry is not enforced for direct strand input and it is not checked
    pArtifact->CheckDebondingSymmetry(pDebondLimits->CheckDebondingSymmetry(segmentKey)); // Is checking symmetry enabled?
-   pArtifact->IsDebondingSymmetrical(pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput ? DEBOND_SYMMETRY_NA : DEBOND_SYMMETRY_TRUE); // the result is either NA or TRUE
+   pArtifact->IsDebondingSymmetrical(pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput ? DEBOND_SYMMETRY_NA : DEBOND_SYMMETRY_TRUE); // the result is either NA or TRUE
 
    // LRFD 5.9.4.3.3, 9th Edition, Requirement E
    if (pDebondLimits->CheckAdjacentDebonding(segmentKey))

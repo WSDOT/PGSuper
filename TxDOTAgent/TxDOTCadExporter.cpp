@@ -549,12 +549,12 @@ void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& gir
       StrandIndexType ns = strands.GetStrandCount(pgsTypes::Straight);
       StrandIndexType nh = strands.GetStrandCount(pgsTypes::Harped);
       StrandIndexType ndb = strands.GetDebondCount(pgsTypes::Straight, pgsTypes::metEnd, pGirderEntry);
-      CStrandData::StrandDefinitionType sdt = strands.GetStrandDefinitionType();
+      pgsTypes::StrandDefinitionType sdt = strands.GetStrandDefinitionType();
       if (!passed || ns + nh == 0)
       {
          m_Log << _T(",") << 0;// _T("noStrands");
       }
-      else if (CStrandData::sdtTotal == sdt || CStrandData::sdtStraightHarped == sdt)
+      else if (pgsTypes::sdtTotal == sdt || pgsTypes::sdtStraightHarped == sdt)
       {
          if (nh > 0 && pgsTypes::asHarped == adjType)
          {

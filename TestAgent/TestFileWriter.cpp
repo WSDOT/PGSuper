@@ -140,7 +140,7 @@ inline StrandIndexType GetNumRaisedStraightStrands(IStrandGeometry * pStrandGeom
 }
 
 // Legacy TxDOT algo for determining strand fill type. Not really useful for our purposes, but this is how it's always been done...
-static bool IsTxStandardStrands(bool isHarpedDesign, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
+static bool IsTxStandardStrands(bool isHarpedDesign, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 
@@ -152,12 +152,12 @@ static bool IsTxStandardStrands(bool isHarpedDesign, CStrandData::StrandDefiniti
    {
       return false; // no strands, not standard
    }
-   else if (sdtType == CStrandData::sdtTotal)
+   else if (sdtType == pgsTypes::sdtTotal)
    {
       // strands filled using library order. always standard
       return true;
    }
-   else if (sdtType == CStrandData::sdtStraightHarped)
+   else if (sdtType == pgsTypes::sdtStraightHarped)
    {
       // check if strands entered straight/harped match library order. then standard
       StrandIndexType tns, tnh;
@@ -175,7 +175,7 @@ static bool IsTxStandardStrands(bool isHarpedDesign, CStrandData::StrandDefiniti
       // standard harped designs must be filled using library order
       return false;
    }
-   else if (sdtType == CStrandData::sdtDirectSelection)
+   else if (sdtType == pgsTypes::sdtDirectSelection)
    {
       // This is the hard one. We have a straight design, possibly with raised strands. In order to be standard;
       // the bottom half of the girder must be filled filling each row completely from the bottom up.

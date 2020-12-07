@@ -670,7 +670,7 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
       oldSegmentData.m_SlabOffset[pgsTypes::metEnd]   =  pSegment->GetSlabOffset(pgsTypes::metEnd);
    }
 
-   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectSelection )
+   if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectSelection )
    {
       // We can go no further
       ::AfxMessageBox(_T("Programmer Error: EditDirectSelectionPrestressing - can only be called for Direct Select strand fill"),MB_OK | MB_ICONWARNING);
@@ -808,7 +808,7 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
       oldSegmentData.m_SlabOffset[pgsTypes::metEnd]   =  pSegment->GetSlabOffset(pgsTypes::metEnd);
    }
 
-   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectRowInput )
+   if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectRowInput )
    {
       // We can go no further
       ::AfxMessageBox(_T("Programmer Error: EditDirectRowInputPrestressing - can only be called for Direct Row Input strand definition"),MB_OK | MB_ICONWARNING);
@@ -884,7 +884,7 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
       oldSegmentData.m_SlabOffset[pgsTypes::metEnd]   =  pSegment->GetSlabOffset(pgsTypes::metEnd);
    }
 
-   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectStrandInput)
+   if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput)
    {
       // We can go no further
       ::AfxMessageBox(_T("Programmer Error: EditDirectStrandInputPrestressing - can only be called for Direct Strand Input strand definition"), MB_OK | MB_ICONWARNING);

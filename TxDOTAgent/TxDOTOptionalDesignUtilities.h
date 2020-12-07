@@ -212,7 +212,7 @@ txcwStrandLayoutType GetStrandLayoutType(IBroker* pBroker, const CGirderKey& gir
 bool IsIBeam(IBroker* pBroker, const CGirderKey& girderKey);
 
 // Criteria for TxDOT Non/Standard design
-bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, CStrandData::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker);
+bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker);
 
 
 

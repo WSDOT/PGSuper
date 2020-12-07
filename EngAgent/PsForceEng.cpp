@@ -441,7 +441,7 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pg
       {
          GET_IFACE(ISegmentData, pSegmentData);
          const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-         if (pStrands->GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+         if (pStrands->GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
          {
             const auto& strandRows = pStrands->GetStrandRows();
             for (const auto& strandRow : strandRows)

@@ -29,6 +29,29 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+const CString& GetStrandDefinitionType(pgsTypes::StrandDefinitionType strandDefinitionType,pgsTypes::AdjustableStrandType adjustableStrandType)
+{
+   static std::array<CString, 5> strStrandDefTypes{
+      _T("Number of Permanent Strands"),
+      _T("Figure it out"),
+      _T("Strand Locations"),
+      _T("Strand Rows"),
+      _T("Individual Strands")
+   };
+
+   static CString strAdjHarped(_T("Number of Straight and Harped Strands"));
+   static CString strAdjStraight(_T("Number of Straight and Adjustable Straight Strands"));
+   static CString strAdjStraightHarped(_T("Number of Straight and Number of Adjustable Strands"));
+
+   if (strandDefinitionType == pgsTypes::sdtStraightHarped)
+   {
+      return adjustableStrandType == pgsTypes::asHarped ? strAdjHarped : (adjustableStrandType == pgsTypes::asStraight ? strAdjStraight : strAdjStraightHarped);
+   }
+   else
+   {
+      return strStrandDefTypes[strandDefinitionType];
+   }
+}
 
 CString GetGirderSpacingType(pgsTypes::SupportedBeamSpacing spacingType, bool bSplicedGirder)
 {

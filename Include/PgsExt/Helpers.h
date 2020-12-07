@@ -23,7 +23,7 @@
 
 #include <PgsExt\PgsExtExp.h>
 
-
+PGSEXTFUNC const CString& GetStrandDefinitionType(pgsTypes::StrandDefinitionType strandDefinitionType, pgsTypes::AdjustableStrandType adjustableStrandType);
 CString PGSEXTFUNC GetGirderSpacingType(pgsTypes::SupportedBeamSpacing spacingType, bool bSplicedGirder);
 CString PGSEXTFUNC GetTopWidthType(pgsTypes::TopWidthType type);
 CString PGSEXTFUNC GetLiveLoadTypeName(pgsTypes::LiveLoadType llType);
