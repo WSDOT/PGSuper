@@ -4992,6 +4992,7 @@ STDMETHODIMP CProjectAgentImp::Init()
    m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
    m_scidRebarStrengthWarning     = pStatusCenter->RegisterCallback(new pgsRebarStrengthStatusCallback());
    m_scidLoadDescriptionWarning   = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning));
+   m_scidConnectionGeometryWarning = pStatusCenter->RegisterCallback(new pgsConnectionGeometryStatusCallback(m_pBroker, eafTypes::statusWarning));
 
    return S_OK;
 }
@@ -6273,6 +6274,47 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       GET_IFACE(IEAFStatusCenter, pStatusCenter);
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
       pStatusCenter->Add(pStatusItem);
+   }
+
+   // The UI was allowing some invalid pier connection geometry. The code that follows checks for the invalid geometry and fixes it.
+   // If the input is alterned, a warning is posted to the status center.
+   PierIndexType nPiers = m_BridgeDescription.GetPierCount();
+   for (PierIndexType pierIdx = 1; pierIdx < nPiers - 1; pierIdx++)
+   {
+      CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
+
+      Float64 brgOffset, endDist;
+      ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
+      ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
+      if (pPier->GetPrevSpan())
+      {
+         pPier->GetBearingOffset(pgsTypes::Back, &brgOffset, &brgOffsetMeasure);
+         pPier->GetGirderEndDistance(pgsTypes::Back, &endDist, &endDistMeasure);
+         if (brgOffset < endDist)
+         {
+            pPier->SetGirderEndDistance(pgsTypes::Back, brgOffset, endDistMeasure);
+            CString strMsg;
+            strMsg.Format(_T("End Distance was greater than Bearing Offset on the Back side of Pier %s. The End Distance was changed to match the Bearing Offset. Review Pier %s connection geometry."), LABEL_PIER(pierIdx), LABEL_PIER(pierIdx));
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            std::unique_ptr<pgsConnectionGeometryStatusItem> pStatusItem = std::make_unique<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg);
+            pStatusCenter->Add(pStatusItem.release());
+         }
+      }
+
+      if (pPier->GetNextSpan())
+      {
+         pPier->GetBearingOffset(pgsTypes::Ahead, &brgOffset, &brgOffsetMeasure);
+         pPier->GetGirderEndDistance(pgsTypes::Ahead, &endDist, &endDistMeasure);
+         if (brgOffset < endDist)
+         {
+            pPier->SetGirderEndDistance(pgsTypes::Ahead, brgOffset, endDistMeasure);
+            CString strMsg;
+            strMsg.Format(_T("End Distance was greater than Bearing Offset on the Ahead side of Pier %s. The End Distance was changed to match the Bearing Offset. Review Pier %s connection geometry."), LABEL_PIER(pierIdx), LABEL_PIER(pierIdx));
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            std::unique_ptr<pgsConnectionGeometryStatusItem> pStatusItem = std::make_unique<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg);
+            pStatusCenter->Add(pStatusItem.release());
+         }
+      }
    }
 
    ValidateBridgeModel();

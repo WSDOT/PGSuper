@@ -4286,7 +4286,7 @@ void CBridgeAgentImp::ValidateGirders()
                   if (diaphragm_width < CLpier_to_end_of_segment)
                   {
                      CString strMsg;
-                     strMsg.Format(_T("%s end of %s does not engage continuity diaphragm at Pier %s"), endType == pgsTypes::metStart ? _T("Start") : _T("End"), SEGMENT_LABEL(segmentKey),LABEL_PIER(pierIdx));
+                     strMsg.Format(_T("%s end of %s does not engage continuity diaphragm at Pier %s.\r\nPrecast elements must engage pier diaphragms to make the continuity connection. There is a gap between the end of this element and the diaphragm. Update the connection geometry and the diaphragm dimensions."), endType == pgsTypes::metStart ? _T("Start") : _T("End"), SEGMENT_LABEL(segmentKey), LABEL_PIER(pierIdx));
                      std::unique_ptr<pgsConnectionGeometryStatusItem> pStatusItem = std::make_unique<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg);
                      pStatusCenter->Add(pStatusItem.release());
                   }

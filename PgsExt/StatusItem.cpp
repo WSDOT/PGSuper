@@ -755,7 +755,7 @@ void pgsConnectionGeometryStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem != nullptr);
 
    CString str;
-   str.Format(_T("%s\r\nPrecast elements must engage pier diaphragms to make the continuity connection. There is a gap between the end of this element and the diaphragm. Update the connection geometry and the diaphragm dimensions."),pItem->GetDescription());
+   str.Format(_T("%s"),pItem->GetDescription());
    AfxMessageBox(str, MB_ICONEXCLAMATION);
 
    GET_IFACE(IEditByUI, pEdit);

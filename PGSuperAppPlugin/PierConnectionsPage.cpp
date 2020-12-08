@@ -201,13 +201,17 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
       {
          DDV_UnitValueZeroOrMore(pDX, IDC_LEFT_END_DISTANCE,   m_EndDistance[pgsTypes::Back],   pDisplayUnits->GetComponentDimUnit() );
 
-         // if end distance is measured from the datum line end distance cannot be greater than
-         // the bearing offset
-         if ( (m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierAlongGirder ||
-               m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierNormalToPier)
-               &&
-               (m_BearingOffset[pgsTypes::Back] < m_EndDistance[pgsTypes::Back])
-            )
+         // the end distance must be less than the bearing offset
+         // if end distance is measured from the datum line, the end distance must be less than the bearing offset otherwise, 
+         // the end of the girder is beyond the CL Bearing towards the span
+         // if the end distance is measured from the CL Bearing, the end distance must be less than the bearing offset otherwise,
+         // the end of the girder will go past the Alignment/Pier reference line
+         // The only time the End Distance can be greater than the Bearing Offset is at end abutments when the End Distance is
+         // measured from the CL Bearing... this is how cantilever spans are modeled
+         // Note that this check doesn't occur if there isn't a previous span, which would be a situation where there could be a cantilever,
+         // so only the first two cases need to be checked.
+
+         if (m_BearingOffset[pgsTypes::Back] < m_EndDistance[pgsTypes::Back])
          {
             pDX->PrepareEditCtrl(IDC_LEFT_END_DISTANCE);
             AfxMessageBox(_T("End Distance must be less than or equal to the Bearing Offset"),MB_OK | MB_ICONINFORMATION);
@@ -219,13 +223,8 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
       {
          DDV_UnitValueZeroOrMore(pDX, IDC_RIGHT_END_DISTANCE,   m_EndDistance[pgsTypes::Ahead],   pDisplayUnits->GetComponentDimUnit() );
 
-         // if end distance is measured from the datum line end distance cannot be greater than
-         // the bearing offset
-         if ( (m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierAlongGirder ||
-               m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierNormalToPier)
-               &&
-               (m_BearingOffset[pgsTypes::Ahead] < m_EndDistance[pgsTypes::Ahead])
-            )
+         // See comment above about back side of pier
+         if (m_BearingOffset[pgsTypes::Ahead] < m_EndDistance[pgsTypes::Ahead])
          {
             pDX->PrepareEditCtrl(IDC_RIGHT_END_DISTANCE);
             AfxMessageBox(_T("End Distance must be less than or equal to the Bearing Offset"),MB_OK | MB_ICONINFORMATION);
