@@ -68,13 +68,13 @@ void AddShape2Section(IGeneralSection *pSection, IShape *pShape, IStressStrain *
    // Just add shape as is
    pSection->AddShape(pShape, pfgMaterial, pbgMaterial, ei, Le);
 #else
-   // Convert shape to a fast polygon
+   // Convert shape to a fast polygon (the standard polyshape now uses the faster polyshape implementation)
    // get points from shape and create a faster poly
    CComPtr<IPoint2dCollection> points;
    pShape->get_PolyPoints(&points);
 
-   CComPtr<IFasterPolyShape> poly;
-   HRESULT hr = poly.CoCreateInstance(CLSID_FasterPolyShape);
+   CComPtr<IPolyShape> poly;
+   HRESULT hr = poly.CoCreateInstance(CLSID_PolyShape);
 
    poly->AddPoints(points);
 
