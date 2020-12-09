@@ -725,7 +725,7 @@ void TrafficBarrierEntry::CreatePolyShape(pgsTypes::TrafficBarrierOrientation or
    }
 
    CollectionIndexType nPoints;
-   polyshape->get_NumPoints(&nPoints);
+   polyshape->get_Count(&nPoints);
    if ( nPoints == 0 )
    {
       polyshape->AddPoint(0,0);

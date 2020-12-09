@@ -1673,7 +1673,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
             CComQIPtr<IPolyShape> polyShape(shape);
             CComPtr<IPoint2d> pntStart, pntEnd;
             IndexType nPoints;
-            polyShape->get_NumPoints(&nPoints);
+            polyShape->get_Count(&nPoints);
             polyShape->get_Point(1, &pntStart);
             polyShape->get_Point(2+(nPoints-6)/2+2, &pntEnd);
 
