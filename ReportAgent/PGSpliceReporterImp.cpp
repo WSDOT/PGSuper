@@ -33,6 +33,7 @@
 
 #include <Reporting\EquilibriumCheckReportSpecificationBuilder.h>
 #include <Reporting\EquilibriumCheckChapterBuilder.h>
+#include <Reporting\PrincipalTensionStressDetailsChapterBuilder.h>
 
 //#include <Reporting\InitialStrainAnalysisReportSpecificationBuilder.h>
 //#include <Reporting\InitialStrainAnalysisChapterBuilder.h>
@@ -210,7 +211,46 @@ STDMETHODIMP CPGSpliceReporterImp::ShutDown()
 //
 HRESULT CPGSpliceReporterImp::OnSpecificationChanged()
 {
-   return CReporterBase::OnSpecificationChanged();
+   HRESULT hr = CReporterBase::OnSpecificationChanged();
+   if ( FAILED(hr) )
+      return hr;
+
+   // Available reports and chapters for principal web stresses are dependent on settings
+   GET_IFACE(IReportManager,pRptMgr);
+   GET_IFACE(ISpecification, pSpec);
+
+   CSegmentKey key(0, 0, 0); // any key should work for splice
+   ISpecification::PrincipalWebStressCheckType  checkType = pSpec->GetPrincipalWebStressCheckType(key);
+
+   bool bIsTimeStepPrincStress = ISpecification::pwcNCHRPTimeStepMethod == checkType;
+
+
+   std::_tstring prinRepName(_T("Principal Web Stress Details Report"));
+   std::shared_ptr<CReportBuilder> pPsRptBuilder = pRptMgr->GetReportBuilder(_T("Principal Web Stress Details Report"));
+   ATLASSERT(pPsRptBuilder);
+   if (pPsRptBuilder != nullptr)
+   {
+      pPsRptBuilder->Hidden(!bIsTimeStepPrincStress);
+   }
+
+   std::shared_ptr<CReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
+
+   if (bIsTimeStepPrincStress)
+   {
+      // This is the simplified version
+      pRptBuilder->RemoveChapterBuilder(_T("Principal Tension Stresses in Webs Details"));
+   }
+   else
+   {
+      auto pChBuilder = pRptBuilder->GetChapterBuilder(TEXT("Principal Tension Stresses in Webs Details"));
+      if (pChBuilder == nullptr)
+      {
+         // chapter wasn't previously added
+         VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CPrincipalTensionStressDetailsChapterBuilder), TEXT("Longitudinal Reinforcement for Shear")/*this is the name of the chapter after which the shrinkage strain chapter will be added*/));
+      }
+   }
+
+   return S_OK;
 }
 
 HRESULT CPGSpliceReporterImp::OnAnalysisTypeChanged()

@@ -43,6 +43,7 @@ static char THIS_FILE[] = __FILE__;
 
 #define DELTA_P    symbol(DELTA) << _T("P")
 #define DELTA_M    symbol(DELTA) << _T("M")
+#define DELTA_V    symbol(DELTA) << _T("V")
 #define DELTA_Pk   symbol(DELTA) << Sub2(_T("P"),_T("k"))
 #define DELTA_Mk   symbol(DELTA) << Sub2(_T("M"),_T("k"))
 #define DELTA_E    symbol(DELTA) << symbol(epsilon)
@@ -123,6 +124,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    bool bHasDeck = IsStructuralDeck(pBridge->GetDeckType());
 
@@ -213,7 +215,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
          if ( !prevGirderKey.IsEqual(segmentKey) )
          {
             // we only want to do this when the girder changes
-            vLoads = GetProductForces(pBroker, segmentKey);
+            vLoads = pProductLoads->GetProductForcesForGirder(poi.GetSegmentKey());
          }
 
          const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
@@ -1189,7 +1191,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedSectionForceTable(con
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     false);
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(7);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(10);
    RowIndexType rowIdx = 0;
    ColumnIndexType colIdx = 0;
 
@@ -1197,37 +1199,43 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedSectionForceTable(con
    pTable->SetRowSpan(rowIdx,colIdx,2);
    (*pTable)(rowIdx,colIdx++) << _T("Component");
 
-   pTable->SetColumnSpan(rowIdx,colIdx,2);
+   pTable->SetColumnSpan(rowIdx,colIdx,3);
    (*pTable)(rowIdx,colIdx) << _T("Creep");
-   colIdx += 2;
+   colIdx += 3;
 
-   pTable->SetColumnSpan(rowIdx,colIdx,2);
+   pTable->SetColumnSpan(rowIdx,colIdx,3);
    (*pTable)(rowIdx,colIdx) << _T("Shrinkage");
-   colIdx += 2;
+   colIdx += 3;
 
-   pTable->SetColumnSpan(rowIdx,colIdx,2);
+   pTable->SetColumnSpan(rowIdx,colIdx,3);
    (*pTable)(rowIdx,colIdx) << _T("Relaxation");
-   colIdx += 2;
+   colIdx += 3;
    
    rowIdx++;
    colIdx = 1;
    (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(_T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
    (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(_T("M")) << Sub(_T("r")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(_T("V")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
    (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(_T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
    (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(_T("M")) << Sub(_T("r")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(_T("V")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
    (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(_T("P")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
    (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(_T("M")) << Sub(_T("r")),rptMomentUnitTag,pDisplayUnits->GetSmallMomentUnit());
+   (*pTable)(rowIdx,colIdx++) << COLHDR(Overline(_T("V")) << Sub(_T("r")),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
 
    rowIdx = pTable->GetNumberOfHeaderRows();
    colIdx = 0;
    (*pTable)(rowIdx,colIdx++) << _T("Composite Section");
-   (*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.dPi[pgsTypes::pftCreep]);
+   (*pTable)(rowIdx,colIdx++) <<  force.SetValue(tsDetails.dPi[pgsTypes::pftCreep]);
    (*pTable)(rowIdx,colIdx++) << moment.SetValue(tsDetails.dMi[pgsTypes::pftCreep]);
-   (*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.dPi[pgsTypes::pftShrinkage]);
-   (*pTable)(rowIdx,colIdx++) << moment.SetValue(tsDetails.dPi[pgsTypes::pftShrinkage]);
-   (*pTable)(rowIdx,colIdx++) << force.SetValue(tsDetails.dPi[pgsTypes::pftRelaxation]);
-   (*pTable)(rowIdx,colIdx++) << moment.SetValue(tsDetails.dPi[pgsTypes::pftRelaxation]);
+   (*pTable)(rowIdx,colIdx++) <<  force.SetValue(tsDetails.dVi[pgsTypes::pftCreep]);
+   (*pTable)(rowIdx,colIdx++) <<  force.SetValue(tsDetails.dPi[pgsTypes::pftShrinkage]);
+   (*pTable)(rowIdx,colIdx++) << moment.SetValue(tsDetails.dMi[pgsTypes::pftShrinkage]);
+   (*pTable)(rowIdx,colIdx++) <<  force.SetValue(tsDetails.dVi[pgsTypes::pftShrinkage]);
+   (*pTable)(rowIdx,colIdx++) <<  force.SetValue(tsDetails.dPi[pgsTypes::pftRelaxation]);
+   (*pTable)(rowIdx,colIdx++) << moment.SetValue(tsDetails.dMi[pgsTypes::pftRelaxation]);
+   (*pTable)(rowIdx,colIdx++) <<  force.SetValue(tsDetails.dVi[pgsTypes::pftRelaxation]);
 
    return pTable;
 }
@@ -1448,8 +1456,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
    rowIdx++;
    colIdx = 0;
    (*pTable)(rowIdx, colIdx++) << _T("Composite");
-   (*pTable)(rowIdx, colIdx) << DELTA_P << _T("(") << rptForceUnitTag(&pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure) << _T(")") << rptNewLine;
-   (*pTable)(rowIdx, colIdx++) << DELTA_M << _T("(") << rptMomentUnitTag(&pDisplayUnits->GetSmallMomentUnit().UnitOfMeasure) << _T(")");
+   (*pTable)(rowIdx, colIdx)   << DELTA_P << _T("(") << rptForceUnitTag(&pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure) << _T(")") << rptNewLine;
+   (*pTable)(rowIdx, colIdx)   << DELTA_M << _T("(") << rptMomentUnitTag(&pDisplayUnits->GetSmallMomentUnit().UnitOfMeasure) << _T(")") << rptNewLine;
+   (*pTable)(rowIdx, colIdx++) << DELTA_V << _T("(") << rptForceUnitTag(&pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure) << _T(")");
 
    rowIdx++;
    colIdx = 0;
@@ -1565,7 +1574,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
 
       // Composite
       (*pTable)(rowIdx, colIdx) << force.SetValue(tsDetails.dPi[pfType]) << rptNewLine;
-      (*pTable)(rowIdx, colIdx) << moment.SetValue(tsDetails.dMi[pfType]);
+      (*pTable)(rowIdx, colIdx) << moment.SetValue(tsDetails.dMi[pfType]) << rptNewLine;
+      (*pTable)(rowIdx, colIdx) << force.SetValue(tsDetails.dVi[pfType]);
       rowIdx++;
 
       // Girder
@@ -1623,7 +1633,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
 
    // Composite
    (*pTable)(rowIdx, colIdx) << force.SetValue(tsDetails.dP) << rptNewLine;
-   (*pTable)(rowIdx, colIdx) << moment.SetValue(tsDetails.dM);
+   (*pTable)(rowIdx, colIdx) << moment.SetValue(tsDetails.dM) << rptNewLine;
+   (*pTable)(rowIdx, colIdx) << force.SetValue(tsDetails.dV);
    rowIdx++;
 
    // Girder
@@ -1682,7 +1693,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
 
    // Composite
    (*pTable)(rowIdx, colIdx) << force.SetValue(tsDetails.P) << rptNewLine;
-   (*pTable)(rowIdx, colIdx) << moment.SetValue(tsDetails.M);
+   (*pTable)(rowIdx, colIdx) << moment.SetValue(tsDetails.M)<< rptNewLine;
+   (*pTable)(rowIdx, colIdx) << force.SetValue(tsDetails.V);
    rowIdx++;
 
    // Girder
@@ -1940,11 +1952,10 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
 
 rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBroker* pBroker,const pgsPointOfInterest& poi,ResultsType resultsType,bool bGirder,IEAFDisplayUnits* pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-
    INIT_UV_PROTOTYPE(rptStressUnitValue,     stress,      pDisplayUnits->GetStressUnit(),    false);
 
-   std::vector<pgsTypes::ProductForceType> vLoads = GetProductForces(pBroker,poi.GetSegmentKey());
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   std::vector<pgsTypes::ProductForceType> vLoads = pProductLoads->GetProductForcesForGirder(poi.GetSegmentKey());
 
    IndexType nLoads = vLoads.size();
    ColumnIndexType nColumns = nLoads + 2;
@@ -3295,104 +3306,3 @@ void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChap
    }
 }
 
-std::vector<pgsTypes::ProductForceType> CTimeStepDetailsChapterBuilder::GetProductForces(IBroker* pBroker,const CGirderKey& girderKey) const
-{
-   std::vector<pgsTypes::ProductForceType> vProductForces;
-
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
-
-   vProductForces.push_back(pgsTypes::pftGirder);
-
-   vProductForces.push_back(pgsTypes::pftDiaphragm);
-
-   if ( pLoads->HasShearKeyLoad(girderKey) )
-   {
-      vProductForces.push_back(pgsTypes::pftShearKey);
-   }
-
-   if ( !IsZero(pUserLoads->GetConstructionLoad()) )
-   {
-      vProductForces.push_back(pgsTypes::pftConstruction);
-   }
-
-   if (pLoads->HasLongitudinalJointLoad())
-   {
-      vProductForces.push_back(pgsTypes::pftLongitudinalJoint);
-   }
-
-   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
-   {
-      vProductForces.push_back(pgsTypes::pftSlab);
-      vProductForces.push_back(pgsTypes::pftSlabPad);
-
-      if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
-      {
-         vProductForces.push_back(pgsTypes::pftSlabPanel);
-      }
-   }
-
-   if ( pLoads->HasSidewalkLoad(girderKey) )
-   {
-      vProductForces.push_back(pgsTypes::pftSidewalk);
-   }
-
-   vProductForces.push_back(pgsTypes::pftTrafficBarrier);
-
-   if ( pBridge->HasOverlay() )
-   {
-      vProductForces.push_back(pgsTypes::pftOverlay);
-   }
-
-   if ( pUserLoads->HasUserDC(girderKey) )
-   {
-      vProductForces.push_back(pgsTypes::pftUserDC);
-   }
-
-   if ( pUserLoads->HasUserDW(girderKey) )
-   {
-      vProductForces.push_back(pgsTypes::pftUserDW);
-   }
-
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-   {
-      if ( 0 < pStrandGeom->GetStrandCount(CSegmentKey(girderKey,segIdx),pgsTypes::Straight) ||
-           0 < pStrandGeom->GetStrandCount(CSegmentKey(girderKey,segIdx),pgsTypes::Harped)   ||
-           0 < pStrandGeom->GetStrandCount(CSegmentKey(girderKey,segIdx),pgsTypes::Temporary)
-           )
-      {
-         vProductForces.push_back(pgsTypes::pftPretension);
-         break;
-      }
-   }
-
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-   if ( 0 < nDucts )
-   {
-      vProductForces.push_back(pgsTypes::pftPostTensioning);
-      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
-   }
-
-   // time-depending effects
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( !pLossParams->IgnoreCreepEffects() )
-   {
-      vProductForces.push_back(pgsTypes::pftCreep);
-   }
-
-   if ( !pLossParams->IgnoreShrinkageEffects() )
-   {
-      vProductForces.push_back(pgsTypes::pftShrinkage);
-   }
-
-   if ( !pLossParams->IgnoreRelaxationEffects() )
-   {
-      vProductForces.push_back(pgsTypes::pftRelaxation);
-   }
-
-   return vProductForces;
-}

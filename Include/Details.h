@@ -793,6 +793,35 @@ struct TIME_STEP_REBAR
    }
 };
 
+// Principal stress in web variables for time step analyses
+struct TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS
+{
+   TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS(LPCTSTR lpszLocation, Float64 YwebSection, Float64 Qc, Float64 bw, bool bAdjusted, Float64 fpcx, Float64 fpcxs, Float64 t, Float64 ts) :
+      strLocation(lpszLocation), YwebSection(YwebSection), Qc(Qc), bw(bw), bIsShearWidthAdjustedForTendon(bAdjusted),fpcx(fpcx), fpcx_s(fpcxs), tau(t),tau_s(ts)
+   {
+   }
+
+   std::_tstring strLocation; // description of web section
+   Float64 YwebSection; // elevation of web section in girder section coordinates
+   Float64 Qc; // first moment of area of the section about the evaluation point
+   Float64 bw; // shear width at the evaluation point
+   bool bIsShearWidthAdjustedForTendon;
+   Float64 fpcx; // Maximum axial stress at evaluation point - increment at this interval
+   Float64 fpcx_s; // Maximum axial stress at evaluation point - sum of all previous intervals plus fpcx
+   Float64 tau; // shear stress at the evaluation point - increment at this interval
+   Float64 tau_s; // shear stress at the evaluation point - sum of all previous intervals plus t
+};
+
+struct TIME_STEP_PRINCIPALSTRESSINWEBDETAILS
+{
+   Float64 Hg; // height of non-composite girder
+   Float64 Vu; // Shear on section
+   Float64 I; // moment of inertia  section
+   Float64 fTop; // Stress at top of non-composite girder for computing maximum fpcx
+   Float64 fBot; // Stress at bottom of non-composite girder for computing maximum fpcx
+   std::vector<TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS> WebSections; // points along the web height where principal tension is evaluted
+};
+
 // This struct holds the computation details for a specific interval 
 // for a time step loss analysis
 struct TIME_STEP_DETAILS
@@ -814,18 +843,28 @@ struct TIME_STEP_DETAILS
    // Change in total loading on the section due to externally applied loads during this interval
    // Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   std::array<Float64,pftTimeStepSize> dPi, dMi;
+   std::array<Float64,pftTimeStepSize> dPi, dMi, dVi;
 
-   // total change in loading on the section (summation of dPi and dMi)
-   Float64 dP, dM;
+   // total change in loading on the section (summation of dPi, dMi, dVi)
+   Float64 dP, dM, dV;
+
+   // Incremental change in vertical component of prestresses force during this interval
+   Float64 dVpprei; // pretension
+   Float64 dVpposgi; // posttension in girder
+   Float64 dVppossi; // posttension in segment
+
+   // Total change in vertical component of prestresses force during this interval and all intervals up to this interval
+   Float64 Vpprei; // pretension
+   Float64 Vpposgi; // posttension in girder
+   Float64 Vppossi; // posttension in segment
 
    // Total loading on the section due to externally applied loads in all intervals upto
    // and including this interval. Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   std::array<Float64, pftTimeStepSize> Pi, Mi;
+   std::array<Float64, pftTimeStepSize> Pi, Mi, Vi;
 
-   // total change in loading on the section (summation of Pi and Mi)
-   Float64 P, M;
+   // total change in loading on the section (summation of Pi, Mi, Vi)
+   Float64 P, M, V;
 
    // Time step parameters for girder and deck
    TIME_STEP_CONCRETE Girder;
@@ -864,6 +903,10 @@ struct TIME_STEP_DETAILS
    std::array<Float64, pftTimeStepSize> er; // axial strain
    std::array<Float64, pftTimeStepSize> rr; // curvature
 
+   // Principal web stress details for each loading. NOTE: that an additional loading is tagged on 
+   // to the end to capture vertical shear due to prestressing
+   std::array<TIME_STEP_PRINCIPALSTRESSINWEBDETAILS, pftTimeStepSize+1> PrincipalStressDetails;
+
    // Check equilibrium
    Float64 dPext, dPint; // change in external and internal axial force during this interval (dPext == dPint)
    Float64 dMext, dMint; // change in external and internal moment during this interval (dMext == dMint)
@@ -887,9 +930,11 @@ struct TIME_STEP_DETAILS
       {
          dPi[i] = 0;
          dMi[i] = 0;
+         dVi[i] = 0;
 
          Pi[i] = 0;
          Mi[i] = 0;
+         Vi[i] = 0;
 
          der[i] = 0;
          drr[i] = 0;
@@ -909,9 +954,11 @@ struct TIME_STEP_DETAILS
 
       dP = 0;
       dM = 0;
+      dV = 0;
 
       P = 0;
       M = 0;
+      V = 0;
 
       dPext = 0;
       dPint = 0;
@@ -921,6 +968,13 @@ struct TIME_STEP_DETAILS
       Pint  = 0;
       Mext  = 0;
       Mint  = 0;
+
+      dVpprei = 0;
+      dVpposgi = 0;
+      dVppossi = 0;
+      Vpprei = 0;
+      Vpposgi = 0;
+      Vppossi = 0;
    }
 };
 

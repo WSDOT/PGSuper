@@ -340,6 +340,9 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    DDX_Text(pDX, IDC_PRINCIPAL_TENSION_UNIT, fcTag);
    DDX_CBEnum(pDX, IDC_PRINCIPAL_TENSION_METHOD, m_Entry.m_PrincipalTensileStressMethod);
    DDX_Text(pDX, IDC_TENDON_NEARNESS_FACTOR, m_Entry.m_PrincipalTensileStressTendonNearnessFactor);
+   DDX_Text(pDX, IDC_UNGROUTED_MULTIPLIER, m_Entry.m_PrincipalTensileStressUngroutedMultiplier);
+   DDX_Text(pDX, IDC_GROUTED_MULTIPLIER, m_Entry.m_PrincipalTensileStressGroutedMultiplier);
+
 
    DDX_KeywordUnitValueAndTag(pDX, IDC_PRINCIPAL_FC_THRESHOLD, IDC_PRINCIPAL_FC_THRESHOLD_UNIT, _T("All"), m_Entry.m_PrincipalTensileStressFcThreshold, pDisplayUnits->Stress );
    if (pDX->m_bSaveAndValidate && m_Entry.m_PrincipalTensileStressFcThreshold < 0.0 && m_Entry.m_PrincipalTensileStressFcThreshold != -1.0)

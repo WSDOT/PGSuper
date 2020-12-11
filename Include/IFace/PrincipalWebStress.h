@@ -37,6 +37,8 @@
 #include <Details.h>
 #endif
 
+#include <IFace\AnalysisResults.h>
+
 // PROJECT INCLUDES
 //
 
@@ -49,6 +51,43 @@ class pgsPointOfInterest;
 
 // MISCELLANEOUS
 //
+struct PrincipalWebResult
+{
+   Float64 f_pcx; // web axial stress
+   Float64 tau;   // web shear stress
+
+   PrincipalWebResult() :
+      f_pcx(0), tau(0)
+   {;}
+};
+
+struct TimeStepCombinedPrincipalWebStressDetailsAtWebSection
+{
+   std::_tstring strLocation; // description of web section
+   Float64 YwebSection;
+
+   std::array<PrincipalWebResult, lcLoadingCombinationTypeCount> LoadComboResults; // results for each LoadingCombinationType
+
+   Float64 Vp_Tau;  // vertical component for prestress
+
+   // pretensioned + posttensioned prestress
+   Float64 Prestress_Fpcx;
+   Float64 Prestress_Tau;
+
+   Float64 LL_Ftop; // results for live load
+   Float64 LL_Fbot;
+   Float64 LL_Fpcx;
+   Float64 LL_Vu;
+   Float64 LL_Tau;
+
+   Float64 Service3Fpcx; // results for Service III
+   Float64 Service3Tau;
+   Float64 Service3PrincipalStress;
+
+   TimeStepCombinedPrincipalWebStressDetailsAtWebSection():
+      YwebSection(0), Vp_Tau(0), Prestress_Fpcx(0), Prestress_Tau(0), LL_Fpcx(0), LL_Tau(0), Service3Fpcx(0), Service3Tau(0), Service3PrincipalStress(0)
+   {;}
+};
 
 /*****************************************************************************
 INTERFACE
@@ -61,7 +100,12 @@ DEFINE_GUID(IID_IPrincipalWebStress,
    0x179d8e05, 0x2c51, 0x4c32, 0xae, 0x11, 0x71, 0xd4, 0x89, 0xc4, 0xf8, 0x4);
 interface IPrincipalWebStress : IUnknown
 {
+   // Principal web stress details: NON-TIME-STEP loss analyses only
    virtual const PRINCIPALSTRESSINWEBDETAILS* GetPrincipalWebStressDetails(const pgsPointOfInterest& poi) const = 0;
+
+   // Principal web stress details: TIME-STEP loss analyses only
+   // vector of results at each web section elevation
+   virtual const std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection>* GetTimeStepPrincipalWebStressDetails(const pgsPointOfInterest& poi, IntervalIndexType interval) const = 0;
 };
 
 #endif // INCLUDED_IFACE_PRINCIPALWEBSTRESS_H_

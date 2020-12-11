@@ -23002,6 +23002,12 @@ Float64 CBridgeAgentImp::GetQ(pgsTypes::SectionPropertyType spType, IntervalInde
    // Yclip is in girder section coordinate (Y=0 at top of plane girder and negative downwards)
   const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
 
+  if (!props.Section)
+  {
+     // no section at location
+     return 0.0;
+  }
+
    auto found = props.Q.find(Yclip);
    if (found != props.Q.end())
    {
@@ -29902,15 +29908,22 @@ void CBridgeAgentImp::GetSegmentDuctPoint(const CSegmentKey& segmentKey, Float64
    CComPtr<IPoint3d> cg;
    tendon->get_CG(Xs, tmPath, &cg);
 
-   Float64 x, y, z;
-   cg->Location(&x, &y, &z);
-   ATLASSERT(IsEqual(z, Xs));
+   if (cg)
+   {
+      Float64 x, y, z;
+      cg->Location(&x, &y, &z);
+      ATLASSERT(IsEqual(z, Xs));
 
-   CComPtr<IPoint2d> pnt;
-   pnt.CoCreateInstance(CLSID_Point2d);
-   pnt->Move(x, y);
+      CComPtr<IPoint2d> pnt;
+      pnt.CoCreateInstance(CLSID_Point2d);
+      pnt->Move(x, y);
 
-   pnt.CopyTo(ppPoint);
+      pnt.CopyTo(ppPoint);
+   }
+   else
+   {
+      *ppPoint = nullptr;
+   }
 }
 
 void CBridgeAgentImp::GetSegmentDuctPoint(const pgsPointOfInterest& poi, DuctIndexType ductIdx, IPoint2d** ppPoint) const

@@ -90,6 +90,9 @@
 #include <Reporting\TimeStepDetailsChapterBuilder.h>
 #include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
 
+#include <Reporting\PrincipalWebStressDetailsChapterBuilder.h>
+#include <Reporting\PrincipalWebStressDetailsReportSpecificationBuilder.h>
+
 #include <Reporting\PointOfInterestChapterBuilder.h>
 
 #include <Reporting\DistributionFactorSummaryChapterBuilder.h>
@@ -129,6 +132,7 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateSpecChecReport();
    CreateDistributionFactorSummaryReport();
    CreateTimeStepDetailsReport();
+   CreatePrincipalWebStressDetailsReport();
    CreatePierReactionsReport();
    CreateTimelineReport();
 
@@ -450,6 +454,22 @@ void CReporterBase::CreateTimeStepDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTimeStepDetailsChapterBuilder) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 }
+
+void CReporterBase::CreatePrincipalWebStressDetailsReport()
+{
+   GET_IFACE(IReportManager,pRptMgr);
+   std::shared_ptr<CReportSpecificationBuilder> pPoiRptSpecBuilder(  std::make_shared<CPrincipalWebStressDetailsReportSpecificationBuilder>(m_pBroker) );
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Principal Web Stress Details Report")));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pPoiRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPrincipalWebStressDetailsChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+}
+
 
 void CReporterBase::CreatePointOfInterestReport()
 {

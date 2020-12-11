@@ -20,45 +20,35 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ReporterBase.h : Declaration of the CReporterBase
-
 #pragma once
 
-class CReporterBase
+#include <Reporting\ReportingExp.h>
+#include <Reporting\BrokerReportSpecification.h>
+#include <PgsExt\ReportPointOfInterest.h>
+
+class REPORTINGCLASS CPrincipalWebStressDetailsReportSpecification :
+   public CBrokerReportSpecification
 {
 public:
-   void SetBroker(IBroker* pBroker);
-   HRESULT InitCommonReportBuilders();
+	CPrincipalWebStressDetailsReportSpecification(LPCTSTR strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,
+                                                 IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear);
+   ~CPrincipalWebStressDetailsReportSpecification(void);
 
-   HRESULT OnSpecificationChanged();
+   void SetOptions(bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear);
+
+   virtual HRESULT Validate() const;
+   virtual std::_tstring GetReportContextString() const override;
+
+   pgsPointOfInterest GetPointOfInterest() const;
+   IntervalIndexType GetInterval() const;
+   bool ReportAtAllLocations() const;
+   bool ReportAxial() const;
+   bool ReportShear() const;
 
 protected:
-   IBroker* m_pBroker; // weak reference
-
-   virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion=true) = 0;
-   void CreateBridgeGeometryReport();
-   void CreateDetailsReport();
-   void CreateLoadRatingReport();
-   void CreateLoadRatingSummaryReport();
-   void CreateBearingDesignReport();
-
-   void CreateBridgeAnalysisReport();
-   void CreateHaulingReport();
-   void CreateLiftingReport();
-   void CreateMultiGirderSpecCheckReport();
-   void CreateSpecChecReport();
-   void CreateDistributionFactorSummaryReport();
-   void CreateMultiHaunchGeometryReport();
-
-#if defined _DEBUG || defined _BETA_VERSION
-   void CreateDistributionFactorsReport();
-#endif
-
-   void CreateStageByStageDetailsReport();
-   void CreateTimeStepDetailsReport();
-   void CreatePrincipalWebStressDetailsReport();
-   void CreatePointOfInterestReport();
-
-   void CreatePierReactionsReport();
-   void CreateTimelineReport();
+   bool m_bReportAtAllLocations;
+   pgsPointOfInterest m_Poi;
+   IntervalIndexType m_IntervalIdx;
+   bool m_bReportAxialDetails;
+   bool m_bReportShearDetails;
 };

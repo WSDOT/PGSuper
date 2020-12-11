@@ -29,6 +29,12 @@ Axial stress at the elevation of the web where principal stress is being evaluat
 
 Axial stress is computed using the bending moment causing the maximum stress on the side of the girder (above or below the centroidal axis) where the principal tensile stress is being evaluated. The shear stress is computed for maximum shear force at a section. These maximum force effects may not occur concurrently.
 
+Shear and Axial Stresses for Time-Dependent Analyses
+-------------
+The stress calculation methods described above were developed with pretensioned prestress structures and simple construction scenerios in mind. More complex  structures analyzed using time-step losses require a higher level of accuracy. Hence, when time-step losses, and the NCHRP 849 method is selected, the program computes both shear stresses and axial stresses using an incremental time-step approach. Stresses for each loading are computed from the incremental load response and transformed section properties at each time interval, and then summed to give a cummulative stress response at each interval. For intervals at and after the application of live load, cummulateive load responses are summed and factored appropriately to compute required demand. 
+![](Principal_Stress_TimeStep.png)
+The equations below show how incremental stresses are computed for each interval(i), and summed over time to compute cummulative response at interval n. The Principal Web Stress Details report shows the details of this compuatation.
+
 Principal Tensile Stress
 ------------------------
 The principal tensile stress is computed using

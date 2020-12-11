@@ -34,6 +34,17 @@
 #include <IFace\Project.h>
 #include <PgsExt\LoadFactors.h>
 
+/////////// Misc
+
+inline IndexType HashPOIInterval(PoiIDType poiid, IntervalIndexType interval)
+{
+   ATLASSERT(poiid < Int32_Max);  // safety zone
+   ATLASSERT(interval < Int32_Max);
+   return make_Int64((Int32)poiid, (Int32)interval);
+}
+
+//////////////
+
 pgsPrincipalWebStressEngineer::pgsPrincipalWebStressEngineer() :
    m_pBroker(nullptr), m_StatusGroupID(INVALID_ID)
 {
@@ -77,7 +88,284 @@ const PRINCIPALSTRESSINWEBDETAILS* pgsPrincipalWebStressEngineer::GetPrincipalSt
    return &((*(retval.first)).second);
 }
 
+const std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection>* pgsPrincipalWebStressEngineer::GetTimeStepPrincipalWebStressDetails(const pgsPointOfInterest & poi, IntervalIndexType interval) const
+{
+   ATLASSERT(poi.GetID() != INVALID_ID);
+   IndexType hashval = HashPOIInterval(poi.GetID(), interval);
+
+   auto found = m_TimeStepDetails.find(hashval);
+   if (found != m_TimeStepDetails.end())
+   {
+      return &((*found).second); // already been computed
+   }
+
+   std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> details = ComputeTimeStepPrincipalWebStressDetails(poi, interval);
+
+   auto retval = m_TimeStepDetails.insert(std::make_pair(poi.GetID(), details));
+   return &((*(retval.first)).second);
+}
+
+std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalWebStressEngineer::ComputeTimeStepPrincipalWebStressDetails(const pgsPointOfInterest& poi, IntervalIndexType interval) const
+{
+   std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> details;
+
+   GET_IFACE(ILosses,pLosses);
+   GET_IFACE(IProductLoads,pProductLoads);
+   
+   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,interval);
+   const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[interval]);
+
+   // Create empty results for each web section elevation. We know that girder load result will be there
+   details.reserve( tsDetails.PrincipalStressDetails[pgsTypes::pftGirder].WebSections.size() );
+   for (const auto& webSection : tsDetails.PrincipalStressDetails[pgsTypes::pftGirder].WebSections)
+   {
+      details.push_back(TimeStepCombinedPrincipalWebStressDetailsAtWebSection());
+      TimeStepCombinedPrincipalWebStressDetailsAtWebSection& wsDetail = details.back();
+      wsDetail.strLocation = webSection.strLocation;
+      wsDetail.YwebSection = webSection.YwebSection;
+   }
+
+   // Build loading combinations
+   std::vector<LoadingCombinationType> loadCombos = { lcDC, lcDW, lcCR, lcSH, lcRE, lcPS };
+   for (auto combo :loadCombos)
+   {
+      std::vector<pgsTypes::ProductForceType> productForceTypes = pProductLoads->GetProductForcesForCombo(combo);
+
+      for (auto forceType : productForceTypes)
+      {
+         std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection>::iterator iterDet = details.begin();
+         for (const auto& webSection : tsDetails.PrincipalStressDetails[forceType].WebSections)
+         {
+            // Sum cummulative results from each product force type
+            iterDet->LoadComboResults[combo].f_pcx += webSection.fpcx_s;
+            iterDet->LoadComboResults[combo].tau   += webSection.tau_s;
+
+            iterDet++;
+         }
+      }
+   }
+
+   // total prestess 
+   std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection>::iterator iterDet = details.begin();
+   std::vector<TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS>::const_iterator preIter  = tsDetails.PrincipalStressDetails[pgsTypes::pftPretension].WebSections.begin();
+   std::vector<TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS>::const_iterator postIter = tsDetails.PrincipalStressDetails[pgsTypes::pftPostTensioning].WebSections.begin();
+   while (iterDet != details.end())
+   {
+      // Sum cummulative results from each product force type
+      iterDet->Prestress_Fpcx += preIter->fpcx_s + postIter->fpcx_s;
+      iterDet->Prestress_Tau  += preIter->tau_s    + postIter->tau_s;
+
+      preIter++;
+      postIter++;
+      iterDet++;
+   }
+
+   // vertical component of prestressing is a special case stored at the end (pftTimeStepSize'd member) of PrincipalStressDetails
+   iterDet = details.begin();
+   for (const auto& webSection : tsDetails.PrincipalStressDetails[pftTimeStepSize].WebSections)
+   {
+      // Sum cummulative results from each product force type
+      iterDet->Vp_Tau = webSection.tau_s;
+
+      iterDet++;
+   }
+
+   // Live load load shear responses
+   GET_IFACE(IProductForces,pProductForces);
+   auto maxBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+   auto minBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   sysSectionValue dummy, Vmin, Vmax;
+   pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, maxBat, true, true, &dummy, &Vmax);
+   pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, minBat, true, true, &Vmin, &dummy);
+   // Want max absolute value, but to retain sign. 
+   Float64 Vu = Vmax.Left();
+   if (fabs(Vmin.Left()) > fabs(Vu))  { Vu =  Vmin.Left();  }
+   if (fabs(Vmax.Right()) > fabs(Vu)) { Vu = -Vmax.Right(); } // sign convention
+   if (fabs(Vmin.Right()) > fabs(Vu)) { Vu = -Vmin.Right(); }
+
+   // use section properties from girder load case (they are all the same)
+   const TIME_STEP_PRINCIPALSTRESSINWEBDETAILS& rtsDet = tsDetails.PrincipalStressDetails[pgsTypes::pftGirder];
+   Float64 Hg = rtsDet.Hg;
+   Float64 I = rtsDet.I;
+
+   iterDet = details.begin();
+   for (const auto& webSection : rtsDet.WebSections) 
+   {
+      // Shear stress is pretty simple
+      Float64 Q = webSection.Qc;
+      Float64 bw = webSection.bw;
+      iterDet->LL_Vu = Vu;
+      iterDet->LL_Tau = Vu * Q / (I * bw);
+
+      // Axial stresses due to live load not so simple. 
+      // Uses the same logic as for combined reponse (non-time step) in  pgsPrincipalWebStressEngineer::ComputePrincipalStressInWeb()
+      // If the web section is above the girder centroid at this evaluation interval (the composite section interval), we want maximum (tensile) stress near the top of the girder.
+      // The stress is maximized at the top of the girder from negative moments, which are minimum moments for our sign convention. We also need the corresponding
+      // stress in the bottom of the girder for the minimum moment which is the minimum (compressive) stress.
+
+      // if the web section is below the composite girder centroid, we want the maximum (tensile) stress near the bottom of the girder. This occurs with positive (maximum) moment.
+      // The corresponding stress at the top of the girder for the maximum moment is the minimum (compressive) stression.
+      Float64 YwebSection = webSection.YwebSection;
+
+      bool bWebSectionAboveCentroid = ::IsLE(tsDetails.Ytr, YwebSection) ? true : false; 
+      auto llbat = pProductForces->GetBridgeAnalysisType(bWebSectionAboveCentroid ? pgsTypes::Minimize /*want minimum, or negative moments*/ : pgsTypes::Maximize /*want maximum, or positive moment*/);
+      std::array<Float64, 2> fMin, fMax;
+      pProductForces->GetLiveLoadStress(interval, pgsTypes::lltDesign, poi, llbat, true, true, pgsTypes::TopGirder, pgsTypes::BottomGirder, 
+                                        &fMin[pgsTypes::TopGirder], &fMax[pgsTypes::TopGirder], &fMin[pgsTypes::BottomGirder], &fMax[pgsTypes::BottomGirder]);
+
+      // we are seeking the maximum principal tensile stress so we want the maximum axial stress. At the extremeties of the section, it is typically easy to know
+      // which case governings, however at the centroids, it can get a little more tricky. we will compute them both to determine which controls
+      Float64 fpcx1 = fMax[pgsTypes::TopGirder] - (fMin[pgsTypes::BottomGirder] - fMax[pgsTypes::TopGirder])*YwebSection / Hg;
+      Float64 fpcx2 = fMin[pgsTypes::TopGirder] - (fMax[pgsTypes::BottomGirder] - fMin[pgsTypes::TopGirder])*YwebSection / Hg;
+
+      Float64 fTop, fBot, fpcx;
+      if (fpcx2 < fpcx1)
+      {
+         fpcx = fpcx1;
+         fTop = fMax[pgsTypes::TopGirder];
+         fBot = fMin[pgsTypes::BottomGirder];
+      }
+      else
+      {
+         fpcx = fpcx2;
+         fTop = fMin[pgsTypes::TopGirder];
+         fBot = fMax[pgsTypes::BottomGirder];
+      }
+
+      iterDet->LL_Ftop = fTop;
+      iterDet->LL_Fbot = fBot;
+      iterDet->LL_Fpcx = fpcx;
+
+      iterDet++;
+   }
+
+   // Build Service III results from loading combos
+   GET_IFACE(ILoadFactors, pILoadFactors);
+   const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
+   pgsTypes::LimitState limitState = pgsTypes::ServiceIII;
+   Float64 gDC = pLoadFactors->GetDCMax(limitState);
+   Float64 gDW = pLoadFactors->GetDWMax(limitState);
+   Float64 gCR = pLoadFactors->GetCRMax(limitState);
+   Float64 gSH = pLoadFactors->GetSHMax(limitState);
+   Float64 gRE = pLoadFactors->GetREMax(limitState);
+   Float64 gPS = pLoadFactors->GetPSMax(limitState);
+   Float64 gLL = pLoadFactors->GetLLIMMax(limitState);
+
+   for (auto& detail : details)
+   {
+      detail.Service3Fpcx  = gDC * detail.LoadComboResults[lcDC].f_pcx;
+      detail.Service3Tau   = gDC * detail.LoadComboResults[lcDC].tau;
+
+      // prestressing is added unfactored
+      detail.Service3Tau  += detail.Vp_Tau;
+
+      detail.Service3Fpcx  += detail.Prestress_Fpcx;
+      detail.Service3Tau   += detail.Prestress_Tau;
+
+      detail.Service3Fpcx += gDW * detail.LoadComboResults[lcDW].f_pcx;
+      detail.Service3Tau  += gDW * detail.LoadComboResults[lcDW].tau;
+
+      detail.Service3Fpcx += gCR * detail.LoadComboResults[lcCR].f_pcx;
+      detail.Service3Tau  += gCR * detail.LoadComboResults[lcCR].tau;
+
+      detail.Service3Fpcx += gSH * detail.LoadComboResults[lcSH].f_pcx;
+      detail.Service3Tau  += gSH * detail.LoadComboResults[lcSH].tau;
+
+      detail.Service3Fpcx += gRE * detail.LoadComboResults[lcRE].f_pcx;
+      detail.Service3Tau  += gRE * detail.LoadComboResults[lcRE].tau;
+
+      detail.Service3Fpcx += gPS * detail.LoadComboResults[lcPS].f_pcx;
+      detail.Service3Tau  += gPS * detail.LoadComboResults[lcPS].tau;
+
+      detail.Service3Fpcx += gLL * detail.LL_Fpcx;
+      detail.Service3Tau  += gLL * detail.LL_Tau;
+
+      // Finally, principal stress
+      m_MorhCircle->put_Sii(detail.Service3Fpcx);
+      m_MorhCircle->put_Sjj(0);
+      m_MorhCircle->put_Sij(detail.Service3Tau);
+
+      m_MorhCircle->get_Smax(&detail.Service3PrincipalStress);
+   }
+
+   return details;
+}
+
 void pgsPrincipalWebStressEngineer::Check(const PoiList& vPois, pgsPrincipalTensionStressArtifact* pArtifact) const
+{
+   GET_IFACE(ISpecification, pSpec);
+
+   // Assume that if the first poi needs checked a certain way, they all do
+   const pgsPointOfInterest& rpoi(vPois.front());
+   ISpecification::PrincipalWebStressCheckType  checkType = pSpec->GetPrincipalWebStressCheckType(rpoi.GetSegmentKey());
+   ATLASSERT(ISpecification::pwcNotApplicable != checkType);
+
+   if (ISpecification::pwcNCHRPTimeStepMethod == checkType)
+   {
+      CheckTimeStep(vPois, pArtifact);
+   }
+   else
+   {
+      CheckSimpleLosses(vPois, pArtifact);
+   }
+}
+
+void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList & vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
+{
+   GET_IFACE(IAllowableConcreteStress, pAllowables);
+   GET_IFACE(IMaterials, pMaterials);
+   GET_IFACE(IIntervals, pIntervals);
+
+   IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
+
+   Float64 coefficient = pAllowables->GetAllowablePrincipalWebTensionStressCoefficient();
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   Float64 fcReqd = -Float64_Max;
+   for (const pgsPointOfInterest& poi : vPois)
+   {
+      // Time step analysis:
+      const auto* pWebSectionDetails =  GetTimeStepPrincipalWebStressDetails(poi, liveLoadInterval);
+
+      Float64 stress_limit = pAllowables->GetAllowablePrincipalWebTensionStress(poi);
+
+      // find controlling web section
+      Float64 fmax = -Float64_Max;
+      Float64 Yg; // web section elevation at controlling fmax
+      std::_tstring strWebLocation; // web section description at controlling fmax
+      for (const auto& webSection : *pWebSectionDetails)
+      {
+         if (fmax < webSection.Service3PrincipalStress)
+         {
+            fmax = webSection.Service3PrincipalStress;
+            Yg = webSection.YwebSection;
+            strWebLocation = webSection.strLocation;
+         }
+      }
+
+      // compute required concrete strength for this web section
+      CClosureKey closureKey;
+      Float64 lambda;
+      if(pPoi->IsInClosureJoint(poi,&closureKey))
+      {
+         lambda = pMaterials->GetClosureJointLambda(closureKey);
+      }
+      else
+      {
+         lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
+      }
+      Float64 fc_reqd = pow(fmax / (coefficient*lambda), 2);
+      fcReqd = Max(fcReqd, fc_reqd); // we want the max
+
+      // create check artifact for this poi
+      pgsPrincipalTensionSectionArtifact artifact(poi, stress_limit, fmax, Yg, strWebLocation.c_str(), fcReqd);
+
+      pArtifact->AddPrincipalTensionStressArtifact(artifact);
+   } // next poi
+}
+
+void pgsPrincipalWebStressEngineer::CheckSimpleLosses(const PoiList & vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
 {
    GET_IFACE(IAllowableConcreteStress, pAllowables);
    GET_IFACE(IMaterials, pMaterials);
@@ -147,8 +435,8 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
 
    pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor, principalTensileStressFcThreshold;
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&principalTensileStressFcThreshold);
+   Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier,principalTensileStressFcThreshold;
+   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&ungroutedMultiplier,&groutedMultiplier,&principalTensileStressFcThreshold);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);

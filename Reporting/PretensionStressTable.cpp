@@ -117,8 +117,9 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       loadRatingIntervalIdx = releaseIntervalIdx;
    }
 
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec); // not used if we aren't reporting rating results
+   GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec);
+
    int nRatingTypes = (int)pgsTypes::lrLoadRatingTypeCount;
 
    ColumnIndexType nColumns;

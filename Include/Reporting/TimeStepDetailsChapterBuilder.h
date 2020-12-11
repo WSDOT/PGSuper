@@ -81,8 +81,6 @@ protected:
    void ReportSegmentTendonRelaxationDetails(rptChapter* pChapter, IBroker* pBroker, const pgsPointOfInterest& poi, IntervalIndexType firstIntervalIdx, IntervalIndexType lastIntervalIdx, IEAFDisplayUnits* pDisplayUnits) const;
    void ReportGirderTendonRelaxationDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
 
-   std::vector<pgsTypes::ProductForceType> GetProductForces(IBroker* pBroker,const CGirderKey& girderKey) const;
-
    // Prevent accidental copying and assignment
    CTimeStepDetailsChapterBuilder(const CTimeStepDetailsChapterBuilder&) = delete;
    CTimeStepDetailsChapterBuilder& operator=(const CTimeStepDetailsChapterBuilder&) = delete;

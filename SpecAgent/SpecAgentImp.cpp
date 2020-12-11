@@ -2009,17 +2009,17 @@ Float64 CSpecAgentImp::GetAllowablePrincipalWebTensionStressCoefficient() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor, principalTensileStressFcThreshold;
-   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&principalTensileStressFcThreshold);
-   return coefficient;
+   Float64 tensionCoefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultimplier, principalTensileStressFcThreshold;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &tensionCoefficient,&ductDiameterFactor,&ungroutedMultiplier, &groutedMultimplier,&principalTensileStressFcThreshold);
+   return tensionCoefficient;
 }
 
 Float64 CSpecAgentImp::GetprincipalTensileStressFcThreshold() const
 {
    const SpecLibraryEntry* pSpec = GetSpec();
    pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor, principalTensileStressFcThreshold;
-   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&principalTensileStressFcThreshold);
+   Float64 tensionCoefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultimplier, principalTensileStressFcThreshold;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &tensionCoefficient,&ductDiameterFactor,&ungroutedMultiplier, &groutedMultimplier,&principalTensileStressFcThreshold);
    return principalTensileStressFcThreshold;
 }
 
@@ -3531,57 +3531,23 @@ void CSpecAgentImp::Invalidate()
 
 Float64 CSpecAgentImp::GetDuctDeductFactor(IntervalIndexType intervalIdx, IntervalIndexType groutDuctIntervalIdx) const
 {
-   // Before 2nd Edition, 2000 interims
-   // LRFD 5.8.2.9
-   // "In determining the web width at a particular level, the diameter of ungrouted ducts or
-   // one-half the diameter of grouted ducts at that level shall be subtracted from the web width"
-   //
-   // 2nd Edtion, 2003 interims
-   // "In determining the web width at a particular level, one-half the diameter of ungrouted ducts or
-   // one-quarter the diameter of grouted ducts at that level shall be subtracted from the web width"
-   //
-   // 9th Edition, 2020
-   // LRFD 5.7.2.8
-   // The paragraph quoted above has been removed and the following is now the definition of bv
-   // "bv = ... for grouted ducts, no modification is necessary. For ungrouted ducts, reduce bv by the diameter of the duct"
+   Float64 deduct_factor;
 
-   auto lrfdVersion = lrfdVersionMgr::GetVersion();
-   Float64 deduct_factor = 1.0;
-   if (lrfdVersion < lrfdVersionMgr::SecondEditionWith2000Interims)
+   // Get principal web stress parameters
+   const SpecLibraryEntry* pSpec = GetSpec();
+
+   pgsTypes::PrincipalTensileStressMethod method;
+   Float64 coefficient, principalTensileStressFcThreshold, ductDiameterNearnessFactor, ungroutedDiameterMultiplier, groutedDiameterMultiplier;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterNearnessFactor,&ungroutedDiameterMultiplier, &groutedDiameterMultiplier, &principalTensileStressFcThreshold);
+
+   if (intervalIdx < groutDuctIntervalIdx)
    {
-      // before 2nd Edtion 2000 interims
-      if (intervalIdx < groutDuctIntervalIdx)
-      {
-         deduct_factor = 1.00;
-      }
-      else
-      {
-         deduct_factor = 0.50;
-      }
-   }
-   else if (lrfdVersionMgr::SecondEditionWith2000Interims <= lrfdVersion && lrfdVersion < lrfdVersionMgr::NinthEdition2020)
-   {
-      // 2nd Edition, 2000 interms to 9th Edition 2020
-      if (intervalIdx < groutDuctIntervalIdx)
-      {
-         deduct_factor = 0.50;
-      }
-      else
-      {
-         deduct_factor = 0.25;
-      }
+      deduct_factor = ungroutedDiameterMultiplier;
    }
    else
    {
-      // 9th Edition, 2020 and later
-      if (intervalIdx < groutDuctIntervalIdx)
-      {
-         deduct_factor = 1.00;
-      }
-      else
-      {
-         deduct_factor = 0;
-      }
+      deduct_factor = groutedDiameterMultiplier;
    }
+
    return deduct_factor;
 }

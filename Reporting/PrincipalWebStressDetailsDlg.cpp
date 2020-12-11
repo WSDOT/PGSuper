@@ -19,12 +19,12 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 //
-// TimeStepDetailsDlg.cpp : implementation file
+// PrincipalWebStressDetailsDlg.cpp : implementation file
 //
 
 #include "stdafx.h"
 #include "Reporting.h"
-#include "TimeStepDetailsDlg.h"
+#include "PrincipalWebStressDetailsDlg.h"
 
 #include <PgsExt\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
@@ -40,14 +40,17 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-// CTimeStepDetailsDlg dialog
+// CPrincipalWebStressDetailsDlg dialog
 
-IMPLEMENT_DYNAMIC(CTimeStepDetailsDlg, CDialog)
+IMPLEMENT_DYNAMIC(CPrincipalWebStressDetailsDlg, CDialog)
 
-CTimeStepDetailsDlg::CTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
-	: CDialog(CTimeStepDetailsDlg::IDD, pParent)
+
+CPrincipalWebStressDetailsDlg::CPrincipalWebStressDetailsDlg(IBroker* pBroker,std::shared_ptr<CPrincipalWebStressDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,bool bReportAxial, bool bReportShear,CWnd* pParent)
+	: CDialog(CPrincipalWebStressDetailsDlg::IDD, pParent)
    , m_SliderPos(0)
-   , m_pTsRptSpec(pRptSpec)
+   , m_pPwsRptSpec(pRptSpec)
+   , m_bReportShearStress(bReportShear)
+   , m_bReportAxial(bReportAxial)
 {
    m_InitialPOI = initialPoi;
    m_GirderKey = m_InitialPOI.GetSegmentKey();
@@ -56,11 +59,12 @@ CTimeStepDetailsDlg::CTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CTimeS
    m_pBroker = pBroker;
 }
 
-CTimeStepDetailsDlg::~CTimeStepDetailsDlg()
+
+CPrincipalWebStressDetailsDlg::~CPrincipalWebStressDetailsDlg()
 {
 }
 
-void CTimeStepDetailsDlg::DoDataExchange(CDataExchange* pDX)
+void CPrincipalWebStressDetailsDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
    DDX_Control(pDX, IDC_SLIDER, m_Slider);
@@ -70,15 +74,17 @@ void CTimeStepDetailsDlg::DoDataExchange(CDataExchange* pDX)
    DDX_CBItemData(pDX, IDC_INTERVAL, m_IntervalIdx);
    DDX_Slider(pDX, IDC_SLIDER, m_SliderPos);
    DDX_Check_Bool(pDX, IDC_ALL_LOCATIONS, m_bUseAllLocations);
+   DDX_Check(pDX, IDC_SHEAR, m_bReportShearStress);
+   DDX_Check(pDX, IDC_AXIAL, m_bReportAxial);
 }
 
-BEGIN_MESSAGE_MAP(CTimeStepDetailsDlg, CDialog)
+BEGIN_MESSAGE_MAP(CPrincipalWebStressDetailsDlg, CDialog)
    ON_WM_HSCROLL()
    ON_BN_CLICKED(IDC_ALL_LOCATIONS,OnClickedAllLocations)
    ON_CBN_SELCHANGE(IDC_GIRDERLINE,OnGirderLineChanged)
 END_MESSAGE_MAP()
 
-BOOL CTimeStepDetailsDlg::OnInitDialog()
+BOOL CPrincipalWebStressDetailsDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -125,35 +131,45 @@ BOOL CTimeStepDetailsDlg::OnInitDialog()
    }
    m_Slider.SetPos(pos);
 
-   InitFromTimeStepRptSpec();
+   InitFromPrincipalWebStressRptSpec();
 
    UpdateSliderLabel();
    OnClickedAllLocations();
 
-   SetWindowText(_T("Time Step Details"));
+   SetWindowText(_T("Principal Web Stress Details"));
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-bool CTimeStepDetailsDlg::UseAllLocations()
+bool CPrincipalWebStressDetailsDlg::UseAllLocations()
 {
    return m_bUseAllLocations;
 }
 
-pgsPointOfInterest CTimeStepDetailsDlg::GetPOI()
+pgsPointOfInterest CPrincipalWebStressDetailsDlg::GetPOI()
 {
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());
    pgsPointOfInterest poi = m_vPOI[m_SliderPos];
    return poi;
 }
 
-IntervalIndexType CTimeStepDetailsDlg::GetInterval()
+IntervalIndexType CPrincipalWebStressDetailsDlg::GetInterval()
 {
    return m_IntervalIdx;
 }
 
-void CTimeStepDetailsDlg::UpdatePOI()
+bool CPrincipalWebStressDetailsDlg::GetReportShear()
+{
+   return m_bReportShearStress;
+}
+
+bool CPrincipalWebStressDetailsDlg::GetReportAxial()
+{
+   return m_bReportAxial;
+}
+
+void CPrincipalWebStressDetailsDlg::UpdatePOI()
 {
    GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI.clear();
@@ -165,15 +181,15 @@ void CTimeStepDetailsDlg::UpdatePOI()
    }
 }
 
-void CTimeStepDetailsDlg::InitFromTimeStepRptSpec()
+void CPrincipalWebStressDetailsDlg::InitFromPrincipalWebStressRptSpec()
 {
-   if (!m_pTsRptSpec)
+   if (!m_pPwsRptSpec)
    {
       return;
    }
 
-   m_bUseAllLocations = m_pTsRptSpec->ReportAtAllLocations();
-   pgsPointOfInterest poi = m_pTsRptSpec->GetPointOfInterest();
+   m_bUseAllLocations = m_pPwsRptSpec->ReportAtAllLocations();
+   pgsPointOfInterest poi = m_pPwsRptSpec->GetPointOfInterest();
 
    m_GirderKey = poi.GetSegmentKey();
 
@@ -188,18 +204,20 @@ void CTimeStepDetailsDlg::InitFromTimeStepRptSpec()
       cur_pos++;
    }
 
-   m_IntervalIdx = m_pTsRptSpec->GetInterval();
+   m_IntervalIdx = m_pPwsRptSpec->GetInterval();
+   m_bReportAxial = m_pPwsRptSpec->ReportAxial();
+   m_bReportShearStress = m_pPwsRptSpec->ReportShear();
 
    UpdateData(FALSE);
 }
 
-void CTimeStepDetailsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+void CPrincipalWebStressDetailsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
    UpdateSliderLabel();
    CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
-void CTimeStepDetailsDlg::UpdateSliderLabel()
+void CPrincipalWebStressDetailsDlg::UpdateSliderLabel()
 {
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
@@ -226,7 +244,7 @@ void CTimeStepDetailsDlg::UpdateSliderLabel()
    m_Location.SetWindowText(strLabel);
 }
 
-void CTimeStepDetailsDlg::OnClickedAllLocations()
+void CPrincipalWebStressDetailsDlg::OnClickedAllLocations()
 {
    int show = IsDlgButtonChecked(IDC_ALL_LOCATIONS) ? SW_HIDE : SW_SHOW;
    GetDlgItem(IDC_LABEL)->ShowWindow(show);
@@ -234,7 +252,7 @@ void CTimeStepDetailsDlg::OnClickedAllLocations()
    m_Location.ShowWindow(show);
 }
 
-void CTimeStepDetailsDlg::OnGirderLineChanged()
+void CPrincipalWebStressDetailsDlg::OnGirderLineChanged()
 {
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERLINE);
    GirderIndexType gdrIdx = (GirderIndexType)pcbGirders->GetCurSel();

@@ -35,6 +35,8 @@ public:
 
    static std::vector<pgsTypes::ProductForceType> GetProductForces(IBroker* pBroker,LoadingCombinationType combo);
 
+   static std::vector<pgsTypes::ProductForceType> GetProductForces(IBroker* pBroker,const CGirderKey& girderKey);
+
 private:
    void AddLoadItem(pgsTypes::ProductForceType pfType,CComBSTR bstrLoadGroupName,LoadCaseIDType lcid);
 

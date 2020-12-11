@@ -20,45 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ReporterBase.h : Declaration of the CReporterBase
-
 #pragma once
 
-class CReporterBase
+#include <Reporting\ReportingExp.h>
+#include <Reporting\BrokerReportSpecificationBuilder.h>
+
+class REPORTINGCLASS CPrincipalWebStressDetailsReportSpecificationBuilder :
+   public CBrokerReportSpecificationBuilder
 {
 public:
-   void SetBroker(IBroker* pBroker);
-   HRESULT InitCommonReportBuilders();
+   CPrincipalWebStressDetailsReportSpecificationBuilder(IBroker* pBroker);
+   ~CPrincipalWebStressDetailsReportSpecificationBuilder(void);
 
-   HRESULT OnSpecificationChanged();
-
-protected:
-   IBroker* m_pBroker; // weak reference
-
-   virtual CTitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion=true) = 0;
-   void CreateBridgeGeometryReport();
-   void CreateDetailsReport();
-   void CreateLoadRatingReport();
-   void CreateLoadRatingSummaryReport();
-   void CreateBearingDesignReport();
-
-   void CreateBridgeAnalysisReport();
-   void CreateHaulingReport();
-   void CreateLiftingReport();
-   void CreateMultiGirderSpecCheckReport();
-   void CreateSpecChecReport();
-   void CreateDistributionFactorSummaryReport();
-   void CreateMultiHaunchGeometryReport();
-
-#if defined _DEBUG || defined _BETA_VERSION
-   void CreateDistributionFactorsReport();
-#endif
-
-   void CreateStageByStageDetailsReport();
-   void CreateTimeStepDetailsReport();
-   void CreatePrincipalWebStressDetailsReport();
-   void CreatePointOfInterestReport();
-
-   void CreatePierReactionsReport();
-   void CreateTimelineReport();
+   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc);
 };

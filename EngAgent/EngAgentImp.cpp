@@ -3686,6 +3686,11 @@ const PRINCIPALSTRESSINWEBDETAILS* CEngAgentImp::GetPrincipalWebStressDetails(co
    return m_pPrincipalWebStressEngineer->GetPrincipalStressInWeb(poi);
 }
 
+const std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection>* CEngAgentImp::GetTimeStepPrincipalWebStressDetails(const pgsPointOfInterest& poi, IntervalIndexType interval) const
+{
+   return m_pPrincipalWebStressEngineer->GetTimeStepPrincipalWebStressDetails(poi, interval);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // IGirderHaunch
 Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey) const

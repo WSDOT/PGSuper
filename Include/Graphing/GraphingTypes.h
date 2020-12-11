@@ -50,6 +50,7 @@ enum GraphType
    graphDeckShrinkageStress,
    graphLoadRating,
    graphWebShearStress,
+   graphWebAxialStress,
    graphPrincipalWebStressDemand,
    graphPrincipalWebStressLimit
 };

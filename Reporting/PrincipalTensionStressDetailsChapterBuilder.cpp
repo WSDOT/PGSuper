@@ -70,6 +70,18 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+
+   // This report does not apply to the time step method
+   if (false) //bTimeStepMethod)
+   {
+      *pPara << _T("Principal web stress details for time-step analyses can be found in the Principal Web Stress Details report.") << rptNewLine;
+      return pChapter;
+   }
+
    GET_IFACE2(pBroker, IArtifact, pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
@@ -145,13 +157,9 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
    DuctIndexType nGirderDucts = pGirderTendonGeom->GetDuctCount(girderKey);
    DuctIndexType nSegmentDucts = 0; // will add to this as we loop over segments
 
-   GET_IFACE2(pBroker, ISpecification, pSpec);
-   GET_IFACE2(pBroker, ILibrary, pLib);
-   std::_tstring specName = pSpec->GetSpecification();
-   const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
    pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor, principalTensileStressFcThreshold;
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor, &principalTensileStressFcThreshold);
+   Float64 coefficient, ductDiameterFactor,  ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
+   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&ungroutedMultiplier,&groutedMultiplier, &principalTensileStressFcThreshold);
 
    *pPara << _T("Y = elevation in web where principal stress is computed, measured downwards from top centerline of non-composite girder.") << rptNewLine;
    *pPara << RPT_STRESS(_T("top")) << _T(" and ") << RPT_STRESS(_T("bot")) << _T(" Service III stress including effective prestress.") << rptNewLine;

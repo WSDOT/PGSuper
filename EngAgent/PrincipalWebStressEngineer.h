@@ -23,6 +23,7 @@
 #pragma once
 
 #include <Details.h>
+#include <IFace\PrincipalWebStress.h>
 
 class pgsPrincipalWebStressEngineer
 {
@@ -36,18 +37,29 @@ public:
 
    const PRINCIPALSTRESSINWEBDETAILS* GetPrincipalStressInWeb(const pgsPointOfInterest& poi) const;
 
+   const std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection>* GetTimeStepPrincipalWebStressDetails(const pgsPointOfInterest& poi, IntervalIndexType interval) const;
+
    void Check(const PoiList& vPois, pgsPrincipalTensionStressArtifact* pArtifact) const;
 
 private:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
 
+   void CheckTimeStep(const PoiList& vPois, pgsPrincipalTensionStressArtifact* pArtifact) const;
+   void CheckSimpleLosses(const PoiList& vPois, pgsPrincipalTensionStressArtifact* pArtifact) const;
 
    CComPtr<IMohrCircle> m_MorhCircle;
 
+   // non-time step
    mutable std::map<PoiIDType, PRINCIPALSTRESSINWEBDETAILS> m_Details;
 
+   // time-step
+   // map index is hashed. see in cpp for details
+   mutable std::map<IndexType, std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection>> m_TimeStepDetails;
+
    PRINCIPALSTRESSINWEBDETAILS ComputePrincipalStressInWeb(const pgsPointOfInterest& poi) const;
+
+   std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> ComputeTimeStepPrincipalWebStressDetails(const pgsPointOfInterest& poi, IntervalIndexType interval) const;
 
    sysSectionValue GetNonCompositeShear(pgsTypes::BridgeAnalysisType bat, IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi) const;
    void GetCompositeShear(pgsTypes::BridgeAnalysisType bat, IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, sysSectionValue* pVmin, sysSectionValue* pVmax) const;

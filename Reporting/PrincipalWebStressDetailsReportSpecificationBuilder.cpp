@@ -21,9 +21,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
-#include <Reporting\TimeStepDetailsReportSpecification.h>
-#include "TimeStepDetailsDlg.h"
+#include <Reporting\PrincipalWebStressDetailsReportSpecificationBuilder.h>
+#include <Reporting\PrincipalWebStressDetailsReportSpecification.h>
+#include "PrincipalWebStressDetailsDlg.h"
 
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
@@ -35,22 +35,22 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CTimeStepDetailsReportSpecificationBuilder::CTimeStepDetailsReportSpecificationBuilder(IBroker* pBroker) :
+CPrincipalWebStressDetailsReportSpecificationBuilder::CPrincipalWebStressDetailsReportSpecificationBuilder(IBroker* pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
 
-CTimeStepDetailsReportSpecificationBuilder::~CTimeStepDetailsReportSpecificationBuilder(void)
+CPrincipalWebStressDetailsReportSpecificationBuilder::~CPrincipalWebStressDetailsReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<CReportSpecification> CPrincipalWebStressDetailsReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for span, girder, and chapter list
    // initialize dialog for the current cut location
-   std::shared_ptr<CTimeStepDetailsReportSpecification> pInitRptSpec( std::dynamic_pointer_cast<CTimeStepDetailsReportSpecification>(pOldRptSpec) );
+   std::shared_ptr<CPrincipalWebStressDetailsReportSpecification> pInitRptSpec( std::dynamic_pointer_cast<CPrincipalWebStressDetailsReportSpecification>(pOldRptSpec) );
 
    pgsPointOfInterest initial_poi;
    if ( pInitRptSpec )
@@ -80,22 +80,22 @@ std::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder
       initial_poi = vPoi.front().get();
    }
 
-   CTimeStepDetailsDlg dlg(m_pBroker,pInitRptSpec,initial_poi,INVALID_INDEX);
+   CPrincipalWebStressDetailsDlg dlg(m_pBroker,pInitRptSpec,initial_poi,INVALID_INDEX,true,true);
 
    if ( dlg.DoModal() == IDOK )
    {
       std::shared_ptr<CReportSpecification> pNewRptSpec;
       if(pInitRptSpec)
       {
-         std::shared_ptr<CTimeStepDetailsReportSpecification> pNewGRptSpec(std::make_shared<CTimeStepDetailsReportSpecification>(*pInitRptSpec) );
+         std::shared_ptr<CPrincipalWebStressDetailsReportSpecification> pNewGRptSpec(std::make_shared<CPrincipalWebStressDetailsReportSpecification>(*pInitRptSpec) );
 
-         pNewGRptSpec->SetOptions(dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval());
+         pNewGRptSpec->SetOptions(dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval(),dlg.GetReportAxial(),dlg.GetReportShear());
 
          pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
       }
       else
       {
-         pNewRptSpec = std::make_shared<CTimeStepDetailsReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval());
+         pNewRptSpec = std::make_shared<CPrincipalWebStressDetailsReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval(), dlg.GetReportAxial() ,dlg.GetReportShear());
       }
 
       rptDesc.ConfigureReportSpecification(pNewRptSpec);
@@ -106,7 +106,7 @@ std::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder
    return nullptr;
 }
 
-std::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<CReportSpecification> CPrincipalWebStressDetailsReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
 {
    // always prompt
    return CreateReportSpec(rptDesc,std::shared_ptr<CReportSpecification>());

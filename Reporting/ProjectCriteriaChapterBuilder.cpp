@@ -64,6 +64,7 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
 void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
 void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
+void write_principal_web_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
@@ -256,6 +257,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
          write_shear_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
       } // next segment
 
+      write_principal_web_stress(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_haunch_dead_load(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_creep(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_losses(pChapter, pBroker, pDisplayUnits, pSpecEntry);
@@ -1046,8 +1048,37 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    }
 }
 
+void write_principal_web_stress(rptChapter * pChapter, IBroker * pBroker, IEAFDisplayUnits * pDisplayUnits, const SpecLibraryEntry * pSpecEntry)
+{
+   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress,   pDisplayUnits->GetStressUnit(), false );
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara<<_T("Principal Web Stress")<<rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   pgsTypes::PrincipalTensileStressMethod method;
+   Float64 coefficient, ductDiameterFactor,  ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
+   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor, &ungroutedMultiplier, &groutedMultiplier, &principalTensileStressFcThreshold);
+   if (method == pgsTypes::ptsmNCHRP)
+   {
+      *pPara<<_T("Principal web stress computed using WSDOT BDM/NCHRP Report 849, Equation 3.8")<<rptNewLine;
+   }
+   else
+   {
+      *pPara<<_T("Principal web stress computed using AASHTO LRFD Equation 5.9.2.3.3-1")<<rptNewLine;
+   }
+
+   *pPara << _T("Allowable tension coefficient: ") << tension_coeff.SetValue(coefficient) << _T("lambda)sqrt(f'c (") << stress.GetUnitTag() << _T("))") << rptNewLine;
+   *pPara << _T("When vertical analysis location is within ") << ductDiameterFactor << _T(" diameters from a duct location, Reduce web width for ungrouted ducts by ") << ungroutedMultiplier << _T(" * duct diameter, and ") << groutedMultiplier << _T(" * duct diameter, for grouted ducts.")  << rptNewLine;
+}
+
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
 {
+
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Creep Criteria")<<rptNewLine;

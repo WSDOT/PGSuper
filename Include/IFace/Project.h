@@ -542,6 +542,11 @@ interface ISpecification : IUnknown
    virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const = 0;
 
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const = 0;
+
+   // Method and applicabiity for Principal Web stress check are based on several requirements
+   typedef enum PrincipalWebStressCheckType { pwcNotApplicable, pwcAASHTOMethod, pwcNCHRPMethod, pwcNCHRPTimeStepMethod } PrincipalWebStressCheckType;
+
+   virtual PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const = 0;
 };
 
 /*****************************************************************************

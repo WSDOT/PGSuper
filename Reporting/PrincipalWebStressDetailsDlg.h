@@ -23,24 +23,27 @@
 #pragma once
 
 #include "resource.h"
-#include <Reporting\TimeStepDetailsReportSpecification.h>
+#include <Reporting\PrincipalWebStressDetailsReportSpecification.h>
 
-// CTimeStepDetailsDlg dialog
+// CPrincipalWebStressDetailsDlg dialog
 
-class CTimeStepDetailsDlg : public CDialog
+class CPrincipalWebStressDetailsDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CTimeStepDetailsDlg)
+	DECLARE_DYNAMIC(CPrincipalWebStressDetailsDlg)
 
 public:
-	CTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
-	virtual ~CTimeStepDetailsDlg();
+	CPrincipalWebStressDetailsDlg(IBroker* pBroker,std::shared_ptr<CPrincipalWebStressDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,
+                                 IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear, CWnd* pParent = nullptr);   // standard constructor
+	virtual ~CPrincipalWebStressDetailsDlg();
 
 // Dialog Data
-	enum { IDD = IDD_TIMESTEP_DETAILS };
+	enum { IDD = IDD_PRINCIPAL_WEBSTRESS_DETAILS };
 
    bool UseAllLocations();
    pgsPointOfInterest GetPOI();
    IntervalIndexType GetInterval();
+   bool GetReportShear();
+   bool GetReportAxial();
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
@@ -49,7 +52,7 @@ protected:
 
 private:
    IBroker* m_pBroker;
-   std::shared_ptr<CTimeStepDetailsReportSpecification> m_pTsRptSpec;
+   std::shared_ptr<CPrincipalWebStressDetailsReportSpecification> m_pPwsRptSpec;
 
    pgsPointOfInterest m_InitialPOI;
    CGirderKey m_GirderKey;
@@ -65,11 +68,13 @@ private:
    void UpdateSliderLabel();
    void UpdatePOI();
 
-   void InitFromTimeStepRptSpec();
+   void InitFromPrincipalWebStressRptSpec();
 
 public:
    virtual BOOL OnInitDialog();
    afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
    afx_msg void OnClickedAllLocations();
    afx_msg void OnGirderLineChanged();
+   BOOL m_bReportShearStress;
+   BOOL m_bReportAxial;
 };

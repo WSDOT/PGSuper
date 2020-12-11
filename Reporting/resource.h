@@ -32,6 +32,7 @@
 #define IDC_RADIO2                      3010
 #define IDD_LOADRATINGSUMMARYREPORT     3010
 #define IDC_SELECT_MULTIPLE_BUTTON      3011
+#define IDD_PRINCIPAL_WEBSTRESS_DETAILS 3011
 #define IDC_INTERVAL                    3012
 #define IDC_SLIDER1                     3013
 #define IDC_POI                         3013
@@ -42,14 +43,17 @@
 #define IDC_GIRDERLINE                  3016
 #define IDC_RADIO_GIRDERLINE            3017
 #define IDC_RADIO_INDIV_GIRDER          3018
+#define IDC_CHECK1                      3019
+#define IDC_SHEAR                       3019
+#define IDC_AXIAL                       3020
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        3012
+#define _APS_NEXT_RESOURCE_VALUE        3013
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         3019
+#define _APS_NEXT_CONTROL_VALUE         3020
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

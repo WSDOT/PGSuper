@@ -9496,6 +9496,78 @@ void CProjectAgentImp::GetTaperedSolePlateRequirements(bool* pbCheckTaperedSoleP
    *pTaperedSolePlateThreshold = m_pSpecEntry->GetTaperedSolePlateInclinationThreshold();
 }
 
+ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const
+{
+   pgsTypes::PrincipalTensileStressMethod method;
+   Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
+   m_pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor, &ungroutedMultiplier, &groutedMultiplier, &principalTensileStressFcThreshold);
+
+   // spliced girder files always analyze principal web stress
+   GET_IFACE(IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+   if (bIsSplicedGirder)
+   {
+      return method == pgsTypes::ptsmLRFD ? pwcAASHTOMethod : pwcNCHRPTimeStepMethod;
+   }
+   else
+   {
+      // PGSuper models depend in concrete strength
+      GET_IFACE(IMaterials,pMaterials);
+      Float64 concStrength;
+      if (segmentKey.groupIndex == INVALID_INDEX || segmentKey.girderIndex == INVALID_INDEX || segmentKey.segmentIndex == INVALID_INDEX)
+      {
+         // Get max f'c for entire bridge
+         Float64 maxFc = 0;
+         GET_IFACE(IBridge,pBridge);
+         GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+         for (GroupIndexType iGroup = 0; iGroup < nGroups; iGroup++)
+         {
+            GirderIndexType nGirders = pBridge->GetGirderCount(iGroup);
+            for (GirderIndexType iGirder = 0; iGirder < nGirders; iGirder++)
+            {
+               SegmentIndexType nSegments = pBridge->GetSegmentCount(iGroup, iGirder);
+               for (SegmentIndexType iSegment = 0; iSegment < nSegments; iSegment++)
+               {
+                  Float64 fc = pMaterials->GetSegmentFc28(CSegmentKey(iGroup, iGirder, iSegment));
+                  maxFc = max(fc, maxFc);
+               }
+            }
+         }
+
+         concStrength = maxFc;
+      }
+      else
+      {
+         concStrength = pMaterials->GetSegmentFc28(segmentKey);
+      }
+
+      if (concStrength < principalTensileStressFcThreshold)
+      {
+         return ISpecification::pwcNotApplicable;
+      }
+      else
+      {
+         if (method == pgsTypes::ptsmLRFD)
+         {
+            return pwcAASHTOMethod;
+         }
+         else
+         {
+            GET_IFACE(ILossParameters, pLossParams);
+            if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+            {
+               return pwcNCHRPTimeStepMethod;
+            }
+            else
+            {
+               return pwcNCHRPMethod;
+            }
+         }
+      }
+   }
+
+}
+
 Uint16 CProjectAgentImp::GetMomentCapacityMethod() const
 {
    return m_pSpecEntry->GetLRFDOverreinforcedMomentCapacity() == true ? LRFD_METHOD : WSDOT_METHOD;

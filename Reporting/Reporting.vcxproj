@@ -545,6 +545,10 @@
     <ClCompile Include="PretensionStressTable.cpp" />
     <ClCompile Include="PrincipalTensionStressCheckTable.cpp" />
     <ClCompile Include="PrincipalTensionStressDetailsChapterBuilder.cpp" />
+    <ClCompile Include="PrincipalWebStressDetailsChapterBuilder.cpp" />
+    <ClCompile Include="PrincipalWebStressDetailsDlg.cpp" />
+    <ClCompile Include="PrincipalWebStressDetailsReportSpecification.cpp" />
+    <ClCompile Include="PrincipalWebStressDetailsReportSpecificationBuilder.cpp" />
     <ClCompile Include="ProductAxialTable.cpp" />
     <ClCompile Include="ProductDisplacementsTable.cpp" />
     <ClCompile Include="ProductForcesChapterBuilder.cpp" />
@@ -732,6 +736,9 @@
     <ClInclude Include="..\Include\Reporting\PretensionStressTable.h" />
     <ClInclude Include="..\Include\Reporting\PrincipalTensionStressCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\PrincipalTensionStressDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalWebStressDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalWebStressDetailsReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalWebStressDetailsReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ProductAxialTable.h" />
     <ClInclude Include="..\Include\Reporting\ProductDisplacementsTable.h" />
     <ClInclude Include="..\Include\Reporting\ProductForcesChapterBuilder.h" />
@@ -794,6 +801,7 @@
     <ClInclude Include="EquilibriumCheckDlg.h" />
     <ClInclude Include="InitialStrainAnalysisDlg.h" />
     <ClInclude Include="MultiViewReportDlg.h" />
+    <ClInclude Include="PrincipalWebStressDetailsDlg.h" />
     <ClInclude Include="Reporting.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RMultiGirderSelectDlg.h" />

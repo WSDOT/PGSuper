@@ -335,6 +335,12 @@ interface IProductLoads : IUnknown
    virtual pgsTypes::LiveLoadApplicabilityType GetLiveLoadApplicability(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx) const = 0;
    virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType) const = 0;
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx) const = 0;
+
+   // get list of product loads for a given load combo tpe
+   virtual std::vector<pgsTypes::ProductForceType> GetProductForcesForCombo(LoadingCombinationType combo) const = 0;
+
+   // get list of pertinent product loads for a given girder. use this when creating reports
+   virtual std::vector<pgsTypes::ProductForceType> GetProductForcesForGirder(const CGirderKey& girderKey) const = 0;
 };
 
 

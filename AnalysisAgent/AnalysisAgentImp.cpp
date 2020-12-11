@@ -2400,6 +2400,16 @@ std::vector<std::_tstring> CAnalysisAgentImp::GetVehicleNames(pgsTypes::LiveLoad
    return m_pGirderModelManager->GetVehicleNames(llType, girderKey);
 }
 
+std::vector<pgsTypes::ProductForceType> CAnalysisAgentImp::GetProductForcesForCombo(LoadingCombinationType combo) const
+{
+   return CProductLoadMap::GetProductForces(m_pBroker,combo);
+}
+
+std::vector<pgsTypes::ProductForceType> CAnalysisAgentImp::GetProductForcesForGirder(const CGirderKey& girderKey) const
+{
+   return CProductLoadMap::GetProductForces(m_pBroker,girderKey);
+}
+
 std::_tstring CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx) const
 {
    return m_pGirderModelManager->GetLiveLoadName(llType,vehicleIdx);

@@ -30,6 +30,7 @@
 #include <Reporting\GirderComparisonChapterBuilder.h>
 #include <Reporting\OptimizedFabricationChapterBuilder.h>
 #include <Reporting\DesignOutcomeChapterBuilder.h>
+#include <Reporting\PrincipalTensionStressDetailsChapterBuilder.h>
 #if defined _DEBUG
 #include <Reporting\IntervalChapterBuilder.h> // for testing
 #endif
@@ -227,8 +228,9 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    GET_IFACE(IReportManager,pRptMgr);
    GET_IFACE( ILossParameters, pLossParams);
 
+   bool bTimeStep = pLossParams->GetLossMethod() == pgsTypes::TIME_STEP;
    bool bHidden = true;
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( bTimeStep )
    {
       bHidden = false;
    }
@@ -245,6 +247,31 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
          std::shared_ptr<CReportBuilder> pRptBuilder(*iter);
          pRptBuilder->Hidden(bHidden);
       }
+   }
+
+   // Principal web stress report has two conditions
+   bool bIsTimeStepPrincStress = false;
+   if (bTimeStep)
+   {
+      GET_IFACE(ILibrary, pLib);
+      GET_IFACE(ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+      pgsTypes::PrincipalTensileStressMethod method;
+      Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
+      pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor, &ungroutedMultiplier, &groutedMultiplier, &principalTensileStressFcThreshold);
+      if (method == pgsTypes::ptsmNCHRP)
+      {
+         bIsTimeStepPrincStress = true;
+      }
+   }
+
+   std::_tstring prinRepName(_T("Principal Web Stress Details Report"));
+   std::shared_ptr<CReportBuilder> pPsRptBuilder = pRptMgr->GetReportBuilder(_T("Principal Web Stress Details Report"));
+   ATLASSERT(pPsRptBuilder);
+   if (pPsRptBuilder != nullptr)
+   {
+      pPsRptBuilder->Hidden(!bIsTimeStepPrincStress);
    }
 
    // Add time-step chapters the details report
@@ -265,6 +292,20 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
       pRptBuilder->RemoveChapterBuilder(_T("Shrinkage Strain Details"));
    }
 
+   if (bIsTimeStepPrincStress)
+   {
+      // This is the simplified version
+      pRptBuilder->RemoveChapterBuilder(_T("Principal Tension Stresses in Webs Details"));
+   }
+   else
+   {
+      auto pChBuilder = pRptBuilder->GetChapterBuilder(TEXT("Principal Tension Stresses in Webs Details"));
+      if (pChBuilder == nullptr)
+      {
+         // chapter wasn't previously added
+         VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CPrincipalTensionStressDetailsChapterBuilder), TEXT("Longitudinal Reinforcement for Shear")/*this is the name of the chapter after which the shrinkage strain chapter will be added*/));
+      }
+   }
 
    return S_OK;
 }

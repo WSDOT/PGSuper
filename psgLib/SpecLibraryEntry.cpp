@@ -49,7 +49,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 79.0 
+#define CURRENT_VERSION 80.0 
 
 /****************************************************************************
 CLASS
@@ -275,6 +275,8 @@ m_UHPCFiberShearStrength(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
 m_PrincipalTensileStressMethod(pgsTypes::ptsmLRFD),
 m_PrincipalTensileStressCoefficient(::ConvertToSysUnits(0.110,unitMeasure::SqrtKSI)),
 m_PrincipalTensileStressTendonNearnessFactor(1.5),
+m_PrincipalTensileStressUngroutedMultiplier(1.0),
+m_PrincipalTensileStressGroutedMultiplier(0.0),
 m_PrincipalTensileStressFcThreshold(::ConvertToSysUnits(10.0,unitMeasure::KSI)),
 m_bAlertTaperedSolePlateRequirement(true),
 m_TaperedSolePlateInclinationThreshold(0.01),
@@ -697,6 +699,9 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("PrincipalTensileStressCoefficient"), m_PrincipalTensileStressCoefficient);
    pSave->Property(_T("PrincipalTensileStressTendonNearnessFactor"), m_PrincipalTensileStressTendonNearnessFactor); // added in version 77
    pSave->Property(_T("PrincipalTensileStressFcThreshold"), m_PrincipalTensileStressFcThreshold); // added in version 78
+   pSave->Property(_T("PrincipalTensileStressUngroutedMultiplier"), m_PrincipalTensileStressUngroutedMultiplier); // added in version 80
+   pSave->Property(_T("PrincipalTensileStressGroutedMultiplier"), m_PrincipalTensileStressGroutedMultiplier);     //   ""   ""  ""    80
+
 
    // removed in version 29
    // pSave->Property(_T("Bs3IgnoreRangeOfApplicability"), m_Bs3IgnoreRangeOfApplicability);
@@ -2448,6 +2453,29 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                   THROW_LOAD(InvalidFileFormat, pLoad);
                }
             }
+
+            if (79 < version)
+            {
+               // added in version 78
+               if (!pLoad->Property(_T("PrincipalTensileStressUngroutedMultiplier"), &m_PrincipalTensileStressUngroutedMultiplier))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
+
+               if (!pLoad->Property(_T("PrincipalTensileStressGroutedMultiplier"), &m_PrincipalTensileStressGroutedMultiplier))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
+            }
+            else
+            {
+               // Older versions did not load the duct multipliers -> they were spec dependent. Use the spec version to determine the value
+               DeterminePrincipalStressDuctDeductionMultiplier();
+            }
+         }
+         else
+         {
+            DeterminePrincipalStressDuctDeductionMultiplier();
          }
       }
 
@@ -4692,7 +4720,9 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    if (m_PrincipalTensileStressMethod != rOther.m_PrincipalTensileStressMethod || 
       !::IsEqual(m_PrincipalTensileStressCoefficient, rOther.m_PrincipalTensileStressCoefficient) ||
       !::IsEqual(m_PrincipalTensileStressTendonNearnessFactor,rOther.m_PrincipalTensileStressTendonNearnessFactor) ||
-      !::IsEqual(m_PrincipalTensileStressFcThreshold,rOther.m_PrincipalTensileStressFcThreshold))
+      !::IsEqual(m_PrincipalTensileStressFcThreshold,rOther.m_PrincipalTensileStressFcThreshold) ||
+      !::IsEqual(m_PrincipalTensileStressUngroutedMultiplier,rOther.m_PrincipalTensileStressUngroutedMultiplier) ||
+      !::IsEqual(m_PrincipalTensileStressGroutedMultiplier,rOther.m_PrincipalTensileStressGroutedMultiplier))
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Principal Tensile Stress in Web parameters are different"), _T(""), _T("")));
@@ -6300,22 +6330,28 @@ void SpecLibraryEntry::SetFatigueCompressionStressFactor(Float64 stress)
    m_Bs3CompStressService1A = stress;
 }
 
-void SpecLibraryEntry::SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient,Float64 ductFactor,Float64 principalTensileStressFcThreshold)
+void SpecLibraryEntry::SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient,Float64 ductNearnessFactor,
+                                                                 Float64 principalTensileStressUngroutedMultiplier, Float64 principalTensileStressGroutedMultiplier,Float64 principalTensileStressFcThreshold)
 {
    m_PrincipalTensileStressMethod = principalTensileStressMethod;
    m_PrincipalTensileStressCoefficient = principalTensionCoefficient;
-   m_PrincipalTensileStressTendonNearnessFactor = ductFactor;
+   m_PrincipalTensileStressTendonNearnessFactor = ductNearnessFactor;
    m_PrincipalTensileStressFcThreshold = principalTensileStressFcThreshold;
+   m_PrincipalTensileStressUngroutedMultiplier = principalTensileStressUngroutedMultiplier;
+   m_PrincipalTensileStressGroutedMultiplier = principalTensileStressGroutedMultiplier;
 }
 
-void SpecLibraryEntry::GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctFactor,Float64* principalTensileStressFcThreshold) const
+void SpecLibraryEntry::GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctNearnessFactor,
+                                                                 Float64* pPrincipalTensileStressUngroutedMultiplier, Float64* pPrincipalTensileStressGroutedMultiplier, Float64* principalTensileStressFcThreshold) const
 {
    *pPrincipalTensileStressMethod = m_PrincipalTensileStressMethod;
    *pPrincipalTensionCoefficient = m_PrincipalTensileStressCoefficient;
-   *pDuctFactor = m_PrincipalTensileStressTendonNearnessFactor;
+   *pDuctNearnessFactor = m_PrincipalTensileStressTendonNearnessFactor;
 
    // note that magic value of -1 means "all" in library. Return zero to our clients, which means any f'c
    *principalTensileStressFcThreshold = m_PrincipalTensileStressFcThreshold==-1.0 ? 0.0 : m_PrincipalTensileStressFcThreshold;
+   *pPrincipalTensileStressUngroutedMultiplier = m_PrincipalTensileStressUngroutedMultiplier;
+   *pPrincipalTensileStressGroutedMultiplier = m_PrincipalTensileStressGroutedMultiplier;
 }
 
 Float64 SpecLibraryEntry::GetFinalTensionStressFactor(int exposureCondition) const
@@ -7907,6 +7943,9 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_PrincipalTensileStressMethod = rOther.m_PrincipalTensileStressMethod;
    m_PrincipalTensileStressCoefficient = rOther.m_PrincipalTensileStressCoefficient;
    m_PrincipalTensileStressTendonNearnessFactor = rOther.m_PrincipalTensileStressTendonNearnessFactor;
+   m_PrincipalTensileStressUngroutedMultiplier = rOther.m_PrincipalTensileStressUngroutedMultiplier;
+   m_PrincipalTensileStressGroutedMultiplier = rOther.m_PrincipalTensileStressGroutedMultiplier;
+
    m_PrincipalTensileStressFcThreshold = rOther.m_PrincipalTensileStressFcThreshold;
 
    m_FlexureModulusOfRuptureCoefficient = rOther.m_FlexureModulusOfRuptureCoefficient;
@@ -8118,6 +8157,41 @@ void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
+
+void SpecLibraryEntry::DeterminePrincipalStressDuctDeductionMultiplier()
+{
+   // Before 2nd Edition, 2000 interims
+   // LRFD 5.8.2.9
+   // "In determining the web width at a particular level, the diameter of ungrouted ducts or
+   // one-half the diameter of grouted ducts at that level shall be subtracted from the web width"
+   //
+   // 2nd Edtion, 2003 interims
+   // "In determining the web width at a particular level, one-half the diameter of ungrouted ducts or
+   // one-quarter the diameter of grouted ducts at that level shall be subtracted from the web width"
+   //
+   // 9th Edition, 2020
+   // LRFD 5.7.2.8
+   // The paragraph quoted above has been removed and the following is now the definition of bv
+   // "bv = ... for grouted ducts, no modification is necessary. For ungrouted ducts, reduce bv by the diameter of the duct"
+
+   if (m_bUseCurrentSpecification || m_SpecificationType >= lrfdVersionMgr::NinthEdition2020)
+   {
+      // 9th Edition, 2020 and later
+      m_PrincipalTensileStressUngroutedMultiplier = 1.0;
+      m_PrincipalTensileStressGroutedMultiplier   = 0.0;
+   }
+   else if (m_SpecificationType < lrfdVersionMgr::SecondEditionWith2000Interims)
+   {
+      m_PrincipalTensileStressUngroutedMultiplier = 1.0;
+      m_PrincipalTensileStressGroutedMultiplier   = 0.5;
+   }
+   else 
+   {
+      // 2nd Edition, 2000 interms to 9th Edition 2020
+      m_PrincipalTensileStressUngroutedMultiplier = 0.50;
+      m_PrincipalTensileStressGroutedMultiplier   = 0.25;
+   }
+}
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 //
