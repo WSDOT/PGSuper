@@ -529,10 +529,18 @@
     <ClCompile Include="TimelineManagerReportSpecificationBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PrincipalWebStressDetailsReportSpecificationBuilder.cpp" />
-    <ClCompile Include="PrincipalWebStressDetailsReportSpecification.cpp" />
-    <ClCompile Include="PrincipalWebStressDetailsChapterBuilder.cpp" />
-    <ClCompile Include="PrincipalWebStressDetailsDlg.cpp" />
+    <ClCompile Include="PrincipalWebStressDetailsChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PrincipalWebStressDetailsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PrincipalWebStressDetailsReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PrincipalWebStressDetailsReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h">
