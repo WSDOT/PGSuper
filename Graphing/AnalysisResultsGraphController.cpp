@@ -552,7 +552,7 @@ std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
    GET_IFACE(ISpecification,pSpec);
    ISpecification::PrincipalWebStressCheckType pwscType = pSpec->GetPrincipalWebStressCheckType(CSegmentKey(INVALID_INDEX, INVALID_INDEX, INVALID_INDEX));
 
-   if (m_LiveLoadIntervalIdx <= GetInterval() || ISpecification::pwcNCHRPTimeStepMethod == pwscType) // time step method covers all intervals
+   if (ISpecification::pwcNotApplicable != pwscType && (m_LiveLoadIntervalIdx <= GetInterval() || ISpecification::pwcNCHRPTimeStepMethod == pwscType)) // time step method covers all intervals
    {
       vActions.push_back(actionPrincipalWebStress);
    }
