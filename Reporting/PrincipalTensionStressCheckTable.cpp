@@ -163,8 +163,8 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Service III") << rptNewLine;
-   *pPara << _T("Principal Tension Stresses in Webs [5.9.2.3.3], Checked in Interval ") << liveLoadInterval << _T(" - ") << pIntervals->GetDescription(liveLoadInterval) << rptNewLine;
+   *pPara << _T("Principal Tension Stresses in Webs [5.9.2.3.3]") << rptNewLine;
+   *pPara << _T("Interval ") << LABEL_INTERVAL(liveLoadInterval) << _T(" - ") << pIntervals->GetDescription(liveLoadInterval) << _T(", Service III") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
