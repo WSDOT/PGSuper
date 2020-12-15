@@ -292,21 +292,6 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
       pRptBuilder->RemoveChapterBuilder(_T("Shrinkage Strain Details"));
    }
 
-   if (bIsTimeStepPrincStress)
-   {
-      // This is the simplified version
-      pRptBuilder->RemoveChapterBuilder(_T("Principal Tension Stresses in Webs Details"));
-   }
-   else
-   {
-      auto pChBuilder = pRptBuilder->GetChapterBuilder(TEXT("Principal Tension Stresses in Webs Details"));
-      if (pChBuilder == nullptr)
-      {
-         // chapter wasn't previously added
-         VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<CChapterBuilder>(new CPrincipalTensionStressDetailsChapterBuilder), TEXT("Longitudinal Reinforcement for Shear")/*this is the name of the chapter after which the shrinkage strain chapter will be added*/));
-      }
-   }
-
    return S_OK;
 }
 

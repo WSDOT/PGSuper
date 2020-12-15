@@ -159,10 +159,12 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
 
    GET_IFACE2(pBroker, IAllowableConcreteStress, pAllowables);
 
+   IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
+
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
    *pPara << _T("Service III") << rptNewLine;
-   *pPara << _T("Principal Tension Stresses in Webs [5.9.2.3.3]") << rptNewLine;
+   *pPara << _T("Principal Tension Stresses in Webs [5.9.2.3.3], Checked in Interval ") << liveLoadInterval << _T(" - ") << pIntervals->GetDescription(liveLoadInterval) << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;

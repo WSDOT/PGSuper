@@ -400,6 +400,8 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
       {
          (*pShearPara) << _T("* - Web width reduced due to proximity to duct") << rptNewLine;
       }
+
+      (*pShearPara) << _T("Y = elevation in web where principal stress is computed, measured downwards from top centerline of non-composite girder.") << rptNewLine;
    }
 
    if (m_bReportAxial)

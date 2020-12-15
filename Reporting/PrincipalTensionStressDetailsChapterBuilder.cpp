@@ -70,8 +70,16 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(CReportSpecifica
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
+   ISpecification::PrincipalWebStressCheckType  checkType = pSpec->GetPrincipalWebStressCheckType(CSegmentKey(girderKey,0));
+
+   if (ISpecification::pwcNCHRPTimeStepMethod == checkType)
+   {
+      *pPara << _T("Details for Time-Dependent Principal Web Stress computations may be found in the Principal Web Stress Details report.") << rptNewLine;
+      return pChapter;
+   }
+
+   GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
 
