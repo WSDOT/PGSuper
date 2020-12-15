@@ -94,7 +94,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
 
          if( pParent->m_pSegment->Strands.IsSymmetricDebond() )
          {
-            if (debond_info.Length[pgsTypes::metStart] < 0.0 )
+            if (debond_info.Length[pgsTypes::metStart] <= 0.0 )
             {
                HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
 	            AfxMessageBox( _T("Debond length must be greater than zero"), MB_ICONEXCLAMATION);
@@ -113,7 +113,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
             if ( debond_info.Length[pgsTypes::metStart] <= 0.0 && debond_info.Length[pgsTypes::metEnd] <= 0.0 )
             {
                HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
-	            AfxMessageBox( _T("Debond length at at least one end must be greater than zero"), MB_ICONEXCLAMATION);
+	            AfxMessageBox( _T("Debond length at one end must be greater than zero"), MB_ICONEXCLAMATION);
 	            pDX->Fail();
             }
          }

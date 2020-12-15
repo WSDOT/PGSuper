@@ -460,6 +460,13 @@ HRESULT CStrandRow::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = pStrLoad->get_Property(_T("DebondLengthEnd"),&var);
       m_DebondLength[pgsTypes::metEnd] = var.dblVal;
 
+      // if the debond length is zero, the strand isn't actually debonded... force the debond setting to false
+      if (m_bIsDebonded[pgsTypes::metStart] && IsZero(m_DebondLength[pgsTypes::metStart]))
+         m_bIsDebonded[pgsTypes::metStart] = false;
+
+      if (m_bIsDebonded[pgsTypes::metEnd] && IsZero(m_DebondLength[pgsTypes::metEnd]))
+         m_bIsDebonded[pgsTypes::metEnd] = false;
+
       pStrLoad->EndUnit();
    }
    catch(...)
@@ -1124,7 +1131,8 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          {
             CDebondData debond_info;
             hr = debond_info.Load(pStrLoad,pProgress);
-            m_Debond[pgsTypes::Straight].push_back(debond_info);
+            if(0 < debond_info.Length[pgsTypes::metStart] || 0 < debond_info.Length[pgsTypes::metEnd])
+               m_Debond[pgsTypes::Straight].push_back(debond_info);
          }
          hr = pStrLoad->EndUnit();
 
@@ -1140,7 +1148,8 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          {
             CDebondData debond_info;
             hr = debond_info.Load(pStrLoad,pProgress);
-            m_Debond[pgsTypes::Harped].push_back(debond_info);
+            if (0 < debond_info.Length[pgsTypes::metStart] || 0 < debond_info.Length[pgsTypes::metEnd])
+               m_Debond[pgsTypes::Harped].push_back(debond_info);
          }
          hr = pStrLoad->EndUnit();
 
@@ -1156,7 +1165,8 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          {
             CDebondData debond_info;
             hr = debond_info.Load(pStrLoad,pProgress);
-            m_Debond[pgsTypes::Temporary].push_back(debond_info);
+            if (0 < debond_info.Length[pgsTypes::metStart] || 0 < debond_info.Length[pgsTypes::metEnd])
+               m_Debond[pgsTypes::Temporary].push_back(debond_info);
          }
          hr = pStrLoad->EndUnit();
       }
@@ -2141,7 +2151,8 @@ void CStrandData::ProcessStrandRowData()
          }
 
          // debonded strands
-         if (strandRow.m_bIsDebonded[pgsTypes::metStart] || strandRow.m_bIsDebonded[pgsTypes::metEnd])
+         if ( (strandRow.m_bIsDebonded[pgsTypes::metStart] && !IsZero(strandRow.m_DebondLength[pgsTypes::metStart])) || 
+              (strandRow.m_bIsDebonded[pgsTypes::metEnd]   && !IsZero(strandRow.m_DebondLength[pgsTypes::metEnd])) )
          {
             CDebondData debondData;
             debondData.needsConversion = false;

@@ -5244,12 +5244,16 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
          // only add POI if debond and transfer point are on the girder
          if ( d1 < segment_length && d2 < segment_length )
          {
-            Xs  = d1;
-            Xsp = Xs + start_offset;
-            Xgp = segmentOffset + Xsp;
-            Xg  = Xgp - first_segment_start_offset;
-            pgsPointOfInterest poiDBD(segmentKey,Xs,Xsp,Xg,Xgp,attrib_debond);
-            VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
+            ATLASSERT(0 < debond_info.Length[pgsTypes::metStart]);// this should not happen, but if it does it would be nice to know about it because there is a bug somewhere
+            if (!IsZero(debond_info.Length[pgsTypes::metStart]))
+            {
+               Xs = d1;
+               Xsp = Xs + start_offset;
+               Xgp = segmentOffset + Xsp;
+               Xg = Xgp - first_segment_start_offset;
+               pgsPointOfInterest poiDBD(segmentKey, Xs, Xsp, Xg, Xgp, attrib_debond);
+               VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
+            }
 
             Xs  = d2;
             Xsp = Xs + start_offset;
@@ -5264,12 +5268,16 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
          // only add POI if debond and transfer point are on the girder
          if ( 0 < d1 && 0 < d2 )
          {
-            Xs  = d1;
-            Xsp = Xs + start_offset;
-            Xgp = segmentOffset + Xsp;
-            Xg  = Xgp - first_segment_start_offset;
-            pgsPointOfInterest poiDBD(segmentKey,Xs,Xsp,Xg,Xgp,attrib_debond);
-            VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
+            ATLASSERT(0 < debond_info.Length[pgsTypes::metStart]); // this should not happen, but if it does it would be nice to know about it because there is a bug somewhere
+            if (!IsZero(debond_info.Length[pgsTypes::metStart]))
+            {
+               Xs = d1;
+               Xsp = Xs + start_offset;
+               Xgp = segmentOffset + Xsp;
+               Xg = Xgp - first_segment_start_offset;
+               pgsPointOfInterest poiDBD(segmentKey, Xs, Xsp, Xg, Xgp, attrib_debond);
+               VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
+            }
 
             Xs  = d2;
             Xsp = Xs + start_offset;
