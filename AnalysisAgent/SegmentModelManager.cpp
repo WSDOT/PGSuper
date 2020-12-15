@@ -68,6 +68,24 @@ void CSegmentModelManager::Clear()
 
 void CSegmentModelManager::DumpAnalysisModels(GirderIndexType gdrIdx) const
 {
+   GET_IFACE(IBridge, pBridge);
+   std::vector<CGirderKey> girderKeys;
+   pBridge->GetGirderline(gdrIdx, &girderKeys);
+
+   for (const auto& girderKey : girderKeys)
+   {
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         CSegmentKey segmentKey(girderKey, segIdx);
+         BuildReleaseModel(segmentKey);
+         BuildLiftingModel(segmentKey);
+         BuildStorageModel(segmentKey);
+         BuildHaulingModel(segmentKey);
+      }
+   }
+
+
    DumpAnalysisModels(gdrIdx,&m_ReleaseModels,_T("Release"));
    DumpAnalysisModels(gdrIdx,&m_LiftingModels,_T("Lifting"));
    DumpAnalysisModels(gdrIdx,&m_StorageModels,_T("Storage"));
