@@ -44,6 +44,10 @@ IMPLEMENT_DYNCREATE(CAnalysisResultsGraphController,CGirderGraphControllerBase)
 CAnalysisResultsGraphController::CAnalysisResultsGraphController():
 CGirderGraphControllerBase(true/*false*//*exclude ALL_GROUPS*/)
 {
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   m_LiveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 }
 
 void CAnalysisResultsGraphController::SetGraphMode(CAnalysisResultsGraphController::GraphModeType mode)
@@ -191,7 +195,16 @@ IntervalIndexType CAnalysisResultsGraphController::GetInterval() const
 
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_DROP_LIST);
    int curSel = pcbIntervals->GetCurSel();
-   IntervalIndexType intervalIdx = (IntervalIndexType)pcbIntervals->GetItemData(curSel);
+   IntervalIndexType intervalIdx;
+   if (curSel != CB_ERR)
+   {
+      intervalIdx = (IntervalIndexType)pcbIntervals->GetItemData(curSel);
+   }
+   else
+   {
+      intervalIdx = GetFirstInterval(); // this is selected by default at startup
+   }
+
    return intervalIdx;
 }
 
@@ -552,12 +565,13 @@ std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
    GET_IFACE(ISpecification,pSpec);
    ISpecification::PrincipalWebStressCheckType pwscType = pSpec->GetPrincipalWebStressCheckType(CSegmentKey(INVALID_INDEX, INVALID_INDEX, INVALID_INDEX));
 
-   if (ISpecification::pwcNotApplicable != pwscType && (m_LiveLoadIntervalIdx <= GetInterval() || ISpecification::pwcNCHRPTimeStepMethod == pwscType)) // time step method covers all intervals
+   IntervalIndexType interval = GetInterval();
+   if (ISpecification::pwcNotApplicable != pwscType && (m_LiveLoadIntervalIdx <= interval || ISpecification::pwcNCHRPTimeStepMethod == pwscType)) // time step method covers all intervals
    {
       vActions.push_back(actionPrincipalWebStress);
    }
 
-   if (GetInterval() == m_LoadRatingIntervalIdx && GetGraphMode() == Loading)
+   if (interval == m_LoadRatingIntervalIdx && GetGraphMode() == Loading)
    {
       // rating factors are only applicable for "By Loading" results the interval when load rating occurs
       vActions.push_back(actionLoadRating);
