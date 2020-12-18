@@ -573,7 +573,7 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
       nMaxDucts = Max(nMaxDucts, nGirderDucts); // overall max number of ducts
    }
    
-   grGraphColor graphColor(nMaxDucts);
+   grGraphColor graphColor;
 
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {

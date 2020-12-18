@@ -469,7 +469,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       vIntervals.push_back(startIntervalIdx);
    }
 
-   grGraphColor graphColor(vIntervals.size());
+   grGraphColor graphColor;
 
    if ( m_XAxisType == X_AXIS_INTERVAL )
    {

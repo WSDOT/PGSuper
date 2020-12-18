@@ -1472,9 +1472,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    IntervalIndexType firstPlottingIntervalIdx = vIntervals.front();
    IntervalIndexType lastPlottingIntervalIdx = vIntervals.back();
 
-   IndexType nGraphs = ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphCount();
-   m_pGraphColor->SetGraphCount(nGraphs);
-
    CAnalysisResultsGraphController::GraphModeType graphMode = ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode();
 
    IndexType nSelectedGraphs = ((CAnalysisResultsGraphController*)m_pGraphController)->GetSelectedGraphCount();
