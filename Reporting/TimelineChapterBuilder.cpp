@@ -86,7 +86,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pEventTable = rptStyleManager::CreateDefaultTable(6);
+   rptRcTable* pEventTable = rptStyleManager::CreateDefaultTable(7);
    *pPara << pEventTable << rptNewLine;
 
    pEventTable->EnableRowStriping(false);
@@ -102,7 +102,11 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
    pEventTable->SetColumnStyle(col, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pEventTable->SetStripeRowColumnStyle(col, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-   (*pEventTable)(0, col++) << _T("Activities");
+   (*pEventTable)(0, col++) << _T("Activity");
+
+   pEventTable->SetColumnStyle(col, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pEventTable->SetStripeRowColumnStyle(col, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   (*pEventTable)(0, col++) << _T("Activity Details");
 
    pEventTable->SetColumnStyle(col, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pEventTable->SetStripeRowColumnStyle(col, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -135,6 +139,9 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       if (constructSegmentActivity.IsEnabled())
       {
          (*pEventTable)(row, col) << (pDocType->IsPGSuperDocument() ? _T("Construct Girders") : _T("Construct Segments"));
+         (*pEventTable)(row, col + 1) << _T("Time from strand stressing to release: ") << constructSegmentActivity.GetRelaxationTime() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Age of concrete at prestress release: ") << constructSegmentActivity.GetAgeAtRelease() << _T(" days") << rptNewLine;
+
          const auto& segments = constructSegmentActivity.GetSegments();
          for (const auto& segmentID : segments)
          {
@@ -142,7 +149,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             ATLASSERT(pSegment);
             if (girderKey == pSegment->GetSegmentKey())
             {
-               (*pEventTable)(row, col + 1) << SEGMENT_LABEL(pSegment->GetSegmentKey()) << rptNewLine;
+               (*pEventTable)(row, col + 2) << SEGMENT_LABEL(pSegment->GetSegmentKey()) << rptNewLine;
             }
          }
          row++;
@@ -158,7 +165,8 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             const auto* pPier = pBridgeDesc->FindPier(pierID);
             ATLASSERT(pPier);
-            (*pEventTable)(row, col + 1) << GetLabel(pPier, pDisplayUnits) << rptNewLine;
+            (*pEventTable)(row, col + 1) << _T("") << rptNewLine;
+            (*pEventTable)(row, col + 2) << GetLabel(pPier, pDisplayUnits) << rptNewLine;
          }
 
          const auto& ts = erectPierActivity.GetTempSupports();
@@ -166,7 +174,8 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             const auto* pTS = pBridgeDesc->FindTemporarySupport(tsID);
             ATLASSERT(pTS);
-            (*pEventTable)(row, col + 1) << GetLabel(pTS, pDisplayUnits) << rptNewLine;
+            (*pEventTable)(row, col + 1) << _T("") << rptNewLine;
+            (*pEventTable)(row, col + 2) << GetLabel(pTS, pDisplayUnits) << rptNewLine;
          }
 
          row++;
@@ -184,7 +193,8 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             ATLASSERT(pSegment);
             if (girderKey == pSegment->GetSegmentKey())
             {
-               (*pEventTable)(row, col + 1) << SEGMENT_LABEL(pSegment->GetSegmentKey()) << rptNewLine;
+               (*pEventTable)(row, col + 1) << _T("") << rptNewLine;
+               (*pEventTable)(row, col + 2) << SEGMENT_LABEL(pSegment->GetSegmentKey()) << rptNewLine;
             }
          }
          row++;
@@ -200,7 +210,8 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             const auto* pTS = pBridgeDesc->FindTemporarySupport(tsID);
             ATLASSERT(pTS);
-            (*pEventTable)(row, col + 1) << GetLabel(pTS, pDisplayUnits) << rptNewLine;
+            (*pEventTable)(row, col + 1) << _T("") << rptNewLine;
+            (*pEventTable)(row, col + 2) << GetLabel(pTS, pDisplayUnits) << rptNewLine;
          }
 
          row++;
@@ -212,12 +223,15 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       {
          (*pEventTable)(row, col) << _T("Cast Closure Joints");
 
+         (*pEventTable)(row, col + 1) << _T("Age of concrete at continuity: ") << castClosureJointActivity.GetConcreteAgeAtContinuity() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Curing duration: ") << castClosureJointActivity.GetCuringDuration() << _T(" days") << rptNewLine;
+
          const auto& piers = castClosureJointActivity.GetPiers();
          for (const auto& pierID : piers)
          {
             const auto* pPier = pBridgeDesc->FindPier(pierID);
             ATLASSERT(pPier);
-            (*pEventTable)(row, col + 1) << GetLabel(pPier, pDisplayUnits) << rptNewLine;
+            (*pEventTable)(row, col + 2) << GetLabel(pPier, pDisplayUnits) << rptNewLine;
          }
 
          const auto& ts = castClosureJointActivity.GetTempSupports();
@@ -225,7 +239,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             const auto* pTS = pBridgeDesc->FindTemporarySupport(tsID);
             ATLASSERT(pTS);
-            (*pEventTable)(row, col + 1) << GetLabel(pTS, pDisplayUnits) << rptNewLine;
+            (*pEventTable)(row, col + 2) << GetLabel(pTS, pDisplayUnits) << rptNewLine;
          }
 
          row++;
@@ -236,13 +250,17 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       if (castDeckActivity.IsEnabled())
       {
          (*pEventTable)(row, col) << _T("Cast Deck");
+
+         (*pEventTable)(row, col + 1) << _T("Age of concrete when deck becomes composite with girders: ") << castDeckActivity.GetConcreteAgeAtContinuity() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Curing duration: ") << castDeckActivity.GetCuringDuration() << _T(" days") << rptNewLine;
+
          if (castDeckActivity.GetCastingType() == CCastDeckActivity::Continuous)
          {
-            (*pEventTable)(row, col + 1) << _T("Continuous casting");
+            (*pEventTable)(row, col + 2) << _T("Continuous casting");
          }
          else
          {
-            (*pEventTable)(row, col + 1) << _T("Staged casting");
+            (*pEventTable)(row, col + 2) << _T("Staged casting");
          }
          row++;
          nActivities++;
@@ -252,7 +270,11 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       if (castLongitudinalJointActivity.IsEnabled())
       {
          (*pEventTable)(row, col) << _T("Cast Longitudinal Joints") << rptNewLine;
-         (*pEventTable)(row, col + 1) << _T("") << rptNewLine;
+
+         (*pEventTable)(row, col + 1) << _T("Age of concrete at continuity: ") << castLongitudinalJointActivity.GetConcreteAgeAtContinuity() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Curing duration: ") << castLongitudinalJointActivity.GetCuringDuration() << _T(" days") << rptNewLine;
+
+         (*pEventTable)(row, col + 2) << _T("") << rptNewLine;
          row++;
          nActivities++;
       }
@@ -261,6 +283,9 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       if (stressTendonActivity.IsEnabled())
       {
          (*pEventTable)(row, col) << _T("Stress Tendons") << rptNewLine;
+
+         (*pEventTable)(row, col + 1) << _T("") << rptNewLine;
+
          const auto& tendons = stressTendonActivity.GetTendons();
          for (const auto& tendonKey : tendons)
          {
@@ -268,7 +293,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             ATLASSERT(pGirder);
             if (girderKey == pGirder->GetGirderKey())
             {
-               (*pEventTable)(row, col + 1) << GIRDER_LABEL(pGirder->GetGirderKey()) << _T(", Duct ") << LABEL_DUCT(tendonKey.ductIdx) << rptNewLine;
+               (*pEventTable)(row, col + 2) << GIRDER_LABEL(pGirder->GetGirderKey()) << _T(", Duct ") << LABEL_DUCT(tendonKey.ductIdx) << rptNewLine;
             }
          }
          row++;
@@ -279,42 +304,43 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       if (applyLoadActivity.IsEnabled())
       {
          (*pEventTable)(row, col) << _T("Apply Loads") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("") << rptNewLine;
 
          if (applyLoadActivity.IsIntermediateDiaphragmLoadApplied())
          {
-            (*pEventTable)(row, col + 1) << _T("Intermediate Diaphragms") << rptNewLine;
+            (*pEventTable)(row, col + 2) << _T("Intermediate Diaphragms") << rptNewLine;
          }
 
          if (applyLoadActivity.IsRailingSystemLoadApplied())
          {
-            (*pEventTable)(row, col + 1) << _T("Traffic Barriers\\Railing System") << rptNewLine;
+            (*pEventTable)(row, col + 2) << _T("Traffic Barriers\\Railing System") << rptNewLine;
          }
 
          if (applyLoadActivity.IsOverlayLoadApplied())
          {
-            (*pEventTable)(row, col + 1) << _T("Overlay") << rptNewLine;
+            (*pEventTable)(row, col + 2) << _T("Overlay") << rptNewLine;
          }
 
          if (applyLoadActivity.IsLiveLoadApplied())
          {
-            (*pEventTable)(row, col + 1) << _T("Open to Traffic, Live Load") << rptNewLine;
+            (*pEventTable)(row, col + 2) << _T("Open to Traffic, Live Load") << rptNewLine;
          }
 
          if (applyLoadActivity.IsRatingLiveLoadApplied())
          {
-            (*pEventTable)(row, col + 1) << _T("Load Rating Live Loads") << rptNewLine;
+            (*pEventTable)(row, col + 2) << _T("Load Rating Live Loads") << rptNewLine;
          }
 
          if (applyLoadActivity.IsUserLoadApplied())
          {
-            (*pEventTable)(row, col + 1) << _T("User Defined Loads") << rptNewLine;
+            (*pEventTable)(row, col + 2) << _T("User Defined Loads") << rptNewLine;
             const auto& userLoadIDs = applyLoadActivity.GetUserLoads();
             for (const auto& loadID : userLoadIDs)
             {
                const auto* pLoad = pUserDefinedLoads->FindPointLoad(loadID);
                if (pLoad && (girderKey.girderIndex == ALL_GIRDERS || pLoad->m_SpanKey.girderIndex == girderKey.girderIndex))
                {
-                  (*pEventTable)(row, col + 1) << GetLoadDescription(pLoad) << rptNewLine;
+                  (*pEventTable)(row, col + 2) << GetLoadDescription(pLoad) << rptNewLine;
                }
             }
 
@@ -323,7 +349,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                const auto* pLoad = pUserDefinedLoads->FindDistributedLoad(loadID);
                if (pLoad && (girderKey.girderIndex == ALL_GIRDERS || pLoad->m_SpanKey.girderIndex == girderKey.girderIndex))
                {
-                  (*pEventTable)(row, col + 1) << GetLoadDescription(pLoad) << rptNewLine;
+                  (*pEventTable)(row, col + 2) << GetLoadDescription(pLoad) << rptNewLine;
                }
             }
 
@@ -332,7 +358,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                const auto* pLoad = pUserDefinedLoads->FindMomentLoad(loadID);
                if (pLoad && (girderKey.girderIndex == ALL_GIRDERS || pLoad->m_SpanKey.girderIndex == girderKey.girderIndex))
                {
-                  (*pEventTable)(row, col + 1) << GetLoadDescription(pLoad) << rptNewLine;
+                  (*pEventTable)(row, col + 2) << GetLoadDescription(pLoad) << rptNewLine;
                }
             }
          }
@@ -342,6 +368,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
 
       if (nActivities == 0)
       {
+         (*pEventTable)(row, col++) << _T("") << rptNewLine;
          (*pEventTable)(row, col++) << _T("") << rptNewLine;
          (*pEventTable)(row, col++) << _T("") << rptNewLine;
       }
