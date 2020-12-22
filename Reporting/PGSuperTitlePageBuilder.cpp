@@ -343,12 +343,13 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
    {
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pTitlePage << p;
-      *p << _T("Beams Used in Girderline Analysis Models") << rptNewLine;
+      *p << _T("Beams Used in Girder Line Analysis Models") << rptNewLine;
 
       p = new rptParagraph();
       *pTitlePage << p;
-      *p << italic(ON) << _T("This bridge is described with a different number of girders in each span.") <<  italic(OFF) << _T(" Plane frame analysis is performed in accordance with LRFD 4.6.2. ");
-      *p << _T("The structural analysis model for Girderline ") << LABEL_GIRDER(girderKey.girderIndex) << _T(" consists of ");
+      *p << Bold(_T("This bridge is described with a different number of girders in each span.")) << rptNewLine;
+      *p << _T("Plane frame analysis is performed in accordance with LRFD 4.6.2. ") << rptNewLine;
+      *p << _T("The structural analysis model for Girder Line ") << LABEL_GIRDER(girderKey.girderIndex) << _T(" consists of ");
 
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys);
@@ -364,7 +365,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
          }
       }
 
-      *p << _T(". Note that the pier cap is assumed to be torsionally rigid for transfer of continuous moment. Refer to the Structural Analysis Models section in the Help Technical Guide for more guidance.") << rptNewLine;
+      *p << _T(".") << rptNewLine;
+      *p << _T("The pier cap is assumed to be torsionally rigid for transfer of continuous moment.") << rptNewLine;
+      *p << _T("See the Structural Analysis Models and Reactions topics in the Technical Guide for more information.") << rptNewLine;
    }
 
 
