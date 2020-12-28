@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 109.0    7  15.83 H-3034 variable     1     1     48"D    *     21  0.6  270  18.92  15.63  10.50  10.50                                              5.023  5.349   3.172    -3.642    11349   1.495  1.495   0.489 -0.503 -0.055 -0.038 -0.596  26.00  200.55   10.00   15.00   15.00 
+ 109.0    7  15.83 H-3034 variable     1     1     48"D    *     21  0.6  270  18.92  15.63  10.50  10.50                                              5.023  5.349   3.111    -3.652    11500   1.495  1.495   0.489 -0.503 -0.055 -0.038 -0.596  26.00  199.94   10.00   15.00   15.00 
 
 
 The Specification Check was Not Successful
@@ -23,7 +23,6 @@ Compression stress check failed for Service I Limit State in Interval 28 Install
 Compression stress check failed for Service I Limit State in Interval 32 Install Overlay for Segment 2
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 2
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 2
-Tension stress check failed for Service III Limit State in Interval 33 Time Step for Segment 2
 Compression stress check failed for Fatigue I Limit State in Interval 33 Time Step for Segment 2
 Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 33 Time Step for Deck
@@ -44,7 +43,7 @@ Duct Size check failed for Duct 2.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 109.0    7  15.83 H-3034 variable     1     2     48"D    *     21  0.6  270  18.96  15.67  10.50  10.50                                              5.023  5.349   3.147    -3.566    10808   1.368  1.368   0.520 -0.425 -0.056 -0.038 -0.519  26.09  202.21   10.00   15.00   15.00 
+ 109.0    7  15.83 H-3034 variable     1     2     48"D    *     21  0.6  270  18.96  15.67  10.50  10.50                                              5.023  5.349   3.086    -3.576    10959   1.368  1.368   0.520 -0.425 -0.056 -0.038 -0.519  26.09  201.59   10.00   15.00   15.00 
 
 
 The Specification Check was Not Successful

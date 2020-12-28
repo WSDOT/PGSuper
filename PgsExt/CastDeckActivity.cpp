@@ -286,28 +286,28 @@ Float64 CCastDeckActivity::GetDuration() const
 {
    if (m_CastingType == Continuous)
    {
-      return m_CuringDuration;
+      return m_Age;
    }
    else
    {
       // the time between castings is measured from start to start
       // the total duration of this activity is the the sum of all the
-      // times between starting each casting plus the curing duration of the
+      // times between starting each casting plus the age to continuity of the
       // last casting
 
       // |cast sequence 0
-      // +-------- curing time -------|
+      // +-- age at continuity --|
       // |
       // |                       |cast sequence 1
-      // +-time between casting--+-------- curing time -------|
+      // +-time between casting--+-- age at continuity --|
       // |                       |
       // |                       |                       |cast sequence 2
-      // |                       +-time between casting--+-------- curing time -------|
-      // |                                                                            |
-      // |---------------------- DURATION --------------------------------------------|
+      // |                       +-time between casting--+-- age at continuity --|
+      // |                                                                       |
+      // |---------------------- DURATION ---------------------------------------|
 
       IndexType nCastings = GetCastingCount();
-      return (nCastings - 1)*m_TimeBetweenCastings + m_CuringDuration;
+      return (nCastings - 1)*m_TimeBetweenCastings + m_Age;
    }
 }
 

@@ -1544,7 +1544,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
                cureDeckRegionInterval.Start = castDeckRegionInterval.End; // curing starts when the previous interval ends
 
                // time when curing begins for this casting, and the curing duration
-               vCuringTime[castingIdx] = std::make_pair(cureDeckRegionInterval.Start, castDeckActivity.GetCuringDuration());
+               vCuringTime[castingIdx] = std::make_pair(cureDeckRegionInterval.Start, castDeckActivity.GetConcreteAgeAtContinuity());
                                                                            
                // the curing duration for this interval is the lesser of the time between castings and the curing duration for a casting.
                // if the time between casting is less then the curing duration, the next casting occurs before this casting becomes composite
@@ -1552,11 +1552,11 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
                Float64 curing_duration_this_interval;
                if (1 < nCastings)
                {
-                  curing_duration_this_interval = Min(castDeckActivity.GetTimeBetweenCasting(), castDeckActivity.GetCuringDuration());
+                  curing_duration_this_interval = Min(castDeckActivity.GetTimeBetweenCasting(), castDeckActivity.GetConcreteAgeAtContinuity());
                }
                else
                {
-                  curing_duration_this_interval = castDeckActivity.GetCuringDuration();
+                  curing_duration_this_interval = castDeckActivity.GetConcreteAgeAtContinuity();
                }
 
                cureDeckRegionInterval.Duration = curing_duration_this_interval;
@@ -1700,7 +1700,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
                   }
                }
 
-               if (1 < nCastings && castDeckActivity.GetCuringDuration() < castDeckActivity.GetTimeBetweenCasting() && castingIdx != lastCastingIdx)
+               if (1 < nCastings && castDeckActivity.GetConcreteAgeAtContinuity() < castDeckActivity.GetTimeBetweenCasting() && castingIdx != lastCastingIdx)
                {
                   // each casting cures and becomes composite before the next casting occurs
                   // model the time-step between the time this casting becomes composite and the next
@@ -1709,7 +1709,7 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
                   timeStepInterval.StartEventIdx = eventIdx;
                   timeStepInterval.EndEventIdx = eventIdx;
                   timeStepInterval.Start = m_Intervals.back().End;
-                  timeStepInterval.Duration = castDeckActivity.GetTimeBetweenCasting() - castDeckActivity.GetCuringDuration();
+                  timeStepInterval.Duration = castDeckActivity.GetTimeBetweenCasting() - castDeckActivity.GetConcreteAgeAtContinuity();
                   timeStepInterval.End = timeStepInterval.Start + timeStepInterval.Duration;
                   timeStepInterval.Middle = 0.5*(timeStepInterval.Start + timeStepInterval.End);
                   timeStepInterval.Description = _T("Time-step between deck castings");
