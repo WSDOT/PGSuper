@@ -289,17 +289,17 @@ Float64 CTimelineEvent::GetDuration() const
 
    if ( m_CastClosureJoints.IsEnabled() )
    {
-      duration = Max(duration,m_CastClosureJoints.GetCuringDuration());
+      duration = Max(duration,m_CastClosureJoints.GetTotalCuringDuration());
    }
 
    if ( m_CastDeck.IsEnabled() )
    {
-      duration = Max(duration,m_CastDeck.GetDuration());
+      duration = Max(duration,m_CastDeck.GetTotalCuringDuration());
    }
 
    if (m_CastLongitudinalJoints.IsEnabled())
    {
-      duration = Max(duration, m_CastLongitudinalJoints.GetCuringDuration());
+      duration = Max(duration, m_CastLongitudinalJoints.GetTotalCuringDuration());
    }
 
    // Apply Loads ( zero duration )
@@ -475,20 +475,24 @@ Float64 CTimelineEvent::GetMinElapsedTime() const
    //   elapsedTime += 0;
    //}
 
-   if (m_CastClosureJoints.IsEnabled())
+   if (m_CastClosureJoints.IsEnabled() && !m_CastDeck.IsEnabled())
    {
-      elapsedTime = Max(elapsedTime, m_CastClosureJoints.GetConcreteAgeAtContinuity());
+      elapsedTime = Max(elapsedTime, m_CastClosureJoints.GetTotalCuringDuration());
    }
-
-
-   if (m_CastDeck.IsEnabled())
+   else if (m_CastDeck.IsEnabled() && !m_CastClosureJoints.IsEnabled())
    {
       elapsedTime = Max(elapsedTime, m_CastDeck.GetDuration());
+   }
+   else if (m_CastClosureJoints.IsEnabled() && m_CastDeck.IsEnabled())
+   {
+      Float64 deck_duration = m_CastDeck.GetDuration();
+      Float64 cj_duration = m_CastDeck.GetTimeOfClosureJointCasting() + m_CastClosureJoints.GetTotalCuringDuration();
+      elapsedTime = Max(elapsedTime, deck_duration, cj_duration);
    }
 
    if (m_CastLongitudinalJoints.IsEnabled())
    {
-      elapsedTime = Max(elapsedTime, m_CastLongitudinalJoints.GetConcreteAgeAtContinuity());
+      elapsedTime = Max(elapsedTime, m_CastLongitudinalJoints.GetTotalCuringDuration());
    }
 
    //if ( m_ApplyLoads.IsEnabled() )
@@ -541,6 +545,16 @@ HRESULT CTimelineEvent::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       hr = m_RemoveTempSupports.Load(pStrLoad,pProgress);
       hr = m_CastDeck.Load(pStrLoad,pProgress);
       hr = m_ApplyLoads.Load(pStrLoad,pProgress);
+
+      // DeckCast activity, datablock version 4 added the closure joint casting region. However, the region cannot be resolved
+      // in the cast deck activity object because it doesn't know if a closure joint is added at the same time. The casting region
+      // is INVALID_INDEX if it was never set. INVALID_INDEX also means there is not a closure joint cast with the deck.
+      if (m_CastClosureJoints.IsEnabled() && m_CastDeck.IsEnabled() && m_CastDeck.GetClosureJointCastingRegion() == INVALID_INDEX)
+      {
+         // A closure joint is cast with the deck and the casting region was not specified. The default behavior is the closure joint
+         // is cast with the first deck region casting. Set the closure joint casting region here.
+         m_CastDeck.SetClosureJointCastingRegion(0);
+      }
       
       if (1 < version)
       {

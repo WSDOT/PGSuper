@@ -135,7 +135,7 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
    CDataExchange dx(this,FALSE);
    DDX_CBItemData(&dx,IDC_EVENT,eventIdx);
 
-   m_AgeAtContinuity = pParent->m_TimelineMgr.GetEventByIndex(eventIdx)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+   m_AgeAtContinuity = pParent->m_TimelineMgr.GetEventByIndex(eventIdx)->GetCastClosureJointActivity().GetTotalCuringDuration();
 
    if ( m_strUserEc == _T("") )
    {

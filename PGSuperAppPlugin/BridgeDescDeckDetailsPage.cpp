@@ -504,7 +504,7 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    {
       const CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
       EventIndexType eventIdx = pTimelineMgr->GetCastDeckEventIndex();
-      m_AgeAtContinuity = pTimelineMgr->GetEventByIndex(eventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
+      m_AgeAtContinuity = pTimelineMgr->GetEventByIndex(eventIdx)->GetCastDeckActivity().GetTotalCuringDuration();
    }
 
 

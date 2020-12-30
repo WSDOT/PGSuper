@@ -100,10 +100,10 @@ public:
    void SetRelaxationTime(Float64 r);
    Float64 GetRelaxationTime() const;
 
-   // Age of concrete at release (this is the curing time)
+   // Total curing duration (age of concrete at release)
    // Used to compute f'ci and beginning of creep and shrinkage
-   void SetAgeAtRelease(Float64 age);
-   Float64 GetAgeAtRelease() const;
+   void SetTotalCuringDuration(Float64 duration);
+   Float64 GetTotalCuringDuration() const;
 
 protected:
    virtual LPCTSTR GetUnitName() override { return _T("ConstructSegments"); }
@@ -114,7 +114,7 @@ protected:
    virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress) override;
 
    Float64 m_RelaxationTime;
-   Float64 m_AgeAtRelease;
+   Float64 m_TotalCuringDuration;
 };
 
 // This activity represents the erection of a precast segment into its permanent

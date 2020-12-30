@@ -364,8 +364,8 @@ void CSupportActivityBase::MakeAssignment(const CSupportActivityBase& rOther)
 ////////////////////////////////////////////////////////////////
 CCastClosureJointActivity::CCastClosureJointActivity()
 {
-   m_Age = 7.0; // days
-   m_CuringDuration = 3.0; // days (WSDOT Std Specs 6-02.3(11)
+   m_TotalCuringDuration = 7.0; // days
+   m_ActiveCuringDuration = 3.0; // days (WSDOT Std Specs 6-02.3(11)
 }
 
 CCastClosureJointActivity::CCastClosureJointActivity(const CCastClosureJointActivity& rOther) :
@@ -391,12 +391,12 @@ bool CCastClosureJointActivity::operator==(const CCastClosureJointActivity& rOth
       return false;
    }
 
-   if ( !IsEqual(m_Age,rOther.m_Age) )
+   if ( !IsEqual(m_TotalCuringDuration,rOther.m_TotalCuringDuration) )
    {
       return false;
    }
 
-   if ( !IsEqual(m_CuringDuration,rOther.m_CuringDuration) )
+   if ( !IsEqual(m_ActiveCuringDuration,rOther.m_ActiveCuringDuration) )
    {
       return false;
    }
@@ -409,30 +409,30 @@ bool CCastClosureJointActivity::operator!=(const CCastClosureJointActivity& rOth
    return !operator==(rOther);
 }
 
-Float64 CCastClosureJointActivity::GetConcreteAgeAtContinuity() const
+Float64 CCastClosureJointActivity::GetTotalCuringDuration() const
 {
-   return m_Age;
+   return m_TotalCuringDuration;
 }
 
-void CCastClosureJointActivity::SetConcreteAgeAtContinuity(Float64 age)
+void CCastClosureJointActivity::SetTotalCuringDuration(Float64 duration)
 {
-   m_Age = age;
+   m_TotalCuringDuration = duration;
 }
 
-void CCastClosureJointActivity::SetCuringDuration(Float64 duration)
+void CCastClosureJointActivity::SetActiveCuringDuration(Float64 duration)
 {
-   m_CuringDuration = duration;
+   m_ActiveCuringDuration = duration;
 }
 
-Float64 CCastClosureJointActivity::GetCuringDuration() const
+Float64 CCastClosureJointActivity::GetActiveCuringDuration() const
 {
-   return m_CuringDuration;
+   return m_ActiveCuringDuration;
 }
 
 void CCastClosureJointActivity::MakeCopy(const CCastClosureJointActivity& rOther)
 {
-   m_Age = rOther.m_Age;
-   m_CuringDuration = rOther.m_CuringDuration;
+   m_TotalCuringDuration = rOther.m_TotalCuringDuration;
+   m_ActiveCuringDuration = rOther.m_ActiveCuringDuration;
 }
 
 void CCastClosureJointActivity::MakeAssignment(const CCastClosureJointActivity& rOther)
@@ -453,7 +453,7 @@ HRESULT CCastClosureJointActivity::LoadSubclassData(IStructuredLoad* pStrLoad,IP
          return hr;
       }
 
-      m_Age = var.dblVal;
+      m_TotalCuringDuration = var.dblVal;
 
       Float64 version;
       pStrLoad->get_Version(&version);
@@ -467,11 +467,11 @@ HRESULT CCastClosureJointActivity::LoadSubclassData(IStructuredLoad* pStrLoad,IP
             return hr;
          }
 
-         m_CuringDuration = var.dblVal;
+         m_ActiveCuringDuration = var.dblVal;
       }
       else
       {
-         m_CuringDuration = m_Age;
+         m_ActiveCuringDuration = m_TotalCuringDuration;
       }
    }
    return S_OK;
@@ -481,8 +481,8 @@ HRESULT CCastClosureJointActivity::SaveSubclassData(IStructuredSave* pStrSave,IP
 {
    if ( m_bEnabled )
    {
-      pStrSave->put_Property(_T("AgeAtContinuity"),CComVariant(m_Age));
-      pStrSave->put_Property(_T("CuringDuration"),CComVariant(m_CuringDuration));
+      pStrSave->put_Property(_T("AgeAtContinuity"),CComVariant(m_TotalCuringDuration));
+      pStrSave->put_Property(_T("CuringDuration"),CComVariant(m_ActiveCuringDuration));
    }
 
    return S_OK;

@@ -5496,7 +5496,7 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
 
             EventIndexType eventIdx = m_BridgeDescription.GetTimelineManager()->GetSegmentErectionEventIndex(pSegment->GetID());
             const CTimelineEvent* pEvent = m_BridgeDescription.GetTimelineManager()->GetEventByIndex(eventIdx);
-            Float64 ti = pEvent->GetConstructSegmentsActivity().GetAgeAtRelease();
+            Float64 ti = pEvent->GetConstructSegmentsActivity().GetTotalCuringDuration();
 
             pSegment->Material.Concrete.bBasePropertiesOnInitialValues = false;
 
@@ -5520,7 +5520,7 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
    //{
    //   EventIndexType eventIdx = m_BridgeDescription.GetTimelineManager()->GetCastDeckEventIndex();
    //   const CTimelineEvent* pEvent = m_BridgeDescription.GetTimelineManager()->GetEventByIndex(eventIdx);
-   //   Float64 ti = pEvent->GetCastDeckActivity().GetConcreteAgeAtContinuity();
+   //   Float64 ti = pEvent->GetCastDeckActivity().GetTotalCuringDuration();
 
    //   pDeck->Concrete.bBasePropertiesOnInitialValues = false;
 
@@ -12065,7 +12065,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    pTimelineEvent->SetDay(0);
    pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
-   pTimelineEvent->GetConstructSegmentsActivity().SetAgeAtRelease(  ::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(  ::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().AddSegments(segmentIDs);
 
@@ -12134,8 +12134,8 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       pTimelineEvent->SetDescription(_T("Cast Longitudinal Joints"));
 
       pTimelineEvent->GetCastLongitudinalJointActivity().Enable();
-      pTimelineEvent->GetCastLongitudinalJointActivity().SetConcreteAgeAtContinuity(1.0); // day
-      pTimelineEvent->GetCastLongitudinalJointActivity().SetCuringDuration(1.0); // day
+      pTimelineEvent->GetCastLongitudinalJointActivity().SetTotalCuringDuration(1.0); // day
+      pTimelineEvent->GetCastLongitudinalJointActivity().SetActiveCuringDuration(1.0); // day
       pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
       maxDay = pTimelineEvent->GetDay() + 1;
       pTimelineEvent.release();
@@ -12152,8 +12152,8 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
          pTimelineEvent->GetCastDeckActivity().Enable();
          pTimelineEvent->GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous); // this is the only option supported for PGSuper models
-         pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(deck_diaphragm_curing_duration); // day
-         pTimelineEvent->GetCastDeckActivity().SetCuringDuration(deck_diaphragm_curing_duration); // day
+         pTimelineEvent->GetCastDeckActivity().SetTotalCuringDuration(deck_diaphragm_curing_duration); // day
+         pTimelineEvent->GetCastDeckActivity().SetActiveCuringDuration(deck_diaphragm_curing_duration); // day
          pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
          maxDay = pTimelineEvent->GetDay() + 1;
          pTimelineEvent.release();
@@ -12184,8 +12184,8 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
          pTimelineEvent->GetCastDeckActivity().Enable();
          pTimelineEvent->GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous); // this is the only option supported for PGSuper models
-         pTimelineEvent->GetCastDeckActivity().SetConcreteAgeAtContinuity(deck_diaphragm_curing_duration); // day
-         pTimelineEvent->GetCastDeckActivity().SetCuringDuration(deck_diaphragm_curing_duration); // day
+         pTimelineEvent->GetCastDeckActivity().SetTotalCuringDuration(deck_diaphragm_curing_duration); // day
+         pTimelineEvent->GetCastDeckActivity().SetActiveCuringDuration(deck_diaphragm_curing_duration); // day
          pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
          maxDay = pTimelineEvent->GetDay() + 1;
          pTimelineEvent.release();

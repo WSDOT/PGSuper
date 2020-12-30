@@ -138,9 +138,11 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       const auto& constructSegmentActivity = pTimelineEvent->GetConstructSegmentsActivity();
       if (constructSegmentActivity.IsEnabled())
       {
+         if (0 < nActivities) row++;
+
          (*pEventTable)(row, col) << (pDocType->IsPGSuperDocument() ? _T("Construct Girders") : _T("Construct Segments"));
          (*pEventTable)(row, col + 1) << _T("Time from strand stressing to release: ") << constructSegmentActivity.GetRelaxationTime() << _T(" days") << rptNewLine;
-         (*pEventTable)(row, col + 1) << _T("Age of concrete at prestress release: ") << constructSegmentActivity.GetAgeAtRelease() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Total curing duration: ") << constructSegmentActivity.GetTotalCuringDuration() << _T(" days") << rptNewLine;
 
          const auto& segments = constructSegmentActivity.GetSegments();
          for (const auto& segmentID : segments)
@@ -152,13 +154,14 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                (*pEventTable)(row, col + 2) << SEGMENT_LABEL(pSegment->GetSegmentKey()) << rptNewLine;
             }
          }
-         row++;
          nActivities++;
       }
 
       const auto& erectPierActivity = pTimelineEvent->GetErectPiersActivity();
       if (erectPierActivity.IsEnabled())
       {
+         if (0 < nActivities) row++;
+
          (*pEventTable)(row, col) << _T("Erect Piers and Temporary Supports");
          const auto& piers = erectPierActivity.GetPiers();
          for (const auto& pierID : piers)
@@ -178,13 +181,14 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             (*pEventTable)(row, col + 2) << GetLabel(pTS, pDisplayUnits) << rptNewLine;
          }
 
-         row++;
          nActivities++;
       }
 
       const auto& erectSegmentsActivity = pTimelineEvent->GetErectSegmentsActivity();
       if (erectSegmentsActivity.IsEnabled())
       {
+         if (0 < nActivities) row++;
+
          (*pEventTable)(row, col) << (pDocType->IsPGSuperDocument() ? _T("Erect Girders") : _T("Erect Segments"));
          const auto& segments = erectSegmentsActivity.GetSegments();
          for (const auto& segmentID : segments)
@@ -197,13 +201,15 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                (*pEventTable)(row, col + 2) << SEGMENT_LABEL(pSegment->GetSegmentKey()) << rptNewLine;
             }
          }
-         row++;
+
          nActivities++;
       }
 
       const auto& removeTemporarySupportsActivity = pTimelineEvent->GetRemoveTempSupportsActivity();
       if (removeTemporarySupportsActivity.IsEnabled())
       {
+         if (0 < nActivities) row++;
+
          (*pEventTable)(row, col) << _T("Remove Temporary Supports");
          const auto& ts = removeTemporarySupportsActivity.GetTempSupports();
          for (const auto& tsID : ts)
@@ -214,17 +220,18 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             (*pEventTable)(row, col + 2) << GetLabel(pTS, pDisplayUnits) << rptNewLine;
          }
 
-         row++;
          nActivities++;
       }
 
       const auto& castClosureJointActivity = pTimelineEvent->GetCastClosureJointActivity();
       if (castClosureJointActivity.IsEnabled())
       {
+         if (0 < nActivities) row++;
+
          (*pEventTable)(row, col) << _T("Cast Closure Joints");
 
-         (*pEventTable)(row, col + 1) << _T("Age of concrete at continuity: ") << castClosureJointActivity.GetConcreteAgeAtContinuity() << _T(" days") << rptNewLine;
-         (*pEventTable)(row, col + 1) << _T("Curing duration: ") << castClosureJointActivity.GetCuringDuration() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Total curing duration: ") << castClosureJointActivity.GetTotalCuringDuration() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Active curing duration: ") << castClosureJointActivity.GetActiveCuringDuration() << _T(" days") << rptNewLine;
 
          const auto& piers = castClosureJointActivity.GetPiers();
          for (const auto& pierID : piers)
@@ -242,17 +249,18 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
             (*pEventTable)(row, col + 2) << GetLabel(pTS, pDisplayUnits) << rptNewLine;
          }
 
-         row++;
          nActivities++;
       }
 
       const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
       if (castDeckActivity.IsEnabled())
       {
+         if (0 < nActivities) row++;
+
          (*pEventTable)(row, col) << _T("Cast Deck");
 
-         (*pEventTable)(row, col + 1) << _T("Age of concrete when deck becomes composite with girders: ") << castDeckActivity.GetConcreteAgeAtContinuity() << _T(" days") << rptNewLine;
-         (*pEventTable)(row, col + 1) << _T("Curing duration: ") << castDeckActivity.GetCuringDuration() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Total curing duration: ") << castDeckActivity.GetTotalCuringDuration() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Active curing duration: ") << castDeckActivity.GetActiveCuringDuration() << _T(" days") << rptNewLine;
 
          if (castDeckActivity.GetCastingType() == CCastDeckActivity::Continuous)
          {
@@ -260,30 +268,41 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          }
          else
          {
+            (*pEventTable)(row, col + 1) << _T("Time between castings: ") << castDeckActivity.GetTimeBetweenCasting() << _T(" days") << rptNewLine;
+            (*pEventTable)(row, col + 1) << _T("Number of casting regions: ") << castDeckActivity.GetCastingRegionCount() << rptNewLine;
+
+            if (pTimelineEvent->GetCastClosureJointActivity().IsEnabled())
+            {
+               (*pEventTable)(row, col + 1) << _T("Closure joint cast with region: ") << LABEL_INDEX(castDeckActivity.GetClosureJointCastingRegion()) << rptNewLine;
+            }
+
             (*pEventTable)(row, col + 2) << _T("Staged casting");
          }
-         row++;
+
          nActivities++;
       }
 
       const auto& castLongitudinalJointActivity = pTimelineEvent->GetCastLongitudinalJointActivity();
       if (castLongitudinalJointActivity.IsEnabled())
       {
+         if (0 < nActivities) row++;
+
          (*pEventTable)(row, col) << _T("Cast Longitudinal Joints") << rptNewLine;
 
-         (*pEventTable)(row, col + 1) << _T("Age of concrete at continuity: ") << castLongitudinalJointActivity.GetConcreteAgeAtContinuity() << _T(" days") << rptNewLine;
-         (*pEventTable)(row, col + 1) << _T("Curing duration: ") << castLongitudinalJointActivity.GetCuringDuration() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Total curing duration: ") << castLongitudinalJointActivity.GetTotalCuringDuration() << _T(" days") << rptNewLine;
+         (*pEventTable)(row, col + 1) << _T("Active curing duration: ") << castLongitudinalJointActivity.GetActiveCuringDuration() << _T(" days") << rptNewLine;
 
          (*pEventTable)(row, col + 2) << _T("") << rptNewLine;
-         row++;
+
          nActivities++;
       }
 
       const auto& stressTendonActivity = pTimelineEvent->GetStressTendonActivity();
       if (stressTendonActivity.IsEnabled())
       {
-         (*pEventTable)(row, col) << _T("Stress Tendons") << rptNewLine;
+         if (0 < nActivities) row++;
 
+         (*pEventTable)(row, col) << _T("Stress Tendons") << rptNewLine;
          (*pEventTable)(row, col + 1) << _T("") << rptNewLine;
 
          const auto& tendons = stressTendonActivity.GetTendons();
@@ -296,13 +315,15 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                (*pEventTable)(row, col + 2) << GIRDER_LABEL(pGirder->GetGirderKey()) << _T(", Duct ") << LABEL_DUCT(tendonKey.ductIdx) << rptNewLine;
             }
          }
-         row++;
+
          nActivities++;
       }
 
       const auto& applyLoadActivity = pTimelineEvent->GetApplyLoadActivity();
       if (applyLoadActivity.IsEnabled())
       {
+         if (0 < nActivities) row++;
+
          (*pEventTable)(row, col) << _T("Apply Loads") << rptNewLine;
          (*pEventTable)(row, col + 1) << _T("") << rptNewLine;
 
@@ -362,7 +383,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                }
             }
          }
-         row++;
+
          nActivities++;
       }
 
@@ -376,7 +397,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
       {
          for (int c = 0; c < col; c++)
          {
-            pEventTable->SetRowSpan(row - nActivities, c, nActivities, true);
+            pEventTable->SetRowSpan(row - nActivities + 1, c, nActivities, true);
          }
       }
 

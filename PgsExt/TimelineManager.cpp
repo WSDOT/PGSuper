@@ -1253,7 +1253,7 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
    // if eventIdx == INVALID_INDEX, we are just removing the construction from the timeline
 
    bool bUpdateConstructionTiming = false;
-   Float64 ageAtRelease = 1.0;
+   Float64 totalCuringDuration = 1.0;
    Float64 relaxationTime = 1.0;
 
    // If this construction of this segment is currently being modeled, get the construction
@@ -1273,7 +1273,7 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
 
          // construction of this segment is being modeled and it is moving to a different timeline event
          bUpdateConstructionTiming = true;
-         ageAtRelease   = pTimelineEvent->GetConstructSegmentsActivity().GetAgeAtRelease();
+         totalCuringDuration = pTimelineEvent->GetConstructSegmentsActivity().GetTotalCuringDuration();
          relaxationTime = pTimelineEvent->GetConstructSegmentsActivity().GetRelaxationTime();
          pTimelineEvent->GetConstructSegmentsActivity().RemoveSegment(segmentID); // remove segment from timeline
          break;
@@ -1285,7 +1285,7 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
       m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().AddSegment(segmentID);
       if ( bUpdateConstructionTiming )
       {
-         m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetAgeAtRelease(ageAtRelease);
+         m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetTotalCuringDuration(totalCuringDuration);
          m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetRelaxationTime(relaxationTime);
       }
    }
@@ -1585,7 +1585,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* 
       return;
    }
 
-   Float64 ageAtContinuity = 7.0;
+   Float64 totalCuringDuration = 7.0;
    bool bUpdateAge = false;
 
    for (auto& pTimelineEvent : m_TimelineEvents)
@@ -1593,7 +1593,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* 
       if ( pClosure->GetPier() && pTimelineEvent->GetCastClosureJointActivity().HasPier(pClosure->GetPier()->GetID()) )
       {
          bUpdateAge = true;
-         ageAtContinuity = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+         totalCuringDuration = pTimelineEvent->GetCastClosureJointActivity().GetTotalCuringDuration();
          pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
          break;
       }
@@ -1601,7 +1601,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* 
       if ( pClosure->GetTemporarySupport() && pTimelineEvent->GetCastClosureJointActivity().HasTempSupport(pClosure->GetTemporarySupport()->GetID()) )
       {
          bUpdateAge = true;
-         ageAtContinuity = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+         totalCuringDuration = pTimelineEvent->GetCastClosureJointActivity().GetTotalCuringDuration();
          pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
          break;
       }
@@ -1613,7 +1613,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* 
 
       if ( bUpdateAge )
       {
-         m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().SetConcreteAgeAtContinuity(ageAtContinuity);
+         m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().SetTotalCuringDuration(totalCuringDuration);
       }
 
       if ( pClosure->GetPier() )
@@ -1833,7 +1833,7 @@ EventIDType CTimelineManager::GetCastLongitudinalJointEventID() const
 int CTimelineManager::SetCastLongitudinalJointEventByIndex(EventIndexType eventIdx, bool bAdjustTimeline)
 {
    bool bUpdateAge = false;
-   Float64 age_at_continuity = 7.0;
+   Float64 totalCuringDuration = 7.0;
    CTimelineEvent* pOldCastLongitudinalJointEvent = nullptr;
 
    // search for the event where the longitudinal joint is cast
@@ -1842,7 +1842,7 @@ int CTimelineManager::SetCastLongitudinalJointEventByIndex(EventIndexType eventI
       if (pTimelineEvent->GetCastLongitudinalJointActivity().IsEnabled())
       {
          bUpdateAge = true;
-         age_at_continuity = pTimelineEvent->GetCastLongitudinalJointActivity().GetConcreteAgeAtContinuity();
+         totalCuringDuration = pTimelineEvent->GetCastLongitudinalJointActivity().GetTotalCuringDuration();
          pTimelineEvent->GetCastLongitudinalJointActivity().Enable(false);
          pOldCastLongitudinalJointEvent = pTimelineEvent; // hang onto the event in case the edit needs to be rolled back
          break;
@@ -1856,7 +1856,7 @@ int CTimelineManager::SetCastLongitudinalJointEventByIndex(EventIndexType eventI
 
       if (bUpdateAge)
       {
-         longitudinal_joint_event.GetCastLongitudinalJointActivity().SetConcreteAgeAtContinuity(age_at_continuity);
+         longitudinal_joint_event.GetCastLongitudinalJointActivity().SetTotalCuringDuration(totalCuringDuration);
       }
 
       int result = SetEventByIndex(eventIdx, longitudinal_joint_event, bAdjustTimeline);

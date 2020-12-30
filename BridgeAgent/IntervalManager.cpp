@@ -172,7 +172,6 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
       ProcessStep5(eventIdx,pTimelineEvent); // interval to start of next event
    } // next event
    
-
    ASSERT_VALID;
 }
 
@@ -925,14 +924,14 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
    // a) Erect Segment
    // b) Remove Temporary Supports
    // c) Stress Tendons
-   // d) Cast Closure
+   // d) Cast Closure (but not when cast at the same time as the deck - that's a special case handled in Step 3)
 
-   // For each activity in this event, get phrase to use in the description of the interval
-   // as well as record the interval index if needed. Since the interval object hasn't
+   // For each activity in this event, get a phrase to use in the description of the interval
+   // as well as record the interval index as needed. Since the interval object hasn't
    // been added to the m_Intervals collection yet, the interval index is the size of the collection
    IntervalIndexType intervalIdx = m_Intervals.size();
    
-   std::vector<CString> strDescriptions;
+   std::vector<CString> strDescriptions; // holds the descriptive text - this will get built up as we go
 
    const CBridgeDescription2* pBridgeDesc = pTimelineEvent->GetTimelineManager()->GetBridgeDescription();
 
@@ -1085,8 +1084,10 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
    }
 
    const CCastClosureJointActivity& closureJointActivity = pTimelineEvent->GetCastClosureJointActivity();
-   if ( closureJointActivity.IsEnabled() )
+   if ( closureJointActivity.IsEnabled() && !pTimelineEvent->GetCastDeckActivity().IsEnabled())
    {
+      // Closure joint is cast in this event and this event is not the same event when the deck is cast.
+      // Closure joint will be modeled in Step 3 with the deck casting if it is cast at the same time as the deck
       strDescriptions.push_back(CString(_T("Cast Closure Joint")));
       IntervalIndexType castClosureIntervalIdx = intervalIdx;
 
@@ -1095,7 +1096,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
       {
          m_CastClosureIntervals.emplace(closureKey, castClosureIntervalIdx);
       }
-   } // end if cast deck activity
+   } // end if closure joint activity
 
    if ( strDescriptions.size() == 0 )
    {
@@ -1150,16 +1151,12 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
    }
 }
 
-#define SEGMENT 1
-#define CLOSURE 2
-#define LONGITUDINAL_JOINT 3
-#define DECK 4
-
 struct CuringInfo
 {
+   enum Component { Segment,  ClosureJoint, LongitudinalJoint, Deck }; // order matters... these are used as secondary sort keys for time-ordering
    Float64 duration;
-   int activity;
-   CuringInfo(Float64 d, int a) : duration(d), activity(a) {}
+   Component component;
+   CuringInfo(Float64 d, Component c) : duration(d), component(c) {}
 
    bool operator<(const CuringInfo& other) const
    {
@@ -1169,40 +1166,72 @@ struct CuringInfo
       if (other.duration < duration)
          return false;
 
-      return activity < other.activity;
+      return component < other.component;
    }
 };
+
+template<class T>
+CString BuildCommaSeparatedList(LPCTSTR strLabel,const T& list)
+{
+   CString string(strLabel);
+   string += _T(" ");
+   std::for_each(std::cbegin(list), std::prev(std::cend(list)), [&string](const auto& index)
+   {
+      CString strItem;
+      strItem.Format(_T("%d, "), LABEL_INDEX(index));
+      string += strItem;
+   });
+   CString strItem;
+   strItem.Format(_T("%d"), LABEL_INDEX(list.back()));
+   string += strItem;
+
+   return string;
+}
 
 void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent* pTimelineEvent)
 {
    // Step 3: Create curing duration intervals
-   // Deck casting intervals are also handled here because of the staged nature of the deck model
+   // Deck casting intervals are also handled here because of the staged nature of the deck model.
+   // If closure joints are cast in the same event as the deck, they are handled here as well
+   //
+   // NOTE: In this context curing means total curing time from casting to the time with concrete becomes composite with other concrete.
+   // This is generally modeled with ConcreteAgeAtContinuity. The curing time in the activity objects is the duration of active curing
+   // after which shrinkage is assumed to begin. Shrinkage can begin before, at the same time, or after continuity.
 
    const CConstructSegmentActivity& constructSegmentActivity = pTimelineEvent->GetConstructSegmentsActivity();
    const CCastLongitudinalJointActivity& castLongitudinalJointActivity = pTimelineEvent->GetCastLongitudinalJointActivity();
    const CCastDeckActivity& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
    const CCastClosureJointActivity& castClosureJointActivity = pTimelineEvent->GetCastClosureJointActivity();
 
-   std::set<CuringInfo> curingDurations;
+   // get the duration of every activity in this event
+   std::set<CuringInfo> curingDurations; // this is a set so it will automatically be sorted
    if ( constructSegmentActivity.IsEnabled() )
    {
-      curingDurations.emplace(constructSegmentActivity.GetRelaxationTime(),SEGMENT);
+      // use relaxation time because it covers the total duration from strand stressing to release
+      curingDurations.emplace(constructSegmentActivity.GetRelaxationTime(),CuringInfo::Segment);
    }
 
    if (castLongitudinalJointActivity.IsEnabled())
    {
-      curingDurations.emplace(castLongitudinalJointActivity.GetConcreteAgeAtContinuity(), LONGITUDINAL_JOINT);
+      curingDurations.emplace(castLongitudinalJointActivity.GetTotalCuringDuration(), CuringInfo::LongitudinalJoint);
    }
 
-   if ( castDeckActivity.IsEnabled() )
+   if ( castDeckActivity.IsEnabled() && !castClosureJointActivity.IsEnabled() )
    {
       // we want the total duration of all deck casting regions to cure
-      curingDurations.emplace(castDeckActivity.GetDuration(),DECK);
+      curingDurations.emplace(castDeckActivity.GetDuration(),CuringInfo::Deck);
    }
-
-   if ( castClosureJointActivity.IsEnabled() )
+   else if (castClosureJointActivity.IsEnabled() && !castDeckActivity.IsEnabled())
    {
-      curingDurations.emplace(castClosureJointActivity.GetConcreteAgeAtContinuity(),CLOSURE);
+      curingDurations.emplace(castClosureJointActivity.GetTotalCuringDuration(), CuringInfo::ClosureJoint);
+   }
+   else if(castDeckActivity.IsEnabled() && castClosureJointActivity.IsEnabled())
+   {
+      // The closure joint is cast at the same time as the deck. The closure joint can be cast with any of the deck regions.
+      // The total curing duration is the greater of the deck or the end of the closure joint curing... which ever one ends last sets the total duration
+      Float64 deck_duration = castDeckActivity.GetDuration();
+      Float64 cj_duration = castDeckActivity.GetTimeOfClosureJointCasting() + castClosureJointActivity.GetTotalCuringDuration();
+      curingDurations.emplace(Max(deck_duration,cj_duration), CuringInfo::Deck);
    }
 
    if ( curingDurations.size() == 0 )
@@ -1215,27 +1244,39 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
    // build the intervals for the curing durations
    // work in order of shortest to longest duration
 
-   // the concrete for all concrete casting activities during this event
-   // are cast at the same time. the curing intervals are based on the
-   // one with the shortest curing time, then the next longest, and so on.
-   // the duration of the curing time is the curing time for the
+   // The concrete for all concrete casting activities during this event
+   // are cast at the same time (except deck and closure joint when the closure joint is cast during a specific staged placement). 
+   // The curing intervals are based on the one with the shortest curing time, then the next longest, and so on.
+   // The duration of the curing time is the curing time for the
    // given activity less the duration of the other curing times that
    // have already occuring during this activity
    //
-   // e.g. Deck concrete and closure joint concrete are cast at the same
+   // e.g. Continuous placement deck concrete and closure joint concrete are cast at the same
    // time. It takes the closure joint 3 days to cure and the deck 10 days.
    // The curing duration for the closure joint and deck together is modeled as 3 days. the
-   // curing duration for the deck then proceeds for an additional 7 days
+   // curing duration for the deck then proceeds for an additional 7 days.
+   //
+   // e.g. Staged placement deck concrete and closure joint are cast in the same event
+   // and the closure joint is cast with placement region 2 which is placed in the second
+   // placement sequence. It takes each placement of deck concrete 19 days to cure with
+   // 14 days between the start of each placement. The closure joint cures for 10 days.
+   // The analysis intervals are modeled as follows:
+   // Interval i  : First deck casting sequence (duration 0 days - load application)
+   // Interval i+1: First deck casting sequence curing (duration 14 of the 19 total days)
+   // Interval i+2: Second deck casting sequence and closure joint casting occur (duration 0 days - load application)
+   // Interval i+3: First deck casting sequence, second deck casting sequence, and closure joint curing (duration 5 days - the remaining 5 days of the 19 days for the first deck casting = first 5 days of the second deck casting and closure joint casting)
+   // Interval i+4: Second deck casting sequence and closure joint curing (duration 5 days - the remaining 5 days of curing time from the 10 day for closure joint curing)
+   // Interval i+5: Second deck casting sequence curing (duration 9 days - the remaining 9 days from the total 19 days of curing)
 
    Float64 previous_curing_duration = 0;
    for ( const auto& curingInfo : curingDurations)
    {
       Float64 duration = curingInfo.duration;
-      int activityType = curingInfo.activity;
+      CuringInfo::Component component = curingInfo.component;
 
       Float64 remaining_duration = duration - previous_curing_duration;
 
-      if ( activityType == SEGMENT )
+      if ( component == CuringInfo::Segment)
       {
          ATLASSERT(IsEqual(duration,constructSegmentActivity.GetRelaxationTime()));
 
@@ -1411,10 +1452,10 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
             }
          } // next segment
       }
-      else if (activityType == LONGITUDINAL_JOINT)
+      else if (component == CuringInfo::LongitudinalJoint)
       {
          CInterval cureLongitudinalJointInterval;
-         ATLASSERT(IsEqual(duration, castLongitudinalJointActivity.GetConcreteAgeAtContinuity()));
+         ATLASSERT(IsEqual(duration, castLongitudinalJointActivity.GetTotalCuringDuration()));
          if (0 < duration)
          {
             // only model longitudinal joint curing if we are doing a time-step analysis
@@ -1446,302 +1487,333 @@ void CIntervalManager::ProcessStep3(EventIndexType eventIdx,const CTimelineEvent
             m_CompositeLongitudinalJointsIntervalIdx = m_CastLongitudinalJointsIntervalIdx + 1;
          }
       }
-      else if ( activityType == DECK )
+      else if (component == CuringInfo::ClosureJoint)
       {
-         ATLASSERT(IsEqual(duration,castDeckActivity.GetDuration()));
+         ATLASSERT(IsEqual(duration, castClosureJointActivity.GetTotalCuringDuration()));
+
+         CInterval cureClosureInterval;
+         cureClosureInterval.StartEventIdx = eventIdx;
+         cureClosureInterval.EndEventIdx = eventIdx;
+         cureClosureInterval.Start = m_Intervals.back().End; // curing starts when the previous interval ends
+         cureClosureInterval.Duration = remaining_duration;
+         cureClosureInterval.End = cureClosureInterval.Start + cureClosureInterval.Duration;
+         cureClosureInterval.Middle = 0.5*(cureClosureInterval.Start + cureClosureInterval.End);
+         cureClosureInterval.Description = _T("Closure joints curing");
+         StoreInterval(cureClosureInterval);
+      }
+      else if ( component == CuringInfo::Deck )
+      {
+         ATLASSERT(IsEqual(duration,Max(castClosureJointActivity.IsEnabled() ? castDeckActivity.GetTimeOfClosureJointCasting() + castClosureJointActivity.GetTotalCuringDuration() : 0,castDeckActivity.GetDuration())));
          ATLASSERT(pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone);
-         if (0 <= duration)
+         IndexType nCastings = castDeckActivity.GetCastingCount();
+         IndexType lastCastingIdx = nCastings - 1;
+
+         std::vector<std::pair<Float64,Float64>> vCuringTime; // keep track of when curing starts for a casting and how long curing takes
+         // first item is time when curing starts, the second item is curing duration
+
+         // parmeters to keep track of partially cured concrete
+         std::set<IndexType> vDeckCastingsCuringDuringThisInterval; // this is the casting regions that are curing during this interval
+         bool bClosureJointCuringDuringThisInterval = false; // indicates if a closure joint is curing during this interval
+
+         IndexType closureJointCastingIdx = castDeckActivity.GetClosureJointCasting(); // casting index when closure joint is cast along with some deck regions
+
+         // work through each deck casting sequence
+         for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
          {
-            // only model deck curing if we are doing a time-step analysis
+            // get the deck regions that are cast during this casting
+            std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
 
-            IndexType nCastings = castDeckActivity.GetCastingCount();
-            IndexType lastCastingIdx = nCastings - 1;
+            // is the closure joint cast during this deck casting?
+            bool bClosureJointCastInThisCasting = (castingIdx == closureJointCastingIdx ? true : false);
 
-            std::vector<std::pair<Float64,Float64>> vCuringTime; // keep track of when curing starts for a casting and how long curing takes
-            // first item in the pair is time when curing starts, the second item is curing duration
-            // the current curing duration is the time at the end of the cure deck region interval less the time when casting occured
-            // if the current curing duration is equal to the actual curing duration, the concrete in the casting is cured and has become composite
-            vCuringTime.resize(nCastings, std::make_pair(-99999,-99999)); // initialize with obvious bad value
+            ////////////////////////////////////////////////////////////////////////////
+            // Model casting of concrete
+            ////////////////////////////////////////////////////////////////////////////
 
-            for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
+            // Create analysis interval for casting of deck regions
+            CInterval castDeckRegionsInterval;
+            castDeckRegionsInterval.StartEventIdx = eventIdx;
+            castDeckRegionsInterval.EndEventIdx = eventIdx;
+            castDeckRegionsInterval.Start = m_Intervals.back().End;
+            castDeckRegionsInterval.Duration = 0;
+            castDeckRegionsInterval.End = castDeckRegionsInterval.Start + castDeckRegionsInterval.Duration;
+            castDeckRegionsInterval.Middle = 0.5*(castDeckRegionsInterval.Start + castDeckRegionsInterval.End);
+
+            // build label
+            if (1 < nCastings)
             {
-               // interval for casting a deck region
-               CInterval castDeckRegionInterval;
-               castDeckRegionInterval.StartEventIdx = eventIdx;
-               castDeckRegionInterval.EndEventIdx = eventIdx;
-               castDeckRegionInterval.Start = m_Intervals.back().End;
-               castDeckRegionInterval.Duration = 0;
-               castDeckRegionInterval.End = castDeckRegionInterval.Start + castDeckRegionInterval.Duration;
-               castDeckRegionInterval.Middle = 0.5*(castDeckRegionInterval.Start + castDeckRegionInterval.End);
-
-               std::vector<IndexType> vRegions = castDeckActivity.GetRegions(castingIdx);
-               if (1 < nCastings)
+               castDeckRegionsInterval.Description = BuildCommaSeparatedList(bClosureJointCastInThisCasting ? _T("Cast closure joint and deck regions") : _T("Cast deck regions"), vRegions);
+            }
+            else
+            {
+               if (bClosureJointCastInThisCasting)
                {
-                  CString strDesc = _T("Cast deck regions ");
-                  auto begin = std::begin(vRegions);
-                  auto iter = begin;
-                  auto end = std::end(vRegions);
-                  for (; iter != end; iter++)
-                  {
-                     if (iter != begin)
-                     {
-                        strDesc += _T(", ");
-                     }
-                     CString strRegion;
-                     strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
-                     strDesc += strRegion;
-                  }
-                  castDeckRegionInterval.Description = strDesc;
-               }
-               else
-               {
-                  castDeckRegionInterval.Description = GetCastDeckEventName(pBridgeDesc->GetDeckDescription()->GetDeckType());
+                  castDeckRegionsInterval.Description = CString(_T("Cast closure joint and "));
                }
 
-               IntervalIndexType castDeckIntervalIdx;
-               if (castingIdx == 0 && (castLongitudinalJointActivity.IsEnabled() || castClosureJointActivity.IsEnabled()))
+               castDeckRegionsInterval.Description += GetCastDeckEventName(pBridgeDesc->GetDeckDescription()->GetDeckType());
+            }
+
+            // get the interval when this casting occurs or create a new one
+            IntervalIndexType castDeckRegionsIntervalIdx;
+            if (castingIdx == 0 && castLongitudinalJointActivity.IsEnabled())
+            {
+               // This is the first casting and LJ are cast at the same time. Use the previously defined (defined in ProcessStep2)
+               // interval as the deck casting interval for the first deck casting
+               castDeckRegionsIntervalIdx = m_CastLongitudinalJointsIntervalIdx;
+               auto& interval = m_Intervals[castDeckRegionsIntervalIdx]; // get the interval
+               interval.Description += _T(", ") + castDeckRegionsInterval.Description; // append the deck casting description
+
+               castDeckRegionsInterval = interval;
+            }
+            else
+            {
+               // there weren't other castings happening at the same time as the deck casting that previously created analysis intervals 
+               // so store the new castDeckRegionInterval in the interval manager
+               castDeckRegionsIntervalIdx = StoreInterval(castDeckRegionsInterval);
+            }
+
+            // record the casting interval for each deck region that is cast during this casting
+            for (auto regionIdx : vRegions)
+            {
+               m_vCastDeckIntervalIdx[regionIdx] = castDeckRegionsIntervalIdx;
+            }
+
+            if (bClosureJointCastInThisCasting)
+            {
+               // closure joints are being cast at the same time as this casting and the analysis interval hasn't be recorded yet (recall that it was skipped in ProcessStep2)
+               // record the casting interval for all the associated closure joints now
+               const auto& vClosureKeys(castClosureJointActivity.GetClosureKeys(pBridgeDesc));
+               for (const auto& closureKey : vClosureKeys)
                {
-                  // if this is the first casting, and LJ or CJ are cast at the same time, use the previously defined (defined in ProcessStep2)
-                  // interval as the deck casting interval for the first deck casting
-                  if (castLongitudinalJointActivity.IsEnabled())
-                  {
-                     castDeckIntervalIdx = m_CastLongitudinalJointsIntervalIdx;
-                     auto& interval = m_Intervals[castDeckIntervalIdx]; // get the interval
-                     interval.Description += _T(", ") + castDeckRegionInterval.Description; // append the deck casting description
-
-                     castDeckRegionInterval = interval;
-                  }
-                  else
-                  {
-                     ATLASSERT(castClosureJointActivity.IsEnabled());
-                     // the interval for all the closure joints cast in this activity are the same, so just get the first one
-                     const auto& vClosureKeys = castClosureJointActivity.GetClosureKeys(pBridgeDesc);
-                     const auto& closureKey = vClosureKeys.front();
-                     IntervalIndexType castClosureJointIntervalIdx = m_CastClosureIntervals[closureKey];
-                     castDeckIntervalIdx = castClosureJointIntervalIdx;
-
-                     auto& interval = m_Intervals[castDeckIntervalIdx]; // get the interval
-                     interval.Description += _T(", ") + castDeckRegionInterval.Description; // append the deck casting description
-
-                     castDeckRegionInterval = interval;
-                  }
+                  m_CastClosureIntervals.emplace(closureKey, castDeckRegionsIntervalIdx);
                }
-               else
-               {
-                  // there weren't other castings happening at the same time as the deck casting so store the new castDeckRegionInterval in the interval manager
-                  castDeckIntervalIdx = StoreInterval(castDeckRegionInterval);
-               }
+            }
 
-               for (auto regionIdx : vRegions)
-               {
-                  m_vCastDeckIntervalIdx[regionIdx] = castDeckIntervalIdx;
-               }
+            ////////////////////////////////////////////////////////////////////////////
+            // Model curing of concrete
+            ////////////////////////////////////////////////////////////////////////////
 
-               // interval for the deck region curing
-               CInterval cureDeckRegionInterval;
-               cureDeckRegionInterval.StartEventIdx = eventIdx;
-               cureDeckRegionInterval.EndEventIdx = eventIdx;
-               cureDeckRegionInterval.Start = castDeckRegionInterval.End; // curing starts when the previous interval ends
+            // Create interval for deck region curing.
+            bool bIsThereMoreCuringForThisCasting = false; // indicates of curing wasn't completed for the analysis interval and that it needs to carry over to the next interval
+
+            Float64 deck_curing_duration = castDeckActivity.GetTotalCuringDuration();
+            Float64 cj_curing_duration = (bClosureJointCastInThisCasting ? castClosureJointActivity.GetTotalCuringDuration() : 0);
+            Float64 remaining_curing_time_this_casting = Max(deck_curing_duration, cj_curing_duration);
+
+            // loop, creating analysis intervals, until all the curing is complete
+            do
+            {
+               bIsThereMoreCuringForThisCasting = false; // assume all the curing will be handled one interval
+
+               Float64 curing_duration_this_casting = remaining_curing_time_this_casting;
+
+               CInterval cureDeckRegionsInterval;
+               cureDeckRegionsInterval.StartEventIdx = eventIdx;
+               cureDeckRegionsInterval.EndEventIdx = eventIdx;
+               cureDeckRegionsInterval.Start = m_Intervals.back().End; // curing starts when the previous interval ends
 
                // time when curing begins for this casting, and the curing duration
-               vCuringTime[castingIdx] = std::make_pair(cureDeckRegionInterval.Start, castDeckActivity.GetConcreteAgeAtContinuity());
-                                                                           
-               // the curing duration for this interval is the lesser of the time between castings and the curing duration for a casting.
-               // if the time between casting is less then the curing duration, the next casting occurs before this casting becomes composite
+               if (vCuringTime.size() == castingIdx)
+               {
+                  vCuringTime.emplace_back(cureDeckRegionsInterval.Start, castDeckActivity.GetTotalCuringDuration());
+               }
+
+               // If the time between castings is less than the curing duration of the deck casting (or CJ casting if applicable), the curing must be split over multiple intervals.
+               // The curing duration for this interval is the lesser of the time between castings and the curing duration for a casting.
+               // If the time between casting is less then the curing duration, the next casting occurs before this casting becomes composite and
                // the total curing of this casting will be modeled over multiple intervals
-               Float64 curing_duration_this_interval;
+
+               if (1 < nCastings && castingIdx != lastCastingIdx)
+               {
+                  // if there are multiple castings and this is not the last casting, the maximum duration of the interval is time between castings
+                  Float64 time_between_castings = castDeckActivity.GetTimeBetweenCasting();
+                  if (time_between_castings < curing_duration_this_casting)
+                  {
+                     curing_duration_this_casting = Min(curing_duration_this_casting,time_between_castings); // this is the amount of curing time that will take place for the interval that is being defined
+                     bIsThereMoreCuringForThisCasting = false; // there is more curing time and we need to loop back through and create an interval for it
+                  }
+               }
+
+               // the curing time for this casting cannot go beyond the end of curing for a previously cast region that is still curing
+               for (auto ci : vDeckCastingsCuringDuringThisInterval)
+               {
+                  // amount of curing time remaining for a previously cast region that is still curing
+                  Float64 remaining_cure_time_of_previous_casting = vCuringTime[ci].first + vCuringTime[ci].second - m_Intervals.back().End;
+
+                  if (0 < remaining_cure_time_of_previous_casting && remaining_cure_time_of_previous_casting < remaining_curing_time_this_casting)
+                  {
+                     // there is curing time remaining for a previous casting and it is less than the remaining curing time for this casting,
+                     // this interval ends when curing of the previous casting ends
+                     curing_duration_this_casting = Min(curing_duration_this_casting,remaining_cure_time_of_previous_casting);
+                     bIsThereMoreCuringForThisCasting = true; // there is more curing time and we need to loop back through and create an interval for it
+                  }
+               }
+
+               if (0 < deck_curing_duration)
+               {
+                  // There is remaining curing time for the deck region.
+                  // Record this casting as currently curing.
+                  vDeckCastingsCuringDuringThisInterval.insert(castingIdx);
+
+                  if (deck_curing_duration < remaining_curing_time_this_casting)
+                  {
+                     // the curing time remaining is more than the curing time for the deck regions cast in this casting
+                     // this interval ends when the deck regions finish curing and become composite and there will
+                     // be more curing for whatever remains (probably a closure joint)
+                     curing_duration_this_casting = Min(curing_duration_this_casting, deck_curing_duration);
+                     bIsThereMoreCuringForThisCasting = true; // there is more curing time and we need to loop back through and create an interval for it
+                  }
+               }
+
+               // check if the closure joint is curing in this interval.
+               bClosureJointCuringDuringThisInterval = false;
+               if (closureJointCastingIdx <= castingIdx)
+               {
+                  // the closure joint has been cast, see if there is still some curing time
+                  ATLASSERT(closureJointCastingIdx != INVALID_INDEX); // if it is INVALID_INDEX, we forgot to set the region index somewhere
+                  Float64 remaining_cure_time_for_closure_joint = vCuringTime[closureJointCastingIdx].first + castClosureJointActivity.GetTotalCuringDuration() - m_Intervals.back().End;
+                  bClosureJointCuringDuringThisInterval = (0 < remaining_cure_time_for_closure_joint ? true : false); // closure joint is curing if there is remaining curing time
+                  if (bClosureJointCuringDuringThisInterval && remaining_cure_time_for_closure_joint < remaining_curing_time_this_casting)
+                  {
+                     // the remaining curing time is less than the curing time for this casting so we have to stop early
+                     curing_duration_this_casting = Min(curing_duration_this_casting,remaining_cure_time_for_closure_joint);
+                     bClosureJointCuringDuringThisInterval = true; // this is still some curing time so the CJ is curing during this castings cure time
+                     bIsThereMoreCuringForThisCasting = true; // there is more curing time and we need to loop back through and create an interval for it
+                  }
+               }
+
+               cureDeckRegionsInterval.Duration = curing_duration_this_casting;
+               cureDeckRegionsInterval.End = cureDeckRegionsInterval.Start + cureDeckRegionsInterval.Duration;
+               cureDeckRegionsInterval.Middle = 0.5*(cureDeckRegionsInterval.Start + cureDeckRegionsInterval.End);
+
+               // create label for deck region curing interval
                if (1 < nCastings)
                {
-                  curing_duration_this_interval = Min(castDeckActivity.GetTimeBetweenCasting(), castDeckActivity.GetConcreteAgeAtContinuity());
-               }
-               else
-               {
-                  curing_duration_this_interval = castDeckActivity.GetConcreteAgeAtContinuity();
-               }
-
-               cureDeckRegionInterval.Duration = curing_duration_this_interval;
-               cureDeckRegionInterval.End = cureDeckRegionInterval.Start + cureDeckRegionInterval.Duration;
-               cureDeckRegionInterval.Middle = 0.5*(cureDeckRegionInterval.Start + cureDeckRegionInterval.End);
-               if (pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeOverlay)
-               {
-                  cureDeckRegionInterval.Description = _T("Composite overlay curing");
-               }
-               else
-               {
-                  if (1 < nCastings)
+                  // get all the regions that are curing right now
+                  std::vector<IndexType> vRegionsCuring;
+                  for (auto ci : vDeckCastingsCuringDuringThisInterval)
                   {
-                     CString strDesc = _T("Deck curing regions ");
-                     auto begin = std::begin(vRegions);
-                     auto iter = begin;
-                     auto end = std::end(vRegions);
-                     for (; iter != end; iter++)
-                     {
-                        if (iter != begin)
-
-                        {
-                           strDesc += _T(", ");
-                        }
-                        CString strRegion;
-                        strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
-                        strDesc += strRegion;
-                     }
-
-                     cureDeckRegionInterval.Description = strDesc;
+                     auto regions = castDeckActivity.GetRegions(ci);
+                     vRegionsCuring.insert(std::end(vRegionsCuring), std::cbegin(regions), std::cend(regions));
+                  }
+                  if (0 < vRegionsCuring.size())
+                  {
+                     std::sort(vRegionsCuring.begin(), vRegionsCuring.end());
+                     cureDeckRegionsInterval.Description = BuildCommaSeparatedList(bClosureJointCuringDuringThisInterval ? _T("Closure joint and deck regions") : _T("Deck regions"), vRegionsCuring) + CString(_T(" curing"));
                   }
                   else
                   {
-                     cureDeckRegionInterval.Description = _T("Deck curing");
+                     cureDeckRegionsInterval.Description = _T("Closure joint curing");
                   }
                }
-
-               IntervalIndexType curingIntervalIdx;
-               if (castingIdx == 0 && (castLongitudinalJointActivity.IsEnabled() || castClosureJointActivity.IsEnabled()))
+               else
                {
-                  // if this is the first casting, and LJ or CJ are cast at the same time, use the previously defined (defined in ProcessStep2)
+                  CString strDeck(pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeOverlay ? _T("Composite overlay") : _T("Deck"));
+
+                  //if (0 < vDeckCastingsCuringDuringThisInterval.size())
+                  //{
+                     if (bClosureJointCuringDuringThisInterval)
+                     {
+                        cureDeckRegionsInterval.Description = _T("Closure joint and ");
+                     }
+                     cureDeckRegionsInterval.Description += strDeck;
+                     cureDeckRegionsInterval.Description += _T(" curing");
+                  //}
+                  //else
+                  //{
+                  //   cureDeckRegionsInterval.Description = _T("Closure joint curing");
+                  //}
+               }
+
+               IntervalIndexType deckRegionsCuringIntervalIdx;
+               if (castingIdx == 0 && castLongitudinalJointActivity.IsEnabled())
+               {
+                  // This is the first casting and LJ are cast at the same time. Use the previously defined (defined in ProcessStep2)
                   // interval as the deck curing interval for the first deck casting
-                  if (castLongitudinalJointActivity.IsEnabled())
-                  {
-                     curingIntervalIdx = m_CastLongitudinalJointsIntervalIdx + 1; // curing is in the interval after casting
-                     auto& interval = m_Intervals[curingIntervalIdx]; // get the interval
-                     interval.Description += _T(", ") + cureDeckRegionInterval.Description; // append the deck curing description
+                  deckRegionsCuringIntervalIdx = m_CastLongitudinalJointsIntervalIdx + 1; // curing is in the interval after casting
+                  auto& interval = m_Intervals[deckRegionsCuringIntervalIdx]; // get the interval
+                  interval.Description += _T(", ") + cureDeckRegionsInterval.Description; // append the deck curing description
 
-                     cureDeckRegionInterval = interval;
-                  }
-                  else
-                  {
-                     ATLASSERT(castClosureJointActivity.IsEnabled());
-                     // the interval for all the closure joints cast in this activity are the same, so just get the first one
-                     const auto& vClosureKeys = castClosureJointActivity.GetClosureKeys(pBridgeDesc);
-                     const auto& closureKey = vClosureKeys.front();
-                     IntervalIndexType cureClosureJointIntervalIdx = m_CastClosureIntervals[closureKey] + 1; // curing is in the interval after casting
-                     curingIntervalIdx = cureClosureJointIntervalIdx;
-
-                     if (m_Intervals.size() <= curingIntervalIdx)
-                     {
-                        // there is an overlap of the deck curing and closure curing intervals and the closure joint
-                        // curing interval hasn't been created yet.
-                        // add the new cure deck interval now
-                        ATLASSERT(m_Intervals.size() == curingIntervalIdx);
-                        cureDeckRegionInterval.Description += _T(", Closure Joints curing");
-                        curingIntervalIdx = StoreInterval(cureDeckRegionInterval);
-                     }
-                     else
-                     {
-                        auto& interval = m_Intervals[curingIntervalIdx]; // get the interval
-                        interval.Description += _T(", ") + cureDeckRegionInterval.Description; // append the deck curing description
-                        cureDeckRegionInterval = interval;
-                     }
-                  }
+                  cureDeckRegionsInterval = interval;
                }
                else
                {
-                  curingIntervalIdx = StoreInterval(cureDeckRegionInterval);
+                  deckRegionsCuringIntervalIdx = StoreInterval(cureDeckRegionsInterval);
                }
+
+               // update the remaining curing time for this casting
+               remaining_curing_time_this_casting -= cureDeckRegionsInterval.Duration;
+               deck_curing_duration -= cureDeckRegionsInterval.Duration;
 
                // determine if this or one of the preceding castings becomes composite at the end of this curing interval
                IntervalIndexType compositeCastingIdx = INVALID_INDEX; // index of the casting that has become composite
                for (IndexType ci = 0; ci <= castingIdx; ci++)
                {
-                  Float64 elapsed_curing_time = cureDeckRegionInterval.End - vCuringTime[ci].first;
-                  Float64 curing_time_for_casting = vCuringTime[ci].second;
-                  if (IsEqual(elapsed_curing_time,curing_time_for_casting))
+                  Float64 elapsed_curing_time_for_casting = cureDeckRegionsInterval.End - vCuringTime[ci].first;
+                  Float64 total_curing_time_for_casting = vCuringTime[ci].second;
+                  if (IsEqual(elapsed_curing_time_for_casting, total_curing_time_for_casting))
                   {
-                     // the casting has become composite
+                     // a casting has become composite
                      compositeCastingIdx = ci;
+                     vDeckCastingsCuringDuringThisInterval.erase(ci); // done curing so remove it from the curing list
                      break;
                   }
                }
 
                if (IsStructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType()) && compositeCastingIdx != INVALID_INDEX)
                {
-                  CInterval compositeDeckRegionInterval;
-                  compositeDeckRegionInterval.StartEventIdx = eventIdx;
-                  compositeDeckRegionInterval.EndEventIdx = eventIdx;
-                  compositeDeckRegionInterval.Start = cureDeckRegionInterval.End;
-                  compositeDeckRegionInterval.Duration = 0;
-                  compositeDeckRegionInterval.End = compositeDeckRegionInterval.Start + compositeDeckRegionInterval.Duration;
-                  compositeDeckRegionInterval.Middle = 0.5*(compositeDeckRegionInterval.Start + compositeDeckRegionInterval.End);
+                  // Assuming deck regions is becoming composite... need to deal with the cast of the CJ becoming composite first
+                  CInterval compositeDeckRegionsInterval;
+                  compositeDeckRegionsInterval.StartEventIdx = eventIdx;
+                  compositeDeckRegionsInterval.EndEventIdx = eventIdx;
+                  compositeDeckRegionsInterval.Start = cureDeckRegionsInterval.End;
+                  compositeDeckRegionsInterval.Duration = 0;
+                  compositeDeckRegionsInterval.End = compositeDeckRegionsInterval.Start + compositeDeckRegionsInterval.Duration;
+                  compositeDeckRegionsInterval.Middle = 0.5*(compositeDeckRegionsInterval.Start + compositeDeckRegionsInterval.End);
 
-                  if (pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeOverlay)
+                  auto vCompositeRegions = castDeckActivity.GetRegions(compositeCastingIdx);
+
+                  // build the label
+                  if (1 < nCastings)
                   {
-                     compositeDeckRegionInterval.Description = _T("Composite overlay");
+                     compositeDeckRegionsInterval.Description = BuildCommaSeparatedList(_T("Composite deck regions"), vCompositeRegions);
                   }
                   else
                   {
-                     if (1 < nCastings)
-                     {
-                        CString strDesc = _T("Composite deck regions ");
-                        auto begin = std::begin(vRegions);
-                        auto iter = begin;
-                        auto end = std::end(vRegions);
-                        for (; iter != end; iter++)
-                        {
-                           if (iter != begin)
-                           {
-                              strDesc += _T(", ");
-                           }
-                           CString strRegion;
-                           strRegion.Format(_T("%d"), LABEL_INDEX(*iter));
-                           strDesc += strRegion;
-                        }
-                        compositeDeckRegionInterval.Description = strDesc;
-                     }
-                     else
-                     {
-                        compositeDeckRegionInterval.Description = _T("Composite deck");
-                     }
+                     compositeDeckRegionsInterval.Description = (pBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtCompositeOverlay ? _T("Composite overlay") : _T("Composite deck"));
                   }
 
-                  IntervalIndexType compositeDeckRegionIntervalIdx = StoreInterval(compositeDeckRegionInterval);
+                  // store the interval
+                  IntervalIndexType compositeDeckRegionsIntervalIdx = StoreInterval(compositeDeckRegionsInterval);
 
-                  for (auto regionIdx : vRegions)
+                  // record when the deck regions become composite
+                  for (auto regionIdx : vCompositeRegions)
                   {
-                     m_vCompositeDeckIntervalIdx[regionIdx] = compositeDeckRegionIntervalIdx;
+                     m_vCompositeDeckIntervalIdx[regionIdx] = compositeDeckRegionsIntervalIdx;
                   }
                }
+            } while (bIsThereMoreCuringForThisCasting);
 
-               if (1 < nCastings && castDeckActivity.GetConcreteAgeAtContinuity() < castDeckActivity.GetTimeBetweenCasting() && castingIdx != lastCastingIdx)
-               {
-                  // each casting cures and becomes composite before the next casting occurs
-                  // model the time-step between the time this casting becomes composite and the next
-                  // casting occurs
-                  CInterval timeStepInterval;
-                  timeStepInterval.StartEventIdx = eventIdx;
-                  timeStepInterval.EndEventIdx = eventIdx;
-                  timeStepInterval.Start = m_Intervals.back().End;
-                  timeStepInterval.Duration = castDeckActivity.GetTimeBetweenCasting() - castDeckActivity.GetConcreteAgeAtContinuity();
-                  timeStepInterval.End = timeStepInterval.Start + timeStepInterval.Duration;
-                  timeStepInterval.Middle = 0.5*(timeStepInterval.Start + timeStepInterval.End);
-                  timeStepInterval.Description = _T("Time-step between deck castings");
-                  StoreInterval(timeStepInterval);
-               }
-            }
-         }
-         else
-         {
-            ATLASSERT(false); // this is just to see if we ever get here. this might be dead code
-            // for non-timestep analysis (PGSuper) deck is composite the interval after it is cast
-            if (IsStructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType()))
+            if (1 < nCastings && castDeckActivity.GetTotalCuringDuration() < castDeckActivity.GetTimeBetweenCasting() && castingIdx != lastCastingIdx)
             {
-               //m_CompositeDeckIntervalIdx = m_CastDeckIntervalIdx + 1;
-               m_vCompositeDeckIntervalIdx = m_vCastDeckIntervalIdx;
-               std::for_each(std::begin(m_vCompositeDeckIntervalIdx), std::end(m_vCompositeDeckIntervalIdx), [](auto& value) {return value + 1;});
+               // Each deck region casting cures and becomes composite before the next casting occurs.
+               // Model the time-step between the time this casting becomes composite and the time the next casting occurs
+               CInterval timeStepInterval;
+               timeStepInterval.StartEventIdx = eventIdx;
+               timeStepInterval.EndEventIdx = eventIdx;
+               timeStepInterval.Start = m_Intervals.back().End;
+               timeStepInterval.Duration = castDeckActivity.GetTimeBetweenCasting() - castDeckActivity.GetTotalCuringDuration() + deck_curing_duration;
+               timeStepInterval.End = timeStepInterval.Start + timeStepInterval.Duration;
+               timeStepInterval.Middle = 0.5*(timeStepInterval.Start + timeStepInterval.End);
+               timeStepInterval.Description = _T("Time-step to next deck region casting");
+               StoreInterval(timeStepInterval);
             }
          }
       }
-      else if ( activityType == CLOSURE )
+      else
       {
-         ATLASSERT(IsEqual(duration,castClosureJointActivity.GetConcreteAgeAtContinuity()));
-
-         CInterval cureClosureInterval;
-         cureClosureInterval.StartEventIdx = eventIdx;
-         cureClosureInterval.EndEventIdx   = eventIdx;
-         cureClosureInterval.Start         = m_Intervals.back().End; // curing starts when the previous interval ends
-         cureClosureInterval.Duration      = remaining_duration;
-         cureClosureInterval.End           = cureClosureInterval.Start + cureClosureInterval.Duration;
-         cureClosureInterval.Middle        = 0.5*(cureClosureInterval.Start + cureClosureInterval.End);
-         cureClosureInterval.Description   = _T("Closure joints curing");
-         StoreInterval(cureClosureInterval);
+         ATLASSERT(false); // is there a new component type?
       }
 
       previous_curing_duration += duration;

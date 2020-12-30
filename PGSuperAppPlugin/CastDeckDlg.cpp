@@ -82,11 +82,11 @@ CCastDeckActivity CCastDeckDlg::GetCastDeckActivity(CDataExchange* pTheDX)
 
    Float64 age;
    DDX_Text(pDX, IDC_AGE, age);
-   castDeckActivity.SetConcreteAgeAtContinuity(age);
+   castDeckActivity.SetTotalCuringDuration(age);
 
    Float64 cure_duration;
    DDX_Text(pDX, IDC_CURING, cure_duration);
-   castDeckActivity.SetCuringDuration(cure_duration);
+   castDeckActivity.SetActiveCuringDuration(cure_duration);
 
    if (castingType == CCastDeckActivity::Staged)
    {
@@ -94,12 +94,25 @@ CCastDeckActivity CCastDeckDlg::GetCastDeckActivity(CDataExchange* pTheDX)
       DDX_Text(pDX, IDC_TIME_BETWEEN_CASTING, time_between_casting);
       castDeckActivity.SetTimeBetweenCasting(time_between_casting);
 
+      IndexType closure_joint_casting_region;
+      DDX_CBIndex(pDX, IDC_CLOSURE_JOINT_CASTING_REGION, closure_joint_casting_region);
+      castDeckActivity.SetClosureJointCastingRegion(closure_joint_casting_region);
+
       m_ctrlGrid.GetData(castDeckActivity);
 
       pgsTypes::DeckCastingRegionBoundary boundary;
       DDX_CBItemData(pDX, IDC_REGION_BOUNDARY, boundary);
       castDeckActivity.SetDeckCastingRegionBoundary(boundary);
    }
+   else if (m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastClosureJointActivity().IsEnabled())
+   {
+      // closure joints are cast with this deck so set the casting region to 0
+      // if this step was skipped, the casting region index would be INVALID_INDEX which indicates an error
+      // or indicates there is not a closure cast at the same time as the deck
+      ATLASSERT(castingType == CCastDeckActivity::Continuous);
+      castDeckActivity.SetClosureJointCastingRegion(0);
+   }
+
 
    return castDeckActivity;
 }
@@ -115,8 +128,8 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
       // Data coming out of the dialog
       CCastDeckActivity castDeckActivity = GetCastDeckActivity(pDX);
 
-      DDV_NonNegativeDouble(pDX,IDC_AGE,castDeckActivity.GetConcreteAgeAtContinuity());
-      DDV_NonNegativeDouble(pDX,IDC_CURING,castDeckActivity.GetCuringDuration());
+      DDV_NonNegativeDouble(pDX,IDC_AGE,castDeckActivity.GetTotalCuringDuration());
+      DDV_NonNegativeDouble(pDX,IDC_CURING,castDeckActivity.GetActiveCuringDuration());
 
       if (castDeckActivity.GetCastingType() == CCastDeckActivity::Staged)
       {
@@ -145,19 +158,22 @@ void CCastDeckDlg::DoDataExchange(CDataExchange* pDX)
    else
    {
       // Data going into the dialog
-      CCastDeckActivity castDeckActivity = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity();
+      const CCastDeckActivity& castDeckActivity = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity();
 
       int iCastingType = (int)(castDeckActivity.GetCastingType());
       DDX_Radio(pDX, IDC_CAST_DECK_1, iCastingType);
 
-      Float64 age = castDeckActivity.GetConcreteAgeAtContinuity();
+      Float64 age = castDeckActivity.GetTotalCuringDuration();
       DDX_Text(pDX,IDC_AGE,age);
 
-      Float64 cure_duration = castDeckActivity.GetCuringDuration();
+      Float64 cure_duration = castDeckActivity.GetActiveCuringDuration();
       DDX_Text(pDX,IDC_CURING,cure_duration);
 
       Float64 time_between_casting = castDeckActivity.GetTimeBetweenCasting();
       DDX_Text(pDX, IDC_TIME_BETWEEN_CASTING, time_between_casting);
+
+      IndexType closure_joint_casting_region = castDeckActivity.GetClosureJointCastingRegion();
+      DDX_CBIndex(pDX, IDC_CLOSURE_JOINT_CASTING_REGION, closure_joint_casting_region);
 
       m_ctrlGrid.SetData(castDeckActivity);
 
@@ -181,6 +197,20 @@ BOOL CCastDeckDlg::OnInitDialog()
    m_ctrlDeckRegion.SubclassDlgItem(IDC_DECK_REGIONS, this);
 
    FillRegionBoundaryControl();
+
+   // Fill the closure joint deck region casting options. If the deck casting type is continuous, then regions aren't modeled yet. However,
+   // the grid control has placeholders for the number of regions there would be if the deck casting type was staged. If the deck casting 
+   // type is continuous, use the number of grid rows as the number of casting regions.
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CLOSURE_JOINT_CASTING_REGION);
+   const CCastDeckActivity& castDeckActivity = m_TimelineMgr.GetEventByIndex(m_EventIndex)->GetCastDeckActivity();
+   IndexType nCastingRegions = (castDeckActivity.GetCastingType() == CCastDeckActivity::Continuous ? (IndexType)(m_ctrlGrid.GetRowCount()) : castDeckActivity.GetCastingRegionCount());
+   for (IndexType regionIdx = 0; regionIdx < nCastingRegions; regionIdx++)
+   {
+      CString str;
+      str.Format(_T("%d"), LABEL_INDEX(regionIdx));
+      pCB->AddString(str);
+   }
+   pCB->SetCurSel(0);
 
    CDialog::OnInitDialog();
 
@@ -247,8 +277,6 @@ void CCastDeckDlg::OnBnClickedCastDeck(UINT nIDC)
 {
    CCastDeckActivity::CastingType castingType = (CCastDeckActivity::CastingType)(nIDC - IDC_CAST_DECK_1);
    UpdateControls(castingType);
-   m_ctrlDeckRegion.Invalidate();
-   m_ctrlDeckRegion.UpdateWindow();
    OnDeckRegionsChanged();
 }
 
@@ -268,6 +296,16 @@ void CCastDeckDlg::UpdateControls(CCastDeckActivity::CastingType castingType)
    GetDlgItem(IDC_PLACEMENT_REGION_LABEL)->ShowWindow(nCmdShow);
    GetDlgItem(IDC_REGION_BOUNDARY_LABEL)->ShowWindow(nCmdShow);
    GetDlgItem(IDC_REGION_BOUNDARY)->ShowWindow(nCmdShow);
+
+   // if the deck casting event doesn't have a closure joint event, always
+   // hide the closure joint controls
+   const auto* pEvent = m_TimelineMgr.GetEventByIndex(m_EventIndex);
+   if (!pEvent->GetCastClosureJointActivity().IsEnabled())
+   {
+      nCmdShow = SW_HIDE;
+   }
+   GetDlgItem(IDC_CLOSURE_JOINT_LABEL)->ShowWindow(nCmdShow);
+   GetDlgItem(IDC_CLOSURE_JOINT_CASTING_REGION)->ShowWindow(nCmdShow);
 }
 
 void CCastDeckDlg::FillRegionBoundaryControl()

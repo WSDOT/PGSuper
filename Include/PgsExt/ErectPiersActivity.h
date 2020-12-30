@@ -110,11 +110,11 @@ public:
    bool operator==(const CCastClosureJointActivity& rOther) const;
    bool operator!=(const CCastClosureJointActivity& rOther) const;
 
-   Float64 GetConcreteAgeAtContinuity() const;
-   void SetConcreteAgeAtContinuity(Float64 age);
+   Float64 GetTotalCuringDuration() const;
+   void SetTotalCuringDuration(Float64 duration);
 
-   void SetCuringDuration(Float64 duration);
-   Float64 GetCuringDuration() const;
+   void SetActiveCuringDuration(Float64 duration);
+   Float64 GetActiveCuringDuration() const;
 
 protected:
    virtual LPCTSTR GetUnitName() override { return _T("CastClosurePours"); }
@@ -126,6 +126,6 @@ protected:
    virtual HRESULT LoadSubclassData(IStructuredLoad* pStrLoad,IProgress* pProgress) override;
    virtual HRESULT SaveSubclassData(IStructuredSave* pStrSave,IProgress* pProgress) override;
 
-   Float64 m_Age; // age of concrete when continuity between segments is acheived
-   Float64 m_CuringDuration; // duration of time closure is cured (used in shrinkage computations)
+   Float64 m_TotalCuringDuration; // total curing time (age of concrete when continuity between segments is acheived)
+   Float64 m_ActiveCuringDuration; // duration of time closure is actively cured (used in shrinkage computations)
 };

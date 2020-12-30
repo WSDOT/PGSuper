@@ -131,8 +131,8 @@ void CConcreteManager::ValidateConcrete() const
       ATLASSERT(pTimelineEvent && pTimelineEvent->GetCastDeckActivity().IsEnabled());
       const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
 
-      Float64   age_at_initial_loading = castDeckActivity.GetConcreteAgeAtContinuity();
-      Float64   cure_time = castDeckActivity.GetCuringDuration();
+      Float64   age_at_initial_loading = castDeckActivity.GetTotalCuringDuration();
+      Float64   cure_time = castDeckActivity.GetActiveCuringDuration();
       Float64   time_between_casting = castDeckActivity.GetTimeBetweenCasting();
 
       IndexType nRegions = castDeckActivity.GetCastingRegionCount();
@@ -228,7 +228,7 @@ void CConcreteManager::ValidateConcrete() const
 
             EventIndexType segConstructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segmentID);
             Float64 segment_casting_time        = pTimelineMgr->GetStart(segConstructEventIdx);
-            Float64 segment_age_at_release      = pTimelineMgr->GetEventByIndex(segConstructEventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
+            Float64 segment_age_at_release      = pTimelineMgr->GetEventByIndex(segConstructEventIdx)->GetConstructSegmentsActivity().GetTotalCuringDuration();
             Float64 segment_cure_time           = segment_age_at_release;
 
 
@@ -245,7 +245,7 @@ void CConcreteManager::ValidateConcrete() const
                const CClosureJointData* pClosure  = pGirder->GetClosureJoint(segIdx);
                EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure);
                Float64 closure_casting_time       = pTimelineMgr->GetStart(castClosureEventIdx);
-               Float64 closure_age_at_continuity  = pTimelineMgr->GetEventByIndex(castClosureEventIdx)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+               Float64 closure_age_at_continuity  = pTimelineMgr->GetEventByIndex(castClosureEventIdx)->GetCastClosureJointActivity().GetTotalCuringDuration();
                Float64 closure_cure_time          = closure_age_at_continuity;
 
                // this isn't really needed because closure joints are for spliced girders only and
@@ -301,8 +301,8 @@ void CConcreteManager::ValidateConcrete() const
       // Time dependent model
       EventIndexType castLongitudinalJointEventIdx = pTimelineMgr->GetCastLongitudinalJointEventIndex();
       time_at_casting = pTimelineMgr->GetStart(castLongitudinalJointEventIdx);
-      age_at_initial_loading = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetConcreteAgeAtContinuity();
-      cure_time = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetCuringDuration();
+      age_at_initial_loading = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetTotalCuringDuration();
+      cure_time = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetActiveCuringDuration();
 
       // modulus of rupture coefficients
       time_step = time_at_casting + cure_time;

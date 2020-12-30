@@ -162,34 +162,21 @@ CCastDeckActivity::CCastDeckActivity()
 
    m_CastingType = Continuous;
 
-   m_CuringDuration = 14.0; // days (WSDOT Std. Specs 6-02.3(11)B2
-   m_Age = 14.0; // days
+   m_ActiveCuringDuration = 14.0; // days (WSDOT Std. Specs 6-02.3(11)B2
+   m_TotalCuringDuration = 14.0; // days
    m_TimeBetweenCastings = 14.0;
 
    m_DeckCastingRegionBoundary = pgsTypes::dcrbParallelToPier;
 
    m_vContinuousCastingRegions.emplace_back(ALL_SPANS, 0);
 
-   UpdateCastings();
-}
+   m_ClosureJointCastingRegion = INVALID_INDEX;
 
-CCastDeckActivity::CCastDeckActivity(const CCastDeckActivity& rOther)
-{
-   MakeCopy(rOther);
+   UpdateCastings();
 }
 
 CCastDeckActivity::~CCastDeckActivity()
 {
-}
-
-CCastDeckActivity& CCastDeckActivity::operator= (const CCastDeckActivity& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 bool CCastDeckActivity::operator==(const CCastDeckActivity& rOther) const
@@ -205,12 +192,12 @@ bool CCastDeckActivity::operator==(const CCastDeckActivity& rOther) const
    }
 
 
-   if (!IsEqual(m_Age, rOther.m_Age))
+   if (!IsEqual(m_TotalCuringDuration, rOther.m_TotalCuringDuration))
    {
       return false;
    }
 
-   if (!IsEqual(m_CuringDuration, rOther.m_CuringDuration))
+   if (!IsEqual(m_ActiveCuringDuration, rOther.m_ActiveCuringDuration))
    {
       return false;
    }
@@ -228,6 +215,11 @@ bool CCastDeckActivity::operator==(const CCastDeckActivity& rOther) const
       }
 
       if (m_vCastingRegions != rOther.m_vCastingRegions)
+      {
+         return false;
+      }
+
+      if (m_ClosureJointCastingRegion != rOther.m_ClosureJointCastingRegion)
       {
          return false;
       }
@@ -262,31 +254,31 @@ CCastDeckActivity::CastingType CCastDeckActivity::GetCastingType() const
    return m_CastingType;
 }
 
-void CCastDeckActivity::SetConcreteAgeAtContinuity(Float64 age)
+void CCastDeckActivity::SetTotalCuringDuration(Float64 duration)
 {
-   m_Age = age;
+   m_TotalCuringDuration = duration;
 }
 
-Float64 CCastDeckActivity::GetConcreteAgeAtContinuity() const
+Float64 CCastDeckActivity::GetTotalCuringDuration() const
 {
-   return m_Age;
+   return m_TotalCuringDuration;
 }
 
-void CCastDeckActivity::SetCuringDuration(Float64 duration)
+void CCastDeckActivity::SetActiveCuringDuration(Float64 duration)
 {
-   m_CuringDuration = duration;
+   m_ActiveCuringDuration = duration;
 }
 
-Float64 CCastDeckActivity::GetCuringDuration() const
+Float64 CCastDeckActivity::GetActiveCuringDuration() const
 {
-   return m_CuringDuration;
+   return m_ActiveCuringDuration;
 }
 
 Float64 CCastDeckActivity::GetDuration() const
 {
    if (m_CastingType == Continuous)
    {
-      return m_Age;
+      return m_TotalCuringDuration;
    }
    else
    {
@@ -307,7 +299,7 @@ Float64 CCastDeckActivity::GetDuration() const
       // |---------------------- DURATION ---------------------------------------|
 
       IndexType nCastings = GetCastingCount();
-      return (nCastings - 1)*m_TimeBetweenCastings + m_Age;
+      return (nCastings - 1)*m_TimeBetweenCastings + m_TotalCuringDuration;
    }
 }
 
@@ -467,6 +459,62 @@ void CCastDeckActivity::AddNegMomentRegion(PierIndexType pierIdx)
    }
 }
 
+void CCastDeckActivity::SetClosureJointCastingRegion(IndexType regionIdx)
+{
+   m_ClosureJointCastingRegion = regionIdx;
+}
+
+IndexType CCastDeckActivity::GetClosureJointCastingRegion() const
+{
+   return m_ClosureJointCastingRegion;
+}
+
+Float64 CCastDeckActivity::GetTimeOfClosureJointCasting() const
+{
+   if (m_ClosureJointCastingRegion == INVALID_INDEX || m_CastingType == Continuous)
+      return 0.0;
+
+   // get information about the region that is cast at the same time as the closure joints
+   const CCastingRegion& region = m_vCastingRegions[m_ClosureJointCastingRegion];
+
+   // sequence numbers are not sequential, they could be 1, 3, 21, 99. Only the relatve order matters.
+   // m_vCastingOrder has all the sequnce numbers in sorted order. search for the sequence number
+   // for the region of interest
+   auto found = std::find(std::cbegin(m_vCastingOrder), std::cend(m_vCastingOrder), region.m_SequenceIndex);
+   ATLASSERT(found != m_vCastingOrder.end()); // if it isn't found, there is a bug somewhere
+   auto idx = std::distance(std::cbegin(m_vCastingOrder), found); // get the index in m_vCastingOrder where the region of interest's sequence number is found
+   Float64 time = idx*m_TimeBetweenCastings; // sum of the castimg times for all previous casting operations
+   return time;
+}
+
+IndexType CCastDeckActivity::GetClosureJointCasting() const
+{
+   if (m_ClosureJointCastingRegion == INVALID_INDEX)
+      return INVALID_INDEX; // there isn't a closure joint associated with this deck casting
+
+   if (m_CastingType == Continuous)
+   {
+      // for continuous casting, there is only one casting
+      return 0;
+   }
+   else
+   {
+      // check all the castings until we find the region
+      IndexType nCastings = GetCastingCount();
+      for (IndexType castingIdx = 0; castingIdx < nCastings; castingIdx++)
+      {
+         std::vector<IndexType> vRegions = GetRegions(castingIdx);
+         if (std::find(std::begin(vRegions), std::end(vRegions), m_ClosureJointCastingRegion) != vRegions.end())
+         {
+            return castingIdx;
+         }
+      }
+   }
+
+   ATLASSERT(false); // should never get here
+   return INVALID_INDEX;
+}
+
 void CCastDeckActivity::InsertSpan(const CBridgeDescription2* pBridge, SpanIndexType newSpanIdx, PierIndexType newPierIdx)
 {
    if (m_CastingType == Continuous)
@@ -551,17 +599,17 @@ HRESULT CCastDeckActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("AgeAtContinuity"), &var);
-         m_Age = var.dblVal;
+         m_TotalCuringDuration = var.dblVal;
 
          if (1 < version)
          {
             // added in version 2
             hr = pStrLoad->get_Property(_T("CuringDuration"), &var);
-            m_CuringDuration = var.dblVal;
+            m_ActiveCuringDuration = var.dblVal;
          }
          else
          {
-            m_CuringDuration = m_Age;
+            m_ActiveCuringDuration = m_TotalCuringDuration;
          }
 
          if (m_CastingType == Staged)
@@ -588,6 +636,13 @@ HRESULT CCastDeckActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
                }
             }
             hr = pStrLoad->EndUnit(); // CastingRegions
+
+            if (3 < version) // added in version 4
+            {
+               var.vt = VT_INDEX;
+               hr = pStrLoad->get_Property(_T("ClosureJointCastingRegion"), &var);
+               m_ClosureJointCastingRegion = VARIANT2INDEX(var);
+            }
          }
       }
 
@@ -606,13 +661,13 @@ HRESULT CCastDeckActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
 HRESULT CCastDeckActivity::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("CastDeck"), 3.0);
+   pStrSave->BeginUnit(_T("CastDeck"), 4.0);
    pStrSave->put_Property(_T("Enabled"), CComVariant(m_bEnabled));
    if (m_bEnabled)
    {
       pStrSave->put_Property(_T("CastingType"), CComVariant(m_CastingType)); // added in version 3
-      pStrSave->put_Property(_T("AgeAtContinuity"), CComVariant(m_Age));
-      pStrSave->put_Property(_T("CuringDuration"), CComVariant(m_CuringDuration)); // added in version 2
+      pStrSave->put_Property(_T("AgeAtContinuity"), CComVariant(m_TotalCuringDuration));
+      pStrSave->put_Property(_T("CuringDuration"), CComVariant(m_ActiveCuringDuration)); // added in version 2
 
       if (m_CastingType == Staged)
       {
@@ -625,29 +680,14 @@ HRESULT CCastDeckActivity::Save(IStructuredSave* pStrSave,IProgress* pProgress)
             castingRegion.Save(pStrSave, pProgress);
          }
          pStrSave->EndUnit(); // CastingRegions
+
+         // added in version 4
+         pStrSave->put_Property(_T("ClosureJointCastingRegion"), CComVariant(m_ClosureJointCastingRegion));
       }
    }
    pStrSave->EndUnit();
 
    return S_OK;
-}
-
-void CCastDeckActivity::MakeCopy(const CCastDeckActivity& rOther)
-{
-   m_bEnabled = rOther.m_bEnabled;
-   m_CastingType = rOther.m_CastingType;
-   m_Age      = rOther.m_Age;
-   m_CuringDuration = rOther.m_CuringDuration;
-   m_TimeBetweenCastings = rOther.m_TimeBetweenCastings;
-   m_DeckCastingRegionBoundary = rOther.m_DeckCastingRegionBoundary;
-   m_vCastingRegions = rOther.m_vCastingRegions;
-   m_vContinuousCastingRegions = rOther.m_vContinuousCastingRegions;
-   m_vCastingOrder = rOther.m_vCastingOrder;
-}
-
-void CCastDeckActivity::MakeAssignment(const CCastDeckActivity& rOther)
-{
-   MakeCopy(rOther);
 }
 
 void CCastDeckActivity::UpdateCastings()

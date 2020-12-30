@@ -275,7 +275,7 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_SegmentID);
-   m_AgeAtRelease = pParent->m_TimelineMgr.GetEventByID(constructionEventID)->GetConstructSegmentsActivity().GetAgeAtRelease();
+   m_AgeAtRelease = pParent->m_TimelineMgr.GetEventByID(constructionEventID)->GetConstructSegmentsActivity().GetTotalCuringDuration();
 
    EventIDType erectionEventID = pParent->m_TimelineMgr.GetSegmentErectionEventID(pParent->m_SegmentID);
 

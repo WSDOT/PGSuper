@@ -11,8 +11,8 @@ Staged placement | The deck is placed in stages defined by deck regions and the 
 Define the timing parameters
 Item | Description
 -----|---------------
-Age of concrete when deck becomes composite with girders | Enter the age of the concrete when it has sufficient strength to be consider composite with the girders
-Curing Duration | Enter the duration of active curing of the concrete. Shrinkage strains are assumed to begin when curing ends.
+Total curing duration | Enter the total curing duration. Concrete is assumed to be fully cured when it has sufficient strength to be consider composite with the girders
+Active curing Duration | Enter the duration of active curing of the concrete. Shrinkage strains are assumed to begin when active curing ends.
 Time between casting | For staged placement, enter the timing between the start of each placement
 
 Define the placement regions

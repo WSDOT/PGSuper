@@ -1405,6 +1405,9 @@
 #define IDC_WORKPOINT_STATIC            2026
 #define IDC_RB_COPY                     2027
 #define IDC_RB_DONT_COPY                2028
+#define IDC_CLOSURE_JOINT_LABEL         2029
+#define IDC_COMBO2                      2030
+#define IDC_CLOSURE_JOINT_CASTING_REGION 2030
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1564,7 +1567,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        405
 #define _APS_NEXT_COMMAND_VALUE         37004
-#define _APS_NEXT_CONTROL_VALUE         2029
+#define _APS_NEXT_CONTROL_VALUE         2031
 #define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

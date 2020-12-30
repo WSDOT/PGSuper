@@ -12,8 +12,7 @@
 #endif
 #include "afxres.h"
 #include <EAF\EAFResources.h>
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -3256,12 +3255,13 @@ BEGIN
     PUSHBUTTON      "<",IDC_MOVE_LEFT,145,61,27,14
     LTEXT           "Closures cast during this activity",IDC_STATIC,187,6,122,8
     LISTBOX         IDC_TARGET_LIST,186,17,123,129,LBS_SORT | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Age of concrete at continuity",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,7,155,129,10
-    EDITTEXT        IDC_AGE,178,153,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_AGE_UNIT,220,156,17,8
-    LTEXT           "Curing duration (shrinkage begins when curing ends)",IDC_STATIC,7,169,169,8
-    EDITTEXT        IDC_CURING,178,168,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_CURING_UNIT,220,171,17,8
+    CONTROL         "Total curing duration (age of concrete when continutity is achieved)",IDC_STATIC,
+                    "Static",SS_LEFTNOWORDWRAP | WS_GROUP,7,155,223,10
+    EDITTEXT        IDC_AGE,233,153,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_AGE_UNIT,275,156,17,8
+    LTEXT           "Active curing duration (shrinkage begins when curing ends)",IDC_STATIC,7,169,190,8
+    EDITTEXT        IDC_CURING,233,168,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_CURING_UNIT,275,171,17,8
     DEFPUSHBUTTON   "OK",IDOK,151,194,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,205,194,50,14
     PUSHBUTTON      "Help",ID_HELP,259,194,50,14
@@ -3303,12 +3303,13 @@ BEGIN
     LTEXT           "Segments constructed during this activity",IDC_TARGET_LABEL,171,6,138,8
     LISTBOX         IDC_TARGET_LIST,186,17,123,129,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Time from strand stressing to release",IDC_STATIC,7,160,120,8
-    EDITTEXT        IDC_RELAXATION_TIME,135,158,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_RELAXATION_TIME_UNIT,180,162,17,8
-    CONTROL         "Age of concrete at prestress release",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,7,177,129,10
-    EDITTEXT        IDC_AGE,135,175,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_AGE_UNIT,180,177,17,8
-    LTEXT           "Curing duration assumed to be equal to age of concrete at prestress release",IDC_STATIC,7,191,246,8
+    EDITTEXT        IDC_RELAXATION_TIME,206,158,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_RELAXATION_TIME_UNIT,251,162,17,8
+    CONTROL         "Total curing duration (age of concrete at prestress release)",IDC_STATIC,
+                    "Static",SS_LEFTNOWORDWRAP | WS_GROUP,7,177,195,10
+    EDITTEXT        IDC_AGE,206,175,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_AGE_UNIT,251,177,17,8
+    LTEXT           "Active curing is assumed to be equal to the total curing duration (shrikage begins at release)",IDC_STATIC,7,191,296,8
     LTEXT           "This activity includes lifting of the precast segments from the casting bed and placing them into storage.",IDC_NOTE,7,204,302,16
     DEFPUSHBUTTON   "OK",IDOK,150,227,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,204,227,50,14
@@ -3377,30 +3378,32 @@ BEGIN
     COMBOBOX        IDC_GIRDERS,157,7,142,94,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_CAST_DECK DIALOGEX 0, 0, 375, 300
+IDD_CAST_DECK DIALOGEX 0, 0, 375, 342
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Cast Deck"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Continuous placement",IDC_CAST_DECK_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,7,7,87,10
     CONTROL         "Staged placement",IDC_CAST_DECK_2,"Button",BS_AUTORADIOBUTTON,99,7,73,10
-    LTEXT           "Age of concrete when deck becomes composite with girders",IDC_STATIC,7,36,198,8
-    EDITTEXT        IDC_AGE,206,33,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_AGE_UNIT,248,36,17,8
-    LTEXT           "Curing duration (shrinkage begins when curing ends)",IDC_STATIC,7,51,169,8
-    EDITTEXT        IDC_CURING,206,49,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_CURING_UNIT,248,52,17,8
-    LTEXT           "Time between casting",IDC_TIME_BETWEEN_CASTING_LABEL,7,64,70,8
-    EDITTEXT        IDC_TIME_BETWEEN_CASTING,206,65,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_TIME_BETWEEN_CASTING_UNIT,248,67,17,8
-    LTEXT           "Placement regions",IDC_PLACEMENT_REGION_LABEL,7,78,59,8
-    CONTROL         "Custom1",IDC_DECK_REGION_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,89,357,85
-    LTEXT           "Region boundaries are",IDC_REGION_BOUNDARY_LABEL,7,179,73,8
-    COMBOBOX        IDC_REGION_BOUNDARY,81,176,154,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Custom",IDC_DECK_REGIONS,7,191,358,82
-    DEFPUSHBUTTON   "OK",IDOK,210,279,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,263,279,50,14
-    PUSHBUTTON      "Help",ID_HELP,318,279,50,14
+    LTEXT           "Total curing duration (age of concrete when continutity is achieved)",IDC_STATIC,7,36,220,8
+    EDITTEXT        IDC_AGE,229,33,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_AGE_UNIT,271,36,17,8
+    LTEXT           "Active curing duration (shrinkage begins when curing ends)",IDC_STATIC,7,52,190,8
+    EDITTEXT        IDC_CURING,229,49,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_CURING_UNIT,271,52,17,8
+    LTEXT           "Time between casting",IDC_TIME_BETWEEN_CASTING_LABEL,7,67,70,8
+    EDITTEXT        IDC_TIME_BETWEEN_CASTING,229,65,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_TIME_BETWEEN_CASTING_UNIT,271,67,17,8
+    LTEXT           "Closure joints are cast with the deck. Cast them with placement region",IDC_CLOSURE_JOINT_LABEL,7,87,226,8
+    COMBOBOX        IDC_CLOSURE_JOINT_CASTING_REGION,238,85,43,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Placement regions",IDC_PLACEMENT_REGION_LABEL,7,102,59,8
+    CONTROL         "Custom1",IDC_DECK_REGION_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,113,357,85
+    LTEXT           "Region boundaries are",IDC_REGION_BOUNDARY_LABEL,7,203,73,8
+    COMBOBOX        IDC_REGION_BOUNDARY,81,200,154,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Custom",IDC_DECK_REGIONS,7,215,358,82
+    DEFPUSHBUTTON   "OK",IDOK,210,321,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,263,321,50,14
+    PUSHBUTTON      "Help",ID_HELP,318,321,50,14
 END
 
 IDD_POSTTENSION_PARAMETERS DIALOGEX 0, 0, 282, 116
@@ -3677,20 +3680,20 @@ BEGIN
     LTEXT           "Bearing Data for Each Girder",IDC_STATIC,7,3,92,8
 END
 
-IDD_CAST_LONGITUDINAL_JOINTS DIALOGEX 0, 0, 269, 62
+IDD_CAST_LONGITUDINAL_JOINTS DIALOGEX 0, 0, 297, 62
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Cast Longitudinal Joints"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Age of concrete when continutity is achieved",IDC_STATIC,7,10,145,8
-    EDITTEXT        IDC_AGE,178,7,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_AGE_UNIT,220,10,17,8
-    LTEXT           "Curing duration (shrinkage begins when curing ends)",IDC_STATIC,7,23,169,8
-    EDITTEXT        IDC_CURING,178,22,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Days",IDC_CURING_UNIT,220,25,17,8
-    DEFPUSHBUTTON   "OK",IDOK,106,40,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,159,40,50,14
-    PUSHBUTTON      "Help",ID_HELP,212,40,50,14
+    LTEXT           "Total curing duration (age of concrete when continutity is achieved)",IDC_STATIC,7,10,218,8
+    EDITTEXT        IDC_AGE,230,7,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_AGE_UNIT,272,10,17,8
+    LTEXT           "Active curing duration (shrinkage begins when curing ends)",IDC_STATIC,7,23,190,8
+    EDITTEXT        IDC_CURING,230,22,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Days",IDC_CURING_UNIT,272,25,17,8
+    DEFPUSHBUTTON   "OK",IDOK,134,41,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,187,41,50,14
+    PUSHBUTTON      "Help",ID_HELP,240,41,50,14
 END
 
 IDD_BRIDGEDESC_BEARING DIALOGEX 0, 0, 477, 252
@@ -4007,6 +4010,14 @@ BEGIN
     BEGIN
     END
 
+    IDD_CAST_CLOSURE_JOINT, DIALOG
+    BEGIN
+    END
+
+    IDD_CONSTRUCT_SEGMENT, DIALOG
+    BEGIN
+    END
+
     IDD_STRESS_TENDON, DIALOG
     BEGIN
     END
@@ -4016,7 +4027,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 368
         TOPMARGIN, 7
-        BOTTOMMARGIN, 293
+        BOTTOMMARGIN, 335
     END
 
     IDD_PIER_LAYOUT, DIALOG
@@ -4060,6 +4071,14 @@ BEGIN
     IDD_BEARING_GDR_BY_GDR, DIALOG
     BEGIN
         BOTTOMMARGIN, 200
+    END
+
+    IDD_CAST_LONGITUDINAL_JOINTS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 290
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 55
     END
 
     IDD_BRIDGEDESC_BEARING, DIALOG
@@ -4634,6 +4653,16 @@ BEGIN
 END
 
 IDD_EDIT_HAUNCH AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CAST_CLOSURE_JOINT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CONSTRUCT_SEGMENT AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

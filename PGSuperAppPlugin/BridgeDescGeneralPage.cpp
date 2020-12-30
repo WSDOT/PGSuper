@@ -1725,8 +1725,8 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
       castDeckEvent.SetDescription(GetCastDeckEventName(newDeckType));
       castDeckEvent.GetCastDeckActivity().Enable();
       castDeckEvent.GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous);
-      castDeckEvent.GetCastDeckActivity().SetConcreteAgeAtContinuity(28.0); // day
-      castDeckEvent.GetCastDeckActivity().SetCuringDuration(28.0); // day
+      castDeckEvent.GetCastDeckActivity().SetTotalCuringDuration(28.0); // day
+      castDeckEvent.GetCastDeckActivity().SetActiveCuringDuration(28.0); // day
       
       EventIndexType castDeckEventIdx;
       pTimelineMgr->AddTimelineEvent(castDeckEvent, true, &castDeckEventIdx);

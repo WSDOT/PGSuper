@@ -496,7 +496,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
       EventIndexType eventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segmentID);
-      m_AgeAtRelease = pTimelineMgr->GetEventByIndex(eventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
+      m_AgeAtRelease = pTimelineMgr->GetEventByIndex(eventIdx)->GetConstructSegmentsActivity().GetTotalCuringDuration();
 
       // hide regular text label
       GetDlgItem(IDC_FC_LABEL)->ShowWindow(SW_HIDE);
@@ -1004,7 +1004,7 @@ void CGirderDescGeneralPage::OnMoreConcreteProperties()
 
 
    EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_pSegment->GetID());
-   Float64 ageAtRelease = pParent->m_TimelineMgr.GetEventByID(constructionEventID)->GetConstructSegmentsActivity().GetAgeAtRelease();
+   Float64 ageAtRelease = pParent->m_TimelineMgr.GetEventByID(constructionEventID)->GetConstructSegmentsActivity().GetTotalCuringDuration();
    dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(ageAtRelease,unitMeasure::Day);
 
    dlg.m_fci = pParent->m_pSegment->Material.Concrete.Fci;
