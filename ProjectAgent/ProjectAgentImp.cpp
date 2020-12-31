@@ -1534,6 +1534,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
             }
          }
 
+         var.vt = VT_R8;
          pLoad->get_Property(_T("AllowableYieldStressCoefficient"),&var);
          pObj->m_AllowableYieldStressCoefficient = var.dblVal;
 
@@ -4560,9 +4561,10 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    HRESULT hr = S_OK;
    if ( pSave )
    {
-      pSave->BeginUnit(_T("LiveLoads"),5.0);
+      pSave->BeginUnit(_T("LiveLoads"),6.0);
 
       // version 4... added fatigue live load
+      // version 6... added emergency vehicle live load
 
 
       // added in version 2
@@ -4577,6 +4579,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
 
       CProjectAgentImp::SaveLiveLoad(pSave,pProgress,pObj,_T("LegalRoutineLiveLoads"),pgsTypes::lltLegalRating_Routine); // added in version 5
       CProjectAgentImp::SaveLiveLoad(pSave,pProgress,pObj,_T("LegalSpecialLiveLoads"),pgsTypes::lltLegalRating_Special); // added in version 5
+      CProjectAgentImp::SaveLiveLoad(pSave, pProgress, pObj, _T("LegalEmergencyLiveLoads"), pgsTypes::lltLegalRating_Emergency); // added in version 6
       CProjectAgentImp::SaveLiveLoad(pSave,pProgress,pObj,_T("PermitRoutineLiveLoads"),pgsTypes::lltPermitRating_Routine); // added in version 5
       CProjectAgentImp::SaveLiveLoad(pSave,pProgress,pObj,_T("PermitSpecialLiveLoads"),pgsTypes::lltPermitRating_Special); // added in version 5
 
@@ -4644,6 +4647,15 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
             if ( FAILED(hr) )
             {
                return hr;
+            }
+
+            if (6 <= version)
+            {
+               hr = CProjectAgentImp::LoadLiveLoad(pLoad, pProgress, pObj, _T("LegalEmergencyLiveLoads"), pgsTypes::lltLegalRating_Emergency);
+               if (FAILED(hr))
+               {
+                  return hr;
+               }
             }
 
             hr = CProjectAgentImp::LoadLiveLoad(pLoad,pProgress,pObj,_T("PermitRoutineLiveLoads"),pgsTypes::lltPermitRating_Routine);
