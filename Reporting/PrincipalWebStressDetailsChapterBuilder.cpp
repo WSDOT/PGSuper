@@ -183,9 +183,6 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
          // we only want to do this when the girder changes
          GET_IFACE2(pBroker, IProductLoads, pProductLoads);
          vLoads = pProductLoads->GetProductForcesForGirder(segmentKey);
-
-         // also add final case, which is vertical component for prestress, tagged onto end
-         vLoads.push_back((pgsTypes::ProductForceType)pftTimeStepSize);
       }
 
        BuildIncrementalStressTables(pChapter, pBroker, intervalIdx, vPoi, vLoads, pDisplayUnits);
@@ -199,9 +196,6 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
    // Combined stresses. From live load to last interval
    for ( IntervalIndexType intervalIdx = liveLoadIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
    {
-      CGirderKey prevGirderKey;
-      std::vector<pgsTypes::ProductForceType> vLoads;
-
       // Heading
       if ( rptIntervalIdx == INVALID_INDEX )
       {
@@ -269,14 +263,14 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
       bool bWasDuctReduced = false;
       rptParagraph* pShearPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       (*pChapter) << pShearPara;
-      (*pShearPara) << _T("Incremental Shear Stresses for Principal Web Stresses per Load Case for ") << strInterval << rptNewLine;
+      (*pShearPara) << _T("Incremental Shear Stresses") << rptNewLine;
       pShearPara = new rptParagraph;
       (*pChapter) << pShearPara;
       (*pShearPara) << rptRcImage(strImagePath + _T("PrincipalShearStress.png")) << rptNewLine;
 
       for (IndexType iTable = 0; iTable < nTables; iTable++)
       {
-         IndexType nTableLoads = iTable != nTables - 1 ? nLoadsPerTable : modTableLoads;
+         IndexType nTableLoads = (iTable == nTables-1 &&  modTableLoads!=0) ? modTableLoads : nLoadsPerTable;
 
          // Shear Stress table header
          rptRcTable* pShearStressTable = rptStyleManager::CreateDefaultTable(6 + nTableLoads * 3);
@@ -304,17 +298,10 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
             pgsTypes::ProductForceType pfType = *itLoadHdr++;
 
             pShearStressTable->SetColumnSpan(shearStressRowIdx, shearStressColIdx, 3);
-            if (pfType == (pgsTypes::ProductForceType)pftTimeStepSize)
-            {
-               (*pShearStressTable)(shearStressRowIdx, shearStressColIdx) << Sub2(_T("V"), _T("p")); // special case
-            }
-            else
-            {
-               (*pShearStressTable)(shearStressRowIdx, shearStressColIdx) << pProductLoads->GetProductLoadName(pfType);
-            }
+            (*pShearStressTable)(shearStressRowIdx, shearStressColIdx) << pProductLoads->GetProductLoadName(pfType);
 
             shearStressRowIdx++;
-            (*pShearStressTable)(shearStressRowIdx, shearStressColIdx++) << COLHDR(symbol(DELTA) << Sub2(_T("V"), _T("u")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+            (*pShearStressTable)(shearStressRowIdx, shearStressColIdx++) << COLHDR(symbol(DELTA) << _T("V"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
             (*pShearStressTable)(shearStressRowIdx, shearStressColIdx++) << COLHDR(symbol(DELTA) << symbol(tau), rptStressUnitTag, pDisplayUnits->GetStressUnit());
             (*pShearStressTable)(shearStressRowIdx, shearStressColIdx++) << COLHDR(symbol(SIGMA) << symbol(tau), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
@@ -398,7 +385,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
 
       if (bWasDuctReduced)
       {
-         (*pShearPara) << _T("* - Web width reduced due to proximity to duct") << rptNewLine;
+         (*pShearPara) << _T("* Web width reduced due to proximity to duct") << rptNewLine;
       }
 
       (*pShearPara) << _T("Y = elevation in web where principal stress is computed, measured downwards from top centerline of non-composite girder.") << rptNewLine;
@@ -409,7 +396,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
       // Axial Tables
       rptParagraph* pAxialPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
       (*pChapter) << pAxialPara;
-      (*pAxialPara) << _T("Incremental Axial Stresses for Principal Web Stresses per Load Case for ") << strInterval << rptNewLine;
+      (*pAxialPara) << _T("Incremental Axial Stresses") << rptNewLine;
       pAxialPara = new rptParagraph;
       (*pChapter) << pAxialPara;
       (*pAxialPara) << rptRcImage(strImagePath + _T("PrincipalAxialStress.png")) << rptNewLine;
@@ -417,7 +404,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
       itLoad = vLoads.begin();
       for (IndexType iTable = 0; iTable < nTables; iTable++)
       {
-         IndexType nTableLoads = iTable != nTables - 1 ? nLoadsPerTable : modTableLoads;
+         IndexType nTableLoads = (iTable == nTables-1 &&  modTableLoads!=0) ? modTableLoads : nLoadsPerTable;
 
          // Axial Stress table header
          rptRcTable* pAxialStressTable = rptStyleManager::CreateDefaultTable(4 + nTableLoads * 4);
@@ -558,7 +545,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildLiveLoadStressTable(rptChapt
    (*pTable)(0, ColIdx++) << COLHDR(Sub2(_T("f"), _T("top")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pTable)(0, ColIdx++) << COLHDR(Sub2(_T("f"), _T("bot")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pTable)(0, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(0, ColIdx++) << COLHDR(Sub2(_T("V"), _T("u")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+   (*pTable)(0, ColIdx++) << COLHDR(_T("V"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
    (*pTable)(0, ColIdx++) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
    RowIndexType RowIdx = 1;
@@ -614,12 +601,12 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChap
    // Create different paragraphs for shear stress and axial stress tables
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << _T("Cummulative Combined Stresses for Principal Web Stresses ") << strInterval << rptNewLine;
+   (*pPara) << _T("Cummulative Combined Principal Web Stresses ") << strInterval << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
    (*pPara) << rptRcImage(strImagePath + _T("PrincipalTensionStress.png")) << rptNewLine;
 
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(23);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable( 23 );
    *pPara << pTable << rptNewLine;
    RowIndexType RowIdx = 0;
    ColumnIndexType ColIdx = 0;
@@ -631,37 +618,37 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChap
    (*pTable)(RowIdx, ColIdx++) << _T("Web Location");
 
    pTable->SetColumnSpan(0, ColIdx, 2);
-   (*pTable)(0, ColIdx) << symbol(SIGMA) << _T("DC");
-   (*pTable)(1, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, ColIdx++) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, ColIdx) << _T("DC");
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pTable->SetColumnSpan(0, ColIdx, 2);
-   (*pTable)(0, ColIdx) << symbol(SIGMA) << _T("DW");
-   (*pTable)(1, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, ColIdx++) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, ColIdx) << _T("DW");
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pTable->SetColumnSpan(0, ColIdx, 2);
-   (*pTable)(0, ColIdx) << symbol(SIGMA) << _T("CR");
-   (*pTable)(1, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, ColIdx++) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, ColIdx) << _T("CR");
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pTable->SetColumnSpan(0, ColIdx, 2);
-   (*pTable)(0, ColIdx) << symbol(SIGMA) << _T("SH");
-   (*pTable)(1, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, ColIdx++) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, ColIdx) << _T("SH");
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pTable->SetColumnSpan(0, ColIdx, 2);
-   (*pTable)(0, ColIdx) << symbol(SIGMA) << _T("RE");
-   (*pTable)(1, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, ColIdx++) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, ColIdx) << _T("RE");
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pTable->SetColumnSpan(0, ColIdx, 2);
-   (*pTable)(0, ColIdx) << symbol(SIGMA) << _T("PS");
-   (*pTable)(1, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, ColIdx++) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, ColIdx) << _T("PS");
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pTable->SetColumnSpan(0, ColIdx, 2);
-   (*pTable)(0, ColIdx) << symbol(SIGMA) << Sub2(_T("V"), _T("p"));
-   (*pTable)(1, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, ColIdx++) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, ColIdx) << _T("Pre-Tensioned Prestress");
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pTable->SetColumnSpan(0, ColIdx, 2);
-   (*pTable)(0, ColIdx) << symbol(SIGMA) << _T("Total Prestress");
-   (*pTable)(1, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(1, ColIdx++) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, ColIdx) << _T("Post-Tensioned Prestress");
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(1, ColIdx++) << symbol(SIGMA) << COLHDR(symbol(tau) , rptStressUnitTag, pDisplayUnits->GetStressUnit());
    pTable->SetColumnSpan(0, ColIdx, 2);
    (*pTable)(0, ColIdx) << _T("LL+IM Design");
    (*pTable)(1, ColIdx++) << COLHDR(Sub2(_T("f"), _T("pcx")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -716,17 +703,15 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChap
          IFNFIRSTNEWLINE(bFirstWebSection,pTable,RowIdx, ColIdx);
          (*pTable)(RowIdx, ColIdx++) << stress.SetValue(webDetail.LoadComboResults[lcPS].tau);
 
-         // Vp
+         // Prestress
          IFNFIRSTNEWLINE(bFirstWebSection,pTable,RowIdx, ColIdx);
-         (*pTable)(RowIdx, ColIdx++) << stress.SetValue(0.0); // no axial from this case
+         (*pTable)(RowIdx, ColIdx++) << stress.SetValue(webDetail.PrePrestress_Fpcx);
          IFNFIRSTNEWLINE(bFirstWebSection,pTable,RowIdx, ColIdx);
-         (*pTable)(RowIdx, ColIdx++) << stress.SetValue(webDetail.Vp_Tau);
-
-         // total prestress
+         (*pTable)(RowIdx, ColIdx++) << stress.SetValue(webDetail.PrePrestress_Tau);
          IFNFIRSTNEWLINE(bFirstWebSection,pTable,RowIdx, ColIdx);
-         (*pTable)(RowIdx, ColIdx++) << stress.SetValue(webDetail.Prestress_Fpcx);
+         (*pTable)(RowIdx, ColIdx++) << stress.SetValue(webDetail.PostPrestress_Fpcx);
          IFNFIRSTNEWLINE(bFirstWebSection,pTable,RowIdx, ColIdx);
-         (*pTable)(RowIdx, ColIdx++) << stress.SetValue(webDetail.Prestress_Tau);
+         (*pTable)(RowIdx, ColIdx++) << stress.SetValue(webDetail.PostPrestress_Tau);
 
          // LL
          IFNFIRSTNEWLINE(bFirstWebSection,pTable,RowIdx, ColIdx);

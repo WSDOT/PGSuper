@@ -1734,6 +1734,14 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                Float64 P = -xfer_factor*As*prevTimeStepDetails.Strands[strandType].fpe;
                tsDetails.dPi[pgsTypes::pftPretension] += P;
                tsDetails.dMi[pgsTypes::pftPretension] += P*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys);
+               if (strandType == pgsTypes::Harped)
+               {
+                  // vertical component of prestressed harped strands
+                  Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi, nullptr);
+                  Float64 vz = GetVertShearFromSlope(ss);
+                  tsDetails.dVi[pgsTypes::pftPretension] -= P * vz;
+                  tsDetails.Vi[pgsTypes::pftPretension] += prevTimeStepDetails.Vi[pgsTypes::pftPretension] + tsDetails.dVi[pgsTypes::pftPretension];
+               } // else - right now, no vertical force from straight strands. This may be a bug for some strand configurations?
 
                tsDetails.Pi[pgsTypes::pftPretension] += prevTimeStepDetails.Pi[pgsTypes::pftPretension] + tsDetails.dPi[pgsTypes::pftPretension];
                tsDetails.Mi[pgsTypes::pftPretension] += prevTimeStepDetails.Mi[pgsTypes::pftPretension] + tsDetails.dMi[pgsTypes::pftPretension];
@@ -1816,6 +1824,15 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                      Float64 P = -xfer_factor*strand.As*prevTimeStepDetails.Strands[strandType][strandIdx].fpe;
                      tsDetails.dPi[pgsTypes::pftPretension] += P;
                      tsDetails.dMi[pgsTypes::pftPretension] += P*(tsDetails.Ytr - strand.Ys);
+                     if (strandType == pgsTypes::Harped)
+                     {
+                        // vertical component of prestressed harped strands
+                        Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi, nullptr);
+                        Float64 vz = GetVertShearFromSlope(ss);
+                        tsDetails.dVi[pgsTypes::pftPretension] -= P * vz;
+                        tsDetails.Vi[pgsTypes::pftPretension] += prevTimeStepDetails.Vi[pgsTypes::pftPretension] + tsDetails.dVi[pgsTypes::pftPretension];
+                     } // else - right now, no vertical force from straight strands. This may be a bug for some strand configurations?
+
 
                      tsDetails.Pi[pgsTypes::pftPretension] += prevTimeStepDetails.Pi[pgsTypes::pftPretension] + tsDetails.dPi[pgsTypes::pftPretension];
                      tsDetails.Mi[pgsTypes::pftPretension] += prevTimeStepDetails.Mi[pgsTypes::pftPretension] + tsDetails.dMi[pgsTypes::pftPretension];
@@ -1908,9 +1925,21 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                // the force in the strand
                tsDetails.dPi[pgsTypes::pftPostTensioning] -= tsTendon.Pj;
                tsDetails.dMi[pgsTypes::pftPostTensioning] -= tsTendon.Pj*(tsDetails.Ytr - tsTendon.Ys);
+               // vertical component of prestress
+               if (!IsZero(tsDetails.dPi[pgsTypes::pftPostTensioning]))
+               {
+                  CComPtr<IVector3d> slope;
+                  m_pSegmentTendonGeometry->GetSegmentTendonSlope(poi, ductIdx, &slope);
+                  Float64 Y;
+                  slope->get_Y(&Y); // ignore lateral aspect of slope, if present.
+
+                  Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
+                  tsDetails.dVi[pgsTypes::pftPostTensioning] -= tsDetails.dPi[pgsTypes::pftPostTensioning] * vz;
+               }
 
                tsDetails.Pi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Pi[pgsTypes::pftPostTensioning] + tsDetails.dPi[pgsTypes::pftPostTensioning];
                tsDetails.Mi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Mi[pgsTypes::pftPostTensioning] + tsDetails.dMi[pgsTypes::pftPostTensioning];
+               tsDetails.Vi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Vi[pgsTypes::pftPostTensioning] + tsDetails.dVi[pgsTypes::pftPostTensioning];
 
                // relaxation during the stressing interval
                if (!bIgnoreRelaxationEffects)
@@ -2027,6 +2056,18 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                // the force in the strand
                tsDetails.dPi[pgsTypes::pftPostTensioning] -= tsTendon.Pj;
                tsDetails.dMi[pgsTypes::pftPostTensioning] -= tsTendon.Pj*(tsDetails.Ytr - tsTendon.Ys);
+               // vertical component of prestress
+               if (!IsZero(tsDetails.dPi[pgsTypes::pftPostTensioning]))
+               {
+                  CComPtr<IVector3d> slope;
+                  m_pGirderTendonGeometry->GetGirderTendonSlope(poi, ductIdx, &slope);
+                  Float64 Y;
+                  slope->get_Y(&Y);
+                  Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
+
+                  tsDetails.dVi[pgsTypes::pftPostTensioning] -= tsDetails.dPi[pgsTypes::pftPostTensioning] * vz;
+                  tsDetails.Vi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Vi[pgsTypes::pftPostTensioning] + tsDetails.dVi[pgsTypes::pftPostTensioning];
+               }
 
                tsDetails.Pi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Pi[pgsTypes::pftPostTensioning] + tsDetails.dPi[pgsTypes::pftPostTensioning];
                tsDetails.Mi[pgsTypes::pftPostTensioning] += prevTimeStepDetails.Mi[pgsTypes::pftPostTensioning] + tsDetails.dMi[pgsTypes::pftPostTensioning];
@@ -2546,24 +2587,6 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             } // next strand idx
 #endif // LUMP_STRANDS
          } // next strand type
-
-         ///// Vp - vertical components of prestress. Pretension must add up effects from all load cases
-         Float64 fhs = 0;
-         for (int i = 0; i < pftTimeStepSize; i++)
-         {
-            pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)(i);
-            fhs += tsDetails.Strands[pgsTypes::Harped].dPi[pfType];
-         }
-
-         if (!IsZero(fhs))
-         {
-            // vertical component of prestress
-            Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi,nullptr);
-            Float64 vz = GetVertShearFromSlope(ss);
-
-            tsDetails.dVpprei = fhs * vz;
-         }
-
       } // ( bIsOnSegment && stressStrandsIntervalIdx <= intervalIdx )
    }
    else
@@ -3181,6 +3204,15 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                   tsDetails.Strands[strandType].dei[pfType] += dei;
                   tsDetails.Strands[strandType].dPi[pfType] += dPi;
+
+                  if (strandType == pgsTypes::Harped)
+                  {
+                     // vertical component of prestressed harped strands due to change in strand force from creep
+                     Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi, nullptr); // function is for harped strands only
+                     Float64 vz = GetVertShearFromSlope(ss);
+                     tsDetails.dVi[pgsTypes::pftPretension] += dPi * vz;
+                     tsDetails.Vi[pgsTypes::pftPretension]  += dPi * vz; // regular pretension case takes care of rest of summation
+                  }
                }
                else if (pfType == pgsTypes::pftShrinkage)
                {
@@ -3190,6 +3222,15 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                   tsDetails.Strands[strandType].dei[pfType] += dei;
                   tsDetails.Strands[strandType].dPi[pfType] += dPi;
+
+                  if (strandType == pgsTypes::Harped)
+                  {
+                     // vertical component of prestressed harped strands due to change in strand force from shrinkage
+                     Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi, nullptr); // function is for harped strands only
+                     Float64 vz = GetVertShearFromSlope(ss);
+                     tsDetails.dVi[pgsTypes::pftPretension] += dPi * vz;
+                     tsDetails.Vi[pgsTypes::pftPretension]  += dPi * vz;
+                  }
                }
                else if (pfType == pgsTypes::pftRelaxation)
                {
@@ -3199,6 +3240,15 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                   tsDetails.Strands[strandType].dei[pfType] += dei;
                   tsDetails.Strands[strandType].dPi[pfType] += dPi;
+
+                  if (strandType == pgsTypes::Harped)
+                  {
+                     // vertical component of prestressed harped strands due to change in strand force from relaxation
+                     Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi, nullptr); // function is for harped strands only
+                     Float64 vz = GetVertShearFromSlope(ss);
+                     tsDetails.dVi[pgsTypes::pftPretension] += dPi * vz;
+                     tsDetails.Vi[pgsTypes::pftPretension]  += dPi * vz;
+                  }
                }
 
                if (intervalIdx == releaseIntervalIdx)
@@ -3251,6 +3301,16 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                      strand.dei[pfType] += dei;
                      strand.dPi[pfType] += dPi;
+
+                     if (strandType == pgsTypes::Harped)
+                     {
+                        // vertical component of prestressed harped strands due to change in strand force from creep
+                        Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi, nullptr); // function is for harped strands only
+                        Float64 vz = GetVertShearFromSlope(ss);
+                        tsDetails.dVi[pgsTypes::pftPretension] += dPi * vz;
+                        tsDetails.Vi[pgsTypes::pftPretension]  += dPi * vz; // regular pretension case takes care of rest of summation
+                     }
+
                   }
                   else if (pfType == pgsTypes::pftShrinkage)
                   {
@@ -3260,6 +3320,16 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                      strand.dei[pfType] += dei;
                      strand.dPi[pfType] += dPi;
+
+                     if (strandType == pgsTypes::Harped)
+                     {
+                        // vertical component of prestressed harped strands due to change in strand force from creep
+                        Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi, nullptr); // function is for harped strands only
+                        Float64 vz = GetVertShearFromSlope(ss);
+                        tsDetails.dVi[pgsTypes::pftPretension] += dPi * vz;
+                        tsDetails.Vi[pgsTypes::pftPretension]  += dPi * vz; // regular pretension case takes care of rest of summation
+                     }
+
                   }
                   else if (pfType == pgsTypes::pftRelaxation)
                   {
@@ -3269,6 +3339,15 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                      strand.dei[pfType] += dei;
                      strand.dPi[pfType] += dPi;
+
+                     if (strandType == pgsTypes::Harped)
+                     {
+                        // vertical component of prestressed harped strands due to change in strand force from creep
+                        Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi, nullptr); // function is for harped strands only
+                        Float64 vz = GetVertShearFromSlope(ss);
+                        tsDetails.dVi[pgsTypes::pftPretension] += dPi * vz;
+                        tsDetails.Vi[pgsTypes::pftPretension]  += dPi * vz; // regular pretension case takes care of rest of summation
+                     }
                   }
 
                   strand.Pi[pfType] += prevTimeStepDetails.Strands[strandType][strandIdx].Pi[pfType] + strand.dPi[pfType];
@@ -3328,6 +3407,20 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
+
+                     // Change in shear force due to change in vert component of prestress force
+                     if (!IsZero(dPi))
+                     {
+                        CComPtr<IVector3d> slope;
+                        m_pSegmentTendonGeometry->GetSegmentTendonSlope(poi, ductIdx, &slope);
+                        Float64 Y;
+                        slope->get_Y(&Y); // ignore lateral aspect of slope, if present.
+
+                        Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
+
+                        tsDetails.dVi[pgsTypes::pftPostTensioning] += dPi * vz;
+                        tsDetails.Vi[pgsTypes::pftPostTensioning]  += dPi * vz;
+                     }
                   }
                   else if (pfType == pgsTypes::pftShrinkage)
                   {
@@ -3337,6 +3430,19 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
+
+                     if (!IsZero(dPi))
+                     {
+                        CComPtr<IVector3d> slope;
+                        m_pSegmentTendonGeometry->GetSegmentTendonSlope(poi, ductIdx, &slope);
+                        Float64 Y;
+                        slope->get_Y(&Y); // ignore lateral aspect of slope, if present.
+
+                        Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
+
+                        tsDetails.dVi[pgsTypes::pftPostTensioning] += dPi * vz;
+                        tsDetails.Vi[pgsTypes::pftPostTensioning]  += dPi * vz;
+                     }
                   }
                   else if (pfType == pgsTypes::pftRelaxation)
                   {
@@ -3346,6 +3452,19 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
+
+                     if (!IsZero(dPi))
+                     {
+                        CComPtr<IVector3d> slope;
+                        m_pSegmentTendonGeometry->GetSegmentTendonSlope(poi, ductIdx, &slope);
+                        Float64 Y;
+                        slope->get_Y(&Y); // ignore lateral aspect of slope, if present.
+
+                        Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
+
+                        tsDetails.dVi[pgsTypes::pftPostTensioning] += dPi * vz;
+                        tsDetails.Vi[pgsTypes::pftPostTensioning]  += dPi * vz;
+                     }
                   }
 
                   tendon.Pi[pfType] += prevTimeStepDetails.SegmentTendons[ductIdx].Pi[pfType] + tendon.dPi[pfType];
@@ -3417,6 +3536,19 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
+
+                     // Change in vertial component of prestress
+                     if (!IsZero(dPi))
+                     {
+                        CComPtr<IVector3d> slope;
+                        m_pGirderTendonGeometry->GetGirderTendonSlope(poi, ductIdx, &slope);
+                        Float64 Y;
+                        slope->get_Y(&Y);
+                        Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
+
+                        tsDetails.dVi[pgsTypes::pftPostTensioning] += dPi * vz;
+                        tsDetails.Vi[pgsTypes::pftPostTensioning]  += dPi * vz;
+                     }
                   }
                   else if (pfType == pgsTypes::pftShrinkage)
                   {
@@ -3426,6 +3558,18 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
+
+                     if (!IsZero(dPi))
+                     {
+                        CComPtr<IVector3d> slope;
+                        m_pGirderTendonGeometry->GetGirderTendonSlope(poi, ductIdx, &slope);
+                        Float64 Y;
+                        slope->get_Y(&Y);
+                        Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
+
+                        tsDetails.dVi[pgsTypes::pftPostTensioning] += dPi * vz;
+                        tsDetails.Vi[pgsTypes::pftPostTensioning]  += dPi * vz;
+                     }
                   }
                   else if (pfType == pgsTypes::pftRelaxation)
                   {
@@ -3435,6 +3579,18 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
+
+                     if (!IsZero(dPi))
+                     {
+                        CComPtr<IVector3d> slope;
+                        m_pGirderTendonGeometry->GetGirderTendonSlope(poi, ductIdx, &slope);
+                        Float64 Y;
+                        slope->get_Y(&Y);
+                        Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
+
+                        tsDetails.dVi[pgsTypes::pftPostTensioning] += dPi * vz;
+                        tsDetails.Vi[pgsTypes::pftPostTensioning]  += dPi * vz;
+                     }
                   }
 
                   tendon.Pi[pfType] += prevTimeStepDetails.GirderTendons[ductIdx].Pi[pfType] + tendon.dPi[pfType];
@@ -3511,83 +3667,6 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       // total due to secondary pt at the end of this interval
       tsDetails.Pi[pgsTypes::pftSecondaryEffects] = prevTimeStepDetails.Pi[pgsTypes::pftSecondaryEffects] + tsDetails.dPi[pgsTypes::pftSecondaryEffects];
       tsDetails.Mi[pgsTypes::pftSecondaryEffects] = prevTimeStepDetails.Mi[pgsTypes::pftSecondaryEffects] + tsDetails.dMi[pgsTypes::pftSecondaryEffects];
-
-      ///// Vp - vertical components of prestress
-      // Pretension must add up effects from all load cases
-      Float64 fhs = 0;
-      for (int i = 0; i < pftTimeStepSize; i++)
-      {
-         pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)(i); // typecast useful for debugging
-         fhs += tsDetails.Strands[pgsTypes::Harped].dPi[i];
-      }
-
-      if (!IsZero(fhs))
-      {
-         // vertical component of prestress
-         Float64 ss = m_pStrandGeom->GetAvgStrandSlope(poi,nullptr);
-         Float64 vz = GetVertShearFromSlope(ss);
-
-         tsDetails.dVpprei = fhs * vz;
-      }
-
-      tsDetails.Vpprei = tsDetails.dVpprei + prevTimeStepDetails.Vpprei;
-
-      // Vp post tension of segments
-      if (bIsOnSegment)
-      {
-         DuctIndexType nDucts = m_pSegmentTendonGeometry->GetDuctCount(segmentKey);
-         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
-         {
-            Float64 fs = 0;
-            for (int i = 0; i < pftTimeStepSize; i++)
-            {
-               pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)(i);
-               fs += tsDetails.SegmentTendons[ductIdx].dPi[i];
-            }
-
-            if (!IsZero(fs))
-            {
-               CComPtr<IVector3d> slope;
-               m_pSegmentTendonGeometry->GetSegmentTendonSlope(poi, ductIdx, &slope);
-               Float64 Y;
-               slope->get_Y(&Y); // ignore lateral aspect of slope, if present.
-
-               Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
-               tsDetails.dVppossi += fs * vz;
-            }
-         }
-      }
-
-      tsDetails.Vppossi = tsDetails.dVppossi + prevTimeStepDetails.Vppossi;
-
-      // Vp post tension on girders
-      if (bIsOnGirder)
-      {
-         DuctIndexType nDucts = m_pGirderTendonGeometry->GetDuctCount(girderKey);
-         for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
-         {
-            Float64 fs = 0;
-            for (int i = 0; i < pftTimeStepSize; i++)
-            {
-               pgsTypes::ProductForceType pfType = (pgsTypes::ProductForceType)(i);
-               fs += tsDetails.GirderTendons[ductIdx].dPi[i];
-            }
-
-            if (!IsZero(fs))
-            {
-               CComPtr<IVector3d> slope;
-               m_pGirderTendonGeometry->GetGirderTendonSlope(poi, ductIdx, &slope);
-               Float64 Y;
-               slope->get_Y(&Y);
-
-               Float64 vz = IsZero(Y) ? 0.0 : GetVertShearFromSlope(1 / Y);
-
-               tsDetails.dVpposgi += fs * vz;
-            }
-         }
-      }
-
-      tsDetails.Vpposgi = tsDetails.dVpposgi + prevTimeStepDetails.Vpposgi;
 
    } // end if interval < releaseIntervalidx
 
@@ -3685,14 +3764,6 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       }
    } // next product load type
 
-   // Need to compute principal web stress separately for vertical component of prestress - treated as a unique load case
-   if (m_PrincipalTensileStressCheckType = ISpecification::pwcNCHRPTimeStepMethod)
-   {
-      const TIME_STEP_DETAILS* pPrevTimeStepDetails = intervalIdx==0 ? nullptr : &details.TimeStepDetails[intervalIdx - 1];
-
-      ComputePrincipalStressInWeb(intervalIdx, poi, (pgsTypes::ProductForceType)pftTimeStepSize, nSegmentDucts, nGirderDucts, tsDetails, pPrevTimeStepDetails);
-   }
-   
 
 #if defined _BETA_VERSION
    // change in internal force and moment must be the same as the change external force and moment
@@ -5046,19 +5117,9 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
    }
 
    // Vu and section stresses
-   if (pgsTypes::pftProductForceTypeCount-1 == pfType)
-   {
-      // Vp - treated as special case
-      PsDetails.Vu = tsDetails.dVpprei + tsDetails.dVppossi + tsDetails.dVpposgi;
-      PsDetails.fTop = 0.0;
-      PsDetails.fBot = 0.0;
-   }
-   else
-   {
-      PsDetails.Vu = tsDetails.dVi[pfType];
-      PsDetails.fTop = tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtIncremental];
-      PsDetails.fBot = tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental];
-   }
+   PsDetails.Vu = tsDetails.dVi[pfType];
+   PsDetails.fTop = tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtIncremental];
+   PsDetails.fBot = tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental];
 
    /// Next build sorted list of elevations where we are computing principal stresses
    auto vPsWebElevations = m_pGirder->GetWebSections(poi);
@@ -5172,7 +5233,16 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
          }
       }
 
-      Float64 bw = bw_raw - max_duct_deduction;
+      Float64 bw;
+      if (intervalIdx >= releaseIntervalIdx)
+      {
+         bw = bw_raw - max_duct_deduction;
+         bw = bw < 0.0 ? 0.0 : bw; // can't be negative
+      }
+      else
+      {
+         bw = 0.0; // no concrete yet
+      }
 
       Float64 Q;
       if (bInClosureJoint)
@@ -5186,11 +5256,7 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
 
       // shear stress
       Float64 tau;
-      if (bw <= 0.0)
-      {
-         Float64_Max; // blow up, but don't crash if no web exists
-      }
-      else if (IsZero(PsDetails.I))
+      if (IsZero(PsDetails.I) ||intervalIdx < releaseIntervalIdx)
       {
          tau = 0.0; // no section. this is probably because concrete wet
       }
@@ -5200,7 +5266,7 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
       }
 
       // axial stress
-      Float64 fpcx = PsDetails.fTop - (PsDetails.fBot - PsDetails.fTop)*YwebSection / PsDetails.Hg;
+      Float64 fpcx = PsDetails.fTop + (PsDetails.fBot - PsDetails.fTop) * -YwebSection/PsDetails.Hg;
 
       // running sums from previous interval
       Float64 tau_s = tau;

@@ -111,6 +111,9 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
 
    GET_IFACE(ILosses,pLosses);
    GET_IFACE(IProductLoads,pProductLoads);
+   GET_IFACE(IIntervals, pIntervals);
+
+   IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
    
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,interval);
    const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[interval]);
@@ -152,92 +155,90 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
    while (iterDet != details.end())
    {
       // Sum cummulative results from each product force type
-      iterDet->Prestress_Fpcx += preIter->fpcx_s + postIter->fpcx_s;
-      iterDet->Prestress_Tau  += preIter->tau_s    + postIter->tau_s;
+      iterDet->PrePrestress_Fpcx += preIter->fpcx_s;
+      iterDet->PrePrestress_Tau  += preIter->tau_s;
+      iterDet->PostPrestress_Fpcx += postIter->fpcx_s;
+      iterDet->PostPrestress_Tau  += postIter->tau_s;
 
       preIter++;
       postIter++;
       iterDet++;
    }
 
-   // vertical component of prestressing is a special case stored at the end (pftTimeStepSize'd member) of PrincipalStressDetails
-   iterDet = details.begin();
-   for (const auto& webSection : tsDetails.PrincipalStressDetails[pftTimeStepSize].WebSections)
+   // Live load 
+   if (interval >= liveLoadInterval)
    {
-      // Sum cummulative results from each product force type
-      iterDet->Vp_Tau = webSection.tau_s;
+      // shear responses
+      GET_IFACE(IProductForces, pProductForces);
+      pgsTypes::BridgeAnalysisType maxBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+      pgsTypes::BridgeAnalysisType minBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-      iterDet++;
-   }
+      sysSectionValue dummy, Vmin, Vmax;
+      pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, maxBat, true, true, &dummy, &Vmax);
+      pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, minBat, true, true, &Vmin, &dummy);
+      // Want max absolute value, but to retain sign. 
+      Float64 Vu = Vmax.Left();
+      if (fabs(Vmin.Left()) > fabs(Vu)) { Vu = Vmin.Left(); }
+      if (fabs(Vmax.Right()) > fabs(Vu)) { Vu = -Vmax.Right(); } // sign convention
+      if (fabs(Vmin.Right()) > fabs(Vu)) { Vu = -Vmin.Right(); }
 
-   // Live load load shear responses
-   GET_IFACE(IProductForces,pProductForces);
-   auto maxBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
-   auto minBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+      // use section properties from girder load case (they are all the same)
+      const TIME_STEP_PRINCIPALSTRESSINWEBDETAILS& rtsDet = tsDetails.PrincipalStressDetails[pgsTypes::pftGirder];
+      Float64 Hg = rtsDet.Hg;
+      Float64 I = rtsDet.I;
 
-   sysSectionValue dummy, Vmin, Vmax;
-   pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, maxBat, true, true, &dummy, &Vmax);
-   pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, minBat, true, true, &Vmin, &dummy);
-   // Want max absolute value, but to retain sign. 
-   Float64 Vu = Vmax.Left();
-   if (fabs(Vmin.Left()) > fabs(Vu))  { Vu =  Vmin.Left();  }
-   if (fabs(Vmax.Right()) > fabs(Vu)) { Vu = -Vmax.Right(); } // sign convention
-   if (fabs(Vmin.Right()) > fabs(Vu)) { Vu = -Vmin.Right(); }
-
-   // use section properties from girder load case (they are all the same)
-   const TIME_STEP_PRINCIPALSTRESSINWEBDETAILS& rtsDet = tsDetails.PrincipalStressDetails[pgsTypes::pftGirder];
-   Float64 Hg = rtsDet.Hg;
-   Float64 I = rtsDet.I;
-
-   iterDet = details.begin();
-   for (const auto& webSection : rtsDet.WebSections) 
-   {
-      // Shear stress is pretty simple
-      Float64 Q = webSection.Qc;
-      Float64 bw = webSection.bw;
-      iterDet->LL_Vu = Vu;
-      iterDet->LL_Tau = Vu * Q / (I * bw);
-
-      // Axial stresses due to live load not so simple. 
-      // Uses the same logic as for combined reponse (non-time step) in  pgsPrincipalWebStressEngineer::ComputePrincipalStressInWeb()
-      // If the web section is above the girder centroid at this evaluation interval (the composite section interval), we want maximum (tensile) stress near the top of the girder.
-      // The stress is maximized at the top of the girder from negative moments, which are minimum moments for our sign convention. We also need the corresponding
-      // stress in the bottom of the girder for the minimum moment which is the minimum (compressive) stress.
-
-      // if the web section is below the composite girder centroid, we want the maximum (tensile) stress near the bottom of the girder. This occurs with positive (maximum) moment.
-      // The corresponding stress at the top of the girder for the maximum moment is the minimum (compressive) stression.
-      Float64 YwebSection = webSection.YwebSection;
-
-      bool bWebSectionAboveCentroid = ::IsLE(tsDetails.Ytr, YwebSection) ? true : false; 
-      auto llbat = pProductForces->GetBridgeAnalysisType(bWebSectionAboveCentroid ? pgsTypes::Minimize /*want minimum, or negative moments*/ : pgsTypes::Maximize /*want maximum, or positive moment*/);
-      std::array<Float64, 2> fMin, fMax;
-      pProductForces->GetLiveLoadStress(interval, pgsTypes::lltDesign, poi, llbat, true, true, pgsTypes::TopGirder, pgsTypes::BottomGirder, 
-                                        &fMin[pgsTypes::TopGirder], &fMax[pgsTypes::TopGirder], &fMin[pgsTypes::BottomGirder], &fMax[pgsTypes::BottomGirder]);
-
-      // we are seeking the maximum principal tensile stress so we want the maximum axial stress. At the extremeties of the section, it is typically easy to know
-      // which case governings, however at the centroids, it can get a little more tricky. we will compute them both to determine which controls
-      Float64 fpcx1 = fMax[pgsTypes::TopGirder] - (fMin[pgsTypes::BottomGirder] - fMax[pgsTypes::TopGirder])*YwebSection / Hg;
-      Float64 fpcx2 = fMin[pgsTypes::TopGirder] - (fMax[pgsTypes::BottomGirder] - fMin[pgsTypes::TopGirder])*YwebSection / Hg;
-
-      Float64 fTop, fBot, fpcx;
-      if (fpcx2 < fpcx1)
+      iterDet = details.begin();
+      for (const auto& webSection : rtsDet.WebSections)
       {
-         fpcx = fpcx1;
-         fTop = fMax[pgsTypes::TopGirder];
-         fBot = fMin[pgsTypes::BottomGirder];
-      }
-      else
-      {
-         fpcx = fpcx2;
-         fTop = fMin[pgsTypes::TopGirder];
-         fBot = fMax[pgsTypes::BottomGirder];
-      }
+         // Shear stress is pretty simple
+         Float64 Q = webSection.Qc;
+         Float64 bw = webSection.bw;
+         iterDet->LL_Vu = Vu;
+         iterDet->LL_Tau = Vu * Q / (I * bw);
 
-      iterDet->LL_Ftop = fTop;
-      iterDet->LL_Fbot = fBot;
-      iterDet->LL_Fpcx = fpcx;
+         // Axial stresses due to live load not so simple. 
+         // Uses similar logic as for combined reponse (non-time step) in  pgsPrincipalWebStressEngineer::ComputePrincipalStressInWeb(), except that we are only looking at live load response.
+         // If the web section is above the girder centroid at this evaluation interval (the composite section interval), we want maximum (tensile) stress near the top of the girder.
+         // The tensile stress is maximized at the top of the girder from negative moments, which are minimum moments for our sign convention. 
+         // Live load response is pure bending, so the corresponding bottom stress can be computed using a linear variation with zero at the nuetral axis.
 
-      iterDet++;
+         // if the web section is below the composite girder centroid, we want the maximum (tensile) stress near the bottom of the girder. This occurs with positive (maximum) moment.
+         // The corresponding stress at the top of the girder for the maximum moment is the minimum (compressive) stression.
+         Float64 YwebSection = webSection.YwebSection;
+
+         bool bWebSectionAboveCentroid = ::IsLE(tsDetails.Ytr, YwebSection) ? true : false;
+         pgsTypes::BridgeAnalysisType llbat = pProductForces->GetBridgeAnalysisType(bWebSectionAboveCentroid ? pgsTypes::Minimize /*want minimum, or negative moments*/ : pgsTypes::Maximize /*want maximum, or positive moment*/);
+         std::array<Float64, 2> fMin, fMax;
+         pProductForces->GetLiveLoadStress(interval, pgsTypes::lltDesign, poi, llbat, true, true, pgsTypes::TopGirder, pgsTypes::BottomGirder,
+            &fMin[pgsTypes::TopGirder], &fMax[pgsTypes::TopGirder], &fMin[pgsTypes::BottomGirder], &fMax[pgsTypes::BottomGirder]);
+
+         // We are seeking the maximum principal tensile stress so we want the maximum axial stress at the elevation in question.
+
+         Float64 fTop, fBot;
+         if (bWebSectionAboveCentroid)
+         {
+            // want max top tension
+            fTop = fMax[pgsTypes::TopGirder];
+            // stress at bottom assuming zero stress at neutral axis
+            fBot = LinInterpLine(0.0, fTop, -tsDetails.Ytr, 0.0, Hg);
+         }
+         else
+         {
+            // want max bottom tension
+            fBot = fMax[pgsTypes::BottomGirder];
+            // stress at top assuming zero stress at neutral axis
+            fTop = LinInterpLine(-tsDetails.Ytr, 0.0, Hg, fBot, 0.0);
+         }
+
+         // interpolate fpcx at YwebSection
+         Float64 fpcx = fTop + (fBot - fTop) * -YwebSection / Hg;
+
+         iterDet->LL_Ftop = fTop;
+         iterDet->LL_Fbot = fBot;
+         iterDet->LL_Fpcx = fpcx;
+
+         iterDet++;
+      }
    }
 
    // Build Service III results from loading combos
@@ -258,10 +259,10 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
       detail.Service3Tau   = gDC * detail.LoadComboResults[lcDC].tau;
 
       // prestressing is added unfactored
-      detail.Service3Tau  += detail.Vp_Tau;
-
-      detail.Service3Fpcx  += detail.Prestress_Fpcx;
-      detail.Service3Tau   += detail.Prestress_Tau;
+      detail.Service3Fpcx  += detail.PrePrestress_Fpcx;
+      detail.Service3Fpcx  += detail.PostPrestress_Fpcx;
+      detail.Service3Tau   += detail.PrePrestress_Tau;
+      detail.Service3Tau   += detail.PostPrestress_Tau;
 
       detail.Service3Fpcx += gDW * detail.LoadComboResults[lcDW].f_pcx;
       detail.Service3Tau  += gDW * detail.LoadComboResults[lcDW].tau;
@@ -599,6 +600,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
          // adjust the web width by the maximum duct deduction
          Float64 duct_deduction = Max(max_segment_duct_deduction, max_girder_duct_deduction);
          bw -= duct_deduction;
+         bw = bw < 0.0 ? 0.0 : bw;
       }
 
       // Get shear force

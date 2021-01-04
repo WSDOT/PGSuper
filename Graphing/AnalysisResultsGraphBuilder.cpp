@@ -92,17 +92,27 @@ struct WebSectionManager
    }
 
    // Create data series for each of our web sections
-   void CreateGraphSeries(CAnalysisResultsGraphBuilder& rBuilder, grGraphXY& rGraph, const std::_tstring& graphName, IntervalIndexType intervalIdx,IndexType graphIdx)
+   void CreateGraphSeries(CAnalysisResultsGraphController* pGraphController, CAnalysisResultsGraphBuilder& rBuilder, grGraphXY& rGraph, const std::_tstring& graphName, IntervalIndexType intervalIdx,IndexType graphIdx)
    {
       IndexType idx = 0;
       for (auto& section : m_WebSections)
       {
-         std::_tstring fullName(graphName + _T(" - ") + std::get<0>(section).c_str());
-         IndexType data_series = rGraph.FindDataSeries(fullName.c_str());
+         CString fullName;
+         if (pGraphController->GetGraphMode() == CAnalysisResultsGraphController::Loading)
+         {
+            fullName = graphName.c_str() + CString(_T(" - ")) + std::get<0>(section).c_str();
+         }
+         else
+         {
+            fullName.Format(_T("%s, Interval %d"), std::get<0>(section).c_str(), intervalIdx);
+         }
+
+         IndexType data_series = rGraph.FindDataSeries(fullName);
          if (INVALID_INDEX == data_series)
          {
-            COLORREF c(rBuilder.GetGraphColor(graphIdx + idx++, intervalIdx));
-            data_series = rGraph.CreateDataSeries(fullName.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, c);
+            COLORREF c(rBuilder.GetGraphColor(graphIdx*8 + idx++, intervalIdx));
+            int pen = idx % 2 == 0 ? PS_SOLID : PS_DASH;
+            data_series = rGraph.CreateDataSeries(fullName, pen , GRAPH_PEN_WEIGHT, c);
          }
 
          std::get<2>(section) = data_series;
@@ -152,12 +162,12 @@ private:
 
 inline std::_tstring Shear_Stress_String(const std::_tstring& loadName)
 {
-   return std::_tstring(loadName + _T(" -Shear stress"));
+   return std::_tstring(loadName + _T(" - Shear"));
 }
 
 inline std::_tstring Axial_Stress_String(const std::_tstring& loadName)
 {
-   return std::_tstring(loadName + _T(" -Axial stress"));
+   return std::_tstring(loadName + _T(" - Axial"));
 }
 
 
@@ -1266,7 +1276,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
       strAction = _T("Rating Factor");
       break;
    case actionPrincipalWebStress:
-      strAction = _T("Principal Web Stress");
+      strAction = _T("Web Stress");
       break;
    default:
       ASSERT(0);
@@ -1365,7 +1375,7 @@ COLORREF CAnalysisResultsGraphBuilder::GetGraphColor(IndexType graphIdx,Interval
    }
    else
    {
-      c = m_pGraphColor->GetColor(intervalIdx);
+      c = m_pGraphColor->GetColor(graphIdx+intervalIdx);
    }
 
    return c;
@@ -3859,7 +3869,7 @@ void CAnalysisResultsGraphBuilder::TimeStepPrincipalWebStressGraph(IndexType gra
          }
 
          // Create data series going into this graph
-         webSectionManager.CreateGraphSeries(*this, m_Graph, graphDef.m_Name, intervalIdx, graphIdx);
+         webSectionManager.CreateGraphSeries((CAnalysisResultsGraphController*)m_pGraphController, *this, m_Graph, graphDef.m_Name, intervalIdx, graphIdx);
 
          auto i(vPoi.begin());
          auto end(vPoi.end());
@@ -3948,7 +3958,7 @@ void CAnalysisResultsGraphBuilder::TimeStepPrincipalWebStressLiveLoadGraph(Index
       }
 
       // Create data series going into this graph
-      webSectionManager.CreateGraphSeries(*this, m_Graph, graphDef.m_Name, intervalIdx, graphIdx);
+      webSectionManager.CreateGraphSeries((CAnalysisResultsGraphController*)m_pGraphController, *this, m_Graph, graphDef.m_Name, intervalIdx, graphIdx);
 
       auto i(vPoi.begin());
       auto end(vPoi.end());
@@ -4017,7 +4027,7 @@ void CAnalysisResultsGraphBuilder::TimeStepProductLoadPrincipalWebStressGraph(In
    }
 
    // Create data series going into this graph
-   webSectionManager.CreateGraphSeries(*this, m_Graph, graphDef.m_Name, intervalIdx, graphIdx);
+   webSectionManager.CreateGraphSeries((CAnalysisResultsGraphController*)m_pGraphController, *this, m_Graph, graphDef.m_Name, intervalIdx, graphIdx);
 
    auto i(vPoi.begin());
    auto end(vPoi.end());

@@ -68,11 +68,11 @@ struct TimeStepCombinedPrincipalWebStressDetailsAtWebSection
 
    std::array<PrincipalWebResult, lcLoadingCombinationTypeCount> LoadComboResults; // results for each LoadingCombinationType
 
-   Float64 Vp_Tau;  // vertical component for prestress
-
-   // pretensioned + posttensioned prestress
-   Float64 Prestress_Fpcx;
-   Float64 Prestress_Tau;
+   // pretensioned & posttensioned prestress
+   Float64 PrePrestress_Fpcx;
+   Float64 PrePrestress_Tau;
+   Float64 PostPrestress_Fpcx;
+   Float64 PostPrestress_Tau;
 
    Float64 LL_Ftop; // results for live load
    Float64 LL_Fbot;
@@ -85,7 +85,7 @@ struct TimeStepCombinedPrincipalWebStressDetailsAtWebSection
    Float64 Service3PrincipalStress;
 
    TimeStepCombinedPrincipalWebStressDetailsAtWebSection():
-      YwebSection(0), Vp_Tau(0), Prestress_Fpcx(0), Prestress_Tau(0), LL_Fpcx(0), LL_Tau(0), Service3Fpcx(0), Service3Tau(0), Service3PrincipalStress(0)
+      YwebSection(0), PrePrestress_Fpcx(0), PrePrestress_Tau(0), PostPrestress_Fpcx(0), PostPrestress_Tau(0), LL_Ftop(0), LL_Fbot(0), LL_Fpcx(0), LL_Vu(0), LL_Tau(0), Service3Fpcx(0), Service3Tau(0), Service3PrincipalStress(0)
    {;}
 };
 

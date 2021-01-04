@@ -848,16 +848,6 @@ struct TIME_STEP_DETAILS
    // total change in loading on the section (summation of dPi, dMi, dVi)
    Float64 dP, dM, dV;
 
-   // Incremental change in vertical component of prestresses force during this interval
-   Float64 dVpprei; // pretension
-   Float64 dVpposgi; // posttension in girder
-   Float64 dVppossi; // posttension in segment
-
-   // Total change in vertical component of prestresses force during this interval and all intervals up to this interval
-   Float64 Vpprei; // pretension
-   Float64 Vpposgi; // posttension in girder
-   Float64 Vppossi; // posttension in segment
-
    // Total loading on the section due to externally applied loads in all intervals upto
    // and including this interval. Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
@@ -903,9 +893,8 @@ struct TIME_STEP_DETAILS
    std::array<Float64, pftTimeStepSize> er; // axial strain
    std::array<Float64, pftTimeStepSize> rr; // curvature
 
-   // Principal web stress details for each loading. NOTE: that an additional loading is tagged on 
-   // to the end to capture vertical shear due to prestressing
-   std::array<TIME_STEP_PRINCIPALSTRESSINWEBDETAILS, pftTimeStepSize+1> PrincipalStressDetails;
+   // Principal web stress details for each loading. 
+   std::array<TIME_STEP_PRINCIPALSTRESSINWEBDETAILS, pftTimeStepSize> PrincipalStressDetails;
 
    // Check equilibrium
    Float64 dPext, dPint; // change in external and internal axial force during this interval (dPext == dPint)
@@ -968,13 +957,6 @@ struct TIME_STEP_DETAILS
       Pint  = 0;
       Mext  = 0;
       Mint  = 0;
-
-      dVpprei = 0;
-      dVpposgi = 0;
-      dVppossi = 0;
-      Vpprei = 0;
-      Vpposgi = 0;
-      Vppossi = 0;
    }
 };
 
