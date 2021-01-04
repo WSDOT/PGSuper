@@ -301,21 +301,18 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
    const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(girderKey,ratingType,INVALID_INDEX);
-   pgsRatingArtifact::ShearRatings shearRatings = pRatingArtifact->GetShearRatings();
+   const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear = pRatingArtifact->GetLongitudinalReinforcementForShear();
 
    bool bAddFootnote = false;
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   pgsRatingArtifact::ShearRatings::iterator i(shearRatings.begin());
-   pgsRatingArtifact::ShearRatings::iterator end(shearRatings.end());
-   for ( ; i != end; i++ )
+   for( const auto& item : longReinfShear)
    {
-      pgsPointOfInterest& poi = i->first;
+      const pgsPointOfInterest& poi = item.first;
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-      pgsShearRatingArtifact& shearRatingArtifact = i->second;
-      const pgsLongReinfShearArtifact& artifact = shearRatingArtifact.GetLongReinfShearArtifact();
+      const auto& artifact = item.second;
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 

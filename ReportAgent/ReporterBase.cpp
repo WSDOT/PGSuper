@@ -235,8 +235,8 @@ void CReporterBase::CreateLoadRatingReport()
    pRptBuilder->SetReportSpecificationBuilder( pLoadRatingRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingDetailsChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CLongitudinalReinforcementForShearLoadRatingChapterBuilder(true)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingReactionsChapterBuilder(true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLongitudinalReinforcementForShearLoadRatingChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder(true)) );
    //pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder(false)) );

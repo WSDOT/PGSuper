@@ -119,9 +119,6 @@ public:
    void SetLiveLoadShear(Float64 Vllim);
    Float64 GetLiveLoadShear() const;
 
-   void SetLongReinfShearArtifact(const pgsLongReinfShearArtifact& artifact);
-   const pgsLongReinfShearArtifact& GetLongReinfShearArtifact() const;
-
    void SetHorizontalInterfaceShearArtifact(const pgsHorizontalShearArtifact& artifact);
    const pgsHorizontalShearArtifact& GetHorizontalInterfaceShearArtifact() const;
 
@@ -160,6 +157,5 @@ protected:
    Float64 m_Vre;
    Float64 m_Vps;
    Float64 m_Vllim;
-   pgsLongReinfShearArtifact m_LongReinfShearArtifact;
    pgsHorizontalShearArtifact m_HorizShearArtifact;
 };

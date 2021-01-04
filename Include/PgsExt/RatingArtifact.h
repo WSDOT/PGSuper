@@ -51,6 +51,7 @@ public:
    typedef std::vector<std::pair<pgsPointOfInterest,pgsShearRatingArtifact>>  ShearRatings;
    typedef std::vector<std::pair<pgsPointOfInterest,pgsStressRatingArtifact>> StressRatings;
    typedef std::vector<std::pair<pgsPointOfInterest,pgsYieldStressRatioArtifact>> YieldStressRatios;
+   typedef std::vector<std::pair<pgsPointOfInterest, pgsLongReinfShearArtifact>> LongitudinalReinforcementForShear;
 
    pgsRatingArtifact(pgsTypes::LoadRatingType ratingType);
    pgsRatingArtifact(const pgsRatingArtifact& rOther);
@@ -64,16 +65,19 @@ public:
    void AddArtifact(const pgsPointOfInterest& poi,const pgsShearRatingArtifact& artifact);
    void AddArtifact(const pgsPointOfInterest& poi,const pgsStressRatingArtifact& artifact);
    void AddArtifact(const pgsPointOfInterest& poi,const pgsYieldStressRatioArtifact& artifact,bool bPositiveMoment);
+   void AddArtifact(const pgsPointOfInterest& poi, const pgsLongReinfShearArtifact& artifact);
 
    const pgsMomentRatingArtifact* GetMomentRatingArtifact(const pgsPointOfInterest& poi, bool bPositiveMoment) const;
    const pgsShearRatingArtifact* GetShearRatingArtifact(const pgsPointOfInterest& poi) const;
    const pgsStressRatingArtifact* GetStressRatingArtifact(const pgsPointOfInterest& poi) const;
    const pgsYieldStressRatioArtifact* GetYieldStressRatioArtifact(const pgsPointOfInterest& poi, bool bPositiveMoment) const;
+   const pgsLongReinfShearArtifact* GetLongitudinalReinforcementForShearArtifact(const pgsPointOfInterest& poi) const;
 
    const MomentRatings& GetMomentRatings(bool bPositiveMoment) const;
    const ShearRatings& GetShearRatings() const;
    const StressRatings& GetStressRatings() const;
    const YieldStressRatios& GetYieldStressRatios(bool bPositiveMoment) const;
+   const LongitudinalReinforcementForShear& GetLongitudinalReinforcementForShear() const;
 
    Float64 GetMomentRatingFactor(bool bPositiveMoment) const;
    Float64 GetMomentRatingFactorEx(bool bPositiveMoment,const pgsMomentRatingArtifact** ppArtifact) const;
@@ -107,6 +111,7 @@ protected:
    StressRatings m_StressRatings;
    YieldStressRatios m_PositiveMomentYieldStressRatios;
    YieldStressRatios m_NegativeMomentYieldStressRatios;
+   LongitudinalReinforcementForShear m_LongitudinalReinforcementForShear;
 
    mutable bool m_bPositiveMomentRatingCached;
    mutable Float64 m_RF_PositiveMoment;

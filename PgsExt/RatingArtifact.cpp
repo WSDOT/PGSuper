@@ -194,6 +194,11 @@ void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi,const pgsYield
    }
 }
 
+void pgsRatingArtifact::AddArtifact(const pgsPointOfInterest& poi, const pgsLongReinfShearArtifact& artifact)
+{
+   m_LongitudinalReinforcementForShear.emplace_back(poi, artifact);
+}
+
 const pgsMomentRatingArtifact* pgsRatingArtifact::GetMomentRatingArtifact(const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
    auto& ratings = (bPositiveMoment ? m_PositiveMomentRatings : m_NegativeMomentRatings);
@@ -236,6 +241,16 @@ const pgsYieldStressRatioArtifact* pgsRatingArtifact::GetYieldStressRatioArtifac
    return &(found->second);
 }
 
+const pgsLongReinfShearArtifact* pgsRatingArtifact::GetLongitudinalReinforcementForShearArtifact(const pgsPointOfInterest& poi) const
+{
+   auto found = std::find_if(m_LongitudinalReinforcementForShear.begin(), m_LongitudinalReinforcementForShear.end(), [&poi](const auto& pair) {return poi == pair.first; });
+   if (found == m_LongitudinalReinforcementForShear.end())
+   {
+      return nullptr;
+   }
+   return &(found->second);
+}
+
 const pgsRatingArtifact::MomentRatings& pgsRatingArtifact::GetMomentRatings(bool bPositiveMoment) const
 {
    return (bPositiveMoment ? m_PositiveMomentRatings : m_NegativeMomentRatings);
@@ -254,6 +269,11 @@ const pgsRatingArtifact::StressRatings& pgsRatingArtifact::GetStressRatings() co
 const pgsRatingArtifact::YieldStressRatios& pgsRatingArtifact::GetYieldStressRatios(bool bPositiveMoment) const
 {
    return (bPositiveMoment ? m_PositiveMomentYieldStressRatios : m_NegativeMomentYieldStressRatios);
+}
+
+const pgsRatingArtifact::LongitudinalReinforcementForShear& pgsRatingArtifact::GetLongitudinalReinforcementForShear() const
+{
+   return m_LongitudinalReinforcementForShear;
 }
 
 Float64 pgsRatingArtifact::GetMomentRatingFactorEx(bool bPositiveMoment,const pgsMomentRatingArtifact** ppArtifact) const
@@ -624,6 +644,7 @@ void pgsRatingArtifact::MakeCopy(const pgsRatingArtifact& rOther)
    m_StressRatings = rOther.m_StressRatings;
    m_PositiveMomentYieldStressRatios = rOther.m_PositiveMomentYieldStressRatios;
    m_NegativeMomentYieldStressRatios = rOther.m_NegativeMomentYieldStressRatios;
+   m_LongitudinalReinforcementForShear = rOther.m_LongitudinalReinforcementForShear;
 
    m_bPositiveMomentRatingCached = rOther.m_bPositiveMomentRatingCached;
    m_RF_PositiveMoment = rOther.m_RF_PositiveMoment;
