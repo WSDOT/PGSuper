@@ -523,13 +523,10 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildLiveLoadStressTable(rptChapt
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
    location.IncludeSpanAndGirder(true);
 
-   CString strInterval;
-   strInterval.Format(_T("Interval %d"), LABEL_INTERVAL(intervalIdx));
-
    // Create different paragraphs for shear stress and axial stress tables
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << _T("Live Load Stresses for Principal Web Stresses for ") << strInterval << rptNewLine;
+   (*pPara) << _T("Live Load Stresses") << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
