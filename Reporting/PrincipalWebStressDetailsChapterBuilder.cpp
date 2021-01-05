@@ -187,7 +187,7 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
 
        BuildIncrementalStressTables(pChapter, pBroker, intervalIdx, vPoi, vLoads, pDisplayUnits);
 
-      if (intervalIdx >= liveLoadIntervalIdx)
+      if (liveLoadIntervalIdx <= intervalIdx)
       {
           BuildLiveLoadStressTable(pChapter, pBroker, intervalIdx, vPoi, pDisplayUnits);
       }
@@ -243,15 +243,12 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   CString strInterval;
-   strInterval.Format(_T("Interval %d"), LABEL_INTERVAL(intervalIdx));
-
    // Fit up to five product loads per table
    const IndexType nLoadsPerTable = 5;
    IndexType nLoads = vLoads.size();
    IndexType nTables = nLoads / nLoadsPerTable;
    IndexType modTableLoads = nLoads % nLoadsPerTable;
-   if (modTableLoads > 0) //
+   if (0 < modTableLoads)
    {
       nTables++;
    }

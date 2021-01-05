@@ -5199,13 +5199,13 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
    // Build results at each elevation
    PsDetails.WebSections.reserve(vPsWebElevations.size());
 
-   int ie = 0;
+   IndexType webSectionIdx = 0;
    for (const auto& PsWebLocation : vPsWebElevations)
    {
       Float64 YwebSection = std::get<0>(PsWebLocation); // this is in girder section coordinates
       auto strLocation(std::get<2>(PsWebLocation));
 
-      Float64 bw_raw = std::get<1>(PsWebLocation);
+      Float64 bw_raw = (releaseIntervalIdx <= intervalIdx ? std::get<1>(PsWebLocation) : 0.0); // web width is zero before release (it doesn't exist)
 
       // Adjust web width if a duct is nearby
       bool bNearDuct = false;
@@ -5233,16 +5233,7 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
          }
       }
 
-      Float64 bw;
-      if (intervalIdx >= releaseIntervalIdx)
-      {
-         bw = bw_raw - max_duct_deduction;
-         bw = bw < 0.0 ? 0.0 : bw; // can't be negative
-      }
-      else
-      {
-         bw = 0.0; // no concrete yet
-      }
+      Float64 bw = Max(bw_raw - max_duct_deduction, 0.0);
 
       Float64 Q;
       if (bInClosureJoint)
@@ -5256,7 +5247,7 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
 
       // shear stress
       Float64 tau;
-      if (IsZero(PsDetails.I) ||intervalIdx < releaseIntervalIdx)
+      if (IsZero(PsDetails.I) || IsZero(bw))
       {
          tau = 0.0; // no section. this is probably because concrete wet
       }
@@ -5266,15 +5257,15 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
       }
 
       // axial stress
-      Float64 fpcx = PsDetails.fTop + (PsDetails.fBot - PsDetails.fTop) * -YwebSection/PsDetails.Hg;
+      Float64 fpcx = PsDetails.fTop - (PsDetails.fBot - PsDetails.fTop) * YwebSection/PsDetails.Hg;
 
       // running sums from previous interval
       Float64 tau_s = tau;
       Float64 fpcx_s = fpcx;
-      if (pPrevTsDetails != nullptr && pPrevTsDetails->PrincipalStressDetails[pfType].WebSections.size() > ie)
+      if (pPrevTsDetails != nullptr && webSectionIdx < pPrevTsDetails->PrincipalStressDetails[pfType].WebSections.size())
       {
-         tau_s += pPrevTsDetails->PrincipalStressDetails[pfType].WebSections[ie].tau_s;
-         fpcx_s += pPrevTsDetails->PrincipalStressDetails[pfType].WebSections[ie].fpcx_s;
+         tau_s += pPrevTsDetails->PrincipalStressDetails[pfType].WebSections[webSectionIdx].tau_s;
+         fpcx_s += pPrevTsDetails->PrincipalStressDetails[pfType].WebSections[webSectionIdx].fpcx_s;
       }
 
       // Special case for release interval. We have to carry and sum Vu from the stressing interval to compute the cummlative shear stress at release
@@ -5286,8 +5277,8 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
          tau_s += Vu_at_stressing * Q / (bw * PsDetails.I);
       }
 
-      PsDetails.WebSections.push_back(TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS(strLocation.c_str(), YwebSection, Q, bw, bNearDuct, fpcx, fpcx_s, tau, tau_s));
+      PsDetails.WebSections.emplace_back(strLocation.c_str(), YwebSection, Q, bw, bNearDuct, fpcx, fpcx_s, tau, tau_s);
 
-      ie++;
+      webSectionIdx++;
    } // next web elevation
 }
