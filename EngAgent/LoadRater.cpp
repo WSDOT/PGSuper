@@ -908,33 +908,8 @@ void pgsLoadRater::LongitudinalReinforcementForShearRating(const CGirderKey& gir
 
    GET_IFACE(IShearCapacity, pShearCapacity);
 
-   std::vector<CRITSECTDETAILS> criticalSections;
-   GetCriticalSectionZones(girderKey, limitState, &criticalSections);
-
-   GET_IFACE(IPointOfInterest, pPoi);
-   PoiList vMyPoi(vPoi);
-
-   GET_IFACE(IBridge, pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-
-   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType endGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : girderKey.groupIndex);
-   PoiList vCSPoi;
-   for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
+   for(const pgsPointOfInterest& poi : vPoi)
    {
-      CGirderKey thisGirderKey(girderKey);
-      thisGirderKey.groupIndex = grpIdx;
-      ASSERT_GIRDER_KEY(thisGirderKey);
-      PoiList csPoi;
-      pPoi->GetCriticalSections(limitState, thisGirderKey, &csPoi);
-      vCSPoi.insert(std::end(vCSPoi), std::cbegin(csPoi), std::cend(csPoi));
-   }
-
-   CollectionIndexType nPOI = vMyPoi.size();
-   for (CollectionIndexType i = 0; i < nPOI; i++)
-   {
-      const pgsPointOfInterest& poi = vMyPoi[i];
-      // longitudinal steel check
       pgsLongReinfShearArtifact l_artifact;
       SHEARCAPACITYDETAILS scd;
       pgsDesigner2 designer;

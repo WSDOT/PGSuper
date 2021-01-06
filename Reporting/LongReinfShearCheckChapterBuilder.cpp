@@ -106,7 +106,7 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CLongReinfShearCheckChapterBuilder::GetName() const
 {
-   return TEXT("Longitudinal Reinforcement for Shear");
+   return TEXT("Longitudinal Reinforcement for Shear Details");
 }
 
 rptChapter* CLongReinfShearCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -311,11 +311,8 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
          pgsTypes::LimitState ls = *ls_iter;
          pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
 
-         rptParagraph* pParagraph;
-
-         pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
+         rptParagraph* pParagraph = new rptParagraph;
          *pChapter << pParagraph;
-         *pParagraph << LrfdCw8th(_T("5.8.3.5"),_T("5.7.3.5")) << rptNewLine;
 
          lrfdVersionMgr::Version vers = lrfdVersionMgr::GetVersion();
          if ( 0 < nDucts )
@@ -360,7 +357,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter,CRe
          location.IncludeSpanAndGirder(true);
 
          const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(thisGirderKey,ratingType,INVALID_INDEX/*all vehicles*/);
-         pgsRatingArtifact::LongitudinalReinforcementForShear longReinfShear = pRatingArtifact->GetLongitudinalReinforcementForShear();
+         const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear = pRatingArtifact->GetLongitudinalReinforcementForShear();
 
 
          pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -819,38 +816,40 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
 
    pgsRatingArtifact::LongitudinalReinforcementForShear::const_iterator i(longReinfShear.begin());
    pgsRatingArtifact::LongitudinalReinforcementForShear::const_iterator end(longReinfShear.end());
-   for ( ; i != end; i++ )
+   for (; i != end; i++)
    {
       col = 0;
       const pgsPointOfInterest& poi = i->first;
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       const pgsLongReinfShearArtifact& artifact = i->second;
-
-      Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
-
-      (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
-      (*table)(row,col++) << area.SetValue( artifact.GetAs());
-      (*table)(row,col++) << stress.SetValue( artifact.GetFy());
-      (*table)(row,col++) << area.SetValue( artifact.GetAps());
-      (*table)(row,col++) << stress.SetValue( artifact.GetFps());
-
-      if (0 < nMaxSegmentDucts)
+      if (artifact.IsApplicable())
       {
-         (*table)(row, col++) << area.SetValue(artifact.GetAptSegment());
-         (*table)(row, col++) << stress.SetValue(artifact.GetFptSegment());
-      }
+         Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-      if ( 0 < nGirderDucts )
-      {
-         (*table)(row,col++) << area.SetValue( artifact.GetAptGirder());
-         (*table)(row,col++) << stress.SetValue( artifact.GetFptGirder());
-      }
-      (*table)(row,col++) << moment.SetValue( artifact.GetMu());
-      (*table)(row,col++) << dim.SetValue( artifact.GetDv());
-      (*table)(row,col++) << artifact.GetFlexuralPhi();
+         (*table)(row, col++) << location.SetValue(POI_SPAN, poi);
+         (*table)(row, col++) << area.SetValue(artifact.GetAs());
+         (*table)(row, col++) << stress.SetValue(artifact.GetFy());
+         (*table)(row, col++) << area.SetValue(artifact.GetAps());
+         (*table)(row, col++) << stress.SetValue(artifact.GetFps());
 
-      row++;
+         if (0 < nMaxSegmentDucts)
+         {
+            (*table)(row, col++) << area.SetValue(artifact.GetAptSegment());
+            (*table)(row, col++) << stress.SetValue(artifact.GetFptSegment());
+         }
+
+         if (0 < nGirderDucts)
+         {
+            (*table)(row, col++) << area.SetValue(artifact.GetAptGirder());
+            (*table)(row, col++) << stress.SetValue(artifact.GetFptGirder());
+         }
+         (*table)(row, col++) << moment.SetValue(artifact.GetMu());
+         (*table)(row, col++) << dim.SetValue(artifact.GetDv());
+         (*table)(row, col++) << artifact.GetFlexuralPhi();
+
+         row++;
+      }
    }
 }
 
