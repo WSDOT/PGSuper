@@ -365,11 +365,12 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    ///////////////////////////////////////
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IGirder, pGirder);
 
    p = new rptParagraph;
    *pChapter << p;
 
-   pTable = rptStyleManager::CreateDefaultTable(8,_T("Bearing Recess Geometry"));
+   pTable = rptStyleManager::CreateDefaultTable(9,_T("Bearing Recess Geometry"));
 
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
@@ -381,7 +382,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    (*pTable)(0,col++) << _T("Girder") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
    (*pTable)(0,col++) << _T("Excess") << rptNewLine << _T("Camber") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
    (*pTable)(0,col++) << _T("Bearing") << rptNewLine << _T("Recess") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-   (*pTable)(0,col++) << _T("* W") << rptNewLine << _T("Recess") << rptNewLine << _T("Length");
+   (*pTable)(0,col++) << _T("* Transverse") << rptNewLine << _T("Bearing") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+   (*pTable)(0,col++) << _T("** W") << rptNewLine << _T("Recess") << rptNewLine << _T("Length");
    (*pTable)(0,col++) << _T("D") << rptNewLine << _T("Recess") << rptNewLine << _T("Height");
    (*pTable)(0,col++) << Sub2(_T("D"),_T("1"));
    (*pTable)(0,col++) << Sub2(_T("D"),_T("2"));
@@ -391,7 +393,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    bool bCheckTaperedSolePlate;
    Float64 taperedSolePlateThreshold;
    pSpec->GetTaperedSolePlateRequirements(&bCheckTaperedSolePlate, &taperedSolePlateThreshold);
-   bool bNeedTaperedSolePlate = false; // if bearing recess slope exceeds "taperedSolePlateThreshold", a tapered bearing plate is required per LRFD 14.8.2
+   bool bNeedTaperedSolePlateTransverse = false; // if bearing recess slope exceeds "taperedSolePlateThreshold", a tapered bearing plate is required per LRFD 14.8.2
+   bool bNeedTaperedSolePlateLongitudinal = false; // if bearing recess slope exceeds "taperedSolePlateThreshold", a tapered bearing plate is required per LRFD 14.8.2
 
    for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
@@ -439,7 +442,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       Float64 slope3 = slope1 + slope2;
       (*pTable)(row,col++) << scalar.SetValue(slope3);
 
-      bNeedTaperedSolePlate = taperedSolePlateThreshold < fabs(slope3); // see lrfd 14.8.2
+      Float64 transverse_slope = pGirder->GetOrientation(segmentKey);
+      (*pTable)(row, col++) << scalar.SetValue(transverse_slope);
+
+      bNeedTaperedSolePlateLongitudinal = taperedSolePlateThreshold < fabs(slope3); // see lrfd 14.8.2
+      bNeedTaperedSolePlateTransverse = taperedSolePlateThreshold < fabs(transverse_slope); // see lrfd 14.8.2
 
       Float64 W = max(pbd->RecessLength, pbd->Length); // don't allow recess to be shorter than bearing
       Float64 D = pbd->RecessHeight;
@@ -455,12 +462,27 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    }
 
    *p << pTable << rptNewLine;
-   *p << _T("* W is maximum of input bearing length and recess length") << rptNewLine;
+   *p << _T("* Orientation of the girder cross section with respect to vertical, zero indicates plumb and positive values indicate girder is rotated clockwise") << rptNewLine;
+   *p << _T("** W is maximum of input bearing length and recess length") << rptNewLine;
 
-   if (bCheckTaperedSolePlate && bNeedTaperedSolePlate)
+   if (bCheckTaperedSolePlate && (bNeedTaperedSolePlateLongitudinal || bNeedTaperedSolePlateTransverse))
    {
       *p << bgcolor(rptRiStyle::Yellow);
-      *p << _T("The inclination of the underside of the girder to the horizontal exceeds ") << taperedSolePlateThreshold << _T(" rad. Per LRFD 14.8.2 a tapered sole plate shall be used in order to provide a level surface.") << rptNewLine;
+      *p << _T("The inclination of the underside of the girder to the horizontal exceeds ") << taperedSolePlateThreshold << _T(" rad.");
+      if (bNeedTaperedSolePlateLongitudinal && !bNeedTaperedSolePlateTransverse)
+      {
+         *p << _T(" in the longitudinal direction.");
+      }
+      else if (!bNeedTaperedSolePlateLongitudinal && bNeedTaperedSolePlateTransverse)
+      {
+         *p << _T(" in the transverse direction.");
+      }
+      else
+      {
+         ATLASSERT(bNeedTaperedSolePlateLongitudinal && bNeedTaperedSolePlateTransverse);
+         *p << _T(" in the longitudinal and transverse directions.");
+      }
+      *p << _T(" Per LRFD 14.8.2 a tapered sole plate shall be used in order to provide a level surface.") << rptNewLine;
       *p << bgcolor(rptRiStyle::White);
    }
    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.png")) << rptNewLine;
