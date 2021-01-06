@@ -200,8 +200,8 @@ void CDrawTendonsControl::OnPaint()
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there are ducts/tendons
    DuctIndexType nDucts = m_pPTData->GetDuctCount();
    DuctIndexType startDuctIdx = (m_bDrawAllDucts || m_DuctIdx == ALL_DUCTS ? 0 : m_DuctIdx);
-   DuctIndexType endDuctIdx = (m_bDrawAllDucts || m_DuctIdx == ALL_DUCTS ? nDucts - 1 : startDuctIdx);
-   for (DuctIndexType ductIdx = startDuctIdx; ductIdx <= endDuctIdx; ductIdx++)
+   DuctIndexType endDuctIdx = (m_bDrawAllDucts || m_DuctIdx == ALL_DUCTS ? nDucts : startDuctIdx + 1);
+   for (DuctIndexType ductIdx = startDuctIdx; ductIdx < endDuctIdx; ductIdx++)
    {
       CComPtr<IPoint2dCollection> ductPoints;
       const CDuctData* pDuct = m_pPTData->GetDuct(ductIdx);
