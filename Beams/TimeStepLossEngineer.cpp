@@ -4557,14 +4557,34 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, 
    const CPrecastSegmentData* pSegment = pPTData->GetSegment();
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
+   auto iter(pLosses->SectionLosses.begin());
+   auto end(pLosses->SectionLosses.end());
+   for (; iter != end; iter++)
+   {
+      if (iter->first.GetSegmentKey().IsEqual(segmentKey))
+      {
+         break;
+      }
+   }
+   auto start = iter;
+
+   auto riter(pLosses->SectionLosses.rbegin());
+   auto rend(pLosses->SectionLosses.rend());
+   for (; riter != rend; riter++)
+   {
+      if (riter->first.GetSegmentKey().IsEqual(segmentKey))
+      {
+         break;
+      }
+   }
+   end = riter.base();
+
    // Find friction loss at Xset
    Float64 dfpF_Xset;
    Float64 dfpF;
    Float64 Dset = 0;
    if (endType == pgsTypes::metStart)
    {
-      SectionLossContainer::iterator iter(pLosses->SectionLosses.begin());
-      SectionLossContainer::iterator end(pLosses->SectionLosses.end());
       if (minFrDetails.X < Xset)
       {
          // anchor set exceeds the length of the tendon
@@ -4612,7 +4632,7 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, 
 
       // Calculate incremental contribution to seating loss along the strand
       // This is numerical integration using the trapezoidal rule
-      iter = pLosses->SectionLosses.begin();
+      iter = start;
       Float64 X1 = iter->second.SegmentFrictionLossDetails[ductIdx].X;
       Float64 fr1 = iter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
       bool bX1OnDuct = InRange(0.0, X1, Ls);
@@ -4655,8 +4675,8 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, 
    }
    else
    {
-      SectionLossContainer::reverse_iterator rIter(pLosses->SectionLosses.rbegin());
-      SectionLossContainer::reverse_iterator rIterEnd(pLosses->SectionLosses.rend());
+      auto rIter = std::make_reverse_iterator(end);
+      auto rIterEnd = std::make_reverse_iterator(start);
       if (Xset < minFrDetails.X)
       {
          // anchor set exceeds the length of the tendon
@@ -4702,7 +4722,7 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, 
 
       // Calculate incremental contribution to seating loss along the strand
       // This is numerical integration using the trapezoidal rule
-      rIter = pLosses->SectionLosses.rbegin();
+      rIter = std::make_reverse_iterator(end);
       Float64 X1 = rIter->second.SegmentFrictionLossDetails[ductIdx].X;
       Float64 fr1 = rIter->second.SegmentFrictionLossDetails[ductIdx].dfpF;
       bool bX1OnDuct = InRange(0.0, X1, Ls);
