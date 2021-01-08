@@ -29783,8 +29783,10 @@ void CBridgeAgentImp::GetDuctCenterline(const CSegmentKey& segmentKey, const CPr
    points.CopyTo(ppPoints);
 
    PoiList vPoi;
-   GetPointsOfInterest(segmentKey, POI_0L | POI_5L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
+   GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+   GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi, POIFIND_OR);
    ATLASSERT(vPoi.size() == 3);
+   SortPoiList(&vPoi);
 
    std::array<std::pair<Float64, Float64>, 3> control_points;
    for (int i = 0; i < 3; i++)
