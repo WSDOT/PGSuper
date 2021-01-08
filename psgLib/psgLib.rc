@@ -9,8 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -595,7 +594,7 @@ BEGIN
     LTEXT           "for strands placed by the push method",IDC_STATIC,65,347,121,8
     EDITTEXT        IDC_PULL_METHOD,31,360,30,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "for strands placed by the pull-through method",IDC_STATIC,65,363,142,8
-    LTEXT           "Outside diameter of duct shall not exceed ",IDC_STATIC,17,383,133,8
+    LTEXT           "Outside diameter of duct shall not exceed ",IDC_DUCT_SIZE_LABEL,17,383,133,8
     EDITTEXT        IDC_DUCT_SIZE_RATIO,150,381,26,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "times the least gross concrete thickness at the duct",IDC_STATIC,179,383,162,8
 END
@@ -1869,27 +1868,29 @@ BEGIN
     LTEXT           "f'c",IDC_STATIC,277,335,13,8
 END
 
-IDD_DUCT_ENTRY DIALOGEX 0, 0, 340, 122
+IDD_DUCT_ENTRY DIALOGEX 0, 0, 341, 130
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Ducts"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Entry:",IDC_STATIC,7,7,21,8
     LTEXT           "Name",IDC_NAME,37,7,141,8
-    LTEXT           "Max Outside Diameter (OD)",IDC_STATIC,7,28,89,8
+    LTEXT           "Outside Diameter (OD)",IDC_STATIC,7,28,74,8
     EDITTEXT        IDC_OD,100,25,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_OD_UNIT,146,29,19,8
     LTEXT           "Inside Diameter (ID)",IDC_STATIC,7,45,66,8
     EDITTEXT        IDC_ID,100,42,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_ID_UNIT,146,44,19,8
-    LTEXT           "Strand Offset (Z) (C5.9.1.6)",IDC_STATIC,7,61,92,8
-    EDITTEXT        IDC_Z,100,59,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_Z_UNIT,146,61,19,8
-    CONTROL         "",IDC_ZDIM,"Static",SS_ENHMETAFILE,173,6,160,81
-    DEFPUSHBUTTON   "OK",IDOK,175,101,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,230,101,50,14
-    PUSHBUTTON      "Help",ID_HELP,283,101,50,14
-    LTEXT           "Max Outside Diameter should account for ribs on the duct. Used to evaluate LRFD 5.4.6.2.",IDC_STATIC,7,84,150,22
+    LTEXT           "Nominal Diameter (ND)",IDC_STATIC,7,62,73,8
+    EDITTEXT        IDC_ND,100,59,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ND_UNIT,146,61,19,8
+    LTEXT           "Strand Offset (Z) (C5.9.1.6)",IDC_STATIC,7,78,92,8
+    EDITTEXT        IDC_Z,100,76,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_Z_UNIT,146,78,19,8
+    CONTROL         "",IDC_ZDIM,"Static",SS_ENHMETAFILE,174,6,160,81
+    DEFPUSHBUTTON   "OK",IDOK,175,109,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,230,109,50,14
+    PUSHBUTTON      "Help",ID_HELP,284,109,50,14
 END
 
 IDD_CEBFIP_CONCRETE DIALOGEX 0, 0, 229, 131
@@ -2359,9 +2360,9 @@ BEGIN
     IDD_DUCT_ENTRY, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 333
+        RIGHTMARGIN, 334
         TOPMARGIN, 7
-        BOTTOMMARGIN, 115
+        BOTTOMMARGIN, 123
     END
 
     IDD_CEBFIP_CONCRETE, DIALOG
@@ -2879,6 +2880,11 @@ BEGIN
     0
 END
 
+IDD_DUCT_ENTRY AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -3008,8 +3014,7 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
-
+#include "grid\gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

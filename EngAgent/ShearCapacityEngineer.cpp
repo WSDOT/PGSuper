@@ -1361,7 +1361,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          {
             for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
             {
-               Float64 d = pSegmentTendonGeometry->GetOutsideDiameter(segmentKey, ductIdx);
+               Float64 d = pSegmentTendonGeometry->GetNominalDiameter(segmentKey, ductIdx);
                duct_diameter = Max(duct_diameter, d);
             }
          }
@@ -1376,7 +1376,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          {
             if (pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
             {
-               Float64 d = pGirderTendonGeometry->GetOutsideDiameter(girderKey, ductIdx);
+               Float64 d = pGirderTendonGeometry->GetNominalDiameter(girderKey, ductIdx);
                duct_diameter = Max(duct_diameter, d);
             }
          }

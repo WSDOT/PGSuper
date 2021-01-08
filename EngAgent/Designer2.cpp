@@ -1701,7 +1701,9 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
       {
          Float64 Apt = pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, stressTendonIntervalIdx, ductIdx);
          Float64 Aduct = pSegmentTendonGeometry->GetInsideDuctArea(segmentKey, ductIdx);
-         Float64 OD = pSegmentTendonGeometry->GetOutsideDiameter(segmentKey, ductIdx);
+
+         // starting with 9th edition, the duct diameter limit and the duct reduction for shear is based on nominal duct diameter
+         Float64 duct_diameter = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020 ? pSegmentTendonGeometry->GetOutsideDiameter(segmentKey,ductIdx) : pSegmentTendonGeometry->GetNominalDiameter(segmentKey, ductIdx));
 
          Float64 r = pSegmentTendonGeometry->GetMinimumRadiusOfCurvature(segmentKey, ductIdx);
 
@@ -1709,7 +1711,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
 
          pgsDuctSizeArtifact artifact;
          artifact.SetDuctArea(Apt, Aduct, Kmax);
-         artifact.SetDuctSize(OD, tWebMin, Tmax);
+         artifact.SetDuctSize(duct_diameter, tWebMin, Tmax);
          artifact.SetRadiusOfCurvature(r, Rmin);
 
          pSegmentArtifact->SetDuctSizeArtifact(ductIdx, artifact);
@@ -1734,7 +1736,9 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
       IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
       Float64 Apt = pGirderTendonGeometry->GetGirderTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
       Float64 Aduct = pGirderTendonGeometry->GetInsideDuctArea(girderKey,ductIdx);
-      Float64 OD = pGirderTendonGeometry->GetOutsideDiameter(girderKey,ductIdx);
+
+      // starting with 9th edition, the duct diameter limit and the duct reduction for shear is based on nominal duct diameter
+      Float64 duct_diameter = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020 ? pGirderTendonGeometry->GetOutsideDiameter(girderKey, ductIdx) : pGirderTendonGeometry->GetNominalDiameter(girderKey, ductIdx));
 
       Float64 r = pGirderTendonGeometry->GetMinimumRadiusOfCurvature(girderKey,ductIdx);
 
@@ -1747,7 +1751,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
 
       pgsDuctSizeArtifact artifact;
       artifact.SetDuctArea(Apt,Aduct,Kmax);
-      artifact.SetDuctSize(OD,tWebMin,Tmax);
+      artifact.SetDuctSize(duct_diameter,tWebMin,Tmax);
       artifact.SetRadiusOfCurvature(r,Rmin);
 
       pGirderArtifact->SetDuctSizeArtifact(ductIdx,artifact);

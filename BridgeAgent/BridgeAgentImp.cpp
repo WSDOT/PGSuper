@@ -29353,6 +29353,26 @@ Float64 CBridgeAgentImp::GetInsideDiameter(const CGirderKey& girderKey,DuctIndex
    return dia;
 }
 
+Float64 CBridgeAgentImp::GetNominalDiameter(const CGirderKey& girderKey, DuctIndexType ductIdx) const
+{
+   CComPtr<ISuperstructureMember> ssMbr;
+   GetSuperstructureMember(girderKey, &ssMbr);
+
+   CComQIPtr<IItemData> itemData(ssMbr);
+
+   CComPtr<IUnknown> unk;
+   itemData->GetItemData(CComBSTR(_T("Tendons")), &unk);
+
+   CComQIPtr<ITendonCollection> tendons(unk);
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+
+   Float64 dia;
+   tendon->get_NominalDiameter(&dia);
+
+   return dia;
+}
+
 Float64 CBridgeAgentImp::GetInsideDuctArea(const CGirderKey& girderKey,DuctIndexType ductIdx) const
 {
    CComPtr<ISuperstructureMember> ssMbr;
@@ -30121,6 +30141,24 @@ Float64 CBridgeAgentImp::GetInsideDiameter(const CSegmentKey& segmentKey, DuctIn
 
    Float64 dia;
    tendon->get_InsideDiameter(&dia);
+
+   return dia;
+}
+
+Float64 CBridgeAgentImp::GetNominalDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const
+{
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(segmentKey, &girder);
+   CComPtr<ITendonCollection> tendons;
+   girder->get_Tendons(&tendons);
+   ATLASSERT(tendons);
+
+   CComPtr<ITendon> tendon;
+   tendons->get_Item(ductIdx, &tendon);
+   ATLASSERT(tendon);
+
+   Float64 dia;
+   tendon->get_NominalDiameter(&dia);
 
    return dia;
 }
@@ -34933,6 +34971,7 @@ bool CBridgeAgentImp::CreateTendons(const CPrecastSegmentData* pSegment, ISupers
 
          tendon->put_OutsideDiameter(pDuctData->pDuctLibEntry->GetOD());
          tendon->put_InsideDiameter(pDuctData->pDuctLibEntry->GetID());
+         tendon->put_NominalDiameter(pDuctData->pDuctLibEntry->GetNominalDiameter());
          tendon->put_StrandCount(pDuctData->nStrands);
          tendon->putref_Material(tendonMaterial);
 
@@ -35176,6 +35215,7 @@ bool CBridgeAgentImp::CreateTendons(const CBridgeDescription2* pBridgeDesc,const
 
          tendon->put_OutsideDiameter( pDuctData->pDuctLibEntry->GetOD() );
          tendon->put_InsideDiameter( pDuctData->pDuctLibEntry->GetID() );
+         tendon->put_NominalDiameter(pDuctData->pDuctLibEntry->GetNominalDiameter());
          tendon->put_StrandCount(pDuctData->nStrands);
          tendon->putref_Material(tendonMaterial);
 

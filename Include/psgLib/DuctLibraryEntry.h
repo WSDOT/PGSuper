@@ -92,6 +92,11 @@ public:
    Float64 GetID() const;
 
    //------------------------------------------------------------------------
+   // Set/Get Nominal Diameter
+   void SetNominalDiameter(Float64 id);
+   Float64 GetNominalDiameter() const;
+
+   //------------------------------------------------------------------------
    // Set/Get distance from center of duct to center of strands at top/bottom
    void SetZ(Float64 z);
    Float64 GetZ() const;
@@ -114,5 +119,6 @@ private:
    // GROUP: DATA MEMBERS
    Float64 m_OD;
    Float64 m_ID;
+   Float64 m_ND;
    Float64 m_Z;
 };
