@@ -1344,6 +1344,7 @@ interface ISectionProperties : IUnknown
    // are based on the section properties model defined in the project criteria
    virtual Float64 GetHg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual void GetCentroid(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const = 0;
    virtual Float64 GetIxx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
@@ -1369,6 +1370,7 @@ interface ISectionProperties : IUnknown
    // are based on the specified section property type
    virtual Float64 GetHg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual void GetCentroid(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const = 0;
    virtual Float64 GetIxx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetIyy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetIxy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;

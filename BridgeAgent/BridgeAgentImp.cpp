@@ -22361,6 +22361,12 @@ Float64 CBridgeAgentImp::GetAg(IntervalIndexType intervalIdx,const pgsPointOfInt
    return GetAg(sectPropType,intervalIdx,poi);
 }
 
+void CBridgeAgentImp::GetCentroid(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const
+{
+   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
+   GetCentroid(sectPropType, intervalIdx, poi, ppCG);
+}
+
 Float64 CBridgeAgentImp::GetIxx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
@@ -22491,6 +22497,13 @@ Float64 CBridgeAgentImp::GetAg(pgsTypes::SectionPropertyType spType,IntervalInde
    Float64 area;
    props.ShapeProps->get_Area(&area);
    return area;
+}
+
+void CBridgeAgentImp::GetCentroid(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const
+{
+   const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
+   Float64 area;
+   props.ShapeProps->get_Centroid(ppCG);
 }
 
 Float64 CBridgeAgentImp::GetIxx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
