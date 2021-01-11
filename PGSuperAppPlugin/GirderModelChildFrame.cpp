@@ -243,10 +243,6 @@ void CGirderModelChildFrame::SelectGirder(const CGirderKey& girderKey,bool bDoUp
    	   UpdateViews();
       }
    }
-   else
-   {
-      ATLASSERT(false);
-   }
 }
 
 const CGirderKey& CGirderModelChildFrame::GetSelection() const
