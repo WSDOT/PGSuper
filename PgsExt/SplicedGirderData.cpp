@@ -336,7 +336,7 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
 
       if ( pMyTimelineMgr && pOtherTimelineMgr )
       {
-         SegmentIDType segID = pOtherSegment->GetID();
+         SegmentIDType segID = m_Segments[segIdx]->GetID();
          ATLASSERT(segIdx == pOtherSegment->GetIndex());
          EventIndexType constructionEventIdx, erectionEventIdx;
          pOtherTimelineMgr->GetSegmentEvents(segID,&constructionEventIdx,&erectionEventIdx);
@@ -346,7 +346,7 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
       if ( segIdx < nSegments-1 )
       {
          const CClosureJointData* pOtherClosure = rOther.m_Closures[segIdx];
-         ClosureIDType closureID = pOtherClosure->GetID();
+         ClosureIDType closureID = m_Closures[segIdx]->GetID();
 
          if ( m_bCreatingNewGirder )
          {
