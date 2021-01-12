@@ -545,42 +545,49 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    CComQIPtr<iConnectable> connectable(doPnt);
 
    // sockets for top flange dimension lines
-   boxSlab->get_TopCenter(&pntTC);
-
-   pntTC->Offset(-twLeft,0); // move pntTC to left edge and create a socket
-   connectable->AddSocket(SOCKET_TL,pntTC,&socketTL);
-
-   pntTC->Offset(twLeft+twRight,0); // move pntTC to right edge and create a socket
-   connectable->AddSocket(SOCKET_TR,pntTC,&socketTR);
-
-   // recycle pntTC for top center of girder shape bounding box
-   pntTC.Release();
-   boxGirder->get_TopCenter(&pntTC);
-   if(bottom_width < top_width)
-      pntTC->Offset(0.5*(twLeft - twRight), 0); // now pntTC is at the nominal centerline girder
+   CComPtr<IPoint2d> pntNCL; // nominal centerline
+   boxGirder->get_TopLeft(&pntNCL);
+   if (bottom_width < top_width)
+      pntNCL->Offset(twLeft, 0); // now at the nominal centerline girder
    else
-      pntTC->Offset(0.5*(bwLeft - bwRight), 0); // now pntTC is at the nominal centerline girder
+      pntNCL->Offset(bwLeft, 0); // now at the nominal centerline girder
 
-   boxGirder->get_BottomCenter(&pntBC);
-   Float64 yBot;
-   pntBC->get_Y(&yBot); // elevation of bottom of girder
-   Float64 Hg = pSectProps->GetHg(intervalIdx, poi); // CL height of girder
-   Float64 yTop = yBot + Hg; // elevation of top of girder
-   pntTC->put_Y(yTop);
-   connectable->AddSocket(SOCKET_TC,pntTC,&socketTC);
+   //boxGirder->get_BottomCenter(&pntBC);
+   //Float64 yBot;
+   //pntBC->get_Y(&yBot); // elevation of bottom of girder
+   //Float64 Hg = pSectProps->GetHg(intervalIdx, poi); // CL height of girder
+   //Float64 yTop = yBot + Hg; // elevation of top of girder
+   //pntNCL->put_Y(yTop);
+   connectable->AddSocket(SOCKET_TC, pntNCL, &socketTC);
+
+   Float64 Xncl;
+   pntNCL->get_X(&Xncl);
+   CComPtr<IPoint2d> pntTL;
+   pntTL.CoCreateInstance(CLSID_Point2d);
+   pntTL->Move(Xncl - twLeft, 0);
+   connectable->AddSocket(SOCKET_TL,pntTL,&socketTL);
+
+   CComPtr<IPoint2d> pntTR;
+   pntTR.CoCreateInstance(CLSID_Point2d);
+   pntTR->Move(Xncl + twRight, 0);
+   connectable->AddSocket(SOCKET_TR,pntTR,&socketTR);
 
    // sockets for bottom flange dimension line
+   pntNCL.Release();
+   boxGirder->get_BottomLeft(&pntNCL);
+   if(bottom_width < top_width)
+      pntNCL->Offset(twLeft, 0);
+   else
+      pntNCL->Offset(bwLeft, 0);
+
+   connectable->AddSocket(SOCKET_BC, pntNCL,&socketBC);
+
    CComQIPtr<IGirderSection> section(girderShape);
    FlangeIndexType nBottomFlanges, nWebs;
    section->get_BottomFlangeCount(&nBottomFlanges);
    section->get_WebCount(&nWebs);
 
-   if(bottom_width < top_width)
-      pntBC->Offset(0.5*(twLeft - twRight), 0);
-   else
-      pntBC->Offset(0.5*(bwLeft - bwRight), 0);
-
-   connectable->AddSocket(SOCKET_BC,pntBC,&socketBC);
+   Float64 Hg = pSectProps->GetHg(intervalIdx, poi); // CL height of girder
 
    if (0 < nBottomFlanges)
    {
@@ -590,16 +597,14 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       section->get_BottomFlangeWidth(0, &wx);
       CComPtr<IPoint2d> pntBL;
       pntBL.CoCreateInstance(CLSID_Point2d);
-      pntBL->MoveEx(pntBC);
-      pntBL->Offset(x - 0.5*(bwLeft - bwRight + wx), 0);
+      pntBL->Move(x - 0.5*(bwLeft - bwRight + wx), -Hg);
       connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
 
       section->get_BottomFlangeLocation(nBottomFlanges - 1, &x);
       section->get_BottomFlangeWidth(nBottomFlanges - 1, &wx);
       CComPtr<IPoint2d> pntBR;
       pntBR.CoCreateInstance(CLSID_Point2d);
-      pntBR->MoveEx(pntBC);
-      pntBR->Offset(x - 0.5*(bwLeft - bwRight - wx), 0);
+      pntBR->Move(x - 0.5*(bwLeft - bwRight - wx), -Hg);
       connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
    }
    else if (0 < nWebs)
@@ -610,16 +615,14 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       section->get_WebThickness(0, &wx);
       CComPtr<IPoint2d> pntBL;
       pntBL.CoCreateInstance(CLSID_Point2d);
-      pntBL->MoveEx(pntBC);
-      pntBL->Offset(x - 0.5*(bwLeft - bwRight + wx), 0);
+      pntBL->Move(x - 0.5*(bwLeft - bwRight + wx), -Hg);
       connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
 
       section->get_WebLocation(nWebs-1, &x);
       section->get_WebThickness(nWebs - 1, &wx);
       CComPtr<IPoint2d> pntBR;
       pntBR.CoCreateInstance(CLSID_Point2d);
-      pntBR->MoveEx(pntBC);
-      pntBR->Offset(x - 0.5*(bwLeft - bwRight - wx), 0);
+      pntBR->Move(x - 0.5*(bwLeft - bwRight - wx), -Hg);
       connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
    }
    else
@@ -631,6 +634,28 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    }
 
    pDL->AddDisplayObject(doPnt);
+
+
+   // Draw the vertical nominal centerline
+   // The nominal centerline is located the maximum of the top/bottom left width of the girder from the left side of the bounding box
+   CComPtr<IPoint2d> pntBL;
+   boxGirder->get_BottomLeft(&pntBL);
+   Float64 x_offset;
+   pntBL->get_X(&x_offset);
+   Float64 x = x_offset + Max(twLeft, bwLeft);
+   Float64 y_offset = 0.01*Hg;
+
+   // create a point at the top of the section
+   CComPtr<IPoint2d> pntTop;
+   pntTop.CoCreateInstance(CLSID_Point2d);
+   pntTop->Move(x, y_offset);
+
+   // create a point at the bottom of the section
+   CComPtr<IPoint2d> pntBottom;
+   pntBottom.CoCreateInstance(CLSID_Point2d);
+   pntBottom->Move(x, -(Hg + y_offset));
+
+   CreateLineDisplayObject(pDL, pntTop, pntBottom, BLACK, lsCenterline);
 }
 
 void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr)
@@ -1183,22 +1208,6 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
 
 
    pDL->AddDisplayObject(doPnt);
-
-   // Draw the vertical nominal centerline (the nominal centerline is at X=0 in girder section coordinates)
-
-   Float64 y_offset = 0.01*Hg;
-
-   // create a point at the top of the section
-   CComPtr<IPoint2d> pntTop;
-   pntTop.CoCreateInstance(CLSID_Point2d);
-   pntTop->Move(0, y_offset);
-
-   // create a point at the bottom of the section
-   CComPtr<IPoint2d> pntBottom;
-   pntBottom.CoCreateInstance(CLSID_Point2d);
-   pntBottom->Move(0, -(Hg+y_offset));
-
-   CreateLineDisplayObject(pDL, pntTop, pntBottom, BLACK, lsCenterline);
 }
 
 void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr)
