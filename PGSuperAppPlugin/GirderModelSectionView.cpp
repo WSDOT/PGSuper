@@ -1122,8 +1122,6 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
    }
 
    GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-   Float64 Xleft = pSectProp->GetXleft(intervalIdx, poi);
-   Float64 Xright = pSectProp->GetXright(intervalIdx, poi);
    Float64 Yb = pSectProp->GetY(intervalIdx, poi, pgsTypes::BottomGirder);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi); 
    // NOTE: release interval is correct for Hg. We are using the girder section coordinates
@@ -1185,6 +1183,22 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
 
 
    pDL->AddDisplayObject(doPnt);
+
+   // Draw the vertical nominal centerline (the nominal centerline is at X=0 in girder section coordinates)
+
+   Float64 y_offset = 0.01*Hg;
+
+   // create a point at the top of the section
+   CComPtr<IPoint2d> pntTop;
+   pntTop.CoCreateInstance(CLSID_Point2d);
+   pntTop->Move(0, y_offset);
+
+   // create a point at the bottom of the section
+   CComPtr<IPoint2d> pntBottom;
+   pntBottom.CoCreateInstance(CLSID_Point2d);
+   pntBottom->Move(0, -(Hg+y_offset));
+
+   CreateLineDisplayObject(pDL, pntTop, pntBottom, BLACK, lsCenterline);
 }
 
 void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr)
@@ -1525,6 +1539,9 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       connectorBottomRightCG->GetEndPlug(&endPlug);
       socketCGX_BottomRight->Connect(startPlug, &dwCookie);
       socketCGX_Bottom->Connect(endPlug, &dwCookie);
+
+      // Draw a vertical line that connects the horizontal CG dimension leader lines
+      CreateLineDisplayObject(pDL, pntCGX_Top, pntCGX_Bottom, BLACK, lsSolid);
    }
 
 
@@ -2055,4 +2072,69 @@ void CGirderModelSectionView::UpdateDrawingScale()
    {
       display_list->HideDisplayObjects(false);
    }
+}
+
+void CGirderModelSectionView::CreateLineDisplayObject(iDisplayList* pDL, IPoint2d* pStart, IPoint2d* pEnd,COLORREF color,LineStyleType lineStyle)
+{
+   // create the line display object
+   CComPtr<iLineDisplayObject> doLine;
+   doLine.CoCreateInstance(CLSID_LineDisplayObject);
+
+   // create the line drawing strategy
+   CComPtr<iSimpleDrawLineStrategy> line_draw_strategy;
+   line_draw_strategy.CoCreateInstance(CLSID_SimpleDrawLineStrategy);
+   line_draw_strategy->SetColor(color);
+   line_draw_strategy->SetLineStyle(lineStyle);
+
+   // associate the drawing strategy with the display object
+   doLine->SetDrawLineStrategy(line_draw_strategy);
+
+   // get the plugs at the end of the line
+   CComQIPtr<iConnector> centerline_connector(doLine);
+   CComQIPtr<iPlug> startPlug, endPlug;
+   centerline_connector->GetStartPlug(&startPlug);
+   centerline_connector->GetEndPlug(&endPlug);
+
+   // create a point display object at the start of the line
+   CComPtr<iPointDisplayObject> doStart;
+   doStart.CoCreateInstance(CLSID_PointDisplayObject);
+   doStart->SetPosition(pStart, FALSE, FALSE);
+
+   // update the draw point strategy so that the point isn't displayed
+   CComPtr<iDrawPointStrategy> dps;
+   doStart->GetDrawingStrategy(&dps);
+   CComQIPtr<iSimpleDrawPointStrategy> draw_point_strategy(dps);
+   if (draw_point_strategy) draw_point_strategy->SetPointType(ptNone);
+
+   // add a socket at the start for the line's plug
+   CComQIPtr<iConnectable> start_connectable(doStart);
+   CComPtr<iSocket> start_socket;
+   start_connectable->AddSocket(0, pStart, &start_socket);
+
+   // create a point display object at the end of the line
+   CComPtr<iPointDisplayObject> doEnd;
+   doEnd.CoCreateInstance(CLSID_PointDisplayObject);
+   doEnd->SetPosition(pEnd, FALSE, FALSE);
+
+   // update the draw point strategy so that the point isn't displayed
+   dps.Release();
+   doEnd->GetDrawingStrategy(&dps);
+   draw_point_strategy.Release();
+   dps.QueryInterface(&draw_point_strategy);
+   if (draw_point_strategy) draw_point_strategy->SetPointType(ptNone);
+
+   // add a socket at the end for the line's plug
+   CComQIPtr<iConnectable> end_connectable(doEnd);
+   CComPtr<iSocket> end_socket;
+   end_connectable->AddSocket(0, pEnd, &end_socket);
+
+   // connect the line's plugs into the sockets
+   DWORD dwCookie;
+   start_connectable->Connect(0, atByID, startPlug, &dwCookie);
+   end_connectable->Connect(0, atByID, endPlug, &dwCookie);
+
+   // add the display objects to the display list
+   pDL->AddDisplayObject(doStart);
+   pDL->AddDisplayObject(doEnd);
+   pDL->AddDisplayObject(doLine);
 }

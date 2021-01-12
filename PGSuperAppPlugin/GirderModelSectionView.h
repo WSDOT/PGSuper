@@ -29,6 +29,7 @@
 // GirderModelSectionView.h : header file
 
 #include <DManip\DisplayView.h>
+#include <DManip\LineStyles.h>
 
 // Forward declarations
 class CGirderModelChildFrame;
@@ -103,6 +104,7 @@ private:
    void BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr);
    void BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr);
    void BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
+   void CreateLineDisplayObject(iDisplayList* pDL, IPoint2d* pStart, IPoint2d* pEnd, COLORREF color, LineStyleType lineStyle);
 
    virtual void UpdateDrawingScale();
 
