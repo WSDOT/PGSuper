@@ -29,6 +29,7 @@
 #include "GirderDescDlg.h"
 #include "PGSuperColors.h"
 #include <PgsExt\DesignConfigUtil.h>
+#include <PgsExt\Helpers.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>

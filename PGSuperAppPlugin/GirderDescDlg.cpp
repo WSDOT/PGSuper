@@ -32,6 +32,7 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\Helpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

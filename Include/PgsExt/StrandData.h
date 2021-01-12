@@ -212,6 +212,7 @@ public:
    // Strand extension paramaters (not used if using pgsTypes::sdtDirectRowInput)
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
+   std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType, pgsTypes::MemberEndType endType);
    void SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<GridIndexType>& extStrands);
    bool IsExtendedStrand(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType) const;
    StrandIndexType GetExtendedStrandCount(pgsTypes::StrandType strandType, pgsTypes::MemberEndType endType) const;

@@ -1720,6 +1720,11 @@ const std::vector<GridIndexType>& CStrandData::GetExtendedStrands(pgsTypes::Stra
    return m_NextendedStrands[strandType][endType];
 }
 
+std::vector<GridIndexType>& CStrandData::GetExtendedStrands(pgsTypes::StrandType strandType, pgsTypes::MemberEndType endType)
+{
+   return m_NextendedStrands[strandType][endType];
+}
+
 void CStrandData::SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<StrandIndexType>& extStrands)
 {
    m_NextendedStrands[strandType][endType] = extStrands;
