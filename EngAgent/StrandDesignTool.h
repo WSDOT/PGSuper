@@ -245,11 +245,11 @@ public:
 
    // Given an amount of stress demand, return the minimum debond level to relieve the stress
    void GetDebondLevelForTopTension(const StressDemand& demand, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded, IntervalIndexType interval, Float64 tensDemand, Float64 outboardDistance,
-                                    Float64 Hg, Float64 Yb, Float64 Ag, Float64 St,
+                                    Float64 Hg, Float64 Yb,  Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy,
                                     DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const;
 
    void GetDebondLevelForBottomCompression(const StressDemand& demand, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded, IntervalIndexType interval, Float64 tensDemand, Float64 outboardDistance,
-                                           Float64 Hg, Float64 Yb, Float64 Ag, Float64 Sb,
+                                           Float64 Hg, Float64 Yb, Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy,
                                            DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const;
 
    // Debonding levels are integer values used to quantify the amount of strands debonded at
@@ -730,7 +730,8 @@ private:
 
       void Init(Float64 Hg,IPoint2dCollection* strandLocations);
       // Stress relief from debonding at this level
-      Float64 ComputeReliefStress(Float64 pePerStrandFullyBonded, Float64 pePerStrandDebonded, StrandIndexType nperm, StrandIndexType ntemp, Float64 cgtot,Float64 Hg,Float64 Yb, Float64 Ag, Float64 S, SHARED_LOGFILE LOGFILE) const;
+      Float64 ComputeReliefStress(Float64 pePerStrandFullyBonded, Float64 pePerStrandDebonded, StrandIndexType nperm, StrandIndexType ntemp, Float64 cgtot, Float64 Hg, 
+                                  Float64 Yb, Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy, SHARED_LOGFILE LOGFILE) const;
    };
 
    typedef std::vector<DebondLevel>                DebondLevelCollection;

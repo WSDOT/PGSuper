@@ -4209,29 +4209,41 @@ void pgsStrandDesignTool::DebondLevel::Init(Float64 Hg,IPoint2dCollection* stran
    }
 }
 
-Float64 pgsStrandDesignTool::DebondLevel::ComputeReliefStress(Float64 pePerStrandFullyBonded, Float64 pePerStrandDebonded, StrandIndexType nperm, StrandIndexType ntemp, Float64 cgtot,
-                                                              Float64 Hg,Float64 Yb, Float64 Ag, Float64 S ,SHARED_LOGFILE LOGFILE) const
+Float64 pgsStrandDesignTool::DebondLevel::ComputeReliefStress(Float64 pePerStrandFullyBonded, Float64 pePerStrandDebonded, StrandIndexType nperm, StrandIndexType ntemp, Float64 cgFb,
+                                                              Float64 Hg, Float64 Yb,  Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy, SHARED_LOGFILE LOGFILE) const
 {
    // first compute stress from prestress due to fully bonded strand group
    StrandIndexType ntot = nperm + ntemp;
-   Float64 etot = Yb - (Hg + cgtot); // eccentricity of total strand group
-   Float64 stress_fb = ntot * pePerStrandFullyBonded * (-1.0/Ag - etot/S);
+   Float64 e_fb  = Yb - (Hg + cgFb); // eccentricity of total strand group
+   Float64 P_fb  = -1.0 * ntot * pePerStrandFullyBonded;
+   Float64 Mx_fb =  P_fb * e_fb;
+   Float64 My_fb =  P_fb * eccX;
+
+   Float64 stress_fb = P_fb*Ca + Mx_fb*Cmx + My_fb*Cmy;
 
    // Now get cg and eccentricity of new group with strands debonded
    StrandIndexType nsdb = StrandsDebonded.size();
-   StrandIndexType nsnew = ntot - nsdb;
-   Float64 cgnew = (ntot * cgtot  - nsdb * m_DebondedStrandsCg) / nsnew;
+   StrandIndexType ns_new = ntot - nsdb;
+   Float64 cg_new = (ntot * cgFb  - nsdb * m_DebondedStrandsCg) / ns_new;
 
-   Float64 enew = Yb - (Hg + cgnew);
+   // stress due to prestress for _new debonded section
+   Float64 e_new  = Yb - (Hg + cg_new);
+   Float64 P_new  = -1.0 * ns_new * pePerStrandDebonded;
+   Float64 Mx_new = P_new * e_new;
+   Float64 My_new = P_new * eccX;
 
-   // stress due to prestress for new debonded section
-   Float64 stress_new = nsnew * pePerStrandDebonded * (-1.0/Ag - enew/S);
+   Float64 stress_new = P_new*Ca + Mx_new*Cmx + My_new*Cmy;
 
    // difference is how much debonding will relieve the stress here
    Float64 stress_relief = stress_fb - stress_new;
 
-   LOG(_T("ComputeReliefStress: =")<< ::ConvertFromSysUnits(stress_relief, unitMeasure::KSI) << _T("ksi, pePerStrandDebonded=") << ::ConvertFromSysUnits(pePerStrandDebonded, unitMeasure::Kip) << _T(" Kip, Hg=") << ::ConvertFromSysUnits(Hg, unitMeasure::Inch) << _T(" in, Yb=") << ::ConvertFromSysUnits(Yb, unitMeasure::Inch) << _T(" Kip, Ag=") << ::ConvertFromSysUnits(Ag, unitMeasure::Inch2) << _T(" in2, S=") << ::ConvertFromSysUnits(S, unitMeasure::Inch3) << _T(" in3, Cg=") << ::ConvertFromSysUnits(m_DebondedStrandsCg, unitMeasure::Inch) << _T(" in, ndebonded=") << nsdb);
-   LOG(_T("                cgnew=") << ::ConvertFromSysUnits(cgnew, unitMeasure::Inch) << _T(" in, etot=") << ::ConvertFromSysUnits(etot, unitMeasure::Inch) << _T(" in, enew=") << ::ConvertFromSysUnits( enew, unitMeasure::Inch)  << _T("in, Pe=") << ::ConvertFromSysUnits((ntot-nsdb)*pePerStrandDebonded, unitMeasure::Kip) << _T(" Kip") );
+   LOG(_T("ComputeReliefStress: pePerStrandDebonded=") << ::ConvertFromSysUnits(pePerStrandDebonded, unitMeasure::Kip) << _T(" Kip, pePerStrandFullyBonded=")
+      << ::ConvertFromSysUnits(pePerStrandFullyBonded, unitMeasure::Kip) << _T(" Kip, nperm=") << nperm << _T(", ntemp=") << ntemp << _T(", cgFB=") << ::ConvertFromSysUnits(cgFb, unitMeasure::Inch)
+      << _T(" in, Hg=") << ::ConvertFromSysUnits(Hg, unitMeasure::Inch) << _T(" in, Yb=") << ::ConvertFromSysUnits(Yb, unitMeasure::Inch) << _T(" in"));
+   LOG(_T("                     m_DebondedStrandsCg=") << ::ConvertFromSysUnits(m_DebondedStrandsCg, unitMeasure::Inch)<< _T(" in, ntot=") << ntot << _T(" ndebonded=") << nsdb <<_T(", cg_new=") << ::ConvertFromSysUnits(cg_new, unitMeasure::Inch) 
+      << _T(" in, e_fb=") << ::ConvertFromSysUnits(e_fb, unitMeasure::Inch) << _T(" in, e_new=") << ::ConvertFromSysUnits( e_new, unitMeasure::Inch)  
+      << _T("in, Pe=") << ::ConvertFromSysUnits((ntot-nsdb)*pePerStrandDebonded, unitMeasure::Kip) << _T(" Kip"));
+   LOG(_T("                     stress_fb=") << ::ConvertFromSysUnits(stress_fb, unitMeasure::KSI) << _T(" ksi, stress_new=") << ::ConvertFromSysUnits(stress_new, unitMeasure::KSI) << _T(" ksi, stress_relief=") << ::ConvertFromSysUnits(stress_relief, unitMeasure::KSI));
 
    return stress_relief;
 }
@@ -4701,7 +4713,7 @@ Float64 pgsStrandDesignTool::ComputePrestressForcePerStrand(const GDRCONFIG& ful
 }
 
 void pgsStrandDesignTool::GetDebondLevelForTopTension(const StressDemand& demand, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded, IntervalIndexType interval, Float64 tensDemand, Float64 outboardDistance,
-                                                      Float64 Hg, Float64 Yb, Float64 Ag, Float64 St,
+                                                      Float64 Hg, Float64 Yb, Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy,
                                                       DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const
 {
    ATLASSERT(outboardDistance<=m_DebondSectionLength);
@@ -4725,13 +4737,15 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(const StressDemand& demand
          {
             const DebondLevel& lvl = *it;
 
-            Float64 debonded_strand_force = ComputePrestressForcePerStrand(fullyBondedConfig, demand, lvl, interval, pPrestressForce);
-
            // can only attain level with min number of strands
            if (lvl.MinTotalStrandsRequired <= nperm)
            {
+               Float64 debonded_strand_force = ComputePrestressForcePerStrand(fullyBondedConfig, demand, lvl, interval, pPrestressForce);
+
+               LOG(_T("GetDebondLevelForTopTension: level  = ")<<level<<_T(", interval = ")<<interval<<_T(", strand force =") << ::ConvertFromSysUnits(debonded_strand_force,unitMeasure::Kip) << _T(" kip"));
+
                // stress relief for lvl
-               Float64 stress =  lvl.ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force, nperm, ntemp, cgFullyBonded, Hg, Yb, Ag, St, LOGGER);
+               Float64 stress =  lvl.ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER);
 
               // if this makes it by fudge, call it good enough
               if ( tensDemand*TensDebondFudge < stress)
@@ -4767,7 +4781,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(const StressDemand& demand
             // Note that we might try to improve this later by trying even less debonding inboard, but things are complicated enough as is.
             Float64 debonded_strand_force_l = ComputePrestressForcePerStrand(fullyBondedConfig, demand, m_DebondLevels[level], interval, pPrestressForce);
 
-            Float64 outb_allev =  m_DebondLevels[level].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l, nperm, ntemp, cgFullyBonded, Hg, Yb, Ag, St, LOGGER); // no fudge
+            Float64 outb_allev =  m_DebondLevels[level].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER); // no fudge
 
             if (tensDemand < outb_allev)
             {
@@ -4775,7 +4789,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(const StressDemand& demand
                // Stress relief (alleviation) provided by next-lower level
                Float64 debonded_strand_force_l1 = ComputePrestressForcePerStrand(fullyBondedConfig, demand, m_DebondLevels[level], interval, pPrestressForce);
 
-               Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l1, nperm, ntemp, cgFullyBonded, Hg, Yb, Ag, St, LOGGER);
+               Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l1, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER);
 
                Float64 transfer_provided = 1.0-(outboardDistance / GetTransferLength(pgsTypes::Permanent));
             
@@ -4805,7 +4819,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(const StressDemand& demand
 }
 
 void pgsStrandDesignTool::GetDebondLevelForBottomCompression(const StressDemand& demand, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded, IntervalIndexType interval, Float64 compDemand, Float64 outboardDistance,
-                                                             Float64 Hg,Float64 Yb, Float64 Ag, Float64 Sb,
+                                                             Float64 Hg, Float64 Yb, Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy,
                                                              DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const
 {
    ATLASSERT(outboardDistance<=m_DebondSectionLength);
@@ -4831,11 +4845,13 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(const StressDemand&
 
            Float64 debonded_strand_force = ComputePrestressForcePerStrand(fullyBondedConfig, demand, lvl, interval, pPrestressForce);
 
+           LOG(_T("GetDebondLevelForBottomCompression: level  = ")<<level<<_T(", interval = ")<<interval<<_T(", strand force =") << ::ConvertFromSysUnits(debonded_strand_force,unitMeasure::Kip) << _T(" kip"));
+
            // can only attain level with min number of strands
            if (lvl.MinTotalStrandsRequired <= nperm)
            {
                // stress relief for lvl
-               Float64 stress =  lvl.ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force, nperm, ntemp, cgFullyBonded, Hg, Yb, Ag, Sb, LOGGER);
+               Float64 stress =  lvl.ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER);
 
               // if this makes it by fudge, call it good enough
               if (stress < (compDemand * ComprDebondFudge))
@@ -4872,7 +4888,7 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(const StressDemand&
 
             Float64 debonded_strand_force_l = ComputePrestressForcePerStrand(fullyBondedConfig, demand, m_DebondLevels[level], interval, pPrestressForce);
 
-            Float64 outb_allev =  m_DebondLevels[level].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l, nperm, ntemp, cgFullyBonded, Hg, Yb, Ag, Sb, LOGGER); // no fudge
+            Float64 outb_allev =  m_DebondLevels[level].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER); // no fudge
 
             if (outb_allev < compDemand)
             {
@@ -4880,7 +4896,7 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(const StressDemand&
                // Stress relief (alleviation) provided by next-lower level
                Float64 debonded_strand_force_l2 = ComputePrestressForcePerStrand(fullyBondedConfig, demand, m_DebondLevels[level-1], interval, pPrestressForce);
 
-               Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l2, nperm, ntemp, cgFullyBonded, Hg, Yb, Ag, Sb, LOGGER);
+               Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l2, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER);
 
                Float64 transfer_provided = 1.0-(outboardDistance / GetTransferLength(pgsTypes::Permanent));
             
@@ -4913,6 +4929,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
                                                                           IntervalIndexType interval, Float64 allowTens, Float64 allowComp) const
 {
    GET_IFACE(ISectionProperties,pSectProp);
+   GET_IFACE(IStrandGeometry,pStrandGeom);
 
    std::vector<DebondLevelType> debond_levels;
    SectionIndexType max_db_sections = GetMaxNumberOfDebondSections();
@@ -4930,10 +4947,11 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
       // Section properties of beam - non-prismatic
       // using release interval because we are computing stress on the girder due to prestress which happens in this interval
       Float64 Yb = pSectProp->GetY(interval,demand.m_Poi,pgsTypes::BottomGirder);
-      Float64 Ag = pSectProp->GetAg(interval,demand.m_Poi);
-      Float64 St = pSectProp->GetS(interval, demand.m_Poi, pgsTypes::TopGirder);
-      Float64 Sb = pSectProp->GetS(interval, demand.m_Poi, pgsTypes::BottomGirder);
       Float64 Hg = pSectProp->GetHg(interval, demand.m_Poi);
+
+      // Need X eccentricity for My biaxial bending. This value will not change because the design algo can only define strand layouts that are symmetric about Y
+      Float64 nEffectiveStrands, eccX, eccY;
+      pStrandGeom->GetEccentricity(interval, demand.m_Poi, false, &fullyBondedConfig, &nEffectiveStrands, &eccX, &eccY);
 
       if (allowTens < demand.m_TopStress || demand.m_BottomStress < allowComp)
       {
@@ -4951,8 +4969,12 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
             // debonding needs to reduce stress by this much
             Float64 tens_demand = demand.m_TopStress - allowTens;
 
+            // Get stress coefficients for top stress
+            Float64 Cat, Ctx, Cty;
+            pSectProp->GetStressCoefficients(interval, demand.m_Poi, pgsTypes::TopGirder, &fullyBondedConfig, &Cat, &Ctx, &Cty);
+
             DebondLevelType out_top_db_level, in_top_db_level;
-            GetDebondLevelForTopTension(demand, fullyBondedConfig, cgFullyBonded, interval, tens_demand, out_to_in_distance, Hg, Yb, Ag, St, &out_top_db_level, &in_top_db_level);
+            GetDebondLevelForTopTension(demand, fullyBondedConfig, cgFullyBonded, interval, tens_demand, out_to_in_distance, Hg, Yb, eccX, Cat, Ctx, Cty, &out_top_db_level, &in_top_db_level);
 
             LOG(_T("Debonding needed to control top tensile overstress of ") << ::ConvertFromSysUnits(tens_demand,unitMeasure::KSI) << _T(" KSI at ")<<::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft. Outboard level required was ")<< out_top_db_level<<_T(" Inboard level required was ")<< in_top_db_level);
 
@@ -4979,8 +5001,12 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
             // debonding needs to reduce stress by this much
             Float64 comp_demand = demand.m_BottomStress - allowComp;
 
+            // Get stress coefficients for bottom stress
+            Float64 Cab, Cbx, Cby;
+            pSectProp->GetStressCoefficients(interval, demand.m_Poi, pgsTypes::BottomGirder, &fullyBondedConfig, &Cab, &Cbx, &Cby);
+
             DebondLevelType out_bot_db_level, in_bot_db_level;
-            GetDebondLevelForBottomCompression(demand, fullyBondedConfig, cgFullyBonded, interval, comp_demand, out_to_in_distance, Hg, Yb, Ag, Sb, &out_bot_db_level, &in_bot_db_level);
+            GetDebondLevelForBottomCompression(demand, fullyBondedConfig, cgFullyBonded, interval, comp_demand, out_to_in_distance, Hg, Yb, eccX, Cab, Cbx, Cby, &out_bot_db_level, &in_bot_db_level);
 
             LOG(_T("Debonding needed to control bottom compressive overstress of ") << ::ConvertFromSysUnits(comp_demand,unitMeasure::KSI) << _T(" KSI at ")<<::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft. Outboard level required was ")<< out_bot_db_level<<_T(" Inboard level required was ")<< in_bot_db_level);
 
