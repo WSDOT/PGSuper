@@ -312,7 +312,7 @@ void pgsPrincipalWebStressEngineer::Check(const PoiList& vPois, pgsPrincipalTens
    }
 }
 
-void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList & vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
+void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
 {
    GET_IFACE(IAllowableConcreteStress, pAllowables);
    GET_IFACE(IMaterials, pMaterials);

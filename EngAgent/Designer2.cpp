@@ -6234,26 +6234,51 @@ void pgsDesigner2::CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentK
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
 
    // Get points of interest for the check
-   PoiList vPoi;
-   GetShearPointsOfInterest(false/*not design*/, segmentKey, pgsTypes::StrengthI, intervalIdx, vPoi);
-   // NOTE: even though this is a ServiceIII check, we need to get the shear POI for StrengthI because
-   // shear is a strength limit state check. This prinicpal tension check was added to LRFD in 8th Edition.
-   // Prior to 8th edition, the critical section was changed so that it is no longer a function of the
-   // limit state. As such, we can safely use the StrengthI limit state value.
-
-   // don't check POIs that are in critical section zones
-   GET_IFACE(IPointOfInterest, pPoi);
    PoiList vPois;
-   for (const auto& poiRef : vPoi)
-   {
-      if (!pPoi->IsInCriticalSectionZone(poiRef.get(), pgsTypes::StrengthI))
-      {
-         vPois.emplace_back(poiRef);
-      }
-   }
+   GetPrincipalWebStressPointsOfInterest(segmentKey, intervalIdx, &vPois);
 
    pgsPrincipalWebStressEngineer engineer(m_pBroker,m_StatusGroupID);
    engineer.Check(vPois, pArtifact);
+}
+
+void pgsDesigner2::GetPrincipalWebStressPointsOfInterest(const CSegmentKey & rSegmentKey, IntervalIndexType intervalIdx, PoiList * pPoiList) const
+{
+   std::vector<CSegmentKey> segmentKeys;
+   if (rSegmentKey.segmentIndex == ALL_SEGMENTS)
+   {
+      CGirderKey gdrKey(rSegmentKey);
+
+      GET_IFACE(IBridge,pBridge);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(gdrKey);
+      for (SegmentIndexType iseg = 0; iseg < nSegments; iseg++)
+      {
+         segmentKeys.push_back(CSegmentKey(gdrKey,iseg));
+      }
+   }
+   else
+   {
+      segmentKeys.push_back(rSegmentKey);
+   }
+
+   for (auto& segmentKey : segmentKeys)
+   {
+      PoiList vPois;
+      GetShearPointsOfInterest(false/*not design*/, segmentKey, pgsTypes::StrengthI, intervalIdx, vPois);
+      // NOTE: even though this is a ServiceIII check, we need to get the shear POI for StrengthI because
+      // shear is a strength limit state check. This prinicpal tension check was added to LRFD in 8th Edition.
+      // Prior to 8th edition, the critical section was changed so that it is no longer a function of the
+      // limit state. As such, we can safely use the StrengthI limit state value.
+
+      // don't check POIs that are in critical section zones
+      GET_IFACE(IPointOfInterest, pPoi);
+      for (const auto& poiRef : vPois)
+      {
+         if (!pPoi->IsInCriticalSectionZone(poiRef.get(), pgsTypes::StrengthI))
+         {
+            pPoiList->emplace_back(poiRef);
+         }
+      }
+   }
 }
 
 void pgsDesigner2::DesignEndZone(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const

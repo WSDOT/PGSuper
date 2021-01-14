@@ -104,7 +104,7 @@ struct WebSectionManager
          }
          else
          {
-            fullName.Format(_T("%s, Interval %d"), std::get<0>(section).c_str(), intervalIdx);
+            fullName.Format(_T("%s, Interval %d"), std::get<0>(section).c_str(), LABEL_INTERVAL(intervalIdx));
          }
 
          IndexType data_series = rGraph.FindDataSeries(fullName);
@@ -1511,14 +1511,24 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
          //}
          //
          PoiList vPoi;
-         pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), &vPoi);
 
-         if ( bSimpleSpanSegments )
+         // Pois for pricipal web stress are unique. 
+         ActionType actionType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
+         if (actionPrincipalWebStress == actionType)
          {
-            // these POI are between segments so they don't apply
-            vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }),vPoi.end());
-            //pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
-            //pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+            GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
+            pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), lastPlottingIntervalIdx, &vPoi);
+         }
+         else
+         {
+            pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegments ? segIdx : ALL_SEGMENTS), &vPoi);
+            if (bSimpleSpanSegments)
+            {
+               // these POI are between segments so they don't apply
+               vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }), vPoi.end());
+               //pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
+               //pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+            }
          }
 
          // Map POI coordinates to X-values for the graph

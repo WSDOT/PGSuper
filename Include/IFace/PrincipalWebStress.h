@@ -100,6 +100,9 @@ DEFINE_GUID(IID_IPrincipalWebStress,
    0x179d8e05, 0x2c51, 0x4c32, 0xae, 0x11, 0x71, 0xd4, 0x89, 0xc4, 0xf8, 0x4);
 interface IPrincipalWebStress : IUnknown
 {
+   // Points of interest are in B region
+   virtual void GetPrincipalWebStressPointsOfInterest(const CSegmentKey& segmentKey, IntervalIndexType interval, PoiList* pPoiList) const = 0;
+
    // Principal web stress details: NON-TIME-STEP loss analyses only
    virtual const PRINCIPALSTRESSINWEBDETAILS* GetPrincipalWebStressDetails(const pgsPointOfInterest& poi) const = 0;
 

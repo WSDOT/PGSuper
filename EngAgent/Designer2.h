@@ -385,6 +385,8 @@ public:
    // Returns a nauling analysis artifact if the segment was already checked, otherwise returns nullptr
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const;
 
+   void GetPrincipalWebStressPointsOfInterest(const CSegmentKey& segmentKey, IntervalIndexType interval, PoiList* pPoiList) const;
+
    // Clears all cached artifacts
    void ClearArtifacts();
 
@@ -459,6 +461,7 @@ private:
    void CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmentStabilityArtifact* pArtifact) const;
    void CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifact* pArtifact) const;
    void CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentKey, pgsPrincipalTensionStressArtifact* pArtifact) const;
+
 
    void CheckConstructability(const CGirderKey& girderKey,pgsConstructabilityArtifact* pArtifact) const;
 

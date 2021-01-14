@@ -100,22 +100,22 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
       }
    }
 
+   IntervalIndexType rptIntervalIdx = pTSDRptSpec->GetInterval();
+
    const pgsPointOfInterest& rptPoi(pTSDRptSpec->GetPointOfInterest());
-   const CSegmentKey& segmentKey(rptPoi.GetSegmentKey());
-   const CGirderKey& girderKey(segmentKey);
+   CSegmentKey segmentKey(rptPoi.GetSegmentKey());
    PoiList vPoi;
    if ( pTSDRptSpec->ReportAtAllLocations() )
    {
-      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-      pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,girderKey.girderIndex,ALL_SEGMENTS), &vPoi);
-      vPoi.erase(std::unique(vPoi.begin(), vPoi.end(), [](const pgsPointOfInterest& poi1, const pgsPointOfInterest& poi2) {return IsEqual(poi1.GetDistFromStart(), poi2.GetDistFromStart());}), vPoi.end());
+      segmentKey.segmentIndex = ALL_SEGMENTS;
+
+      GET_IFACE2(pBroker, IPrincipalWebStress, pPrincipalWebStress);
+      pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(segmentKey, rptIntervalIdx, &vPoi);
    }
    else
    {
       vPoi.push_back(rptPoi);
    }
-
-   IntervalIndexType rptIntervalIdx = pTSDRptSpec->GetInterval();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -156,6 +156,8 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
       //pPara->SetName(str);
    }
 
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
    // Incremental stresses
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -163,9 +165,6 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
    IntervalIndexType lastIntervalIdx  = (rptIntervalIdx == INVALID_INDEX ? nIntervals-1 : rptIntervalIdx);
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
    {
-      CGirderKey prevGirderKey;
-      std::vector<pgsTypes::ProductForceType> vLoads;
-
       // Heading
       if ( rptIntervalIdx == INVALID_INDEX )
       {
@@ -178,12 +177,7 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
          pPara->SetName(str);
       }
 
-      if ( !prevGirderKey.IsEqual(segmentKey) )
-      {
-         // we only want to do this when the girder changes
-         GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-         vLoads = pProductLoads->GetProductForcesForGirder(segmentKey);
-      }
+      std::vector<pgsTypes::ProductForceType> vLoads = pProductLoads->GetProductForcesForGirder(segmentKey);
 
        BuildIncrementalStressTables(pChapter, pBroker, intervalIdx, vPoi, vLoads, pDisplayUnits);
 

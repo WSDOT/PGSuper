@@ -30,7 +30,7 @@
 #include <MFCTools\CustomDDX.h>
 
 #include <IFace\Intervals.h>
-#include <IFace\PointOfInterest.h>
+#include <IFace\PrincipalWebStress.h>
 #include <IFace\Bridge.h>
 
 #ifdef _DEBUG
@@ -161,19 +161,21 @@ IntervalIndexType CPrincipalWebStressDetailsDlg::GetInterval()
 
 bool CPrincipalWebStressDetailsDlg::GetReportShear()
 {
-   return m_bReportShearStress;
+   return m_bReportShearStress!=FALSE;
 }
 
 bool CPrincipalWebStressDetailsDlg::GetReportAxial()
 {
-   return m_bReportAxial;
+   return m_bReportAxial!=FALSE;
 }
 
 void CPrincipalWebStressDetailsDlg::UpdatePOI()
 {
+   // Would like to call GetPrincipalWebStressPointsOfInterest() here, but we have to analyze all time steps to get the data
    GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI.clear();
    pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI);
+
    if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 

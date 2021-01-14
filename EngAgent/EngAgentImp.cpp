@@ -3681,6 +3681,11 @@ void CEngAgentImp::ClearDesignCriticalSections() const
 
 /////////////////////////////////////////////////////////////////////////////
 // IPrincipalWebStress
+void CEngAgentImp::GetPrincipalWebStressPointsOfInterest(const CSegmentKey& segmentKey, IntervalIndexType interval, PoiList* pPoiList) const
+{
+   m_Designer.GetPrincipalWebStressPointsOfInterest(segmentKey, interval, pPoiList);
+}
+
 const PRINCIPALSTRESSINWEBDETAILS* CEngAgentImp::GetPrincipalWebStressDetails(const pgsPointOfInterest& poi) const
 {
    return m_pPrincipalWebStressEngineer->GetPrincipalStressInWeb(poi);
