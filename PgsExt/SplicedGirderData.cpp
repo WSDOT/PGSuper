@@ -334,19 +334,21 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
          *m_Segments[segIdx] = *pOtherSegment;
       }
 
-      if ( pMyTimelineMgr && pOtherTimelineMgr )
+      if ( pMyTimelineMgr && pOtherTimelineMgr // make sure timeline managers are not null
+         && pMyTimelineMgr != pOtherTimelineMgr // make sure they aren't the same timeline manager (it's a waste of effort if the pointers reference the same object)
+         )
       {
+         SegmentIDType otherSegID = pOtherSegment->GetID();
          SegmentIDType segID = m_Segments[segIdx]->GetID();
          ATLASSERT(segIdx == pOtherSegment->GetIndex());
          EventIndexType constructionEventIdx, erectionEventIdx;
-         pOtherTimelineMgr->GetSegmentEvents(segID,&constructionEventIdx,&erectionEventIdx);
+         pOtherTimelineMgr->GetSegmentEvents(otherSegID,&constructionEventIdx,&erectionEventIdx);
          pMyTimelineMgr->SetSegmentEvents(segID,constructionEventIdx,erectionEventIdx);
       }
 
       if ( segIdx < nSegments-1 )
       {
          const CClosureJointData* pOtherClosure = rOther.m_Closures[segIdx];
-         ClosureIDType closureID = m_Closures[segIdx]->GetID();
 
          if ( m_bCreatingNewGirder )
          {
@@ -368,10 +370,11 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
             }
          }
 
-         if (!bCopyDataOnly && (pMyTimelineMgr && pOtherTimelineMgr) )
+         if (!bCopyDataOnly && (pMyTimelineMgr && pOtherTimelineMgr) /*both not null*/ && (pMyTimelineMgr != pOtherTimelineMgr)/*pointers don't refernece same object*/ )
          {
-            ATLASSERT(closureID == m_Closures[segIdx]->GetID());
-            EventIndexType castClosureEventIdx = pOtherTimelineMgr->GetCastClosureJointEventIndex(closureID);
+            ClosureIDType otherClosureID = pOtherClosure->GetID();
+            ClosureIDType closureID = m_Closures[segIdx]->GetID();
+            EventIndexType castClosureEventIdx = pOtherTimelineMgr->GetCastClosureJointEventIndex(otherClosureID);
             if ( castClosureEventIdx != INVALID_INDEX )
             {
                pMyTimelineMgr->SetCastClosureJointEventByIndex(closureID,castClosureEventIdx);
