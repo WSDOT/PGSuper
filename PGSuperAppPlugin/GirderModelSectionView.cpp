@@ -482,6 +482,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
 
    pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
@@ -519,17 +520,20 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    GET_IFACE2(pBroker, IGirder, pGirder);
    CComPtr<IPoint2d> pntTC, pntBC; // top and bottom center
-   Float64 top_width, twLeft, twRight;
+   Float64 twLeft, twRight;
+   Float64 top_width = pGirder->GetTopWidth(poi, &twLeft, &twRight);
+   Float64 tfwLeft, tfwRight;
    if (eventIdx <= castDeckEventIdx || IsNonstructuralDeck(deckType))
    {
-      top_width = pGirder->GetTopWidth(poi,&twLeft,&twRight);
+      tfwLeft = twLeft;
+      tfwRight = twRight;
       boxSlab = boxGirder;
    }
    else
    {
-      top_width = pSectProps->GetTributaryFlangeWidth(poi);
-      twLeft = top_width / 2;
-      twRight = twLeft;
+      Float64 tfw = pSectProps->GetTributaryFlangeWidth(poi);
+      tfwLeft = tfw / 2;
+      tfwRight = tfwLeft;
 
       CComPtr<ICompositeShapeItem> slabShapeItem;
       composite->get_Item(nShapes-1,&slabShapeItem); // slab is always last in composite
@@ -552,24 +556,18 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    else
       pntNCL->Offset(bwLeft, 0); // now at the nominal centerline girder
 
-   //boxGirder->get_BottomCenter(&pntBC);
-   //Float64 yBot;
-   //pntBC->get_Y(&yBot); // elevation of bottom of girder
-   //Float64 Hg = pSectProps->GetHg(intervalIdx, poi); // CL height of girder
-   //Float64 yTop = yBot + Hg; // elevation of top of girder
-   //pntNCL->put_Y(yTop);
    connectable->AddSocket(SOCKET_TC, pntNCL, &socketTC);
 
    Float64 Xncl;
    pntNCL->get_X(&Xncl);
    CComPtr<IPoint2d> pntTL;
    pntTL.CoCreateInstance(CLSID_Point2d);
-   pntTL->Move(Xncl - twLeft, 0);
+   pntTL->Move(Xncl - tfwLeft, 0);
    connectable->AddSocket(SOCKET_TL,pntTL,&socketTL);
 
    CComPtr<IPoint2d> pntTR;
    pntTR.CoCreateInstance(CLSID_Point2d);
-   pntTR->Move(Xncl + twRight, 0);
+   pntTR->Move(Xncl + tfwRight, 0);
    connectable->AddSocket(SOCKET_TR,pntTR,&socketTR);
 
    // sockets for bottom flange dimension line
@@ -587,7 +585,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    section->get_BottomFlangeCount(&nBottomFlanges);
    section->get_WebCount(&nWebs);
 
-   Float64 Hg = pSectProps->GetHg(intervalIdx, poi); // CL height of girder
+   Float64 Hg = pSectProps->GetHg(releaseIntervalIdx, poi); // CL height of girder
 
    if (0 < nBottomFlanges)
    {
