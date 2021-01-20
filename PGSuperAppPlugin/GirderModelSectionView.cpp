@@ -565,6 +565,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    CComPtr<IPoint2d> pntNCL; // nominal centerline top
    boxGirder->get_TopCenter(&pntNCL);
    pntNCL->put_X(xNCL); // now at the nominal centerline girder
+   pntNCL->put_Y(tyCL);
 
    // sockets for top flange dimension lines
    CComPtr<iSocket> socketTL, socketTC, socketTR, socketBL, socketBC, socketBR;
@@ -1604,6 +1605,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
 
    // set the text labels on the dimension lines
    Float64 twLeft, twRight;
+   Float64 top_width;
    if (IsNonstructuralDeck(deckType) || (IsStructuralDeck(deckType) && eventIdx <= castDeckEventIdx))
    {
       pGirder->GetTopWidth(poi,&twLeft,&twRight);
@@ -1615,11 +1617,16 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
          twLeft += jwLeft / 2; // half the joint width is attributed to this girder
          twRight += jwRight / 2;
       }
+
+      top_width = twLeft + twRight;
    }
    else
    {
-      // top width includes longitudinal joints
-      pSectProp->GetTributaryFlangeWidthEx(poi, &twLeft, &twRight);
+      // this is an analysis section model so we are showing the effective top flange width, centered on the girder
+      // this is NOT the tributary width
+      top_width = pSectProp->GetEffectiveFlangeWidth(poi);
+      twLeft = top_width / 2;
+      twRight = twLeft;
    }
 
    Float64 bwLeft, bwRight;
@@ -1681,7 +1688,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
 
    textBlock.CoCreateInstance(CLSID_TextBlock);
    textBlock->SetPointSize(FONT_POINT_SIZE);
-   strDim = FormatDimension(twLeft + twRight, length_unit);
+   strDim = FormatDimension(top_width, length_unit);
    textBlock->SetText(strDim);
    doDimLineTopFlangeWidth->SetTextBlock(textBlock);
 
@@ -1705,10 +1712,14 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    doDimLineHeight->SetTextBlock(textBlock);
 
    // adjust the witness line
+   CComPtr<IPoint2d> pntTC;
+   socketTC->GetPosition(&pntTC);
+   Float64 X;
+   pntTC->get_X(&X);
    long tx0, ty0;
    long tx1, ty1;
-   m_pCoordinateMap->WPtoTP(0, 0, &tx0, &ty0);
-   m_pCoordinateMap->WPtoTP(twLeft, 0, &tx1, &ty1);
+   m_pCoordinateMap->WPtoTP(X, 0, &tx0, &ty0);
+   m_pCoordinateMap->WPtoTP(twLeft - X, 0, &tx1, &ty1);
    doDimLineHeight->SetWitnessLength(tx1 - tx0 + twip_offset);
 
    if ((settings & IDG_SV_GIRDER_CG) && socketCG)
@@ -1764,7 +1775,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       Float64 x2 = Max(twRight, bottom_width / 2);
 
       m_pCoordinateMap->WPtoTP(x1, 0, &tx0, &ty0);
-      m_pCoordinateMap->WPtoTP(x2, 0, &tx1, &ty1);
+      m_pCoordinateMap->WPtoTP(x2 - x1, 0, &tx1, &ty1);
 
       doDimLineTopCG->SetWitnessLength(-tx1 + tx0 - twip_offset);
       doDimLineBottomCG->SetWitnessLength(-tx1 + tx0 - twip_offset);
@@ -1803,7 +1814,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       Float64 x2 = Max(twLeft, bottom_width / 2);
 
       m_pCoordinateMap->WPtoTP(x1, 0, &tx0, &ty0);
-      m_pCoordinateMap->WPtoTP(x2, 0, &tx1, &ty1);
+      m_pCoordinateMap->WPtoTP(x2-x1, 0, &tx1, &ty1);
       doDimLineTopCGPS->SetWitnessLength(tx1 - tx0 + twip_offset);
       doDimLineBottomCGPS->SetWitnessLength(tx1 - tx0 + twip_offset);
 
