@@ -114,7 +114,6 @@ BEGIN_MESSAGE_MAP(CGirderModelSectionView, CDisplayView)
 	ON_COMMAND(ID_EDIT_STIRRUPS, OnEditStirrups)
 	ON_COMMAND(ID_USER_CUT, OnUserCut)
 	ON_WM_SIZE()
-	ON_WM_PAINT()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -127,11 +126,22 @@ CGirderModelChildFrame* CGirderModelSectionView::GetFrame()
 // CGirderModelSectionView drawing
 void CGirderModelSectionView::DoPrint(CDC* pDC, CPrintInfo* pInfo)
 {
+   CDManipClientDC dc2(this);
+
    OnBeginPrinting(pDC, pInfo);
    OnPrepareDC(pDC);
+
+   // the leader lines for the vertical dimension lines are set in twips units which depend on the display
+   // the screen and printer have different resolution so the dpi to twips conversion is going to be different
+   // to get the dimension lines to scale property, we have to rebuild all of the display objects.
+   // at this point, the mapping objects have been updated for printing so all we need to do is rebuild the display objects and print
+   UpdateDisplayObjects(); //rebuild display objects with printer mapping
    UpdateDrawingScale();
    OnDraw(pDC);
    OnEndPrinting(pDC, pInfo);
+
+   // printing is done and the mapping is returned to the screen. rebuild the display objects for the screen
+   UpdateDisplayObjects(); // rebuild display objects with screen mapping
 }
 
 /////////////////////////////////////////////////////////////////////////////
