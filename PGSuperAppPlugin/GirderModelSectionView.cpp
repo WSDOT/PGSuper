@@ -507,8 +507,6 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    strategy->DoFill(true);
 
    // Set up sockets so dimension lines can plug into the girder shape
-   CComPtr<IRect2d> boxGirder, boxSlab;
-
    CComQIPtr<ICompositeShape> composite(shape);
    IndexType nShapes;
    composite->get_Count(&nShapes);
@@ -516,68 +514,77 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    composite->get_Item(0, &girderShapeItem); // basic girder is always first in composite
    CComPtr<IShape> girderShape;
    girderShapeItem->get_Shape(&girderShape);
+
+   // Girder is drawn in girder coordinates. Origin is at the top CL of this bounding box:
+   CComPtr<IRect2d> boxGirder;
    girderShape->get_BoundingBox(&boxGirder);
 
    GET_IFACE2(pBroker, IGirder, pGirder);
-   CComPtr<IPoint2d> pntTC, pntBC; // top and bottom center
-   Float64 twLeft, twRight;
-   Float64 top_width = pGirder->GetTopWidth(poi, &twLeft, &twRight);
-   Float64 tfwLeft, tfwRight;
+   // Get top and bottom girder flange widths. These are in nominal girder coordinates, they will need to be converted to girder coord's
+   Float64 twLeft, twRight, bwLeft, bwRight;
+   Float64 top_width    = pGirder->GetTopWidth(poi, &twLeft, &twRight);
+   Float64 bottom_width = pGirder->GetBottomWidth(poi, &bwLeft, &bwRight);
+
+   // BIG ASSUMPTION: The nominal centerline is located at the maximum of the top/bottom left width of the girder from the left side of the bounding box.
+   // This assumes that the widest part of the girder is at the top or bottom of the section.
+   CComPtr<IPoint2d> pntBL;
+   boxGirder->get_BottomLeft(&pntBL);
+   Float64 xBL;
+   pntBL->get_X(&xBL);
+   Float64 xNCL = xBL + Max(twLeft, bwLeft);
+
+
+   // X locations of top and bottom flange tips in girder coordinates
+   Float64 bxLeft  = xNCL - bwLeft;
+   Float64 bxRight = xNCL + bwRight;
+
+   Float64 txLeft, txRight;
+   Float64 tyCL;
    if (eventIdx <= castDeckEventIdx || IsNonstructuralDeck(deckType))
    {
-      tfwLeft = twLeft;
-      tfwRight = twRight;
-      boxSlab = boxGirder;
+      txLeft  = xNCL - twLeft;
+      txRight = xNCL + twRight;
+      tyCL = 0.0;
    }
    else
    {
-      Float64 tfw = pSectProps->GetTributaryFlangeWidth(poi);
-      tfwLeft = tfw / 2;
-      tfwRight = tfwLeft;
-
       CComPtr<ICompositeShapeItem> slabShapeItem;
       composite->get_Item(nShapes-1,&slabShapeItem); // slab is always last in composite
       CComPtr<IShape> slabShape;
       slabShapeItem->get_Shape(&slabShape);
+      CComPtr<IRect2d> boxSlab;
       slabShape->get_BoundingBox(&boxSlab);
+
+      boxSlab->get_Left(&txLeft);
+      boxSlab->get_Right(&txRight);
+
+      boxSlab->get_Top(&tyCL);
    }
 
-   Float64 bottom_width, bwLeft, bwRight;
-   bottom_width = pGirder->GetBottomWidth(poi, &bwLeft, &bwRight);
 
+   CComPtr<IPoint2d> pntNCL; // nominal centerline top
+   boxGirder->get_TopCenter(&pntNCL);
+   pntNCL->put_X(xNCL); // now at the nominal centerline girder
+
+   // sockets for top flange dimension lines
    CComPtr<iSocket> socketTL, socketTC, socketTR, socketBL, socketBC, socketBR;
    CComQIPtr<iConnectable> connectable(doPnt);
 
-   // sockets for top flange dimension lines
-   CComPtr<IPoint2d> pntNCL; // nominal centerline
-   boxGirder->get_TopLeft(&pntNCL);
-   if (bottom_width < top_width)
-      pntNCL->Offset(twLeft, 0); // now at the nominal centerline girder
-   else
-      pntNCL->Offset(bwLeft, 0); // now at the nominal centerline girder
-
    connectable->AddSocket(SOCKET_TC, pntNCL, &socketTC);
 
-   Float64 Xncl;
-   pntNCL->get_X(&Xncl);
    CComPtr<IPoint2d> pntTL;
    pntTL.CoCreateInstance(CLSID_Point2d);
-   pntTL->Move(Xncl - tfwLeft, 0);
+   pntTL->Move(txLeft, tyCL);
    connectable->AddSocket(SOCKET_TL,pntTL,&socketTL);
 
    CComPtr<IPoint2d> pntTR;
    pntTR.CoCreateInstance(CLSID_Point2d);
-   pntTR->Move(Xncl + tfwRight, 0);
+   pntTR->Move(txRight, tyCL);
    connectable->AddSocket(SOCKET_TR,pntTR,&socketTR);
 
    // sockets for bottom flange dimension line
    pntNCL.Release();
-   boxGirder->get_BottomLeft(&pntNCL);
-   if(bottom_width < top_width)
-      pntNCL->Offset(twLeft, 0);
-   else
-      pntNCL->Offset(bwLeft, 0);
-
+   boxGirder->get_BottomCenter(&pntNCL);
    connectable->AddSocket(SOCKET_BC, pntNCL,&socketBC);
 
    CComQIPtr<IGirderSection> section(girderShape);
@@ -625,9 +632,11 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    }
    else
    {
-      pntBC->Offset(-bottom_width / 2, 0);
+      CComPtr<IPoint2d> pntBC;
+      boxGirder->get_BottomCenter(&pntBC);
+      pntBC->Offset(-bottom_width / 2, 0.0);
       connectable->AddSocket(SOCKET_BL, pntBC, &socketBL);
-      pntBC->Offset(bottom_width, 0);
+      pntBC->Offset(bottom_width, 0.0);
       connectable->AddSocket(SOCKET_BR, pntBC, &socketBR);
    }
 
@@ -635,23 +644,17 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
 
    // Draw the vertical nominal centerline
-   // The nominal centerline is located the maximum of the top/bottom left width of the girder from the left side of the bounding box
-   CComPtr<IPoint2d> pntBL;
-   boxGirder->get_BottomLeft(&pntBL);
-   Float64 x_offset;
-   pntBL->get_X(&x_offset);
-   Float64 x = x_offset + Max(twLeft, bwLeft);
    Float64 y_offset = 0.01*Hg;
 
    // create a point at the top of the section
    CComPtr<IPoint2d> pntTop;
    pntTop.CoCreateInstance(CLSID_Point2d);
-   pntTop->Move(x, y_offset);
+   pntTop->Move(xNCL, y_offset);
 
    // create a point at the bottom of the section
    CComPtr<IPoint2d> pntBottom;
    pntBottom.CoCreateInstance(CLSID_Point2d);
-   pntBottom->Move(x, -(Hg + y_offset));
+   pntBottom->Move(xNCL, -(Hg + y_offset));
 
    CreateLineDisplayObject(pDL, pntTop, pntBottom, BLACK, lsCenterline);
 }
