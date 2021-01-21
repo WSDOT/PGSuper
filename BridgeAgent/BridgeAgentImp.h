@@ -999,9 +999,9 @@ public:
 
 // IShapes
 public:
-   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape) const override;
+   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape, IndexType* pGirderIndex=nullptr, IndexType* pSlabIndex=nullptr) const override;
    virtual void GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias,IShape** ppShape) const override;
-   virtual void GetSegmentSectionShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, bool bOrient,pgsTypes::SectionCoordinateType csType, IShape** ppShape) const override;
+   virtual void GetSegmentSectionShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, bool bOrient,pgsTypes::SectionCoordinateType csType, IShape** ppShape, IndexType* pGirderIndex=nullptr, IndexType* pSlabIndex=nullptr) const override;
    virtual void GetSlabShape(Float64 station,IDirection* pDirection,bool bIncludeHaunchbool,IShape** ppShape) const override;
    virtual void GetLeftTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) const override;
    virtual void GetRightTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) const override;

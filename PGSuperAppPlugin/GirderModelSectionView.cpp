@@ -507,8 +507,9 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    // Get the shape in Girder Section Coordinates so that it is in the same coordinate system
    // as the items internal to the section (strand, rebar, etc.) (0,0 is at top center of girder)
+   IndexType girderShapeIdx, slabShapeIdx;
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(intervalIdx, poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,&shape);
+   pShapes->GetSegmentShape(intervalIdx, poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,&shape, &girderShapeIdx, &slabShapeIdx);
    strategy->SetShape(shape);
    strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
    strategy->SetSolidFillColor(segmentKey.girderIndex == m_pFrame->GetSelection().girderIndex ? SEGMENT_FILL_COLOR : SEGMENT_FILL_GHOST_COLOR);
@@ -518,10 +519,8 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    // Set up sockets so dimension lines can plug into the girder shape
    CComQIPtr<ICompositeShape> composite(shape);
-   IndexType nShapes;
-   composite->get_Count(&nShapes);
    CComPtr<ICompositeShapeItem> girderShapeItem;
-   composite->get_Item(0, &girderShapeItem); // basic girder is always first in composite
+   composite->get_Item(girderShapeIdx, &girderShapeItem);
    CComPtr<IShape> girderShape;
    girderShapeItem->get_Shape(&girderShape);
 
@@ -558,17 +557,24 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    }
    else
    {
-      CComPtr<ICompositeShapeItem> slabShapeItem;
-      composite->get_Item(nShapes-1,&slabShapeItem); // slab is always last in composite
-      CComPtr<IShape> slabShape;
-      slabShapeItem->get_Shape(&slabShape);
-      CComPtr<IRect2d> boxSlab;
-      slabShape->get_BoundingBox(&boxSlab);
+      if (slabShapeIdx == INVALID_INDEX)
+      {
+         ATLASSERT(0); // should never happen. New slab type or layout?
+      }
+      else
+      {
+         CComPtr<ICompositeShapeItem> slabShapeItem;
+         composite->get_Item(slabShapeIdx, &slabShapeItem);
+         CComPtr<IShape> slabShape;
+         slabShapeItem->get_Shape(&slabShape);
+         CComPtr<IRect2d> boxSlab;
+         slabShape->get_BoundingBox(&boxSlab);
 
-      boxSlab->get_Left(&txLeft);
-      boxSlab->get_Right(&txRight);
+         boxSlab->get_Left(&txLeft);
+         boxSlab->get_Right(&txRight);
 
-      boxSlab->get_Top(&tyCL);
+         boxSlab->get_Top(&tyCL);
+      }
    }
 
 

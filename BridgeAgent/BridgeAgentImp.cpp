@@ -23688,7 +23688,7 @@ Float64 CBridgeAgentImp::GetSegmentHeight(const CPrecastSegmentData* pSegment, F
 /////////////////////////////////////////////////////////////////////////
 // IShapes
 //
-void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape) const
+void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape, IndexType* pGirderIndex, IndexType* pSlabIndex) const
 {
    CComPtr<ICompositeShape> compShape;
    compShape.CoCreateInstance(CLSID_CompositeShape);
@@ -23711,6 +23711,18 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
       shape->Clone(&clone);
       compShape->AddShape(clone, (idx == sprops.GirderShapeIndex || idx == sprops.SlabShapeIndex ? VARIANT_FALSE : VARIANT_TRUE));
    }
+
+   // indices into composite section
+   if (pGirderIndex != nullptr)
+   {
+      *pGirderIndex = sprops.GirderShapeIndex;
+   }
+
+   if (pSlabIndex != nullptr)
+   {
+      *pSlabIndex = sprops.SlabShapeIndex;
+   }
+
    
    compShape.QueryInterface(ppShape);
 
@@ -23818,7 +23830,7 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
    }
 }
 
-void CBridgeAgentImp::GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void CBridgeAgentImp::GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias,IShape** ppShape) const
 {
    // create a segment shape at the specified location using the parameters defined in pSegment
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
@@ -23830,7 +23842,7 @@ void CBridgeAgentImp::GetSegmentShape(const CPrecastSegmentData* pSegment, Float
    beamFactory->CreateSegmentShape(m_pBroker, pSegment, Xs, sectionBias, ppShape);
 }
 
-void CBridgeAgentImp::GetSegmentSectionShape(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bOrient, pgsTypes::SectionCoordinateType csType, IShape** ppShape) const
+void CBridgeAgentImp::GetSegmentSectionShape(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bOrient, pgsTypes::SectionCoordinateType csType, IShape** ppShape, IndexType* pGirderIndex, IndexType* pSlabIndex) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
    SectProp sectProps = GetSectionProperties(intervalIdx, poi, sectPropType);
@@ -23839,6 +23851,17 @@ void CBridgeAgentImp::GetSegmentSectionShape(IntervalIndexType intervalIdx, cons
       // if the POI isn't at a location with concrete yet (like at a pier diaphragm before it is cast), the section object is null
       // there isn't a shape to get in this case so set the return value pointer to null and return
       *ppShape = nullptr;
+
+      if (pGirderIndex != nullptr)
+      {
+         *pGirderIndex = INVALID_INDEX;
+      }
+
+      if (pSlabIndex != nullptr)
+      {
+         *pSlabIndex = INVALID_INDEX;
+      }
+
       return;
    }
 
@@ -23852,6 +23875,18 @@ void CBridgeAgentImp::GetSegmentSectionShape(IntervalIndexType intervalIdx, cons
    sectionItem->get_Shape(&shape);
 
    shape->Clone(ppShape);
+
+   // indices into composite section
+   if (pGirderIndex != nullptr)
+   {
+      *pGirderIndex = sectProps.GirderShapeIndex;
+   }
+
+   if (pSlabIndex != nullptr)
+   {
+      *pSlabIndex = sectProps.SlabShapeIndex;
+   }
+
 
    // Right now, ppShape is in Bridge Section Coordinates
    if (csType == pgsTypes::scGirder || csType == pgsTypes::scCentroid)
