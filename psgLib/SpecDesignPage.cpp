@@ -53,7 +53,7 @@ CSpecDesignPage::CSpecDesignPage(CWnd* pParent /*=nullptr*/)
 
 void CSpecDesignPage::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+   CPropertyPage::DoDataExchange(pDX);
 
    // dad is a friend of the entry. use him to transfer data.
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
@@ -276,6 +276,23 @@ BOOL CSpecDesignPage::OnSetActive()
    pWnd = GetDlgItem(IDC_90_DAY_STRENGTH_LABEL);
    pWnd->SetWindowText(CString(_T("% of f'c for stress combinations after 90 days for slow curing concretes (")) + pDad->LrfdCw8th(_T("5.14.1.2.5"), _T("5.12.3.2.5")) + _T(")"));
 
+   if (pDad->GetSpecVersion() < lrfdVersionMgr::NinthEdition2020)
+   {
+      pWnd = GetDlgItem(IDC_LIFTING_GROUP);
+      pWnd->SetWindowText(_T("Lifting Stability Check/Design Options"));
+
+      pWnd = GetDlgItem(IDC_HAULING_GROUP);
+      pWnd->SetWindowText(_T("Hauling Stability Check/Design Options"));
+   }
+   else
+   {
+      // requirement is new in LRFD 9th Edition so add spec reference
+      pWnd = GetDlgItem(IDC_LIFTING_GROUP);
+      pWnd->SetWindowText(_T("Lifting Stability Check/Design Options (LRFD 5.5.4.3)"));
+
+      pWnd = GetDlgItem(IDC_HAULING_GROUP);
+      pWnd->SetWindowText(_T("Hauling Stability Check/Design Options (LRFD 5.5.4.3)"));
+   }
 
    return CPropertyPage::OnSetActive();
 }

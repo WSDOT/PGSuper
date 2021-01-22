@@ -73,6 +73,7 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("Jmax"));
    m_DimNames.emplace_back(_T("ShearKeyDepth"));
    m_DimNames.emplace_back(_T("EndBlockLength"));
+   m_DimNames.emplace_back(_T("FlushExteriorFace"));
 
    m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // H1
    m_DefaultDims.emplace_back(::ConvertToSysUnits(29.5,unitMeasure::Inch)); // H2
@@ -91,6 +92,7 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // Jmax
    m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // shear key
    m_DefaultDims.emplace_back(::ConvertToSysUnits( 12.0,unitMeasure::Inch)); // end block
+   m_DefaultDims.emplace_back(0); // FlushExteriorFace
 
    // SI Units
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
@@ -110,6 +112,7 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Jmax
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // shear key
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // end block
+   m_DimUnits[0].emplace_back((const unitLength*)BFDIMUNITBOOLEAN); // FlushExteriorFace
 
    // US Units
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1
@@ -129,6 +132,7 @@ HRESULT CBoxBeamFactory::FinalConstruct()
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Jmax
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // shear key
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // end block
+   m_DimUnits[1].emplace_back((const unitLength*)BFDIMUNITBOOLEAN); // FlushExteriorFace
 
    return S_OK;
 }
@@ -136,7 +140,8 @@ HRESULT CBoxBeamFactory::FinalConstruct()
 bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
-   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
+   bool bFlushExteriorFace;
+   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength, bFlushExteriorFace);
 
    if ( H1 <= 0.0 )
    {
@@ -173,31 +178,55 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    if ( H5 < 0.0 )
    {
       std::_tostringstream os;
-      os << _T("H5 must be a positive value") << std::ends;
+      os << _T("H5 must be zero or greater") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
-   if ( H6 <= 0.0 )
+   if ( H5 == 0.0 && W1 > 0.0)
    {
       std::_tostringstream os;
-      os << _T("H6 must be a positive value") << std::ends;
+      os << _T("W1 must be zero if H5 is zero") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
-   if ( H7 <= 0.0 )
-   {
-      std::_tostringstream os;
-      os << _T("H7 must be a positive value") << std::ends;
-      *strErrMsg = os.str();
-      return false;
-   }
-
-   if ( W1 <= 0.0 )
+   if ( W1 < 0.0 )
    {
       std::_tostringstream os;
       os << _T("W1 must be a positive value") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( H6 < 0.0 )
+   {
+      std::_tostringstream os;
+      os << _T("H6 must be zero or greater") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( H6 == 0.0 && W4 > 0.0)
+   {
+      std::_tostringstream os;
+      os << _T("W4 must be zero if H6 is zero") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( W4 < 0.0 )
+   {
+      std::_tostringstream os;
+      os << _T("W4 must be a positive value") << std::ends;
+      *strErrMsg = os.str();
+      return false;
+   }
+
+   if ( H7 < 0.0 )
+   {
+      std::_tostringstream os;
+      os << _T("H7 must be a positive value") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -218,10 +247,10 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
       return false;
    }
 
-   if ( W4 < 0.0 )
+   if ( W4 <= 0.0 && H6 > 0.0 )
    {
       std::_tostringstream os;
-      os << _T("W4 must be a positive value") << std::ends;
+      os << _T("W4 must be a positive value if H6 is positive") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
@@ -319,7 +348,7 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
 
 void CBoxBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
-   pSave->BeginUnit(_T("BoxBeamDimensions"),4.0);
+   pSave->BeginUnit(_T("BoxBeamDimensions"),5.0);
    for( const auto& name : m_DimNames)
    {
       Float64 value = GetDimension(dimensions,name);
@@ -442,6 +471,7 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
 
       dimensions.emplace_back(_T("ShearKeyDepth"),0.0);
       dimensions.emplace_back(_T("EndBlockLength"),0.0);
+      dimensions.emplace_back(_T("FlushExteriorFace"),0);
    }
    else
    {
@@ -483,6 +513,10 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(sysIStructuredLo
             else if ( dimVersion < 3 && name == _T("EndBlockLength") )
             {
                value = 0.0;
+            }
+            else if ( dimVersion < 5 && name == _T("FlushExteriorFace") )
+            {
+               value = 0;  // old versions did not flush exterior face or have option
             }
             else
             {
@@ -647,7 +681,8 @@ void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
                                     Float64& C1,
                                     Float64& J,
                                     Float64& shearKeyDepth,
-                                    Float64& endBlockLength) const
+                                    Float64& endBlockLength,
+                                    bool& bFlushExteriorFace) const
 {
    H1 = GetDimension(dimensions,_T("H1"));
    H2 = GetDimension(dimensions,_T("H2"));
@@ -666,9 +701,10 @@ void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    J  = GetDimension(dimensions,_T("Jmax"));
    shearKeyDepth   = GetDimension(dimensions,_T("ShearKeyDepth"));
    endBlockLength  = GetDimension(dimensions,_T("EndBlockLength"));
+
+   Float64 tmp = GetDimension(dimensions,_T("FlushExteriorFace"));
+   bFlushExteriorFace = tmp != 0;
 }
-
-
 
 void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt,  pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
@@ -770,7 +806,8 @@ void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimension
    }
 
    Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
-   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
+   bool bFlushExteriorFace;
+   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength, bFlushExteriorFace);
 
    if (shearKeyDepth==0.0)
    {
@@ -944,7 +981,8 @@ void CBoxBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions
 void CBoxBeamFactory::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
 {
    Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
-   GetDimensions(dimensions, H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength);
+   bool bFlushExteriorFace;
+   GetDimensions(dimensions,H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength, bFlushExteriorFace);
 
    pBeam->put_H1(H1);
    pBeam->put_H2(H2);
@@ -962,4 +1000,10 @@ void CBoxBeamFactory::DimensionBeam(const IBeamFactory::Dimensions& dimensions, 
    pBeam->put_C1(C1);
 
    __super::DimensionBeam(dimensions, pBeam);
+}
+
+bool CBoxBeamFactory::ExcludeExteriorBeamShearKeys(const IBeamFactory::Dimensions& dimensions) const
+{
+   Float64 tmp = GetDimension(dimensions,_T("FlushExteriorFace"));
+   return tmp != 0;
 }

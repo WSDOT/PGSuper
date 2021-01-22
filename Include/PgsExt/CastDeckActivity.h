@@ -72,10 +72,10 @@ public:
    };
 
    CCastDeckActivity();
-   CCastDeckActivity(const CCastDeckActivity& rOther);
+   CCastDeckActivity(const CCastDeckActivity& rOther) = default;
    ~CCastDeckActivity();
 
-   CCastDeckActivity& operator= (const CCastDeckActivity& rOther);
+   CCastDeckActivity& operator= (const CCastDeckActivity& rOther) = default;
    bool operator==(const CCastDeckActivity& rOther) const;
    bool operator!=(const CCastDeckActivity& rOther) const;
 
@@ -85,11 +85,11 @@ public:
    void SetCastingType(CCastDeckActivity::CastingType castingType);
    CCastDeckActivity::CastingType GetCastingType() const;
 
-   void SetConcreteAgeAtContinuity(Float64 age);
-   Float64 GetConcreteAgeAtContinuity() const;
+   void SetTotalCuringDuration(Float64 duration);
+   Float64 GetTotalCuringDuration() const;
 
-   void SetCuringDuration(Float64 duration);
-   Float64 GetCuringDuration() const;
+   void SetActiveCuringDuration(Float64 duration);
+   Float64 GetActiveCuringDuration() const;
 
    // returns the total duration of this activity
    Float64 GetDuration() const;
@@ -124,23 +124,35 @@ public:
    void RemoveNegMomentRegion(PierIndexType pierIdx);
    void AddNegMomentRegion(PierIndexType pierIdx);
 
+   // When a closure joint is cast at the same time as the deck, and deck casting is staged,
+   // closure joint is cast at the same time as the region designated by this parameter.
+   void SetClosureJointCastingRegion(IndexType regionIdx);
+   IndexType GetClosureJointCastingRegion() const;
+
+   // If a closure joint is cast along with the deck, this is the time relative to the start of the deck casting activty
+   // when the closure joint is cast.
+   Float64 GetTimeOfClosureJointCasting() const;
+
+   // Returns the casting index when the closure joint is cast. Returns INVALID_INDEX if a closure joint is not cast at the same time as the deck
+   IndexType GetClosureJointCasting() const;
+
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
 protected:
-   void MakeCopy(const CCastDeckActivity& rOther);
-   void MakeAssignment(const CCastDeckActivity& rOther);
    bool m_bEnabled;
    
    CastingType m_CastingType;
    Float64 m_TimeBetweenCastings;
    pgsTypes::DeckCastingRegionBoundary m_DeckCastingRegionBoundary;
 
-   Float64 m_Age;
-   Float64 m_CuringDuration;
+   Float64 m_TotalCuringDuration;
+   Float64 m_ActiveCuringDuration;
 
    std::vector<CCastingRegion> m_vCastingRegions;
    std::vector<CCastingRegion> m_vContinuousCastingRegions; // this is kind of a dummy region... it covers the entire bridge
+
+   IndexType m_ClosureJointCastingRegion; // if there is a closure joint cast with the deck, the closure joint is cast at the same time as this region. INVALID_INDEX if there isn't concurrent closure joint casting
 
    void UpdateCastings();
    std::vector<IndexType> m_vCastingOrder; // contains the casting sequence number is sorted order

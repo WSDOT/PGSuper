@@ -212,6 +212,17 @@ public:
    // Moves a pier to a new location. Span lengths are adjusted according to moveOption
    bool MovePier(PierIndexType pierIdx,Float64 newStation,pgsTypes::MovePierOption moveOption);
 
+   // Internally all bridges start at abutment(0) and end at an abutment(nspans). However, the UI allows a bridge
+   // to start with abitrary pier numbering. The functions below support this capability
+   void SetPierDisplaySettings(pgsTypes::DisplayEndSupportType startPierType, pgsTypes::DisplayEndSupportType endPierType, PierIndexType startPierNumber);
+   void GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const;
+   PierIndexType GetDisplayStartingPierNumber() const;  // pier number at start of bridge for display purposes
+   void SetDisplayStartingPierNumber(PierIndexType);
+   pgsTypes::DisplayEndSupportType GetDisplayStartSupportType() const; // type of support and start of bridge
+   void SetDisplayStartSupportType(pgsTypes::DisplayEndSupportType);
+   pgsTypes::DisplayEndSupportType GetDisplayEndSupportType() const; // type of support and end of bridge
+   void SetDisplayEndSupportType(pgsTypes::DisplayEndSupportType);
+
    // =================================================================================
    // Temporary Supports
    // =================================================================================
@@ -404,9 +415,6 @@ public:
    // Gets the segments on either side of a temporary support... left and right segment key will be the same if segment is continuous over TS
    void GetSegmentsAtTemporarySupport(SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey) const;
 
-   // Returns true of the overall bridge model is stable
-   bool IsStable() const;
-
    // Returns the approximate maximum width of the bridge. The width is computed as:
    // for bridges with decks - the maximum sum of the left right deck overhangs
    // for bridges without decks - the maximum spacing width (this width is based on the raw input and is not adjusted for skews)
@@ -430,6 +438,13 @@ public:
    void SetLongitudinalJointMaterial(const CConcreteMaterial& material);
 
    void ForEachSegment(std::function<void(CPrecastSegmentData*,void*)>& fn,void* pData);
+
+   // Returns true if the overall bridge model is stable
+   bool IsStable() const;
+
+   bool IsValidSpan(SpanIndexType spanIdx) const;
+   bool IsValidLayout() const;
+   bool IsValidBridge() const;
 
 protected:
    void MakeCopy(const CBridgeDescription2& rOther);
@@ -503,6 +518,10 @@ private:
    std::vector<CSpanData2*> m_Spans;
    std::vector<CTemporarySupportData*> m_TemporarySupports;
    std::vector<CGirderGroupData*> m_GirderGroups;
+
+   pgsTypes::DisplayEndSupportType m_DisplayStartSupportType;
+   pgsTypes::DisplayEndSupportType m_DisplayEndSupportType;
+   PierIndexType m_StartingPierNumber;
 
    Float64 m_AlignmentOffset; // offset from Alignment to CL Bridge (< 0 = right of alignment)
 

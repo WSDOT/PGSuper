@@ -48,6 +48,7 @@
 #include "PsForceEng.h"
 #include "GirderHandlingChecker.h"
 #include "GirderLiftingChecker.h"
+#include "PrincipalWebStressEngineer.h"
 #include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\StabilityAnalysisPoint.h>
 #include <PgsExt\EngUtil.h>
@@ -126,13 +127,13 @@ private:
    LldfRangeOfApplicabilityAction m_OldRoa;
 };
 
-bool CanDesign(CStrandData::StrandDefinitionType type)
+bool CanDesign(pgsTypes::StrandDefinitionType type)
 {
    // we can only design for these strand definition types
    // Techincally, we should not design for sdtDirectionSelection, however the designer does work. The "gotcha" is that the
    // strand defintion type gets changed to sdtStraightHarped when it should not... design should not change the strand definition type
    // but since sdtDirectSelection has been a valid choice for a long time and it does work, we'll let it go
-   return (type == CStrandData::sdtTotal || type == CStrandData::sdtStraightHarped || type == CStrandData::sdtDirectSelection) ? true : false;
+   return (type == pgsTypes::sdtTotal || type == pgsTypes::sdtStraightHarped || type == pgsTypes::sdtDirectSelection) ? true : false;
 }
 
 /****************************************************************************
@@ -413,7 +414,7 @@ void pgsDesigner2::GetSlabOffsetDetails(const CSegmentKey& segmentKey,const GDRC
    // the profile chord reference line passes through the deck at this station and offset
    Float64 Y_girder_ref_line_left_bearing = pAlignment->GetElevation(station,offset);
 
-   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
+   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetMatingSurfaceCount(segmentKey);
 
    Float64 girder_top_slope = pGdr->GetTransverseTopFlangeSlope(segmentKey);
 
@@ -570,7 +571,7 @@ Float64 pgsDesigner2::GetSectionGirderOrientationEffect(const pgsPointOfInterest
    GET_IFACE(IGirder,pGdr);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
-   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
+   MatingSurfaceIndexType nMatingSurfaces = pGdr->GetMatingSurfaceCount(segmentKey);
 
    Float64 girder_orientation = pGdr->GetOrientation(segmentKey);
 
@@ -898,6 +899,9 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
 
       pProgress->UpdateMessage(_T("Checking debonding"));
       CheckDebonding(segmentKey, pSegmentArtifact->GetDebondArtifact());
+
+      pProgress->UpdateMessage(_T("Checking principal tension stress in webs"));
+      CheckPrincipalTensionStressInWebs(segmentKey, pSegmentArtifact->GetPrincipalTensionStressArtifact());
    } // next segment
 
    pProgress->UpdateMessage(_T("Checking constructability"));
@@ -960,9 +964,7 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   // There are a few cases were we don't design
-   // 1) Time Step analysis
-   // 2) Strands are defined using the individual strand model
+   // We don't design for time-step analysis
    GET_IFACE(ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
    {
@@ -1000,7 +1002,7 @@ pgsGirderDesignArtifact pgsDesigner2::Design(const CGirderKey& girderKey,const s
    }
 
    // we don't want events to fire so we'll hold events and then cancel any pending events
-   // when design is done. Use auto class so we do it exeption safely.
+   // when design is done. Use auto class so we do it exception safely.
    GET_IFACE(IEvents,pEvents);
    GET_IFACE(ILiveLoads,pLiveLoads);
    AutoDesign myAutoDes(pEvents, pLiveLoads);
@@ -1082,7 +1084,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
 
    GET_IFACE_NOCHECK(ISpecification, pSpec);
    GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IGirder,pGdr);
+   GET_IFACE_NOCHECK(IGirder, pGdr);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    // Design each segment in the girder
@@ -1124,6 +1126,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       // initialize temporary top strand usage type
       // we prefer pretensioned TTS so set it to that
       // however if there is precamber, TTS must be post-tensioned
+
       artifact.SetTemporaryStrandUsage(IsZero(pGdr->GetPrecamber(segmentKey)) ? pgsTypes::ttsPretensioned : pgsTypes::ttsPTBeforeLifting);
 
 
@@ -1155,15 +1158,13 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       GetConfinementZoneLengths(segmentKey, pGdr, segment_length, &zoneFactor, &startd, &endd, &startConfinementZl, &endConfinementZl);
 
       // Use shear design tool to control stirrup design
-      m_ShearDesignTool.Initialize(m_pBroker, this, m_StatusGroupID, &artifact, startConfinementZl, endConfinementZl,
-                                   bPermit, options.doDesignStirrupLayout==slLayoutStirrups);
+      m_ShearDesignTool.Initialize(m_pBroker, this, m_StatusGroupID, &artifact, startConfinementZl, endConfinementZl, bPermit, options.doDesignForShear == sdtLayoutStirrups);
 
       // clear outcome codes
       m_DesignerOutcome.Reset();
 
       // don't do anything if nothing is asked
-      if (options.doDesignForFlexure==dtNoDesign && 
-          !options.doDesignForShear)
+      if (options.doDesignForFlexure==dtNoDesign && options.doDesignForShear == sdtNoDesign)
       {
          artifact.SetOutcome(pgsSegmentDesignArtifact::NoDesignRequested);
          girderDesignArtifact.AddSegmentDesignArtifact(segIdx,artifact);
@@ -1334,7 +1335,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
                }
             }
 
-            if (options.doDesignSlabOffset != sodNoSlabOffsetDesign)
+            if (options.doDesignSlabOffset != sodPreserveHaunch)
             {
                pProgress->UpdateMessage(_T("Designing Slab Offset Outer Loop"));
 
@@ -1394,14 +1395,14 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
             m_DesignerOutcome.Reset();
          }
 
-         if (options.doDesignForShear)
+         if (options.doDesignForShear != sdtNoDesign)
          {
             //
             // Refine stirrup design
             // 
             pProgress->UpdateMessage(_T("Designing Shear Stirrups"));
 
-            DesignShear(&artifact, options.doDesignStirrupLayout==slLayoutStirrups, options.doDesignForFlexure!=dtNoDesign);
+            DesignShear(&artifact, options.doDesignForShear == sdtLayoutStirrups, options.doDesignForFlexure!=dtNoDesign);
 
             if ( m_DesignerOutcome.WasDesignAborted() )
             {
@@ -1427,7 +1428,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
          return;
       }
 
-      if (artifact.GetDesignOptions().doDesignSlabOffset != sodNoSlabOffsetDesign)
+      if (artifact.GetDesignOptions().doDesignSlabOffset != sodPreserveHaunch)
       {
          LOG(_T("Final Slab Offset before rounding (Start) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metStart),unitMeasure::Inch) << _T(" in and (End) ") << ::ConvertFromSysUnits( artifact.GetSlabOffset(pgsTypes::metEnd),unitMeasure::Inch) << _T(" in"));
          Float64 start_offset = RoundSlabOffsetValue(pSpec, artifact.GetSlabOffset(pgsTypes::metStart));
@@ -1700,7 +1701,9 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
       {
          Float64 Apt = pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, stressTendonIntervalIdx, ductIdx);
          Float64 Aduct = pSegmentTendonGeometry->GetInsideDuctArea(segmentKey, ductIdx);
-         Float64 OD = pSegmentTendonGeometry->GetOutsideDiameter(segmentKey, ductIdx);
+
+         // starting with 9th edition, the duct diameter limit and the duct reduction for shear is based on nominal duct diameter
+         Float64 duct_diameter = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020 ? pSegmentTendonGeometry->GetOutsideDiameter(segmentKey,ductIdx) : pSegmentTendonGeometry->GetNominalDiameter(segmentKey, ductIdx));
 
          Float64 r = pSegmentTendonGeometry->GetMinimumRadiusOfCurvature(segmentKey, ductIdx);
 
@@ -1708,7 +1711,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
 
          pgsDuctSizeArtifact artifact;
          artifact.SetDuctArea(Apt, Aduct, Kmax);
-         artifact.SetDuctSize(OD, tWebMin, Tmax);
+         artifact.SetDuctSize(duct_diameter, tWebMin, Tmax);
          artifact.SetRadiusOfCurvature(r, Rmin);
 
          pSegmentArtifact->SetDuctSizeArtifact(ductIdx, artifact);
@@ -1733,7 +1736,9 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
       IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey,ductIdx);
       Float64 Apt = pGirderTendonGeometry->GetGirderTendonArea(girderKey,stressTendonIntervalIdx,ductIdx);
       Float64 Aduct = pGirderTendonGeometry->GetInsideDuctArea(girderKey,ductIdx);
-      Float64 OD = pGirderTendonGeometry->GetOutsideDiameter(girderKey,ductIdx);
+
+      // starting with 9th edition, the duct diameter limit and the duct reduction for shear is based on nominal duct diameter
+      Float64 duct_diameter = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020 ? pGirderTendonGeometry->GetOutsideDiameter(girderKey, ductIdx) : pGirderTendonGeometry->GetNominalDiameter(girderKey, ductIdx));
 
       Float64 r = pGirderTendonGeometry->GetMinimumRadiusOfCurvature(girderKey,ductIdx);
 
@@ -1746,7 +1751,7 @@ void pgsDesigner2::CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArt
 
       pgsDuctSizeArtifact artifact;
       artifact.SetDuctArea(Apt,Aduct,Kmax);
-      artifact.SetDuctSize(OD,tWebMin,Tmax);
+      artifact.SetDuctSize(duct_diameter,tWebMin,Tmax);
       artifact.SetRadiusOfCurvature(r,Rmin);
 
       pGirderArtifact->SetDuctSizeArtifact(ductIdx,artifact);
@@ -1947,7 +1952,7 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    std::vector<pgsTypes::StrandType> strandTypes;
-   if ( pStrands->GetStrandDefinitionType() == CStrandData::sdtTotal )
+   if ( pStrands->GetStrandDefinitionType() == pgsTypes::sdtTotal )
    {
       strandTypes.push_back(pgsTypes::Permanent);
    }
@@ -3716,7 +3721,7 @@ Float64 pgsDesigner2::GetNormalFrictionForce(const pgsPointOfInterest& poi) cons
       Float64 top_flange_width = pGdr->GetTopFlangeWidth(poi);
       Float64 panel_support    = pDeck->PanelSupport;
 
-      MatingSurfaceIndexType nMatingSurfaces = pGdr->GetNumberOfMatingSurfaces(segmentKey);
+      MatingSurfaceIndexType nMatingSurfaces = pGdr->GetMatingSurfaceCount(segmentKey);
       Float64 wMating = 0; // sum of mating surface widths... less deck panel support width
       for ( MatingSurfaceIndexType i = 0; i < nMatingSurfaces; i++ )
       {
@@ -4016,11 +4021,19 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    
 
    // the check is applicable
-
-   pArtifact->SetApplicability(true);
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+
+   pArtifact->SetApplicability(true);
+
+   // 9th edition added a requirement that ApsFps > AsFy
+   // This requirement was developed primarily for simple span pretensioned girders. This limit will not be checked
+   // in negative moment regions where the tension tie is the deck rebar, unless there are PT tendons providing
+   // the tension tie
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   auto nDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
+   pArtifact->PretensionForceMustExceedBarForce((scd.bTensionBottom || 0 < nDucts) && lrfdVersionMgr::NinthEdition2020 <= pSpecEntry->GetSpecificationType() ? true : false);
 
    // Longitudinal steel
    Float64 fy = scd.fy; 
@@ -4592,6 +4605,60 @@ void pgsDesigner2::InitShearCheck(const CSegmentKey& segmentKey,IntervalIndexTyp
    }
 }
 
+void pgsDesigner2::GetShearPointsOfInterest(bool bDesign,const CSegmentKey& segmentKey,pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,PoiList& vPoi) const
+{
+   if (bDesign)
+   {
+      vPoi = m_ShearDesignTool.GetDesignPoi();
+   }
+   else
+   {
+      GET_IFACE(IPointOfInterest, pPoi);
+      PoiList pois;
+      pPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &pois);
+
+      PoiList csPoi;
+      pPoi->GetCriticalSections(limitState, segmentKey, &csPoi); // this gets all CS for the girderline
+      // only keep CS poi on this segment
+      for (const auto& poi : csPoi)
+      {
+         if (poi.get().GetSegmentKey() == segmentKey)
+         {
+            pois.emplace_back(poi);
+         }
+      }
+
+      PoiList morePoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_FACEOFSUPPORT | POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | POI_DEBOND, &morePoi, POIFIND_OR);
+      pois.insert(std::end(pois), std::begin(morePoi), std::end(morePoi));
+
+      // if closures can take any load, add it to the list of poi
+      GET_IFACE_NOCHECK(IIntervals, pIntervals);
+      GET_IFACE(IBridge, pBridge);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
+      if (segmentKey.segmentIndex < nSegments - 1 && pIntervals->GetCompositeClosureJointInterval(segmentKey) <= intervalIdx)
+      {
+         PoiList vCJPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_CLOSURE, &vCJPoi);
+         pois.insert(std::end(pois), std::begin(vCJPoi), std::end(vCJPoi));
+      }
+
+
+      // these poi are for the WSDOT summary report. They are traditional location for reporting shear checks
+      morePoi.clear();
+      pPoi->GetPointsOfInterest(segmentKey, POI_H | POI_15H, &morePoi, POIFIND_OR);
+      pois.insert(pois.end(), morePoi.begin(), morePoi.end());
+
+      pPoi->SortPoiList(&pois); // sort and remove duplicates
+
+      // remove all POI from the container that are outside of the CL Bearings...
+      // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
+      Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
+      Float64 endDist = pBridge->GetSegmentStartEndDistance(segmentKey);
+      std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(segmentKey, endDist, endDist + segmentSpanLength));
+   }
+}
+
 void pgsDesigner2::CheckShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,pgsGirderArtifact* pGirderArtifact) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -4622,47 +4689,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    // InitShearCheck causes the critical section for shear POI to be created...
    // Get the POI here so the CS poi are in the list
    PoiList vPoi;
-   if ( bDesign )
-   {
-      vPoi = m_ShearDesignTool.GetDesignPoi();
-   }
-   else
-   {
-      GET_IFACE(IPointOfInterest, pPoi);
-      PoiList pois;
-      pPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &pois);
-      PoiList csPoi;
-      pPoi->GetPointsOfInterest(segmentKey, limitState == pgsTypes::StrengthII ? POI_CRITSECTSHEAR2 : POI_CRITSECTSHEAR1, &csPoi);
-      pois.insert(std::end(pois),std::begin(csPoi),std::end(csPoi));
-      PoiList morePoi;
-      pPoi->GetPointsOfInterest(segmentKey, POI_FACEOFSUPPORT | POI_HARPINGPOINT | POI_STIRRUP_ZONE | POI_CONCLOAD | POI_DIAPHRAGM | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP | POI_DEBOND, &morePoi, POIFIND_OR);
-      pois.insert(std::end(pois),std::begin(morePoi),std::end(morePoi)); 
-
-      // if closures can take any load, add it to the list of poi
-      GET_IFACE_NOCHECK(IIntervals,pIntervals);
-      GET_IFACE(IBridge,pBridge);
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
-      if ( segmentKey.segmentIndex < nSegments-1 && pIntervals->GetCompositeClosureJointInterval(segmentKey) <= intervalIdx )
-      {
-         PoiList vCJPoi;
-         pPoi->GetPointsOfInterest(segmentKey, POI_CLOSURE, &vCJPoi);
-         pois.insert(std::end(pois),std::begin(vCJPoi),std::end(vCJPoi));
-      }
-
-
-      // these poi are for the WSDOT summary report. They are traditional location for reporting shear checks
-      morePoi.clear();
-      pPoi->GetPointsOfInterest(segmentKey, POI_H | POI_15H, &morePoi, POIFIND_OR);
-      pois.insert(pois.end(),morePoi.begin(),morePoi.end()); 
-      
-      pPoi->SortPoiList(&pois); // sort and remove duplicates
-
-      // remove all POI from the container that are outside of the CL Bearings...
-      // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
-      Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
-      Float64 endDist   = pBridge->GetSegmentStartEndDistance(segmentKey);
-      std::remove_copy_if(pois.begin(), pois.end(), std::back_inserter(vPoi), PoiIsOutsideOfBearings(segmentKey,endDist,endDist+segmentSpanLength));
-   }
+   GetShearPointsOfInterest(bDesign, segmentKey, limitState, intervalIdx, vPoi);
 
    ATLASSERT(pStirrupArtifact != nullptr);
    GET_IFACE(IMaterials,pMaterials);
@@ -4967,9 +4994,9 @@ void pgsDesigner2::CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmen
    Float64 minWeb       = DBL_MAX;
 
    GET_IFACE(IGirder,pGdr);
-   FlangeIndexType nTopFlanges = pGdr->GetNumberOfTopFlanges(segmentKey);
+   FlangeIndexType nTopFlanges = pGdr->GetTopFlangeCount(segmentKey);
    WebIndexType    nWebs       = pGdr->GetWebCount(segmentKey);
-   FlangeIndexType nBotFlanges = pGdr->GetNumberOfBottomFlanges(segmentKey);
+   FlangeIndexType nBotFlanges = pGdr->GetBottomFlangeCount(segmentKey);
 
    if ( nTopFlanges != 0 || nWebs != 0 || nBotFlanges != 0 )
    {
@@ -5631,129 +5658,222 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    }
 }
 
-void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifact* pArtifact) const
+void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifact* pArtifact) const
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IStrandGeometry,pStrandGeometry);
-   GET_IFACE(IDebondLimits,pDebondLimits);
+   GET_IFACE(IStrandGeometry, pStrandGeometry);
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   GET_IFACE(IProgress,pProgress);
+
+   // Get total number of straight strands below half height. Never include harped strands in count
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   pgsTypes::AdjustableStrandType adjustable_strand_type = pSegment->Strands.GetAdjustableStrandType();
+   pgsTypes::StrandType strand_type = adjustable_strand_type == pgsTypes::asHarped ? pgsTypes::Straight : pgsTypes::Permanent;
+
+   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey, strand_type, pgsTypes::dbetEither);
+   pArtifact->SetNumDebondedStrands(nDebonded);
+
+   if (nDebonded == 0)
+   {
+      return;
+   }
+
+   GET_IFACE(ISegmentData, pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+   CComPtr<IIndexArray> arrayPermStrandIndex;
+   if (pStrands->GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput)
+   {
+      pStrandGeometry->ComputePermanentStrandIndices(segmentKey, strand_type, &arrayPermStrandIndex);
+   }
+
+   GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IDebondLimits, pDebondLimits);
+   GET_IFACE(IProgress, pProgress);
+   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IGirder, pGirder);
 
    CEAFAutoProgress ap(pProgress);
-   pProgress->UpdateMessage( _T("Checking debonding requirements") );
+   pProgress->UpdateMessage(_T("Checking debonding requirements"));
 
-   Float64 maxFra = pDebondLimits->GetMaxDebondedStrands(segmentKey);
-   pArtifact->AddMaxDebondStrandsAtSection(pDebondLimits->GetMaxNumDebondedStrandsPerSection(segmentKey),
-                                           pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey));
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | POI_0L | POI_10L, &vPoi);
+   ATLASSERT(vPoi.size() == 2);
+   std::array<pgsPointOfInterest, 2> poi{ vPoi.front(),vPoi.back() };
+
+   StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, strand_type);
+   StrandIndexType nPermStrands = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Permanent);
+
+   // +--------------+--------+------------------+-------------+
+   // | Beam         | # Webs | # Bottom Flanges | Requirement |
+   // +--------------+--------+------------------+-------------+
+   // | I-Beams      |    1   |        1         |     I       |
+   // | U-Beams      |    2   |        1         |     J       |
+   // | Voided Slabs |    0   |        0         |     K       |
+   // | Double Tee   |    2   |        0         |     K       |
+   // +--------------+--------+------------------+-------------+
+   WebIndexType nWebs = pGirder->GetWebCount(segmentKey);
+   FlangeIndexType nFlanges = pGirder->GetBottomFlangeCount(segmentKey);
+   if (nWebs == 1 && nFlanges == 1)
+   {
+      // single-web flanged sections
+      // (I-beams, bulb-tees, and inverted-tees)
+      // Requirement I apply
+      pArtifact->SetSection(pgsDebondArtifact::I);
+   }
+   else if (1 < nWebs && nFlanges == 1)
+   {
+      // multi-web sections having bottom flanges
+      // (voided slab, box beams, and U-beams)
+      // Requirement J apply
+      pArtifact->SetSection(pgsDebondArtifact::J);
+   }
+   else
+   {
+      // all other sections
+      // Requirement K apply
+      ATLASSERT(0 <= nWebs && nFlanges == 0);
+      pArtifact->SetSection(pgsDebondArtifact::K);
+   }
+
+
+   StrandIndexType nMax10orLess, nMax;
+   bool bCheckMaxPerSection;
+   Float64 fraMaxPerSection;
+   pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey, &nMax10orLess, &nMax, &bCheckMaxPerSection, &fraMaxPerSection);
+   pArtifact->AddMaxDebondStrandsAtSection(nStrands <= 10 ? nMax10orLess : nMax, bCheckMaxPerSection, fraMaxPerSection);
 
    Float64 maxFraPerRow = pDebondLimits->GetMaxDebondedStrandsPerRow(segmentKey);
 
-   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-   pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
-
-   // Get total number of straight strands below half height. Never include harped strands in count
-   pgsTypes::StrandType strand_type = adj_type == pgsTypes::asHarped ? pgsTypes::Straight : pgsTypes::Permanent;
-   pgsPointOfInterest poi(segmentKey,0); // we can use a dummy poi here because we are getting rows for straight strands
-
-   StrandIndexType nStrands = pStrandGeometry->GetNumStrandsBottomHalf(poi, strand_type);
-
    // Only straight strands can be debonded
    // Total number of debonded strands
-   StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
-   Float64 fra = (nStrands == 0 ? 0 : (Float64)nDebonded/(Float64)nStrands);
-
-   pArtifact->SetMaxFraDebondedStrands(maxFra);
-   pArtifact->SetFraDebondedStrands(fra);
-   pArtifact->SetNumDebondedStrands(nDebonded);
+   pArtifact->CheckMaxFraDebondedStrands(pDebondLimits->CheckMaxDebondedStrands(segmentKey));
+   Float64 fraDebonded = (nStrands == 0 ? 0 : (Float64)nDebonded / (Float64)nPermStrands);
+   pArtifact->SetFraDebondedStrands(fraDebonded);
+   if (pArtifact->CheckMaxFraDebondedStrands())
+   {
+      Float64 maxFra = pDebondLimits->GetMaxDebondedStrands(segmentKey);
+      pArtifact->SetMaxFraDebondedStrands(maxFra);
+   }
 
    // If adjustable strands are straight, we will need to match up rows in order to get a total for each row
-   bool doCheckAdj(false);
-   if (pgsTypes::asHarped != adj_type)
+   bool bCheckAdjustableStrands(false);
+   if (adjustable_strand_type != pgsTypes::asHarped)
    {
-      if (pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped) > 0)
+      if (0 < pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped))
       {
-         doCheckAdj = true;
+         bCheckAdjustableStrands = true;
       }
    }
 
    // Number of debonded strands in row
-   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
-   for ( RowIndexType row = 0; row < nRows; row++ )
+   RowIndexType nRows = pStrandGeometry->GetNumRowsWithStrand(poi[pgsTypes::metStart], pgsTypes::Straight);
+   for (RowIndexType rowIdx = 0; rowIdx < nRows; rowIdx++)
    {
-      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi,row,pgsTypes::Straight);
+      StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
 
-      if (doCheckAdj)
+      if (bCheckAdjustableStrands)
       {
          // In order to determine all strands in row - we need to add in any adjustable straight stands that might be in this row.
-         Float64 row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi, row, pgsTypes::Straight);
+         Float64 row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
 
-         RowIndexType nAdjRows = pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Harped);
-         for (RowIndexType adjrow = 0; adjrow < nAdjRows; adjrow++)
+         RowIndexType nAdjustableStrandRows = pStrandGeometry->GetNumRowsWithStrand(poi[pgsTypes::metStart], pgsTypes::Harped);
+         for (RowIndexType adjustableStrandRowIdx = 0; adjustableStrandRowIdx < nAdjustableStrandRows; adjustableStrandRowIdx++)
          {
-            Float64 adj_row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi, adjrow, pgsTypes::Harped);
+            Float64 adjustable_strand_row_elev = pStrandGeometry->GetUnadjustedStrandRowElevation(poi[pgsTypes::metStart], adjustableStrandRowIdx, pgsTypes::Harped);
 
-            if (IsEqual(adj_row_elev, row_elev, gs_rowToler))
+            if (IsEqual(adjustable_strand_row_elev, row_elev, gs_rowToler))
             {
-               StrandIndexType nAdjStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi, adjrow, pgsTypes::Harped);
-               nStrandsInRow += nAdjStrandsInRow;
+               StrandIndexType nAdjustableStrandsInRow = pStrandGeometry->GetNumStrandInRow(poi[pgsTypes::metStart], adjustableStrandRowIdx, pgsTypes::Harped);
+               nStrandsInRow += nAdjustableStrandsInRow;
                break;
             }
          }
       }
 
-      StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(poi,row,pgsTypes::Straight);
-      fra = (nStrandsInRow == 0 ? 0 : (Float64)nDebondStrandsInRow/(Float64)nStrandsInRow);
-      bool bExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(poi,row,pgsTypes::Straight);
+      StrandIndexType nDebondStrandsInRow = pStrandGeometry->GetNumDebondedStrandsInRow(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
+      Float64 fra = (nStrandsInRow == 0 ? 0 : (Float64)nDebondStrandsInRow / (Float64)nStrandsInRow);
       pArtifact->AddNumStrandsInRow(nStrandsInRow);
       pArtifact->AddNumDebondedStrandsInRow(nDebondStrandsInRow);
       pArtifact->AddFraDebondedStrandsInRow(fra);
       pArtifact->AddMaxFraDebondedStrandsInRow(maxFraPerRow);
-      pArtifact->AddIsExteriorStrandDebondedInRow(bExteriorStrandDebonded);
+
+      // LRFD 9th Edition, 5.9.4.3.3, Requirement I, J, K (exterior strands in row must be debonded)
+      if (pDebondLimits->IsExteriorStrandBondingRequiredInRow(segmentKey, pgsTypes::metStart, rowIdx))
+      {
+         if (pArtifact->GetSection() == pgsDebondArtifact::K && lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::NinthEdition2020)
+         {
+            // this is a multi-web, no flange section - LRFD 9th Edition, 5.9.4.3.3 Requirement K applies. Exterior strands in each web need to be bonded
+            if (nWebs == 0)
+            {
+               // this is a solid slab
+               bool bIsExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
+               pArtifact->SetExtriorStrandBondState(rowIdx, bIsExteriorStrandDebonded ? pgsDebondArtifact::Debonded : pgsDebondArtifact::Bonded);
+            }
+            else
+            {
+               for (WebIndexType webIdx = 0; webIdx < nWebs; webIdx++)
+               {
+                  bool bIsExteriorStrandDebonded = pStrandGeometry->IsExteriorWebStrandDebondedInRow(poi[pgsTypes::metStart], webIdx, rowIdx, pgsTypes::Straight);
+                  pArtifact->SetExtriorStrandBondState(rowIdx, bIsExteriorStrandDebonded ? pgsDebondArtifact::Debonded : pgsDebondArtifact::Bonded, webIdx);
+               }
+            }
+         }
+         else
+         {
+            bool bIsExteriorStrandDebonded = pStrandGeometry->IsExteriorStrandDebondedInRow(poi[pgsTypes::metStart], rowIdx, pgsTypes::Straight);
+            pArtifact->SetExtriorStrandBondState(rowIdx, bIsExteriorStrandDebonded ? pgsDebondArtifact::Debonded : pgsDebondArtifact::Bonded);
+         }
+      }
+      else
+      {
+         // exterior strands are not required to be bonded in this row
+         // this requirement was first introduced in LRFD 9th edition for I-Beams (5.9.4.3.3 Requirement I)
+         ATLASSERT(lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion());
+         pArtifact->SetExtriorStrandBondState(rowIdx, pgsDebondArtifact::None);
+      }
    }
 
    // Number of debonded strands at a section and section lengths
-   Float64 L = pBridge->GetSegmentLength( segmentKey );
-   Float64 L2 = L/2.0;
+   Float64 L = pBridge->GetSegmentLength(segmentKey);
+   Float64 L2 = L / 2.0;
 
-   Float64 lmin_section = Float64_Max;
+   std::array<Float64, 2> lmin_section{ Float64_Max,Float64_Max };
    Float64 lmax_debond_length = 0.0;
 
    // left end
-   StrandIndexType nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetStart);
+   StrandIndexType nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetStart);
    Float64 prev_location = 0.0;
-   SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
-   for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+   SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey, pgsTypes::metStart, pgsTypes::Straight);
+   for (SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++)
    {
-      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
-      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nDebondedEnd);
-      Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
-      pArtifact->AddDebondSection(location,nDebondedStrands,fraDebondedStrands);
+      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey, pgsTypes::metStart, sectionIdx, pgsTypes::Straight);
+      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands / (Float64)nDebondedEnd);
+      Float64 location = pStrandGeometry->GetDebondSection(segmentKey, pgsTypes::metStart, sectionIdx, pgsTypes::Straight);
+      pArtifact->AddDebondSection(location, nDebondedStrands, fraDebondedStrands);
 
-      if ( location < 0 || L2 < location )
+      if (location < 0 || L2 < location)
       {
          ATLASSERT(false);
          continue; // bond occurs after mid-girder... skip this one
       }
 
-      Float64 section_len = location - prev_location;
-      lmin_section = Min(lmin_section, section_len);
-         
+      Float64 section_len = fabs(location - prev_location);
+      lmin_section[pgsTypes::metStart] = Min(lmin_section[pgsTypes::metStart], section_len);
+
       lmax_debond_length = Max(lmax_debond_length, location);
 
       prev_location = location;
    }
 
    // right end
-   nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEnd);
-   nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metEnd,pgsTypes::Straight);
-   for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
+   nDebondedEnd = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEnd);
+   nSections = pStrandGeometry->GetNumDebondSections(segmentKey, pgsTypes::metEnd, pgsTypes::Straight);
+   for (SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++)
    {
-      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey,pgsTypes::metEnd,sectionIdx,pgsTypes::Straight);
-      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands/(Float64)nDebondedEnd);
-      Float64 location = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metEnd,sectionIdx,pgsTypes::Straight);
-      pArtifact->AddDebondSection(location,nDebondedStrands,fraDebondedStrands);
+      StrandIndexType nDebondedStrands = pStrandGeometry->GetNumDebondedStrandsAtSection(segmentKey, pgsTypes::metEnd, sectionIdx, pgsTypes::Straight);
+      Float64 fraDebondedStrands = (nDebondedEnd == 0 ? 0 : (Float64)nDebondedStrands / (Float64)nDebondedEnd);
+      Float64 location = pStrandGeometry->GetDebondSection(segmentKey, pgsTypes::metEnd, sectionIdx, pgsTypes::Straight);
+      pArtifact->AddDebondSection(location, nDebondedStrands, fraDebondedStrands);
 
-      if ( location < L2 || L < location )
+      if (location < L2 || L < location)
       {
          ATLASSERT(false);
          continue; // bond occurs after the end of the girder... skip this one
@@ -5767,10 +5887,10 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
       }
       else
       {
-         section_len = location - prev_location;
+         section_len = fabs(location - prev_location);
       }
 
-      lmin_section = Min(lmin_section, section_len);
+      lmin_section[pgsTypes::metEnd] = Min(lmin_section[pgsTypes::metEnd], section_len);
 
 
       Float64 debond_length = L - location;
@@ -5779,6 +5899,10 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
       prev_location = location;
    }
 
+   lmin_section[pgsTypes::metStart] = lmin_section[pgsTypes::metStart] == Float64_Max ? 0 : lmin_section[pgsTypes::metStart];
+   lmin_section[pgsTypes::metEnd] = lmin_section[pgsTypes::metEnd] == Float64_Max ? 0 : lmin_section[pgsTypes::metEnd];
+   pArtifact->SetMinDebondSectionSpacing(Min(lmin_section[pgsTypes::metStart], lmin_section[pgsTypes::metEnd]));
+
    Float64 dll;
    pgsTypes::DebondLengthControl control;
    pDebondLimits->GetMaxDebondLength(segmentKey, &dll, &control);
@@ -5786,18 +5910,378 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifac
    pArtifact->SetMaxDebondLength(lmax_debond_length);
    pArtifact->SetDebondLengthLimit(dll, control);
 
-   Float64 dds = pDebondLimits->GetMinDebondSectionDistance(segmentKey);
+   Float64 dds = pDebondLimits->GetMinDistanceBetweenDebondSections(segmentKey);
+   pArtifact->SetDebondSectionSpacingLimit(dds);
 
-   if (lmin_section == Float64_Max)
+   // LRFD 5.9.4.3.3, 9th Edition, Requirement D
+   // If one of the built-in strand models are used, strands are forced to be symmetric and satisfy the requirement
+   // Symmetry is not enforced for direct strand input and it is not checked
+   pArtifact->CheckDebondingSymmetry(pDebondLimits->CheckDebondingSymmetry(segmentKey)); // Is checking symmetry enabled?
+   pArtifact->IsDebondingSymmetrical(pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput ? DEBOND_SYMMETRY_NA : DEBOND_SYMMETRY_TRUE); // the result is either NA or TRUE
+
+   // LRFD 5.9.4.3.3, 9th Edition, Requirement E
+   if (pDebondLimits->CheckAdjacentDebonding(segmentKey))
    {
-      lmin_section = 0.0;
+      pArtifact->CheckAdjacentDebonding(true);
+      std::vector<RowIndexType> vRowsWithDebonding = pStrandGeometry->GetRowsWithDebonding(segmentKey, pgsTypes::Straight);
+      if (1 < vRowsWithDebonding.size())
+      {
+         // loop over all the rows with debonding, working two rows at a time
+         auto iter = vRowsWithDebonding.begin() + 1;
+         auto end = vRowsWithDebonding.end();
+         for (; iter != end; iter++)
+         {
+            RowIndexType prevRowIdx = *(iter - 1);  // row i-1
+            RowIndexType thisRowIdx = *iter;        // row i
+
+            bool bCompareVertically = true;
+            if (prevRowIdx + 1 != thisRowIdx)
+            {
+               // there is a row with all bonded strands between rows with debonded strands
+               // rows with debonding are not adjacent so don't compare verticially
+               bCompareVertically = false;
+            }
+
+
+            // create records for each strand, left to right
+            // the record is the horizontal position, the debonding state and strand index of the strand at this position on the previous row,
+            // and the debonding state and strand index of the strand at this position in this row
+            const int debonded = 0; // stand is debonded
+            const int bonded = 1; // strand is bonded
+            const int none = -1; // there isn't a strand vertically above or below the strand a this position
+
+            for (int i = 0; i < 2; i++)
+            {
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+
+               std::map<Float64, std::tuple<StrandIndexType, int, StrandIndexType, int>> debondRecords; // key = horizontal position, value = strand index and debond state in prev row, strand index and debond state in this row
+
+               // evaluate previous row
+               std::vector<StrandIndexType> vStrandsPrevRow = pStrandGeometry->GetStrandsInRow(poi[endType], prevRowIdx, pgsTypes::Straight);
+               for (auto strandIdx : vStrandsPrevRow)
+               {
+                  CComPtr<IPoint2d> pnt;
+                  pStrandGeometry->GetStrandPosition(poi[endType], strandIdx, pgsTypes::Straight, &pnt);
+                  Float64 x;
+                  pnt->get_X(&x);
+                  bool bIsDebonded = pStrandGeometry->IsStrandDebonded(poi[endType], strandIdx, pgsTypes::Straight);
+                  debondRecords.emplace(x, std::make_tuple(strandIdx, bIsDebonded ? debonded : bonded, INVALID_INDEX, none));
+               }
+
+               // evalute current row
+               std::vector<StrandIndexType> vStrandsThisRow = pStrandGeometry->GetStrandsInRow(poi[endType], thisRowIdx, pgsTypes::Straight);
+               for (auto strandIdx : vStrandsThisRow)
+               {
+                  CComPtr<IPoint2d> pnt;
+                  pStrandGeometry->GetStrandPosition(poi[endType], strandIdx, pgsTypes::Straight, &pnt);
+                  Float64 x;
+                  pnt->get_X(&x);
+                  bool bIsDebonded = pStrandGeometry->IsStrandDebonded(poi[endType], strandIdx, pgsTypes::Straight);
+
+                  auto found = debondRecords.find(x);
+                  if (found != debondRecords.end())
+                  {
+                     // this is a strand at this position in the previous row... update the strand record
+                     std::get<2>(found->second) = strandIdx;
+                     std::get<3>(found->second) = bIsDebonded ? debonded : bonded;
+                  }
+                  else
+                  {
+                     // this is not a strand at this position in the previous row... create a new strand record
+                     debondRecords.emplace(x, std::make_tuple(INVALID_INDEX, none, strandIdx, bIsDebonded ? debonded : bonded));
+                  }
+               }
+
+               // now that we have the strand records, analyze them to make sure adjacent strands are not debonded
+               auto iter = debondRecords.begin();
+               std::pair<Float64, std::tuple<StrandIndexType, int, StrandIndexType, int>> prevItem = *iter;
+               iter++;
+               auto end = debondRecords.end();
+               for (; iter != end; iter++)
+               {
+                  std::pair<Float64, std::tuple<StrandIndexType, int, StrandIndexType, int>> thisItem = *iter;
+                  if (bCompareVertically && (std::get<1>(prevItem.second) == debonded && std::get<3>(prevItem.second) == debonded))
+                  {
+                     // adjacent rows are being compared for vertical adjacency and the strands in both rows are debonded
+                     StrandIndexType permStrandIdx1(std::get<0>(prevItem.second)), permStrandIdx2(std::get<2>(prevItem.second));
+                     if (arrayPermStrandIndex)
+                     {
+                        arrayPermStrandIndex->get_Item(std::get<0>(prevItem.second), &permStrandIdx1);
+                        arrayPermStrandIndex->get_Item(std::get<2>(prevItem.second), &permStrandIdx2);
+                     }
+                     pArtifact->AddAdjacentDebondedStrands(endType, permStrandIdx1, permStrandIdx2);
+                  }
+
+                  if (std::get<1>(prevItem.second) == debonded && std::get<1>(thisItem.second) == debonded)
+                  {
+                     // adjacent strands horizontally are debonded
+                     StrandIndexType permStrandIdx1(std::get<0>(prevItem.second)), permStrandIdx2(std::get<0>(thisItem.second));
+                     if (arrayPermStrandIndex)
+                     {
+                        arrayPermStrandIndex->get_Item(std::get<0>(prevItem.second), &permStrandIdx1);
+                        arrayPermStrandIndex->get_Item(std::get<0>(thisItem.second), &permStrandIdx2);
+                     }
+                     pArtifact->AddAdjacentDebondedStrands(endType, permStrandIdx1, permStrandIdx2);
+                  }
+
+                  prevItem = thisItem;
+               }
+            }
+         }
+      }
+      else
+      {
+         // zero or one row have debonding.... if it's zero the loop doesn't do anything
+         // if there is one, the we are just checking if horizontally adjacent strands are debonded
+         for (int i = 0; i < 2; i++)
+         {
+            pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+            for (auto rowIdx : vRowsWithDebonding)
+            {
+               std::vector<StrandIndexType> vStrandsThisRow = pStrandGeometry->GetStrandsInRow(poi[endType], rowIdx, pgsTypes::Straight);
+
+               // sort the indexes based on the x-position of the strand, sorting left to right (need to compare adjacent strands, not adjacent strand indices)
+               std::sort(std::begin(vStrandsThisRow), std::end(vStrandsThisRow), [poi, endType, pStrandGeometry](auto strandIdx1, auto strandIdx2) {CComPtr<IPoint2d> pnt1, pnt2;
+               pStrandGeometry->GetStrandPosition(poi[endType], strandIdx1, pgsTypes::Straight, &pnt1);
+               pStrandGeometry->GetStrandPosition(poi[endType], strandIdx2, pgsTypes::Straight, &pnt2);
+               Float64 x1, x2;
+               pnt1->get_X(&x1);
+               pnt2->get_X(&x2);
+               return x1 < x2; }
+               );
+
+#if defined _DEBUG
+               Float64 X = -Float64_Max; // make sure strand indices represent strands left to right in order
+#endif
+
+               StrandIndexType prevStrandIdx = INVALID_INDEX;
+               bool bWasPreviousStrandDebonded = false;
+               for (auto strandIdx : vStrandsThisRow)
+               {
+#if defined _DEBUG
+                  CComPtr<IPoint2d> pnt;
+                  pStrandGeometry->GetStrandPosition(poi[endType], strandIdx, pgsTypes::Straight, &pnt);
+                  Float64 x;
+                  pnt->get_X(&x);
+                  ATLASSERT(X < x); // make sure strands are ordered left to right
+                  X = x;
+#endif
+
+                  bool bIsDebonded = pStrandGeometry->IsStrandDebonded(poi[endType], strandIdx, pgsTypes::Straight);
+                  if (bIsDebonded && bWasPreviousStrandDebonded)
+                  {
+                     StrandIndexType permStrandIdx1(prevStrandIdx), permStrandIdx2(strandIdx);
+                     if (arrayPermStrandIndex)
+                     {
+                        arrayPermStrandIndex->get_Item(prevStrandIdx, &permStrandIdx1);
+                        arrayPermStrandIndex->get_Item(strandIdx, &permStrandIdx2);
+                     }
+                     pArtifact->AddAdjacentDebondedStrands(endType, permStrandIdx1, permStrandIdx2);
+                  }
+                  bWasPreviousStrandDebonded = bIsDebonded;
+                  prevStrandIdx = strandIdx;
+               }
+            }
+         }
+      }
+   }
+   else
+   {
+      pArtifact->CheckAdjacentDebonding(false);
    }
 
-   pArtifact->SetMinDebondSectionSpacing(lmin_section);
-   pArtifact->SetDebondSectionSpacingLimit(dds);
+
+   if(pDebondLimits->CheckDebondingInWebWidthProjections(segmentKey))
+   {
+      pArtifact->CheckDebondingInWebWidthProjection(true); // need to check with Spec/Girder for this
+      IndexType nRegions = 0;
+      std::vector<RowIndexType> vRowsWithDebonding = pStrandGeometry->GetRowsWithDebonding(segmentKey, pgsTypes::Straight);
+
+      // get strand diameter/radius so we can create a bounding box for a strand point
+      GET_IFACE(IMaterials, pMaterials);
+      const auto* pStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+      Float64 d_strand = pStrand->GetNominalDiameter();
+      Float64 r_strand = 0.5*d_strand;
+
+      CComPtr<IRect2d> strandRect;
+      strandRect.CoCreateInstance(CLSID_Rect2d);
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+         Float64 fra, ratio;
+         std::vector<CComPtr<IRect2d>> vRegions = pStrandGeometry->GetWebWidthProjectionsForDebonding(segmentKey, endType, &fra, &ratio);
+         if (pArtifact->GetSection() == pgsDebondArtifact::I)
+         {
+            // only applicable to Requirement I cross sections
+            ATLASSERT(IsEqual(fraDebonded, fra));
+            pArtifact->SetBottomFlangeToWebWidthRatio(endType, ratio);
+         }
+
+         auto n = vRegions.size();
+         if (0 < n)
+         {
+            nRegions += n;
+
+            for (auto rowIdx : vRowsWithDebonding)
+            {
+               std::vector<StrandIndexType> vStrandsThisRow = pStrandGeometry->GetStrandsInRow(poi[endType], rowIdx, pgsTypes::Straight);
+               for (auto strandIdx : vStrandsThisRow)
+               {
+                  // we are checking to see if there are debonded strands in the web width projection region... no need to check bonded strands
+                  if (pStrandGeometry->IsStrandDebonded(poi[endType], strandIdx, pgsTypes::Straight))
+                  {
+                     // strand is debonded... get its location
+                     CComPtr<IPoint2d> pnt;
+                     pStrandGeometry->GetStrandPosition(poi[endType], strandIdx, pgsTypes::Straight, &pnt);
+
+                     Float64 x, y;
+                     pnt->Location(&x, &y);
+
+                     // the entire strand must be contained within the region... set the strand rectangle so cover
+                     // the strand (this is the strand's bounding box)
+                     strandRect->SetBounds(x - r_strand, x + r_strand, y - r_strand, y + r_strand);
+
+                     // check if the strand is within on of the regions
+                     for (auto rect : vRegions)
+                     {
+                        VARIANT_BOOL vbResult;
+                        rect->ContainsRect(strandRect, &vbResult);
+                        if (vbResult == VARIANT_TRUE)
+                        {
+                           // a debonded strand is in the web width projection region, record it
+                           StrandIndexType permStrandIdx(strandIdx);
+                           if (arrayPermStrandIndex)
+                           {
+                              arrayPermStrandIndex->get_Item(strandIdx,&permStrandIdx);
+                           }
+                           pArtifact->AddDebondedStrandInWebWidthProjection(endType, permStrandIdx);
+                           break; // no need to check other regions, break out of the loop
+                        }
+                     } // next region
+                  } // if debonded
+               } // next trand
+            } // next row
+         } // if there are regions
+      } // next end
+
+      if (nRegions == 0)
+      {
+         // if there aren't any web width projection regions, then this check is not applicable
+         // (think about double-tee beams... the check may be enabled in the criteria,
+         // but double-tee beams fall under Requirement K of 5.9.4.3.3 where the web width projection
+         // is not a requirement
+         pArtifact->CheckDebondingInWebWidthProjection(false); 
+      }
+   } // if evaluated
+   else
+   {
+      pArtifact->CheckDebondingInWebWidthProjection(false);
+   }
+
+   // NOTE: Requirement I, check for debonding furthest from vertical centerline, is not evaluated
+   // NOTE: Requirement J and K, check uniformity of debond spacing, is not evaluated
+   // NOTE: Requirement J, check debonding from vertical centerline outward (from notation in Fig C5.9.4.3.3-2), is not evaluated
 }
 
-void pgsDesigner2::DesignEndZone(bool firstPass, arDesignOptions options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const
+void pgsDesigner2::CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentKey, pgsPrincipalTensionStressArtifact* pArtifact) const
+{
+   // First determine of this check is applicable... 
+
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017)
+   {
+      // this requirement was added in LRFD 8th Edition, 2017... so any spec before this
+      // the requirement is not applicable
+      pArtifact->SetApplicablity(pgsPrincipalTensionStressArtifact::Specification);
+      return;
+   }
+
+   // This is always applicable if there is post-tensioning
+   // If there isn't post-tensioning, it is only applicable if fc28 > 10 ksi
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
+
+   DuctIndexType nDucts = nSegmentDucts + nGirderDucts;
+
+   if (nDucts == 0)
+   {
+      // no post-tensioning, check fc
+      GET_IFACE(IMaterials, pMaterials);
+      Float64 fc = pMaterials->GetSegmentFc28(segmentKey);
+
+      // threshold f'c for performing principal stress check
+      GET_IFACE(IAllowableConcreteStress, pAllowable );
+      Float64 principalTensileStressFcThreshold = pAllowable->GetprincipalTensileStressFcThreshold();
+
+      pArtifact->SetApplicablity(principalTensileStressFcThreshold < fc ? pgsPrincipalTensionStressArtifact::Applicable : pgsPrincipalTensionStressArtifact::ConcreteStrength); // no PT so only applicable if fc > 10 ksi
+   }
+   else
+   {
+      // this is PT
+      pArtifact->SetApplicablity(pgsPrincipalTensionStressArtifact::Applicable);
+   }
+
+   if (!pArtifact->IsApplicable())
+   {
+      // if the check isn't appicable, leave now
+      return;
+
+   }
+
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
+
+   // Get points of interest for the check
+   PoiList vPois;
+   GetPrincipalWebStressPointsOfInterest(segmentKey, intervalIdx, &vPois);
+
+   pgsPrincipalWebStressEngineer engineer(m_pBroker,m_StatusGroupID);
+   engineer.Check(vPois, pArtifact);
+}
+
+void pgsDesigner2::GetPrincipalWebStressPointsOfInterest(const CSegmentKey & rSegmentKey, IntervalIndexType intervalIdx, PoiList * pPoiList) const
+{
+   std::vector<CSegmentKey> segmentKeys;
+   if (rSegmentKey.segmentIndex == ALL_SEGMENTS)
+   {
+      CGirderKey gdrKey(rSegmentKey);
+
+      GET_IFACE(IBridge,pBridge);
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(gdrKey);
+      for (SegmentIndexType iseg = 0; iseg < nSegments; iseg++)
+      {
+         segmentKeys.push_back(CSegmentKey(gdrKey,iseg));
+      }
+   }
+   else
+   {
+      segmentKeys.push_back(rSegmentKey);
+   }
+
+   for (auto& segmentKey : segmentKeys)
+   {
+      PoiList vPois;
+      GetShearPointsOfInterest(false/*not design*/, segmentKey, pgsTypes::StrengthI, intervalIdx, vPois);
+      // NOTE: even though this is a ServiceIII check, we need to get the shear POI for StrengthI because
+      // shear is a strength limit state check. This prinicpal tension check was added to LRFD in 8th Edition.
+      // Prior to 8th edition, the critical section was changed so that it is no longer a function of the
+      // limit state. As such, we can safely use the StrengthI limit state value.
+
+      // don't check POIs that are in critical section zones
+      GET_IFACE(IPointOfInterest, pPoi);
+      for (const auto& poiRef : vPois)
+      {
+         if (!pPoi->IsInCriticalSectionZone(poiRef.get(), pgsTypes::StrengthI))
+         {
+            pPoiList->emplace_back(poiRef);
+         }
+      }
+   }
+}
+
+void pgsDesigner2::DesignEndZone(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const
 {
    // At this point we either have harping or debonding maximized in the end-zones
    // The concrete strength for lifting will control over this case
@@ -5851,7 +6335,7 @@ void pgsDesigner2::DesignEndZone(bool firstPass, arDesignOptions options, pgsSeg
    }
 }
 
-void pgsDesigner2::DesignEndZoneDebonding(bool firstPass, arDesignOptions options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const
+void pgsDesigner2::DesignEndZoneDebonding(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const
 {
    LOG(_T("Entering DesignEndZoneDebonding"));
 
@@ -6131,7 +6615,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
    Int16 cIter = 0;
    Int16 nFutileAttempts=0;
    Int16 nIterMax = 40;
-   Int16 nIterEarlyStage = (options.doDesignSlabOffset != sodNoSlabOffsetDesign) ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
+   Int16 nIterEarlyStage = (options.doDesignSlabOffset != sodPreserveHaunch) ? 10 : 5; // Early design stage - NOTE: DO NOT change this value unless you run all design tests VERY SENSITIVE!!!
    StrandIndexType Ns, Nh, Nt;
    Float64 fc, fci, start_slab_offset, end_slab_offset;
 
@@ -6293,7 +6777,7 @@ void pgsDesigner2::DesignMidZone(bool bUseCurrentStrands, const arDesignOptions&
          }
       }
 
-      if (options.doDesignSlabOffset != sodNoSlabOffsetDesign)
+      if (options.doDesignSlabOffset != sodPreserveHaunch)
       {
          pProgress->UpdateMessage(_T("Designing Slab Offset - inner loop"));
          DesignSlabOffset( pProgress );
@@ -7068,7 +7552,7 @@ void pgsDesigner2::DesignMidZoneInitialStrands(bool bUseCurrentStrands, IProgres
    Float64 fc_lldf = fcgdr;
    if ( pGirderMaterial->Concrete.bUserEc )
    {
-      fc_lldf = lrfdConcreteUtil::FcFromEc( pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
+      fc_lldf = lrfdConcreteUtil::FcFromEc( (matConcrete::Type)(pGirderMaterial->Concrete.Type), pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
    }
 
    GET_IFACE(ILiveLoadDistributionFactors,pLLDF);

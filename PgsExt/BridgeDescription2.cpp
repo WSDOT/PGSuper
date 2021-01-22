@@ -39,7 +39,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define FILE_VERSION 12
+#define FILE_VERSION 13
+// Version 13 - added starting pier renumbering
 // Version 12 - added work point location
 // Version 11 - Added BearingData, and Top Width Spacing for adjacent deck beams
 // Version 10 - added assumed excess camber data
@@ -100,6 +101,11 @@ CBridgeDescription2::CBridgeDescription2()
    m_RightTopWidth = 0;
    
    m_bWasVersion3_1FilletRead = false;
+
+
+   m_StartingPierNumber = 1;
+   m_DisplayStartSupportType = pgsTypes::desAbutment;
+   m_DisplayEndSupportType = pgsTypes::desAbutment;
 }
 
 CBridgeDescription2::CBridgeDescription2(const CBridgeDescription2& rOther)
@@ -228,6 +234,21 @@ bool CBridgeDescription2::operator==(const CBridgeDescription2& rOther) const
       {
          return false;
       }
+   }
+
+   if ( m_DisplayStartSupportType != rOther.m_DisplayStartSupportType )
+   {
+      return false;
+   }
+
+   if ( m_DisplayEndSupportType != rOther.m_DisplayEndSupportType )
+   {
+      return false;
+   }
+
+   if ( m_StartingPierNumber != rOther.m_StartingPierNumber )
+   {
+      return false;
    }
       
    if ( m_BearingType != rOther.m_BearingType )
@@ -574,6 +595,23 @@ HRESULT CBridgeDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress
          }
       }
 
+      if (13 <= version)
+      {
+         var.vt = VT_UI8;
+         hr = pStrLoad->get_Property(_T("StartingPierNumber"), &var);
+         m_StartingPierNumber = var.llVal;
+
+         var.vt = VT_UI4;
+         hr = pStrLoad->get_Property(_T("DisplayStartSupportType"), &var);
+         pgsTypes::DisplayEndSupportType dt = (pgsTypes::DisplayEndSupportType)(var.lVal);
+         m_DisplayStartSupportType = dt;
+
+         var.vt = VT_UI4;
+         hr = pStrLoad->get_Property(_T("DisplayEndSupportType"), &var);
+         dt = (pgsTypes::DisplayEndSupportType)(var.lVal);
+         m_DisplayEndSupportType = dt;
+      }
+
       if ( 10 < version )
       {
          var.vt = VT_UI4;
@@ -844,6 +882,11 @@ HRESULT CBridgeDescription2::Save(IStructuredSave* pStrSave,IProgress* pProgress
    {
       hr = pStrSave->put_Property(_T("AssExcessCamber"),CComVariant(m_AssumedExcessCamber));
    }
+
+   // Pier renumbering. Added in version 13
+   hr = pStrSave->put_Property(_T("StartingPierNumber"),CComVariant(m_StartingPierNumber));
+   hr = pStrSave->put_Property(_T("DisplayStartSupportType"),CComVariant(m_DisplayStartSupportType));
+   hr = pStrSave->put_Property(_T("DisplayEndSupportType"),CComVariant(m_DisplayEndSupportType));
 
    hr = pStrSave->put_Property(_T("BearingType"),CComVariant(m_BearingType)); // Added in version 9
    if ( m_BearingType == pgsTypes::brtBridge )
@@ -2287,6 +2330,50 @@ bool CBridgeDescription2::MovePier(PierIndexType pierIdx,Float64 newStation,pgsT
    return bRetVal;
 }
 
+void CBridgeDescription2::SetPierDisplaySettings(pgsTypes::DisplayEndSupportType startPierType, pgsTypes::DisplayEndSupportType endPierType, PierIndexType startPierNumber)
+{
+   m_DisplayStartSupportType = startPierType;
+   m_DisplayEndSupportType = endPierType;
+   m_StartingPierNumber = startPierNumber;
+}
+
+void CBridgeDescription2::GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const
+{
+   *pStartPierType = m_DisplayStartSupportType;
+   *pEndPierType = m_DisplayEndSupportType;
+   *pStartPierNumber = m_StartingPierNumber;
+}
+
+PierIndexType CBridgeDescription2::GetDisplayStartingPierNumber() const
+{
+   return m_StartingPierNumber;
+}
+
+void CBridgeDescription2::SetDisplayStartingPierNumber(PierIndexType num)
+{
+   m_StartingPierNumber = num;
+}
+
+pgsTypes::DisplayEndSupportType CBridgeDescription2::GetDisplayStartSupportType() const
+{
+   return m_DisplayStartSupportType;
+}
+
+void CBridgeDescription2::SetDisplayStartSupportType(pgsTypes::DisplayEndSupportType dtype)
+{
+   m_DisplayStartSupportType = dtype;
+}
+
+pgsTypes::DisplayEndSupportType CBridgeDescription2::GetDisplayEndSupportType() const
+{
+   return m_DisplayEndSupportType;
+}
+
+void CBridgeDescription2::SetDisplayEndSupportType(pgsTypes::DisplayEndSupportType dtype)
+{
+   m_DisplayEndSupportType = dtype;
+}
+
 bool CBridgeDescription2::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
 {
    _ASSERT( 0 < newLength );
@@ -3083,6 +3170,10 @@ void CBridgeDescription2::MakeCopy(const CBridgeDescription2& rOther)
    m_LeftRailingSystem        = rOther.m_LeftRailingSystem;
    m_RightRailingSystem       = rOther.m_RightRailingSystem;
    m_AlignmentOffset          = rOther.m_AlignmentOffset;
+
+   m_StartingPierNumber      = rOther.m_StartingPierNumber;
+   m_DisplayStartSupportType = rOther.m_DisplayStartSupportType;
+   m_DisplayEndSupportType   = rOther.m_DisplayEndSupportType;
    
    m_Deck                     = rOther.m_Deck;
    m_Deck.SetBridgeDescription(this);
@@ -3746,6 +3837,26 @@ bool CBridgeDescription2::IsStable() const
    return true;
 }
 
+bool CBridgeDescription2::IsValidSpan(SpanIndexType spanIdx) const
+{
+   return 0.0 < m_Spans[spanIdx]->GetSpanLength() ? true : false;
+}
+
+bool CBridgeDescription2::IsValidLayout() const
+{
+   for (const auto *pSpan : m_Spans)
+   {
+      if (!IsValidSpan(pSpan->GetIndex()))  return false;
+   }
+
+   return true;
+}
+
+bool CBridgeDescription2::IsValidBridge() const
+{
+   return IsValidLayout();
+}
+
 Float64 CBridgeDescription2::GetBridgeWidth() const
 {
    const CDeckDescription2* pDeck = GetDeckDescription();
@@ -3776,17 +3887,21 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                   CComPtr<IGirderSection> gdrSection;
                   factory->CreateGirderSection(nullptr,INVALID_ID,m_pGirderLibraryEntry->GetDimensions(),-1,-1,&gdrSection);
 
-                  Float64 Wtf;
-                  gdrSection->get_TopWidth(&Wtf);
+                  // Width is max of top and bottom.
+                  Float64 Width, wleft, wrght;
+                  gdrSection->get_TopWidth(&wleft,&wrght);
+                  Width = wleft + wrght;
+                  gdrSection->get_BottomWidth(&wleft,&wrght);
+                  Width = max(Width, wleft + wrght);
 
                   if ( 1 < nGirders )
                   {
-                     Float64 w = s*(nGirders-1) + nGirders*Wtf;
+                     Float64 w = s*(nGirders-1) + nGirders*Width;
                      max_spacing_width = Max(max_spacing_width,w);
                   }
                   else
                   {
-                     max_spacing_width = Max(max_spacing_width,Wtf);
+                     max_spacing_width = Max(max_spacing_width,Width);
                   }
                }
                else
@@ -3822,10 +3937,13 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                         CComPtr<IGirderSection> gdrSection;
                         factory->CreateGirderSection(nullptr,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
 
-                        Float64 Wtf;
-                        gdrSection->get_TopWidth(&Wtf);
+                        Float64 Width, wleft, wrght;
+                        gdrSection->get_TopWidth(&wleft,&wrght);
+                        Width = wleft + wrght;
+                        gdrSection->get_BottomWidth(&wleft,&wrght);
+                        Width = max(Width, wleft + wrght);
 
-                        w += Wtf;
+                        w += Width;
                      } // next girder
 
                      if ( 1 < nGirders )
@@ -3869,9 +3987,13 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                      CComPtr<IGirderSection> gdrSection;
                      factory->CreateGirderSection(nullptr,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
 
-                     Float64 Wtf;
-                     gdrSection->get_TopWidth(&Wtf);
-                     w += Wtf;
+                     Float64 Width, wleft, wrght;
+                     gdrSection->get_TopWidth(&wleft,&wrght);
+                     Width = wleft + wrght;
+                     gdrSection->get_BottomWidth(&wleft,&wrght);
+                     Width = max(Width, wleft + wrght);
+
+                     w += Width;
                      if ( gdrIdx < nGirders-1 )
                      {
                         w += s;

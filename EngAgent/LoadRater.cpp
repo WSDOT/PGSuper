@@ -131,6 +131,7 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
       pPoi->SortPoiList(&vShearPoi); // sort and remove duplicates
 
       ShearRating(girderKey,vShearPoi,ratingType,vehicleIdx, loadRatingIntervalIdx, bTimeStep, ratingArtifact);
+      LongitudinalReinforcementForShearRating(girderKey, vShearPoi, ratingType, vehicleIdx, loadRatingIntervalIdx, bTimeStep, ratingArtifact);
    }
 
    return ratingArtifact;
@@ -859,17 +860,12 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
       shearArtifact.SetLiveLoadFactor(gLL);
       shearArtifact.SetLiveLoadShear(LLIM+PL);
 
-      // longitudinal steel check
-      pgsLongReinfShearArtifact l_artifact;
-      SHEARCAPACITYDETAILS scd;
+      // horizontal interface shear check
+      pgsHorizontalShearArtifact h_artifact;
+
       pgsDesigner2 designer;
       designer.SetBroker(m_pBroker);
-      pShearCapacity->GetShearCapacityDetails(limitState,loadRatingIntervalIdx,poi,nullptr,&scd);
-      designer.InitShearCheck(poi.GetSegmentKey(),loadRatingIntervalIdx, limitState,nullptr);
-      designer.CheckLongReinfShear(poi,loadRatingIntervalIdx, limitState,scd,nullptr,&l_artifact);
-      shearArtifact.SetLongReinfShearArtifact(l_artifact);
 
-      pgsHorizontalShearArtifact h_artifact;
       h_artifact.SetApplicability(false);
       if (pBridge->IsCompositeDeck())
       {
@@ -898,6 +894,30 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
       shearArtifact.SetHorizontalInterfaceShearArtifact(h_artifact);
 
       ratingArtifact.AddArtifact(poi,shearArtifact);
+   }
+}
+
+void pgsLoadRater::LongitudinalReinforcementForShearRating(const CGirderKey& girderKey, const PoiList& vPoi, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx, IntervalIndexType loadRatingIntervalIdx, bool bTimeStep, pgsRatingArtifact& ratingArtifact) const
+{
+   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE(IProgress, pProgress);
+   CEAFAutoProgress ap(pProgress);
+   pProgress->UpdateMessage(_T("Load rating for longitudinal reinforcement for shear"));
+
+   pgsTypes::LimitState limitState = ::GetStrengthLimitStateType(ratingType);
+
+   GET_IFACE(IShearCapacity, pShearCapacity);
+
+   for(const pgsPointOfInterest& poi : vPoi)
+   {
+      pgsLongReinfShearArtifact l_artifact;
+      SHEARCAPACITYDETAILS scd;
+      pgsDesigner2 designer;
+      designer.SetBroker(m_pBroker);
+      pShearCapacity->GetShearCapacityDetails(limitState, loadRatingIntervalIdx, poi, nullptr, &scd);
+      designer.InitShearCheck(poi.GetSegmentKey(), loadRatingIntervalIdx, limitState, nullptr);
+      designer.CheckLongReinfShear(poi, loadRatingIntervalIdx, limitState, scd, nullptr, &l_artifact);
+      ratingArtifact.AddArtifact(poi, l_artifact);
    }
 }
 

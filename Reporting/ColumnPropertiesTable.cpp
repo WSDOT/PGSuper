@@ -77,7 +77,7 @@ rptRcTable* CColumnPropertiesTable::Build(IBroker* pBroker,IEAFDisplayUnits* pDi
       }
 
       CString strLabel;
-      strLabel.Format(_T("Pier %d"),LABEL_PIER(pierIdx));
+      strLabel.Format(_T("Pier %s"),LABEL_PIER(pierIdx));
 
       rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(4,strLabel);
       (*pLayoutTable)(layoutTableRow++,0) << xs_table;

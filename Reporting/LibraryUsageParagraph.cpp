@@ -53,11 +53,13 @@ rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker, bool doPrintTable)
    sysTime time;
    bool bPrintDate = sysTime::PrintDate(true);
    
-   std::_tstring strPublisher;
+   std::_tstring strServer;
+   std::_tstring strConfiguration;
    std::_tstring strMasterLibFile;
-   pLibrary->GetMasterLibraryInfo(strPublisher,strMasterLibFile,time);
+   pLibrary->GetMasterLibraryInfo(strServer,strConfiguration,strMasterLibFile,time);
 
-   *pParagraph << _T("Configuration Name: ") << strPublisher << rptNewLine;
+   *pParagraph << _T("Configuration Server: ") << strServer << rptNewLine;
+   *pParagraph << _T("Configuration Name: ") << strConfiguration << rptNewLine;
    *pParagraph << _T("Configuration Source: ") << strMasterLibFile << rptNewLine;
    *pParagraph << _T("Configuration Date Stamp: ") << time.AsString() << rptNewLine;
 

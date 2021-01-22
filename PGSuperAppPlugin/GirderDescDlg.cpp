@@ -32,6 +32,7 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\Helpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,7 +51,7 @@ CGirderDescDlg::CGirderDescDlg(const CBridgeDescription2* pBridgeDesc,const CSeg
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
    CString strTitle;
-   strTitle.Format(_T("Girder Details for Span %d, Girder %s"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
+   strTitle.Format(_T("Girder Details for Span %s, Girder %s"),LABEL_SPAN(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex));
    SetTitle(strTitle);
 
    Init(pBridgeDesc,segmentKey);
@@ -117,7 +118,7 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
 
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
-   if( m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput || m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if( m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput || m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       AddAdditionalPropertyPages( false, false );
    }
@@ -214,7 +215,7 @@ LRESULT CGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 
 	ASSERT_VALID(this);
 
-	CPropertyPage* pPage = GetPage(GetActiveIndex());
+   auto* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
 	if( pPage != nullptr )
@@ -393,7 +394,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
-   if (m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
+   if (m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)
    {
       // first get in girderdata format
       const CDirectStrandFillCollection* pDirectFillData(nullptr);

@@ -29,6 +29,7 @@
 #include "SpanDisplayObjectEvents.h"
 #include "mfcdual.h"
 #include "PGSuperDocBase.h"
+#include <IFace\EditByUI.h>
 
 #include <PgsExt\SpanData2.h>
 

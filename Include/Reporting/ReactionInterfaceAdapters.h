@@ -211,3 +211,56 @@ private:
    bool              m_bAlwaysReport;
    IntervalIndexType m_ThresholdInterval;
 };
+
+/*****************************************************************************
+CLASS 
+   ReactionUnitValueTool
+
+   Utility adapter class for outputting individual bearing reactions. This class
+   reports the total reaction on the first line, and the total/numbearings on the second line.
+   If the table is a pier reaction table it only reports the total reaction.
+
+DESCRIPTION
+
+LOG
+*****************************************************************************/
+
+class ReactionUnitValueTool : public rptRcComposite
+{
+public:
+   ReactionUnitValueTool(ReactionTableType tableType, rptForceUnitValue reactUVal) :
+   m_NumBearings(1),
+   m_TableType(tableType),
+   m_ReactUVal(reactUVal)
+   {
+   }
+
+   void SetNumBearings(IndexType nb)
+   {
+      m_NumBearings = nb;
+   }
+
+   rptReportContent& SetValue(Float64 val)
+   {
+      ClearContents();
+      this->AddContent(m_ReactUVal.SetValue(val));
+
+      if (m_TableType == BearingReactionsTable && m_NumBearings > 1 )
+      {
+         // add second line
+         this->AddContent(rptNewLine);
+         this->AddContent(m_ReactUVal.SetValue(val/m_NumBearings));
+      }
+
+      return *this;
+   }
+
+
+private:
+   ReactionTableType m_TableType;
+   rptForceUnitValue m_ReactUVal;
+   IndexType m_NumBearings; // if we are reporting bearings
+
+   ReactionUnitValueTool();
+};
+

@@ -63,7 +63,7 @@ m_pBroker(pBroker)
 {
 }
 
-eafTypes::StatusSeverityType pgsRefinedAnalysisStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsRefinedAnalysisStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }
@@ -152,7 +152,7 @@ pgsInstallationErrorStatusCallback::pgsInstallationErrorStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }
@@ -201,7 +201,7 @@ pgsUnknownErrorStatusCallback::pgsUnknownErrorStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsUnknownErrorStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsUnknownErrorStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }
@@ -225,6 +225,10 @@ CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
+pgsInformationalStatusItem::~pgsInformationalStatusItem()
+{
+}
+
 bool pgsInformationalStatusItem::IsEqual(CEAFStatusItem* pOther)
 {
    pgsInformationalStatusItem* other = dynamic_cast<pgsInformationalStatusItem*>(pOther);
@@ -242,7 +246,7 @@ m_Severity(severity), m_HelpID(helpID)
 {
 }
 
-eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -284,7 +288,7 @@ m_pBroker(pBroker)
    m_HelpID = 0;
 }
 
-eafTypes::StatusSeverityType pgsProjectCriteriaStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsProjectCriteriaStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }
@@ -357,7 +361,7 @@ m_pBroker(pBroker), m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -376,11 +380,11 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    {
       GET_IFACE(IEditByUI,pEdit);
 
-      if (pEdit->EditSegmentDescription(pItem->m_SegmentKey,pItem->m_Page))
+      if (pItem->m_SegmentKey.segmentIndex == INVALID_INDEX ? pEdit->EditGirderDescription(pItem->m_SegmentKey, pItem->m_Page) : pEdit->EditSegmentDescription(pItem->m_SegmentKey, pItem->m_Page))
       {
          // assume that edit took care of status
          StatusItemIDType id = pItem->GetID();
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         GET_IFACE(IEAFStatusCenter, pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }
@@ -410,7 +414,7 @@ pgsStructuralAnalysisTypeStatusCallback::pgsStructuralAnalysisTypeStatusCallback
 {
 }
 
-eafTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverity() const
 {
    return eafTypes::statusWarning;
 }
@@ -452,7 +456,7 @@ m_pBroker(pBroker), m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -590,7 +594,7 @@ m_pBroker(pBroker)
 {
 }
 
-eafTypes::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity() const
 {
    return eafTypes::statusInformation;
 }
@@ -637,7 +641,7 @@ m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -680,20 +684,83 @@ pgsTimelineStatusCallback::pgsTimelineStatusCallback(IBroker* pBroker, eafTypes:
 {
 }
 
-eafTypes::StatusSeverityType pgsTimelineStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsTimelineStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
 void pgsTimelineStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
    pgsTimelineStatusItem* pItem = dynamic_cast<pgsTimelineStatusItem*>(pStatusItem);
    ATLASSERT(pItem != nullptr);
+
+   CString str(pItem->GetDescription());
+   AfxMessageBox(str, MB_ICONEXCLAMATION);
 
    GET_IFACE(IEditByUI, pEdit);
 
    if (pEdit->EditTimeline())
+   {
+      // assume that edit took care of status
+      StatusItemIDType id = pItem->GetID();
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      pStatusCenter->RemoveByID(id);
+   }
+}
+
+
+//////////////////////////////////////////////////////////
+pgsConnectionGeometryStatusItem::pgsConnectionGeometryStatusItem(StatusGroupIDType statusGroupID, StatusCallbackIDType callbackID, PierIndexType pierIdx, LPCTSTR strDescription) :
+   CEAFStatusItem(statusGroupID, callbackID, strDescription),
+   m_PierIdx(pierIdx)
+{
+}
+
+bool pgsConnectionGeometryStatusItem::IsEqual(CEAFStatusItem* pOther)
+{
+   pgsConnectionGeometryStatusItem* other = dynamic_cast<pgsConnectionGeometryStatusItem*>(pOther);
+   if (!other)
+   {
+      return false;
+   }
+
+
+   if (CString(this->GetDescription()) != CString(other->GetDescription()))
+   {
+      return false;
+   }
+
+   if (m_PierIdx != other->m_PierIdx)
+   {
+      return false;
+   }
+
+   return true;
+}
+
+
+pgsConnectionGeometryStatusCallback::pgsConnectionGeometryStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity) :
+   m_pBroker(pBroker), m_Severity(severity)
+{
+}
+
+eafTypes::StatusSeverityType pgsConnectionGeometryStatusCallback::GetSeverity() const
+{
+   return m_Severity;
+}
+
+void pgsConnectionGeometryStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+{
+   pgsConnectionGeometryStatusItem* pItem = dynamic_cast<pgsConnectionGeometryStatusItem*>(pStatusItem);
+   ATLASSERT(pItem != nullptr);
+
+   CString str;
+   str.Format(_T("%s"),pItem->GetDescription());
+   AfxMessageBox(str, MB_ICONEXCLAMATION);
+
+   GET_IFACE(IEditByUI, pEdit);
+
+   if (pEdit->EditPierDescription(pItem->m_PierIdx,EPD_CONNECTION))
    {
       // assume that edit took care of status
       StatusItemIDType id = pItem->GetID();

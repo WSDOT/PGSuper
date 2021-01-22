@@ -64,11 +64,13 @@ void write_bridge_site2(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
 void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
 void write_moment_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
 void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry,const CSegmentKey& segmentKey);
+void write_principal_web_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_haunch_dead_load(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_losses(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_strand_stress(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_deflections(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
+void write_bearings(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry);
 void write_rating_criteria(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const RatingLibraryEntry* pRatingEntry);
 void write_load_factors(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,LPCTSTR lpszName,const CLiveLoadFactorModel& model);
 
@@ -255,11 +257,13 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(CReportSpecification* pRptSpec
          write_shear_capacity(pChapter, pBroker, pDisplayUnits, pSpecEntry, segmentKey);
       } // next segment
 
+      write_principal_web_stress(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_haunch_dead_load(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_creep(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_losses(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_strand_stress(pChapter, pBroker, pDisplayUnits, pSpecEntry);
       write_deflections(pChapter, pBroker, pDisplayUnits, pSpecEntry);
+      write_bearings(pChapter, pBroker, pDisplayUnits, pSpecEntry);
 
       if ( bRating )
       {
@@ -1044,8 +1048,37 @@ void write_shear_capacity(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    }
 }
 
+void write_principal_web_stress(rptChapter * pChapter, IBroker * pBroker, IEAFDisplayUnits * pDisplayUnits, const SpecLibraryEntry * pSpecEntry)
+{
+   INIT_UV_PROTOTYPE( rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
+   INIT_UV_PROTOTYPE( rptPressureSectionValue, stress,   pDisplayUnits->GetStressUnit(), false );
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara<<_T("Principal Web Stress")<<rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   pgsTypes::PrincipalTensileStressMethod method;
+   Float64 coefficient, ductDiameterFactor,  ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
+   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor, &ungroutedMultiplier, &groutedMultiplier, &principalTensileStressFcThreshold);
+   if (method == pgsTypes::ptsmNCHRP)
+   {
+      *pPara<<_T("Principal web stress computed using WSDOT BDM/NCHRP Report 849, Equation 3.8")<<rptNewLine;
+   }
+   else
+   {
+      *pPara<<_T("Principal web stress computed using AASHTO LRFD Equation 5.9.2.3.3-1")<<rptNewLine;
+   }
+
+   *pPara << _T("Allowable tension coefficient: ") << tension_coeff.SetValue(coefficient) << _T("lambda)sqrt(f'c (") << stress.GetUnitTag() << _T("))") << rptNewLine;
+   *pPara << _T("When vertical analysis location is within ") << ductDiameterFactor << _T(" diameters from a duct location, Reduce web width for ungrouted ducts by ") << ungroutedMultiplier << _T(" * duct diameter, and ") << groutedMultiplier << _T(" * duct diameter, for grouted ducts.")  << rptNewLine;
+}
+
 void write_creep(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
 {
+
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara<<_T("Creep Criteria")<<rptNewLine;
@@ -1317,6 +1350,34 @@ void write_deflections(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* 
    {
       *pPara << _T("Live Load Deflection Limit not evaluated") << rptNewLine;
    }
+}
+
+void write_bearings(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const SpecLibraryEntry* pSpecEntry)
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Bearing Design Parameters Criteria") << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   *pPara << _T("Tapered Sole Plate requirements of LRFD 14.8.2 are ");
+   if (!pSpecEntry->AlertTaperedSolePlateRequirement())
+   {
+      *pPara << _T("not ");
+   }
+   *pPara << _T("evaluated.") << rptNewLine;
+   if (pSpecEntry->AlertTaperedSolePlateRequirement())
+   {
+      *pPara << _T("Tapered Sole Plates are required when the inclination of the underside of the girder to the horizontal exceeds ") << pSpecEntry->GetTaperedSolePlateInclinationThreshold() << _T(" rad.") << rptNewLine;
+   }
+
+   *pPara << _T("Dynamic load allowance is ");
+   if (!pSpecEntry->UseImpactForBearingReactions())
+   {
+      *pPara << _T("not ");
+   }
+   *pPara << _T("included in live load reactions and rotations.") << rptNewLine;
 }
 
 void write_rating_criteria(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const RatingLibraryEntry* pRatingEntry)

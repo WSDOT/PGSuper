@@ -125,18 +125,18 @@ libLibraryManager()
 
    // don't change the order that the libraries are added to the library manager
    // add new libraries at the end of this list
-   m_ConcLibIdx      = this->AddLibrary(conc_lib.release()); 
-   m_ConnLibIdx      = this->AddLibrary(conn_lib.release());
-   m_GirdLibIdx      = this->AddLibrary(gird_lib.release());
-   m_DiapLibIdx      = this->AddLibrary(diap_lib.release());
-   m_BarrLibIdx      = this->AddLibrary(barr_lib.release());
-   m_SpecLibIdx      = this->AddLibrary(spec_lib.release());
-   m_LiveLibIdx      = this->AddLibrary(live_lib.release());
-   m_RatingLibIdx    = this->AddLibrary(rate_lib.release());
-   m_DuctLibIdx      = this->AddLibrary(duct_lib.release());
-   m_HaulTruckLibIdx = this->AddLibrary(haul_lib.release());
+   m_ConcLibIdx      = AddLibrary(conc_lib.release()); 
+   m_ConnLibIdx      = AddLibrary(conn_lib.release());
+   m_GirdLibIdx      = AddLibrary(gird_lib.release());
+   m_DiapLibIdx      = AddLibrary(diap_lib.release());
+   m_BarrLibIdx      = AddLibrary(barr_lib.release());
+   m_SpecLibIdx      = AddLibrary(spec_lib.release());
+   m_LiveLibIdx      = AddLibrary(live_lib.release());
+   m_RatingLibIdx    = AddLibrary(rate_lib.release());
+   m_DuctLibIdx      = AddLibrary(duct_lib.release());
+   m_HaulTruckLibIdx = AddLibrary(haul_lib.release());
 
-   m_strPublisher = _T("Unknown");
+   m_strServer = _T("Unknown");
    m_strLibFile   = _T("Unknown");
 
    UpdateLibraryNames();
@@ -333,15 +333,17 @@ void psgLibraryManager::UpdateLibraryNames()
    LiveLoadLib->SetDisplayName(_T("Vehicular Live Load"));
 }
 
-void psgLibraryManager::SetMasterLibraryInfo(LPCTSTR strPublisher,LPCTSTR strLibFile)
+void psgLibraryManager::SetMasterLibraryInfo(LPCTSTR strServer,LPCTSTR strConfiguration,LPCTSTR strLibFile)
 {
-   m_strPublisher = strPublisher;
+   m_strServer = strServer;
+   m_strConfiguration = strConfiguration;
    m_strLibFile   = strLibFile;
 }
 
-void psgLibraryManager::GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strLibFile) const
+void psgLibraryManager::GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strLibFile) const
 {
-   strPublisher = m_strPublisher;
+   strServer = m_strServer;
+   strConfiguration = m_strConfiguration;
    strLibFile = m_strLibFile;
 }
 

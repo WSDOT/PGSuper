@@ -24,8 +24,6 @@ See @ref tg_structural_analysis_models in the @ref technical_guide for more info
 
 > NOTE: All closure joints at piers are installed during the same construction event. Changing the installation event for this closure joint changes it for all closure joints at this support. 
 
-> NOTE: The face of support for various shear releated computations is located one-half of the bearing length from the centerline bearing.
-
 Support Geometry
 -----------------
 Define the geometry of the connection.
@@ -34,6 +32,8 @@ Item | Description
 -----|-----------
 Bearing Offset | Distance from the pier line to the centerline bearing. Use the drop down list to select how this parameter is measured.
 End Distance | Locates the end of the segments. Use the drop down list to select how this parameter is measured
+
+> NOTE: The bearing offset cannot be measured along the centerline of girder when girder spacing is measured at the centerline bearing. In the general case, girders are not parallel and this will result in a unique bearing location relative to the centerline pier and there would not be a single, continuous bearing line through the bearing points for all girders.
 
 Diaphragm
 ------------
@@ -45,3 +45,7 @@ Width | Enter the width of the diaphragm, normal to the pier or enter the keywor
 Height | Enter the height of the diaphragm or enter the keyword "Compute" to compute the height based on the connection geometry.
 
 See @ref tg_computing_pier_diaphragm_dimensions in the @ref technical_guide for more information.
+
+Face of Support
+-------------------
+The face of support for various shear releated computations is based on the connection and diaphragm geometry as well as the boundary conditions. See @ref tg_face_of_support for more information.

@@ -206,12 +206,12 @@ void CCatalogServerAppMixin::SaveRegistryCatalogServers()
    }
 }
 
-CString CCatalogServerAppMixin::GetCachedMasterLibraryFile()
+const CString& CCatalogServerAppMixin::GetCachedMasterLibraryFile() const
 {
    return m_MasterLibraryFileCache;
 }
 
-CString CCatalogServerAppMixin::GetMasterLibraryFile()
+CString CCatalogServerAppMixin::GetMasterLibraryFile() const
 {
    CString strMasterLibFile;
    switch( m_SharedResourceType )
@@ -238,7 +238,7 @@ CString CCatalogServerAppMixin::GetMasterLibraryFile()
    return strMasterLibFile;
 }
 
-void CCatalogServerAppMixin::GetTemplateFolders(CString& strWorkgroupFolder)
+void CCatalogServerAppMixin::GetTemplateFolders(CString& strWorkgroupFolder) const
 {
    strWorkgroupFolder = m_WorkgroupTemplateFolderCache;
 }
@@ -248,7 +248,7 @@ void CCatalogServerAppMixin::SetCacheUpdateFrequency(CacheUpdateFrequency freque
    m_CacheUpdateFrequency = frequency;
 }
 
-CacheUpdateFrequency CCatalogServerAppMixin::GetCacheUpdateFrequency()
+CacheUpdateFrequency CCatalogServerAppMixin::GetCacheUpdateFrequency() const
 {
    return m_CacheUpdateFrequency;
 }
@@ -258,7 +258,7 @@ void CCatalogServerAppMixin::SetSharedResourceType(SharedResourceType resType)
    m_SharedResourceType = resType;
 }
 
-SharedResourceType CCatalogServerAppMixin::GetSharedResourceType()
+SharedResourceType CCatalogServerAppMixin::GetSharedResourceType() const
 {
    return m_SharedResourceType;
 }
@@ -291,6 +291,11 @@ CString CCatalogServerAppMixin::GetMasterLibraryPublisher() const
    }
 
    return strPublisher;
+}
+
+const CString& CCatalogServerAppMixin::GetConfigurationName() const
+{
+   return m_CurrentCatalogServer;
 }
 
 class CConfigureDlg : public CPropertySheet
@@ -480,7 +485,7 @@ void CCatalogServerAppMixin::RecursiveDelete(LPCTSTR pstr)
    finder.Close();
 }
 
-bool CCatalogServerAppMixin::IsTimeToUpdateCache()
+bool CCatalogServerAppMixin::IsTimeToUpdateCache() const
 {
 //   LOG(_T("IsTimeToUpdateCache()"));
    if ( m_SharedResourceType == srtDefault )
@@ -536,7 +541,7 @@ bool CCatalogServerAppMixin::IsTimeToUpdateCache()
    return bTimeToUpdate;
 }
 
-bool CCatalogServerAppMixin::AreUpdatesPending()
+bool CCatalogServerAppMixin::AreUpdatesPending() const
 {
    // get the MD5 files from the Internet or local network, compute the MD5 of the cache
    // if different, then there is an update pending
@@ -711,7 +716,7 @@ bool CCatalogServerAppMixin::DoCacheUpdate()
    return bSuccessful;
 }
 
-sysDate CCatalogServerAppMixin::GetLastCacheUpdateDate()
+sysDate CCatalogServerAppMixin::GetLastCacheUpdateDate() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFApp* pApp = EAFGetApp();
@@ -730,7 +735,7 @@ void CCatalogServerAppMixin::SetLastCacheUpdateDate(const sysDate& date)
    pApp->WriteProfileInt(_T("Settings"),_T("LastCacheUpdate"),date.Hash());
 }
 
-CString CCatalogServerAppMixin::GetDefaultMasterLibraryFile()
+CString CCatalogServerAppMixin::GetDefaultMasterLibraryFile() const
 {
    CEAFApp* pApp = EAFGetApp();
 
@@ -756,7 +761,7 @@ CString CCatalogServerAppMixin::GetDefaultMasterLibraryFile()
    return strAppPath + CString(_T("Configurations\\WSDOT.lbr"));
 }
 
-CString CCatalogServerAppMixin::GetDefaultWorkgroupTemplateFolder()
+CString CCatalogServerAppMixin::GetDefaultWorkgroupTemplateFolder() const
 {
    CEAFApp* pApp = EAFGetApp();
 
@@ -782,7 +787,7 @@ CString CCatalogServerAppMixin::GetDefaultWorkgroupTemplateFolder()
    return strAppPath + CString(_T("Configurations\\")) + GetAppName();
 }
 
-CString CCatalogServerAppMixin::GetCacheFolder()
+CString CCatalogServerAppMixin::GetCacheFolder() const
 {
    CEAFApp* pParentApp = EAFGetApp();
 
@@ -799,7 +804,7 @@ CString CCatalogServerAppMixin::GetCacheFolder()
    }
 }
 
-CString CCatalogServerAppMixin::GetSaveCacheFolder()
+CString CCatalogServerAppMixin::GetSaveCacheFolder() const
 {
    CEAFApp* pApp = EAFGetApp();
 
@@ -859,27 +864,27 @@ void CCatalogServerAppMixin::ProcessLibrarySetUp(const CPGSBaseCommandLineInfo& 
    }
 }
 
-LPCTSTR CCatalogServerAppMixin::GetCatalogServerKey()
+LPCTSTR CCatalogServerAppMixin::GetCatalogServerKey() const
 {
    return _T("CatalogServer");
 }
 
-LPCTSTR CCatalogServerAppMixin::GetPublisherKey()
+LPCTSTR CCatalogServerAppMixin::GetPublisherKey() const
 {
    return _T("Publisher");
 }
 
-LPCTSTR CCatalogServerAppMixin::GetMasterLibraryCacheKey()
+LPCTSTR CCatalogServerAppMixin::GetMasterLibraryCacheKey() const
 {
    return _T("MasterLibraryCache");
 }
 
-LPCTSTR CCatalogServerAppMixin::GetMasterLibraryURLKey()
+LPCTSTR CCatalogServerAppMixin::GetMasterLibraryURLKey() const
 {
    return _T("MasterLibraryURL");
 }
 
-LPCTSTR CCatalogServerAppMixin::GetWorkgroupTemplatesCacheKey()
+LPCTSTR CCatalogServerAppMixin::GetWorkgroupTemplatesCacheKey() const
 {
    return _T("WorkgroupTemplatesCache");
 }

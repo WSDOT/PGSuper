@@ -36,8 +36,8 @@ class pgsLiveLoadStatusCallback : public iStatusCallback
 {
 public:
    pgsLiveLoadStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;
@@ -60,8 +60,8 @@ class pgsLiftingSupportLocationStatusCallback : public iStatusCallback
 {
 public:
    pgsLiftingSupportLocationStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;
@@ -81,8 +81,8 @@ class pgsHaulTruckStatusCallback : public iStatusCallback
 {
 public:
    pgsHaulTruckStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;
@@ -104,8 +104,8 @@ class pgsBunkPointLocationStatusCallback : public iStatusCallback
 {
 public:
    pgsBunkPointLocationStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity();
-   virtual void Execute(CEAFStatusItem* pStatusItem);
+   virtual eafTypes::StatusSeverityType GetSeverity() const override;
+   virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
    IBroker* m_pBroker;

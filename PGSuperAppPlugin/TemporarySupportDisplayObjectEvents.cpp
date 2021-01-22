@@ -41,9 +41,9 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CTemporarySupportDisplayObjectEvents
 
-CTemporarySupportDisplayObjectEvents::CTemporarySupportDisplayObjectEvents(SupportIDType tsID,CBridgeModelViewChildFrame* pFrame)
+CTemporarySupportDisplayObjectEvents::CTemporarySupportDisplayObjectEvents(const CTemporarySupportData* pTS, CBridgeModelViewChildFrame* pFrame)
 {
-   m_tsID   = tsID;
+   m_pTS = pTS;
    m_pFrame = pFrame;
 
    m_pPrevTS = nullptr;
@@ -52,15 +52,10 @@ CTemporarySupportDisplayObjectEvents::CTemporarySupportDisplayObjectEvents(Suppo
    m_pPrevPier = nullptr;
    m_pNextPier = nullptr;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-
-   const CTemporarySupportData* pTS = pIBridgeDesc->FindTemporarySupport(tsID);
    SupportIndexType tsIdx = pTS->GetIndex();
 
-   m_pNextTS = pIBridgeDesc->GetTemporarySupport(tsIdx+1);
-   m_pPrevTS = pIBridgeDesc->GetTemporarySupport(tsIdx-1);
+   m_pNextTS = m_pTS->GetBridgeDescription()->GetTemporarySupport(tsIdx - 1);
+   m_pPrevTS = m_pTS->GetBridgeDescription()->GetTemporarySupport(tsIdx + 1);
 
    if ( (m_pPrevTS && (m_pPrevTS->GetSpan() != pTS->GetSpan())) || m_pPrevTS == nullptr)
    {
@@ -90,7 +85,7 @@ void CTemporarySupportDisplayObjectEvents::SelectTemporarySupport(iDisplayObject
 {
    // do the selection at the frame level because it will do this view
    // and the other view
-   m_pFrame->SelectTemporarySupport(m_tsID);
+   m_pFrame->SelectTemporarySupport(m_pTS->GetID());
 }
 
 void CTemporarySupportDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
@@ -229,12 +224,24 @@ STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnContextMenu
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_TEMPORARY_SUPPORT_CONTEXT,nullptr);
 
+      pMenu->AppendSeparator();
+      pMenu->AppendMenu(IDM_ERECTION_TOWER, CTemporarySupportData::AsString(pgsTypes::ErectionTower), nullptr);
+      pMenu->AppendMenu(IDM_STRONG_BACK, CTemporarySupportData::AsString(pgsTypes::StrongBack), nullptr);
+
+      if (pThis->m_pTS->GetSupportType() == pgsTypes::ErectionTower)
+      {
+         // toggling of segment conneciton type is only applicable to erection towers... segments must be joined with a closure joint at strongbacks
+         pMenu->AppendSeparator();
+         pMenu->AppendMenu(IDM_CONTINUOUS_SEGMENT, CTemporarySupportData::AsString(pgsTypes::tsctContinuousSegment), nullptr);
+         pMenu->AppendMenu(IDM_CONTINUOUS_CLOSURE, CTemporarySupportData::AsString(pgsTypes::tsctClosureJoint), nullptr);
+      }
+
       std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
       std::map<IDType,IBridgePlanViewEventCallback*>::iterator iter;
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgePlanViewEventCallback* callback = iter->second;
-         callback->OnTemporarySupportContextMenu(pThis->m_tsID,pMenu);
+         callback->OnTemporarySupportContextMenu(pThis->m_pTS->GetID(),pMenu);
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);

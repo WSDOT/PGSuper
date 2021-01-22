@@ -78,6 +78,9 @@ public:
    afx_msg void OnBnClickedStraightDesignCheck();
    afx_msg void OnBnClickedDebondDesignCheck();
    afx_msg void OnBnClickedHarpedDesignCheck();
+   afx_msg void OnClickedCheckMaxTotalStrands();
+   afx_msg void OnBnClickedCheckMaxFractionPerSection();
+   afx_msg void OnBnClickedCheckMinDistance();
 };
 
 //{{AFX_INSERT_LOCATION}}

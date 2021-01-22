@@ -308,46 +308,6 @@ void CApplyLoadsDlg::FillLists()
    }
 }
 
-CString CApplyLoadsDlg::GetLoadDescription(const CPointLoadData* pLoad)
-{
-   CString str;
-   str.Format(_T("Pt. Load: %s, %s, %s"),UserLoads::GetLoadCaseName(pLoad->m_LoadCase).c_str(),GetLocation(pLoad->m_SpanKey),pLoad->m_Description.c_str());
-   return str;
-}
-
-CString CApplyLoadsDlg::GetLoadDescription(const CDistributedLoadData* pLoad)
-{
-   CString str;
-   str.Format(_T("Dist. Load: %s, %s, %s"),UserLoads::GetLoadCaseName(pLoad->m_LoadCase).c_str(),GetLocation(pLoad->m_SpanKey),pLoad->m_Description.c_str());
-   return str;
-}
-
-CString CApplyLoadsDlg::GetLoadDescription(const CMomentLoadData* pLoad)
-{
-   CString str;
-   str.Format(_T("Mom. Load: %s, %s, %s"),UserLoads::GetLoadCaseName(pLoad->m_LoadCase).c_str(),GetLocation(pLoad->m_SpanKey),pLoad->m_Description.c_str());
-   return str;
-}
-
-CString CApplyLoadsDlg::GetLocation(const CSpanKey& spanKey)
-{
-   CString strSpan;
-   if ( spanKey.spanIndex == ALL_SPANS )
-      strSpan = _T("All Spans");
-   else
-      strSpan.Format(_T("Span %d"),LABEL_SPAN(spanKey.spanIndex));
-
-   CString strGirder;
-   if ( spanKey.girderIndex == ALL_GIRDERS )
-      strGirder = _T("All Girders");
-   else
-      strGirder.Format(_T("Girder %s"),LABEL_GIRDER(spanKey.girderIndex));
-
-   CString str;
-   str.Format(_T("%s, %s"),strSpan,strGirder);
-   return str;
-}
-
 void CApplyLoadsDlg::OnHelp()
 {
    EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_APPLY_LOADS);

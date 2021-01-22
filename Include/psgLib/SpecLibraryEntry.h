@@ -195,6 +195,9 @@ public:
 
    pgsTypes::AnalysisType GetAnalysisType() const;
 
+   void UseCurrentSpecification(bool bUseCurrent);
+   bool UseCurrentSpecification() const;
+
    // Set/Get specification type we are based on
    void SetSpecificationType(lrfdVersionMgr::Version type);
    lrfdVersionMgr::Version GetSpecificationType() const;
@@ -205,7 +208,7 @@ public:
 
    // Set/Get string to describe specification
    void SetDescription(LPCTSTR name);
-   std::_tstring GetDescription() const;
+   std::_tstring GetDescription(bool bApplySymbolSubstitution=true) const;
 
    // Set/Get the method of computing section properties
    void SetSectionPropertyMode(pgsTypes::SectionPropertyMode mode);
@@ -455,6 +458,12 @@ public:
    // as a factor times f'c
    Float64 GetFatigueCompressionStressFactor() const;
    void SetFatigueCompressionStressFactor(Float64 stress);
+
+   // Set/Get the method and tensile stress limit coefficient for principal tensile stress in webs
+   void SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient, Float64 ductNearnessFactor, 
+                                                  Float64 principalTensileStressUngroutedMultiplier, Float64 principalTensileStressGroutedMultiplier, Float64 principalTensileStressFcThreshold);
+   void GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctNearnessFactor, 
+                                                  Float64* pPrincipalTensileStressUngroutedMultiplier, Float64* pPrincipalTensileStressGroutedMultiplier, Float64* principalTensileStressFcThreshold) const;
 
    //////////////////////////////////////
    //
@@ -905,11 +914,6 @@ public:
    void LimitNetTensionStrainToPositiveValues(bool bLimit);
    bool LimitNetTensionStrainToPositiveValues() const;
 
-   // Set/Get flag indicating if the mininimum stirrup requirement is ignored when choosing
-   // to compute beta by equation 5.7.3.4.2-1 or -2.
-   void IgnoreMiniumStirrupRequirementForBeta(bool bIgnore);
-   bool IgnoreMiniumStirrupRequirementForBeta() const;
-
    // Set/Get the coefficient for computing modulus of rupture for shear capacity analysis
    void SetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type,Float64 fr);
    Float64 GetShearModulusOfRuptureCoefficient(pgsTypes::ConcreteType type) const;
@@ -1228,6 +1232,17 @@ public:
    void SetFinishedElevationTolerance(Float64 tol);
    Float64 GetFinishedElevationTolerance() const;
 
+   //////////////////////////////////////
+   //
+   // Bearings Parameters
+   //
+   //////////////////////////////////////
+   void AlertTaperedSolePlateRequirement(bool bAlert);
+   bool AlertTaperedSolePlateRequirement() const;
+   void SetTaperedSolePlateInclinationThreshold(Float64 threshold);
+   Float64 GetTaperedSolePlateInclinationThreshold() const;
+   void UseImpactForBearingReactions(bool bUse);
+   bool UseImpactForBearingReactions() const;
 
    ////////////////////////////////////////
    //
@@ -1255,6 +1270,7 @@ protected:
 private:
 
    // general
+   bool m_bUseCurrentSpecification;
    lrfdVersionMgr::Version m_SpecificationType;
    lrfdVersionMgr::Units m_SpecificationUnits;
    std::_tstring m_Description;
@@ -1411,6 +1427,16 @@ private:
    std::array<Float64, pgsTypes::ConcreteTypeCount>  m_FlexureModulusOfRuptureCoefficient; // index is pgsTypes::ConcreteType enum
    std::array<Float64, pgsTypes::ConcreteTypeCount>  m_ShearModulusOfRuptureCoefficient;   // index is pgsTypes::ConcreteType enum
    bool m_bLimitNetTensionStrainToPositiveValues; // when true, es from LRFD Eq 5.7.3.4.2-4 is taken to be zero if it is computed as a negative value
+
+   pgsTypes::PrincipalTensileStressMethod m_PrincipalTensileStressMethod;
+   Float64 m_PrincipalTensileStressCoefficient;
+   Float64 m_PrincipalTensileStressTendonNearnessFactor; // used to define if a tendon is "near" the section being evaluated... This is a number of outside duct diameters from section
+   Float64 m_PrincipalTensileStressFcThreshold; // minimum f'c to trigger principal stress check for non-post tensioned beams
+   Float64 m_PrincipalTensileStressUngroutedMultiplier; // Multiplier * Duct Diameter to be subtracted from web for  UNGROUTED ducts, if elevation near duct
+   Float64 m_PrincipalTensileStressGroutedMultiplier;   // Multiplier * Duct Diameter to be subtracted from web for  GROUTED ducts, if elevation near duct
+
+   void DeterminePrincipalStressDuctDeductionMultiplier();
+
 
    // Closure Joint Allowable Stresses
    Float64 m_ClosureCompStressAtStressing;
@@ -1586,6 +1612,11 @@ private:
    Float64 m_90DayConcreteStrengthFactor;
 
    Float64 m_FinishedElevationTolerance; // tolerance between finished and design roadway surface elevation for no-deck bridges
+
+   // bearing reactions
+   bool m_bAlertTaperedSolePlateRequirement;
+   Float64 m_TaperedSolePlateInclinationThreshold;
+   bool m_bUseImpactForBearingReactions;
 };
 
 #endif // INCLUDED_PSGLIB_SPECLIBRARYENTRY_H_

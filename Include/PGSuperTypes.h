@@ -185,11 +185,18 @@ typedef struct pgsTypes
       stTemporary
    } SupportType;
 
-   typedef enum ColumnFixityType
+   typedef enum ColumnTransverseFixityType
+   {
+      ctftTopFixedBottomFixed,
+      ctftTopFixedBottomPinned,
+      ctftTopPinnedBottomFixed
+   } ColumnTransverseFixityType;
+
+   typedef enum ColumnLongitudinalBaseFixityType
    {
       cftFixed,
       cftPinned
-   } ColumnFixityType;
+   } ColumnLongitudinalBaseFixityType;
 
    typedef enum TemporarySupportType
    {
@@ -236,6 +243,14 @@ typedef struct pgsTypes
       pmtPhysical   // pier is modeled with a physical description
    } PierModelType;
 
+   // Bridge models can begin and/or end with a pier or an abutment starting with an arbitrary number (e.g., Pier 3)
+   // This enum indicates what type of permanent support is at either end of the bridge
+   typedef enum DisplayEndSupportType
+   {
+      desAbutment,
+      desPier
+   } DisplayEndSupportType;
+
    typedef enum TopFlangeThickeningType
    {
       tftNone, // top flange is not thickened
@@ -280,8 +295,20 @@ typedef struct pgsTypes
 
    typedef enum StressLocation { BottomGirder, TopGirder, BottomDeck, TopDeck } StressLocation;
 
+   // defines the method used for defining the pretensioned strands
+   typedef enum StrandDefinitionType {
+      sdtTotal, // input is total number of permanent strands
+      sdtStraightHarped, // input is number of harped and number of straight strands
+      sdtDirectSelection, // input is a fill array of strand positions in the girder strand grid
+      sdtDirectRowInput, // input is direct row input by user. horizontal rows of strands are defined. the strand grid in the girder library is ignored
+      sdtDirectStrandInput // input is direct input of individual strands by the user. the strand grid in the girder library is ignored
+   } StrandDefinitionType;
+
+   
    // Note that Permanent was added below when input for total permanent strands was added in 12/06
    typedef enum StrandType { Straight, Harped, Temporary, Permanent } StrandType;
+
+
    typedef enum AnalysisType { Simple, Continuous, Envelope } AnalysisType;
 
    // Adjustable strands can be straight or harped. In library only; they can be either
@@ -805,6 +832,12 @@ typedef struct pgsTypes
       dcrbNormalToAlignment, // deck casting region boundaries are normal to the alignment
       dcrbParallelToPier // deck casting region boundaries are parallel to their reference pier
    } DeckCastingRegionBoundary;
+
+   typedef enum PrincipalTensileStressMethod
+   {
+      ptsmLRFD,
+      ptsmNCHRP
+   } PrincipalTensileStressMethod;
 
 } pgsTypes;
 
@@ -1362,32 +1395,32 @@ struct HANDLINGCONFIG
 
 enum arFlexuralDesignType { dtNoDesign, dtDesignForHarping, dtDesignForDebonding, dtDesignFullyBonded,
                             dtDesignFullyBondedRaised, dtDesignForDebondingRaised }; // raised straight strands
+enum arConcreteDesignType { cdPreserveStrength, cdDesignForMinStrength };
 enum arDesignStrandFillType { ftGridOrder, ftMinimizeHarping, ftDirectFill }; // direct fill used for raised straight
-enum arSlabOffsetDesignType { sodNoSlabOffsetDesign, sodSlabOffsetandAssumedExcessCamberDesign }; 
-enum arDesignStirrupLayoutType { slLayoutStirrups, slRetainExistingLayout };
+enum arSlabOffsetDesignType { sodPreserveHaunch, sodDesignHaunch, sodDefault }; 
+enum arShearDesignType { sdtNoDesign, sdtLayoutStirrups, sdtRetainExistingLayout };
 
 struct arDesignOptions
 {
    arFlexuralDesignType doDesignForFlexure;
+   arConcreteDesignType doDesignConcreteStrength;
+   arDesignStrandFillType doStrandFillType;
+   bool doForceHarpedStrandsStraight;
    arSlabOffsetDesignType doDesignSlabOffset;
+   arShearDesignType doDesignForShear;
    bool doDesignLifting;
    bool doDesignHauling;
    bool doDesignSlope;
    bool doDesignHoldDown;
 
-   arDesignStrandFillType doStrandFillType;
-   bool doForceHarpedStrandsStraight;
-
+   // max concrete strength for this option
    Float64 maxFci;
    Float64 maxFc;
 
-   bool doDesignForShear;
 
-   arDesignStirrupLayoutType doDesignStirrupLayout;
-
-   arDesignOptions(): doDesignForFlexure(dtNoDesign), doDesignSlabOffset(sodNoSlabOffsetDesign), doDesignLifting(false), doDesignHauling(false),
-                      doDesignSlope(false), doDesignHoldDown(false), doDesignForShear(false), 
-                      doStrandFillType(ftMinimizeHarping), doDesignStirrupLayout(slLayoutStirrups),
+   arDesignOptions(): doDesignConcreteStrength(cdDesignForMinStrength),doDesignForFlexure(dtNoDesign), doDesignSlabOffset(sodPreserveHaunch), doDesignLifting(false), doDesignHauling(false),
+                      doDesignSlope(false), doDesignHoldDown(false), 
+                      doStrandFillType(ftMinimizeHarping), doDesignForShear(sdtLayoutStirrups),
                       doForceHarpedStrandsStraight(false),
                       maxFci(0.0),
                       maxFc(0.0)
@@ -2142,6 +2175,21 @@ inline bool IsContinuousBoundaryCondition(pgsTypes::BoundaryConditionType bc)
    {
       return false;
    }
+}
+
+inline bool IsContinuousBoundaryConditionAheadSide(pgsTypes::BoundaryConditionType bc)
+{
+   return IsContinuousBoundaryCondition(bc) || bc == pgsTypes::bctIntegralBeforeDeckHingeBack || bc == pgsTypes::bctIntegralAfterDeckHingeBack;
+}
+
+inline bool IsContinuousBoundaryConditionBackSide(pgsTypes::BoundaryConditionType bc)
+{
+   return IsContinuousBoundaryCondition(bc) || bc == pgsTypes::bctIntegralBeforeDeckHingeAhead || bc == pgsTypes::bctIntegralAfterDeckHingeAhead;
+}
+
+inline bool IsContinuousBoundaryCondition(pgsTypes::PierFaceType pierFace, pgsTypes::BoundaryConditionType bc)
+{
+   return (pierFace == pgsTypes::Ahead ? IsContinuousBoundaryConditionAheadSide(bc) : IsContinuousBoundaryConditionBackSide(bc));
 }
 
 inline bool IsParabolicVariation(pgsTypes::SegmentVariationType variationType)

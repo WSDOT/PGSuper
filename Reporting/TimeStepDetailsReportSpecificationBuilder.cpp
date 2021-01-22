@@ -76,7 +76,7 @@ std::shared_ptr<CReportSpecification> CTimeStepDetailsReportSpecificationBuilder
       GET_IFACE(IPointOfInterest,pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
-      ATLASSERT(1 < vPoi.size());
+      ATLASSERT(0 < vPoi.size());
       initial_poi = vPoi.front().get();
    }
 

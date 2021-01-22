@@ -1487,7 +1487,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
@@ -1686,7 +1686,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    {
       bSkipToNextRow = false;
 
-      if ( row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
@@ -1866,7 +1866,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
@@ -1999,7 +1999,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
@@ -2122,7 +2122,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    {
       bSkipToNextRow = false;
 
-      if (row1 != 1 && prev_poi.AtSamePlace(poi))
+      if (row1 != 1 && prev_poi == poi)
       {
          row1--;
          bSkipToNextRow = true;
@@ -2785,7 +2785,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
       else
       {
-         *pEci = pMaterial->GetEconc(pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
+         *pEci = pMaterial->GetEconc(pConfig->ConcType,pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
       }
 
       if (pConfig->bUserEc)
@@ -2794,7 +2794,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
       else
       {
-         *pEc = pMaterial->GetEconc(pConfig->fc, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
+         *pEc = pMaterial->GetEconc(pConfig->ConcType, pConfig->fc, pMaterial->GetSegmentStrengthDensity(segmentKey), pMaterial->GetSegmentEccK1(segmentKey), pMaterial->GetSegmentEccK2(segmentKey));
       }
    }
    else
@@ -3173,7 +3173,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *pAslab = pSectProp->GetGrossDeckArea(poi);
 
    Float64 wTop = 0;
-   FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
+   FlangeIndexType nFlanges = pGirder->GetTopFlangeCount(segmentKey);
    for ( FlangeIndexType flangeIdx = 0; flangeIdx < nFlanges; flangeIdx++ )
    {
       Float64 wtf = pGirder->GetTopFlangeWidth(poi,flangeIdx);

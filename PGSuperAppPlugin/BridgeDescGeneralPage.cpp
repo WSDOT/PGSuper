@@ -1725,8 +1725,8 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
       castDeckEvent.SetDescription(GetCastDeckEventName(newDeckType));
       castDeckEvent.GetCastDeckActivity().Enable();
       castDeckEvent.GetCastDeckActivity().SetCastingType(CCastDeckActivity::Continuous);
-      castDeckEvent.GetCastDeckActivity().SetConcreteAgeAtContinuity(28.0); // day
-      castDeckEvent.GetCastDeckActivity().SetCuringDuration(28.0); // day
+      castDeckEvent.GetCastDeckActivity().SetTotalCuringDuration(28.0); // day
+      castDeckEvent.GetCastDeckActivity().SetActiveCuringDuration(28.0); // day
       
       EventIndexType castDeckEventIdx;
       pTimelineMgr->AddTimelineEvent(castDeckEvent, true, &castDeckEventIdx);
@@ -2390,7 +2390,7 @@ void CBridgeDescGeneralPage::UpdateEc()
       strK1.Format(_T("%f"), m_JointConcrete.EcK1);
       strK2.Format(_T("%f"), m_JointConcrete.EcK2);
 
-      strEc = CConcreteDetailsDlg::UpdateEc(strFc, strDensity, strK1, strK2);
+      strEc = CConcreteDetailsDlg::UpdateEc(m_JointConcrete.Type,strFc, strDensity, strK1, strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }

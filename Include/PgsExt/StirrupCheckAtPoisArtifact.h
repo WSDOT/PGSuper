@@ -137,13 +137,24 @@ public:
    bool IsApplicable() const;
    void SetApplicability(bool isApplicable);
 
+   // LRFD 9th Edition added the requirement that Apsfps > Asfy
+   // set this parameter to true if this requirement is to be checked
+   bool PretensionForceMustExceedBarForce() const;
+   void PretensionForceMustExceedBarForce(bool bExceed);
+
+   Float64 GetPretensionForce() const;
+   Float64 GetRebarForce() const;
+
+
    // lrfd demand and capacity criteria
    void SetDemandForce(Float64 area);
    Float64 GetDemandForce() const;
    void SetCapacityForce(Float64 area);
    Float64 GetCapacityForce() const;
 
-   bool   Passed() const;
+   bool PassedPretensionForce() const; // 9th edition requirement for Apsfps > Asfy
+   bool PassedCapacity() const;
+   bool Passed() const;
 
    // GROUP: LIFECYCLE
 
@@ -217,7 +228,8 @@ private:
    Float64 m_DemandForce;
    Float64 m_CapacityForce;
    Uint16  m_Equation;
-   bool    m_IsApplicable;
+   bool    m_bIsApplicable;
+   bool    m_bPretesionForceLimit;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

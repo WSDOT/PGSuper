@@ -114,6 +114,14 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    CGirderKey girderKey(segmentKey);
 
 #if defined _DEBUG
+   // there is a built-in assumption that shear capacity is being computed at the strength limit state
+   // which occurs after the bridge is open to traffic.
+   //
+   // this assumption has an impact on effective shear width (bv) when there are ducts/tendons 
+   // in spliced girder bridges.
+   //
+   // since LRFD 9th Edition, bv, Vc, and Vs depend on if ducts are grouted or ungrouted and since
+   // we assume the bridge is open to traffic are also assume ducts are grouted
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    ATLASSERT( liveLoadIntervalIdx <= intervalIdx );
@@ -567,6 +575,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
 
    // shear area (bv and dv)
    pscd->bv = pGdr->GetShearWidth(poi);
+   pscd->bw = pGdr->GetWebWidth(poi); // needed for Vs for LRFD 9th edition and later
 
 
    // material props
@@ -602,7 +611,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       }
       else
       {
-         pscd->Ec = pMaterial->GetEconc(pscd->fc,
+         pscd->Ec = pMaterial->GetEconc(pMaterial->GetSegmentConcreteType(segmentKey),pscd->fc,
                                         pMaterial->GetSegmentStrengthDensity(segmentKey),
                                         pMaterial->GetSegmentEccK1(segmentKey),
                                         pMaterial->GetSegmentEccK2(segmentKey));
@@ -1332,6 +1341,60 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
    Float64 fy = pscd->fy;
 
    Float64 Vs = (IsZero(S) ? 0 : fy * dv * Av * cot_theta / S );
+
+   if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   {
+      // We are assuming that the bridge is open to traffic so all ducts are grouted
+
+      // Find largest duct in section to use for the deduction factor
+      Float64 duct_diameter = 0;
+
+      GET_IFACE(IPointOfInterest, pPoi);
+      // Check segment ducts
+      if (pPoi->IsOnSegment(poi))
+      {
+         const CSegmentKey& segmentKey(poi.GetSegmentKey());
+         // need to make sure poi is in segment (could be in closure)
+         GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+         DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+         if (pSegmentTendonGeometry->IsOnDuct(poi))
+         {
+            for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+            {
+               Float64 d = pSegmentTendonGeometry->GetNominalDiameter(segmentKey, ductIdx);
+               duct_diameter = Max(duct_diameter, d);
+            }
+         }
+      }
+
+      if (pPoi->IsOnGirder(poi))
+      {
+         const CGirderKey& girderKey(poi.GetSegmentKey());
+         GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+         DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+         for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+         {
+            if (pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
+            {
+               Float64 d = pGirderTendonGeometry->GetNominalDiameter(girderKey, ductIdx);
+               duct_diameter = Max(duct_diameter, d);
+            }
+         }
+      }
+
+
+      // if there aren't any ducts, duct_diameter is 0.0 and lambda_duct
+      // evalutes to 1.0, which is what we want
+      Float64 delta = 2.0;
+      Float64 bw = pscd->bw;
+      Float64 lambda_duct = 1 - delta*pow(duct_diameter / bw, 2.0);
+
+      pscd->duct_diameter = duct_diameter;
+      pscd->delta = delta;
+      pscd->lambda_duct = lambda_duct;
+
+      Vs *= lambda_duct;
+   }
 
    pscd->Vs = Vs;
 

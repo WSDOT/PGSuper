@@ -27,6 +27,10 @@
 
 class CPierData2;
 class CTemporarySupportData;
+class CBridgeDescription2;
+class CPointLoadData;
+class CDistributedLoadData;
+class CMomentLoadData;
 interface IEAFDisplayUnits;
 
 #include <PsgLib\ConnectionLibraryEntry.h>
@@ -36,8 +40,9 @@ interface IEAFDisplayUnits;
 #define LABEL_GIRDER(_g_) pgsGirderLabel::GetGirderLabel(_g_).c_str()
 #define LABEL_INDEX(_i_) (IndexType)((_i_)+1)
 #define LABEL_GROUP(_g_) (GroupIndexType)LABEL_INDEX(_g_)
-#define LABEL_SPAN(_s_) (SpanIndexType)LABEL_INDEX(_s_)
-#define LABEL_PIER(_p_) (PierIndexType)LABEL_INDEX(_p_)
+#define LABEL_SPAN(_s_) pgsPierLabel::GetPierLabel(_s_).c_str()
+#define LABEL_PIER(_p_) pgsPierLabel::GetPierLabel(_p_).c_str()
+#define LABEL_PIER_EX(_ia_,_p_) pgsPierLabel::GetPierLabelEx(_ia_, _p_).c_str()
 #define LABEL_TEMPORARY_SUPPORT(_ts_) (SupportIndexType)LABEL_INDEX(_ts_ )
 #define LABEL_SEGMENT(_s_) (SegmentIndexType)LABEL_INDEX(_s_)
 #define LABEL_EVENT(_e_) (EventIndexType)LABEL_INDEX(_e_)
@@ -59,8 +64,10 @@ class PGSEXTCLASS pgsGirderLabel
 {
 public:
    static std::_tstring GetGirderLabel(GirderIndexType gdrIdx);
-   static std::_tstring GetGirderLabel(const CGirderKey& girderKey);
-   static std::_tstring GetSegmentLabel(const CSegmentKey& segmentKey);
+   // Can force "Span" regardless of document type if desired
+   static std::_tstring GetGirderLabel(const CGirderKey& girderKey, bool forceSpan=false);
+   static std::_tstring GetSegmentLabel(const CSegmentKey& segmentKey, bool forceSpan=false);
+   static std::_tstring GetGroupLabel(GroupIndexType grpIdx, bool forceSpan=false);
    static std::_tstring GetClosureLabel(const CClosureKey& closureKey);
    static bool UseAlphaLabel();
    static bool UseAlphaLabel(bool bUseAlpha);
@@ -71,20 +78,76 @@ private:
    ~pgsGirderLabel(void);
 };
 
-class PGSEXTCLASS pgsAutoLabel
+class PGSEXTCLASS pgsAutoGirderLabel
 {
 public:
-   pgsAutoLabel() { m_bOldSetting = pgsGirderLabel::UseAlphaLabel(false); }
-   ~pgsAutoLabel() { pgsGirderLabel::UseAlphaLabel(m_bOldSetting); }
+   pgsAutoGirderLabel() { m_bOldSetting = pgsGirderLabel::UseAlphaLabel(false); }
+   ~pgsAutoGirderLabel() { pgsGirderLabel::UseAlphaLabel(m_bOldSetting); }
 private:
    bool m_bOldSetting;
 };
+
+// Class used for pier and span labelling. 
+// settings are saved in static members (not BridgeAgent) for performance since they are called millions of times potentially 
+class PGSEXTCLASS pgsAutoPierLabel;
+
+class PGSEXTCLASS pgsPierLabel
+{
+   friend pgsAutoPierLabel;
+
+public:
+   // numeric label only
+   static std::_tstring GetPierLabel(PierIndexType pierIdx);
+   // text and numeric label (i.e., "Pier 3")
+   static std::_tstring GetPierLabelEx(bool bIsAbutment, PierIndexType pierIdx);
+   static std::_tstring GetPierTypeLabelEx(bool bIsAbutment, PierIndexType pierIdx);
+
+   static void SetPierLabelSettings(pgsTypes::DisplayEndSupportType displayStartSupportType, pgsTypes::DisplayEndSupportType displayEndSupportType, PierIndexType startingPierNumber);
+
+   // utility function to create label independently of static data values
+   static std::_tstring pgsPierLabel::CreatePierLabel(bool bIsAbutment, PierIndexType pierIdx, pgsTypes::DisplayEndSupportType displayStartSupportType, pgsTypes::DisplayEndSupportType displayEndSupportType, PierIndexType startingPierNumber);
+
+   // create label based on current CBridgeDescription2
+   static std::_tstring pgsPierLabel::CreatePierLabel(const CBridgeDescription2& bridgeDescr, PierIndexType pierIdx);
+
+private:
+   static pgsTypes::DisplayEndSupportType m_DisplayStartSupportType;
+   static pgsTypes::DisplayEndSupportType m_DisplayEndSupportType;
+   static PierIndexType m_StartingPierNumber;
+
+   pgsPierLabel(void);
+   ~pgsPierLabel(void);
+};
+
+class PGSEXTCLASS pgsAutoPierLabel
+{
+public:
+   pgsAutoPierLabel() : m_OldDisplayStartSupportType(pgsPierLabel::m_DisplayStartSupportType), m_OldDisplayEndSupportType(pgsPierLabel::m_DisplayEndSupportType),m_OldStartingPierNumber(pgsPierLabel::m_StartingPierNumber)
+   {;}
+
+   ~pgsAutoPierLabel() 
+   {
+      pgsPierLabel::m_DisplayStartSupportType = m_OldDisplayStartSupportType;
+      pgsPierLabel::m_DisplayEndSupportType = m_OldDisplayEndSupportType;
+      pgsPierLabel::m_StartingPierNumber = m_OldStartingPierNumber;
+   }
+
+private:
+   pgsTypes::DisplayEndSupportType m_OldDisplayStartSupportType;
+   pgsTypes::DisplayEndSupportType m_OldDisplayEndSupportType;
+   PierIndexType m_OldStartingPierNumber;
+};
+
 
 LPCTSTR PGSEXTFUNC GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbutment,bool bAbbreviation);
 LPCTSTR PGSEXTFUNC GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type,bool bAbutment,bool bAbbreviation);
 
 CString PGSEXTFUNC GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits);
 CString PGSEXTFUNC GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits);
+
+CString PGSEXTFUNC GetLoadDescription(const CPointLoadData* pLoad);
+CString PGSEXTFUNC GetLoadDescription(const CDistributedLoadData* pLoad);
+CString PGSEXTFUNC GetLoadDescription(const CMomentLoadData* pLoad);
 
 CString PGSEXTFUNC ConcreteDescription(const CConcreteMaterial& concrete);
 

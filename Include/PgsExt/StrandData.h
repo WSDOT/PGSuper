@@ -33,7 +33,7 @@ class matPsStrand;
 class GirderLibraryEntry;
 
 // Class to store direct-select strand fill input
-// Only used for CStrandData::sdtDirectSelection
+// Only used for pgsTypes::sdtDirectSelection
 class PGSEXTCLASS CDirectStrandFillInfo
 {
 public:
@@ -156,15 +156,6 @@ DESCRIPTION
 class PGSEXTCLASS CStrandData
 {
 public:
-   typedef enum StrandDefinitionType { 
-      sdtTotal, // input is total number of permanent strands
-      sdtStraightHarped, // input is number of harped and number of straight strands
-      sdtDirectSelection, // input is a fill array of strand positions in the girder strand grid
-      sdtDirectRowInput, // input is direct row input by user. horizontal rows of strands are defined. the strand grid in the girder library is ignored
-      sdtDirectStrandInput // input is direct input of individual strands by the user. the strand grid in the girder library is ignored
-   } StrandDefinitionType;
-
-public:
    CStrandData();
    CStrandData(const CStrandData& rOther);
    ~CStrandData();
@@ -180,13 +171,13 @@ public:
    //    -When changing from one fill type to another, YOU MUST SET THE NUMBER OR FILL OF STRANDS FIRST
    //     because a type change will reset all other strand data
    //
-   // Fill using CStrandData::sdtTotal
+   // Fill using pgsTypes::sdtTotal
    void SetTotalPermanentNstrands(StrandIndexType nPermanent,StrandIndexType nStraight, StrandIndexType nHarped);
-   // Fill using CStrandData::sdtStraightHarped
+   // Fill using pgsTypes::sdtStraightHarped
    void SetHarpedStraightNstrands(StrandIndexType nStraight, StrandIndexType nHarped);
    void SetTemporaryNstrands(StrandIndexType nStrands);
 
-   // Functions to fill selected strands directly (CStrandData::sdtDirectSelection)
+   // Functions to fill selected strands directly (pgsTypes::sdtDirectSelection)
    // Filling indexes into library fill order
    void SetDirectStrandFillStraight(const CDirectStrandFillCollection& rCollection);
    const CDirectStrandFillCollection* GetDirectStrandFillStraight() const;
@@ -208,7 +199,7 @@ public:
    // gets the strand row containing the specified strand
    bool GetStrandRow(pgsTypes::StrandType strandType,StrandIndexType strandIdx, const CStrandRow** ppRow) const;
 
-   // Set number of strands for any fill except CStrandData::sdtDirectRowInput or CStrandData::sdtDirectStrandInput
+   // Set number of strands for any fill except pgsTypes::sdtDirectRowInput or pgsTypes::sdtDirectStrandInput
    void SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands);
 
    // Returns the number of strands
@@ -218,9 +209,10 @@ public:
    pgsTypes::AdjustableStrandType GetAdjustableStrandType() const;
    void SetAdjustableStrandType(pgsTypes::AdjustableStrandType type);
 
-   // Strand extension paramaters (not used if using CStrandData::sdtDirectRowInput)
+   // Strand extension paramaters (not used if using pgsTypes::sdtDirectRowInput)
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
+   std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType, pgsTypes::MemberEndType endType);
    void SetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const std::vector<GridIndexType>& extStrands);
    bool IsExtendedStrand(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType) const;
    StrandIndexType GetExtendedStrandCount(pgsTypes::StrandType strandType, pgsTypes::MemberEndType endType) const;
@@ -266,8 +258,8 @@ public:
    void SetTemporaryStrandUsage(pgsTypes::TTSUsage ttsUsage);
    pgsTypes::TTSUsage GetTemporaryStrandUsage() const;
 
-   void SetStrandDefinitionType(StrandDefinitionType permStrandsType);
-   StrandDefinitionType GetStrandDefinitionType() const;
+   void SetStrandDefinitionType(pgsTypes::StrandDefinitionType permStrandsType);
+   pgsTypes::StrandDefinitionType GetStrandDefinitionType() const;
 
    HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64* pVersion);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
@@ -283,7 +275,7 @@ protected:
    StrandIndexType ProcessDirectFillData(const CDirectStrandFillCollection& rInCollection, CDirectStrandFillCollection& rLocalCollection);
    void ProcessStrandRowData();
 
-   StrandDefinitionType m_NumPermStrandsType; // one of StrandDefinitionType enum values
+   pgsTypes::StrandDefinitionType m_NumPermStrandsType; // one of StrandDefinitionType enum values
    // Note that the arrays with size 3 and 4 below are indexed using pgsTypes::StrandType.
    // The pgsTypes::Permanent position is used when NumPermStrandsType==sdtTotal.
    // When this is the case, values must be divided proportionally to straight and harped strands into 
@@ -296,7 +288,7 @@ protected:
    HarpedStrandOffsetType m_HsoHpMeasurement;  // one of HarpedStrandOffsetType enums
    std::array<Float64,2> m_HpOffsetAtHp; // access array with pgsTypes::MemberEndType
 
-   std::vector<CDebondData> m_Debond[3];
+   std::array<std::vector<CDebondData>, 3> m_Debond;
    bool m_bSymmetricDebond; // if true, left and right debond are the same (Only use Length1 of CDebondData struct)
 
    std::array<bool,4> m_bPjackCalculated; // true if Pjack was calculated
@@ -308,7 +300,7 @@ protected:
 
    // Grid index for extended strands. First array index is pgsTypes::StrandType (except don't use permanent)
    // second index is pgsTypes::MemberEndType
-   std::vector<GridIndexType> m_NextendedStrands[3][2];
+   std::array<std::array<std::vector<GridIndexType>,2>,3> m_NextendedStrands;
    bool m_bConvertExtendedStrands;
    friend CProjectAgentImp;
 

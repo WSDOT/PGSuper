@@ -207,6 +207,11 @@ void CSpanLengthGrid::FillGrid(const std::vector<Float64>& vSpanLengths)
       std::vector<Float64>::const_iterator iter;
       for ( iter = vSpanLengths.begin(); iter != vSpanLengths.end(); iter++ )
       {
+         CString strPierLabel = pgsPierLabel::GetPierLabel(nRow-1).c_str();
+
+         // left column header
+         SetValueRange(CGXRange(nRow, 0), strPierLabel);
+
          Float64 L = *iter;
          CString strLength;
          strLength.Format(_T("%s"),FormatDimension(L,pDisplayUnits->GetSpanLengthUnit(),false));

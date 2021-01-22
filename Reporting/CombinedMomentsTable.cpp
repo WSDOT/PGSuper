@@ -1211,4 +1211,12 @@ void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,Interval
    PoiList vPoi2;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPECIAL | POI_SECTCHANGE, &vPoi2, POIFIND_OR);
    pIPoi->MergePoiLists(*pPoi, vPoi2, pPoi);
+
+   if (poiRefAttribute == POI_SPAN)
+   {
+      PoiList csPois;
+      pIPoi->GetCriticalSections(pgsTypes::StrengthI, girderKey, &csPois);
+
+      pIPoi->MergePoiLists(*pPoi, csPois, pPoi);
+   }
 }

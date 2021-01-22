@@ -27,28 +27,15 @@
 #include <PgsExt\ClosureJointData.h>
 #include <PgsExt\PierData2.h>
 #include <PgsExt\TemporarySupportData.h>
+#include <PgsExt\GirderLabel.h>
+
+#include <System\Flags.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-
-// predicate function for sorting timeline events by the less than operator
-bool CompareEvents(CTimelineEvent* pTimelineEvent1,CTimelineEvent* pTimelineEvent2)
-{
-   return *pTimelineEvent1 < *pTimelineEvent2;
-}
-
-class FindTimelineEventByDay
-{
-public:
-   FindTimelineEventByDay(Float64 day) { m_Day = day; }
-   bool operator()(const CTimelineEvent* pTimelineEvent) { return IsEqual(m_Day,pTimelineEvent->GetDay()); }
-private:
-   Float64 m_Day;
-};
 
 // initialize the ID counter
 EventIDType CTimelineManager::ms_ID = 0;
@@ -96,7 +83,7 @@ bool CTimelineManager::operator==(const CTimelineManager& rOther) const
       const auto* pMyEvent = *myIter;
       const auto* pOtherEvent = *otherIter;
 
-      if ( *pMyEvent != *pOtherEvent )
+      if (*pMyEvent != *pOtherEvent)
       {
          return false;
       }
@@ -145,7 +132,7 @@ void CTimelineManager::AppendTimelineEvent(CTimelineEvent* pTimelineEvent,EventI
    pTimelineEvent->SetTimelineManager(this);
 
    *pEventIdx = m_TimelineEvents.size();
-   m_TimelineEvents.push_back(pTimelineEvent);
+   m_TimelineEvents.emplace_back(pTimelineEvent);
 }
 
 int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdjustTimeline,EventIndexType* pEventIdx)
@@ -376,7 +363,7 @@ int CTimelineManager::AddTimelineEvent(CTimelineEvent* pTimelineEvent,bool bAdju
    }
 
    // Put the timeline event in the collection
-   m_TimelineEvents.push_back(pTimelineEvent);
+   m_TimelineEvents.emplace_back(pTimelineEvent);
    Sort(); // sort
 
    auto found = std::find(m_TimelineEvents.cbegin(),m_TimelineEvents.cend(),pTimelineEvent);
@@ -657,7 +644,7 @@ bool CTimelineManager::HasEvent(Float64 day) const
 {
    PGS_ASSERT_VALID;
 
-   auto found( std::find_if(m_TimelineEvents.cbegin(),m_TimelineEvents.cend(),FindTimelineEventByDay(day)) );
+   auto found(std::find_if(std::cbegin(m_TimelineEvents), std::cend(m_TimelineEvents), [day](const auto& event) {return IsEqual(day, event->GetDay()); }));
    return ( found != m_TimelineEvents.cend() ? true : false);
 }
 
@@ -830,11 +817,17 @@ const CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx)
 {
    PGS_ASSERT_VALID;
 
-   ATLASSERT(0 <= eventIdx && eventIdx < (EventIndexType)m_TimelineEvents.size() );
-   return m_TimelineEvents[eventIdx];
+   if (0 <= eventIdx && eventIdx < (EventIndexType)m_TimelineEvents.size())
+   {
+      return m_TimelineEvents[eventIdx];
+   }
+   else
+   {
+      return nullptr;
+   }
 }
 
-const CTimelineEvent* CTimelineManager::GetEventByID(IDType id) const
+const CTimelineEvent* CTimelineManager::GetEventByID(EventIDType id) const
 {
    PGS_ASSERT_VALID;
 
@@ -866,7 +859,7 @@ CTimelineEvent* CTimelineManager::GetEventByIndex(EventIndexType eventIdx)
    }
 }
 
-CTimelineEvent* CTimelineManager::GetEventByID(IDType id)
+CTimelineEvent* CTimelineManager::GetEventByID(EventIDType id)
 {
    ATLASSERT(id != INVALID_ID);
    PGS_ASSERT_VALID;
@@ -1260,7 +1253,7 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
    // if eventIdx == INVALID_INDEX, we are just removing the construction from the timeline
 
    bool bUpdateConstructionTiming = false;
-   Float64 ageAtRelease = 1.0;
+   Float64 totalCuringDuration = 1.0;
    Float64 relaxationTime = 1.0;
 
    // If this construction of this segment is currently being modeled, get the construction
@@ -1280,7 +1273,7 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
 
          // construction of this segment is being modeled and it is moving to a different timeline event
          bUpdateConstructionTiming = true;
-         ageAtRelease   = pTimelineEvent->GetConstructSegmentsActivity().GetAgeAtRelease();
+         totalCuringDuration = pTimelineEvent->GetConstructSegmentsActivity().GetTotalCuringDuration();
          relaxationTime = pTimelineEvent->GetConstructSegmentsActivity().GetRelaxationTime();
          pTimelineEvent->GetConstructSegmentsActivity().RemoveSegment(segmentID); // remove segment from timeline
          break;
@@ -1292,7 +1285,7 @@ void CTimelineManager::SetSegmentConstructionEventByIndex(SegmentIDType segmentI
       m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().AddSegment(segmentID);
       if ( bUpdateConstructionTiming )
       {
-         m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetAgeAtRelease(ageAtRelease);
+         m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetTotalCuringDuration(totalCuringDuration);
          m_TimelineEvents[eventIdx]->GetConstructSegmentsActivity().SetRelaxationTime(relaxationTime);
       }
    }
@@ -1592,7 +1585,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* 
       return;
    }
 
-   Float64 ageAtContinuity = 7.0;
+   Float64 totalCuringDuration = 7.0;
    bool bUpdateAge = false;
 
    for (auto& pTimelineEvent : m_TimelineEvents)
@@ -1600,7 +1593,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* 
       if ( pClosure->GetPier() && pTimelineEvent->GetCastClosureJointActivity().HasPier(pClosure->GetPier()->GetID()) )
       {
          bUpdateAge = true;
-         ageAtContinuity = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+         totalCuringDuration = pTimelineEvent->GetCastClosureJointActivity().GetTotalCuringDuration();
          pTimelineEvent->GetCastClosureJointActivity().RemovePier(pClosure->GetPier()->GetID());
          break;
       }
@@ -1608,7 +1601,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* 
       if ( pClosure->GetTemporarySupport() && pTimelineEvent->GetCastClosureJointActivity().HasTempSupport(pClosure->GetTemporarySupport()->GetID()) )
       {
          bUpdateAge = true;
-         ageAtContinuity = pTimelineEvent->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+         totalCuringDuration = pTimelineEvent->GetCastClosureJointActivity().GetTotalCuringDuration();
          pTimelineEvent->GetCastClosureJointActivity().RemoveTempSupport(pClosure->GetTemporarySupport()->GetID());
          break;
       }
@@ -1620,7 +1613,7 @@ void CTimelineManager::SetCastClosureJointEventByIndex(const CClosureJointData* 
 
       if ( bUpdateAge )
       {
-         m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().SetConcreteAgeAtContinuity(ageAtContinuity);
+         m_TimelineEvents[eventIdx]->GetCastClosureJointActivity().SetTotalCuringDuration(totalCuringDuration);
       }
 
       if ( pClosure->GetPier() )
@@ -1840,7 +1833,7 @@ EventIDType CTimelineManager::GetCastLongitudinalJointEventID() const
 int CTimelineManager::SetCastLongitudinalJointEventByIndex(EventIndexType eventIdx, bool bAdjustTimeline)
 {
    bool bUpdateAge = false;
-   Float64 age_at_continuity = 7.0;
+   Float64 totalCuringDuration = 7.0;
    CTimelineEvent* pOldCastLongitudinalJointEvent = nullptr;
 
    // search for the event where the longitudinal joint is cast
@@ -1849,7 +1842,7 @@ int CTimelineManager::SetCastLongitudinalJointEventByIndex(EventIndexType eventI
       if (pTimelineEvent->GetCastLongitudinalJointActivity().IsEnabled())
       {
          bUpdateAge = true;
-         age_at_continuity = pTimelineEvent->GetCastLongitudinalJointActivity().GetConcreteAgeAtContinuity();
+         totalCuringDuration = pTimelineEvent->GetCastLongitudinalJointActivity().GetTotalCuringDuration();
          pTimelineEvent->GetCastLongitudinalJointActivity().Enable(false);
          pOldCastLongitudinalJointEvent = pTimelineEvent; // hang onto the event in case the edit needs to be rolled back
          break;
@@ -1863,7 +1856,7 @@ int CTimelineManager::SetCastLongitudinalJointEventByIndex(EventIndexType eventI
 
       if (bUpdateAge)
       {
-         longitudinal_joint_event.GetCastLongitudinalJointActivity().SetConcreteAgeAtContinuity(age_at_continuity);
+         longitudinal_joint_event.GetCastLongitudinalJointActivity().SetTotalCuringDuration(totalCuringDuration);
       }
 
       int result = SetEventByIndex(eventIdx, longitudinal_joint_event, bAdjustTimeline);
@@ -2283,34 +2276,38 @@ EventIDType CTimelineManager::FindUserLoadEventID(LoadIDType loadID) const
    return pEvent->GetID();
 }
 
-int CTimelineManager::Validate() const
+Uint32 CTimelineManager::Validate() const
 {
+   ClearValidationCaches();
+
    if ( m_pBridgeDesc == nullptr )
    {
       return TLM_SUCCESS;
    }
 
+   Uint32 error = TLM_SUCCESS;
+
    // Make sure the deck is cast
    if ( m_pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone && !IsDeckCast() )
    {
-      return TLM_CAST_DECK_ACTIVITY_REQUIRED;
+      error |= TLM_CAST_DECK_ACTIVITY_REQUIRED;
    }
 
    if ( m_pBridgeDesc->GetDeckDescription()->WearingSurface == pgsTypes::wstOverlay && !IsOverlayInstalled() )
    {
-      return TLM_OVERLAY_ACTIVITY_REQUIRED;
+      error |= TLM_OVERLAY_ACTIVITY_REQUIRED;
    }
 
    // Make sure the intermediate diaphragms are installed
    if (!IsIntermediateDiaphragmInstalled())
    {
-      return TLM_INTERMEDIATE_DIAPHRAGM_ACTIVITY_REQUIRED;
+      error |= TLM_INTERMEDIATE_DIAPHRAGM_ACTIVITY_REQUIRED;
    }
 
    // Make sure the railing system is installed
    if ( !IsRailingSystemInstalled() )
    {
-      return TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED;
+      error |= TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED;
    }
    
    // Check user defined loads
@@ -2318,7 +2315,7 @@ int CTimelineManager::Validate() const
    {
       if ( !IsUserDefinedLoadApplied(load.m_ID) )
       {
-         return TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
       }
    }
 
@@ -2326,7 +2323,7 @@ int CTimelineManager::Validate() const
    {
       if ( !IsUserDefinedLoadApplied(load.m_ID) )
       {
-         return TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
       }
    }
 
@@ -2334,7 +2331,7 @@ int CTimelineManager::Validate() const
    {
       if ( !IsUserDefinedLoadApplied(load.m_ID) )
       {
-         return TLM_USER_LOAD_ACTIVITY_REQUIRED;
+         error |= TLM_USER_LOAD_ACTIVITY_REQUIRED;
       }
    }
 
@@ -2345,7 +2342,7 @@ int CTimelineManager::Validate() const
       EventIndexType lastSegmentErectionEventIdx = GetLastSegmentErectionEventIndex();
       if (GetRailingSystemLoadEventIndex() < lastSegmentErectionEventIdx)
       {
-         return TLM_RAILING_SYSTEM_ERROR;
+         error |= TLM_RAILING_SYSTEM_ERROR;
       }
    }
    else
@@ -2353,14 +2350,14 @@ int CTimelineManager::Validate() const
       EventIndexType castDeckEventIdx = GetCastDeckEventIndex();
       if (GetRailingSystemLoadEventIndex() <= castDeckEventIdx)
       {
-         return TLM_RAILING_SYSTEM_ERROR;
+         error |= TLM_RAILING_SYSTEM_ERROR;
       }
 
       // Make sure intermediate diaphragms are installed before the deck is cast
       EventIndexType diaphragmEventIdx = GetIntermediateDiaphragmsLoadEventIndex();
       if (castDeckEventIdx < diaphragmEventIdx)
       {
-         return TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR;
+         error |= TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR;
       }
    }
 
@@ -2369,14 +2366,14 @@ int CTimelineManager::Validate() const
    EventIndexType liveLoadEventIdx = GetLiveLoadEventIndex();
    if (liveLoadEventIdx == INVALID_INDEX)
    {
-      return TLM_LIVELOAD_ACTIVITY_REQUIRED;
+      error |= TLM_LIVELOAD_ACTIVITY_REQUIRED;
    }
 
    // Make sure load rating doesn't occur before bridge is open to traffic
    EventIndexType loadRatingEventIdx = GetLoadRatingEventIndex();
    if ( loadRatingEventIdx < liveLoadEventIdx )
    {
-      return TLM_LOAD_RATING_ERROR;
+      error |= TLM_LOAD_RATING_ERROR;
    }
 
    // Make sure all piers are erected
@@ -2387,7 +2384,8 @@ int CTimelineManager::Validate() const
       PierIDType pierID = pPier->GetID();
       if ( !IsPierErected(pierID) )
       {
-         return TLM_ERECT_PIERS_ACTIVITY_REQUIRED;
+         m_ErectPiersActivityError.emplace_back(std::make_pair(pierIdx,INVALID_INDEX));
+         error |= TLM_ERECT_PIERS_ACTIVITY_REQUIRED;
       }
    }
 
@@ -2401,19 +2399,22 @@ int CTimelineManager::Validate() const
       SupportIDType tsID = pTS->GetID();
       if ( !IsTemporarySupportErected(tsID) )
       {
-         return TLM_ERECT_PIERS_ACTIVITY_REQUIRED;
+         m_ErectPiersActivityError.emplace_back(std::make_pair(INVALID_INDEX, tsIdx));
+         error |= TLM_ERECT_PIERS_ACTIVITY_REQUIRED;
       }
 
       if ( !IsTemporarySupportRemoved(tsID) )
       {
-         return TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED;
+         m_RemoveTemporarySupportsActivityError.emplace_back(tsIdx);
+         error |= TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED;
       }
    
       EventIndexType erectIdx, removeIdx;
       GetTempSupportEvents(tsID,&erectIdx,&removeIdx);
       if ( removeIdx < erectIdx )
       {
-         return TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR;
+         m_TemporarySupportRemovalError.emplace_back(tsIdx);
+         error |= TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR;
       }
 
       // save the strongbacks, there is additional validation to be done later
@@ -2442,50 +2443,56 @@ int CTimelineManager::Validate() const
             // tendon must be stressed
             if ( !IsTendonStressed(girderID,ductIdx) )
             {
-               return TLM_STRESS_TENDONS_ACTIVITY_REQUIRED;
+               m_StressTendonsActivityError.emplace_back(pGirder->GetGirderKey(), ductIdx);
+               error |= TLM_STRESS_TENDONS_ACTIVITY_REQUIRED;
             }
 
-			int result = ValidateDuct(pGirder,ductIdx);
-			if (result != TLM_SUCCESS)
-			{
-				return result;
-			}
+			   int result = ValidateDuct(pGirder,ductIdx);
+			   if (result != TLM_SUCCESS)
+			   {
+               m_StressTendonError.emplace_back(pGirder->GetGirderKey(), ductIdx);
+               error |= result;
+			   }
          }
 
 
-         for(const auto& pTS : vStrongBacks)
+         if (gdrIdx == 0)
          {
-            // make sure strong backs are erected
-            // 1) at the same time or after one of the segments it supports
-            // 2) before both segments it supports are erected
-            ATLASSERT(pTS->GetSupportType() == pgsTypes::StrongBack);
-            const CClosureJointData* pCJ = pTS->GetClosureJoint(gdrIdx);
-            const CPrecastSegmentData* pLeftSegment = pCJ->GetLeftSegment();
-            const CPrecastSegmentData* pRightSegment = pCJ->GetRightSegment();
-
-            SegmentIDType leftSegmentID = pLeftSegment->GetID();
-            SegmentIDType rightSegmentID = pRightSegment->GetID();
-            EventIndexType erectLeftSegmentEventIdx = GetSegmentErectionEventIndex(leftSegmentID);
-            EventIndexType erectRightSegmentEventIdx = GetSegmentErectionEventIndex(rightSegmentID);
-
-            EventIndexType erectTempSupportEventIdx, removeTempSupportEventIdx;
-            GetTempSupportEvents(pTS->GetID(), &erectTempSupportEventIdx, &removeTempSupportEventIdx);
-
-            if ((erectLeftSegmentEventIdx <= erectTempSupportEventIdx) && (erectTempSupportEventIdx <= erectRightSegmentEventIdx)
-               ||
-               (erectRightSegmentEventIdx <= erectTempSupportEventIdx) && (erectTempSupportEventIdx <= erectLeftSegmentEventIdx)
-               )
+            for (const auto& pTS : vStrongBacks)
             {
-               // 1) temporary support is erected at or after the left segment is erected and at or before the right segment is erected
-               // OR
-               // 2) temporary support is erected at or after the right segment is erected and at or before the left segment is erected 
-               //
-               // These are the valid cases
-            }
-            else
-            {
-               // everything else is invalid
-               return TLM_STRONGBACK_ERECTION_ERROR;
+               // make sure strong backs are erected
+               // 1) at the same time or after one of the segments it supports
+               // 2) before both segments it supports are erected
+               ATLASSERT(pTS->GetSupportType() == pgsTypes::StrongBack);
+               const CClosureJointData* pCJ = pTS->GetClosureJoint(gdrIdx);
+               const CPrecastSegmentData* pLeftSegment = pCJ->GetLeftSegment();
+               const CPrecastSegmentData* pRightSegment = pCJ->GetRightSegment();
+
+               SegmentIDType leftSegmentID = pLeftSegment->GetID();
+               SegmentIDType rightSegmentID = pRightSegment->GetID();
+               EventIndexType erectLeftSegmentEventIdx = GetSegmentErectionEventIndex(leftSegmentID);
+               EventIndexType erectRightSegmentEventIdx = GetSegmentErectionEventIndex(rightSegmentID);
+
+               EventIndexType erectTempSupportEventIdx, removeTempSupportEventIdx;
+               GetTempSupportEvents(pTS->GetID(), &erectTempSupportEventIdx, &removeTempSupportEventIdx);
+
+               if ((erectLeftSegmentEventIdx <= erectTempSupportEventIdx) && (erectTempSupportEventIdx <= erectRightSegmentEventIdx)
+                  ||
+                  (erectRightSegmentEventIdx <= erectTempSupportEventIdx) && (erectTempSupportEventIdx <= erectLeftSegmentEventIdx)
+                  )
+               {
+                  // 1) temporary support is erected at or after the left segment is erected and at or before the right segment is erected
+                  // OR
+                  // 2) temporary support is erected at or after the right segment is erected and at or before the left segment is erected 
+                  //
+                  // These are the valid cases
+               }
+               else
+               {
+                  // everything else is invalid
+                  m_StrongBackErectionError.emplace_back(pTS->GetIndex());
+                  error |= TLM_STRONGBACK_ERECTION_ERROR;
+               }
             }
          }
 
@@ -2498,13 +2505,15 @@ int CTimelineManager::Validate() const
             // Segment must be constructed...
             if ( !IsSegmentConstructed(segID) )
             {
-               return TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED;
+               m_ConstructSegmentActivityError.emplace_back(pSegment->GetSegmentKey());
+               error |= TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED;
             }
 
             // and erected...
             if ( !IsSegmentErected(segID) )
             {
-               return TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED;
+               m_ErectSegmentActivityError.emplace_back(pSegment->GetSegmentKey());
+               error |= TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED;
             }
 
             // and its supports must be erected prior to the segment being erected
@@ -2517,53 +2526,64 @@ int CTimelineManager::Validate() const
                if (erectSegmentEventIdx < erectPierEventIdx)
                {
                   // segment cannot be erected before the pier
-                  return TLM_SEGMENT_ERECTION_ERROR;
+                  m_SegmentErectionError.emplace_back(pSegment->GetSegmentKey());
+                  error |= TLM_SEGMENT_ERECTION_ERROR;
                }
             }
 
             // Returns a vector of all the temporary supports that support this segment
-            std::vector<const CTemporarySupportData*> vTS = pSegment->GetTemporarySupports();
-            for (const auto& pTS : vTS)
+            if (gdrIdx == 0)
             {
-               EventIndexType erectTempSupportEventIdx, removeTempSupportEventIdx;
-               GetTempSupportEvents(pTS->GetID(), &erectTempSupportEventIdx, &removeTempSupportEventIdx);
-
-               // can't remove temporary support before segment is erected
-               if (removeTempSupportEventIdx <= erectSegmentEventIdx)
+               // temporary supports are the same for all girder lines... just check this for the first girder
+               std::vector<const CTemporarySupportData*> vTS = pSegment->GetTemporarySupports();
+               for (const auto& pTS : vTS)
                {
-                  return TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR;
-               }
-            }
+                  EventIndexType erectTempSupportEventIdx, removeTempSupportEventIdx;
+                  GetTempSupportEvents(pTS->GetID(), &erectTempSupportEventIdx, &removeTempSupportEventIdx);
 
-            const CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
-            if ( pClosureJoint )
-            {
-               // if there is a closure joint....
-
-               // it must be cast
-               if ( !IsClosureJointCast(pClosureJoint->GetID()) )
-               {
-                  return TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED;
+                  // can't remove temporary support before segment is erected
+                  if (removeTempSupportEventIdx <= erectSegmentEventIdx)
+                  {
+                     m_TemporarySupportRemovalError.emplace_back(pTS->GetIndex());
+                     error |= TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR;
+                  }
                }
 
-               // and cast after the adjacent segments are erected
-               EventIndexType erectRightSegmentEventIdx = GetSegmentErectionEventIndex(pClosureJoint->GetRightSegment()->GetID());
-               EventIndexType castClosureEventIdx = GetCastClosureJointEventIndex(pClosureJoint);
-               if ( castClosureEventIdx < erectSegmentEventIdx ||   // must be cast after left segment is erected
-                    castClosureEventIdx < erectRightSegmentEventIdx // must be cast after right segment is erected
-                  )
+               const CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
+               if (pClosureJoint)
                {
-                  return TLM_CLOSURE_JOINT_ERROR;
-               }
-            }
+                  // if there is a closure joint....
+
+                  // it must be cast
+                  if (!IsClosureJointCast(pClosureJoint->GetID()))
+                  {
+                     m_CastClosureJointActivityError.emplace_back(pClosureJoint->GetClosureKey());
+                     error |= TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED;
+                  }
+
+                  // and cast after the adjacent segments are erected
+                  EventIndexType erectRightSegmentEventIdx = GetSegmentErectionEventIndex(pClosureJoint->GetRightSegment()->GetID());
+                  EventIndexType castClosureEventIdx = GetCastClosureJointEventIndex(pClosureJoint);
+                  if (castClosureEventIdx < erectSegmentEventIdx ||   // must be cast after left segment is erected
+                     castClosureEventIdx < erectRightSegmentEventIdx // must be cast after right segment is erected
+                     )
+                  {
+                     m_ClosureJointError.emplace_back(pClosureJoint->GetClosureKey());
+                     error |= TLM_CLOSURE_JOINT_ERROR;
+                  }
+               } // if pClosureJoint
+            } // if gdrIdx == 0
          } // next segment
       } // next girder
    } // next group
 
-   return TLM_SUCCESS;
+   // temporary supports can be at the ends of two different segments, that can lead to duplicate IDs in this container. remove duplicates
+   m_TemporarySupportRemovalError.erase(std::unique(std::begin(m_TemporarySupportRemovalError), std::end(m_TemporarySupportRemovalError)), std::end(m_TemporarySupportRemovalError));
+
+   return error;
 }
 
-int CTimelineManager::ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexType ductIdx) const
+Uint32 CTimelineManager::ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexType ductIdx) const
 {
 	EventIndexType ptEventIdx = GetStressTendonEventIndex(pGirder->GetID(), ductIdx);
 	const CPTData* pPTData = pGirder->GetPostTensioning();
@@ -2585,7 +2605,7 @@ int CTimelineManager::ValidateDuct(const CSplicedGirderData* pGirder, DuctIndexT
 		auto vEndSegments = pGirder->GetSegmentsForSpan(endSpanIdx);
 		startSegIdx = vStartSegments.front()->GetSegmentKey().segmentIndex;
 		endSegIdx = vEndSegments.back()->GetSegmentKey().segmentIndex;
-        break;
+      break;
 	}
 	case CDuctGeometry::Offset:
 		ATLASSERT(false); // not fully implemented yet
@@ -2664,11 +2684,11 @@ HRESULT CTimelineManager::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
             std::vector<CGirderTendonKey> vTendonKeys = stressTendonActivity.GetTendons();
             for (const auto& tendonKey : vTendonKeys)
             {
-               if (std::find(vStressedTendons.cbegin(), vStressedTendons.cend(), tendonKey) == vStressedTendons.cend())
+               if (std::find(std::cbegin(vStressedTendons), std::cend(vStressedTendons), tendonKey) == std::cend(vStressedTendons))
                {
                   // the tendon has not been previously stressed
                   vStressedTendons.push_back(tendonKey);
-                  std::sort(vStressedTendons.begin(), vStressedTendons.end());
+                  std::sort(std::begin(vStressedTendons), std::end(vStressedTendons));
                }
                else
                {
@@ -2775,7 +2795,8 @@ void CTimelineManager::Clear()
 
 void CTimelineManager::Sort()
 {
-   std::sort(m_TimelineEvents.begin(),m_TimelineEvents.end(),CompareEvents);
+   // sort events using the event objects, not the pointers in the collection
+   std::sort(std::begin(m_TimelineEvents), std::end(m_TimelineEvents), [](const auto& event1, const auto& event2) {return *event1 < *event2; });
 
    // make sure events don't overlap and that there is only one
    // of each type of single Occurrence activities (such as cast deck or open to traffic)
@@ -2866,15 +2887,22 @@ void CTimelineManager::ClearCaches()
    std::for_each(std::begin(m_TimelineEvents), std::end(m_TimelineEvents), [](auto* pTimelineEvent) {pTimelineEvent->ClearCaches(); });
 }
 
-Float64 g_Day;
-bool SearchMe(CTimelineEvent* pEvent)
-{ 
-   // returns true when the trial event occurs on or after g_Day
-   // searching for the first event after the event that is being validated
-   return g_Day <= pEvent->GetDay(); 
+void CTimelineManager::ClearValidationCaches() const
+{
+   m_RemoveTemporarySupportsActivityError.clear();
+   m_ErectPiersActivityError.clear();
+   m_StrongBackErectionError.clear();
+   m_ConstructSegmentActivityError.clear();
+   m_ErectSegmentActivityError.clear();
+   m_SegmentErectionError.clear();
+   m_TemporarySupportRemovalError.clear();
+   m_CastClosureJointActivityError.clear();
+   m_ClosureJointError.clear();
+   m_StressTendonsActivityError.clear();
+   m_StressTendonError.clear();
 }
 
-int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
+Uint32 CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
 {
    if ( m_TimelineEvents.size() == 0 ||
         pTimelineEvent == m_TimelineEvents.back()
@@ -2888,8 +2916,7 @@ int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
    const CTimelineEvent* pPrevEvent = nullptr;
 
    // find the first event that comes after the new event
-   g_Day = pTimelineEvent->GetDay();
-   auto found( std::find_if(m_TimelineEvents.cbegin(),m_TimelineEvents.cend(),SearchMe) );
+   auto found(std::find_if(std::cbegin(m_TimelineEvents), std::cend(m_TimelineEvents), [day = pTimelineEvent->GetDay()](const auto& event) {return day <= event->GetDay(); }));
    if ( found == m_TimelineEvents.cend() )
    {
       // the "next" event wasn't found... that means there is no event that would come after the event that is being validated
@@ -2934,107 +2961,147 @@ int CTimelineManager::ValidateEvent(const CTimelineEvent* pTimelineEvent) const
    return TLM_SUCCESS;
 }
 
-CString CTimelineManager::GetErrorMessage(int errorCode) const
+std::_tstring CTimelineManager::GetErrorMessage(Uint32 errorCode) const
 {
-   CString strMsg;
-   switch(errorCode)
+   std::_tostringstream os;
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_OVERLAPS_PREVIOUS_EVENT))
    {
-   case TLM_OVERLAPS_PREVIOUS_EVENT:
-      strMsg = _T("This event begins before the activities in the previous event have completed.");
-      break;
-
-   case TLM_OVERRUNS_NEXT_EVENT:
-      strMsg = _T("The activities in this event end after the next event begins.");
-      break;
-
-   case TLM_EVENT_NOT_FOUND:
-      strMsg = _T("Event not found");
-      break;
-
-   case TLM_CAST_DECK_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include an activity for casting the deck.");
-      break;
-
-   case TLM_OVERLAY_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include an activity for installing the overlay.");
-      break;
-
-   case TLM_INTERMEDIATE_DIAPHRAGM_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include an activity for installing intermediate diaphragms.");
-      break;
-
-   case TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include an activity for installing the traffic barrier/railing system.");
-      break;
-
-   case TLM_LIVELOAD_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include an activity for opening the bridge to traffic.");
-      break;
-
-   case TLM_USER_LOAD_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include activities for one or more user defined loads.");
-      break;
-
-   case TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include activites for constructing one or more segments.");
-      break;
-
-   case TLM_ERECT_PIERS_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include activities for constructing one or more piers or temporary supports.");
-      break;
-
-   case TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include activites for erecting one or more segments.");
-      break;
-
-   case TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include activities for removing one or more of the temporary supports.");
-      break;
-
-   case TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include activities for casting one or more of the closure joints.");
-      break;
-
-   case TLM_STRESS_TENDONS_ACTIVITY_REQUIRED:
-      strMsg = _T("The timeline does not include activites for stressing one or more tendons.");
-      break;
-
-   case TLM_STRONGBACK_ERECTION_ERROR:
-      strMsg = _T("A strong back is erected before the segments that support it.");
-      break;
-
-   case TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR:
-      strMsg = _T("A temporary support has been removed while it is still supporting a segment.");
-      break;
-
-   case TLM_SEGMENT_ERECTION_ERROR:
-      strMsg = _T("A segment has been erected before its supporting elements (Pier or Temporary Support) have been erected.");
-      break;
-
-   case TLM_CLOSURE_JOINT_ERROR:
-      strMsg = _T("A closure joint has been cast before its adjacent segments have been erected.");
-      break;
-
-   case TLM_RAILING_SYSTEM_ERROR:
-      strMsg = _T("The traffic barrier/railing system has been installed before the deck was cast.");
-      break;
-
-   case TLM_STRESS_TENDON_ERROR:
-      strMsg = _T("A tendon has been stressed before the segments and closure joints have been assembled.");
-      break;
-
-   case TLM_LOAD_RATING_ERROR:
-      strMsg = _T("Bridge must be open to traffic before load rating.");
-      break;
-
-   case TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR:
-      strMsg = _T("Intermediate diaphragms are cast after the deck.");
-      break;
-
-   default:
-      ATLASSERT(false);
+      os << _T("This event begins before the activities in the previous event have completed.") << std::endl << std::endl;
    }
-   return strMsg;
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_OVERRUNS_NEXT_EVENT))
+   {
+      os << _T("The activities in this event end after the next event begins.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_EVENT_NOT_FOUND))
+   {
+      os << _T("Event not found") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_CAST_DECK_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include an activity for casting the deck.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_OVERLAY_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include an activity for installing the overlay.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_INTERMEDIATE_DIAPHRAGM_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include an activity for installing intermediate diaphragms.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_RAILING_SYSTEM_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include an activity for installing the traffic barrier/railing system.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_LIVELOAD_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include an activity for opening the bridge to traffic.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_USER_LOAD_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include activities for one or more user defined loads.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_CONSTRUCT_SEGMENTS_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include activites for constructing the following segments:") << std::endl;
+      std::for_each(std::cbegin(m_ConstructSegmentActivityError), std::cend(m_ConstructSegmentActivityError), [&os](const auto& segmentKey) {os << SEGMENT_LABEL(segmentKey) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_ERECT_SEGMENTS_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include activites for erecting the following segments:") << std::endl;
+      std::for_each(std::cbegin(m_ErectSegmentActivityError), std::cend(m_ErectSegmentActivityError), [&os](const auto& segmentKey) {os << SEGMENT_LABEL(segmentKey) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_SEGMENT_ERECTION_ERROR))
+   {
+      os << _T("The following segments are erected before their supporting elements (Pier or Temporary Support) have been constructed:") << std::endl;
+      std::for_each(std::cbegin(m_SegmentErectionError), std::cend(m_SegmentErectionError), [&os](const auto& segmentKey) {os << SEGMENT_LABEL(segmentKey) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR))
+   {
+      os << _T("The following temporary supports has been removed while they are still supporting segments:") << std::endl;
+      std::for_each(std::cbegin(m_TemporarySupportRemovalError), std::cend(m_TemporarySupportRemovalError), [&os](const auto& tsIdx) {os << _T("Temporary Support ") << LABEL_INDEX(tsIdx) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_CAST_CLOSURE_JOINT_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include activities for casting the following closure joints:") << std::endl;
+      std::for_each(std::cbegin(m_CastClosureJointActivityError), std::cend(m_CastClosureJointActivityError), [&os](const auto& cjKey) {os << _T("Group ") << LABEL_GROUP(cjKey.groupIndex) << _T(", Closure ") << LABEL_SEGMENT(cjKey.segmentIndex) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_CLOSURE_JOINT_ERROR))
+   {
+      os << _T("The following closure joints are cast before the adjacent segments have been erected:") << std::endl;
+      std::for_each(std::cbegin(m_ClosureJointError), std::cend(m_ClosureJointError), [&os](const auto& cjKey) {os << _T("Group ") << LABEL_GROUP(cjKey.groupIndex) << _T(", Closure ") << LABEL_SEGMENT(cjKey.segmentIndex) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_ERECT_PIERS_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include activities for constructing the following piers or temporary supports:") << std::endl;
+      std::for_each(std::cbegin(m_ErectPiersActivityError), std::cend(m_ErectPiersActivityError), [&os](const auto& pair) {if(pair.first != INVALID_INDEX) os << _T("Pier ") << LABEL_PIER(pair.first) << std::endl; else os << _T("Temporary Support ") << LABEL_TEMPORARY_SUPPORT(pair.second) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_REMOVE_TEMPORARY_SUPPORTS_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include activities for removing the following temporary supports:") << std::endl;
+      std::for_each(std::cbegin(m_RemoveTemporarySupportsActivityError), std::cend(m_RemoveTemporarySupportsActivityError), [&os](const auto& tsIdx) {os << _T("Temporary Support ") << LABEL_TEMPORARY_SUPPORT(tsIdx) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_STRESS_TENDONS_ACTIVITY_REQUIRED))
+   {
+      os << _T("The timeline does not include activites for stressing the following tendons:") << std::endl;
+      std::for_each(std::cbegin(m_StressTendonsActivityError), std::cend(m_StressTendonsActivityError), [&os](const auto& key) {os << GIRDER_LABEL(key.girderKey) << _T(", Duct ") << LABEL_DUCT(key.ductIdx) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_STRONGBACK_ERECTION_ERROR))
+   {
+      os << _T("The following strongbacks are erected before the segments that support them:") << std::endl;
+      std::for_each(std::cbegin(m_StrongBackErectionError), std::cend(m_StrongBackErectionError), [&os](const auto& tsIdx) {os << _T("Temporary Support ") << LABEL_TEMPORARY_SUPPORT(tsIdx) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_RAILING_SYSTEM_ERROR))
+   {
+      os << _T("The traffic barrier/railing system has been installed before the deck was cast.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_STRESS_TENDON_ERROR))
+   {
+      os << _T("The following tendons are stressed before the segments and closure joints have been assembled:") << std::endl;
+      std::for_each(std::cbegin(m_StressTendonError), std::cend(m_StressTendonError), [&os](const auto& key) {os << GIRDER_LABEL(key.girderKey) << _T(", Duct ") << LABEL_DUCT(key.ductIdx) << std::endl; });
+      os << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_LOAD_RATING_ERROR))
+   {
+      os << _T("Bridge must be open to traffic before load rating.") << std::endl << std::endl;
+   }
+
+   if (sysFlags<Uint32>::IsSet(errorCode, TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR))
+   {
+      os << _T("Intermediate diaphragms are cast after the deck. Add an Apply Load activity at or before the event containing the Cast Deck activity.") << std::endl << std::endl;
+   }
+
+   return os.str();
 }
 
 #if defined _DEBUG

@@ -89,6 +89,8 @@ protected:
    CPierEndDistanceMeasureComboBox m_cbEndDistanceMeasure;
    friend CPierEndDistanceMeasureComboBox;
 
+   BOOL CanMeasureBearingOffsetAlongGirder(); // returns true of bearing offset can be measured along centerline girder
+
    void OnEndDistanceMeasureChanged();
    void OnBearingOffsetMeasureChanged();
    void OnBoundaryConditionChanged();

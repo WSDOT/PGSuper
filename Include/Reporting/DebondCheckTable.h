@@ -47,48 +47,17 @@ LOG
 class REPORTINGCLASS CDebondCheckTable
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    CDebondCheckTable();
-
-   //------------------------------------------------------------------------
-   // Destructor
    virtual ~CDebondCheckTable();
-
-   // GROUP: OPERATORS
-
-   // GROUP: OPERATIONS
 
    void Build(rptChapter* pChapter, IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const;
 
 private:
-   //------------------------------------------------------------------------
-   // Builds the table for debonded strands in a row
-   rptRcTable* Build1(const pgsDebondArtifact* pDebondArtifact,IEAFDisplayUnits* pDisplayUnits) const;
+   CDebondCheckTable(const CDebondCheckTable& rOther) = delete;
+   CDebondCheckTable& operator=(const CDebondCheckTable&) = delete;
 
-   //------------------------------------------------------------------------
-   // Builds the table for debonded strands at a section
-   rptRcTable* Build2(const pgsDebondArtifact* pDebondArtifact,Float64 segmentLength, IEAFDisplayUnits* pDisplayUnits) const;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CDebondCheckTable(const CDebondCheckTable& rOther);
+   rptRcTable* Build1(const pgsDebondArtifact* pDebondArtifact, bool bAfter8thEdition, IEAFDisplayUnits* pDisplayUnits) const;
+   rptRcTable* Build2(const pgsDebondArtifact* pDebondArtifact, IEAFDisplayUnits* pDisplayUnits) const;
 };
 
 #endif // INCLUDED_DEBONDCHECKTABLE_H_

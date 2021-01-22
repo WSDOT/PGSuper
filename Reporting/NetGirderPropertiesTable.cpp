@@ -64,7 +64,7 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
    std::_tostringstream os;
-   os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") <<  pIntervals->GetDescription(intervalIdx);
+   os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << _T("; for ") << pgsGirderLabel::GetSegmentLabel(segmentKey);
 
    rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(9,os.str().c_str());
    xs_table->SetNumberOfHeaderRows(2);

@@ -223,8 +223,13 @@ CSpanReportSpecification::~CSpanReportSpecification(void)
 
 std::_tstring CSpanReportSpecification::GetReportTitle() const
 {
+   return GetReportName() + _T(" - ") + GetReportContextString();
+}
+
+std::_tstring CSpanReportSpecification::GetReportContextString() const
+{
    CString msg;
-   msg.Format(_T("%s - Span %d"),GetReportName().c_str(),LABEL_SPAN(GetSpan()));
+   msg.Format(_T("Span %s"),LABEL_SPAN(GetSpan()));
    return std::_tstring(msg);
 }
 
@@ -272,12 +277,49 @@ CGirderReportSpecification::~CGirderReportSpecification(void)
 
 std::_tstring CGirderReportSpecification::GetReportTitle() const
 {
+   return GetReportName() + _T(" - ") + GetReportContextString();
+}
+
+std::_tstring CGirderReportSpecification::GetReportContextString() const
+{
+   GroupIndexType grpIdx  = m_GirderKey.groupIndex;
+   GirderIndexType gdrIdx = m_GirderKey.girderIndex;
+
    GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
-   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
 
    CString msg;
-   msg.Format(_T("%s - %s %d Girder %s"),GetReportName().c_str(),strGroupLabel,LABEL_GROUP(m_GirderKey.groupIndex),LABEL_GIRDER(m_GirderKey.girderIndex));
+   if (bIsPGSuper)
+   {
+      if ( grpIdx != INVALID_INDEX && gdrIdx != INVALID_INDEX )
+      {
+         msg.Format(_T("Span %s Girder %s"), LABEL_SPAN(m_GirderKey.groupIndex), LABEL_GIRDER(m_GirderKey.girderIndex));
+      }
+      else if( grpIdx != INVALID_INDEX )
+      {
+         msg.Format(_T("Span %s"), LABEL_SPAN(m_GirderKey.groupIndex));
+      }
+      else if ( gdrIdx != INVALID_INDEX )
+      {
+         msg.Format(_T("Girder %s"), LABEL_GIRDER(m_GirderKey.girderIndex));
+      }
+   }
+   else
+   {
+      if ( grpIdx != INVALID_INDEX && gdrIdx != INVALID_INDEX )
+      {
+         msg.Format(_T("Group %d Girder %s"), LABEL_GROUP(m_GirderKey.groupIndex), LABEL_GIRDER(m_GirderKey.girderIndex));
+      }
+      else if( grpIdx != INVALID_INDEX )
+      {
+         msg.Format(_T("Group %d"), LABEL_GROUP(m_GirderKey.groupIndex));
+      }
+      else if ( gdrIdx != INVALID_INDEX )
+      {
+         msg.Format(_T("Girder %s"), LABEL_GIRDER(m_GirderKey.girderIndex));
+      }
+   }
+
    return std::_tstring(msg);
 }
 
@@ -365,8 +407,13 @@ CGirderLineReportSpecification::~CGirderLineReportSpecification(void)
 
 std::_tstring CGirderLineReportSpecification::GetReportTitle() const
 {
+   return GetReportName() + _T(" - ") + GetReportContextString();
+}
+
+std::_tstring CGirderLineReportSpecification::GetReportContextString() const
+{
    CString msg;
-   msg.Format(_T("%s - Girder Line %s"),GetReportName().c_str(),LABEL_GIRDER(m_GirderIdx));
+   msg.Format(_T("Girder Line %s"), LABEL_GIRDER(m_GirderIdx));
    return std::_tstring(msg);
 }
 
@@ -425,7 +472,69 @@ CMultiGirderReportSpecification::~CMultiGirderReportSpecification(void)
 
 std::_tstring CMultiGirderReportSpecification::GetReportTitle() const
 {
-   return GetReportName();
+   return GetReportName() + _T(" - ") + GetReportContextString();
+}
+
+// comparator to sort girderkeys
+struct gkeyComparer
+{
+   bool operator() (CGirderKey i, CGirderKey j)
+   {
+      if (i.groupIndex == j.groupIndex)
+      {
+         return i.girderIndex < j.girderIndex;
+      }
+      else
+      {
+         return i.groupIndex < j.groupIndex;
+      }
+   }
+};
+
+std::_tstring CMultiGirderReportSpecification::GetReportContextString() const
+{
+   GET_IFACE(IDocumentType,pDocType);
+   bool bIsPGSuper = pDocType->IsPGSuperDocument();
+
+   // sort so that keys are grouped by span
+   std::vector<CGirderKey> Keys(m_GirderKeys);
+   gkeyComparer comp;
+   std::sort(Keys.begin(), Keys.end(), comp);
+
+   std::_tostringstream os;
+   bool bFirstGrp(true);
+   GroupIndexType curGrp = Keys.front().groupIndex;
+   for (auto& key : Keys)
+   {
+      if (bFirstGrp || key.groupIndex != curGrp)
+      {
+         if (!bFirstGrp)
+         {
+            os << _T("), ");
+         }
+
+         if (bIsPGSuper)
+         {
+            os << _T("Span ") << LABEL_SPAN(key.groupIndex) << _T(" (Girder ") << LABEL_GIRDER(key.girderIndex);
+         }
+         else
+         {
+            os << _T("Group ") << LABEL_GROUP(key.groupIndex) << _T(" (Girder ") << LABEL_GIRDER(key.girderIndex);
+         }
+
+         curGrp = key.groupIndex;
+      }
+      else
+      {
+         os << _T(",") << LABEL_GIRDER(key.girderIndex);
+      }
+
+      bFirstGrp = false;
+   }
+
+   os << _T(")");
+
+   return os.str();
 }
 
 void CMultiGirderReportSpecification::SetGirderKeys(const std::vector<CGirderKey>& girderKeys)
@@ -494,6 +603,11 @@ std::_tstring CMultiViewSpanGirderReportSpecification::GetReportTitle() const
    return GetReportName();
 }
 
+std::_tstring CMultiViewSpanGirderReportSpecification::GetReportContextString() const
+{
+   return std::_tstring(); // may want to revisit
+}
+
 void CMultiViewSpanGirderReportSpecification::SetGirderKeys(const std::vector<CGirderKey>& girderKeys)
 {
    m_GirderKeys = girderKeys;
@@ -560,14 +674,17 @@ CPointOfInterestReportSpecification::~CPointOfInterestReportSpecification(void)
 
 std::_tstring CPointOfInterestReportSpecification::GetReportTitle() const
 {
+   return GetReportName() + _T(" - ") + GetReportContextString();
+}
+
+std::_tstring CPointOfInterestReportSpecification::GetReportContextString() const
+{
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE(rptPointOfInterest, rptPOI, pDisplayUnits->GetSpanLengthUnit(), true);
    rptPOI.SetValue(POI_SPAN,m_POI);
 
-   CString msg;
-   msg.Format(_T("%s - %s"),GetReportName().c_str(),rptPOI.AsString().c_str());
-   return std::_tstring(msg);
+   return rptPOI.AsString();
 }
 
 void CPointOfInterestReportSpecification::SetPointOfInterest(const pgsPointOfInterest& poi)

@@ -863,9 +863,17 @@ Float64 CSpecAgentImp::GetAllowableTensionStress(pgsTypes::LoadRatingType rating
    }
 
    GET_IFACE(IRatingSpecification,pRatingSpec);
-   Float64 x = pRatingSpec->GetAllowableTensionCoefficient(ratingType);
+   bool bCheckMax;
+   Float64 fmax;
+   Float64 x = pRatingSpec->GetAllowableTensionCoefficient(ratingType,&bCheckMax,&fmax);
 
    Float64 fallow = x*lambda*sqrt(fc);
+
+   if (bCheckMax)
+   {
+      fallow = Min(fallow, fmax);
+   }
+
    return fallow;
 }
 
@@ -1956,6 +1964,65 @@ bool CSpecAgentImp::CheckFinalDeadLoadTensionStress() const
    return pSpec->CheckFinalTensionPermanentLoadStresses();
 }
 
+Float64 CSpecAgentImp::GetAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey) const
+{
+   Float64 k = GetAllowablePrincipalWebTensionStressCoefficient();
+
+   Float64 lambda, fc;
+   GET_IFACE(IMaterials, pMaterials);
+   lambda = pMaterials->GetSegmentLambda(segmentKey);
+   fc = pMaterials->GetSegmentFc28(segmentKey);
+
+   Float64 f = k*lambda*sqrt(fc);
+   return f;
+}
+
+Float64 CSpecAgentImp::GetAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey) const
+{
+   Float64 k = GetAllowablePrincipalWebTensionStressCoefficient();
+
+   Float64 lambda, fc;
+   GET_IFACE(IMaterials, pMaterials);
+
+   lambda = pMaterials->GetClosureJointLambda(closureKey);
+   fc = pMaterials->GetClosureJointFc28(closureKey);
+
+   Float64 f = k*lambda*sqrt(fc);
+   return f;
+}
+
+Float64 CSpecAgentImp::GetAllowablePrincipalWebTensionStress(const pgsPointOfInterest& poi) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   CClosureKey closureKey;
+   if (pPoi->IsInClosureJoint(poi, &closureKey))
+   {
+      return GetAllowableClosureJointPrincipalWebTensionStress(closureKey);
+   }
+   else
+   {
+      return GetAllowableSegmentPrincipalWebTensionStress(poi.GetSegmentKey());
+   }
+}
+
+Float64 CSpecAgentImp::GetAllowablePrincipalWebTensionStressCoefficient() const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   pgsTypes::PrincipalTensileStressMethod method;
+   Float64 tensionCoefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultimplier, principalTensileStressFcThreshold;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &tensionCoefficient,&ductDiameterFactor,&ungroutedMultiplier, &groutedMultimplier,&principalTensileStressFcThreshold);
+   return tensionCoefficient;
+}
+
+Float64 CSpecAgentImp::GetprincipalTensileStressFcThreshold() const
+{
+   const SpecLibraryEntry* pSpec = GetSpec();
+   pgsTypes::PrincipalTensileStressMethod method;
+   Float64 tensionCoefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultimplier, principalTensileStressFcThreshold;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &tensionCoefficient,&ductDiameterFactor,&ungroutedMultiplier, &groutedMultimplier,&principalTensileStressFcThreshold);
+   return principalTensileStressFcThreshold;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // ITransverseReinforcementSpec
 //
@@ -3001,10 +3068,15 @@ void CSpecAgentImp::GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInter
 
 /////////////////////////////////////////////////////////////////////
 // IDebondLimits
+bool CSpecAgentImp::CheckMaxDebondedStrands(const CSegmentKey& segmentKey) const
+{
+   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+   return pGirderEntry->CheckMaxTotalFractionDebondedStrands();
+}
+
 Float64 CSpecAgentImp::GetMaxDebondedStrands(const CSegmentKey& segmentKey) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-
    return pGirderEntry->GetMaxTotalFractionDebondedStrands();
 }
 
@@ -3014,26 +3086,10 @@ Float64 CSpecAgentImp::GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey
    return pGirderEntry->GetMaxFractionDebondedStrandsPerRow();
 }
 
-Float64 CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) const
+void CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pNS, bool* pbCheckMax, Float64* pMaxFraction) const
 {
-   StrandIndexType nMax;
-   Float64 fMax;
-
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-   pGirderEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);
-
-   return fMax;
-}
-
-StrandIndexType CSpecAgentImp::GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) const
-{
-   StrandIndexType nMax;
-   Float64 fMax;
-
-   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-   pGirderEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);
-
-   return nMax;
+   pGirderEntry->GetMaxDebondedStrandsPerSection(p10orLess,pNS,pbCheckMax,pMaxFraction);
 }
 
 void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) const
@@ -3087,10 +3143,101 @@ void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* p
    *pLen = min_len>0.0 ? min_len : 0.0; // don't return less than zero
 }
 
-Float64 CSpecAgentImp::GetMinDebondSectionDistance(const CSegmentKey& segmentKey) const
+void CSpecAgentImp::GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey, Float64* pndb, bool* pbUseMinDistance, Float64* pMinDistance) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-   return pGirderEntry->GetMinDebondSectionLength();
+   pGirderEntry->GetMinDistanceBetweenDebondSections(pndb, pbUseMinDistance, pMinDistance);
+}
+
+Float64 CSpecAgentImp::GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey) const
+{
+   Float64 ndb, minDist;
+   bool bMinDist;
+   GetMinDistanceBetweenDebondSections(segmentKey, &ndb, &bMinDist, &minDist);
+
+   GET_IFACE(IMaterials, pMaterials);
+   const auto* pStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
+   Float64 db = pStrand->GetNominalDiameter();
+   Float64 debond_dist = ndb*db;
+   if (bMinDist)
+   {
+      debond_dist = Max(debond_dist, minDist);
+   }
+   return debond_dist;
+}
+
+bool CSpecAgentImp::CheckDebondingSymmetry(const CSegmentKey& segmentKey) const
+{
+   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+   return pGirderEntry->CheckDebondingSymmetry();
+}
+
+bool CSpecAgentImp::CheckAdjacentDebonding(const CSegmentKey& segmentKey) const
+{
+   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+   return pGirderEntry->CheckAdjacentDebonding();
+}
+
+bool CSpecAgentImp::CheckDebondingInWebWidthProjections(const CSegmentKey& segmentKey) const
+{
+   const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+   return pGirderEntry->CheckDebondingInWebWidthProjections();
+}
+
+#if defined _DEBUG
+#include <initguid.h>
+#include <Plugins\BeamFamilyCLSID.h>
+#endif
+bool CSpecAgentImp::IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, RowIndexType rowIdx) const
+{
+   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::NinthEdition2020)
+   {
+      // exterior strands in each row are required to be bonded
+      return true;
+   }
+
+   // Beginning with LRFD 9th Edition, 5.9.4.3.3, third bullet point of Item I, only the rows within the full width portion of the bottom flange
+   // need to have the exterior strands debonded.
+   GET_IFACE(IPointOfInterest, pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | (endType == pgsTypes::metStart ? POI_0L : POI_10L), &vPoi);
+   const pgsPointOfInterest& poi(vPoi.front());
+
+   GET_IFACE(IGirder, pGirder);
+   WebIndexType nWebs = pGirder->GetWebCount(segmentKey);
+   FlangeIndexType nFlanges = pGirder->GetBottomFlangeCount(segmentKey);
+
+   if(nWebs == 1 && nFlanges == 1)
+   {
+      // this is a single web flanged girder
+#if defined _DEBUG
+      const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
+      CComPtr<IBeamFactory> factory;
+      pGirderEntry->GetBeamFactory(&factory);
+
+      auto clsid = factory->GetFamilyCLSID();
+      ATLASSERT(clsid == CLSID_WFBeamFamily || clsid == CLSID_DeckBulbTeeBeamFamily || clsid == CLSID_SplicedIBeamFamily);
+      // if this assert fires, is there a new family for single web flanged girders?
+#endif
+      Float64 Hg = pGirder->GetHeight(poi);
+      Float64 bf = pGirder->GetMinBottomFlangeThickness(poi);
+      Float64 ybf = -(Hg - bf); // elevation to top of full width section of bottom flange in girder section coordinates (0,0 at top center, negative downwards)
+
+      GET_IFACE(IStrandGeometry, pStrandGeometry);
+      auto vStrands = pStrandGeometry->GetStrandsInRow(poi, rowIdx, pgsTypes::Straight);
+      ATLASSERT(0 < vStrands.size());
+      CComPtr<IPoint2d> pnt;
+      pStrandGeometry->GetStrandPosition(poi, vStrands.front(), pgsTypes::Straight, &pnt);
+      Float64 y;
+      pnt->get_Y(&y);
+
+      return (y < ybf) ? true : false;
+      // strand row is below top of full width section of bottom flange so the exterior strands must be bonded
+   }
+   else
+   {
+      return true;
+   }
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -3300,6 +3447,22 @@ Float64 CSpecAgentImp::GetTendonAreaLimit(pgsTypes::StrandInstallationType insta
    return (installationType == pgsTypes::sitPush ? pushRatio : pullRatio);
 }
 
+Float64 CSpecAgentImp::GetSegmentDuctDeductionFactor(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
+{
+   // assumed ducts are grouted and cured in the interval following their installation and stressing
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType groutDuctIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey) + 1;
+   return GetDuctDeductFactor(intervalIdx, groutDuctIntervalIdx);
+}
+
+Float64 CSpecAgentImp::GetGirderDuctDeductionFactor(const CGirderKey& girderKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx) const
+{
+   // assumed ducts are grouted and cured in the interval following their installation and stressing
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType groutDuctIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx) + 1;
+   return GetDuctDeductFactor(intervalIdx, groutDuctIntervalIdx);
+}
+
 ////////////////////
 // Private methods
 
@@ -3345,7 +3508,7 @@ void CSpecAgentImp::ValidateHaulTruck(const CPrecastSegmentData* pSegment) const
       }
       else
       {
-         strMsg.Format(_T("The haul truck is not defined for Span %d Girder %s"), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
+         strMsg.Format(_T("The haul truck is not defined for Span %s Girder %s"), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
       }
 
       pgsSegmentRelatedStatusItem* pStatusItem = new pgsHaulTruckStatusItem(m_StatusGroupID, m_scidHaulTruckError, strMsg, segmentKey);
@@ -3364,4 +3527,27 @@ void CSpecAgentImp::Invalidate()
    // remove our items from the status center
    GET_IFACE(IEAFStatusCenter, pStatusCenter);
    pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
+}
+
+Float64 CSpecAgentImp::GetDuctDeductFactor(IntervalIndexType intervalIdx, IntervalIndexType groutDuctIntervalIdx) const
+{
+   Float64 deduct_factor;
+
+   // Get principal web stress parameters
+   const SpecLibraryEntry* pSpec = GetSpec();
+
+   pgsTypes::PrincipalTensileStressMethod method;
+   Float64 coefficient, principalTensileStressFcThreshold, ductDiameterNearnessFactor, ungroutedDiameterMultiplier, groutedDiameterMultiplier;
+   pSpec->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterNearnessFactor,&ungroutedDiameterMultiplier, &groutedDiameterMultiplier, &principalTensileStressFcThreshold);
+
+   if (intervalIdx < groutDuctIntervalIdx)
+   {
+      deduct_factor = ungroutedDiameterMultiplier;
+   }
+   else
+   {
+      deduct_factor = groutedDiameterMultiplier;
+   }
+
+   return deduct_factor;
 }

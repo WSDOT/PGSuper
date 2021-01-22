@@ -40,10 +40,12 @@ static char THIS_FILE[] = __FILE__;
 // CLibraryEntryConflict dialog
 
 
-CLibraryEntryConflict::CLibraryEntryConflict(const std::_tstring& entryName, const std::_tstring& libName, 
+CLibraryEntryConflict::CLibraryEntryConflict(const std::_tstring& strServer, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName,
                                              const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,CWnd* pParent)
 	: CDialog(CLibraryEntryConflict::IDD, pParent),
    m_KeyList(keylists),
+   m_Server(strServer.c_str()),
+   m_Configuration(strConfiguration.c_str()),
    m_EntryName(entryName.c_str()),
    m_LibName(libName.c_str()),
    m_IsImported(isImported),
@@ -63,7 +65,8 @@ void CLibraryEntryConflict::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_OVERWRITE, m_Overwrite);
 	DDX_Control(pDX, IDC_CONFLICT_BOTTOM, m_ConflictBottom);
 	DDX_Control(pDX, IDC_CONFLICT_TOP, m_ConflictTop);
-	DDX_Control(pDX, IDC_ENTRY_TEXT, m_EntryText);
+   DDX_Control(pDX, IDC_ENTRY_TEXT, m_EntryText);
+   DDX_Control(pDX, IDC_CONFIGURATION_TEXT, m_ConfigurationText);
    DDX_Control(pDX, IDC_CONFLICT_LIST, m_ConflictList);
 	//}}AFX_DATA_MAP
 }
@@ -143,6 +146,10 @@ BOOL CLibraryEntryConflict::OnInitDialog()
 	CString text;
    text.Format(_T("The entry name is %s in the %s"),m_EntryName,m_LibName);
    m_EntryText.SetWindowText(text);
+
+   CString configuration;
+   configuration.Format(_T("Server: %s, Configuration: %s"), m_Server, m_Configuration);
+   m_ConfigurationText.SetWindowText(configuration);
 
    // Fill up the conflict list
    m_ConflictList.InsertColumn(0,_T("Item"));

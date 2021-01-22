@@ -233,7 +233,7 @@ BOOL CTxDOTOptionalDesignView::UpdateCurrentPageData()
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-      CPropertyPage* pPage = m_pPropSheet->GetActivePage();
+      CWnd* pPage = m_pPropSheet->GetActivePage();
 
       CTxDOTOptionalDesignBridgeInputPage* pBridgeInput = dynamic_cast<CTxDOTOptionalDesignBridgeInputPage*>(pPage);
       if (pBridgeInput!=nullptr)
@@ -262,11 +262,7 @@ BOOL CTxDOTOptionalDesignView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_C
        && m_pPropSheet!=nullptr && ::IsWindow(m_pPropSheet->m_hWnd))
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-      CPropertyPage* pPage;
-      pPage = m_pPropSheet->GetActivePage();
-
-      if(pPage->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
+      if(m_pPropSheet->GetActivePage()->OnCmdMsg(nID, nCode, pExtra, pHandlerInfo))
         return TRUE;
    }
 

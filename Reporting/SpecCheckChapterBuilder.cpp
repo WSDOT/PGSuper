@@ -43,7 +43,7 @@
 #include <Reporting\ContinuityCheck.h>
 #include <Reporting\DuctSizeCheckTable.h>
 #include <Reporting\DuctGeometryCheckTable.h>
-
+#include <Reporting\PrincipalTensionStressCheckTable.h>
 #include <Reporting\RatingSummaryTable.h>
 
 #include <MathEx.h>
@@ -167,7 +167,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    Float64 fc_reqd  = pGirderArtifact->GetRequiredGirderConcreteStrength();
    if ( 0 <= fci_reqd )
    {
-      Float64 fci_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+      Float64 fci_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOffTol(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
       *p << _T("Required ") << RPT_FCI << _T(" = ") << stress_u.SetValue(fci_reqd);
       *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fci_rounded) << rptNewLine;
    }
@@ -189,7 +189,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( 0 <= fc_reqd )
    {
-      Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+      Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOffTol(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
       *p << _T("Required ") << RPT_FC  << _T(" = ") << stress_u.SetValue(fc_reqd);
       *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fc_rounded) << rptNewLine;
    }
@@ -240,7 +240,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       Float64 fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength();
       if ( 0 <= fc_reqd )
       {
-         Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOff(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOff(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+         Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOffTol(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
          *p << _T("Required ") << RPT_FC  << _T(" = ") << stress_u.SetValue(fc_reqd);
          *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fc_rounded) << rptNewLine;
       }
@@ -262,27 +262,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
          CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,task,false/*deck stresses*/);
       } // next task
-   }
-
-   // Principle tension stress in webs
-   p = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   p->SetName(_T("Principal Tensile Stresses in Webs"));
-   *p << p->GetName() << rptNewLine;
-   *pChapter << p;
-
-
-   p = new rptParagraph;
-   *pChapter << p;
-   GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterials);
-   Float64 fc_limit = ::ConvertToSysUnits(10.0, unitMeasure::KSI);
-   Float64 fcSegment = pMaterials->GetSegmentFc28(CSegmentKey(girderKey, 0)); // it's ok to use segment 0 because we know non-pgsplice files have only one segment per girder
-   if (pDocType->IsPGSpliceDocument() || fc_limit < fcSegment)
-   {
-      *p << _T("The requirements of LRFD 5.9.2.3.3 are applicable but have not been evaluted. Use alternative methods to evaluate compliance with these requirements.") << rptNewLine;
-   }
-   else
-   {
-      *p << _T("LRFD 5.9.2.3.3 - Principal Tensile Stresses in Webs limitations are not applicable.") << rptNewLine;
    }
 
    // Flexural Capacity
@@ -405,6 +384,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       }
    }
 
+   // Principle tension stress in webs
+   CPrincipalTensionStressCheckTable().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
+
    if (pSpecEntry->IsSplittingCheckEnabled())
    {
       // Splitting Zone check
@@ -422,8 +404,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Lifting
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
    {
+      // starting with 9th edition, stability checks are manditory so always report the outcome
       p = new rptParagraph;
       p->SetName(_T("Lifting"));
       *pChapter << p;
@@ -433,8 +416,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Hauling
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
+   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
    {
+      // starting with 9th edition, stability checks are manditory so always report the outcome
       p = new rptParagraph;
       p->SetName(_T("Hauling"));
       *pChapter << p;
@@ -521,6 +505,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       return pChapter;
    }
 
+   std::vector<CGirderKey> girderKeys{ girderKey }; // needed for rating summary tables
+
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -529,7 +515,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       (*pPara) << pPara->GetName() << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
-      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker, girderKey, CRatingSummaryTable::Design ) << rptNewLine;
+      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker, girderKeys, CRatingSummaryTable::Design ) << rptNewLine;
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
@@ -543,14 +529,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Routine);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Routine);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
          }
 
          bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Routine,&bMustCloseBridge);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKeys, pgsTypes::lrLegal_Routine,&bMustCloseBridge);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
@@ -563,14 +549,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Special);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Special);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
          }
 
          bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Special,&bMustCloseBridge);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKeys, pgsTypes::lrLegal_Special,&bMustCloseBridge);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
@@ -583,14 +569,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Emergency);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Emergency);
          if (pTable)
          {
             (*pPara) << pTable << rptNewLine;
          }
 
          bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKey, pgsTypes::lrLegal_Emergency, &bMustCloseBridge);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker, girderKeys, pgsTypes::lrLegal_Emergency, &bMustCloseBridge);
          if (pTable)
          {
             (*pPara) << pTable << rptNewLine;
@@ -614,7 +600,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrPermit_Routine);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrPermit_Routine);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
@@ -623,7 +609,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrPermit_Special);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrPermit_Special);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;

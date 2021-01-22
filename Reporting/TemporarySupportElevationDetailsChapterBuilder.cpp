@@ -82,7 +82,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(CReportSpecif
 
    bool bHasElevationAdjustment = pBridge->HasTemporarySupportElevationAdjustments();
 
-   GET_IFACE2(pBroker, ITempSupport, pTempSupport);
+   GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport);
 
    std::array<std::_tstring, 2> strMemberEnd{ _T("Start"),_T("End") };
 

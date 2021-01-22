@@ -59,7 +59,8 @@ m_Vp(0),
 m_Theta(0),
 m_DemandForce(0),
 m_CapacityForce(0),
-m_IsApplicable(false)
+m_bIsApplicable(false),
+m_bPretesionForceLimit(false)
 {
 }
 
@@ -304,29 +305,76 @@ Float64 pgsLongReinfShearArtifact::GetCapacityForce() const
    return m_CapacityForce;
 }
 
-bool pgsLongReinfShearArtifact::Passed() const
+Float64 pgsLongReinfShearArtifact::GetPretensionForce() const
 {
-   if ( !m_IsApplicable ) 
+   return m_Aps*m_Fps + m_AptSegment*m_FptSegment + m_AptGirder*m_FptGirder;
+}
+
+Float64 pgsLongReinfShearArtifact::GetRebarForce() const
+{
+   return m_As*m_Fy;
+}
+
+
+bool pgsLongReinfShearArtifact::PassedPretensionForce() const
+{
+   if (m_bPretesionForceLimit)
+   {
+      // new requirement in 9th Edition
+      Float64 AsFy = GetRebarForce();
+      Float64 ApsFps = GetPretensionForce();
+      return AsFy < ApsFps; // ApsFps must exceed AsFy
+   }
+   else
+   {
+      return true;
+   }
+}
+
+bool pgsLongReinfShearArtifact::PassedCapacity() const
+{
+   if (!m_bIsApplicable)
    {
       return true;
    }
 
-   if ( m_Equation == 1 && fabs(m_Mu) <= fabs(m_Mr) && !IsZero(m_Mr) )
+   if (m_Equation == 1 && fabs(m_Mu) <= fabs(m_Mr) && !IsZero(m_Mr))
    {
+      // Except as may be required by Article 5.7.3.6.3, where the reaction force or the load at the maximum
+      // moment location introduces direct compression into the flexural compression face of the member, the area of
+      // longitudinal reinforcement on the flexural tension side of the member need not exceed the area required to
+      // resist the maximum moment acting alone.
+      //
+      // Mr > Mu, therefore, check not required
       return true;
    }
 
    return m_DemandForce <= m_CapacityForce;
 }
 
+bool pgsLongReinfShearArtifact::Passed() const
+{
+   return PassedCapacity() && PassedPretensionForce();
+}
+
 bool pgsLongReinfShearArtifact::IsApplicable() const
 {
-   return m_IsApplicable;
+   return m_bIsApplicable;
 }
 
 void pgsLongReinfShearArtifact::SetApplicability(bool isApplicable)
 {
-   m_IsApplicable = isApplicable;
+   m_bIsApplicable = isApplicable;
+}
+
+bool pgsLongReinfShearArtifact::PretensionForceMustExceedBarForce() const
+{
+   return m_bPretesionForceLimit;
+}
+
+void pgsLongReinfShearArtifact::PretensionForceMustExceedBarForce(bool bExceed)
+{
+   m_bPretesionForceLimit = bExceed;
 }
 
 
@@ -373,7 +421,8 @@ void pgsLongReinfShearArtifact::MakeCopy(const pgsLongReinfShearArtifact& rOther
    m_Equation = rOther.m_Equation;
    m_DemandForce = rOther.m_DemandForce;
    m_CapacityForce = rOther.m_CapacityForce;
-   m_IsApplicable = rOther.m_IsApplicable;
+   m_bIsApplicable = rOther.m_bIsApplicable;
+   m_bPretesionForceLimit = rOther.m_bPretesionForceLimit;
 }
 
 void pgsLongReinfShearArtifact::MakeAssignment(const pgsLongReinfShearArtifact& rOther)

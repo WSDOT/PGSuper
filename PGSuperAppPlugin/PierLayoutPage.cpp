@@ -188,46 +188,58 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
          DDV_UnitValueGreaterThanZero(pDX, IDC_H3, m_XBeamHeight[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
 
          // X2 and X4 must be >= 0
+         DDV_UnitValueZeroOrMore(pDX, IDC_X1, m_XBeamTaperLength[pgsTypes::stLeft],    pDisplayUnits->GetSpanLengthUnit());
          DDV_UnitValueZeroOrMore(pDX, IDC_X2, m_XBeamEndSlopeOffset[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-         DDV_UnitValueZeroOrMore(pDX, IDC_X4, m_XBeamEndSlopeOffset[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
+         DDV_UnitValueZeroOrMore(pDX, IDC_X3, m_XBeamTaperLength[pgsTypes::stRight],   pDisplayUnits->GetSpanLengthUnit());
+         DDV_UnitValueZeroOrMore(pDX, IDC_X4, m_XBeamEndSlopeOffset[pgsTypes::stRight],pDisplayUnits->GetSpanLengthUnit());
 
-         if (0 < m_XBeamTaperHeight[pgsTypes::stLeft])
+         // Left end
+         if (0 < m_XBeamTaperLength[pgsTypes::stLeft])
          {
             // if H2 > 0, then X1 must be > 0
-            DDV_UnitValueGreaterThanZero(pDX, IDC_X1, m_XBeamTaperLength[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
+            if ( IsZero(m_XBeamTaperHeight[pgsTypes::stLeft]) )
+            {
+               pDX->PrepareCtrl(IDC_H2);
+               AfxMessageBox(_T("H2 must be greater than zero when X1 is greater than zero."));
+               pDX->Fail();
+            }
+            else if ( m_XBeamTaperLength[pgsTypes::stLeft] < m_XBeamEndSlopeOffset[pgsTypes::stLeft] )
+            {
+               pDX->PrepareCtrl(IDC_X1);
+               AfxMessageBox(_T("X1 must be greater than X2 when X1 is greater than zero."));
+               pDX->Fail();
+            }
          }
-         else if (IsZero(m_XBeamTaperHeight[pgsTypes::stLeft]) && !IsZero(m_XBeamTaperLength[pgsTypes::stLeft]))
+         else if ( !IsZero(m_XBeamTaperHeight[pgsTypes::stLeft]) )
          {
-            // if H2 is zero, then X1 must also be zero
-            pDX->PrepareCtrl(IDC_X1);
-            AfxMessageBox(_T("X1 must be 0 when H2 is 0."));
+            // if X1 is zero, then H2 must also be zero
+            pDX->PrepareCtrl(IDC_H2);
+            AfxMessageBox(_T("H2 must be zero when X1 is zero"));
             pDX->Fail();
          }
 
-         if (0 < m_XBeamTaperHeight[pgsTypes::stRight])
+         // Right end
+         if (0 < m_XBeamTaperLength[pgsTypes::stRight])
          {
             // if H4 > 0, then X3 must be > 0
-            DDV_UnitValueGreaterThanZero(pDX, IDC_X3, m_XBeamTaperLength[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
+            if ( IsZero(m_XBeamTaperHeight[pgsTypes::stRight]) )
+            {
+               pDX->PrepareCtrl(IDC_H4);
+               AfxMessageBox(_T("H4 must be greater than zero when X3 is greater than zero."));
+               pDX->Fail();
+            }
+            else if ( m_XBeamTaperLength[pgsTypes::stRight] < m_XBeamEndSlopeOffset[pgsTypes::stRight] )
+            {
+               pDX->PrepareCtrl(IDC_X3);
+               AfxMessageBox(_T("X3 must be greater than X4 when X3 is greater than zero."));
+               pDX->Fail();
+            }
          }
-         else if (IsZero(m_XBeamTaperHeight[pgsTypes::stRight]) && !IsZero(m_XBeamTaperLength[pgsTypes::stRight]))
+         else if ( !IsZero(m_XBeamTaperHeight[pgsTypes::stRight]) )
          {
-            // if H4 is zero, then X3 must also be zero
-            pDX->PrepareCtrl(IDC_X3);
-            AfxMessageBox(_T("X3 must be 0 when H4 is 0."));
-            pDX->Fail();
-         }
-
-         if (m_XBeamTaperLength[pgsTypes::stLeft] < m_XBeamEndSlopeOffset[pgsTypes::stLeft])
-         {
-            pDX->PrepareCtrl(IDC_X2);
-            AfxMessageBox(_T("X2 must be less than X1"));
-            pDX->Fail();
-         }
-
-         if (m_XBeamTaperLength[pgsTypes::stRight] < m_XBeamEndSlopeOffset[pgsTypes::stRight])
-         {
-            pDX->PrepareCtrl(IDC_X4);
-            AfxMessageBox(_T("X4 must be less than X3"));
+            // if X3 is zero, then H4 must also be zero
+            pDX->PrepareCtrl(IDC_H4);
+            AfxMessageBox(_T("H4 must be zero when X3 is zero"));
             pDX->Fail();
          }
 
@@ -540,7 +552,7 @@ void CPierLayoutPage::UpdateEc()
       strK1.Format(_T("%f"),m_pPier->GetConcrete().EcK1);
       strK2.Format(_T("%f"),m_pPier->GetConcrete().EcK2);
 
-      strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
+      strEc = CConcreteDetailsDlg::UpdateEc(m_pPier->GetConcrete().Type,strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }

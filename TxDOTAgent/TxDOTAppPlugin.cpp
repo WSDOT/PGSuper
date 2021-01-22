@@ -329,13 +329,13 @@ void CTxDOTAppPlugin::UpdateDocTemplates()
    }
 }
 
-CString CTxDOTAppPlugin::GetDefaultMasterLibraryFile()
+CString CTxDOTAppPlugin::GetDefaultMasterLibraryFile() const
 {
    CString path = GetDefaultWorkgroupTemplateFolder();
    return path + (_T("\\TXDOT.LBR"));
 }
 
-CString CTxDOTAppPlugin::GetDefaultWorkgroupTemplateFolder()
+CString CTxDOTAppPlugin::GetDefaultWorkgroupTemplateFolder() const
 {
    CEAFApp* pApp = EAFGetApp();
 

@@ -102,7 +102,10 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    ColumnIndexType nColumns = (bComposite ? 3 : 2);
 
-   rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(nColumns,_T("Section Properties"));
+   std::_tstring str(_T("Section Properties - "));
+   str += pgsGirderLabel::GetSegmentLabel(segmentKey);
+
+   rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(nColumns,str.c_str());
 
    (*xs_table)(0,0) << _T("");
 
@@ -186,7 +189,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    }
 
    (*xs_table)(row, 0) << RPT_STOP_GIRDER << _T(" (") << rptLength3UnitTag(&pDisplayUnits->GetSectModulusUnit().UnitOfMeasure) << _T(")");
-   (*xs_table)(row++,1) << l3.SetValue( -pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopGirder) );
+   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopGirder) );
 
    (*xs_table)(row, 0) << RPT_SBOT_GIRDER << _T(" (") << rptLength3UnitTag(&pDisplayUnits->GetSectModulusUnit().UnitOfMeasure) << _T(")");
    (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
@@ -256,13 +259,13 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
          (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetY(lastIntervalIdx, poi, pgsTypes::BottomDeck));
       }
 
-      (*xs_table)(row++,2) << l3.SetValue( -pSectProp->GetS(lastIntervalIdx,poi,pgsTypes::TopGirder) );
+      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(lastIntervalIdx,poi,pgsTypes::TopGirder) );
       (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(lastIntervalIdx,poi,pgsTypes::BottomGirder) );
 
       if (bHasDeck)
       {
-         (*xs_table)(row++, 2) << l3.SetValue(-pSectProp->GetS(lastIntervalIdx, poi, pgsTypes::TopDeck));
-         (*xs_table)(row++, 2) << l3.SetValue(-pSectProp->GetS(lastIntervalIdx, poi, pgsTypes::BottomDeck));
+         (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetS(lastIntervalIdx, poi, pgsTypes::TopDeck));
+         (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetS(lastIntervalIdx, poi, pgsTypes::BottomDeck));
          (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetQSlab(lastIntervalIdx,poi));
          (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetEffectiveFlangeWidth(poi));
       }

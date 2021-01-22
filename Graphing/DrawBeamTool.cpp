@@ -204,7 +204,7 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const grlibPointMapper& 
    } // end of group loop
 }
 
-Float64 CDrawBeamTool::ComputeShift(const CGirderKey& girderKey)
+Float64 CDrawBeamTool::ComputeGirderShift(const CGirderKey& girderKey)
 {
    if ( girderKey.groupIndex == ALL_GROUPS || girderKey.groupIndex == 0 )
    {
@@ -218,6 +218,19 @@ Float64 CDrawBeamTool::ComputeShift(const CGirderKey& girderKey)
 
    poi.SetSegmentKey(CSegmentKey(0,girderKey.girderIndex,0));
    Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+
+   Float64 shift = Xgl - Xstart;
+   return shift;
+}
+
+Float64 CDrawBeamTool::ComputeSegmentShift(const CSegmentKey& segmentKey)
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   pgsPointOfInterest poi(segmentKey, 0.0); // poi at start of segment
+   Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+
+   poi.SetSegmentKey(CSegmentKey(segmentKey/*demotes segmentKey to a girder key*/, 0 /*first segment*/));
+   Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(poi); // poi at start of first segment
 
    Float64 shift = Xgl - Xstart;
    return shift;
@@ -810,7 +823,7 @@ void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx,
    GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
    GET_IFACE_NOCHECK(IIntervals,pIntervals); // only gets used if there are tendons
 
-   Float64 tendonShift = ComputeShift(girderKey);
+   Float64 tendonShift = ComputeGirderShift(girderKey);
 
    GET_IFACE(IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -829,6 +842,8 @@ void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx,
          CComPtr<IPoint2dCollection> points;
          pSegmentTendonGeometry->GetDuctCenterline(segmentKey, ductIdx, &points);
 
+         Float64 segment_tendon_shift = ComputeSegmentShift(segmentKey);
+
          COLORREF color = SEGMENT_TENDON_LINE_COLOR;
 
          CPen pen(PS_SOLID, 1, color);
@@ -845,7 +860,7 @@ void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx,
             Float64 x, y;
             point->Location(&x, &y);
 
-            Float64 WX = m_pUnitConverter->Convert(x + beamShift + tendonShift);
+            Float64 WX = m_pUnitConverter->Convert(x + beamShift + tendonShift + segment_tendon_shift);
             Float64 WY = m_pUnitConverter->Convert(y);
 
             LONG DX, DY;

@@ -88,7 +88,15 @@ BOOL CSelectGirderDlg::OnInitDialog()
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
 	   CString strLabel;
-      strLabel.Format(_T("%s %d"),(bPGSuper ? _T("Span") : _T("Group")), LABEL_GROUP(grpIdx));
+      if (bPGSuper)
+      {
+         strLabel.Format(_T("Span %s"), LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         strLabel.Format(_T("Group %d"), LABEL_GROUP(grpIdx));
+      }
+
 	   pGroupBox->AddString(strLabel);
    }
 

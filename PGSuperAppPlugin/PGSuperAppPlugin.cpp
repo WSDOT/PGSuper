@@ -374,32 +374,32 @@ CPGSBaseCommandLineInfo* CPGSuperAppPlugin::CreateCommandLineInfo() const
    return new CPGSuperCommandLineInfo();
 }
 
-LPCTSTR CPGSuperAppPlugin::GetCatalogServerKey()
+LPCTSTR CPGSuperAppPlugin::GetCatalogServerKey() const
 {
    return _T("CatalogServer2");
 }
 
-LPCTSTR CPGSuperAppPlugin::GetPublisherKey()
+LPCTSTR CPGSuperAppPlugin::GetPublisherKey() const
 {
    return _T("Publisher2");
 }
 
-LPCTSTR CPGSuperAppPlugin::GetMasterLibraryCacheKey()
+LPCTSTR CPGSuperAppPlugin::GetMasterLibraryCacheKey() const
 {
    return _T("MasterLibraryCache2");
 }
 
-LPCTSTR CPGSuperAppPlugin::GetMasterLibraryURLKey()
+LPCTSTR CPGSuperAppPlugin::GetMasterLibraryURLKey() const
 {
    return _T("MasterLibraryURL2");
 }
 
-LPCTSTR CPGSuperAppPlugin::GetWorkgroupTemplatesCacheKey()
+LPCTSTR CPGSuperAppPlugin::GetWorkgroupTemplatesCacheKey() const
 {
    return _T("WorkgroupTemplatesCache2");
 }
 
-CString CPGSuperAppPlugin::GetCacheFolder()
+CString CPGSuperAppPlugin::GetCacheFolder() const
 {
    CAutoRegistry autoReg(GetAppName());
 

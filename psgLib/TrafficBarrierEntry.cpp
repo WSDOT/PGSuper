@@ -76,7 +76,7 @@ m_CurbOffset(0)
 
    lrfdVersionMgr::Units old_units = lrfdVersionMgr::GetUnits();
    lrfdVersionMgr::SetUnits(lrfdVersionMgr::US);
-   m_Ec = lrfdConcreteUtil::ModE(fc,density,false);
+   m_Ec = lrfdConcreteUtil::ModE(matConcrete::Normal, fc,density,false);
    lrfdVersionMgr::SetUnits(old_units);
 }
 
@@ -725,7 +725,7 @@ void TrafficBarrierEntry::CreatePolyShape(pgsTypes::TrafficBarrierOrientation or
    }
 
    CollectionIndexType nPoints;
-   polyshape->get_NumPoints(&nPoints);
+   polyshape->get_Count(&nPoints);
    if ( nPoints == 0 )
    {
       polyshape->AddPoint(0,0);

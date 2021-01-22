@@ -70,7 +70,6 @@ static char THIS_FILE[] = __FILE__;
 #include <WBFLGenericBridgeTools_i.c>
 
 
-
 //
 //TODO: If this DLL is dynamically linked against the MFC DLLs,
 //		any functions exported from this DLL which call into

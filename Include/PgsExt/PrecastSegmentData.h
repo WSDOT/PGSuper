@@ -143,6 +143,9 @@ public:
    // Returns true if the segment is a drop-in segment
    bool IsDropIn() const;
 
+   // Returns true if the segment is propped (supported by two hard supports and a cantilever end)
+   bool IsPropped() const;
+
 
    //------------------------------------------------------------------------
    // specialized function to copy only material data or only prestressing data

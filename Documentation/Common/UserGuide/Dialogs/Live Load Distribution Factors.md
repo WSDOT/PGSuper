@@ -24,7 +24,7 @@ When this option is selected, all distribution factors are computed using the Le
 
 Option 3 - Directly Input All Live Load Distribution Factors
 --------------------------------------------------------------
-When this option is selected, you input the live load distribution factors that are to be used in the analysis. LRFD 4.6.2.2.1 defines live load distribution factors for positive moment, negative moment near interior supports, negative moment in main spans, shear, and reaction. 
+When this option is selected, you input the live load distribution factors that are to be used in the analysis. LRFD 4.6.2.2.1 defines live load distribution factors for positive moment, negative moment near interior supports, negative moment in main spans, and shear. 
 
 > TIP: If the configuration of the bridge you are designing doesn't conform to the simplified method of analysis described in the AASHTO LRFD Bridge Design Specifications, compute the live load distribution factors using another method and then input them into this dialog.
 
@@ -78,3 +78,6 @@ There may be occasions when you wish to use some of the computed live load distr
 Press [Fill with Computed Values...] to open the @subpage ug_dialogs_fill_live_load_distribution_factors window.
 
 > TIP: Fill With Computed Values is a one-time operation. Values will **NOT** be automatically updated if bridge data is later modified.
+
+### Live Load Distribution Factor for Reactions, Deflections, and Rotations ###
+Live load reactions, deflections, and rotations are always uniformly distributed to all girders in a span. The distribution factor is (multiple precense factor)*(number of lanes)/(number of girders).

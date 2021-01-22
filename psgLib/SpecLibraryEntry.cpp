@@ -35,6 +35,8 @@
 #include <EAF\EAFApp.h>
 #include <psgLib\LibraryEntryDifferenceItem.h>
 
+#include <boost\algorithm\string\replace.hpp>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -47,7 +49,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 75.0 
+#define CURRENT_VERSION 80.0 
 
 /****************************************************************************
 CLASS
@@ -59,7 +61,8 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 SpecLibraryEntry::SpecLibraryEntry() :
-m_SpecificationType(lrfdVersionMgr::SeventhEditionWith2016Interims),
+m_bUseCurrentSpecification(true),
+m_SpecificationType(lrfdVersionMgr::NinthEdition2020),
 m_SpecificationUnits(lrfdVersionMgr::US),
 m_SectionPropertyMode(pgsTypes::spmGross),
 m_DoCheckStrandSlope(true),
@@ -268,7 +271,16 @@ m_HaulingCamberMultiplier(1.0),
 m_FinishedElevationTolerance(::ConvertToSysUnits(1.00,unitMeasure::Inch)),
 m_SlabOffsetRoundingMethod(pgsTypes::sormRoundNearest),
 m_SlabOffsetRoundingTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
-m_UHPCFiberShearStrength(::ConvertToSysUnits(0.75,unitMeasure::KSI))
+m_UHPCFiberShearStrength(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
+m_PrincipalTensileStressMethod(pgsTypes::ptsmLRFD),
+m_PrincipalTensileStressCoefficient(::ConvertToSysUnits(0.110,unitMeasure::SqrtKSI)),
+m_PrincipalTensileStressTendonNearnessFactor(1.5),
+m_PrincipalTensileStressUngroutedMultiplier(1.0),
+m_PrincipalTensileStressGroutedMultiplier(0.0),
+m_PrincipalTensileStressFcThreshold(::ConvertToSysUnits(10.0,unitMeasure::KSI)),
+m_bAlertTaperedSolePlateRequirement(true),
+m_TaperedSolePlateInclinationThreshold(0.01),
+m_bUseImpactForBearingReactions(false)
 {
    m_bCheckStrandStress[CSS_AT_JACKING]       = false;
    m_bCheckStrandStress[CSS_BEFORE_TRANSFER]  = true;
@@ -489,8 +501,9 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("SpecificationLibraryEntry"), CURRENT_VERSION);
    pSave->Property(_T("Name"),this->GetName().c_str());
-   pSave->Property(_T("Description"),this->GetDescription().c_str());
+   pSave->Property(_T("Description"), this->GetDescription(false).c_str());
 
+   pSave->Property(_T("UseCurrentSpecification"), m_bUseCurrentSpecification); // added in version 77
    pSave->Property(_T("SpecificationType"),lrfdVersionMgr::GetVersionString(m_SpecificationType,true));
 
    if (m_SpecificationUnits==lrfdVersionMgr::SI)
@@ -680,6 +693,15 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("Bs3TensStressServSc"),    m_Bs3TensStressServSc);   
    pSave->Property(_T("Bs3DoTensStressServScMax"), m_Bs3DoTensStressServScMax);
    pSave->Property(_T("Bs3TensStressServScMax"), m_Bs3TensStressServScMax);
+
+   // added in version 76
+   pSave->Property(_T("PrincipalTensileStressMethod"), m_PrincipalTensileStressMethod);
+   pSave->Property(_T("PrincipalTensileStressCoefficient"), m_PrincipalTensileStressCoefficient);
+   pSave->Property(_T("PrincipalTensileStressTendonNearnessFactor"), m_PrincipalTensileStressTendonNearnessFactor); // added in version 77
+   pSave->Property(_T("PrincipalTensileStressFcThreshold"), m_PrincipalTensileStressFcThreshold); // added in version 78
+   pSave->Property(_T("PrincipalTensileStressUngroutedMultiplier"), m_PrincipalTensileStressUngroutedMultiplier); // added in version 80
+   pSave->Property(_T("PrincipalTensileStressGroutedMultiplier"), m_PrincipalTensileStressGroutedMultiplier);     //   ""   ""  ""    80
+
 
    // removed in version 29
    // pSave->Property(_T("Bs3IgnoreRangeOfApplicability"), m_Bs3IgnoreRangeOfApplicability);
@@ -1026,6 +1048,13 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("SlabOffsetRoundingMethod"), (long)m_SlabOffsetRoundingMethod);
    pSave->Property(_T("SlabOffsetRoundingTolerance"), m_SlabOffsetRoundingTolerance);
 
+   // added in version 79
+   pSave->BeginUnit(_T("Bearings"), 1.0);
+      pSave->Property(_T("AlertTaperedSolePlateRequirement"), m_bAlertTaperedSolePlateRequirement);
+      pSave->Property(_T("TaperedSolePlaneInclinationThreshold"), m_TaperedSolePlateInclinationThreshold);
+      pSave->Property(_T("UseImpactForBearingReactions"), m_bUseImpactForBearingReactions);
+   pSave->EndUnit(); // Bearings
+
    pSave->EndUnit();
 
    return true;
@@ -1061,6 +1090,22 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if (76 < version)
+      {
+         // added in version 77
+         if (!pLoad->Property(_T("UseCurrentSpecification"), &m_bUseCurrentSpecification))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+      else
+      {
+         // if loading an older file, set this to false because it wasn't an option
+         // and we don't want to change the specification.
+         // the default for new entires is true so we have to force the value to false here
+         m_bUseCurrentSpecification = false;
       }
 
       std::_tstring tmp;
@@ -2374,6 +2419,63 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          if(!pLoad->Property(_T("Bs3TensStressServScMax"), &m_Bs3TensStressServScMax))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (75 < version)
+         {
+            // added in version 76
+            Int16 value;
+            if (!pLoad->Property(_T("PrincipalTensileStressMethod"), &value))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+            m_PrincipalTensileStressMethod = (pgsTypes::PrincipalTensileStressMethod)value;
+
+            if (!pLoad->Property(_T("PrincipalTensileStressCoefficient"), &m_PrincipalTensileStressCoefficient))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+
+            if (76 < version)
+            {
+               // added in version 77
+               if (!pLoad->Property(_T("PrincipalTensileStressTendonNearnessFactor"), &m_PrincipalTensileStressTendonNearnessFactor))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
+            }
+
+            if (77 < version)
+            {
+               // added in version 78
+               if (!pLoad->Property(_T("PrincipalTensileStressFcThreshold"), &m_PrincipalTensileStressFcThreshold))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
+            }
+
+            if (79 < version)
+            {
+               // added in version 78
+               if (!pLoad->Property(_T("PrincipalTensileStressUngroutedMultiplier"), &m_PrincipalTensileStressUngroutedMultiplier))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
+
+               if (!pLoad->Property(_T("PrincipalTensileStressGroutedMultiplier"), &m_PrincipalTensileStressGroutedMultiplier))
+               {
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+               }
+            }
+            else
+            {
+               // Older versions did not load the duct multipliers -> they were spec dependent. Use the spec version to determine the value
+               DeterminePrincipalStressDuctDeductionMultiplier();
+            }
+         }
+         else
+         {
+            DeterminePrincipalStressDuctDeductionMultiplier();
          }
       }
 
@@ -4338,6 +4440,35 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          m_SlabOffsetRoundingTolerance = m_SpecificationUnits == lrfdVersionMgr::US ? ::ConvertToSysUnits(0.25, unitMeasure::Inch) : ::ConvertToSysUnits(5.0,unitMeasure::Millimeter);
       }
 
+      // Bearings was added in verison 79
+      if (78 < version)
+      {
+         if (!pLoad->BeginUnit(_T("Bearings")))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("AlertTaperedSolePlateRequirement"), &m_bAlertTaperedSolePlateRequirement))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+         
+         if (!pLoad->Property(_T("TaperedSolePlaneInclinationThreshold"), &m_TaperedSolePlateInclinationThreshold))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("UseImpactForBearingReactions"), &m_bUseImpactForBearingReactions))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+         
+         if (!pLoad->EndUnit()) // Bearings
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
       if(!pLoad->EndUnit())
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
@@ -4353,6 +4484,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             m_LimitStateConcreteStrength = pgsTypes::lscSpecifiedStrength;
          }
       }
+   }
+
+   // sometimes the user may toggle between several loss methods. if they select time step and change the time dependent model
+   // and then change to a different method, the time dependent model is saved in its last state. This makes the default time dependent
+   // model be the last used value. Change it to the true default value here
+   if (m_LossMethod != LOSSES_TIME_STEP)
+   {
+      m_TimeDependentModel = TDM_AASHTO;
    }
 
    return true;
@@ -4381,10 +4520,10 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
    }
 
-   if ( m_SpecificationType != rOther.m_SpecificationType )
+   if ( m_bUseCurrentSpecification != rOther.m_bUseCurrentSpecification || m_SpecificationType != rOther.m_SpecificationType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Design Criteria Basis"),lrfdVersionMgr::GetVersionString(m_SpecificationType),lrfdVersionMgr::GetVersionString(rOther.m_SpecificationType)));
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Basis is different"),lrfdVersionMgr::GetVersionString(m_SpecificationType),lrfdVersionMgr::GetVersionString(rOther.m_SpecificationType)));
    }
 
    if ( lrfdVersionMgr::ThirdEditionWith2006Interims < m_SpecificationType && m_SpecificationUnits != rOther.m_SpecificationUnits )
@@ -4576,6 +4715,17 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Stress Limits for Temporary Loading Conditions are different"),_T(""),_T("")));
+   }
+
+   if (m_PrincipalTensileStressMethod != rOther.m_PrincipalTensileStressMethod || 
+      !::IsEqual(m_PrincipalTensileStressCoefficient, rOther.m_PrincipalTensileStressCoefficient) ||
+      !::IsEqual(m_PrincipalTensileStressTendonNearnessFactor,rOther.m_PrincipalTensileStressTendonNearnessFactor) ||
+      !::IsEqual(m_PrincipalTensileStressFcThreshold,rOther.m_PrincipalTensileStressFcThreshold) ||
+      !::IsEqual(m_PrincipalTensileStressUngroutedMultiplier,rOther.m_PrincipalTensileStressUngroutedMultiplier) ||
+      !::IsEqual(m_PrincipalTensileStressGroutedMultiplier,rOther.m_PrincipalTensileStressGroutedMultiplier))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Principal Tensile Stress in Web parameters are different"), _T(""), _T("")));
    }
 
    //
@@ -5212,11 +5362,32 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Required slab offset rounding tolerance values are different"), _T(""), _T("")));
    }
 
+
+   // bearing reactions
+   if (m_bAlertTaperedSolePlateRequirement != rOther.m_bAlertTaperedSolePlateRequirement)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Alert tapered sole plate requirement are different"), _T(""), _T("")));
+   }
+
+   if (m_bAlertTaperedSolePlateRequirement && !::IsEqual(m_TaperedSolePlateInclinationThreshold, rOther.m_TaperedSolePlateInclinationThreshold))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Tapered Sole Plate inclination thresholds are different"), _T(""), _T("")));
+   }
+
+   if (m_bUseImpactForBearingReactions != rOther.m_bUseImpactForBearingReactions)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Bearing reactions dynamic load allowances are different"), _T(""), _T("")));
+   }
+      
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
+
 
    // Don't compare the placehold values for abandonded parameters
    //if ( m_LossMethod == 3 /*this is the old LOSSES_GENERAL_LUMPSUM that existed prior to version 50*/ )
@@ -5253,6 +5424,15 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
 }
 
 //======================== ACCESS     =======================================
+void SpecLibraryEntry::UseCurrentSpecification(bool bUseCurrent)
+{
+   m_bUseCurrentSpecification = bUseCurrent;
+}
+
+bool SpecLibraryEntry::UseCurrentSpecification() const
+{
+   return m_bUseCurrentSpecification;
+}
 
 void SpecLibraryEntry::SetSpecificationType(lrfdVersionMgr::Version type)
 {
@@ -5261,7 +5441,14 @@ void SpecLibraryEntry::SetSpecificationType(lrfdVersionMgr::Version type)
 
 lrfdVersionMgr::Version SpecLibraryEntry::GetSpecificationType() const
 {
-   return m_SpecificationType;
+   if (m_bUseCurrentSpecification)
+   {
+      return (lrfdVersionMgr::Version)((int)lrfdVersionMgr::LastVersion - 1);
+   }
+   else
+   {
+      return m_SpecificationType;
+   }
 }
 
 void SpecLibraryEntry::SetSpecificationUnits(lrfdVersionMgr::Units units)
@@ -5280,9 +5467,21 @@ void SpecLibraryEntry::SetDescription(LPCTSTR name)
    m_Description = name;
 }
 
-std::_tstring SpecLibraryEntry::GetDescription() const
+std::_tstring SpecLibraryEntry::GetDescription(bool bApplySymbolSubstitution) const
 {
-   return m_Description;
+   if (bApplySymbolSubstitution)
+   {
+      std::_tstring description(m_Description);
+      std::_tstring strSubstitute(lrfdVersionMgr::GetCodeString());
+      strSubstitute += _T(", ");
+      strSubstitute += lrfdVersionMgr::GetVersionString();
+      boost::replace_all(description,_T("%BDS%"), strSubstitute);
+      return description;
+   }
+   else
+   {
+      return m_Description;
+   }
 }
 
 void SpecLibraryEntry::SetSectionPropertyMode(pgsTypes::SectionPropertyMode spMode)
@@ -6129,6 +6328,30 @@ Float64 SpecLibraryEntry::GetFatigueCompressionStressFactor() const
 void SpecLibraryEntry::SetFatigueCompressionStressFactor(Float64 stress)
 {
    m_Bs3CompStressService1A = stress;
+}
+
+void SpecLibraryEntry::SetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod principalTensileStressMethod, Float64 principalTensionCoefficient,Float64 ductNearnessFactor,
+                                                                 Float64 principalTensileStressUngroutedMultiplier, Float64 principalTensileStressGroutedMultiplier,Float64 principalTensileStressFcThreshold)
+{
+   m_PrincipalTensileStressMethod = principalTensileStressMethod;
+   m_PrincipalTensileStressCoefficient = principalTensionCoefficient;
+   m_PrincipalTensileStressTendonNearnessFactor = ductNearnessFactor;
+   m_PrincipalTensileStressFcThreshold = principalTensileStressFcThreshold;
+   m_PrincipalTensileStressUngroutedMultiplier = principalTensileStressUngroutedMultiplier;
+   m_PrincipalTensileStressGroutedMultiplier = principalTensileStressGroutedMultiplier;
+}
+
+void SpecLibraryEntry::GetPrincipalTensileStressInWebsParameters(pgsTypes::PrincipalTensileStressMethod* pPrincipalTensileStressMethod, Float64* pPrincipalTensionCoefficient,Float64* pDuctNearnessFactor,
+                                                                 Float64* pPrincipalTensileStressUngroutedMultiplier, Float64* pPrincipalTensileStressGroutedMultiplier, Float64* principalTensileStressFcThreshold) const
+{
+   *pPrincipalTensileStressMethod = m_PrincipalTensileStressMethod;
+   *pPrincipalTensionCoefficient = m_PrincipalTensileStressCoefficient;
+   *pDuctNearnessFactor = m_PrincipalTensileStressTendonNearnessFactor;
+
+   // note that magic value of -1 means "all" in library. Return zero to our clients, which means any f'c
+   *principalTensileStressFcThreshold = m_PrincipalTensileStressFcThreshold==-1.0 ? 0.0 : m_PrincipalTensileStressFcThreshold;
+   *pPrincipalTensileStressUngroutedMultiplier = m_PrincipalTensileStressUngroutedMultiplier;
+   *pPrincipalTensileStressGroutedMultiplier = m_PrincipalTensileStressGroutedMultiplier;
 }
 
 Float64 SpecLibraryEntry::GetFinalTensionStressFactor(int exposureCondition) const
@@ -7549,6 +7772,36 @@ Float64 SpecLibraryEntry::GetFinishedElevationTolerance() const
    return m_FinishedElevationTolerance;
 }
 
+void SpecLibraryEntry::AlertTaperedSolePlateRequirement(bool bAlert)
+{
+   m_bAlertTaperedSolePlateRequirement = bAlert;
+}
+
+bool SpecLibraryEntry::AlertTaperedSolePlateRequirement() const
+{
+   return m_bAlertTaperedSolePlateRequirement;
+}
+
+void SpecLibraryEntry::SetTaperedSolePlateInclinationThreshold(Float64 threshold)
+{
+   m_TaperedSolePlateInclinationThreshold = threshold;
+}
+
+Float64 SpecLibraryEntry::GetTaperedSolePlateInclinationThreshold() const
+{
+   return m_TaperedSolePlateInclinationThreshold;
+}
+
+void SpecLibraryEntry::UseImpactForBearingReactions(bool bUse)
+{
+   m_bUseImpactForBearingReactions = bUse;
+}
+
+bool SpecLibraryEntry::UseImpactForBearingReactions() const
+{
+   return m_bUseImpactForBearingReactions;
+}
+
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
@@ -7558,6 +7811,7 @@ Float64 SpecLibraryEntry::GetFinishedElevationTolerance() const
 //======================== OPERATIONS =======================================
 void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 {
+   m_bUseCurrentSpecification = rOther.m_bUseCurrentSpecification;
    m_SpecificationType          = rOther.m_SpecificationType;
    m_SpecificationUnits         = rOther.m_SpecificationUnits;
    m_Description.erase();
@@ -7685,6 +7939,14 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_Bs3TensStressServScMax     = rOther.m_Bs3TensStressServScMax;
    m_Bs3IgnoreRangeOfApplicability = rOther.m_Bs3IgnoreRangeOfApplicability;
    m_Bs3LRFDOverReinforcedMomentCapacity = rOther.m_Bs3LRFDOverReinforcedMomentCapacity;
+
+   m_PrincipalTensileStressMethod = rOther.m_PrincipalTensileStressMethod;
+   m_PrincipalTensileStressCoefficient = rOther.m_PrincipalTensileStressCoefficient;
+   m_PrincipalTensileStressTendonNearnessFactor = rOther.m_PrincipalTensileStressTendonNearnessFactor;
+   m_PrincipalTensileStressUngroutedMultiplier = rOther.m_PrincipalTensileStressUngroutedMultiplier;
+   m_PrincipalTensileStressGroutedMultiplier = rOther.m_PrincipalTensileStressGroutedMultiplier;
+
+   m_PrincipalTensileStressFcThreshold = rOther.m_PrincipalTensileStressFcThreshold;
 
    m_FlexureModulusOfRuptureCoefficient = rOther.m_FlexureModulusOfRuptureCoefficient;
    m_ShearModulusOfRuptureCoefficient = rOther.m_ShearModulusOfRuptureCoefficient;
@@ -7874,6 +8136,11 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
 
    m_SlabOffsetRoundingMethod = rOther.m_SlabOffsetRoundingMethod;
    m_SlabOffsetRoundingTolerance = rOther.m_SlabOffsetRoundingTolerance;
+
+
+   m_bAlertTaperedSolePlateRequirement = rOther.m_bAlertTaperedSolePlateRequirement;
+   m_TaperedSolePlateInclinationThreshold = rOther.m_TaperedSolePlateInclinationThreshold;
+   m_bUseImpactForBearingReactions = rOther.m_bUseImpactForBearingReactions;
 }
 
 void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)
@@ -7890,6 +8157,41 @@ void SpecLibraryEntry::MakeAssignment(const SpecLibraryEntry& rOther)
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
+
+void SpecLibraryEntry::DeterminePrincipalStressDuctDeductionMultiplier()
+{
+   // Before 2nd Edition, 2000 interims
+   // LRFD 5.8.2.9
+   // "In determining the web width at a particular level, the diameter of ungrouted ducts or
+   // one-half the diameter of grouted ducts at that level shall be subtracted from the web width"
+   //
+   // 2nd Edtion, 2003 interims
+   // "In determining the web width at a particular level, one-half the diameter of ungrouted ducts or
+   // one-quarter the diameter of grouted ducts at that level shall be subtracted from the web width"
+   //
+   // 9th Edition, 2020
+   // LRFD 5.7.2.8
+   // The paragraph quoted above has been removed and the following is now the definition of bv
+   // "bv = ... for grouted ducts, no modification is necessary. For ungrouted ducts, reduce bv by the diameter of the duct"
+
+   if (m_bUseCurrentSpecification || m_SpecificationType >= lrfdVersionMgr::NinthEdition2020)
+   {
+      // 9th Edition, 2020 and later
+      m_PrincipalTensileStressUngroutedMultiplier = 1.0;
+      m_PrincipalTensileStressGroutedMultiplier   = 0.0;
+   }
+   else if (m_SpecificationType < lrfdVersionMgr::SecondEditionWith2000Interims)
+   {
+      m_PrincipalTensileStressUngroutedMultiplier = 1.0;
+      m_PrincipalTensileStressGroutedMultiplier   = 0.5;
+   }
+   else 
+   {
+      // 2nd Edition, 2000 interms to 9th Edition 2020
+      m_PrincipalTensileStressUngroutedMultiplier = 0.50;
+      m_PrincipalTensileStressGroutedMultiplier   = 0.25;
+   }
+}
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 //

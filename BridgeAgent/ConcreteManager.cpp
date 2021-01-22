@@ -106,7 +106,7 @@ void CConcreteManager::ValidateConcrete() const
       }
       else
       {
-         modE = lrfdConcreteUtil::ModE(pDeck->Concrete.Fc,
+         modE = lrfdConcreteUtil::ModE((matConcrete::Type)pDeck->Concrete.Type,pDeck->Concrete.Fc,
             pDeck->Concrete.StrengthDensity,
             false /* ignore LRFD range checks */);
 
@@ -131,8 +131,8 @@ void CConcreteManager::ValidateConcrete() const
       ATLASSERT(pTimelineEvent && pTimelineEvent->GetCastDeckActivity().IsEnabled());
       const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
 
-      Float64   age_at_initial_loading = castDeckActivity.GetConcreteAgeAtContinuity();
-      Float64   cure_time = castDeckActivity.GetCuringDuration();
+      Float64   age_at_initial_loading = castDeckActivity.GetTotalCuringDuration();
+      Float64   cure_time = castDeckActivity.GetActiveCuringDuration();
       Float64   time_between_casting = castDeckActivity.GetTimeBetweenCasting();
 
       IndexType nRegions = castDeckActivity.GetCastingRegionCount();
@@ -172,7 +172,7 @@ void CConcreteManager::ValidateConcrete() const
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE(pLeftRailingSystem->Concrete.Fc, 
+      modE = lrfdConcreteUtil::ModE((matConcrete::Type)pLeftRailingSystem->Concrete.Type,pLeftRailingSystem->Concrete.Fc, 
                                     pLeftRailingSystem->Concrete.StrengthDensity, 
                                     false /* ignore LRFD range checks */ );
 
@@ -192,7 +192,7 @@ void CConcreteManager::ValidateConcrete() const
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE(pRightRailingSystem->Concrete.Fc, 
+      modE = lrfdConcreteUtil::ModE((matConcrete::Type)pRightRailingSystem->Concrete.Type,pRightRailingSystem->Concrete.Fc, 
                                     pRightRailingSystem->Concrete.StrengthDensity, 
                                     false /* ignore LRFD range checks */ );
 
@@ -228,7 +228,7 @@ void CConcreteManager::ValidateConcrete() const
 
             EventIndexType segConstructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segmentID);
             Float64 segment_casting_time        = pTimelineMgr->GetStart(segConstructEventIdx);
-            Float64 segment_age_at_release      = pTimelineMgr->GetEventByIndex(segConstructEventIdx)->GetConstructSegmentsActivity().GetAgeAtRelease();
+            Float64 segment_age_at_release      = pTimelineMgr->GetEventByIndex(segConstructEventIdx)->GetConstructSegmentsActivity().GetTotalCuringDuration();
             Float64 segment_cure_time           = segment_age_at_release;
 
 
@@ -245,7 +245,7 @@ void CConcreteManager::ValidateConcrete() const
                const CClosureJointData* pClosure  = pGirder->GetClosureJoint(segIdx);
                EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosure);
                Float64 closure_casting_time       = pTimelineMgr->GetStart(castClosureEventIdx);
-               Float64 closure_age_at_continuity  = pTimelineMgr->GetEventByIndex(castClosureEventIdx)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+               Float64 closure_age_at_continuity  = pTimelineMgr->GetEventByIndex(castClosureEventIdx)->GetCastClosureJointActivity().GetTotalCuringDuration();
                Float64 closure_cure_time          = closure_age_at_continuity;
 
                // this isn't really needed because closure joints are for spliced girders only and
@@ -280,7 +280,7 @@ void CConcreteManager::ValidateConcrete() const
       }
       else
       {
-         modE = lrfdConcreteUtil::ModE(LJConcrete.Fc,
+         modE = lrfdConcreteUtil::ModE((matConcrete::Type)LJConcrete.Type,LJConcrete.Fc,
             LJConcrete.StrengthDensity,
             false /* ignore LRFD range checks */);
 
@@ -301,8 +301,8 @@ void CConcreteManager::ValidateConcrete() const
       // Time dependent model
       EventIndexType castLongitudinalJointEventIdx = pTimelineMgr->GetCastLongitudinalJointEventIndex();
       time_at_casting = pTimelineMgr->GetStart(castLongitudinalJointEventIdx);
-      age_at_initial_loading = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetConcreteAgeAtContinuity();
-      cure_time = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetCuringDuration();
+      age_at_initial_loading = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetTotalCuringDuration();
+      cure_time = pTimelineMgr->GetEventByIndex(castLongitudinalJointEventIdx)->GetCastLongitudinalJointActivity().GetActiveCuringDuration();
 
       // modulus of rupture coefficients
       time_step = time_at_casting + cure_time;
@@ -329,7 +329,7 @@ void CConcreteManager::ValidateConcrete() const
          }
          else
          {
-            modE = lrfdConcreteUtil::ModE( concrete.Fc, 
+            modE = lrfdConcreteUtil::ModE( (matConcrete::Type)concrete.Type, concrete.Fc, 
                                            concrete.StrengthDensity, 
                                            false /* ignore LRFD range checks */ );
 
@@ -424,7 +424,8 @@ void CConcreteManager::ValidateConcrete() const
             //THROW_UNWIND(strMsg.c_str(),-1);
          }
 
-         if (fcMax < fc28)
+         pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)pDeckConcrete->GetType();
+         if (fcMax < fc28 && slabConcreteType != pgsTypes::UHPC)
          {
             std::_tostringstream os;
             os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
@@ -435,9 +436,8 @@ void CConcreteManager::ValidateConcrete() const
             pStatusCenter->Add(pStatusItem);
          }
 
-         pgsTypes::ConcreteType slabConcreteType = (pgsTypes::ConcreteType)pDeckConcrete->GetType();
          Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
-         if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) )
+         if (  max_slab_fc < fc28 && !IsEqual(max_slab_fc,fc28) && slabConcreteType != pgsTypes::UHPC )
          {
             std::_tostringstream os;
             os << _T("Deck concrete strength (" << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << ") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_slab_fc,pDisplayUnits->GetStressUnit());
@@ -480,7 +480,7 @@ void CConcreteManager::ValidateConcrete() const
          if ( !IsConcreteDensityInRange(strength_density, slabConcreteType) )
          {
             std::_tostringstream os;
-            if (m_pvDeckConcrete[regionIdx]->GetType() == pgsTypes::Normal )
+            if (slabConcreteType == pgsTypes::Normal )
             {
                os << _T("Deck concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
             }
@@ -535,7 +535,8 @@ void CConcreteManager::ValidateConcrete() const
          //THROW_UNWIND(strMsg.c_str(),-1);
       }
 
-      if (fcMax < fc28)
+      pgsTypes::ConcreteType jointConcreteType = (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType();
+      if (fcMax < fc28 && jointConcreteType != pgsTypes::UHPC)
       {
          std::_tostringstream os;
          os << _T("Longitudinal joint strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
@@ -546,7 +547,6 @@ void CConcreteManager::ValidateConcrete() const
          pStatusCenter->Add(pStatusItem);
       }
 
-      pgsTypes::ConcreteType jointConcreteType = (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType();
       //Float64 max_slab_fc = pLimits->GetMaxSlabFc(slabConcreteType);
       //if (max_slab_fc < fc28 && !IsEqual(max_slab_fc, fc28))
       //{
@@ -589,10 +589,10 @@ void CConcreteManager::ValidateConcrete() const
          pStatusCenter->Add(pStatusItem);
       }
 
-      if (!IsConcreteDensityInRange(strength_density, (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType()))
+      if (!IsConcreteDensityInRange(strength_density, jointConcreteType))
       {
          std::_tostringstream os;
-         if (m_pLongitudinalJointConcrete->GetType() == pgsTypes::Normal)
+         if (jointConcreteType == pgsTypes::Normal)
          {
             os << _T("Longitudinal joint concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
          }
@@ -824,18 +824,17 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
    }
 
 
-   if (fcMax < fc28)
+   if (fcMax < fc28 && concreteType != pgsTypes::UHPC)
    {
       std::_tostringstream os;
       os << strLabel << _T(" strength (" << (LPCTSTR)::FormatDimension(fc28, pDisplayUnits->GetStressUnit()) << ") exceeds the ") << (LPCTSTR)::FormatDimension(fcMax, pDisplayUnits->GetStressUnit()) << _T(" concrete strength limit per LRFD 5.1");
       std::_tstring strMsg = os.str();
 
-      CSegmentKey dummyKey;
-      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::FinalStrength, dummyKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
+      pgsConcreteStrengthStatusItem* pStatusItem = new pgsConcreteStrengthStatusItem(elementType, pgsConcreteStrengthStatusItem::FinalStrength, segmentKey, m_StatusGroupID, m_scidConcreteStrengthWarning, strMsg.c_str());
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fci < fci && !IsEqual(max_fci,fci,::ConvertToSysUnits(0.001,unitMeasure::KSI)) )
+   if (  max_fci < fci && !IsEqual(max_fci,fci,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::UHPC )
    {
       std::_tostringstream os;
       os << strLabel << _T(": Initial concrete strength (") << (LPCTSTR)::FormatDimension(fci,pDisplayUnits->GetStressUnit()) <<  _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fci,pDisplayUnits->GetStressUnit());
@@ -846,7 +845,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
       pStatusCenter->Add(pStatusItem);
    }
 
-   if (  max_fc < fc28 && !IsEqual(max_fc,fc28,::ConvertToSysUnits(0.001,unitMeasure::KSI)) )
+   if (  max_fc < fc28 && !IsEqual(max_fc,fc28,::ConvertToSysUnits(0.001,unitMeasure::KSI)) && concreteType != pgsTypes::UHPC )
    {
       std::_tostringstream os;
       os << strLabel << _T(": Concrete strength (") << (LPCTSTR)::FormatDimension(fc28,pDisplayUnits->GetStressUnit()) << _T(") exceeds the normal value of ") << (LPCTSTR)::FormatDimension(max_fc,pDisplayUnits->GetStressUnit());
@@ -885,7 +884,7 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
    if ( !IsConcreteDensityInRange(pConcrete->GetStrengthDensity(), concreteType) )
    {
       std::_tostringstream os;
-      if ( concreteType == pgsTypes::Normal || concreteType == pgsTypes::UHPC)
+      if ( concreteType == pgsTypes::Normal)
       {
          os << strLabel << _T(": concrete density is out of range for Normal Weight Concrete per LRFD 5.2.");
       }
@@ -932,7 +931,11 @@ void CConcreteManager::ValidateConcreteParameters(std::shared_ptr<matConcreteBas
 
 bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::ConcreteType type) const
 {
-   if ( type == pgsTypes::Normal || type == pgsTypes::UHPC)
+   if (type == pgsTypes::UHPC)
+   {
+      return true; // there isn't a desnity limit for UHPC
+   }
+   else if ( type == pgsTypes::Normal)
    {
       return ( GetNWCDensityLimit() <= density );
    }
@@ -1008,7 +1011,7 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE( concrete.Fci, 
+      modE = lrfdConcreteUtil::ModE( (matConcrete::Type)concrete.Type,concrete.Fci, 
                                      concrete.StrengthDensity, 
                                      false /* ignore LRFD range checks */ );
 
@@ -1042,7 +1045,7 @@ void CConcreteManager::CreateConcrete(const CConcreteMaterial& concrete,LPCTSTR 
    }
    else
    {
-      modE = lrfdConcreteUtil::ModE( concrete.Fc, 
+      modE = lrfdConcreteUtil::ModE( (matConcrete::Type)concrete.Type,concrete.Fc, 
                                      concrete.StrengthDensity, 
                                      false /* ignore LRFD range checks */ );
 
@@ -1819,10 +1822,66 @@ Float64 CConcreteManager::GetShearModRupture(Float64 fc,pgsTypes::ConcreteType t
    return lrfdConcreteUtil::ModRupture( fc, GetShearFrCoefficient(type) );
 }
 
-Float64 CConcreteManager::GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const
+Float64 CConcreteManager::GetEconc(pgsTypes::ConcreteType type, Float64 fc,Float64 density,Float64 K1,Float64 K2) const
 {
-   return K1*K2*lrfdConcreteUtil::ModE(fc,density, false ); // ignore LRFD limits
+   return K1*K2*lrfdConcreteUtil::ModE((matConcrete::Type)type, fc,density, false ); // ignore LRFD limits
 }
+
+bool CConcreteManager::HasUHPC() const
+{
+   ValidateConcrete();
+   ValidateSegmentConcrete();
+   for (auto& item : m_pSegmentConcrete)
+   {
+      if (item.second->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   for (auto& item : m_pClosureConcrete)
+   {
+      if (item.second->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   ValidateDeckConcrete();
+   for (auto& item : m_pvDeckConcrete)
+   {
+      if (item->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   ValidateLongitudinalJointConcrete();
+   if (m_pLongitudinalJointConcrete != nullptr && m_pLongitudinalJointConcrete->GetType() == matConcrete::UHPC)
+   {
+      return true;
+   }
+
+   ValidateRailingSystemConcrete();
+   for (auto& item : m_pRailingConcrete)
+   {
+      if (item->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   for (auto& item : m_pPierConcrete)
+   {
+      if (item.second->GetType() == matConcrete::UHPC)
+      {
+         return true;
+      }
+   }
+
+   return false;
+}
+
 
 Float64 CConcreteManager::GetShearFrCoefficient(pgsTypes::ConcreteType type) const
 {

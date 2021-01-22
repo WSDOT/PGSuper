@@ -153,17 +153,17 @@ void CSpanDetailsDlg::Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType 
 
    // Set dialog title
    CString strTitle;
-   strTitle.Format(_T("Span %d Details"),LABEL_SPAN(m_pSpanData->GetIndex()));
+   strTitle.Format(_T("Span %s Details"),LABEL_SPAN(m_pSpanData->GetIndex()));
    SetTitle(strTitle);
 
 
-   CString strStartPierLabel(m_pPrevPier->GetPrevSpan() == nullptr ? _T("Abut.") : _T("Pier"));
-   m_strStartPierTitle.Format(_T("%s %d Connections"),strStartPierLabel,LABEL_PIER(m_pPrevPier->GetIndex()));
+   bool isAbut = m_pPrevPier->GetPrevSpan() == nullptr;
+   m_strStartPierTitle.Format(_T("%s Connections"),LABEL_PIER_EX(isAbut, m_pPrevPier->GetIndex()));
    m_StartPierPage.m_psp.dwFlags |= PSP_USETITLE;
    m_StartPierPage.m_psp.pszTitle = m_strStartPierTitle.GetBuffer();
 
-   CString strEndPierLabel(m_pNextPier->GetNextSpan() == nullptr ? _T("Abut.") : _T("Pier"));
-   m_strEndPierTitle.Format(_T("%s %d Connections"),strEndPierLabel,LABEL_PIER(m_pNextPier->GetIndex()));
+   isAbut = m_pNextPier->GetNextSpan() == nullptr;
+   m_strEndPierTitle.Format(_T("%s Connections"),LABEL_PIER_EX(isAbut,m_pNextPier->GetIndex()));
    m_EndPierPage.m_psp.dwFlags |= PSP_USETITLE;
    m_EndPierPage.m_psp.pszTitle = m_strEndPierTitle.GetBuffer();
 }
@@ -186,7 +186,7 @@ LRESULT CSpanDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 
 	ASSERT_VALID(this);
 
-	CPropertyPage* pPage = GetPage(GetActiveIndex());
+   auto* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
 	if( pPage != nullptr )

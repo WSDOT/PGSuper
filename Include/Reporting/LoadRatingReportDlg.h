@@ -25,6 +25,8 @@
 #include <ReportManager\ReportManager.h>
 #include "resource.h"
 
+#include "SharedCTrls\MultiGirderSelectGrid.h" 
+
 // CLoadRatingReportDlg dialog
 
 class CLoadRatingReportDlg : public CDialog
@@ -38,15 +40,20 @@ public:
 // Dialog Data
 	enum { IDD = IDD_LOADRATINGREPORT };
 
-   GirderIndexType m_Girder;
    bool m_bReportAtAllPoi;
    std::vector<std::_tstring> m_ChapterList;
+
+   void SetGirderKey(const CGirderKey& girderKey);
+   CGirderKey GetGirderKey() const;
+   bool IsSingleGirderLineSelected() const;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
    virtual void UpdateChapterList();
    virtual void UpdateGirderComboBox();
+   virtual void UpdateGirderLineComboBox();
+   virtual void UpdateSpanComboBox();
 
    virtual void ClearChapterCheckMarks();
    virtual void InitChapterListFromSpec();
@@ -59,13 +66,25 @@ protected:
 
    std::shared_ptr<CReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
+private:
+   int m_RadioNum;
+   GirderIndexType m_Girder;
+   GirderIndexType m_GirderLine;
+   SpanIndexType m_Span;
+
 public:
 	// Generated message map functions
 	//{{AFX_MSG(CReportDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnHelp();
-	afx_msg void OnGroupChanged();
+   afx_msg void OnBnClickedRadio();
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()
+   afx_msg void OnCbnSelchangeSpan();
+   afx_msg void OnDestroy(); 
+
+private:
+   void LoadSettings();
+   void SaveSettings();
 };

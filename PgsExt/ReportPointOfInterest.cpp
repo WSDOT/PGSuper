@@ -155,7 +155,7 @@ std::_tstring rptPointOfInterest::AsString() const
       if ( m_Reference == POI_SPAN )
       {
          CString str1;
-         str1.Format(_T("Span %d Girder %s, "),LABEL_SPAN(m_SpanKey.spanIndex),LABEL_GIRDER(m_SpanKey.girderIndex));
+         str1.Format(_T("Span %s Girder %s, "),LABEL_SPAN(m_SpanKey.spanIndex),LABEL_GIRDER(m_SpanKey.girderIndex));
          str  = str1;
       }
       else

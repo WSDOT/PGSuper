@@ -24,6 +24,7 @@
 #define INCLUDED_IFACE_BRIDGE_H_
 
 #include <vector>
+#include <functional>
 
 #include <PGSuperTypes.h>
 #include <Details.h>
@@ -122,6 +123,7 @@ struct BearingElevationDetails
    Float64 Offset; // offset where the elevations are computed
    Float64 FinishedGradeElevation; // final design surface elevation at Station and Offset (top of overlay if overlay built with bridge, top of deck for no overlay or future overlay)
    Float64 OverlayDepth; // depth of overlay (future overlays not considered)
+   Float64 GrossSlabDepth;
    Float64 SlabOffset;
    Float64 Hg; // adjusted for girder orientation
    Float64 BrgRecess;
@@ -656,6 +658,8 @@ interface IBridge : IUnknown
 
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const = 0;
 
+   virtual Float64 GetTemporarySupportStation(SupportIndexType tsIdx) const = 0;
+
    // returns true if any of the temporary supports have non-zero elevation adjustments
    virtual bool HasTemporarySupportElevationAdjustments() const = 0;
 
@@ -668,6 +672,10 @@ interface IBridge : IUnknown
 
    // Compute bearing elevation data for each girder along bearing line at edges of girder bottom. Will return two values 0=Left, 1=Right
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const = 0;
+
+   // Internally, all bridges start and Abutment 0 and end and abutment n-1. However, users can chose to start at a different pier or abutment
+   // for display purposes. This is carried through the UI and reporting
+   virtual void GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const = 0;
 };
 
 /*****************************************************************************
@@ -907,10 +915,6 @@ interface IMaterials : IUnknown
    virtual std::_tstring GetDeckRebarName() const = 0;
    virtual void GetDeckRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade) const = 0;
 
-   // Density limits for normal and light weight concrete
-   virtual Float64 GetNWCDensityLimit() const = 0; // returns the minimum density for normal weight concrete
-   virtual Float64 GetLWCDensityLimit() const = 0; // returns the maximum density for lightweight concrete
-
    // Material Properties Calcluations
    virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const = 0;
    virtual Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const = 0;
@@ -920,7 +924,10 @@ interface IMaterials : IUnknown
    virtual Float64 GetClosureJointFlexureFrCoefficient(const CClosureKey& closureKey) const = 0;
    virtual Float64 GetClosureJointShearFrCoefficient(const CClosureKey& closureKey) const = 0;
 
-   virtual Float64 GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const = 0;
+   virtual Float64 GetEconc(pgsTypes::ConcreteType type,Float64 fc,Float64 density,Float64 K1,Float64 K2) const = 0;
+
+   // Returns true if there is UHPC concrete used in the model
+   virtual bool HasUHPC() const = 0;
 };
 
 /*****************************************************************************
@@ -1146,7 +1153,8 @@ interface IStrandGeometry : IUnknown
    virtual StrandIndexType GetPreviousNumPermanentStrands(const CSegmentKey& segmentKey,StrandIndexType curNum) const = 0;
    virtual StrandIndexType GetPreviousNumPermanentStrands(LPCTSTR strGirderName,StrandIndexType curNum) const = 0;
    // Compute strand Indices as in girder library for given filled strands
-   virtual bool ComputePermanentStrandIndices(LPCTSTR strGirderName,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strType, IIndexArray** permIndices) const = 0;
+   virtual void ComputePermanentStrandIndices(const CSegmentKey& segmentKey, pgsTypes::StrandType strType, IIndexArray** permIndices) const = 0;
+   virtual void ComputePermanentStrandIndices(LPCTSTR strGirderName,const PRESTRESSCONFIG& rconfig, pgsTypes::StrandType strType, IIndexArray** permIndices) const = 0;
 
    // Functions to compute ordered strand filling for straight/harped/temporary fill orders
    virtual bool IsValidNumStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type,StrandIndexType curNum) const = 0;
@@ -1227,7 +1235,13 @@ interface IStrandGeometry : IUnknown
    virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
    virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) const = 0;
    virtual StrandIndexType GetNumDebondedStrandsInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
+
+   // returns true if one of the exterior strands in the specified row is debonded at the poi
    virtual bool IsExteriorStrandDebondedInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
+
+   // returns true if one of the exterior strands in the specified row and web is debonded at the poi. this method should only be used for multi-web
+   // sections without bottom flanges (such as double T, triple tees, and channel beams).
+   virtual bool IsExteriorWebStrandDebondedInRow(const pgsPointOfInterest& poi, WebIndexType webIdx,RowIndexType rowIdx, pgsTypes::StrandType strandType) const = 0;
    virtual Float64 GetUnadjustedStrandRowElevation(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
 
    virtual bool HasDebonding(const CSegmentKey& segmentKey) const = 0;
@@ -1250,7 +1264,6 @@ interface IStrandGeometry : IUnknown
    // returns long array of the same length as GetStrandPositions. 0==not debondable
    virtual void ListDebondableStrands(const CSegmentKey& segmentKey,const ConfigStrandFillVector& rFillArray,pgsTypes::StrandType strandType, IIndexArray** list) const = 0;
    virtual void ListDebondableStrands(LPCTSTR strGirderName,const ConfigStrandFillVector& rFillArray,pgsTypes::StrandType strandType, IIndexArray** list) const = 0; 
-   virtual Float64 GetDefaultDebondLength(const CSegmentKey& segmentKey) const = 0;
 
    // Returns the indicies of rows that have debonding
    virtual std::vector<RowIndexType> GetRowsWithDebonding(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
@@ -1262,6 +1275,12 @@ interface IStrandGeometry : IUnknown
    // Lstrand is the length of the bonded strands, and nStrands is the number of debonded strands for
    // this configuration
    virtual void GetDebondConfigurationByRow(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, RowIndexType rowIdx, IndexType configIdx, const GDRCONFIG* pConfig, Float64* pXstart, Float64* pLstrand, Float64* pCgX, Float64* pCgY, StrandIndexType* pnStrands) const = 0;
+
+   // Returns a vector of rectangular regions represententing web width projections within which strands must be bonded per LRFD 9th Edition, 5.9.4.3.3, Items I and J.
+   // If LRFD 5.9.4.3.3 Item I applies (Single web, flange section, eg. I-Beam), the fraction of debonded strands is stored in pFraDebonded and the bottom flange to web width ratio is stored in pBottomFlangeToWebWidthRatio, otherwise
+   // these parameters are invalid
+   // Strands must be completely within the region for the "most be bonded" requirement to apply
+   virtual std::vector<CComPtr<IRect2d>> GetWebWidthProjectionsForDebonding(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType,Float64* pFraDebonded,Float64* pBottomFlangeToWebWidthRatio) const = 0;
 
    // Functions to compute harped strand offsets based on available measurement types
    // Absolute offset is distance that raw strand grid locations are to be moved.
@@ -1325,6 +1344,7 @@ interface ISectionProperties : IUnknown
    // are based on the section properties model defined in the project criteria
    virtual Float64 GetHg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual void GetCentroid(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const = 0;
    virtual Float64 GetIxx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
@@ -1350,6 +1370,7 @@ interface ISectionProperties : IUnknown
    // are based on the specified section property type
    virtual Float64 GetHg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual void GetCentroid(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const = 0;
    virtual Float64 GetIxx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetIyy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetIxy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
@@ -1388,6 +1409,8 @@ interface ISectionProperties : IUnknown
 
    virtual Float64 GetQSlab(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetQSlab(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,Float64 fc) const = 0;
+   virtual Float64 GetQ(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Yclip) const = 0;
+   virtual Float64 GetQ(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Yclip) const = 0;
    virtual Float64 GetAcBottomHalf(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0; // for Fig. 5.7.3.4.2-3
    virtual Float64 GetAcTopHalf(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0; // for Fig. 5.7.3.4.2-3
 
@@ -1444,14 +1467,14 @@ DEFINE_GUID(IID_IShapes,
 0xb0bfec24, 0x7355, 0x46d7, 0xb5, 0x52, 0x5a, 0x17, 0x7b, 0xb2, 0xe, 0xee);
 interface IShapes : public IUnknown
 {
-   // returns the raw shape of the segment
-   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape) const = 0;
+   // returns the raw shape of the segment. Indices are locations for main girder shape and slab in the composite shape
+   virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape, IndexType* pGirderIndex=nullptr, IndexType* pSlabIndex=nullptr) const = 0;
 
    // returns the raw segment shape based on the provided segment data. the shape will be in the girder section coordinate system
    virtual void GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const = 0;
 
    // returns the shape of the segment with any section removal (such as clipping for sacrifical depth)
-   virtual void GetSegmentSectionShape(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bOrient, pgsTypes::SectionCoordinateType csType, IShape** ppShape) const = 0;
+   virtual void GetSegmentSectionShape(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bOrient, pgsTypes::SectionCoordinateType csType, IShape** ppShape, IndexType* pGirderIndex=nullptr, IndexType* pSlabIndex=nullptr) const = 0;
 
    virtual void GetSlabShape(Float64 station,IDirection* pDirection,bool bIncludeHaunch,IShape** ppShape) const = 0;
    virtual void GetLeftTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) const = 0;
@@ -1612,8 +1635,8 @@ interface IGirder : public IUnknown
    // as the left end and right end of the girder is the same (same debonding, symmetric harp points, etc)
    virtual bool    IsSymmetric(IntervalIndexType intervalIdx,const CGirderKey& girderKey) const = 0; 
 
-   // Returns teh number of mating surfaces
-   virtual MatingSurfaceIndexType  GetNumberOfMatingSurfaces(const CGirderKey& girderKey) const = 0;
+   // Returns the number of mating surfaces
+   virtual MatingSurfaceIndexType  GetMatingSurfaceCount(const CGirderKey& girderKey) const = 0;
 
    // Location of mating surface, measured from the CL girder. < 0 if left of CL.
    // if bGirderOnly is false, structural longitinal joints are considered as part of the mating surface
@@ -1628,7 +1651,7 @@ interface IGirder : public IUnknown
    virtual bool GetMatingSurfaceProfile(const pgsPointOfInterest& poi, MatingSurfaceIndexType msIdx, bool bGirderOnly, IPoint2dCollection** ppPoints) const = 0;
 
    // Returns the number of top flanges
-   virtual FlangeIndexType GetNumberOfTopFlanges(const CGirderKey& girderKey) const = 0;
+   virtual FlangeIndexType GetTopFlangeCount(const CGirderKey& girderKey) const = 0;
 
    // Returns the location of the center of a top flange measured from the CL girder. < 0 if left of CL.
    virtual Float64 GetTopFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const = 0;
@@ -1668,7 +1691,7 @@ interface IGirder : public IUnknown
    virtual Float64 GetTopFlangeThickening(const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
 
    // Returns the number of bottom flanges
-   virtual FlangeIndexType GetNumberOfBottomFlanges(const CGirderKey& girderKey) const = 0;
+   virtual FlangeIndexType GetBottomFlangeCount(const CGirderKey& girderKey) const = 0;
 
    // Returns the location of the center of a bottom flange measured from the CL girder. < 0 if left of CL.
    virtual Float64 GetBottomFlangeLocation(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const = 0;
@@ -1680,7 +1703,7 @@ interface IGirder : public IUnknown
    virtual Float64 GetBottomFlangeWidth(const pgsPointOfInterest& poi) const = 0;
 
    // Returns the total width of the bottom of a girder
-   virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetBottomWidth(const pgsPointOfInterest& poi, Float64* pLeft=nullptr, Float64* pRight=nullptr) const = 0;
 
    // Returns the thickness of a top flange
    virtual Float64 GetBottomFlangeThickness(const pgsPointOfInterest& poi,FlangeIndexType flangeIdx) const = 0;
@@ -1854,6 +1877,10 @@ interface IGirder : public IUnknown
    virtual const stbGirder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const = 0;
    virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
    virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const = 0;
+
+   // Returns the elevation of web-flange intersections that are included in principal web shear checks
+   // The key is the elevation in girder section coordinates and the value is descriptive text
+   virtual std::vector<std::tuple<Float64, Float64, std::_tstring>> GetWebSections(const pgsPointOfInterest& poi) const = 0;
 };
 
 /*****************************************************************************
@@ -1896,6 +1923,7 @@ interface IGirderTendonGeometry : public IUnknown
    // returns the diameter of the duct
    virtual Float64 GetOutsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
    virtual Float64 GetInsideDiameter(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetNominalDiameter(const CGirderKey& girderKey, DuctIndexType ductIdx) const = 0;
 
    virtual Float64 GetInsideDuctArea(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
 
@@ -2002,6 +2030,7 @@ interface ISegmentTendonGeometry : public IUnknown
    // returns the diameter of the duct
    virtual Float64 GetOutsideDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
    virtual Float64 GetInsideDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
+   virtual Float64 GetNominalDiameter(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
 
    virtual Float64 GetInsideDuctArea(const CSegmentKey& segmentKey, DuctIndexType ductIdx) const = 0;
 

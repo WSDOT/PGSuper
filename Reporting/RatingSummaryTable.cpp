@@ -24,6 +24,7 @@
 #include <Reporting\RatingSummaryTable.h>
 
 #include <PgsExt\RatingArtifact.h>
+#include <PgsExt\ISummaryRatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 #include <PgsExt\Helpers.h>
 
@@ -48,7 +49,7 @@ CRatingSummaryTable::~CRatingSummaryTable()
 
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirderKey& girderKey,CRatingSummaryTable::RatingTableType ratingTableType) const
+rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,CRatingSummaryTable::RatingTableType ratingTableType) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -196,8 +197,8 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
    }
 
    GET_IFACE2(pBroker,IArtifact,pArtifact);
-   const pgsRatingArtifact* pRoutineRatingArtifact = pArtifact->GetRatingArtifact(girderKey,routine_rating_type,INVALID_INDEX);
-   const pgsRatingArtifact* pSpecialRatingArtifact = pArtifact->GetRatingArtifact(girderKey,special_rating_type,INVALID_INDEX);
+   std::shared_ptr<const pgsISummaryRatingArtifact> pRoutineRatingArtifact = pArtifact->GetSummaryRatingArtifact(girderKeys,routine_rating_type,INVALID_INDEX);
+   std::shared_ptr<const pgsISummaryRatingArtifact> pSpecialRatingArtifact = pArtifact->GetSummaryRatingArtifact(girderKeys,special_rating_type,INVALID_INDEX);
 
    bool bReportPostingAnalysis = false;
 
@@ -206,7 +207,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
    {
       RowIndexType row = table->GetNumberOfHeaderRows();
 
-      const pgsRatingArtifact* pRatingArtifact = (i == 0 ? pRoutineRatingArtifact : pSpecialRatingArtifact);
+      std::shared_ptr<const pgsISummaryRatingArtifact> pRatingArtifact = (i == 0 ? pRoutineRatingArtifact : pSpecialRatingArtifact);
       pgsTypes::LoadRatingType ratingType      = (i == 0 ? routine_rating_type    : special_rating_type);
       if ( pRatingArtifact )
       {
@@ -644,7 +645,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const CGirde
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const
+rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType) const
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
@@ -695,7 +696,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
    {
       std::_tstring strName = pProductLoads->GetLiveLoadName(llType,vehicleIdx);
 
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,vehicleIdx);
+      std::shared_ptr<const pgsISummaryRatingArtifact> pRatingArtifact = pArtifact->GetSummaryRatingArtifact(girderKeys,ratingType,vehicleIdx);
 
       const pgsMomentRatingArtifact* pPositiveMoment;
       const pgsMomentRatingArtifact* pNegativeMoment;
@@ -789,7 +790,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker,const CGirderKe
    return pTable;
 }
 
-rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge) const
+rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge) const
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -821,7 +822,7 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirder
    for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
    {
       ColumnIndexType col = 0;
-      const pgsRatingArtifact* pRatingArtifact = pArtifact->GetRatingArtifact(girderKey,ratingType,vehicleIdx);
+      std::shared_ptr<const pgsISummaryRatingArtifact> pRatingArtifact = pArtifact->GetSummaryRatingArtifact(girderKeys,ratingType,vehicleIdx);
       if ( pRatingArtifact )
       {
          Float64 postingLoad, W, RF;
@@ -888,12 +889,12 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const CGirder
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const CGirderKey& girderKey) const
+rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys) const
 {
    GET_IFACE2(pBroker, IArtifact, pArtifact);
 
-   const pgsRatingArtifact* pEV2Artifact = pArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Emergency, 0);
-   const pgsRatingArtifact* pEV3Artifact = pArtifact->GetRatingArtifact(girderKey, pgsTypes::lrLegal_Emergency, 1);
+   std::shared_ptr<const pgsISummaryRatingArtifact> pEV2Artifact = pArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrLegal_Emergency, 0);
+   std::shared_ptr<const pgsISummaryRatingArtifact> pEV3Artifact = pArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrLegal_Emergency, 1);
 
    Float64 RF2 = pEV2Artifact->GetRatingFactor();
    Float64 RF3 = pEV3Artifact->GetRatingFactor();

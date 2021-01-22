@@ -50,14 +50,6 @@
 
 #define PGSUPER_DOCUMENT_ROOT_NODE_VERSION 3.0
 
-#define EPD_GENERAL        0
-#define EPD_CONNECTION     1
-#define EPD_SPACING        2
-
-#define ESD_GENERAL        0
-#define ESD_CONNECTION     1
-#define ESD_SPACING        2
-
 #define VS_GIRDER_ELEVATION   0
 #define VS_GIRDER_SECTION     1
 
@@ -69,6 +61,83 @@
 class CCopyGirderDlg;
 class pgsSegmentDesignArtifact;
 class CPGSuperDocProxyAgent;
+
+// A simple class to keep track of state information
+// for file compatibility
+class CFileCompatibilityState
+{
+public:
+   CFileCompatibilityState() { ResetFlags(); }
+
+   // Set/Get version of application that was used to when saving a file (after version 2.1)
+   void SetApplicationVersion(LPCTSTR lpszAppVersion) { m_strAppVersion = lpszAppVersion; }
+   const CString& GetApplicationVersion() const { return m_strAppVersion; }
+
+   // Set this flag if the application used to save this file was version 2.1 or earlier
+   void SetPreVersion21Flag() { m_bPreVersion21File = true;  }
+
+   // Call when a new file is created
+   void NewFileCreated() { ResetFlags(); m_strFilePath.Empty();  m_bNewFromTemplate = true; }
+
+   // Call when a file was opened. Keeps track of orginal filename and if the file was creaetd from a template
+   void FileOpened(LPCTSTR lpszFilePath) { ResetFlags(); m_strFilePath = lpszFilePath; m_bNewFromTemplate = false;  }
+
+   // Call when a file is saved. Updates the file name and the version of the application when saved
+   void FileSaved(LPCTSTR lpszFilePath, LPCTSTR lpszAppVersion) { ResetFlags();  m_strFilePath = lpszFilePath; m_strAppVersion = lpszAppVersion; }
+
+   // Call at the begining of the file saving process. Call with true of the file is unnamed (e.g. a new file that hasn't been saved or a Save As)
+   void Saving(bool bUnnamed) { m_bUnnamed = bUnnamed; }
+
+   // Returns the file name that will be used when making a copy of the original file
+   CString GetCopyFileName() const 
+   { 
+      CString strFile(m_strFilePath); 
+      auto pos = strFile.ReverseFind(_T('.')); 
+      if (m_bPreVersion21File)
+      {
+         strFile.Insert(pos, CString(_T("(2.1)")));
+      }
+      else
+      {
+         strFile.Insert(pos, CString(_T("(")) + m_strAppVersion + CString(_T(")")));
+      }
+      return strFile;
+   }
+
+   // Returns true if the user should be warned that the file format is going to change
+   // lpszPathName is name of file that is going to be saved
+   // lpszCurrentAppVersion is the application version of the application right now
+   bool PromptToMakeCopy(LPCTSTR lpszPathName,LPCTSTR lpszCurrentAppVersion)
+   {
+      bool bDifferentVersion = m_bPreVersion21File || m_strAppVersion != CString(lpszCurrentAppVersion) ? true : false;
+
+      if (m_bUnnamed && bDifferentVersion)
+      {
+         return m_strFilePath == CString(lpszPathName); // this is a Save As and the file name isn't changing
+      }
+
+      if ((m_bUnnamed == false || m_bNewFromTemplate == false) && bDifferentVersion)
+      {
+         return true; // this is a save, but not for a new file
+      }
+
+      return false;
+   }
+
+private:
+   void ResetFlags()
+   {
+      m_bPreVersion21File = false;
+      m_bUnnamed = false;
+      m_bNewFromTemplate = false;
+   }
+
+   CString m_strFilePath;
+   CString m_strAppVersion;
+   bool m_bPreVersion21File; // while was created with Version 2.1 or earlier
+   bool m_bUnnamed;
+   bool m_bNewFromTemplate;
+};
 
 /*--------------------------------------------------------------------*/
 class CPGSDocBase : public CEAFBrokerDocument, 
@@ -117,6 +186,7 @@ public:
 	public:
 	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName) override;
    virtual void OnCloseDocument() override;
+   virtual BOOL DoSave(LPCTSTR lpszPathName, BOOL bReplace = TRUE) override;
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
 	//}}AFX_VIRTUAL
 
@@ -136,6 +206,68 @@ public:
 	virtual void AssertValid() const override;
 	virtual void Dump(CDumpContext& dc) const override;
 #endif
+
+   IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
+   bool UnregisterBridgePlanViewCallback(IDType ID);
+   const std::map<IDType, IBridgePlanViewEventCallback*>& GetBridgePlanViewCallbacks();
+
+   IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
+   bool UnregisterBridgeSectionViewCallback(IDType ID);
+   const std::map<IDType, IBridgeSectionViewEventCallback*>& GetBridgeSectionViewCallbacks();
+
+   IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback);
+   bool UnregisterAlignmentPlanViewCallback(IDType ID);
+   const std::map<IDType, IAlignmentPlanViewEventCallback*>& GetAlignmentPlanViewCallbacks();
+
+   IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback);
+   bool UnregisterAlignmentProfileViewCallback(IDType ID);
+   const std::map<IDType, IAlignmentProfileViewEventCallback*>& GetAlignmentProfileViewCallbacks();
+
+   IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
+   bool UnregisterGirderElevationViewCallback(IDType ID);
+   const std::map<IDType, IGirderElevationViewEventCallback*>& GetGirderElevationViewCallbacks();
+
+   IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
+   bool UnregisterGirderSectionViewCallback(IDType ID);
+   const std::map<IDType, IGirderSectionViewEventCallback*>& GetGirderSectionViewCallbacks();
+
+   IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
+   bool UnregisterEditPierCallback(IDType ID);
+   const std::map<IDType, IEditPierCallback*>& GetEditPierCallbacks();
+
+   IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback);
+   bool UnregisterEditTemporarySupportCallback(IDType ID);
+   const std::map<IDType, IEditTemporarySupportCallback*>& GetEditTemporarySupportCallbacks();
+
+   IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
+   bool UnregisterEditSpanCallback(IDType ID);
+   const std::map<IDType, IEditSpanCallback*>& GetEditSpanCallbacks();
+
+   IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback, ICopyGirderPropertiesCallback* pCopyCallback);
+   bool UnregisterEditGirderCallback(IDType ID);
+   const std::map<IDType, IEditGirderCallback*>& GetEditGirderCallbacks();
+   const std::map<IDType, ICopyGirderPropertiesCallback*>& GetCopyGirderPropertiesCallbacks();
+
+   IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback, ICopyGirderPropertiesCallback* pCopyCallback);
+   bool UnregisterEditSplicedGirderCallback(IDType ID);
+   const std::map<IDType, IEditSplicedGirderCallback*>& GetEditSplicedGirderCallbacks();
+   const std::map<IDType, ICopyGirderPropertiesCallback*>& GetCopySplicedGirderPropertiesCallbacks();
+
+   IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback);
+   bool UnregisterEditSegmentCallback(IDType ID);
+   const std::map<IDType, IEditSegmentCallback*>& GetEditSegmentCallbacks();
+
+   IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback);
+   bool UnregisterEditClosureJointCallback(IDType ID);
+   const std::map<IDType, IEditClosureJointCallback*>& GetEditClosureJointCallbacks();
+
+   IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
+   bool UnregisterEditBridgeCallback(IDType ID);
+   const std::map<IDType, IEditBridgeCallback*>& GetEditBridgeCallbacks();
+
+   IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback);
+   bool UnregisterEditLoadRatingOptionsCallback(IDType ID);
+   const std::map<IDType, IEditLoadRatingOptionsCallback*>& GetEditLoadRatingOptionsCallbacks();
 
    // ISupportLibraryManager
    virtual CollectionIndexType GetNumberOfLibraryManagers() const override;
@@ -187,8 +319,7 @@ public:
    void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType face);
    void DeleteSpan(SpanIndexType spanIdx);
    void DeleteSpan(SpanIndexType spanIdx,pgsTypes::RemovePierType pierRemoveType);
-   void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,IndexType eventIdx);
-
+   void InsertSpan(PierIndexType refPierIdx, pgsTypes::PierFaceType pierFace, Float64 spanLength, bool bCreateNewGroup, EventIndexType eventIdx);
 
    // set/get view settings for bridge model editor
    UINT GetBridgeEditorSettings() const;
@@ -202,87 +333,31 @@ public:
    UINT GetGirderEditorSettings() const;
    void SetGirderEditorSettings(UINT settings, BOOL bNotify = TRUE);
 
-   // called when the UI Hints have been reset
-   virtual void ResetUIHints() override;
-
-   bool ShowProjectPropertiesOnNewProject();
-   void ShowProjectPropertiesOnNewProject(bool bShow);
 
    BOOL UpdateTemplates();
 
-   IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
-   bool UnregisterBridgePlanViewCallback(IDType ID);
-   const std::map<IDType,IBridgePlanViewEventCallback*>& GetBridgePlanViewCallbacks();
-
-   IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback);
-   bool UnregisterBridgeSectionViewCallback(IDType ID);
-   const std::map<IDType,IBridgeSectionViewEventCallback*>& GetBridgeSectionViewCallbacks();
-
-   IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback);
-   bool UnregisterAlignmentPlanViewCallback(IDType ID);
-   const std::map<IDType,IAlignmentPlanViewEventCallback*>& GetAlignmentPlanViewCallbacks();
-
-   IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback);
-   bool UnregisterAlignmentProfileViewCallback(IDType ID);
-   const std::map<IDType,IAlignmentProfileViewEventCallback*>& GetAlignmentProfileViewCallbacks();
-
-   IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback);
-   bool UnregisterGirderElevationViewCallback(IDType ID);
-   const std::map<IDType,IGirderElevationViewEventCallback*>& GetGirderElevationViewCallbacks();
-
-   IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback);
-   bool UnregisterGirderSectionViewCallback(IDType ID);
-   const std::map<IDType,IGirderSectionViewEventCallback*>& GetGirderSectionViewCallbacks();
-
-   IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
-   bool UnregisterEditPierCallback(IDType ID);
-   const std::map<IDType,IEditPierCallback*>& GetEditPierCallbacks();
-
-   IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback);
-   bool UnregisterEditTemporarySupportCallback(IDType ID);
-   const std::map<IDType,IEditTemporarySupportCallback*>& GetEditTemporarySupportCallbacks();
-
-   IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback);
-   bool UnregisterEditSpanCallback(IDType ID);
-   const std::map<IDType,IEditSpanCallback*>& GetEditSpanCallbacks();
-
-   IDType RegisterEditGirderCallback(IEditGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
-   bool UnregisterEditGirderCallback(IDType ID);
-   const std::map<IDType,IEditGirderCallback*>& GetEditGirderCallbacks();
-   const std::map<IDType,ICopyGirderPropertiesCallback*>& GetCopyGirderPropertiesCallbacks();
-
-   IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback);
-   bool UnregisterEditSplicedGirderCallback(IDType ID);
-   const std::map<IDType,IEditSplicedGirderCallback*>& GetEditSplicedGirderCallbacks();
-   const std::map<IDType,ICopyGirderPropertiesCallback*>& GetCopySplicedGirderPropertiesCallbacks();
-
-   IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback);
-   bool UnregisterEditSegmentCallback(IDType ID);
-   const std::map<IDType,IEditSegmentCallback*>& GetEditSegmentCallbacks();
-
-   IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback);
-   bool UnregisterEditClosureJointCallback(IDType ID);
-   const std::map<IDType,IEditClosureJointCallback*>& GetEditClosureJointCallbacks();
-
-   IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback);
-   bool UnregisterEditBridgeCallback(IDType ID);
-   const std::map<IDType,IEditBridgeCallback*>& GetEditBridgeCallbacks();
-
-   IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback);
-   bool UnregisterEditLoadRatingOptionsCallback(IDType ID);
-   const std::map<IDType,IEditLoadRatingOptionsCallback*>& GetEditLoadRatingOptionsCallbacks();
+   long GetReportViewKey();
 
    virtual UINT GetStandardToolbarResourceID() = 0;
 
-   long GetReportViewKey();
-
 protected:
+   // Override default behavior
+   virtual void ResetUIHints(bool bPrompt = TRUE) override;
+
+   // called when the UI Hints have been reset
+   virtual void OnUIHintsReset() override;
+
+
+   bool ShowProjectPropertiesOnNewProject();
+   void ShowProjectPropertiesOnNewProject(bool bShow);
 
    CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
 
    bool m_bSelectingGirder;
    bool m_bSelectingSegment;
    bool m_bClearingSelection;
+
+   CFileCompatibilityState m_FileCompatibilityState;
 
    IDType m_CallbackID;
    // View Notification Callbacks
@@ -331,8 +406,6 @@ protected:
 
    CSelection m_Selection;
 
-   arSlabOffsetDesignType m_DesignSlabOffset;
-
    // callback IDs for any status callbacks we register
    StatusCallbackIDType m_scidInformationalError;
    StatusGroupIDType m_StatusGroupID;
@@ -361,6 +434,7 @@ protected:
    virtual Float64 GetRootNodeVersion() override;
 
    virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
+   virtual BOOL SaveTheDocument(LPCTSTR lpszPathName) override;
    virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
 
    virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;

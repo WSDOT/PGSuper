@@ -2235,6 +2235,8 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    // results to compute if additional long reinf is needed
    GDRCONFIG config = this->GetSegmentConfiguration(); // current design
 
+   bool b9thEdition(lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion() ? true : false);
+
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -2250,21 +2252,19 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
 
    // We will use #5 bars if using rebar 
    // Compute min development length for this bar size
-   Float64 rbfy=1.0;
-   Float64 tensile_development_length=0.0;
+   GET_IFACE(ILongitudinalRebar, pLongRebar);
+   const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(m_SegmentKey);
+   const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType, pLRD->BarGrade, matRebar::bs5); // #5
+   Float64 rbfy = pRebar->GetYieldStrength();
+   Float64 tensile_development_length = 0.0;
    if(m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingRebar)
    {
-      GET_IFACE(ILongitudinalRebar,pLongRebar);
-      const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(m_SegmentKey);
-      const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pLRD->BarType,pLRD->BarGrade,matRebar::bs5); // #5
-      rbfy = pRebar->GetYieldStrength();
-
       GET_IFACE(IMaterials,pMaterials);
       Float64 density = pMaterials->GetSegmentStrengthDensity(m_SegmentKey);
 
       REBARDEVLENGTHDETAILS details = lrfdRebar::GetRebarDevelopmentLengthDetails(pRebar->GetSize(),pRebar->GetNominalArea(),pRebar->GetNominalDimension(),pRebar->GetYieldStrength(),(matConcrete::Type)config.ConcType,m_pArtifact->GetConcreteStrength(),config.bHasFct,config.Fct,density);
       tensile_development_length = details.ldb;
-      ATLASSERT(tensile_development_length>0.0);
+      ATLASSERT(0.0 < tensile_development_length);
    }
 
    // make sure we have the POI's at the end faces of the precast element
@@ -2274,8 +2274,8 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    pPoi->GetPointsOfInterest(m_SegmentKey, POI_FACEOFSUPPORT, &vPoi2);
    pPoi->MergePoiLists(vPoi, vPoi2, &vPoi);
 
-   Float64 As=0.0;
-   for(Int32 ils=0; ils<nls; ils++)
+   Float64 As = 0.0;
+   for(Int32 ils = 0; ils < nls; ils++)
    {
       LOG(_T("Checking LRS (failures reported only) at ")<<vPoi.size()<<_T(" Pois, ils = ")<<ils);
 
@@ -2327,7 +2327,21 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                         ATLASSERT(false);
                      }
    
-                     LOG(_T("location = ")<< ::ConvertFromSysUnits(location,unitMeasure::Feet)<<_T(" demand = ")<< ::ConvertFromSysUnits(demand,unitMeasure::Kip)<<_T(", capacity = ")<< ::ConvertFromSysUnits(capacity,unitMeasure::Kip)<<_T(", as rebar = ")<< ::ConvertFromSysUnits(as,unitMeasure::Inch2));
+                     LOG(_T("location = ")<< ::ConvertFromSysUnits(location,unitMeasure::Feet)<<_T(" demand = ")<< ::ConvertFromSysUnits(demand,unitMeasure::Kip)<<_T(", capacity = ")<< ::ConvertFromSysUnits(capacity,unitMeasure::Kip)<<_T(", additional as rebar needed = ")<< ::ConvertFromSysUnits(as,unitMeasure::Inch2));
+
+                     if (b9thEdition)
+                     {
+                        // in 9th Edition LRFD, ApsFps > AsFy
+                        // check this requirement and add more Aps if needed
+                        Float64 as_fy = (l_artifact.GetAs() + as)*rbfy;
+                        Float64 aps_fps = l_artifact.GetPretensionForce();
+                        if (aps_fps < as_fy)
+                        {
+                           // there is already too much rebar, can't add more
+                           m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::RebarForceExceedsPretensionForceForLongReinfShear);
+                           return sdFail;
+                        }
+                     }
                      As = Max(As, as);
                   }
                   else if(m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingStrands)
@@ -2348,7 +2362,21 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      }
    
                      Float64 as = (demand-capacity)/fps;
-                     LOG(_T("location = ")<< ::ConvertFromSysUnits(location,unitMeasure::Feet)<<_T(" demand = ")<< ::ConvertFromSysUnits(demand,unitMeasure::Kip)<<_T(", capacity = ")<< ::ConvertFromSysUnits(capacity,unitMeasure::Kip)<<_T(", as strand = ")<< ::ConvertFromSysUnits(as,unitMeasure::Inch2));
+                     LOG(_T("location = ")<< ::ConvertFromSysUnits(location,unitMeasure::Feet)<<_T(" demand = ")<< ::ConvertFromSysUnits(demand,unitMeasure::Kip)<<_T(", capacity = ")<< ::ConvertFromSysUnits(capacity,unitMeasure::Kip)<<_T(", additional as strand needed = ")<< ::ConvertFromSysUnits(as,unitMeasure::Inch2));
+
+                     if (b9thEdition)
+                     {
+                        // in 9th Edition LRFD, ApsFps > AsFy
+                        // check this requirement and add more Aps if needed
+                        Float64 aps = l_artifact.GetAps();
+                        Float64 aps_fps = (aps+as)*fps;
+                        Float64 as_fy = l_artifact.GetRebarForce();
+                        if (aps_fps < as_fy)
+                        {
+                           as = as_fy / fps - aps;
+                           LOG(_T("ApsFps < AsFy so add more Aps = ") << ConvertFromSysUnits(as, unitMeasure::Inch2));
+                        }
+                     }
                      As = Max(As, as);
                   }
                   else

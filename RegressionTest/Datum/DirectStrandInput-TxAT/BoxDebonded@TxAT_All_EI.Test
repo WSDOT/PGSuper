@@ -1,7 +1,7 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  44.00    6   7.60                     1     1    4XB20          44  1/2  270   6.03   5.65   8.00   8.00  12   0.00    0     0                                               5.500  5.500   2.994    -3.806     2236   0.573  0.716   3.253 -1.364 -0.070 -0.060 -1.494 127.67  354.53    1.00    1.00    1.00 
-Warning: Irregular, Non-standard debonding increments used for beam 1 in span  1. Cannot write debonding information to TxDOT CAD format.
+Warning: Irregular, Non-standard debonding increments used for beam 1 in span 1. Cannot write debonding information to TxDOT CAD format.
 
 
 The Specification Check was Not Successful

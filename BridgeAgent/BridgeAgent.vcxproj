@@ -563,7 +563,6 @@
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\Alignment.h" />
     <ClInclude Include="..\Include\IFace\Bridge.h" />
-    <ClInclude Include="..\Include\IFace\DesignOverrides.h" />
     <ClInclude Include="..\Include\IFace\Intervals.h" />
     <ClInclude Include="..\Include\IFace\PointOfInterest.h" />
     <ClInclude Include="BrgPointIdMgr.h" />

@@ -1,0 +1,264 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2020  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+//
+// PrincipalWebStressDetailsDlg.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "Reporting.h"
+#include "PrincipalWebStressDetailsDlg.h"
+
+#include <PgsExt\GirderLabel.h>
+#include <MFCTools\CustomDDX.h>
+
+#include <IFace\Intervals.h>
+#include <IFace\PrincipalWebStress.h>
+#include <IFace\Bridge.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+
+// CPrincipalWebStressDetailsDlg dialog
+
+IMPLEMENT_DYNAMIC(CPrincipalWebStressDetailsDlg, CDialog)
+
+
+CPrincipalWebStressDetailsDlg::CPrincipalWebStressDetailsDlg(IBroker* pBroker,std::shared_ptr<CPrincipalWebStressDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,bool bReportAxial, bool bReportShear,CWnd* pParent)
+	: CDialog(CPrincipalWebStressDetailsDlg::IDD, pParent)
+   , m_SliderPos(0)
+   , m_pPwsRptSpec(pRptSpec)
+   , m_bReportShearStress(bReportShear)
+   , m_bReportAxial(bReportAxial)
+{
+   m_InitialPOI = initialPoi;
+   m_GirderKey = m_InitialPOI.GetSegmentKey();
+   m_IntervalIdx = intervalIdx;
+   m_bUseAllLocations = false;
+   m_pBroker = pBroker;
+}
+
+
+CPrincipalWebStressDetailsDlg::~CPrincipalWebStressDetailsDlg()
+{
+}
+
+void CPrincipalWebStressDetailsDlg::DoDataExchange(CDataExchange* pDX)
+{
+   CDialog::DoDataExchange(pDX);
+   DDX_Control(pDX, IDC_SLIDER, m_Slider);
+   DDX_Control(pDX, IDC_LOCATION, m_Location);
+
+   DDX_CBIndex(pDX, IDC_GIRDERLINE, m_GirderKey.girderIndex);
+   DDX_CBItemData(pDX, IDC_INTERVAL, m_IntervalIdx);
+   DDX_Slider(pDX, IDC_SLIDER, m_SliderPos);
+   DDX_Check_Bool(pDX, IDC_ALL_LOCATIONS, m_bUseAllLocations);
+   DDX_Check(pDX, IDC_SHEAR, m_bReportShearStress);
+   DDX_Check(pDX, IDC_AXIAL, m_bReportAxial);
+}
+
+BEGIN_MESSAGE_MAP(CPrincipalWebStressDetailsDlg, CDialog)
+   ON_WM_HSCROLL()
+   ON_BN_CLICKED(IDC_ALL_LOCATIONS,OnClickedAllLocations)
+   ON_CBN_SELCHANGE(IDC_GIRDERLINE,OnGirderLineChanged)
+END_MESSAGE_MAP()
+
+BOOL CPrincipalWebStressDetailsDlg::OnInitDialog()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   GET_IFACE(IBridge,pBridge);
+   CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERLINE);
+   IndexType nGirderLines = pBridge->GetGirderlineCount();
+   for ( IndexType gdrIdx = 0; gdrIdx < nGirderLines; gdrIdx++ )
+   {
+      CString str;
+      str.Format(_T("%s"),LABEL_GIRDER(gdrIdx));
+      pcbGirders->AddString(str);
+   }
+
+   GET_IFACE( IIntervals, pIntervals);
+   CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+   {
+      CString strLabel;
+      strLabel.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      int idx = pcbIntervals->AddString(strLabel);
+      pcbIntervals->SetItemData(idx,(DWORD_PTR)intervalIdx);
+   }
+   int idx = pcbIntervals->AddString(_T("All Intervals"));
+   pcbIntervals->SetItemData(idx,(DWORD_PTR)INVALID_INDEX);
+
+   UpdatePOI();
+
+   CDialog::OnInitDialog();
+
+   // initial the slider range
+   m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
+
+   // initial the slider position to the current poi location
+   int pos = (int)m_vPOI.size()/2; // default is mid-span
+   int cur_pos = 0;
+   for (const pgsPointOfInterest& poi : m_vPOI)
+   {
+      if ( poi.GetID() == m_InitialPOI.GetID() )
+      {
+         pos = cur_pos;
+      }
+      cur_pos++;
+   }
+   m_Slider.SetPos(pos);
+
+   InitFromPrincipalWebStressRptSpec();
+
+   UpdateSliderLabel();
+   OnClickedAllLocations();
+
+   SetWindowText(_T("Principal Web Stress Details"));
+
+   return TRUE;  // return TRUE unless you set the focus to a control
+   // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+bool CPrincipalWebStressDetailsDlg::UseAllLocations()
+{
+   return m_bUseAllLocations;
+}
+
+pgsPointOfInterest CPrincipalWebStressDetailsDlg::GetPOI()
+{
+   ASSERT((int)m_SliderPos < (int)m_vPOI.size());
+   pgsPointOfInterest poi = m_vPOI[m_SliderPos];
+   return poi;
+}
+
+IntervalIndexType CPrincipalWebStressDetailsDlg::GetInterval()
+{
+   return m_IntervalIdx;
+}
+
+bool CPrincipalWebStressDetailsDlg::GetReportShear()
+{
+   return m_bReportShearStress!=FALSE;
+}
+
+bool CPrincipalWebStressDetailsDlg::GetReportAxial()
+{
+   return m_bReportAxial!=FALSE;
+}
+
+void CPrincipalWebStressDetailsDlg::UpdatePOI()
+{
+   // Would like to call GetPrincipalWebStressPointsOfInterest() here, but we have to analyze all time steps to get the data
+   GET_IFACE(IPointOfInterest,pPOI);
+   m_vPOI.clear();
+   pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI);
+
+   if (m_Slider.GetSafeHwnd() != nullptr )
+   {
+      m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
+                                                   // subtract one so we don't go past the end of the array
+   }
+}
+
+void CPrincipalWebStressDetailsDlg::InitFromPrincipalWebStressRptSpec()
+{
+   if (!m_pPwsRptSpec)
+   {
+      return;
+   }
+
+   m_bUseAllLocations = m_pPwsRptSpec->ReportAtAllLocations();
+   pgsPointOfInterest poi = m_pPwsRptSpec->GetPointOfInterest();
+
+   m_GirderKey = poi.GetSegmentKey();
+
+   int cur_pos = 0;
+   for(const pgsPointOfInterest& p : m_vPOI)
+   {
+      if ( p.AtSamePlace(poi) )
+      {
+         m_SliderPos = cur_pos;
+         break;
+      }
+      cur_pos++;
+   }
+
+   m_IntervalIdx = m_pPwsRptSpec->GetInterval();
+   m_bReportAxial = m_pPwsRptSpec->ReportAxial();
+   m_bReportShearStress = m_pPwsRptSpec->ReportShear();
+
+   UpdateData(FALSE);
+}
+
+void CPrincipalWebStressDetailsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+   UpdateSliderLabel();
+   CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
+}
+
+void CPrincipalWebStressDetailsDlg::UpdateSliderLabel()
+{
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+
+   CString strLabel;
+   ASSERT((int)m_SliderPos < (int)m_vPOI.size());
+   pgsPointOfInterest poi = m_vPOI[m_Slider.GetPos()];
+
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+   rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+   rptPoi.SetValue(POI_SPAN,poi);
+   rptPoi.PrefixAttributes(false); // put the attributes after the location
+   rptPoi.IncludeSpanAndGirder(true);
+
+#if defined _DEBUG || defined _BETA_VERSION
+   strLabel.Format(_T("Point Of Interest: ID = %d %s"),poi.GetID(),rptPoi.AsString().c_str());
+#else
+   strLabel.Format(_T("%s"),rptPoi.AsString().c_str());
+#endif
+   // remove the HTML tags
+   strLabel.Replace(_T("<sub>"),_T(""));
+   strLabel.Replace(_T("</sub>"),_T(""));
+
+   m_Location.SetWindowText(strLabel);
+}
+
+void CPrincipalWebStressDetailsDlg::OnClickedAllLocations()
+{
+   int show = IsDlgButtonChecked(IDC_ALL_LOCATIONS) ? SW_HIDE : SW_SHOW;
+   GetDlgItem(IDC_LABEL)->ShowWindow(show);
+   m_Slider.ShowWindow(show);
+   m_Location.ShowWindow(show);
+}
+
+void CPrincipalWebStressDetailsDlg::OnGirderLineChanged()
+{
+   CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERLINE);
+   GirderIndexType gdrIdx = (GirderIndexType)pcbGirders->GetCurSel();
+   m_GirderKey.girderIndex = gdrIdx;
+   UpdatePOI();
+   UpdateSliderLabel();
+}

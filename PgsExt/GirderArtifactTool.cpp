@@ -62,8 +62,7 @@ bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,const 
 }
 
 
-void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
-                        const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
+void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
 {
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bPrestressedGirder = pDocType->IsPGSuperDocument();
@@ -86,9 +85,9 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
       const pgsTendonStressArtifact* pTendonStress = pGirderArtifact->GetTendonStressArtifact(ductIdx);
       if ( !pTendonStress->Passed() )
       {
-         CString strMsg;
-         strMsg.Format(_T("Tendon %d is overstressed"),LABEL_DUCT(ductIdx));
-         rFailures.push_back(std::_tstring(strMsg.GetBuffer()));
+         std::_tostringstream os;
+         os << _T("Tendon ") << LABEL_DUCT(ductIdx) << _T(" is overstressed");
+         rFailures.emplace_back(os.str());
       }
    }
 
@@ -112,57 +111,57 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
          if (referToDetailsReport)
          {
             std::_tstring msg(_T("Strand Stresses [") + std::_tstring(LrfdCw8th(_T("5.9.3"), _T("5.9.2.2"))) + _T("] have been exceeded.  See the Details Report for more information"));
-            rFailures.push_back(msg);
+            rFailures.emplace_back(msg);
          }
          else
          {
-            rFailures.push_back(_T("Stresses in the prestressing strands are too high."));
+            rFailures.emplace_back(_T("Stresses in the prestressing strands are too high."));
          }
       }
 
       const pgsStrandSlopeArtifact* pStrandSlope = pArtifact->GetStrandSlopeArtifact();
       if ( !pStrandSlope->Passed() )
       {
+         std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            CString strMsg;
-            strMsg.Format(_T("Strand slope exceeds maximum for Segment %d"),LABEL_SEGMENT(segIdx));
-            rFailures.push_back(std::_tstring(strMsg.GetBuffer()));
+            os << _T("Strand slope exceeds maximum for Segment ") << LABEL_SEGMENT(segIdx);
          }
          else
          {
-            rFailures.push_back(_T("Strand slope exceeds maximum"));
+            os << _T("Strand slope exceeds maximum");
          }
+         rFailures.emplace_back(os.str());
       }
 
       const pgsHoldDownForceArtifact* pHoldDownForce = pArtifact->GetHoldDownForceArtifact();
       if ( !pHoldDownForce->Passed() )
       {
+         std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            CString strMsg;
-            strMsg.Format(_T("Hold down force exceeds maximum for Segment %d"),LABEL_SEGMENT(segIdx));
-            rFailures.push_back(std::_tstring(strMsg.GetBuffer()));
+            os << _T("Hold down force exceeds maximum for Segment ") << LABEL_SEGMENT(segIdx);
          }
          else
          {
-            rFailures.push_back(_T("Hold down force exceeds maximum"));
+            os << _T("Hold down force exceeds maximum");
          }
+         rFailures.emplace_back(os.str());
       }
 
       const auto* pPlantHandling = pArtifact->GetPlantHandlingWeightArtifact();
       if (!pPlantHandling->Passed())
       {
+         std::_tostringstream os;
          if (1 < nSegments)
          {
-            CString strMsg;
-            strMsg.Format(_T("Plant handling weight exceeds maximum for Segment %d"), LABEL_SEGMENT(segIdx));
-            rFailures.push_back(std::_tstring(strMsg.GetBuffer()));
+            os << _T("Plant handling weight exceeds maximum for Segment ") <<  LABEL_SEGMENT(segIdx);
          }
          else
          {
-            rFailures.push_back(_T("Plant handling weight exceeds maximum"));
+            os << _T("Plant handling weight exceeds maximum");
          }
+         rFailures.emplace_back(os.str());
       }
 
 
@@ -184,10 +183,32 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures,
                {
                   os << _T(" for Deck");
                }
-               rFailures.push_back(os.str());
+               rFailures.emplace_back(os.str());
             }
          } // next task
       } // beam/deck loop
+
+      if (!pArtifact->GetPrincipalTensionStressArtifact()->Passed())
+      {
+         std::_tostringstream os;
+         if (1 < nSegments)
+         {
+            os << _T("Principal tension stress in webs stress check failed for Segment ") << LABEL_SEGMENT(segIdx);
+            if (referToDetailsReport)
+            {
+               os << _T(" See the Details Report for more information");
+            }
+         }
+         else
+         {
+            os << _T("Principal tension stress in webs stress check failed.");
+            if (referToDetailsReport)
+            {
+               os << _T(" See the Details Report for more information");
+            }
+         }
+         rFailures.emplace_back(os.str());
+      }
    } // next segment
 }
 
@@ -223,14 +244,14 @@ void ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailures,const pg
    {
       std::_tostringstream os;
       os << _T("Ultimate moment capacity (positive moment) check failed for ") << strLimitState << _T(" Limit State") << std::ends;
-      rFailures.push_back(os.str());
+      rFailures.emplace_back(os.str());
    }
 
    if ( MomentCapacityFailures(pBroker,pGirderArtifact,intervalIdx,ls,false) )
    {
       std::_tostringstream os;
       os << _T("Ultimate moment capacity (negative moment) check failed for ") << strLimitState << _T(" Limit State") << std::ends;
-      rFailures.push_back(os.str());
+      rFailures.emplace_back(os.str());
    }
 }
 
@@ -269,7 +290,7 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
          {
             std::_tostringstream os;
             os << _T("Ultimate vertical shear capacity check failed for ") << strLimitState << _T(" Limit State") << std::ends;
-            rFailures.push_back(os.str());
+            rFailures.emplace_back(os.str());
 
             bContinue1 = false;
          }
@@ -278,7 +299,7 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
          {
             std::_tostringstream os;
             os << _T("Longitudinal Reinforcement for Shear check failed for ") << strLimitState << _T(" Limit State") << std::ends;
-            rFailures.push_back(os.str());
+            rFailures.emplace_back(os.str());
 
             bContinue2 = false;
          }
@@ -320,7 +341,7 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
          {
             std::_tostringstream os;
             os << _T("Horizontal Interface Shears/Length check failed for ") << strLimitState << _T(" Limit State [") << LrfdCw8th(_T("5.8.4"),_T("5.7.4")) << _T("].") << std::ends;
-            rFailures.push_back(os.str());
+            rFailures.emplace_back(os.str());
 
             return;
          }
@@ -356,7 +377,7 @@ void ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const 
          {
             std::_tostringstream os;
             os << _T("Stirrup detailing checks failed for the ") << strLimitState << _T(" Limit State.") << std::ends;
-            rFailures.push_back(os.str());
+            rFailures.emplace_back(os.str());
             return;
          }
       }
@@ -376,17 +397,17 @@ void ListDebondingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGird
 
       if ( !pDebond->Passed() )
       {
-         CString strMsg;
+         std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            strMsg.Format(_T("Debond arrangement checks failed for Segment %d."),LABEL_SEGMENT(segIdx));
+            os << _T("Debond arrangement checks failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
          }
          else
          {
-            strMsg.Format(_T("Debond arrangement checks failed."));
+            os << _T("Debond arrangement checks failed.");
          }
 
-         rFailures.push_back(strMsg.GetBuffer());
+         rFailures.emplace_back(os.str());
       }
    } // next segment
 }
@@ -403,18 +424,18 @@ void ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgs
       const pgsSplittingZoneArtifact* pBZArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingZoneArtifact();
       if ( !pBZArtifact->Passed() )
       {
-         CString strZone( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() ? _T("Splitting") : _T("Bursting") );
-         CString strMsg;
+         std::_tstring strZone( lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() ? _T("Splitting") : _T("Bursting") );
+         std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            strMsg.Format(_T("%s zone check failed for Segment %d."),strZone,LABEL_SEGMENT(segIdx));
+            os << strZone << _T(" zone check failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
          }
          else
          {
-            strMsg.Format(_T("%s zone check failed."),strZone);
+            os << strZone << _T(" zone check failed.");
          }
 
-         rFailures.push_back(strMsg.GetBuffer());
+         rFailures.emplace_back(os.str());
       }
    } // next segment
 }
@@ -432,17 +453,17 @@ void ListConfinementZoneFailures(IBroker* pBroker,FailureList& rFailures,const p
       const pgsConfinementArtifact& rShear = pStirrups->GetConfinementArtifact();
       if ( !rShear.Passed() )
       {
-         CString strMsg;
+         std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            strMsg.Format(_T("Confinement zone check failed for Segment %d."),LABEL_SEGMENT(segIdx));
+            os << _T("Confinement zone check failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
          }
          else
          {
-            strMsg.Format(_T("Confinement zone check failed."));
+            os << _T("Confinement zone check failed.");
          }
 
-         rFailures.push_back(strMsg.GetBuffer());
+         rFailures.emplace_back(os.str());
       }
    } // next segment
 }
@@ -461,47 +482,47 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       const pgsPrecastIGirderDetailingArtifact* pBeamDetails = pArtifact->GetPrecastIGirderDetailingArtifact();
       if ( !pBeamDetails->Passed() )
       {
-         CString strMsg;
+         std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            strMsg.Format(_T("Girder Dimension Detailing check failed for Segment %d."),LABEL_SEGMENT(segIdx));
+            os << _T("Girder Dimension Detailing check failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
          }
          else
          {
-            strMsg.Format(_T("Girder Dimension Detailing check failed"));
+            os << _T("Girder Dimension Detailing check failed");
          }
-         rFailures.push_back(strMsg.GetBuffer());
+         rFailures.emplace_back(os.str());
       }
 
       const pgsSegmentStabilityArtifact* pSegmentStability = pArtifact->GetSegmentStabilityArtifact();
       if ( !pSegmentStability->Passed() )
       {
-         CString strMsg;
+         std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            strMsg.Format(_T("Global Girder Stability check failed for Segment %d."),LABEL_SEGMENT(segIdx));
+            os << _T("Global Girder Stability check failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
          }
          else
          {
-            strMsg.Format(_T("Global Girder Stability check failed"));
+            os << _T("Global Girder Stability check failed");
          }
-         rFailures.push_back(strMsg.GetBuffer());
+         rFailures.push_back(os.str());
       }
 
       // Lifting
       const stbLiftingCheckArtifact* pLifting = pArtifact->GetLiftingCheckArtifact();
       if (pLifting!=nullptr && !pLifting->Passed() )
       {
-         CString strMsg;
+         std::_tostringstream os;
          if ( 1 < nSegments )
          {
-            strMsg.Format(_T("Lifting checks failed for Segment %d."),LABEL_SEGMENT(segIdx));
+            os << _T("Lifting checks failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
          }
          else
          {
-            strMsg.Format(_T("Lifting checks failed"));
+            os << _T("Lifting checks failed");
          }
-         rFailures.push_back(strMsg.GetBuffer());
+         rFailures.emplace_back(os.str());
       }
 
       // Hauling
@@ -513,16 +534,16 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       {
          if (!pHauling->Passed(pgsTypes::CrownSlope) || !pHauling->Passed(pgsTypes::Superelevation))
          {
-            CString strMsg;
+            std::_tostringstream os;
             if (1 < nSegments)
             {
-               strMsg.Format(_T("Hauling checks failed for Segment %d."), LABEL_SEGMENT(segIdx));
+               os << _T("Hauling checks failed for Segment ") << LABEL_SEGMENT(segIdx) << _T(".");
             }
             else
             {
-               strMsg.Format(_T("Hauling checks failed"));
+               os << _T("Hauling checks failed");
             }
-            rFailures.push_back(strMsg.GetBuffer());
+            rFailures.emplace_back(os.str());
          }
       }
    } // next segment
@@ -532,41 +553,37 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
    const pgsConstructabilityArtifact* pConstruct = pGirderArtifact->GetConstructabilityArtifact();
    if ( !pConstruct->SlabOffsetPassed() )
    {
-      CString strMsg(_T("Slab Offset (\"A\" Dimension) check failed"));
-      rFailures.push_back(strMsg.GetBuffer());
+      rFailures.emplace_back(_T("Slab Offset (\"A\" Dimension) check failed"));
    }
 
    if (!pConstruct->FinishedElevationPassed())
    {
-      CString strMsg(_T("Finished elevation check failed"));
-      rFailures.push_back(strMsg.GetBuffer());
+      rFailures.emplace_back(_T("Finished elevation check failed"));
    }
 
    if ( pConstruct->IsHaunchAtBearingCLsApplicable() && !pConstruct->HaunchAtBearingCLsPassed() )
    {
-      CString strMsg(_T("Minimum haunch depth at bearing centerlines check failed"));
-      rFailures.push_back(strMsg.GetBuffer());
+      rFailures.emplace_back(_T("Minimum haunch depth at bearing centerlines check failed"));
    }
 
    if ( !pConstruct->MinimumFilletPassed() )
    {
-      CString strMsg(_T("Minimum fillet value exceeded for bridge check failed"));
-      rFailures.push_back(strMsg.GetBuffer());
+      rFailures.emplace_back(_T("Minimum fillet value exceeded for bridge check failed"));
    }
 
    if (!pConstruct->PrecamberPassed())
    {
-      rFailures.push_back(_T("Precamber check failed"));
+      rFailures.emplace_back(_T("Precamber check failed"));
    }
 
    if ( !pConstruct->BottomFlangeClearancePassed() )
    {
-      rFailures.push_back(_T("Bottom flange clearance check failed"));
+      rFailures.emplace_back(_T("Bottom flange clearance check failed"));
    }
 
    if ( !pConstruct->HaunchGeometryPassed() )
    {
-      rFailures.push_back(_T("Excess camber geometry check failed"));
+      rFailures.emplace_back(_T("Excess camber geometry check failed"));
    }
 
    // Live Load Deflection
@@ -580,11 +597,11 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       {
          if (referToDetails)
          {
-            rFailures.push_back(_T("Live Load Deflection check failed. Refer to the Details or Specification Check Report for more information"));
+            rFailures.emplace_back(_T("Live Load Deflection check failed. Refer to the Details or Specification Check Report for more information"));
          }
          else
          {
-            rFailures.push_back(_T("Live Load Deflection check failed"));
+            rFailures.emplace_back(_T("Live Load Deflection check failed"));
          }
       }
    }
@@ -596,16 +613,16 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       const pgsDuctSizeArtifact* pDuctSizeArtifact = pGirderArtifact->GetDuctSizeArtifact(ductIdx);
       if ( !pDuctSizeArtifact->PassedRadiusOfCurvature() )
       {
-         CString strMsg;
-         strMsg.Format(_T("Radius of Curvature of duct failed for Duct %d."),LABEL_DUCT(ductIdx));
-         rFailures.push_back(strMsg.GetBuffer());
+         std::_tostringstream os;
+         os << _T("Radius of Curvature of duct failed for Duct ") << LABEL_DUCT(ductIdx) << _T(".");
+         rFailures.emplace_back(os.str());
       }
 
       if ( !pDuctSizeArtifact->PassedDuctArea() || !pDuctSizeArtifact->PassedDuctSize() )
       {
-         CString strMsg;
-         strMsg.Format(_T("Duct Size check failed for Duct %d."),LABEL_DUCT(ductIdx));
-         rFailures.push_back(strMsg.GetBuffer());
+         std::_tostringstream os;
+         os << _T("Duct Size check failed for Duct ") << LABEL_DUCT(ductIdx) << _T(".");
+         rFailures.emplace_back(os.str());
       }
    }
 }

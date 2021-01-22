@@ -74,7 +74,7 @@ m_pBroker(pBroker), m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsAlignmentDescriptionStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsAlignmentDescriptionStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -117,7 +117,7 @@ m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsConcreteStrengthStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsConcreteStrengthStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -174,7 +174,7 @@ m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsPointLoadStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsPointLoadStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -243,7 +243,7 @@ m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsDistributedLoadStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsDistributedLoadStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
@@ -312,7 +312,7 @@ m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsMomentLoadStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsMomentLoadStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }

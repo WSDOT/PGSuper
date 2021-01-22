@@ -136,14 +136,27 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
       }
    }
 
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(5,_T(""));
+   if (lrfdVersionMgr::NinthEdition2020 <= vers)
+   {
+      *pBody << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRS_ReinforcementLimit.png")) << rptNewLine;
+   }
+
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(vers < lrfdVersionMgr::NinthEdition2020 ? 5 : 8,_T(""));
    *pBody << table;
 
-   (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,1)  << COLHDR(_T("Capacity"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,2)  << COLHDR(_T("Demand"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
-   (*table)(0,3)  << _T("Equation");
-   (*table)(0,4)  << _T("Status") << rptNewLine << _T("(C/D)");
+   ColumnIndexType col = 0;
+   (*table)(0, col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0, col++)  << COLHDR(_T("Capacity"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0, col++)  << COLHDR(_T("Demand"),rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   (*table)(0, col++)  << _T("Equation");
+   (*table)(0, col++)  << _T("Status") << rptNewLine << _T("(C/D)");
+   
+   if (lrfdVersionMgr::NinthEdition2020 <= vers)
+   {
+      (*table)(0, col++) << COLHDR(RPT_APS << RPT_FPS, rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      (*table)(0, col++) << COLHDR(RPT_AS << RPT_FY, rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
+      (*table)(0, col++) << _T("Status");
+   }
 
    // Fill up the table
    bool bAddFootnote = false;
@@ -152,6 +165,7 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   location.IncludeSpanAndGirder(1 < nSegments);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
@@ -173,33 +187,56 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 
          if ( pArtifact->IsApplicable() )
          {
-            (*table)(row,0) << location.SetValue( POI_SPAN, poi );
+            col = 0;
+            (*table)(row, col++) << location.SetValue( POI_SPAN, poi );
 
             Float64 C = pArtifact->GetCapacityForce();
             Float64 D = pArtifact->GetDemandForce();
-            (*table)(row,1) << shear.SetValue( C );
-            (*table)(row,2) << shear.SetValue( D );
+            (*table)(row, col++) << shear.SetValue( C );
+            (*table)(row, col++) << shear.SetValue( D );
 
-            (*table)(row,3) << LrfdCw8th(_T("5.8.3.5-"),_T("5.7.3.5-")) << pArtifact->GetEquation();
+            (*table)(row,col++) << LrfdCw8th(_T("5.8.3.5-"),_T("5.7.3.5-")) << pArtifact->GetEquation();
 
-            bool bPassed = pArtifact->Passed();
+            bool bPassed = pArtifact->PassedCapacity();
             if ( bPassed )
             {
-               (*table)(row,4) << RPT_PASS;
+               (*table)(row, col) << RPT_PASS;
             }
             else
             {
-               (*table)(row,4) << RPT_FAIL;
+               (*table)(row, col) << RPT_FAIL;
             }
 
             Float64 ratio = IsZero(D) ? DBL_MAX : C/D;
             if ( bPassed && fabs(pArtifact->GetMu()) <= fabs(pArtifact->GetMr()) && ratio < 1.0 )
             {
                bAddFootnote = true;
-               (*table)(row,4) << _T("*");
+               (*table)(row, col) << _T("*");
             }
 
-            (*table)(row,4) << rptNewLine << _T("(") << cap_demand.SetValue(C,D,bPassed) << _T(")");
+            (*table)(row, col) << rptNewLine << _T("(") << cap_demand.SetValue(C,D,bPassed) << _T(")");
+            col++;
+
+            if (lrfdVersionMgr::NinthEdition2020 <= vers)
+            {
+               (*table)(row, col++) << shear.SetValue(pArtifact->GetPretensionForce());
+               (*table)(row, col++) << shear.SetValue(pArtifact->GetRebarForce());
+               if (pArtifact->PretensionForceMustExceedBarForce())
+               {
+                  if (pArtifact->PassedPretensionForce())
+                  {
+                     (*table)(row, col++) << RPT_PASS;
+                  }
+                  else
+                  {
+                     (*table)(row, col++) << RPT_FAIL;
+                  }
+               }
+               else
+               {
+                  (*table)(row, col++) << RPT_NA;
+               }
+            }
 
             row++;
          }
@@ -264,21 +301,18 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
    const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(girderKey,ratingType,INVALID_INDEX);
-   pgsRatingArtifact::ShearRatings shearRatings = pRatingArtifact->GetShearRatings();
+   const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear = pRatingArtifact->GetLongitudinalReinforcementForShear();
 
    bool bAddFootnote = false;
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   pgsRatingArtifact::ShearRatings::iterator i(shearRatings.begin());
-   pgsRatingArtifact::ShearRatings::iterator end(shearRatings.end());
-   for ( ; i != end; i++ )
+   for( const auto& item : longReinfShear)
    {
-      pgsPointOfInterest& poi = i->first;
+      const pgsPointOfInterest& poi = item.first;
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-      pgsShearRatingArtifact& shearRatingArtifact = i->second;
-      const pgsLongReinfShearArtifact& artifact = shearRatingArtifact.GetLongReinfShearArtifact();
+      const auto& artifact = item.second;
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 

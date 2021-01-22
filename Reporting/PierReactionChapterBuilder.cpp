@@ -108,13 +108,23 @@ rptChapter* CPierReactionChapterBuilder::Build(CReportSpecification* pRptSpec, U
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false);
 
-   rptParagraph* pPara = new rptParagraph;
+    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
    if (IsDifferentNumberOfGirdersPerSpan(pBridge))
    {
-      (*pPara) << italic(ON) << _T("This bridge is described with a different number of girders in each span. Plane frame analysis performed in accordance with LRFD 4.6.2. Careful consideration should be taken when applying pier reactions below to substructure models. Refer to the Technical Guide Structural Analysis Models documentation for more information.") << italic(OFF) << rptNewLine << rptNewLine;
+      (*pPara) << Bold(_T("This bridge is described with a different number of girders in each span.")) << rptNewLine;
+      (*pPara) << _T("Plane frame analysis performed in accordance with LRFD 4.6.2.") << rptNewLine;
+      (*pPara) << _T("Careful consideration should be taken when applying pier reactions below to substructure models.") << rptNewLine;
+      (*pPara) << _T("Refer to the Structural Analysis Models and Reactions topics in the Technical Guide for more information.") << rptNewLine << rptNewLine;
    }
+
+  pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Girder Line Reactions") << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
 
    bool bDesign = true;
    bool bRating = false;

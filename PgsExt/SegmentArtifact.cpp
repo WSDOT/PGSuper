@@ -234,6 +234,16 @@ const pgsHaulingAnalysisArtifact* pgsSegmentArtifact::GetHaulingAnalysisArtifact
    return m_pHaulingAnalysisArtifact;
 }
 
+const pgsPrincipalTensionStressArtifact* pgsSegmentArtifact::GetPrincipalTensionStressArtifact() const
+{
+   return &m_PrincipalTensionStressArtifact;
+}
+
+pgsPrincipalTensionStressArtifact* pgsSegmentArtifact::GetPrincipalTensionStressArtifact()
+{
+   return &m_PrincipalTensionStressArtifact;
+}
+
 void pgsSegmentArtifact::SetTendonStressArtifact(DuctIndexType ductIdx, const pgsTendonStressArtifact& artifact)
 {
    m_TendonStressArtifacts.insert(std::make_pair(ductIdx, artifact));
@@ -652,6 +662,11 @@ bool pgsSegmentArtifact::DidDeckFlexuralStressesPass() const
    return true;
 }
 
+bool pgsSegmentArtifact::DidPrincipalTensionStressPass() const
+{
+   return m_PrincipalTensionStressArtifact.Passed();
+}
+
 Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(IntervalIndexType intervalIdx,pgsTypes::LimitState ls) const
 {
    CComPtr<IBroker> pBroker;
@@ -853,6 +868,9 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
       fc_reqd = Max(fc_reqd,fc_reqd_hauling);
    }
 
+   Float64 fc_reqd_principal_tension = m_PrincipalTensionStressArtifact.GetRequiredSegmentConcreteStrength();
+   fc_reqd = Max(fc_reqd, fc_reqd_principal_tension);
+
    return fc_reqd;
 }
 
@@ -903,6 +921,9 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
          }
       }
    }
+
+   Float64 fc_reqd_principal_tension = m_PrincipalTensionStressArtifact.GetRequiredClosureJointConcreteStrength();
+   fc_reqd = Max(fc_reqd, fc_reqd_principal_tension);
 
    return fc_reqd;
 }
@@ -1027,6 +1048,8 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
 
    m_TendonStressArtifacts = rOther.m_TendonStressArtifacts;
    m_DuctSizeArtifacts = rOther.m_DuctSizeArtifacts;
+
+   m_PrincipalTensionStressArtifact = rOther.m_PrincipalTensionStressArtifact;
 }
 
 void pgsSegmentArtifact::MakeAssignment(const pgsSegmentArtifact& rOther)

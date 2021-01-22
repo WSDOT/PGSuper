@@ -103,7 +103,7 @@ protected:
 
 private:
    std::vector<CGirderData> m_GirderData;
-   std::vector<Float64> m_SlabOffset[2]; // slab offset at each end of the girder for each girder line
+   std::array<std::vector<Float64>, 2> m_SlabOffset; // slab offset at each end of the girder for each girder line
                                          // index is pgsTypes::metStart and pgsTypes::metEnd
 
    typedef std::pair<GirderIndexType,GirderIndexType> GirderGroup; // index of first and last girder in the group

@@ -201,13 +201,17 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
       {
          DDV_UnitValueZeroOrMore(pDX, IDC_LEFT_END_DISTANCE,   m_EndDistance[pgsTypes::Back],   pDisplayUnits->GetComponentDimUnit() );
 
-         // if end distance is measured from the datum line end distance cannot be greater than
-         // the bearing offset
-         if ( (m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierAlongGirder ||
-               m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierNormalToPier)
-               &&
-               (m_BearingOffset[pgsTypes::Back] < m_EndDistance[pgsTypes::Back])
-            )
+         // the end distance must be less than the bearing offset
+         // if end distance is measured from the datum line, the end distance must be less than the bearing offset otherwise, 
+         // the end of the girder is beyond the CL Bearing towards the span
+         // if the end distance is measured from the CL Bearing, the end distance must be less than the bearing offset otherwise,
+         // the end of the girder will go past the Alignment/Pier reference line
+         // The only time the End Distance can be greater than the Bearing Offset is at end abutments when the End Distance is
+         // measured from the CL Bearing... this is how cantilever spans are modeled
+         // Note that this check doesn't occur if there isn't a previous span, which would be a situation where there could be a cantilever,
+         // so only the first two cases need to be checked.
+
+         if (m_BearingOffset[pgsTypes::Back] < m_EndDistance[pgsTypes::Back])
          {
             pDX->PrepareEditCtrl(IDC_LEFT_END_DISTANCE);
             AfxMessageBox(_T("End Distance must be less than or equal to the Bearing Offset"),MB_OK | MB_ICONINFORMATION);
@@ -219,13 +223,8 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
       {
          DDV_UnitValueZeroOrMore(pDX, IDC_RIGHT_END_DISTANCE,   m_EndDistance[pgsTypes::Ahead],   pDisplayUnits->GetComponentDimUnit() );
 
-         // if end distance is measured from the datum line end distance cannot be greater than
-         // the bearing offset
-         if ( (m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierAlongGirder ||
-               m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierNormalToPier)
-               &&
-               (m_BearingOffset[pgsTypes::Ahead] < m_EndDistance[pgsTypes::Ahead])
-            )
+         // See comment above about back side of pier
+         if (m_BearingOffset[pgsTypes::Ahead] < m_EndDistance[pgsTypes::Ahead])
          {
             pDX->PrepareEditCtrl(IDC_RIGHT_END_DISTANCE);
             AfxMessageBox(_T("End Distance must be less than or equal to the Bearing Offset"),MB_OK | MB_ICONINFORMATION);
@@ -489,12 +488,30 @@ void CPierConnectionsPage::UpdateConnectionPicture(ConnectionLibraryEntry::EndDi
    m_ConnectionPicture.SetImage(image_name, _T("Metafile"));
 }
 
+BOOL CPierConnectionsPage::CanMeasureBearingOffsetAlongGirder()
+{
+   bool bCanMeasureAlongGirder = true;
+   if (m_pPier->GetPrevSpan())
+   {
+      auto* pSpacing = m_pPier->GetGirderSpacing(pgsTypes::Back);
+      bCanMeasureAlongGirder &= pSpacing->GetMeasurementLocation() == pgsTypes::AtCenterlineBearing ? false : true;
+   }
+
+   if (m_pPier->GetNextSpan())
+   {
+      auto* pSpacing = m_pPier->GetGirderSpacing(pgsTypes::Ahead);
+      bCanMeasureAlongGirder &= pSpacing->GetMeasurementLocation() == pgsTypes::AtCenterlineBearing ? false : true;
+   }
+
+   return bCanMeasureAlongGirder;
+}
+
 void CPierConnectionsPage::FillBearingOffsetComboBox()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
    pCB->ResetContent();
 
-   CString strType(m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   CString strType = pgsPierLabel::GetPierTypeLabelEx(m_pPier->IsAbutment(), m_pPier->GetIndex()).c_str();
 
    CString strLabel;
    strLabel.Format(_T("Normal to %s Line"),strType);
@@ -502,8 +519,11 @@ void CPierConnectionsPage::FillBearingOffsetComboBox()
    int idx = pCB->AddString(strLabel);
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::NormalToPier));
 
-   idx = pCB->AddString(_T("Along Girder"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::AlongGirder));
+   if (CanMeasureBearingOffsetAlongGirder())
+   {
+      idx = pCB->AddString(_T("Along Girder"));
+      pCB->SetItemData(idx, DWORD(ConnectionLibraryEntry::AlongGirder));
+   }
 }
 
 void CPierConnectionsPage::FillEndDistanceComboBox()
@@ -517,7 +537,7 @@ void CPierConnectionsPage::FillEndDistanceComboBox()
    idx = pCB->AddString(_T("Measured from and Normal to CL Bearing"));
    pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingNormalToPier));
 
-   CString strType(m_pPier->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   CString strType = pgsPierLabel::GetPierTypeLabelEx(m_pPier->IsAbutment(), m_pPier->GetIndex()).c_str();
 
    CString strLabel;
    strLabel.Format(_T("Measured from %s Line, Along Girder"),strType);
@@ -729,14 +749,14 @@ void CPierConnectionsPage::OnCopyFromLibrary()
 	   int result = AfxChoose(_T("Copy Connection Data from Library"),strMsg,strNames,0,TRUE);
 	   if ( 0 <= result )
 	   {
-	      CDataExchange dx(this,TRUE);
-	      DoDataExchange(&dx);
+         std::_tstring name = names[result];
+         GET_IFACE2(pBroker, ILibrary, pLib);
+         const ConnectionLibraryEntry* pEntry = pLib->GetConnectionEntry(name.c_str());
+
+         CDataExchange dx(this,TRUE);
+	      DoDataExchange(&dx); // get all the current data
 	
-	      std::_tstring name = names[result];
-		
-	      GET_IFACE2(pBroker,ILibrary,pLib);
-	      const ConnectionLibraryEntry* pEntry = pLib->GetConnectionEntry(name.c_str());
-	
+         // update with data from library
 	      for ( int i = 0; i < 2; i++ )
 	      {
 	         m_BearingOffset[i] = pEntry->GetGirderBearingOffset();
@@ -748,11 +768,22 @@ void CPierConnectionsPage::OnCopyFromLibrary()
 	         m_DiaphragmLoadLocation[i] = pEntry->GetDiaphragmLoadLocation();
 	      }
 	      m_EndDistanceMeasurementType   = pEntry->GetEndDistanceMeasurementType();
-	      m_BearingOffsetMeasurementType = pEntry->GetBearingOffsetMeasurementType();
-	
+
+         auto brgOffsetMeasurementType = pEntry->GetBearingOffsetMeasurementType();
+         if( (CanMeasureBearingOffsetAlongGirder() && brgOffsetMeasurementType == ConnectionLibraryEntry::AlongGirder) || brgOffsetMeasurementType == ConnectionLibraryEntry::NormalToPier)
+         {
+            m_BearingOffsetMeasurementType = brgOffsetMeasurementType;
+         }
+         else
+         {
+            AfxMessageBox(_T("The Bearing Offset Measurement type in the library entry is not compatible with the girder spacing measurement type. The bearing offset measurement type will not be changed."), MB_ICONINFORMATION | MB_OK);
+         }
+
+         // put the new data back in the controls
 	      dx.m_bSaveAndValidate = FALSE;
 	      DoDataExchange(&dx);
 
+         // update the images
          OnBoundaryConditionChanged();
          OnBackDiaphragmLoadTypeChanged();
          OnAheadDiaphragmLoadTypeChanged();
@@ -769,6 +800,19 @@ BOOL CPierConnectionsPage::OnSetActive()
    m_BoundaryConditionType = m_pPier->GetBoundaryConditionType();
    FillBoundaryConditionComboBox();
    OnBoundaryConditionChanged();
+
+   // update the bearing offset measurement options. they are dependent on how girder spacing is measured
+   // girder spacing measurement could have changed on the girder spacing tab
+
+   FillBearingOffsetComboBox(); // this is going to change the current selection that was set by DoDataExchange which will cause OnBearingOffsetMeasureChanged to crash
+
+   // the the beariong offset measurement type and reset the control so OnBearingOffsetMeasureChanged will work property
+   Float64 brgOffset;
+   m_pPier->GetBearingOffset(m_pPier->GetNextSpan() == nullptr ? pgsTypes::Back : pgsTypes::Ahead, &brgOffset, &m_BearingOffsetMeasurementType);
+   CDataExchange dx(this, FALSE);
+   DDX_CBItemData(&dx, IDC_BEARING_OFFSET_MEASURE, m_BearingOffsetMeasurementType);
+
+   OnBearingOffsetMeasureChanged();
 
    return bResult;
 }

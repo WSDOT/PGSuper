@@ -28,10 +28,12 @@
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\DocumentType.h>
 
 #include <Material\PsStrand.h>
 
 #include <PgsExt\BridgeDescription2.h>
+#include <PgsExt\Helpers.h>
 
 #include <Lrfd\RebarPool.h>
 
@@ -47,12 +49,12 @@ CLASS
 ****************************************************************************/
 
 
-void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
-void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx);
+void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
+void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -79,18 +81,20 @@ rptChapter* CGirderComparisonChapterBuilder::Build(CReportSpecification* pRptSpe
    GroupIndexType grpIdx = pSpec->GetSpan();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bPGSuper = pDocType->IsPGSuperDocument();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   girders(pChapter,pBroker,pDisplayUnits,grpIdx);
-   if (prestressing(pChapter,pBroker,pDisplayUnits,grpIdx))
+   girders(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
+   if (prestressing(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper))
    {
-      debonding(pChapter,pBroker,pDisplayUnits,grpIdx);
+      debonding(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
    }
 
-   material(pChapter,pBroker,pDisplayUnits,grpIdx);
-   stirrups(pChapter,pBroker,pDisplayUnits,grpIdx);
-   handling(pChapter,pBroker,pDisplayUnits,grpIdx);
+   material(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
+   stirrups(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
+   handling(pChapter,pBroker,pDisplayUnits,grpIdx,bPGSuper);
 
    return pChapter;
 }
@@ -119,11 +123,18 @@ CChapterBuilder* CGirderComparisonChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Girder Types for Span ")<< LABEL_GROUP(grpIdx) << rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Girder Types for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   {
+      *pHead << _T("Girder Types for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -155,7 +166,7 @@ void girders(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUni
 }
 
 // return true if debonding exists
-bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    bool was_debonding = false;
 
@@ -172,7 +183,14 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
 
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Prestressing Strands for Span ")<< LABEL_GROUP(grpIdx) <<rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Prestressing Strands for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   {
+      *pHead << _T("Prestressing Strands for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
 
 
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
@@ -182,58 +200,68 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(bTempStrands ? 12 : 9,_T(""));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(bTempStrands ? 13 : 10,_T(""));
    *pPara << p_table << rptNewLine;
 
    p_table->SetNumberOfHeaderRows(3);
 
-   p_table->SetRowSpan(0,0,3);
-   (*p_table)(0,0) << _T("Girder");
+   ColumnIndexType col = 0;
+   p_table->SetRowSpan(0,col,3);
+   (*p_table)(0,col++) << _T("Girder");
 
-   p_table->SetColumnSpan(0,1,8);
-   (*p_table)(0,1) << _T("Permanent Strands");
+   p_table->SetRowSpan(0, col, 3);
+   (*p_table)(0, col++) << _T("Strand Definition");
 
-   p_table->SetRowSpan(1,1,2);
-   (*p_table)(1,1) << _T("Material");
+   p_table->SetColumnSpan(0, col, 8);
+   (*p_table)(0, col) << _T("Permanent Strands");
 
-   p_table->SetColumnSpan(1,2,2);
-   (*p_table)(1,2) << _T("Straight");
-   (*p_table)(2,2) << _T("#");
-   (*p_table)(2,3) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+   p_table->SetRowSpan(1, col, 2);
+   (*p_table)(1, col++) << _T("Material");
 
-   p_table->SetColumnSpan(1,4,5);
-   (*p_table)(1,4) << _T("Adjustable Strands");
-   (*p_table)(2,4) << _T("Type");
-   (*p_table)(2,5) << _T("#");
-   (*p_table)(2,6) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
-   (*p_table)(2,7) << COLHDR(_T("Girder End")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*p_table)(2,8)<< COLHDR(_T("Harping Pt")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   p_table->SetColumnSpan(1, col, 2);
+   (*p_table)(1, col) << _T("Straight");
+   (*p_table)(2, col++) << _T("#");
+   (*p_table)(2, col++) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+
+   p_table->SetColumnSpan(1, col, 5);
+   (*p_table)(1, col) << _T("Adjustable Strands");
+   (*p_table)(2, col++) << _T("Type");
+   (*p_table)(2, col++) << _T("#");
+   (*p_table)(2, col++) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+   (*p_table)(2, col++) << COLHDR(_T("Girder End")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*p_table)(2, col++)<< COLHDR(_T("Harping Pt")<<rptNewLine<<_T("Offset"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    if ( bTempStrands )
    {
-      p_table->SetColumnSpan(0,9,3);
-      (*p_table)(0,9) << _T("Temporary Strands");
+      p_table->SetColumnSpan(0, col, 3);
+      (*p_table)(0, col) << _T("Temporary Strands");
 
-      p_table->SetRowSpan(1,9,2);
-      (*p_table)(1,9) << _T("Material");
+      p_table->SetRowSpan(1, col, 2);
+      (*p_table)(1, col++) << _T("Material");
 
-      p_table->SetRowSpan(1,10,2);
-      (*p_table)(1,10) << _T("#");
+      p_table->SetRowSpan(1, col, 2);
+      (*p_table)(1, col++) << _T("#");
 
-      p_table->SetRowSpan(1,11,2);
-      (*p_table)(1,11) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
+      p_table->SetRowSpan(1, col, 2);
+      (*p_table)(1, col++) << COLHDR(Sub2(_T("P"),_T("jack")),rptForceUnitTag,pDisplayUnits->GetGeneralForceUnit());
    }
 
    GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
+      col = 0;
+
       CSegmentKey segmentKey(grpIdx,gdrIdx,0);
 
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-      ColumnIndexType col = 0;
       (*p_table)(row,col++) << LABEL_GIRDER(gdrIdx);
+
+      auto adjustableStrandType = pStrands->GetAdjustableStrandType();
+      auto strandDefinitionType = pStrands->GetStrandDefinitionType();
+      (*p_table)(row, col++) << GetStrandDefinitionType(strandDefinitionType, adjustableStrandType);
+
       (*p_table)(row,col++) << pStrands->GetStrandMaterial(pgsTypes::Straight)->GetName();
 
       (*p_table)(row,col) << pStrands->GetStrandCount(pgsTypes::Straight);
@@ -262,16 +290,25 @@ bool prestressing(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDispl
       (*p_table)(row,col++) << pStrands->GetStrandCount(pgsTypes::Harped);
       (*p_table)(row,col++) << force.SetValue(pStrands->GetPjack(pgsTypes::Harped));
 
-      ConfigStrandFillVector confvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
+      if (strandDefinitionType == pgsTypes::sdtTotal || strandDefinitionType == pgsTypes::sdtStraightHarped || strandDefinitionType == pgsTypes::sdtDirectSelection)
+      {
+         ConfigStrandFillVector confvec = pStrandGeometry->ComputeStrandFill(segmentKey, pgsTypes::Harped, pStrands->GetStrandCount(pgsTypes::Harped));
 
-      // convert to absolute adjustment
-      Float64 adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, pgsTypes::metStart, confvec, 
-                                                                           pStrands->GetHarpStrandOffsetMeasurementAtEnd(), pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
-      (*p_table)(row,col++) << dim.SetValue(adjustment);
+         // convert to absolute adjustment
+         Float64 adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetEnd(segmentKey, pgsTypes::metStart, confvec,
+            pStrands->GetHarpStrandOffsetMeasurementAtEnd(), pStrands->GetHarpStrandOffsetAtEnd(pgsTypes::metStart));
+         (*p_table)(row, col++) << dim.SetValue(adjustment);
 
-      adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, pgsTypes::metStart, confvec, 
-                                                                  pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint(), pStrands->GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd));
-      (*p_table)(row,col++) << dim.SetValue(adjustment);
+         adjustment = pStrandGeometry->ComputeAbsoluteHarpedOffsetHp(segmentKey, pgsTypes::metStart, confvec,
+            pStrands->GetHarpStrandOffsetMeasurementAtHarpPoint(), pStrands->GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd));
+         (*p_table)(row, col++) << dim.SetValue(adjustment);
+      }
+      else
+      {
+         ATLASSERT(strandDefinitionType == pgsTypes::sdtDirectRowInput || strandDefinitionType == pgsTypes::sdtDirectStrandInput);
+         (*p_table)(row, col++) << _T("");
+         (*p_table)(row, col++) << _T("");
+      }
 
       if ( bTempStrands )
       {
@@ -449,7 +486,7 @@ DebondComparison::DebondStatus DebondComparison::Init(SpanIndexType span, Girder
       return IsDebonding;
 }
 
-void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
@@ -468,7 +505,15 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
 
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Debonding of Prestressing Strands for Span ")<< LABEL_GROUP(grpIdx) <<rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Debonding of Prestressing Strands for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   {
+      *pHead << _T("Debonding of Prestressing Strands for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
+
 
    if (status==DebondComparison::NonSymmetricDebonding)
    {
@@ -566,7 +611,7 @@ void debonding(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayU
 
 }
 
-void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -575,7 +620,14 @@ void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Girder Concrete for Span ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Girder Concrete for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   {
+      *pHead << _T("Girder Concrete for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,         pDisplayUnits->GetStressUnit(),        false );
@@ -612,7 +664,7 @@ void material(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
 }
 
-void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -630,13 +682,20 @@ void stirrups(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara <<bold(ON)<<_T("Span ") << LABEL_GROUP(grpIdx) << _T(", Girder ")<<LABEL_GIRDER(gdrIdx)<<bold(OFF);
+      if (bPGSuper)
+      {
+         *pPara << bold(ON) << _T("Span ") << LABEL_SPAN(grpIdx) << _T(", Girder ") << LABEL_GIRDER(gdrIdx) << bold(OFF);
+      }
+      else
+      {
+         *pPara << bold(ON) << _T("Group ") << LABEL_GROUP(grpIdx) << _T(", Girder ") << LABEL_GIRDER(gdrIdx) << bold(OFF);
+      }
       
       stirr_table.Build(pChapter,pBroker,thisSegmentKey,pDisplayUnits);
    }
 }
 
-void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx)
+void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,GroupIndexType grpIdx,bool bPGSuper)
 {
    GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
    GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
@@ -646,7 +705,15 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
 
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter<<pHead;
-   *pHead<<_T("Lifting and Shipping Locations for Span ")<< LABEL_GROUP(grpIdx)<<rptNewLine;
+   if (bPGSuper)
+   {
+      *pHead << _T("Lifting and Shipping Locations for Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
+   }
+   else
+   if (bPGSuper)
+   {
+      *pHead << _T("Lifting and Shipping Locations for Group ") << LABEL_GROUP(grpIdx) << rptNewLine;
+   }
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false );
 
@@ -678,7 +745,7 @@ void handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
       CSegmentKey segmentKey(grpIdx,gdrIdx,0);
-#pragma Reminder("UPDATE: assuming precast girder")
+#pragma Reminder("UPDATE: assuming precast girder bridge")
 
       col = 0;
 

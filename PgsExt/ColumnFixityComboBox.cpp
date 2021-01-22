@@ -45,7 +45,7 @@ void CColumnFixityComboBox::SetFixityTypes(UINT fixity)
    UpdateFixity();
 }
 
-int CColumnFixityComboBox::AddFixity(pgsTypes::ColumnFixityType fixityType)
+int CColumnFixityComboBox::AddFixity(pgsTypes::ColumnLongitudinalBaseFixityType fixityType)
 {
    int idx = AddString( fixityType == pgsTypes::cftFixed ? _T("Fixed") : _T("Pinned") );
    SetItemData(idx,(DWORD)fixityType);
@@ -81,7 +81,7 @@ void CColumnFixityComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   pgsTypes::ColumnFixityType fixityType = (pgsTypes::ColumnFixityType)(lpDrawItemStruct->itemData);
+   pgsTypes::ColumnLongitudinalBaseFixityType fixityType = (pgsTypes::ColumnLongitudinalBaseFixityType)(lpDrawItemStruct->itemData);
    CString strText = (fixityType == pgsTypes::cftFixed ? _T("Fixed") : _T("Pinned"));
 
    CDC dc;

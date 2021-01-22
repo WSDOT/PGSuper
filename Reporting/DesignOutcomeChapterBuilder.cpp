@@ -604,7 +604,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       row++;
 
       GET_IFACE2(pBroker,IBridge,pBridge);
-      if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset != sodNoSlabOffsetDesign) )
+      if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset != sodPreserveHaunch) )
       {
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -634,7 +634,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
             row++;
          }
 
-         if ( options.doDesignSlabOffset==sodSlabOffsetandAssumedExcessCamberDesign && pSpec->IsAssumedExcessCamberForLoad() )
+         if ( options.doDesignSlabOffset==sodDesignHaunch && pSpec->IsAssumedExcessCamberForLoad() )
          {
             (*pTable)(row,0) << _T("Assumed Excess Camber");
             (*pTable)(row,1) << length.SetValue( pArtifact->GetAssumedExcessCamber() );
@@ -846,7 +846,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
    if ( outcome == pgsSegmentDesignArtifact::Success)
    {
       *pParagraph << rptNewLine << color(Green)
-                  << _T("The design for Span ") << LABEL_GROUP(segmentKey.groupIndex)
+                  << _T("The design for Span ") << LABEL_SPAN(segmentKey.groupIndex)
                   << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
                   << _T(" was successful.") 
                   << color(Black)
@@ -857,7 +857,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
             outcome == pgsSegmentDesignArtifact::SuccessButLongitudinalBarsNeeded4FlexuralTensionHauling)
    {
       *pParagraph << rptNewLine << color(OrangeRed)
-                  << _T("The design for Span ") << LABEL_GROUP(segmentKey.groupIndex)
+                  << _T("The design for Span ") << LABEL_SPAN(segmentKey.groupIndex)
                   << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
                   << _T(" failed.")
                   << color(Black);
@@ -900,7 +900,7 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
    *pChapter << pParagraph;
 
    *pParagraph << rptNewLine << color(Red)
-               << _T("The design attempt for Span ") << LABEL_GROUP(segmentKey.groupIndex)
+               << _T("The design attempt for Span ") << LABEL_SPAN(segmentKey.groupIndex)
                << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex)
                << _T(" failed.") 
                << color(Black)
@@ -982,6 +982,10 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
 
       case pgsSegmentDesignArtifact::NoStrandDevelopmentLengthForLongReinfShear:
          *pParagraph << _T("Additional strands are required to meet longitudinal reinforcement for shear requirements. However, the face of support is at the end of the girder, so there is no room for prestress development. Consider changing the connection to allow for development.") << rptNewLine;
+         break;
+
+      case pgsSegmentDesignArtifact::RebarForceExceedsPretensionForceForLongReinfShear:
+         *pParagraph << _T("Additional longitudinal mild steel reinforcement bars are required to meet longitudinal reinforcement for shear requirements. The force in the reinforcement AsFy exceeds the pretension force ApsFps and additional reinforcement is required. Consider using the design option that adds strands instead of rebar.") << rptNewLine;
          break;
 
       case pgsSegmentDesignArtifact::TooManyBarsForLongReinfShear:
@@ -1251,7 +1255,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
       row = 0;
 
-      (*pTable)(row++,col) << _T("Span ") << LABEL_GROUP(girderKey.groupIndex) <<rptNewLine<<_T("Girder ")<<LABEL_GIRDER(girderKey.girderIndex);
+      (*pTable)(row++,col) << _T("Span ") << LABEL_SPAN(girderKey.groupIndex) <<rptNewLine<<_T("Girder ")<<LABEL_GIRDER(girderKey.girderIndex);
 
       const pgsGirderDesignArtifact* pGirderDesignArtifact = pArtifacts[idx++];
       const pgsSegmentDesignArtifact* pArtifact = pGirderDesignArtifact->GetSegmentDesignArtifact(segIdx);
@@ -1419,13 +1423,13 @@ void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexTyp
          didHauling = true;
       }
 
-      if (options.doDesignSlabOffset != sodNoSlabOffsetDesign)
+      if (options.doDesignSlabOffset != sodPreserveHaunch)
       {
          didSlabOffset = true;
 
          GET_IFACE2(pBroker,ISpecification,pSpec);
 
-         if (options.doDesignSlabOffset == sodSlabOffsetandAssumedExcessCamberDesign && pSpec->IsAssumedExcessCamberInputEnabled())
+         if (options.doDesignSlabOffset == sodDesignHaunch && pSpec->IsAssumedExcessCamberInputEnabled())
          {
             didAssumedExcessCamber = true;
          }

@@ -62,7 +62,7 @@ void DDV_DuctGeometry(CDataExchange* pDX,int nIDC,CParabolicDuctGeometry& ductGe
          if ( offsetLow <= 0.0 )
          {
             CString strMsg;
-            strMsg.Format(_T("The low point offset in Span %d must be greater than zero."),LABEL_SPAN(spanIdx));
+            strMsg.Format(_T("The low point offset in Span %s must be greater than zero."),LABEL_SPAN(spanIdx));
             AfxMessageBox(strMsg,MB_ICONEXCLAMATION | MB_OK);
             pDX->Fail();
          }
@@ -78,7 +78,7 @@ void DDV_DuctGeometry(CDataExchange* pDX,int nIDC,CParabolicDuctGeometry& ductGe
             if ( highOffset <= 0.0 )
             {
                CString strMsg;
-               strMsg.Format(_T("The high point offset at Pier %d must be greater than zero."),LABEL_PIER(pierIdx));
+               strMsg.Format(_T("The high point offset at Pier %s must be greater than zero."),LABEL_PIER(pierIdx));
                AfxMessageBox(strMsg,MB_ICONEXCLAMATION | MB_OK);
                pDX->Fail();
             }
@@ -164,6 +164,7 @@ BOOL CParabolicDuctDlg::OnInitDialog()
    m_DrawTendons.SubclassDlgItem(IDC_TENDONS, this);
    m_DrawTendons.CustomInit(m_pGirderlineDlg->GetGirder()->GetGirderKey(), m_pGirderlineDlg->GetGirder(), &m_PTData);
    m_DrawTendons.SetDuct(m_DuctIdx);
+   m_DrawTendons.DrawAllDucts(true);
    m_DrawTendons.SetMapMode(m_pGirderlineDlg->GetTendonControlMapMode());
 
    FillPierLists();
@@ -202,14 +203,7 @@ void CParabolicDuctDlg::FillPierLists()
    for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
    {
       CString strText;
-      if (m_pGirderlineDlg->GetGirder()->GetGirderGroup()->GetBridgeDescription()->GetPier(pierIdx)->IsAbutment())
-      {
-         strText.Format(_T("Abut %d"), LABEL_PIER(pierIdx));
-      }
-      else
-      {
-         strText.Format(_T("Pier %d"), LABEL_PIER(pierIdx));
-      }
+      strText.Format(_T("%s"), LABEL_PIER_EX(m_pGirderlineDlg->GetGirder()->GetGirderGroup()->GetBridgeDescription()->GetPier(pierIdx)->IsAbutment(), pierIdx));
 
       if (pierIdx < ductEndPierIdx)
       {

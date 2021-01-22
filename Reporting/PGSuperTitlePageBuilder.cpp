@@ -145,6 +145,17 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
 
+   // write location
+   std::_tstring strloc = pRptSpec->GetReportContextString();
+   if (!strloc.empty())
+   {
+      *pPara << _T("For ") << strloc << rptNewLine;
+   }
+   else
+   {
+      *pPara << rptNewLine;
+   }
+
    // Determine if the report spec has span/girder information
    std::shared_ptr<CSpanReportSpecification>       pSpanRptSpec       = std::dynamic_pointer_cast<CSpanReportSpecification,CReportSpecification>(pRptSpec);
    std::shared_ptr<CGirderReportSpecification>     pGirderRptSpec     = std::dynamic_pointer_cast<CGirderReportSpecification,CReportSpecification>(pRptSpec);
@@ -156,33 +167,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
    if ( pGirderRptSpec != nullptr )
    {
       girderKey = pGirderRptSpec->GetGirderKey();
-      GroupIndexType grpIdx  = girderKey.groupIndex;
-      GirderIndexType gdrIdx = girderKey.girderIndex;
-
-      if ( grpIdx != INVALID_INDEX && gdrIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine;
-         *pPara << _T("Span ") << LABEL_SPAN(grpIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-      }
-      else if( grpIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine;
-         *pPara << _T("Span ") << LABEL_SPAN(grpIdx) << rptNewLine;
-      }
-      else if ( gdrIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine;
-         *pPara << _T("Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
-      }
    }
    else if ( pSpanRptSpec != nullptr )
    {
-      SpanIndexType spanIdx = pSpanRptSpec->GetSpan();
-      if ( spanIdx != INVALID_INDEX )
-      {
-         *pPara << _T("For") << rptNewLine;
-         *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
-      }
    }
    else if ( pGirderLineRptSpec != nullptr )
    {
@@ -190,8 +177,6 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
       GirderIndexType gdrIdx = pGirderLineRptSpec->GetGirderIndex();
       girderKey.girderIndex = gdrIdx;
       ATLASSERT(gdrIdx != INVALID_INDEX);
-      *pPara << _T("For") << rptNewLine;
-      *pPara << _T("Girder Line ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
    }
    else
    {
@@ -358,12 +343,13 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
    {
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pTitlePage << p;
-      *p << _T("Beams Used in Girderline Analysis Models") << rptNewLine;
+      *p << _T("Beams Used in Girder Line Analysis Models") << rptNewLine;
 
       p = new rptParagraph();
       *pTitlePage << p;
-      *p << italic(ON) << _T("This bridge is described with a different number of girders in each span.") <<  italic(OFF) << _T(" Plane frame analysis is performed in accordance with LRFD 4.6.2. ");
-      *p << _T("The structural analysis model for Girderline ") << LABEL_GIRDER(girderKey.girderIndex) << _T(" consists of ");
+      *p << Bold(_T("This bridge is described with a different number of girders in each span.")) << rptNewLine;
+      *p << _T("Plane frame analysis is performed in accordance with LRFD 4.6.2. ") << rptNewLine;
+      *p << _T("The structural analysis model for Girder Line ") << LABEL_GIRDER(girderKey.girderIndex) << _T(" consists of ");
 
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys);
@@ -379,7 +365,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
          }
       }
 
-      *p << _T(". Note that the pier cap is assumed to be torsionally rigid for transfer of continuous moment. Refer to the Structural Analysis Models section in the Help Technical Guide for more guidance.") << rptNewLine;
+      *p << _T(".") << rptNewLine;
+      *p << _T("The pier cap is assumed to be torsionally rigid for transfer of continuous moment.") << rptNewLine;
+      *p << _T("See the Structural Analysis Models and Reactions topics in the Technical Guide for more information.") << rptNewLine;
    }
 
 
@@ -431,7 +419,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
       (*pTable)(row++, 1) << _T("Point of prestress transfer");
 
       (*pTable)(row, 0) << _T("FoS");
-      (*pTable)(row++, 1) << _T("Face of Support");
+      (*pTable)(row++, 1) << _T("Face of Support in final bridge configuration");
 
       (*pTable)(row, 0) << _T("ST");
       (*pTable)(row++, 1) << _T("Section Transitions");
@@ -524,7 +512,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
             (*pTable)(0,1) << _T("Description");
 
             row = 1;
-            CString strSeverityType[] = { _T("Info"), _T("Warning"), _T("Error") };
+            CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
             for ( CollectionIndexType i = 0; i < nItems; i++ )
             {
                CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
@@ -532,6 +520,12 @@ rptChapter* CPGSuperTitlePageBuilder::Build(std::shared_ptr<CReportSpecification
                if ( DoPrintStatusItem(pItem, thisGirderKey, nSegments) )
                {
                   eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
+
+                  // Set text and cell background
+                  rptRiStyle::FontColor colors[] = {rptRiStyle::LightGreen, rptRiStyle::Yellow, rptRiStyle::Red };
+                  rptRiStyle::FontColor color = colors[severity];
+                  (*pTable)(row, 0) << new rptRcBgColor(color);
+                  (*pTable)(row, 0).SetFillBackGroundColor(color);
 
                   (*pTable)(row,0) << strSeverityType[severity];
                   (*pTable)(row++,1) << pItem->GetDescription();

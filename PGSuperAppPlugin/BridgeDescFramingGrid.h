@@ -101,6 +101,10 @@ public:
    std::vector<txnTransaction*> GetSpanTransactions(SpanIndexType spanIdx);
    std::vector<txnTransaction*> GetTemporarySupportTransactions(SupportIndexType tsIdx);
 
+   // Tricky workaround here to avoid cell validation if user hits the dailog Cancel button or "X". Value
+   // below will be set in OnKillFocus (for Cancel button) and CBridgeDescFramingPage::OnCancel() (for "X" menu item)
+   void SetDoNotValidateCells();
+
 private:
    void InsertRow();
 
@@ -137,6 +141,12 @@ private:
    CComPtr<IStation> m_objStation;
    CComPtr<IAngle> m_objAngle;
    CComPtr<IDirection> m_objDirection;
+
+   bool m_bDoValidate;
+
+public:
+   afx_msg void OnKillFocus(CWnd* pNewWnd);
+
 };
 
 /////////////////////////////////////////////////////////////////////////////

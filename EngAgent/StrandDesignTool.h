@@ -71,19 +71,9 @@ typedef Int32 DebondLevelType; // NEED this to be a signed type!
 static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
 {
    std::_tostringstream os;
-   for (std::vector<DebondLevelType>::const_iterator it=rvec.begin(); it!=rvec.end(); it++)
-   {
-      os<<*it<<", ";
-   }
-
-   std::_tstring str(os.str());
-   DebondLevelType n = (DebondLevelType)str.size();
-   if (0 < n)
-   {
-      str.erase(n-2,2); // get rid of trailing ", "
-   }
-
-   return str;
+   std::for_each(std::cbegin(rvec), std::prev(std::cend(rvec)), [&os](const auto& value) {os << value << _T(", "); });
+   os << rvec.back();
+   return os.str();
 }
 
 // FORWARD DECLARATIONS
@@ -255,11 +245,11 @@ public:
 
    // Given an amount of stress demand, return the minimum debond level to relieve the stress
    void GetDebondLevelForTopTension(const StressDemand& demand, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded, IntervalIndexType interval, Float64 tensDemand, Float64 outboardDistance,
-                                    Float64 Hg, Float64 Yb, Float64 Ag, Float64 St,
+                                    Float64 Hg, Float64 Yb,  Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy,
                                     DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const;
 
    void GetDebondLevelForBottomCompression(const StressDemand& demand, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded, IntervalIndexType interval, Float64 tensDemand, Float64 outboardDistance,
-                                           Float64 Hg, Float64 Yb, Float64 Ag, Float64 Sb,
+                                           Float64 Hg, Float64 Yb, Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy,
                                            DebondLevelType* pOutboardLevel, DebondLevelType* pInboardLevel) const;
 
    // Debonding levels are integer values used to quantify the amount of strands debonded at
@@ -430,11 +420,11 @@ private:
    Float64 m_HgEnd;
 
    // values cached for performance
-   Float64 m_Aps[3]; // area of straight, harped, and temporary strand (use pgsTypes::StrandType enum)
+   std::array<Float64, 3> m_Aps; // area of straight, harped, and temporary strand (use pgsTypes::StrandType enum)
    Float64 m_SegmentLength;
    Float64 m_SpanLength;
    Float64 m_StartConnectionLength;
-   Float64 m_XFerLength[3];
+   std::array<Float64, 3> m_XFerLength;
 
    // mid-zone locations
    Float64 m_lftMz;
@@ -675,7 +665,9 @@ private:
    ConcreteStrengthController m_FciControl;
    ConcreteStrengthController m_FcControl;
 
+   Float64 m_MinFci;
    Float64 m_MaxFci;
+   Float64 m_MinFc;
    Float64 m_MaxFc;
 
    // store whether release strength required additional rebar
@@ -738,7 +730,8 @@ private:
 
       void Init(Float64 Hg,IPoint2dCollection* strandLocations);
       // Stress relief from debonding at this level
-      Float64 ComputeReliefStress(Float64 pePerStrandFullyBonded, Float64 pePerStrandDebonded, StrandIndexType nperm, StrandIndexType ntemp, Float64 cgtot,Float64 Hg,Float64 Yb, Float64 Ag, Float64 S, SHARED_LOGFILE LOGFILE) const;
+      Float64 ComputeReliefStress(Float64 pePerStrandFullyBonded, Float64 pePerStrandDebonded, StrandIndexType nperm, StrandIndexType ntemp, Float64 cgtot, Float64 Hg, 
+                                  Float64 Yb, Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy, SHARED_LOGFILE LOGFILE) const;
    };
 
    typedef std::vector<DebondLevel>                DebondLevelCollection;
@@ -750,9 +743,12 @@ private:
    // debond section spacings
    SectionIndexType m_NumDebondSections;
    Float64 m_DebondSectionLength;
+   
    // limits at sections
-   Float64 m_MaxPercentDebondSection;
+   StrandIndexType m_MaxDebondSection10orLess;
    StrandIndexType   m_MaxDebondSection;
+   bool m_bCheckMaxFraAtSection;
+   Float64 m_MaxPercentDebondSection;
 
    // maximum debond levels due to physical contrants at any section
    std::vector<DebondLevelType> m_MaxPhysicalDebondLevels;

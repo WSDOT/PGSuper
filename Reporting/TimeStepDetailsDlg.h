@@ -49,7 +49,7 @@ protected:
 
 private:
    IBroker* m_pBroker;
-   std::shared_ptr<CTimeStepDetailsReportSpecification> m_pRptSpec;
+   std::shared_ptr<CTimeStepDetailsReportSpecification> m_pTsRptSpec;
 
    pgsPointOfInterest m_InitialPOI;
    CGirderKey m_GirderKey;
@@ -65,7 +65,7 @@ private:
    void UpdateSliderLabel();
    void UpdatePOI();
 
-   void InitFromRptSpec();
+   void InitFromTimeStepRptSpec();
 
 public:
    virtual BOOL OnInitDialog();

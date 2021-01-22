@@ -540,6 +540,13 @@ interface ISpecification : IUnknown
 
    // Rounding method for required slab offset value
    virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const = 0;
+
+   virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const = 0;
+
+   // Method and applicabiity for Principal Web stress check are based on several requirements
+   typedef enum PrincipalWebStressCheckType { pwcNotApplicable, pwcAASHTOMethod, pwcNCHRPMethod, pwcNCHRPTimeStepMethod } PrincipalWebStressCheckType;
+
+   virtual PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const = 0;
 };
 
 /*****************************************************************************
@@ -628,7 +635,7 @@ interface ILibrary : IUnknown
    virtual HaulTruckLibrary*       GetHaulTruckLibrary() = 0;
 
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const = 0;
-   virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const = 0;
+   virtual void GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,sysTime& time) const = 0;
 
    virtual const RatingLibrary* GetRatingLibrary() const = 0;
    virtual RatingLibrary* GetRatingLibrary() = 0;
@@ -1035,6 +1042,8 @@ interface IBridgeDescription : IUnknown
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders) = 0;
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::BoundaryConditionType connectionType) = 0;
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType,EventIndexType castClosureEventIdx) = 0;
+   virtual void SetBoundaryCondition(SupportIndexType tsIdx, pgsTypes::TemporarySupportType supportType) = 0;
+   virtual void SetBoundaryCondition(SupportIndexType tsIdx, pgsTypes::TempSupportSegmentConnectionType connectionType, EventIndexType castClosureEventIdx) = 0;
 
    virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan) = 0;
    virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx) = 0;

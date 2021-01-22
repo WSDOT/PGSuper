@@ -335,7 +335,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       MoveAheadGroup();
    
       CString strTxt;
-      strTxt.Format(_T("Ahead side of %s %d = Start of Span %d"), IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Ahead]->GetIndex()));
+      strTxt.Format(_T("Ahead side of %s = Start of Span %s"), LABEL_PIER_EX(IsAbutment(),pParent->m_pPier->GetIndex()), LABEL_SPAN(pParent->m_pSpan[pgsTypes::Ahead]->GetIndex()));
       GetDlgItem(IDC_AHEADGROUP)->SetWindowText(strTxt);
 
       // Don't need the copy button
@@ -347,7 +347,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       HideAheadGroup();
 
       CString strTxt;
-      strTxt.Format(_T("Back side of %s %d = End of Span %d"),IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Back]->GetIndex()));
+      strTxt.Format(_T("Back side of %s = End of Span %s"), LABEL_PIER_EX(IsAbutment(), pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Back]->GetIndex()));
       GetDlgItem(IDC_BACKGROUP)->SetWindowText(strTxt);
 
       // Don't need the copy button
@@ -363,10 +363,10 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
       ATLASSERT(m_SpacingTypeMode == Both);
 
       CString strTxt;
-      strTxt.Format(_T("Back side of %s %d = End of Span %d"),IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Back]->GetIndex()));
+      strTxt.Format(_T("Back side of %s = End of Span %s"),LABEL_PIER_EX(IsAbutment(), pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Back]->GetIndex()));
       GetDlgItem(IDC_BACKGROUP)->SetWindowText(strTxt);
 
-      strTxt.Format(_T("Ahead side of %s %d = Start of Span %d"),IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Ahead]->GetIndex()));
+      strTxt.Format(_T("Ahead side of %s = Start of Span %s"),LABEL_PIER_EX(IsAbutment(),pParent->m_pPier->GetIndex()),LABEL_SPAN(pParent->m_pSpan[pgsTypes::Ahead]->GetIndex()));
       GetDlgItem(IDC_AHEADGROUP)->SetWindowText(strTxt);
    }
 
@@ -500,6 +500,8 @@ void CPierGirderSpacingPage::FillGirderSpacingMeasurementComboBox(int nIDC, Conn
    item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem);
    pSpacingType->SetItemData(idx,item_data);
 
+   // if the bearing offset is measured along the CL girder, the girder spacing cannot be measured at the CL bearing
+   // this is because there would not be a unique CL bearing line common to all girders if the girders are not parallel to one another
    if (bearingMeasure!=ConnectionLibraryEntry::AlongGirder)
    {
       idx = pSpacingType->AddString(_T("Measured at and along the CL bearing"));

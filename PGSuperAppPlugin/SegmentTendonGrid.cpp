@@ -406,6 +406,8 @@ void CSegmentTendonGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
       // Pjack check box
       OnCalcPjack(nRow);
    }
+
+   __super::OnClickedButtonRowCol(nRow, nCol);
 }
 
 void CSegmentTendonGrid::OnCalcPjack(ROWCOL nRow)
@@ -672,8 +674,6 @@ void CSegmentTendonGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
       }
    }
 
-   ResizeColWidthsToFit(CGXRange(0, 0, GetRowCount(), GetColCount()));
-
    CGirderSegmentTendonsPage* pParent = (CGirderSegmentTendonsPage*)GetParent();
    ASSERT(pParent->IsKindOf(RUNTIME_CLASS(CGirderSegmentTendonsPage)));
 
@@ -684,6 +684,8 @@ void CSegmentTendonGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
 
 BOOL CSegmentTendonGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
 {
+   ResizeColWidthsToFit(CGXRange(0, 0, GetRowCount(), GetColCount()));
+
    CGirderSegmentTendonsPage* pParent = (CGirderSegmentTendonsPage*)GetParent();
    ASSERT(pParent->IsKindOf(RUNTIME_CLASS(CGirderSegmentTendonsPage)));
 

@@ -23,11 +23,12 @@
 #include "StdAfx.h"
 #include <Reporting\OptimizedFabricationChapterBuilder.h>
 
-
 #include <IFace\Constructability.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+
+#include <PgsExt\SplicedGirderData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -103,6 +104,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    }
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -137,6 +139,11 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
          continue;
       }
 
+      if (pBridgeDesc->GetPrecastSegmentData(segmentKey)->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
+      {
+         *pPara << _T("Fabrication optimization analysis cannot be performed when strands are defined with the Individual Strand method.") << rptNewLine;
+         continue;
+      }
 
       FABRICATIONOPTIMIZATIONDETAILS details;
       pFabOp->GetFabricationOptimizationDetails(segmentKey,&details);
@@ -155,8 +162,8 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      Float64 fci_form_stripping_without_tts = (bUSUnits ? CeilOff(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                                        : CeilOff(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(6,unitMeasure::MPa)) );
+      Float64 fci_form_stripping_without_tts = (bUSUnits ? CeilOffTol(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
+                                                        : CeilOffTol(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(6,unitMeasure::MPa)) );
       
       if ( 0 <  pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
       {
@@ -205,14 +212,14 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
             *pPara << _T("Jacking Force, ") << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(details.Pjack) << rptNewLine;
 
             Float64 fci[4];
-            fci[NO_TTS]          = (bUSUnits ? CeilOff(details.Fci[NO_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOff(details.Fci[NO_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
-            fci[PS_TTS]          = (bUSUnits ? CeilOff(details.Fci[PS_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOff(details.Fci[PS_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
-            fci[PT_TTS_REQUIRED] = (bUSUnits ? CeilOff(details.Fci[PT_TTS_REQUIRED], ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOff(details.Fci[PT_TTS_REQUIRED], ::ConvertToSysUnits(6,  unitMeasure::MPa)));
-            fci[PT_TTS_OPTIONAL] = (bUSUnits ? CeilOff(details.Fci[PT_TTS_OPTIONAL], ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOff(details.Fci[PT_TTS_OPTIONAL], ::ConvertToSysUnits(6,  unitMeasure::MPa)));
+            fci[NO_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[NO_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
+                                             : CeilOffTol(details.Fci[NO_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
+            fci[PS_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[PS_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
+                                             : CeilOffTol(details.Fci[PS_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
+            fci[PT_TTS_REQUIRED] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_REQUIRED], ::ConvertToSysUnits(100,unitMeasure::PSI)) 
+                                             : CeilOffTol(details.Fci[PT_TTS_REQUIRED], ::ConvertToSysUnits(6,  unitMeasure::MPa)));
+            fci[PT_TTS_OPTIONAL] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_OPTIONAL], ::ConvertToSysUnits(100,unitMeasure::PSI)) 
+                                             : CeilOffTol(details.Fci[PT_TTS_OPTIONAL], ::ConvertToSysUnits(6,  unitMeasure::MPa)));
             
 
             pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());

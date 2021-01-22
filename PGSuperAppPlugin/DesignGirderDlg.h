@@ -41,16 +41,15 @@ class CDesignGirderDlg : public CDialog
 {
 // Construction
 public:
-	CDesignGirderDlg(GroupIndexType grpIdx,GirderIndexType gdrIdx, bool enableA, arSlabOffsetDesignType designA, IBroker* pBroker, CWnd* pParent = nullptr);   // standard constructor
+	CDesignGirderDlg(const CGirderKey& girderKey, IBroker* pBroker, arSlabOffsetDesignType haunchDesignType, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDesignGirderDlg)
 	enum { IDD = IDD_DESIGN_GIRDER };
-   GroupIndexType m_Group;
-	GirderIndexType m_Girder;
-	BOOL	m_DesignForFlexure;
-	BOOL	m_DesignForShear;
-	//}}AFX_DATA
+   CGirderKey m_GirderKey;
+   //}}AFX_DATA
+
+   static void LoadSettings(bool& bDesignFlexure, arSlabOffsetDesignType& haunchDesignType, arConcreteDesignType& concreteDesignType, arShearDesignType& shearDesignType);
 
 
 // Overrides
@@ -62,17 +61,26 @@ public:
 
 // return design options
 public:
-   arSlabOffsetDesignType m_DesignSlabOffset;
    std::vector<CGirderKey> m_GirderKeys;
 
 // Implementation
 private:
    IBroker* m_pBroker;
 
-   bool m_EnableA; // if true, we can ask if user wants A design
+   arSlabOffsetDesignType m_HaunchDesignType;
+   BOOL m_bEnableHaunchDesign; // if true the haunch design option should be enabled
 
    void UpdateGirderComboBox(SpanIndexType spanIdx);
-   void UpdateADimCtrl();
+   void UpdateDesignHaunchCtrl();
+   void UpdateConcreteDesignCtrl();
+
+   void SaveSettings();
+
+   BOOL DesignForFlexure();
+   BOOL DesignHaunch();
+   BOOL PreserveConcreteStrength();
+   BOOL DesignForShear();
+   BOOL DesignWithCurrentStirrups();
 
 protected:
 	// Generated message map functions
@@ -81,17 +89,16 @@ protected:
 	afx_msg void OnHelp();
 	afx_msg void OnSpanChanged();
 	afx_msg void OnDesignFlexure();
-	//}}AFX_MSG
+   afx_msg void OnDestroy();
+   afx_msg void OnBnClickedSelectGirders();
+   afx_msg void OnBnClickedRadio();
+   afx_msg void OnBnClickedDesignShear();
+   //}}AFX_MSG
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 
    CString m_strToolTip;
-public:
-   afx_msg void OnBnClickedSelectGirders();
-   afx_msg void OnBnClickedRadio();
    int m_DesignRadioNum;
-   BOOL m_StartWithCurrentStirrupLayout;
-   afx_msg void OnBnClickedDesignShear();
 };
 
 //{{AFX_INSERT_LOCATION}}

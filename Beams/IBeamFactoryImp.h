@@ -46,6 +46,7 @@ public:
 
    HRESULT FinalConstruct();
 
+
 DECLARE_REGISTRY_RESOURCEID(IDR_IBEAMFACTORY)
 DECLARE_CLASSFACTORY_SINGLETON(CIBeamFactory)
 
@@ -123,17 +124,17 @@ public:
 private:
    std::vector<std::_tstring> m_DimNames;
    std::vector<Float64> m_DefaultDims;
-   std::vector<const unitLength*> m_DimUnits[2];
+   std::array<std::vector<const unitLength*>,2> m_DimUnits;
 
    void GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                      Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& d7,
-                      Float64& w1,Float64& w2,Float64& w3,Float64& w4,
+                      Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& h,
+                      Float64& w1,Float64& w2,Float64& w3,Float64& w4,Float64& w5,
                       Float64& t1,Float64& t2, Float64& c1,
                       Float64& ebWidth,Float64& ebLength,Float64& ebTransition) const;
 
    Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const;
 
-   void DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IPrecastBeam* pBeam) const;
+   void DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IPrecastBeam2* pBeam) const;
 };
 
 #endif //__IBEAMFACTORY_H_

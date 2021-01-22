@@ -32,9 +32,11 @@
 #include "LoadRater.h"
 #include "MomentCapacityEngineer.h"
 #include "ShearCapacityEngineer.h"
+#include "PrincipalWebStressEngineer.h"
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\CrackedSection.h>
+#include <IFace\PrincipalWebStress.h>
 #include <EAF\EAFInterfaceCache.h>
 
 #include <PgsExt\PoiKey.h>
@@ -119,6 +121,7 @@ class ATL_NO_VTABLE CEngAgentImp :
    public ILiveLoadDistributionFactors,
    public IMomentCapacity,
    public IShearCapacity,
+   public IPrincipalWebStress,
    public IGirderHaunch,
    public IFabricationOptimization,
    public IArtifact,
@@ -149,6 +152,7 @@ BEGIN_COM_MAP(CEngAgentImp)
    COM_INTERFACE_ENTRY(ILiveLoadDistributionFactors)
    COM_INTERFACE_ENTRY(IMomentCapacity)
    COM_INTERFACE_ENTRY(IShearCapacity)
+   COM_INTERFACE_ENTRY(IPrincipalWebStress)
    COM_INTERFACE_ENTRY(IGirderHaunch)
    COM_INTERFACE_ENTRY(IFabricationOptimization)
    COM_INTERFACE_ENTRY(IArtifact)
@@ -310,6 +314,7 @@ public:
                        Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
                        Float64* gV,  Float64* gV1,  Float64* gV2) const;   // shear
    virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey) const override;
+   virtual Float64 GetDeflectionDistFactorEx(const CSpanKey& spanKey, Float64* pMPF, Uint32* pnLanes, GirderIndexType* pnGirders) const override;
 
 // IMomentCapacity
 public:
@@ -348,6 +353,12 @@ public:
    virtual std::vector<SHEARCAPACITYDETAILS> GetShearCapacityDetails(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const PoiList& vPoi) const override;
    virtual void ClearDesignCriticalSections() const override;
 
+// IPrincipalWebStress
+public:
+   virtual void GetPrincipalWebStressPointsOfInterest(const CSegmentKey& segmentKey, IntervalIndexType interval, PoiList* pPoiList) const override;
+   virtual const PRINCIPALSTRESSINWEBDETAILS* GetPrincipalWebStressDetails(const pgsPointOfInterest& poi) const override;
+   virtual const std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection>* GetTimeStepPrincipalWebStressDetails(const pgsPointOfInterest& poi, IntervalIndexType interval) const override;
+
 // IGirderHaunch
 public:
    virtual Float64 GetRequiredSlabOffset(const CSegmentKey& segmentKey) const override;
@@ -364,11 +375,12 @@ public:
    virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey) const override;
    virtual const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const override;
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const override;
-   virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& design) const override;
+   virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType) const override;
    virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) const override;
    virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact) const override;
    virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const override;
    virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const override;
+   virtual std::shared_ptr<const pgsISummaryRatingArtifact> GetSummaryRatingArtifact(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const override;
 
 // ICrackedSection
 public:
@@ -435,7 +447,7 @@ private:
       }
 
    };
-   mutable std::map<RatingArtifactKey, pgsRatingArtifact> m_RatingArtifacts[pgsTypes::lrLoadRatingTypeCount]; // pgsTypes::LoadRatingType enum as key
+   mutable std::array<std::map<RatingArtifactKey, pgsRatingArtifact>, pgsTypes::lrLoadRatingTypeCount> m_RatingArtifacts; // pgsTypes::LoadRatingType enum as key
 
    mutable std::map<PrestressPoiKey,Float64> m_PsForce; // cache of prestress forces
    mutable std::map<PrestressWithLiveLoadPoiKey,Float64> m_PsForceWithLiveLoad; // cache of prestress forces including live load
@@ -451,10 +463,13 @@ private:
    static UINT DeleteMomentCapacityEngineer(LPVOID pParam);
    std::unique_ptr<pgsMomentCapacityEngineer> m_pMomentCapacityEngineer;
 
+   static UINT DeletePrincipalWebStressEngineer(LPVOID pParam);
+   std::unique_ptr<pgsPrincipalWebStressEngineer> m_pPrincipalWebStressEngineer;
+
 
    // Shear Capacity
    using ShearCapacityContainer = std::map<PoiIDType, SHEARCAPACITYDETAILS>;
-   mutable ShearCapacityContainer m_ShearCapacity[9]; // use the LimitStateToShearIndex method to map limit state to array index
+   mutable std::array<ShearCapacityContainer, 9> m_ShearCapacity; // use the LimitStateToShearIndex method to map limit state to array index
    const SHEARCAPACITYDETAILS* ValidateShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const;
    void InvalidateShearCapacity();
    mutable std::map<PoiIDType,FPCDETAILS> m_Fpc;
@@ -465,13 +480,13 @@ private:
 
    // critical section for shear (a segment can have N critical sections)
    // critical sections are listed left to right along a segment
-   mutable std::map<CGirderKey,std::vector<CRITSECTDETAILS>> m_CritSectionDetails[9]; // use the LimitStateToShearIndex method to map limit state to array index
-   mutable std::map<CGirderKey,std::vector<CRITSECTDETAILS>> m_DesignCritSectionDetails[9]; // use the LimitStateToShearIndex method to map limit state to array index
+   mutable std::array<std::map<CGirderKey,std::vector<CRITSECTDETAILS>>, 9> m_CritSectionDetails; // use the LimitStateToShearIndex method to map limit state to array index
+   mutable std::array<std::map<CGirderKey,std::vector<CRITSECTDETAILS>>, 9> m_DesignCritSectionDetails; // use the LimitStateToShearIndex method to map limit state to array index
    const std::vector<CRITSECTDETAILS>& ValidateShearCritSection(pgsTypes::LimitState limitState,const CGirderKey& girderKey, const GDRCONFIG* pConfig = nullptr) const;
    std::vector<CRITSECTDETAILS> CalculateShearCritSection(pgsTypes::LimitState limitState,const CGirderKey& girderKey, const GDRCONFIG* pConfig = nullptr) const;
    void InvalidateShearCritSection();
 
-   mutable std::map<CSegmentKey,SLABOFFSETDETAILS> m_SLABOFFSETDETAILS;
+   mutable std::map<CSegmentKey,SLABOFFSETDETAILS> m_SlabOffsetDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
    mutable std::map<CSegmentKey, std::map<Float64,stbLiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;

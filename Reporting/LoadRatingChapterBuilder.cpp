@@ -60,13 +60,18 @@ LPCTSTR CLoadRatingChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CLoadRatingReportSpecification* pLoadRatingRptSpec = dynamic_cast<CLoadRatingReportSpecification*>(pRptSpec);
+   CBrokerReportSpecification* pGirderRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
-   CGirderKey girderKey;
+   pGirderRptSpec->GetBroker(&pBroker);
 
-   ATLASSERT(pLoadRatingRptSpec);
-   pLoadRatingRptSpec->GetBroker(&pBroker);
-   girderKey = pLoadRatingRptSpec->GetGirderKey();
+   CLoadRatingReportSpecificationBase* pLrGirderRptSpec = dynamic_cast<CLoadRatingReportSpecificationBase*>(pRptSpec);
+   if (!pLrGirderRptSpec)
+   {
+      ATLASSERT(0);
+      return nullptr;
+   }
+
+   std::vector<CGirderKey> girderKeys = pLrGirderRptSpec->GetGirderKeys();
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
@@ -75,6 +80,8 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    rptParagraph* pPara;
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    (*pChapter) << pPara;
+
+   (*pPara) << _T("Controlling Rating Factors for Selected Girders: ") << pGirderRptSpec->GetReportContextString() << rptNewLine;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
@@ -90,7 +97,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
       (*pPara) << pPara->GetName() << rptNewLine;
       pPara = new rptParagraph;
       (*pChapter) << pPara;
-      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,girderKey,CRatingSummaryTable::Design ) << rptNewLine;
+      (*pPara) << CRatingSummaryTable().BuildByLimitState(pBroker,girderKeys,CRatingSummaryTable::Design ) << rptNewLine;
    }
 
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) || pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
@@ -104,14 +111,14 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrLegal_Routine);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKeys, pgsTypes::lrLegal_Routine);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
          }
 
          bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Routine,&bMustCloseBridge);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKeys, pgsTypes::lrLegal_Routine,&bMustCloseBridge);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
@@ -124,14 +131,14 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Special) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrLegal_Special);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKeys, pgsTypes::lrLegal_Special);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
          }
 
          bool bMustCloseBridge;
-         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKey, pgsTypes::lrLegal_Special, &bMustCloseBridge);
+         pTable = CRatingSummaryTable().BuildLoadPosting(pBroker,girderKeys, pgsTypes::lrLegal_Special, &bMustCloseBridge);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
@@ -144,13 +151,13 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
       if (pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Emergency))
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKey, pgsTypes::lrLegal_Emergency);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker, girderKeys, pgsTypes::lrLegal_Emergency);
          if (pTable)
          {
             (*pPara) << pTable << rptNewLine;
          }
 
-         pTable = CRatingSummaryTable().BuildEmergencyVehicleLoadPosting(pBroker, girderKey);
+         pTable = CRatingSummaryTable().BuildEmergencyVehicleLoadPosting(pBroker, girderKeys);
          if (pTable)
          {
             (*pPara) << pTable << rptNewLine;
@@ -170,7 +177,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrPermit_Routine);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKeys, pgsTypes::lrPermit_Routine);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;
@@ -179,7 +186,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special) )
       {
-         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKey, pgsTypes::lrPermit_Special);
+         rptRcTable* pTable = CRatingSummaryTable().BuildByVehicle(pBroker,girderKeys, pgsTypes::lrPermit_Special);
          if ( pTable )
          {
             (*pPara) << pTable << rptNewLine;

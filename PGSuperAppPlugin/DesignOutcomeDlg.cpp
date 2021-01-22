@@ -279,7 +279,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
       for (std::vector<CGirderKey>::const_iterator it=m_GirderKeys.begin(); it!=m_GirderKeys.end(); it++)
       {
          CString str;
-         str.Format(_T("Span %d, Girder %s"), LABEL_SPAN(it->groupIndex), LABEL_GIRDER(it->girderIndex));
+         str.Format(_T("Span %s, Girder %s"), LABEL_SPAN(it->groupIndex), LABEL_GIRDER(it->girderIndex));
          m_ADesignFromCombo.AddString(str);
 
          m_ADesignCheckBox.SetCheck(BST_CHECKED);
@@ -307,10 +307,18 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    {
       CEAFApp* pApp = EAFGetApp();
       WINDOWPLACEMENT wp;
-      if (pApp->ReadWindowPlacement(CString("Settings"),CString("DesignOutcome"),&wp))
+      if (pApp->ReadWindowPlacement(CString("Window Positions"),CString("DesignOutcome"),&wp))
       {
-         CRect rect(wp.rcNormalPosition);
-         SetWindowPos(nullptr,0,0,rect.Size().cx,rect.Size().cy,SWP_NOMOVE);
+         CWnd* pDesktop = GetDesktopWindow();
+         //CRect rDesktop;
+         //pDesktop->GetWindowRect(&rDesktop); // this is the size of one monitor.... use GetSystemMetrics to get the entire desktop
+         CRect rDesktop(0, 0, GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
+         CRect rDlg(wp.rcNormalPosition);
+         if (rDesktop.PtInRect(rDlg.TopLeft()) && rDesktop.PtInRect(rDlg.BottomRight()))
+         {
+            // if dialog is within the desktop area, set its position... otherwise the default position will be sued
+            SetWindowPos(NULL, wp.rcNormalPosition.left, wp.rcNormalPosition.top, wp.rcNormalPosition.right - wp.rcNormalPosition.left, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top, 0);
+         }
       }
    }
 
@@ -350,7 +358,7 @@ void CDesignOutcomeDlg::CleanUp()
       {
          wp.flags = 0;
          wp.showCmd = SW_SHOWNORMAL;
-         pApp->WriteWindowPlacement(CString("Settings"),CString("DesignOutcome"),&wp);
+         pApp->WriteWindowPlacement(CString("Window Positions"),CString("DesignOutcome"),&wp);
       }
    }
 }
@@ -393,11 +401,11 @@ void CDesignOutcomeDlg::OnCbnSelchangeDesignaFrom()
          m_ADesignToCombo.AddString(_T("the entire bridge"));
 
          CString str2;
-         str2.Format(_T("all girders in Span %d"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex));
+         str2.Format(_T("all girders in Span %s"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex));
          m_ADesignToCombo.AddString(str2);
 
          CString str;
-         str.Format(_T("Span %d, Girder %s Only"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex), LABEL_GIRDER(m_GirderKeys[cursel].girderIndex));
+         str.Format(_T("Span %s, Girder %s Only"), LABEL_SPAN(m_GirderKeys[cursel].groupIndex), LABEL_GIRDER(m_GirderKeys[cursel].girderIndex));
          m_ADesignToCombo.AddString(str);
 
          m_ADesignToCombo.SetCurSel(tosel);

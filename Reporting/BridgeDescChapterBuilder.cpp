@@ -63,19 +63,20 @@ static void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 static void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_girder_spacing(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,const CGirderSpacing2* pGirderSpacing,RowIndexType row,ColumnIndexType col);
-static void write_bearing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CGirderKey& girderKey);
-static void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CGirderKey& girderKey);
+static void write_bearing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const std::vector<CGirderKey>& girderKeys);
+static void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const std::vector<CGirderKey>& girderKeys);
 static void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,GroupIndexType grpIdx,GirderIndexType gdrIdx,Uint16 level);
 static void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
-static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
-static void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
+static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
+static void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row);
 static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, bool bUse90dayStrength, Float64 fc90, Float64 Ec90, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row);
-static void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level,bool bAASHTOParameters);
+static void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level,bool bAASHTOParameters);
 static void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row,bool bAASHTOParameters);
-static void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
+static void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row);
 static void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 
 /****************************************************************************
 CLASS
@@ -96,19 +97,28 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+
    CComPtr<IBroker> pBroker;
-   CGirderKey girderKey;
+   std::vector<CGirderKey> girderKeys;
 
    if ( pGdrRptSpec )
    {
       pGdrRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrRptSpec->GetGirderKey();
+      girderKeys.push_back(pGdrRptSpec->GetGirderKey());
    }
    else if ( pGdrLineRptSpec)
    {
       pGdrLineRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrLineRptSpec->GetGirderKey();
-      girderKey.groupIndex = 0;
+      GET_IFACE2(pBroker,IBridge,pBridge);
+
+      CGirderKey girderKey = pGdrLineRptSpec->GetGirderKey();
+      pBridge->GetGirderline(girderKey, &girderKeys);
+   }
+   else if ( pMultiGirderRptSpec)
+   {
+      pMultiGirderRptSpec->GetBroker(&pBroker);
+      girderKeys = pMultiGirderRptSpec->GetGirderKeys();
    }
    else
    {
@@ -124,11 +134,12 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    //write_profile_data( pBroker, pDisplayUnits, pChapter, level);
    //write_crown_data( pBroker, pDisplayUnits, pChapter, level);
    write_bridge_data( pBroker, pDisplayUnits, pChapter, level);
-   write_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level);
+   write_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level);
+   write_friction_loss_data( pBroker, pDisplayUnits, pChapter, level);
    write_pier_data( pBroker, pDisplayUnits, pChapter, level);
-   write_bearing_data( pBroker, pDisplayUnits, pChapter, level,girderKey );
+   write_bearing_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_span_data( pBroker, pDisplayUnits, pChapter, level);
-   write_ps_data( pBroker, pDisplayUnits, pChapter, level,girderKey );
+   write_ps_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_slab_data( pBroker, pDisplayUnits, pChapter, level );
    write_deck_reinforcing_data( pBroker, pDisplayUnits, pChapter, level );
 
@@ -828,10 +839,13 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
          }
       }
 
-      pnt.Release();
-      pRoadway->GetCurvePoint(hcIdx, cptPI, pgsTypes::pcGlobal, &pnt);
-      pnt->Location(&x, &y);
-      (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+      if (!IsZero(hc_data.Radius))
+      {
+         pnt.Release();
+         pRoadway->GetCurvePoint(hcIdx, cptPI, pgsTypes::pcGlobal, &pnt);
+         pnt->Location(&x, &y);
+         (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+      }
 
       if (IsZero(hc_data.Radius))
       {
@@ -1260,7 +1274,7 @@ void write_bridge_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapt
    row++;
 }
 
-void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
+void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level)
 {
    GET_IFACE2(pBroker,ILibrary, pLib );
    GET_IFACE2(pBroker,ISpecification, pSpec );
@@ -1272,25 +1286,25 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
       switch( pSpecEntry->GetTimeDependentModel() )
       {
       case TDM_AASHTO:
-         write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level,true/*AASHTO parameters*/);
+         write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level,true/*AASHTO parameters*/);
          break;
 
       case TDM_ACI209:
-         write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level,false/*AASHTO parameters*/);
+         write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level,false/*AASHTO parameters*/);
          break;
 
       case TDM_CEBFIP:
-         write_cebfip_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level);
+         write_cebfip_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level);
          break;
       }
    }
    else
    {
-      write_lrfd_concrete_details(pBroker,pDisplayUnits,pChapter,girderKey,level);
+      write_lrfd_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level);
    }
 }
 
-void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
+void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -1331,6 +1345,17 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
    *pPara << pTable << rptNewLine;
 
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << _T("* = Modulus of elasticity was input") << rptNewLine;
+   *pPara << Sub2(_T("w"), _T("c")) << _T(" = unit weight of plain concrete") << rptNewLine;
+   *pPara << Sub2(_T("w"), _T("w")) << _T(" = unit weight of concrete with reinforcement") << rptNewLine;
+   *pPara << Sub2(_T("D"), _T("agg")) << _T(" = maximum aggregate diameter") << rptNewLine;
+   *pPara << RPT_STRESS(_T("ct")) << _T(" = average splitting strength of lightweight concrete") << rptNewLine;
+   *pPara << Sub2(_T("K"), _T("1")) << _T(" = averaging factor for course of aggregate") << rptNewLine;
+   *pPara << Sub2(_T("K"), _T("2")) << _T(" = bounding factor for course of aggregate") << rptNewLine;
+   *pPara << symbol(lambda) << _T(" = concrete density modification factor") << rptNewLine;
+
    if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
    {
       // Ec with square root, no K values
@@ -1348,26 +1373,30 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_2016.png")) << rptNewLine;
    }
 
-   *pPara << _T("* = Modulus of elasticity was input") << rptNewLine;
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   if (pMaterials->HasUHPC())
+   {
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_UHPC.png")) << _T(" for UHPC") << rptNewLine;
+   }
 
 
    ColumnIndexType col = 0;
    RowIndexType row = 0;
-   (*pTable)(row,col++) << _T("Element");
-   (*pTable)(row,col++) << _T("Type");
-   (*pTable)(row,col++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,col++) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*pTable)(row,col++) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << _T("Element");
+   (*pTable)(row, col++) << _T("Type");
+   (*pTable)(row, col++) << COLHDR(RPT_FCI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if (bUse90dayStrength)
    {
       (*pTable)(row, col++) << COLHDR(RPT_FC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*pTable)(row, col++) << COLHDR(RPT_EC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
-   (*pTable)(row,col++) << COLHDR(Sub2(_T("w"),_T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
-   (*pTable)(row,col++) << COLHDR(Sub2(_T("w"),_T("c")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
-   (*pTable)(row,col++) << COLHDR(Sub2(_T("D"),_T("agg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*pTable)(row,col++) << COLHDR(RPT_STRESS(_T("ct")),  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*pTable)(row, col++) << COLHDR(Sub2(_T("w"),_T("c")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
+   (*pTable)(row, col++) << COLHDR(Sub2(_T("w"), _T("w")), rptDensityUnitTag, pDisplayUnits->GetDensityUnit());
+   (*pTable)(row, col++) << COLHDR(Sub2(_T("D"),_T("agg")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*pTable)(row, col++) << COLHDR(RPT_STRESS(_T("ct")),  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if ( bK1 )
    {
       pTable->SetNumberOfHeaderRows(2);
@@ -1377,7 +1406,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       }
 
       pTable->SetColumnSpan(0,col,2);
-      (*pTable)(0,col) << Sub2(_T("E"),_T("c"));
+      (*pTable)(0,col) << _T("MOE");
       (*pTable)(1,col++) << Sub2(_T("K"),_T("1"));
       (*pTable)(1,col++) << Sub2(_T("K"),_T("2"));
 
@@ -1409,16 +1438,12 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    row = pTable->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   std::vector<CGirderKey> vGirderKeys;
-   pBridge->GetGirderline(girderKey, &vGirderKeys);
-   for(const auto& thisGirderKey : vGirderKeys)
+   for(const auto& thisGirderKey : girderKeys)
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
       const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
@@ -1449,14 +1474,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
          Float64 lambda = pMaterials->GetSegmentLambda(thisSegmentKey);
 
-         if ( nSegments == 1 )
-         {
-            (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex);
-         }
-         else
-         {
-            (*pTable)(row,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-         }
+         (*pTable)(row, 0) << pgsGirderLabel::GetGirderLabel(thisGirderKey);
 
          write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,bUse90dayStrength,bUse90dayStrength,fc90,Ec90,lambda,pSegment->Material.Concrete,row);
          row++;
@@ -1558,17 +1576,8 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable
       }
    }
 
-
-   (*pTable)(row,col++) << density.SetValue( concrete.WeightDensity );
-
-   if ( concrete.bUserEc )
-   {
-      (*pTable)(row,col++) << RPT_NA;
-   }
-   else
-   {
-      (*pTable)(row,col++) << density.SetValue( concrete.StrengthDensity );
-   }
+   (*pTable)(row, col++) << density.SetValue( concrete.StrengthDensity );
+   (*pTable)(row, col++) << density.SetValue( concrete.WeightDensity );
 
    (*pTable)(row,col++) << cmpdim.SetValue( concrete.MaxAggregateSize );
 
@@ -1598,7 +1607,7 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable
    }
 }
 
-void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level,bool bAASHTOParameters)
+void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level,bool bAASHTOParameters)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -1658,10 +1667,7 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   std::vector<CGirderKey> vGirderKeys;
-   pBridge->GetGirderline(girderKey, &vGirderKeys);
-   for(const auto& thisGirderKey : vGirderKeys)
+   for(const auto& thisGirderKey : girderKeys)
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
       const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
@@ -1675,14 +1681,7 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
          Float64 fc28 = pMaterials->GetSegmentFc28(thisSegmentKey);
          Float64 Ec28 = pMaterials->GetSegmentEc28(thisSegmentKey);
 
-         if ( nSegments == 1 )
-         {
-            (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex);
-         }
-         else
-         {
-            (*pTable)(row,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-         }
+         (*pTable)(row, 0) << pgsGirderLabel::GetGirderLabel(thisGirderKey);
 
          write_aci209_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pSegment->Material.Concrete,row,bAASHTOParameters);
          row++;
@@ -1768,7 +1767,7 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    }
 }
 
-void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
+void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -1803,10 +1802,7 @@ void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   std::vector<CGirderKey> vGirderKeys;
-   pBridge->GetGirderline(girderKey, &vGirderKeys);
-   for(const auto& thisGirderKey : vGirderKeys)
+   for(const auto& thisGirderKey : girderKeys)
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
       const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
@@ -1820,14 +1816,7 @@ void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
          Float64 fc28 = pMaterials->GetSegmentFc28(thisSegmentKey);
          Float64 Ec28 = pMaterials->GetSegmentEc28(thisSegmentKey);
 
-         if ( nSegments == 1 )
-         {
-            (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex);
-         }
-         else
-         {
-            (*pTable)(row,0) << _T("Segment ") << LABEL_SEGMENT(segIdx);
-         }
+         (*pTable)(row, 0) << pgsGirderLabel::GetGirderLabel(thisGirderKey);
 
          write_cebfip_concrete_row(pDisplayUnits,pTable,fc28,Ec28,pSegment->Material.Concrete,row);
          row++;
@@ -1898,6 +1887,62 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    }
 
    (*pTable)(row,col++) << cmpdim.SetValue( concrete.MaxAggregateSize );
+}
+
+void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
+{
+   // Only write for spliced girders
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   if (!pDocType->IsPGSpliceDocument())
+   {
+      return;
+   }
+
+   INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false );
+   INIT_UV_PROTOTYPE( rptPerLengthUnitValue, pldim, pDisplayUnits->GetPerLengthUnit(), false );
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+   rptParagraph* pPara;
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   // Setup the table
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Post-Tensioning Anchor Set and Friction Loss Parameters"));
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+   *pPara << pTable << rptNewLine;
+
+   (*pTable)(0,1) << COLHDR(symbol(DELTA) << Sub(_T("set")) << rptNewLine << _T("Anchor Set"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pTable)(0,2) << COLHDR(Sub(_T("K")) << rptNewLine << _T("Wobble Friction Coefficient"),rptPerLengthUnitTag,pDisplayUnits->GetPerLengthUnit());
+   (*pTable)(0,3) << symbol(mu) << rptNewLine <<_T("Coefficient of Friction");
+   (*pTable)(1, 0) << _T("Temporary Strands");
+   (*pTable)(2, 0) << _T("Tendons");
+
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   Float64 Dset, wobble, friction;
+   pLossParams->GetTemporaryStrandPostTensionParameters(&Dset,&wobble,&friction);
+   (*pTable)(1, 1) << cmpdim.SetValue(Dset);
+   (*pTable)(1, 2) << pldim.SetValue(wobble);
+   (*pTable)(1, 3) << scalar.SetValue(friction);
+
+   pLossParams->GetTendonPostTensionParameters(&Dset,&wobble,&friction);
+   (*pTable)(2, 1) << cmpdim.SetValue(Dset);
+   (*pTable)(2, 2) << pldim.SetValue(wobble);
+   (*pTable)(2, 3) << scalar.SetValue(friction);
+
+   pPara = new rptParagraph;
+   pPara->SetStyleName(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Time Step Analysis - Time Dependent Effects");
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   *pPara << _T("Creep Effects are ") << (pLossParams->IgnoreCreepEffects()         ? _T("Ignored") : _T("Considered")) << rptNewLine;
+   *pPara << _T("Shrinkage Effects are ") << (pLossParams->IgnoreShrinkageEffects() ? _T("Ignored") : _T("Considered")) << rptNewLine;
+   *pPara << _T("Relaxation Effects are ") << (pLossParams->IgnoreRelaxationEffects()         ? _T("ignored") : _T("Considered")) << rptNewLine;
 }
 
 void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
@@ -2052,18 +2097,9 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
       bool bAbutment = pPier->IsAbutment();
-      if ( bAbutment )
-      {
-         (*pLayoutTable)(row1,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
-         (*pDiaphragmTable)(row2,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
-         (*pConnectionTable)(row3,0) << _T("Abutment ") << LABEL_PIER(pierIdx);
-      }
-      else
-      {
-         (*pLayoutTable)(row1,0) << _T("Pier ") << LABEL_PIER(pierIdx);
-         (*pDiaphragmTable)(row2,0) << _T("Pier ") << LABEL_PIER(pierIdx);
-         (*pConnectionTable)(row3,0) << _T("Pier ") << LABEL_PIER(pierIdx);
-      }
+      (*pLayoutTable)(row1,0)     <<  LABEL_PIER_EX(bAbutment,pierIdx);
+      (*pDiaphragmTable)(row2,0)  <<  LABEL_PIER_EX(bAbutment,pierIdx);
+      (*pConnectionTable)(row3,0) <<  LABEL_PIER_EX(bAbutment, pierIdx);
 
       (*pLayoutTable)(row1,1) << rptRcStation(pPier->GetStation(), &pDisplayUnits->GetStationFormat() );
       (*pLayoutTable)(row1,2) << RPT_BEARING(OLE2T(bstrBearing));
@@ -2238,7 +2274,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    }
 }
 
-void write_bearing_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level, const CGirderKey& girderKey)
+void write_bearing_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level, const std::vector<CGirderKey>& girderKeys)
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false);
 
@@ -2278,57 +2314,91 @@ void write_bearing_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptCh
    ptable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    ptable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   // TRICKY: use adapter class to get bearing lines over piers
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-   std::unique_ptr<IProductReactionAdapter> pBearingLines =  std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign,lastIntervalIdx,girderKey);
-
    RowIndexType row = 1;
-   ReactionLocationIter iter = pBearingLines->GetReactionLocations(pBridge);
-   for (iter.First(); !iter.IsDone(); iter.Next())
+   for (const auto& girderKey : girderKeys)
    {
-      ColumnIndexType col = 0;
-      const ReactionLocation& brgLoc(iter.CurrentItem());
+      PierIndexType startPierIdx, endPierIdx;
+      pBridge->GetGirderGroupPiers(girderKey.groupIndex, &startPierIdx, &endPierIdx);
 
-      pgsTypes::PierFaceType pf = brgLoc.Face == rftBack ? pgsTypes::Back : pgsTypes::Ahead;
-
-      const CBearingData2* pbd = pIBridgeDesc->GetBearingData(brgLoc.PierIdx, pf, girderKey.girderIndex);
-
-      if (pbd != nullptr)
+      for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
       {
-         bool is_rect = pbd->Shape == bsRectangular;
-
-         (*ptable)(row, col++) << brgLoc.PierLabel;
-         (*ptable)(row, col++) << (is_rect ? _T("Rectangular") : _T("Round"));
-         (*ptable)(row, col++) << pbd->BearingCount;
-         if (pbd->BearingCount > 1)
+         // face reported depends on where we are in the loop, and if interior pier whether continuous
+         Uint32 intStartFace, intEndFace;
+         bool isContinous(false);
+         if (pierIdx == startPierIdx)
          {
-            (*ptable)(row, col++) << cmpdim.SetValue(pbd->Spacing);
+            intStartFace = 0;
+            intEndFace = 0;
+         }
+         else if (pierIdx == endPierIdx)
+         {
+            intStartFace = 1;
+            intEndFace = 1;
          }
          else
          {
-            (*ptable)(row, col++) << RPT_NA;;
+            bool bLeft, bRight;
+            pBridge->IsContinuousAtPier(pierIdx, &bLeft, &bRight);
+            if (bLeft || bRight)
+            {
+               intStartFace = 0;
+               intEndFace = 0;
+               isContinous = true;
+            }
+            else
+            {
+               intStartFace = 0;
+               intEndFace = 1;
+            }
          }
 
-         (*ptable)(row, col++) << cmpdim.SetValue(pbd->Length);
-         if (is_rect)
+         for (Uint32 idx = intStartFace; idx <= intEndFace; idx++)
          {
-            (*ptable)(row, col++) << cmpdim.SetValue(pbd->Width);
-         }
-         else
-         {
-            (*ptable)(row, col++) << RPT_NA;;
-         }
+            ColumnIndexType col = 0;
 
-         (*ptable)(row, col++) << cmpdim.SetValue(pbd->Height);
-         (*ptable)(row, col++) << cmpdim.SetValue(pbd->RecessHeight);
-         (*ptable)(row, col++) << cmpdim.SetValue(pbd->RecessLength);
-         (*ptable)(row, col++) << cmpdim.SetValue(pbd->SolePlateHeight);
+            pgsTypes::PierFaceType pf = (idx == 0 ? pgsTypes::Ahead : pgsTypes::Back);
+            std::_tstring strFace(isContinous ? _T("") : (idx == 0 ? _T(" - Ahead") : _T(" - Back")));
 
-         row++;
-      }
-      else
-      {
-         ATLASSERT(0); // should never happen
+            const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pf, girderKey.girderIndex);
+
+            if (pbd != nullptr)
+            {
+               bool is_rect = pbd->Shape == bsRectangular;
+
+               (*ptable)(row, col++) << _T("Girder ") << LABEL_GIRDER(girderKey.girderIndex) << _T(" - Pier ") << LABEL_PIER(pierIdx) << strFace;
+               (*ptable)(row, col++) << (is_rect ? _T("Rectangular") : _T("Round"));
+               (*ptable)(row, col++) << pbd->BearingCount;
+               if (pbd->BearingCount > 1)
+               {
+                  (*ptable)(row, col++) << cmpdim.SetValue(pbd->Spacing);
+               }
+               else
+               {
+                  (*ptable)(row, col++) << RPT_NA;;
+               }
+
+               (*ptable)(row, col++) << cmpdim.SetValue(pbd->Length);
+               if (is_rect)
+               {
+                  (*ptable)(row, col++) << cmpdim.SetValue(pbd->Width);
+               }
+               else
+               {
+                  (*ptable)(row, col++) << RPT_NA;;
+               }
+
+               (*ptable)(row, col++) << cmpdim.SetValue(pbd->Height);
+               (*ptable)(row, col++) << cmpdim.SetValue(pbd->RecessHeight);
+               (*ptable)(row, col++) << cmpdim.SetValue(pbd->RecessLength);
+               (*ptable)(row, col++) << cmpdim.SetValue(pbd->SolePlateHeight);
+
+               row++;
+            }
+            else
+            {
+               ATLASSERT(0); // should never happen
+            }
+         }
       }
    }
 }
@@ -2508,7 +2578,7 @@ void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
       const CPierData2* pPier = pBridgeDesc->GetGirderGroup(grpIdx)->GetPier(pgsTypes::metStart);
       const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(0);
       const CGirderSpacing2* pSpacing = pPier->GetGirderSpacing(pgsTypes::Ahead);
-      (*pTable)(row,0) << _T("Pier ") << LABEL_PIER(pPier->GetIndex());
+      (*pTable)(row,0) << LABEL_PIER_EX(pPier->IsAbutment(), pPier->GetIndex());
       write_girder_spacing(pBroker,pDisplayUnits,pTable,pSpacing,row,1);
 
       row++;
@@ -2642,7 +2712,7 @@ void write_span_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       GirderIndexType nGirders = pGroup->GetGirderCount();
 
-      (*pTable)(row,0) << LABEL_GROUP(grpIdx);
+      (*pTable)(row,0) << LABEL_SPAN(grpIdx);
       (*pTable)(row,1) << nGirders;
 
       if ( 1 < nGirders )
@@ -2767,7 +2837,7 @@ void write_girder_spacing(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptRc
    }
 }
 
-void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CGirderKey& girderKey)
+void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const std::vector<CGirderKey>& girderKeys)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdim,    pDisplayUnits->GetXSectionDimUnit(),  true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
@@ -2780,7 +2850,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    *pChapter << pPara;
 
    GET_IFACE2(pBroker, ISegmentData,      pSegmentData);
-   GET_IFACE2(pBroker, IBridge,           pBridge ); 
+   GET_IFACE2_NOCHECK(pBroker, IBridge,   pBridge ); 
    GET_IFACE2(pBroker, IStrandGeometry,   pStrandGeom);
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker, ISpecification,    pSpec );
@@ -2789,9 +2859,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   std::vector<CGirderKey> vGirderKeys;
-   pBridge->GetGirderline(girderKey, &vGirderKeys);
-   for(const auto& thisGirderKey : vGirderKeys)
+   for(const auto& thisGirderKey : girderKeys)
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
       const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
@@ -2832,14 +2900,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                if (pPier)
                {
                   PierIndexType pierIdx = pPier->GetIndex();
-                  if (pPier->IsAbutment())
-                  {
-                     (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Abutment ") << LABEL_PIER(pierIdx);
-                  }
-                  else
-                  {
-                     (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at Pier ") << LABEL_PIER(pierIdx);
-                  }
+                  (*pTable)(row, 0) << _T("Slab Offset (\"A\" Dimension) at ") << LABEL_PIER_EX(pPier->IsAbutment(), pierIdx);
                }
                else
                {
@@ -2885,23 +2946,23 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          }
 
          CString strFillType;
-         if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtTotal)
+         if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtTotal)
          {
             strFillType = "Sequence of Permanent Strands";
          }
-         else if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtStraightHarped)
+         else if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtStraightHarped)
          {
             strFillType = "Sequence of Straight/Harped Strands";
          }
-         else if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
+         else if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)
          {
             strFillType = "Non-Sequential, Direct Fill";
          }
-         else if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput)
+         else if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput)
          {
             strFillType = "Direct Input Strand Rows";
          }
-         else if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+         else if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
          {
             strFillType = "Direct Input Strands";
          }

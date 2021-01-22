@@ -31,28 +31,13 @@ static char THIS_FILE[] = __FILE__;
 
 CCastLongitudinalJointActivity::CCastLongitudinalJointActivity()
 {
-   m_CuringDuration = 1.0; // days
-   m_Age = 1.0; // days
+   m_ActiveCuringDuration = 1.0; // days
+   m_TotalCuringDuration = 1.0; // days
    m_bEnabled = false;
-}
-
-CCastLongitudinalJointActivity::CCastLongitudinalJointActivity(const CCastLongitudinalJointActivity& rOther)
-{
-   MakeCopy(rOther);
 }
 
 CCastLongitudinalJointActivity::~CCastLongitudinalJointActivity()
 {
-}
-
-CCastLongitudinalJointActivity& CCastLongitudinalJointActivity::operator= (const CCastLongitudinalJointActivity& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 bool CCastLongitudinalJointActivity::operator==(const CCastLongitudinalJointActivity& rOther) const
@@ -62,12 +47,12 @@ bool CCastLongitudinalJointActivity::operator==(const CCastLongitudinalJointActi
       return false;
    }
 
-   if ( !IsEqual(m_Age,rOther.m_Age) )
+   if ( !IsEqual(m_TotalCuringDuration,rOther.m_TotalCuringDuration) )
    {
       return false;
    }
 
-   if ( !IsEqual(m_CuringDuration,rOther.m_CuringDuration) )
+   if ( !IsEqual(m_ActiveCuringDuration,rOther.m_ActiveCuringDuration) )
    {
       return false;
    }
@@ -90,24 +75,24 @@ bool CCastLongitudinalJointActivity::IsEnabled() const
    return m_bEnabled;
 }
 
-void CCastLongitudinalJointActivity::SetConcreteAgeAtContinuity(Float64 age)
+void CCastLongitudinalJointActivity::SetTotalCuringDuration(Float64 duration)
 {
-   m_Age = age;
+   m_TotalCuringDuration = duration;
 }
 
-Float64 CCastLongitudinalJointActivity::GetConcreteAgeAtContinuity() const
+Float64 CCastLongitudinalJointActivity::GetTotalCuringDuration() const
 {
-   return m_Age;
+   return m_TotalCuringDuration;
 }
 
-void CCastLongitudinalJointActivity::SetCuringDuration(Float64 duration)
+void CCastLongitudinalJointActivity::SetActiveCuringDuration(Float64 duration)
 {
-   m_CuringDuration = duration;
+   m_ActiveCuringDuration = duration;
 }
 
-Float64 CCastLongitudinalJointActivity::GetCuringDuration() const
+Float64 CCastLongitudinalJointActivity::GetActiveCuringDuration() const
 {
-   return m_CuringDuration;
+   return m_ActiveCuringDuration;
 }
 
 HRESULT CCastLongitudinalJointActivity::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
@@ -130,10 +115,10 @@ HRESULT CCastLongitudinalJointActivity::Load(IStructuredLoad* pStrLoad,IProgress
       {
          var.vt = VT_R8;
          hr = pStrLoad->get_Property(_T("AgeAtContinuity"),&var);
-         m_Age = var.dblVal;
+         m_TotalCuringDuration = var.dblVal;
 
          hr = pStrLoad->get_Property(_T("CuringDuration"),&var);
-         m_CuringDuration = var.dblVal;
+         m_ActiveCuringDuration = var.dblVal;
       }
 
       pStrLoad->EndUnit();
@@ -153,22 +138,10 @@ HRESULT CCastLongitudinalJointActivity::Save(IStructuredSave* pStrSave,IProgress
    pStrSave->put_Property(_T("Enabled"),CComVariant(m_bEnabled));
    if ( m_bEnabled )
    {
-      pStrSave->put_Property(_T("AgeAtContinuity"),CComVariant(m_Age));
-      pStrSave->put_Property(_T("CuringDuration"),CComVariant(m_CuringDuration)); // added in version 2
+      pStrSave->put_Property(_T("AgeAtContinuity"),CComVariant(m_TotalCuringDuration));
+      pStrSave->put_Property(_T("CuringDuration"),CComVariant(m_ActiveCuringDuration)); // added in version 2
    }
    pStrSave->EndUnit();
 
    return S_OK;
-}
-
-void CCastLongitudinalJointActivity::MakeCopy(const CCastLongitudinalJointActivity& rOther)
-{
-   m_bEnabled = rOther.m_bEnabled;
-   m_Age      = rOther.m_Age;
-   m_CuringDuration = rOther.m_CuringDuration;
-}
-
-void CCastLongitudinalJointActivity::MakeAssignment(const CCastLongitudinalJointActivity& rOther)
-{
-   MakeCopy(rOther);
 }

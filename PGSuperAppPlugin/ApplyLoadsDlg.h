@@ -56,9 +56,6 @@ protected:
    BOOL m_bReadOnly;
 
    void FillLists();
-   CString GetLoadDescription(const CPointLoadData* pLoad);
-   CString GetLoadDescription(const CDistributedLoadData* pLoad);
-   CString GetLoadDescription(const CMomentLoadData* pLoad);
    CString GetLocation(const CSpanKey& spanKey);
 
 	DECLARE_MESSAGE_MAP()

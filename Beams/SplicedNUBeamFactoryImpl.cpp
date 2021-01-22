@@ -225,7 +225,7 @@ Float64 CSplicedNUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecast
 
    Float64 Xl, Yl, Xr, Yr;
    ZoneType zone = ::GetControlPoints(Xs, Ls, X, Y, &Xl, &Yl, &Xr, &Yr);
-   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, bParabolas));
+   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, Yl, Yr, bParabolas));
 }
 
 Float64 CSplicedNUBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
@@ -246,7 +246,7 @@ Float64 CSplicedNUBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPre
 
    Float64 Xl, Yl, Xr, Yr;
    ZoneType zone = ::GetControlPoints(Xs, Ls, X, Y, &Xl, &Yl, &Xr, &Yr);
-   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, bParabolas));
+   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, Yl, Yr, bParabolas));
 }
 
 void CSplicedNUBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const

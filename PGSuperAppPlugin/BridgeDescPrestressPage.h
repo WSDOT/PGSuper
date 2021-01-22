@@ -121,12 +121,12 @@ protected:
 
    void InitHarpStrandOffsetMeasureComboBox(CComboBox* pCB);
 
-   void HideControls(int key, CStrandData::StrandDefinitionType numPermStrandsType);
+   void HideControls(int key, pgsTypes::StrandDefinitionType numPermStrandsType);
    void DisableEndOffsetControls(BOOL disable);
    void ShowEndOffsetControls(BOOL show);
    void DisableHpOffsetControls(BOOL disable);
    void ShowHpOffsetControls(BOOL show);
-   void ShowHideNumStrandControls(CStrandData::StrandDefinitionType numPermStrandsType);
+   void ShowHideNumStrandControls(pgsTypes::StrandDefinitionType numPermStrandsType);
    void UpdateStrandControls();
    void UpdateAdjustableStrandControls();
    void ShowOffsetControlGroup(BOOL show);
@@ -148,7 +148,7 @@ protected:
    bool m_AllowEndAdjustment;
 
    pgsTypes::AdjustableStrandType m_LibraryAdjustableStrandType; // in girder library
-   CStrandData::StrandDefinitionType m_CurrStrandDefinitionType; 
+   pgsTypes::StrandDefinitionType m_CurrStrandDefinitionType; 
 
    void UpdateStrandList(UINT nIDC);
 

@@ -74,7 +74,7 @@ protected:
    virtual ROWCOL SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col) = 0;
    virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) = 0;
    virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) = 0;
-   virtual CStrandData::StrandDefinitionType GetStrandDefinitionType() = 0;
+   virtual pgsTypes::StrandDefinitionType GetStrandDefinitionType() = 0;
 
 public:
    // custom stuff for grid
@@ -133,7 +133,7 @@ protected:
    virtual ROWCOL SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col) override;
    virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
    virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
-   virtual CStrandData::StrandDefinitionType GetStrandDefinitionType() override { return CStrandData::sdtDirectRowInput;  }
+   virtual pgsTypes::StrandDefinitionType GetStrandDefinitionType() override { return pgsTypes::sdtDirectRowInput;  }
 
    virtual UINT Validate(ROWCOL nRow, CStrandRow& strandRow) override;
    virtual void ShowValidationError(ROWCOL nRow, UINT iError) override;
@@ -152,7 +152,7 @@ protected:
    virtual ROWCOL SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col) override;
    virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
    virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
-   virtual CStrandData::StrandDefinitionType GetStrandDefinitionType() override { return CStrandData::sdtDirectStrandInput; }
+   virtual pgsTypes::StrandDefinitionType GetStrandDefinitionType() override { return pgsTypes::sdtDirectStrandInput; }
 
    virtual UINT Validate(ROWCOL nRow, CStrandRow& strandRow) override;
    virtual void ShowValidationError(ROWCOL nRow, UINT iError) override;

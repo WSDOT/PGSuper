@@ -40,6 +40,7 @@
 #include <PgsExt\DeflectionCheckArtifact.h>
 #include <PgsExt\TendonStressArtifact.h>
 #include <PgsExt\DuctSizeArtifact.h>
+#include <PgsExt\PrincipalTensionStressArtifact.h>
 
 #include <Stability\Stability.h>
 
@@ -119,6 +120,9 @@ public:
 
    void SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact*  artifact);
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
+
+   const pgsPrincipalTensionStressArtifact* GetPrincipalTensionStressArtifact() const;
+   pgsPrincipalTensionStressArtifact* GetPrincipalTensionStressArtifact();
 
    void SetTendonStressArtifact(DuctIndexType ductIdx, const pgsTendonStressArtifact& artifact);
    const pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx) const;
@@ -213,4 +217,7 @@ private:
    const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object
 
    pgsDebondArtifact m_DebondArtifact;
+
+   mutable pgsPrincipalTensionStressArtifact m_PrincipalTensionStressArtifact;
+   bool DidPrincipalTensionStressPass() const;
 };

@@ -510,7 +510,7 @@ void CEditPointLoadDlg::UpdateSpanList()
          if (HasCantilever(pgsTypes::metStart) )
          {
             CString str;
-            str.Format(_T("Span %d Start Cantilever"), LABEL_SPAN(spanIdx));
+            str.Format(_T("Span %s Start Cantilever"), LABEL_SPAN(spanIdx));
             pcbSpans->AddString(str);
             SpanType spanType;
             spanType.spanIdx = spanIdx;
@@ -521,7 +521,7 @@ void CEditPointLoadDlg::UpdateSpanList()
       }
 
       CString str;
-      str.Format(_T("Span %d"), LABEL_SPAN(spanIdx));
+      str.Format(_T("Span %s"), LABEL_SPAN(spanIdx));
       pcbSpans->AddString(str);
       SpanType spanType;
       spanType.spanIdx = spanIdx;
@@ -534,7 +534,7 @@ void CEditPointLoadDlg::UpdateSpanList()
          if (HasCantilever(pgsTypes::metEnd))
          {
             CString str;
-            str.Format(_T("Span %d End Cantilever"), LABEL_SPAN(spanIdx));
+            str.Format(_T("Span %s End Cantilever"), LABEL_SPAN(spanIdx));
             pcbSpans->AddString(str);
             SpanType spanType;
             spanType.spanIdx = spanIdx;

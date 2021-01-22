@@ -6482,10 +6482,9 @@ Float64 CGirderModelManager::GetBearingProductReaction(IntervalIndexType interva
    ATLASSERT( found != vPiers.end() ); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
 #endif
    
-   GET_IFACE(IBridge,pBridge);
-
    if ( location.Face == rftMid )
    {
+      GET_IFACE(IBridge, pBridge);
       ATLASSERT(pBridge->IsInteriorPier(location.PierIdx));
       std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>> vSupports;
       vSupports.emplace_back(location.PierIdx,pgsTypes::stPier);
@@ -6496,18 +6495,9 @@ Float64 CGirderModelManager::GetBearingProductReaction(IntervalIndexType interva
    }
    else
    {
-      ATLASSERT(pBridge->IsBoundaryPier(location.PierIdx));
-      SupportIDType supportID;
-      if (pBridge->IsAbutment(location.PierIdx))
-      {
-         supportID = GetPierID(location.PierIdx);
-      }
-      else
-      {
-         SupportIDType backID, aheadID;
-         GetPierTemporarySupportIDs(location.PierIdx, &backID, &aheadID);
-         supportID = (location.Face == rftBack ? backID : aheadID);
-      }
+      SupportIDType backID, aheadID;
+      GetPierSupportIDs(location, &backID, &aheadID);
+      SupportIDType supportID = (location.Face == rftBack ? backID : aheadID);
 
       REACTION reaction = GetBearingReaction(intervalIdx, pfType, supportID, location.GirderKey, bat, resultsType);
       return reaction.Fy;
@@ -6522,37 +6512,28 @@ void CGirderModelManager::GetBearingLiveLoadReaction(IntervalIndexType intervalI
    ASSERT_GIRDER_KEY(location.GirderKey);
 
 #if defined _DEBUG
-   GET_IFACE(IBearingDesign,pBearingDesign);
-   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx,location.GirderKey);
-   std::vector<PierIndexType>::iterator found = std::find(vPiers.begin(),vPiers.end(),location.PierIdx);
-   ATLASSERT( found != vPiers.end() ); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
+   GET_IFACE(IBearingDesign, pBearingDesign);
+   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx, location.GirderKey);
+   std::vector<PierIndexType>::iterator found = std::find(vPiers.begin(), vPiers.end(), location.PierIdx);
+   ATLASSERT(found != vPiers.end()); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
 #endif
    
-   GET_IFACE(IBridge,pBridge);
    if ( location.Face == rftMid )
    {
+      GET_IFACE(IBridge, pBridge);
       ATLASSERT(pBridge->IsInteriorPier(location.PierIdx));
 
       REACTION Rmin,Rmax;
       // get maximum vertical (Fy) reaction with corresponding rotation (Mz = Rz)
-      GM_GetLiveLoadReaction(intervalIdx,llType,location.PierIdx,location.GirderKey,bat,bIncludeImpact,bIncludeLLDF,pgsTypes::fetFy,pgsTypes::fetRz,&Rmin,&Rmax,pTmin,pTmax,pMinVehIdx,pMaxVehIdx);
+      GM_GetLiveLoadReaction(intervalIdx, llType, location.PierIdx, location.GirderKey, bat, bIncludeImpact, bIncludeLLDF, pgsTypes::fetFy, pgsTypes::fetRz, &Rmin, &Rmax, pTmin, pTmax, pMinVehIdx, pMaxVehIdx);
       *pRmin = Rmin.Fy;
       *pRmax = Rmax.Fy;
    }
    else
    {
-      ATLASSERT(pBridge->IsBoundaryPier(location.PierIdx));
-      SupportIDType supportID;
-      if (pBridge->IsAbutment(location.PierIdx))
-      {
-         supportID = GetPierID(location.PierIdx);
-      }
-      else
-      {
-         SupportIDType backID, aheadID;
-         GetPierTemporarySupportIDs(location.PierIdx, &backID, &aheadID);
-         supportID = (location.Face == rftBack ? backID : aheadID);
-      }
+      SupportIDType backID, aheadID;
+      GetPierSupportIDs(location, &backID, &aheadID);
+      SupportIDType supportID = (location.Face == rftBack ? backID : aheadID);
 
       m_LBAMPoi->Clear();
       m_LBAMPoi->Add(supportID);
@@ -6572,10 +6553,10 @@ void CGirderModelManager::GetBearingLiveLoadRotation(IntervalIndexType intervalI
    ASSERT_GIRDER_KEY(location.GirderKey);
 
 #if defined _DEBUG
-   GET_IFACE(IBearingDesign,pBearingDesign);
-   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx,location.GirderKey);
-   std::vector<PierIndexType>::iterator found = std::find(vPiers.begin(),vPiers.end(),location.PierIdx);
-   ATLASSERT( found != vPiers.end() ); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
+   GET_IFACE(IBearingDesign, pBearingDesign);
+   std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx, location.GirderKey);
+   std::vector<PierIndexType>::iterator found = std::find(vPiers.begin(), vPiers.end(), location.PierIdx);
+   ATLASSERT(found != vPiers.end()); // if this fires, we are requesting bearing reactions at a pier that doesn't have bearing reactions
 #endif
 
    if ( location.Face == rftMid )
@@ -6583,7 +6564,7 @@ void CGirderModelManager::GetBearingLiveLoadRotation(IntervalIndexType intervalI
       GET_IFACE(IProductForces,pForces);
       // rotation is the same on both sides of the pier
       pgsTypes::PierFaceType pierFace = pgsTypes::Back;
-      pForces->GetLiveLoadRotation(intervalIdx,llType,location.PierIdx,location.GirderKey,pierFace,bat,bIncludeImpact,bIncludeLLDF,pTmin,pTmax,pRmin,pRmax,pMinVehIdx,pMaxVehIdx);
+      pForces->GetLiveLoadRotation(intervalIdx, llType, location.PierIdx, location.GirderKey, pierFace, bat, bIncludeImpact, bIncludeLLDF, pTmin, pTmax, pRmin, pRmax, pMinVehIdx, pMaxVehIdx);
    }
    else
    {
@@ -6820,19 +6801,9 @@ void CGirderModelManager::GetBearingCombinedLiveLoadReaction(IntervalIndexType i
    }
    else
    {
-      GET_IFACE(IBridge,pBridge);
-      ATLASSERT(pBridge->IsBoundaryPier(location.PierIdx));
-      SupportIDType supportID;
-      if (pBridge->IsAbutment(location.PierIdx))
-      {
-         supportID = GetPierID(location.PierIdx);
-      }
-      else
-      {
-         SupportIDType backID, aheadID;
-         GetPierTemporarySupportIDs(location.PierIdx, &backID, &aheadID);
-         supportID = (location.Face == rftBack ? backID : aheadID);
-      }
+      SupportIDType backID, aheadID;
+      GetPierSupportIDs(location, &backID, &aheadID);
+      SupportIDType supportID = (location.Face == rftBack ? backID : aheadID);
 
       m_LBAMPoi->Clear();
       m_LBAMPoi->Add(supportID);
@@ -7468,8 +7439,8 @@ void CGirderModelManager::CreateLBAMSupport(GirderIndexType gdrLineIdx,bool bCon
       }
       objSupport->put_TopRelease(bReleaseTop);
 
-      pgsTypes::ColumnFixityType fixityType = pPier->GetColumnFixity();
-      objSupport->put_BoundaryCondition(fixityType == pgsTypes::cftFixed ? bcFixed : bcPinned);
+      pgsTypes::ColumnLongitudinalBaseFixityType fixityType = pPier->GetColumnFixity();
+      objSupport->put_BoundaryCondition(fixityType == pgsTypes::cftPinned ? bcPinned : bcFixed);
 
       GET_IFACE(IBridge,pBridge);
       PierIndexType pierIdx = pPier->GetIndex();
@@ -7963,7 +7934,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             //                           |         |         |
             //                           |         +------------- Permanent pier
             //                           |                   |
-            //      Temporary Supports---+-------------------+
+            //                           +-------------------+--- Dummy Temporary Supports
             //
             // o indicates member end release.
 
@@ -8094,9 +8065,7 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
                ssms->Add(right_pier_diaphragm_ssm);
             }
 
-            //
             // Create dummy temporary supports at the CL Bearing
-            //
             CComPtr<ISpans> spans;
             pModel->get_Spans(&spans);
 
@@ -8110,7 +8079,9 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             GetPierTemporarySupportIDs(pierIdx,&backID,&aheadID);
 
             // Temporary support at CL bearing on left side of pier
-            if ( !IsZero(left_end_dist+left_end_offset) )
+            // if the left end disance or offset is zero, the end of the beam is at the CL Pier
+            // so we don't need the temporary support
+            if ( !IsZero(left_end_dist+left_end_offset) && !IsZero(left_end_offset) )
             {
                // CLBearing is not at the CL Pier... create a dummy temporary support
                CComPtr<ISpan> objSpan;
@@ -8172,7 +8143,9 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
             }
 
             // Temporary support CL Bearing on right side of pier
-            if (!IsZero(right_end_dist + right_end_offset))
+            // if the right end disance or offset is zero, the end of the beam is at the CL Pier
+            // so we don't need the temporary support
+            if (!IsZero(right_end_dist+right_end_offset) && !IsZero(right_end_offset))
             {
                CComPtr<ISpan> objSpan;
                spans->get_Item(spanIdx + 1, &objSpan);
@@ -8302,7 +8275,8 @@ void CGirderModelManager::GetLBAMBoundaryConditions(bool bContinuous,const CTime
       // "drop in" segments start and end in the same span (pier segments straddle a pier),
       // don't have any interior supports, and are supported by strong backs at each end
       bool bIsDropIn = pSegment->IsDropIn();
-      if ( pTS->GetSupportType() == pgsTypes::ErectionTower || bIsDropIn )
+      bool bIsPropped = pSegment->IsPropped();
+      if ( pTS->GetSupportType() == pgsTypes::ErectionTower || bIsDropIn || bIsPropped)
       {
          CClosureKey closureKey(pClosure->GetClosureKey());
          GET_IFACE(IIntervals,pIntervals);
@@ -12774,6 +12748,35 @@ void CGirderModelManager::GetPierTemporarySupportIDs(PierIndexType pierIdx,Suppo
    *pAheadID = -((SupportIDType)pierIdx*10000);
 }
 
+void CGirderModelManager::GetPierSupportIDs(const ReactionLocation& location, SupportIDType* pBackID, SupportIDType* pAheadID) const
+{
+   GET_IFACE(IBridge, pBridge);
+   ATLASSERT(pBridge->IsBoundaryPier(location.PierIdx)); // must be a boundary pier
+   if (pBridge->IsAbutment(location.PierIdx))
+   {
+      *pBackID = GetPierID(location.PierIdx);
+      *pAheadID = *pBackID;
+   }
+   else
+   {
+      SupportIDType backID, aheadID;
+      GetPierTemporarySupportIDs(location.PierIdx, &backID, &aheadID);
+
+      PierIDType pierID = GetPierID(location.PierIdx);
+
+      CSegmentKey backSegmentKey, aheadSegmentKey;
+      pBridge->GetSegmentsAtPier(location.PierIdx, location.GirderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
+
+      Float64 left_brg_offset = pBridge->GetSegmentEndBearingOffset(backSegmentKey);
+      Float64 left_end_dist = pBridge->GetSegmentEndEndDistance(backSegmentKey);
+
+      Float64 right_brg_offset = pBridge->GetSegmentStartBearingOffset(aheadSegmentKey);
+      Float64 right_end_dist = pBridge->GetSegmentStartEndDistance(aheadSegmentKey);
+
+      *pBackID = IsZero(left_brg_offset + left_end_dist) ? pierID : backID;
+      *pAheadID = IsZero(right_brg_offset + right_end_dist) ? pierID : aheadID;
+   }
+}
 
 //////////////////////////////////////////////////
 // LLDF Support Methods
@@ -14312,17 +14315,16 @@ void CGirderModelManager::ApplyLLDF_Support(const CSpanKey& spanKey,pgsTypes::Me
 
    const pgsPointOfInterest& poi(vPoi.front());
 
-   Float64 gpmstr, gnmstr, gvstr;
    Float64 gpmfat, gnmfat, gvfat;
-   pLLDF->GetDistributionFactors(poi, pgsTypes::StrengthI, &gpmstr, &gnmstr, &gvstr);
    pLLDF->GetDistributionFactors(poi, pgsTypes::FatigueI, &gpmfat, &gnmfat, &gvfat);
 
    Float64 gpM = 99999999;
    Float64 gnM = 99999999;
    Float64 gV  = 99999999;
-   Float64 gR  = gvstr; 
+   Float64 gR  = pLLDF->GetDeflectionDistFactor(spanKey); // uniform distribution for reactions
    Float64 gF  = gvfat;
-   Float64 gD  = pLLDF->GetDeflectionDistFactor(spanKey);
+   Float64 gD  = gR; // uniform distribution for deflections (same as reactions)
+
 
    GET_IFACE(IBridge,pBridge);
 
@@ -15478,7 +15480,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          Float64 panel_width = trib_slab_width; // start with tributary width
 
          // deduct width of mating surfaces
-         MatingSurfaceIndexType nMatingSurfaces = pGirder->GetNumberOfMatingSurfaces(segmentKey);
+         MatingSurfaceIndexType nMatingSurfaces = pGirder->GetMatingSurfaceCount(segmentKey);
          for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++ )
          {
             panel_width -= pGirder->GetMatingSurfaceWidth(poi,msIdx);
@@ -15509,7 +15511,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          else if ( pDeck->OverhangTaper[side] == pgsTypes::dotBottomTopFlange )
          {
             // deck overhang tapers to the bottom of the top flange
-            FlangeIndexType nFlanges = pGirder->GetNumberOfTopFlanges(segmentKey);
+            FlangeIndexType nFlanges = pGirder->GetTopFlangeCount(segmentKey);
             Float64 flange_thickness;
             if ( nFlanges == 0 )
             {
@@ -15566,7 +15568,7 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
          Float64 panel_width = w;
 
          // deduct width of mating surfaces
-         MatingSurfaceIndexType nMatingSurfaces = pGirder->GetNumberOfMatingSurfaces(segmentKey);
+         MatingSurfaceIndexType nMatingSurfaces = pGirder->GetMatingSurfaceCount(segmentKey);
          for ( MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++ )
          {
             panel_width -= pGirder->GetMatingSurfaceWidth(poi,msIdx);
@@ -15607,8 +15609,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
       // mating surface
       Float64 mating_surface_width = 0;
-      MatingSurfaceIndexType nMatingSurfaces = pGirder->GetNumberOfMatingSurfaces(segmentKey);
-      ATLASSERT( nMatingSurfaces == pGirder->GetNumberOfMatingSurfaces(segmentKey) );
+      MatingSurfaceIndexType nMatingSurfaces = pGirder->GetMatingSurfaceCount(segmentKey);
+      ATLASSERT( nMatingSurfaces == pGirder->GetMatingSurfaceCount(segmentKey) );
       for ( MatingSurfaceIndexType matingSurfaceIdx = 0; matingSurfaceIdx < nMatingSurfaces; matingSurfaceIdx++ )
       {
          mating_surface_width += pGirder->GetMatingSurfaceWidth(poi,matingSurfaceIdx);

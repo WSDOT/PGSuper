@@ -87,7 +87,7 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
       }
 
       CString strLabel;
-      strLabel.Format(_T("%s %d, "), (leftAbut==prtype || rightAbut==prtype) ? _T("Abutment") : _T("Pier"),LABEL_PIER(pierIdx));
+      strLabel.Format(_T("%s, "), LABEL_PIER_EX(leftAbut==prtype || rightAbut==prtype, pierIdx));
 
       // Create table(s) for pier
       if (interPier==prtype)
@@ -163,7 +163,7 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
          }
 
          CString strLabel;
-         strLabel.Format(_T("%s %d, "), (leftAbut==prtype || rightAbut==prtype) ? _T("Abutment") : _T("Pier"),LABEL_PIER(pierIdx));
+         strLabel.Format(_T("%s, "), LABEL_PIER_EX(leftAbut==prtype || rightAbut==prtype, pierIdx));
 
          // Create table(s) for pier
          if (interPier==prtype)

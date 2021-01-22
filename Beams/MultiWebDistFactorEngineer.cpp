@@ -528,7 +528,7 @@ lrfdLiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParamete
       }
       else
       {
-         Float64 Ecgdr = pMaterials->GetEconc(fcgdr,
+         Float64 Ecgdr = pMaterials->GetEconc(pMaterials->GetSegmentConcreteType(segmentKey),fcgdr,
                                               pMaterials->GetSegmentStrengthDensity(segmentKey),
                                               pMaterials->GetSegmentEccK1(segmentKey),
                                               pMaterials->GetSegmentEccK2(segmentKey)

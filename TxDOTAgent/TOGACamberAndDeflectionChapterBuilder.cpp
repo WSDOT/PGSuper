@@ -155,12 +155,12 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
 
    // Get Midspan poi's
    PoiList vPoi_orig;
-   pIPOI->GetPointsOfInterest(origSegmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi_orig);
+   pIPOI->GetPointsOfInterest(origSegmentKey, POI_5L | POI_SPAN, &vPoi_orig);
    ATLASSERT(vPoi_orig.size()==1);
    const pgsPointOfInterest& poi_orig( vPoi_orig.front() );
 
    PoiList vPoi_fabr;
-   pIPOI->GetPointsOfInterest(fabrSegmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi_fabr);
+   pIPOI->GetPointsOfInterest(fabrSegmentKey, POI_5L | POI_SPAN, &vPoi_fabr);
    ATLASSERT(vPoi_fabr.size()==1);
    const pgsPointOfInterest& poi_fabr( vPoi_fabr.front() );
 

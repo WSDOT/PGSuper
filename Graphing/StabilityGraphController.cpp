@@ -125,13 +125,22 @@ void CStabilityGraphController::FillGroupCtrl()
    CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
 
    GET_IFACE(IDocumentType,pDocType);
-   CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
+   bool isPGSuper = pDocType->IsPGSuperDocument();
+
    GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       CString strLabel;
-      strLabel.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
+      if (isPGSuper)
+      {
+         strLabel.Format(_T("Span %s"), LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         strLabel.Format(_T("Group %d"), LABEL_GROUP(grpIdx));
+      }
+
       pcbGroup->AddString(strLabel);
    }
 }

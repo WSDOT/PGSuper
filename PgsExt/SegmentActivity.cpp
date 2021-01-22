@@ -257,7 +257,7 @@ void CSegmentActivityBase::Update()
 CConstructSegmentActivity::CConstructSegmentActivity(CTimelineEvent* pTimelineEvent) : CSegmentActivityBase(pTimelineEvent)
 {
    m_RelaxationTime = 1.0; // day
-   m_AgeAtRelease   = 1.0; // day
+   m_TotalCuringDuration = 1.0; // day
 }
 
 CConstructSegmentActivity::CConstructSegmentActivity(const CConstructSegmentActivity& rOther) :
@@ -288,7 +288,7 @@ bool CConstructSegmentActivity::operator==(const CConstructSegmentActivity& rOth
       return false;
    }
 
-   if ( !IsEqual(m_AgeAtRelease,rOther.m_AgeAtRelease) )
+   if ( !IsEqual(m_TotalCuringDuration,rOther.m_TotalCuringDuration) )
    {
       return false;
    }
@@ -311,20 +311,20 @@ Float64 CConstructSegmentActivity::GetRelaxationTime() const
    return m_RelaxationTime;
 }
 
-void CConstructSegmentActivity::SetAgeAtRelease(Float64 age)
+void CConstructSegmentActivity::SetTotalCuringDuration(Float64 duration)
 {
-   m_AgeAtRelease = age;
+   m_TotalCuringDuration = duration;
 }
 
-Float64 CConstructSegmentActivity::GetAgeAtRelease() const
+Float64 CConstructSegmentActivity::GetTotalCuringDuration() const
 {
-   return m_AgeAtRelease;
+   return m_TotalCuringDuration;
 }
 
 void CConstructSegmentActivity::MakeCopy(const CConstructSegmentActivity& rOther)
 {
    m_RelaxationTime = rOther.m_RelaxationTime;
-   m_AgeAtRelease   = rOther.m_AgeAtRelease;
+   m_TotalCuringDuration = rOther.m_TotalCuringDuration;
 }
 
 void CConstructSegmentActivity::MakeAssignment(const CConstructSegmentActivity& rOther)
@@ -348,7 +348,7 @@ HRESULT CConstructSegmentActivity::LoadSubclassData(IStructuredLoad* pStrLoad,IP
          m_RelaxationTime = var.dblVal;
 
          pStrLoad->get_Property(_T("AgeAtRelease"),&var);
-         m_AgeAtRelease = var.dblVal;
+         m_TotalCuringDuration = var.dblVal;
       } 
    }
    catch (HRESULT)
@@ -365,7 +365,7 @@ HRESULT CConstructSegmentActivity::SaveSubclassData(IStructuredSave* pStrSave,IP
    if ( m_bEnabled )
    {
       pStrSave->put_Property(_T("RelaxationTime"),CComVariant(m_RelaxationTime));
-      pStrSave->put_Property(_T("AgeAtRelease"),CComVariant(m_AgeAtRelease));
+      pStrSave->put_Property(_T("AgeAtRelease"),CComVariant(m_TotalCuringDuration));
    }
 
    return S_OK;

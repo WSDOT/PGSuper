@@ -278,14 +278,14 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
    std::_tstring strAttributes = poi.GetAttributes(POI_SPAN,false);
    if ( strAttributes.size() == 0 )
    {
-      strSubtitle.Format(_T("Span %d Girder %s, %s"),
+      strSubtitle.Format(_T("Span %s Girder %s, %s"),
          LABEL_SPAN(spanKey.spanIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
    }
    else
    {
-      strSubtitle.Format(_T("Span %d Girder %s, %s (%s)"),
+      strSubtitle.Format(_T("Span %s Girder %s, %s (%s)"),
          LABEL_SPAN(spanKey.spanIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()),
@@ -303,7 +303,7 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
 
    int penWeight = GRAPH_PEN_WEIGHT;
 
-   IndexType dataSeries[4];
+   std::array<IndexType, 4> dataSeries;
    dataSeries[pgsTypes::TopDeck]         = m_Graph.CreateDataSeries(_T("Top of Deck"),     PS_SOLID, penWeight, ORANGE);
    dataSeries[pgsTypes::BottomDeck]      = m_Graph.CreateDataSeries(_T("Bottom of Deck"),  PS_SOLID, penWeight, RED);
    dataSeries[pgsTypes::TopGirder]       = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID, penWeight, GREEN);

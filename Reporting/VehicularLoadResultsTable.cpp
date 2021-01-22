@@ -203,6 +203,10 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
       PoiList vPoi;
       pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
 
+      PoiList csPois;
+      pIPoi->GetCriticalSections(pgsTypes::StrengthI, thisGirderKey, &csPois);
+      pIPoi->MergePoiLists(vPoi, csPois, &vPoi);
+
       std::vector<Float64> dummy;
       std::vector<Float64> Pmin, Pmax;
       std::vector<Float64> Mmin, Mmax;

@@ -201,24 +201,24 @@ private:
    const MOMENTCAPACITYDETAILS* StoreMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const MOMENTCAPACITYDETAILS& mcd, MomentCapacityDetailsContainer& container) const;
 
    mutable MOMENTCAPACITYDETAILS m_InvalidPoiMomentCapacity; // used to store moment capacity results for the last poi with id of INVALID_ID
-   mutable MomentCapacityDetailsContainer m_NonCompositeMomentCapacity[2];
-   mutable MomentCapacityDetailsContainer m_CompositeMomentCapacity[2];
+   mutable std::array<MomentCapacityDetailsContainer, 2> m_NonCompositeMomentCapacity;
+   mutable std::array<MomentCapacityDetailsContainer, 2> m_CompositeMomentCapacity;
    void InvalidateMomentCapacity();
 
    using CrackingMomentContainer = std::map<PoiIDType, CRACKINGMOMENTDETAILS>;
-   CrackingMomentContainer m_NonCompositeCrackingMoment[2];
-   CrackingMomentContainer m_CompositeCrackingMoment[2];
+   std::array<CrackingMomentContainer, 2> m_NonCompositeCrackingMoment;
+   std::array<CrackingMomentContainer, 2> m_CompositeCrackingMoment;
    const CRACKINGMOMENTDETAILS* ValidateCrackingMoments(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const;
    void InvalidateCrackingMoments();
 
    // index 0 = Moment Type (Positive = 0, Negative = 1)
-   mutable std::map<PoiIDType, MINMOMENTCAPDETAILS> m_NonCompositeMinMomentCapacity[2];
-   mutable std::map<PoiIDType, MINMOMENTCAPDETAILS> m_CompositeMinMomentCapacity[2];
+   mutable std::array<std::map<PoiIDType, MINMOMENTCAPDETAILS>, 2> m_NonCompositeMinMomentCapacity;
+   mutable std::array<std::map<PoiIDType, MINMOMENTCAPDETAILS>, 2> m_CompositeMinMomentCapacity;
    const MINMOMENTCAPDETAILS* ValidateMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const;
    void InvalidateMinMomentCapacity();
 
    using CrackedSectionDetailsContainer = std::map<PoiIDType, CRACKEDSECTIONDETAILS>;
-   mutable CrackedSectionDetailsContainer m_CrackedSectionDetails[2]; // 0 = positive moment, 1 = negative moment
+   mutable std::array<CrackedSectionDetailsContainer, 2> m_CrackedSectionDetails; // 0 = positive moment, 1 = negative moment
    const CRACKEDSECTIONDETAILS* ValidateCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const;
    void InvalidateCrackedSectionDetails();
 
@@ -226,8 +226,8 @@ private:
    // This is a cache of moment capacities computed based on a supplied GDRCONFIG (m_TempGirderConfig) and not the
    // current state of input. These moment capacities are usually cached for speed during design.
    mutable GDRCONFIG m_TempGirderConfig;
-   mutable MomentCapacityDetailsContainer m_TempNonCompositeMomentCapacity[2];
-   mutable MomentCapacityDetailsContainer m_TempCompositeMomentCapacity[2];
+   mutable std::array<MomentCapacityDetailsContainer, 2> m_TempNonCompositeMomentCapacity;
+   mutable std::array<MomentCapacityDetailsContainer, 2> m_TempCompositeMomentCapacity;
 
 
 public:

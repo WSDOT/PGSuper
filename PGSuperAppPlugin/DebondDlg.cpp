@@ -29,6 +29,7 @@
 #include "GirderDescDlg.h"
 #include "PGSuperColors.h"
 #include <PgsExt\DesignConfigUtil.h>
+#include <PgsExt\Helpers.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
@@ -94,7 +95,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
 
          if( pParent->m_pSegment->Strands.IsSymmetricDebond() )
          {
-            if (debond_info.Length[pgsTypes::metStart] < 0.0 )
+            if (debond_info.Length[pgsTypes::metStart] <= 0.0 )
             {
                HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
 	            AfxMessageBox( _T("Debond length must be greater than zero"), MB_ICONEXCLAMATION);
@@ -113,7 +114,7 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
             if ( debond_info.Length[pgsTypes::metStart] <= 0.0 && debond_info.Length[pgsTypes::metEnd] <= 0.0 )
             {
                HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
-	            AfxMessageBox( _T("Debond length at at least one end must be greater than zero"), MB_ICONEXCLAMATION);
+	            AfxMessageBox( _T("Debond length at one end must be greater than zero"), MB_ICONEXCLAMATION);
 	            pDX->Fail();
             }
          }
@@ -499,7 +500,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       ly += 4;
 
       CString strLabel;
-      strLabel.Format(_T("%d"),permIdx+1);
+      strLabel.Format(_T("%d"),LABEL_INDEX(permIdx));
       pDC->TextOut(lx,ly,strLabel);
    }
 
@@ -631,7 +632,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
          ly += 4;
 
          CString strLabel;
-         strLabel.Format(_T("%d"), permIdx + 1);
+         strLabel.Format(_T("%d"), LABEL_INDEX(permIdx));
          pDC->TextOut(lx, ly, strLabel);
       }
    }
@@ -739,7 +740,7 @@ ConfigStrandFillVector CGirderDescDebondPage::ComputeStrandFillVector(pgsTypes::
 
 HBRUSH CGirderDescDebondPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
-   HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+   HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
    int ID = pWnd->GetDlgCtrlID();
    switch( ID )
    {

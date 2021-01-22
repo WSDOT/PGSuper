@@ -29,6 +29,7 @@
 #define RPT_LFT_SUPPORT_LOCATION  _T("Location from") << rptNewLine << _T("Left Support")
 
 #define LIVELOAD_PER_LANE             _T("* Live Load values are per lane and include impact.")
+#define LIVELOAD_PER_LANE_NO_IMPACT   _T("* Live Load values are per lane and do not include impact.")
 #define LIVELOAD_PER_GIRDER           _T("* Live Load values are per girder and include impact.")
 #define LIVELOAD_PER_GIRDER_NO_IMPACT _T("* Live Load values are per girder and do not include impact.")
 

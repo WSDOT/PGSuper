@@ -243,10 +243,6 @@ void CGirderModelChildFrame::SelectGirder(const CGirderKey& girderKey,bool bDoUp
    	   UpdateViews();
       }
    }
-   else
-   {
-      ATLASSERT(false);
-   }
 }
 
 const CGirderKey& CGirderModelChildFrame::GetSelection() const
@@ -660,11 +656,11 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
    }
    else if (lHint == 0 || lHint == HINT_BRIDGECHANGED || lHint == HINT_GIRDERCHANGED || lHint == HINT_UNITSCHANGED )
    {
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
       if (lHint == HINT_BRIDGECHANGED)
       {
          // If the bridge changed, make sure the girder key is still valid
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker, IBridge, pBridge);
          GroupIndexType nGroups = pBridge->GetGirderGroupCount();
          if (nGroups <= m_GirderKey.groupIndex)
@@ -680,7 +676,9 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
       }
 
       UpdateCutRange();
-      m_cutPoi = GetCutPointOfInterest(m_cutPoi.GetDistFromStart());
+      GET_IFACE2(pBroker,IPointOfInterest, pPoi);
+      Float64 Xgp = pPoi->ConvertPoiToGirderPathCoordinate(m_cutPoi);
+      m_cutPoi = GetCutPointOfInterest(Xgp);
       FillEventComboBox();
       UpdateBar();
    }
@@ -818,7 +816,8 @@ void CGirderModelChildFrame::UpdateBar()
    ASSERT(pwndCutLocation);
    
    CEAFDocument* pDoc = EAFGetDocument();
-   CString strGroupLabel( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? _T("Span") : _T("Group") );
+   BOOL bIsPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
+   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group") );
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -840,7 +839,15 @@ void CGirderModelChildFrame::UpdateBar()
 
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
-      strLabel.Format(_T("%s %d"), strGroupLabel, LABEL_GROUP(grpIdx));
+      if (bIsPGSuper)
+      {
+         strLabel.Format(_T("%s %s"), strGroupLabel, LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         strLabel.Format(_T("%s %d"), strGroupLabel, LABEL_GROUP(grpIdx));
+      }
+
       idx = pcbGroup->AddString(strLabel);
       pcbGroup->SetItemData(idx,(DWORD_PTR)grpIdx);
    }
@@ -1205,13 +1212,13 @@ void CGirderModelChildFrame::OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pC
 void CGirderModelChildFrame::OnDesignGirderDirect()
 {
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
-   pDoc->DesignGirder(false,sodSlabOffsetandAssumedExcessCamberDesign,m_GirderKey);
+   pDoc->DesignGirder(false,sodDesignHaunch,m_GirderKey);
 }
 
 void CGirderModelChildFrame::OnDesignGirderDirectHoldSlabOffset()
 {
    CPGSuperDoc* pDoc = (CPGSuperDoc*)EAFGetDocument();
-   pDoc->DesignGirder(false,sodNoSlabOffsetDesign,m_GirderKey);
+   pDoc->DesignGirder(false,sodPreserveHaunch,m_GirderKey);
 }
 
 

@@ -207,7 +207,7 @@ bool PGSEXTFUNC DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config);
 // Some other utilities for dealing with strands. Perhaps we should have called this file strandutil.h
 inline ConfigStrandFillVector ComputeHarpedStrandFillVector(const CSegmentKey& segmentKey,const CPrecastSegmentData& segmentData, IStrandGeometry* pStrandGeometry)
 {
-   if (segmentData.Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection )
+   if (segmentData.Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection )
    {
       ConfigStrandFillVector vec = ConvertDirectToConfigFill(pStrandGeometry, pgsTypes::Harped, 
                                    segmentKey,

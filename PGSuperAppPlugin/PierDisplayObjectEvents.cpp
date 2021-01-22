@@ -30,6 +30,7 @@
 #include "mfcdual.h"
 #include "pgsuperdoc.h"
 #include <IFace\Project.h>
+#include <IFace\EditByUI.h>
 #include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG

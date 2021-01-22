@@ -85,8 +85,8 @@ END_CONNECTION_POINT_MAP()
    virtual const CRuntimeClass* GetDocTemplateRuntimeClass() override;
    virtual void CTxDOTAppPlugin::UpdateDocTemplates() override;
 
-   virtual CString GetDefaultMasterLibraryFile() override;
-   virtual CString GetDefaultWorkgroupTemplateFolder() override;
+   virtual CString GetDefaultMasterLibraryFile() const override;
+   virtual CString GetDefaultWorkgroupTemplateFolder() const override;
 
 // IEAFAppPlugin
 public:

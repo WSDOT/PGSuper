@@ -1,12 +1,13 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.00    7   9.00   River bridge      1     1    Bridg    *     34  0.6  270  54.86  68.87  12.00  12.00                                              5.000 10.099  10.099    10.099    11864   0.785  0.884   0.211 -0.152 -0.033 -0.022 -0.207 116.80  479.77   10.00   10.00   10.00 
+ 59.00    7   9.00   River bridge      1     1    Bridg    *     34  0.6  270  49.60  68.87  12.00  12.00                                              5.000 10.099  10.099    10.099    11785   0.785  0.884   0.250 -0.163 -0.035 -0.023 -0.221 124.57  524.90   10.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
 Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 1
 Compression stress check failed for Service I Limit State in Interval 24 Apply User Defined Loads, Install Overlay for Segment 1
+Compression stress check failed for Service I Limit State in Interval 31 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
 Tension stress check failed for Service I Limit State in Interval 24 Apply User Defined Loads, Install Overlay for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
@@ -51,6 +52,7 @@ Tension stress check failed for Service III Limit State in Interval 31 Load Rati
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 9
 Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 9
 Compression stress check failed for Service I Limit State in Interval 24 Apply User Defined Loads, Install Overlay for Segment 9
+Compression stress check failed for Service I Limit State in Interval 31 Load Rating for Segment 9
 Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
 Tension stress check failed for Service I Limit State in Interval 24 Apply User Defined Loads, Install Overlay for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
@@ -83,13 +85,14 @@ Duct Size check failed for Duct 4.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.00    7   9.00   River bridge      1     2    Bridg    *     34  0.6  270  54.86  68.87  12.00  12.00                                              5.000 10.099  10.099    10.099    12118   0.785  0.884   0.211 -0.165 -0.032 -0.021 -0.218 116.80  478.53   10.00   10.00   10.00 
+ 59.00    7   9.00   River bridge      1     2    Bridg    *     34  0.6  270  49.60  68.87  12.00  12.00                                              5.000 10.099  10.099    10.099    12038   0.785  0.884   0.250 -0.177 -0.034 -0.022 -0.233 124.57  523.16   10.00   10.00   10.00 
 
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 1
 Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 1
 Compression stress check failed for Service I Limit State in Interval 24 Apply User Defined Loads, Install Overlay for Segment 1
+Compression stress check failed for Service I Limit State in Interval 31 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
 Tension stress check failed for Service I Limit State in Interval 24 Apply User Defined Loads, Install Overlay for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck
@@ -134,6 +137,7 @@ Tension stress check failed for Service III Limit State in Interval 31 Load Rati
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 9
 Compression stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Segment 9
 Compression stress check failed for Service I Limit State in Interval 24 Apply User Defined Loads, Install Overlay for Segment 9
+Compression stress check failed for Service I Limit State in Interval 31 Load Rating for Segment 9
 Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
 Tension stress check failed for Service I Limit State in Interval 24 Apply User Defined Loads, Install Overlay for Deck
 Tension stress check failed for Service III Limit State in Interval 31 Load Rating for Deck

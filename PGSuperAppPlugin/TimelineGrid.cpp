@@ -260,7 +260,7 @@ void CTimelineGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    // We are editing an event
    CEditTimelineDlg* pParent = (CEditTimelineDlg*)GetParent();
    EventIndexType eventIdx = (IndexType)(nRow-1);
-   CTimelineEventDlg dlg(pParent->m_TimelineManager,eventIdx,TRUE,m_bReadOnly);
+   CTimelineEventDlg dlg(pParent->m_TimelineManager,eventIdx,TRUE,INVALID_INDEX,m_bReadOnly,this);
    if ( dlg.DoModal() == IDOK )
    {
       pParent->m_TimelineManager = dlg.m_TimelineManager;
@@ -331,7 +331,7 @@ BOOL CTimelineGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
          }
          else
          {
-            CString strProblem = pParent->m_TimelineManager.GetErrorMessage(result);
+            CString strProblem = pParent->m_TimelineManager.GetErrorMessage(result).c_str();
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
             CString strMsg;

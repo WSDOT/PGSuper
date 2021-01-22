@@ -43,6 +43,7 @@ protected:
    BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
 
    afx_msg void OnHelp();
+   afx_msg void OnMaxTensionStressChanged();
 
    CString m_strTip; // buffer that holds the tooltip text
 

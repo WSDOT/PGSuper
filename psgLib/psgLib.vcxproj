@@ -582,6 +582,7 @@
     <ClCompile Include="ShearSteelGrid.cpp" />
     <ClCompile Include="ShearSteelPage.cpp" />
     <ClCompile Include="ShearZoneData.cpp" />
+    <ClCompile Include="SpecBearingsPage.cpp" />
     <ClCompile Include="SpecClosurePage.cpp" />
     <ClCompile Include="SpecCreepPage.cpp" />
     <ClCompile Include="SpecDeadLoadsPage.cpp" />
@@ -721,6 +722,7 @@
     <ClInclude Include="SectionViewDialog.h" />
     <ClInclude Include="ShearBarsLegsGrid.h" />
     <ClInclude Include="ShearDesignPage.h" />
+    <ClInclude Include="SpecBearingsPage.h" />
     <ClInclude Include="SpecClosurePage.h" />
     <ClInclude Include="SpecCreepPage.h" />
     <ClInclude Include="SpecDeadLoadsPage.h" />

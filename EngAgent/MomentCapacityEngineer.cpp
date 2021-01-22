@@ -68,13 +68,13 @@ void AddShape2Section(IGeneralSection *pSection, IShape *pShape, IStressStrain *
    // Just add shape as is
    pSection->AddShape(pShape, pfgMaterial, pbgMaterial, ei, Le);
 #else
-   // Convert shape to a fast polygon
+   // Convert shape to a fast polygon (the standard polyshape now uses the faster polyshape implementation)
    // get points from shape and create a faster poly
    CComPtr<IPoint2dCollection> points;
    pShape->get_PolyPoints(&points);
 
-   CComPtr<IFasterPolyShape> poly;
-   HRESULT hr = poly.CoCreateInstance(CLSID_FasterPolyShape);
+   CComPtr<IPolyShape> poly;
+   HRESULT hr = poly.CoCreateInstance(CLSID_PolyShape);
 
    poly->AddPoints(points);
 
@@ -164,13 +164,6 @@ const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::GetMomentCapacityDetails
    const MOMENTCAPACITYDETAILS* pMCD = nullptr;
    if ( pConfig == nullptr )
    {
-#if defined _DEBUG
-      // Mu is only considered once live load is applied to the structure
-      GET_IFACE(IIntervals, pIntervals);
-      IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-      ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
-#endif
-
       if (poi.GetID() == INVALID_ID)
       {
          // compute but don't cache since poiID is the key
@@ -272,12 +265,6 @@ Float64 pgsMomentCapacityEngineer::GetCrackingMoment(IntervalIndexType intervalI
 
 const CRACKINGMOMENTDETAILS* pgsMomentCapacityEngineer::GetCrackingMomentDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-#if defined _DEBUG
-   // Mu is only considered once live load is applied to the structure
-   GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
-#endif
    ATLASSERT(poi.GetID() != INVALID_ID);
 
    return ValidateCrackingMoments(intervalIdx, poi, bPositiveMoment);
@@ -323,13 +310,6 @@ Float64 pgsMomentCapacityEngineer::GetMinMomentCapacity(IntervalIndexType interv
 
 const MINMOMENTCAPDETAILS* pgsMomentCapacityEngineer::GetMinMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
-#if defined _DEBUG
-   // Mu is only considered once live load is applied to the structure
-   GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   ATLASSERT(liveLoadIntervalIdx <= intervalIdx);
-#endif
-
    return ValidateMinMomentCapacity(intervalIdx, poi, bPositiveMoment);
 }
 
@@ -535,87 +515,88 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    Float64 Haunch; // haunch build up that is modeled
    BuildCapacityProblem(intervalIdx,poi,pConfig,eps_initial,ept_initial_segment,ept_initial_girder,bondTool,bPositiveMoment,&section,&pntCompression,&szOffset,&dt,&H,&Haunch,bond_factors);
 
+   CComPtr<IMomentCapacitySolution> solution;
+   if (section)
+   {
 #if defined _DEBUG_SECTION_DUMP
-   DumpSection(poi,section,bond_factors[0],bond_factors[1],bPositiveMoment);
+      DumpSection(poi, section, bond_factors[0], bond_factors[1], bPositiveMoment);
 #endif // _DEBUG_SECTION_DUMP
 
-   m_MomentCapacitySolver->putref_Section(section);
-   m_MomentCapacitySolver->put_Slices(10);
-   m_MomentCapacitySolver->put_SliceGrowthFactor(3);
-   m_MomentCapacitySolver->put_MaxIterations(50);
+      m_MomentCapacitySolver->putref_Section(section);
+      m_MomentCapacitySolver->put_Slices(10);
+      m_MomentCapacitySolver->put_SliceGrowthFactor(3);
+      m_MomentCapacitySolver->put_MaxIterations(50);
 
-   // Set the convergence tolerance to 0.1N. This is more than accurate enough for the
-   // output display. Output accurace for SI = 0.01kN = 10N, for US = 0.01kip = 45N
-   m_MomentCapacitySolver->put_AxialTolerance(0.1);
+      // Set the convergence tolerance to 0.1N. This is more than accurate enough for the
+      // output display. Output accurace for SI = 0.01kN = 10N, for US = 0.01kip = 45N
+      m_MomentCapacitySolver->put_AxialTolerance(0.1);
 
-   // determine neutral axis angle
-   // compression is on the left side of the neutral axis
-   Float64 na_angle = (bPositiveMoment ? 0.00 : M_PI);
+      // determine neutral axis angle
+      // compression is on the left side of the neutral axis
+      Float64 na_angle = (bPositiveMoment ? 0.00 : M_PI);
 
-   // compressive strain limit
-   Float64 ec = -0.003; 
-
-   CComPtr<IMomentCapacitySolution> solution;
+      // compressive strain limit
+      Float64 ec = -0.003;
 
 #if defined _DEBUG
-   CTime startTime = CTime::GetCurrentTime();
+      CTime startTime = CTime::GetCurrentTime();
 #endif // _DEBUG
 
-   HRESULT hr = m_MomentCapacitySolver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
-   if ( hr == RC_E_MATERIALFAILURE )
-   {
-      WATCHX(MomCap,0,_T("Exceeded material strain limit"));
-      hr = S_OK;
-   }
-   
-   // It is ok if this assert fires... All it means is that the solver didn't find a solution
-   // on its first try. The purpose of this assert is to help gauge how often this happens.
-   // Second and third attempts are made below
-#if defined _DEBUG
-   ATLASSERT(SUCCEEDED(hr));
-   if ( hr == RC_E_INITCONCRETE )       ATLASSERT(SUCCEEDED(hr));
-   if ( hr == RC_E_SOLUTIONNOTFOUND )   ATLASSERT(SUCCEEDED(hr));
-   if ( hr == RC_E_BEAMNOTSYMMETRIC )   ATLASSERT(SUCCEEDED(hr));
-   if ( hr == RC_E_MATERIALFAILURE )    ATLASSERT(SUCCEEDED(hr));
-#endif // _DEBUG
-
-   if (FAILED(hr))
-   {
-      // Try again with more slices
-      m_MomentCapacitySolver->put_Slices(20);
-      m_MomentCapacitySolver->put_SliceGrowthFactor(2);
-      m_MomentCapacitySolver->put_AxialTolerance(1.0);
-      hr = m_MomentCapacitySolver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
-
-      if ( hr == RC_E_MATERIALFAILURE )
+      HRESULT hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, smFixedCompressiveStrain, &solution);
+      if (hr == RC_E_MATERIALFAILURE)
       {
-         WATCHX(MomCap,0,_T("Exceeded material strain limit"));
+         WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
          hr = S_OK;
       }
 
-      if ( FAILED(hr) )
+      // It is ok if this assert fires... All it means is that the solver didn't find a solution
+      // on its first try. The purpose of this assert is to help gauge how often this happens.
+      // Second and third attempts are made below
+#if defined _DEBUG
+      ATLASSERT(SUCCEEDED(hr));
+      if (hr == RC_E_INITCONCRETE)       ATLASSERT(SUCCEEDED(hr));
+      if (hr == RC_E_SOLUTIONNOTFOUND)   ATLASSERT(SUCCEEDED(hr));
+      if (hr == RC_E_BEAMNOTSYMMETRIC)   ATLASSERT(SUCCEEDED(hr));
+      if (hr == RC_E_MATERIALFAILURE)    ATLASSERT(SUCCEEDED(hr));
+#endif // _DEBUG
+
+      if (FAILED(hr))
       {
          // Try again with more slices
-         m_MomentCapacitySolver->put_Slices(50);
+         m_MomentCapacitySolver->put_Slices(20);
          m_MomentCapacitySolver->put_SliceGrowthFactor(2);
-         m_MomentCapacitySolver->put_AxialTolerance(10.0);
-         hr = m_MomentCapacitySolver->Solve(0.00,na_angle,ec,smFixedCompressiveStrain,&solution);
+         m_MomentCapacitySolver->put_AxialTolerance(1.0);
+         hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, smFixedCompressiveStrain, &solution);
 
-         if ( hr == RC_E_MATERIALFAILURE )
+         if (hr == RC_E_MATERIALFAILURE)
          {
-            WATCHX(MomCap,0,_T("Exceeded material strain limit"));
+            WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
             hr = S_OK;
          }
 
-         if ( FAILED(hr) )
+         if (FAILED(hr))
          {
-            GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-            GET_IFACE(IDocumentType,pDocType);
+            // Try again with more slices
+            m_MomentCapacitySolver->put_Slices(50);
+            m_MomentCapacitySolver->put_SliceGrowthFactor(2);
+            m_MomentCapacitySolver->put_AxialTolerance(10.0);
+            hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, smFixedCompressiveStrain, &solution);
 
-            CString strErrorCode;
-            switch(hr)
+            if (hr == RC_E_MATERIALFAILURE)
             {
+               WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
+               hr = S_OK;
+            }
+
+            if (FAILED(hr))
+            {
+               GET_IFACE(IEAFStatusCenter, pStatusCenter);
+               GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+               GET_IFACE(IDocumentType, pDocType);
+
+               CString strErrorCode;
+               switch (hr)
+               {
                case RC_E_INITCONCRETE:          strErrorCode = _T("RC_E_INITCONCRETE");          break;
                case RC_E_SOLUTIONNOTFOUND:      strErrorCode = _T("RC_E_SOLUTIONNOTFOUND");      break;
                case RC_E_BEAMNOTSYMMETRIC:      strErrorCode = _T("RC_E_BEAMNOTSYMMETRIC");      break;
@@ -625,60 +606,61 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
                case RC_E_FGMATERIAL:            strErrorCode = _T("RC_E_FGMATERIAL");            break;
                case RC_E_BGMATERIAL:            strErrorCode = _T("RC_E_BGMATERIAL");            break;
                case E_FAIL:                     strErrorCode = _T("E_FAIL");                     break;
-               default:                         strErrorCode.Format(_T("0x%X"),hr);
+               default:                         strErrorCode.Format(_T("0x%X"), hr);
+               }
+
+               // Dump the section for later diagnostics
+               GET_IFACE(IEAFDocument, pDoc);
+               CString strFileRoot = pDoc->GetFileRoot(); // returns the root path for the document such as "C:\My Documents\"
+               CString strFileName;
+               strFileName.Format(_T("%sRCCapacity_POI_%d.txt"), strFileRoot, poi.GetID());
+
+               CComPtr<IStructuredSave2> ss;
+               ss.CoCreateInstance(CLSID_StructuredSave2);
+               CComBSTR bstrFileName(strFileName);
+               ss->Open(bstrFileName);
+
+               CComQIPtr<IStructuredStorage2> stg(section);
+               stg->Save(ss);
+               ss->Close();
+
+               ss.Release();
+               stg.Release();
+
+               const unitmgtLengthData& unit = pDisplayUnits->GetSpanLengthUnit();
+               CString msg;
+               msg.Format(_T("An unknown error occured while computing %s moment capacity for %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d)\nPlease contact technical support with a screen print of this error message and send the diagnostic file %s."),
+                  (bPositiveMoment ? _T("positive") : _T("negative")),
+                  SEGMENT_LABEL(segmentKey),
+                  ::ConvertFromSysUnits(poi.GetDistFromStart(), unit.UnitOfMeasure),
+                  unit.UnitOfMeasure.UnitTag().c_str(),
+                  strErrorCode,
+                  poi.GetID(),
+                  strFileName);
+               pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID, m_scidUnknown, _T(__FILE__), __LINE__, msg);
+               pStatusCenter->Add(pStatusItem);
+
+               THROW_UNWIND(msg, -1);
             }
-
-            // Dump the section for later diagnostics
-            GET_IFACE(IEAFDocument,pDoc);
-            CString strFileRoot = pDoc->GetFileRoot(); // returns the root path for the document such as "C:\My Documents\"
-            CString strFileName;
-            strFileName.Format(_T("%sRCCapacity_POI_%d.txt"),strFileRoot,poi.GetID());
-
-            CComPtr<IStructuredSave2> ss;
-            ss.CoCreateInstance(CLSID_StructuredSave2);
-            CComBSTR bstrFileName(strFileName);
-            ss->Open(bstrFileName);
-
-            CComQIPtr<IStructuredStorage2> stg(section);
-            stg->Save(ss);
-            ss->Close();
-
-            ss.Release();
-            stg.Release();
-
-            const unitmgtLengthData& unit = pDisplayUnits->GetSpanLengthUnit();
-            CString msg;
-            msg.Format(_T("An unknown error occured while computing %s moment capacity for %s at %f %s from the left end of the girder.\n(hr = %s)\n(Location ID = %d)\nPlease contact technical support with a screen print of this error message and send the diagnostic file %s."),
-                        (bPositiveMoment ? _T("positive") : _T("negative")),
-                        SEGMENT_LABEL(segmentKey),
-                        ::ConvertFromSysUnits(poi.GetDistFromStart(),unit.UnitOfMeasure),
-                        unit.UnitOfMeasure.UnitTag().c_str(),
-                        strErrorCode,
-                        poi.GetID(),
-                        strFileName);
-            pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg);
-            pStatusCenter->Add(pStatusItem);
-
-            THROW_UNWIND(msg,-1);
          }
       }
-   }
-
 
 #if defined _DEBUG
-   CTime endTime = CTime::GetCurrentTime();
-   CTimeSpan duration = endTime - startTime;
-   WATCHX(MomCap,0,_T("Duration = ") << duration.GetTotalSeconds() << _T(" seconds"));
+      CTime endTime = CTime::GetCurrentTime();
+      CTimeSpan duration = endTime - startTime;
+      WATCHX(MomCap,0,_T("Duration = ") << duration.GetTotalSeconds() << _T(" seconds"));
 #endif // _DEBUG
+   }
 
    mcd.CapacitySolution = solution;
 
-   Float64 Fz,Mx,My;
-   CComPtr<IPlane3d> strains;
-   solution->get_Fz(&Fz);
-   solution->get_Mx(&Mx);
-   solution->get_My(&My);
-   solution->get_StrainPlane(&strains);
+   Float64 Fz(0.0),Mx(0.0),My(0.0);
+   if (solution)
+   {
+      solution->get_Fz(&Fz);
+      solution->get_Mx(&Mx);
+      solution->get_My(&My);
+   }
 
    ATLASSERT( IsZero(Fz,0.1) );
    ATLASSERT( Mx != 0.0 ? IsZero(My/Mx,0.30) : true );  // when there is an odd number of harped strands, the strands aren't always symmetrical
@@ -743,17 +725,28 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       }
    }
 
-   Float64 C,T;
-   solution->get_CompressionResultant(&C);
-   solution->get_TensionResultant(&T);
+   Float64 C(0.0),T(0.0);
+   if (solution)
+   {
+      solution->get_CompressionResultant(&C);
+      solution->get_TensionResultant(&T);
+   }
    ATLASSERT(IsZero(C+T,0.5)); // equilibrium within 0.5 Newtons
    
    mcd.C = C;
    mcd.T = T;
 
    CComPtr<IPoint2d> cgC, cgT;
-   solution->get_CompressionResultantLocation(&cgC);
-   solution->get_TensionResultantLocation(&cgT);
+   if (solution)
+   {
+      solution->get_CompressionResultantLocation(&cgC);
+      solution->get_TensionResultantLocation(&cgT);
+   }
+   else
+   {
+      cgC.CoCreateInstance(CLSID_Point2d);
+      cgT.CoCreateInstance(CLSID_Point2d);
+   }
 
    Float64 fps_avg = 0;
    Float64 fpt_avg_segment = 0;
@@ -763,7 +756,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
    const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
 
-   if ( IsZero(Mn) )
+   if ( IsZero(Mn) || solution == nullptr)
    {
       // dimensions have no meaning if no moment capacity
       mcd.c          = 0.0;
@@ -1501,7 +1494,7 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
       GET_IFACE(IBridge,pBridge);
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType intervalIdx;
-      if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+      if ( IsStructuralDeck(pBridge->GetDeckType()) )
       {
          IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
          intervalIdx = compositeIntervalIdx - 1;
@@ -1848,9 +1841,26 @@ void pgsMomentCapacityEngineer::CreateTendonMaterial(const matPsStrand* pTendon,
 
 void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 eps_initial,const std::vector<Float64>& ept_initial_segment,const std::vector<Float64>& ept_initial_girder,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,ISize2d** szOffset,Float64* pdt,Float64* pH,Float64* pHaunch,std::map<StrandIndexType,Float64>* pBondFactors) const
 {
+   // beam shape
+   GET_IFACE(IShapes, pShapes);
+   CComPtr<IShape> shapeBeam;
+   pShapes->GetSegmentSectionShape(intervalIdx, poi, false, pgsTypes::scGirder, &shapeBeam);
+   if (shapeBeam == nullptr)
+   {
+      // if the poi is at a location where concrete doesn't exist in the current interval, there isn't a shape to be analyzed
+      // this can happen at the centerline of a pier diaphragm before the pier diaphragm is cast
+      // there is no moment capacity for this case
+      *ppProblem = nullptr;
+      *pntCompression = nullptr;
+      *szOffset = nullptr;
+      *pdt = 0;
+      *pH = 0;
+      *pHaunch = 0;
+      return;
+   }
+
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IMaterials,pMaterial);
-   GET_IFACE(IShapes, pShapes);
    GET_IFACE(IPointOfInterest,pPoi);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
@@ -2021,10 +2031,6 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
-
-   // beam shape
-   CComPtr<IShape> shapeBeam;
-   pShapes->GetSegmentSectionShape(intervalIdx,poi,false,pgsTypes::scGirder,&shapeBeam);
 
    // offset each shape so that the origin of the composite (if it is composite)
    // is located at the centroid of the bare girder (this keeps the moment capacity solver happy)

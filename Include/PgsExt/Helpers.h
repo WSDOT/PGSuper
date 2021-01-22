@@ -22,8 +22,9 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
+#include <PgsExt\DebondData.h>
 
-
+PGSEXTFUNC const CString& GetStrandDefinitionType(pgsTypes::StrandDefinitionType strandDefinitionType, pgsTypes::AdjustableStrandType adjustableStrandType);
 CString PGSEXTFUNC GetGirderSpacingType(pgsTypes::SupportedBeamSpacing spacingType, bool bSplicedGirder);
 CString PGSEXTFUNC GetTopWidthType(pgsTypes::TopWidthType type);
 CString PGSEXTFUNC GetLiveLoadTypeName(pgsTypes::LiveLoadType llType);
@@ -31,3 +32,9 @@ CString PGSEXTFUNC GetLiveLoadTypeName(pgsTypes::LoadRatingType ratingType);
 std::_tstring PGSEXTFUNC GetDesignTypeName(arFlexuralDesignType type);
 LPCTSTR PGSEXTFUNC GetDeckTypeName(pgsTypes::SupportedDeckType deckType);
 LPCTSTR PGSEXTFUNC GetCastDeckEventName(pgsTypes::SupportedDeckType deckType);
+
+
+// Changes in girder fill can make debonding invalid. This algorithm gets rid of any
+// debonding of strands that don't exist
+bool PGSEXTFUNC ReconcileDebonding(const ConfigStrandFillVector& fillvec, std::vector<CDebondData>& rDebond);
+bool PGSEXTFUNC ReconcileExtendedStrands(const ConfigStrandFillVector& fillvec, std::vector<GridIndexType>& extendedStrands);

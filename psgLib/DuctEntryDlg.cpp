@@ -65,6 +65,9 @@ void CDuctEntryDlg::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_ID, IDC_ID_UNIT, m_ID, pDisplayUnits->ComponentDim );
    DDV_UnitValueGreaterThanZero(pDX, IDC_ID, m_ID, pDisplayUnits->ComponentDim );
 
+   DDX_UnitValueAndTag(pDX, IDC_ND, IDC_ND_UNIT, m_ND, pDisplayUnits->ComponentDim);
+   DDV_UnitValueGreaterThanZero(pDX, IDC_ND, m_ND, pDisplayUnits->ComponentDim);
+
    DDX_UnitValueAndTag(pDX, IDC_Z, IDC_Z_UNIT, m_Z, pDisplayUnits->ComponentDim );
    DDV_UnitValueZeroOrMore(pDX, IDC_Z, m_Z, pDisplayUnits->ComponentDim );
 

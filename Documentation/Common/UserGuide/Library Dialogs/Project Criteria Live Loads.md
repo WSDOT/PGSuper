@@ -24,7 +24,7 @@ Use rigid method... | When checked, the rigid method, as described in LRFD 4.6.2
 > * The location of maximum deck width will be used to determine the spacing used to compute the live load distribution factors.
 > * Spacings are measured normal to the alignment at the station of the location determined above.
 > * Most LRFD distribution factor methods use a single value (S) for girder spacing as a parameter. However, PGSuper allows spacing to vary (splay), if desired. If the spacing to the left and right side of the girder are different, PGSuper will use the average of the two adjacent spacings where a single value is needed. Note that the actual spacings are used when using the lever rule or statical method.
-> * If the fractional distance is not 0.5, the width of the bridge is evaluated at two locations. If the width of the bridge is the same at both locations, the section that is nearest the start of the span will be used.
+> * If the fractional distance is not 0.5, the width of the bridge is evaluated at two locations. If the width of the bridge is the same at both locations, the section that is nearest the location specifed in the Project Criteria will be used.
 
 > TIP: You can forego the computation of live load distribution factors and enter your own values.
  

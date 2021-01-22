@@ -632,6 +632,8 @@ void CStrandGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
       ASSERT(pParent);
       pParent->OnChange();
    }
+
+   __super::OnModifyCell(nRow, nCol);
 }
 
 void CStrandGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
@@ -645,6 +647,8 @@ void CStrandGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
       ASSERT(pParent);
       pParent->OnChange();
    }
+
+   __super::OnClickedButtonRowCol(nRow, nCol);
 }
 
 BOOL CStrandGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
@@ -653,7 +657,8 @@ BOOL CStrandGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    ASSERT(pParent);
 
    pParent->OnChange();
-   return TRUE;
+   
+   return __super::OnEndEditing(nRow, nCol);
 }
 
 ROWCOL CStrandGrid::GetStrandTypeCol()

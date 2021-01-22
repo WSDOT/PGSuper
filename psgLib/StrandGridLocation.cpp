@@ -169,6 +169,11 @@ BOOL CStrandGridLocation::OnInitDialog()
    {
       pcb->AddString(_T("Harped"));
       pbox->SetWindowText(_T("Location at Harping Points"));
+
+      if (!m_UseHarpedGrid)
+      {
+         HideEndBox();
+      }
    }
    else if (m_AdjustableStrandType==pgsTypes::asStraight || m_AdjustableStrandType==pgsTypes::asStraightOrHarped)
    {

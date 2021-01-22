@@ -60,7 +60,7 @@ Temporary supports are erection towers and strongbacks and are only found in spl
 
 Idealized roller supports are used for erection tower temporary supports.
 
-Girderlines
+Girder Lines
 --------------
 The structural analysis models use the same girder in each span (e.g. Girder B from every span is used to create the model for the first interior girder line). When the number of girders per span is not equal the right exterior girder is used when a span has fewer girders then the girder line for which the model is being constructed. This is illustrated below.
 
@@ -68,7 +68,9 @@ The structural analysis models use the same girder in each span (e.g. Girder B f
 
 In the illustration above, Spans 1 and 2 have 4 girders and Span 3 has 5 girders. Girder D from spans 1 and 2 are used in the line model for analyzing Girder E.
 
-> NOTE: The accuracy of such girderline models relies on 100 percent transfer of moment through the pier cap (i.e., the pier cap is torsionally rigid, and the beam-cap connection is rigid). If this assumption is questionable, users should construct a 3D finite element model or other means for confirmation. 
+> NOTE: The accuracy of such girder line models relies on 100 percent transfer of moment through the pier cap (i.e., the pier cap is torsionally rigid, and the beam-cap connection is rigid). If this assumption is questionable, users should construct a 3D finite element model or other means for confirmation. 
+
+> NOTE: See @ref tg_reactions for guidance on intrepreting bearing and pier reactions from girder line models.
 
 Loading
 ---------
@@ -204,12 +206,12 @@ Railing system loads consist of dead loads from the traffic barrier, sidewalk, a
 A mating surface is the contact point between a girder and the bridge deck. Examples are:
 
 Girder Type | Number of Webs | Number of Mating Surfaces
----------|-----------|------------
-I-Beam |  1 | 1
-U-Beam |  2 | 2
-Box Beam |  2 |  1
-Voided Slab |  0 |  1
-Double Tee |  2 |  1
+------------|----------------|--------------------------
+I-Beam      |  1             | 1
+U-Beam      |  2             | 2
+Box Beam    |  2             | 1
+Voided Slab |  0             | 1
+Double Tee  |  2             | 1
 
 <h5>Exterior and Interior Traffic Barriers</h5>
 The dead load of exterior and interior barriers are distributed as follows:  
@@ -228,7 +230,7 @@ Pedestrian live load on sidewalk is distributed to the same girders, and in the 
 Consider for example a bridge section with three U-beams. If the railing system loads are distributed over the 3 nearest girders, the exterior barrier dead load per girder would be 0.33(W<sub>left</sub> + W<sub>right</sub>).
 
 Girder A |  Girder B |  Girder C
----------|-----------|------------
+---------|-----------|----------
 0.33W<sub>left</sub> + 0.33W<sub>right</sub> |  0.33W<sub>left</sub> + 0.33W<sub>right</sub> |  0.33W<sub>left</sub> + 0.33W<sub>right</sub>
  
 However, if the loads are distributed over the 3 exterior webs or mating surfaces, the exterior barrier dead load would be:

@@ -230,7 +230,7 @@ Float64 CSplicedIBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastS
 
    Float64 Xl, Yl, Xr, Yr;
    ZoneType zone = ::GetControlPoints(Xs, Ls, X, Y, &Xl, &Yl, &Xr, &Yr);
-   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, bParabolas));
+   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, Yl, Yr, bParabolas));
 }
 
 Float64 CSplicedIBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
@@ -251,7 +251,7 @@ Float64 CSplicedIBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPrec
 
    Float64 Xl, Yl, Xr, Yr;
    ZoneType zone = ::GetControlPoints(Xs, Ls, X, Y, &Xl, &Yl, &Xr, &Yr);
-   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, bParabolas));
+   return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, Yl, Yr, bParabolas));
 }
 
 void CSplicedIBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const

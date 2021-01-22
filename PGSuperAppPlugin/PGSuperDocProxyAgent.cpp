@@ -539,9 +539,9 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
    }
 }
 
-void CPGSuperDocProxyAgent::OnResetHints()
+void CPGSuperDocProxyAgent::OnUIHintsReset()
 {
-   Fire_OnHintsReset();
+   Fire_OnUIHintsReset();
 }
 
 //////////////////////////////////////////////////////////
@@ -811,6 +811,7 @@ HRESULT CPGSuperDocProxyAgent::OnSpecificationChanged()
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
    m_pMyDocument->UpdateProjectCriteriaIndicator();
+   m_pMyDocument->UpdateAnalysisTypeStatusIndicator();
 
    FireEvent( 0, HINT_SPECCHANGED, nullptr );
    return S_OK;
@@ -1315,7 +1316,7 @@ bool CPGSuperDocProxyAgent::EditBearings()
 // IDesign
 void CPGSuperDocProxyAgent::DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey)
 {
-   arSlabOffsetDesignType designSlabOffset = bDesignSlabOffset ? sodSlabOffsetandAssumedExcessCamberDesign : sodNoSlabOffsetDesign;
+   arSlabOffsetDesignType designSlabOffset = bDesignSlabOffset ? sodDesignHaunch : sodPreserveHaunch;
 
    ((CPGSuperDoc*)m_pMyDocument)->DesignGirder(bPrompt,designSlabOffset,girderKey);
 }

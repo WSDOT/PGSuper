@@ -48,6 +48,8 @@ public:
    CString m_InitialEc;
    CString m_strFct;
 
+   Float64 m_MinFcUHPC;
+   Float64 m_MaxFcUHPC;
    Float64 m_MinNWCDensity;
    Float64 m_MaxLWCDensity;
    bool m_bErrorInDDX;
@@ -64,6 +66,7 @@ public:
 // Implementation
 protected:
    bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
+   bool IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type);
    pgsTypes::ConcreteType GetConreteType();
 
 	// Generated message map functions

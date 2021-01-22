@@ -150,6 +150,7 @@ public:
    virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSetAtAnchorage(const CGirderKey& girderKey) const override;
    virtual Float64 GetGirderTendonAllowableCoefficientAfterAnchorSet(const CGirderKey& girderKey) const override;
    virtual Float64 GetGirderTendonAllowableCoefficientAfterLosses(const CGirderKey& girderKey) const override;
+
 // IAllowableConcreteStress
 public:
    virtual Float64 GetAllowableCompressionStress(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const override;
@@ -194,6 +195,12 @@ public:
 
    virtual bool CheckTemporaryStresses() const override;
    virtual bool CheckFinalDeadLoadTensionStress() const override;
+
+   virtual Float64 GetAllowableSegmentPrincipalWebTensionStress(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetAllowableClosureJointPrincipalWebTensionStress(const CClosureKey& closureKey) const override;
+   virtual Float64 GetAllowablePrincipalWebTensionStress(const pgsPointOfInterest& poi) const override;
+   virtual Float64 GetAllowablePrincipalWebTensionStressCoefficient() const override;
+   virtual Float64 GetprincipalTensileStressFcThreshold() const override;
 
 // ITransverseReinforcementSpec
 public:
@@ -316,12 +323,17 @@ public:
 
 // IDebondLimits
 public:
+   virtual bool CheckMaxDebondedStrands(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) const override;
-   virtual Float64 GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey) const override;
-   virtual StrandIndexType GetMaxNumDebondedStrandsPerSection(const CSegmentKey& segmentKey) const override;
+   virtual void GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pNS, bool* pbCheckMax, Float64* pMaxFraction) const override;
    virtual void GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) const override;
-   virtual Float64 GetMinDebondSectionDistance(const CSegmentKey& segmentKey) const override;
+   virtual void GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey, Float64* pndb, bool* pbUseMinDistance, Float64* pMinDistance) const override;
+   virtual Float64 GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey) const override;
+   virtual bool CheckDebondingSymmetry(const CSegmentKey& segmentKey) const override;
+   virtual bool CheckAdjacentDebonding(const CSegmentKey& segmentKey) const override;
+   virtual bool CheckDebondingInWebWidthProjections(const CSegmentKey& segmentKey) const override;
+   virtual bool IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, RowIndexType rowIdx) const override;
 
 // IResistanceFactors
 public:
@@ -347,6 +359,8 @@ public:
    virtual Float64 GetGirderTendonAreaLimit(const CGirderKey& girderKey) const override;
    virtual Float64 GetGirderTendonDuctSizeLimit(const CGirderKey& girderKey) const override;
    virtual Float64 GetTendonAreaLimit(pgsTypes::StrandInstallationType installationType) const override;
+   virtual Float64 GetSegmentDuctDeductionFactor(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const override;
+   virtual Float64 GetGirderDuctDeductionFactor(const CGirderKey& girderKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx) const override;
 
 private:
    DECLARE_EAF_AGENT_DATA;
@@ -360,6 +374,7 @@ private:
    const SpecLibraryEntry* GetSpec() const;
 
    Float64 GetRadiusOfCurvatureLimit(pgsTypes::DuctType ductType) const;
+   Float64 GetDuctDeductFactor(IntervalIndexType intervalIdx, IntervalIndexType groutDuctIntervalIdx) const;
 
    bool IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls) const;
    void ValidateHaulTruck(const CPrecastSegmentData* pSegment) const;

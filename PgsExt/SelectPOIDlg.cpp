@@ -105,22 +105,22 @@ BOOL CSelectPOIDlg::OnInitDialog()
    m_GirderKey = m_InitialPOI.GetSegmentKey();
 
    GET_IFACE2(pBroker,IDocumentType,pDocType);
-   CString strGroup;
-   if ( pDocType->IsPGSuperDocument() )
-   {
-      strGroup = _T("Span");
-   }
-   else
-   {
-      strGroup = _T("Group");
-   }
+   bool isPGSuper = pDocType->IsPGSuperDocument();
 
    CComboBox* pGroupBox = (CComboBox*)GetDlgItem( IDC_GROUP );
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       CString strLabel;
-      strLabel.Format(_T("%s %d"),strGroup,LABEL_GROUP(grpIdx));
+      if (isPGSuper)
+      {
+         strLabel.Format(_T("Span %s"), LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         strLabel.Format(_T("Group %d"), LABEL_GROUP(grpIdx));
+      }
+
       pGroupBox->AddString(strLabel);
    }
    pGroupBox->SetCurSel((int)m_GirderKey.groupIndex);

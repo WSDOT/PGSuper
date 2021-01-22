@@ -60,6 +60,13 @@ protected:
       IDType DisplayListID;
    };
 
+   struct TemporarySupportDisplayObjectInfo
+   {
+      TemporarySupportDisplayObjectInfo(SupportIndexType tsIdx, IDType listID) : tsIdx(tsIdx), DisplayListID(listID) {}
+      SupportIndexType tsIdx;
+      IDType DisplayListID;
+   };
+
    struct SpanDisplayObjectInfo
    {
       SpanDisplayObjectInfo(SpanIndexType spanIdx,IDType listID): SpanIdx(spanIdx), DisplayListID(listID) {}
@@ -101,6 +108,7 @@ public:
    void SelectClosureJoint(const CSegmentKey& closureKey,bool bSelect);
    void SelectDeck(bool bSelect);
    void SelectAlignment(bool bSelect);
+   bool GetSelectedTemporarySupport(SupportIndexType* ptsIdx);
    void SelectTemporarySupport(SupportIDType tsID,bool bSelect);
    void ClearSelection();
    bool IsDeckSelected();

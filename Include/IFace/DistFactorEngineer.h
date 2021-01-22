@@ -120,5 +120,13 @@ interface IUBeamDistFactorEngineer : IUnknown
    virtual void Init(bool bTypeB, bool bisSpreadSlab) = 0;
 };
 
+// {E77E6143-9E82-4644-AF40-7D073BD9FC2B}
+DEFINE_GUID(IID_IBulbTeeDistFactorEngineer,
+   0xe77e6143, 0x9e82, 0x4644, 0xaf, 0x40, 0x7d, 0x7, 0x3b, 0xd9, 0xfc, 0x2b);
+interface IBulbTeeDistFactorEngineer : IUnknown
+{
+   virtual void Init() = 0;
+};
+
 #endif // INCLUDED_IFACE_DISTFACTORENGINEER_H_
 

@@ -39,6 +39,19 @@
 #define EBD_DECKREBAR      4
 #define EBD_ENVIRONMENT    5
 
+// Pier Editing
+#define EPD_GENERAL        0
+#define EPD_LAYOUT         1
+#define EPD_SPACING        2
+#define EPD_CONNECTION     3
+#define EPD_BEARINGS       4
+
+// Span Editing
+#define ESD_GENERAL        0
+#define ESD_CONNECTION     1
+#define ESD_SPACING        2
+
+
 // PGSuper Edit Girder Details Pages
 #define EGD_GENERAL        0
 #define EGD_CONCRETE       EGD_GENERAL
@@ -100,13 +113,13 @@ interface IEditByUI : IUnknown
    virtual UINT GetLibToolBarID() = 0;
    virtual UINT GetHelpToolBarID() = 0;
 
-   // NOTE: Strand fill type must be CStrandData::sdtDirectSelection before entering this dialog
+   // NOTE: Strand fill type must be pgsTypes::sdtDirectSelection before entering this dialog
    virtual bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey) = 0;
 
-   // NOTE: Strand fill type must be CStrandData::sdtDirectRowInput before entering this dialog
+   // NOTE: Strand fill type must be pgsTypes::sdtDirectRowInput before entering this dialog
    virtual bool EditDirectRowInputPrestressing(const CSegmentKey& segmentKey) = 0;
 
-   // NOTE: Strand fill type must be CStrandData::sdtDirectStrandInput before entering this dialog
+   // NOTE: Strand fill type must be pgsTypes::sdtDirectStrandInput before entering this dialog
    virtual bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey) = 0;
 
    virtual void AddPointLoad(const CPointLoadData& loadData) = 0;

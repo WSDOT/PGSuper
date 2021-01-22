@@ -137,8 +137,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
    return nullptr;
 }
 
-rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CReportSpecification* pRptSpec,Uint16 level,
-                    const pgsGirderArtifact* pGirderArtifact) const
+rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CReportSpecification* pRptSpec,Uint16 level, const pgsGirderArtifact* pGirderArtifact) const
 {
    CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
@@ -151,8 +150,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CReportSpecification* pRptS
    return pChapter;
 }
 
-void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroker* pBroker,
-                                                    const pgsGirderArtifact* pGirderArtifact) const
+void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

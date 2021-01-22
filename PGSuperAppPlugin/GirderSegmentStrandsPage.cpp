@@ -99,6 +99,23 @@ void DDX_UnitValueChoice(CDataExchange* pDX, UINT nIDC, UINT nIDCUnit, Float64& 
    }
 }
 
+void DDV_UnitValueChoice(CDataExchange* pDX, UINT nIDC, Float64& value, Float64 Ls, const unitmgtLengthData& lengthUnit)
+{
+   if (pDX->m_bSaveAndValidate)
+   {
+      if (0 < value)
+      {
+         DDV_UnitValueLimitOrLess(pDX, nIDC, value, Ls, lengthUnit);
+      }
+      else if (value < -1.0)
+      {
+         pDX->PrepareEditCtrl(nIDC);
+         AfxMessageBox(_T("Enter a value between 0% and 100%"));
+         pDX->Fail();
+      }
+   }
+}
+
 CGirderSegmentStrandsPage::CGirderSegmentStrandsPage()
 	: CPropertyPage(CGirderSegmentStrandsPage::IDD)
 {
@@ -115,7 +132,7 @@ void CGirderSegmentStrandsPage::Init(CPrecastSegmentData* pSegment)
    m_Strands = m_pSegment->Strands;
    m_Tendons = m_pSegment->Tendons;
 
-   if (m_Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if (m_Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       m_pGrid = std::make_unique<CPointStrandGrid>();
    }
@@ -335,7 +352,7 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    EnableToolTips(TRUE);
    EnableRemoveButton(FALSE); // start off with the button disabled... it will get enabled when a row in the grid is selected
 
-   if (m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectStrandInput)
+   if (m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       m_StrandSpacingImage.ShowWindow(SW_HIDE);
       GetDlgItem(IDC_SPACING_LABEL)->ShowWindow(SW_HIDE);
@@ -493,7 +510,7 @@ void CGirderSegmentStrandsPage::UpdateStrandControls()
 
 void CGirderSegmentStrandsPage::OnHelp() 
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), m_pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectRowInput ? IDH_GIRDER_STRAND_ROW_INPUT : IDH_GIRDER_INDIVIDUAL_STRAND_INPUT );
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectRowInput ? IDH_GIRDER_STRAND_ROW_INPUT : IDH_GIRDER_INDIVIDUAL_STRAND_INPUT );
 }
 
 void CGirderSegmentStrandsPage::OnEpoxyChanged()
@@ -748,6 +765,9 @@ void CGirderSegmentStrandsPage::FillHarpPointUnitComboBox(UINT nIDC, const unitm
 
 void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CDataExchange* pDX,CStrandData* pStrands)
 {
+   if (pDX->m_bSaveAndValidate && pStrands->GetStrandCount(pgsTypes::Harped) == 0)
+      return;
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
@@ -757,34 +777,21 @@ void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CDataExchange* pDX,CS
    {
       pStrands->GetHarpPoints(&Xstart, &Xlhp, &Xrhp, &Xend);
    }
+
    DDX_UnitValueChoice(pDX, IDC_X1, IDC_X1_MEASURE, Xstart, pDisplayUnits->GetSpanLengthUnit());
    DDX_UnitValueChoice(pDX, IDC_X2, IDC_X2_MEASURE, Xlhp, pDisplayUnits->GetSpanLengthUnit());
    DDX_UnitValueChoice(pDX, IDC_X3, IDC_X3_MEASURE, Xrhp, pDisplayUnits->GetSpanLengthUnit());
    DDX_UnitValueChoice(pDX, IDC_X4, IDC_X4_MEASURE, Xend, pDisplayUnits->GetSpanLengthUnit());
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 Ls = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
+   DDV_UnitValueChoice(pDX, IDC_X1, Xstart, Ls, pDisplayUnits->GetSpanLengthUnit());
+   DDV_UnitValueChoice(pDX, IDC_X2, Xlhp, Ls, pDisplayUnits->GetSpanLengthUnit());
+   DDV_UnitValueChoice(pDX, IDC_X3, Xrhp, Ls, pDisplayUnits->GetSpanLengthUnit());
+   DDV_UnitValueChoice(pDX, IDC_X4, Xend, Ls, pDisplayUnits->GetSpanLengthUnit());
+
    if (pDX->m_bSaveAndValidate)
    {
-      GET_IFACE2(pBroker, IBridge, pBridge);
-      Float64 L = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
-      if (0 < Xstart)
-      {
-         DDV_UnitValueLimitOrLess(pDX, IDC_X1, Xstart, L, pDisplayUnits->GetSpanLengthUnit());
-      }
-
-      if (0 < Xlhp)
-      {
-         DDV_UnitValueLimitOrLess(pDX, IDC_X2, Xlhp, L, pDisplayUnits->GetSpanLengthUnit());
-      }
-
-      if (0 < Xrhp)
-      {
-         DDV_UnitValueLimitOrLess(pDX, IDC_X3, Xrhp, L, pDisplayUnits->GetSpanLengthUnit());
-      }
-
-      if (0 < Xend)
-      {
-         DDV_UnitValueLimitOrLess(pDX, IDC_X4, Xend, L, pDisplayUnits->GetSpanLengthUnit());
-      }
-
       pStrands->SetHarpPoints(Xstart, Xlhp, Xrhp, Xend);
    }
 }

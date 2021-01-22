@@ -109,7 +109,7 @@ protected:
    Float64 m_XBeamTaperLength[2];
    Float64 m_XBeamEndSlopeOffset[2];
    Float64 m_XBeamOverhang[2];
-   pgsTypes::ColumnFixityType m_ColumnFixity;
+   pgsTypes::ColumnLongitudinalBaseFixityType m_ColumnFixity;
 };
 
 //{{AFX_INSERT_LOCATION}}

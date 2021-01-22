@@ -69,7 +69,7 @@ protected:
    arvPhysicalConverter* m_pYFormat;
    grGraphXY m_Graph;
 
-   bool m_bPlot[4];
+   std::array<bool, 4> m_bPlot;
 
    int m_XAxisType;
 

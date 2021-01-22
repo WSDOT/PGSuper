@@ -127,7 +127,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       {
          pDX->PrepareEditCtrl(IDC_STATION);
          CString strMsg;
-         strMsg.Format(_T("Temporary support cannot be at the same location as %s %d"),pBridgeDesc->GetPier(pierIdx)->IsAbutment() ? _T("Abutment") : _T("Pier"),LABEL_PIER(pierIdx));
+         strMsg.Format(_T("Temporary support cannot be at the same location as %s"),LABEL_PIER_EX(pBridgeDesc->GetPier(pierIdx)->IsAbutment(),pierIdx));
          AfxMessageBox(strMsg,MB_OK | MB_ICONSTOP);
          pDX->Fail();
       }
@@ -216,19 +216,18 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
       int result = pTimelineMgr->Validate();
       if (result != TLM_SUCCESS)
       {
-         if (result == TLM_STRONGBACK_ERECTION_ERROR)
+         if (sysFlags<Uint32>::IsSet(result,TLM_STRONGBACK_ERECTION_ERROR))
          {
             pDX->PrepareCtrl(IDC_ERECTION_EVENT);
-            CString strMsg = pTimelineMgr->GetErrorMessage(result);
+            CString strMsg = pTimelineMgr->GetErrorMessage(result).c_str();
             strMsg += _T("\r\n\r\nPlease correct the temporary support erection event.");
             AfxMessageBox(strMsg, MB_ICONEXCLAMATION);
             pDX->Fail();
          }
-         else
+         else if (sysFlags<Uint32>::IsSet(result, TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR))
          {
-            ATLASSERT(result == TLM_TEMPORARY_SUPPORT_REMOVAL_ERROR);
             pDX->PrepareCtrl(IDC_REMOVAL_EVENT);
-            CString strMsg = pTimelineMgr->GetErrorMessage(result);
+            CString strMsg = pTimelineMgr->GetErrorMessage(result).c_str();
             strMsg += _T("\r\n\r\nPlease correct the temporary support removal event.");
             AfxMessageBox(strMsg, MB_ICONEXCLAMATION);
             pDX->Fail();
@@ -257,7 +256,15 @@ BOOL CTemporarySupportLayoutPage::OnInitDialog()
    m_SlabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
    m_InitialSlabOffsetType = m_SlabOffsetType;
 
-   pParent->m_pTS->GetSlabOffset(&m_SlabOffset[pgsTypes::Back], &m_SlabOffset[pgsTypes::Ahead]);
+   if (pParent->m_pTS->HasSlabOffset())
+   {
+      pParent->m_pTS->GetSlabOffset(&m_SlabOffset[pgsTypes::Back], &m_SlabOffset[pgsTypes::Ahead]);
+   }
+   else
+   {
+      m_SlabOffset[pgsTypes::Back] = pParent->m_BridgeDesc.GetSlabOffset();
+      m_SlabOffset[pgsTypes::Ahead] = m_SlabOffset[pgsTypes::Back];
+   }
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_TS_TYPE);
    pCB->SetItemData(pCB->AddString(_T("Erection Tower")), (DWORD_PTR)pgsTypes::ErectionTower);
@@ -281,7 +288,7 @@ BOOL CTemporarySupportLayoutPage::OnInitDialog()
       int idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotSegment, false));
       pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotSegment);
 
-      pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, false));
+      idx = pCB->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, false));
       pCB->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBearingLine);
    }
    pCB->SetCurSel(m_InitialSlabOffsetType == pgsTypes::sotSegment ? 0 : 1);

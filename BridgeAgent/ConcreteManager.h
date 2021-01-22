@@ -110,7 +110,8 @@ public:
    Float64 GetShearFrCoefficient(pgsTypes::ConcreteType type) const;
    Float64 GetSegmentShearFrCoefficient(const CSegmentKey& segmentKey) const;
    Float64 GetClosureJointShearFrCoefficient(const CClosureKey& closureKey) const;
-   Float64 GetEconc(Float64 fc,Float64 density,Float64 K1,Float64 K2) const;
+   Float64 GetEconc(pgsTypes::ConcreteType type, Float64 fc,Float64 density,Float64 K1,Float64 K2) const;
+   bool HasUHPC() const;
 
    // Time-dependent concrete properties
    // t is the absolute time in the time sequence. Time is automatically

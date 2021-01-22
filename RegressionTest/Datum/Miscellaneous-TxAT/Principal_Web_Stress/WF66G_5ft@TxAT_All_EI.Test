@@ -1,0 +1,27 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    6   5.00                     1     1    WF66G    *     54  0.6  270  27.91  11.58  10.75  10.75                                              18  62.0  7.0  7.500 10.100   5.624    -5.676    12896   0.466  0.596   5.325 -2.923 -0.442 -0.626 -3.991 227.39  332.72    9.00   15.00   18.00 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    6   5.00                     1     2    WF66G    *     54  0.6  270  27.91  11.58  10.75  10.75                                              18  62.0  7.0  7.500 10.100   5.668    -5.716    12969   0.466  0.596   5.188 -2.996 -0.442 -0.626 -4.064 227.39  329.87    9.00   15.00   18.00 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    6   5.00                     1     4    WF66G    *     54  0.6  270  27.91  11.58  10.75  10.75                                              18  62.0  7.0  7.500 10.100   5.668    -5.716    12969   0.466  0.596   5.188 -2.996 -0.442 -0.626 -4.064 227.39  329.87    9.00   15.00   18.00 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+
+

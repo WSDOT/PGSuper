@@ -641,11 +641,10 @@ void CBridgeSectionView::UpdateGirderTooltips()
       const matPsStrand* pStrand     = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
       const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
-      StrandIndexType Ns, Nh, Nt, Nsd;
-      Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
-      Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped);
-      Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
-      Nsd= pStrandGeom->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
+      StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
+      StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped);
+      StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary);
+      StrandIndexType Nsd = pStrandGeom->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither);
 
       std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 
@@ -2925,7 +2924,7 @@ GroupIndexType CBridgeSectionView::GetGroupIndex()
       if ( grpIdx == nGroups-1 )
       {
          // Include end station for last group
-         if ( prev_pier_station <= cut_station && cut_station <= next_pier_station )
+         if ( ::IsLE(prev_pier_station,cut_station) && ::IsLE(cut_station,next_pier_station) )
          {
             return pGroup->GetIndex();
          }
@@ -2935,7 +2934,7 @@ GroupIndexType CBridgeSectionView::GetGroupIndex()
          // Exclue end station for all other groups
          // Section cuts look ahead on station so if we are cutting at a group
          // boundary, we want the next group
-         if ( prev_pier_station <= cut_station && cut_station < next_pier_station )
+         if ( ::IsLE(prev_pier_station,cut_station) && ::IsLT(cut_station,next_pier_station) )
          {
             return pGroup->GetIndex();
          }

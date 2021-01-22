@@ -96,7 +96,7 @@ CLibraryEditorDoc::CLibraryEditorDoc()
    UINT nCommands = GetPluginCommandManager()->ReserveCommandIDRange(LIBRARY_PLUGIN_COMMAND_COUNT);
    ATLASSERT(nCommands == LIBRARY_PLUGIN_COMMAND_COUNT);
 
-   UIHints(FALSE); // not using UIHints feature
+   EnableUIHints(FALSE); // not using UIHints feature
 }
 
 CLibraryEditorDoc::~CLibraryEditorDoc()

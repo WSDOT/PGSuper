@@ -184,7 +184,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification
          GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
          CSegmentKey segmentKey(grpIdx, gdrIdx, 0);
 
-         MatingSurfaceIndexType nWebs = pGirder->GetNumberOfMatingSurfaces(segmentKey);
+         MatingSurfaceIndexType nWebs = pGirder->GetMatingSurfaceCount(segmentKey);
          pTable->SetRowSpan(row, 0, Int16(row_step*nWebs));
 
          (*pTable)(row, 0) << LABEL_GIRDER(gdrIdx);

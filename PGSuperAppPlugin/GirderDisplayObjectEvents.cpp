@@ -250,7 +250,7 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
          UINT nPos = pMenu->FindMenuItem(strDesignGirder);
          pMenu->RemoveMenu(nPos-1,MF_BYPOSITION,nullptr); // remove the separater before "Design Girder"
          pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECT,MF_BYCOMMAND,nullptr);
-         pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET,MF_BYCOMMAND,nullptr);
+         pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECT_PRESERVEHAUNCH,MF_BYCOMMAND,nullptr);
       }
 
       pPGSDoc->BuildReportMenu(pMenu,true);

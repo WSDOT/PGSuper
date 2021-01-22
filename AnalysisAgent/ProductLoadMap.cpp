@@ -214,3 +214,106 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroke
 
    return pfTypes;
 }
+
+std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroker * pBroker, const CGirderKey & girderKey)
+{
+std::vector<pgsTypes::ProductForceType> vProductForces;
+
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
+
+   vProductForces.push_back(pgsTypes::pftGirder);
+
+   vProductForces.push_back(pgsTypes::pftDiaphragm);
+
+   if ( pLoads->HasShearKeyLoad(girderKey) )
+   {
+      vProductForces.push_back(pgsTypes::pftShearKey);
+   }
+
+   if ( !IsZero(pUserLoads->GetConstructionLoad()) )
+   {
+      vProductForces.push_back(pgsTypes::pftConstruction);
+   }
+
+   if (pLoads->HasLongitudinalJointLoad())
+   {
+      vProductForces.push_back(pgsTypes::pftLongitudinalJoint);
+   }
+
+   if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
+   {
+      vProductForces.push_back(pgsTypes::pftSlab);
+      vProductForces.push_back(pgsTypes::pftSlabPad);
+
+      if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
+      {
+         vProductForces.push_back(pgsTypes::pftSlabPanel);
+      }
+   }
+
+   if ( pLoads->HasSidewalkLoad(girderKey) )
+   {
+      vProductForces.push_back(pgsTypes::pftSidewalk);
+   }
+
+   vProductForces.push_back(pgsTypes::pftTrafficBarrier);
+
+   if ( pBridge->HasOverlay() )
+   {
+      vProductForces.push_back(pgsTypes::pftOverlay);
+   }
+
+   if ( pUserLoads->HasUserDC(girderKey) )
+   {
+      vProductForces.push_back(pgsTypes::pftUserDC);
+   }
+
+   if ( pUserLoads->HasUserDW(girderKey) )
+   {
+      vProductForces.push_back(pgsTypes::pftUserDW);
+   }
+
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   {
+      if ( 0 < pStrandGeom->GetStrandCount(CSegmentKey(girderKey,segIdx),pgsTypes::Straight) ||
+           0 < pStrandGeom->GetStrandCount(CSegmentKey(girderKey,segIdx),pgsTypes::Harped)   ||
+           0 < pStrandGeom->GetStrandCount(CSegmentKey(girderKey,segIdx),pgsTypes::Temporary)
+           )
+      {
+         vProductForces.push_back(pgsTypes::pftPretension);
+         break;
+      }
+   }
+
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+   if ( 0 < nDucts )
+   {
+      vProductForces.push_back(pgsTypes::pftPostTensioning);
+      vProductForces.push_back(pgsTypes::pftSecondaryEffects);
+   }
+
+   // time-depending effects
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   if ( !pLossParams->IgnoreCreepEffects() )
+   {
+      vProductForces.push_back(pgsTypes::pftCreep);
+   }
+
+   if ( !pLossParams->IgnoreShrinkageEffects() )
+   {
+      vProductForces.push_back(pgsTypes::pftShrinkage);
+   }
+
+   if ( !pLossParams->IgnoreRelaxationEffects() )
+   {
+      vProductForces.push_back(pgsTypes::pftRelaxation);
+   }
+
+   return vProductForces;
+}
+

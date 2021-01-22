@@ -334,19 +334,21 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
          *m_Segments[segIdx] = *pOtherSegment;
       }
 
-      if ( pMyTimelineMgr && pOtherTimelineMgr )
+      if ( pMyTimelineMgr && pOtherTimelineMgr // make sure timeline managers are not null
+         && pMyTimelineMgr != pOtherTimelineMgr // make sure they aren't the same timeline manager (it's a waste of effort if the pointers reference the same object)
+         )
       {
-         SegmentIDType segID = pOtherSegment->GetID();
+         SegmentIDType otherSegID = pOtherSegment->GetID();
+         SegmentIDType segID = m_Segments[segIdx]->GetID();
          ATLASSERT(segIdx == pOtherSegment->GetIndex());
          EventIndexType constructionEventIdx, erectionEventIdx;
-         pOtherTimelineMgr->GetSegmentEvents(segID,&constructionEventIdx,&erectionEventIdx);
+         pOtherTimelineMgr->GetSegmentEvents(otherSegID,&constructionEventIdx,&erectionEventIdx);
          pMyTimelineMgr->SetSegmentEvents(segID,constructionEventIdx,erectionEventIdx);
       }
 
       if ( segIdx < nSegments-1 )
       {
          const CClosureJointData* pOtherClosure = rOther.m_Closures[segIdx];
-         ClosureIDType closureID = pOtherClosure->GetID();
 
          if ( m_bCreatingNewGirder )
          {
@@ -368,10 +370,11 @@ void CSplicedGirderData::MakeCopy(const CSplicedGirderData& rOther,bool bCopyDat
             }
          }
 
-         if (!bCopyDataOnly && (pMyTimelineMgr && pOtherTimelineMgr) )
+         if (!bCopyDataOnly && (pMyTimelineMgr && pOtherTimelineMgr) /*both not null*/ && (pMyTimelineMgr != pOtherTimelineMgr)/*pointers don't refernece same object*/ )
          {
-            ATLASSERT(closureID == m_Closures[segIdx]->GetID());
-            EventIndexType castClosureEventIdx = pOtherTimelineMgr->GetCastClosureJointEventIndex(closureID);
+            ClosureIDType otherClosureID = pOtherClosure->GetID();
+            ClosureIDType closureID = m_Closures[segIdx]->GetID();
+            EventIndexType castClosureEventIdx = pOtherTimelineMgr->GetCastClosureJointEventIndex(otherClosureID);
             if ( castClosureEventIdx != INVALID_INDEX )
             {
                pMyTimelineMgr->SetCastClosureJointEventByIndex(closureID,castClosureEventIdx);
@@ -1182,27 +1185,54 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
 
          // the left and right segments have been merged into a single segment
          // now, look at the construction and erection events.... use the earliest
-         // event for construction and erection
+         // event for construction and erection. if the left segment is supported by a
+         // temporary support, the combined segment cannot be erected before the temporary support
          CTimelineManager* pTimelineMgr = GetTimelineManager();
          if (pTimelineMgr)
          {
             SegmentIDType leftSegID = pLeftSegment->GetID();
             SegmentIDType rightSegID = pRightSegment->GetID();
 
+            // construction events
             EventIndexType leftSegConstructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(leftSegID);
             EventIndexType rightSegConstructEventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(rightSegID);
             if (rightSegConstructEventIdx < leftSegConstructEventIdx)
             {
+               // the right segment is constructed before the left segment, so remove the left segment from
+               // its construction event and put it into the construction event for the right segment
                CTimelineEvent* pLeftSegConstructionEvent = pTimelineMgr->GetEventByIndex(leftSegConstructEventIdx);
                CTimelineEvent* pRightSegConstructionEvent = pTimelineMgr->GetEventByIndex(rightSegConstructEventIdx);
                pLeftSegConstructionEvent->GetConstructSegmentsActivity().RemoveSegment(leftSegID);
                pRightSegConstructionEvent->GetConstructSegmentsActivity().AddSegment(leftSegID);
             }
 
+
             EventIndexType leftSegErectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(leftSegID);
             EventIndexType rightSegErectionEventIdx = pTimelineMgr->GetSegmentErectionEventIndex(rightSegID);
-            if (rightSegErectionEventIdx < leftSegErectionEventIdx)
+
+            EventIndexType tempSupportErectionIdx = INVALID_INDEX;
+            for (int i = 0; i < 2; i++)
             {
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+               if (pLeftSegment->GetClosureJoint(endType))
+               {
+                  // the left segment is supported by a temporary support so find out when the temporary support
+                  // is erected... the combined segment cannot be erected before the temporary support with the
+                  // latest erection interval is erected
+                  auto tsID = pLeftSegment->GetClosureJoint(endType)->GetTemporarySupportID();
+                  EventIndexType erectionEventIdx, removalEventIdx;
+                  pTimelineMgr->GetTempSupportEvents(tsID, &erectionEventIdx, &removalEventIdx);
+                  tempSupportErectionIdx = (tempSupportErectionIdx == INVALID_INDEX ? erectionEventIdx : Max(tempSupportErectionIdx, erectionEventIdx));
+               }
+            }
+
+
+            if (rightSegErectionEventIdx < leftSegErectionEventIdx // the right segment is erected before the left segment
+               &&
+               tempSupportErectionIdx <= rightSegErectionEventIdx // the right segment is erected at or after the latest erected temporary support of the left segment is erected
+               )
+            {
+               // remove the left segment from its erection event and put it into the erection event for the right segment
                CTimelineEvent* pLeftSegErectionEvent = pTimelineMgr->GetEventByIndex(leftSegErectionEventIdx);
                CTimelineEvent* pRightSegErectionEvent = pTimelineMgr->GetEventByIndex(rightSegErectionEventIdx);
                pLeftSegErectionEvent->GetErectSegmentsActivity().RemoveSegment(leftSegID);
@@ -1210,9 +1240,10 @@ void CSplicedGirderData::JoinSegmentsAtTemporarySupport(SupportIndexType tsIdx)
             }
          }
 
+         // remove the construction and erection events for the right segment from the timeline
          RemoveSegmentFromTimelineManager(pRightSegment);
 
-         delete pRightSegment;
+         delete pRightSegment; // we are done with the right segment... it no longer exists
          pRightSegment = nullptr;
          m_Segments.erase(segIter);
 

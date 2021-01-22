@@ -36,7 +36,8 @@ public:
 
    void SetOptions(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
 
-   virtual HRESULT Validate() const;
+   virtual HRESULT Validate() const override;
+   virtual std::_tstring GetReportContextString() const override;
 
    pgsPointOfInterest GetPOI() const;
    IntervalIndexType GetInterval() const;

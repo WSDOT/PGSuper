@@ -29,6 +29,29 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+const CString& GetStrandDefinitionType(pgsTypes::StrandDefinitionType strandDefinitionType,pgsTypes::AdjustableStrandType adjustableStrandType)
+{
+   static std::array<CString, 5> strStrandDefTypes{
+      _T("Number of Permanent Strands"),
+      _T("Figure it out"),
+      _T("Strand Locations"),
+      _T("Strand Rows"),
+      _T("Individual Strands")
+   };
+
+   static CString strAdjHarped(_T("Number of Straight and Harped Strands"));
+   static CString strAdjStraight(_T("Number of Straight and Adjustable Straight Strands"));
+   static CString strAdjStraightHarped(_T("Number of Straight and Number of Adjustable Strands"));
+
+   if (strandDefinitionType == pgsTypes::sdtStraightHarped)
+   {
+      return adjustableStrandType == pgsTypes::asHarped ? strAdjHarped : (adjustableStrandType == pgsTypes::asStraight ? strAdjStraight : strAdjStraightHarped);
+   }
+   else
+   {
+      return strStrandDefTypes[strandDefinitionType];
+   }
+}
 
 CString GetGirderSpacingType(pgsTypes::SupportedBeamSpacing spacingType, bool bSplicedGirder)
 {
@@ -261,4 +284,52 @@ LPCTSTR GetCastDeckEventName(pgsTypes::SupportedDeckType deckType)
       ATLASSERT(false); // shouldn't get here... deck type sdtNone is never cast
    }
    return _T("Bad deck type");
+}
+
+
+// Changes in girder fill can make debonding invalid. This algorithm gets rid of any
+// debonding of strands that don't exist
+bool ReconcileDebonding(const ConfigStrandFillVector& fillvec, std::vector<CDebondData>& rDebond)
+{
+   bool didErase = false;
+   StrandIndexType strsize = fillvec.size();
+
+   std::vector<CDebondData>::iterator it = rDebond.begin();
+   while (it != rDebond.end())
+   {
+      if (it->strandTypeGridIdx > strsize || fillvec[it->strandTypeGridIdx] == 0)
+      {
+         it = rDebond.erase(it);
+         didErase = true;
+      }
+      else
+      {
+         it++;
+      }
+   }
+
+   return didErase;
+}
+
+bool ReconcileExtendedStrands(const ConfigStrandFillVector& fillvec, std::vector<GridIndexType>& extendedStrands)
+{
+   bool didErase = false;
+   StrandIndexType strsize = fillvec.size();
+
+   std::vector<GridIndexType>::iterator it(extendedStrands.begin());
+   while (it != extendedStrands.end())
+   {
+      GridIndexType gridIdx = *it;
+      if (strsize < gridIdx || fillvec[gridIdx] == 0)
+      {
+         it = extendedStrands.erase(it);
+         didErase = true;
+      }
+      else
+      {
+         it++;
+      }
+   }
+
+   return didErase;
 }

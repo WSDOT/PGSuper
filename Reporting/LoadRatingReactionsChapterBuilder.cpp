@@ -52,11 +52,18 @@ LPCTSTR CLoadRatingReactionsChapterBuilder::GetName() const
 
 rptChapter* CLoadRatingReactionsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
 {
-   CLoadRatingReportSpecification* pGirderRptSpec = dynamic_cast<CLoadRatingReportSpecification*>(pRptSpec);
+   CBrokerReportSpecification* pGirderRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
-   CGirderKey girderKey = pGirderRptSpec->GetGirderKey();
-   girderKey.groupIndex = ALL_GROUPS;
+
+   CLoadRatingReportSpecificationBase* pLrGirderRptSpec = dynamic_cast<CLoadRatingReportSpecificationBase*>(pRptSpec);
+   if (!pLrGirderRptSpec)
+   {
+      ATLASSERT(0);
+      return nullptr;
+   }
+
+   std::vector<CGirderKey> girderKeys = pLrGirderRptSpec->GetGirderKeys();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -95,86 +102,97 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(CReportSpecification* pRpt
       live_load_types.push_back(pgsTypes::lltPermitRating_Special);
    }
 
+   GET_IFACE2( pBroker, IProductLoads, pProductLoads);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    std::vector<pgsTypes::LiveLoadType>::iterator llTypeIter(live_load_types.begin());
    std::vector<pgsTypes::LiveLoadType>::iterator llTypeIterEnd(live_load_types.end());
-   for ( ; llTypeIter != llTypeIterEnd; llTypeIter++ )
+   for (auto& llType : live_load_types )
    {
-      pgsTypes::LiveLoadType llType = *llTypeIter;
+      for (auto& girderKey : girderKeys)
+      {
 
-      GET_IFACE2( pBroker, IProductLoads, pProductLoads);
-      std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
+         std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType, girderKey);
 
-      // nothing to report if there are no loads
-      if ( strLLNames.size() == 0 )
-      {
-         continue;
-      }
+         // nothing to report if there are no loads
+         if (strLLNames.size() == 0)
+         {
+            continue;
+         }
 
-      // if the only loading is the DUMMY load, then move on
-      if ( strLLNames.size() == 1 && strLLNames[0] == std::_tstring(NO_LIVE_LOAD_DEFINED) )
-      {
-         continue;
-      }
+         // if the only loading is the DUMMY load, then move on
+         if (strLLNames.size() == 1 && strLLNames[0] == std::_tstring(NO_LIVE_LOAD_DEFINED))
+         {
+            continue;
+         }
 
-      rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
-      *pChapter << p;
-
-      if ( llType == pgsTypes::lltDesign )
-      {
-         *p << _T("Design Live Load Individual Vehicle Response") << rptNewLine;
-      }
-      else if ( llType == pgsTypes::lltPermit )
-      {
-         *p << _T("Permit Live Load Individual Vehicle Response") << rptNewLine;
-      }
-      else if ( llType == pgsTypes::lltFatigue )
-      {
-         *p << _T("Fatigue Live Load Individual Vehicle Response") << rptNewLine;
-      }
-      else if ( llType == pgsTypes::lltPedestrian )
-      {
-         *p << _T("Pedestrian Live Load Response") << rptNewLine;
-      }
-      else if ( llType == pgsTypes::lltLegalRating_Routine )
-      {
-         *p << _T("AASHTO Legal Rating Routine Commercial Vehicle Individual Vehicle Live Load Response")  << rptNewLine;
-      }
-      else if ( llType == pgsTypes::lltLegalRating_Special )
-      {
-         *p << _T("AASHTO Legal Rating Specialized Hauling Vehicle Individual Vehicle Live Load Response") << rptNewLine;
-      }
-      else if (llType == pgsTypes::lltLegalRating_Emergency)
-      {
-         *p << _T("Emergency Vehicle Individual Vehicle Live Load Response") << rptNewLine;
-      }
-      else if ( llType == pgsTypes::lltPermitRating_Routine )
-      {
-         *p << _T("Routine Permit Rating Individual Vehicle Live Load Response") << rptNewLine;
-      }
-      else if ( llType == pgsTypes::lltPermitRating_Special )
-      {
-         *p << _T("Special Permit Rating Individual Vehicle Live Load Response") << rptNewLine;
-      }
-      else
-      {
-         ATLASSERT(false); // is there a new live load type???
-      }
-
-      std::vector<std::_tstring>::iterator llNameIter(strLLNames.begin());
-      std::vector<std::_tstring>::iterator llNameIterEnd(strLLNames.end());
-      VehicleIndexType vehicleIdx = 0;
-      for ( ; llNameIter != llNameIterEnd; llNameIter++, vehicleIdx++ )
-      {
-         std::_tstring strLLName = *llNameIter;
-
-         p = new rptParagraph;
+         rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << p;
-         p->SetName( strLLName.c_str() );
-         *p << CVehicularLoadReactionTable().Build(pBroker,girderKey,llType,strLLName,vehicleIdx,analysisType,false,false,pDisplayUnits) << rptNewLine;
-         *p << LIVELOAD_PER_LANE << rptNewLine;
+
+         if (llType == pgsTypes::lltDesign)
+         {
+            *p << _T("Design Live Load Individual Vehicle Response");
+         }
+         else if (llType == pgsTypes::lltPermit)
+         {
+            *p << _T("Permit Live Load Individual Vehicle Response");
+         }
+         else if (llType == pgsTypes::lltFatigue)
+         {
+            *p << _T("Fatigue Live Load Individual Vehicle Response");
+         }
+         else if (llType == pgsTypes::lltPedestrian)
+         {
+            *p << _T("Pedestrian Live Load Response");
+         }
+         else if (llType == pgsTypes::lltLegalRating_Routine)
+         {
+            *p << _T("AASHTO Legal Rating Routine Commercial Vehicle Individual Vehicle Live Load Response");
+         }
+         else if (llType == pgsTypes::lltLegalRating_Special)
+         {
+            *p << _T("AASHTO Legal Rating Specialized Hauling Vehicle Individual Vehicle Live Load Response");
+         }
+         else if (llType == pgsTypes::lltLegalRating_Emergency)
+         {
+            *p << _T("Emergency Vehicle Individual Vehicle Live Load Response");
+         }
+         else if (llType == pgsTypes::lltPermitRating_Routine)
+         {
+            *p << _T("Routine Permit Rating Individual Vehicle Live Load Response");
+         }
+         else if (llType == pgsTypes::lltPermitRating_Special)
+         {
+            *p << _T("Special Permit Rating Individual Vehicle Live Load Response");
+         }
+         else
+         {
+            ATLASSERT(false); // is there a new live load type???
+         }
+
+         if (girderKeys.size() > 1) // reports with multiple girders get confusing, so report girder at each live load type
+         {
+            *p << _T(", for ") << pgsGirderLabel::GetGirderLabel(girderKey) << rptNewLine;
+         }
+         else
+         {
+            *p  << rptNewLine;
+         }
+
+         std::vector<std::_tstring>::iterator llNameIter(strLLNames.begin());
+         std::vector<std::_tstring>::iterator llNameIterEnd(strLLNames.end());
+         VehicleIndexType vehicleIdx = 0;
+         for (; llNameIter != llNameIterEnd; llNameIter++, vehicleIdx++)
+         {
+            std::_tstring strLLName = *llNameIter;
+
+            p = new rptParagraph;
+            *pChapter << p;
+            p->SetName(strLLName.c_str());
+            *p << CVehicularLoadReactionTable().Build(pBroker, girderKey, llType, strLLName, vehicleIdx, analysisType, false, false, pDisplayUnits) << rptNewLine;
+            *p << LIVELOAD_PER_LANE << rptNewLine;
+         }
       }
    }
 

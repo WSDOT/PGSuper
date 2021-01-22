@@ -233,7 +233,7 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    deck.Concrete.ShrinkageK2 = 1.0;
 
    deck.Concrete.bUserEc = false;
-   deck.Concrete.Ec = lrfdConcreteUtil::ModE(deck.Concrete.Fc,deck.Concrete.StrengthDensity,false);
+   deck.Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)deck.Concrete.Type,deck.Concrete.Fc,deck.Concrete.StrengthDensity,false);
    deck.bInputAsDepthAndDensity = false;
    deck.OverlayWeight = ::ConvertToSysUnits(0.025,unitMeasure::KSF);
 

@@ -16,8 +16,9 @@ Check the boxes in this section to select a design option.
 
 Option | Description
 -------|------------
-Design For Flexure | Designs the girders for flexure
-Design Haunch Geometry<sup>*</sup> | When enabled, the Girder Designer will attempt to find the optimal slab offset for the selected girder(s). If the haunch load is distributed parabolically, the Girder Designer will also change the assumed excess camber to match the computed excess camber.
+Design For Flexure | Designs the girders for flexure. Flexure design can be refined with the Haunch Geometry and  Concrete Strength options.
+Haunch Geometry<sup>*</sup> | Haunch geometry can be preserved during the design, or it can be designed. When the design option is enabled the Girder Designer will attempt to find the optimal slab offset for the selected girder(s). If the haunch load is distributed parabolically, the Girder Designer will also change the assumed excess camber to match the computed excess camber.
+Concrete Strength | When Design for minimum concrete strength is selected the Girder Designer will attempt to determine the minimum concrete strength for release and the specified 28 day strength. When Preserve concrete strength during design is selected the Girder Designer will not change the concrete strength.
 Design for Shear | Designs the selected girders for shear
 Start with Current Stirrup Layout | If this option is selected the Girder Designer will first perform a specification check on the currently input stirrup layout. If the check passes, the Girder Designer will not modify the current stirrup layout. If the specification check fails, the Girder Designer will attempt to modify the layout of the stirrups by moving the stirrup zone boundaries. If this option is not selected, the Girder Designer will design the stirrups using the design control parameters from the Shear Design tab for the girder library entry.
 

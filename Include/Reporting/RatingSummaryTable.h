@@ -49,18 +49,18 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the rating summary table with results listed by limit state and structural action
-   virtual rptRcTable* BuildByLimitState(IBroker* pBroker,const CGirderKey& girderKey,RatingTableType ratingTableType) const;
+   virtual rptRcTable* BuildByLimitState(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,RatingTableType ratingTableType) const;
 
    //------------------------------------------------------------------------
    // Builds the rating summary table with results listed by rating vehicle
-   virtual rptRcTable* BuildByVehicle(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType) const;
+   virtual rptRcTable* BuildByVehicle(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType) const;
 
    //------------------------------------------------------------------------
    // Builds the load posting table for a a legal load rating (but not emergency vehicles)
-   virtual rptRcTable* BuildLoadPosting(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge) const;
+   virtual rptRcTable* BuildLoadPosting(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge) const;
 
    //------------------------------------------------------------------------
    // Builds the load posting table for emergency vehicles
-   virtual rptRcTable* BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const CGirderKey& girderKey) const;
+   virtual rptRcTable* BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys) const;
 };
 

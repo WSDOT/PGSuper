@@ -144,7 +144,7 @@ void CSplicedGirderGeneralPage::DoDataExchange(CDataExchange* pDX)
       if ( result != TLM_SUCCESS )
       {
          pDX->PrepareCtrl(IDC_GIRDER_GRID);
-         CString strMsg = pTimelineMgr->GetErrorMessage(result);
+         CString strMsg = pTimelineMgr->GetErrorMessage(result).c_str();
          AfxMessageBox(strMsg);
          pDX->Fail();
       }

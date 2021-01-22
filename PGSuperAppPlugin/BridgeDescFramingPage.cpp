@@ -60,17 +60,23 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
    //{{AFX_DATA_MAP(CBridgeDescFramingPage)
    DDX_Control(pDX, IDC_ORIENTATIONFMT, m_OrientationFormat);
 	DDX_Control(pDX, IDC_STATIONFMT, m_StationFormat);
+   DDX_CBEnum(pDX, IDC_START_CB, m_DisplayStartSupportType);
+   DDX_CBEnum(pDX, IDC_END_CB, m_DisplayEndSupportType);
+   DDX_Text(pDX, IDC_STARTPIERNO, m_StartingPierNumber);
+   DDV_GreaterThanZero(pDX,IDC_STARTPIERNO,(Float64)m_StartingPierNumber);
 	//}}AFX_DATA_MAP
-
-   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
-   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
    if ( pDX->m_bSaveAndValidate )
    {
+      // Save pier numbering basis
+      pParent->m_BridgeDesc.SetPierDisplaySettings(m_DisplayStartSupportType, m_DisplayEndSupportType, m_StartingPierNumber);
+
       DDV_GXGridWnd(pDX, &m_Grid);
       // why validate grid and then not get the data out of it?
       // pParent->m_BridgeDesc is kept continuously up to date with grid
@@ -86,9 +92,10 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
             auto found = std::find(std::cbegin(boundary_conditions), std::cend(boundary_conditions), bc);
             if (found == std::cend(boundary_conditions))
             {
-               CString strPier(pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abut") : _T("Pier"));
+               bool bIsAbument = pierIdx == 0 || pierIdx == nPiers - 1;
                CString strMsg;
-               strMsg.Format(_T("The boundary conditions for %s %d are invalid.\r\nPress the Edit button in the grid to update the boundary conditions."), strPier, LABEL_PIER(pierIdx));
+               strMsg.Format(_T("The boundary conditions for %s are invalid.\r\nPress the Edit button in the grid to update the boundary conditions."), 
+                            pgsPierLabel::CreatePierLabel(bIsAbument, pierIdx, m_DisplayStartSupportType, m_DisplayEndSupportType, m_StartingPierNumber));
                AfxMessageBox(strMsg, MB_ICONERROR | MB_OK);
                pDX->PrepareCtrl(IDC_PIER_GRID);
                pDX->Fail();
@@ -102,7 +109,7 @@ void CBridgeDescFramingPage::DoDataExchange(CDataExchange* pDX)
             if (found == std::cend(connections))
             {
                CString strMsg;
-               strMsg.Format(_T("The connection type at Pier %d is invalid.\r\nPress the Edit button in the grid to update the connection type."), LABEL_PIER(pierIdx));
+               strMsg.Format(_T("The connection type at Pier %d is invalid.\r\nPress the Edit button in the grid to update the connection type."), pierIdx+m_StartingPierNumber);
                AfxMessageBox(strMsg, MB_ICONERROR | MB_OK);
                pDX->PrepareCtrl(IDC_PIER_GRID);
                pDX->Fail();
@@ -127,6 +134,9 @@ BEGIN_MESSAGE_MAP(CBridgeDescFramingPage, CPropertyPage)
    ON_COMMAND(IDC_LAYOUT, OnLayoutBySpanLengths)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_ORIENT_PIERS, &CBridgeDescFramingPage::OnOrientPiers)
+   ON_CBN_SELCHANGE(IDC_START_CB, &CBridgeDescFramingPage::OnCbnSelchangeStartCb)
+   ON_CBN_SELCHANGE(IDC_END_CB, &CBridgeDescFramingPage::OnCbnSelchangeEndCb)
+   ON_EN_UPDATE(IDC_STARTPIERNO, &CBridgeDescFramingPage::OnEnUpdateStartpierno)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -161,20 +171,20 @@ void CBridgeDescFramingPage::EnableRemovePierBtn(BOOL bEnable)
          CString strLabel;
          if ( pierIdx != INVALID_INDEX && pierIdx == nPiers-1 ) // a pier is selected and it is the last pier
          {
-            strLabel.Format(_T("Remove Span %d/Pier %d"),LABEL_SPAN(pierIdx-1),LABEL_PIER(pierIdx));
+            strLabel.Format(_T("Remove Span %d/Pier %d"), pierIdx-1+m_StartingPierNumber, pierIdx+m_StartingPierNumber);
          }
          else
          {
             if (spanIdx != INVALID_INDEX)
             {
                // a span is selected
-               strLabel.Format(_T("Remove Span %d/Pier %d"), LABEL_SPAN(spanIdx), LABEL_PIER(spanIdx+1));
+               strLabel.Format(_T("Remove Span %d/Pier %d"), spanIdx+m_StartingPierNumber, spanIdx+1+m_StartingPierNumber);
             }
             else
             {
                // a pier is selected
                ATLASSERT(pierIdx != INVALID_INDEX);
-               strLabel.Format(_T("Remove Span %d/Pier %d"), LABEL_SPAN(pierIdx), LABEL_PIER(pierIdx));
+               strLabel.Format(_T("Remove Span %d/Pier %d"), pierIdx+m_StartingPierNumber, pierIdx+m_StartingPierNumber);
             }
          }
 
@@ -199,6 +209,12 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
 
    m_Grid.SubclassDlgItem(IDC_PIER_GRID, this);
    m_Grid.CustomInit();
+
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+   // Load pier numbering basis
+   pParent->m_BridgeDesc.GetPierDisplaySettings(&m_DisplayStartSupportType, &m_DisplayEndSupportType, &m_StartingPierNumber);
 
    CPropertyPage::OnInitDialog();
 	
@@ -265,6 +281,10 @@ void CBridgeDescFramingPage::OnRemovePier()
 
 void CBridgeDescFramingPage::OnAddPier() 
 {
+   // Tricky: Need to take current status of pier labelling, set it, and stow it so proper labels are displayed
+   pgsAutoPierLabel autoPierLabel; // will reset values upon destruction
+   pgsPierLabel::SetPierLabelSettings(m_DisplayStartSupportType, m_DisplayEndSupportType, m_StartingPierNumber);
+
    m_Grid.OnAddPier();
 }
 
@@ -273,11 +293,17 @@ void CBridgeDescFramingPage::OnLayoutBySpanLengths()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    std::vector<Float64> spanLengths = m_Grid.GetSpanLengths();
+
+   // Tricky: Need to take current status of pier labelling, set it, and stow it so proper labels are displayed
+   pgsAutoPierLabel autoPierLabel; // will reset values upon destruction
+   pgsPierLabel::SetPierLabelSettings(m_DisplayStartSupportType, m_DisplayEndSupportType, m_StartingPierNumber);
+
    CSpanLengthDlg dlg;
    dlg.m_SpanLengths = spanLengths;
+   dlg.m_PierIdx = m_StartingPierNumber-1;
    if ( dlg.DoModal() == IDOK )
    {
-      m_Grid.SetSpanLengths(dlg.m_SpanLengths,dlg.m_PierIdx);
+      m_Grid.SetSpanLengths(dlg.m_SpanLengths,dlg.m_PierIdx - m_StartingPierNumber + 1);
    }
 }
 
@@ -342,4 +368,66 @@ BOOL CBridgeDescFramingPage::OnSetActive()
    EnableRemoveTemporarySupportBtn(m_Grid.EnableRemoveTemporarySupportBtn());
 
    return CPropertyPage::OnSetActive();
+}
+
+void CBridgeDescFramingPage::OnCbnSelchangeStartCb()
+{
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+   CComboBox* pctrl = (CComboBox*)GetDlgItem(IDC_START_CB);
+   pgsTypes::DisplayEndSupportType shp = (pgsTypes::DisplayEndSupportType)pctrl->GetCurSel();
+   ATLASSERT(shp!=CB_ERR);
+
+   m_DisplayStartSupportType = shp;
+
+   // update grid text
+   m_Grid.FillGrid(pParent->m_BridgeDesc);
+}
+
+void CBridgeDescFramingPage::OnCbnSelchangeEndCb()
+{
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+   CComboBox* pctrl = (CComboBox*)GetDlgItem(IDC_END_CB);
+   pgsTypes::DisplayEndSupportType shp = (pgsTypes::DisplayEndSupportType)pctrl->GetCurSel();
+   ATLASSERT(shp!=CB_ERR);
+
+   m_DisplayEndSupportType = shp;
+
+   // update grid text
+   m_Grid.FillGrid(pParent->m_BridgeDesc);
+}
+
+CString CBridgeDescFramingPage::GetPierLabel(bool isAbutment, PierIndexType pierIdx)
+{
+   return pgsPierLabel::CreatePierLabel(isAbutment, pierIdx, m_DisplayStartSupportType, m_DisplayEndSupportType, m_StartingPierNumber).c_str();
+}
+
+
+void CBridgeDescFramingPage::OnEnUpdateStartpierno()
+{
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+
+   try
+   {
+      CDataExchange DX(this, TRUE);
+      DDX_Text(&DX, IDC_STARTPIERNO, m_StartingPierNumber);
+      DDV_GreaterThanZero(&DX, IDC_STARTPIERNO, (Float64)m_StartingPierNumber);
+
+      // update grid text
+      m_Grid.FillGrid(pParent->m_BridgeDesc);
+   }
+   catch (...)
+   {
+      throw;
+   }
+}
+
+void CBridgeDescFramingPage::OnCancel()
+{
+   // Tricky: tell grid not to validate cells if dialog is cancelling. This fixed a bug where
+   //         users were forced to input valid grid data in order to cancel the dialog
+   m_Grid.SetDoNotValidateCells();
+
+   CPropertyPage::OnCancel();
 }

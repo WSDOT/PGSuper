@@ -17,6 +17,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+static Float64 gs_Millimeter = ::ConvertToSysUnits(1.0, unitMeasure::Millimeter);
 
 void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeometry& ductGeometry)
 {
@@ -105,6 +106,8 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
          Xg_Last = Xg;
       }
 
+      Xg = ::IsEqual(Xg, Lg, gs_Millimeter) ? Lg : Xg;
+
       if ( ::IsLT(Lg,Xg) )
       {
          GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
@@ -167,6 +170,7 @@ BOOL CLinearDuctDlg::OnInitDialog()
    m_DrawTendons.SubclassDlgItem(IDC_TENDONS, this);
    m_DrawTendons.CustomInit(m_pGirderlineDlg->GetGirder()->GetGirderKey(), m_pGirderlineDlg->GetGirder(), &m_PTData);
    m_DrawTendons.SetDuct(m_DuctIdx);
+   m_DrawTendons.DrawAllDucts(true);
    m_DrawTendons.SetMapMode(m_pGirderlineDlg->GetTendonControlMapMode());
 
    CComboBox* pcbLocation = (CComboBox*)GetDlgItem(IDC_LOCATION);

@@ -26,6 +26,7 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_environmental
 * @subpage ug_dialogs_erect_piers
 * @subpage ug_dialogs_erect_segments
+* @subpage ug_dialogs_file_compatibility_warning
 * @subpage ug_dialogs_girder_details
 * @subpage ug_dialogs_girder_view_section_cut
 * @subpage ug_dialogs_girder_view_settings
@@ -38,6 +39,8 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_load_factors
 * @subpage ug_dialogs_load_modifiers
 * @subpage ug_dialogs_load_rating_options
+* @subpage ug_dialogs_loadrating_report_options
+* @subpage ug_dialogs_loadrating_summary_report_options
 * @subpage ug_dialogs_loads_view
 * @subpage ug_dialogs_moment_load
 * @subpage ug_dialogs_parabolic_duct

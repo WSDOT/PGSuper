@@ -416,7 +416,7 @@ void CDeckRegionGrid::SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 
    SetStyleRange(CGXRange(row, colType), CGXStyle().SetHorizontalAlignment(DT_CENTER).SetValue(_T("-M")));
 
    CString strPierLabel;
-   strPierLabel.Format(_T("%d"), LABEL_PIER(pierIdx));
+   strPierLabel.Format(_T("%s"), LABEL_PIER(pierIdx));
    SetStyleRange(CGXRange(row, colPier), CGXStyle()
       .SetValue(strPierLabel)
       .SetHorizontalAlignment(DT_CENTER)
@@ -518,7 +518,7 @@ void CDeckRegionGrid::SetSpanData(SpanIndexType spanIdx, Float64 L, IndexType se
    SetStyleRange(CGXRange(row, colType), CGXStyle().SetHorizontalAlignment(DT_CENTER).SetValue(_T("+M")));
 
    CString strSpanLabel;
-   strSpanLabel.Format(_T("%d"), LABEL_SPAN(spanIdx));
+   strSpanLabel.Format(_T("%s"), LABEL_SPAN(spanIdx));
    SetStyleRange(CGXRange(row, colSpan), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
       .SetVerticalAlignment(DT_VCENTER)

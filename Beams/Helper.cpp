@@ -23,7 +23,6 @@
 #include "stdafx.h"
 #include <Beams\Helper.h>
 #include <IFace\Bridge.h>
-#include <IFace\BeamFactory.h>
 #include <PgsExt\BridgeDescription2.h>
 #include "AgeAdjustedMaterial.h"
 

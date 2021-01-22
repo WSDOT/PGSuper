@@ -29,6 +29,7 @@
 
 #include "GirderHandlingChecker.h"
 #include "GirderLiftingChecker.h"
+#include "SummaryRatingArtifactImpl.h"
 
 #include <IFace\BeamFactory.h>
 #include <IFace\StatusCenter.h>
@@ -211,6 +212,7 @@ m_ShearCapEngineer(nullptr,0),
 m_bAreDistFactorEngineersValidated(false)
 {
    m_pMomentCapacityEngineer = std::make_unique<pgsMomentCapacityEngineer>(nullptr, 0);
+   m_pPrincipalWebStressEngineer = std::make_unique<pgsPrincipalWebStressEngineer>(nullptr, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -233,7 +235,15 @@ void CEngAgentImp::InvalidateAll()
 #if defined _USE_MULTITHREADING
    m_ThreadManager.CreateThread(CEngAgentImp::DeleteMomentCapacityEngineer, (LPVOID)(pOldEng));
 #else
-   CEngAgentImp::DeleteMomentCapacityEngineer((LPVOID)(pOldCache));
+   CEngAgentImp::DeleteMomentCapacityEngineer((LPVOID)(pOldEng));
+#endif
+
+   pgsPrincipalWebStressEngineer* pOld = m_pPrincipalWebStressEngineer.release();
+   m_pPrincipalWebStressEngineer = std::make_unique<pgsPrincipalWebStressEngineer>(m_pBroker, m_StatusGroupID);
+#if defined _USE_MULTITHREADING
+   m_ThreadManager.CreateThread(CEngAgentImp::DeletePrincipalWebStressEngineer, (LPVOID)(pOld));
+#else
+   CEngAgentImp::DeletePrincipalWebStressEngineer((LPVOID)(pOld));
 #endif
 }
 
@@ -246,10 +256,19 @@ UINT CEngAgentImp::DeleteMomentCapacityEngineer(LPVOID pParam)
    return 0;
 }
 
+UINT CEngAgentImp::DeletePrincipalWebStressEngineer(LPVOID pParam)
+{
+   WATCH(_T("Begin: DeletePrincipalWebStressEngineer"));
+   pgsPrincipalWebStressEngineer* pEng = (pgsPrincipalWebStressEngineer*)pParam;
+   delete pEng;
+   WATCH(_T("End: DeletePrincipalWebStressEngineer"));
+   return 0;
+}
+
 //-----------------------------------------------------------------------------
 void CEngAgentImp::InvalidateHaunch()
 {
-   m_SLABOFFSETDETAILS.clear();
+   m_SlabOffsetDetails.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -494,6 +513,8 @@ void CEngAgentImp::InvalidateShearCritSection()
 //-----------------------------------------------------------------------------
 const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTypes::LimitState limitState,const CGirderKey& girderKey, const GDRCONFIG* pConfig) const
 {
+   ASSERT_GIRDER_KEY(girderKey);
+
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -550,6 +571,8 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    //
    // * = critical section location
    // # = location between FOS and critical section (critial section zones)
+
+   ASSERT_GIRDER_KEY(girderKey);
 
    std::vector<CRITSECTDETAILS> vcsDetails;
 
@@ -928,16 +951,17 @@ STDMETHODIMP CEngAgentImp::RegInterfaces()
 {
    CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
 
-   pBrokerInit->RegInterface( IID_ILosses,                      this );
-   pBrokerInit->RegInterface( IID_IPretensionForce,             this );
-   pBrokerInit->RegInterface( IID_IPosttensionForce,            this );
-   pBrokerInit->RegInterface( IID_ILiveLoadDistributionFactors, this );
-   pBrokerInit->RegInterface( IID_IMomentCapacity,              this );
-   pBrokerInit->RegInterface( IID_IShearCapacity,               this );
-   pBrokerInit->RegInterface( IID_IGirderHaunch,                this );
-   pBrokerInit->RegInterface( IID_IFabricationOptimization,     this );
-   pBrokerInit->RegInterface( IID_IArtifact,                    this );
-   pBrokerInit->RegInterface( IID_ICrackedSection,              this );
+   pBrokerInit->RegInterface(IID_ILosses,                      this);
+   pBrokerInit->RegInterface(IID_IPretensionForce,             this);
+   pBrokerInit->RegInterface(IID_IPosttensionForce,            this);
+   pBrokerInit->RegInterface(IID_ILiveLoadDistributionFactors, this);
+   pBrokerInit->RegInterface(IID_IMomentCapacity,              this);
+   pBrokerInit->RegInterface(IID_IShearCapacity,               this);
+   pBrokerInit->RegInterface(IID_IPrincipalWebStress,          this);
+   pBrokerInit->RegInterface(IID_IGirderHaunch,                this);
+   pBrokerInit->RegInterface(IID_IFabricationOptimization,     this);
+   pBrokerInit->RegInterface(IID_IArtifact,                    this);
+   pBrokerInit->RegInterface(IID_ICrackedSection,              this);
 
     return S_OK;
 }
@@ -950,12 +974,14 @@ STDMETHODIMP CEngAgentImp::Init()
    m_PsForceEngineer.SetBroker(m_pBroker);
    m_pMomentCapacityEngineer->SetBroker(m_pBroker);
    m_ShearCapEngineer.SetBroker(m_pBroker);
+   m_pPrincipalWebStressEngineer->SetBroker(m_pBroker);
    m_Designer.SetBroker(m_pBroker);
    m_LoadRater.SetBroker(m_pBroker);
 
    m_Designer.SetStatusGroupID(m_StatusGroupID);
    m_PsForceEngineer.SetStatusGroupID(m_StatusGroupID);
    m_pMomentCapacityEngineer->SetStatusGroupID(m_StatusGroupID);
+   m_pPrincipalWebStressEngineer->SetStatusGroupID(m_StatusGroupID);
    m_ShearCapEngineer.SetStatusGroupID(m_StatusGroupID);
 
    // regiter the callback ID's we will be using
@@ -3222,6 +3248,36 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
          }
       } while ( pSpan );
    }
+
+   rptParagraph* pPara;
+   pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   (*pChapter) << pPara;
+   (*pPara) << _T("Live Load Distribution Factors - Reactions, Deflections, and Rotations") << rptNewLine;
+
+   pPara = new rptParagraph;
+   (*pChapter) << pPara;
+
+   Float64 mpf;
+   Uint32 nLanes;
+   GirderIndexType nGirders;
+   GET_IFACE(IBridge, pBridge);
+   SpanIndexType startSpanIdx = pBridge->GetGirderGroupStartSpan(girderKey.groupIndex);
+   SpanIndexType endSpanIdx = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
+
+   for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+   {
+      CSpanKey spanKey(spanIdx, girderKey.girderIndex);
+      Float64 lldf = GetDeflectionDistFactorEx(spanKey, &mpf, &nLanes, &nGirders);
+
+      if (startSpanIdx != endSpanIdx)
+      {
+         *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+      }
+      (*pPara) << _T("Number of Design Lanes (nLanes) = ") << nLanes << rptNewLine;
+      (*pPara) << _T("Number of Girders (nGirders) = ") << nGirders << rptNewLine;
+      (*pPara) << _T("Multiple Presense Factor (mpf) = ") << mpf << rptNewLine;
+      (*pPara) << _T("Distribution Factor = (mpf)*(nLanes)/(nGirders) = ") << lldf << rptNewLine;
+   }
 }
 
 bool CEngAgentImp::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState limitState,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) const
@@ -3257,7 +3313,15 @@ bool CEngAgentImp::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState l
 
 Float64 CEngAgentImp::GetDeflectionDistFactor(const CSpanKey& spanKey) const
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   Float64 mpf;
+   Uint32 nLanes;
+   GirderIndexType nGirders;
+   return GetDeflectionDistFactorEx(spanKey, &mpf, &nLanes, &nGirders);
+}
+
+Float64 CEngAgentImp::GetDeflectionDistFactorEx(const CSpanKey& spanKey,Float64* pMPF,Uint32* pnLanes,GirderIndexType* pnGirders) const
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
@@ -3265,7 +3329,11 @@ Float64 CEngAgentImp::GetDeflectionDistFactor(const CSpanKey& spanKey) const
    GirderIndexType nGirders = pGroup->GetGirderCount();
    Uint32 nLanes = GetNumberOfDesignLanes(spanKey.spanIndex);
    Float64 mpf = lrfdUtility::GetMultiplePresenceFactor(nLanes);
-   Float64 gD = mpf*nLanes/nGirders;
+   Float64 gD = mpf*nLanes / nGirders;
+
+   *pMPF = mpf;
+   *pnLanes = nLanes;
+   *pnGirders = nGirders;
 
    return gD;
 }
@@ -3612,6 +3680,23 @@ void CEngAgentImp::ClearDesignCriticalSections() const
 }
 
 /////////////////////////////////////////////////////////////////////////////
+// IPrincipalWebStress
+void CEngAgentImp::GetPrincipalWebStressPointsOfInterest(const CSegmentKey& segmentKey, IntervalIndexType interval, PoiList* pPoiList) const
+{
+   m_Designer.GetPrincipalWebStressPointsOfInterest(segmentKey, interval, pPoiList);
+}
+
+const PRINCIPALSTRESSINWEBDETAILS* CEngAgentImp::GetPrincipalWebStressDetails(const pgsPointOfInterest& poi) const
+{
+   return m_pPrincipalWebStressEngineer->GetPrincipalStressInWeb(poi);
+}
+
+const std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection>* CEngAgentImp::GetTimeStepPrincipalWebStressDetails(const pgsPointOfInterest& poi, IntervalIndexType interval) const
+{
+   return m_pPrincipalWebStressEngineer->GetTimeStepPrincipalWebStressDetails(poi, interval);
+}
+
+/////////////////////////////////////////////////////////////////////////////
 // IGirderHaunch
 Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey) const
 {
@@ -3623,15 +3708,15 @@ Float64 CEngAgentImp::GetRequiredSlabOffset(const CSegmentKey& segmentKey) const
 
 const SLABOFFSETDETAILS& CEngAgentImp::GetSlabOffsetDetails(const CSegmentKey& segmentKey) const
 {
-   auto found = m_SLABOFFSETDETAILS.find(segmentKey);
+   auto found = m_SlabOffsetDetails.find(segmentKey);
 
-   if ( found == m_SLABOFFSETDETAILS.end() )
+   if ( found == m_SlabOffsetDetails.end() )
    {
       // not found
       SLABOFFSETDETAILS details;
       m_Designer.GetSlabOffsetDetails(segmentKey,nullptr,&details);
 
-      auto result = m_SLABOFFSETDETAILS.insert( std::make_pair(segmentKey,details) );
+      auto result = m_SlabOffsetDetails.insert( std::make_pair(segmentKey,details) );
       ATLASSERT(result.second == true);
       found = result.first;
    }
@@ -4077,46 +4162,91 @@ const pgsRatingArtifact* CEngAgentImp::GetRatingArtifact(const CGirderKey& girde
    return FindRatingArtifact(girderKey,ratingType,vehicleIdx);
 }
 
-const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& designOptions) const
+std::shared_ptr<const pgsISummaryRatingArtifact> CEngAgentImp::GetSummaryRatingArtifact(const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx) const
 {
-   std::map<CGirderKey,pgsGirderDesignArtifact>::size_type cRemove = m_DesignArtifacts.erase(girderKey);
-   ATLASSERT( cRemove == 0 || cRemove == 1 );
+   std::shared_ptr<const pgsISummaryRatingArtifact> ptr(std::make_shared<pgsSummaryRatingArtifactImpl>(girderKeys, ratingType, vehicleIdx, m_pBroker, this));
 
-   // Tricky: Set to gross sections and prismatic haunch if needed
-   GET_IFACE_NOCHECK(IBridge,pBridge);
-   GET_IFACE(ISectionProperties,pSectProp);
+   return ptr;
+}
 
-   bool doTrans  = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed;
-   bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType());
-
-   // Use the class below to temporarly set transformed and prismatic haunch properties in library and then reset them back
-   DesignOverrider overrider(doTrans, doHaunch, m_pBroker);
-
-   pgsGirderDesignArtifact gdrDesignArtifact = m_Designer.Design(girderKey,designOptions);
-
-   // NOTE: girder artifact should have an overall outcome for the design of all segments
-   // we want to know if design was cancelled... all segment artifacts will have the DesignCancelled
-   // outcome so we just have to check the first artifact
-   SegmentIndexType segIdx = 0;
-   pgsSegmentDesignArtifact* pSegmentDesignArtifact = gdrDesignArtifact.GetSegmentDesignArtifact(segIdx);
-   if ( pSegmentDesignArtifact->GetOutcome() == pgsSegmentDesignArtifact::DesignCancelled )
+const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderKey& girderKey, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType) const
+{
+   if (bDesignFlexure || shearDesignType != sdtNoDesign)
    {
+      std::map<CGirderKey, pgsGirderDesignArtifact>::size_type cRemove = m_DesignArtifacts.erase(girderKey);
+      ATLASSERT(cRemove == 0 || cRemove == 1);
+
+
+      // A girder can have multiple design strategies, but only one strategy is needed if we are designing for shear only
+      GET_IFACE(ISpecification, pSpecification);
+      std::vector<arDesignOptions> designOptions = pSpecification->GetDesignOptions(girderKey); // gets the design options and parameters for the specific type of girder (generally from the Project Criteria and Girder Library Entry)
+      if (bDesignFlexure == false && shearDesignType != sdtNoDesign && 1 < designOptions.size())
+      {
+         designOptions.erase(designOptions.begin() + 1, designOptions.end());
+         ATLASSERT(designOptions.size() == 1);
+      }
+
+      // Modify the options based on the overrides provided in the function arguements
+      for (auto& options : designOptions)
+      {
+         if (bDesignFlexure)
+         {
+            if (haunchDesignType != sodDefault)
+            {
+               options.doDesignSlabOffset = haunchDesignType;
+            }
+            options.doDesignConcreteStrength = concreteDesignType;
+         }
+         else
+         {
+            options.doDesignForFlexure = dtNoDesign;
+         }
+
+         options.doDesignForShear = shearDesignType;
+      }
+
+
+      // Tricky: Set to gross sections and prismatic haunch if needed
+      GET_IFACE_NOCHECK(IBridge, pBridge);
+      GET_IFACE(ISectionProperties, pSectProp);
+
+      bool doTrans = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed;
+      bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType());
+
+      // Use the class below to temporarly set transformed and prismatic haunch properties in library and then reset them back
+      DesignOverrider overrider(doTrans, doHaunch, m_pBroker);
+
+      pgsGirderDesignArtifact gdrDesignArtifact = m_Designer.Design(girderKey, designOptions);
+
+      // NOTE: girder artifact should have an overall outcome for the design of all segments
+      // we want to know if design was cancelled... all segment artifacts will have the DesignCancelled
+      // outcome so we just have to check the first artifact
+      SegmentIndexType segIdx = 0;
+      pgsSegmentDesignArtifact* pSegmentDesignArtifact = gdrDesignArtifact.GetSegmentDesignArtifact(segIdx);
+      if (pSegmentDesignArtifact->GetOutcome() == pgsSegmentDesignArtifact::DesignCancelled)
+      {
+         return nullptr;
+      }
+
+      // Write notes if section properties were tweaked for design
+      if (doTrans)
+      {
+         pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnTransformedSectionsSetToGross);
+      }
+
+      if (doHaunch)
+      {
+         pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnParabolicHaunchSetToConstant);
+      }
+
+      auto retval = m_DesignArtifacts.insert(std::make_pair(girderKey, gdrDesignArtifact));
+      return &((*retval.first).second);
+   }
+   else
+   {
+      ATLASSERT(false); // design wasn't specified (bDesignFlexure and bDesignShear are both false)
       return nullptr;
    }
-
-   // Write notes if section properties were tweaked for design
-   if (doTrans)
-   {
-      pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnTransformedSectionsSetToGross);
-   }
-
-   if (doHaunch)
-   {
-      pSegmentDesignArtifact->AddDesignNote(pgsSegmentDesignArtifact::dnParabolicHaunchSetToConstant);
-   }
-
-   auto retval = m_DesignArtifacts.insert(std::make_pair(girderKey,gdrDesignArtifact));
-   return &((*retval.first).second);
 }
 
 const pgsGirderDesignArtifact* CEngAgentImp::GetDesignArtifact(const CGirderKey& girderKey) const

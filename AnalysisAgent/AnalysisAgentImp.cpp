@@ -512,6 +512,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       equivLoads.push_back(endMoment);
 
       // debonding
+      PoiList vDebondPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_DEBOND, &vDebondPoi);
       std::vector<RowIndexType> vRows = pStrandGeom->GetRowsWithDebonding(segmentKey, pgsTypes::Straight, pConfig);
       for (const auto& rowIdx : vRows)
       {
@@ -526,11 +528,29 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
             Float64 Xend = Xstart + Lstrand;
 
             Float64 PsDebond = nStrands*Ps / Ns;
-            pgsPointOfInterest startPoi(pPoi->GetPointOfInterest(segmentKey, Xstart));
+            auto found = std::find_if(std::cbegin(vDebondPoi), std::cend(vDebondPoi), [Xstart](const pgsPointOfInterest& poi) {return IsEqual(poi.GetDistFromStart(), Xstart); });
+            pgsPointOfInterest startPoi;
+            if (found == std::cend(vDebondPoi))
+            {
+               startPoi.SetLocation(segmentKey, Xstart);
+            }
+            else
+            {
+               startPoi = *found;
+            }
             ATLASSERT(pConfig == nullptr ? startPoi.GetID() != INVALID_ID : true);
             ATLASSERT(pConfig == nullptr ? startPoi.HasAttribute(POI_DEBOND) : true);
 
-            pgsPointOfInterest endPoi(pPoi->GetPointOfInterest(segmentKey, Xend));
+            found = std::find_if(std::cbegin(vDebondPoi), std::cend(vDebondPoi), [Xend](const pgsPointOfInterest& poi) {return IsEqual(poi.GetDistFromStart(), Xend); });
+            pgsPointOfInterest endPoi;
+            if (found == std::cend(vDebondPoi))
+            {
+               endPoi.SetLocation(segmentKey, Xend);
+            }
+            else
+            {
+               endPoi = *found;
+            }
             ATLASSERT(pConfig == nullptr ? endPoi.GetID() != INVALID_ID : true);
             ATLASSERT(pConfig == nullptr ? endPoi.HasAttribute(POI_DEBOND) : true);
 
@@ -1828,7 +1848,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
       }
       else
       {
-         Eci_config = pMaterial->GetEconc(pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Eci_config = pMaterial->GetEconc(pConfig->ConcType,pConfig->fci, pMaterial->GetSegmentStrengthDensity(segmentKey),
             pMaterial->GetSegmentEccK1(segmentKey),
             pMaterial->GetSegmentEccK2(segmentKey));
       }
@@ -1852,7 +1872,7 @@ void CAnalysisAgentImp::GetGirderDeflectionForCamber(const pgsPointOfInterest& p
       }
       else
       {
-         Ec_config = pMaterial->GetEconc(pConfig->fc28, pMaterial->GetSegmentStrengthDensity(segmentKey),
+         Ec_config = pMaterial->GetEconc(pConfig->ConcType, pConfig->fc28, pMaterial->GetSegmentStrengthDensity(segmentKey),
             pMaterial->GetSegmentEccK1(segmentKey),
             pMaterial->GetSegmentEccK2(segmentKey));
       }
@@ -2378,6 +2398,16 @@ void CAnalysisAgentImp::ApplyRotationAdjustment(IntervalIndexType intervalIdx,co
 std::vector<std::_tstring> CAnalysisAgentImp::GetVehicleNames(pgsTypes::LiveLoadType llType, const CGirderKey& girderKey) const
 {
    return m_pGirderModelManager->GetVehicleNames(llType, girderKey);
+}
+
+std::vector<pgsTypes::ProductForceType> CAnalysisAgentImp::GetProductForcesForCombo(LoadingCombinationType combo) const
+{
+   return CProductLoadMap::GetProductForces(m_pBroker,combo);
+}
+
+std::vector<pgsTypes::ProductForceType> CAnalysisAgentImp::GetProductForcesForGirder(const CGirderKey& girderKey) const
+{
+   return CProductLoadMap::GetProductForces(m_pBroker,girderKey);
 }
 
 std::_tstring CAnalysisAgentImp::GetLiveLoadName(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx) const
@@ -6145,7 +6175,7 @@ void CAnalysisAgentImp::GetDesignStress(const StressCheckTask& task,const pgsPoi
       Float64 fc_lldf = pConfig->fc ;
       if ( pGirderMaterial->Concrete.bUserEc )
       {
-         fc_lldf = lrfdConcreteUtil::FcFromEc( pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
+         fc_lldf = lrfdConcreteUtil::FcFromEc( (matConcrete::Type)pGirderMaterial->Concrete.Type, pGirderMaterial->Concrete.Ec, pGirderMaterial->Concrete.StrengthDensity );
       }
 
       GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
@@ -9795,6 +9825,14 @@ void CAnalysisAgentImp::GetCombinedLiveLoadReaction(IntervalIndexType intervalId
 
 /////////////////////////////////////////////////
 // IBearingDesign
+bool CAnalysisAgentImp::BearingLiveLoadReactionsIncludeImpact() const
+{
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   return pSpecEntry->UseImpactForBearingReactions();
+}
+
 std::vector<PierIndexType> CAnalysisAgentImp::GetBearingReactionPiers(IntervalIndexType intervalIdx,const CGirderKey& girderKey) const
 {
    std::vector<PierIndexType> vPiers;
@@ -9936,7 +9974,7 @@ Float64 CAnalysisAgentImp::GetDeflectionAdjustmentFactor(const pgsPointOfInteres
 
    GET_IFACE(IMaterials,pMaterials);
    Float64 Ec = pMaterials->GetSegmentEc(poi.GetSegmentKey(),intervalIdx);
-   Float64 Ec_adjusted = (pConfig->bUserEc ? pConfig->Ec : pMaterials->GetEconc(fc,pMaterials->GetSegmentStrengthDensity(poi.GetSegmentKey()),
+   Float64 Ec_adjusted = (pConfig->bUserEc ? pConfig->Ec : pMaterials->GetEconc(pConfig->ConcType, fc,pMaterials->GetSegmentStrengthDensity(poi.GetSegmentKey()),
                                                                                pMaterials->GetSegmentEccK1(poi.GetSegmentKey()),
                                                                                pMaterials->GetSegmentEccK2(poi.GetSegmentKey())));
    Float64 EI = IsZero(Iy) ? 0 : Ec*(Ix*Iy-Ixy*Ixy)/Iy;

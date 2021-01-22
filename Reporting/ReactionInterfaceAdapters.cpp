@@ -43,14 +43,8 @@ bool DoDoReportAtPier(IntervalIndexType intervalIdx,PierIndexType pierIdx,const 
 
 void LabelPier(std::_tostringstream& os, PierIndexType pierIdx, PierIndexType nPiers, PierReactionFaceType face)
 {
-   if (pierIdx == 0 || pierIdx == nPiers-1 )
-   {
-      os << _T("Abutment ") << LABEL_PIER(pierIdx);
-   }
-   else
-   {
-      os << _T("Pier ") << LABEL_PIER(pierIdx);
-   }
+   bool isAbut = (pierIdx == 0 || pierIdx == nPiers - 1);
+   os << LABEL_PIER_EX(isAbut,pierIdx);
 
    if (face == rftBack)
    {

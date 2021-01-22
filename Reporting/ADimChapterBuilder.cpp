@@ -213,7 +213,15 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
       {
          col = 0;
 
-         (*pTable1)(row1,col++) << location.SetValue(POI_ERECTED_SEGMENT, slab_offset.PointOfInterest );
+         if (bIsSplicedGirder)
+         {
+            (*pTable1)(row1, col++) << location.SetValue(POI_ERECTED_SEGMENT, slab_offset.PointOfInterest);
+         }
+         else
+         {
+            (*pTable1)(row1, col++) << location.SetValue(POI_SPAN, slab_offset.PointOfInterest);
+         }
+
          (*pTable1)(row1,col++) << rptRcStation(slab_offset.Station, &pDisplayUnits->GetStationFormat() );
          (*pTable1)(row2,col++) << RPT_OFFSET(slab_offset.Offset,dim);
 
@@ -235,7 +243,15 @@ rptChapter* CADimChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 lev
          row1++;
 
          col = 0;
-         (*pTable2)(row2,col++) << location.SetValue(POI_ERECTED_SEGMENT, slab_offset.PointOfInterest );
+         if (bIsSplicedGirder)
+         {
+            (*pTable2)(row2, col++) << location.SetValue(POI_ERECTED_SEGMENT, slab_offset.PointOfInterest);
+         }
+         else
+         {
+            (*pTable2)(row2, col++) << location.SetValue(POI_SPAN, slab_offset.PointOfInterest);
+         }
+
          (*pTable2)(row2,col++) << slab_offset.CrownSlope;
          (*pTable2)(row2,col++) << slab_offset.GirderTopSlope;
          (*pTable2)(row2,col++) << comp.SetValue(slab_offset.Wtop );

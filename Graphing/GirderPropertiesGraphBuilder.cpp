@@ -235,7 +235,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       const unitmgtLengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
       m_pYFormat = new LengthTool(heightUnit);
       m_Graph.SetYAxisValueFormat(*m_pYFormat);
-      std::_tstring strYAxisTitle = _T("Elevation (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
+      std::_tstring strYAxisTitle = _T("Elevation from top of non-composite girder (") + ((LengthTool*)m_pYFormat)->UnitTag() + _T(")");
       m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
       break;
       }
@@ -288,8 +288,14 @@ void CGirderPropertiesGraphBuilder::UpdateGraphTitle(const CGirderKey& girderKey
    else
    {
       GET_IFACE(IDocumentType,pDocType);
-      CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
-      strGraphTitle.Format(_T("%s %d Girder %s - %s - Interval %d: %s"),strGroupLabel,LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
+      if (pDocType->IsPGSuperDocument())
+      {
+         strGraphTitle.Format(_T("Span %s Girder %s - %s - Interval %d: %s"), LABEL_SPAN(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), GetPropertyLabel(propertyType), LABEL_INTERVAL(intervalIdx), strInterval);
+      }
+      else
+      {
+         strGraphTitle.Format(_T("Group %d Girder %s - %s - Interval %d: %s"), LABEL_GROUP(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), GetPropertyLabel(propertyType), LABEL_INTERVAL(intervalIdx), strInterval);
+      }
    }
    
    m_Graph.SetTitle(strGraphTitle);
@@ -567,7 +573,7 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
       nMaxDucts = Max(nMaxDucts, nGirderDucts); // overall max number of ducts
    }
    
-   grGraphColor graphColor(nMaxDucts);
+   grGraphColor graphColor;
 
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {

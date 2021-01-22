@@ -292,7 +292,7 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CPrecastSegmentData* pSegment = m_Girder.GetSegment(m_SegmentKey.segmentIndex);
-   if (pSegment->Strands.GetStrandDefinitionType() == CStrandData::sdtDirectSelection)
+   if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)
    {
       // first get in girderdata format
       const CDirectStrandFillCollection* pDirectFillData(nullptr);
@@ -406,7 +406,7 @@ LRESULT CGirderSegmentDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 
 	ASSERT_VALID(this);
 
-	CPropertyPage* pPage = GetPage(GetActiveIndex());
+	auto* pPage = GetPage(GetActiveIndex());
 
 	/* Forward the message on to the active page of the property sheet */
 	if( pPage != nullptr )

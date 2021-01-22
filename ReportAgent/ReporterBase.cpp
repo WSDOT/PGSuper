@@ -28,6 +28,7 @@
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <Reporting\BridgeAnalysisReportSpecificationBuilder.h>
+#include <Reporting\TimelineManagerReportSpecificationBuilder.h>
 
 #include <Reporting\AlignmentChapterBuilder.h>
 #include <Reporting\DeckElevationChapterBuilder.h>
@@ -37,6 +38,7 @@
 
 #include <Reporting\BridgeDescChapterBuilder.h>
 #include <Reporting\BridgeDescDetailsChapterBuilder.h>
+#include <Reporting\TimelineChapterBuilder.h>
 #include <Reporting\IntervalChapterBuilder.h>
 #include <Reporting\SectPropChapterBuilder.h>
 #include <Reporting\SpanDataChapterBuilder.h>
@@ -88,6 +90,9 @@
 #include <Reporting\TimeStepDetailsChapterBuilder.h>
 #include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
 
+#include <Reporting\PrincipalWebStressDetailsChapterBuilder.h>
+#include <Reporting\PrincipalWebStressDetailsReportSpecificationBuilder.h>
+
 #include <Reporting\PointOfInterestChapterBuilder.h>
 
 #include <Reporting\DistributionFactorSummaryChapterBuilder.h>
@@ -97,6 +102,8 @@
 #include <Reporting\MultiGirderHaunchGeometryChapterBuilder.h>
 
 #include <Reporting\PierReactionChapterBuilder.h>
+
+#include <Reporting\PrincipalTensionStressDetailsChapterBuilder.h>
 
 #include <IReportManager.h>
 #include <IFace\Project.h>
@@ -117,6 +124,7 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateBridgeGeometryReport();
    CreateDetailsReport();
    CreateLoadRatingReport();
+   CreateLoadRatingSummaryReport();
    CreateBearingDesignReport();
    CreateBridgeAnalysisReport();
    CreateHaulingReport();
@@ -124,7 +132,9 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateSpecChecReport();
    CreateDistributionFactorSummaryReport();
    CreateTimeStepDetailsReport();
+   CreatePrincipalWebStressDetailsReport();
    CreatePierReactionsReport();
+   CreateTimelineReport();
 
 #if defined _DEBUG || defined _BETA_VERSION
    // these are just some testing/debugging reports
@@ -169,11 +179,13 @@ void CReporterBase::CreateDetailsReport()
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
+   
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDeckElevationChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingSeatElevationsChapterBuilder2) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTimelineChapterBuilder));
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CIntervalChapterBuilder));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
@@ -190,11 +202,12 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLossesChapterBuilder) ); 
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCastingYardRebarRequirementChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CMomentCapacityDetailsChapterBuilder) );
-   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(true, false)));
-   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CHorizontalInterfaceShearCapacityDetailsChapterBuilder(true, false)));
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CShearCapacityDetailsChapterBuilder(true, false)));
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CHorizontalInterfaceShearCapacityDetailsChapterBuilder(true, false)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CStirrupDetailingCheckChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCritSectionChapterBuilder(true,false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLongReinfShearCheckChapterBuilder(true,false)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPrincipalTensionStressDetailsChapterBuilder));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSplittingZoneDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder) );
@@ -222,8 +235,8 @@ void CReporterBase::CreateLoadRatingReport()
    pRptBuilder->SetReportSpecificationBuilder( pLoadRatingRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingChapterBuilder(true)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingDetailsChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CLongitudinalReinforcementForShearLoadRatingChapterBuilder(true)));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingReactionsChapterBuilder(true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLongitudinalReinforcementForShearLoadRatingChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder(true)) );
    //pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSpanDataChapterBuilder(false)) );
@@ -247,6 +260,29 @@ void CReporterBase::CreateLoadRatingReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CEffFlangeWidthDetailsChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CDistributionFactorDetailsChapterBuilder(false)) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CCrackedSectionDetailsChapterBuilder(false)) );
+   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+}
+
+void CReporterBase::CreateLoadRatingSummaryReport()
+{
+   GET_IFACE(IReportManager,pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pLoadRatingRptSpecBuilder(std::make_shared<CLoadRatingSummaryReportSpecificationBuilder>(m_pBroker) );
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Load Rating Summary Report")));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pLoadRatingRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingDetailsChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingReactionsChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CAlignmentChapterBuilder) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBridgeDescChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(false,true,true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(false,true,true)) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 }
 
@@ -419,6 +455,22 @@ void CReporterBase::CreateTimeStepDetailsReport()
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
 }
 
+void CReporterBase::CreatePrincipalWebStressDetailsReport()
+{
+   GET_IFACE(IReportManager,pRptMgr);
+   std::shared_ptr<CReportSpecificationBuilder> pPoiRptSpecBuilder(  std::make_shared<CPrincipalWebStressDetailsReportSpecificationBuilder>(m_pBroker) );
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Principal Web Stress Details Report")));
+#if defined _DEBUG || defined _BETA_VERSION
+   pRptBuilder->IncludeTimingChapter();
+#endif
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pRptBuilder->SetReportSpecificationBuilder( pPoiRptSpecBuilder );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPrincipalWebStressDetailsChapterBuilder) );
+   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+}
+
+
 void CReporterBase::CreatePointOfInterestReport()
 {
    GET_IFACE(IReportManager,pRptMgr);
@@ -464,6 +516,19 @@ void CReporterBase::CreatePierReactionsReport()
    pRptBuilder->SetReportSpecificationBuilder( pRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CPierReactionChapterBuilder(true)) );
    pRptMgr->AddReportBuilder( pRptBuilder.release() );
+}
+
+void CReporterBase::CreateTimelineReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CTimelineManagerReportSpecificationBuilder>(m_pBroker));
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Timeline Manager Report"), true)); // hidden report
+   //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
+   pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTimelineChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
 }
 
 HRESULT CReporterBase::OnSpecificationChanged()

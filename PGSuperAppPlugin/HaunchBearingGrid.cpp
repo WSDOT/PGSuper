@@ -214,7 +214,7 @@ void CHaunchBearingGrid::FillGrid()
          std::array<Float64, 2> slabOffset;
          pPier->GetSlabOffset(&slabOffset[pgsTypes::Back], &slabOffset[pgsTypes::Ahead],pParent->m_BridgeDesc.GetSlabOffsetType() == pgsTypes::sotSegment ? true : false);
          CString strSupport;
-         strSupport.Format(_T("%s %d"), pPier->IsAbutment() ? _T("Abutment") : _T("Pier"), LABEL_PIER(pierIdx));
+         strSupport.Format(_T("%s"), LABEL_PIER_EX(pPier->IsAbutment(),pierIdx));
          if (pPier->IsAbutment())
          {
             pgsTypes::PierFaceType face = pPier->GetPrevSpan() == nullptr ? pgsTypes::Ahead : pgsTypes::Back;

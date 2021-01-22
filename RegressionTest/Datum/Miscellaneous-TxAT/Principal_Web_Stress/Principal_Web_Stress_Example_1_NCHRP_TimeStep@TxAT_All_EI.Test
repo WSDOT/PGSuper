@@ -1,0 +1,35 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.83    7   5.00                     1     1    WF100    *     64  0.6  270  42.21  18.09   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.152    -5.703    21735   0.478  0.596  -0.471 -2.471 -0.457 -0.663 -3.591 277.33  567.05   21.00   18.33   18.33 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
+Splitting zone check failed.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.83    7   5.00                     1     2    WF100    *     64  0.6  270  42.44  18.13   9.75   9.75                                              20  96.0  7.0  7.497 10.100   5.281    -5.563    21959   0.478  0.596  -0.036 -2.632 -0.460 -0.668 -3.760 252.11  426.25   21.00   18.33   18.33 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
+Splitting zone check failed.
+Lifting checks failed
+Hauling checks failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.83    7   5.00                     1     4    WF100    *     64  0.6  270  42.21  18.09   9.75   9.75                                              20  96.0  7.0  7.500 10.100   4.911    -5.398    20461   0.478  0.596  -0.626 -2.606 -0.457  0.000 -3.063 277.33  585.62   21.00   18.33   18.33 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Lifting checks failed
+Hauling checks failed
+
+

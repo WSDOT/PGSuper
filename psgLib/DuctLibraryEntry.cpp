@@ -43,6 +43,7 @@ static char THIS_FILE[] = __FILE__;
 DuctLibraryEntry::DuctLibraryEntry() :
 m_OD(0),
 m_ID(0),
+m_ND(0),
 m_Z(0)
 {
 }
@@ -71,12 +72,13 @@ DuctLibraryEntry& DuctLibraryEntry::operator= (const DuctLibraryEntry& rOther)
 //======================== OPERATIONS =======================================
 bool DuctLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 {
-   pSave->BeginUnit(_T("DuctEntry"), 1.0);
+   pSave->BeginUnit(_T("DuctEntry"), 2.0);
 
    pSave->Property(_T("Name"),this->GetName().c_str());
    
    pSave->Property(_T("OD"), m_OD);
    pSave->Property(_T("ID"), m_ID);
+   pSave->Property(_T("ND"), m_ND); // added in version 2
    pSave->Property(_T("Z"),  m_Z);
    pSave->EndUnit();
 
@@ -87,6 +89,8 @@ bool DuctLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("DuctEntry")))
    {
+      Float64 version = pLoad->GetVersion();
+
       std::_tstring name;
       if(pLoad->Property(_T("Name"),&name))
       {
@@ -105,6 +109,18 @@ bool DuctLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       if(!pLoad->Property(_T("ID"), &m_ID))
       {
          THROW_LOAD(InvalidFileFormat,pLoad);
+      }
+
+      if (1 < version)
+      {
+         if (!pLoad->Property(_T("ND"), &m_ND))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+      else
+      {
+         m_ND = m_OD;
       }
 
       if(!pLoad->Property(_T("Z"), &m_Z))
@@ -145,10 +161,16 @@ bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<pgsLi
       vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("OD"),m_OD,rOther.m_OD,pDisplayUnits->ComponentDim));
    }
 
-   if ( !::IsEqual(m_ID,rOther.m_ID) )
+   if (!::IsEqual(m_ID, rOther.m_ID))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("ID"),m_ID,rOther.m_ID,pDisplayUnits->ComponentDim));
+      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("ID"), m_ID, rOther.m_ID, pDisplayUnits->ComponentDim));
+   }
+
+   if (!::IsEqual(m_ND, rOther.m_ND))
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Nominal Diameter"), m_ND, rOther.m_ND, pDisplayUnits->ComponentDim));
    }
 
    if ( !::IsEqual(m_Z,rOther.m_Z) )
@@ -187,6 +209,16 @@ Float64 DuctLibraryEntry::GetID() const
    return m_ID;
 }
 
+void DuctLibraryEntry::SetNominalDiameter(Float64 nd)
+{
+   m_ND = nd;
+}
+
+Float64 DuctLibraryEntry::GetNominalDiameter() const
+{
+   return m_ND;
+}
+
 Float64 DuctLibraryEntry::GetInsideArea() const
 {
    return M_PI*m_ID*m_ID/4;
@@ -207,6 +239,7 @@ bool DuctLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.m_Name = CString(GetName().c_str());
    dlg.m_OD = m_OD;
    dlg.m_ID = m_ID;
+   dlg.m_ND = m_ND;
    dlg.m_Z  = m_Z;
 
    INT_PTR i = dlg.DoModal();
@@ -214,6 +247,7 @@ bool DuctLibraryEntry::Edit(bool allowEditing,int nPage)
    {
       m_OD = dlg.m_OD;
       m_ID = dlg.m_ID;
+      m_ND = dlg.m_ND;
       m_Z  = dlg.m_Z;
       return true;
    }
@@ -225,6 +259,7 @@ void DuctLibraryEntry::MakeCopy(const DuctLibraryEntry& rOther)
 {
    m_OD = rOther.m_OD;
    m_ID = rOther.m_ID;
+   m_ND = rOther.m_ND;
    m_Z  = rOther.m_Z;
 }
 

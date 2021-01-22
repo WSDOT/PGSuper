@@ -160,6 +160,7 @@ END_CONNECTION_POINT_MAP()
    StatusCallbackIDType m_scidGirderDescriptionWarning;
    StatusCallbackIDType m_scidRebarStrengthWarning;
    StatusCallbackIDType m_scidLoadDescriptionWarning;
+   StatusCallbackIDType m_scidConnectionGeometryWarning;
 
 // IAgent
 public:
@@ -250,6 +251,8 @@ public:
    virtual void SetGirderCount(GroupIndexType grpIdx,GirderIndexType nGirders) override;
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::BoundaryConditionType connectionType) override;
    virtual void SetBoundaryCondition(PierIndexType pierIdx,pgsTypes::PierSegmentConnectionType connectionType,EventIndexType castClosureEventIdx) override;
+   virtual void SetBoundaryCondition(SupportIndexType tsIdx, pgsTypes::TemporarySupportType supportType) override;
+   virtual void SetBoundaryCondition(SupportIndexType tsIdx, pgsTypes::TempSupportSegmentConnectionType connectionType, EventIndexType castClosureEventIdx) override;
    virtual void DeletePier(PierIndexType pierIdx,pgsTypes::PierFaceType faceForSpan) override;
    virtual void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace, Float64 spanLength, const CSpanData2* pSpanData,const CPierData2* pPierData,bool bCreateNewGroup,EventIndexType eventIdx) override;
    virtual void InsertTemporarySupport(CTemporarySupportData* pTSData,EventIndexType erectionEventIdx,EventIndexType removalEventIdx,EventIndexType castClosureJointEventIdx) override;
@@ -422,6 +425,8 @@ public:
    virtual bool IsAssumedExcessCamberForLoad() const override; 
    virtual bool IsAssumedExcessCamberForSectProps() const override; 
    virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const override;
+   virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const override;
+   virtual ISpecification::PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const override;
 
 // IRatingSpecification
 public:
@@ -460,8 +465,8 @@ public:
    virtual void SetLiveLoadFactor(pgsTypes::LimitState ls,Float64 gLL) override;
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,bool bResolveIfDefault=false) const override;
    virtual Float64 GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType,Int16 adtt,const RatingLibraryEntry* pRatingEntry,bool bResolveIfDefault=false) const override;
-   virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType,Float64 t) override;
-   virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType) const override;
+   virtual void SetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType, Float64 t, bool bLimitStress, Float64 fMax) override;
+   virtual Float64 GetAllowableTensionCoefficient(pgsTypes::LoadRatingType ratingType, bool* pbLimitStress, Float64* pfMax) const override;
    virtual void RateForStress(pgsTypes::LoadRatingType ratingType,bool bRateForStress) override;
    virtual bool RateForStress(pgsTypes::LoadRatingType ratingType) const override;
    virtual void RateForShear(pgsTypes::LoadRatingType ratingType,bool bRateForShear) override;
@@ -519,7 +524,7 @@ public:
    virtual DuctLibrary*            GetDuctLibrary() override;
    virtual HaulTruckLibrary*       GetHaulTruckLibrary() override;
    virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const override;
-   virtual void GetMasterLibraryInfo(std::_tstring& strPublisher,std::_tstring& strMasterLib,sysTime& time) const override;
+   virtual void GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib, sysTime& time) const override;
    virtual RatingLibrary* GetRatingLibrary() override;
    virtual const RatingLibrary* GetRatingLibrary() const override;
    virtual const RatingLibraryEntry* GetRatingEntry( LPCTSTR lpszName ) const override;
@@ -741,7 +746,29 @@ private:
    std::array<Float64, pgsTypes::LimitStateCount> m_gPS;
    std::array<Float64, pgsTypes::LimitStateCount> m_gLL;
 
-   std::array<Float64, pgsTypes::lrLoadRatingTypeCount> m_AllowableTensionCoefficient; // index is load rating type
+   struct TensionStressParams
+   {
+      Float64 coefficient;
+      bool bLimitStress;
+      Float64 fMax;
+      TensionStressParams() {}
+      TensionStressParams(Float64 a, bool b, Float64 c) : coefficient(a), bLimitStress(b), fMax(c) {}
+      bool operator==(const TensionStressParams& other) const
+      {
+         if (!IsEqual(coefficient, other.coefficient) || bLimitStress != other.bLimitStress)
+            return false;
+
+         if (bLimitStress && !IsEqual(fMax, other.fMax))
+            return false;
+
+         return true;
+      }
+      bool operator!=(const TensionStressParams& other) const
+      {
+         return !operator==(other);
+      }
+   };
+   std::array<TensionStressParams, pgsTypes::lrLoadRatingTypeCount> m_AllowableTensileStress; // index is load rating type
    std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bCheckYieldStress; // index is load rating type
    std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bRateForStress; // index is load rating type
    std::array<bool, pgsTypes::lrLoadRatingTypeCount>    m_bRateForShear; // index is load rating type

@@ -32,6 +32,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\DocumentType.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,6 +81,8 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2_NOCHECK(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
 
    bool bDesign = m_bDesign;
    bool bRating;
@@ -119,7 +122,15 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
          pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
          std::_tostringstream os;
-         os << _T("Group ") << LABEL_GROUP(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex);
+         if (isPGSuper)
+         {
+            os << _T("Span ") << LABEL_SPAN(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex);
+         }
+         else
+         {
+            os << _T("Group ") << LABEL_GROUP(thisGirderKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(thisGirderKey.girderIndex);
+         }
+
          pPara->SetName( os.str().c_str() );
          (*pPara) << pPara->GetName() << rptNewLine;
       }

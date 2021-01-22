@@ -40,55 +40,6 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\ExtendUI.h>
 
-// handy functions
-
-// Changes in girder fill can make debonding invalid. This algorithm gets rid of any
-// debonding of strands that don't exist
-inline bool ReconcileDebonding(const ConfigStrandFillVector& fillvec, std::vector<CDebondData>& rDebond)
-{
-   bool didErase = false;
-   StrandIndexType strsize = fillvec.size();
-
-   std::vector<CDebondData>::iterator it=rDebond.begin();
-   while ( it!=rDebond.end() )
-   {
-      if (it->strandTypeGridIdx > strsize || fillvec[it->strandTypeGridIdx]==0)
-      {
-         it = rDebond.erase(it);
-         didErase = true;
-      }
-      else
-      {
-         it++;
-      }
-   }
-
-   return didErase;
-}
-
-inline bool ReconcileExtendedStrands(const ConfigStrandFillVector& fillvec, std::vector<GridIndexType>& extendedStrands)
-{
-   bool didErase = false;
-   StrandIndexType strsize = fillvec.size();
-
-   std::vector<GridIndexType>::iterator it(extendedStrands.begin());
-   while ( it != extendedStrands.end() )
-   {
-      GridIndexType gridIdx = *it;
-      if (strsize < gridIdx || fillvec[gridIdx]==0)
-      {
-         it = extendedStrands.erase(it);
-         didErase = true;
-      }
-      else
-      {
-         it++;
-      }
-   }
-
-   return didErase;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
 

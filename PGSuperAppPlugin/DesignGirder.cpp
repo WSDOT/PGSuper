@@ -158,7 +158,7 @@ void txnDesignGirder::Init()
       rdata.m_SegmentData[1] = pSegmentDesignArtifact->GetSegmentData();
 
       // Slab offset design data
-      if ( m_NewSlabOffsetType!=sodtDoNotDesign && pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset != sodNoSlabOffsetDesign )
+      if ( m_NewSlabOffsetType!=sodtDoNotDesign && pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset != sodPreserveHaunch )
       {
          if (m_NewSlabOffsetType==sodtAllSelectedGirders ||
              (rdata.m_DesignArtifact.GetGirderKey().groupIndex == m_FromSpanIdx && rdata.m_DesignArtifact.GetGirderKey().girderIndex == m_FromGirderIdx))
@@ -168,7 +168,7 @@ void txnDesignGirder::Init()
             m_DesignSlabOffset[pgsTypes::metEnd]   = pSegmentDesignArtifact->GetSlabOffset(pgsTypes::metEnd);
 
             GET_IFACE2(pBroker,ISpecification,pSpec);
-            if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodSlabOffsetandAssumedExcessCamberDesign &&
+            if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodDesignHaunch &&
                  pSpec->IsAssumedExcessCamberForLoad())
             {
                // AssumedExcessCamber was done too - store it

@@ -172,3 +172,42 @@ void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 ma
       pfcCtrl->SetCurSel(idx_sel);
    }
 }
+
+// Utility string functions for Transverse column boundary conditions
+#define CFCB_TBFIX_STR _T("Top and Bottom Fixed")
+#define CFCB_TFIX_BPIN_STR _T("Top Fixed, Bottom Pinned")
+#define CFCB_TPIN_BFIX_STR _T("Top Pinned, Bottom Fixed")
+
+inline CString GetTransverseFixityString(pgsTypes::ColumnTransverseFixityType fixityType)
+{
+   if (fixityType == pgsTypes::ctftTopFixedBottomFixed)
+   {
+      return CFCB_TBFIX_STR;
+   }
+   else if (fixityType == pgsTypes::ctftTopFixedBottomPinned)
+   {
+      return CFCB_TFIX_BPIN_STR;
+   }
+   else 
+   {
+      ATLASSERT(fixityType == pgsTypes::ctftTopPinnedBottomFixed); // new type?
+      return CFCB_TPIN_BFIX_STR;
+   }
+}
+
+inline pgsTypes::ColumnTransverseFixityType GetTransverseFixityTypeFromString(CString str)
+{
+   if (str == CFCB_TBFIX_STR)
+   {
+      return pgsTypes::ctftTopFixedBottomFixed;
+   }
+   else if (str == CFCB_TFIX_BPIN_STR)
+   {
+      return pgsTypes::ctftTopFixedBottomPinned;
+   }
+   else 
+   {
+      ATLASSERT(str == CFCB_TPIN_BFIX_STR); // new type?
+      return pgsTypes::ctftTopPinnedBottomFixed;
+   }
+}

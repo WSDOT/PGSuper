@@ -156,6 +156,8 @@ public:
    virtual VehicleIndexType GetVehicleCount(pgsTypes::LiveLoadType llType) const override;
    virtual Float64 GetVehicleWeight(pgsTypes::LiveLoadType llType,VehicleIndexType vehicleIdx) const override;
    virtual std::vector<std::_tstring> GetVehicleNames(pgsTypes::LiveLoadType llType, const CGirderKey& segmentKey) const override;
+   virtual std::vector<pgsTypes::ProductForceType> GetProductForcesForCombo(LoadingCombinationType combo) const override;
+   virtual std::vector<pgsTypes::ProductForceType> GetProductForcesForGirder(const CGirderKey& girderKey) const override;
 
 // IProductForces
 public:
@@ -377,6 +379,8 @@ public:
 
 // IBearingDesign
 public:
+   virtual bool BearingLiveLoadReactionsIncludeImpact() const override;
+
    virtual std::vector<PierIndexType> GetBearingReactionPiers(IntervalIndexType intervalIdx,const CGirderKey& girderKey) const override;
 
    virtual Float64 GetBearingProductReaction(IntervalIndexType intervalIdx,const ReactionLocation& location,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat, ResultsType resultsType) const override;

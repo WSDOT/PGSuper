@@ -74,8 +74,7 @@ public:
    virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const override;
 
 protected:
-   virtual bool ExcludeExteriorBeamShearKeys() const override { return false; }
-   virtual bool UseOverallWidth() const override { return false; }
+   virtual bool ExcludeExteriorBeamShearKeys(const IBeamFactory::Dimensions& dimensions) const override;
 
    virtual void DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const override;
 
@@ -98,8 +97,8 @@ private:
                                     Float64& C1,
                                     Float64& J,
                                     Float64& shearKeyDepth,
-                                    Float64& endBlockLength) const;
-
+                                    Float64& endBlockLength,
+                                    bool& bFlushExteriorFace) const;
 };
 
 #endif //__BOXBEAMFACTORY_H_

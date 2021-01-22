@@ -39,6 +39,7 @@ protected:
    void CreateBridgeGeometryReport();
    void CreateDetailsReport();
    void CreateLoadRatingReport();
+   void CreateLoadRatingSummaryReport();
    void CreateBearingDesignReport();
 
    void CreateBridgeAnalysisReport();
@@ -55,7 +56,9 @@ protected:
 
    void CreateStageByStageDetailsReport();
    void CreateTimeStepDetailsReport();
+   void CreatePrincipalWebStressDetailsReport();
    void CreatePointOfInterestReport();
 
    void CreatePierReactionsReport();
+   void CreateTimelineReport();
 };

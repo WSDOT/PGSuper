@@ -160,6 +160,17 @@ void CBridgeDescrBearings::OnBnClickedEditBearings()
       UpdateData(TRUE);
    }
 
+   CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
+   ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+   // Tricky: Need to get current status of pier labelling (from parent) and stow it so proper labels are displayed
+   pgsAutoPierLabel autoPierLabel; // will reset values upon destruction
+
+   pgsTypes::DisplayEndSupportType startPierType, endPierType;
+   PierIndexType startPierNumber;
+   pParent->m_BridgeDesc.GetPierDisplaySettings( &startPierType, &endPierType, &startPierNumber);
+   pgsPierLabel::SetPierLabelSettings(startPierType, endPierType, startPierNumber);
+
    CEditBearingDlg dlg(&m_BearingInputData);
    if (dlg.DoModal() == IDOK)
    {

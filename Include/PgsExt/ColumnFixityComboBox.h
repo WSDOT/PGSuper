@@ -22,11 +22,13 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
+#include <PGSuperUIUtil.h>
 
+////////////////// CColumnFixityComboBox //////////////
 // Usage notes:
 // Add the following members to your dialog
 // CColumnFixityComboBox m_cbColumnFixity
-// pgsTypes::ColumnFixityType m_ColumnFixity
+// pgsTypes::ColumnLongitudinalBaseFixityType m_ColumnFixity
 //
 // In DoDataExchange, add the following
 //   DDX_Control(pDX,IDC_COLUMN_FIXITY,m_cbColumnFixity);
@@ -34,6 +36,7 @@
 
 #define COLUMN_FIXITY_FIXED  0x0001
 #define COLUMN_FIXITY_PINNED 0x0002
+
 class PGSEXTCLASS CColumnFixityComboBox : public CComboBox
 {
 public:
@@ -46,7 +49,7 @@ public:
 
 private:
    void UpdateFixity();
-   int AddFixity(pgsTypes::ColumnFixityType fixityType);
+   int AddFixity(pgsTypes::ColumnLongitudinalBaseFixityType fixityType);
 
 protected:
    UINT m_Fixity;

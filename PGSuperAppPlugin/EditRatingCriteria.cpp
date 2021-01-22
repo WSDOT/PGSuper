@@ -113,6 +113,8 @@ txnDesignRatingData::txnDesignRatingData()
    ServiceIII_PS = 1.0;
 
    AllowableTensionCoefficient = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
+   bLimitTensileStress = true;
+   MaxTensileStress = ::ConvertToSysUnits(0.6, unitMeasure::KSI);
    bRateForShear = true;
 }
 
@@ -160,6 +162,12 @@ bool txnDesignRatingData::operator==(const txnDesignRatingData& other) const
    if ( !IsEqual(AllowableTensionCoefficient,other.AllowableTensionCoefficient) )
       return false;
 
+   if (bLimitTensileStress != other.bLimitTensileStress)
+      return false;
+
+   if (bLimitTensileStress && !IsEqual(MaxTensileStress, other.MaxTensileStress))
+      return false;
+
    if ( bRateForShear != other.bRateForShear )
       return false;
 
@@ -195,6 +203,9 @@ txnLegalRatingData::txnLegalRatingData()
    ServiceIII_PS = 1.0;
 
    AllowableTensionCoefficient = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
+   bLimitTensileStress = true;
+   MaxTensileStress = ::ConvertToSysUnits(0.6, unitMeasure::KSI);
+
    bRateForStress   = true;
    bRateForShear    = true;
    bExcludeLaneLoad = false;
@@ -274,6 +285,15 @@ bool txnLegalRatingData::operator==(const txnLegalRatingData& other) const
    if ( !IsEqual(AllowableTensionCoefficient,other.AllowableTensionCoefficient) )
       return false;
 
+   if (!IsEqual(AllowableTensionCoefficient, other.AllowableTensionCoefficient))
+      return false;
+
+   if (bLimitTensileStress != other.bLimitTensileStress)
+      return false;
+
+   if (bLimitTensileStress && !IsEqual(MaxTensileStress, other.MaxTensileStress))
+      return false;
+
    if ( bRateForStress != other.bRateForStress )
       return false;
 
@@ -321,7 +341,9 @@ txnPermitRatingData::txnPermitRatingData()
    ServiceIII_PS = 1.0;
 
    bRateForStress = false;
-   AllowableTensionCoefficient = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
+   AllowableTensionCoefficient = ::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI);
+   bLimitTensileStress = true;
+   MaxTensileStress = ::ConvertToSysUnits(0.6, unitMeasure::KSI);
 
    bRateForShear = true;
    bCheckReinforcementYielding = true;
@@ -420,6 +442,15 @@ bool txnPermitRatingData::operator==(const txnPermitRatingData& other) const
       return false;
 
    if ( !IsEqual(AllowableTensionCoefficient,other.AllowableTensionCoefficient) )
+      return false;
+
+   if (!IsEqual(AllowableTensionCoefficient, other.AllowableTensionCoefficient))
+      return false;
+
+   if (bLimitTensileStress != other.bLimitTensileStress)
+      return false;
+
+   if (bLimitTensileStress && !IsEqual(MaxTensileStress, other.MaxTensileStress))
       return false;
 
 
@@ -571,8 +602,8 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_Operating,m_Data[i].m_Design.ServiceIII_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceIII_Operating,m_Data[i].m_Design.ServiceIII_PS);
 
-   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrDesign_Inventory,m_Data[i].m_Design.AllowableTensionCoefficient );
-   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrDesign_Operating,m_Data[i].m_Design.AllowableTensionCoefficient );
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrDesign_Inventory,m_Data[i].m_Design.AllowableTensionCoefficient, m_Data[i].m_Design.bLimitTensileStress, m_Data[i].m_Design.MaxTensileStress );
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrDesign_Operating,m_Data[i].m_Design.AllowableTensionCoefficient, m_Data[i].m_Design.bLimitTensileStress, m_Data[i].m_Design.MaxTensileStress);
    
    pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory,m_Data[i].m_Design.bRateForShear);
    pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating,m_Data[i].m_Design.bRateForShear);
@@ -646,9 +677,9 @@ void txnEditRatingCriteria::Execute(int i)
    pLiveLoads->SetTruckImpact(pgsTypes::lltLegalRating_Emergency, m_Data[i].m_Legal.IM_Truck_Emergency);
    pLiveLoads->SetLaneImpact(pgsTypes::lltLegalRating_Emergency, m_Data[i].m_Legal.IM_Lane_Emergency);
 
-   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine,m_Data[i].m_Legal.AllowableTensionCoefficient );
-   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Special, m_Data[i].m_Legal.AllowableTensionCoefficient);
-   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Emergency, m_Data[i].m_Legal.AllowableTensionCoefficient);
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine,m_Data[i].m_Legal.AllowableTensionCoefficient, m_Data[i].m_Legal.bLimitTensileStress, m_Data[i].m_Legal.MaxTensileStress);
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Special, m_Data[i].m_Legal.AllowableTensionCoefficient, m_Data[i].m_Legal.bLimitTensileStress, m_Data[i].m_Legal.MaxTensileStress);
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrLegal_Emergency, m_Data[i].m_Legal.AllowableTensionCoefficient, m_Data[i].m_Legal.bLimitTensileStress, m_Data[i].m_Legal.MaxTensileStress);
 
    pRatingSpec->RateForStress(pgsTypes::lrLegal_Routine,m_Data[i].m_Legal.bRateForStress);
    pRatingSpec->RateForStress(pgsTypes::lrLegal_Special, m_Data[i].m_Legal.bRateForStress);
@@ -712,8 +743,8 @@ void txnEditRatingCriteria::Execute(int i)
    
    pRatingSpec->RateForStress(pgsTypes::lrPermit_Routine,m_Data[i].m_Permit.bRateForStress);
    pRatingSpec->RateForStress(pgsTypes::lrPermit_Special,m_Data[i].m_Permit.bRateForStress);
-   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrPermit_Routine,m_Data[i].m_Permit.AllowableTensionCoefficient );
-   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrPermit_Special,m_Data[i].m_Permit.AllowableTensionCoefficient );
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrPermit_Routine,m_Data[i].m_Permit.AllowableTensionCoefficient, m_Data[i].m_Permit.bLimitTensileStress, m_Data[i].m_Permit.MaxTensileStress);
+   pRatingSpec->SetAllowableTensionCoefficient(pgsTypes::lrPermit_Special,m_Data[i].m_Permit.AllowableTensionCoefficient, m_Data[i].m_Permit.bLimitTensileStress, m_Data[i].m_Permit.MaxTensileStress);
 
    pRatingSpec->CheckYieldStress(pgsTypes::lrPermit_Routine,m_Data[i].m_Permit.bCheckReinforcementYielding);
    pRatingSpec->CheckYieldStress(pgsTypes::lrPermit_Special,m_Data[i].m_Permit.bCheckReinforcementYielding);

@@ -27,6 +27,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\Allowables.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\PoiKey.h>
@@ -104,6 +105,8 @@ private:
    CComPtr<IExternalLoading>   m_pExternalLoading;
    CComPtr<IEAFDisplayUnits>   m_pDisplayUnits;
    CComPtr<ILosses>            m_pLosses;
+   CComPtr<IDuctLimits>        m_pDuctLimits;
+
 
 
    // keeps track of the strand types we are analyzing
@@ -157,6 +160,12 @@ private:
 
    void GetAnalysisLocations(const CGirderKey& girderKey, PoiList* pPoiList);
    void GetAnalysisLocations(const CSegmentKey& segmentKey, PoiList* pPoiList);
+
+   void ComputePrincipalStressInWeb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, pgsTypes::ProductForceType pfType, DuctIndexType nSegmentDucts, DuctIndexType nGirderDucts,TIME_STEP_DETAILS& tsDetails, const TIME_STEP_DETAILS* pPrevTsDetails);
+
+   ISpecification::PrincipalWebStressCheckType m_PrincipalTensileStressCheckType;
+   Float64 m_DuctDiameterNearnessFactor;
+
 
    CSegmentKey m_SegmentKey; // segment for which we are currently computing deflections
 };

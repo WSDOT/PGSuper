@@ -325,19 +325,22 @@ BOOL CSpanLayoutPage::OnInitDialog()
    const CSpanData2* pPrevSpan = pParent->m_pSpanData->GetPrevPier()->GetPrevSpan();
    const CSpanData2* pNextSpan = pParent->m_pSpanData->GetNextPier()->GetNextSpan();
 
-   CString strPrevPierType(pParent->m_pSpanData->GetPrevPier()->IsAbutment() ? _T("Abutment") : _T("Pier"));
-   CString strNextPierType(pParent->m_pSpanData->GetNextPier()->IsAbutment() ? _T("Abutment") : _T("Pier"));
+   CString strPrevPierName = pgsPierLabel::GetPierLabelEx(pParent->m_pSpanData->GetPrevPier()->IsAbutment(), m_PrevPierIdx).c_str();
+   CString strNextPierName = pgsPierLabel::GetPierLabelEx(pParent->m_pSpanData->GetNextPier()->IsAbutment(), m_NextPierIdx).c_str();
+
+   CString strPrevPierType = pgsPierLabel::GetPierTypeLabelEx(pParent->m_pSpanData->GetPrevPier()->IsAbutment(), m_PrevPierIdx).c_str();
+   CString strNextPierType = pgsPierLabel::GetPierTypeLabelEx(pParent->m_pSpanData->GetNextPier()->IsAbutment(), m_NextPierIdx).c_str();
 
    CString strSpanLabel;
-   strSpanLabel.Format(_T("Span %d"),LABEL_SPAN(m_SpanIdx));
+   strSpanLabel.Format(_T("Span %s"),LABEL_SPAN(m_SpanIdx));
    GetDlgItem(IDC_SPAN_LABEL)->SetWindowText(strSpanLabel);
 
    CString strSpanLengthBasis;
-   strSpanLengthBasis.Format(_T("Span length is measured along the alignment between the %s Line at %s %d and the %s Line at %s %d."),strPrevPierType,strPrevPierType,LABEL_PIER(m_PrevPierIdx),strNextPierType,strNextPierType,LABEL_PIER(m_NextPierIdx));
+   strSpanLengthBasis.Format(_T("Span length is measured along the alignment between the %s Line at %s and the %s Line at %s."),strPrevPierType,strPrevPierName,strNextPierType,strNextPierName);
    GetDlgItem(IDC_SPAN_LENGTH_BASIS)->SetWindowText(strSpanLengthBasis);
 
    CString strSpanLengthNote;
-   strSpanLengthNote.Format(_T("The length of Span %d is changed by moving all piers after %s %d. Only the length of Span %d is changed."),LABEL_SPAN(m_SpanIdx),strPrevPierType,LABEL_PIER(m_PrevPierIdx),LABEL_SPAN(m_SpanIdx));
+   strSpanLengthNote.Format(_T("The length of Span %s is changed by moving all piers after %s. Only the length of Span %s is changed."),LABEL_SPAN(m_SpanIdx),LABEL_PIER_EX(pParent->m_pSpanData->GetPrevPier()->IsAbutment(),m_PrevPierIdx),LABEL_SPAN(m_SpanIdx));
    GetDlgItem(IDC_SPAN_LENGTH_NOTE)->SetWindowText(strSpanLengthNote);
 
    UpdateSlabOffsetWindowState();

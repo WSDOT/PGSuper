@@ -60,9 +60,10 @@
 #define IDH_DIALOG_LIBIMPORTENTRYCONFLICT 412
 #define IDH_LIVELOAD_DIALOG			   414
 #define IDH_MULTIGIRDER_REPORT         417
-
 #define IDH_EDIT_HAUNCH                420
 #define IDH_EDIT_BEARINGS              421
+#define IDH_LOADRATING_REPORT          422
+#define IDH_LOADRATING_SUMMARY_REPORT  423
 
 #define IDH_LOAD_FACTORS 422
 
@@ -150,6 +151,7 @@
 #define IDH_PRETENSIONING                       3754
 #define IDH_SPLICED_GIRDER_GENERAL              3755
 #define IDH_HAUL_TRUCK_DIALOG                   3756
+#define IDH_PROJECT_CRITERIA_BEARINGS           3757
 
 #define IDH_SELECT_LIVELOAD			  	         3790
 
@@ -161,6 +163,8 @@
 #define IDH_RATING_PERMIT_TAB                   3803
 
 #define IDH_PLUGINS                             3810
+
+#define IDH_FILE_COMPATIBILITY_WARNING          3811
 
 #define IDH_GENERATE_STRANDS                    3900
 #define IDH_STRAND_LOCATION                     3901
@@ -196,4 +200,5 @@
 #define IDH_APPLY_LOADS                5007
 #define IDH_REMOVE_TEMPORARY_SUPPORTS  5008
 #define IDH_CAST_INTERMEDIATE_DIAPHRAGMS 5009
+
 

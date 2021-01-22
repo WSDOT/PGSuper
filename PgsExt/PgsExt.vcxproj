@@ -607,6 +607,7 @@
     <ClCompile Include="PoiPairMap.cpp" />
     <ClCompile Include="PrecastIGirderDetailingArtifact.cpp" />
     <ClCompile Include="PrecastSegmentData.cpp" />
+    <ClCompile Include="PrincipalTensionStressArtifact.cpp" />
     <ClCompile Include="Prompts.cpp" />
     <ClCompile Include="PTData.cpp" />
     <ClCompile Include="RailingSystem.cpp" />
@@ -708,6 +709,7 @@
     <ClInclude Include="..\Include\PgsExt\HoldDownForceArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\InsertDeleteLoad.h" />
     <ClInclude Include="..\Include\PgsExt\IntervalTool.h" />
+    <ClInclude Include="..\Include\PgsExt\ISummaryRatingArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\KdotHaulingAnalysisArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\Keys.h" />
     <ClInclude Include="..\Include\PgsExt\LiftHaulConstants.h" />
@@ -732,6 +734,7 @@
     <ClInclude Include="..\Include\PgsExt\PoiPairMap.h" />
     <ClInclude Include="..\Include\PgsExt\PrecastIGirderDetailingArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\PrecastSegmentData.h" />
+    <ClInclude Include="..\Include\PgsExt\PrincipalTensionStressArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\Prompts.h" />
     <ClInclude Include="..\Include\PgsExt\PTData.h" />
     <ClInclude Include="..\Include\PgsExt\RailingSystem.h" />

@@ -43,6 +43,7 @@ class pgsSegmentArtifact;
 class pgsGirderDesignArtifact;
 
 class pgsRatingArtifact;
+class pgsISummaryRatingArtifact;
 
 class stbLiftingCheckArtifact;
 class pgsHaulingAnalysisArtifact;
@@ -77,7 +78,8 @@ interface IArtifact : IUnknown
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const = 0;
 
    // Creates a DesignArtifact for the specified girder
-   virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey,const std::vector<arDesignOptions>& options) const = 0;
+   // bool bOverrideHaunchDesignOption is true, the haunch design option is set to haunchDesignType, otherwise the setting from the specifications is used
+   virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType) const = 0;
 
    // If the specified girder was previously designed, its DesignArtifact is returned, otherwise nullptr
    virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) const = 0;
@@ -90,6 +92,10 @@ interface IArtifact : IUnknown
 
    // Returns the RatingArtifact for the specified girder
    virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const = 0;
+
+   // Returns the RatingSummaryArtifact for the specified collection of girders
+   virtual std::shared_ptr<const pgsISummaryRatingArtifact> GetSummaryRatingArtifact(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const = 0;
+
 };
 
 #endif // INCLUDED_IFACE_ARTIFACT_H_

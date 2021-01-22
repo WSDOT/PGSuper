@@ -78,7 +78,7 @@ HRESULT CVoidedSlabFactory::FinalConstruct()
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Void Diameter
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Void Spacing
-   m_DimUnits[0].emplace_back(nullptr);                     // Number of Voids
+   m_DimUnits[0].emplace_back((const unitLength*)BFDIMUNITSCALAR); // Number of Voids
    m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Max joint size
 
    // US Units
@@ -86,7 +86,7 @@ HRESULT CVoidedSlabFactory::FinalConstruct()
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Void Diameter
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Void Spacing
-   m_DimUnits[1].emplace_back(nullptr);               // Number of Voids
+   m_DimUnits[1].emplace_back((const unitLength*)BFDIMUNITSCALAR);               // Number of Voids
    m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Max joint size
 
    return S_OK;

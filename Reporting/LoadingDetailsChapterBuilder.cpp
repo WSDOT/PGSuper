@@ -33,6 +33,7 @@
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\DocumentType.h>
 
 #include <algorithm>
 
@@ -89,18 +90,27 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
 {
    CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
    CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   CGirderKey girderKey;
+   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
 
+   CComPtr<IBroker> pBroker;
+   std::vector<CGirderKey> girderKeys;
    if ( pGdrRptSpec )
    {
       pGdrRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrRptSpec->GetGirderKey();
+      girderKeys.push_back(pGdrRptSpec->GetGirderKey());
    }
    else if ( pGdrLineRptSpec)
    {
       pGdrLineRptSpec->GetBroker(&pBroker);
-      girderKey = pGdrLineRptSpec->GetGirderKey();
+      CGirderKey girderKey = pGdrLineRptSpec->GetGirderKey();
+
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      pBridge->GetGirderline(girderKey, &girderKeys);
+   }
+   else if ( pMultiGirderRptSpec)
+   {
+      pMultiGirderRptSpec->GetBroker(&pBroker);
+      girderKeys = pMultiGirderRptSpec->GetGirderKeys();
    }
    else
    {
@@ -130,6 +140,9 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
    }
 
+   GET_IFACE2(pBroker,IDocumentType, pDocType);
+   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
+
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
@@ -140,179 +153,170 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    rptParagraph* pPara;
    rptRcTable* p_table;
 
-   bool one_girder_has_shear_key = false;
-            
-   GET_IFACE2(pBroker,IProductLoads,pProdLoads);
-
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-   GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
-   for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
-   {
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : Min(girderKey.girderIndex,nGirders-1));
-      GirderIndexType lastGirderIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
-      {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-         {
-            CSegmentKey thisSegmentKey(grpIdx,gdrIdx,segIdx);
-
-            if ( 1 < nSegments /* && !m_bSimplifiedVersion*/ )
-            {
-               pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-               *pChapter << pPara;
-               *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
-            }
-
-            // uniform loads
-            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-            *pChapter << pPara;
-            *pPara << _T("Uniform Loads Applied Along the Entire Girder") << rptNewLine;
-
-            pPara = new rptParagraph;
-            *pChapter << pPara;
-
-            p_table = rptStyleManager::CreateDefaultTable(2);
-            *pPara << p_table << rptNewLine;
-
-            p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-            p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-
-            (*p_table)(0,0) << _T("Load Type");
-            (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-
-            RowIndexType row = p_table->GetNumberOfHeaderRows();
-
-            std::vector<SegmentLoad> segLoad;
-            std::vector<DiaphragmLoad> diaLoad;
-            std::vector<ClosureJointLoad> cjLoad;
-            pProdLoads->GetSegmentSelfWeightLoad(thisSegmentKey,&segLoad,&diaLoad,&cjLoad);
-            bool bUniformGirderDeadLoad = (segLoad.size() == 1 && IsEqual(segLoad[0].Wstart,segLoad[0].Wend) ? true : false);
-
-            bool bCJLoad = cjLoad.size() == 0 ? false : true;
-            bool bUniformCJDeadLoad = bCJLoad ? (IsEqual(cjLoad[0].Wstart,cjLoad[0].Wend) && IsEqual(cjLoad[1].Wstart,cjLoad[1].Wend)) : true;;
-
-            if ( bUniformGirderDeadLoad )
-            {
-               // girder load is uniform
-               (*p_table)(row,0) << _T("Girder");
-               (*p_table)(row++,1) << fpl.SetValue(-segLoad[0].Wstart);
-            }
-
-            if ( bCJLoad && bUniformCJDeadLoad )
-            {
-               (*p_table)(row,0) << _T("Closure Joint");
-               (*p_table)(row++,1) << fpl.SetValue(-cjLoad[0].Wstart);
-            }
-
-            // Sum of railing system loads not shown in simplified version
-            if ( !m_bSimplifiedVersion )
-            {
-               if ( pProdLoads->HasSidewalkLoad(thisSegmentKey) )
-               {
-                  (*p_table)(row,0) << _T("Sidewalk");
-                  (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetSidewalkLoad(thisSegmentKey));
-               }
-
-               Float64 tb_load = pProdLoads->GetTrafficBarrierLoad(thisSegmentKey);
-               if (tb_load!=0.0)
-               {
-                  (*p_table)(row,0) << _T("Traffic Barrier");
-                  (*p_table)(row++,1) << fpl.SetValue(-tb_load);
-               }
-
-               if ( pProdLoads->HasPedestrianLoad(thisSegmentKey) )
-               {
-                  (*p_table)(row,0) << _T("Pedestrian Live Load");
-                  (*p_table)(row++,1) << fpl.SetValue(pProdLoads->GetPedestrianLoad(thisSegmentKey));
-               }
-            }
-
-            if ( !bUniformGirderDeadLoad )
-            {
-               p_table = rptStyleManager::CreateDefaultTable(4,_T("Girder Self-Weight"));
-               *pPara << rptNewLine << p_table << rptNewLine;
-
-               (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left End of Girder"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,1) << COLHDR(_T("Load End,")<<rptNewLine<<_T("From Left End of Girder"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,2) << COLHDR(_T("Start Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,3) << COLHDR(_T("End Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-
-               row = p_table->GetNumberOfHeaderRows();
-               std::vector<SegmentLoad>::iterator iter;
-               for ( iter = segLoad.begin(); iter != segLoad.end(); iter++ )
-               {
-                  SegmentLoad& load = *iter;
-
-                  (*p_table)(row,0) << loc.SetValue(load.Xstart);
-                  (*p_table)(row,1) << loc.SetValue(load.Xend);
-                  (*p_table)(row,2) << fpl.SetValue(-load.Wstart);
-                  (*p_table)(row,3) << fpl.SetValue(-load.Wend);
-                  row++;
-               }
-            }
-
-
-            if ( bCJLoad && !bUniformCJDeadLoad )
-            {
-               p_table = rptStyleManager::CreateDefaultTable(4,_T("Closure Joint Self-Weight"));
-               *pPara << rptNewLine << p_table << rptNewLine;
-
-               (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left End of CJ"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,1) << COLHDR(_T("Load End,")<<rptNewLine<<_T("From Left End of CJ"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-               (*p_table)(0,2) << COLHDR(_T("Start Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-               (*p_table)(0,3) << COLHDR(_T("End Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-
-               row = p_table->GetNumberOfHeaderRows();
-               std::vector<ClosureJointLoad>::iterator iter;
-               for ( iter = cjLoad.begin(); iter != cjLoad.end(); iter++ )
-               {
-                  ClosureJointLoad& load = *iter;
-
-                  (*p_table)(row,0) << loc.SetValue(load.Xstart);
-                  (*p_table)(row,1) << loc.SetValue(load.Xend);
-                  (*p_table)(row,2) << fpl.SetValue(-load.Wstart);
-                  (*p_table)(row,3) << fpl.SetValue(-load.Wend);
-                  row++;
-               }
-            }
-
-            ReportPrecastDiaphragmLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
-            ReportLongitudinalJointLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
-            ReportConstructionLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
-            ReportShearKeyLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey, one_girder_has_shear_key);
-            ReportSlabLoad(pBroker, pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
-            ReportOverlayLoad(     pChapter,pBridge,pProdLoads,pDisplayUnits,bRating,thisSegmentKey);
-            ReportPedestrianLoad(pChapter, pBroker, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
-         } // segIdx
-      } // gdrIdx
-   } // grpIdx
-
-   // User defined loads.... these loads are span/girder based
+   // See if any user defined loads
    GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoads);
    IndexType nPointLoads  = pUserDefinedLoads->GetPointLoadCount();
    IndexType nDistLoads   = pUserDefinedLoads->GetDistributedLoadCount();
    IndexType nMomentLoads = pUserDefinedLoads->GetMomentLoadCount();
    bool bHasUserLoads = (0 < nPointLoads + nDistLoads + nMomentLoads ? true : false);
 
-   SpanIndexType startSpanIdx, endSpanIdx;
-   pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
-   for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+   bool one_girder_has_shear_key = false;
+            
+   GET_IFACE2(pBroker,IProductLoads,pProdLoads);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   for (const auto& girderKey : girderKeys)
    {
-      GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanIdx);
-      GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-      GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : Min(girderKey.girderIndex,nGirders-1));
-      GirderIndexType lastGirderIdx  = (girderKey.girderIndex == ALL_GIRDERS ? nGirders-1 : firstGirderIdx);
-      for ( GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++ )
-      {
-         CSpanKey spanKey(spanIdx,gdrIdx);
+      pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
+      *pPara << pgsGirderLabel::GetGirderLabel(girderKey);
 
+      SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      {
+         CSegmentKey thisSegmentKey(girderKey,segIdx);
+
+         if ( 1 < nSegments /* && !m_bSimplifiedVersion*/ )
+         {
+            pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+            *pChapter << pPara;
+            *pPara << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+         }
+
+         // uniform loads
          pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
-         *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+         *pPara << _T("Uniform Loads Applied Along the Entire Girder") << rptNewLine;
+
+         pPara = new rptParagraph;
+         *pChapter << pPara;
+
+         p_table = rptStyleManager::CreateDefaultTable(2);
+         *pPara << p_table << rptNewLine;
+
+         p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
+         p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
+
+         (*p_table)(0,0) << _T("Load Type");
+         (*p_table)(0,1) << COLHDR(_T("w"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+         RowIndexType row = p_table->GetNumberOfHeaderRows();
+
+         std::vector<SegmentLoad> segLoad;
+         std::vector<DiaphragmLoad> diaLoad;
+         std::vector<ClosureJointLoad> cjLoad;
+         pProdLoads->GetSegmentSelfWeightLoad(thisSegmentKey,&segLoad,&diaLoad,&cjLoad);
+         bool bUniformGirderDeadLoad = (segLoad.size() == 1 && IsEqual(segLoad[0].Wstart,segLoad[0].Wend) ? true : false);
+
+         bool bCJLoad = cjLoad.size() == 0 ? false : true;
+         bool bUniformCJDeadLoad = bCJLoad ? (IsEqual(cjLoad[0].Wstart,cjLoad[0].Wend) && IsEqual(cjLoad[1].Wstart,cjLoad[1].Wend)) : true;;
+
+         if ( bUniformGirderDeadLoad )
+         {
+            // girder load is uniform
+            (*p_table)(row,0) << _T("Girder");
+            (*p_table)(row++,1) << fpl.SetValue(-segLoad[0].Wstart);
+         }
+
+         if ( bCJLoad && bUniformCJDeadLoad )
+         {
+            (*p_table)(row,0) << _T("Closure Joint");
+            (*p_table)(row++,1) << fpl.SetValue(-cjLoad[0].Wstart);
+         }
+
+         // Sum of railing system loads not shown in simplified version
+         if ( !m_bSimplifiedVersion )
+         {
+            if ( pProdLoads->HasSidewalkLoad(thisSegmentKey) )
+            {
+               (*p_table)(row,0) << _T("Sidewalk");
+               (*p_table)(row++,1) << fpl.SetValue(-pProdLoads->GetSidewalkLoad(thisSegmentKey));
+            }
+
+            Float64 tb_load = pProdLoads->GetTrafficBarrierLoad(thisSegmentKey);
+            if (tb_load!=0.0)
+            {
+               (*p_table)(row,0) << _T("Traffic Barrier");
+               (*p_table)(row++,1) << fpl.SetValue(-tb_load);
+            }
+
+            if ( pProdLoads->HasPedestrianLoad(thisSegmentKey) )
+            {
+               (*p_table)(row,0) << _T("Pedestrian Live Load");
+               (*p_table)(row++,1) << fpl.SetValue(pProdLoads->GetPedestrianLoad(thisSegmentKey));
+            }
+         }
+
+         if ( !bUniformGirderDeadLoad )
+         {
+            p_table = rptStyleManager::CreateDefaultTable(4,_T("Girder Self-Weight"));
+            *pPara << rptNewLine << p_table << rptNewLine;
+
+            (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left End of Girder"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,1) << COLHDR(_T("Load End,")<<rptNewLine<<_T("From Left End of Girder"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,2) << COLHDR(_T("Start Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,3) << COLHDR(_T("End Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+            row = p_table->GetNumberOfHeaderRows();
+            std::vector<SegmentLoad>::iterator iter;
+            for ( iter = segLoad.begin(); iter != segLoad.end(); iter++ )
+            {
+               SegmentLoad& load = *iter;
+
+               (*p_table)(row,0) << loc.SetValue(load.Xstart);
+               (*p_table)(row,1) << loc.SetValue(load.Xend);
+               (*p_table)(row,2) << fpl.SetValue(-load.Wstart);
+               (*p_table)(row,3) << fpl.SetValue(-load.Wend);
+               row++;
+            }
+         }
+
+
+         if ( bCJLoad && !bUniformCJDeadLoad )
+         {
+            p_table = rptStyleManager::CreateDefaultTable(4,_T("Closure Joint Self-Weight"));
+            *pPara << rptNewLine << p_table << rptNewLine;
+
+            (*p_table)(0,0) << COLHDR(_T("Load Start,")<<rptNewLine<<_T("From Left End of CJ"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,1) << COLHDR(_T("Load End,")<<rptNewLine<<_T("From Left End of CJ"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+            (*p_table)(0,2) << COLHDR(_T("Start Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+            (*p_table)(0,3) << COLHDR(_T("End Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
+
+            row = p_table->GetNumberOfHeaderRows();
+            std::vector<ClosureJointLoad>::iterator iter;
+            for ( iter = cjLoad.begin(); iter != cjLoad.end(); iter++ )
+            {
+               ClosureJointLoad& load = *iter;
+
+               (*p_table)(row,0) << loc.SetValue(load.Xstart);
+               (*p_table)(row,1) << loc.SetValue(load.Xend);
+               (*p_table)(row,2) << fpl.SetValue(-load.Wstart);
+               (*p_table)(row,3) << fpl.SetValue(-load.Wend);
+               row++;
+            }
+         }
+
+         ReportPrecastDiaphragmLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
+         ReportLongitudinalJointLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
+         ReportConstructionLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
+         ReportShearKeyLoad(pChapter, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey, one_girder_has_shear_key);
+         ReportSlabLoad(pBroker, pChapter,pBridge,pProdLoads,pDisplayUnits,thisSegmentKey);
+         ReportOverlayLoad(     pChapter,pBridge,pProdLoads,pDisplayUnits,bRating,thisSegmentKey);
+         ReportPedestrianLoad(pChapter, pBroker, pBridge, pProdLoads, pDisplayUnits, thisSegmentKey);
+      } // segIdx
+
+      // user defined loads are span based
+      SpanIndexType startSpanIdx, endSpanIdx;
+      pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
+      for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
+      {
+         CSpanKey spanKey(spanIdx,girderKey.girderIndex);
+
+         if (bIsSplicedGirder)
+         {
+            pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+            *pChapter << pPara;
+            *pPara << _T("Span ") << LABEL_SPAN(spanIdx) << rptNewLine;
+         }
 
          ReportCastInPlaceDiaphragmLoad(pChapter,pBridge,pProdLoads,pDisplayUnits,spanKey);
 
@@ -330,10 +334,12 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
             *pChapter << pPara;
          }
       }
-   }
 
-   ReportEquivPretensionLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
-   ReportEquivSegmentPostTensioningLoads(pChapter, bRating, pBridge, pDisplayUnits, girderKey);
+      ReportEquivPretensionLoads(pChapter,bRating,pBridge,pDisplayUnits,girderKey);
+      ReportEquivSegmentPostTensioningLoads(pChapter, bRating, pBridge, pDisplayUnits, girderKey);
+
+   } // girderkey
+
 
    bool bPermit;
    ReportLiveLoad(pChapter,bDesign,bRating,pRatingSpec,bPermit);
@@ -512,7 +518,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
       Float64 deck_density = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx, castDeckIntervalIdx);
       Float64 deck_unit_weight = deck_density; // *unitSysUnitsMgr::GetGravitationalAcceleration();
-      *pNotePara << _T("Unit weight of ") << strDeckName << _T(" material is ") << density.SetValue(deck_unit_weight);
+      *pNotePara << strDeckName << _T("unit weight with reinforcement = ") << density.SetValue(deck_unit_weight);
 
       pPara = new rptParagraph;
       *pChapter << pPara;

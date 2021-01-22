@@ -56,9 +56,10 @@ CBridgeDescRailingSystemPage::CBridgeDescRailingSystemPage() : CPropertyPage(CBr
 	//}}AFX_DATA_INIT
    EAFGetBroker(&m_pBroker);
 
-   GET_IFACE(IMaterials,pMaterial);
-   m_MinNWCDensity = pMaterial->GetNWCDensityLimit();
-   m_MaxLWCDensity = pMaterial->GetLWCDensityLimit();
+   m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
+   m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
+
+   lrfdConcreteUtil::GetUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
 }
 
 CBridgeDescRailingSystemPage::~CBridgeDescRailingSystemPage()
@@ -709,7 +710,7 @@ void CBridgeDescRailingSystemPage::UpdateRightEc()
       strK1.Format(_T("%f"),m_RightRailingSystem.Concrete.EcK1);
       strK2.Format(_T("%f"),m_RightRailingSystem.Concrete.EcK2);
 
-      strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
+      strEc = CConcreteDetailsDlg::UpdateEc(m_RightRailingSystem.Concrete.Type,strFc,strDensity,strK1,strK2);
       pWndEc->SetWindowText(strEc);
    }
 }
@@ -735,7 +736,7 @@ void CBridgeDescRailingSystemPage::UpdateLeftEc()
       strK1.Format(_T("%f"),m_LeftRailingSystem.Concrete.EcK1);
       strK2.Format(_T("%f"),m_LeftRailingSystem.Concrete.EcK2);
 
-      strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
+      strEc = CConcreteDetailsDlg::UpdateEc(m_LeftRailingSystem.Concrete.Type,strFc,strDensity,strK1,strK2);
       pWndEc->SetWindowText(strEc);
    }
 }
@@ -911,15 +912,24 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
    // Make sure data was successfully parsed before issuing a message
    if(bRetValue!=0)
    {
-      if ( !IsDensityInRange(m_LeftRailingSystem.Concrete.StrengthDensity,m_LeftRailingSystem.Concrete.Type) ||
-           !IsDensityInRange(m_LeftRailingSystem.Concrete.WeightDensity,  m_LeftRailingSystem.Concrete.Type) )
+      if ( !IsDensityInRange(m_LeftRailingSystem.Concrete.StrengthDensity,m_LeftRailingSystem.Concrete.Type) )
       {
          AfxMessageBox((m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal || m_LeftRailingSystem.Concrete.Type == pgsTypes::UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
-      else if ( !IsDensityInRange(m_RightRailingSystem.Concrete.StrengthDensity,m_RightRailingSystem.Concrete.Type) ||
-                !IsDensityInRange(m_RightRailingSystem.Concrete.WeightDensity,  m_RightRailingSystem.Concrete.Type) )
+      
+      if ( !IsDensityInRange(m_RightRailingSystem.Concrete.StrengthDensity,m_RightRailingSystem.Concrete.Type) )
       {
          AfxMessageBox((m_RightRailingSystem.Concrete.Type == pgsTypes::Normal || m_RightRailingSystem.Concrete.Type == pgsTypes::UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+      }
+
+      if (!IsStrengthInRange(m_LeftRailingSystem.Concrete.Fc, m_LeftRailingSystem.Concrete.Type))
+      {
+         AfxMessageBox(_T("Left Railing System: The concrete strength is not in the normal range for UHPC.\nThe concrete will be treated as UHPC."));
+      }
+
+      if (!IsStrengthInRange(m_RightRailingSystem.Concrete.Fc, m_RightRailingSystem.Concrete.Type))
+      {
+         AfxMessageBox(_T("Right Railing System: The concrete strength is not in the normal range for UHPC.\nThe concrete will be treated as UHPC."));
       }
    }
 
@@ -934,7 +944,11 @@ void CBridgeDescRailingSystemPage::SetConcreteTypeLabel(UINT nID,pgsTypes::Concr
 
 bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
-   if (type == pgsTypes::Normal || type == pgsTypes::UHPC)
+   if (type == pgsTypes::UHPC)
+   {
+      return true;
+   }
+   else if (type == pgsTypes::Normal )
    {
       return ( m_MinNWCDensity <= density );
    }
@@ -944,6 +958,17 @@ bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::Co
    }
 }
 
+bool CBridgeDescRailingSystemPage::IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type)
+{
+   if (type == pgsTypes::UHPC)
+   {
+      return InRange(m_MinFcUHPC, fc, m_MaxFcUHPC);
+   }
+   else
+   {
+      return true; // no range limit for other concrete types
+   }
+}
 
 void CBridgeDescRailingSystemPage::FillEventList()
 {
@@ -1011,7 +1036,7 @@ void CBridgeDescRailingSystemPage::OnEventChanged()
          }
          else
          {
-            CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result);
+            CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result).c_str();
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
             CString strMsg;

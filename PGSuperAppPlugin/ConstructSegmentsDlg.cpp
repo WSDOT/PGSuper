@@ -78,18 +78,18 @@ void CConstructSegmentsDlg::DoDataExchange(CDataExchange* pDX)
       if ( relaxationTime < ageAtRelease )
       {
          pDX->PrepareEditCtrl(IDC_AGE);
-         AfxMessageBox(_T("Concrete age at release must be less than or equal to the time between strand stressing and release"),MB_ICONWARNING);
+         AfxMessageBox(_T("Relaxation time must be greater or equal to the total curing duration. Intrinsic relaxation begins at initial strand stressing and continues until the concrete is cured and the prestress strands are released."),MB_ICONWARNING);
          pDX->Fail();
       }
 
       pEvent->GetConstructSegmentsActivity().SetRelaxationTime(relaxationTime);
-      pEvent->GetConstructSegmentsActivity().SetAgeAtRelease(ageAtRelease);
+      pEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(ageAtRelease);
    }
    else
    {
       CTimelineEvent* pEvent = m_TimelineMgr.GetEventByIndex(m_EventIndex);
       Float64 relaxationTime = pEvent->GetConstructSegmentsActivity().GetRelaxationTime();
-      Float64 ageAtRelease = pEvent->GetConstructSegmentsActivity().GetAgeAtRelease();
+      Float64 ageAtRelease = pEvent->GetConstructSegmentsActivity().GetTotalCuringDuration();
       DDX_Text(pDX,IDC_RELAXATION_TIME,relaxationTime);
       DDX_Text(pDX,IDC_AGE,ageAtRelease);
    }
@@ -190,7 +190,7 @@ void CConstructSegmentsDlg::FillLists()
             CString label;
             if ( pDocType->IsPGSuperDocument() )
             {
-               label.Format(_T("Span %d, Girder %s"),LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx));
+               label.Format(_T("Span %s, Girder %s"),LABEL_SPAN(grpIdx),LABEL_GIRDER(gdrIdx));
             }
             else
             {

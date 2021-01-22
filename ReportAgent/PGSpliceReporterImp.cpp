@@ -33,6 +33,7 @@
 
 #include <Reporting\EquilibriumCheckReportSpecificationBuilder.h>
 #include <Reporting\EquilibriumCheckChapterBuilder.h>
+#include <Reporting\PrincipalTensionStressDetailsChapterBuilder.h>
 
 //#include <Reporting\InitialStrainAnalysisReportSpecificationBuilder.h>
 //#include <Reporting\InitialStrainAnalysisChapterBuilder.h>
@@ -113,7 +114,7 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
 #if defined _DEBUG || defined _BETA_VERSION
    pTSRptBuilder->IncludeTimingChapter();
 #endif
-   pTSRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
+   pTSRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pTSRptBuilder->GetName())) );
    pTSRptBuilder->SetReportSpecificationBuilder( pRptSpecBuilder );
    pTSRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTemporarySupportReactionChapterBuilder(true)) );
    pRptMgr->AddReportBuilder( pTSRptBuilder.release() );
@@ -210,7 +211,29 @@ STDMETHODIMP CPGSpliceReporterImp::ShutDown()
 //
 HRESULT CPGSpliceReporterImp::OnSpecificationChanged()
 {
-   return CReporterBase::OnSpecificationChanged();
+   HRESULT hr = CReporterBase::OnSpecificationChanged();
+   if ( FAILED(hr) )
+      return hr;
+
+   // Available reports and chapters for principal web stresses are dependent on settings
+   GET_IFACE(IReportManager,pRptMgr);
+   GET_IFACE(ISpecification, pSpec);
+
+   CSegmentKey key(0, 0, 0); // any key should work for splice
+   ISpecification::PrincipalWebStressCheckType  checkType = pSpec->GetPrincipalWebStressCheckType(key);
+
+   bool bIsTimeStepPrincStress = ISpecification::pwcNCHRPTimeStepMethod == checkType;
+
+
+   std::_tstring prinRepName(_T("Principal Web Stress Details Report"));
+   std::shared_ptr<CReportBuilder> pPsRptBuilder = pRptMgr->GetReportBuilder(_T("Principal Web Stress Details Report"));
+   ATLASSERT(pPsRptBuilder);
+   if (pPsRptBuilder != nullptr)
+   {
+      pPsRptBuilder->Hidden(!bIsTimeStepPrincStress);
+   }
+
+   return S_OK;
 }
 
 HRESULT CPGSpliceReporterImp::OnAnalysisTypeChanged()

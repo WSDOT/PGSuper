@@ -40,6 +40,7 @@ public:
 	//}}AFX_DATA
    Float64 m_OD;
    Float64 m_ID;
+   Float64 m_ND;
    Float64 m_Z;
 
    bool m_bAllowEditing;

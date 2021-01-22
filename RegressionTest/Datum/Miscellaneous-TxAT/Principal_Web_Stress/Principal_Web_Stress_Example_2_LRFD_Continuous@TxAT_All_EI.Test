@@ -1,0 +1,60 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.83    7   5.00                     1     1    WF100    *     64  0.6  270  43.96  18.40   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.203    -4.956    20786   0.474  0.596   4.365 -2.710 -0.198 -0.278 -3.187 249.78  432.52   21.00   18.33   18.33 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.83    7   5.00                     1     2    WF100    *     64  0.6  270  43.96  18.40   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.278    -5.026    20801   0.474  0.596   4.149 -2.857 -0.198 -0.278 -3.333 249.78  426.51   21.00   18.33   18.33 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.83    7   5.00                     1     4    WF100    *     64  0.6  270  43.96  18.40   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.144    -4.826    20662   0.474  0.596   4.149 -2.857 -0.198  0.000 -3.055 249.78  444.22   21.00   18.33   18.33 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.83    7   5.00                     2     1    WF100    *     64  0.6  270  43.96  18.40   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.203    -4.956    20786   0.474  0.596   4.365 -2.710 -0.198 -0.278 -3.187 249.78  432.52   21.00   18.33   18.33 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.83    7   5.00                     2     2    WF100    *     64  0.6  270  43.96  18.40   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.278    -5.026    20801   0.474  0.596   4.149 -2.857 -0.198 -0.278 -3.333 249.78  426.51   21.00   18.33   18.33 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.83    7   5.00                     2     4    WF100    *     64  0.6  270  43.96  18.40   9.75   9.75                                              20  96.0  7.0  7.500 10.100   5.144    -4.826    20662   0.474  0.596   4.149 -2.857 -0.198  0.000 -3.055 249.78  444.22   21.00   18.33   18.33 
+
+
+The Specification Check was Not Successful
+Splitting zone check failed.
+Slab Offset ("A" Dimension) check failed
+
+

@@ -38,4 +38,6 @@ However, some agencies may wish to ignore the effect of prestress transfer (zero
 
 Size of Ducts (LRFD 5.4.6.2)
 ----------------------------
-These parameters allow you to modify the requirements of LRFD 5.4.6.2
+These parameters allow you to modify the requirements of LRFD 5.4.6.2.
+
+> NOTE: The permissible duct size was increased to 0.54 times the least gross concrete thickness at the duct in LRFD 9th Edition. As stated in LRFD 9th Edition, C5.4.6.2, the research forming the basis for this requirement was limited to duct stacks and does not apply to bundled ducts. PGSplice will treat all ducts as duct stacks.

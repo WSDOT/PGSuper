@@ -136,7 +136,7 @@ public:
    void SetDocument(CPGSDocBase* pDoc);
    void OnStatusChanged();
 
-   void OnResetHints();
+   void OnUIHintsReset();
 
 // IAgentEx
 public:

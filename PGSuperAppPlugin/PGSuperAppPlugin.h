@@ -97,12 +97,12 @@ public:
 protected:
    virtual CPGSBaseCommandLineInfo* CreateCommandLineInfo() const override;
 
-   virtual LPCTSTR GetCatalogServerKey() override;
-   virtual LPCTSTR GetPublisherKey() override;
-   virtual LPCTSTR GetMasterLibraryCacheKey() override;
-   virtual LPCTSTR GetMasterLibraryURLKey() override;
-   virtual LPCTSTR GetWorkgroupTemplatesCacheKey() override;
-   virtual CString GetCacheFolder() override;
+   virtual LPCTSTR GetCatalogServerKey() const override;
+   virtual LPCTSTR GetPublisherKey() const override;
+   virtual LPCTSTR GetMasterLibraryCacheKey() const override;
+   virtual LPCTSTR GetMasterLibraryURLKey() const override;
+   virtual LPCTSTR GetWorkgroupTemplatesCacheKey() const override;
+   virtual CString GetCacheFolder() const override;
 
 // IEAFAppPlugin
 public:

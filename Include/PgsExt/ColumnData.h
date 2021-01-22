@@ -70,8 +70,8 @@ public:
 
    // Set/Get the transverse fixity at the base of the column
    // This is used for transverse pier analysis only
-   void SetTransverseFixity(pgsTypes::ColumnFixityType columnFixity);
-   pgsTypes::ColumnFixityType GetTransverseFixity() const;
+   void SetTransverseFixity(pgsTypes::ColumnTransverseFixityType columnFixity);
+   pgsTypes::ColumnTransverseFixityType GetTransverseFixity() const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
@@ -94,5 +94,5 @@ private:
    ColumnShapeType m_ShapeType;
    Float64 m_D1, m_D2;
 
-   pgsTypes::ColumnFixityType m_TransverseFixity; // fixity used for pier analysis
+   pgsTypes::ColumnTransverseFixityType m_TransverseFixity; // fixity used for pier analysis
 };

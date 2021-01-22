@@ -23,6 +23,7 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\EditBridge.h>
 #include <EAF\EAFUtilities.h>
+#include <PgsExt\GirderLabel.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -85,6 +86,9 @@ void txnEditBridge::Execute(int i)
    }
 
    pBridgeDesc->SetBridgeDescription( m_BridgeDesc[i] );
+
+   // Set pier labelling. This is also in the BridgeAgent, but we use static members in the pgsPierLabel class for performance
+   pgsPierLabel::SetPierLabelSettings(m_BridgeDesc[i].GetDisplayStartSupportType(), m_BridgeDesc[i].GetDisplayEndSupportType(), m_BridgeDesc[i].GetDisplayStartingPierNumber());
 
    pEvents->FirePendingEvents();
 }

@@ -267,26 +267,30 @@ void write_girder_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
          dim_iter++, unit_iter++ )
    {
       const unitLength* pUnit = *unit_iter;
-      if ( pUnit )
+      if ( pUnit == (const unitLength*)BFDIMUNITBOOLEAN)
+      {
+         (*pTable)(0,1) << (*dim_iter).first.c_str() << ((*dim_iter).second==0 ? _T(" = False") : _T(" = True")) << rptNewLine;
+      }
+      else if ( pUnit == (const unitLength*)BFDIMUNITSCALAR)
+      {
+         (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << (*dim_iter).second << rptNewLine;
+      }
+      else
       {
          const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
-         rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 8, false);
+         rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
          cmpdim.SetFormat(length_unit.Format);
          cmpdim.SetWidth(length_unit.Width);
          cmpdim.SetPrecision(length_unit.Precision);
 
          (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << cmpdim.SetValue( (*dim_iter).second ) << rptNewLine;
       }
-      else
-      {
-         (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << (*dim_iter).second << rptNewLine;
-      }
    }
 
    if (IsTopWidthSpacing(pBridgeDesc->GetGirderSpacingType()))
    {
       const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
-      rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure, length_unit.Tol, true, !bUnitsSI, 8, false);
+      rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure, length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
       cmpdim.SetFormat(length_unit.Format);
       cmpdim.SetWidth(length_unit.Width);
       cmpdim.SetPrecision(length_unit.Precision);
@@ -348,17 +352,32 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      *pPara << _T("Maximum number of debonded strands = ") << pGdrEntry->GetMaxTotalFractionDebondedStrands()*100 << _T("% of total number of strands") << rptNewLine;
+      if (pGdrEntry->CheckMaxTotalFractionDebondedStrands())
+      {
+         *pPara << _T("Maximum number of debonded strands = ") << pGdrEntry->GetMaxTotalFractionDebondedStrands() * 100 << _T("% of total number of strands") << rptNewLine;
+      }
       *pPara << _T("Maximum number of debonded strands per row = ") << pGdrEntry->GetMaxFractionDebondedStrandsPerRow()*100 << _T("% of strands in any row") << rptNewLine;
 
-      StrandIndexType nMax;
+      StrandIndexType nDebonded10orLess, nDebonded;
+      bool bCheckMax;
       Float64 fMax;
+      pGdrEntry->GetMaxDebondedStrandsPerSection(&nDebonded10orLess,&nDebonded,&bCheckMax,&fMax);   
+      *pPara << _T("Maximum number of debonded strands per section. For 10 or fewer total strands ") << nDebonded10orLess << _T(" otherwise ") << nDebonded << _T(" strands");
+      if (bCheckMax)
+      {
+         *pPara << _T(" but not more than ") << fMax * 100 << _T("% of strands debonded at any section");
+      }
+      *pPara << rptNewLine;
 
-      pGdrEntry->GetMaxDebondedStrandsPerSection(&nMax,&fMax);   
-      *pPara << _T("Maximum number of debonded strands per section. The greater of ") << nMax << _T(" strands or ") << fMax*100 << _T("% of strands debonded at any section") << rptNewLine;
-
-      fMax = pGdrEntry->GetMinDebondSectionLength();
-      *pPara << _T("Maximum distance between debond sections = ")<<cmpdim.SetValue(fMax)<< rptNewLine;
+      Float64 ndb, minDist;
+      bool bMinDist;
+      pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
+      *pPara << _T("Longitudinal spacing of debonding termnation sections = ") << ndb << Sub2(_T("d"), _T("b"));
+      if (bMinDist)
+      {
+         *pPara << _T(" but not less than ") << cmpdim.SetValue(minDist) << rptNewLine;
+      }
+      *pPara << rptNewLine;
 
       bool useSpanFraction, useHardDistance;
       Float64 spanFraction, hardDistance;
@@ -759,21 +778,10 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    const matRebar* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,matRebar::bs3);
    const matRebar* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,matRebar::bs3);
 
-   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(pDeckRebar == nullptr ? 2 : 3);
-   *pPara << pLayoutTable << rptNewLine;
-
-   ColumnIndexType nCols = pLayoutTable->GetNumberOfColumns();
-   for ( ColumnIndexType col = 0; col < nCols; col++ )
-   {
-      pLayoutTable->SetColumnStyle(col,_T("BottomAlignCellStyle"));
-   }
-
-   ColumnIndexType layoutColumn = 0;
-
    if ( pDeckRebar )
    {
       rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Deck Reinforcing Material"));
-      (*pLayoutTable)(0,layoutColumn++) << pTable;
+      *pPara << pTable << rptNewLine;
 
       RowIndexType row = 0;
 
@@ -792,7 +800,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    if ( pShearRebar )
    {
       rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Transverse Reinforcing Material (Stirrups, Confinement, and Horizontal Interface Shear Bars)"));
-      (*pLayoutTable)(0,layoutColumn++) << pTable;
+      *pPara << pTable << rptNewLine;
 
       RowIndexType row = 0;
 
@@ -811,7 +819,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    if ( pLongRebar )
    {
       rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("Longitudinal Girder Reinforcing Material"));
-      (*pLayoutTable)(0,layoutColumn++) << pTable;
+      *pPara << pTable << rptNewLine;
 
       RowIndexType row = 0;
 

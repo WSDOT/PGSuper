@@ -77,7 +77,8 @@ GRID_IMPLEMENT_REGISTER(CBridgeDescFramingGrid, CS_DBLCLKS, 0, 0, 0);
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingGrid
 
-CBridgeDescFramingGrid::CBridgeDescFramingGrid()
+CBridgeDescFramingGrid::CBridgeDescFramingGrid():
+   m_bDoValidate(true)
 {
 //   RegisterClass();
    HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
@@ -96,6 +97,7 @@ BEGIN_MESSAGE_MAP(CBridgeDescFramingGrid, CGXGridWnd)
 	//{{AFX_MSG_MAP(CBridgeDescFramingGrid)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	//}}AFX_MSG_MAP
+   ON_WM_KILLFOCUS()
 END_MESSAGE_MAP()
 
 std::vector<Float64> CBridgeDescFramingGrid::GetSpanLengths()
@@ -260,6 +262,11 @@ void CBridgeDescFramingGrid::OnChangedSelection(const CGXRange* pChangedRect,BOO
    pParent->EnableRemoveTemporarySupportBtn(EnableRemoveTemporarySupportBtn());
 
    CGXGridWnd::OnChangedSelection(pChangedRect,bIsDragging,bKey);
+}
+
+void CBridgeDescFramingGrid::SetDoNotValidateCells()
+{
+   m_bDoValidate = false;
 }
 
 void CBridgeDescFramingGrid::InsertRow()
@@ -767,8 +774,9 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pPierData->GetStation());
 
-   CString strPierLabel;
-   strPierLabel.Format(_T("%s %d"),pPierData->IsAbutment() ? _T("Abut") : _T("Pier"),LABEL_PIER(pPierData->GetIndex()));
+   CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
+
+   CString strPierLabel = pParent->GetPierLabel(pPierData->IsAbutment(), pPierData->GetIndex());
 
    ROWCOL col = 0;
 
@@ -952,14 +960,15 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
             else
             {
                startRow = GetPierRow(pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetIndex());
-               strStartSupportLabel.Format(_T("%s %d"), pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetIndex()));
+               // parent builds label
+               strStartSupportLabel = pParent->GetPierLabel(pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->IsAbutment(),pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetIndex());
                startStation = pSegment->GetClosureJoint(pgsTypes::metStart)->GetPier()->GetStation();
             }
          }
          else
          {
             startRow = GetPierRow(pGirder->GetPier(pgsTypes::metStart)->GetIndex());
-            strStartSupportLabel.Format(_T("%s %d"), pGirder->GetPier(pgsTypes::metStart)->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pGirder->GetPier(pgsTypes::metStart)->GetIndex()));
+            strStartSupportLabel = pParent->GetPierLabel(pGirder->GetPier(pgsTypes::metStart)->IsAbutment(), pGirder->GetPier(pgsTypes::metStart)->GetIndex());
             startStation = pGirder->GetPier(pgsTypes::metStart)->GetStation();
          }
 
@@ -984,14 +993,14 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
             else
             {
                endRow = GetPierRow(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetIndex());
-               strEndSupportLabel.Format(_T("%s %d"), pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetIndex()));
+               strEndSupportLabel = pParent->GetPierLabel(pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->IsAbutment(),pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetIndex());
                endStation = pSegment->GetClosureJoint(pgsTypes::metEnd)->GetPier()->GetStation();
             }
          }
          else
          {
             endRow = GetPierRow(pGirder->GetPier(pgsTypes::metEnd)->GetIndex());
-            strEndSupportLabel.Format(_T("%s %d"), pGirder->GetPier(pgsTypes::metEnd)->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pGirder->GetPier(pgsTypes::metEnd)->GetIndex()));
+            strEndSupportLabel = pParent->GetPierLabel(pGirder->GetPier(pgsTypes::metEnd)->IsAbutment(), pGirder->GetPier(pgsTypes::metEnd)->GetIndex());
             endStation = pGirder->GetPier(pgsTypes::metEnd)->GetStation();
          }
 
@@ -1055,7 +1064,6 @@ void CBridgeDescFramingGrid::FillSpanColumn()
    CBridgeDescDlg* pDlg = (CBridgeDescDlg*)(pParent->GetParent());
    ASSERT( pDlg->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg) ) );
 
-   bool bIsValidBridge = true;
    pParent->EnableInsertSpanBtn(TRUE);
    pParent->EnableInsertTempSupportBtn(TRUE);
 
@@ -1071,11 +1079,8 @@ void CBridgeDescFramingGrid::FillSpanColumn()
       ROWCOL nextPierRow = GetPierRow(pNextPier->GetIndex());
 
       // create prev and next pier labels
-      CString strPrevPierLabel;
-      strPrevPierLabel.Format(_T("%s %d"), pPrevPier->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pPrevPier->GetIndex()));
-
-      CString strNextPierLabel;
-      strNextPierLabel.Format(_T("%s %d"), pNextPier->IsAbutment() ? _T("Abut") : _T("Pier"), LABEL_PIER(pNextPier->GetIndex()));
+      CString strPrevPierLabel = pParent->GetPierLabel(pPrevPier->IsAbutment(),pPrevPier->GetIndex());
+      CString strNextPierLabel = pParent->GetPierLabel(pNextPier->IsAbutment(),pNextPier->GetIndex());
 
       // label prev pier
       SetStyleRange(CGXRange(prevPierRow,col), CGXStyle()
@@ -1117,10 +1122,6 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 
       // fill in all rows between prev and next pier with span length
       Float64 spanLength = pNextPier->GetStation() - pPrevPier->GetStation();
-      if (spanLength <= 0)
-      {
-         bIsValidBridge = false;
-      }
       CString strSpanLength;
       strSpanLength.Format(_T("%s"),FormatDimension(spanLength,pDisplayUnits->GetSpanLengthUnit()));
       for (ROWCOL row = prevPierRow + 1; row < nextPierRow; row++)
@@ -1133,8 +1134,6 @@ void CBridgeDescFramingGrid::FillSpanColumn()
             .SetMergeCell(GX_MERGE_VERTICAL | GX_MERGE_COMPVALUE)
             .SetInterior(::GetSysColor(COLOR_BTNFACE))
             .SetTextColor(spanLength <= 0 ? RED : ::GetSysColor(COLOR_WINDOWTEXT))
-            .SetReadOnly(TRUE)
-            .SetEnabled(FALSE)
             .SetValue(strSpanLength)
          );
       }
@@ -1173,7 +1172,7 @@ void CBridgeDescFramingGrid::FillSpanColumn()
       );
    }
 
-   if (!bIsValidBridge)
+   if (!pDlg->m_BridgeDesc.IsValidLayout())
    {
       // disable edit buttons because bridge is not valid
       pParent->EnableInsertSpanBtn(FALSE);
@@ -1199,20 +1198,13 @@ void CBridgeDescFramingGrid::FillSpanColumn()
          ROWCOL prevPierRow = GetPierRow(pPrevPier->GetIndex());
          ROWCOL nextPierRow = GetPierRow(pNextPier->GetIndex());
 
-         SetStyleRange(CGXRange(prevPierRow, col + 1), CGXStyle()
-            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-            .SetEnabled(FALSE)
-         );
-
-         SetStyleRange(CGXRange(prevPierRow+1, col + 1), CGXStyle()
-            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-            .SetEnabled(FALSE)
-         );
-
-         SetStyleRange(CGXRange(nextPierRow, col + 1), CGXStyle()
-            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-            .SetEnabled(FALSE)
-         );
+         for (ROWCOL r = prevPierRow; r <= nextPierRow; r++)
+         {
+            SetStyleRange(CGXRange(r, col + 1), CGXStyle()
+               .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+               .SetEnabled(FALSE)
+            );
+         }
       }
    }
 
@@ -1263,6 +1255,12 @@ void CBridgeDescFramingGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
 // validate input
 BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 {
+   if (!m_bDoValidate)
+   {
+      // User hit Cancel button - just let any input errors go
+      return TRUE;
+   }
+
 	CString s;
 	CGXControl* pControl = GetControl(nRow, nCol);
 	pControl->GetCurrentText(s);
@@ -1278,6 +1276,10 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       if ( FAILED(hr) )
       {
 			SetWarningText (_T("Invalid Station Value"));
+         DisplayWarningText();
+         // Don't let focus move outside of grid. See Mantis 1090
+         SetFocus();
+
          return FALSE;
       }
       else
@@ -1296,11 +1298,19 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       if (result == VALIDATE_INVALID)
       {
 			SetWarningText (_T("Orientation is invalid"));
+         DisplayWarningText();
+         // Don't let focus move outside of grid. See Mantis 1090
+         SetFocus();
+
          return FALSE;
       }
       else if ( result == VALIDATE_SKEW_ANGLE )
       {
 		   SetWarningText (_T("Skew angle must be less than 88 deg"));
+         DisplayWarningText();
+         // Don't let focus move outside of grid. See Mantis 1090
+         SetFocus();
+
          return FALSE;
       }
    }
@@ -1313,6 +1323,7 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
    if ( nCol == 1 || nCol == 2 )
    {
       // Pier or temporary support station or orientation changed... 
+
       CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
       ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
 
@@ -1322,33 +1333,43 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       PierIndexType pierIdx = GetPierIndex(nRow);
       if ( pierIdx != INVALID_INDEX )
       {
+         // it was the pier that changed
          CPierData2* pPierData = GetPierRowData(nRow);
          FillPierRow(nRow,pPierData); // updates station and orientation formatting
       }
       else
       {
-         SupportIndexType currTsIdx = GetTemporarySupportIndex(nRow);
-         CTemporarySupportData tsData = GetTemporarySupportRowData(nRow);
-         if ( tsData.GetStation() <= pDlg->m_BridgeDesc.GetPier(0)->GetStation() ||
-              pDlg->m_BridgeDesc.GetPier(pDlg->m_BridgeDesc.GetPierCount()-1)->GetStation() <= tsData.GetStation() )
-         {
-            // new station is not on the bridge
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-            CString strStation = FormatStation(pDisplayUnits->GetStationFormat(), tsData.GetStation());
-            m_sWarningText.Format(_T("Station %s is not on the bridge"), strStation);
-            return FALSE;
-         }
+         // it was the temporary support that changed
 
-         SupportIndexType newTsIdx = pDlg->m_BridgeDesc.SetTemporarySupportByIndex(currTsIdx, tsData);
-         // temporary support station could have changed... if so, update the grid for all temporary support
-         // rows from where the ts used to be to where it is now
-         for (SupportIndexType tsIdx = Min(newTsIdx, currTsIdx); tsIdx <= Max(newTsIdx, currTsIdx); tsIdx++)
+         if (pDlg->m_BridgeDesc.IsValidBridge())
          {
-            const CTemporarySupportData* pTS = pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx);
-            ROWCOL tsRow = GetTemporarySupportRow(tsIdx);
-            FillTemporarySupportRow(tsRow, pTS); // updates station and orientation formatting
+            // temporary support station could have changed... update all temporary support rows
+            // from where the ts used to be to where it is now
+
+            SupportIndexType currTsIdx = GetTemporarySupportIndex(nRow);
+            CTemporarySupportData tsData = GetTemporarySupportRowData(nRow);
+
+            if (tsData.GetStation() <= pDlg->m_BridgeDesc.GetPier(0)->GetStation() || pDlg->m_BridgeDesc.GetPier(pDlg->m_BridgeDesc.GetPierCount() - 1)->GetStation() <= tsData.GetStation())
+            {
+               // new station is not on the bridge
+               CComPtr<IBroker> pBroker;
+               EAFGetBroker(&pBroker);
+               GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+               CString strStation = FormatStation(pDisplayUnits->GetStationFormat(), tsData.GetStation());
+               m_sWarningText.Format(_T("Station %s is not on the bridge"), strStation);
+               return FALSE;
+            }
+
+            // update the bridge model with the new tempoary support data. the bridge model will give us back
+            // the new index of the temporary support (the TS could have moved so it might have a new index)
+            // Update all the temporary support rows in the grid based on the updated bridge model
+            SupportIndexType newTsIdx = pDlg->m_BridgeDesc.SetTemporarySupportByIndex(currTsIdx, tsData);
+            for (SupportIndexType tsIdx = Min(newTsIdx, currTsIdx); tsIdx <= Max(newTsIdx, currTsIdx); tsIdx++)
+            {
+               const CTemporarySupportData* pTS = pDlg->m_BridgeDesc.GetTemporarySupport(tsIdx);
+               ROWCOL tsRow = GetTemporarySupportRow(tsIdx);
+               FillTemporarySupportRow(tsRow, pTS); // updates station and orientation formatting
+            }
          }
       }
 
@@ -1659,4 +1680,18 @@ void CBridgeDescFramingGrid::DeleteTransactions(std::map<IndexType,std::vector<t
          delete pTxn;
       }
    }
+}
+
+void CBridgeDescFramingGrid::OnKillFocus(CWnd* pNewWnd)
+{
+   CWnd* pParent = GetParent();
+   CWnd* pGpParent = pParent->GetParent();
+   CWnd* pcancel = pGpParent->GetDlgItem(IDCANCEL);
+   if (pNewWnd == pcancel)
+   {
+      // do not validate cell values if user hits Cancel
+      m_bDoValidate = false;
+   }
+
+   CGXGridWnd::OnKillFocus(pNewWnd);
 }

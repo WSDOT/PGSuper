@@ -72,6 +72,9 @@ interface IBeamFactoryCLSIDTranslator : public IUnknown
    virtual bool TranslateCLSID(LPCTSTR oldCLSID,LPCTSTR* newCLSID) = 0;
 };
 
+// Note that we play a game here to allow scalars and booleans into the system if the values are: 
+#define BFDIMUNITSCALAR 0  // The dimension is a scalar.
+#define BFDIMUNITBOOLEAN 1 // The dimension is a boolean.
 
 /*****************************************************************************
 INTERFACE
@@ -163,7 +166,10 @@ interface IBeamFactory : IUnknown
 
    //---------------------------------------------------------------------------------
    // Returns a vector of length unit objects representing the units of measure of each
-   // dimenions. If an item in the vector is nullptr, the dimension is a scalar.
+   // dimension. 
+   // Note that we play a game here to allow scalars and booleans into the system if the values are: 
+   // (const unitLength*) BFDIMUNITSCALAR : The dimension is a scalar.
+   // (const unitLength*) BFDIMUNITBOOLEAN: // The dimension is a boolean.
    virtual const std::vector<const unitLength*>& GetDimensionUnits(bool bSIUnits) const = 0;
 
    //---------------------------------------------------------------------------------
@@ -439,3 +445,65 @@ interface IBeamFactoryCompatibility : IUnknown
    virtual pgsCompatibilityData* GetCompatibilityData() const = 0;
    virtual void UpdateBridgeModel(CBridgeDescription2* pBridgeDesc, const GirderLibraryEntry* pGirderEntry) const = 0;
 };
+
+
+
+template <class T>
+T ConvertIBeamDimensions(const T& dimensions)
+{
+   // Convert old dimensions IBeam dimensions to new dimensions and put them in the correct order
+   // Dimensions changed we the IBeamFactory was updated to use the extended top flange width dimension
+
+   // New W2 = Old W1
+   // New W3 = Old W2
+   // New W1 = 0
+   // New W5 = Old W3
+   // New D6 = Old D4
+   // New D4 = Old D6
+   // New H = Old D1 + D2 + D3 + D4 + D5 + D6 + D7
+
+   // order of m_DimNames for new dimensions
+   //m_DimNames.emplace_back(_T("D1"));
+   //m_DimNames.emplace_back(_T("D2"));
+   //m_DimNames.emplace_back(_T("D3"));
+   //m_DimNames.emplace_back(_T("D4"));
+   //m_DimNames.emplace_back(_T("D5"));
+   //m_DimNames.emplace_back(_T("D6"));
+   //m_DimNames.emplace_back(_T("H"));
+   //m_DimNames.emplace_back(_T("T1"));
+   //m_DimNames.emplace_back(_T("T2"));
+   //m_DimNames.emplace_back(_T("W1"));
+   //m_DimNames.emplace_back(_T("W2"));
+   //m_DimNames.emplace_back(_T("W3"));
+   //m_DimNames.emplace_back(_T("W4"));
+   //m_DimNames.emplace_back(_T("W5"));
+   //m_DimNames.emplace_back(_T("C1"));
+   //m_DimNames.emplace_back(_T("EndBlockWidth"));
+   //m_DimNames.emplace_back(_T("EndBlockLength"));
+   //m_DimNames.emplace_back(_T("EndBlockTransition"));
+
+   // H = old D1 + ... + old D7
+   Float64 h = dimensions[1].second + dimensions[2].second + dimensions[3].second + dimensions[4].second + dimensions[5].second + dimensions[6].second + dimensions[7].second;
+
+   IBeamFactory::Dimensions new_dimensions;
+   new_dimensions.emplace_back(dimensions[1]); // D1
+   new_dimensions.emplace_back(dimensions[2]); // D2
+   new_dimensions.emplace_back(dimensions[3]); // D3
+   new_dimensions.emplace_back(_T("D4"), dimensions[6].second); // D4 = old D6
+   new_dimensions.emplace_back(dimensions[5]); // D5
+   new_dimensions.emplace_back(_T("D6"), dimensions[4].second); // D6 = old D4
+   new_dimensions.emplace_back(_T("H"), h); // H
+   new_dimensions.emplace_back(dimensions[8]); // T1
+   new_dimensions.emplace_back(dimensions[9]); // T2
+   new_dimensions.emplace_back(_T("W1"), 0.0); // W1
+   new_dimensions.emplace_back(_T("W2"), dimensions[10].second); // W2 = old W1
+   new_dimensions.emplace_back(_T("W3"), dimensions[11].second); // W3 = old W2
+   new_dimensions.emplace_back(dimensions[13]); // W4
+   new_dimensions.emplace_back(_T("W5"), dimensions[12].second); // W5 = old W3
+   new_dimensions.emplace_back(dimensions[0]); // C1
+   new_dimensions.emplace_back(dimensions[14]); // EndBlockWidth
+   new_dimensions.emplace_back(dimensions[15]); // EndBlockLength
+   new_dimensions.emplace_back(dimensions[16]); // EndBlockTransition
+
+   return new_dimensions;
+}

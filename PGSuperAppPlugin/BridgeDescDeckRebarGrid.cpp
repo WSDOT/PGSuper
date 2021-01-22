@@ -286,21 +286,23 @@ void CBridgeDescDeckRebarGrid::UpdatePierList()
    CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
    ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
+   // build pier list for combo box
+   m_strPiers.Empty();
    PierIndexType nPiers = pGrandParent->m_BridgeDesc.GetPierCount();
    IndexType idx = 0;
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
    {
-      if ( idx == 0 )
+      if (idx != 0)
       {
-         m_strPiers.Format(_T("%d"),LABEL_PIER(pierIdx));
-         idx++;
+         m_strPiers += _T("\n");
       }
-      else
-      {
-         CString str = m_strPiers;
-         m_strPiers.Format(_T("%s\n%d"),str,LABEL_PIER(pierIdx));
-         idx++;
-      }
+
+      CString str;
+      str.Format(_T("%s"), CreatePierLabel(pGrandParent->m_BridgeDesc, pierIdx).c_str());
+
+      m_strPiers += str;
+
+      idx++;
    }
 
    m_nContinuousPiers = idx;
@@ -399,12 +401,13 @@ bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMoment
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
+   CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
+   ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
    // pier index
    CString strPier = GetCellValue(nRow,1);
-   pRebarData->PierIdx = _tstoi(strPier) - 1;
-
-   CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
-   ASSERT(pParent);
+   pRebarData->PierIdx = GetPierIndexFromString(pGrandParent->m_BridgeDesc, strPier);
 
    // mat
    CString strMat = GetCellValue(nRow,2);
@@ -479,11 +482,13 @@ void CBridgeDescDeckRebarGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    {
       // Pier Changed
       CString strPier = GetCellValue(nRow,1);
-      PierIndexType pierIdx = _tstoi(strPier) - 1;
 
       CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
       CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
       ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+      PierIndexType pierIdx = GetPierIndexFromString(pGrandParent->m_BridgeDesc, strPier);
+
       const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
       UpdateCutoff(nRow,pPier);
    }
@@ -510,7 +515,7 @@ void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::Neg
    const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(rebarData.PierIdx);
 
    // pier index
-   SetValueRange(CGXRange(nRow,1),(LONG)(LABEL_PIER(rebarData.PierIdx)));
+   SetValueRange(CGXRange(nRow,1), CreatePierLabel(pGrandParent->m_BridgeDesc, rebarData.PierIdx).c_str());
 
    // Mat
    SetValueRange(CGXRange(nRow,2),rebarData.Mat == CDeckRebarData::TopMat ? _T("Top") : _T("Bottom"));
@@ -614,6 +619,22 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
    }
 }
 
+std::_tstring CBridgeDescDeckRebarGrid::CreatePierLabel(const CBridgeDescription2 & bridgeDescr, PierIndexType pierIdx)
+{
+   std::_tostringstream os;
+   os << pierIdx + bridgeDescr.GetDisplayStartingPierNumber();
+
+   return os.str();
+}
+
+PierIndexType CBridgeDescDeckRebarGrid::GetPierIndexFromString(const CBridgeDescription2 & bridgeDescr, const CString& strPier)
+{
+   PierIndexType pierIdx = _tstoi(strPier);
+   pierIdx -= bridgeDescr.GetDisplayStartingPierNumber();
+
+   return pierIdx;
+}
+
 void CBridgeDescDeckRebarGrid::FillGrid(const std::vector<CDeckRebarData::NegMomentRebarData>& vRebarData)
 {
 	GetParam()->EnableUndo(FALSE);
@@ -693,14 +714,13 @@ BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
    if ( nCol == 1 )
    {
-      CString strPier = GetCellValue(nRow,1);
-      PierIndexType pierIdx = _tstoi(strPier) - 1;
-
       CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
-      ASSERT(pParent);
-
       CBridgeDescDlg* pGrandParent = (CBridgeDescDlg*)(pParent->GetParent());
       ASSERT( pGrandParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
+
+      CString strPier = GetCellValue(nRow,1);
+      PierIndexType pierIdx = GetPierIndexFromString(pGrandParent->m_BridgeDesc, strPier);
+
       const CPierData2* pPier = pGrandParent->m_BridgeDesc.GetPier(pierIdx);
 
       if ( pPier->IsBoundaryPier() && !pPier->IsAbutment() )
@@ -714,7 +734,7 @@ BOOL CBridgeDescDeckRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          if ( pPier->GetBoundaryConditionType() == pgsTypes::bctHinge || pPier->GetBoundaryConditionType() == pgsTypes::bctRoller )
          {
             CString strMsg;
-            strMsg.Format(_T("Pier %d has a hinge/roller type connection. It cannot have supplimental reinforcement. Remove this row from the Supplemental Reinforcement Grid"),LABEL_PIER(pierIdx));
+            strMsg.Format(_T("Pier %s has a hinge/roller type connection. It cannot have supplimental reinforcement. Remove this row from the Supplemental Reinforcement Grid"), CreatePierLabel(pGrandParent->m_BridgeDesc, pierIdx).c_str());
             SetWarningText(strMsg);
             return FALSE;
          }

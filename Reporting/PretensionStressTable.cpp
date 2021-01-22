@@ -108,6 +108,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
    if ( bTimeStepAnalysis )
    {
@@ -116,16 +117,48 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       loadRatingIntervalIdx = releaseIntervalIdx;
    }
 
+   GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec);
+
+   int nRatingTypes = (int)pgsTypes::lrLoadRatingTypeCount;
+
    ColumnIndexType nColumns;
    if ( bDesign )
    {
       nColumns = 2 // two location columns
-               + nIntervals; // one for each interval
+         + nIntervals // one for each interval
+         + 2; // two additional columns for last intervale
    }
    else
    {
       // Load Rating
-      nColumns = 2; // location column and column for live load stage
+      ColumnIndexType nRatingColumns = 1;
+      for (int i = 0; i < nRatingTypes; i++)
+      {
+         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
+         pgsTypes::LimitState limitState = ::GetServiceLimitStateType(ratingType);
+         if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+         {
+            if (IsDesignRatingType(ratingType))
+            {
+               nRatingColumns++;
+            }
+            else
+            {
+               pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+               VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+               for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+               {
+                  if (pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx) == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                  {
+                     continue;
+                  }
+                  nRatingColumns++;
+               }
+            }
+         }
+      }
+      nColumns = nRatingColumns;
    }
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nColumns,_T("Girder Stresses"));
@@ -146,7 +179,13 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    ColumnIndexType col = 0;
    if ( bDesign )
    {
+      p_table->SetNumberOfHeaderRows(2);
+      p_table->SetRowSpan(0, col, 2);
+      p_table->SetRowSpan(1, col, SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(RPT_GDR_END_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+
+      p_table->SetRowSpan(0, col, 2);
+      p_table->SetRowSpan(1, col, SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
       std::vector<IntervalIndexType>::iterator iter(vIntervals.begin());
@@ -154,13 +193,61 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       for ( ; iter != end; iter++ )
       {
          IntervalIndexType intervalIdx = *iter;
+
+         if (iter != end - 1)
+         {
+            p_table->SetRowSpan(0, col, 2);
+            p_table->SetRowSpan(1, col, SKIP_CELL);
+         }
+
          (*p_table)(0,col++) << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine << pIntervals->GetDescription(intervalIdx);
       }
+
+      col--;
+      p_table->SetColumnSpan(0, col, 3);
+      (*p_table)(1, col++) << _T("Service I");
+      (*p_table)(1, col++) << _T("Service III");
+
+      pgsTypes::LimitState ls = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+      std::_tstring strLS(ls == pgsTypes::ServiceIA ? _T("Service IA") : _T("Fatigue I"));
+      (*p_table)(1, col++) << strLS;
    }
    else
    {
+      p_table->SetNumberOfHeaderRows(2);
+
+      p_table->SetRowSpan(0, col, 2);
+      p_table->SetRowSpan(1, col, SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
-      (*p_table)(0,col++) << _T("Interval ") << LABEL_INTERVAL(loadRatingIntervalIdx) << rptNewLine << pIntervals->GetDescription(loadRatingIntervalIdx);
+
+      p_table->SetColumnSpan(0, col, nRatingTypes);
+      (*p_table)(0,col) << _T("Interval ") << LABEL_INTERVAL(loadRatingIntervalIdx) << rptNewLine << pIntervals->GetDescription(loadRatingIntervalIdx);
+      for (int i = 0; i < nRatingTypes; i++)
+      {
+         pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
+         if (pRatingSpec->IsRatingEnabled(ratingType) && pRatingSpec->RateForStress(ratingType))
+         {
+            pgsTypes::LimitState limitState = ::GetServiceLimitStateType(ratingType);
+            if (IsDesignRatingType(ratingType))
+            {
+               (*p_table)(1, col++) << GetLimitStateString(limitState);
+            }
+            else
+            {
+               pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
+               VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+               for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++)
+               {
+                  if (pProductLoads->GetLiveLoadApplicability(llType, vehicleIdx) == pgsTypes::llaNegMomentAndInteriorPierReaction)
+                  {
+                     continue;
+                  }
+                  std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+                  (*p_table)(1, col++) << GetLimitStateString(limitState) << _T(", ") << name;
+               }
+            }
+         }
+      }
    }
 
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -168,6 +255,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi);
    pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
    pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND, &vPoi, POIFIND_OR);
+   pPoi->GetCriticalSections(pgsTypes::StrengthI, segmentKey, &vPoi);
    pPoi->SortPoiList(&vPoi);
    pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
@@ -226,7 +314,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                   (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
                }
 
-               if (0 < Nt)
+               if (0 < Nt && intervalIdx < tsRemovalIntervalIdx)
                {
                   (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << rptNewLine;
                   if (bIsAsymmetric)
@@ -248,8 +336,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
             else
             {
                Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI, bIncludeElasticEffects);
-               Float64 Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceI, bIncludeElasticEffects);
-               (*p_table)(row, col) << _T("Service I") << rptNewLine;
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {
@@ -259,20 +345,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                else
                {
                   (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
-               }
-
-               if (0 < Nt)
-               {
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << rptNewLine;
-                  if (bIsAsymmetric)
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << rptNewLine;
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("ty")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
-                  }
-                  else
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("t")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
-                  }
                }
 
                Float64 fTop, fBot;
@@ -280,11 +352,9 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
 
-               (*p_table)(row, col) << rptNewLine;
+               col++;
 
                Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII, bIncludeElasticEffects);
-               Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, pgsTypes::ServiceIII, bIncludeElasticEffects);
-               (*p_table)(row, col) << _T("Service III") << rptNewLine;
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {
@@ -294,33 +364,16 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                else
                {
                   (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
-               }
-               if (0 < Nt)
-               {
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << rptNewLine;
-                  if (bIsAsymmetric)
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << rptNewLine;
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("ty")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
-                  }
-                  else
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("t")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
-                  }
                }
 
                pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling vehicle*/, &fTop, &fBot);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
 
-               (*p_table)(row, col) << rptNewLine;
+               col++;
 
                pgsTypes::LimitState ls = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
-               std::_tstring strLS(ls == pgsTypes::ServiceIA ? _T(" (Service IA)") : _T(" (Fatigue I)"));
-
                Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, ls, bIncludeElasticEffects);
-               Ft = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Temporary, ls, bIncludeElasticEffects);
-               (*p_table)(row, col) << strLS << rptNewLine;
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {
@@ -330,20 +383,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                else
                {
                   (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(epy) << rptNewLine;
-               }
-
-               if (0 < Nt)
-               {
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << rptNewLine;
-                  if (bIsAsymmetric)
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(etx) << rptNewLine;
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("ty")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
-                  }
-                  else
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("t")) << _T(" = ") << ecc.SetValue(ety) << rptNewLine;
-                  }
                }
 
                pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, ls, INVALID_INDEX/*controlling vehicle*/, &fTop, &fBot);
@@ -360,7 +399,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
          GET_IFACE2(pBroker, IProductLoads, pProductLoads);
          GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
          int nReported = 0;
-         int nRatingTypes = (int)pgsTypes::lrLoadRatingTypeCount;
          for (int i = 0; i < nRatingTypes; i++)
          {
             pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)i;
@@ -372,7 +410,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                if (IsDesignRatingType(ratingType))
                {
                   Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState);
-                  (*p_table)(row, col) << GetLimitStateString(limitState) << rptNewLine;
                   (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                   if (bIsAsymmetric)
                   {
@@ -388,6 +425,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                   pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, limitState,INVALID_INDEX/*controlling truck*/,&fTop,&fBot);
                   (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                   (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
+
+                  col++;
                }
                else
                {
@@ -400,8 +439,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                         continue;
                      }
                      Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState, bIncludeElasticEffects, vehicleIdx);
-                     std::_tstring name = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
-                     (*p_table)(row, col) << GetLimitStateString(limitState) << _T(", ") << name << rptNewLine;
                      (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                      if (bIsAsymmetric)
                      {
@@ -418,16 +455,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                      (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                      (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot);
 
-                     if ( vehicleIdx != nVehicles-1)
-                     {
-                        (*p_table)(row, col) << rptNewLine;
-                     }
+                     col++;
                   }
-               }
-
-               if (i != nRatingTypes - 1)
-               {
-                  (*p_table)(row, col) << rptNewLine;
                }
 
                nReported++;

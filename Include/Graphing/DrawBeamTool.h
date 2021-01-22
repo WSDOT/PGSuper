@@ -83,5 +83,6 @@ protected:
    void DrawIntegralHingeBack(CPoint p,CDC* pDC);
    void DrawIntegralHingeAhead(CPoint p,CDC* pDC);
    void DrawTendons(Float64 beamShift,IntervalIndexType intervalIndexType, const CGirderKey& girderKey, const grlibPointMapper& mapper,CDC* pDC);
-   Float64 ComputeShift(const CGirderKey& girderKey);
+   Float64 ComputeGirderShift(const CGirderKey& girderKey);
+   Float64 ComputeSegmentShift(const CSegmentKey& segmentKey);
 };

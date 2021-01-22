@@ -75,7 +75,6 @@ void BearingInputData::CopyToBridgeDescription(CBridgeDescription2* pBridgeDesc)
          {
             ATLASSERT(BearingPierData::bpdCL == bpd.m_BPDType);
 
-            bd.Length /= 2.0; // split in half
             pPier->SetBearingData(pgsTypes::Ahead, bd);
             pPier->SetBearingData(pgsTypes::Back, bd);
          }
@@ -110,7 +109,6 @@ void BearingInputData::CopyToBridgeDescription(CBridgeDescription2* pBridgeDesc)
             {
                ATLASSERT(BearingPierData::bpdCL == bpd.m_BPDType);
 
-               bd.Length /= 2.0; // split in half
                pPier->SetBearingData(ig, pgsTypes::Ahead, bd);
                pPier->SetBearingData(ig, pgsTypes::Back,  bd);
             }
@@ -472,16 +470,9 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
 
       ROWCOL col = _STARTCOL;
 
-      // row index
-      CString crow;
-      if (row == 1 || row == numRows)
-      {
-         crow.Format(_T("Abutment %d"), PierNo);
-      }
-      else
-      {
-         crow.Format(_T("Pier %d"), PierNo);
-      }
+      // row label
+      bool isAbut = (row == 1 || row == numRows);
+      CString crow = pgsPierLabel::GetPierLabelEx(isAbut, hp.m_PierIndex).c_str();
 
       if (row == 1 || row == numRows || hp.m_BPDType==BearingPierData::bpdCL) // single row title
       {

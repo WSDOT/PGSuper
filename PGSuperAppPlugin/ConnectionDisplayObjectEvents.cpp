@@ -28,6 +28,7 @@
 #include "ConnectionDisplayObjectEvents.h"
 #include "mfcdual.h"
 #include "pgsuperdoc.h"
+#include <IFace\EditByUI.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

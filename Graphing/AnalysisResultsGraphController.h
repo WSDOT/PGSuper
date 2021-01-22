@@ -120,11 +120,12 @@ protected:
    void UpdateListInfo();
    void UpdateResultsType();
 
-   IntervalIndexType GetFirstInterval();
-   IntervalIndexType GetLastInterval();
+   IntervalIndexType GetFirstInterval() const;
+   IntervalIndexType GetLastInterval() const;
 
    bool m_bHasStructuralDeck;
 
+   IntervalIndexType m_LiveLoadIntervalIdx;
    IntervalIndexType m_LoadRatingIntervalIdx;
 
 #ifdef _DEBUG

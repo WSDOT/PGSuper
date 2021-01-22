@@ -138,6 +138,38 @@ struct MINMOMENTCAPDETAILS
    Float64 Mu;
 };
 
+struct PRINCIPALTENSIONWEBSECTIONDETAILS
+{
+   PRINCIPALTENSIONWEBSECTIONDETAILS(LPCTSTR lpszLocation, Float64 YwebSection, Float64 fTop, Float64 fBot, Float64 fpcx, Float64 Vu,Float64 Qnc, Float64 Qc, Float64 bw, bool bAdjusted, Float64 t, Float64 fmax) :
+      strLocation(lpszLocation), fTop(fTop), fBot(fBot), fpcx(fpcx), YwebSection(YwebSection),Vu(Vu), Qnc(Qnc), Qc(Qc), bw(bw), bIsShearWidthAdjustedForTendon(bAdjusted), t(t), fmax(fmax)
+   {
+   }
+
+   std::_tstring strLocation; // description of web section
+   Float64 YwebSection; // elevation of web section in girder section coordinates
+   Float64 fTop; // Service III stress at top of non-composite girder, including prestress, for computing maximum fpcx
+   Float64 fBot; // Service III stress at bottom of non-composite girder, including prestress, for computing maximum fpcx
+   Float64 fpcx; // maximum axial stress at evaluation point
+   Float64 Vu;  // Service III shear on composite section if NCHRP method, Vu for LRFD method
+   Float64 Qnc; // first moment of area of the non-composite section about the evaluation point
+   Float64 Qc; // first moment of area of the composite section about the evaluation point
+   Float64 bw; // shear width at the evaluation point
+   bool bIsShearWidthAdjustedForTendon;
+   Float64 t; // shear stress at the evaluation point
+   Float64 fmax; // maximum principal stress at the evaluation point
+};
+
+struct PRINCIPALSTRESSINWEBDETAILS
+{
+   Float64 Hg; // height of non-composite girder
+   Float64 Vp; // Vertical component of prestress
+
+   Float64 Vnc; // Service III shear on non-composite section
+   Float64 Inc; // moment of inertia of non-composite section
+   Float64 Ic; // moment of inertia of composite section
+   std::vector<PRINCIPALTENSIONWEBSECTIONDETAILS> WebSections; // points along the web height where principal tension is evaluted
+};
+
 struct SHEARCAPACITYDETAILS
 {
    SHEARCAPACITYDETAILS()
@@ -212,11 +244,11 @@ struct SHEARCAPACITYDETAILS
    Float64 Vc;
    Float64 Vs;
    Float64 Vf; // capacity of UHPC fibers
-   Float64 Vn1;  // [E5.8.3.3-1]
-   Float64 Vn2;  // [E5.8.3.3-2]
+   Float64 Vn1;  // [Eqn 5.8.3.3-1]
+   Float64 Vn2;  // [Eqn 5.8.3.3-2]
    Float64 Vn;   // Nominal shear resistance
    Float64 pVn;  // Factored nominal shear resistance
-   Float64 VuLimit; // Limiting Vu where stirrups are required [E5.8.2.4-1]
+   Float64 VuLimit; // Limiting Vu where stirrups are required [Eqn 5.8.2.4-1]
    bool bStirrupsReqd; // If true, stirrups and/or Vf from fibers is required LRFD 5.7.2.3-1
    Int16 Equation; // Equation used to comupte ex (Only applicable after LRFD 1999)
    Float64 vfc_tbl;
@@ -233,6 +265,13 @@ struct SHEARCAPACITYDETAILS
    pgsTypes::ConcreteType ConcreteType;
    bool bHasFct;
    Float64 fct;
+
+   // LRFD 9th Edition
+   Float64 bw; // web width without any deductions
+   Float64 duct_diameter; // diameter of largest duct in section
+   Float64 delta; // duct diamter correction factor
+   Float64 lambda_duct; // shear strength reduction factor
+
 };
 
 // fpc - strand stress for shear capacity calculation
@@ -754,6 +793,35 @@ struct TIME_STEP_REBAR
    }
 };
 
+// Principal stress in web variables for time step analyses
+struct TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS
+{
+   TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS(LPCTSTR lpszLocation, Float64 YwebSection, Float64 Qc, Float64 bw, bool bAdjusted, Float64 fpcx, Float64 fpcxs, Float64 t, Float64 ts) :
+      strLocation(lpszLocation), YwebSection(YwebSection), Qc(Qc), bw(bw), bIsShearWidthAdjustedForTendon(bAdjusted),fpcx(fpcx), fpcx_s(fpcxs), tau(t),tau_s(ts)
+   {
+   }
+
+   std::_tstring strLocation; // description of web section
+   Float64 YwebSection; // elevation of web section in girder section coordinates
+   Float64 Qc; // first moment of area of the section about the evaluation point
+   Float64 bw; // shear width at the evaluation point
+   bool bIsShearWidthAdjustedForTendon;
+   Float64 fpcx; // Maximum axial stress at evaluation point - increment at this interval
+   Float64 fpcx_s; // Maximum axial stress at evaluation point - sum of all previous intervals plus fpcx
+   Float64 tau; // shear stress at the evaluation point - increment at this interval
+   Float64 tau_s; // shear stress at the evaluation point - sum of all previous intervals plus t
+};
+
+struct TIME_STEP_PRINCIPALSTRESSINWEBDETAILS
+{
+   Float64 Hg; // height of non-composite girder
+   Float64 Vu; // Shear on section
+   Float64 I; // moment of inertia  section
+   Float64 fTop; // Stress at top of non-composite girder for computing maximum fpcx
+   Float64 fBot; // Stress at bottom of non-composite girder for computing maximum fpcx
+   std::vector<TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS> WebSections; // points along the web height where principal tension is evaluted
+};
+
 // This struct holds the computation details for a specific interval 
 // for a time step loss analysis
 struct TIME_STEP_DETAILS
@@ -775,18 +843,18 @@ struct TIME_STEP_DETAILS
    // Change in total loading on the section due to externally applied loads during this interval
    // Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   std::array<Float64,pftTimeStepSize> dPi, dMi;
+   std::array<Float64,pftTimeStepSize> dPi, dMi, dVi;
 
-   // total change in loading on the section (summation of dPi and dMi)
-   Float64 dP, dM;
+   // total change in loading on the section (summation of dPi, dMi, dVi)
+   Float64 dP, dM, dV;
 
    // Total loading on the section due to externally applied loads in all intervals upto
    // and including this interval. Array index is one of the pgsTypes::ProductForceType enum values
    // upto and including pgsTypes::pftRelaxation
-   std::array<Float64, pftTimeStepSize> Pi, Mi;
+   std::array<Float64, pftTimeStepSize> Pi, Mi, Vi;
 
-   // total change in loading on the section (summation of Pi and Mi)
-   Float64 P, M;
+   // total change in loading on the section (summation of Pi, Mi, Vi)
+   Float64 P, M, V;
 
    // Time step parameters for girder and deck
    TIME_STEP_CONCRETE Girder;
@@ -825,6 +893,9 @@ struct TIME_STEP_DETAILS
    std::array<Float64, pftTimeStepSize> er; // axial strain
    std::array<Float64, pftTimeStepSize> rr; // curvature
 
+   // Principal web stress details for each loading. 
+   std::array<TIME_STEP_PRINCIPALSTRESSINWEBDETAILS, pftTimeStepSize> PrincipalStressDetails;
+
    // Check equilibrium
    Float64 dPext, dPint; // change in external and internal axial force during this interval (dPext == dPint)
    Float64 dMext, dMint; // change in external and internal moment during this interval (dMext == dMint)
@@ -848,9 +919,11 @@ struct TIME_STEP_DETAILS
       {
          dPi[i] = 0;
          dMi[i] = 0;
+         dVi[i] = 0;
 
          Pi[i] = 0;
          Mi[i] = 0;
+         Vi[i] = 0;
 
          der[i] = 0;
          drr[i] = 0;
@@ -870,9 +943,11 @@ struct TIME_STEP_DETAILS
 
       dP = 0;
       dM = 0;
+      dV = 0;
 
       P = 0;
       M = 0;
+      V = 0;
 
       dPext = 0;
       dPint = 0;

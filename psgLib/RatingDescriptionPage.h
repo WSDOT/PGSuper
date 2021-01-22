@@ -58,8 +58,12 @@ protected:
 	//{{AFX_MSG(CRatingDescriptionPage)
 	virtual BOOL OnInitDialog();
    afx_msg void OnSpecificationChanged();
-	//}}AFX_MSG
+   //}}AFX_MSG
    afx_msg void OnHelp();
 	DECLARE_MESSAGE_MAP()
 
+   CCacheComboBox m_cbSpecification;
+
+public:
+   afx_msg void OnBnClickedUseCurrentVersion();
 };

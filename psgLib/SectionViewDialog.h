@@ -62,9 +62,18 @@ protected:
    CComPtr<IShapeProperties> m_ShapeProps;
    const GirderLibraryEntry* m_pGirderEntry;
    Float64 m_Hg;
-   bool                m_IsEnd;
-   bool                m_DrawNumbers;
+   bool                m_bIsEnd;
+   bool                m_bDrawNumbers;
    Float64             m_Radius;
+
+   Float64 m_Wg;
+   bool m_bDrawWebSections;
+   CComPtr<IDblArray> m_Y;
+   CComPtr<IDblArray> m_W;
+   CComPtr<IBstrArray> m_Desc;
+
+   bool m_bDrawWebWidthProjections;
+   CComPtr<IUnkArray> m_WebWidthProjections;
 
 #ifdef _DEBUG
    std::vector< CComPtr<IShape> > m_RegionShapes; // for debugging the strandmover
@@ -75,6 +84,8 @@ protected:
    void DrawShape(CDC* pDC,grlibPointMapper& mapper,ICompositeShape* pCompositeShape,CBrush& solidBrush,CBrush& voidBrush);
    void DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool isEnd);
    StrandIndexType DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index,StrandIndexType strandInc=1);
+   void DrawWebSections(CDC* pDC, grlibPointMapper& Mapper);
+   void DrawWebWidthProjections(CDC* pDC, grlibPointMapper& Mapper);
 
 
 	// Generated message map functions
@@ -87,6 +98,9 @@ protected:
 
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnClickNumbers();
+    afx_msg void OnClickWebSections();
+public:
+   afx_msg void OnBnClickedShowWebWidthProjections();
 };
 
 //{{AFX_INSERT_LOCATION}}

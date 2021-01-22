@@ -56,6 +56,8 @@ void CRatingDescriptionPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CRatingDescriptionPage)
 	//}}AFX_DATA_MAP
 
+   DDX_Control(pDX, IDC_SPECIFICATION, m_cbSpecification);
+
    CRatingDialog* pDad = (CRatingDialog*)GetParent();
    // dad is a friend of the entry. use him to transfer data.
    pDad->ExchangeDescriptionData(pDX);
@@ -68,6 +70,7 @@ BEGIN_MESSAGE_MAP(CRatingDescriptionPage, CPropertyPage)
 	//}}AFX_MSG_MAP
    ON_CBN_SELCHANGE(IDC_SPECIFICATION,OnSpecificationChanged)
 	ON_BN_CLICKED(ID_HELP,OnHelp)
+   ON_BN_CLICKED(IDC_USE_CURRENT_VERSION, &CRatingDescriptionPage::OnBnClickedUseCurrentVersion)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -89,6 +92,8 @@ BOOL CRatingDescriptionPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 	
+   OnBnClickedUseCurrentVersion();
+
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -104,4 +109,22 @@ void CRatingDescriptionPage::OnSpecificationChanged()
 {
    CRatingDialog* pParent = (CRatingDialog*)GetParent();
    pParent->UpdatePageLayout();
+}
+
+void CRatingDescriptionPage::OnBnClickedUseCurrentVersion()
+{
+   if (IsDlgButtonChecked(IDC_USE_CURRENT_VERSION) == BST_CHECKED)
+   {
+      // disable the dropdown list
+      m_cbSpecification.EnableWindow(FALSE);
+
+      // box is checked so change to the most current specification
+      // it will be last one in the dropdown list
+      m_cbSpecification.SetCurSel(m_cbSpecification.GetCount() - 1);
+   }
+   else
+   {
+      m_cbSpecification.EnableWindow(TRUE);
+   }
+   OnSpecificationChanged();
 }

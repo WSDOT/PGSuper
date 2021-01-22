@@ -70,6 +70,20 @@ void CClosureJointGeneralPage::DoDataExchange(CDataExchange* pDX)
    {
       m_ctrlEci.GetWindowText(m_strUserEci);
    }
+
+   if (pDX->m_bSaveAndValidate)
+   {
+      int result = pParent->m_TimelineMgr.Validate();
+      if (result != TLM_SUCCESS)
+      {
+         auto strError = pParent->m_TimelineMgr.GetErrorMessage(result);
+         CString strMsg;
+         strMsg.Format(_T("%s"), strError.c_str());
+         AfxMessageBox(strMsg, MB_OK | MB_ICONERROR);
+         pDX->PrepareCtrl(IDC_EVENT);
+         pDX->Fail();
+      }
+   }
 }
 
 
@@ -121,7 +135,7 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
    CDataExchange dx(this,FALSE);
    DDX_CBItemData(&dx,IDC_EVENT,eventIdx);
 
-   m_AgeAtContinuity = pParent->m_TimelineMgr.GetEventByIndex(eventIdx)->GetCastClosureJointActivity().GetConcreteAgeAtContinuity();
+   m_AgeAtContinuity = pParent->m_TimelineMgr.GetEventByIndex(eventIdx)->GetCastClosureJointActivity().GetTotalCuringDuration();
 
    if ( m_strUserEc == _T("") )
    {
@@ -155,7 +169,7 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
       strDescription.Format(_T("Location: Closure Joint for Group %d Girder %s at Temporary Support %d (%s)"),
          LABEL_GROUP(grpIdx),
          LABEL_GIRDER(gdrIdx),
-         LABEL_PIER(pClosure->GetTemporarySupport()->GetIndex()),
+         LABEL_TEMPORARY_SUPPORT(pClosure->GetTemporarySupport()->GetIndex()),
          FormatStation(pDisplayUnits->GetStationFormat(),station)
          );
       GetDlgItem(IDC_LOCATION)->SetWindowText(strDescription);
@@ -166,7 +180,7 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
    {
       Float64 station = pClosure->GetPier()->GetStation();
       CString strDescription;
-      strDescription.Format(_T("Location: Closure Joint for Group %d Girder %s at Pier %d (%s)"),
+      strDescription.Format(_T("Location: Closure Joint for Group %d Girder %s at Pier %s (%s)"),
          LABEL_GROUP(grpIdx),
          LABEL_GIRDER(gdrIdx),
          LABEL_PIER(pClosure->GetPier()->GetIndex()),
@@ -481,7 +495,7 @@ void CClosureJointGeneralPage::UpdateEci()
       strK1.Format(_T("%f"),pParent->m_ClosureJoint.GetConcrete().EcK1);
       strK2.Format(_T("%f"),pParent->m_ClosureJoint.GetConcrete().EcK2);
 
-      CString strEci = CConcreteDetailsDlg::UpdateEc(strFci,strDensity,strK1,strK2);
+      CString strEci = CConcreteDetailsDlg::UpdateEc(pParent->m_ClosureJoint.GetConcrete().Type,strFci,strDensity,strK1,strK2);
       m_ctrlEci.SetWindowText(strEci);
    }
 }
@@ -565,7 +579,7 @@ void CClosureJointGeneralPage::UpdateEc()
       strK1.Format(_T("%f"),pParent->m_ClosureJoint.GetConcrete().EcK1);
       strK2.Format(_T("%f"),pParent->m_ClosureJoint.GetConcrete().EcK2);
 
-      CString strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
+      CString strEc = CConcreteDetailsDlg::UpdateEc(pParent->m_ClosureJoint.GetConcrete().Type,strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }

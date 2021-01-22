@@ -7,7 +7,6 @@ The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Debond arrangement checks failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -17,7 +16,6 @@ Debond arrangement checks failed.
 
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
-Debond arrangement checks failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
@@ -27,7 +25,6 @@ Debond arrangement checks failed.
 
 The Specification Check was Not Successful
 Tension stress check failed for Service III Limit State in Interval 20 Open to Traffic
-Debond arrangement checks failed.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 

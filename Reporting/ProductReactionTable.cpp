@@ -30,6 +30,8 @@
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
+#include <PgsExt\PierData2.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -71,8 +73,12 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
+   INIT_UV_PROTOTYPE( rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false );
 
+   // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
+   ReactionUnitValueTool reaction(tableType, reactu);
+
+   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
@@ -102,8 +108,8 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
                          tableType==PierReactionsTable ?_T("Girder Line Pier Reactions"): _T("Girder Bearing Reactions") );
    RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
-   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
    GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
@@ -136,7 +142,18 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
       const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
       IntervalIndexType erectSegmentIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
 
-     (*p_table)(row,col++) << reactionLocation.PierLabel;
+      const CBearingData2* pbd = pIBridgeDesc->GetBearingData(reactionLocation.PierIdx, (reactionLocation.Face==rftBack? pgsTypes::Back : pgsTypes::Ahead), girderKey.girderIndex);
+      IndexType numBearings = pbd->BearingCount;
+
+      reaction.SetNumBearings(numBearings); // class will dump per-bearing reaction if applicable:
+
+     (*p_table)(row,col) << reactionLocation.PierLabel;
+     if (tableType == BearingReactionsTable && numBearings > 1) // add second line for per-bearing value
+     {
+        (*p_table)(row, col) << _T(" - Total") << rptNewLine << _T("Per Bearing");
+     }
+
+     col++;
 
      ReactionDecider reactionDecider(tableType,reactionLocation,thisGirderKey,pBridge,pIntervals);
    

@@ -43,6 +43,7 @@
 #include "SpecLiveLoadsPage.h"
 #include "SpecGirderStressPage.h"
 #include "SpecClosurePage.h"
+#include "SpecBearingsPage.h"
 
 class SpecLibraryEntry;
 
@@ -80,6 +81,8 @@ public:
    CSpecDeadLoadsPage          m_SpecDeadLoadsPage;
    CSpecLiveLoadsPage          m_SpecLiveLoadsPage;
    CSpecGirderStressPage m_SpecGirderStressPage;
+
+   CSpecBearingsPage m_SpecBearingsPage;
 
    bool                m_bAllowEditing;
 
@@ -136,6 +139,7 @@ public:
 
    void ExchangeDesignData(CDataExchange* pDX);
 
+   void ExchangeBearingsData(CDataExchange* pDX);
 
 private:
    void Init();

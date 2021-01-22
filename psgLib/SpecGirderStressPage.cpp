@@ -79,6 +79,10 @@ END_MESSAGE_MAP()
 
 BOOL CSpecGirderStressPage::OnInitDialog()
 {
+   CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_PRINCIPAL_TENSION_METHOD);
+   pcb->AddString(_T("AASHTO LRFD Equation 5.9.2.3.3-1"));
+   pcb->AddString(_T("WSDOT BDM\\NCHRP Report 849 Equation 3.8"));
+
    CPropertyPage::OnInitDialog();
 
    OnCheckServiceITensileStress();
@@ -110,9 +114,30 @@ BOOL CSpecGirderStressPage::OnSetActive()
       pWnd->SetWindowText(_T("Fatigue I plus one-half the sum of effective prestress and permanent loads"));
    }
 
+
    // 2017 crosswalk chapter 5 reorg
    GetDlgItem(IDC_GTEMP)->SetWindowText(CString(_T("Stress Limits for Temporary Stresses before Losses (LRFD ")) +  pDad->LrfdCw8th(_T("5.9.4.1"),_T("5.9.2.3.1")) + _T(")"));
    GetDlgItem(IDC_GPERM)->SetWindowText(CString(_T("Stress Limits at Service Limit State after Losses (LRFD ")) +  pDad->LrfdCw8th(_T("5.9.4.2"),_T("5.9.2.3.2")) + _T(")"));
+
+   // This was not in the LRFD before 8th Edition 2017
+   int nShow = (pDad->m_Entry.GetSpecificationType() < lrfdVersionMgr::EighthEdition2017 ? SW_HIDE : SW_SHOW);
+   GetDlgItem(IDC_PRINCIPAL_TENSION_GROUP)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_TENSION_LABEL)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_TENSION)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_TENSION_UNIT)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_TENSION_METHOD_LABEL)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_TENSION_METHOD)->ShowWindow(nShow);
+
+   GetDlgItem(IDC_PRINCIPAL_TENSION_LABEL2)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_TENSION_LABEL3)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_TENSION_LABEL4)->ShowWindow(nShow);
+   GetDlgItem(IDC_TENDON_NEARNESS_FACTOR)->ShowWindow(nShow);
+   GetDlgItem(IDC_UNGROUTED_MULTIPLIER)->ShowWindow(nShow);
+   GetDlgItem(IDC_GROUTED_MULTIPLIER)->ShowWindow(nShow);
+
+   GetDlgItem(IDC_PRINCIPAL_LABELFC)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_FC_THRESHOLD)->ShowWindow(nShow);
+   GetDlgItem(IDC_PRINCIPAL_FC_THRESHOLD_UNIT)->ShowWindow(nShow);
 
    return CPropertyPage::OnSetActive();
 }

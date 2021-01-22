@@ -76,6 +76,7 @@
 #define IDD_EDIT_POINTLOAD              206
 #define IDD_EDIT_DISTRIBUTEDLOAD        207
 #define IDD_EDIT_LOADS                  208
+#define IDD_TIMELINE_REPORT             209
 #define IDR_EDITLOADS                   210
 #define IDI_EDIT_LOADS                  211
 #define IDR_LOADS_CTX                   212
@@ -190,6 +191,7 @@
 #define IDD_SELECT_BOUNDARY_CONDITION   392
 #define IDI_ICON1                       395
 #define IDI_RW_CS                       395
+#define IDD_FILESAVEWARNINGDLG          401
 #define IDR_PGSUPER_TEMPLATE_ICON       500
 #define IDR_PGSPLICE_TEMPLATE_ICON      501
 #define IDD_ABOUTBOX                    999
@@ -226,6 +228,7 @@
 #define IDC_SERVICE_IA_DW               1018
 #define IDC_AFTER_XFER                  1018
 #define IDC_AHEAD_DIAPHRAGM_OFFSET      1018
+#define IDC_TENSION_MAX                 1019
 #define IDC_STRENGTH_I_DW_MIN           1020
 #define IDC_STRENGTH_I_DW_MAX           1021
 #define IDC_STRENGTH_II_DW_MIN          1022
@@ -289,8 +292,11 @@
 #define IDC_OLAY_WEIGHT_UNIT            1098
 #define IDC_FCI                         1099
 #define IDC_OLAY_DEPTH                  1101
+#define IDC_CHECK_TENSION_MAX           1101
 #define IDC_FCI_UNIT                    1102
 #define IDC_OLAY_DEPTH_UNIT             1102
+#define IDC_RELEASE_TENSION_MAX_UNIT    1102
+#define IDC_TENSION_MAX_UNIT            1102
 #define IDD_PIER_LAYOUT                 1112
 #define IDC_STRAND_SIZE                 1112
 #define IDC_FINAL                       1112
@@ -392,8 +398,10 @@
 #define IDC_SS_TITLE                    1190
 #define IDC_USER_CUT                    1191
 #define IDC_HS_TITLE                    1192
-#define IDC_DESIGN_A                    1193
+#define IDC_DESIGN_HAUNCH               1193
 #define IDC_TEMP_TITLE                  1194
+#define IDC_DESIGN_CONCRETE             1194
+#define IDC_DESIGN_CONCRETE_STRENGTH    1194
 #define IDC_HPOFFSET_END_TITLE          1195
 #define IDC_HPOFFSET_END_NOTE           1196
 #define IDC_HPOFFSET_HP_TITLE           1197
@@ -419,7 +427,7 @@
 #define IDC_STRENGTH_I_DC               1259
 #define IDC_FY_COEFFICIENT              1259
 #define IDC_LOAD                        1259
-#define IDC_START_GROUP_EDIT             1259
+#define IDC_START_GROUP_EDIT            1259
 #define IDC_LEFT_PRISMATIC_LENGTH       1259
 #define IDC_RELAXATION_TIME             1259
 #define IDC_ANCHORSET_PT                1259
@@ -830,13 +838,13 @@
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_LABEL 1613
 #define IDC_NOTE                        1614
 #define IDC_RIGHT_SIDEWALK_RIGHT_DEPTH_LABEL 1615
-#define IDC_START_GROUP_SPIN             1615
+#define IDC_START_GROUP_SPIN            1615
 #define IDC_NOTE2                       1615
 #define IDC_WOBBLE_PT                   1615
 #define IDC_RIGHT_SIDEWALK_LEFT_DEPTH_UNIT 1616
-#define IDC_END_GROUP_EDIT               1616
+#define IDC_END_GROUP_EDIT              1616
 #define IDC_WOBBLE_TTS                  1616
-#define IDC_END_GROUP_SPIN               1617
+#define IDC_END_GROUP_SPIN              1617
 #define IDC_LEFT_PRISMATIC_FLANGE_DEPTH 1617
 #define IDC_DAY                         1617
 #define IDC_FRICTION_PT                 1617
@@ -903,7 +911,7 @@
 #define IDC_STATION_LOCATION_LABEL      1640
 #define IDC_RIGHT_PRISMATIC_FLANGE_DEPTH_UNIT 1640
 #define IDC_HARPED                      1640
-#define IDC_GROUP_COUNT                  1640
+#define IDC_GROUP_COUNT                 1640
 #define IDC_LINE_GROUP                  1641
 #define IDC_LEFT_PRISMATIC_LABEL        1641
 #define IDS_E_FILENOTFOUND              1642
@@ -1154,10 +1162,10 @@
 #define IDC_PIER_MODEL_LABEL            1849
 #define IDC_DIMENSIONS_NOTE             1850
 #define IDC_LOAD_RATING_EVENT_LABEL     1851
-#define IDC_GROUP_RANGE_LABEL            1854
-#define IDC_GROUP_RANGE_TO               1855
+#define IDC_GROUP_RANGE_LABEL           1854
+#define IDC_GROUP_RANGE_TO              1855
 #define IDC_FIXITY_LABEL                1856
-#define IDC_GROUP_RANGE_LABEL2           1856
+#define IDC_GROUP_RANGE_LABEL2          1856
 #define IDC_FIXITY                      1857
 #define IDC_DIAPHRAGM_NOTE              1858
 #define IDC_SERVICE_I_CR                1859
@@ -1228,6 +1236,8 @@
 #define IDC_STRANDS                     1904
 #define IDC_EDIT_BEARINGS               1904
 #define IDC_DECK_EVENT_DETAILS          1904
+#define IDC_HELP                        1904
+#define IDC_VIEW_TIMELINE_SUMMARY       1904
 #define IDC_LABELS                      1905
 #define IDC_BUTTON2                     1905
 #define IDC_LOAD_LOCATION_NOTE          1906
@@ -1281,12 +1291,14 @@
 #define IDC_CHECK1                      1925
 #define IDC_STRANDS_CG                  1925
 #define IDC_BRG_RECESS_LENGTH           1925
+#define IDC_DONT_WARN                   1925
 #define IDC_STRANDS_CG2                 1926
 #define IDC_SECTION_CG                  1926
 #define IDC_EDIT1                       1926
 #define IDC_BRG_SPACING_STATIC          1926
 #define IDC_VIEW_TEMPLATE_EDIT          1926
 #define IDC_TIME_BETWEEN_CASTING        1926
+#define IDC_STARTPIERNO                 1926
 #define IDC_BRG_RECESS_LENGTH_UNIT      1927
 #define IDC_BEARING_GRID                1928
 #define IDC_BRG1_STATIC                 1928
@@ -1327,11 +1339,14 @@
 #define IDC_NUMSEGMENTS_COMBO           1961
 #define IDC_REGION_BOUNDARY             1961
 #define IDC_START_PIER                  1961
+#define IDC_START_CB                    1961
+#define IDC_DEFAULT_OPTIONS             1961
 #define IDC_RATE_FOR_STRESS             1962
 #define IDC_X2_MEASURE                  1962
 #define IDC_RIDGEPT_COMBO               1962
 #define IDC_START_PIER2                 1962
 #define IDC_END_PIER                    1962
+#define IDC_END_CB                      1962
 #define IDI_STRANDS                     1963
 #define IDC_X3_MEASURE                  1963
 #define IDC_VIEW_TEMPLATE_COMBO         1963
@@ -1388,6 +1403,11 @@
 #define IDC_HG_END                      2023
 #define IDC_INSTALLATION_TIME           2025
 #define IDC_WORKPOINT_STATIC            2026
+#define IDC_RB_COPY                     2027
+#define IDC_RB_DONT_COPY                2028
+#define IDC_CLOSURE_JOINT_LABEL         2029
+#define IDC_COMBO2                      2030
+#define IDC_CLOSURE_JOINT_CASTING_REGION 2030
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1501,7 +1521,7 @@
 #define ID_INSERT_PIER                  36950
 #define ID_EDIT_DECK                    36951
 #define ID_OPTIONS_HINTS                36952
-#define ID_PROJECT_DESIGNGIRDERDIRECTHOLDSLABOFFSET 36953
+#define ID_PROJECT_DESIGNGIRDERDIRECT_PRESERVEHAUNCH 36953
 #define ID_REPORTS_                     36956
 #define ID_OPTIONS_LABELS               36957
 #define ID_RATING_SPEC                  36958
@@ -1538,14 +1558,16 @@
 #define ID_ADD_MOMENT_LOAD_CTX          36999
 #define ID_PROJECT_BARRIER              37000
 #define ID_EDIT_BEARING                 37001
+#define IDM_ERECTION_TOWER              37002
+#define IDM_STRONG_BACK                 37003
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        401
-#define _APS_NEXT_COMMAND_VALUE         37001
-#define _APS_NEXT_CONTROL_VALUE         2027
-#define _APS_NEXT_SYMED_VALUE           113
+#define _APS_NEXT_RESOURCE_VALUE        405
+#define _APS_NEXT_COMMAND_VALUE         37004
+#define _APS_NEXT_CONTROL_VALUE         2031
+#define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

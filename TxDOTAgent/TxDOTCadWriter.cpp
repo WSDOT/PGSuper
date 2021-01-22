@@ -24,7 +24,6 @@
 
 #include "TxDOTCadWriter.h"
 #include "TxDOTOptionalDesignData.h"
-#include "TxDOTOptionalDesignUtilities.h"
 #include "TxDataExporter.h"
 
 #include <IFace\Project.h>
@@ -58,7 +57,6 @@ static char THIS_FILE[] = __FILE__;
 //
 static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi, bool isIBeam, const pgsPointOfInterest& pmid);
 static std::_tstring FractionalStrandSize(Float64 realSize); // Return fractional string for strand size
-static TxDOTCadWriter::txcwStrandLayout GetSingleStrandLayoutType(IBroker* pBroker, const CGirderKey& girderKey, bool isIBeam);
 
 //
 // Utility Workhorse for writing debond information
@@ -84,83 +82,7 @@ private:
    void WriteRowData(CTxDataExporter& rDataExporter, const RowData& row,Float64 Hg, Uint32 currRowNum);
 };
 
-TxDOTCadWriter::txcwStrandLayout TxDOTCadWriter::GetStrandLayoutType(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
-{
-   // IGirders are treated differently than others
-   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   std::_tstring girderFamily = pBridgeDesc->GetGirderFamilyName();
-
-   // IGirders are treated differently than others
-   bool isIBeam = girderFamily == _T("I-Beam");
-
-
-   // loop over all girders in list and determine if they are the same, or different
-   txcwStrandLayout layout;
-   bool first = true;
-   for (std::vector<CGirderKey>::const_iterator it = girderKeys.begin(); it != girderKeys.end(); it++)
-   {
-      const CGirderKey& girderKey(*it);
-      CSegmentKey segmentKey(girderKey, 0);
-
-      if (first)
-      {
-         layout = GetSingleStrandLayoutType(pBroker, girderKey, isIBeam);
-      }
-      else
-      {
-         txcwStrandLayout layout2 = GetSingleStrandLayoutType(pBroker, girderKey, isIBeam);
-         if (layout2 != layout) // any mismatch will trigger
-         {
-            return tslMixed;
-         }
-      }
-
-      if (layout == tslDebondedIBeam)
-      {
-         return layout; // error condition
-      }
-   }
-
-   return layout;
-}
-
-TxDOTCadWriter::txcwStrandLayout GetSingleStrandLayoutType(IBroker* pBroker, const CGirderKey& girderKey, bool isIBeam)
-{
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
-
-   CSegmentKey segmentKey(girderKey, 0);
-
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-   if (isIBeam)
-   {
-      if (pStrandGeometry->HasDebonding(segmentKey))
-      {
-         return TxDOTCadWriter::tslDebondedIBeam;
-      }
-      else
-      {
-         return TxDOTCadWriter::tslHarped;
-      }
-   }
-   else
-   {
-      bool isHarpedDesign = !pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) &&
-                            0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Harped);
-      if (isHarpedDesign)
-      {
-         return TxDOTCadWriter::tslMixed; // beam other than I beam with harped strands. This currently cannot happen
-      }
-      else
-      {
-         return TxDOTCadWriter::tslStraight;
-      }
-   }
-}
-
-int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, TxDOTCadWriter::txcwStrandLayout strandLayout, txcwNsTableLayout tableLayout)
+int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, txcwStrandLayoutType strandLayout, txcwNsTableLayout tableLayout, bool isIBeam)
 {
 #if defined _DEBUG
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -203,32 +125,18 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
 	ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& pmid(vPoi.back());
 
-   // IGirders are treated differently than others
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   std::_tstring girderFamily = pBridgeDesc->GetGirderFamilyName();
-
-   // IGirders are treated differently than others
-   bool isIBeam = girderFamily == _T("I-Beam");
-
    StrandIndexType harpedCount   = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    StrandIndexType straightCount = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
 
    // Determine if harped strands are straight by comparing harped eccentricity at end/mid
-   bool isHarpedDesign = strandLayout == TxDOTCadWriter::tslHarped;
-   bool are_harped_bent(false);
-   if (isHarpedDesign && 0 < harpedCount)
+   bool isHarpedDesign = strandLayout == tslHarped || isIBeam; // all I beams treated as harped
+   bool are_harped_bent = strandLayout == tslHarped;
+
+   // Small fakeout here to allow pure straight designs to coexist with harped output
+   if (isIBeam && (strandLayout==tslStraight || strandLayout==tslRaisedStraight))
    {
-      Float64 nEff;
-      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
-      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped,&nEff);
-      are_harped_bent = !IsEqual(hs_ecc_end, hs_ecc_mid);
+      strandLayout = tslHarped;
    }
-
-   // Determine if a straight-raised design
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   Float64 kt = pSectProp->GetKt(releaseIntervalIdx, pois);
-
-   StrandIndexType numRaisedStraightStrands = GetNumRaisedStraightStrands(pStrandGeometry, segmentKey, pois, kt);
 
    // STRUCTURE NAME
    if (m_RowNum==0)
@@ -239,7 +147,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    }
 
 	// SPAN NUMBER
-   rDataExporter.WriteIntToCell(1, _T("SpanNum"), m_RowNum, LABEL_SPAN(segmentKey.groupIndex));
+   rDataExporter.WriteStringToCell(1, _T("SpanNum"), m_RowNum, LABEL_SPAN(segmentKey.groupIndex));
 
 	// GIRDER NUMBER
    rDataExporter.WriteStringToCell(1, _T("GdrNum"), m_RowNum, LABEL_GIRDER(segmentKey.girderIndex));
@@ -256,7 +164,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    std::_tstring ns_strand_pattern;
-   bool do_write_ns_data = !IsTxDOTStandardStrands(strandLayout==TxDOTCadWriter::tslHarped, pStrands->GetStrandDefinitionType(), segmentKey, pBroker );
+   bool do_write_ns_data = !IsTxDOTStandardStrands(strandLayout, pStrands->GetStrandDefinitionType(), segmentKey, pBroker );
    if (do_write_ns_data && TxDOTCadWriter::ttlnTwoTables == tableLayout)
    {
       ns_strand_pattern = std::_tstring((std::size_t)++m_NonStandardCnt, _T('*')); // write *, **, ***,... depending on number of non-standard beams
@@ -354,6 +262,8 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
 
    // Done with values that are common to both strand layouts. Now write to specific layouts
    Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
+
+   GET_IFACE2(pBroker, ISectionProperties,pSectProp);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
 
    // use utility class for writing debond information
@@ -424,7 +334,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    if (writer.GetTotalNumDebonds() > 0 && are_harped_bent)
    {
       CString msg;
-      msg.Format(_T("Warning: Beam %s in span %2d has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.\n"), LABEL_GIRDER(gdrIdx), (int)LABEL_SPAN(spanIdx));
+      msg.Format(_T("Warning: Beam %s in span %s has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.\n"), LABEL_GIRDER(gdrIdx), LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++m_RowNum, msg);
    }
 
@@ -503,26 +413,26 @@ Uint32 TxDOTDebondWriter::WriteDebondDataData(CTxDataExporter& rDataExporter, Ui
    if (m_OutCome==SectionMismatch)
    {
       CString msg;
-      msg.Format(_T("Warning: Irregular, Non-standard debonding increments used for girder %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+      msg.Format(_T("Warning: Irregular, Non-standard debonding increments used for girder %s in span %s. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++currRow, msg);
    }
    if (m_OutCome==SectionsNotSymmetrical)
    {
       CString msg;
-      msg.Format(_T("Warning: Debonding is not symmetrical for girder %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+      msg.Format(_T("Warning: Debonding is not symmetrical for girder %s in span %s. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++currRow, msg);
    }
    else if (m_OutCome==TooManySections)
    {
       CString msg;
-      msg.Format(_T("Warning: The number of debonded sections exceeds ten for girder %s in span %2d. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+      msg.Format(_T("Warning: The number of debonded sections exceeds ten for girder %s in span %s. Cannot write debonding information to TxDOT CAD format.\n"),LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++currRow, msg);
    }
    else if (m_OutCome==NonStandardSection)
    {
       Float64 spac = ::ConvertFromSysUnits(m_SectionSpacing , unitMeasure::Feet );
       CString msg;
-      msg.Format( _T("Warning: Non-standard debonding increment of %6.3f ft used  for girder %s in span %2d. \n"),spac,LABEL_GIRDER(gdrIdx),(int)LABEL_SPAN(spanIdx));
+      msg.Format( _T("Warning: Non-standard debonding increment of %6.3f ft used  for girder %s in span %s. \n"),spac,LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++currRow, msg);
    }
 

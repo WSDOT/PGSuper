@@ -238,14 +238,14 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& 
    std::_tstring strAttributes = poi.GetAttributes(POI_SPAN,false);
    if ( strAttributes.size() == 0 )
    {
-      strSubtitle.Format(_T("Span %d Girder %s (%s)"),
+      strSubtitle.Format(_T("Span %s Girder %s (%s)"),
          LABEL_SPAN(spanKey.spanIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()));
    }
    else
    {
-      strSubtitle.Format(_T("Span %d, Girder %s (%s (%s))"),
+      strSubtitle.Format(_T("Span %s, Girder %s (%s (%s))"),
          LABEL_SPAN(spanKey.spanIndex),
          LABEL_GIRDER(segmentKey.girderIndex),
          FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()),

@@ -252,7 +252,8 @@ void CGirderGraphControllerBase::FillGroupCtrl()
    pcbGroup->ResetContent();
 
    GET_IFACE(IDocumentType,pDocType);
-   CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
+   bool isPGSuper = pDocType->IsPGSuperDocument();
+   CString strGroupLabel( isPGSuper ? _T("Span") : _T("Group"));
 
    int idx;
 
@@ -269,7 +270,15 @@ void CGirderGraphControllerBase::FillGroupCtrl()
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       CString strItem;
-      strItem.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
+      if (isPGSuper)
+      {
+         strItem.Format(_T("%s %s"), strGroupLabel, LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         strItem.Format(_T("%s %d"), strGroupLabel, LABEL_GROUP(grpIdx));
+      }
+
       idx = pcbGroup->AddString(strItem);
       pcbGroup->SetItemData(idx,grpIdx);
    }

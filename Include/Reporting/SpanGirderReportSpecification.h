@@ -91,12 +91,13 @@ public:
    CSpanReportSpecification(const CSpanReportSpecification& other);
    ~CSpanReportSpecification(void);
 
-   virtual std::_tstring GetReportTitle() const;
+   virtual std::_tstring GetReportTitle() const override;
+   virtual std::_tstring GetReportContextString() const override;
 
    void SetSpan(SpanIndexType spanIdx);
    SpanIndexType GetSpan() const;
 
-   virtual HRESULT Validate() const;
+   virtual HRESULT Validate() const override;
 
 protected:
    SpanIndexType m_Span;
@@ -111,7 +112,8 @@ public:
    CGirderReportSpecification(const CGirderReportSpecification& other);
    ~CGirderReportSpecification(void);
 
-   virtual std::_tstring GetReportTitle() const;
+   virtual std::_tstring GetReportTitle() const override;
+   virtual std::_tstring GetReportContextString() const override;
 
    void SetGroupIndex(GroupIndexType grpIdx);
    GroupIndexType GetGroupIndex() const;
@@ -137,7 +139,8 @@ public:
    CGirderLineReportSpecification(const CGirderLineReportSpecification& other);
    ~CGirderLineReportSpecification(void);
 
-   virtual std::_tstring GetReportTitle() const;
+   virtual std::_tstring GetReportTitle() const override;
+   virtual std::_tstring GetReportContextString() const override;
 
    void SetGirderIndex(GirderIndexType gdrIdx);
    GirderIndexType GetGirderIndex() const;
@@ -154,13 +157,14 @@ class REPORTINGCLASS CMultiGirderReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CMultiGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girdersKeys);
+   CMultiGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
    CMultiGirderReportSpecification(const CMultiGirderReportSpecification& other);
    ~CMultiGirderReportSpecification(void);
 
-   virtual std::_tstring GetReportTitle() const;
+   virtual std::_tstring GetReportTitle() const override;
+   virtual std::_tstring GetReportContextString() const override;
 
-   void SetGirderKeys(const std::vector<CGirderKey>& girdersKeys);
+   void SetGirderKeys(const std::vector<CGirderKey>& girderKeys);
    const std::vector<CGirderKey>& GetGirderKeys() const;
 
    bool IsMyGirder(const CGirderKey& girderKey) const;
@@ -183,7 +187,8 @@ public:
    CMultiViewSpanGirderReportSpecification(const CMultiViewSpanGirderReportSpecification& other);
    ~CMultiViewSpanGirderReportSpecification(void);
 
-   virtual std::_tstring GetReportTitle() const;
+   virtual std::_tstring GetReportTitle() const override;
+   virtual std::_tstring GetReportContextString() const override;
 
    void SetGirderKeys(const std::vector<CGirderKey>& girderKeys);
    const std::vector<CGirderKey>& GetGirderKeys() const;
@@ -205,7 +210,8 @@ public:
    CPointOfInterestReportSpecification(const CPointOfInterestReportSpecification& other);
    ~CPointOfInterestReportSpecification(void);
 
-   virtual std::_tstring GetReportTitle() const;
+   virtual std::_tstring GetReportTitle() const override;
+   virtual std::_tstring GetReportContextString() const override;
 
    void SetPointOfInterest(const pgsPointOfInterest& poi);
    const pgsPointOfInterest& GetPointOfInterest() const;

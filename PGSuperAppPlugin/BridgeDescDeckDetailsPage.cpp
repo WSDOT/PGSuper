@@ -504,7 +504,7 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
    {
       const CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
       EventIndexType eventIdx = pTimelineMgr->GetCastDeckEventIndex();
-      m_AgeAtContinuity = pTimelineMgr->GetEventByIndex(eventIdx)->GetCastDeckActivity().GetConcreteAgeAtContinuity();
+      m_AgeAtContinuity = pTimelineMgr->GetEventByIndex(eventIdx)->GetCastDeckActivity().GetTotalCuringDuration();
    }
 
 
@@ -770,7 +770,7 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
       strK1.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->Concrete.EcK1);
       strK2.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->Concrete.EcK2);
 
-      strEc = CConcreteDetailsDlg::UpdateEc(strFc,strDensity,strK1,strK2);
+      strEc = CConcreteDetailsDlg::UpdateEc(pParent->m_BridgeDesc.GetDeckDescription()->Concrete.Type,strFc,strDensity,strK1,strK2);
       m_ctrlEc.SetWindowText(strEc);
    }
 }
@@ -1333,7 +1333,7 @@ void CBridgeDescDeckDetailsPage::OnDeckEventChanged()
          }
          else
          {
-            CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result);
+            CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result).c_str();
 
             CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
@@ -1407,7 +1407,7 @@ void CBridgeDescDeckDetailsPage::OnOverlayEventChanged()
             }
             else
             {
-               CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result);;
+               CString strProblem = pParent->m_BridgeDesc.GetTimelineManager()->GetErrorMessage(result).c_str();
                CString strRemedy(_T("Should the timeline be adjusted to accomodate this event?"));
 
                CString strMsg;

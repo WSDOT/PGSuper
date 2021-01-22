@@ -288,7 +288,7 @@ void CSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF o
       pgsTypes::PierSegmentConnectionType connectionType = m_pPier->GetSegmentConnectionType();
       if ( connectionType == pgsTypes::psctContinousClosureJoint || connectionType == pgsTypes::psctContinuousSegment )
       {
-         DrawPinnedSupport(pDC,topx,topy,wid,hgt);
+         DrawRollerSupport(pDC,topx,topy,wid,hgt);
       }
       else
       {

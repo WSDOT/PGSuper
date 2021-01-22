@@ -51,7 +51,7 @@ m_pBroker(pBroker)
 {
 }
 
-eafTypes::StatusSeverityType pgsVSRatioStatusCallback::GetSeverity()
+eafTypes::StatusSeverityType pgsVSRatioStatusCallback::GetSeverity() const
 {
    return eafTypes::statusError;
 }

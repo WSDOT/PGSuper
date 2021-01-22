@@ -513,6 +513,7 @@
     <ClCompile Include="LoadRatingReactionsChapterBuilder.cpp" />
     <ClCompile Include="LoadRatingReportDlg.cpp" />
     <ClCompile Include="LoadRatingReportSpecificationBuilder.cpp" />
+    <ClCompile Include="LoadRatingSummaryReportDlg.cpp" />
     <ClCompile Include="LongitudinalReinforcementForShearLoadRatingChapterBuilder.cpp" />
     <ClCompile Include="LongRebarLocations.cpp" />
     <ClCompile Include="LongReinfShearCheck.cpp" />
@@ -542,6 +543,12 @@
     <ClCompile Include="PrestressLossTable.cpp" />
     <ClCompile Include="PrestressRotationTable.cpp" />
     <ClCompile Include="PretensionStressTable.cpp" />
+    <ClCompile Include="PrincipalTensionStressCheckTable.cpp" />
+    <ClCompile Include="PrincipalTensionStressDetailsChapterBuilder.cpp" />
+    <ClCompile Include="PrincipalWebStressDetailsChapterBuilder.cpp" />
+    <ClCompile Include="PrincipalWebStressDetailsDlg.cpp" />
+    <ClCompile Include="PrincipalWebStressDetailsReportSpecification.cpp" />
+    <ClCompile Include="PrincipalWebStressDetailsReportSpecificationBuilder.cpp" />
     <ClCompile Include="ProductAxialTable.cpp" />
     <ClCompile Include="ProductDisplacementsTable.cpp" />
     <ClCompile Include="ProductForcesChapterBuilder.cpp" />
@@ -591,6 +598,9 @@
     <ClCompile Include="TemporarySupportReactionChapterBuilder.cpp" />
     <ClCompile Include="GirderTendonGeometryChapterBuilder.cpp" />
     <ClCompile Include="TendonStressCheckTable.cpp" />
+    <ClCompile Include="TimelineChapterBuilder.cpp" />
+    <ClCompile Include="TimelineManagerReportSpecification.cpp" />
+    <ClCompile Include="TimelineManagerReportSpecificationBuilder.cpp" />
     <ClCompile Include="TimeStepCamberChapterBuilder.cpp" />
     <ClCompile Include="TimeStepDetailsChapterBuilder.cpp" />
     <ClCompile Include="TimeStepDetailsDlg.cpp" />
@@ -695,6 +705,7 @@
     <ClInclude Include="..\Include\Reporting\LoadRatingReactionsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\LoadRatingReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\LoadRatingSummaryReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\LongitudinalReinforcementForShearLoadRatingChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LongRebarLocations.h" />
     <ClInclude Include="..\Include\Reporting\LongReinfShearCheck.h" />
@@ -723,6 +734,11 @@
     <ClInclude Include="..\Include\Reporting\PrestressLossTable.h" />
     <ClInclude Include="..\Include\Reporting\PrestressRotationTable.h" />
     <ClInclude Include="..\Include\Reporting\PretensionStressTable.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalTensionStressCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalTensionStressDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalWebStressDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalWebStressDetailsReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\PrincipalWebStressDetailsReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ProductAxialTable.h" />
     <ClInclude Include="..\Include\Reporting\ProductDisplacementsTable.h" />
     <ClInclude Include="..\Include\Reporting\ProductForcesChapterBuilder.h" />
@@ -763,6 +779,9 @@
     <ClInclude Include="..\Include\Reporting\TemporarySupportReactionChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\GirderTendonGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TendonStressCheckTable.h" />
+    <ClInclude Include="..\Include\Reporting\TimelineChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\TimelineManagerReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\TimelineManagerReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepCamberChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\TimeStepDetailsReportSpecification.h" />
@@ -782,6 +801,7 @@
     <ClInclude Include="EquilibriumCheckDlg.h" />
     <ClInclude Include="InitialStrainAnalysisDlg.h" />
     <ClInclude Include="MultiViewReportDlg.h" />
+    <ClInclude Include="PrincipalWebStressDetailsDlg.h" />
     <ClInclude Include="Reporting.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="RMultiGirderSelectDlg.h" />

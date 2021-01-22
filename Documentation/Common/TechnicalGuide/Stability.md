@@ -7,6 +7,8 @@ In-depth analyses is performed to check criteria for lifting and hauling based o
 
 Several options are provided to customize the stress and stability calculations including methods for computing stresses and parameters to account for wind, centrifugal forces, and impact.
 
+In its ninth edition, the AASHTO LRFD Bridge Design Specifications made investigation of stabiilty of precast members during handling, transportation, and erection manditory. See LRFD 5.5.4.3.
+
 ### Lifting Analysis and WSDOT Method for Hauling Analysis ###
 
 Analysis of stresses and stability during lifting and hauling is described in the following papers:
@@ -25,6 +27,9 @@ The WSDOT method for hauling analysis looks at the following cases:
 3) Stability limitations at slow speeds in a superelevated condition.
 
 ### KDOT Method for Hauling Analysis ###
+
+> NOTE: The KDOT method does not consider stability and therefore does not satisfy the requirements of LRFD 5.5.4.3.
+
 Hauling from the casting yard to the bridge site is a critical stage in the life of a prestressed girder. Dynamic load effects and support locations can create stress conditions that control overall girder design. The Kansas DOT utilizes their own unique approach to the hauling analysis. Section 3.5.2.13 of the KDOT Bridge Design Manual describes the method as follows:
 
 _During transportation, prestressed beams may be subjected to dynamic forces. This "bouncing" of the beam can reduce the dead load on the member which could result in critical tension stresses in the top of the beam. The designer should check these stresses by assuming support points for beam transportation at 5.0 ft. from the end of the beam or to the first tenth point of the span, whichever is greater. If the controlling support distance is somewhere between 5 ft. and the first tenth point, be sure to enter this maximum support length on the beam "Details Sheet". Verify that the maximum support length dimension is shown on the shop drawings. Check tension in the top of the beam over the temporary support due to the cantilevered moment. To approximate the dynamic load effects, assume a beam dead load of "3g" on the cantilevered portion (PCI Design Handbook, 1985, p. 5-17)._

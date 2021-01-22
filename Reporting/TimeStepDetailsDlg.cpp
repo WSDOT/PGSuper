@@ -47,7 +47,7 @@ IMPLEMENT_DYNAMIC(CTimeStepDetailsDlg, CDialog)
 CTimeStepDetailsDlg::CTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CTimeStepDetailsDlg::IDD, pParent)
    , m_SliderPos(0)
-   , m_pRptSpec(pRptSpec)
+   , m_pTsRptSpec(pRptSpec)
 {
    m_InitialPOI = initialPoi;
    m_GirderKey = m_InitialPOI.GetSegmentKey();
@@ -125,13 +125,12 @@ BOOL CTimeStepDetailsDlg::OnInitDialog()
    }
    m_Slider.SetPos(pos);
 
-   if ( m_pRptSpec )
-   {
-      InitFromRptSpec();
-   }
+   InitFromTimeStepRptSpec();
 
    UpdateSliderLabel();
    OnClickedAllLocations();
+
+   SetWindowText(_T("Time Step Details"));
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -166,10 +165,15 @@ void CTimeStepDetailsDlg::UpdatePOI()
    }
 }
 
-void CTimeStepDetailsDlg::InitFromRptSpec()
+void CTimeStepDetailsDlg::InitFromTimeStepRptSpec()
 {
-   m_bUseAllLocations = m_pRptSpec->ReportAtAllLocations();
-   pgsPointOfInterest poi = m_pRptSpec->GetPointOfInterest();
+   if (!m_pTsRptSpec)
+   {
+      return;
+   }
+
+   m_bUseAllLocations = m_pTsRptSpec->ReportAtAllLocations();
+   pgsPointOfInterest poi = m_pTsRptSpec->GetPointOfInterest();
 
    m_GirderKey = poi.GetSegmentKey();
 
@@ -184,7 +188,7 @@ void CTimeStepDetailsDlg::InitFromRptSpec()
       cur_pos++;
    }
 
-   m_IntervalIdx = m_pRptSpec->GetInterval();
+   m_IntervalIdx = m_pTsRptSpec->GetInterval();
 
    UpdateData(FALSE);
 }

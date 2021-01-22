@@ -52,6 +52,7 @@ CDrawTendonsControl::CDrawTendonsControl()
    m_pPTData = nullptr;
    m_MapMode = grlibPointMapper::Isotropic;
    m_DuctIdx = ALL_DUCTS;
+   m_bDrawAllDucts = false;
 }
 
 CDrawTendonsControl::~CDrawTendonsControl()
@@ -102,6 +103,21 @@ void CDrawTendonsControl::SetDuct(DuctIndexType ductIdx)
 DuctIndexType CDrawTendonsControl::GetDuct() const
 {
    return m_DuctIdx;
+}
+
+void CDrawTendonsControl::DrawAllDucts(bool bDrawAll)
+{
+   if (m_bDrawAllDucts != bDrawAll)
+   {
+      m_bDrawAllDucts = bDrawAll;
+      Invalidate();
+      UpdateWindow();
+   }
+}
+
+bool CDrawTendonsControl::DrawAllDucts() const
+{
+   return m_bDrawAllDucts;
 }
 
 BOOL CDrawTendonsControl::OnEraseBkgnd(CDC* pDC)
@@ -179,13 +195,13 @@ void CDrawTendonsControl::OnPaint()
    }
 
    // Create a poly line for each tendon. 
-   std::vector<CComPtr<IPoint2dCollection>> ducts;
+   std::vector<std::pair<CComPtr<IPoint2dCollection>,bool>> ducts;
    GET_IFACE2_NOCHECK(pBroker,IGirderTendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there are ducts/tendons
    DuctIndexType nDucts = m_pPTData->GetDuctCount();
-   DuctIndexType startDuctIdx = (m_DuctIdx == ALL_DUCTS ? 0 : m_DuctIdx);
-   DuctIndexType endDuctIdx = (m_DuctIdx == ALL_DUCTS ? nDucts - 1 : startDuctIdx);
-   for (DuctIndexType ductIdx = startDuctIdx; ductIdx <= endDuctIdx; ductIdx++)
+   DuctIndexType startDuctIdx = (m_bDrawAllDucts || m_DuctIdx == ALL_DUCTS ? 0 : m_DuctIdx);
+   DuctIndexType endDuctIdx = (m_bDrawAllDucts || m_DuctIdx == ALL_DUCTS ? nDucts : startDuctIdx + 1);
+   for (DuctIndexType ductIdx = startDuctIdx; ductIdx < endDuctIdx; ductIdx++)
    {
       CComPtr<IPoint2dCollection> ductPoints;
       const CDuctData* pDuct = m_pPTData->GetDuct(ductIdx);
@@ -203,8 +219,11 @@ void CDrawTendonsControl::OnPaint()
          pnt->put_X(X);
       }
 
-      ducts.push_back(ductPoints);
+      ducts.push_back(std::make_pair(ductPoints,m_DuctIdx == ALL_DUCTS || m_DuctIdx == ductIdx));
    }
+
+   // sort the ducts so the ones with "true" as the second value in the pair are last so they draw on top
+   std::sort(std::begin(ducts), std::end(ducts), [](const auto& d1, const auto& d2) {return d1.second < d2.second; });
 
 
    //
@@ -242,11 +261,8 @@ void CDrawTendonsControl::OnPaint()
 
    // Draw the precast girder segments
    SegmentIndexType segIdx = 0;
-   std::vector<CComPtr<IShape>>::iterator shapeIter(segmentShapes.begin());
-   std::vector<CComPtr<IShape>>::iterator shapeIterEnd(segmentShapes.end());
-   for ( ; shapeIter != shapeIterEnd; shapeIter++ )
+   for(auto& shape : segmentShapes)
    {
-      CComPtr<IShape> shape = *shapeIter;
       DrawShape(&dc,mapper,shape);
 
       CComPtr<IShapeProperties> props;
@@ -264,12 +280,13 @@ void CDrawTendonsControl::OnPaint()
 
    // Draw the tendons
    CPen tendonColor(PS_SOLID,1,GIRDER_TENDON_LINE_COLOR);
-   dc.SelectObject(&tendonColor);
-   std::vector<CComPtr<IPoint2dCollection>>::iterator ductIter(ducts.begin());
-   std::vector<CComPtr<IPoint2dCollection>>::iterator ductIterEnd(ducts.end());
-   for ( ; ductIter != ductIterEnd; ductIter++ )
+   CPen ghostTendonColor(PS_SOLID, 1, GIRDER_DUCT_LINE_COLOR2);
+   for(const auto& ductPoints : ducts)
    {
-      CComPtr<IPoint2dCollection> points = *ductIter;
+      CComPtr<IPoint2dCollection> points = ductPoints.first;
+
+      dc.SelectObject(ductPoints.second == true ? &tendonColor : &ghostTendonColor);
+
       Draw(&dc,mapper,points,FALSE);
    }
 

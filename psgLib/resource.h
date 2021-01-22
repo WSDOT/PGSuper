@@ -112,6 +112,7 @@
 #define IDD_GIRDER_HAUNCH_CAMBER        311
 #define IDD_HAUL_TRUCK                  312
 #define IDD_EDIT_ADDITIONAL_INTERFACE_STEEL 324
+#define IDD_SPEC_BEARINGS               330
 #define IDC_IMPACT_USAGE                411
 #define IDC_D1                          1001
 #define IDC_W1                          1002
@@ -392,6 +393,7 @@
 #define IDC_SERVICE_COMPRESSION         1086
 #define IDC_PT_AT_JACKING_SR            1087
 #define IDC_RELEASE_COMPRESSION2        1087
+#define IDC_PRINCIPAL_FC_THRESHOLD      1087
 #define IDC_HE_COMP_STRESS_HANDLING     1088
 #define IDC_PS_AFTER_LOSSES_SR          1088
 #define IDC_PS_AFTER_ALL_LOSSES_SR      1088
@@ -429,6 +431,7 @@
 #define IDC_AFTER_DECK_TENSION_MAX_UNIT 1108
 #define IDC_TS_TENSION_WITH_REBAR       1109
 #define IDC_CURING_METHOD               1110
+#define IDC_PRINCIPAL_TENSION           1110
 #define IDC_FINAL                       1112
 #define IDC_SHIPPING1_TAG               1113
 #define IDC_BEFORE_TEMP_STRAND_REMOVAL  1113
@@ -489,6 +492,7 @@
 #define IDC_ADD_STRAIGHT_STRAND         1142
 #define IDC_TS_TENSION_WITH_REBAR_UNIT  1142
 #define IDC_APPEND_STRAIGHT_STRAND      1143
+#define IDC_PRINCIPAL_TENSION_UNIT      1143
 #define IDC_ADD_TEMPORARY_STRAND        1144
 #define IDC_APPLY_DR_TO_BEAM            1144
 #define IDC_APPEND_TEMPORARY_STRAND     1145
@@ -880,6 +884,7 @@
 #define IDC_HAUNCH_COMP_CB              1441
 #define IDC_WIND_TYPE                   1441
 #define IDC_HOLD_DOWN_FORCE_TYPE        1441
+#define IDC_PRINCIPAL_TENSION_METHOD    1441
 #define IDC_DIST_TRAFFIC_BARRIER_BASIS  1442
 #define IDC_CF_TYPE                     1442
 #define IDC_HAUNCH_COMP_CB2             1442
@@ -888,7 +893,6 @@
 #define IDC_NWC_NOTE                    1443
 #define IDC_HAUNCH_FACTOR               1443
 #define IDC_CHECK1                      1444
-#define IDC_ALWAYS_RATE                 1444
 #define IDC_IS_VARIABLE_AXLE_TRUCK      1444
 #define IDC_HAS_AGG_STRENGTH            1444
 #define IDC_STRAND_EXTENSIONS           1444
@@ -902,6 +906,11 @@
 #define IDC_DUAL_TANDEM                 1444
 #define IDC_USE_DECK_FOR_PC             1444
 #define IDC_INCLUDE_STRAND_FOR_NEG_MOMENT 1444
+#define IDC_WEB_SECTIONS                1444
+#define IDC_USE_CURRENT_VERSION         1444
+#define IDC_SOLE_PLATE_REQUIRED         1444
+#define IDC_TAPERED_SOLE_PLATE_REQUIRED 1444
+#define IDC_ALWAYS_RATE                 1445
 #define IDC_BRIDGE_LENGTH               1445
 #define IDC_EXTEND_DECK_BARS            1445
 #define IDC_DESIGN_SPLITTING            1445
@@ -1115,6 +1124,9 @@
 #define IDC_RIGID_METHOD                1557
 #define IDC_BEARING_ELEVS               1557
 #define IDC_LIMIT_STRAIN                1557
+#define IDC_SHOW_WEB_WIDTH_PROJECTIOS   1557
+#define IDC_SHOW_WEB_WIDTH_PROJECTIONS  1557
+#define IDC_BEARING_REACTION_IMPACT     1557
 #define IDC_FCGP_COMBO                  1558
 #define IDC_FCPG_COMBO                  1558
 #define IDC_DEBOND_RAISE_CHECK          1558
@@ -1126,6 +1138,7 @@
 #define IDC_CHECK_PT_AT_JACKING         1559
 #define IDC_FC1                         1559
 #define IDC_CAMBER1                     1559
+#define IDC_BEARING_LLDF1               1559
 #define IDC_SMAX                        1560
 #define IDC_TRANSFORMED                 1560
 #define IDC_SMAX_UNIT                   1561
@@ -1196,8 +1209,10 @@
 #define IDC_ZDIM                        1583
 #define IDC_LF_LOWER3_LABEL             1584
 #define IDC_SPACING_LABEL_1             1584
+#define IDC_ND                          1584
 #define IDC_LF_LOWER3                   1585
 #define IDC_SPACING_LABEL_2             1585
+#define IDC_ND_UNIT                     1585
 #define IDC_LF_UPPER3_LABEL             1586
 #define IDC_TEMP_STRAND_REMOVAL_GROUP   1586
 #define IDC_LF_UPPER3                   1587
@@ -1217,8 +1232,11 @@
 #define IDC_AFTER_DECK_TENSION_LABEL    1593
 #define IDC_LF_MIDDLE4_LABEL            1594
 #define IDC_S                           1594
+#define IDC_PRINCIPAL_LABELC            1594
+#define IDC_PRINCIPAL_LABELFC           1594
 #define IDC_LF_MIDDLE4                  1595
 #define IDC_S_LABEL                     1595
+#define IDC_PRINCIPAL_FC_THRESHOLD_UNIT 1595
 #define IDC_LF_MIDDLE3_LABEL            1596
 #define IDC_BETA_SC_LABEL               1596
 #define IDC_LF_MIDDLE3                  1597
@@ -1228,6 +1246,7 @@
 #define IDC_CLEARANCE                   1598
 #define IDC_HRC                         1598
 #define IDC_CROWN_SLOPE                 1598
+#define IDC_MIN_DISTANCE_DB             1598
 #define IDC_LF_MIDDLE2                  1599
 #define IDC_CLEARANCE_UNIT              1599
 #define IDC_LF_MIDDLE1_LABEL            1600
@@ -1366,11 +1385,41 @@
 #define IDC_CHECK3                      1710
 #define IDC_USE_90_DAY_STRENGTH         1710
 #define IDC_IGNORE_SKEW_REDUCTION       1710
+#define IDC_CHECK_MAX_TOTAL_STRANDS     1710
 #define IDC_90_DAY_STRENGTH_LABEL       1711
 #define IDC_UHPC_FIBER_SHEAR_STRENGTH   1712
 #define IDC_UHPC_FIBER_SHEAR_STRENGTH_UNIT 1713
 #define IDC_UHPC_F1                     1714
 #define IDC_UHPC_F1_UNIT                1715
+#define IDC_PRINCIPAL_TENSION_GROUP     1716
+#define IDC_PRINCIPAL_TENSION_LABEL     1717
+#define IDC_PRINCIPAL_TENSION_METHOD_LABEL 1718
+#define IDC_LIFTING_GROUP               1719
+#define IDC_HAULING_GROUP               1720
+#define IDC_PRINCIPAL_TENSION_LABEL2    1721
+#define IDC_MAX_TOTAL_STRANDS_UNIT      1721
+#define IDC_PRINCIPAL_TENSION_LABEL3    1722
+#define IDC_MAX_NUM_PER_SECTION_10_OR_LESS 1722
+#define IDC_PRINCIPAL_TENSION_METHOD_LABEL4 1723
+#define IDC_PRINCIPAL_TENSION_LABEL4    1723
+#define IDC_CHECK_MAX_FRACTION_PER_SECTION 1723
+#define IDC_TENDON_NEARNESS_FACTOR      1724
+#define IDC_MAX_FRACTION_PER_SECTION_UNIT 1724
+#define IDC_CHECK_MIN_DISTANCE          1725
+#define IDC_UNGROUTED_MULTIPLIER        1725
+#define IDC_CHECK4                      1726
+#define IDC_CHECK_DEBONDING_SYMMETRY    1726
+#define IDC_PRINCIPAL_TENSION_LABEL5    1726
+#define IDC_CHECK5                      1727
+#define IDC_CHECK_ADJACENT_STRANDS      1727
+#define IDC_UNGROUTED_MULTIPLIER2       1727
+#define IDC_GROUTED_MULTIPLIER          1727
+#define IDC_CHECK_WEB_WIDTH_PROJECTIONS 1728
+#define IDC_PRINCIPAL_TENSION_LABEL6    1728
+#define IDC_CONFIGURATION_TEXT          1729
+#define IDC_TAPERED_SOLE_PLATE_THRESHOLD 1730
+#define IDC_BEARING_LLDF2               1731
+#define IDC_DUCT_SIZE_LABEL             1732
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1402,9 +1451,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        327
+#define _APS_NEXT_RESOURCE_VALUE        333
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1716
+#define _APS_NEXT_CONTROL_VALUE         1733
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

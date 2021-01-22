@@ -143,6 +143,7 @@
 #include "EditHaunchDlg.h"
 #include "EditBearingDlg.h"
 #include "SelectBoundaryConditionDlg.h"
+#include "FileSaveWarningDlg.h"
 
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
@@ -305,7 +306,6 @@ END_MESSAGE_MAP()
 // CPGSDocBase construction/destruction
 
 CPGSDocBase::CPGSDocBase():
-m_DesignSlabOffset(sodSlabOffsetandAssumedExcessCamberDesign),
 m_bAutoCalcEnabled(true)
 {
 	EnableAutomation();
@@ -670,7 +670,7 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
       oldSegmentData.m_SlabOffset[pgsTypes::metEnd]   =  pSegment->GetSlabOffset(pgsTypes::metEnd);
    }
 
-   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectSelection )
+   if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectSelection )
    {
       // We can go no further
       ::AfxMessageBox(_T("Programmer Error: EditDirectSelectionPrestressing - can only be called for Direct Select strand fill"),MB_OK | MB_ICONWARNING);
@@ -808,7 +808,7 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
       oldSegmentData.m_SlabOffset[pgsTypes::metEnd]   =  pSegment->GetSlabOffset(pgsTypes::metEnd);
    }
 
-   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectRowInput )
+   if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectRowInput )
    {
       // We can go no further
       ::AfxMessageBox(_T("Programmer Error: EditDirectRowInputPrestressing - can only be called for Direct Row Input strand definition"),MB_OK | MB_ICONWARNING);
@@ -884,7 +884,7 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
       oldSegmentData.m_SlabOffset[pgsTypes::metEnd]   =  pSegment->GetSlabOffset(pgsTypes::metEnd);
    }
 
-   if (pSegment->Strands.GetStrandDefinitionType() != CStrandData::sdtDirectStrandInput)
+   if (pSegment->Strands.GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput)
    {
       // We can go no further
       ::AfxMessageBox(_T("Programmer Error: EditDirectStrandInputPrestressing - can only be called for Direct Strand Input strand definition"), MB_OK | MB_ICONWARNING);
@@ -1417,14 +1417,35 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //FrictionCoefficient = 0.2;
    //pLossParameters->SetTendonPostTensionParameters(Dset, WobbleFriction, FrictionCoefficient);
 
+   // Updates all load rating specs to include max tensile stress limit
+   //GET_IFACE(IRatingSpecification, pRatingSpec);
+   //for (int i = 0; i < pgsTypes::lrLoadRatingTypeCount; i++)
+   //{
+   //   pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
+   //   bool bLimit;
+   //   Float64 max;
+   //   Float64 coefficient = pRatingSpec->GetAllowableTensionCoefficient(ratingType, &bLimit, &max);
+   //   pRatingSpec->SetAllowableTensionCoefficient(ratingType, coefficient, true, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   //}
 
    //
    // Copy the updated template into the source tree
    //
+   //LPWSTR path;
+   //HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &path);
+   //CString strAppData;
+
    //CString templateFileName(strTemplate);
-   //templateFileName.Replace(_T("C:\\Users\\bricer\\AppData\\Roaming\\PGSuperV3\\WorkgroupTemplates"), _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\AASHTO"));
-   //templateFileName.Replace(_T("C:\\Users\\bricer\\AppData\\Roaming\\PGSuperV3\\WorkgroupTemplates"), _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\WSDOT"));
-   //templateFileName.Replace(_T("C:\\Users\\bricer\\AppData\\Roaming\\PGSplice\\WorkgroupTemplates"), _T("F:\\ARP\\PGSuper\\Configurations\\PGSplice\\WSDOT"));
+
+   //// for PGSuper templates
+   //strAppData.Format(_T("%s\\PGSuperV3\\WorkgroupTemplates"), path);
+   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\AASHTO"));
+   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\WSDOT"));
+
+   //// for PGSplice templates
+   //strAppData.Format(_T("%s\\PGSplice\\WorkgroupTemplates"), path);
+   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSplice\\WSDOT"));
+
    //CEAFBrokerDocument::SaveTheDocument(templateFileName);
 }
 
@@ -1930,6 +1951,8 @@ BOOL CPGSDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
    }
 
    InitProjectProperties();
+
+   m_FileCompatibilityState.NewFileCreated();
    return TRUE;
 }
 
@@ -1938,6 +1961,14 @@ void CPGSDocBase::OnCloseDocument()
    CEAFBrokerDocument::OnCloseDocument();
 
    CBeamFamilyManager::Reset();
+}
+
+BOOL CPGSDocBase::DoSave(LPCTSTR lpszPathName, BOOL bReplace)
+{
+   // this is the start of the saving process....
+   m_FileCompatibilityState.Saving(lpszPathName == nullptr ? true : false);
+
+   return __super::DoSave(lpszPathName, bReplace);
 }
 
 void CPGSDocBase::InitProjectProperties()
@@ -2113,6 +2144,9 @@ BOOL CPGSDocBase::OpenTheDocument(LPCTSTR lpszPathName)
       return FALSE;
    }
 
+   // A new file was opened
+   m_FileCompatibilityState.FileOpened(lpszPathName);
+
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    m_DocUnitSystem->put_UnitMode( IS_US_UNITS(pDisplayUnits) ? umUS : umSI );
   
@@ -2202,13 +2236,95 @@ Float64 CPGSDocBase::GetRootNodeVersion()
    return FILE_VERSION;
 }
 
+BOOL CPGSDocBase::SaveTheDocument(LPCTSTR lpszPathName)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CString strAppVersion = pApp->GetVersion(true);
+
+   bool bMakeCopy = false;
+   CString strCopyFileName = m_FileCompatibilityState.GetCopyFileName();
+   Uint32 hintSettings = GetUIHintSettings();
+   
+   if (sysFlags<Uint32>::IsClear(hintSettings, UIHINT_FILESAVEWARNING))
+   {
+      // if the hint flag is clear, that means we want to warn if appropreate
+      if ( m_FileCompatibilityState.PromptToMakeCopy(lpszPathName,strAppVersion) )
+      {
+         CFileSaveWarningDlg dlg(GetRootNodeName(),lpszPathName, strCopyFileName, m_FileCompatibilityState.GetApplicationVersion(),strAppVersion,EAFGetMainFrame());
+         auto result = dlg.DoModal();
+         if (result == IDCANCEL)
+         {
+            // user cancelled the save
+            return FALSE;
+         }
+
+         if (dlg.m_bDontWarn)
+         {
+            // the don't warn me again flag was set...
+
+            // update the hint settings
+            sysFlags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
+            SetUIHintSettings(hintSettings);
+
+            // Save the default option to the registry
+            CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+            CComPtr<IEAFAppPlugin> pAppPlugin;
+            pTemplate->GetPlugin(&pAppPlugin);
+            CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+            CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
+            pApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
+
+            // make or don't make copy based on default option
+            bMakeCopy = (dlg.m_DefaultCopyOption == FSW_COPY ? true : false);
+         }
+         else if(dlg.m_CopyOption == FSW_COPY)
+         {
+            bMakeCopy = true;
+         }
+      }
+   }
+   else
+   {
+      // we aren't prompting because the "don't show me again" is enabled.... 
+      // get the default action from the registry
+      CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+      CComPtr<IEAFAppPlugin> pAppPlugin;
+      pTemplate->GetPlugin(&pAppPlugin);
+      CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+      CAutoRegistry autoReg(pPGSBase->GetAppName());
+      CWinApp* pApp = AfxGetApp();
+      int value = pApp->GetProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), FSW_COPY);
+      bMakeCopy = (value == FSW_COPY ? true : false);
+   }
+
+   if (bMakeCopy)
+   {
+      BOOL bSuccess = ::CopyFile(lpszPathName, strCopyFileName, FALSE);
+      if (!bSuccess && AfxMessageBox(_T("Unable to make a copy of the original file. Would you like to proceed with saving the file?"),MB_YESNO) == IDNO)
+      {
+         return FALSE;
+      }
+   }
+
+   BOOL bResult = __super::SaveTheDocument(lpszPathName);
+   if (bResult)
+   {
+      // there was a successful save, update the file compatibility state
+      m_FileCompatibilityState.FileSaved(lpszPathName, strAppVersion);
+   }
+   return bResult;
+}
+
 HRESULT CPGSDocBase::WriteTheDocument(IStructuredSave* pStrSave)
 {
    // before the standard broker document persistence, write out the version
    // number of the application that created this document
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
-   HRESULT hr = pStrSave->put_Property(_T("Version"),CComVariant(pApp->GetVersion(true)));
+   CString strAppVersion = pApp->GetVersion(true);
+
+   HRESULT hr = pStrSave->put_Property(_T("Version"),CComVariant(strAppVersion));
    if ( FAILED(hr) )
    {
       return hr;
@@ -2226,6 +2342,7 @@ HRESULT CPGSDocBase::WriteTheDocument(IStructuredSave* pStrSave)
 
 HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
 {
+   USES_CONVERSION;
    Float64 version;
    HRESULT hr = pStrLoad->get_Version(&version);
    if ( FAILED(hr) )
@@ -2242,15 +2359,17 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
       {
          return hr;
       }
+      m_FileCompatibilityState.SetApplicationVersion(OLE2T(var.bstrVal));
 
    #if defined _DEBUG
-      TRACE(_T("Loading data saved with PGSuper Version %s\n"),CComBSTR(var.bstrVal));
+      TRACE(_T("Loading data saved with PGSuper Version %s\n"), m_FileCompatibilityState.GetApplicationVersion());
    }
    else
    {
       TRACE(_T("Loading data saved with PGSuper Version 2.1 or earlier\n"));
    #endif
-   } // clses the bracket for if ( 1.0 < version )
+      m_FileCompatibilityState.SetPreVersion21Flag();
+   } // colses the bracket for if ( 1.0 < version )
 
    return CEAFBrokerDocument::LoadTheDocument(pStrLoad);
 }
@@ -2703,7 +2822,7 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Design.ServiceIII_SH          = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_Inventory);
    oldData.m_Design.ServiceIII_PS          = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceIII_Inventory);
 
-   oldData.m_Design.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrDesign_Inventory);
+   oldData.m_Design.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrDesign_Inventory,&oldData.m_Design.bLimitTensileStress,&oldData.m_Design.MaxTensileStress);
    oldData.m_Design.bRateForShear = pSpec->RateForShear(pgsTypes::lrDesign_Inventory);
 
    GET_IFACE(ILiveLoads,pLiveLoads);
@@ -2733,7 +2852,7 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Legal.ServiceIII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
    oldData.m_Legal.ServiceIII_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceIII_LegalSpecial);
 
-   oldData.m_Legal.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine);
+   oldData.m_Legal.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine, &oldData.m_Legal.bLimitTensileStress, &oldData.m_Legal.MaxTensileStress);
    oldData.m_Legal.bRateForShear    = pSpec->RateForShear(pgsTypes::lrLegal_Routine);
    oldData.m_Legal.bExcludeLaneLoad = pSpec->ExcludeLegalLoadLaneLoading();
 
@@ -2790,7 +2909,7 @@ void CPGSDocBase::OnRatingSpec()
 
    oldData.m_Permit.bRateForShear = pSpec->RateForShear(pgsTypes::lrPermit_Routine);
    oldData.m_Permit.bRateForStress = pSpec->RateForStress(pgsTypes::lrPermit_Routine);
-   oldData.m_Permit.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrPermit_Routine);
+   oldData.m_Permit.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrPermit_Routine, &oldData.m_Permit.bLimitTensileStress, &oldData.m_Permit.MaxTensileStress);
    oldData.m_Permit.bCheckReinforcementYielding = pSpec->CheckYieldStress(pgsTypes::lrPermit_Routine);
    oldData.m_Permit.YieldStressCoefficient = pSpec->GetYieldStressLimitCoefficient();
    oldData.m_Permit.SpecialPermitType = pSpec->GetSpecialPermitType();
@@ -3035,12 +3154,13 @@ bool CPGSDocBase::LoadMasterLibrary()
    pTemplate->GetPlugin(&pAppPlugin);
    CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
-   CString strMasterLibaryFile = pPGSuper->GetCachedMasterLibraryFile();
 
-   std::_tstring strPublisher = pPGSuper->GetMasterLibraryPublisher();
-   std::_tstring strMasterLibFile = pPGSuper->GetMasterLibraryFile();
+   const auto& strPublisher = pPGSuper->GetMasterLibraryPublisher();
+   const auto& strConfiguration = pPGSuper->GetConfigurationName();
+   const auto& strMasterLibFile = pPGSuper->GetMasterLibraryFile();
 
-   m_LibMgr.SetMasterLibraryInfo(strPublisher.c_str(),strMasterLibFile.c_str());
+   const auto& strMasterLibaryFile = pPGSuper->GetCachedMasterLibraryFile();
+   m_LibMgr.SetMasterLibraryInfo(strPublisher,strConfiguration,strMasterLibFile);
 
    return DoLoadMasterLibrary(strMasterLibaryFile);
 }
@@ -3840,7 +3960,7 @@ void CPGSDocBase::OnEditPier()
       for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
       {
          CString strItem;
-         strItem.Format(_T("%s %d\n"), (pierIdx == 0 || pierIdx == nPiers - 1 ? _T("Abutment") : _T("Pier")), LABEL_PIER(pierIdx));
+         strItem.Format(_T("%s\n"), LABEL_PIER_EX(pierIdx == 0 || pierIdx == nPiers - 1, pierIdx));
 
          strItems += strItem;
       }
@@ -3889,7 +4009,7 @@ void CPGSDocBase::OnEditSpan()
       for ( SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
       {
          CString strItem;
-         strItem.Format(_T("Span %d\n"),LABEL_SPAN(spanIdx));
+         strItem.Format(_T("Span %s\n"),LABEL_SPAN(spanIdx));
 
          strItems += strItem;
       }
@@ -3927,7 +4047,7 @@ void CPGSDocBase::DeletePier(PierIndexType pierIdx)
    PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
    CString strTitle;
-   strTitle.Format(_T("Deleting Pier %d"),LABEL_PIER(pierIdx));
+   strTitle.Format(_T("Deleting Pier %s"),LABEL_PIER(pierIdx));
    dlg.m_strTitle = strTitle;
 
    CString strLabel;
@@ -3941,11 +4061,11 @@ void CPGSDocBase::DeletePier(PierIndexType pierIdx)
    }
    else if ( pierIdx == nPiers-1)
    {
-      strItems.Format(_T("Span %d\n"),LABEL_SPAN(pierIdx-1));
+      strItems.Format(_T("Span %s\n"),LABEL_SPAN(pierIdx-1));
    }
    else
    {
-      strItems.Format(_T("Span %d\nSpan %d\n"),LABEL_SPAN(pierIdx-1),LABEL_SPAN(pierIdx));
+      strItems.Format(_T("Span %s\nSpan %s\n"),LABEL_SPAN(pierIdx-1),LABEL_SPAN(pierIdx));
    }
 
    dlg.m_strItems = strItems;
@@ -3981,11 +4101,8 @@ void CPGSDocBase::DeleteSpan(SpanIndexType spanIdx)
    PierIndexType prevPierIdx = (PierIndexType)spanIdx;
    PierIndexType nextPierIdx = prevPierIdx + 1;
 
-   CString strPier1Label = pBridgeDesc->GetPier(prevPierIdx)->IsAbutment() ? _T("Abutment") : _T("Pier");
-   CString strPier2Label = pBridgeDesc->GetPier(nextPierIdx)->IsAbutment() ? _T("Abutment") : _T("Pier");
-
    CString strTitle;
-   strTitle.Format(_T("Deleting Span %d"),LABEL_SPAN(spanIdx));
+   strTitle.Format(_T("Deleting Span %s"),LABEL_SPAN(spanIdx));
    dlg.m_strTitle = strTitle;
 
    CString strLabel;
@@ -3993,7 +4110,7 @@ void CPGSDocBase::DeleteSpan(SpanIndexType spanIdx)
    dlg.m_strLabel = strLabel;
 
    CString strItems;
-   strItems.Format(_T("%s %d\n%s %d"),strPier1Label,LABEL_PIER(prevPierIdx),strPier2Label,LABEL_PIER(nextPierIdx));
+   strItems.Format(_T("%s\n%s"),LABEL_PIER_EX(pBridgeDesc->GetPier(prevPierIdx)->IsAbutment(),prevPierIdx),LABEL_PIER_EX(pBridgeDesc->GetPier(nextPierIdx)->IsAbutment(), nextPierIdx));
    dlg.m_strItems = strItems;
    if ( dlg.DoModal() == IDOK )
    {
@@ -4050,7 +4167,7 @@ void CPGSDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
    {
       PierIndexType nPiers = pBridgeDesc->GetPierCount();
       CString strLabel;
-      strLabel.Format(_T("Delete Pier %d"),LABEL_PIER(m_Selection.PierIdx));
+      strLabel.Format(_T("Delete Pier %s"),LABEL_PIER(m_Selection.PierIdx));
 
       pCmdUI->SetText(strLabel);
       pCmdUI->Enable(TRUE);
@@ -4059,7 +4176,7 @@ void CPGSDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
    {
       // only span is selected
       CString strLabel;
-      strLabel.Format(_T("Delete Span %d"),LABEL_SPAN(m_Selection.SpanIdx));
+      strLabel.Format(_T("Delete Span %s"),LABEL_SPAN(m_Selection.SpanIdx));
       pCmdUI->SetText(strLabel);
       pCmdUI->Enable(TRUE);
    }
@@ -4098,7 +4215,7 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
             // the boundary conditions of the pier will become invalid, select a new bc
             SpanIndexType deleteSpanIdx = (SpanIndexType)(deleteSpanOnPierFace == pgsTypes::Back ? deletePierIdx - 1 : deletePierIdx);
             CString strPrompt;
-            strPrompt.Format(_T("Removing Span %d and Pier %d will make the boundary condition of Pier %d invalid.\r\nSelect a valid boundary condition."), LABEL_SPAN(deleteSpanIdx), LABEL_PIER(deletePierIdx), LABEL_PIER(pierIdx));
+            strPrompt.Format(_T("Removing Span %s and Pier %s will make the boundary condition of Pier %s invalid.\r\nSelect a valid boundary condition."), LABEL_SPAN(deleteSpanIdx), LABEL_PIER(deletePierIdx), LABEL_PIER(pierIdx));
 
             CSelectBoundaryConditionDlg dlg;
             dlg.m_strPrompt = strPrompt;
@@ -4361,15 +4478,20 @@ void CPGSDocBase::PopulateGraphMenu()
 void CPGSDocBase::LoadDocumentSettings()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CEAFBrokerDocument::LoadDocumentSettings();
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
    CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
 
+   {
+      CWinApp* pApp = AfxGetApp();
+      CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
+      CEAFBrokerDocument::LoadDocumentSettings();
+   }
+
    CEAFApp* pApp = EAFGetApp();
-   CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
+   CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
 
    CString strAutoCalcDefault = pApp->GetLocalMachineString(_T("Settings"),_T("AutoCalc"), _T("On"));
    CString strAutoCalc = pApp->GetProfileString(_T("Settings"),_T("AutoCalc"),strAutoCalcDefault);
@@ -4854,10 +4976,27 @@ void CPGSDocBase::SetGirderEditorSettings(UINT settings,BOOL bNotify)
    }
 }
 
-void CPGSDocBase::ResetUIHints()
+void CPGSDocBase::ResetUIHints(bool bPrompt)
 {
-   __super::ResetUIHints();
-   m_pPGSuperDocProxyAgent->OnResetHints();
+   // this overrides the base class version because
+   // we want to customize the prompt
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CString strText;
+   strText = _T("Reset all user interface hints and warnings?");
+   int result = AfxMessageBox(strText, MB_YESNO);
+   if (result == IDNO)
+   {
+      return;
+   }
+
+   __super::ResetUIHints(false);
+}
+
+void CPGSDocBase::OnUIHintsReset()
+{
+   __super::OnUIHintsReset();
+   m_pPGSuperDocProxyAgent->OnUIHintsReset();
 }
 
 bool CPGSDocBase::ShowProjectPropertiesOnNewProject()

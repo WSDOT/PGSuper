@@ -56,6 +56,8 @@ void CSpecDescrPage::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CSpecDescrPage)
 	//}}AFX_DATA_MAP
 
+   DDX_Control(pDX, IDC_SPECIFICATION, m_cbSpecification);
+
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
    // dad is a friend of the entry. use him to transfer data.
    pDad->ExchangeDescriptionData(pDX);
@@ -69,6 +71,7 @@ BEGIN_MESSAGE_MAP(CSpecDescrPage, CPropertyPage)
     ON_CBN_SELCHANGE(IDC_SPECIFICATION,OnSpecificationChanged)
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(ID_HELP, OnHelp)
+   ON_BN_CLICKED(IDC_USE_CURRENT_VERSION, &CSpecDescrPage::OnBnClickedUseCurrentVersion)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -103,7 +106,9 @@ BOOL CSpecDescrPage::OnInitDialog()
    CPropertyPage::OnInitDialog();
 
    // enable/disable si setting for before 2007
+   OnBnClickedUseCurrentVersion();
    OnSpecificationChanged();
+
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -128,7 +133,7 @@ void CSpecDescrPage::OnSpecificationChanged()
    DWORD_PTR id = pSpec->GetItemData(idx);
 
    BOOL enable_si = TRUE;
-   if (id > (DWORD)lrfdVersionMgr::ThirdEditionWith2006Interims)
+   if ((DWORD)lrfdVersionMgr::ThirdEditionWith2006Interims < id)
    {
       CheckRadioButton(IDC_SPEC_UNITS_SI,IDC_SPEC_UNITS_US,IDC_SPEC_UNITS_US);
       enable_si = FALSE;
@@ -141,7 +146,7 @@ void CSpecDescrPage::OnSpecificationChanged()
    CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
    lrfdVersionMgr::Version version = pParent->GetSpecVersion();
 
-   if (version >= lrfdVersionMgr::EighthEdition2017)
+   if (lrfdVersionMgr::EighthEdition2017 <= version)
    {
       ShearCapacityMethod method = pParent->m_Entry.GetShearCapacityMethod();
       if (method==scmVciVcw)
@@ -150,5 +155,22 @@ void CSpecDescrPage::OnSpecificationChanged()
          pParent->m_Entry.SetShearCapacityMethod(scmBTEquations);
       }
    }
+}
 
+void CSpecDescrPage::OnBnClickedUseCurrentVersion()
+{
+   if (IsDlgButtonChecked(IDC_USE_CURRENT_VERSION) == BST_CHECKED)
+   {
+      // disable the dropdown list
+      m_cbSpecification.EnableWindow(FALSE);
+
+      // box is checked so change to the most current specification
+      // it will be last one in the dropdown list
+      m_cbSpecification.SetCurSel(m_cbSpecification.GetCount() - 1);
+   }
+   else
+   {
+      m_cbSpecification.EnableWindow(TRUE);
+   }
+   OnSpecificationChanged();
 }

@@ -218,14 +218,22 @@ void CLocationGraphController::FillGroupCtrl(bool bInit)
    }
 
    GET_IFACE(IDocumentType,pDocType);
-   CString strGroupLabel(pDocType->IsPGSuperDocument() ? _T("Span") : _T("Group"));
+   bool isPGSuper = pDocType->IsPGSuperDocument();
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       CString strItem;
-      strItem.Format(_T("%s %d"),strGroupLabel,LABEL_GROUP(grpIdx));
+      if (isPGSuper)
+      {
+         strItem.Format(_T("Span %s"), LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         strItem.Format(_T("Group %d"), LABEL_GROUP(grpIdx));
+      }
+
       int idx = pcbGroup->AddString(strItem);
       pcbGroup->SetItemData(idx,(DWORD_PTR)grpIdx);
    }
@@ -310,14 +318,14 @@ void CLocationGraphController::FillLocationCtrl()
       std::_tstring strAttributes = poi.GetAttributes(POI_SPAN,false);
       if ( strAttributes.size() == 0 )
       {
-         strItem.Format(_T("Span %d, %s"),
+         strItem.Format(_T("Span %s, %s"),
             LABEL_SPAN(spanKey.spanIndex),
             FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit())
             );
       }
       else
       {
-         strItem.Format(_T("Span %d, %s (%s)"),
+         strItem.Format(_T("Span %s, %s (%s)"),
             LABEL_SPAN(spanKey.spanIndex),
             FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit()),
             poi.GetAttributes(POI_SPAN,false).c_str()

@@ -105,7 +105,7 @@ const std::vector<IntervalIndexType>& intervals
 {
    ATLASSERT(m_GraphType == graphDeckShrinkageStress); // only type supported now
    m_IntervalApplicability.insert(intervals.begin(),intervals.end());
-   m_ApplicableActions = ACTIONS_STRESS_ONLY;
+   m_ApplicableActions = ACTIONS_STRESS;
 }
 
 // constructor for demands
@@ -120,7 +120,7 @@ CAnalysisResultsGraphDefinition::CAnalysisResultsGraphDefinition(
    m_GraphType = grtype;
    m_LoadType.LimitStateType = lstype;
    m_IntervalApplicability.insert(intervals.begin(), intervals.end());
-   m_ApplicableActions = ACTIONS_STRESS_ONLY;
+   m_ApplicableActions = ACTIONS_STRESS;
 }
 
 // constructor for vehicular live loads
@@ -269,36 +269,40 @@ std::vector< std::pair<std::_tstring,IDType> > CAnalysisResultsGraphDefinitions:
       switch(action)
       {
          case actionAxial:
-            bApplicableAction = def.m_ApplicableActions & ACTIONS_AXIAL_ONLY ? true : false;
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_AXIAL ? true : false;
             break;
 
          case actionShear:
-            bApplicableAction = def.m_ApplicableActions & ACTIONS_SHEAR_ONLY ? true : false;
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_SHEAR ? true : false;
             break;
 
          case actionReaction:
-            bApplicableAction = def.m_ApplicableActions & ACTIONS_REACTION_ONLY ? true : false;
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_REACTION ? true : false;
             break;
 
          case actionMoment:
-            bApplicableAction = def.m_ApplicableActions & ACTIONS_MOMENT_ONLY ? true : false;
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_MOMENT ? true : false;
             break;
 
          case actionDeflection:
          case actionRotation:
-            bApplicableAction = def.m_ApplicableActions & ACTIONS_DEFLECTION_ONLY ? true : false;
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_DEFLECTION ? true : false;
             break;
 
          case actionXDeflection:
-            bApplicableAction = def.m_ApplicableActions & ACTIONS_X_DEFLECTION_ONLY ? true : false;
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_X_DEFLECTION ? true : false;
             break;
 
          case actionStress:
-            bApplicableAction = def.m_ApplicableActions & ACTIONS_STRESS_ONLY ? true : false;
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_STRESS ? true : false;
             break;
 
          case actionLoadRating:
             bApplicableAction = def.m_ApplicableActions & ACTIONS_LOAD_RATING ? true : false;
+            break;
+
+         case actionPrincipalWebStress:
+            bApplicableAction = def.m_ApplicableActions & ACTIONS_WEB_STRESS ? true : false;
             break;
 
          default:

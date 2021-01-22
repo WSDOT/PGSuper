@@ -400,6 +400,9 @@
     <ClCompile Include="CustomDDX.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PrincipalTensionStressArtifact.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\PgsExt\AASHTOConcretePage.h">
@@ -805,6 +808,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\PgsExt\CustomDDX.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\PrincipalTensionStressArtifact.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\ISummaryRatingArtifact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -211,12 +211,18 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
    // top row labels
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
-   CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
 
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
       CString lbl;
-      lbl.Format(_T("%s %d"), strGroupLabel, LABEL_GROUP(grpIdx));
+      if (bIsPGSuper)
+      {
+         lbl.Format(_T("Span %s"), LABEL_SPAN(grpIdx));
+      }
+      else
+      {
+         lbl.Format(_T("Group %d"), LABEL_GROUP(grpIdx));
+      }
 
 	   SetStyleRange(CGXRange(0,ROWCOL(grpIdx+1)), CGXStyle()
             .SetWrapText(TRUE)
@@ -287,6 +293,42 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
    SetCurrentCell(1,1);
 
 	GetParam( )->EnableUndo(TRUE);
+}
+
+void CMultiGirderSelectGrid::Enable(bool bEnable)
+{
+	GetParam()->EnableUndo(FALSE);
+   GetParam()->SetLockReadOnly(FALSE);
+
+   CGXStyle style;
+   CGXRange range;
+   if ( bEnable )
+   {
+      style.SetEnabled(TRUE)
+         .SetReadOnly(FALSE)
+         .SetInterior(::GetSysColor(COLOR_WINDOW));
+//           .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+
+      range = CGXRange(1,1,GetRowCount(),GetColCount());
+      SetStyleRange(range,style);
+
+	   GetParam()->EnableSelection((WORD) (GX_SELFULL));
+   }
+   else
+   {
+      style.SetEnabled(FALSE)
+           .SetReadOnly(TRUE)
+           .SetInterior(::GetSysColor(COLOR_BTNFACE));
+//           .SetTextColor(::GetSysColor(COLOR_GRAYTEXT));
+
+      range = CGXRange(0,0,GetRowCount(),GetColCount());
+      SetStyleRange(range,style);
+
+	   GetParam()->EnableSelection((WORD) (GX_SELNONE));
+   }
+
+   GetParam()->SetLockReadOnly(TRUE);
+   GetParam()->EnableUndo(FALSE);
 }
 
 bool CMultiGirderSelectGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)

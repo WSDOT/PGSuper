@@ -261,6 +261,11 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(CReportSpecification* pRp
       rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
+      if (vGirderKeys.size() > 1)
+      {
+         // report where we are if more than one girder in report
+         *pPara << pgsGirderLabel::GetGirderLabel(thisGirderKey) << rptNewLine;
+      }
 
       bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
 
@@ -2121,11 +2126,25 @@ void write_Vs_table(IBroker* pBroker,
 
    *pParagraph << _T("Shear Resistance Provided By Shear Reinforcement - ") << GetLimitStateString(ls) << rptNewLine;
 
-   *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Vs.png")) << rptNewLine;
+   if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   {
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Vs_2020.png")) << rptNewLine;
+   }
+   else
+   {
+      *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Vs.png")) << rptNewLine;
+   }
    *pParagraph << rptNewLine;
    
 
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(9);
+   ColumnIndexType nCols = 9;
+
+   if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   {
+      nCols += 4;
+   }
+
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(nCols);
 
    //if ( segmentKey.groupIndex == ALL_GROUPS )
    //{
@@ -2135,15 +2154,24 @@ void write_Vs_table(IBroker* pBroker,
 
    *pParagraph << table << rptNewLine;
 
-   (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,1) << COLHDR( RPT_FY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0,2) << COLHDR( Sub2(_T("A"),_T("v")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,3) << COLHDR( _T("s"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4) << COLHDR( Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(0,5) << COLHDR( Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,6) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
-   (*table)(0,7) << COLHDR( symbol(alpha), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
-   (*table)(0,8) << COLHDR( Sub2(_T("V"),_T("s")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
+   ColumnIndexType col = 0;
+
+   (*table)(0, col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0, col++) << COLHDR( RPT_FY, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0, col++) << COLHDR( Sub2(_T("A"),_T("v")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0, col++) << COLHDR( _T("s"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0, col++) << COLHDR( Sub2(_T("A"),_T("v")) << _T("/S"), rptLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0, col++) << COLHDR( Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0, col++) << COLHDR( symbol(theta), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
+   (*table)(0, col++) << COLHDR( symbol(alpha), rptAngleUnitTag, pDisplayUnits->GetAngleUnit() );
+   if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   {
+      (*table)(0, col++) << symbol(delta);
+      (*table)(0, col++) << COLHDR(Sub2(symbol(phi), _T("duct")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*table)(0, col++) << COLHDR(Sub2(_T("b"), _T("w")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*table)(0, col++) << Sub2(symbol(lambda),_T("duct"));
+   }
+   (*table)(0, col++) << COLHDR( Sub2(_T("V"),_T("s")), rptForceUnitTag, pDisplayUnits->GetShearUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
@@ -2153,6 +2181,8 @@ void write_Vs_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, avs, pDisplayUnits->GetAvOverSUnit(), false );
+
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
 
@@ -2174,33 +2204,49 @@ void write_Vs_table(IBroker* pBroker,
       SHEARCAPACITYDETAILS scd;
       pShearCap->GetShearCapacityDetails(ls,intervalIdx,poi, nullptr, &scd);
 
-      (*table)(row,0) << location.SetValue( POI_SPAN, poi );
-      (*table)(row,1) << stress.SetValue( scd.fy );
-      (*table)(row,2) << area.SetValue( scd.Av );
-      (*table)(row,3) << dim.SetValue( scd.S );
+      col = 0;
+
+      (*table)(row, col++) << location.SetValue( POI_SPAN, poi );
+      (*table)(row, col++) << stress.SetValue( scd.fy );
+      (*table)(row, col++) << area.SetValue( scd.Av );
+      (*table)(row, col++) << dim.SetValue( scd.S );
       if (0.0 < scd.S)
       {
-         (*table)(row,4) << avs.SetValue( scd.Av/scd.S );
+         (*table)(row, col++) << avs.SetValue( scd.Av/scd.S );
       }
       else
       {
          ATLASSERT(scd.Av == 0.0);
-         (*table)(row,4) << avs.SetValue( 0.0 );
+         (*table)(row, col++) << avs.SetValue( 0.0 );
       }
-      (*table)(row,5) << dim.SetValue( scd.dv );
+      (*table)(row, col++) << dim.SetValue( scd.dv );
 
       if (scd.ShearInRange)
       {
-         (*table)(row,6) << angle.SetValue( scd.Theta );
-         (*table)(row,7) << angle.SetValue( scd.Alpha );
-         (*table)(row,8) << shear.SetValue( scd.Vs );
+         (*table)(row, col++) << angle.SetValue( scd.Theta );
+         (*table)(row, col++) << angle.SetValue( scd.Alpha );
+         if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+         {
+            (*table)(row, col++) << scd.delta;
+            (*table)(row, col++) << dim.SetValue(scd.duct_diameter);
+            (*table)(row, col++) << dim.SetValue(scd.bw);
+            (*table)(row, col++) << scalar.SetValue(scd.lambda_duct);
+         }
+         (*table)(row, col++) << shear.SetValue( scd.Vs );
       }
       else
       {
          print_footnote=true;
-         (*table)(row,6) << _T("*");
-         (*table)(row,7) << _T("*");
-         (*table)(row,8) << _T("*");
+         (*table)(row, col++) << _T("*");
+         (*table)(row, col++) << _T("*");
+         if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+         {
+            (*table)(row, col++) << _T("*");
+            (*table)(row, col++) << _T("*");
+            (*table)(row, col++) << _T("*");
+            (*table)(row, col++) << _T("*");
+         }
+         (*table)(row, col++) << _T("*");
       }
 
       row++;

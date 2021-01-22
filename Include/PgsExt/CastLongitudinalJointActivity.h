@@ -35,30 +35,28 @@ class PGSEXTCLASS CCastLongitudinalJointActivity
 {
 public:
    CCastLongitudinalJointActivity();
-   CCastLongitudinalJointActivity(const CCastLongitudinalJointActivity& rOther);
+   CCastLongitudinalJointActivity(const CCastLongitudinalJointActivity& rOther) = default;
    ~CCastLongitudinalJointActivity();
 
-   CCastLongitudinalJointActivity& operator= (const CCastLongitudinalJointActivity& rOther);
+   CCastLongitudinalJointActivity& operator= (const CCastLongitudinalJointActivity& rOther) = default;
    bool operator==(const CCastLongitudinalJointActivity& rOther) const;
    bool operator!=(const CCastLongitudinalJointActivity& rOther) const;
 
    void Enable(bool bEnable = true);
    bool IsEnabled() const;
 
-   void SetConcreteAgeAtContinuity(Float64 age);
-   Float64 GetConcreteAgeAtContinuity() const;
+   void SetTotalCuringDuration(Float64 duration);
+   Float64 GetTotalCuringDuration() const;
 
-   void SetCuringDuration(Float64 duration);
-   Float64 GetCuringDuration() const;
+   void SetActiveCuringDuration(Float64 duration);
+   Float64 GetActiveCuringDuration() const;
 
 	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
 
 protected:
-   void MakeCopy(const CCastLongitudinalJointActivity& rOther);
-   void MakeAssignment(const CCastLongitudinalJointActivity& rOther);
    bool m_bEnabled;
    
-   Float64 m_Age;
-   Float64 m_CuringDuration;
+   Float64 m_TotalCuringDuration;
+   Float64 m_ActiveCuringDuration;
 };

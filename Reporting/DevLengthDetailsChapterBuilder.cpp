@@ -28,6 +28,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
+#include <IFace\Intervals.h>
 #include <WBFLGenericBridgeTools.h>
 
 #include <PgsExt\BridgeDescription2.h>
@@ -37,6 +38,8 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#pragma Reminder("TODO: Update this chapter builder so that it is not performing the calculations, only reporting")
 
 // Some utility functions
 rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
@@ -155,6 +158,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterials); // only used if there are rebar in the girder
 
@@ -304,7 +308,15 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          bond_factor = ForceIntoRange(0.0,bond_factor,1.0);
 
-         (*pTable)(row,0) << location.SetValue( POI_ERECTED_SEGMENT, poi );
+         if (bIsPGSplice)
+         {
+            (*pTable)(row, 0) << location.SetValue(POI_ERECTED_SEGMENT, poi);
+         }
+         else
+         {
+            (*pTable)(row, 0) << location.SetValue(POI_SPAN, poi);
+         }
+
          (*pTable)(row,1) << stress.SetValue(bonded_details.fps);
          (*pTable)(row,2) << stress.SetValue(bonded_details.fpe);
          (*pTable)(row,3) << length.SetValue(bonded_details.db);
@@ -390,6 +402,8 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
             (*pParagraph) << pTable << rptNewLine;
    
+            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+            Float64 fci = pMaterials->GetSegmentFc(thisSegmentKey,releaseIntervalIdx);
             Float64 fc = pMaterials->GetSegmentFc28(thisSegmentKey);
             pgsTypes::ConcreteType concType = pMaterials->GetSegmentConcreteType(thisSegmentKey);
             bool hasFct = pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(thisSegmentKey);
@@ -416,13 +430,18 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                   {
                      // We have a unique bar
                      diamSet.insert(diam);
-                     REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(thisSegmentKey, rebar, concType, fc, hasFct, Fct);
-
+                     
                      CComBSTR barname;
                      rebar->get_Name(&barname);
 
+                     // development length in fresh concrete
+                     REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(thisSegmentKey, rebar, concType, fci, hasFct, Fct);
                      WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
+                     row++;
 
+                     // development length in mature concrete
+                     devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(thisSegmentKey, rebar, concType, fc, hasFct, Fct);
+                     WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
                      row++;
                   } // end if
                } // next patternIdx
