@@ -6,9 +6,11 @@ Longitudinal deck reinforcement is modeled as Primary Reinforcement and Suppleme
 
 Transverse deck reinforcement is not modeled.
 
-Reinforcement is modeled with a combination of individual bars and a lump sum quantity. These values are additive. The total area of reinforcement is computed as
+Reinforcement is modeled with a combination of individual bars and a lump sum quantity. These values are additive. The total area of reinforcement is computed as:
 
 As = (Area of individual bar/spacing + lump sum area per unit length) X (Tributary width of deck)
+
+> NOTE: Deck analysis is limited to the strength limit state. Detailing and service limit state criteria, such as crack control, are not evaluated.
 
 Deck Reinforcement
 ------------------
@@ -16,7 +18,7 @@ Deck Reinforcement
 Item | Description
 -----|--------------
 Reinforcement | Use the drop down list to select the reinforcing steel used in the deck.
-Top Mat Cover | Enter the nominal cover for the top mat of reinforcing. Cover is measured from the top of the deck to the top of individual bars and to the center of lump sum reinforcement.
+Top Mat Cover | Enter the nominal cover for the top mat of reinforcing. Cover is measured from the top of the effective deck to the top of individual bars and to the center of lump sum reinforcement. The top of the effective deck is the top of deck after the sacrificial wearing surface has been removed. If you have a 0.5" sacrificial wearing surface and you want the bars to be 2.5" below the top of the cast depth, input the top cover as 2.0" from the top of the effective deck.
 Bottom Mat Cover | Enter the nominal cover for the bottom mat of reinforcing. The bottom mat cover is measured from the bottom (underside) of the deck to the bottom of individual bars and to the center of lump sum reinforcement.
 
 Primary Reinforcement
@@ -44,7 +46,8 @@ Right Cutoff | Enter the distance to the bar cutoff on the right side of the Pie
 
 > NOTE: The total reinforcement at a section is equal to the sum of the primary and supplement reinforcement within the tributary width of a girder.
 
-> NOTE: For all Primary Reinforcement and Supplemental Reinforcement described using a lump sum value, the reinforcement is considered to be developed along the full reinforcement length. However: for Supplemental Reinforcement bars described using a bar size and spacing, the area of the bar is reduced for partial development at the ends of the bars.
+> NOTE: For all Primary Reinforcement and Supplemental Reinforcement described using a lump sum value, the reinforcement is considered to be developed along the full reinforcement length. However, for Supplemental Reinforcement bars described using a bar size and spacing, the area of the bar is reduced for partial development at the ends of the bars.
+
 
  
 
