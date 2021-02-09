@@ -150,8 +150,6 @@ void CRatingDialog::ExchangeDescriptionData(CDataExchange* pDX)
    DDX_CBItemData(pDX,IDC_SPECIFICATION,m_Entry.m_SpecificationVersion);
    DDX_Check_Bool(pDX, IDC_USE_CURRENT_VERSION, m_Entry.m_bUseCurrentSpecification);
 
-   DDX_Check_Bool(pDX,IDC_ALWAYS_RATE,m_Entry.m_bAlwaysRate);
-
    if (pDX->m_bSaveAndValidate)
    {
 	   DDX_Text(pDX, IDC_NAME, m_Name);

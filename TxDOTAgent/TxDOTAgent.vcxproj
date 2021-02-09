@@ -533,6 +533,7 @@ xcopy /y /d .\TogaTemplates\*.* $(BRIDGELINKDIR)\TogaTemplates\*.*</Command>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="EccentricityDlg.cpp" />
+    <ClCompile Include="TexasLoadRatingSummaryChapterBuilder.cpp" />
     <ClCompile Include="TOGATestFileWriter.cpp" />
     <ClCompile Include="TxCSVDataExporter.cpp" />
     <ClCompile Include="TxDataExporter.cpp" />
@@ -621,6 +622,7 @@ xcopy /y /d .\TogaTemplates\*.* $(BRIDGELINKDIR)\TogaTemplates\*.*</Command>
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="EccentricityDlg.h" />
+    <ClInclude Include="TexasLoadRatingSummaryChapterBuilder.h" />
     <ClInclude Include="TOGATestFileWriter.h" />
     <ClInclude Include="TxCSVDataExporter.h" />
     <ClInclude Include="TxDataExporter.h" />

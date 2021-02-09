@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     1    WF95P    *     10  0.6  270  44.57  42.89   9.00   9.00                                              5.000 10.258   2.818    -2.623    11629   0.672  0.755  -0.273 -0.387  0.000 -0.063 -0.450  -0.61   63.11    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    6   7.17                     1     1    WF95P    *     10  0.6  270  44.57  42.89   9.00   9.00                                              5.000 10.258   2.818    -2.623    11629   0.672  0.755  -0.273 -0.387  0.000 -0.063 -0.450  -0.61   63.11    0.00    0.00    0.00    0.94    0.00    1.22    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -33,9 +33,9 @@ Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     2    WF95P    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258   2.367    -1.953     9289   0.652  0.755  -2.884 -0.440  0.000 -0.064 -0.504   0.00    0.00    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.58    6   7.17                     1     2    WF95P    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258   2.367    -1.953     9289   0.652  0.755  -2.884 -0.440  0.000 -0.064 -0.504   0.00    0.00    0.00    0.00    0.00    0.41    0.00    0.54    0.00    0.00 
 
 
 The Specification Check was Not Successful

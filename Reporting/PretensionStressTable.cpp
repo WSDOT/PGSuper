@@ -220,7 +220,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       p_table->SetRowSpan(1, col, SKIP_CELL);
       (*p_table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
 
-      p_table->SetColumnSpan(0, col, nRatingTypes);
+      ColumnIndexType span = min(nRatingTypes, nColumns-col);
+      p_table->SetColumnSpan(0, col, span);
       (*p_table)(0,col) << _T("Interval ") << LABEL_INTERVAL(loadRatingIntervalIdx) << rptNewLine << pIntervals->GetDescription(loadRatingIntervalIdx);
       for (int i = 0; i < nRatingTypes; i++)
       {
@@ -396,8 +397,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       else
       {
          // Rating
-         GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-         GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
          int nReported = 0;
          for (int i = 0; i < nRatingTypes; i++)
          {

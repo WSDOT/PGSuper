@@ -430,7 +430,6 @@ public:
 
 // IRatingSpecification
 public:
-   virtual bool AlwaysLoadRate() const override;
    virtual bool IsRatingEnabled() const override;
    virtual bool IsRatingEnabled(pgsTypes::LoadRatingType ratingType) const override;
    virtual void EnableRating(pgsTypes::LoadRatingType ratingType,bool bEnable) override;

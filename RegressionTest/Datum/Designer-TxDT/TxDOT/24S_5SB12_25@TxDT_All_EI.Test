@@ -1,24 +1,24 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.00    5   0.28 24', 5 - 5SB12,     1     1    5SB12          10  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.954    -1.250      401   0.450  0.450   0.170 -0.052  0.000 -0.007 -0.059   9.87   40.18    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.00    5   0.28 24', 5 - 5SB12,     1     1    5SB12          10  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.954    -1.250      401   0.450  0.450   0.170 -0.052  0.000 -0.007 -0.059   9.87   40.18    1.00    1.00    1.00    1.21    3.15    1.56    6.84    1.38 
 
 
 The Specification Check was Not Successful
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.00    5   0.28 24', 5 - 5SB12,     1     2    5SB12          10  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.952    -1.251      402   0.450  0.450   0.170 -0.053  0.000 -0.007 -0.060   9.87   40.15    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.00    5   0.28 24', 5 - 5SB12,     1     2    5SB12          10  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.952    -1.251      402   0.450  0.450   0.170 -0.053  0.000 -0.007 -0.060   9.87   40.15    1.00    1.00    1.00    1.21    3.15    1.57    6.85    1.38 
 
 
 The Specification Check was Not Successful
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.00    5   0.28 24', 5 - 5SB12,     1     3    5SB12          10  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.950    -1.249      402   0.450  0.450   0.170 -0.053  0.000 -0.007 -0.060   9.87   40.15    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.00    5   0.28 24', 5 - 5SB12,     1     3    5SB12          10  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.950    -1.249      402   0.450  0.450   0.170 -0.053  0.000 -0.007 -0.060   9.87   40.15    1.00    1.00    1.00    1.21    3.15    1.57    6.85    1.38 
 
 
 The Specification Check was Not Successful

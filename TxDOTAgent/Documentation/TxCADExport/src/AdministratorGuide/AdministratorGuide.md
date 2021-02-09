@@ -45,6 +45,9 @@ fTens | Ksi | Max applied tensile stress along girder at BSS3, Service III
 UltMom | kip-ft | Max applied moment along girder at BSS3, Strength I
 gMoment | float | Live load distribution factor for moment
 gShear | float | Live load distribution factor for shear
+RFStr1Inventory | float | Rating factor, Strength I Inventory. Minimum of shear and moment RF's
+RFStr1Operating | float | Rating factor, Strength I Operating. Minimum of shear and moment RF's
+RFSvc3Inventory | float | Rating factor, Service III Inventory. Stress
 
 Range Names and Contents of Straight Strand Template Data
 ---------------------------------------------------------
@@ -77,6 +80,9 @@ fTens | Ksi | Max applied tensile stress along girder at BSS3, Service III
 UltMom | kip-ft | Max applied moment along girder at BSS3, Strength I
 gMoment | float | Live load distribution factor for moment
 gShear | float | Live load distribution factor for shear
+RFStr1Inventory | float | Rating factor, Strength I Inventory. Minimum of shear and moment RF's
+RFStr1Operating | float | Rating factor, Strength I Operating. Minimum of shear and moment RF's
+RFSvc3Inventory | float | Rating factor, Service III Inventory. Stress
 
 Range Names and Contents of Non-Standard Table Template Data
 --------------------------------

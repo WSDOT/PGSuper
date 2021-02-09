@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   6.48   Cascade River     1     1    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.313   6.313     6.313     4336   0.555  0.706   2.144 -0.749  0.000 -0.138 -0.888   3.97   55.23    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.00    5   6.48   Cascade River     1     1    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.313   6.313     6.313     4336   0.555  0.706   2.144 -0.749  0.000 -0.138 -0.888   3.97   55.23    0.00    0.00    0.00    1.27    0.38    1.64    0.64    0.88 
 
 
 The Specification Check was Not Successful
@@ -30,9 +30,9 @@ Duct Size check failed for Duct 2.
 Duct Size check failed for Duct 3.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    5   6.48   Cascade River     1     2    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.313   6.313     6.313     4515   0.555  0.706   1.997 -1.088  0.000 -0.130 -1.218   3.97   55.12    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 26.00    5   6.48   Cascade River     1     2    WF60P    *      6  1/2  270  -0.30  -0.93   5.25   5.25                                              3.077  6.313   6.313     6.313     4515   0.555  0.706   1.997 -1.088  0.000 -0.130 -1.218   3.97   55.12    0.00    0.00    0.00    1.20    0.38    1.56    0.63    0.76 
 
 
 The Specification Check was Not Successful

@@ -9,8 +9,7 @@
 //
 #include "afxres.h"
 #include "EAF\EAFResources.h"
-#include "grid\gxresrc.h"
-
+#include "grid\gxresrc.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1432,9 +1431,6 @@ BEGIN
     COMBOBOX        IDC_SPECIFICATION,17,116,237,95,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Always use the most recent edition of AASHTO's The Manual for Bridge Evaluation",IDC_USE_CURRENT_VERSION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,135,276,10
-    GROUPBOX        "Options",IDC_STATIC,7,155,341,52
-    CONTROL         "Always load rate when performing a specification check",IDC_ALWAYS_RATE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,173,191,10
 END
 
 IDD_STRAND_GENERATION DIALOGEX 0, 0, 392, 263
@@ -3015,8 +3011,7 @@ LANGUAGE 9, 1
 #include "res\psgLib.rc2"  // non-Microsoft Visual C++ edited resources
 #include "afxres.rc"         // Standard components
 #endif
-#include "grid\gxres.rc"               // Objective Grid resources
-
+#include "grid\gxres.rc"               // Objective Grid resources
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

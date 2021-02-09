@@ -128,18 +128,6 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
          bRating = false;
       }
    }
-   else
-   {
-      // include load rating results if we are always load rating
-      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-      bRating = pRatingSpec->AlwaysLoadRate();
-
-      // if none of the rating types are enabled, skip the rating
-      if (!pRatingSpec->IsRatingEnabled())
-      {
-         bRating = false;
-      }
-   }
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;

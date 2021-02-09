@@ -8798,12 +8798,6 @@ void CProjectAgentImp::SetHaulTruck(const CSegmentKey& segmentKey,LPCTSTR lpszHa
 ////////////////////////////////////////////////////////////////////////
 // IRatingSpecification Methods
 //
-bool CProjectAgentImp::AlwaysLoadRate() const
-{
-   const RatingLibraryEntry* pRatingEntry = GetRatingEntry(m_RatingSpec.c_str());
-   return pRatingEntry->AlwaysLoadRate();
-}
-
 bool CProjectAgentImp::IsRatingEnabled() const
 {
    for (int i = 0; i < (int)pgsTypes::lrLoadRatingTypeCount; i++)

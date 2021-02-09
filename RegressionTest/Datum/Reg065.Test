@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     1    WF66G    *     36  0.6  270  28.69  11.03  11.00  11.00                                              12  62.0  4.0  4.300  5.600   3.668    -3.783     8960   0.553  0.671   4.521 -1.649 -0.157 -0.225 -2.031 148.29  286.24    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     1     1    WF66G    *     36  0.6  270  28.69  11.03  11.00  11.00                                              12  62.0  4.0  4.300  5.600   3.668    -3.783     8960   0.553  0.671   4.521 -1.649 -0.157 -0.225 -2.031 148.29  286.24    3.00    5.50    5.50    1.78    1.73    2.30    2.28    1.66 
 
 
 The Specification Check was Not Successful
@@ -11,9 +11,9 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.25    5   6.00                     1     2    WF66G    *     36  0.6  270  28.69  11.03  11.00  11.00                                              12  62.0  4.0  4.300  5.600   3.674    -3.786     8959   0.551  0.671   4.458 -1.657 -0.157 -0.225 -2.039 148.29  285.74    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.25    5   6.00                     1     2    WF66G    *     36  0.6  270  28.69  11.03  11.00  11.00                                              12  62.0  4.0  4.300  5.600   3.674    -3.786     8959   0.551  0.671   4.458 -1.657 -0.157 -0.225 -2.039 148.29  285.74    3.00    5.50    5.50    1.78    1.73    2.30    2.28    1.66 
 
 
 The Specification Check was Not Successful

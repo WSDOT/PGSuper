@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 31.50    3  10.00                     1     1     U54           68  1/2  270  18.67  18.33  12.50  12.50  24   2.17   27    12    0   0   6   2   2   5.000  5.000   3.588    -3.424    10003   1.075  1.075   2.101 -1.416 -0.098 -0.087 -1.600 200.48  532.83    0.00    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 31.50    3  10.00                     1     1     U54           68  1/2  270  18.67  18.33  12.50  12.50  24   2.17   27    12    0   0   6   2   2   5.000  5.000   3.588    -3.424    10003   1.075  1.075   2.101 -1.416 -0.098 -0.087 -1.600 200.48  532.83    0.00    0.00    0.00    1.64    1.35    2.12    2.26    1.16 
                                                                                                                 4.14   27    12    6   6   0   0   0 
 Warning: Non-standard debonding increment of  2.500 ft used  for beam 1 in span 1. 
 
@@ -13,9 +13,9 @@ Bursting zone check failed.
 Minimum fillet value exceeded for bridge check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 31.50    3  10.00                     1     2     U54           51  1/2  270  19.33  19.09  12.50  12.50  14   2.17   27    12    2   6   2   2   0   4.000  5.000   3.219    -2.889     7779   0.673  0.934   1.494 -1.228 -0.100 -0.089 -1.418 122.01  315.20    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 31.50    3  10.00                     1     2     U54           51  1/2  270  19.33  19.09  12.50  12.50  14   2.17   27    12    2   6   2   2   0   4.000  5.000   3.219    -2.889     7779   0.673  0.934   1.494 -1.228 -0.100 -0.089 -1.418 122.01  315.20    1.00    1.00    1.00    1.79    1.56    2.31    2.73    1.23 
                                                                                                                 4.14   24     2    2   0   0   0   0 
 Warning: Non-standard debonding increment of  2.500 ft used  for beam 2 in span 1. 
 

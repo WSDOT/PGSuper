@@ -35,6 +35,10 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\Intervals.h>
 
+#include <IFace\RatingSpecification.h>
+#include <PgsExt\RatingArtifact.h>
+#include <PgsExt\ISummaryRatingArtifact.h>
+
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
@@ -780,6 +784,39 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
       workerB.WriteFloat64(fwdLoc,_T("fwHaul"),8,6,_T("%6.2f"));
 	   //----- COL 27 ---- 
       workerB.WriteFloat64(trlLoc,_T("trHaul"),8,6,_T("%6.2f"));
+
+      // rating factors, if enabled
+      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
+      {
+         std::vector<CGirderKey> girderKeys{ girderKey };
+         std::shared_ptr<const pgsISummaryRatingArtifact> pInventoryRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrDesign_Inventory, INVALID_INDEX);
+         std::shared_ptr<const pgsISummaryRatingArtifact> pOperatingRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrDesign_Operating, INVALID_INDEX);
+
+         // Strength I
+         Float64 invMomRF = pInventoryRatingArtifact->GetMomentRatingFactor(true);
+         Float64 invShearRF(0.0);
+         if (pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory))
+         {
+            invShearRF = pInventoryRatingArtifact->GetShearRatingFactor();
+         }
+
+         Float64 oprMomRF = pOperatingRatingArtifact->GetMomentRatingFactor(true);
+         Float64 oprShearRF(0.0);
+         if (pRatingSpec->RateForShear(pgsTypes::lrDesign_Operating))
+         {
+            oprShearRF = pOperatingRatingArtifact->GetShearRatingFactor();
+         }
+
+         // Service III
+         Float64 invStressRF = pInventoryRatingArtifact->GetStressRatingFactor();
+
+         workerB.WriteFloat64(invMomRF, _T("RfInMom"), 8, 6, _T("%6.2f"));
+         workerB.WriteFloat64(invShearRF, _T("RfInShr"), 8, 6, _T("%6.2f"));
+         workerB.WriteFloat64(oprMomRF, _T("RfOpMom"), 8, 6, _T("%6.2f"));
+         workerB.WriteFloat64(oprShearRF, _T("RfOpShr"), 8, 6, _T("%6.2f"));
+         workerB.WriteFloat64(invStressRF, _T("RfInSts"), 8, 6, _T("%6.2f"));
+      }
    }
 
 	// ------ END OF RECORD ----- 

@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.17    6   0.12    Sandy Creek      1     1     5B28          24  1/2  270  11.24  11.24   5.00   5.00                                              4.000  5.000   1.956    -2.237     2105   0.387  0.641   0.816 -0.352 -0.061 -0.073 -0.486  39.37  121.01    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.17    6   0.12    Sandy Creek      1     1     5B28          24  1/2  270  11.24  11.24   5.00   5.00                                              4.000  5.000   1.956    -2.237     2105   0.387  0.641   0.816 -0.352 -0.061 -0.073 -0.486  39.37  121.01    1.00    1.00    1.00    1.22    1.45    1.59    2.54    1.22 
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.17    6   0.12    Sandy Creek      1     2     4B28          22  1/2  270  11.12  11.12   5.00   5.00   4    2.5   22     4    4   0   0   0   0   4.000  5.000   2.083    -2.354     1821   0.333  0.465   1.005 -0.368 -0.074 -0.089 -0.531  40.09  119.34    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.17    6   0.12    Sandy Creek      1     2     4B28          22  1/2  270  11.12  11.12   5.00   5.00   4    2.5   22     4    4   0   0   0   0   4.000  5.000   2.083    -2.354     1821   0.333  0.465   1.005 -0.368 -0.074 -0.089 -0.531  40.09  119.34    1.00    1.00    1.00    1.33    2.30    1.73    3.96    1.30 
 
 
 The Specification Check was Not Successful
@@ -18,9 +18,9 @@ Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.
 Bursting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 24.17    6   0.12    Sandy Creek      1     4     4B28          22  1/2  270  11.12  11.12   5.00   5.00   4    2.5   22     4    4   0   0   0   0   4.000  5.000   2.083    -2.354     1821   0.333  0.465   1.005 -0.368 -0.074 -0.089 -0.531  40.09  119.34    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 24.17    6   0.12    Sandy Creek      1     4     4B28          22  1/2  270  11.12  11.12   5.00   5.00   4    2.5   22     4    4   0   0   0   0   4.000  5.000   2.083    -2.354     1821   0.333  0.465   1.005 -0.368 -0.074 -0.089 -0.531  40.09  119.34    1.00    1.00    1.00    1.33    2.30    1.73    3.96    1.30 
 
 
 The Specification Check was Not Successful

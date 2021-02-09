@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.83    6   6.00                     1     1    WF83G    *     47  0.6  270  36.25  22.65  12.00  12.00                                               9  78.6  4.0  5.900  7.200   4.444    -4.521    14194   0.541  0.671   4.901 -2.142 -0.288 -0.335 -2.764 184.13  290.99    7.25    6.89    6.89 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 33.83    6   6.00                     1     1    WF83G    *     47  0.6  270  36.25  22.65  12.00  12.00                                               9  78.6  4.0  5.900  7.200   4.444    -4.521    14194   0.541  0.671   4.901 -2.142 -0.288 -0.335 -2.764 184.13  290.99    7.25    6.89    6.89    2.03    2.31    2.63    3.05    1.64 
 
 
 The Specification Check was Not Successful
@@ -8,9 +8,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.83    6   6.00                     1     2    WF83G    *     47  0.6  270  36.25  22.65  12.00  12.00                                               9  78.6  4.0  5.900  7.200   4.473    -4.548    14262   0.541  0.671   4.789 -2.181 -0.288 -0.335 -2.804 184.13  288.91    7.25    6.89    6.89 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 33.83    6   6.00                     1     2    WF83G    *     47  0.6  270  36.25  22.65  12.00  12.00                                               9  78.6  4.0  5.900  7.200   4.473    -4.548    14262   0.541  0.671   4.789 -2.181 -0.288 -0.335 -2.804 184.13  288.91    7.25    6.89    6.89    2.02    2.30    2.61    3.04    1.62 
 
 
 The Specification Check was Not Successful

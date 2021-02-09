@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    5   7.00 US101 STEAMBOAT     1     1    0.5in    *      6  0.6  270  43.14  44.17  12.00  10.10                                              5.000  9.750   9.750     9.750    13486   0.602  0.743   0.070 -0.592 -0.183 -0.178 -0.953   5.07   42.72    3.00    3.00    3.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    5   7.00 US101 STEAMBOAT     1     1    0.5in    *      6  0.6  270  43.14  44.17  12.00  10.10                                              5.000  9.750   9.750     9.750    13486   0.602  0.743   0.070 -0.592 -0.183 -0.178 -0.953   5.07   42.72    3.00    3.00    3.00    1.90    1.71    2.46    2.25    2.09 
 
 
 The Specification Check was Not Successful
@@ -12,9 +12,9 @@ Hauling checks failed for Segment 2.
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    5   7.00 US101 STEAMBOAT     1     2    0.5in    *      6  0.6  270  43.14  44.17  12.00  10.10                                              5.000  9.750   9.750     9.750    13756   0.602  0.743   0.070 -0.644 -0.179 -0.174 -0.997   5.07   42.42    3.00    3.00    3.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 32.00    5   7.00 US101 STEAMBOAT     1     2    0.5in    *      6  0.6  270  43.14  44.17  12.00  10.10                                              5.000  9.750   9.750     9.750    13756   0.602  0.743   0.070 -0.644 -0.179 -0.174 -0.997   5.07   42.42    3.00    3.00    3.00    1.87    1.65    2.43    2.18    2.01 
 
 
 The Specification Check was Not Successful

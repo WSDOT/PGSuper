@@ -1,24 +1,24 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    6   9.00                     1     1    BT-72    *     48  1/2  270  28.35  16.42   8.50   8.50                                              12  70.0 20.0  5.800  6.500   2.830    -3.573     8995   0.733  0.733   4.037 -1.256 -0.164 -0.082 -1.502 132.88  269.92    4.00   14.00   14.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.00    6   9.00                     1     1    BT-72    *     48  1/2  270  28.35  16.42   8.50   8.50                                              12  70.0 20.0  5.800  6.500   2.830    -3.573     8995   0.733  0.733   4.037 -1.256 -0.164 -0.082 -1.502 132.88  269.92    4.00   14.00   14.00    1.65    2.00    2.14    2.64    1.84 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    6   9.00                     1     2    BT-72    *     48  1/2  270  28.35  16.42   8.50   8.50                                              12  70.0 20.0  5.800  6.500   2.934    -3.728     9273   0.725  0.884   4.037 -1.492 -0.156 -0.078 -1.726 132.88  263.56    4.00   14.00   14.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.00    6   9.00                     1     2    BT-72    *     48  1/2  270  28.35  16.42   8.50   8.50                                              12  70.0 20.0  5.800  6.500   2.934    -3.728     9273   0.725  0.884   4.037 -1.492 -0.156 -0.078 -1.726 132.88  263.56    4.00   14.00   14.00    1.62    1.58    2.10    2.10    1.72 
 
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 48.00    6   9.00                     1     4    BT-72    *     48  1/2  270  28.35  16.42   8.50   8.50                                              12  70.0 20.0  5.800  6.500   2.934    -3.728     9273   0.725  0.884   4.037 -1.492 -0.156 -0.078 -1.726 132.88  263.56    4.00   14.00   14.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.00    6   9.00                     1     4    BT-72    *     48  1/2  270  28.35  16.42   8.50   8.50                                              12  70.0 20.0  5.800  6.500   2.934    -3.728     9273   0.725  0.884   4.037 -1.492 -0.156 -0.078 -1.726 132.88  263.56    4.00   14.00   14.00    1.62    1.58    2.10    2.10    1.72 
 
 
 The Specification Check was Not Successful

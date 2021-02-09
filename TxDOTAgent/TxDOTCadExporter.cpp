@@ -279,13 +279,15 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
       if (isHarped)
       {
          cols = std::vector<std::_tstring>({ _T("StructureName"),_T("SpanNum"),_T("GdrNum"),_T("GdrType"),_T("NonStd"),_T("NStot"),_T("Size"),_T("Strength"),_T("eCL"),_T("eEnd"),_T("B_1"),
-                                            _T("NH"),_T("ToEnd"),_T("B_2"),_T("FCI"),_T("FC"),_T("B_3"),_T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear"),_T("NSArrangement") });
+                                            _T("NH"),_T("ToEnd"),_T("B_2"),_T("FCI"),_T("FC"),_T("B_3"),_T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear"),
+                                            _T("RFStr1Inventory"), _T("RFStr1Operating"), _T("RFSvc3Inventory"),_T("NSArrangement") });
       }
       else
       {
          cols = std::vector<std::_tstring>({ _T("StructureName"),_T("SpanNum"),_T("GdrNum"),_T("GdrType"),_T("NonStd"),_T("NStot"),_T("Size"),_T("Strength"),_T("eCL"),_T("eEnd"),
                                              _T("NDBtot"),_T("DBBotDist"),_T("NSRow"),_T("NDBRow"),_T("DB_3"),_T("DB_6"),_T("DB_9"),_T("DB_12"),_T("DB_15"),_T("FCI"),_T("FC"),_T("B_3"),
-                                             _T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear"),_T("NSArrangement") });
+                                             _T("fComp"),_T("fTens"),_T("UltMom"),_T("gMoment"),_T("gShear"),
+                                             _T("RFStr1Inventory"), _T("RFStr1Operating"), _T("RFSvc3Inventory"),_T("NSArrangement") });
       }
 
       pCSVDataExporter->InitializeTable(1, cols);

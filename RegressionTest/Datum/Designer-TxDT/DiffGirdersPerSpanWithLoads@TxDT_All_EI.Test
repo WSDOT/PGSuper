@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   8.00                     1     1    WF66G          70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.288    -7.434    16471   0.682  0.814   3.145 -1.516 -0.120 -0.478 -2.114 420.65  605.42    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    4   8.00                     1     1    WF66G          70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.288    -7.434    16471   0.682  0.814   3.145 -1.516 -0.120 -0.478 -2.114 420.65  605.42    3.00    5.50    5.50    0.00    1.03    0.00    1.41    1.11 
 
 
 Girder design was Not Successful
@@ -18,9 +18,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   8.00                     1     2    WF66G          70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.794    -7.959    17462   0.682  0.814   2.589 -1.691 -0.116 -0.460 -2.267 420.65  592.95    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    4   8.00                     1     2    WF66G          70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.794    -7.959    17462   0.682  0.814   2.589 -1.691 -0.116 -0.460 -2.267 420.65  592.95    3.00    5.50    5.50    0.00    0.88    0.00    1.20    0.76 
 
 
 Girder design was Not Successful
@@ -38,9 +38,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     2     1    WF66G          69  0.6  270  27.27  11.92  10.75  10.75                                              23  62.0  7.0  9.100 10.500   6.670    -6.635    15413   0.556  0.671   3.546 -1.232 -0.097 -0.415 -1.744 407.60  619.38    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     2     1    WF66G          69  0.6  270  27.27  11.92  10.75  10.75                                              23  62.0  7.0  9.100 10.500   6.670    -6.635    15413   0.556  0.671   3.546 -1.232 -0.097 -0.415 -1.744 407.60  619.38    3.00    5.50    5.50    0.00    1.76    0.00    2.36    1.67 
 
 
 The Specification Check was Not Successful
@@ -50,9 +50,9 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     2     2    WF66G          69  0.6  270  27.27  11.92  10.75  10.75                                              23  62.0  7.0  9.100 10.500   6.679    -6.643    15414   0.556  0.671   3.502 -1.240 -0.097 -0.415 -1.752 407.60  618.68    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     2     2    WF66G          69  0.6  270  27.27  11.92  10.75  10.75                                              23  62.0  7.0  9.100 10.500   6.679    -6.643    15414   0.556  0.671   3.502 -1.240 -0.097 -0.415 -1.752 407.60  618.68    3.00    5.50    5.50    0.00    1.75    0.00    2.36    1.67 
 
 
 The Specification Check was Not Successful
@@ -62,9 +62,9 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     2     3    WF66G          69  0.6  270  27.27  11.92  10.75  10.75                                              23  62.0  7.0  9.100 10.500   6.679    -6.643    15414   0.556  0.671   3.502 -1.240 -0.097 -0.415 -1.752 407.60  618.68    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     2     3    WF66G          69  0.6  270  27.27  11.92  10.75  10.75                                              23  62.0  7.0  9.100 10.500   6.679    -6.643    15414   0.556  0.671   3.502 -1.240 -0.097 -0.415 -1.752 407.60  618.68    3.00    5.50    5.50    0.00    1.76    0.00    2.36    1.67 
 
 
 The Specification Check was Not Successful
@@ -74,9 +74,9 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   8.00                     3     1    WF66G          70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.288    -7.434    16471   0.682  0.814   3.145 -1.516 -0.120 -0.478 -2.114 420.65  605.42    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    4   8.00                     3     1    WF66G          70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.288    -7.434    16471   0.682  0.814   3.145 -1.516 -0.120 -0.478 -2.114 420.65  605.42    3.00    5.50    5.50    0.00    1.03    0.00    1.40    1.11 
 
 
 Girder design was Not Successful
@@ -94,9 +94,9 @@ Lifting checks failed
 Hauling checks failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    4   8.00                     3     2    WF66G          70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.794    -7.959    17462   0.682  0.814   2.589 -1.691 -0.116 -0.460 -2.267 420.65  592.95    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    4   8.00                     3     2    WF66G          70  0.6  270  27.23  11.63  11.25  11.25                                              24  62.0  7.0  9.000  9.000   7.794    -7.959    17462   0.682  0.814   2.589 -1.691 -0.116 -0.460 -2.267 420.65  592.95    3.00    5.50    5.50    0.00    0.87    0.00    1.19    0.76 
 
 
 Girder design was Not Successful

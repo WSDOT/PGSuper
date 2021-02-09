@@ -1,23 +1,23 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.17    6   0.13  B40-24, B40-28     1     1    5B40c          68  1/2  270  12.56  11.63   5.00   5.00  14    2.5   28    14    4   2   2   4   2   4.900  6.400   3.985    -3.766     5827   0.352  0.766   1.370 -1.231  0.000 -0.317 -1.548 157.14  456.26    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.17    6   0.13  B40-24, B40-28     1     1    5B40c          68  1/2  270  12.56  11.63   5.00   5.00  14    2.5   28    14    4   2   2   4   2   4.900  6.400   3.985    -3.766     5827   0.352  0.766   1.370 -1.231  0.000 -0.317 -1.548 157.14  456.26    1.00    1.00    1.00    1.64    2.35    2.12    3.04    1.03 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.17    6   0.13  B40-24, B40-28     1     2    5B40c          76  1/2  270  11.51  10.97   5.00   5.00   8    2.5   28     8    4   2   2   0   0   6.000  7.100   4.214    -3.979     6094   0.352  0.766   1.418 -1.289  0.000 -0.312 -1.601 178.66  537.39    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.17    6   0.13  B40-24, B40-28     1     2    5B40c          76  1/2  270  11.51  10.97   5.00   5.00   8    2.5   28     8    4   2   2   0   0   6.000  7.100   4.214    -3.979     6094   0.352  0.766   1.418 -1.289  0.000 -0.312 -1.601 178.66  537.39    1.00    1.00    1.00    1.72    2.56    2.23    3.33    1.01 
 
 
 The Specification Check was Not Successful
 Bursting zone check failed.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 28.17    6   0.13  B40-24, B40-28     1     4    5B40c          76  1/2  270  11.51  10.97   5.00   5.00   8    2.5   28     8    4   2   2   0   0   6.000  7.100   4.214    -3.979     6094   0.352  0.766   1.418 -1.289  0.000 -0.312 -1.601 178.66  537.39    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 28.17    6   0.13  B40-24, B40-28     1     4    5B40c          76  1/2  270  11.51  10.97   5.00   5.00   8    2.5   28     8    4   2   2   0   0   6.000  7.100   4.214    -3.979     6094   0.352  0.766   1.418 -1.289  0.000 -0.312 -1.601 178.66  537.39    1.00    1.00    1.00    1.72    2.56    2.23    3.33    1.01 
 
 
 The Specification Check was Not Successful

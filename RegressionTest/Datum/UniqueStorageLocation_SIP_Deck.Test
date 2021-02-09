@@ -1,15 +1,15 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     1    WF66G    *     38  0.6  270  28.65  14.44  11.50  11.50                                              10  62.0  4.0  4.800  5.900   3.776    -3.921     9512   0.553  0.671   4.900 -1.464 -0.142 -0.302 -1.907 148.26  275.47    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     1    WF66G    *     38  0.6  270  28.65  14.44  11.50  11.50                                              10  62.0  4.0  4.800  5.900   3.776    -3.921     9512   0.553  0.671   4.900 -1.464 -0.142 -0.302 -1.907 148.26  275.47    3.00    5.50    5.50    1.84    2.18    2.39    2.90    1.48 
 
 
 The Specification Check was Not Successful
 Slab Offset ("A" Dimension) check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     2    WF66G    *     38  0.6  270  28.65  14.44  11.50  11.50                                              10  62.0  4.0  4.800  5.900   3.779    -3.924     9499   0.553  0.671   4.570 -1.356 -0.142 -0.302 -1.800 146.98  282.52    3.00    5.50    5.50 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 27.83    5   6.00                     1     2    WF66G    *     38  0.6  270  28.65  14.44  11.50  11.50                                              10  62.0  4.0  4.800  5.900   3.779    -3.924     9499   0.553  0.671   4.570 -1.356 -0.142 -0.302 -1.800 146.98  282.52    3.00    5.50    5.50    1.84    2.18    2.39    2.90    1.46 
 
 
 The Specification Check was Successful

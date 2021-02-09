@@ -1,22 +1,22 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 94.00   12   8.33 Bear Creek - Spa    1     1     Tx70    *     54  0.6  270  26.45  16.08   8.50   8.50                                              10  66.5 10.5  6.000  8.100   4.359    -4.724    13800   0.782  0.899   4.675 -2.438  0.000 -0.457 -2.895 250.98  611.78    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 94.00   12   8.33 Bear Creek - Spa    1     1     Tx70    *     54  0.6  270  26.45  16.08   8.50   8.50                                              10  66.5 10.5  6.000  8.100   4.359    -4.724    13800   0.782  0.899   4.675 -2.438  0.000 -0.457 -2.895 250.98  611.78    1.00    1.00    1.00    1.65    1.67    2.14    2.25    1.00 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 94.00   12   8.33 Bear Creek - Spa    1     2     Tx70    *     54  0.6  270  26.45  16.08   8.50   8.50                                              10  66.5 10.5  6.000  7.000   4.325    -4.564    12825   0.642  0.899   4.676 -2.530  0.000 -0.466 -2.996 250.01  607.79    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 94.00   12   8.33 Bear Creek - Spa    1     2     Tx70    *     54  0.6  270  26.45  16.08   8.50   8.50                                              10  66.5 10.5  6.000  7.000   4.325    -4.564    12825   0.642  0.899   4.676 -2.530  0.000 -0.466 -2.996 250.01  607.79    1.00    1.00    1.00    1.97    1.61    2.56    2.15    1.13 
 
 
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 94.00   12   9.20 Bear Creek - Spa    1     7     Tx70          48  0.6  270  26.91  17.25   8.50   8.50                                               8  66.5  8.5  5.500  6.500   4.265    -4.292    12010   0.639  0.832   4.124 -2.597  0.000  0.000 -2.597 195.49  507.51    1.00    1.00    1.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 94.00   12   9.20 Bear Creek - Spa    1     7     Tx70          48  0.6  270  26.91  17.25   8.50   8.50                                               8  66.5  8.5  5.500  6.500   4.265    -4.292    12010   0.639  0.832   4.124 -2.597  0.000  0.000 -2.597 195.49  507.51    1.00    1.00    1.00    1.81    1.76    2.35    2.35    1.04 
 
 
 The Specification Check was Successful
