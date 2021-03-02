@@ -76,7 +76,10 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CGirderDescGeneralPage)
-	DDX_Control(pDX, IDC_EC,      m_ctrlEc);
+   DDX_Control(pDX, IDC_CONSTRUCTION_EVENT, m_cbConstruction);
+   DDX_Control(pDX, IDC_ERECTION_EVENT, m_cbErection);
+
+   DDX_Control(pDX, IDC_EC,      m_ctrlEc);
 	DDX_Control(pDX, IDC_ECI,     m_ctrlEci);
 	DDX_Control(pDX, IDC_MOD_EC,  m_ctrlEcCheck);
 	DDX_Control(pDX, IDC_MOD_ECI, m_ctrlEciCheck);

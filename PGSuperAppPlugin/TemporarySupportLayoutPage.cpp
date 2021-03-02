@@ -76,6 +76,9 @@ void CTemporarySupportLayoutPage::Init(const CTemporarySupportData* pTS)
 
 void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 {
+   DDX_Control(pDX, IDC_ERECTION_EVENT, m_cbErection);
+   DDX_Control(pDX, IDC_REMOVAL_EVENT, m_cbRemoval);
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);

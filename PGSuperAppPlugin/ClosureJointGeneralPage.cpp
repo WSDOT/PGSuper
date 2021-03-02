@@ -50,7 +50,8 @@ void CClosureJointGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
 	CPropertyPage::DoDataExchange(pDX);
 
-	DDX_Control(pDX, IDC_EC,      m_ctrlEc);
+   DDX_Control(pDX, IDC_EVENT, m_cbEvent);
+   DDX_Control(pDX, IDC_EC,      m_ctrlEc);
 	DDX_Control(pDX, IDC_ECI,     m_ctrlEci);
 	DDX_Control(pDX, IDC_USER_EC,  m_ctrlEcCheck);
 	DDX_Control(pDX, IDC_USER_ECI, m_ctrlEciCheck);

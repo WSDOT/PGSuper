@@ -96,6 +96,13 @@ int SetCBCurSelItemData( CComboBox* pCB, T& itemdata )
    return succ;
 }
 
+void CMyToolPalette::DoDataExchange(CDataExchange* pDX)
+{
+   DDX_Control(pDX, IDC_SELEVENT, m_cbEvents);
+
+   __super::DoDataExchange(pDX);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CGirderModelChildFrame
 
@@ -517,117 +524,125 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
    }
 	
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	if ( !m_SettingsBar.Create( this, IDD_GIRDER_EDITOR_BAR, CBRS_TOP, IDD_GIRDER_EDITOR_BAR) )
-	{
-		TRACE0("Failed to create control bar\n");
-		return -1;      // fail to create
-	}
+   { // this code block must be scoped so the module state rolls back for the call to UpdateData below
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      if (!m_SettingsBar.Create(this, IDD_GIRDER_EDITOR_BAR, CBRS_TOP, IDD_GIRDER_EDITOR_BAR))
+      {
+         TRACE0("Failed to create control bar\n");
+         return -1;      // fail to create
+      }
 
-   m_SettingsBar.SetBarStyle(m_SettingsBar.GetBarStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
-	
-   // point load tool
-   CComPtr<iTool> point_load_tool;
-   ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&point_load_tool);
-   point_load_tool->SetID(IDC_POINT_LOAD_DRAG);
-   point_load_tool->SetToolTipText(_T("Drag me onto girder to create a point load"));
+      m_SettingsBar.SetBarStyle(m_SettingsBar.GetBarStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
 
-   CComQIPtr<iToolIcon, &IID_iToolIcon> pti(point_load_tool);
-   HRESULT hr = pti->SetIcon(::AfxGetInstanceHandle(), IDI_POINT_LOAD);
-   ATLASSERT(SUCCEEDED(hr));
 
-   m_SettingsBar.AddTool(point_load_tool);
+      // point load tool
+      CComPtr<iTool> point_load_tool;
+      ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&point_load_tool);
+      point_load_tool->SetID(IDC_POINT_LOAD_DRAG);
+      point_load_tool->SetToolTipText(_T("Drag me onto girder to create a point load"));
 
-   // distributed load tool
-   CComPtr<iTool> distributed_load_tool;
-   ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&distributed_load_tool);
-   distributed_load_tool->SetID(IDC_DISTRIBUTED_LOAD_DRAG);
-   distributed_load_tool->SetToolTipText(_T("Drag me onto girder to create a distributed load"));
-
-   HINSTANCE hInstance = AfxGetInstanceHandle();
-
-   CComQIPtr<iToolIcon, &IID_iToolIcon> dti(distributed_load_tool);
-   hr = dti->SetIcon(hInstance, IDI_DISTRIBUTED_LOAD);
-   ATLASSERT(SUCCEEDED(hr));
-
-   m_SettingsBar.AddTool(distributed_load_tool);
-
-   // moment load tool
-   // Used only with PGSuper (not used for PGSplice)
-   if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
-   {
-      CComPtr<iTool> moment_load_tool;
-      ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&moment_load_tool);
-      moment_load_tool->SetID(IDC_MOMENT_LOAD_DRAG);
-      moment_load_tool->SetToolTipText(_T("Drag me onto girder to create a moment load"));
-      
-      CComQIPtr<iToolIcon, &IID_iToolIcon> mti(moment_load_tool);
-      hr = mti->SetIcon(hInstance, IDI_MOMENT_LOAD);
+      CComQIPtr<iToolIcon, &IID_iToolIcon> pti(point_load_tool);
+      HRESULT hr = pti->SetIcon(::AfxGetInstanceHandle(), IDI_POINT_LOAD);
       ATLASSERT(SUCCEEDED(hr));
 
-      m_SettingsBar.AddTool(moment_load_tool);
-   }
-   else
-   {
-      m_SettingsBar.GetDlgItem(IDC_MOMENT_LOAD_DRAG)->ShowWindow(SW_HIDE);
-   }
+      m_SettingsBar.AddTool(point_load_tool);
 
-   CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_STRANDS);
-   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_STRANDS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
-   m_SettingsBar.AddTooltip(pBtn);
+      // distributed load tool
+      CComPtr<iTool> distributed_load_tool;
+      ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&distributed_load_tool);
+      distributed_load_tool->SetID(IDC_DISTRIBUTED_LOAD_DRAG);
+      distributed_load_tool->SetToolTipText(_T("Drag me onto girder to create a distributed load"));
 
-   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_STRANDS_CG);
-   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_STRANDS_CG), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
-   m_SettingsBar.AddTooltip(pBtn);
+      HINSTANCE hInstance = AfxGetInstanceHandle();
 
-   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_DIMENSIONS);
-   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_DIMENSIONS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
-   m_SettingsBar.AddTooltip(pBtn);
+      CComQIPtr<iToolIcon, &IID_iToolIcon> dti(distributed_load_tool);
+      hr = dti->SetIcon(hInstance, IDI_DISTRIBUTED_LOAD);
+      ATLASSERT(SUCCEEDED(hr));
 
-   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_PROPERTIES);
-   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_PROPERTIES), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
-   m_SettingsBar.AddTooltip(pBtn);
+      m_SettingsBar.AddTool(distributed_load_tool);
 
-   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_LONGITUDINAL_REINFORCEMENT);
-   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_LONGITUDINAL_REINFORCEMENT), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
-   m_SettingsBar.AddTooltip(pBtn);
-
-   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_STIRRUPS);
-   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_STIRRUPS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
-   m_SettingsBar.AddTooltip(pBtn);
-
-   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_USER_LOADS);
-   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_USER_LOADS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
-   m_SettingsBar.AddTooltip(pBtn);
-
-   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SCHEMATIC);
-   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_SCHEMATIC), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
-   m_SettingsBar.AddTooltip(pBtn);
-
-   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SECTION_CG);
-   pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_SECTION_CG), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
-   m_SettingsBar.AddTooltip(pBtn);
-
-   // sets the check state of the sync button
-   CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
-   UINT settings = pDoc->GetGirderEditorSettings();
-   pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
-   pBtn->SetCheck( settings & IDG_SV_SYNC_GIRDER ? TRUE : FALSE);
-
-   if ( SyncWithBridgeModelView() ) 
-   {
-      // Sync only if we can
-      CSelection selection = pDoc->GetSelection();
-      if ( selection.Type == CSelection::Girder && selection.GroupIdx != ALL_GROUPS && selection.GirderIdx != ALL_GIRDERS)
+      // moment load tool
+      // Used only with PGSuper (not used for PGSplice)
+      if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
       {
-	      m_GirderKey.groupIndex = selection.GroupIdx;
-    	   m_GirderKey.girderIndex = selection.GirderIdx;
+         CComPtr<iTool> moment_load_tool;
+         ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&moment_load_tool);
+         moment_load_tool->SetID(IDC_MOMENT_LOAD_DRAG);
+         moment_load_tool->SetToolTipText(_T("Drag me onto girder to create a moment load"));
+      
+         CComQIPtr<iToolIcon, &IID_iToolIcon> mti(moment_load_tool);
+         hr = mti->SetIcon(hInstance, IDI_MOMENT_LOAD);
+         ATLASSERT(SUCCEEDED(hr));
+
+         m_SettingsBar.AddTool(moment_load_tool);
       }
-   }
+      else
+      {
+         m_SettingsBar.GetDlgItem(IDC_MOMENT_LOAD_DRAG)->ShowWindow(SW_HIDE);
+      }
 
-   UpdateCutRange();
+      CButton* pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_STRANDS);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_STRANDS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
 
-   FillEventComboBox();
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_STRANDS_CG);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_STRANDS_CG), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
+
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_DIMENSIONS);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_DIMENSIONS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
+
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_PROPERTIES);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_PROPERTIES), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
+
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_LONGITUDINAL_REINFORCEMENT);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_LONGITUDINAL_REINFORCEMENT), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
+
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_STIRRUPS);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_STIRRUPS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
+
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_USER_LOADS);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_USER_LOADS), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
+
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SCHEMATIC);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_SCHEMATIC), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
+
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SECTION_CG);
+      pBtn->SetIcon((HICON)::LoadImage(hInstance, MAKEINTRESOURCE(IDI_SECTION_CG), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_SHARED));
+      m_SettingsBar.AddTooltip(pBtn);
+
+      // sets the check state of the sync button
+      CPGSDocBase* pDoc = (CPGSDocBase*)GetActiveDocument();
+      UINT settings = pDoc->GetGirderEditorSettings();
+      pBtn = (CButton*)m_SettingsBar.GetDlgItem(IDC_SYNC);
+      pBtn->SetCheck( settings & IDG_SV_SYNC_GIRDER ? TRUE : FALSE);
+
+      if ( SyncWithBridgeModelView() ) 
+      {
+         // Sync only if we can
+         CSelection selection = pDoc->GetSelection();
+         if ( selection.Type == CSelection::Girder && selection.GroupIdx != ALL_GROUPS && selection.GirderIdx != ALL_GIRDERS)
+         {
+	         m_GirderKey.groupIndex = selection.GroupIdx;
+    	      m_GirderKey.girderIndex = selection.GirderIdx;
+         }
+      }
+
+      UpdateCutRange();
+
+      FillEventComboBox();
+   } // end of modulue state scoping
+
+   // Call UpdateData so DoDataExchage gets called and the event combo box can be subclassed
+   // to the wide combo box
+   m_SettingsBar.UpdateData(FALSE);
+
    UpdateBar();
 
 	return 0;

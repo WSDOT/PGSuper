@@ -62,6 +62,13 @@ BEGIN_MESSAGE_MAP(CGirderPropertiesGraphController, CIntervalGirderGraphControll
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+void CGirderPropertiesGraphController::DoDataExchange(CDataExchange* pDX)
+{
+   DDX_Control(pDX, IDC_INTERVAL, m_cbDropList);
+
+   CIntervalGirderGraphControllerBase::DoDataExchange(pDX);
+}
+
 BOOL CGirderPropertiesGraphController::OnInitDialog()
 {
    CIntervalGirderGraphControllerBase::OnInitDialog();

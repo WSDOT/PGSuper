@@ -24,6 +24,7 @@
 
 #include <Graphing\GirderPropertiesGraphBuilder.h>
 #include "GirderGraphControllerBase.h"
+#include <MfcTools\WideDropDownComboBox.h>
 
 class CGirderPropertiesGraphController : public CIntervalGirderGraphControllerBase
 {
@@ -41,7 +42,9 @@ public:
    virtual IndexType GetGraphCount();
 
 protected:
+   CWideDropDownComboBox m_cbDropList;
 
+   virtual void DoDataExchange(CDataExchange* pDX);
    virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CGirderPropertiesGraphController)
