@@ -27,6 +27,7 @@
 #include <Graphing\GraphingTypes.h>
 
 #include <IFace\AnalysisResults.h>
+#include <MfcTools\WideDropDownComboBox.h>
 
 class CAnalysisResultsGraphController : public CGirderGraphControllerBase
 {
@@ -85,7 +86,9 @@ public:
    IDType SelectedGraphIndexToGraphID(IndexType graphIdx);
 
 protected:
+   CWideDropDownComboBox m_cbDropList;
 
+   virtual void DoDataExchange(CDataExchange* pDX);
    virtual BOOL OnInitDialog() override;
 
 	//{{AFX_MSG(CAnalysisResultsGraphController)

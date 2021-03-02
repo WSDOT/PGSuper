@@ -2,6 +2,7 @@
 
 #include <PgsExt\PrecastSegmentData.h>
 #include "DrawPrecastSegmentControl.h"
+#include <MfcTools\WideDropDownComboBox.h>
 
 // CGirderSegmentGeneralPage dialog
 
@@ -15,7 +16,9 @@ public:
 
 // Dialog Data
 	enum { IDD = IDD_SEGMENT_GENERAL };
-	CEdit	   m_ctrlEc;
+   CWideDropDownComboBox m_cbConstruction;
+   CWideDropDownComboBox m_cbErection;
+   CEdit	   m_ctrlEc;
 	CEdit	   m_ctrlEci;
 	CButton	m_ctrlEcCheck;
 	CButton	m_ctrlEciCheck;

@@ -33,10 +33,21 @@
 #include "pgsExt\PointLoadData.h"
 #include <DManip\ToolPalette.h>
 #include <EAF\EAFViewControllerFactory.h>
+#include <MfcTools\WideDropDownComboBox.h>
 
 class CGirderModelElevationView;
 class CGirderModelSectionView;
 class CGirderViewPrintJob;
+
+/// Custom version of CToolPalette that allows the use of a the CWideDropDownComboBox
+class CMyToolPalette : public CToolPalette
+{
+public:
+   virtual void DoDataExchange(CDataExchange* pDX);
+
+protected:
+   CWideDropDownComboBox m_cbEvents;
+};
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -191,7 +202,7 @@ private:
    void DoFilePrint(bool direct);
    void FillEventComboBox();
 
-   CToolPalette m_SettingsBar;
+   CMyToolPalette m_SettingsBar;
 
    // view variables
    Float64 ConvertToGirderlineCoordinate(Float64 Xgl) const;

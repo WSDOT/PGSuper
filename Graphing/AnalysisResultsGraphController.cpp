@@ -92,6 +92,14 @@ BEGIN_MESSAGE_MAP(CAnalysisResultsGraphController, CGirderGraphControllerBase)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+
+void CAnalysisResultsGraphController::DoDataExchange(CDataExchange* pDX)
+{
+   DDX_Control(pDX, IDC_DROP_LIST, m_cbDropList);
+
+   CGirderGraphControllerBase::DoDataExchange(pDX);
+}
+
 BOOL CAnalysisResultsGraphController::OnInitDialog()
 {
    CGirderGraphControllerBase::OnInitDialog();

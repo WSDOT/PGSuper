@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <MfcTools\WideDropDownComboBox.h>
 
 // CTemporarySupportLayoutPage dialog
 
@@ -44,6 +45,9 @@ protected:
    EventIndexType CreateEvent();
 
    void UpdateSlabOffsetControls();
+
+   CWideDropDownComboBox m_cbErection;
+   CWideDropDownComboBox m_cbRemoval;
 
    Float64 m_Station;
    std::_tstring m_strOrientation;

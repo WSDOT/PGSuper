@@ -30,6 +30,7 @@
 //
 
 #include "resource.h"
+#include <MfcTools\WideDropDownComboBox.h>
 
 class CGirderDescDlg;
 
@@ -48,7 +49,9 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CGirderDescGeneralPage)
 	enum { IDD = IDD_GIRDERDESC_GENERAL };
-	CEdit	   m_ctrlEc;
+   CWideDropDownComboBox m_cbConstruction;
+   CWideDropDownComboBox m_cbErection;
+   CEdit	   m_ctrlEc;
 	CEdit	   m_ctrlEci;
 	CButton	m_ctrlEcCheck;
 	CButton	m_ctrlEciCheck;
