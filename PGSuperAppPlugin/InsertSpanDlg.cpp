@@ -65,6 +65,8 @@ void CInsertSpanDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CInsertSpanDlg)
 	//}}AFX_DATA_MAP
 
+   DDX_Control(pDX, IDC_EVENT, m_cbEvents);
+
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
