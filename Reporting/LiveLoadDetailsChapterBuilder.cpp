@@ -87,7 +87,6 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
@@ -209,7 +208,8 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
 
    if ( bRating )
    {
-       bool rate_pedestrian = pRatingSpec->IncludePedestrianLiveLoad();
+      GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+      bool rate_pedestrian = pRatingSpec->IncludePedestrianLiveLoad();
 
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
       {
