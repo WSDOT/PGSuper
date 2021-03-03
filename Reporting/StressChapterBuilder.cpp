@@ -108,7 +108,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
    bool bDesign = m_bDesign;
-   bool bRating;
+   bool bRating = m_bRating;
    
    if ( m_bRating )
    {
