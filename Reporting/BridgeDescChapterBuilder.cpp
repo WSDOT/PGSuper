@@ -58,6 +58,7 @@ static void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 static void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_bridge_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_connection_abbrevation_footnotes(rptChapter* pChapter);
 static void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
@@ -127,16 +128,21 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-#pragma Reminder("UPDATE: Bridge Description Chapter - need to include temporary supports, erection sequence, post-tensioning, etc")
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SupportIndexType nTS = pBridge->GetTemporarySupportCount();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   //write_alignment_data( pBroker, pDisplayUnits, pChapter, level);
-   //write_profile_data( pBroker, pDisplayUnits, pChapter, level);
-   //write_crown_data( pBroker, pDisplayUnits, pChapter, level);
+   //write_alignment_data( pBroker, pDisplayUnits, pChapter, level); // now written as its own chapter
+   //write_profile_data( pBroker, pDisplayUnits, pChapter, level); // now written as its own chapter
+   //write_crown_data( pBroker, pDisplayUnits, pChapter, level); // now written as its own chapter
    write_bridge_data( pBroker, pDisplayUnits, pChapter, level);
    write_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level);
    write_friction_loss_data( pBroker, pDisplayUnits, pChapter, level);
    write_pier_data( pBroker, pDisplayUnits, pChapter, level);
+   if (0 < nTS)
+   {
+      write_ts_data(pBroker, pDisplayUnits, pChapter, level);
+   }
    write_bearing_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_span_data( pBroker, pDisplayUnits, pChapter, level);
    write_ps_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
@@ -1910,8 +1916,6 @@ void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Post-Tensioning Anchor Set and Friction Loss Parameters"));
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
    pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
-   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle( CB_NONE | CJ_LEFT) );
    *pPara << pTable << rptNewLine;
 
    (*pTable)(0,1) << COLHDR(symbol(DELTA) << Sub(_T("set")) << rptNewLine << _T("Anchor Set"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
@@ -1945,6 +1949,28 @@ void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
    *pPara << _T("Relaxation Effects are ") << (pLossParams->IgnoreRelaxationEffects()         ? _T("ignored") : _T("Considered")) << rptNewLine;
 }
 
+void write_connection_abbrevation_footnotes(rptChapter* pChapter)
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << _T("Bearing Offset Measure") << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, false) << rptNewLine;
+   *pPara << rptNewLine;
+   *pPara << _T("End Distance Measure") << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, true, false) << rptNewLine;
+   //*pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, false) << rptNewLine; // produces the same result at the line above
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, false) << rptNewLine;
+}
+
+
 void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    USES_CONVERSION;
@@ -1974,7 +2000,9 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    pLayoutTable->SetNumberOfHeaderRows(2);
 
    pLayoutTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pLayoutTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    pLayoutTable->SetRowSpan(0,0,2);
    (*pLayoutTable)(0,0) << _T("");
@@ -1989,7 +2017,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pLayoutTable)(0,3) << _T("Skew Angle");
 
    pLayoutTable->SetRowSpan(0,4,2);
-   (*pLayoutTable)(0,4) << _T("Boundary") << rptNewLine << _T("Condition");
+   (*pLayoutTable)(0,4) << _T("Boundary Condition");
 
    // Table for pier diaphragms
    rptRcTable* pDiaphragmTable = rptStyleManager::CreateDefaultTable(9,_T("Pier Diaphragms"));
@@ -2050,23 +2078,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
    (*pConnectionTable)(1,7) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
    (*pConnectionTable)(1,8) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
 
-   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
-   *pChapter << pPara;
-   *pPara << _T("Bearing Offset Measure") << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  true,  true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  true,  false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder,  false, false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true,  true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true,  false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, false) << rptNewLine;
-   *pPara << rptNewLine;
-   *pPara << _T("End Distance Measure") << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  true,  true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  true,  false) << rptNewLine;
-   //*pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, false) << rptNewLine; // produces the same result at the line above
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true,  true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true,  false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder,     true,  true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder,     true,  false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder,     false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder,     false, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    true,  true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    true,  false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier,    false, false) << rptNewLine;
+   write_connection_abbrevation_footnotes(pChapter);
 
    bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
 
@@ -2407,9 +2419,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker, ILibrary,     pLib );
    GET_IFACE2(pBroker, ITempSupport,  pTemporarySupport ); 
-   GET_IFACE2(pBroker, IRoadwayData, pAlignment);
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2430,45 +2440,61 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(6,_T("Temporary Supports"));
+   rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(7,_T("Temporary Supports"));
    *pPara << pLayoutTable << rptNewLine;
 
    pLayoutTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pLayoutTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(5, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(5, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetColumnStyle(6, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pLayoutTable->SetStripeRowColumnStyle(6, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   (*pLayoutTable)(0,0) << _T("");
-   (*pLayoutTable)(0,1) << _T("Station");
-   (*pLayoutTable)(0,2) << _T("Bearing");
-   (*pLayoutTable)(0,3) << _T("Skew Angle");
-   (*pLayoutTable)(0,4) << _T("Type");
-   (*pLayoutTable)(0,5) << _T("Erection") << rptNewLine << _T("Stage");
-   (*pLayoutTable)(0,6) << _T("Removal") << rptNewLine << _T("Stage");
+   ColumnIndexType layout_col = 0;
+   (*pLayoutTable)(0, layout_col++) << _T("");
+   (*pLayoutTable)(0, layout_col++) << _T("Station");
+   (*pLayoutTable)(0, layout_col++) << _T("Bearing");
+   (*pLayoutTable)(0, layout_col++) << _T("Skew Angle");
+   (*pLayoutTable)(0, layout_col++) << _T("Type");
+   (*pLayoutTable)(0, layout_col++) << _T("Erection  Event");
+   (*pLayoutTable)(0, layout_col++) << _T("Removal Event");
 
    // connections
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   rptRcTable* pConnectionsTable = rptStyleManager::CreateDefaultTable(8,_T("Temporary Support Connections"));
+   rptRcTable* pConnectionsTable = rptStyleManager::CreateDefaultTable(7,_T("Temporary Support Connections"));
    *pPara << pConnectionsTable << rptNewLine;
+   write_connection_abbrevation_footnotes(pChapter);
 
    pConnectionsTable->SetNumberOfHeaderRows(1);
 
    pConnectionsTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pConnectionsTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetColumnStyle(6, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pConnectionsTable->SetStripeRowColumnStyle(6, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   (*pConnectionsTable)(0,0) << _T("");
-   (*pConnectionsTable)(0,1) << _T("Boundary") << rptNewLine << _T("Condition");
-   (*pConnectionsTable)(0,2) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pConnectionsTable)(0,3) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
-   (*pConnectionsTable)(0,4) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
-   (*pConnectionsTable)(0,5) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
-   (*pConnectionsTable)(0,6) << _T("Closure") << rptNewLine << _T("Stage");
+   ColumnIndexType connections_col = 0;
+   (*pConnectionsTable)(0, connections_col++) << _T("");
+   (*pConnectionsTable)(0, connections_col++) << _T("Boundary") << rptNewLine << _T("Condition");
+   (*pConnectionsTable)(0, connections_col++) << COLHDR(_T("Bearing") << rptNewLine << _T("Offset"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionsTable)(0, connections_col++) << _T("Bearing") << rptNewLine << _T("Offset") << rptNewLine << _T("Measure");
+   (*pConnectionsTable)(0, connections_col++) << COLHDR(_T("End") << rptNewLine << _T("Distance"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+   (*pConnectionsTable)(0, connections_col++) << _T("End") << rptNewLine << _T("Distance") << rptNewLine << _T("Measure");
+   (*pConnectionsTable)(0, connections_col++) << _T("Cast Closure Event");
 
-   RowIndexType row1 = pLayoutTable->GetNumberOfHeaderRows();
-   RowIndexType row2 = pConnectionsTable->GetNumberOfHeaderRows();
+   RowIndexType layout_row = pLayoutTable->GetNumberOfHeaderRows();
+   RowIndexType connections_row = pConnectionsTable->GetNumberOfHeaderRows();
    SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
+      layout_col = 0;
+      connections_col = 0;
+
       const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
       SupportIDType tsID = pTS->GetID();
 
@@ -2490,12 +2516,12 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       CComBSTR bstrBearing;
       direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
 
-      (*pLayoutTable)(row1,0) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
+      (*pLayoutTable)(layout_row, layout_col++) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
 
-      (*pLayoutTable)(row1,1) << rptRcStation(pTS->GetStation(), &pDisplayUnits->GetStationFormat() );
-      (*pLayoutTable)(row1,2) << RPT_BEARING(OLE2T(bstrBearing));
-      (*pLayoutTable)(row1,3) << RPT_ANGLE(OLE2T(bstrAngle));
-      (*pLayoutTable)(row1,4) << CTemporarySupportData::AsString(pTS->GetSupportType());
+      (*pLayoutTable)(layout_row, layout_col++) << rptRcStation(pTS->GetStation(), &pDisplayUnits->GetStationFormat() );
+      (*pLayoutTable)(layout_row, layout_col++) << RPT_BEARING(OLE2T(bstrBearing));
+      (*pLayoutTable)(layout_row, layout_col++) << RPT_ANGLE(OLE2T(bstrAngle));
+      (*pLayoutTable)(layout_row, layout_col++) << CTemporarySupportData::AsString(pTS->GetSupportType());
 
       EventIndexType erectionEventIdx, removalEventIdx;
       pTimelineMgr->GetTempSupportEvents(tsID,&erectionEventIdx,&removalEventIdx);
@@ -2503,44 +2529,44 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       const CTimelineEvent* pErectionEvent = pTimelineMgr->GetEventByIndex(erectionEventIdx);
       const CTimelineEvent* pRemovalEvent  = pTimelineMgr->GetEventByIndex(removalEventIdx);
 
-      (*pLayoutTable)(row1,5) << _T("Event ") << LABEL_EVENT(erectionEventIdx) << _T(": ") << pErectionEvent->GetDescription();
-      (*pLayoutTable)(row1,6) << _T("Event ") << LABEL_EVENT(removalEventIdx)  << _T(": ") << pRemovalEvent->GetDescription();
+      (*pLayoutTable)(layout_row, layout_col++) << _T("Event ") << LABEL_EVENT(erectionEventIdx) << _T(": ") << pErectionEvent->GetDescription();
+      (*pLayoutTable)(layout_row, layout_col++) << _T("Event ") << LABEL_EVENT(removalEventIdx)  << _T(": ") << pRemovalEvent->GetDescription();
 
-      row1++;
+      layout_row++;
 
-      (*pConnectionsTable)(row2,0) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
-      (*pConnectionsTable)(row2,1) << CTemporarySupportData::AsString(pTS->GetConnectionType());
+      (*pConnectionsTable)(connections_row, connections_col++) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
+      (*pConnectionsTable)(connections_row, connections_col++) << CTemporarySupportData::AsString(pTS->GetConnectionType());
 
       if ( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint )
       {
          Float64 brgOffset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
          pTS->GetBearingOffset(&brgOffset,&brgOffsetMeasure);
-         (*pConnectionsTable)(row2,2) << cmpdim.SetValue(brgOffset);
-         (*pConnectionsTable)(row2,3) << GetBearingOffsetMeasureString(brgOffsetMeasure,false,false);
+         (*pConnectionsTable)(connections_row, connections_col++) << cmpdim.SetValue(brgOffset);
+         (*pConnectionsTable)(connections_row, connections_col++) << GetBearingOffsetMeasureString(brgOffsetMeasure,false,true);
 
          Float64 endDist;
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
          pTS->GetGirderEndDistance(&endDist,&endDistMeasure);
-         (*pConnectionsTable)(row2,4) << cmpdim.SetValue(endDist);
-         (*pConnectionsTable)(row2,5) << GetEndDistanceMeasureString(endDistMeasure,false,false);
+         (*pConnectionsTable)(connections_row, connections_col++) << cmpdim.SetValue(endDist);
+         (*pConnectionsTable)(connections_row, connections_col++) << GetEndDistanceMeasureString(endDistMeasure,false,true);
 
          const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(0);
          IDType cpID = pClosureJoint->GetID();
          EventIndexType castClosureEventIdx = pTimelineMgr->GetCastClosureJointEventIndex(cpID);
          const CTimelineEvent* pCastClosureEvent = pTimelineMgr->GetEventByIndex(castClosureEventIdx);
-         (*pConnectionsTable)(row2,6) << _T("Event ") << LABEL_EVENT(castClosureEventIdx) << _T(": ") << pCastClosureEvent->GetDescription();
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("Event ") << LABEL_EVENT(castClosureEventIdx) << _T(": ") << pCastClosureEvent->GetDescription();
       }
       else
       {
-         (*pConnectionsTable)(row2,2) << RPT_NA;
-         (*pConnectionsTable)(row2,3) << RPT_NA;
-         (*pConnectionsTable)(row2,4) << RPT_NA;
-         (*pConnectionsTable)(row2,5) << RPT_NA;
-         (*pConnectionsTable)(row2,6) << RPT_NA;
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
+         (*pConnectionsTable)(connections_row, connections_col++) << _T("");
       }
 
-      row2++;
+      connections_row++;
    }
 }
 
