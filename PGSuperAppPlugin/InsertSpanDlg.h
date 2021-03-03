@@ -27,6 +27,7 @@
 
 #include "resource.h"
 #include <PgsExt\BridgeDescription2.h>
+#include <MfcTools\WideDropDownComboBox.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CInsertSpanDlg dialog
@@ -60,6 +61,8 @@ protected:
    const CBridgeDescription2* m_pBridgeDesc;
    int m_LocationIdx;
    std::vector<std::pair<PierIndexType,pgsTypes::PierFaceType>> m_Keys;
+
+   CWideDropDownComboBox m_cbEvents;
 
 	// Generated message map functions
 	//{{AFX_MSG(CInsertSpanDlg)
