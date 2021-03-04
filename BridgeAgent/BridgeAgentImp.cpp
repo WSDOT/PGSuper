@@ -7980,7 +7980,7 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
          // measuring along a line that is normal the CL Bearing line
          // NOTE: in the general case, there can be multiple CL Bearing lines.
          // to make things managable, we'll create a CL Bearing line by connecting the CL Bearing point
-         // for the first and last girder in the span
+         // for the two exterior girders
          CSegmentKey leftSegmentKey = GetSegmentAtPier(pierIdx,CGirderKey(grpIdx,0));
          CSegmentKey rightSegmentKey = GetSegmentAtPier(pierIdx,CGirderKey(grpIdx,nGirders-1));
 
@@ -8027,17 +8027,16 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
    std::vector<Float64> spaces;
    for ( GirderIndexType gdrIdx = 1; gdrIdx < nGirders; gdrIdx++ ) // start at gdrIdx 1 (spacing between gdrIdx 0 and 1)
    {
-      // girder keys for girders on left and right side of the space
-      CGirderKey leftGirderKey(grpIdx,gdrIdx-1);
-      CGirderKey rightGirderKey(grpIdx,gdrIdx);
+      // girder line IDs for the segments pairs of adjacent segments working left to right across the bridge cross section
 
       // segments that touch the pier
-      CSegmentKey leftGdrSegmentKey(GetSegmentAtPier(pierIdx,leftGirderKey));
-      CSegmentKey rightGdrSegmentKey(GetSegmentAtPier(pierIdx,rightGirderKey));
+      std::array<CSegmentKey, 2> leftSegmentKey, rightSegmentKey;
+      GetSegmentsAtPier(pierIdx, gdrIdx - 1, &leftSegmentKey[pgsTypes::Back], &leftSegmentKey[pgsTypes::Ahead]);
+      GetSegmentsAtPier(pierIdx, gdrIdx, &rightSegmentKey[pgsTypes::Back], &rightSegmentKey[pgsTypes::Ahead]);
 
       // girder line IDs for the segments
-      GirderIDType leftGdrID  = ::GetGirderSegmentLineID(leftGdrSegmentKey);
-      GirderIDType rightGdrID = ::GetGirderSegmentLineID(rightGdrSegmentKey);
+      GirderIDType leftGdrID  = ::GetGirderSegmentLineID(leftSegmentKey[pierFace]);
+      GirderIDType rightGdrID = ::GetGirderSegmentLineID(rightSegmentKey[pierFace]);
 
       // get the girder lines so they can be intersected with the pier line
       CComPtr<IGirderLine> leftGirderLine, rightGirderLine;
@@ -8086,6 +8085,166 @@ std::vector<Float64> CBridgeAgentImp::GetGirderSpacing(PierIndexType pierIdx,pgs
       pntLeft->DistanceEx(pntRight,&distance); // distance along line
 
       ATLASSERT( 0 < distance );
+      spaces.push_back(distance);
+   }
+
+   return spaces;
+}
+
+std::vector<Float64> CBridgeAgentImp::GetGirderSpacingAtTemporarySupport(SupportIndexType tsIdx, pgsTypes::PierFaceType pierFace, pgsTypes::MeasurementLocation measureLocation, pgsTypes::MeasurementType measureType) const
+{
+   VALIDATE(GIRDER);
+
+   // Determine which group the temporary support belogs to
+   std::array<CSegmentKey, 2> segmentKey;
+   GetSegmentsAtTemporarySupport(0, tsIdx, &segmentKey[pgsTypes::Back], &segmentKey[pgsTypes::Ahead]);
+   GroupIndexType grpIdx = segmentKey[pgsTypes::Back].groupIndex;
+
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(grpIdx);
+   GirderIndexType nGirders = pGroup->GetGirderCount();
+
+   // we are going to need the bridge geomtry model
+   CComPtr<IBridgeGeometry> bridgeGeometry;
+   m_Bridge->get_BridgeGeometry(&bridgeGeometry);
+
+   CComPtr<IAlignment> alignment;
+   m_Bridge->get_Alignment(&alignment);
+
+   CComPtr<IPoint2d> pntLeft, pntAlignment, pntBridge, pntRight;
+   GetControlPoints(tsIdx, pgsTypes::pcLocal, &pntLeft, &pntAlignment, &pntBridge, &pntRight);
+
+   CComPtr<ILine2d> measureLine; // only used if we are measuring normal to item (CLPier or CLBrg)
+   if (measureType == pgsTypes::NormalToItem)
+   {
+      // need the line that we are measuring along... then we will intersect the segment lines
+      // with this line to compute the spacing
+      if (measureLocation == pgsTypes::AtPierLine)
+      {
+         // measuring along a line that is normal to the CL Temporary Support line
+         Float64 station = pIBridgeDesc->GetTemporarySupport(tsIdx)->GetStation();
+         CComPtr<IDirection> normal;
+         alignment->Normal(CComVariant(station), &normal);
+         Float64 dir;
+         normal->get_Value(&dir);
+
+         measureLine.CoCreateInstance(CLSID_Line2d);
+         CComPtr<IVector2d> v;
+         CComPtr<IPoint2d> pnt;
+         measureLine->GetExplicit(&pnt, &v);
+
+         v->put_Direction(dir);
+         measureLine->SetExplicit(pntAlignment, v);
+      }
+      else
+      {
+         // measuring along a line that is normal the CL Bearing line
+         // NOTE: in the general case, there can be multiple CL Bearing lines.
+         // to make things managable, we'll create a CL Bearing line by connecting the CL Bearing point
+         // for the two exterior girders
+         CSegmentKey leftSegmentKey(segmentKey[pierFace]);
+         leftSegmentKey.girderIndex = 0;
+         CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
+         GetSegmentEndPoints(leftSegmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
+         CComPtr<IPoint2d> p1 = (pierFace == pgsTypes::Ahead ? pntBrg1 : pntBrg2);
+
+         pntPier1.Release();
+         pntEnd1.Release();
+         pntBrg1.Release();
+         pntBrg2.Release();
+         pntEnd2.Release();
+         pntPier2.Release();
+         
+         CSegmentKey rightSegmentKey(segmentKey[pierFace]);
+         rightSegmentKey.girderIndex = nGirders - 1;
+         GetSegmentEndPoints(rightSegmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
+         CComPtr<IPoint2d> p2 = (pierFace == pgsTypes::Ahead ? pntBrg1 : pntBrg2);
+
+         CComPtr<ILine2d> clBrgLine;
+         clBrgLine.CoCreateInstance(CLSID_Line2d);
+         clBrgLine->ThroughPoints(p1, p2);
+
+         CComPtr<IPoint2d> pntBrg;
+         alignment->Intersect(clBrgLine, pntAlignment, &pntBrg);
+
+         CComPtr<IStation> station;
+         Float64 offset;
+         alignment->Offset(pntBrg, &station, &offset);
+
+         CComPtr<IDirection> normal;
+         alignment->Normal(CComVariant(station), &normal);
+         Float64 dir;
+         normal->get_Value(&dir);
+
+         measureLine.CoCreateInstance(CLSID_Line2d);
+         CComPtr<IPoint2d> p;
+         CComPtr<IVector2d> v;
+         measureLine->GetExplicit(&p, &v);
+
+         v->put_Direction(dir);
+         measureLine->SetExplicit(pntBrg, v);
+      }
+   }
+
+   // loop over all girders and compute the spacing between the girders at the CL Temp Support
+   std::vector<Float64> spaces;
+   for (GirderIndexType gdrIdx = 1; gdrIdx < nGirders; gdrIdx++) // start at gdrIdx 1 (spacing between gdrIdx 0 and 1)
+   {
+      // girder line IDs for the segments pairs of adjacent segments working left to right across the bridge cross section
+      std::array<CSegmentKey, 2> segmentKey;
+      GetSegmentsAtTemporarySupport(gdrIdx-1, tsIdx, &segmentKey[pgsTypes::Back], &segmentKey[pgsTypes::Ahead]);
+      GirderIDType leftGdrID = ::GetGirderSegmentLineID(segmentKey[pierFace]);
+
+      GetSegmentsAtTemporarySupport(gdrIdx, tsIdx, &segmentKey[pgsTypes::Back], &segmentKey[pgsTypes::Ahead]);
+      GirderIDType rightGdrID = ::GetGirderSegmentLineID(segmentKey[pierFace]);
+
+      // get the girder lines so they can be intersected with the pier line
+      CComPtr<IGirderLine> leftGirderLine, rightGirderLine;
+      bridgeGeometry->FindGirderLine(leftGdrID, &leftGirderLine);
+      bridgeGeometry->FindGirderLine(rightGdrID, &rightGirderLine);
+
+      CComPtr<IPoint2d> pntLeft, pntRight; // point on left and right girder
+                                           // spacing is distance between the points
+
+      Float64 distance = -9999;
+      if (measureType == pgsTypes::NormalToItem)
+      {
+         // intersect measure line with girder paths
+
+         // get the girder paths
+         CComPtr<IPath> leftPath, rightPath;
+         leftGirderLine->get_Path(&leftPath);
+         rightGirderLine->get_Path(&rightPath);
+
+         // intersect each path with the normal line
+         leftPath->Intersect(measureLine, pntAlignment, &pntLeft);
+         rightPath->Intersect(measureLine, pntAlignment, &pntRight);
+      }
+      else
+      {
+         ATLASSERT(measureType == pgsTypes::AlongItem);
+         // geometry points are already computed... just get them
+
+         switch (measureLocation)
+         {
+         case pgsTypes::AtPierLine:
+            leftGirderLine->get_PierPoint(pierFace == pgsTypes::Back ? etEnd : etStart, &pntLeft);
+            rightGirderLine->get_PierPoint(pierFace == pgsTypes::Back ? etEnd : etStart, &pntRight);
+            break;
+
+         case pgsTypes::AtCenterlineBearing:
+            leftGirderLine->get_BearingPoint(pierFace == pgsTypes::Back ? etEnd : etStart, &pntLeft);
+            rightGirderLine->get_BearingPoint(pierFace == pgsTypes::Back ? etEnd : etStart, &pntRight);
+            break;
+
+         default:
+            ATLASSERT(false);
+         }
+      }
+
+      pntLeft->DistanceEx(pntRight, &distance); // distance along line
+
+      ATLASSERT(0 < distance);
       spaces.push_back(distance);
    }
 

@@ -412,6 +412,9 @@ interface IBridge : IUnknown
    // returns girder spacing at a pier. The vector will contain nGirders-1 spaces
    virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace, pgsTypes::MeasurementLocation measureLocation, pgsTypes::MeasurementType measureType) const = 0;
 
+   // returns girder spacing at a temporary support. The vector will contain nGirders-1 spaces
+   virtual std::vector<Float64> GetGirderSpacingAtTemporarySupport(SupportIndexType tsIdx, pgsTypes::PierFaceType pierFace, pgsTypes::MeasurementLocation measureLocation, pgsTypes::MeasurementType measureType) const = 0;
+
    // Same as GetGirderSpacing(fl64) above, except returns spacings at bottom CL girder
    virtual std::vector<SpaceBetweenGirder> GetGirderSpacingAtBottomClGirder(Float64 station) const = 0;
 

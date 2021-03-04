@@ -32,6 +32,8 @@
 
 #include <WBFLCogo.h>
 
+#include <PgsExt\PrecastSegmentData.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -750,7 +752,8 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    angle_formatter.CoCreateInstance(CLSID_AngleDisplayUnitFormatter);
    angle_formatter->put_Signed(VARIANT_TRUE);
 
-   GET_IFACE2(pBroker, IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -819,30 +822,44 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
          RowIndexType row = pTable->GetNumberOfHeaderRows();
 
+         CSegmentKey segmentKey(grpIdx, 0, segIdx);
+         std::array<std::vector<Float64>, 8> spacing;
+         if (1 < nGirders)
+         {
+            int idx = 0;
+            const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
+            for (int i = 0; i < 2; i++)
+            {
+               pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+               pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
+               pgsTypes::MeasurementLocation location1 = (i == 0 ? pgsTypes::AtPierLine : pgsTypes::AtCenterlineBearing);
+               pgsTypes::MeasurementLocation location2 = (i == 0 ? pgsTypes::AtCenterlineBearing : pgsTypes::AtPierLine);
+               const CPierData2* pPier = nullptr;
+               const CTemporarySupportData* pTS = nullptr;
+               pSegment->GetSupport(endType, &pPier, &pTS);
+               if (pPier)
+               {
+                  PierIndexType pierIdx = pPier->GetIndex();
+                  spacing[idx++] = pBridge->GetGirderSpacing(pierIdx, face, location1, pgsTypes::NormalToItem);
+                  spacing[idx++] = pBridge->GetGirderSpacing(pierIdx, face, location1, pgsTypes::AlongItem);
+                  spacing[idx++] = pBridge->GetGirderSpacing(pierIdx, face, location2, pgsTypes::NormalToItem);
+                  spacing[idx++] = pBridge->GetGirderSpacing(pierIdx, face, location2, pgsTypes::AlongItem);
+               }
+               else
+               {
+                  SupportIndexType tsIdx = pTS->GetIndex();
+                  spacing[idx++] = pBridge->GetGirderSpacingAtTemporarySupport(tsIdx, face, location1, pgsTypes::NormalToItem);
+                  spacing[idx++] = pBridge->GetGirderSpacingAtTemporarySupport(tsIdx, face, location1, pgsTypes::AlongItem);
+                  spacing[idx++] = pBridge->GetGirderSpacingAtTemporarySupport(tsIdx, face, location2, pgsTypes::NormalToItem);
+                  spacing[idx++] = pBridge->GetGirderSpacingAtTemporarySupport(tsIdx, face, location2, pgsTypes::AlongItem);
+               }
+            }
+         }
+
+
          for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
          {
             CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
-
-#pragma Reminder("UPDATE: spacing is measured at ends of segments")
-            // need to get piers at the ends of the segmetns
-            // could be a pier or temp support
-            // then need to get spacing at pier or TS
-
-            PierIndexType prevPierIdx, nextPierIdx;
-            pBridge->GetGirderGroupPiers(grpIdx, &prevPierIdx, &nextPierIdx);
-
-            std::vector<Float64> spacing[8];
-            if (1 < nGirders)
-            {
-               spacing[0] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine, pgsTypes::NormalToItem);
-               spacing[1] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtPierLine, pgsTypes::AlongItem);
-               spacing[2] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlineBearing, pgsTypes::NormalToItem);
-               spacing[3] = pBridge->GetGirderSpacing(prevPierIdx, pgsTypes::Ahead, pgsTypes::AtCenterlineBearing, pgsTypes::AlongItem);
-               spacing[4] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back, pgsTypes::AtCenterlineBearing, pgsTypes::NormalToItem);
-               spacing[5] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back, pgsTypes::AtCenterlineBearing, pgsTypes::AlongItem);
-               spacing[6] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back, pgsTypes::AtPierLine, pgsTypes::NormalToItem);
-               spacing[7] = pBridge->GetGirderSpacing(nextPierIdx, pgsTypes::Back, pgsTypes::AtPierLine, pgsTypes::AlongItem);
-            }
 
             CComPtr<IAngle> objStartAngle, objEndAngle;
             pBridge->GetSegmentAngle(segmentKey, pgsTypes::metStart, &objStartAngle);
