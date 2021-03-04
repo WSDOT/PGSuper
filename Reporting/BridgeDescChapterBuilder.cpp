@@ -142,9 +142,13 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    if (0 < nTS)
    {
       write_ts_data(pBroker, pDisplayUnits, pChapter, level);
+      write_framing_data(pBroker, pDisplayUnits, pChapter, level);
+   }
+   else
+   {
+      write_span_data(pBroker, pDisplayUnits, pChapter, level);
    }
    write_bearing_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
-   write_span_data( pBroker, pDisplayUnits, pChapter, level);
    write_ps_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_slab_data( pBroker, pDisplayUnits, pChapter, level );
    write_deck_reinforcing_data( pBroker, pDisplayUnits, pChapter, level );
@@ -2581,6 +2585,11 @@ void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
    // Setup the table
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,_T("Framing"));
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
    *pPara << pTable << rptNewLine;
 
    (*pTable)(0,0) << _T("");
