@@ -2406,6 +2406,8 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("UseCurrentSpecification"), m_bUseCurrentSpecification); // added in version 3
    pSave->Property(_T("SpecificationVersion"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion,true));
 
+   //pSave->Property(_T("AlwaysRate"), m_bAlwaysRate); // removed in version 4
+
    pSave->BeginUnit(_T("LiveLoadFactors_Design_Inventory"),1.0);
    if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
    {
