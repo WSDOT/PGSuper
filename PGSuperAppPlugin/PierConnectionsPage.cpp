@@ -197,7 +197,7 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    // Validate connection dimensions
    if ( pDX->m_bSaveAndValidate )
    {
-      if ( m_pPier->GetPrevSpan() )
+      if ( m_pPier->GetPrevSpan() && m_pPier->IsAbutment())
       {
          DDV_UnitValueZeroOrMore(pDX, IDC_LEFT_END_DISTANCE,   m_EndDistance[pgsTypes::Back],   pDisplayUnits->GetComponentDimUnit() );
 
@@ -211,7 +211,9 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
          // Note that this check doesn't occur if there isn't a previous span, which would be a situation where there could be a cantilever,
          // so only the first two cases need to be checked.
 
-         if (m_BearingOffset[pgsTypes::Back] < m_EndDistance[pgsTypes::Back])
+         if ((m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierAlongGirder ||
+            m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierNormalToPier)
+            && (m_BearingOffset[pgsTypes::Back] < m_EndDistance[pgsTypes::Back]))
          {
             pDX->PrepareEditCtrl(IDC_LEFT_END_DISTANCE);
             AfxMessageBox(_T("End Distance must be less than or equal to the Bearing Offset"),MB_OK | MB_ICONINFORMATION);
@@ -219,12 +221,14 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
          }
       }
 
-      if ( m_pPier->GetNextSpan() )
+      if ( m_pPier->GetNextSpan() && m_pPier->IsAbutment())
       {
          DDV_UnitValueZeroOrMore(pDX, IDC_RIGHT_END_DISTANCE,   m_EndDistance[pgsTypes::Ahead],   pDisplayUnits->GetComponentDimUnit() );
 
          // See comment above about back side of pier
-         if (m_BearingOffset[pgsTypes::Ahead] < m_EndDistance[pgsTypes::Ahead])
+         if ((m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierAlongGirder ||
+            m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierNormalToPier)
+            && (m_BearingOffset[pgsTypes::Ahead] < m_EndDistance[pgsTypes::Ahead]))
          {
             pDX->PrepareEditCtrl(IDC_RIGHT_END_DISTANCE);
             AfxMessageBox(_T("End Distance must be less than or equal to the Bearing Offset"),MB_OK | MB_ICONINFORMATION);
