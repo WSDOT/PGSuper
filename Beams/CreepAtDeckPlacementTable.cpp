@@ -48,7 +48,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat(sysNumericFormatTool::Automatic);
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 }
@@ -98,7 +98,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    *pParagraph << Sub2(_T("t"), _T("d")) << _T(" = ") << table->time.SetValue(ptl->GetAgeAtDeckPlacement()) << rptNewLine;
    *pParagraph << Sub2(_T("K"), _T("1")) << _T(" = ") << ptl->GetGdrK1Creep() << rptNewLine;
    *pParagraph << Sub2(_T("K"), _T("2")) << _T(" = ") << ptl->GetGdrK2Creep() << rptNewLine;
-   *pParagraph << Sub2(symbol(psi), _T("b")) << _T("(") << Sub2(_T("t"), _T("d")) << _T(",") << Sub2(_T("t"), _T("i")) << _T(")") << _T(" = ") << table->scalar.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient()) << rptNewLine;
+   *pParagraph << Sub2(symbol(psi), _T("b")) << _T("(") << Sub2(_T("t"), _T("d")) << _T(",") << Sub2(_T("t"), _T("i")) << _T(")") << _T(" = ") << table->creep.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient()) << rptNewLine;
    table->time.ShowUnitTag(false);
 
    // creep loss 

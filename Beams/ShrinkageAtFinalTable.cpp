@@ -204,7 +204,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(2,6) << table->strain.SetValue(ptl->Get_ebdf() * 1000);
    (*pParamTable)(2,7) << ptl->GetGdrK1Creep();
    (*pParamTable)(2,8) << ptl->GetGdrK2Creep();
-   (*pParamTable)(2,9) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(2,9) << table->creep.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
 
    // intermediate results
    pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));

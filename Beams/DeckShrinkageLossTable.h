@@ -28,7 +28,7 @@
 #include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <Reporting\CreepCoefficientChapterBuilder.h>
 
 class lrfdLosses;
 class CGirderData;
@@ -58,6 +58,7 @@ private:
    DECLARE_UV_PROTOTYPE( rptTimeUnitValue,    time);
    rptRcScalar scalar;
    rptRcScalar strain;
+   rptCreepCoefficient creep;
 
    IntervalIndexType compositeIntervalIdx;
 

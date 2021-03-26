@@ -48,7 +48,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat(sysNumericFormatTool::Automatic);
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
@@ -119,7 +119,7 @@ CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,IB
    *pParagraph << Sub2(_T("t"),_T("h"))  << _T(" = ") << table->time.SetValue(ptl->GetAgeAtHauling()) << rptNewLine;
    *pParagraph << Sub2(_T("K"),_T("1"))  << _T(" = ") << ptl->GetGdrK1Creep() << rptNewLine;
    *pParagraph << Sub2(_T("K"),_T("2"))  << _T(" = ") << ptl->GetGdrK2Creep() << rptNewLine;
-   *pParagraph << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("h")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")") << _T(" = ") << table->scalar.SetValue(ptl->GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
+   *pParagraph << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("h")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")") << _T(" = ") << table->creep.SetValue(ptl->GetCreepInitialToShipping().GetCreepCoefficient()) << rptNewLine;
    table->time.ShowUnitTag(false);
 
    *pParagraph << table << rptNewLine;

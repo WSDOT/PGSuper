@@ -252,9 +252,9 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,1) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("d")) << _T(",") << Sub2(_T("t"),_T("i")) << _T(")");
    (*pParamTable)(0,2) << Sub2(symbol(psi),_T("b")) << _T("(") << Sub2(_T("t"),_T("f")) << _T(",") << Sub2(_T("t"),_T("d")) << _T(")");
 
-   (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
-   (*pParamTable)(1,1) << table->scalar.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient());
-   (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());
+   (*pParamTable)(1,0) << table->creep.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(1,1) << table->creep.SetValue(ptl->GetCreepInitialToDeck().GetCreepCoefficient());
+   (*pParamTable)(1,2) << table->creep.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());
 
    if (bIsPrismatic)
    {

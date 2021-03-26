@@ -262,7 +262,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*pParamTable)(row, col++) << table->strain.SetValue(ptl->Get_eddf() * 1000);
    (*pParamTable)(row, col++) << ptl->GetDeckK1Creep();
    (*pParamTable)(row, col++) << ptl->GetDeckK2Creep();
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeck().GetCreepCoefficient());
+   (*pParamTable)(row, col++) << table->creep.SetValue(ptl->GetCreepDeck().GetCreepCoefficient());
 
    pParamTable = rptStyleManager::CreateDefaultTable(13,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -313,7 +313,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetKtd());
    (*pParamTable)(row, col++) << ptl->GetGdrK1Creep();
    (*pParamTable)(row, col++) << ptl->GetGdrK2Creep();
-   (*pParamTable)(row, col++) << table->scalar.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());
+   (*pParamTable)(row, col++) << table->creep.SetValue(ptl->GetCreepDeckToFinal().GetCreepCoefficient());
 
    *pParagraph << table << rptNewLine;
    row = 0;

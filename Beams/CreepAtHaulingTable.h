@@ -28,7 +28,7 @@
 #include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <Reporting\CreepCoefficientChapterBuilder.h>
 #include <PgsExt\StrandData.h>
 
 class lrfdLosses;
@@ -55,6 +55,7 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
    DECLARE_UV_PROTOTYPE( rptTimeUnitValue,    time);
+   rptCreepCoefficient creep;
    rptRcScalar scalar;
    rptRcScalar strain;
 
