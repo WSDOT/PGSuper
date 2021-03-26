@@ -280,7 +280,7 @@ CShrinkageAtHaulingTable* CShrinkageAtHaulingTable::PrepareTable(rptChapter* pCh
    (*paraTable)(2,4) << table->strain.SetValue(ptl->Get_ebih() * 1000);
    (*paraTable)(2,5) << ptl->GetGdrK1Creep();
    (*paraTable)(2,6) << ptl->GetGdrK2Creep();
-   (*paraTable)(2,7) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
+   (*paraTable)(2,7) << table->creep.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
 
 
    // intermediate results

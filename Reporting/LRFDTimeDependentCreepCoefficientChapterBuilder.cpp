@@ -22,6 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h>
+#include <Reporting\CreepCoefficientChapterBuilder.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
@@ -71,6 +72,8 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, vsRatio, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+
+   rptCreepCoefficient creep;
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -465,7 +468,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
             lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
 
             (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
-            (*pTable)(rowIdx,colIdx++) << pDetails->Ct;
+            (*pTable)(rowIdx,colIdx++) << creep.SetValue(pDetails->Ct);
          }
          else
          {
@@ -507,7 +510,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
                lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
 
                (*pTable)(rowIdx,colIdx++) << pLRFDDetails->ktd;
-               (*pTable)(rowIdx,colIdx++) << pDetails->Ct;
+               (*pTable)(rowIdx,colIdx++) << creep.SetValue(pDetails->Ct);
             }
             else
             {
@@ -552,7 +555,7 @@ rptChapter* CLRFDTimeDependentCreepCoefficientChapterBuilder::Build(CReportSpeci
             lrfdLRFDTimeDependentConcreteCreepDetails* pLRFDDetails = static_cast<lrfdLRFDTimeDependentConcreteCreepDetails*>(pDetails.get());
 
             (*pTable)(rowIdx, colIdx++) << pLRFDDetails->ktd;
-            (*pTable)(rowIdx, colIdx++) << pDetails->Ct;
+            (*pTable)(rowIdx, colIdx++) << creep.SetValue(pDetails->Ct);
          }
          else
          {

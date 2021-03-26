@@ -30,6 +30,18 @@
 
 interface IEAFDisplayUnits;
 
+class REPORTINGCLASS rptCreepCoefficient : public rptRcScalar
+{
+public:
+   rptCreepCoefficient()
+   {
+      SetFormat(sysNumericFormatTool::Fixed);
+      //SetWidth(6);
+      SetPrecision(4);
+   }
+};
+
+
 /*****************************************************************************
 CLASS 
    CCreepCoefficientChapterBuilder

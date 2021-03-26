@@ -291,7 +291,7 @@ CShrinkageAtDeckPlacementTable* CShrinkageAtDeckPlacementTable::PrepareTable(rpt
    (*pParamTable)(2,4) << table->strain.SetValue(ptl->Get_ebid() * 1000);
    (*pParamTable)(2,5) << ptl->GetGdrK1Creep();
    (*pParamTable)(2,6) << ptl->GetGdrK2Creep();
-   (*pParamTable)(2,7) << table->scalar.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
+   (*pParamTable)(2,7) << table->creep.SetValue(ptl->GetCreepInitialToFinal().GetCreepCoefficient());
 
    if (bIsPrismatic)
    {

@@ -22,6 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\LRFDCreepCoefficientChapterBuilder.h>
+#include <Reporting\CreepCoefficientChapterBuilder.h>
 
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
@@ -146,30 +147,27 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
    INIT_UV_PROTOTYPE( rptStressUnitValue, fc, pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
 
+   rptCreepCoefficient creep;
+
    CREEPCOEFFICIENTDETAILS details;
 
    //////////////////////////////
    // Report LRFD method
    //////////////////////////////
+   std::vector<std::pair<ICamber::CreepPeriod, std::_tstring>> strHeading;
+   strHeading.emplace_back(ICamber::cpReleaseToDiaphragm, _T("Prestress release until girder erection"));
+   strHeading.emplace_back(ICamber::cpDiaphragmToDeck, _T("Girder erection until deck casting"));
+   strHeading.emplace_back(ICamber::cpReleaseToDeck, _T("Prestress release until deck casting"));
+   strHeading.emplace_back(ICamber::cpReleaseToFinal, _T("Prestress release to final"));
+
    bool bSI = IS_SI_UNITS(pDisplayUnits);
 
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
-      for ( Int16 j = 0; j < 3; j++ )
+      int j = 0;
+      for(const auto& item : strHeading)
       {
-         ICamber::CreepPeriod creepPeriod;
-         if ( j == 0 )
-         {
-            creepPeriod = ICamber::cpReleaseToDiaphragm;
-         }
-         else if ( j == 1 )
-         {
-            creepPeriod = ICamber::cpDiaphragmToDeck;
-         }
-         else
-         {
-            creepPeriod = ICamber::cpReleaseToDeck;
-         }
+         ICamber::CreepPeriod creepPeriod = item.first;
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,creepPeriod,i);
 
@@ -253,42 +251,20 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
          if ( details.Spec == CREEP_SPEC_PRE_2005 )
          {
             *pPara << rptNewLine;
-            if ( j == 0 )
-            {
-               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
-            }
-            else if ( j == 1 )
-            {
-               *pPara << Bold(_T("Girder erection until deck casting")) <<rptNewLine;
-            }
-            else
-            {
-               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
-            }
+            *pPara << Bold(item.second) << rptNewLine;
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
             *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
             *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
             *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
             *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
-            *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+            *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
          }
          else
          {
             // 2005 and later
             *pPara << rptNewLine;
-            if ( j == 0 )
-            {
-               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
-            }
-            else if ( j == 1 )
-            {
-               *pPara << Bold(_T("Girder erection until deck casting")) <<rptNewLine;
-            }
-            else
-            {
-               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
-            }
+            *pPara << Bold(item.second) << rptNewLine;
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
             if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
             {
@@ -313,10 +289,11 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
             *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
             *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
-            *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+            *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
          } // spec type
 
          *pPara << rptNewLine;
+         j++;
       } // loop on j
    }// loop on i
 
@@ -340,6 +317,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, fc, pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
+   rptCreepCoefficient creep;
 
    CREEPCOEFFICIENTDETAILS details;
 
@@ -348,23 +326,18 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
    //////////////////////////////
    bool bSI = IS_SI_UNITS(pDisplayUnits);
 
+   std::vector<std::pair<ICamber::CreepPeriod, std::_tstring>> strHeading;
+   strHeading.emplace_back(ICamber::cpReleaseToDiaphragm, _T("Prestress release until girder erection"));
+   strHeading.emplace_back(ICamber::cpDiaphragmToDeck, _T("Girder erection until deck casting"));
+   strHeading.emplace_back(ICamber::cpReleaseToDeck, _T("Prestress release until deck casting"));
+   strHeading.emplace_back(ICamber::cpReleaseToFinal, _T("Prestress release to final"));
+
    for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
    {
-      for ( Int16 j = 0; j < 3; j++ )
+      int j = 0;
+      for(const auto& item : strHeading)
       {
-         ICamber::CreepPeriod creepPeriod;
-         if ( j == 0 )
-         {
-            creepPeriod = ICamber::cpReleaseToDiaphragm;
-         }
-         else if ( j == 1 )
-         {
-            creepPeriod = ICamber::cpDiaphragmToDeck;
-         }
-         else
-         {
-            creepPeriod = ICamber::cpReleaseToDeck;
-         }
+         ICamber::CreepPeriod creepPeriod = item.first;
 
          details = pCamber->GetCreepCoefficientDetails(segmentKey,creepPeriod,i);
 
@@ -448,44 +421,20 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
          if ( details.Spec == CREEP_SPEC_PRE_2005 )
          {
             *pPara << rptNewLine;
-            if ( j == 0 )
-            {
-               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
-            }
-            else if ( j == 1 )
-            {
-               *pPara << Bold(_T("Girder erection until deck casting")) <<rptNewLine;
-            }
-            else
-            {
-               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
-            }
-
+            *pPara << Bold(item.second) << rptNewLine;
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
             *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
             *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
             *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
             *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
-            *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+            *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
          }
          else
          {
             // 2005 and later
             *pPara << rptNewLine;
-            if ( j == 0 )
-            {
-               *pPara << Bold(_T("Prestress release until girder erection")) <<rptNewLine;
-            }
-            else if ( j == 1 )
-            {
-               *pPara << Bold(_T("Girder erection until deck casting")) <<rptNewLine;
-            }
-            else
-            {
-               *pPara << Bold(_T("Prestress release until deck casting")) <<rptNewLine;
-            }
-
+            *pPara << Bold(item.second) << rptNewLine;
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
             if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
             {
@@ -510,10 +459,11 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
             *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
             *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
-            *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+            *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
          } // spec type
 
          *pPara << rptNewLine;
+         j++;
       } // loop on j
    }// loop on i
 
@@ -551,6 +501,8 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, fc, pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
+
+   rptCreepCoefficient creep;
 
    CREEPCOEFFICIENTDETAILS details;
 
@@ -647,7 +599,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
@@ -659,7 +611,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
@@ -671,7 +623,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
@@ -683,7 +635,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
@@ -695,7 +647,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("c")) << _T(" = ") << details.kc << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue( details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
       }
       else
       {
@@ -726,7 +678,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
@@ -749,7 +701,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
@@ -772,7 +724,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
@@ -795,7 +747,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
@@ -818,7 +770,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
@@ -841,7 +793,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << rptNewLine;
          *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
-         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< details.Ct << rptNewLine;
+         *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
       } // spec type
 
       *pPara << rptNewLine;
