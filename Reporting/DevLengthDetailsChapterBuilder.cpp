@@ -158,8 +158,8 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
 
+   GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals); // only used if there are rebar in the girder
    GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterials); // only used if there are rebar in the girder
 
    GET_IFACE2(pBroker, IDocumentType, pDocType);
