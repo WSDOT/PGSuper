@@ -80,7 +80,7 @@ protected:
    StrandIndexType GetStrandCount();
    StrandIndexType GetNumPermanentStrands();
    void DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper);
-   void DrawStrands(CDC* pDC,grlibPointMapper& mapper);
+   void DrawStrands(CDC* pDC,grlibPointMapper& mapper,Float64 Xadjustment);
 
 
 	// Generated message map functions
