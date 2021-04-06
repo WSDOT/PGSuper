@@ -602,6 +602,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    // sockets for bottom flange dimension line
    pntNCL.Release();
    boxGirder->get_BottomCenter(&pntNCL);
+   pntNCL->put_X(xNCL);
    connectable->AddSocket(SOCKET_BC, pntNCL,&socketBC);
 
    CComQIPtr<IGirderSection> section(girderShape);
