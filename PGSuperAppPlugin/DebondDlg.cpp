@@ -261,7 +261,8 @@ void CGirderDescDebondPage::OnPaint()
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
 
    CComPtr<IShape> shape;
-   pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, &shape);
+   IndexType gdrShapeIdx;
+   pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, &shape, &gdrShapeIdx);
 
    CComQIPtr<IXYPosition> position(shape);
    CComPtr<IPoint2d> lp;
@@ -371,7 +372,28 @@ void CGirderDescDebondPage::OnPaint()
       DrawShape(pDC,shape,mapper);
    }
 
-   DrawStrands(pDC,mapper);
+   // strand points are defined in the girder library relative to a centerline. 
+   // this centerline can be shifted horizontally for asymmetric girders
+   // this adjustment compensates (to see the effect, make Xadjustment equal to zero for a deck bulb tee with unequal overhangs)
+   CComQIPtr<IAsymmetricSection> asymmetric(shape);
+   if (!asymmetric && compshape)
+   {
+      CComPtr<ICompositeShapeItem> shapeItem;
+      compshape->get_Item(gdrShapeIdx, &shapeItem);
+      CComPtr<IShape> gdrShape;
+      shapeItem->get_Shape(&gdrShape);
+      gdrShape.QueryInterface(&asymmetric);
+   }
+
+   Float64 Xadjustment = 0;
+   if (asymmetric)
+   {
+      Float64 wLeft, wRight;
+      asymmetric->GetTopWidth(&wLeft, &wRight);
+      Xadjustment = -0.5*(wRight - wLeft);
+   }
+
+   DrawStrands(pDC,mapper, Xadjustment);
 
    pDC->SelectObject(pOldBrush);
    pDC->SelectObject(pOldPen);
@@ -410,7 +432,7 @@ void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& m
    delete[] points;
 }
 
-void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
+void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper,Float64 Xadjustment)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -470,6 +492,8 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       Float64 x,y;
       point->get_X(&x);
       point->get_Y(&y);
+
+      x += Xadjustment;
 
       CRect rect;
       mapper.WPtoDP(x-m_Radius,y-m_Radius,&rect.left,&rect.top); 
@@ -532,6 +556,9 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
       bool candb;
       pGdrEntry->GetStraightStrandCoordinates( debond_info.strandTypeGridIdx, &xs, &ys, &xe, &ye, &candb);
 
+      xs += Xadjustment;
+      xe += Xadjustment;
+
       CRect rect;
       mapper.WPtoDP(xs-m_Radius,ys-m_Radius,&rect.left,&rect.top); 
       mapper.WPtoDP(xs+m_Radius,ys-m_Radius,&rect.right,&rect.top); 
@@ -570,6 +597,9 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
          Float64 xs, xe, ys, ye;
          bool candb;
          pGdrEntry->GetStraightStrandCoordinates( gridIdx, &xs, &ys, &xe, &ye, &candb);
+
+         xs += Xadjustment;
+         xe += Xadjustment;
 
          CRect rect;
          mapper.WPtoDP(xs-m_Radius,ys-m_Radius,&rect.left,&rect.top); 
@@ -610,6 +640,8 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC,grlibPointMapper& mapper)
          Float64 x, y;
          point->get_X(&x);
          point->get_Y(&y);
+
+         x += Xadjustment;
 
          CRect rect;
          mapper.WPtoDP(x - m_Radius, y - m_Radius, &rect.left, &rect.top);
