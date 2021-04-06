@@ -145,7 +145,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // report the required concrete strengths for the current bridge configuration
    rptParagraph* p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << p;
-   *p << _T("Required Concrete Strengths") << rptNewLine;
+   *p << _T("Required Minimum Concrete Strengths") << rptNewLine;
 
    p = new rptParagraph;
    if ( pDocType->IsPGSuperDocument() )
@@ -182,7 +182,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    {
       GET_IFACE2(pBroker,IMaterials,pMaterial);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,0));
-      *p << _T("Actual ") << RPT_FCI << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc(CSegmentKey(girderKey,0),releaseIntervalIdx) ) << rptNewLine;
+      *p << _T("Provided ") << RPT_FCI << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc(CSegmentKey(girderKey,0),releaseIntervalIdx) ) << rptNewLine;
    }
 
    *p << rptNewLine;
@@ -202,7 +202,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    if ( pDocType->IsPGSuperDocument() )
    {
       GET_IFACE2(pBroker,IMaterials,pMaterial);
-      *p << _T("Actual ") << RPT_FC << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc28(CSegmentKey(girderKey,0))) << rptNewLine;
+      *p << _T("Provided ") << RPT_FC << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc28(CSegmentKey(girderKey,0))) << rptNewLine;
    }
 
    // information about continuity and how it impacts the analysis
