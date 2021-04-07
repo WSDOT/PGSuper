@@ -17648,7 +17648,7 @@ Float64 CBridgeAgentImp::GetStrandArea(const CSegmentKey& segmentKey,IntervalInd
    return Aps;
 }
 
-Float64 CBridgeAgentImp::GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType) const
+Float64 CBridgeAgentImp::GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    if ( intervalIdx < GetStressStrandInterval(segmentKey) )
@@ -17656,21 +17656,40 @@ Float64 CBridgeAgentImp::GetStrandArea(const pgsPointOfInterest& poi,IntervalInd
       return 0; // strands aren't stressed so they aren't even in play yet
    }
 
-   const matPsStrand* pStrand = GetStrandMaterial(segmentKey,strandType);
-   Float64 aps = pStrand->GetNominalArea();
-
-   // count the number of strands that are debonded
-   StrandIndexType nDebonded = 0;
-   StrandIndexType nStrands = GetStrandCount(segmentKey,strandType);
-   for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+   std::vector<pgsTypes::StrandType> vStrandTypes;
+   if (strandType == pgsTypes::Permanent)
    {
-      if ( IsStrandDebonded(poi,strandIdx,strandType) )
-      {
-         nDebonded++;
-      }
+      vStrandTypes.push_back(pgsTypes::Straight);
+      vStrandTypes.push_back(pgsTypes::Harped);
+   }
+   else
+   {
+      vStrandTypes.push_back(strandType);
    }
 
-   Float64 Aps = aps * (nStrands - nDebonded);
+   Float64 Aps = 0;
+   for (auto strand_type : vStrandTypes)
+   {
+      const matPsStrand* pStrand = GetStrandMaterial(segmentKey, strand_type);
+      Float64 aps = pStrand->GetNominalArea();
+
+      StrandIndexType nStrands = GetStrandCount(segmentKey, strand_type, pConfig);
+
+      // count the number of strands that are debonded
+      StrandIndexType nDebonded = 0;
+      if (HasDebonding(segmentKey,pConfig))
+      {
+         for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+         {
+            if (IsStrandDebonded(poi, strandIdx, strand_type, pConfig))
+            {
+               nDebonded++;
+            }
+         }
+      }
+
+      Aps += aps * (nStrands - nDebonded);
+   }
    return Aps;
 }
 
@@ -17731,6 +17750,41 @@ Float64 CBridgeAgentImp::GetPjack(const CSegmentKey& segmentKey,bool bIncTemp) c
    }
 
    return Pj;
+}
+
+Float64 CBridgeAgentImp::GetJackingStress(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+{
+   Float64 fpj = 0;
+   if (strandType == pgsTypes::Permanent)
+   {
+      Float64 PjS = GetPjack(segmentKey, pgsTypes::Straight, pConfig);
+      Float64 PjH = GetPjack(segmentKey, pgsTypes::Harped, pConfig);
+      StrandIndexType Ns = GetStrandCount(segmentKey, pgsTypes::Straight, pConfig);
+      StrandIndexType Nh = GetStrandCount(segmentKey, pgsTypes::Harped, pConfig);
+
+      GET_IFACE(ISegmentData, pSegmentData);
+      const matPsStrand* pStraightStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+      const matPsStrand* pHarpedStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Harped);
+      Float64 aps_s = pStraightStrand->GetNominalArea();
+      Float64 aps_h = pHarpedStrand->GetNominalArea();
+
+      Float64 Aps_s = aps_s*Ns;
+      Float64 Aps_h = aps_h*Nh;
+      Float64 Aps = Aps_s + Aps_h;
+      fpj = IsZero(Aps) ? 0.0 : (PjS + PjH) / Aps;
+   }
+   else
+   {
+      Float64 Pj = GetPjack(segmentKey, strandType, pConfig);
+      StrandIndexType N = GetStrandCount(segmentKey, strandType, pConfig);
+      GET_IFACE(ISegmentData, pSegmentData);
+      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
+      Float64 aps = pStrand->GetNominalArea();
+      Float64 Aps = aps*N;
+      fpj = IsZero(Aps) ? 0.0 : Pj / Aps;
+   }
+
+   return fpj;
 }
 
 bool CBridgeAgentImp::GetAreHarpedStrandsForcedStraight(const CSegmentKey& segmentKey) const
@@ -18528,7 +18582,7 @@ bool CBridgeAgentImp::IsStrandDebonded(const CSegmentKey& segmentKey,StrandIndex
 }
 
 //-----------------------------------------------------------------------------
-bool CBridgeAgentImp::IsStrandDebonded(const pgsPointOfInterest& poi, StrandIndexType strandIdx, pgsTypes::StrandType strandType) const
+bool CBridgeAgentImp::IsStrandDebonded(const pgsPointOfInterest& poi, StrandIndexType strandIdx, pgsTypes::StrandType strandType,const GDRCONFIG* pConfig) const
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
 
@@ -18537,22 +18591,24 @@ bool CBridgeAgentImp::IsStrandDebonded(const pgsPointOfInterest& poi, StrandInde
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    Float64 debond_left, debond_right;
-   if ( !IsStrandDebonded(segmentKey,strandIdx,strandType,nullptr,&debond_left,&debond_right) )
+   if ( !IsStrandDebonded(segmentKey,strandIdx,strandType,pConfig,&debond_left,&debond_right) )
    {
       return false;
    }
 
    Float64 location = poi.GetDistFromStart();
 
-   if ( debond_left!=0.0 && location <= debond_left)
+   if ( !IsZero(debond_left) && ::IsLT(location, debond_left))
    {
+      // this is debonding on the left, and the poi is before bonding begins
       return true;
    }
 
-   Float64 length = GetSegmentLength(segmentKey); // deal with end conditions for unsym debonding
+   Float64 length = GetSegmentLength(segmentKey);
 
-   if ( length!=debond_right && debond_right <= location )
+   if ( !IsEqual(debond_right,length) && ::IsLT(debond_right,location) )
    {
+      // this is debonding on the right and the poi is after the point where bonding ends
       return true;
    }
 
@@ -18560,8 +18616,34 @@ bool CBridgeAgentImp::IsStrandDebonded(const pgsPointOfInterest& poi, StrandInde
 }
 
 //-----------------------------------------------------------------------------
-StrandIndexType CBridgeAgentImp::GetNumDebondedStrands(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::DebondMemberEndType end) const
+StrandIndexType CBridgeAgentImp::GetNumDebondedStrands(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::DebondMemberEndType end, const GDRCONFIG* pConfig) const
 {
+   // This method assumes harped strands can't be debonded
+   if (pConfig)
+   {
+      if (strandType == pgsTypes::Permanent)
+      {
+         strandType = pgsTypes::Straight;
+      }
+
+      if (end == pgsTypes::dbetEither)
+      {
+         return pConfig->PrestressConfig.Debond[strandType].size();
+      }
+      else
+      {
+         StrandIndexType nDebondedStrands = 0;
+         for (const auto& debondInfo : pConfig->PrestressConfig.Debond[strandType])
+         {
+            if (!IsZero(debondInfo.DebondLength[end == pgsTypes::dbetStart ? pgsTypes::metStart : pgsTypes::metEnd]))
+            {
+               nDebondedStrands++;
+            }
+         }
+         return nDebondedStrands;
+      }
+   }
+      
    VALIDATE( GIRDER );
 
    // this method assumes only straight strands can be debonded
@@ -18580,7 +18662,7 @@ StrandIndexType CBridgeAgentImp::GetNumDebondedStrands(const CSegmentKey& segmen
          CComPtr<IStrandModel> strandModel;
          girder->get_StrandModel(&strandModel);
 
-         WDebondLocationType loc = (end==pgsTypes::dbetStart ? wdblLeft : (end==pgsTypes::dbetEnd ? wdblRight : wdblEither));
+         WDebondLocationType loc = (end == pgsTypes::dbetStart ? wdblLeft : (end == pgsTypes::dbetEnd ? wdblRight : wdblEither));
          hr = strandModel->GetStraightStrandDebondCount(loc, &nDebondedStrands);
          break;
       }
@@ -19265,22 +19347,22 @@ std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebondin
 }
 
 //-----------------------------------------------------------------------------
-bool CBridgeAgentImp::HasDebonding(const CSegmentKey& segmentKey) const
+bool CBridgeAgentImp::HasDebonding(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig) const
 {
-   StrandIndexType Ndb[3];
-   Ndb[pgsTypes::Straight]  = GetNumDebondedStrands(segmentKey, pgsTypes::Straight,  pgsTypes::dbetEither);
-   Ndb[pgsTypes::Harped]    = GetNumDebondedStrands(segmentKey, pgsTypes::Harped,    pgsTypes::dbetEither);
-   Ndb[pgsTypes::Temporary] = GetNumDebondedStrands(segmentKey, pgsTypes::Temporary, pgsTypes::dbetEither);
+   std::array<StrandIndexType, 3> Ndb;
+   Ndb[pgsTypes::Straight]  = GetNumDebondedStrands(segmentKey, pgsTypes::Straight,  pgsTypes::dbetEither, pConfig);
+   Ndb[pgsTypes::Harped]    = GetNumDebondedStrands(segmentKey, pgsTypes::Harped,    pgsTypes::dbetEither, pConfig);
+   Ndb[pgsTypes::Temporary] = GetNumDebondedStrands(segmentKey, pgsTypes::Temporary, pgsTypes::dbetEither, pConfig);
 
    return ( Ndb[pgsTypes::Straight] == 0 && Ndb[pgsTypes::Harped] == 0 && Ndb[pgsTypes::Temporary] == 0 ? false : true);
 }
 
-bool CBridgeAgentImp::IsDebondingSymmetric(const CSegmentKey& segmentKey) const
+bool CBridgeAgentImp::IsDebondingSymmetric(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig) const
 {
-   StrandIndexType Ndb[3];
-   Ndb[pgsTypes::Straight]  = GetNumDebondedStrands(segmentKey, pgsTypes::Straight,  pgsTypes::dbetEither);
-   Ndb[pgsTypes::Harped]    = GetNumDebondedStrands(segmentKey, pgsTypes::Harped,    pgsTypes::dbetEither);
-   Ndb[pgsTypes::Temporary] = GetNumDebondedStrands(segmentKey, pgsTypes::Temporary, pgsTypes::dbetEither);
+   std::array<StrandIndexType, 3> Ndb;
+   Ndb[pgsTypes::Straight]  = GetNumDebondedStrands(segmentKey, pgsTypes::Straight,  pgsTypes::dbetEither, pConfig);
+   Ndb[pgsTypes::Harped]    = GetNumDebondedStrands(segmentKey, pgsTypes::Harped,    pgsTypes::dbetEither, pConfig);
+   Ndb[pgsTypes::Temporary] = GetNumDebondedStrands(segmentKey, pgsTypes::Temporary, pgsTypes::dbetEither, pConfig);
 
    // if there are no debonded strands then get the heck outta here
    if ( Ndb[pgsTypes::Straight] == 0 && Ndb[pgsTypes::Harped] == 0 && Ndb[pgsTypes::Temporary] )
@@ -19301,12 +19383,12 @@ bool CBridgeAgentImp::IsDebondingSymmetric(const CSegmentKey& segmentKey) const
 
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
 
-      StrandIndexType n = GetStrandCount(segmentKey,strandType);
+      StrandIndexType n = GetStrandCount(segmentKey,strandType, pConfig);
       for ( StrandIndexType strandIdx = 0; strandIdx < n; strandIdx++ )
       {
          Float64 start, end;
 
-         bool bIsDebonded = IsStrandDebonded(segmentKey,strandIdx,strandType,nullptr,&start,&end);
+         bool bIsDebonded = IsStrandDebonded(segmentKey,strandIdx,strandType,pConfig,&start,&end);
          if ( bIsDebonded && !IsEqual(start,length-end) )
          {
             return false;

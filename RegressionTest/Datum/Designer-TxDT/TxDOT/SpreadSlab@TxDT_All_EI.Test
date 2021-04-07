@@ -18,7 +18,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    4   7.00                     2     1    5SB15          34  1/2  270   4.65   4.45   5.00   5.00  12    2.5   28    12    8   2   2   0   0   4.000  5.000   2.453    -3.210     1365   0.538  0.659   3.575 -0.548 -0.057 -0.083 -0.688  81.10  224.87    1.00    1.00    1.00    1.40    2.60    1.82    3.44    1.10 
+ 26.00    4   7.00                     2     1    5SB15          34  1/2  270   4.65   4.40   5.00   5.00  14    2.5   28    14   10   2   2   0   0   4.000  5.000   2.453    -3.210     1365   0.538  0.659   3.569 -0.548 -0.057 -0.083 -0.688  81.10  224.87    1.00    1.00    1.00    1.40    2.61    1.82    3.45    1.10 
 
 
 The Specification Check was Not Successful
@@ -27,7 +27,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 26.00    4   7.00                     2     2    5SB15          34  1/2  270   4.65   4.45   5.00   5.00  12    2.5   28    12    8   2   2   0   0   4.000  5.000   2.427    -3.199     1370   0.538  0.659   3.575 -0.518 -0.071 -0.083 -0.672  81.10  225.00    1.00    1.00    1.00    1.41    2.61    1.83    3.45    1.14 
+ 26.00    4   7.00                     2     2    5SB15          34  1/2  270   4.65   4.40   5.00   5.00  14    2.5   28    14   10   2   2   0   0   4.000  5.000   2.427    -3.199     1370   0.538  0.659   3.569 -0.518 -0.071 -0.083 -0.672  81.10  225.00    1.00    1.00    1.00    1.41    2.62    1.83    3.46    1.14 
 
 
 The Specification Check was Not Successful

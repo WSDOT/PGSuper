@@ -50,17 +50,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                     3     1    Strai          44  1/2  270   8.21   7.92   8.50   8.50    8    2.5   14     4    0   0   0   2   0                 5.500  5.500   3.226    -4.029     3085   0.650  0.849   3.607 -1.577  0.000 -0.079 -1.656 144.08  397.02    1.00    1.00    1.00    1.59    1.35    2.06    1.75    1.01 
-                                                                                                                  4.5   14     4    2   2   0   0   0 
-
-
-The Specification Check was Not Successful
-Ultimate vertical shear capacity check failed for Strength I Limit State
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                     3     2    Strai          48  1/2  270   7.90   7.58   8.50   8.50    8    2.5   14     4    0   0   0   2   0                 5.900  5.900   3.430    -4.240     3187   0.650  0.849   3.696 -1.849  0.000 -0.075 -1.924 162.51  450.46    1.00    1.00    1.00    1.73    1.43    2.24    1.85    1.00 
+ 38.00    5   8.50                     3     1    Strai          44  1/2  270   8.21   7.92   8.50   8.50    8    2.5   14     4    0   0   0   2   0                 5.500  5.800   3.226    -4.029     3085   0.650  0.849   3.597 -1.577  0.000 -0.079 -1.656 144.08  397.02    1.00    1.00    1.00    1.59    1.45    2.06    1.87    1.02 
                                                                                                                   4.5   14     4    2   0   2   0   0 
 
 
@@ -70,8 +60,8 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                     3     3    Strai          48  1/2  270   7.90   7.58   8.50   8.50    8    2.5   14     4    0   0   0   2   0                 5.900  5.900   3.430    -4.240     3187   0.650  0.849   3.696 -1.849  0.000 -0.075 -1.924 162.51  450.46    1.00    1.00    1.00    1.73    1.43    2.24    1.85    1.00 
-                                                                                                                  4.5   14     4    2   0   2   0   0 
+ 38.00    5   8.50                     3     2    Strai          48  1/2  270   7.90   7.58   8.50   8.50    8    2.5   14     4    0   0   0   0   2                 5.900  6.100   3.430    -4.240     3187   0.650  0.849   3.670 -1.849  0.000 -0.075 -1.924 162.51  450.46    1.00    1.00    1.00    1.73    1.49    2.24    1.93    1.01 
+                                                                                                                  4.5   14     4    0   2   2   0   0 
 
 
 The Specification Check was Not Successful
@@ -80,7 +70,17 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                     4     1    Strai          46  1/2  270   8.05   7.74   8.50   8.50    8    2.5   14     4    0   0   0   0   2                 5.600  5.600   3.315    -4.129     3151   0.648  0.849   3.713 -1.669  0.000 -0.084 -1.753 153.48  424.10    1.00    1.00    1.00    1.61    1.35    2.09    1.75    1.01 
+ 38.00    5   8.50                     3     3    Strai          48  1/2  270   7.90   7.58   8.50   8.50    8    2.5   14     4    0   0   0   0   2                 5.900  6.100   3.430    -4.240     3187   0.650  0.849   3.670 -1.849  0.000 -0.075 -1.924 162.51  450.46    1.00    1.00    1.00    1.73    1.49    2.24    1.93    1.01 
+                                                                                                                  4.5   14     4    0   2   2   0   0 
+
+
+The Specification Check was Not Successful
+Ultimate vertical shear capacity check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 38.00    5   8.50                     4     1    Strai          46  1/2  270   8.05   7.74   8.50   8.50    8    2.5   14     4    0   0   0   2   0                 5.700  5.900   3.315    -4.129     3151   0.648  0.849   3.696 -1.669  0.000 -0.084 -1.753 152.40  423.40    1.00    1.00    1.00    1.61    1.45    2.09    1.87    1.02 
                                                                                                                   4.5   14     4    2   0   2   0   0 
 
 

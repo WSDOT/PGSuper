@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    4   8.67                     2     1    5XB28          58  1/2  270   9.53   9.18   8.00   8.00  14    2.5   28    14    6   2   2   2   2   4.900  5.000   3.144    -3.686     4162   0.600  0.799   5.458 -1.529 -0.108 -0.128 -1.765 168.84  451.74    1.00    1.00    1.00    1.77    1.92    2.30    2.58    1.17 
+ 32.00    4   8.67                     2     1    5XB28          58  1/2  270   9.53   9.18   8.00   8.00  14    2.5   28    14    6   2   2   2   2   4.900  5.200   3.144    -3.686     4162   0.600  0.799   5.458 -1.529 -0.108 -0.128 -1.765 168.84  451.74    1.00    1.00    1.00    1.77    1.94    2.30    2.62    1.17 
 
 
 The Specification Check was Successful
@@ -24,10 +24,9 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 32.00    4   8.67                     2     2    5XB28          60  1/2  270   9.43   9.07   8.00   8.00  14    2.5   28    14    6   2   2   2   2   5.000  5.000   3.180    -3.744     4216   0.593  0.799   5.586 -1.590 -0.134 -0.126 -1.850 178.50  476.50    1.00    1.00    1.00    1.86    1.92    2.42    2.59    1.22 
+ 32.00    4   8.67                     2     2    5XB28          58  1/2  270   9.53   9.18   8.00   8.00  14    2.5   28    14    6   2   2   2   2   5.000  5.300   3.180    -3.744     4216   0.593  0.799   5.368 -1.590 -0.134 -0.126 -1.850 167.49  447.42    1.00    1.00    1.00    1.79    1.96    2.33    2.64    1.17 
 
 
-The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 19 Open to Traffic
+The Specification Check was Successful
 
 

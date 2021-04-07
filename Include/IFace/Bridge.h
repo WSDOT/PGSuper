@@ -1185,13 +1185,15 @@ interface IStrandGeometry : IUnknown
    virtual Float64 GetStrandArea(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType) const = 0;
 
    // Gets the nominal strand area at a poi (reduces the strand area by the area of debonded strands)
-   virtual Float64 GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType) const = 0;
+   virtual Float64 GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // Gets the total nominal strand area
    virtual Float64 GetAreaPrestressStrands(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,bool bIncTemp) const = 0;
 
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,bool bIncTemp) const = 0;
+
+   virtual Float64 GetJackingStress(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    virtual void GetStrandPosition(const pgsPointOfInterest& poi, StrandIndexType strandIdx,pgsTypes::StrandType type, IPoint2d** ppPoint) const = 0;
    virtual void GetStrandPositions(const pgsPointOfInterest& poi, pgsTypes::StrandType type, IPoint2dCollection** ppPoints) const = 0;
@@ -1232,8 +1234,8 @@ interface IStrandGeometry : IUnknown
    virtual bool IsExtendedStrand(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const = 0;
 
    virtual bool IsStrandDebonded(const CSegmentKey& segmentKey,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig,Float64* pStart,Float64* pEnd) const = 0;
-   virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType) const = 0;
-   virtual StrandIndexType GetNumDebondedStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::DebondMemberEndType dbendType) const = 0;
+   virtual bool IsStrandDebonded(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual StrandIndexType GetNumDebondedStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::DebondMemberEndType dbendType, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType ) const = 0;
    virtual StrandIndexType GetNumStrandInRow(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
    virtual std::vector<StrandIndexType> GetStrandsInRow(const pgsPointOfInterest& poi, RowIndexType rowIdx, pgsTypes::StrandType strandType ) const = 0;
@@ -1247,8 +1249,8 @@ interface IStrandGeometry : IUnknown
    virtual bool IsExteriorWebStrandDebondedInRow(const pgsPointOfInterest& poi, WebIndexType webIdx,RowIndexType rowIdx, pgsTypes::StrandType strandType) const = 0;
    virtual Float64 GetUnadjustedStrandRowElevation(const pgsPointOfInterest& poi,RowIndexType rowIdx,pgsTypes::StrandType strandType ) const = 0;
 
-   virtual bool HasDebonding(const CSegmentKey& segmentKey) const = 0;
-   virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey) const = 0;
+   virtual bool HasDebonding(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual bool IsDebondingSymmetric(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // these functions return the data for the number of strands given (used during design)
    virtual RowIndexType GetNumRowsWithStrand(const pgsPointOfInterest& poi,StrandIndexType nStrands,pgsTypes::StrandType strandType ) const = 0;

@@ -339,15 +339,7 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pg
 
    GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom); // not used if pConfig != nullptr
 
-   StrandIndexType Ns = INVALID_INDEX;
-   if (pConfig)
-   {
-      Ns = (strandType == pgsTypes::Permanent ? pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight) + pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped) : pConfig->PrestressConfig.GetStrandCount(strandType));
-   }
-   else
-   {
-      Ns = pStrandGeom->GetStrandCount(segmentKey, strandType);
-   }
+   StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, strandType, pConfig);
 
    // Quick check to make sure there is even an adjustment to be made. If there are no strands, just leave
    if (Ns == 0)
@@ -355,19 +347,10 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pg
       return 1.0;
    }
 
-   StrandIndexType nDebond = INVALID_INDEX;
-   if (pConfig)
-   {
-      nDebond = (strandType == pgsTypes::Permanent ? pConfig->PrestressConfig.Debond[pgsTypes::Straight].size() + pConfig->PrestressConfig.Debond[pgsTypes::Harped].size() : pConfig->PrestressConfig.Debond[strandType].size());
-   }
-   else
-   {
-      nDebond = pStrandGeom->GetNumDebondedStrands(segmentKey, strandType, pgsTypes::dbetEither);
-
-   }
+   StrandIndexType nDebond = pStrandGeom->GetNumDebondedStrands(segmentKey,strandType,pgsTypes::dbetEither,pConfig);
    ATLASSERT(nDebond <= Ns); // must be true!
 
-   // set up loop counters for below. stand type assumptions are same as above
+                             // set up loop counters for below. stand type assumptions are same as above
    pgsTypes::StrandType st1, st2;
    if ( strandType == pgsTypes::Permanent )
    {
@@ -1517,26 +1500,19 @@ Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInter
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx;
-   Float64 gLL;
    if ( IsRatingLimitState(limitState) )
    {
       liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
-
-      GET_IFACE(IRatingSpecification, pRatingSpec);
-      gLL = pRatingSpec->GetLiveLoadFactor(limitState, true);
    }
    else
    {
       liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-
-	   GET_IFACE(ILoadFactors,pLoadFactors);
-	   const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
-	   gLL = pLF->GetLLIMMax(limitState);
    }
+
    pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
 
    Float64 gain = GetInstantaneousEffects(poi,strandType,liveLoadIntervalIdx,intervalTime,pConfig,pDetails);
-   gain += GetElasticGainDueToLiveLoad(poi, strandType, limitState, vehicleIdx, pConfig, pDetails);
+   gain += GetElasticGainDueToLiveLoad(poi, strandType, limitState, vehicleIdx, true/*include live load factor*/,pConfig, pDetails);
    return gain;
 }
 
@@ -1601,77 +1577,25 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTy
    {
       loss = GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,pConfig);
    }
-   Float64 fps = fpj - loss;
+   Float64 fpe = fpj - loss;
 
-   ATLASSERT( 0 <= fps ); // strand stress must be greater than or equal to zero.
+   ATLASSERT( 0 <= fpe ); // strand stress must be greater than or equal to zero.
 
    // Reduce for transfer effect (no transfer effect if the strands aren't released
    if ( releaseIntervalIdx <= intervalIdx )
    {
       Float64 adjust = GetXferLengthAdjustment(poi,strandType,pConfig);
-      fps *= adjust;
+      fpe *= adjust;
    }
 
-   return fps;
+   return fpe;
 }
 
-Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, const GDRCONFIG* pConfig, bool bIncludeElasticEffects) const
+Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx, const GDRCONFIG* pConfig, bool bIncludeElasticEffects) const
 {
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   // Get the prestressing input information
-   GET_IFACE(ISegmentData,pSegmentData );
-   const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
-
-   Float64 Pj;
-   StrandIndexType N;
-
-   if ( pConfig )
-   {
-      if ( strandType == pgsTypes::Permanent )
-      {
-         Pj = pConfig->PrestressConfig.Pjack[pgsTypes::Straight]          + pConfig->PrestressConfig.Pjack[pgsTypes::Harped];
-         N  = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight) + pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-      }
-      else
-      {
-         Pj = pConfig->PrestressConfig.Pjack[strandType];
-         N  = pConfig->PrestressConfig.GetStrandCount(strandType);
-      }
-   }
-   else
-   {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
-      Pj = pStrandGeom->GetPjack(segmentKey,strandType);
-      N  = pStrandGeom->GetStrandCount(segmentKey,strandType);
-   }
-
-   if ( strandType == pgsTypes::Temporary )
-   {
-      N = 0;
-      Pj = 0;
-   }
-
-   if ( strandType == pgsTypes::Temporary && N == 0)
-   {
-      // if we are after temporary strand stress and Nt is zero... the result is zero
-      return 0;
-   }
-
-   if ( IsZero(Pj) && N == 0 )
-   {
-      // no strand, no jack force... the strand stress is 0
-      return 0;
-   }
-
-   Float64 aps = pStrand->GetNominalArea();
-
-   // Compute the jacking stress 
-   Float64 fpj = Pj/(aps*N);
-
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx;
-   if ( IsRatingLimitState(limitState) )
+   if (IsRatingLimitState(limitState))
    {
       liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
    }
@@ -1680,43 +1604,58 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
       liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    }
 
+   Float64 fpe = GetEffectivePrestress(poi, strandType, liveLoadIntervalIdx, pgsTypes::End, pConfig, bIncludeElasticEffects);
 
-   // Compute the requested strand stress
-   Float64 loss = GetEffectivePrestressLossWithLiveLoad(poi,strandType,limitState,vehicleIndex,pConfig,bIncludeElasticEffects);
+   if (IsZero(fpe)) // this happens where there are no strands, or the strands aren't jacked
+      return 0;
 
-   Float64 fps = fpj - loss;
+   GET_IFACE(ILosses, pLosses);
+   const LOSSDETAILS* pDetails;
+   if (pConfig)
+   {
+      pDetails = pLosses->GetLossDetails(poi, *pConfig);
+   }
+   else
+   {
+      pDetails = pLosses->GetLossDetails(poi, liveLoadIntervalIdx);
+   }
 
-   ATLASSERT( 0 <= fps ); // strand stress must be greater than or equal to zero.
+   if (bIncludeElasticEffects)
+   {
+      Float64 dfpLL = GetElasticGainDueToLiveLoad(poi, strandType, limitState, vehicleIdx, true/*include live load factor*/, pConfig, pDetails);
+      fpe += dfpLL;
+   }
 
-   // Reduce for transfer effect
-   Float64 adjust = GetXferLengthAdjustment(poi, strandType, pConfig);
-
-   fps *= adjust;
-
-   return fps;
+   return fpe;
 }
 
-Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails) const
+Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, bool bIncludeLiveLoadFactor, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails) const
 {
    ATLASSERT(!IsStrengthLimitState(limitState)); // limit state must be service or fatigue
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx;
-   Float64 gLL;
+   Float64 gLL = 1.0;
    if (IsRatingLimitState(limitState))
    {
       liveLoadIntervalIdx = pIntervals->GetLoadRatingInterval();
 
-      GET_IFACE(IRatingSpecification, pRatingSpec);
-      gLL = pRatingSpec->GetLiveLoadFactor(limitState, true);
+      if (bIncludeLiveLoadFactor)
+      {
+         GET_IFACE(IRatingSpecification, pRatingSpec);
+         gLL = pRatingSpec->GetLiveLoadFactor(limitState, true);
+      }
    }
    else
    {
       liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-      GET_IFACE(ILoadFactors, pLoadFactors);
-      const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
-      gLL = pLF->GetLLIMMax(limitState);
+      if (bIncludeLiveLoadFactor)
+      {
+         GET_IFACE(ILoadFactors, pLoadFactors);
+         const CLoadFactors* pLF = pLoadFactors->GetLoadFactors();
+         gLL = pLF->GetLLIMMax(limitState);
+      }
    }
    pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
 

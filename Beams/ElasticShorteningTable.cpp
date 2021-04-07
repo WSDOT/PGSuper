@@ -131,7 +131,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       GET_IFACE2(pBroker, IBridge, pBridge);
       bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
 
-      ColumnIndexType numColumns = 4; // location, location, P, M
+      ColumnIndexType numColumns = 5; // location, location, P, M, Aps_Perm
 
       // columns for section properties and total ps eccentricty
       if (bIsPrismatic)
@@ -171,6 +171,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 
       if ( bTemporaryStrands )
       {
+         numColumns++; // Aps_Temp
          if (bIsAsymmetric)
          {
             numColumns += 4; // etx, ety, fcgp, dfpES
@@ -370,9 +371,10 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
             table->SetRowSpan(0, c, 2);
          }
    
-         table->SetColumnSpan(0,col,bIsAsymmetric ? 4 : 3);
+         table->SetColumnSpan(0,col,bIsAsymmetric ? 5 : 4);
          (*table)(0,col) << _T("Permanent Strands");
    
+         (*table)(1, col++) << COLHDR(Sub2(_T("A"),_T("p")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
          if (bIsAsymmetric)
          {
             if (spMode == pgsTypes::spmGross)
@@ -402,8 +404,9 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
          (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
          // temp
-         table->SetColumnSpan(0, col, bIsAsymmetric ? 4 : 3);
+         table->SetColumnSpan(0, col, bIsAsymmetric ? 5 : 4);
          (*table)(0, col) << _T("Temporary Strands");
+         (*table)(1, col++) << COLHDR(Sub2(_T("A"), _T("t")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
          if (bIsAsymmetric)
          {
             if (spMode == pgsTypes::spmGross)
@@ -434,6 +437,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       }
       else
       {
+         (*table)(0, col++) << COLHDR(RPT_APS, rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
          if (bIsAsymmetric)
          {
             if (spMode == pgsTypes::spmGross)
@@ -656,6 +660,7 @@ void CElasticShorteningTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const
 
    (*this)(row+rowOffset,col++) << moment.SetValue( pDetails->pLosses->GetGdrMoment() );
 
+   (*this)(row + rowOffset, col++) << area.SetValue(pDetails->pLosses->GetApsPermanent());
    if (m_bIsAsymmetric)
    {
       (*this)(row + rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccPermanentRelease().X());
@@ -666,6 +671,7 @@ void CElasticShorteningTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const
 
    if ( m_bTemporaryStrands )
    {
+      (*this)(row + rowOffset, col++) << area.SetValue(pDetails->pLosses->GetApsTemporary());
       if (m_bIsAsymmetric)
       {
          (*this)(row + rowOffset, col++) << ecc.SetValue(pDetails->pLosses->GetEccTemporary().X());

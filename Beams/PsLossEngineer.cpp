@@ -331,7 +331,6 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
    Float64 PjS, PjH, PjT;
-   StrandIndexType Ns, Nh, Nt;
 
    Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
    Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
@@ -352,7 +351,6 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ixx, &Iyy, &Ixy, &Ybg, &Ac1, &Ic1, &Ybc1, &Ac2, &Ic2, &Ybc2, &An, &Ixxn, &Iyyn, &Ixyn, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl1, &Msidl2, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
-                     &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
                      &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
                      &fci,&fc,&fcSlab,
@@ -523,7 +521,6 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
    Float64 PjS, PjH, PjT;
-   StrandIndexType Ns, Nh, Nt;
 
    Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
    Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
@@ -543,7 +540,6 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ixx, &Iyy, &Ixy, &Ybg, &Ac1, &Ic1, &Ybc1, &Ac2, &Ic2, &Ybc2, &An, &Ixxn, &Iyyn, &Ixyn, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
                      &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl1, &Msidl2, &rh, 
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
-                     &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
                      &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
                      &fci,&fc,&fcSlab,
@@ -760,7 +756,6 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
    Float64 PjS, PjH, PjT;
-   StrandIndexType Ns, Nh, Nt;
 
    Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
    Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
@@ -778,9 +773,8 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
 
    GetLossParameters(poi, pConfig,&spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ixx, &Iyy, &Ixy, &Ybg, &Ac1, &Ic1, &Ybc1, &Ac2, &Ic2, &Ybc2, &An, &Ixxn, &Iyyn, &Ixyn, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
-                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl1, &Msidl2, &rh, 
+                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl1, &Msidl2, &rh,
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
-                     &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
                      &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
                      &fci,&fc,&fcSlab,
@@ -1010,7 +1004,6 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
    Float64 PjS, PjH, PjT;
-   StrandIndexType Ns, Nh, Nt;
 
    Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
    Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
@@ -1043,9 +1036,8 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
    GetLossParameters(poi, pConfig,&spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ixx, &Iyy, &Ixy, &Ybg, &Ac1, &Ic1, &Ybc1, &Ac2, &Ic2, &Ybc2, &An, &Ixxn, &Iyyn, &Ixyn, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
-                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl1, &Msidl2, &rh, 
+                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl1, &Msidl2, &rh,
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
-                     &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
                      &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
                      &fci,&fc,&fcSlab,
@@ -1332,7 +1324,6 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
    Float64 PjS, PjH, PjT;
-   StrandIndexType Ns, Nh, Nt;
 
    Float64 GdrCreepK1, GdrCreepK2, GdrShrinkageK1, GdrShrinkageK2;
    Float64 DeckCreepK1, DeckCreepK2, DeckShrinkageK1, DeckShrinkageK2;
@@ -1351,9 +1342,8 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    GetLossParameters(poi, pConfig,
                      &spType,
                      &gradePerm, &typePerm, &coatingPerm, &gradeTemp, &typeTemp, &coatingTemp, &fpjPerm, &fpjTTS, &perimeter, &Ag, &Ixx, &Iyy, &Ixy, &Ybg, &Ac1, &Ic1, &Ybc1, &Ac2, &Ic2, &Ybc2, &An, &Ixxn, &Iyyn, &Ixyn, &Ybn, &Acn, &Icn, &Ybcn, &Volume, &SurfaceArea, &Ad, &ed, &Ksh,
-                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl1, &Msidl2, &rh, 
+                     &epermRelease, &epermFinal, &etemp, &aps, &ApsPerm, &ApsTTS, &Mdlg, &Madlg, &Msidl1, &Msidl2, &rh,
                      &ti, &th, &td,& tf, &PjS, &PjH, &PjT,
-                     &Ns, &Nh, &Nt,
                      &GdrCreepK1, &GdrCreepK2, &GdrShrinkageK1, &GdrShrinkageK2,
                      &DeckCreepK1, &DeckCreepK2, &DeckShrinkageK1, &DeckShrinkageK2,
                      &fci,&fc,&fcSlab,
@@ -1363,34 +1353,22 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 
    pLosses->LossMethod = pgsTypes::GENERAL_LUMPSUM;
 
-   // If there are no strands then there can't be any losses
-   StrandIndexType Nstrands = Ns + Nh + Nt;
+   GET_IFACE(ILossParameters,pLossParameters);
 
-   if ( Nstrands == 0 )
-   {
-      std::shared_ptr<const lrfdLumpSumLosses> pLoss (std::make_shared<lrfdLumpSumLosses>(0,0,0,0,usage,0,0,0,0,0,0,0,0,0));
+   // the lump sum loss object can deal with no area of prestress (no strand) cases.
+   std::shared_ptr<const lrfdLumpSumLosses> pLoss(std::make_shared<lrfdLumpSumLosses>(ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage,
+                                          pLossParameters->GetBeforeXferLosses(),
+                                          pLossParameters->GetAfterXferLosses(),
+                                          pLossParameters->GetLiftingLosses(),
+                                          pLossParameters->GetShippingLosses(),
+                                          pLossParameters->GetBeforeTempStrandRemovalLosses(),
+                                          pLossParameters->GetAfterTempStrandRemovalLosses(),
+                                          pLossParameters->GetAfterDeckPlacementLosses(),
+                                          pLossParameters->GetAfterSIDLLosses(),
+                                          pLossParameters->GetFinalLosses()));
 
-      pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
-      ATLASSERT(pLosses->pLosses!=nullptr);
-   }
-   else
-   {
-      GET_IFACE(ILossParameters,pLossParameters);
-
-      std::shared_ptr<const lrfdLumpSumLosses> pLoss(std::make_shared<lrfdLumpSumLosses>(ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage,
-                                           pLossParameters->GetBeforeXferLosses(),
-                                           pLossParameters->GetAfterXferLosses(),
-                                           pLossParameters->GetLiftingLosses(),
-                                           pLossParameters->GetShippingLosses(),
-                                           pLossParameters->GetBeforeTempStrandRemovalLosses(),
-                                           pLossParameters->GetAfterTempStrandRemovalLosses(),
-                                           pLossParameters->GetAfterDeckPlacementLosses(),
-                                           pLossParameters->GetAfterSIDLLosses(),
-                                           pLossParameters->GetFinalLosses()));
-
-      pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
-      ATLASSERT(pLosses->pLosses!=nullptr);
-   }
+   pLosses->pLosses = std::static_pointer_cast<const lrfdLosses>(pLoss);
+   ATLASSERT(pLosses->pLosses!=nullptr);
 }
 
 
@@ -2649,9 +2627,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    Float64* pPjS,
    Float64* pPjH,
    Float64* pPjT,
-   StrandIndexType* pNs,
-   StrandIndexType* pNh,
-   StrandIndexType* pNt,
    Float64* pGdrCreepK1,
    Float64* pGdrCreepK2,
    Float64* pGdrShrinkageK1,
@@ -2687,64 +2662,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    GET_IFACE(ILibrary, pLibrary);
-   GET_IFACE_NOCHECK(ILoadFactors, pILoadFactors);
    GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IGirder, pGirder);
    GET_IFACE(IPointOfInterest, pPoi);
 
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
-
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-
-   if (pConfig)
-   {
-      *pPjS = pConfig->PrestressConfig.Pjack[pgsTypes::Straight];
-      *pNs = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
-
-      *pPjH = pConfig->PrestressConfig.Pjack[pgsTypes::Harped];
-      *pNh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-
-      *pPjT = pConfig->PrestressConfig.Pjack[pgsTypes::Temporary];
-      *pNt = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Temporary);
-   }
-   else
-   {
-      *pPjS = pStrands->GetPjack(pgsTypes::Straight);
-      *pNs = pStrands->GetStrandCount(pgsTypes::Straight);
-
-      *pPjH = pStrands->GetPjack(pgsTypes::Harped);
-      *pNh = pStrands->GetStrandCount(pgsTypes::Harped);
-
-      *pPjT = pStrands->GetPjack(pgsTypes::Temporary);
-      *pNt = pStrands->GetStrandCount(pgsTypes::Temporary);
-   }
-
-   const matPsStrand* pPermStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
-   ATLASSERT(pPermStrand);
-   *pGradePerm = pPermStrand->GetGrade();
-   *pTypePerm = pPermStrand->GetType();
-   *pCoatingPerm = pPermStrand->GetCoating();
-   *paps = pPermStrand->GetNominalArea();
-
-   const matPsStrand* pTempStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
-   ATLASSERT(pTempStrand);
-   *pGradeTemp = pTempStrand->GetGrade();
-   *pTypeTemp = pTempStrand->GetType();
-   *pCoatingTemp = pTempStrand->GetCoating();
-
-
-   Float64 Aps[3];
-   Aps[pgsTypes::Straight] = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetNominalArea();
-   Aps[pgsTypes::Harped] = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Harped)->GetNominalArea();
-   Aps[pgsTypes::Temporary] = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Temporary)->GetNominalArea();
-
-   *pGirderLength = pBridge->GetSegmentLength(segmentKey);
-   *pSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
-
-   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
    IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
 
@@ -2763,6 +2685,38 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
    IntervalIndexType compositeUserLoadIntervalIdx = pIntervals->GetCompositeUserLoadInterval();
+
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+
+   *pApsPerm = pStrandGeom->GetStrandArea(poi, releaseIntervalIdx, pgsTypes::Permanent, pConfig);
+   *pApsTTS = pStrandGeom->GetStrandArea(poi, releaseIntervalIdx, pgsTypes::Temporary, pConfig);
+   *pPjS = pStrandGeom->GetPjack(segmentKey, pgsTypes::Straight, pConfig);
+   *pPjH = pStrandGeom->GetPjack(segmentKey, pgsTypes::Harped, pConfig);
+   *pPjT = pStrandGeom->GetPjack(segmentKey, pgsTypes::Temporary, pConfig);
+   *pFpjPerm = pStrandGeom->GetJackingStress(segmentKey, pgsTypes::Permanent, pConfig);
+   *pFpjTTS = pStrandGeom->GetJackingStress(segmentKey, pgsTypes::Temporary, pConfig);
+
+   const matPsStrand* pPermStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
+   ATLASSERT(pPermStrand);
+   *pGradePerm = pPermStrand->GetGrade();
+   *pTypePerm = pPermStrand->GetType();
+   *pCoatingPerm = pPermStrand->GetCoating();
+   *paps = pPermStrand->GetNominalArea();
+
+   const matPsStrand* pTempStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
+   ATLASSERT(pTempStrand);
+   *pGradeTemp = pTempStrand->GetGrade();
+   *pTypeTemp = pTempStrand->GetType();
+   *pCoatingTemp = pTempStrand->GetCoating();
+
+   *pGirderLength = pBridge->GetSegmentLength(segmentKey);
+   *pSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
+
+   Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
+
 
    //
    // Material Properties
@@ -2973,28 +2927,6 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    {
        *pAd = 0.0;
        *ped = 0.0;
-   }
-
-
-   *pApsPerm = Aps[pgsTypes::Straight]*(*pNs) + Aps[pgsTypes::Harped]*(*pNh);
-   *pApsTTS  = Aps[pgsTypes::Temporary]*(*pNt);
-
-   if ( IsZero(*pApsPerm) )
-   {
-      *pFpjPerm = 0.0;
-   }
-   else
-   {
-      *pFpjPerm = (*pPjS + *pPjH) / *pApsPerm;
-   }
-
-   if ( !IsZero(*pApsTTS) )
-   {
-      *pFpjTTS = *pPjT / *pApsTTS;
-   }
-   else
-   {
-      *pFpjTTS = 0;
    }
 
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);

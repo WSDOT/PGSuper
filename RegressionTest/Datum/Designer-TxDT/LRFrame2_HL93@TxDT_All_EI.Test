@@ -195,7 +195,6 @@ Compression stress check failed for Service I Limit State in Interval 8 Remove t
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
 Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -235,7 +234,6 @@ Compression stress check failed for Service I Limit State in Interval 8 Remove t
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
 Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
