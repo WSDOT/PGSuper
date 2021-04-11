@@ -434,7 +434,6 @@ protected:
    virtual Float64 GetRootNodeVersion() override;
 
    virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
-   virtual BOOL SaveTheDocument(LPCTSTR lpszPathName) override;
    virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
 
    virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;

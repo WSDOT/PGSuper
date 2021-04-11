@@ -39,9 +39,10 @@ static char THIS_FILE[] = __FILE__;
 static UINT indicators[] =
 {
    ID_SEPARATOR,           // status line indicator
-   ID_INDICATOR_CRITERIA,
-   ID_INDICATOR_ANALYSIS,
+   ID_INDICATOR_CRITERIA + EAFID_INDICATOR_MAX,
+   ID_INDICATOR_ANALYSIS + EAFID_INDICATOR_MAX,
    EAFID_INDICATOR_STATUS,
+   EAFID_INDICATOR_AUTOSAVE_ON,
    EAFID_INDICATOR_MODIFIED,
    EAFID_INDICATOR_AUTOCALC_ON,
    ID_INDICATOR_CAPS,
@@ -108,19 +109,7 @@ int CPGSuperStatusBar::GetProjectCriteriaPaneIndex()
 {
    if (m_ProjectCriteriaPaneIdx < 0)
    {
-      for (int i = 0; i < GetPaneCount(); i++)
-      {
-         UINT nID;
-         UINT nStyle;
-         int cxWidth;
-         GetPaneInfo(i, nID, nStyle, cxWidth);
-
-         if (nID == ID_INDICATOR_CRITERIA)
-         {
-            m_ProjectCriteriaPaneIdx = i;
-            break;
-         }
-      }
+      m_ProjectCriteriaPaneIdx = GetPaneIndex(ID_INDICATOR_CRITERIA+ EAFID_INDICATOR_MAX);
    }
 
    return m_ProjectCriteriaPaneIdx;
@@ -130,19 +119,7 @@ int CPGSuperStatusBar::GetAnalysisModePaneIndex()
 {
    if ( m_AnalysisModePaneIdx < 0 )
    {
-      for ( int i = 0; i < GetPaneCount(); i++ )
-      {
-         UINT nID;
-         UINT nStyle;
-         int cxWidth;
-         GetPaneInfo(i,nID,nStyle,cxWidth);
-
-         if ( nID == ID_INDICATOR_ANALYSIS )
-         {
-            m_AnalysisModePaneIdx = i;
-            break;
-         }
-      }
+      m_AnalysisModePaneIdx = GetPaneIndex(ID_INDICATOR_ANALYSIS+ EAFID_INDICATOR_MAX);
    }
 
    return m_AnalysisModePaneIdx;
@@ -172,7 +149,7 @@ void CPGSuperStatusBar::SetProjectCriteria(LPCTSTR lpszCriteria)
    {
       CDC* pDC = GetDC();
       CSize size = pDC->GetTextExtent(lpszCriteria);
-      SetPaneInfo(idx, ID_INDICATOR_CRITERIA, SBPS_NORMAL, size.cx);
+      SetPaneInfo(idx, ID_INDICATOR_CRITERIA+ EAFID_INDICATOR_MAX, SBPS_NORMAL, size.cx);
       SetPaneText(idx, lpszCriteria, TRUE);
    }
 }

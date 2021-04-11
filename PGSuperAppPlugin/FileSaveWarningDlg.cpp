@@ -22,7 +22,7 @@ CFileSaveWarningDlg::CFileSaveWarningDlg(LPCTSTR lpszAppName, LPCTSTR lpszFileNa
    WORD cbBuf = _MAX_PATH;
 
    ::GetFileTitle(lpszFileName, title, cbBuf);
-   m_strLabel.Format(_T("The current project file (%s) was created with %s version %s. Once saved it will be converted to version %s and cannot be opened with an earlier version."),title,lpszAppName,strOldVersion,strCurrentVersion);
+   m_strLabel.Format(_T("%s was created with %s version %s. It will be converted to version %s and you will no longer be able to open it with an earlier version."),title,lpszAppName,strOldVersion,strCurrentVersion);
 }
 
 CFileSaveWarningDlg::~CFileSaveWarningDlg()
@@ -55,13 +55,13 @@ BOOL CFileSaveWarningDlg::OnInitDialog()
    WORD cbBuf = _MAX_PATH;
    ::GetFileTitle(m_strCopyFileName, title, cbBuf);
    CString str;
-   str.Format(_T("Make copy of original file before saving.\r\n%s"), title);
+   str.Format(_T("Make copy of this file before proceeding.\r\n%s"), title);
    CWnd* pRB = GetDlgItem(IDC_RB_COPY);
    pRB->SetWindowText(str);
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DEFAULT_OPTIONS);
-   pCB->AddString(_T("Always save copy of original file when saving older-version files"));
-   pCB->AddString(_T("Never make copy of original file"));
+   pCB->AddString(_T("Always make a copy when opening older-version files"));
+   pCB->AddString(_T("Never make copy, just convert the file"));
    pCB->SetCurSel(0);
    
    CDialog::OnInitDialog();
