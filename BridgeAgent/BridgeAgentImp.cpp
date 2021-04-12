@@ -9779,7 +9779,24 @@ CSegmentKey CBridgeAgentImp::GetSegmentAtPier(PierIndexType pierIdx,const CGirde
 
 void CBridgeAgentImp::GetSegmentsAtPier(PierIndexType pierIdx, GirderIndexType gdrIdx, CSegmentKey* pBackSegmentKey, CSegmentKey* pAheadSegmentKey) const
 {
-   GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
+   if (pPier->IsContinuous())
+   {
+      // this method is intended to return the segment keys at a boundary pier or a pier where segments connection
+      // if this method gets called for a continuous pier (segments are continuous over pier) this method should still
+      // work, so here we do the work to call the GetSegmentAtPier and then return.
+      GroupIndexType backGroupIdx, aheadGroupIdx;
+      GetGirderGroupIndex(pierIdx, &backGroupIdx, &aheadGroupIdx);
+      ATLASSERT(backGroupIdx == aheadGroupIdx);
+
+      CGirderKey girderKey(backGroupIdx, gdrIdx);
+      CSegmentKey segmentKey = GetSegmentAtPier(pierIdx, girderKey);
+      *pBackSegmentKey = segmentKey;
+      *pAheadSegmentKey = segmentKey;
+      return;
+   }
+
    CSegmentKey backSegmentKey, aheadSegmentKey;
    GroupIndexType backGroupIdx, aheadGroupIdx;
    GetGirderGroupIndex(pierIdx, &backGroupIdx, &aheadGroupIdx);
