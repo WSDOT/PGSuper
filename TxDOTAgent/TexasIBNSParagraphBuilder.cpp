@@ -629,8 +629,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             (*p_table)(row,0) << _T(" (w/o Temporary Strands)");
       }
 
-      Float64 nEff;
-      (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmidrel, false, &nEff ) );
+      (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmidrel, false).Y());
 
       if(bFirst)
       {
@@ -639,7 +638,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
             (*p_table)(row,0) << _T(" (w/o Temporary Strands)");
       }
 
-      (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, false, &nEff ) );
+      (*p_table)(row++,col) << ecc.SetValue( pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, false).Y());
 
       if(bFirst)
       {

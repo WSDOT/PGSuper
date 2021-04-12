@@ -599,8 +599,6 @@ inline Float64 SinSlope(Float64 slope)
 // There is a special case during design where the inital adjustable strand type is straight, but the designer
 // wants to do a harped design. For this case, we need to swap out the istrandmover and harping boundaries,
 // so the precast girder can deal with vertical adjustment correctly. 
-// This is definitly a hack and very inefficient, but seems the best of many hacks
-// The class below does the swap in an exception safe manner
 class CStrandMoverSwapper
 {
 public:
@@ -676,7 +674,7 @@ public:
 }
 
 private:
-   Float64 m_EndShift[2], m_HpShift[2]; // array index is pgsTypes::MemberEndType
+   std::array<Float64, 2> m_EndShift, m_HpShift; // array index is pgsTypes::MemberEndType
    CComPtr<IStrandMover> m_StartStrandMover;
    CComPtr<IStrandMover> m_Hp1StrandMover;
    CComPtr<IStrandMover> m_Hp2StrandMover;
@@ -7445,9 +7443,8 @@ bool CBridgeAgentImp::HasAsymmetricPrestressing() const
                const pgsPointOfInterest& poi = vPoi.front();
 
                IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-               Float64 nStrands, X, Y;
-               GetStrandCG(releaseIntervalIdx, poi, true /*include temp strands*/, &nStrands, &X, &Y);
-               if (!IsZero(X))
+               gpPoint2d cg = GetStrandCG(releaseIntervalIdx, poi, true /*include temp strands*/);
+               if (!IsZero(cg.X()))
                {
                   // we found one case of asymmetry so return
                   m_AsymmetricPrestressing = Yes;
@@ -15587,157 +15584,177 @@ const CHorizontalInterfaceZoneData* CBridgeAgentImp::GetHorizInterfaceShearZoneD
 /////////////////////////////////////////////////////////////////////////
 // IStrandGeometry
 //
-void CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pX,Float64* pY) const
+gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig) const
 {
-   GetStrandCG(intervalIdx, poi, bIncTemp, nullptr, nEffectiveStrands, pX, pY);
+   // computes the geometric centroid multiple strand groups (permanent or all strands)
+   std::array<Float64, 3> strand_area
+   {
+      GetStrandArea(poi,intervalIdx,pgsTypes::Straight,pConfig),
+      GetStrandArea(poi,intervalIdx,pgsTypes::Harped,pConfig),
+      bIncTemp ? GetStrandArea(poi,intervalIdx,pgsTypes::Temporary,pConfig) : 0.0
+   };
+
+   std::array<gpPoint2d, 3> strand_cg
+   {
+      GetStrandCG(intervalIdx, poi, pgsTypes::Straight, pConfig),
+      GetStrandCG(intervalIdx, poi, pgsTypes::Harped, pConfig),
+      bIncTemp ? GetStrandCG(intervalIdx, poi, pgsTypes::Temporary, pConfig) : gpPoint2d(0,0)
+   };
+
+   // cg = Sum(strand_cg * strand_area)/Sum(strand_area);
+   Float64 A = std::accumulate(strand_area.begin(), strand_area.end(), 0.0);
+   gpPoint2d cg = IsZero(A) ? gpPoint2d(0,0) : std::inner_product(strand_cg.begin(), strand_cg.end(), strand_area.begin(), gpPoint2d(0, 0)) / A;
+   return cg;
 }
 
-void CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const
+gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
 {
-   GetStrandCG(intervalIdx, poi, strandType, nullptr, nEffectiveStrands, pX, pY);
-}
+   // this method computes the CG for a particular strand type... for a combined type like permanent, call the other version of this method excluding temporary strands
+   if(strandType == pgsTypes::Permanent)
+      return GetStrandCG(intervalIdx,poi,false/*no temporary strands*/, pConfig);
 
-void CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const
-{
-   Float64 sx, sy, Ns;
-   GetStraightStrandCG(intervalIdx, poi, pConfig, &Ns, &sx, &sy);
+   VALIDATE(GIRDER);
 
-   Float64 hx, hy, Nh;
-   GetHarpedStrandCG(intervalIdx, poi, pConfig, &Nh, &hx, &hy);
+   gpPoint2d cg;
 
-   Float64 tx(0), ty(0), Nt(0);
-   if (bIncTemp)
+   // If the strands are off the segment, not yet installed, or been removed (in the case of temporary strands), they aren't
+   // available so we'll use (0,0) as a default CG.
+   if (!AreStrandsEngaged(intervalIdx, poi, strandType,pConfig))
    {
-      GetTemporaryStrandCG(intervalIdx, poi, pConfig, &Nt, &tx, &ty);
+      return cg;
    }
 
-   Float64 N = Ns + Nh + Nt;
-   if (IsZero(N))
-   {
-      *pX = 0.0;
-      *pY = 0.0;
-   }
-   else
-   {
-      *pX = (Ns*sx + Nh*hx + Nt*tx) / N;
-      *pY = (Ns*sy + Nh*hy + Nt*ty) / N;
-   }
-   *nEffectiveStrands = N;
-}
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(poi, &girder);
 
-void CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const
-{
-   if (strandType == pgsTypes::Straight)
-   {
-      GetStraightStrandCG(intervalIdx, poi, pConfig, nEffectiveStrands, pX, pY);
-   }
-   else if (strandType == pgsTypes::Harped)
-   {
-      GetHarpedStrandCG(intervalIdx, poi, pConfig, nEffectiveStrands, pX, pY);
-   }
-   else if (strandType == pgsTypes::Temporary)
-   {
-      GetTemporaryStrandCG(intervalIdx, poi, pConfig, nEffectiveStrands, pX, pY);
-   }
-   else
-   {
-      ATLASSERT(strandType == pgsTypes::Permanent);
-      Float64 sx, sy, Ns;
-      GetStraightStrandCG(intervalIdx, poi, pConfig, &Ns, &sx, &sy);
+   Float64 Xpoi = poi.GetDistFromStart();
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-      Float64 hx, hy, Nh;
-      GetHarpedStrandCG(intervalIdx, poi, pConfig, &Nh, &hx, &hy);
+   CComPtr<IStrandModel> strandModel;
+   girder->get_StrandModel(&strandModel);
 
-      Float64 N = Ns + Nh;
-      if (IsZero(N))
+   CComPtr<IPoint2dCollection> points;
+   if (pConfig)
+   {
+      CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
+      ATLASSERT(strandGridModel); // if pConfig is supplied we are designing.... design only supports a strand grid model
+
+      // get the strand grid locations that are filled with strands
+      CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(strandType));
+
+      if (strandType == pgsTypes::Harped)
       {
-         *pX = 0.0;
-         *pY = 0.0;
+         // Use CStrandMoverSwapper to swap out girder's strand mover and harping offset limits temporarily and configure the strand mover with
+         // the parameters in pConfig. CStrandMoverSwapper is an automatic object that does a rollback all of the changes when it goes out of scope.
+         IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+         Float64 Hg = GetHg(releaseIntervalIdx, poi);
+
+         GET_IFACE(IBridgeDescription, pIBridgeDesc);
+         CStrandMoverSwapper swapper(segmentKey, Hg, pConfig->PrestressConfig, this, strandGridModel, pIBridgeDesc);
+
+         // for the provided strand grid fill, get the coordinates of the strands
+         strandGridModel->GetStrandPositionsEx((StrandType)strandType, Xpoi, &strand_fill, &points);
       }
       else
       {
-         *pX = (Ns*sx + Nh*hx) / N;
-         *pY = (Ns*sy + Nh*hy) / N;
+         // for the provided strand grid fill, get the coordinates of the strands
+         strandGridModel->GetStrandPositionsEx((StrandType)strandType, Xpoi, &strand_fill, &points);
       }
-      *nEffectiveStrands = N;
-   }
-}
-
-void CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const
-{
-   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-   GetEccentricity(spType, intervalIdx, poi, bIncTemp, nEffectiveStrands, pEccX, pEccY);
-}
-
-void CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const
-{
-   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-   GetEccentricity(spType, intervalIdx, poi, strandType, nEffectiveStrands, pEccX, pEccY);
-}
-
-void CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const
-{
-   GetEccentricity(spType, intervalIdx, poi, bIncTemp, nullptr, nEffectiveStrands, pEccX, pEccY);
-}
-
-void CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const
-{
-   GetEccentricity(spType, intervalIdx, poi, strandType, nullptr, nEffectiveStrands, pEccX, pEccY);
-}
-
-void CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const
-{
-   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-   GetEccentricity(spType, intervalIdx, poi, bIncTemp, pConfig, nEffectiveStrands, pEccX, pEccY);
-}
-
-void CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const
-{
-   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-   GetEccentricity(spType, intervalIdx, poi, strandType, pConfig, nEffectiveStrands, pEccX, pEccY);
-}
-
-void CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const
-{
-   Float64 ssex(0), ssey(0), Ns(0);
-   Float64 hsex(0), hsey(0), Nh(0);
-   Float64 tsex(0), tsey(0), Nt(0);
-
-   GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight, pConfig, &Ns, &ssex, &ssey);
-   GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped,   pConfig, &Nh, &hsex, &hsey);
-   if (bIncTemp)
-   {
-      GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary, pConfig, &Nt, &tsex, &tsey);
-   }
-
-   Float64 N = Ns + Nh + Nt;
-   *nEffectiveStrands = N;
-   if (IsZero(N))
-   {
-      *pEccX = 0;
-      *pEccY = 0;
    }
    else
    {
-      *pEccX = (ssex*Ns + hsex*Nh + tsex*Nt) / N;
-      *pEccY = (ssey*Ns + hsey*Nh + tsey*Nt) / N;
-
-      *pEccX = IsZero(*pEccX) ? 0 : *pEccX;
-      *pEccY = IsZero(*pEccY) ? 0 : *pEccY;
+      // get the coordinates of the strands
+      strandModel->GetStrandPositions((StrandType)strandType, Xpoi, &points);
    }
+
+   StrandIndexType nStrands;
+   points->get_Count(&nStrands);
+
+   if (0 < nStrands)
+   {
+      Float64 cg_x = 0.0;
+      Float64 cg_y = 0.0;
+      StrandIndexType nDebonded = 0;
+      for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+      {
+         if (IsStrandDebonded(poi, strandIdx, strandType, pConfig))
+         {
+            // if a strand id debonded at this location, it doesn't contribute to the CG.
+            nDebonded++; // keep track of number of debonded strands that are encountered
+         }
+         else
+         {
+            CComPtr<IPoint2d> point;
+            points->get_Item(strandIdx, &point);
+            Float64 x, y;
+            point->Location(&x, &y);
+
+            cg_x += x;
+            cg_y += y;
+         }
+      }
+      cg.X() = cg_x / (nStrands - nDebonded);
+      cg.Y() = cg_y / (nStrands - nDebonded);
+   }
+
+   if (!HasAsymmetricGirders())
+   {
+      // don't have asymmetric effects, cg is on CL at X = 0
+      ATLASSERT(IsZero(cg.X()));
+      cg.X() = 0;
+   }
+
+   return cg;
 }
 
-void CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const
+gpPoint2d CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig) const
 {
-   Float64 cgx, cgy;
-   GetStrandCG(intervalIdx, poi, strandType, pConfig, nEffectiveStrands, &cgx, &cgy);
+   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
+   return GetEccentricity(spType, intervalIdx, poi, bIncTemp, pConfig);
+}
 
-   if (*nEffectiveStrands == 0)
+gpPoint2d CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+{
+   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
+   return GetEccentricity(spType, intervalIdx, poi, strandType, pConfig);
+}
+
+gpPoint2d CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig) const
+{
+   // computes the geometric eccentricity multiple strand groups (permanent or all strands)
+   std::array<gpPoint2d, 3> ecc
    {
-      *pEccX = 0;
-      *pEccY = 0;
-      return;
+      GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight, pConfig),
+      GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped,   pConfig),
+      bIncTemp ? GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary, pConfig) : gpPoint2d(0,0)
+   };
+
+   std::array<Float64, 3> Aps
+   {
+      GetStrandArea(poi,intervalIdx,pgsTypes::Straight,pConfig),
+      GetStrandArea(poi,intervalIdx,pgsTypes::Harped,pConfig),
+      bIncTemp ? GetStrandArea(poi,intervalIdx,pgsTypes::Temporary,pConfig) : 0.0
+   };
+
+   Float64 A = std::accumulate(Aps.begin(), Aps.end(), 0.0);
+   gpPoint2d e = IsZero(A) ? gpPoint2d(0, 0) : std::inner_product(ecc.begin(), ecc.end(), Aps.begin(), gpPoint2d(0,0)) / A;
+   return e;
+}
+
+gpPoint2d CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+{
+   // this method computes the eccentricity for a particular strand type... for a combined type like permanent, call the other version of this method excluding temporary strands
+   if (strandType == pgsTypes::Permanent)
+      return GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/, pConfig);
+
+   gpPoint2d ecc(0, 0);
+   if (!AreStrandsEngaged(intervalIdx,poi,strandType,pConfig))
+   {
+      // not strands, no eccentricity
+      return ecc;
    }
+
+   gpPoint2d cg = GetStrandCG(intervalIdx, poi, strandType, pConfig);
 
    const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
    Float64 Yt;
@@ -15749,62 +15766,81 @@ void CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType, Inte
       Float64 Xl, Xr;
       props.ShapeProps->get_Xleft(&Xl);
       props.ShapeProps->get_Xright(&Xr);
-      *pEccX = -((Xl + Xr) / 2 - Xl + cgx); // greater than 0 means cg of strands is to the left of the cg of the section
+      ecc.X() = -((Xl + Xr) / 2 - Xl + cg.X()); // greater than 0 means cg of strands is to the left of the cg of the section
+   }
+   ecc.Y() = -(Yt + cg.Y()); // greater than 0 means cg of strands is below the cg of the section
+
+   return ecc;
+}
+
+Float64 CBridgeAgentImp::GetStrandLocation(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType) const
+{
+   ATLASSERT(strandType != pgsTypes::Permanent);
+   VALIDATE(GIRDER);
+
+   // if the strands aren't released yet, then there isn't an eccentricty with respect to the girder cross section
+   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+   if (intervalIdx < GetPrestressReleaseInterval(segmentKey) || IsOffSegment(poi))
+   {
+      return 0;
+   }
+
+   CComPtr<IPrecastGirder> girder;
+   GetGirder(poi, &girder);
+
+   CComPtr<IStrandModel> strandModel;
+   girder->get_StrandModel(&strandModel);
+
+   StrandIndexType nStrands;
+   strandModel->GetStrandCount((StrandType)strandType, &nStrands);
+
+   CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
+
+   Float64 Xs = poi.GetDistFromStart();
+
+   CComPtr<IPoint2dCollection> points;
+   CComPtr<IIndexArray> debondPositions;
+   if (strandType == pgsTypes::Straight)
+   {
+      strandGridModel->GetStraightStrandsDebondedByPositionIndex(Xs, &debondPositions);
    }
    else
    {
-      *pEccX = 0;
+      strandModel->GetStrandPositions((StrandType)strandType, Xs, &points);
    }
-   *pEccY = -(Yt + cgy); // greater than 0 means cg of strands is below the cg of the section
 
-   *pEccX = IsZero(*pEccX) ? 0 : *pEccX;
-   *pEccY = IsZero(*pEccY) ? 0 : *pEccY;
-}
+   Float64 A = 0;
+   Float64 Ay = 0;
 
-Float64 CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) const
-{
-   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-   return GetEccentricity(spType,intervalIdx,poi,bIncTemp,nEffectiveStrands);
-}
-
-Float64 CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,Float64* pnEffectiveStrands) const
-{
-   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-   return GetEccentricity(spType,intervalIdx,poi,strandType,pnEffectiveStrands);
-}
-
-Float64 CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) const
-{
-   return GetEccentricity(spType, intervalIdx, poi, bIncTemp, nullptr, nEffectiveStrands);
-}
-
-Float64 CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) const
-{
-   return GetEccentricity(spType, intervalIdx, poi, strandType, nullptr, nEffectiveStrands);
-}
-
-Float64 CBridgeAgentImp::GetStrandLocation(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx) const
-{
-   Float64 Y = 0;
-   switch( strandType )
+   for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
    {
-   case pgsTypes::Straight:
-      Y = GetSsLocation(poi,intervalIdx);
-      break;
+      Float64 y;
+      if (strandType == pgsTypes::Straight)
+      {
+         Float64 x, y, left_bond, right_bond;
+         strandGridModel->GetStraightStrandBondedLengthByPositionIndex(strandIdx, Xs, &x, &y, &left_bond, &right_bond);
 
-   case pgsTypes::Harped:
-      Y = GetHsLocation(poi,intervalIdx);
-      break;
-
-   case pgsTypes::Temporary:
-      Y = GetTempLocation(poi,intervalIdx);
-      break;
-
-   default:
-      ATLASSERT(false);
+         IndexType foundIdx;
+         HRESULT hr = debondPositions->Find(strandIdx, &foundIdx);
+         if (FAILED(hr))
+         {
+            // Strand is NOT debonded at this location....
+            A += 1;
+            Ay += y;
+         }
+      }
+      else
+      {
+         CComPtr<IPoint2d> point;
+         points->get_Item(strandIdx, &point);
+         point->get_Y(&y);
+         A += 1;
+         Ay += y;
+      }
    }
 
-   ATLASSERT( Y <= 0 ); // this is in Girder Section Coordinates. Since strand is below top of girder its position should be negative
+   Float64 Y = (IsZero(A) ? 0 : Ay / A);
+   ATLASSERT(Y <= 0); // this is in Girder Section Coordinates. Since strand is below top of girder its position should be negative
    return Y;
 }
 
@@ -15974,938 +16010,36 @@ void CBridgeAgentImp::GetStrandCGProfile(const CSegmentKey& segmentKey, bool bIn
    strandModel->GetStrandCGProfile(bIncTemp ? VARIANT_TRUE : VARIANT_FALSE, ppProfilePoints);
 }
 
-Float64 CBridgeAgentImp::GetHsLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const
+bool CBridgeAgentImp::AreStrandsEngaged(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
 {
-   VALIDATE( GIRDER );
-
-   // if the strands aren't released yet, then there isn't an eccentricty with respect to the girder cross section
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   if ( intervalIdx < GetPrestressReleaseInterval(segmentKey) || IsOffSegment(poi) )
-   {
-      return 0;
-   }
+   if (GetStrandCount(segmentKey, strandType, pConfig) == 0)
+      return false; // there aren't any strands
 
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(poi,&girder);
-
-   CComPtr<IStrandModel> strandModel;
-   girder->get_StrandModel(&strandModel);
-
-   Float64 Xs = poi.GetDistFromStart();
-
-   CComPtr<IPoint2dCollection> points;
-   strandModel->GetStrandPositions(Harped,Xs,&points);
-
-   CollectionIndexType nStrands;
-   points->get_Count(&nStrands);
-
-   Float64 A = 0;
-   Float64 Ay = 0;
-
-   for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
-   {
-      CComPtr<IPoint2d> point;
-      points->get_Item(strandIdx,&point);
-      Float64 y;
-      point->get_Y(&y);
-
-      A += 1;
-      Ay += y;
-   }
-
-   Float64 Y = (IsZero(A) ? 0 : Ay/A);
-   return Y;
-}
-
-Float64 CBridgeAgentImp::GetSsLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const
-{
-   // Returns the distance from the top of the girder to the strand
-   VALIDATE( GIRDER );
-
-   // if the strands aren't released yet, then there isn't an eccentricty with respect to the girder cross section
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   if ( intervalIdx < GetPrestressReleaseInterval(segmentKey) || IsOffSegment(poi) )
-   {
-      return 0;
-   }
-
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(poi,&girder);
-
-   CComPtr<IStrandModel> strandModel;
-   girder->get_StrandModel(&strandModel);
-
-   StrandIndexType nStrands;
-   strandModel->GetStrandCount(Straight,&nStrands);
-
-   Float64 Xs = poi.GetDistFromStart();
-
-   CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
-
-   CComPtr<IIndexArray> debondPositions;
-   strandGridModel->GetStraightStrandsDebondedByPositionIndex(Xs,&debondPositions);
-
-   Float64 A = 0;
-   Float64 Ay = 0;
-
-   for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
-   {
-      Float64 x, y, left_bond, right_bond;
-      strandGridModel->GetStraightStrandBondedLengthByPositionIndex(strandIdx, Xs, &x, &y, &left_bond, &right_bond);
-
-      IndexType foundIdx;
-      HRESULT hr = debondPositions->Find(strandIdx,&foundIdx);
-      if ( FAILED(hr) )
-      {
-         // Strand is NOT debonded at this location....
-         A += 1;
-         Ay += y;
-      }
-   }
-
-   Float64 Y = IsZero(A) ? 0 : Ay/A;
-   return Y;
-}
-
-Float64 CBridgeAgentImp::GetTempLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const
-{
-   VALIDATE( GIRDER );
-
-   // if the strands aren't released yet, then there isn't an eccentricty with respect to the girder cross section
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   if ( intervalIdx < GetPrestressReleaseInterval(segmentKey) || IsOffSegment(poi) )
-   {
-      return 0;
-   }
-
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(poi,&girder);
-
-   CComPtr<IStrandModel> strandGridModel;
-   girder->get_StrandModel(&strandGridModel);
-
-   Float64 Xs = poi.GetDistFromStart();
-
-   CComPtr<IPoint2dCollection> points;
-   strandGridModel->GetStrandPositions(Temporary, Xs, &points);
-
-   CollectionIndexType nStrands;
-   points->get_Count(&nStrands);
-
-   Float64 A = 0;
-   Float64 Ay = 0;
-
-   for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
-   {
-      CComPtr<IPoint2d> point;
-      points->get_Item(strandIdx,&point);
-      Float64 y;
-      point->get_Y(&y);
-
-      A += 1;
-      Ay += y;
-   }
-
-   Float64 Y = (IsZero(A) ? 0 : Ay/A);
-   return Y;
-}
-
-Float64 CBridgeAgentImp::GetHsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const
-{
-   ATLASSERT(spType != pgsTypes::sptNetDeck);
-
-   Float64 cgx, cgy;
-   GetHarpedStrandCG(intervalIdx, poi, pConfig, nEffectiveStrands, &cgx, &cgy);
-
-   if (*nEffectiveStrands == 0)
-   {
-      return 0.0;
-   }
-
-   const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
-
-   Float64 Yt;
-   props.ShapeProps->get_Ytop(&Yt);
-   Float64 ecc = -(Yt + cgy);
-   return ecc;
-}
-
-Float64 CBridgeAgentImp::GetSsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const
-{
-   ATLASSERT(spType != pgsTypes::sptNetDeck);
-
-   Float64 cgx, cgy;
-   GetStraightStrandCG(intervalIdx, poi, pConfig, nEffectiveStrands, &cgx, &cgy);
-
-   if (*nEffectiveStrands == 0)
-   {
-      return 0.0;
-   }
-
-   const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
-
-   Float64 Yt;
-   props.ShapeProps->get_Ytop(&Yt);
-   Float64 ecc = -(Yt + cgy);
-   return ecc;
-}
-
-Float64 CBridgeAgentImp::GetTempEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const
-{
-   ATLASSERT(spType != pgsTypes::sptNetDeck);
-
-   Float64 cgx, cgy;
-   GetTemporaryStrandCG(intervalIdx, poi, pConfig, nEffectiveStrands, &cgx, &cgy);
-
-   if (*nEffectiveStrands == 0)
-   {
-      return 0.0;
-   }
-
-   const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
-
-   Float64 Yt;
-   props.ShapeProps->get_Ytop(&Yt);
-   Float64 ecc = -(Yt + cgy);
-   return ecc;
-}
-
-void CBridgeAgentImp::GetHarpedStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,Float64* nEffectiveStrands, Float64* pX,Float64* pY) const
-{
-   *nEffectiveStrands = 0.0;
-   *pX = 0.0;
-   *pY = 0.0;
-
-   // if the strands aren't released yet, or if the poi isn't in the girder, then there isn't an eccentricty with respect to the girder cross section
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
    IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-   if (intervalIdx < releaseIntervalIdx || IsOffSegment(poi))
+   if (strandType == pgsTypes::Temporary)
    {
-      return;
-   }
-
-   if (pConfig == nullptr)
-   {
-      VALIDATE(GIRDER);
-
-      CComPtr<IPrecastGirder> girder;
-      GetGirder(poi, &girder);
-
-      CComPtr<IStrandModel> strandModel;
-      girder->get_StrandModel(&strandModel);
-
-      Float64 Xpoi = poi.GetDistFromStart();
-
-      CComPtr<IPoint2dCollection> points;
-      strandModel->GetStrandPositions(Harped, Xpoi, &points);
-
-      CollectionIndexType nStrandPoints;
-      points->get_Count(&nStrandPoints);
-
-      if (nStrandPoints == 0)
+      IntervalIndexType tsIntallationIntervalIdx = GetTemporaryStrandInstallationInterval(segmentKey);
+      IntervalIndexType tsRemovalIntervalIdx = GetTemporaryStrandRemovalInterval(segmentKey);
+      if (intervalIdx < releaseIntervalIdx || // interval is before release so strands aren't in the segment yet
+         (tsIntallationIntervalIdx == INVALID_INDEX || intervalIdx < tsIntallationIntervalIdx) || // if installation interval is INVALID_INDEX there aren't any temp strands or this interval is before the temp strands are installed
+         (tsRemovalIntervalIdx == INVALID_INDEX || tsRemovalIntervalIdx <= intervalIdx) || // if removal interval is INVALID_INDEX there aren't any temp strnads or this interval is after the temp strands are removed
+         IsOffSegment(poi) // poi is not on the segment
+         )
       {
-         *nEffectiveStrands = 0.0;
-      }
-      else
-      {
-         // must account for partial bonding if poi is near end of girder
-         // NOTE: bond factor is 1.0 if at girder ends
-         Float64 bond_factor = 1.0;
-
-         const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-         GET_IFACE(IPretensionForce, pPrestress);
-         Float64 xfer_length = pPrestress->GetXferLength(segmentKey, pgsTypes::Harped);
-
-         if (0.0 < Xpoi && Xpoi < xfer_length)
-         {
-            bond_factor = Xpoi / xfer_length;
-         }
-         else
-         {
-            Float64 girder_length = GetSegmentLength(segmentKey);
-
-            if ((girder_length - xfer_length) < Xpoi && Xpoi < girder_length)
-            {
-               bond_factor = (girder_length - Xpoi) / xfer_length;
-            }
-         }
-
-         *nEffectiveStrands = (Float64)nStrandPoints*bond_factor;
-
-         if (0 < nStrandPoints)
-         {
-            Float64 cg_x = 0.0;
-            Float64 cg_y = 0.0;
-            for (CollectionIndexType strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++)
-            {
-               CComPtr<IPoint2d> point;
-               points->get_Item(strandPointIdx, &point);
-               Float64 x, y;
-               point->Location(&x,&y);
-
-               cg_x += x;
-               cg_y += y;
-            }
-            *pX = cg_x / (Float64)nStrandPoints;
-            *pY = cg_y / (Float64)nStrandPoints;
-         }
+         return false;
       }
    }
    else
    {
-      StrandIndexType Nh = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Harped);
-
-      ATLASSERT(pConfig->PrestressConfig.Debond[pgsTypes::Harped].empty()); // we don't deal with debonding of harped strands for design. WBFL needs to be updated
-
-      VALIDATE(GIRDER);
-
-      if (Nh == 0)
+      // if the strands aren't released yet, or if the poi isn't in the girder, then there isn't an eccentricty with respect to the girder cross section
+      if (intervalIdx < releaseIntervalIdx || IsOffSegment(poi))
       {
-         return;
-      }
-      else
-      {
-         CComPtr<IPrecastGirder> girder;
-         GetGirder(poi, &girder);
-
-         // must account for partial bonding if poi is near end of girder
-         // NOTE: bond factor is 1.0 if at girder ends
-         Float64 Xpoi = poi.GetDistFromStart();
-         Float64 bond_factor = 1.0;
-
-         GET_IFACE(IPretensionForce, pPrestress);
-         Float64 xfer_length = pPrestress->GetXferLength(segmentKey, pgsTypes::Harped);
-
-         if (0.0 < Xpoi && Xpoi < xfer_length)
-         {
-            bond_factor = Xpoi / xfer_length;
-         }
-         else
-         {
-            Float64 girder_length = GetSegmentLength(segmentKey);
-
-            if ((girder_length - xfer_length) < Xpoi && Xpoi < girder_length)
-            {
-               bond_factor = (girder_length - Xpoi) / xfer_length;
-            }
-         }
-
-         // use continuous interface to set strands
-         CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Harped));
-
-         // Use CStrandMoverSwapper to swap out girder's strand mover and harping offset limits
-         // temporarily for design
-         IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-         Float64 Hg = GetHg(releaseIntervalIdx, poi);
-
-         CComPtr<IStrandModel> strandModel;
-         girder->get_StrandModel(&strandModel);
-         CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
-
-         GET_IFACE(IBridgeDescription, pIBridgeDesc);
-         CStrandMoverSwapper swapper(segmentKey, Hg, pConfig->PrestressConfig, this, strandGridModel, pIBridgeDesc);
-
-         CComPtr<IPoint2dCollection> points;
-         strandGridModel->GetStrandPositionsEx(Harped, poi.GetDistFromStart(), &strand_fill, &points);
-
-         // compute cg
-         CollectionIndexType num_strand_positions;
-         points->get_Count(&num_strand_positions);
-
-         *nEffectiveStrands = bond_factor*num_strand_positions;
-
-         ATLASSERT(Nh == StrandIndexType(num_strand_positions));
-         if (0 < num_strand_positions)
-         {
-            Float64 cg_x = 0.0;
-            Float64 cg_y = 0.0;
-            for (CollectionIndexType strandPositionIdx = 0; strandPositionIdx < num_strand_positions; strandPositionIdx++)
-            {
-               CComPtr<IPoint2d> point;
-               points->get_Item(strandPositionIdx, &point);
-               Float64 x, y;
-               point->Location(&x, &y);
-
-               cg_x += x;
-               cg_y += y;
-            }
-
-            *pX = cg_x / (Float64)num_strand_positions;
-            *pY = cg_y / (Float64)num_strand_positions;
-         }
+         return false;
       }
    }
 
-   if (!HasAsymmetricGirders())
-   {
-      // don't have asymmetric effects, cg is on CL at X = 0
-      *pX = 0;
-   }
-}
-
-void CBridgeAgentImp::GetStraightStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,Float64* nEffectiveStrands, Float64* pX,Float64* pY) const
-{
-   *nEffectiveStrands = 0.0;
-   *pX = 0.0;
-   *pY = 0.0;
-
-   // if the strands aren't released yet, or if the poi isn't in the girder, then there isn't an eccentricty with respect to the girder cross section
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-   if (intervalIdx < releaseIntervalIdx || IsOffSegment(poi))
-   {
-      return;
-   }
-
-   if (pConfig == nullptr)
-   {
-      VALIDATE(GIRDER);
-
-      CComPtr<IPrecastGirder> girder;
-      GetGirder(poi, &girder);
-
-      CComPtr<IStrandModel> strandModel;
-      girder->get_StrandModel(&strandModel);
-
-      StrandIndexType num_strands;
-      strandModel->GetStrandCount(Straight,&num_strands);
-      if (0 < num_strands)
-      {
-         StrandIndexType num_bonded_strands = 0;
-         Float64 num_eff_strands = 0.0; // weighted number of effective strands (number of strands that can have full prestress force)
-
-         Float64 segment_length = GetSegmentLength(segmentKey);
-
-         Float64 Xpoi = poi.GetDistFromStart();
-
-         // treat comp at ends different than in interior
-         Float64 cg_x = 0.0;
-         Float64 cg_y = 0.0;
-         if (IsZero(Xpoi))
-         {
-            // we are at the girder left end. Treat all bonded strands as full strength
-            for (StrandIndexType strandIndex = 0; strandIndex < num_strands; strandIndex++)
-            {
-               Float64 xloc, yloc, left_debond, right_debond;
-               strandModel->GetStraightStrandDebondLengthByPositionIndex(Xpoi, strandIndex, &xloc, &yloc, &left_debond, &right_debond);
-
-               if (left_debond == 0.0)
-               {
-                  // strand is not debonded, we don't care by how much
-                  cg_x += xloc;
-                  cg_y += yloc;
-                  num_bonded_strands++;
-               }
-            }
-
-            num_eff_strands = (Float64)num_bonded_strands;
-         }
-         else if (IsEqual(Xpoi, segment_length))
-         {
-            // we are at the girder right end. Treat all bonded strands as full strength
-            for (StrandIndexType strandIndex = 0; strandIndex < num_strands; strandIndex++)
-            {
-               Float64 xloc, yloc, left_debond, right_debond;
-               // does this have to be the end grid (start/end grids are the same)
-               // Could pass in Xpoi if this method is updated
-               strandModel->GetStraightStrandDebondLengthByPositionIndex(Xpoi, strandIndex, &xloc, &yloc, &left_debond, &right_debond);
-
-               if (right_debond == 0.0)
-               {
-                  cg_x += xloc;
-                  cg_y += yloc;
-                  num_bonded_strands++;
-               }
-            }
-
-            num_eff_strands = (Float64)num_bonded_strands;
-         }
-         else
-         {
-            // at the girder interior, must deal with partial bonding
-            GET_IFACE(IPretensionForce, pPrestress);
-            Float64 xfer_length = pPrestress->GetXferLength(segmentKey, pgsTypes::Straight);
-
-            for (StrandIndexType strandIndex = 0; strandIndex < num_strands; strandIndex++)
-            {
-               Float64 xloc, yloc, left_bond, right_bond;
-               strandModel->GetStraightStrandBondedLengthByPositionIndex(strandIndex, Xpoi, &xloc, &yloc, &left_bond, &right_bond);
-
-               Float64 bond_length = Min(left_bond, right_bond);
-
-               if (bond_length <= 0.0)
-               {
-                  ;// do nothing if bond length is less than zero
-               }
-               else if (bond_length < xfer_length)
-               {
-                  Float64 factor = bond_length / xfer_length;
-                  cg_x += xloc* factor;
-                  cg_y += yloc* factor;
-                  num_eff_strands += factor;
-               }
-               else
-               {
-                  cg_x += xloc;
-                  cg_y += yloc;
-                  num_eff_strands += 1.0;
-               }
-            }
-         }
-
-         *nEffectiveStrands = num_eff_strands;
-
-         if (0.0 < num_eff_strands)
-         {
-            *pX = cg_x / num_eff_strands;
-            *pY = cg_y / num_eff_strands;
-         }
-      }
-   }
-   else
-   {
-      StrandIndexType Ns = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Straight);
-
-      VALIDATE(GIRDER);
-
-      if (0 < Ns)
-      {
-         CComPtr<IPrecastGirder> girder;
-         GetGirder(poi, &girder);
-
-         Float64 girder_length = GetSegmentLength(segmentKey);
-         Float64 Xpoi = poi.GetDistFromStart();
-
-         // transfer
-         GET_IFACE(IPretensionForce, pPrestress);
-         Float64 xfer_length = pPrestress->GetXferLength(segmentKey, pgsTypes::Straight);
-
-         // debonding - Let's set up a mapping data structure to make dealing with debonding easier (eliminate searching)
-         const DebondConfigCollection& rdebonds = pConfig->PrestressConfig.Debond[pgsTypes::Straight];
-
-         std::vector<Int16> debond_map;
-         debond_map.assign(Ns, -1); // strands not debonded have and index of -1
-         Int16 dbinc = 0;
-         for (DebondConfigConstIterator idb = rdebonds.begin(); idb != rdebonds.end(); idb++)
-         {
-            const DEBONDCONFIG& dbinfo = *idb;
-            if (dbinfo.strandIdx < Ns)
-            {
-               debond_map[dbinfo.strandIdx] = dbinc;
-            }
-            else
-            {
-               ATLASSERT(false); // shouldn't be debonding any strands that don't exist
-            }
-
-            dbinc++;
-         }
-
-         // get all current straight strand locations
-         CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Straight));
-
-         CComPtr<IStrandModel> strandModel;
-         girder->get_StrandModel(&strandModel);
-         CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
-
-         CComPtr<IPoint2dCollection> points;
-         strandGridModel->GetStrandPositionsEx(Straight, Xpoi, &strand_fill, &points);
-
-         CollectionIndexType num_strand_positions;
-         points->get_Count(&num_strand_positions);
-         ATLASSERT(Ns == num_strand_positions);
-
-         // loop over all strands, compute bonded length, and weighted cg of strands
-         Float64 cg_x = 0.0;
-         Float64 cg_y = 0.0;
-         Float64 num_eff_strands = 0.0;
-
-         // special cases are where POI is at girder ends. For this, weight strands fully
-         if (IsZero(Xpoi))
-         {
-            // poi is at left end
-            for (CollectionIndexType strandPositionIdx = 0; strandPositionIdx < num_strand_positions; strandPositionIdx++)
-            {
-               CComPtr<IPoint2d> point;
-               points->get_Item(strandPositionIdx, &point);
-               Float64 x,y;
-               point->Location(&x, &y);
-
-               Int16 dbIdx = debond_map[strandPositionIdx];
-               if (dbIdx != -1)
-               {
-                  // strand is debonded
-                  const DEBONDCONFIG& dbinfo = rdebonds[dbIdx];
-
-                  if (dbinfo.DebondLength[pgsTypes::metStart] == 0.0)
-                  {
-                     // left end is not debonded
-                     num_eff_strands += 1.0;
-                     cg_x += x;
-                     cg_y += y;
-                  }
-               }
-               else
-               {
-                  // not debonded, give full weight
-                  num_eff_strands += 1.0;
-                  cg_x += x;
-                  cg_y += y;
-               }
-            }
-         }
-         else if (IsEqual(Xpoi, girder_length))
-         {
-            // poi is at right end
-            for (CollectionIndexType strandPositionIdx = 0; strandPositionIdx < num_strand_positions; strandPositionIdx++)
-            {
-               CComPtr<IPoint2d> point;
-               points->get_Item(strandPositionIdx, &point);
-               Float64 x,y;
-               point->Location(&x, &y);
-
-               Int16 dbIdx = debond_map[strandPositionIdx];
-               if (dbIdx != -1)
-               {
-                  // strand is debonded
-                  const DEBONDCONFIG& dbinfo = rdebonds[dbIdx];
-
-                  if (dbinfo.DebondLength[pgsTypes::metEnd] == 0.0)
-                  {
-                     // right end is not debonded
-                     num_eff_strands += 1.0;
-                     cg_x += x;
-                     cg_y += y;
-                  }
-               }
-               else
-               {
-                  // not debonded, give full weight
-                  num_eff_strands += 1.0;
-                  cg_x += x;
-                  cg_y += y;
-               }
-            }
-         }
-         else
-         {
-            // poi is between ends
-            for (CollectionIndexType strandPositionIdx = 0; strandPositionIdx < num_strand_positions; strandPositionIdx++)
-            {
-               CComPtr<IPoint2d> point;
-               points->get_Item(strandPositionIdx, &point);
-               Float64 x,y;
-               point->Location(&x, &y);
-
-               // bonded length
-               Float64 lft_bond, rgt_bond;
-               Int16 dbIdx = debond_map[strandPositionIdx];
-               if (dbIdx != -1)
-               {
-                  const DEBONDCONFIG& dbinfo = rdebonds[dbIdx];
-
-                  // strand is debonded
-                  lft_bond = Xpoi - dbinfo.DebondLength[pgsTypes::metStart];
-                  rgt_bond = girder_length - dbinfo.DebondLength[pgsTypes::metEnd] - Xpoi;
-               }
-               else
-               {
-                  lft_bond = Xpoi;
-                  rgt_bond = girder_length - Xpoi;
-               }
-
-               Float64 bond_len = Min(lft_bond, rgt_bond);
-               if (bond_len <= 0.0)
-               {
-                  // not bonded - do nothing
-               }
-               else if (bond_len < xfer_length)
-               {
-                  Float64 bf = bond_len / xfer_length; // reduce strand weight for debonding
-                  num_eff_strands += bf;
-                  cg_x += x * bf;
-                  cg_y += y * bf;
-               }
-               else
-               {
-                  // fully bonded
-                  num_eff_strands += 1.0;
-                  cg_x += x;
-                  cg_y += y;
-               }
-            }
-         }
-
-         *nEffectiveStrands = num_eff_strands;
-
-         if (0.0 < num_eff_strands)
-         {
-            *pX = cg_x / num_eff_strands;
-            *pY = cg_y / num_eff_strands;
-         }
-      }
-   }
-
-   if (!HasAsymmetricGirders())
-   {
-      // don't have asymmetric effects, cg is on CL at X = 0
-      *pX = 0;
-   }
-}
-
-void CBridgeAgentImp::GetTemporaryStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,Float64* nEffectiveStrands, Float64* pX,Float64* pY) const
-{
-   *nEffectiveStrands = 0.0;
-   *pX = 0.0;
-   *pY = 0.0;
-
-   // if the strands aren't released yet, or if the poi isn't in the girder, then there isn't an eccentricty with respect to the girder cross section
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-   IntervalIndexType tsIntallationIntervalIdx = GetTemporaryStrandInstallationInterval(segmentKey);
-   IntervalIndexType tsRemovalIntervalIdx = GetTemporaryStrandRemovalInterval(segmentKey);
-   if (IsOffSegment(poi) ||  // poi is not on the segment
-      intervalIdx < releaseIntervalIdx || // interval is before release so strands aren't in the segment yet
-      (tsIntallationIntervalIdx == INVALID_INDEX || intervalIdx < tsIntallationIntervalIdx) || // if installation interval is INVALID_INDEX there aren't any temp strands or this interval is before the temp strands are installed
-      (tsRemovalIntervalIdx == INVALID_INDEX || tsRemovalIntervalIdx <= intervalIdx) // if removal interval is INVALID_INDEX there aren't any temp strnads or this interval is after the temp strands are removed
-      )
-   {
-      return;
-   }
-
-   if (pConfig == nullptr)
-   {
-      VALIDATE(GIRDER);
-
-      CComPtr<IPrecastGirder> girder;
-      GetGirder(poi, &girder);
-
-      CComPtr<IStrandModel> strandModel;
-      girder->get_StrandModel(&strandModel);
-
-      Float64 Xpoi = poi.GetDistFromStart();
-
-      CComPtr<IPoint2dCollection> points;
-      strandModel->GetStrandPositions(Temporary, Xpoi, &points);
-
-      CollectionIndexType num_strand_positions;
-      points->get_Count(&num_strand_positions);
-
-      if (0 < num_strand_positions)
-      {
-         // must account for partial bonding if poi is near end of girder
-         // NOTE: bond factor is 1.0 if at girder ends
-         Float64 bond_factor = 1.0;
-
-         GET_IFACE(IPretensionForce, pPrestress);
-         Float64 xfer_length = pPrestress->GetXferLength(segmentKey, pgsTypes::Temporary);
-
-         if (0.0 < Xpoi && Xpoi < xfer_length)
-         {
-            bond_factor = Xpoi / xfer_length;
-         }
-         else
-         {
-            Float64 girder_length = GetSegmentLength(segmentKey);
-
-            if ((girder_length - xfer_length) < Xpoi && Xpoi < girder_length)
-            {
-               bond_factor = (girder_length - Xpoi) / xfer_length;
-            }
-         }
-
-         *nEffectiveStrands = num_strand_positions*bond_factor;
-
-         Float64 cg_x = 0.0;
-         Float64 cg_y = 0.0;
-         for (CollectionIndexType strandPositionIdx = 0; strandPositionIdx < num_strand_positions; strandPositionIdx++)
-         {
-            CComPtr<IPoint2d> point;
-            points->get_Item(strandPositionIdx, &point);
-            Float64 x,y;
-            point->Location(&x, &y);
-
-            cg_x += x;
-            cg_y += y;
-         }
-
-         *pX = cg_x / (Float64)num_strand_positions;
-         *pY = cg_y / (Float64)num_strand_positions;
-      }
-   }
-   else
-   {
-      StrandIndexType Nt = pConfig->PrestressConfig.GetStrandCount(pgsTypes::Temporary);
-
-      ATLASSERT(pConfig->PrestressConfig.Debond[pgsTypes::Temporary].empty()); // we don't deal with debonding of temp strands for design. WBFL needs to be updated
-
-      VALIDATE(GIRDER);
-
-      if (0 < Nt)
-      {
-         CComPtr<IPrecastGirder> girder;
-         GetGirder(poi, &girder);
-
-         // must account for partial bonding if poi is near end of girder
-         // NOTE: bond factor is 1.0 if at girder ends
-         Float64 Xpoi = poi.GetDistFromStart();
-         Float64 bond_factor = 1.0;
-
-         GET_IFACE(IPretensionForce, pPrestress);
-         Float64 xfer_length = pPrestress->GetXferLength(segmentKey, pgsTypes::Temporary);
-
-         if (0.0 < Xpoi && Xpoi < xfer_length)
-         {
-            bond_factor = Xpoi / xfer_length;
-         }
-         else
-         {
-            Float64 girder_length = GetSegmentLength(segmentKey);
-
-            if ((girder_length - xfer_length) < Xpoi && Xpoi < girder_length)
-            {
-               bond_factor = (girder_length - Xpoi) / xfer_length;
-            }
-         }
-
-         // use continuous interface to set strands
-         CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Temporary));
-
-         CComPtr<IStrandModel> strandModel;
-         girder->get_StrandModel(&strandModel);
-         CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
-
-         CComPtr<IPoint2dCollection> points;
-         strandGridModel->GetStrandPositionsEx(Temporary, Xpoi, &strand_fill, &points);
-
-         // compute cg
-         CollectionIndexType num_strands_positions;
-         points->get_Count(&num_strands_positions);
-
-         *nEffectiveStrands = bond_factor * num_strands_positions;
-
-         ATLASSERT(Nt == StrandIndexType(num_strands_positions));
-         Float64 cg_x = 0.0;
-         Float64 cg_y = 0.0;
-         for (CollectionIndexType strandPositionIdx = 0; strandPositionIdx < num_strands_positions; strandPositionIdx++)
-         {
-            CComPtr<IPoint2d> point;
-            points->get_Item(strandPositionIdx, &point);
-            Float64 x, y;
-            point->Location(&x, &y);
-
-            cg_x += x;
-            cg_y += y;
-         }
-
-         *pX = cg_x / (Float64)num_strands_positions;
-         *pY = cg_y / (Float64)num_strands_positions;
-      }
-   }
-
-   if (!HasAsymmetricGirders())
-   {
-      // don't have asymmetric effects, cg is on CL at X = 0
-      *pX = 0;
-   }
-}
-
-Float64 CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const
-{
-   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-   return GetEccentricity(spType,intervalIdx,poi,bIncTemp,pConfig,nEffectiveStrands);
-}
-
-Float64 CBridgeAgentImp::GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const
-{
-   pgsTypes::SectionPropertyType spType = (GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-   return GetEccentricity(spType,intervalIdx,poi,strandType,pConfig,nEffectiveStrands);
-}
-   
-Float64 CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const
-{
-   if ( IsOffSegment(poi) )
-   {
-      return 0.0;
-   }
-
-   VALIDATE( GIRDER );
-
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(poi,&girder);
-
-   Float64 dns = 0.0;
-   Float64 dnh = 0.0;
-   Float64 dnt = 0.0;
-
-   Float64 eccs = GetEccentricity(spType,intervalIdx, poi, pgsTypes::Straight, pConfig, &dns);
-   Float64 ecch = GetEccentricity(spType,intervalIdx, poi, pgsTypes::Harped, pConfig,   &dnh);
-   Float64 ecct = 0.0;
-
-   Float64 aps[3];
-   aps[pgsTypes::Straight]  = GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetNominalArea() * dns;
-   aps[pgsTypes::Harped]    = GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetNominalArea()   * dnh;
-   aps[pgsTypes::Temporary] = 0;
-
-   if (bIncTemp)
-   {
-      ecct = GetEccentricity(spType,intervalIdx, poi, pgsTypes::Temporary, pConfig, &dnt);
-      aps[pgsTypes::Temporary] = GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetNominalArea()* dnt;
-   }
-
-   Float64 ecc=0.0;
-   *nEffectiveStrands = dns + dnh + dnt;
-   if (0 < *nEffectiveStrands)
-   {
-      ecc = (aps[pgsTypes::Straight]*eccs + aps[pgsTypes::Harped]*ecch + aps[pgsTypes::Temporary]*ecct)/(aps[pgsTypes::Straight] + aps[pgsTypes::Harped] + aps[pgsTypes::Temporary]);
-   }
-
-   return ecc;
-}
-
-Float64 CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig,Float64* nEffectiveStrands) const
-{
-   Float64 e;
-   if ( IsOffSegment(poi) )
-   {
-      return 0.0;
-   }
-
-   switch( strandType )
-   {
-   case pgsTypes::Straight:
-      e = GetSsEccentricity(spType,intervalIdx,poi,pConfig,nEffectiveStrands);
-      break;
-
-   case pgsTypes::Harped:
-      e = GetHsEccentricity(spType,intervalIdx,poi,pConfig,nEffectiveStrands);
-      break;
-
-   case pgsTypes::Temporary:
-      e = GetTempEccentricity(spType,intervalIdx,poi,pConfig,nEffectiveStrands);
-      break;
-
-   case pgsTypes::Permanent:
-      {
-        const CSegmentKey& segmentKey(poi.GetSegmentKey());
-        StrandIndexType Ns = GetStrandCount(segmentKey, pgsTypes::Straight, pConfig);
-        StrandIndexType Nh = GetStrandCount(segmentKey, pgsTypes::Harped, pConfig);
-        Float64 NsEffective, NhEffective;
-        Float64 es = GetSsEccentricity(spType,intervalIdx,poi,pConfig,&NsEffective);
-        Float64 eh = GetHsEccentricity(spType,intervalIdx,poi,pConfig,&NhEffective);
-        *nEffectiveStrands = NsEffective + NhEffective;
-        e = (*nEffectiveStrands == 0 ? 0 : (es*NsEffective + eh*NhEffective) / (NsEffective + NhEffective));
-      }
-      break;
-
-   default:
-      ATLASSERT(false); // should never get here
-   }
-
-   return e;
+   return true;
 }
 
 Float64 CBridgeAgentImp::GetMaxStrandSlope(const CSegmentKey& segmentKey) const
@@ -17633,21 +16767,6 @@ StrandIndexType CBridgeAgentImp::GetMaxStrands(LPCTSTR strGirderName,pgsTypes::S
    return nStrands;
 }
 
-Float64 CBridgeAgentImp::GetStrandArea(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType) const
-{
-   if ( intervalIdx < GetStressStrandInterval(segmentKey) )
-   {
-      return 0; // strands aren't stressed so they aren't even in play yet
-   }
-
-   StrandIndexType Ns = GetStrandCount(segmentKey,strandType);
-   const matPsStrand* pStrand = GetStrandMaterial(segmentKey,strandType);
-
-   Float64 aps = pStrand->GetNominalArea();
-   Float64 Aps = aps * Ns;
-   return Aps;
-}
-
 Float64 CBridgeAgentImp::GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -17668,12 +16787,12 @@ Float64 CBridgeAgentImp::GetStrandArea(const pgsPointOfInterest& poi,IntervalInd
    }
 
    Float64 Aps = 0;
-   for (auto strand_type : vStrandTypes)
+   for (auto type : vStrandTypes)
    {
-      const matPsStrand* pStrand = GetStrandMaterial(segmentKey, strand_type);
+      const matPsStrand* pStrand = GetStrandMaterial(segmentKey, type);
       Float64 aps = pStrand->GetNominalArea();
 
-      StrandIndexType nStrands = GetStrandCount(segmentKey, strand_type, pConfig);
+      StrandIndexType nStrands = GetStrandCount(segmentKey, type, pConfig);
 
       // count the number of strands that are debonded
       StrandIndexType nDebonded = 0;
@@ -17681,32 +16800,25 @@ Float64 CBridgeAgentImp::GetStrandArea(const pgsPointOfInterest& poi,IntervalInd
       {
          for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
          {
-            if (IsStrandDebonded(poi, strandIdx, strand_type, pConfig))
+            if (IsStrandDebonded(poi, strandIdx, type, pConfig))
             {
                nDebonded++;
             }
          }
       }
-
       Aps += aps * (nStrands - nDebonded);
    }
-   return Aps;
-}
-
-Float64 CBridgeAgentImp::GetAreaPrestressStrands(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,bool bIncTemp) const
-{
-   Float64 Aps = GetStrandArea(segmentKey,intervalIdx,pgsTypes::Straight) + GetStrandArea(segmentKey,intervalIdx,pgsTypes::Harped);
-   if ( bIncTemp )
-   {
-      Aps += GetStrandArea(segmentKey,intervalIdx,pgsTypes::Temporary);
-   }
-
    return Aps;
 }
 
 Float64 CBridgeAgentImp::GetPjack(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
 {
    Float64 Pj = 0;
+   if (GetStrandCount(segmentKey, strandType, pConfig) == 0)
+   {
+      return 0;
+   }
+
    if (pConfig)
    {
       if ( strandType == pgsTypes::Permanent )
@@ -18546,11 +17658,8 @@ bool CBridgeAgentImp::IsStrandDebonded(const CSegmentKey& segmentKey,StrandIndex
    else
    {
       const GDRCONFIG& config(pConfig == nullptr ? GetSegmentConfiguration(segmentKey) : *pConfig);
-
-      DebondConfigConstIterator iter;
-      for (iter = config.PrestressConfig.Debond[strandType].begin(); iter != config.PrestressConfig.Debond[strandType].end(); iter++)
+      for(const auto& di : config.PrestressConfig.Debond[strandType])
       {
-         const DEBONDCONFIG& di = *iter;
          if (strandIdx == di.strandIdx)
          {
             *pStart = di.DebondLength[pgsTypes::metStart];
@@ -18619,6 +17728,7 @@ bool CBridgeAgentImp::IsStrandDebonded(const pgsPointOfInterest& poi, StrandInde
 StrandIndexType CBridgeAgentImp::GetNumDebondedStrands(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::DebondMemberEndType end, const GDRCONFIG* pConfig) const
 {
    // This method assumes harped strands can't be debonded
+
    if (pConfig)
    {
       if (strandType == pgsTypes::Permanent)
@@ -22756,7 +21866,6 @@ Float64 CBridgeAgentImp::GetAg(pgsTypes::SectionPropertyType spType,IntervalInde
 void CBridgeAgentImp::GetCentroid(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const
 {
    const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
-   Float64 area;
    props.ShapeProps->get_Centroid(ppCG);
 }
 
@@ -28310,11 +27419,9 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
          for (int i = 0; i < 3; i++)
          {
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-            Float64 N;
-            Float64 eccx, eccy;
-            GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig, &N, &eccx, &eccy);
-            Float64 Xps = Xleft - eccx;
-            Float64 Yps = Ytg - eccy;
+            gpPoint2d ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
+            Float64 Xps = Xleft - ecc.X();
+            Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
@@ -28325,11 +27432,9 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
          for (int i = 0; i < 3; i++)
          {
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-            Float64 N;
-            Float64 eccx, eccy;
-            GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &N, &eccx, &eccy);
-            Float64 Xps = Xleft - eccx;
-            Float64 Yps = Ytg - eccy;
+            gpPoint2d ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
+            Float64 Xps = Xleft - ecc.X();
+            Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
@@ -28656,11 +27761,9 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
          for (int i = 0; i < 3; i++)
          {
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-            Float64 N;
-            Float64 eccx, eccy;
-            GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig, &N, &eccx, &eccy);
-            Float64 Xps = Xleft - eccx;
-            Float64 Yps = Ytg - eccy;
+            gpPoint2d ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &handlingConfig.GdrConfig);
+            Float64 Xps = Xleft - ecc.X();
+            Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start, &handlingConfig.GdrConfig);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
@@ -28671,11 +27774,9 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
          for (int i = 0; i < 3; i++)
          {
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-            Float64 N;
-            Float64 eccx, eccy;
-            GetEccentricity(vPrestressIntervals[strandType], poi, strandType, &N, &eccx, &eccy);
-            Float64 Xps = Xleft - eccx;
-            Float64 Yps = Ytg - eccy;
+            gpPoint2d ecc = GetEccentricity(vPrestressIntervals[strandType], poi, strandType);
+            Float64 Xps = Xleft - ecc.X();
+            Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPSForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::Start);
             pProblem->AddFpe(vNames[strandType].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }

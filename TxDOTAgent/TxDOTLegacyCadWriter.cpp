@@ -276,9 +276,8 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
    bool are_harped_bent(false);
    if (0 < harpedCount)
    {
-      Float64 nEff;
-      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped,&nEff);
-      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped,&nEff);
+      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois,pgsTypes::Harped).Y();
+      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pmid,pgsTypes::Harped).Y();
       are_harped_bent = !IsEqual(hs_ecc_end, hs_ecc_mid);
    }
 
@@ -392,13 +391,12 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 	int strandStrength = (strandMatP->GetGrade() == matPsStrand::Gr1725 ?  250 :  270);
 
 	/* 8. STRAND ECCENTRICITY AT CENTER LINE */
-   Float64 nEff;
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent).Y();
 
 	Float64 strandEccCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
 	/* 9. STRAND ECCENTRICITY AT END */
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent).Y();
 
 	Float64 strandEccEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
@@ -681,7 +679,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
       Float64 totalDeflection = slabDiaphDeflection + overlayDeflection + otherDeflection;
 
    	/* 23. LOSSES (INITIAL)  */
-      Float64 aps = pStrandGeometry->GetAreaPrestressStrands(segmentKey,releaseIntervalIdx,false);
+      Float64 aps = pStrandGeometry->GetStrandArea(pmid,releaseIntervalIdx,pgsTypes::Permanent);
       value = pLosses->GetEffectivePrestressLoss(pmid,pgsTypes::Permanent,releaseIntervalIdx,pgsTypes::End) * aps;
 
       Float64 initialLoss = ::ConvertFromSysUnits( value, unitMeasure::Kip );

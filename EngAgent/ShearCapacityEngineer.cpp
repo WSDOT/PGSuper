@@ -310,9 +310,8 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
 
-   Float64 neff;
    Float64 eps, Pps;
-   eps = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, pConfig, &neff);
+   eps = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, pConfig).Y();
 
    Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx, pgsTypes::End, pConfig)
       + pPsForce->GetPrestressForce(poi, pgsTypes::Straight, finalIntervalIdx, pgsTypes::End, pConfig);

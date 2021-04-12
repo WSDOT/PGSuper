@@ -161,8 +161,14 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
    Float64 Eci = pMaterials->GetSegmentEc(segmentKey, tsInstallIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Temporary)->GetE();
 
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   PoiList vPoi;
+   pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
+   ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& poi(vPoi.front());
+
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
-   Float64 Apt = pStrandGeom->GetStrandArea(segmentKey, tsInstallIntervalIdx, pgsTypes::Temporary);
+   Float64 Apt = pStrandGeom->GetStrandArea(poi, tsInstallIntervalIdx, pgsTypes::Temporary);
 
    *pParagraph << Sub2(_T("E"),_T("p")) << _T(" = ") << table->mod_e.SetValue(Ep) << rptNewLine;
 
@@ -179,26 +185,19 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
 
    if (bIsPrismatic)
    {
-      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-      PoiList vPoi;
-      pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
-      ATLASSERT(vPoi.size() == 1);
-      const pgsPointOfInterest& poi(vPoi.front());
       Float64 Ag = pSectProp->GetAg(releaseIntervalIdx, poi);
       Float64 Ixx = pSectProp->GetIxx(releaseIntervalIdx, poi);
       Float64 Iyy = pSectProp->GetIyy(releaseIntervalIdx, poi);
       Float64 Ixy = pSectProp->GetIxy(releaseIntervalIdx, poi);
 
-      Float64 nEffectiveStrands;
-      Float64 eptx, epty;
-      pStrandGeom->GetEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey, 0), pgsTypes::Temporary, &nEffectiveStrands, &eptx, &epty);
+      gpPoint2d ecc = pStrandGeom->GetEccentricity(tsInstallIntervalIdx, pgsPointOfInterest(segmentKey, 0), pgsTypes::Temporary);
 
       if (spMode == pgsTypes::spmGross)
       {
          if (bIsAsymmetric)
          {
-            *pParagraph << Sub2(_T("e"), _T("ptx")) << _T(" = ") << table->ecc.SetValue(eptx) << rptNewLine;
-            *pParagraph << Sub2(_T("e"), _T("pty")) << _T(" = ") << table->ecc.SetValue(epty) << rptNewLine;
+            *pParagraph << Sub2(_T("e"), _T("ptx")) << _T(" = ") << table->ecc.SetValue(ecc.X()) << rptNewLine;
+            *pParagraph << Sub2(_T("e"), _T("pty")) << _T(" = ") << table->ecc.SetValue(ecc.Y()) << rptNewLine;
             *pParagraph << Sub2(_T("A"), _T("g")) << _T(" = ") << table->area.SetValue(Ag) << rptNewLine;
             *pParagraph << Sub2(_T("I"), _T("xx")) << _T(" = ") << table->mom_inertia.SetValue(Ixx) << rptNewLine;
             *pParagraph << Sub2(_T("I"), _T("yy")) << _T(" = ") << table->mom_inertia.SetValue(Iyy) << rptNewLine;
@@ -206,7 +205,7 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
          }
          else
          {
-            *pParagraph << Sub2(_T("e"), _T("pt")) << _T(" = ") << table->ecc.SetValue(epty) << rptNewLine;
+            *pParagraph << Sub2(_T("e"), _T("pt")) << _T(" = ") << table->ecc.SetValue(ecc.Y()) << rptNewLine;
             *pParagraph << Sub2(_T("A"), _T("g")) << _T(" = ") << table->area.SetValue(Ag) << rptNewLine;
             *pParagraph << Sub2(_T("I"), _T("g")) << _T(" = ") << table->mom_inertia.SetValue(Ixx) << rptNewLine;
          }
@@ -215,8 +214,8 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
       {
          if (bIsAsymmetric)
          {
-            *pParagraph << Sub2(_T("e"), _T("ptxt")) << _T(" = ") << table->ecc.SetValue(eptx) << rptNewLine;
-            *pParagraph << Sub2(_T("e"), _T("ptyt")) << _T(" = ") << table->ecc.SetValue(epty) << rptNewLine;
+            *pParagraph << Sub2(_T("e"), _T("ptxt")) << _T(" = ") << table->ecc.SetValue(ecc.X()) << rptNewLine;
+            *pParagraph << Sub2(_T("e"), _T("ptyt")) << _T(" = ") << table->ecc.SetValue(ecc.Y()) << rptNewLine;
             *pParagraph << Sub2(_T("A"), _T("gt")) << _T(" = ") << table->area.SetValue(Ag) << rptNewLine;
             *pParagraph << Sub2(_T("I"), _T("xxt")) << _T(" = ") << table->mom_inertia.SetValue(Ixx) << rptNewLine;
             *pParagraph << Sub2(_T("I"), _T("yyt")) << _T(" = ") << table->mom_inertia.SetValue(Iyy) << rptNewLine;
@@ -224,7 +223,7 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
          }
          else
          {
-            *pParagraph << Sub2(_T("e"), _T("ptt")) << _T(" = ") << table->ecc.SetValue(epty) << rptNewLine;
+            *pParagraph << Sub2(_T("e"), _T("ptt")) << _T(" = ") << table->ecc.SetValue(ecc.Y()) << rptNewLine;
             *pParagraph << Sub2(_T("A"), _T("gt")) << _T(" = ") << table->area.SetValue(Ag) << rptNewLine;
             *pParagraph << Sub2(_T("I"), _T("gt")) << _T(" = ") << table->mom_inertia.SetValue(Ixx) << rptNewLine;
          }

@@ -2879,6 +2879,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    INIT_UV_PROTOTYPE( rptForceUnitValue,   force,   pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  dia,     pDisplayUnits->GetComponentDimUnit(), true );
+   INIT_UV_PROTOTYPE( rptLength2UnitValue, area,    pDisplayUnits->GetAreaUnit(),         true );
 
    rptParagraph* pPara;
    pPara = new rptParagraph;
@@ -3014,8 +3015,10 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pTable)(row,1) << LABEL_HARP_TYPE(harpedAreStraight);
          row++;
 
+         StrandIndexType Ns = pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+         Float64 Aps_s = pSegment->Strands.GetStrandMaterial(pgsTypes::Straight)->GetNominalArea()*Ns;
          (*pTable)(row,0) << _T("Number of Straight Strands");
-         (*pTable)(row,1) << pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+         (*pTable)(row,1) << Ns;
          StrandIndexType nDebonded = pStrandGeom->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
          if ( 0 < nDebonded )
          {
@@ -3031,12 +3034,18 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          }
          row++;
 
-         (*pTable)(row,0) << _T("Straight Strand P") << Sub(_T("jack"));
+         (*pTable)(row, 0) << _T("Straight Strand ") << RPT_APS;
+         (*pTable)(row, 1) << area.SetValue(Aps_s);
+         row++;
+
+         (*pTable)(row,0) << _T("Straight Strand ") << Sub2(_T("P"),_T("jack"));
          (*pTable)(row,1) << force.SetValue(pSegment->Strands.GetPjack(pgsTypes::Straight));
          row++;
 
+         StrandIndexType Nh = pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+         Float64 Aps_h = pSegment->Strands.GetStrandMaterial(pgsTypes::Harped)->GetNominalArea()*Nh;
          (*pTable)(row,0) << _T("Number of ")<< LABEL_HARP_TYPE(harpedAreStraight) <<_T(" Strands");
-         (*pTable)(row,1) << pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+         (*pTable)(row,1) << Nh;
          nDebonded = pStrandGeom->GetNumDebondedStrands(thisSegmentKey,pgsTypes::Harped,pgsTypes::dbetEither);
          if ( 0 < nDebonded )
          {
@@ -3044,12 +3053,20 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          }
          row++;
 
-         (*pTable)(row,0) << LABEL_HARP_TYPE(harpedAreStraight) << _T(" Strand P") << Sub(_T("jack"));
+         (*pTable)(row, 0) << _T("Harped Strand ") << RPT_APS;
+         (*pTable)(row, 1) << area.SetValue(Aps_h);
+         row++;
+
+         (*pTable)(row,0) << LABEL_HARP_TYPE(harpedAreStraight) << _T(" Strand ") << Sub2(_T("P"),_T("jack"));
          (*pTable)(row,1) << force.SetValue(pSegment->Strands.GetPjack(pgsTypes::Harped));
          row++;
 
          (*pTable)(row,0) << _T("Total Number of Permanent Strands");
          (*pTable)(row,1) << pSegment->Strands.GetStrandCount(pgsTypes::Permanent);
+         row++;
+
+         (*pTable)(row, 0) << _T("Area of Permanent Strands");
+         (*pTable)(row, 1) << area.SetValue(Aps_s + Aps_h);
          row++;
 
          if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary) )
@@ -3063,7 +3080,11 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             }
             row++;
 
-            (*pTable)(row,0) << _T("Temporary Strand P") << Sub(_T("jack"));
+            (*pTable)(row, 0) << _T("Temporary Strand ") << RPT_APS;
+            (*pTable)(row, 1) << area.SetValue((pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary)->GetNominalArea())*(pSegment->Strands.GetStrandCount(pgsTypes::Temporary)));
+            row++;
+
+            (*pTable)(row,0) << _T("Temporary Strand ") << Sub2(_T("P"),_T("jack"));
             (*pTable)(row,1) << force.SetValue(pSegment->Strands.GetPjack(pgsTypes::Temporary));
             row++;
          }
@@ -3318,54 +3339,24 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pTable)(row,1) << stress.SetValue( pSegmentData->GetSegmentMaterial(thisSegmentKey)->Concrete.Fc );
          row++;
 
-         const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(thisSegmentKey,pgsTypes::Straight);
-         ATLASSERT(pStrand != nullptr);
-
-         (*pTable)(row,0) << _T("Prestressing Strand (Permanent)");
-         if ( IS_SI_UNITS(pDisplayUnits) )
+         std::vector<pgsTypes::StrandType> vStrandTypes;
+         vStrandTypes.push_back(pgsTypes::Straight);
+         vStrandTypes.push_back(pgsTypes::Harped);
+         if (0 < pStrandGeom->GetMaxStrands(thisSegmentKey, pgsTypes::Temporary))
          {
-            (*pTable)(row,1) << dia.SetValue(pStrand->GetNominalDiameter()) << _T(" Dia.");
-            std::_tstring strData;
-
-            strData += _T(" ");
-            strData += (pStrand->GetGrade() == matPsStrand::Gr1725 ? _T("Grade 1725") : _T("Grade 1860"));
-            strData += _T(" ");
-            strData += (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
-
-            (*pTable)(row,1) << strData;
+            vStrandTypes.push_back(pgsTypes::Temporary);
          }
-         else
+         std::array<std::_tstring, 3> strStrandType{ _T("Straight"),_T("Harped"),_T("Temporary") };
+
+         for (auto strandType : vStrandTypes)
          {
-            Float64 diam = pStrand->GetNominalDiameter();
-
-            // special designator for 1/2" special (as per High concrete)
-            if (IsEqual(diam,0.013208))
-            {
-               (*pTable)(row,1) << _T(" 1/2\" Special, ");
-            }
-
-            (*pTable)(row,1) << dia.SetValue(diam) << _T(" Dia.");
-            std::_tstring strData;
-
-            strData += _T(" ");
-            strData += (pStrand->GetGrade() == matPsStrand::Gr1725 ? _T("Grade 250") : _T("Grade 270"));
-            strData += _T(" ");
-            strData += (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
-
-            (*pTable)(row,1) << strData;
-         }
-         row++;
-
-
-         if ( 0 < pStrandGeom->GetMaxStrands(thisSegmentKey,pgsTypes::Temporary) )
-         {
-            const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(thisSegmentKey,pgsTypes::Temporary);
+            const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(thisSegmentKey, strandType);
             ATLASSERT(pStrand != nullptr);
 
-            (*pTable)(row,0) << _T("Prestressing Strand (Temporary)");
-            if ( IS_SI_UNITS(pDisplayUnits) )
+            (*pTable)(row, 0) << _T("Prestressing Strand (") << strStrandType[strandType] << _T(")");
+            if (IS_SI_UNITS(pDisplayUnits))
             {
-               (*pTable)(row,1) << dia.SetValue(pStrand->GetNominalDiameter()) << _T(" Dia.");
+               (*pTable)(row, 1) << dia.SetValue(pStrand->GetNominalDiameter()) << _T(" Dia.");
                std::_tstring strData;
 
                strData += _T(" ");
@@ -3373,19 +3364,19 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                strData += _T(" ");
                strData += (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
 
-               (*pTable)(row,1) << strData;
+               (*pTable)(row, 1) << strData;
             }
             else
             {
                Float64 diam = pStrand->GetNominalDiameter();
 
                // special designator for 1/2" special (as per High concrete)
-               if (IsEqual(diam,0.013208))
+               if (IsEqual(diam, 0.013208))
                {
-                  (*pTable)(row,1) << _T(" 1/2\" Special, ");
+                  (*pTable)(row, 1) << _T(" 1/2\" Special, ");
                }
 
-               (*pTable)(row,1) << dia.SetValue(diam) << _T(" Dia.");
+               (*pTable)(row, 1) << dia.SetValue(diam) << _T(" Dia.");
                std::_tstring strData;
 
                strData += _T(" ");
@@ -3393,7 +3384,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
                strData += _T(" ");
                strData += (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
 
-               (*pTable)(row,1) << strData;
+               (*pTable)(row, 1) << strData;
             }
             row++;
          }

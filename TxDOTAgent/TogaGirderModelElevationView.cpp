@@ -888,9 +888,8 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
 
       Float64 hg  = pSectProp->GetHg(releaseIntervalIdx,prev_poi);
       Float64 ybg = pSectProp->GetY(releaseIntervalIdx,prev_poi,pgsTypes::BottomGirder);
-      Float64 nEff;
-      Float64 ex = pStrandGeometry->GetEccentricity(releaseIntervalIdx, prev_poi, pgsTypes::Permanent, &nEff);
-      from_y = ybg - (hg + ex);
+      Float64 ey = pStrandGeometry->GetEccentricity(releaseIntervalIdx, prev_poi, pgsTypes::Permanent).Y();
+      from_y = ybg - (hg + ey);
 
       for ( ; iter!= vPOI.end(); iter++ )
       {
@@ -900,8 +899,8 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
 
          hg  = pSectProp->GetHg(releaseIntervalIdx,poi);
          ybg = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
-         ex = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, &nEff);
-         to_y = ybg - (hg + ex);
+         ey = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent).Y();
+         to_y = ybg - (hg + ey);
 
          from_point->put_X(prev_poi.GetDistFromStart());
          from_point->put_Y(from_y);

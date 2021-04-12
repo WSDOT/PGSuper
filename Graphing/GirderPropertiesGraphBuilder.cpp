@@ -349,8 +349,6 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
    IndexType dataSeries1, dataSeries2, dataSeries3, dataSeries4;
    InitializeGraph(propertyType,girderKey,intervalIdx,&dataSeries1,&dataSeries2, &dataSeries3, &dataSeries4);
 
-   Float64 nEffectiveStrands;
-
    GET_IFACE_NOCHECK(ISectionProperties, pSectProps);
    GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom);
 
@@ -435,12 +433,13 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
          {
             if (bIsAsymmetric)
             {
-               pStrandGeom->GetEccentricity(sectPropType, intervalIdx, poi, true/*include temp strands*/, &nEffectiveStrands, &value2, &value1);
-
+               gpPoint2d ecc = pStrandGeom->GetEccentricity(sectPropType, intervalIdx, poi, true/*include temp strands*/);
+               value2 = ecc.X();
+               value1 = ecc.Y();
             }
             else
             {
-               value1 = pStrandGeom->GetEccentricity(sectPropType, intervalIdx, poi, true/*include temp strands*/, &nEffectiveStrands);
+               value1 = pStrandGeom->GetEccentricity(sectPropType, intervalIdx, poi, true/*include temp strands*/).Y();
             }
          break;
          }

@@ -2794,18 +2794,13 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
 
    // eccentricity of the permanent strands at release
-   Float64 nStrandsEffective;
-   Float64 ex, ey;
-   pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, pConfig, &nStrandsEffective, &ex, &ey);
-   pepermRelease->Move(ex, ey);
+   pepermRelease->Move(pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent, pConfig));
 
    // eccentricity of permanent strands at the last interval when the girder is noncomposite
-   pStrandGeom->GetEccentricity(noncompositeIntervalIdx, poi, pgsTypes::Permanent, pConfig, &nStrandsEffective, &ex, &ey);
-   pepermFinal->Move(ex, ey);
+   pepermFinal->Move(pStrandGeom->GetEccentricity(noncompositeIntervalIdx, poi, pgsTypes::Permanent, pConfig));
 
    // eccentricity of the temporary strands
-   pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poi, pgsTypes::Temporary, pConfig, &nStrandsEffective, &ex, &ey);
-   petemp->Move(ex, ey);
+   petemp->Move(pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poi, pgsTypes::Temporary, pConfig));
 
    pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
    *pSectionProperties = (spType == pgsTypes::sptGross ? lrfdLosses::sptGross : lrfdLosses::sptTransformed);

@@ -301,9 +301,9 @@ void pgsStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusG
    InitDebondData();
 
    // Get area of an individual prestressing strand
-   m_Aps[pgsTypes::Straight]  = pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Straight)->GetNominalArea();
-   m_Aps[pgsTypes::Harped]    = pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Harped)->GetNominalArea();
-   m_Aps[pgsTypes::Temporary] = pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Temporary)->GetNominalArea();
+   m_aps[pgsTypes::Straight]  = pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Straight)->GetNominalArea();
+   m_aps[pgsTypes::Harped]    = pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Harped)->GetNominalArea();
+   m_aps[pgsTypes::Temporary] = pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Temporary)->GetNominalArea();
 
    m_SegmentLength         = pBridge->GetSegmentLength(m_SegmentKey);
    m_SpanLength            = pBridge->GetSegmentSpanLength(m_SegmentKey);
@@ -921,8 +921,7 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
    const GDRCONFIG& config = GetSegmentConfiguration();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   Float64 neff;
-   return pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &config, &neff);
+   return pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &config).Y();
 }
 
 Float64 pgsStrandDesignTool::GetTransferLength(pgsTypes::StrandType strandType) const
@@ -971,7 +970,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
                guess.PrestressConfig.Pjack[pgsTypes::Harped]   + 
                guess.PrestressConfig.Pjack[pgsTypes::Temporary];
 
-      fpjMax = PjMax/(m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh + m_Aps[pgsTypes::Temporary]*nt);
+      fpjMax = PjMax/(m_aps[pgsTypes::Straight]*ns + m_aps[pgsTypes::Harped]*nh + m_aps[pgsTypes::Temporary]*nt);
    }
 
    LOG(_T("Maximum jacking stress for this strand configuration = ") << ::ConvertFromSysUnits(fpjMax,unitMeasure::KSI) << _T(" KSI"));
@@ -989,7 +988,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    }
    else
    {
-      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState,INVALID_INDEX/*controlling live load*/,&guess,true/*include elastic effects*/);
+      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState,INVALID_INDEX/*controlling live load*/,true/*include elastic effects*/, &guess);
    }
 
 #if defined _DEBUG
@@ -1001,7 +1000,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    }
    else
    {
-      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState, INVALID_INDEX/*controlling live load*/,&guess, true/*include elastic effects*/);
+      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState, INVALID_INDEX/*controlling live load*/, true/*include elastic effects*/, &guess);
       ATLASSERT(IsEqual(loss,check_loss));
    }
 #endif // _DEBUG
@@ -1023,11 +1022,12 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
       Aps = -pDesignParams->Preqd/fstrand; // Total required area of prestressing
    }
 
-   LOG(_T("Strand Area = ") << ::ConvertFromSysUnits(m_Aps[pgsTypes::Straight],unitMeasure::Inch2) << _T(" in^2 per strand"));
+   LOG(_T("Strand Area = ") << ::ConvertFromSysUnits(m_aps[pgsTypes::Straight],unitMeasure::Inch2) << _T(" in^2 per strand"));
    LOG(_T("Required area of prestressing = ") << ::ConvertFromSysUnits(Aps,unitMeasure::Inch2) << _T(" in^2"));
 
-   ATLASSERT(IsEqual(m_Aps[pgsTypes::Straight],m_Aps[pgsTypes::Harped])); // must be the same for this algorithm to work
-   Float64 fN = Aps/m_Aps[pgsTypes::Straight];
+#pragma Reminder("WORKING HERE - Mantis 841 - Review this method.... area straight and harped may not be the same")
+   ATLASSERT(IsEqual(m_aps[pgsTypes::Straight],m_aps[pgsTypes::Harped])); // must be the same for this algorithm to work
+   Float64 fN = Aps/m_aps[pgsTypes::Straight];
    StrandIndexType N = (StrandIndexType)ceil(fN);
    N = Max(N,(StrandIndexType)1); // Must be zero or more strands
 
@@ -1272,8 +1272,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
          config.PrestressConfig.Debond[pgsTypes::Straight].clear(); // clear out any debonding if we are in design loop
          config.PrestressConfig.SetStrandFill(pgsTypes::Harped,   hfillvec);
 
-         Float64 neff;
-         Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx,mid_pois[0],pgsTypes::Permanent,&config,&neff);
+         Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx,mid_pois[0],pgsTypes::Permanent,&config).Y();
          LOG(_T("Computed ecc = ")<<ecc<<_T(" for ns=")<<ns<<_T(" nh=")<<nh);
          if ( ::IsGT(0.0,ecc) )
          {
@@ -2514,7 +2513,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
                   guess.PrestressConfig.Pjack[pgsTypes::Harped]   + 
                   guess.PrestressConfig.Pjack[pgsTypes::Temporary];
 
-   Float64 Aps = m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh + m_Aps[pgsTypes::Temporary]*nt;
+   Float64 Aps = m_aps[pgsTypes::Straight]*ns + m_aps[pgsTypes::Harped]*nh + m_aps[pgsTypes::Temporary]*nt;
    Float64 fpj =  pj/Aps;
 
    LOG(_T("Average jacking stress for this strand configuration = ") << ::ConvertFromSysUnits(fpj,unitMeasure::KSI) << _T(" KSI"));
@@ -2535,12 +2534,12 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    Float64 fstrand = fpj - loss;
    LOG(_T("Average strand stress at lifting = ") << ::ConvertFromSysUnits(fstrand,unitMeasure::KSI) << _T(" KSI"));
 
-   Float64 force = fstrand * xFerFactor * (m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh + m_Aps[pgsTypes::Temporary]*nt);
+   Float64 force = fstrand * xFerFactor * (m_aps[pgsTypes::Straight]*ns + m_aps[pgsTypes::Harped]*nh + m_aps[pgsTypes::Temporary]*nt);
 
    LOG(_T("Total force at lifting = (") << ::ConvertFromSysUnits(fstrand,unitMeasure::KSI) << _T(" ksi)(") << xFerFactor << _T(")")
-      << _T("[") << ::ConvertFromSysUnits(m_Aps[pgsTypes::Straight],unitMeasure::Inch2) << _T(" in^2)(") << ns << _T(") + (") 
-      << ::ConvertFromSysUnits(m_Aps[pgsTypes::Harped],unitMeasure::Inch2) << _T(" in^2)(") << nh << _T(") + ") 
-      << ::ConvertFromSysUnits(m_Aps[pgsTypes::Temporary],unitMeasure::Inch2) << _T("in^2)(") << nt << _T(")] = ") << ::ConvertFromSysUnits(force,unitMeasure::Kip) << _T(" kip"));
+      << _T("[") << ::ConvertFromSysUnits(m_aps[pgsTypes::Straight],unitMeasure::Inch2) << _T(" in^2)(") << ns << _T(") + (") 
+      << ::ConvertFromSysUnits(m_aps[pgsTypes::Harped],unitMeasure::Inch2) << _T(" in^2)(") << nh << _T(") + ") 
+      << ::ConvertFromSysUnits(m_aps[pgsTypes::Temporary],unitMeasure::Inch2) << _T("in^2)(") << nt << _T(")] = ") << ::ConvertFromSysUnits(force,unitMeasure::Kip) << _T(" kip"));
 
    return force;
 }
@@ -2580,7 +2579,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
       pj += guess.PrestressConfig.Pjack[pgsTypes::Temporary];
    }
 
-   Float64 Aps = m_Aps[pgsTypes::Straight]*ns + m_Aps[pgsTypes::Harped]*nh + m_Aps[pgsTypes::Temporary]*nt;
+   Float64 Aps = m_aps[pgsTypes::Straight]*ns + m_aps[pgsTypes::Harped]*nh + m_aps[pgsTypes::Temporary]*nt;
    Float64 fpj =  pj/Aps;
 
    LOG(_T("Average jacking stress for this strand configuration = ") << ::ConvertFromSysUnits(fpj,unitMeasure::KSI) << _T(" KSI"));
@@ -2596,7 +2595,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
    }
    else
    {
-      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII,INVALID_INDEX/*controlling live load*/,&guess, true/*include elastic effects*/);
+      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII,INVALID_INDEX/*controlling live load*/, true/*include elastic effects*/, &guess);
    }
 
    if (intervalIdx == releaseIntervalIdx)
@@ -2634,33 +2633,31 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
    GDRCONFIG guess = GetSegmentConfiguration();
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
-   Float64 neff_ss, neff_ts, neff_hs;
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-   Float64 ecc_ss = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &guess,  &neff_ss);
-   Float64 ecc_ts = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &guess, &neff_ts);
+   Float64 ecc_ss = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &guess).Y();
+   Float64 ecc_ts = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &guess).Y();
 
    // compute hs eccentricities for end offsets of 1.0 and -1.0, and extrapolate the required offset
    guess.PrestressConfig.EndOffset[pgsTypes::metStart] = 1.0;
    guess.PrestressConfig.EndOffset[pgsTypes::metEnd]   = 1.0;
-   Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
+   Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &guess).Y();
 
    guess.PrestressConfig.EndOffset[pgsTypes::metStart] = -1.0;
    guess.PrestressConfig.EndOffset[pgsTypes::metEnd]   = -1.0;
-   Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
+   Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &guess).Y();
 
-   Float64 neff = neff_ss + neff_hs + neff_ts;
-   ATLASSERT(neff>0.0);
+   Float64 As = pStrandGeom->GetStrandArea(poi, releaseIntervalIdx, pgsTypes::Straight, &guess);
+   Float64 Ah = pStrandGeom->GetStrandArea(poi, releaseIntervalIdx, pgsTypes::Harped, &guess);
+   Float64 At = pStrandGeom->GetStrandArea(poi, releaseIntervalIdx, pgsTypes::Temporary, &guess);
+   Float64 Aps = As + Ah + At;
+   ATLASSERT(0.0 < Aps);
 
-   Float64 as_straight  = m_Aps[pgsTypes::Straight]*neff_ss;
-   Float64 as_harped    = m_Aps[pgsTypes::Harped]*neff_hs;
-   Float64 as_temporary = m_Aps[pgsTypes::Temporary]*neff_ts;
-   Float64 as = (as_straight + as_harped + as_temporary);
-
-   Float64 ecc_p1 = (as_straight*ecc_ss + as_temporary*ecc_ts + as_harped*ecc_hs_p1)/as;
-   Float64 ecc_m1 = (as_straight*ecc_ss + as_temporary*ecc_ts + as_harped*ecc_hs_m1)/as;
+#pragma Reminder("WORKING HERE - Mantis 841 - Why do we need to compute this here? pStrandGeom should be able to compute in a generic way using the guess configuration")
+   Float64 ecc_p1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_p1)/Aps;
+   Float64 ecc_m1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_m1)/Aps;
 
    mathCoordMapper1d mapper(-1.0, ecc_m1, 1.0, ecc_p1);
 
@@ -2669,7 +2666,7 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
    guess.PrestressConfig.EndOffset[pgsTypes::metStart] = off;
    guess.PrestressConfig.EndOffset[pgsTypes::metEnd] = off;
 
-   Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, true, &guess, &neff);
+   Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, true, &guess).Y();
    ATLASSERT(IsEqual(ecc,new_ecc,0.01));
 
    return off;
@@ -2709,30 +2706,26 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
       GDRCONFIG guess = GetSegmentConfiguration();
 
       GET_IFACE(IStrandGeometry,pStrandGeom);
-      Float64 neff_ss(0.0), neff_ts(0.0), neff_hs(0.0);
 
-      Float64 ecc_ss = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Straight, &guess, &neff_ss);
-
-      Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Temporary, &guess, &neff_ts) : 0.0;
+      Float64 ecc_ss = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Straight, &guess).Y();
+      Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Temporary, &guess).Y() : 0.0;
 
       // compute hs eccentricities for hp offsets of +1.0 and -1.0, and extrapolate the required offset
       guess.PrestressConfig.HpOffset[pgsTypes::metStart] = 1.0;
       guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = 1.0;
-      Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
+      Float64 ecc_hs_p1 = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Harped, &guess).Y();
       guess.PrestressConfig.HpOffset[pgsTypes::metStart] = -1.0;
       guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = -1.0;
-      Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Harped, &guess, &neff_hs);
+      Float64 ecc_hs_m1 = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Harped, &guess).Y();
 
-      Float64 neff = neff_ss + neff_hs + neff_ts;
-      ATLASSERT(neff>0.0);
+      Float64 As = pStrandGeom->GetStrandArea(poi, releaseIntervalIdx, pgsTypes::Straight, &guess);
+      Float64 Ah = pStrandGeom->GetStrandArea(poi, releaseIntervalIdx, pgsTypes::Harped, &guess);
+      Float64 At = (bIncTempStrands ? pStrandGeom->GetStrandArea(poi, releaseIntervalIdx, pgsTypes::Temporary, &guess) : 0.0);
+      Float64 Aps = As + Ah + At;
+      ATLASSERT(0.0 < Aps);
 
-      Float64 as_straight  = m_Aps[pgsTypes::Straight]*neff_ss;
-      Float64 as_harped    = m_Aps[pgsTypes::Harped]*neff_hs;
-      Float64 as_temporary = bIncTempStrands ? m_Aps[pgsTypes::Temporary]*neff_ts : 0;
-      Float64 as = (as_straight + as_harped + as_temporary);
-
-      Float64 ecc_p1 = (as_straight*ecc_ss + as_temporary*ecc_ts + as_harped*ecc_hs_p1)/as;
-      Float64 ecc_m1 = (as_straight*ecc_ss + as_temporary*ecc_ts + as_harped*ecc_hs_m1)/as;
+      Float64 ecc_p1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_p1) / Aps;
+      Float64 ecc_m1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_m1) / Aps;
 
       mathCoordMapper1d mapper(-1.0, ecc_m1, 1.0, ecc_p1);
 
@@ -2740,7 +2733,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
 
       guess.PrestressConfig.HpOffset[pgsTypes::metStart] = off;
       guess.PrestressConfig.HpOffset[pgsTypes::metEnd] = off;
-      Float64 new_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &guess, &neff);
+      Float64 new_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &guess).Y();
       ATLASSERT(IsEqual(ecc,new_ecc,0.01));
 
       return off;
@@ -2811,8 +2804,6 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
       return false;
    }
 
-   Float64 neff_ss(0.0), neff_ts(0.0), neff_hs(0.0);
-
    // loop until our eccentricity gets larger than the target
    StrandIndexType Ns, Nh;
    Float64 eccDiffPrev = eccTarget - curr_ecc; // difference between the target eccentricity and the eccentricy
@@ -2863,9 +2854,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
       guess.PrestressConfig.SetStrandFill(pgsTypes::Straight, sfillvec);
       guess.PrestressConfig.SetStrandFill(pgsTypes::Harped,   hfillvec);
 
-      Float64 new_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &guess, &neff_ss);
-
-      ATLASSERT(0.0 < neff_ss);
+      Float64 new_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &guess).Y();
 
       LOG(_T("Try ns = ")<< Ns <<_T(" nh = ")<< Nh <<_T(" np = ")<< Nh+Ns);
       LOG(_T("New ecc = ")<< ::ConvertFromSysUnits(new_ecc, unitMeasure::Inch) << _T(" in, Target ecc = ")<< ::ConvertFromSysUnits(eccTarget, unitMeasure::Inch) << _T(" in"));
@@ -2878,8 +2867,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
       }
       
       // we have to guard against causing mid-zone Bottom Service tension to go out of bounds. Odd case, but it happens for WF42G
-      Float64 neff;
-      Float64 ms_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, ms_poi, false, &guess, &neff);
+      Float64 ms_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, ms_poi, false, &guess).Y();
       LOG(_T("New Eccentricity in mid-zone, without temp strands, is ") <<::ConvertFromSysUnits( ms_ecc , unitMeasure::Inch)<< _T(" in"));
       LOG(_T("Minimum ecc for release tension mz = ") <<::ConvertFromSysUnits( GetMinimumFinalMidZoneEccentricity() , unitMeasure::Inch)<< _T(" in"));
 
@@ -2969,8 +2957,7 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
       // get the current eccentricity and make sure our target is higher (smaller)
-      Float64 neff;
-      Float64 curr_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, true, &guess, &neff);
+      Float64 curr_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, true, &guess).Y();
       LOG(_T("Current ecc = ")<< ::ConvertFromSysUnits(curr_ecc, unitMeasure::Inch) << _T(" in"));
       if (curr_ecc < eccMin)
       {
@@ -3000,13 +2987,12 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
          return false;
       }
 
-      Float64 neff_ss(0.0), neff_ts(0.0), neff_hs(0.0);
-      Float64 ecc_ts = 0 < nt ? pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &guess, &neff_ts) : 0.0;
+      Float64 ecc_ts = 0 < nt ? pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &guess).Y() : 0.0;
 
       // loop until our eccentricity gets smaller than the target, then step back
       StrandIndexType ns, nh;
       bool succeeded=false;
-      while(curr_ecc>eccMin)
+      while(eccMin < curr_ecc)
       {
          // try to swap straight to harped
          nh = pStrandGeom->GetNextNumStrands(m_SegmentKey,pgsTypes::Harped, nh_prev);
@@ -3043,9 +3029,7 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
 
          guess.PrestressConfig.SetStrandFill(pgsTypes::Straight, sfillvec);
          guess.PrestressConfig.SetStrandFill(pgsTypes::Harped,   hfillvec);
-         Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, true, &guess, &neff);
-
-         ATLASSERT(neff>0.0);
+         Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, true, &guess).Y();
 
          LOG(_T("Try ns = ")<<ns<<_T(" nh = ")<<nh<<_T(" np = ")<< nh+ns);
          LOG(_T("New ecc = ")<< ::ConvertFromSysUnits(new_ecc, unitMeasure::Inch) << _T(" in, Target ecc = ")<< ::ConvertFromSysUnits(eccMax, unitMeasure::Inch) << _T(" in"));
@@ -4950,8 +4934,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
       Float64 Hg = pSectProp->GetHg(interval, demand.m_Poi);
 
       // Need X eccentricity for My biaxial bending. This value will not change because the design algo can only define strand layouts that are symmetric about Y
-      Float64 nEffectiveStrands, eccX, eccY;
-      pStrandGeom->GetEccentricity(interval, demand.m_Poi, false, &fullyBondedConfig, &nEffectiveStrands, &eccX, &eccY);
+      gpPoint2d ecc = pStrandGeom->GetEccentricity(interval, demand.m_Poi, false, &fullyBondedConfig);
 
       if (allowTens < demand.m_TopStress || demand.m_BottomStress < allowComp)
       {
@@ -4974,7 +4957,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
             pSectProp->GetStressCoefficients(interval, demand.m_Poi, pgsTypes::TopGirder, &fullyBondedConfig, &Cat, &Ctx, &Cty);
 
             DebondLevelType out_top_db_level, in_top_db_level;
-            GetDebondLevelForTopTension(demand, fullyBondedConfig, cgFullyBonded, interval, tens_demand, out_to_in_distance, Hg, Yb, eccX, Cat, Ctx, Cty, &out_top_db_level, &in_top_db_level);
+            GetDebondLevelForTopTension(demand, fullyBondedConfig, cgFullyBonded, interval, tens_demand, out_to_in_distance, Hg, Yb, ecc.X(), Cat, Ctx, Cty, &out_top_db_level, &in_top_db_level);
 
             LOG(_T("Debonding needed to control top tensile overstress of ") << ::ConvertFromSysUnits(tens_demand,unitMeasure::KSI) << _T(" KSI at ")<<::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft. Outboard level required was ")<< out_top_db_level<<_T(" Inboard level required was ")<< in_top_db_level);
 
@@ -5006,7 +4989,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
             pSectProp->GetStressCoefficients(interval, demand.m_Poi, pgsTypes::BottomGirder, &fullyBondedConfig, &Cab, &Cbx, &Cby);
 
             DebondLevelType out_bot_db_level, in_bot_db_level;
-            GetDebondLevelForBottomCompression(demand, fullyBondedConfig, cgFullyBonded, interval, comp_demand, out_to_in_distance, Hg, Yb, eccX, Cab, Cbx, Cby, &out_bot_db_level, &in_bot_db_level);
+            GetDebondLevelForBottomCompression(demand, fullyBondedConfig, cgFullyBonded, interval, comp_demand, out_to_in_distance, Hg, Yb, ecc.X(), Cab, Cbx, Cby, &out_bot_db_level, &in_bot_db_level);
 
             LOG(_T("Debonding needed to control bottom compressive overstress of ") << ::ConvertFromSysUnits(comp_demand,unitMeasure::KSI) << _T(" KSI at ")<<::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),unitMeasure::Feet) << _T(" ft. Outboard level required was ")<< out_bot_db_level<<_T(" Inboard level required was ")<< in_bot_db_level);
 

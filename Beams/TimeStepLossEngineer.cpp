@@ -1690,18 +1690,15 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          tsDetails.Strands[strandType].As = m_pStrandGeom->GetStrandArea(poi,intervalIdx,strandType);
 
          // location of strands in Girder Section Coordinates (Y=0 at top of girder)
-         tsDetails.Strands[strandType].Ys = (intervalIdx <= stressStrandsIntervalIdx ? 0 : m_pStrandGeom->GetStrandLocation(poi,strandType,intervalIdx));
+         tsDetails.Strands[strandType].Ys = (intervalIdx <= stressStrandsIntervalIdx ? 0 : m_pStrandGeom->GetStrandLocation(intervalIdx,poi,strandType));
 
          tsDetails.Strands[strandType].E = EStrand[strandType];
 
          if ( intervalIdx == stressStrandsIntervalIdx )
          {
             // Strands are stressed in this interval.. get Pjack and fpj
-            // Pjack is for all the strands (even debonded strands).... need the nominal strand area
-            // (area of all the strands, even the debonded strands) to get fpj
-            Float64 As = m_pStrandGeom->GetStrandArea(segmentKey,intervalIdx,strandType);
-            tsDetails.Strands[strandType].Pj  = (As == 0 ? 0 : m_pStrandGeom->GetPjack(segmentKey,strandType));
-            tsDetails.Strands[strandType].fpj = (As == 0 ? 0 : tsDetails.Strands[strandType].Pj/As);
+            tsDetails.Strands[strandType].Pj  = m_pStrandGeom->GetPjack(segmentKey,strandType);
+            tsDetails.Strands[strandType].fpj = m_pStrandGeom->GetJackingStress(segmentKey, strandType);
 
             // strands relax over the duration of the interval. compute the amount of relaxation
             if ( !bIgnoreRelaxationEffects )
@@ -1724,7 +1721,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                // and debonding. Since the strands data structure contains the actual
                // effective area of strands (area reduced for debonding) we need to
                // get the nominal area here and use it in the calculation below
-               Float64 As = m_pStrandGeom->GetStrandArea(segmentKey,intervalIdx,strandType);
+               Float64 As = m_pStrandGeom->GetStrandArea(poi,intervalIdx,strandType);
 
                // this the interval when the prestress force is release into the girders, apply the
                // prestress as an external force. The prestress force is the area of strand times

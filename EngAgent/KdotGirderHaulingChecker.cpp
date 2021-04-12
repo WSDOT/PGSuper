@@ -39,6 +39,7 @@
 
 #include <limits>
 #include <algorithm>
+#include <numeric>
 
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\GirderModelFactory.H>
@@ -555,46 +556,28 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       pgsKdotHaulingStressAnalysisArtifact haul_artifact;
 
       // calc total prestress force and eccentricity
-      Float64 nfs, nfh, nft;
-      Float64 hps_force, he;
-      Float64 sps_force, se;
-      Float64 tps_force, te;
+      std::array<Float64, 3> P, ecc, Aps;
 
-      if ( pConfig )
+      for (int i = 0; i < 3; i++)
       {
-         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,haulSegmentIntervalIdx,pgsTypes::Middle, pConfig);
-         he = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Harped,pConfig, &nfh);
-         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,haulSegmentIntervalIdx,pgsTypes::Middle,pConfig);
-         se = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Straight,pConfig,&nfs);
-         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::Middle,pConfig);
-         te = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Temporary,pConfig,&nft);
-      }
-      else
-      {
-         hps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Harped,haulSegmentIntervalIdx,pgsTypes::Middle);
-         he = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Harped,&nfh);
-         sps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Straight,haulSegmentIntervalIdx,pgsTypes::Middle);
-         se = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Straight,&nfs);
-         tps_force = pPrestressForce->GetPrestressForce(poi,pgsTypes::Temporary,haulSegmentIntervalIdx,pgsTypes::Middle);
-         te = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poi,pgsTypes::Temporary,&nft);
+         pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+         P[strandType] = pPrestressForce->GetPrestressForce(poi, strandType, haulSegmentIntervalIdx, pgsTypes::Middle, pConfig);
+         ecc[strandType] = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, strandType, pConfig).Y();
+         Aps[strandType] = pStrandGeometry->GetStrandArea(poi, releaseIntervalIdx, strandType, pConfig);
       }
 
-      Float64 total_ps_force = hps_force + sps_force + tps_force;
+      Float64 total_strand_area = std::accumulate(Aps.begin(), Aps.end(), 0.0);
+      Float64 total_ps_force = std::accumulate(P.begin(), P.end(), 0.0);
       Float64 total_e = 0.0;
       if (0 < total_ps_force)
       {
-         total_e = (hps_force*he + sps_force*se + tps_force*te) / total_ps_force;
+         // eccentricty of resultant force
+         total_e = std::inner_product(P.begin(),P.end(),ecc.begin(),0.0) / total_ps_force;
       }
-      else if (0 < nfh + nfs + nft)
+      else if (0 < total_strand_area)
       {
-         Float64 Aps[3];
-         Aps[pgsTypes::Straight] = nfs*pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetNominalArea();
-         Aps[pgsTypes::Harped]   = nfh*pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Harped)->GetNominalArea();
-         Aps[pgsTypes::Temporary]= nft*pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetNominalArea();
-
-         Float64 aps = Aps[pgsTypes::Straight] + Aps[pgsTypes::Harped] + Aps[pgsTypes::Temporary];
-
-         total_e = (he*Aps[pgsTypes::Harped] + se*Aps[pgsTypes::Straight] + te*Aps[pgsTypes::Temporary]) / aps;
+         // geometric eccentricty of strands
+         total_e = std::inner_product(Aps.begin(), Aps.end(), ecc.begin(), 0.0) / total_strand_area;
       }
 
       haul_artifact.SetEffectiveHorizPsForce(total_ps_force);

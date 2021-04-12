@@ -17729,21 +17729,18 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
       }
    }
 
-   std::array<Float64, 3> ex{ 0,0,0 }, ey{ 0,0,0 };
-   Float64 nSEffective;
-   pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &nSEffective, &ex[pgsTypes::Straight], &ey[pgsTypes::Straight]);
-   pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped, &nSEffective, &ex[pgsTypes::Harped], &ey[pgsTypes::Harped]);
-   pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary, &nSEffective, &ex[pgsTypes::Temporary], &ey[pgsTypes::Temporary]);
+   std::array<gpPoint2d, 3> ecc
+   {
+      pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight),
+      pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped),
+      pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary)
+   };
 
    Float64 Pps = std::accumulate(std::cbegin(P), std::cend(P), 0.0);
-   Float64 PpsEx = std::inner_product(std::cbegin(P),std::cend(P),std::cbegin(ex),0.0);
-   Float64 PpsEy = std::inner_product(std::cbegin(P), std::cend(P), std::cbegin(ey), 0.0);
+   gpPoint2d E = IsZero(Pps) ? gpPoint2d(0,0) : std::inner_product(std::cbegin(ecc),std::cend(ecc),std::cbegin(P),gpPoint2d(0,0))/Pps;
 
-   Float64 Ex = IsZero(Pps) ? 0 : PpsEx / Pps;
-   Float64 Ey = IsZero(Pps) ? 0 : PpsEy / Pps;
-
-   *pfTop = GetStress(releaseIntervalIdx,poi,topLoc,Pps,Ex,Ey);
-   *pfBot = GetStress(releaseIntervalIdx,poi,botLoc,Pps,Ex,Ey);
+   *pfTop = GetStress(releaseIntervalIdx,poi,topLoc,Pps,E.X(), E.Y());
+   *pfBot = GetStress(releaseIntervalIdx,poi,botLoc,Pps,E.X(), E.Y());
 }
 
 Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 ex,Float64 ey) const

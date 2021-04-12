@@ -410,8 +410,7 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       else
       {
          GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
-         Float64 nEffectiveStrands, ex, ey;
-         pStrandGeom->GetEccentricity(intervalIdx, poi, true /*include temp strands*/, &nEffectiveStrands, &ex, &ey);
+         gpPoint2d ecc = pStrandGeom->GetEccentricity(intervalIdx, poi, true /*include temp strands*/);
 
          GET_IFACE2(pBroker, IBridge, pBridge);
          if (pBridge->HasAsymmetricGirders())
@@ -426,8 +425,8 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
                FormatDimension(Xr, pDisplayUnits->GetComponentDimUnit()),
                FormatDimension(Yt, pDisplayUnits->GetComponentDimUnit()),
                FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit()),
-               FormatDimension(ex, pDisplayUnits->GetComponentDimUnit()),
-               FormatDimension(ey, pDisplayUnits->GetComponentDimUnit())
+               FormatDimension(ecc.X(), pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(ecc.Y(), pDisplayUnits->GetComponentDimUnit())
             );
          }
          else
@@ -444,8 +443,8 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
                FormatDimension(Yb, pDisplayUnits->GetComponentDimUnit()),
                FormatDimension(St, pDisplayUnits->GetSectModulusUnit()),
                FormatDimension(Sb, pDisplayUnits->GetSectModulusUnit()),
-               FormatDimension(ex, pDisplayUnits->GetComponentDimUnit()),
-               FormatDimension(ey, pDisplayUnits->GetComponentDimUnit())
+               FormatDimension(ecc.X(), pDisplayUnits->GetComponentDimUnit()),
+               FormatDimension(ecc.Y(), pDisplayUnits->GetComponentDimUnit())
             );
          }
       }
@@ -1098,12 +1097,11 @@ void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBro
 
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   Float64 nEffective, cgx, cgy;
-   pStrandGeom->GetStrandCG(intervalIdx, poi, true, &nEffective, &cgx, &cgy);
+   gpPoint2d cg = pStrandGeom->GetStrandCG(intervalIdx, poi, true);
 
    CComPtr<IPoint2d> point;
    point.CoCreateInstance(__uuidof(Point2d));
-   point->Move(cgx,cgy);
+   point->Move(cg.X(),cg.Y());
 
    CComPtr<iPointDisplayObject> doPnt;
    ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
@@ -1802,8 +1800,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    {
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
-      Float64 nEff;
-      Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi,true,&nEff);
+      Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, true).Y();
       Float64 yps = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
       textBlock.Release();

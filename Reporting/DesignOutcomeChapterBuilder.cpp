@@ -584,9 +584,8 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
       GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-      Float64 neff;
-      Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config, &neff);
-      Float64 ecc_current = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, nullptr, &neff);
+      Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config).Y();
+      Float64 ecc_current = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, nullptr).Y();
 
       (*pTable)(row,0) << _T("Eccentricity of Permanent Strands at Midspan");
       (*pTable)(row,1) << length.SetValue(ecc_design);
@@ -1311,8 +1310,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
 
          GET_IFACE2(pBroker,IIntervals,pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-         Float64 neff;
-         Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config, &neff);
+         Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config).Y();
          (*pTable)(row++,col) << length.SetValue(ecc_design);
 
          if (is_harped)

@@ -571,9 +571,8 @@ txcwStrandLayoutType GetStrandLayoutType(IBroker* pBroker, const CGirderKey& gir
       ATLASSERT(vPoi.size() == 1);
       const pgsPointOfInterest& pmid(vPoi.front());
 
-      Float64 nEff;
-      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pois, pgsTypes::Harped, &nEff);
-      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid, pgsTypes::Harped, &nEff);
+      Float64 hs_ecc_end = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pois, pgsTypes::Harped).Y();
+      Float64 hs_ecc_mid = pStrandGeometry->GetEccentricity(releaseIntervalIdx, pmid, pgsTypes::Harped).Y();
       if (!IsEqual(hs_ecc_end, hs_ecc_mid))
       {
          isHarped = true;

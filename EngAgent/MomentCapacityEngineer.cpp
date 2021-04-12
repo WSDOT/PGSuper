@@ -1338,11 +1338,10 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
 
    // Compute stress due to prestressing
    Float64 Pps = pPrestressForce->GetPrestressForce(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
-   Float64 ns_eff;
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   Float64 eps = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &ns_eff ); // eccentricity of non-composite section
+   Float64 eps = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent).Y(); // eccentricity of non-composite section
 
    Float64 dfcpe = pPrestress->GetStress(releaseIntervalIdx, poi,stressLocation,Pps,0.0,eps);
    if ( dfcpe < 0 )
@@ -1389,10 +1388,9 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
       GET_IFACE(IPretensionStresses,pPrestress);
 
       Float64 P = pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceI,INVALID_INDEX/*controlling live load*/,&config);
-      Float64 ns_eff;
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-      Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &config, &ns_eff ); // eccentricity of non-composite section
+      Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &config).Y(); // eccentricity of non-composite section
 
       fcpe = -pPrestress->GetStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,P,0.0,e);
    }

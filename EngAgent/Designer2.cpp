@@ -8107,10 +8107,7 @@ void pgsDesigner2::DesignEndZoneHarpingAdjustment(const arDesignOptions& options
 
    config = m_StrandDesignTool.GetSegmentConfiguration();
 
-#if defined ENABLE_LOGGING
-   Float64 neff;
-#endif
-   LOG(_T("New eccentricity is ") << ::ConvertFromSysUnits( pStrandGeom->GetEccentricity(releaseIntervalIdx,ecc_tens<ecc_comp?top_poi:bot_poi, true, &config, &neff), unitMeasure::Inch) << _T(" in"));
+   LOG(_T("New eccentricity is ") << ::ConvertFromSysUnits( pStrandGeom->GetEccentricity(releaseIntervalIdx,ecc_tens<ecc_comp?top_poi:bot_poi, true, &config).Y(), unitMeasure::Inch) << _T(" in"));
 
    GET_IFACE(IPretensionStresses, pPrestress);
 
@@ -8305,13 +8302,6 @@ std::vector<DebondLevelType> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgre
    StrandIndexType ntemp = config.PrestressConfig.GetStrandCount(pgsTypes::Temporary);
 
 
-
-   // need total number of strands and cg of total strand group
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   Float64 nEff, cgx, cgy;
-   pStrandGeom->GetStrandCG(releaseIntervalIdx, midPOI, true, &config, &nEff, &cgx, &cgy);
-   ATLASSERT((Float64)(nperm+ntemp) == nEff);
-
    GET_IFACE(ILimitStateForces,pForces);
    GET_IFACE(IPretensionStresses, pPrestress);
    PoiList vPOI;
@@ -8357,8 +8347,10 @@ std::vector<DebondLevelType> pgsDesigner2::DesignEndZoneReleaseDebonding(IProgre
    }
 
    // compute debond levels at each section from demand
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   gpPoint2d cg = pStrandGeom->GetStrandCG(releaseIntervalIdx, midPOI, true, &config);
    std::vector<DebondLevelType> debond_levels;
-   debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, config, cgy, releaseIntervalIdx, allowable_tension, allowable_compression);
+   debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, config, cg.Y(), releaseIntervalIdx, allowable_tension, allowable_compression);
 
    if (  debond_levels.empty() && bAbortOnFail )
    {
@@ -9280,11 +9272,6 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
       ASSERT( vPoi.size() == 1 );
       pgsPointOfInterest midPOI(vPoi.front());
 
-      GET_IFACE(IStrandGeometry,pStrandGeom);
-      Float64 nEff, cgx, cgy;
-      pStrandGeom->GetStrandCG(liftingIntervalIdx, midPOI, true, &liftConfig.GdrConfig, &nEff, &cgx, &cgy);
-      ATLASSERT((Float64)(nperm+ntemp) == nEff);
-
       Float64 force_per_strand = 0.0;
 
       // only want stresses in end zones
@@ -9341,7 +9328,9 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
-      lifting_debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, liftConfig.GdrConfig, cgy, liftingIntervalIdx, allowable_tension, allowable_global_compression);
+      GET_IFACE(IStrandGeometry, pStrandGeom);
+      gpPoint2d cg = pStrandGeom->GetStrandCG(liftingIntervalIdx, midPOI, true, &liftConfig.GdrConfig);
+      lifting_debond_levels = m_StrandDesignTool.ComputeDebondsForDemand(stress_demands, liftConfig.GdrConfig, cg.Y(), liftingIntervalIdx, allowable_tension, allowable_global_compression);
 
       if ( lifting_debond_levels.empty() )
       {
@@ -9992,7 +9981,7 @@ void pgsDesigner2::RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,p
       LOG(_T("Moment Arm = ") << ::ConvertFromSysUnits( pmcd->MomentArm, unitMeasure::Inch) << _T(" inch"));
 
       GET_IFACE(ILosses,pILosses);
-      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/,&config, true/*include elastic effects*/);
+      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/, true/*include elastic effects*/, &config);
       LOG(_T("Losses = ") << ::ConvertFromSysUnits( check_loss, unitMeasure::KSI) << _T(" KSI") );
 
       CRACKINGMOMENTDETAILS cmd;

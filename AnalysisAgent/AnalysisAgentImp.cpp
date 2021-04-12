@@ -272,20 +272,14 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
    Float64 PsEnd;    // Force in straight strands (varies with location due to debonding)
    Float64 Ph;    // Force in harped strands
    Float64 Pt;    // Force in temporary strands
-   Float64 ecc_x_harped_start; // x eccentricity of harped strands at end of girder
-   Float64 ecc_y_harped_start; // y eccentricity of harped strands at end of girder
-   Float64 ecc_x_harped_end;  // x eccentricity of harped strands at end of girder
-   Float64 ecc_y_harped_end;  // y eccentricity of harped strands at end of girder
-   Float64 ecc_y_harped_hp1;  // y eccentricity of harped strand at harping point (left)
-   Float64 ecc_y_harped_hp2;  // y eccentricity of harped strand at harping point (right)
-   Float64 ecc_x_straight_start;  // x eccentricity of straight strands (left)
-   Float64 ecc_x_straight_end;    // x eccentricity of straight strands (right)
-   Float64 ecc_y_straight_start;  // y eccentricity of straight strands (left)
-   Float64 ecc_y_straight_end;    // y eccentricity of straight strands (right)
-   Float64 ecc_x_temporary_start; // x eccentricity of temporary strands (left)
-   Float64 ecc_y_temporary_start; // y eccentricity of temporary strands (left)
-   Float64 ecc_x_temporary_end;   // x eccentricity of temporary strands (right)
-   Float64 ecc_y_temporary_end;   // y xccentricity of temporary strands (right)
+   gpPoint2d ecc_harped_start; // eccentricity of harped strands at end of girder
+   gpPoint2d ecc_harped_end;  // eccentricity of harped strands at end of girder
+   gpPoint2d ecc_harped_hp1;  // eccentricity of harped strand at harping point (left)
+   gpPoint2d ecc_harped_hp2;  // eccentricity of harped strand at harping point (right)
+   gpPoint2d ecc_straight_start;  // eccentricity of straight strands (left)
+   gpPoint2d ecc_straight_end;    // eccentricity of straight strands (right)
+   gpPoint2d ecc_temporary_start; // eccentricity of temporary strands (left)
+   gpPoint2d ecc_temporary_end;   // eccentricity of temporary strands (right)
    Float64 hp1; // Location of left harping point
    Float64 hp2; // Location of right harping point
    Float64 Ls;  // Length of segment
@@ -372,12 +366,10 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       // Determine eccentricity of harped strands at end and harp point
       // (assumes eccentricities are the same at each harp point - which they are because
       // of the way the input is defined)
-      Float64 nHs_effective;
-
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Harped, pConfig, &nHs_effective, &ecc_x_harped_start, &ecc_y_harped_start);
-      ecc_y_harped_hp1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, hp1_poi,  pgsTypes::Harped, pConfig, &nHs_effective);
-      ecc_y_harped_hp2 = pStrandGeom->GetEccentricity(releaseIntervalIdx, hp2_poi,  pgsTypes::Harped, pConfig, &nHs_effective);
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Harped, pConfig, &nHs_effective,&ecc_x_harped_end,&ecc_y_harped_end);
+      ecc_harped_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Harped, pConfig);
+      ecc_harped_hp1 = pStrandGeom->GetEccentricity(releaseIntervalIdx, hp1_poi,  pgsTypes::Harped, pConfig);
+      ecc_harped_hp2 = pStrandGeom->GetEccentricity(releaseIntervalIdx, hp2_poi,  pgsTypes::Harped, pConfig);
+      ecc_harped_end = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd,   pgsTypes::Harped, pConfig);
 
       // precamber at the harp points
       Float64 pc1 = pGirder->GetPrecamber(hp1_poi);
@@ -391,15 +383,15 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       // Determine equivalent loads
 
       // moment
-      Mhlx = Ph*ecc_y_harped_start;
-      Mhrx = Ph*ecc_y_harped_end;
+      Mhlx = Ph*ecc_harped_start.Y();
+      Mhrx = Ph*ecc_harped_end.Y();
 
-      Mhly = Ph*ecc_x_harped_start;
-      Mhry = Ph*ecc_x_harped_end;
+      Mhly = Ph*ecc_harped_start.X();
+      Mhry = Ph*ecc_harped_end.X();
 
       // upward force
-      Float64 e_prime_start = (ecc_y_harped_hp1 - ecc_y_harped_start) - pc1;
-      Float64 e_prime_end = (ecc_y_harped_hp2 - ecc_y_harped_end) - pc2;
+      Float64 e_prime_start = (ecc_harped_hp1.Y() - ecc_harped_start.Y()) - pc1;
+      Float64 e_prime_end = (ecc_harped_hp2.Y() - ecc_harped_end.Y()) - pc2;
       e_prime_start = IsZero(e_prime_start) ? 0 : e_prime_start;
       e_prime_end = IsZero(e_prime_end) ? 0 : e_prime_end;
 
@@ -419,8 +411,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       startMoment.Xe = Ls;
       startMoment.Ls = Ls;
       startMoment.P  = Ph;
-      startMoment.ex = ecc_x_harped_start;
-      startMoment.eye = ecc_y_harped_start;
+      startMoment.ex = ecc_harped_start.X();
+      startMoment.eye = ecc_harped_start.Y();
       startMoment.Precamber = precamber;
       startMoment.Mx = Mhlx;
       startMoment.My = Mhly;
@@ -430,8 +422,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       leftHpLoad.Xs = hp1;
       leftHpLoad.P = Ph;
       leftHpLoad.b = hp1;
-      leftHpLoad.eye = ecc_y_harped_start;
-      leftHpLoad.eyh = ecc_y_harped_hp1;
+      leftHpLoad.eye = ecc_harped_start.Y();
+      leftHpLoad.eyh = ecc_harped_hp1.Y();
       leftHpLoad.eprime = e_prime_start;
       leftHpLoad.PrecamberAtLoadPoint = pc1;
       leftHpLoad.Precamber = precamber;
@@ -441,8 +433,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       rightHpLoad.Xs = hp2;
       rightHpLoad.P = Ph;
       rightHpLoad.b = Ls-hp2;
-      rightHpLoad.eye = ecc_y_harped_end;
-      rightHpLoad.eyh = ecc_y_harped_hp2;
+      rightHpLoad.eye = ecc_harped_end.Y();
+      rightHpLoad.eyh = ecc_harped_hp2.Y();
       rightHpLoad.eprime = e_prime_end;
       rightHpLoad.PrecamberAtLoadPoint = pc2;
       rightHpLoad.Precamber = precamber;
@@ -451,8 +443,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       EquivPretensionLoad endMoment;
       endMoment.Xs = Ls;
       endMoment.P  = -Ph;
-      endMoment.ex = ecc_x_harped_end;
-      endMoment.eye = ecc_y_harped_end;
+      endMoment.ex = ecc_harped_end.X();
+      endMoment.eye = ecc_harped_end.Y();
       endMoment.Precamber = precamber;
       endMoment.Mx = -Mhrx;
       endMoment.My = -Mhry;
@@ -467,27 +459,28 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       GET_IFACE_NOCHECK(ISectionProperties, pSectProp);
       GET_IFACE(IPretensionForce,pPrestressForce);
 
-      Float64 nSsEffective;
       Float64 Ps = pPrestressForce->GetPrestressForce(poiMiddle,pgsTypes::Straight,releaseIntervalIdx,pgsTypes::End,pConfig);
+      ecc_straight_start = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Straight, pConfig);
+      Float64 Aps_this_poi = pStrandGeom->GetStrandArea(poiStart, releaseIntervalIdx, pgsTypes::Straight, pConfig);
+      Float64 Aps = pStrandGeom->GetStrandArea(poiMiddle, releaseIntervalIdx, pgsTypes::Straight, pConfig);
+      PsStart = Ps*(Aps_this_poi / Aps);
 
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Straight, pConfig, &nSsEffective, &ecc_x_straight_start, &ecc_y_straight_start);
-      PsStart = Ps*nSsEffective/Ns;
+      ecc_straight_end = pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd, pgsTypes::Straight, pConfig);
+      Aps_this_poi = pStrandGeom->GetStrandArea(poiEnd, releaseIntervalIdx, pgsTypes::Straight, pConfig);
+      PsEnd = Ps*(Aps_this_poi/Aps);
 
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poiEnd, pgsTypes::Straight, pConfig, &nSsEffective, &ecc_x_straight_end, &ecc_y_straight_end);
-      PsEnd = Ps*nSsEffective/Ns;
+      Mslx = PsStart*ecc_straight_start.Y();
+      Msrx = PsEnd*ecc_straight_end.Y();
 
-      Mslx = PsStart*ecc_y_straight_start;
-      Msrx = PsEnd*ecc_y_straight_end;
-
-      Msly = PsStart*ecc_x_straight_start;
-      Msry = PsEnd*ecc_x_straight_end;
+      Msly = PsStart*ecc_straight_start.X();
+      Msry = PsEnd*ecc_straight_end.X();
 
       EquivPretensionLoad startMoment;
       startMoment.Xs = 0;
       startMoment.Xe = Ls;
       startMoment.P = PsStart;
-      startMoment.ex = ecc_x_straight_start;
-      startMoment.eye = ecc_y_straight_start;
+      startMoment.ex = ecc_straight_start.X();
+      startMoment.eye = ecc_straight_start.Y();
       startMoment.PrecamberAtLoadPoint = 0;
       startMoment.Precamber = precamber;
       startMoment.Ls = Ls;
@@ -500,8 +493,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       EquivPretensionLoad endMoment;
       endMoment.Xs = Ls;
       endMoment.P = -PsEnd;
-      endMoment.ex = ecc_x_straight_end;
-      endMoment.eye = ecc_y_straight_end;
+      endMoment.ex = ecc_straight_end.X();
+      endMoment.eye = ecc_straight_end.Y();
       endMoment.PrecamberAtLoadPoint = 0;
       endMoment.Precamber = precamber;
       endMoment.Ls = Ls;
@@ -631,17 +624,14 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
          Pt = -1*pPrestressForce->GetPrestressForce(poiMiddle, pgsTypes::Temporary, tsRemovalIntervalIdx, pgsTypes::Start, pConfig);
       }
 
-      Float64 nTsEffective;
-      pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poiStart, pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_start, &ecc_y_temporary_start);
-      pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poiEnd,   pgsTypes::Temporary, pConfig, &nTsEffective, &ecc_x_temporary_end,   &ecc_y_temporary_end);
+      ecc_temporary_start = pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poiStart, pgsTypes::Temporary, pConfig);
+      ecc_temporary_end = pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poiEnd,   pgsTypes::Temporary, pConfig);
 
-      Pt *= nTsEffective/Nt;
+      Mtlx = Pt*ecc_temporary_start.Y();
+      Mtrx = Pt*ecc_temporary_end.Y();
 
-      Mtlx = Pt*ecc_y_temporary_start;
-      Mtrx = Pt*ecc_y_temporary_end;
-
-      Mtly = Pt*ecc_x_temporary_start;
-      Mtry = Pt*ecc_x_temporary_end;
+      Mtly = Pt*ecc_temporary_start.X();
+      Mtry = Pt*ecc_temporary_end.X();
 
       // The UI forces TTS to be post-tensioned if there is precamber
       // For PT TTS, the tendency of the strand to straightend when
@@ -663,8 +653,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       startMoment.Xe = Ls;
       startMoment.P  = Pt;
       startMoment.N  = 0;
-      startMoment.ex = ecc_x_temporary_start;
-      startMoment.eye = ecc_y_temporary_start;
+      startMoment.ex = ecc_temporary_start.X();
+      startMoment.eye = ecc_temporary_start.Y();
       startMoment.PrecamberAtLoadPoint = 0;
       startMoment.Precamber = precamber;
       startMoment.Ls = Ls;
@@ -676,8 +666,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       EquivPretensionLoad endMoment;
       endMoment.Xs = Ls;
       endMoment.P  = -Pt;
-      endMoment.ex = ecc_x_temporary_end;
-      endMoment.eye = ecc_y_temporary_end;
+      endMoment.ex = ecc_temporary_end.X();
+      endMoment.eye = ecc_temporary_end.Y();
       endMoment.PrecamberAtLoadPoint = 0;
       endMoment.Precamber = precamber;
       endMoment.Ls = Ls;
@@ -2727,18 +2717,15 @@ std::vector<Float64> CAnalysisAgentImp::GetMoment(IntervalIndexType intervalIdx,
                for (const auto& poi : vPoi)
                {
                   Float64 fpes = pPSForce->GetEffectivePrestress(poi, pgsTypes::Straight, intervalIdx, pgsTypes::End);
-                  Float64 Ns;
-                  Float64 es = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Straight, &Ns);
+                  Float64 es = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Straight).Y();
                   Float64 As = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Straight);
 
                   Float64 fpeh = pPSForce->GetEffectivePrestress(poi, pgsTypes::Harped, intervalIdx, pgsTypes::End);
-                  Float64 Nh;
-                  Float64 eh = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Harped, &Nh);
+                  Float64 eh = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Harped).Y();
                   Float64 Ah = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Harped);
 
                   Float64 fpet = pPSForce->GetEffectivePrestress(poi, pgsTypes::Temporary, intervalIdx, pgsTypes::End);
-                  Float64 Nt;
-                  Float64 et = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Temporary, &Nt);
+                  Float64 et = pStrandGeom->GetEccentricity(intervalIdx, poi, pgsTypes::Temporary).Y();
                   Float64 At = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Temporary);
 
                   Float64 Ps = -fpes*As;
@@ -7539,11 +7526,9 @@ Float64 CAnalysisAgentImp::GetStressPerStrand(IntervalIndexType intervalIdx,cons
    pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
    bool bIncludeElasticEffects = (spMode == pgsTypes::spmGross ? true : false);
    Float64 P = pPsForce->GetPrestressForcePerStrand(poi,strandType,intervalIdx,timeType,bIncludeElasticEffects);
-   Float64 nSEffective;
-   Float64 ex, ey;
-   pStrandGeom->GetEccentricity(intervalIdx, poi, strandType, &nSEffective, &ex, &ey);
+   gpPoint2d ecc = pStrandGeom->GetEccentricity(intervalIdx, poi, strandType);
 
-   return GetStress(intervalIdx,poi,stressLocation,P,ex,ey);
+   return GetStress(intervalIdx,poi,stressLocation,P, ecc.X(), ecc.Y());
 }
 
 
@@ -7599,15 +7584,13 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx, const pgs
       P += pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, tsInstallationIntervalIdx, timeType, &config);
    }
 
-   Float64 nSEffective;
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
-   Float64 ex, ey;
-   pStrandGeom->GetEccentricity(spType, bIncludeTemporaryStrands ? tsInstallationIntervalIdx : intervalIdx, poi, bIncludeTemporaryStrands, &config, &nSEffective, &ex, &ey);
+   gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, bIncludeTemporaryStrands ? tsInstallationIntervalIdx : intervalIdx, poi, bIncludeTemporaryStrands, &config);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   *pfTop = GetStress(releaseIntervalIdx, poi, topLoc, P, ex, ey);
-   *pfBot = GetStress(releaseIntervalIdx, poi, botLoc, P, ex, ey);
+   *pfTop = GetStress(releaseIntervalIdx, poi, topLoc, P, ecc.X(), ecc.Y());
+   *pfBot = GetStress(releaseIntervalIdx, poi, botLoc, P, ecc.X(), ecc.Y());
 }
 
 /////////////////////////////////////////////////////////////////////////////

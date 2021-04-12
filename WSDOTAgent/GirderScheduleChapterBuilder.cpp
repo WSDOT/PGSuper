@@ -375,8 +375,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
    Float64 ybg = pSectProp->GetY(releaseIntervalIdx,poiMidSpan,pgsTypes::BottomGirder);
-   Float64 nEff;
-   Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Straight, &nEff);
+   Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Straight).Y();
    (*pTable)(++row,0) << _T("E");
    if (0 < Ns)
    {
@@ -389,7 +388,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    if ( CLSID_SlabBeamFamily != familyCLSID )
    {
-      Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Harped, &nEff);
+      Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Harped).Y();
       (*pTable)(++row,0) << Sub2(_T("F"),_T("C.L."));
       if (0 < Nh)
       {
@@ -402,7 +401,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
 
       Float64 ytg = pSectProp->GetY(releaseIntervalIdx,poiStart,pgsTypes::TopGirder);
-      Float64 hss = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiStart,pgsTypes::Harped,&nEff);
+      Float64 hss = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiStart,pgsTypes::Harped).Y();
       (*pTable)(++row,0) << Sub2(_T("F"),_T("o"));
       if (0 < Nh)
       {

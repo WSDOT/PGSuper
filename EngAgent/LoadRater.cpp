@@ -1439,8 +1439,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
          }
          else
          {
-            Float64 neff;
-            Float64 ep = ratingParams.pStrandGeometry->GetEccentricity(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::Permanent, &neff);
+            Float64 ep = ratingParams.pStrandGeometry->GetEccentricity(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::Permanent).Y();
             Float64 Ixx = ratingParams.pSectProp->GetIxx(ratingParams.loadRatingIntervalIdx, poi);
             llGain = LLIM*ep / Ixx;
          }

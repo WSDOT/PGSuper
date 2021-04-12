@@ -676,32 +676,15 @@ public:
 
 // IStrandGeometry
 public:
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const override;
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const override;
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const override;
-   virtual void GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const override;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
-   virtual void GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pEccX, Float64* pEccY) const override;
+   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) const override;
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) const override;
+   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bIncTemp, Float64* nEffectiveStrands) const override;
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, Float64* nEffectiveStrands) const override;
-
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const override;
-   virtual Float64 GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const override;
-
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const override;
-   virtual Float64 GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const override;
-
-   virtual Float64 GetStrandLocation(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, IntervalIndexType intervalIdx) const override;
+   virtual Float64 GetStrandLocation(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) const override;
 
    virtual void GetStrandProfile(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const override;
    virtual void GetStrandProfile(const CPrecastSegmentData* pSegment, const CStrandData* pStrands,pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const override;
@@ -720,9 +703,8 @@ public:
    virtual StrandIndexType GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const GDRCONFIG* pConfig=nullptr) const override;
    virtual StrandIndexType GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const override;
    virtual StrandIndexType GetMaxStrands(LPCTSTR strGirderName,pgsTypes::StrandType type) const override;
-   virtual Float64 GetStrandArea(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType) const override;
+
    virtual Float64 GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual Float64 GetAreaPrestressStrands(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,bool bIncTemp) const override;
 
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,pgsTypes::StrandType type, const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,bool bIncTemp) const override;
@@ -1699,18 +1681,10 @@ private:
 
    INCREMENTALRELAXATIONDETAILS GetIncrementalRelaxationDetails(Float64 fpi,const matPsStrand* pStrand,Float64 tStart,Float64 tEnd,Float64 tStress) const;
 
-   // Returns the geometric CG location of the strands measured in Girder Coordinates
-   Float64 GetHsLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const;
-   Float64 GetSsLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const;
-   Float64 GetTempLocation(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const;
-
-   Float64 GetHsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG*pConfig, Float64* nEffectiveStrands) const;
-   Float64 GetSsEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const;
-   Float64 GetTempEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands) const;
-
-   void GetHarpedStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const;
-   void GetStraightStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const;
-   void GetTemporaryStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64* nEffectiveStrands, Float64* pX, Float64* pY) const;
+   /// Returns true if strands are engaged with the precast segment in the specified interval and location
+   ///
+   /// Strands are not considered to be engaged if the are off the segment, not yet installed, or have been removed as in the case of temporary strands
+   bool AreStrandsEngaged(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType,const GDRCONFIG* pConfig) const;
 
    Float64 GetSuperstructureDepth(PierIndexType pierIdx) const;
 

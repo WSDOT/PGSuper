@@ -192,14 +192,13 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    rDataExporter.WriteIntToCell(1, _T("Strength"), m_RowNum, strandStrength);
 
 	// STRAND ECCENTRICITY AT CENTER LINE
-   Float64 nEff;
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent).Y();
 	Float64 strandEccCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    rDataExporter.WriteFloatToCell(1, _T("eCL"), m_RowNum, strandEccCL);
 
 	// STRAND ECCENTRICITY AT ENDS
-   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent, &nEff );
+   value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent).Y();
 	Float64 strandEccEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
    rDataExporter.WriteFloatToCell(1, _T("eEnd"), m_RowNum, strandEccEnd);
