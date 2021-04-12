@@ -34,6 +34,7 @@ static char THIS_FILE[] = __FILE__;
 static UINT indicators[] =
 {
 	ID_SEPARATOR,           // status line indicator
+   EAFID_INDICATOR_AUTOSAVE_ON,
    EAFID_INDICATOR_MODIFIED,
    ID_INDICATOR_CAPS,
 	ID_INDICATOR_NUM,
