@@ -1947,6 +1947,8 @@ const std::map<IDType,IEditLoadRatingOptionsCallback*>& CPGSDocBase::GetEditLoad
 
 BOOL CPGSDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
 {
+   m_FileCompatibilityState.CreatingFromTemplate();
+
    if ( !CEAFDocument::OnNewDocumentFromTemplate(lpszPathName) )
    {
       return FALSE;
@@ -1955,6 +1957,7 @@ BOOL CPGSDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)
    InitProjectProperties();
 
    m_FileCompatibilityState.NewFileCreated();
+
    return TRUE;
 }
 

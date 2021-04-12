@@ -76,8 +76,10 @@ public:
    // Set this flag if the application used to save this file was version 2.1 or earlier
    void SetPreVersion21Flag() { m_bPreVersion21File = true;  }
 
+   void CreatingFromTemplate() { m_bCreatingFromTemplate = true; }
+
    // Call when a new file is created
-   void NewFileCreated() { ResetFlags(); m_strFilePath.Empty();  m_bNewFromTemplate = true; }
+   void NewFileCreated() { ResetFlags(); m_strFilePath.Empty(); m_bCreatingFromTemplate = false; m_bNewFromTemplate = true; }
 
    // Call when a file was opened. Keeps track of orginal filename and if the file was creaetd from a template
    void FileOpened(LPCTSTR lpszFilePath) { ResetFlags(); m_strFilePath = lpszFilePath; m_bNewFromTemplate = false;  }
@@ -109,6 +111,9 @@ public:
    // lpszCurrentAppVersion is the application version of the application right now
    bool PromptToMakeCopy(LPCTSTR lpszPathName,LPCTSTR lpszCurrentAppVersion)
    {
+      if (m_bCreatingFromTemplate)
+         return false;
+
       bool bDifferentVersion = m_bPreVersion21File || m_strAppVersion != CString(lpszCurrentAppVersion) ? true : false;
 
       if (m_bUnnamed && bDifferentVersion)
@@ -137,6 +142,7 @@ private:
    bool m_bPreVersion21File; // while was created with Version 2.1 or earlier
    bool m_bUnnamed;
    bool m_bNewFromTemplate;
+   bool m_bCreatingFromTemplate;
 };
 
 /*--------------------------------------------------------------------*/
