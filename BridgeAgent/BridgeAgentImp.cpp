@@ -9784,10 +9784,10 @@ void CBridgeAgentImp::GetSegmentsAtPier(PierIndexType pierIdx, GirderIndexType g
 {
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
-   if (pPier->IsContinuous())
+   if (pPier->IsContinuous() && !pPier->IsBoundaryPier())
    {
-      // this method is intended to return the segment keys at a boundary pier or a pier where segments connection
-      // if this method gets called for a continuous pier (segments are continuous over pier) this method should still
+      // This method is intended to return the segment keys at a boundary pier or a pier where segments connect.
+      // If this method gets called for a continuous pier (segments are continuous over pier) this method should still
       // work, so here we do the work to call the GetSegmentAtPier and then return.
       GroupIndexType backGroupIdx, aheadGroupIdx;
       GetGirderGroupIndex(pierIdx, &backGroupIdx, &aheadGroupIdx);
