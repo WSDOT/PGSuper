@@ -14229,10 +14229,10 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
 
    Float64 Aps = GetApsBottomHalf(poi,dlaNone,pConfig);
 
-   const matPsStrand* pstrand = GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-   ATLASSERT(pstrand!=0);
-   Float64 fps = pstrand->GetYieldStrength();
-   ATLASSERT(fps>0.0);
+   const matPsStrand* pStrand = GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   ATLASSERT(pStrand);
+   Float64 fpy = pStrand->GetYieldStrength();
+   ATLASSERT(0.0 < fpy);
 
    Float64 E,fs,fu;
    CClosureKey closureKey;
@@ -14245,8 +14245,8 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
       GetSegmentLongitudinalRebarProperties(segmentKey,&E,&fs,&fu);
    }
 
-   Float64 denom = Aps*fps + As*fs;
-   Float64 ppr = IsZero(denom) ? 0.0 : (Aps*fps)/denom;
+   Float64 denom = Aps*fpy + As*fs;
+   Float64 ppr = IsZero(denom) ? 0.0 : (Aps*fpy)/denom;
 
    return ppr;
 }
@@ -15710,8 +15710,11 @@ gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsP
             cg_y += y;
          }
       }
-      cg.X() = cg_x / (nStrands - nDebonded);
-      cg.Y() = cg_y / (nStrands - nDebonded);
+
+      nStrands -= nDebonded;
+      ATLASSERT(0 <= nStrands);
+      cg.X() = (nStrands == 0) ? 0 : cg_x / nStrands;
+      cg.Y() = (nStrands == 0) ? 0 : cg_y / nStrands;
    }
 
    if (!HasAsymmetricGirders())
@@ -15788,77 +15791,6 @@ gpPoint2d CBridgeAgentImp::GetEccentricity(pgsTypes::SectionPropertyType spType,
    ecc.Y() = -(Yt + cg.Y()); // greater than 0 means cg of strands is below the cg of the section
 
    return ecc;
-}
-
-Float64 CBridgeAgentImp::GetStrandLocation(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType) const
-{
-   ATLASSERT(strandType != pgsTypes::Permanent);
-   VALIDATE(GIRDER);
-
-   // if the strands aren't released yet, then there isn't an eccentricty with respect to the girder cross section
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   if (intervalIdx < GetPrestressReleaseInterval(segmentKey) || IsOffSegment(poi))
-   {
-      return 0;
-   }
-
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(poi, &girder);
-
-   CComPtr<IStrandModel> strandModel;
-   girder->get_StrandModel(&strandModel);
-
-   StrandIndexType nStrands;
-   strandModel->GetStrandCount((StrandType)strandType, &nStrands);
-
-   CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
-
-   Float64 Xs = poi.GetDistFromStart();
-
-   CComPtr<IPoint2dCollection> points;
-   CComPtr<IIndexArray> debondPositions;
-   if (strandType == pgsTypes::Straight)
-   {
-      strandGridModel->GetStraightStrandsDebondedByPositionIndex(Xs, &debondPositions);
-   }
-   else
-   {
-      strandModel->GetStrandPositions((StrandType)strandType, Xs, &points);
-   }
-
-   Float64 A = 0;
-   Float64 Ay = 0;
-
-   for (CollectionIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
-   {
-      Float64 y;
-      if (strandType == pgsTypes::Straight)
-      {
-         Float64 x, y, left_bond, right_bond;
-         strandGridModel->GetStraightStrandBondedLengthByPositionIndex(strandIdx, Xs, &x, &y, &left_bond, &right_bond);
-
-         IndexType foundIdx;
-         HRESULT hr = debondPositions->Find(strandIdx, &foundIdx);
-         if (FAILED(hr))
-         {
-            // Strand is NOT debonded at this location....
-            A += 1;
-            Ay += y;
-         }
-      }
-      else
-      {
-         CComPtr<IPoint2d> point;
-         points->get_Item(strandIdx, &point);
-         point->get_Y(&y);
-         A += 1;
-         Ay += y;
-      }
-   }
-
-   Float64 Y = (IsZero(A) ? 0 : Ay / A);
-   ATLASSERT(Y <= 0); // this is in Girder Section Coordinates. Since strand is below top of girder its position should be negative
-   return Y;
 }
 
 void CBridgeAgentImp::GetStrandProfile(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const
@@ -16305,7 +16237,7 @@ Float64 CBridgeAgentImp::GetSuperstructureDepth(PierIndexType pierIdx) const
 
 Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig) const
 {
-   return GetApsTensionSide(poi, devAdjust, false, pConfig );
+   return GetApsInHalfDepth(poi, devAdjust, true, pConfig );
 }
 
 StrandIndexType CBridgeAgentImp::GetNumStrandsBottomHalf(const pgsPointOfInterest & poi, pgsTypes::StrandType strandType, const GDRCONFIG * pConfig) const
@@ -16412,7 +16344,7 @@ StrandIndexType CBridgeAgentImp::GetNumStrandsBottomHalf(const pgsPointOfInteres
 
 Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,const GDRCONFIG* pConfig) const
 {
-   return GetApsTensionSide(poi, devAdjust, true, pConfig );
+   return GetApsInHalfDepth(poi, devAdjust, false, pConfig );
 }
 
 ConfigStrandFillVector CBridgeAgentImp::ComputeStrandFill(const CSegmentKey& segmentKey,pgsTypes::StrandType type,StrandIndexType Ns) const
@@ -16702,6 +16634,43 @@ StrandIndexType CBridgeAgentImp::GetStrandCount(const CSegmentKey& segmentKey,pg
    return nStrands;
 }
 
+std::pair<StrandIndexType, StrandIndexType> CBridgeAgentImp::GetStrandCount(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+{
+   ATLASSERT(strandType != pgsTypes::Permanent); // can't be permanent
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   if (intervalIdx < GetStressStrandInterval(segmentKey) // strands aren't stressed so they aren't even in play yet
+      ||
+      (strandType == pgsTypes::Temporary && GetTemporaryStrandRemovalInterval(segmentKey) < intervalIdx)) // strand are temporary and they have been removed
+   {
+      return std::make_pair(0, 0);
+   }
+
+   auto strand_count(std::make_pair((StrandIndexType)0, (StrandIndexType)0));
+   StrandIndexType nStrands = GetStrandCount(segmentKey, strandType, pConfig); // total strand count
+   StrandIndexType nDebondTotal = GetNumDebondedStrands(segmentKey, strandType, pgsTypes::dbetEither, pConfig);
+
+
+   // count the number of strands that are debonded at this location
+   StrandIndexType nDebondedAtPoi = 0;
+   if (HasDebonding(segmentKey, pConfig))
+   {
+      for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+      {
+         if (IsStrandDebonded(poi, strandIdx, strandType, pConfig))
+         {
+            nDebondedAtPoi++;
+         }
+      }
+   }
+
+   ATLASSERT(nDebondTotal <= nStrands); // can't debond more than the total number of strands
+   strand_count.first += (nStrands - nDebondedAtPoi); // number of strands at this section
+   strand_count.second += nDebondTotal - nDebondedAtPoi; // number of debonded strands that are bonded at this section
+
+   return strand_count;
+}
+
 StrandIndexType CBridgeAgentImp::GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const
 {
    VALIDATE(GIRDER);
@@ -16806,24 +16775,11 @@ Float64 CBridgeAgentImp::GetStrandArea(const pgsPointOfInterest& poi,IntervalInd
    Float64 Aps = 0;
    for (auto type : vStrandTypes)
    {
+      auto strand_count = GetStrandCount(poi, intervalIdx, type, pConfig);
+
       const matPsStrand* pStrand = GetStrandMaterial(segmentKey, type);
       Float64 aps = pStrand->GetNominalArea();
-
-      StrandIndexType nStrands = GetStrandCount(segmentKey, type, pConfig);
-
-      // count the number of strands that are debonded
-      StrandIndexType nDebonded = 0;
-      if (HasDebonding(segmentKey,pConfig))
-      {
-         for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
-         {
-            if (IsStrandDebonded(poi, strandIdx, type, pConfig))
-            {
-               nDebonded++;
-            }
-         }
-      }
-      Aps += aps * (nStrands - nDebonded);
+      Aps += aps*strand_count.first;
    }
    return Aps;
 }
@@ -17719,6 +17675,7 @@ bool CBridgeAgentImp::IsStrandDebonded(const pgsPointOfInterest& poi, StrandInde
    Float64 debond_left, debond_right;
    if ( !IsStrandDebonded(segmentKey,strandIdx,strandType,pConfig,&debond_left,&debond_right) )
    {
+      // this strand is not at all debonded
       return false;
    }
 
@@ -17726,7 +17683,7 @@ bool CBridgeAgentImp::IsStrandDebonded(const pgsPointOfInterest& poi, StrandInde
 
    if ( !IsZero(debond_left) && ::IsLT(location, debond_left))
    {
-      // this is debonding on the left, and the poi is before bonding begins
+      // there is debonding on the left, and the poi is before bonding begins
       return true;
    }
 
@@ -17734,7 +17691,7 @@ bool CBridgeAgentImp::IsStrandDebonded(const pgsPointOfInterest& poi, StrandInde
 
    if ( !IsEqual(debond_right,length) && ::IsLT(debond_right,location) )
    {
-      // this is debonding on the right and the poi is after the point where bonding ends
+      // there is debonding on the right and the poi is after the point where bonding ends
       return true;
    }
 
@@ -33417,7 +33374,7 @@ Float64 CBridgeAgentImp::GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,
    return As;
 }
 
-Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,bool bTensionTop,const GDRCONFIG* pConfig) const
+Float64 CBridgeAgentImp::GetApsInHalfDepth(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,bool bBottomHalf,const GDRCONFIG* pConfig) const
 {
    VALIDATE( GIRDER );
 
@@ -33443,32 +33400,18 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,Develop
    girder->get_StrandModel(&strandModel);
    CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
 
-   const matPsStrand* pStrand = GetStrandMaterial(segmentKey,pgsTypes::Straight);
-   Float64 aps = pStrand->GetNominalArea();
-
    Float64 dist_from_start = poi.GetDistFromStart();
    Float64 segment_length = GetSegmentLength(segmentKey);
 
    // Only use approximate bond method if poi is in mid-section of beam (within CSS's).
-   Float64 min_dist_from_ends = Min(dist_from_start, segment_length-dist_from_start);
-   bool use_approximate = (devAdjust==dlaApproximate && fabs(half_depth_elevation)*3.0 < min_dist_from_ends) ? true : false; // Factor here is balance between performance and accuracy.
+   Float64 min_dist_from_ends = Min(dist_from_start, segment_length - dist_from_start);
+   bool use_approximate = (devAdjust == dlaApproximate && fabs(half_depth_elevation)*3.0 < min_dist_from_ends) ? true : false; // Factor here is balance between performance and accuracy.
 
-   // For approximate development length adjustment, take development length information at mid span and use for entire girder
-   // adjusted for distance to ends of strands
-   STRANDDEVLENGTHDETAILS dla_det;
-   if(use_approximate)
-   {
-      PoiList vPoi;
-      GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
-      ATLASSERT(vPoi.size() == 1);
-      const pgsPointOfInterest& poi = vPoi.front();
-      ATLASSERT(poi.IsMidSpan(POI_ERECTED_SEGMENT));
-
-      bool bUHPC = GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
-
-      GET_IFACE(IPretensionForce,pPSForce);
-      dla_det = pPSForce->GetDevLengthDetails(poi, false, bUHPC, pConfig);
-   }
+   ////////////////////////////////
+   // Straight strands
+   ////////////////////////////////
+   const matPsStrand* pStrand = GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   Float64 aps = pStrand->GetNominalArea();
 
    // Get straight strand locations
    CComPtr<IPoint2dCollection> strand_points;
@@ -33495,11 +33438,11 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,Develop
       strand_point->get_Y(&y); // measured in Girder Section Coordinates
       y += Hg; // now measured up from bottom
 
-      // include bar if tension on top and y is greater than centerline or if
-      // tension is not top (tension is bottom) and y is less than centerline
-      bool bIncludeBar = ( (bTensionTop && half_depth_elevation < y) || (!bTensionTop && y <= half_depth_elevation) ) ? true : false;
+      // include bar if top half and y is greater than centerline or if
+      // bottom half and y is less than centerline
+      bool bIncludeStrand = ( (!bBottomHalf && half_depth_elevation < y) || (bBottomHalf && y <= half_depth_elevation) ) ? true : false;
 
-      if ( bIncludeBar )
+      if ( bIncludeStrand )
       {
          Float64 debond_factor;
          if(devAdjust==dlaNone)
@@ -33529,20 +33472,35 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,Develop
 
             Float64 bonded_length = Min(left_bonded_length, right_bonded_length);
 
+            // For approximate development length adjustment, take development length information at mid span and use for entire girder
+            // adjusted for distance to ends of strands
+            PoiList vPoi;
+            GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+            ATLASSERT(vPoi.size() == 1);
+            const pgsPointOfInterest& poi = vPoi.front();
+            ATLASSERT(poi.IsMidSpan(POI_ERECTED_SEGMENT));
+
+            bool bUHPC = GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
+
+            GET_IFACE(IPretensionForce, pPSForce);
+            STRANDDEVLENGTHDETAILS dla_det = pPSForce->GetDevLengthDetails(poi, pgsTypes::Straight, false, bUHPC, pConfig);
+
             debond_factor = GetDevLengthAdjustment(bonded_length, dla_det.ld, dla_det.ltDetails.lt, dla_det.fps, dla_det.fpe);
          }
          else
          {
             // Full adjustment for development
             GET_IFACE(IPretensionForce,pPSForce);
-            debond_factor = pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Straight,pConfig);
+            debond_factor = pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Straight,false, pConfig);
          }
 
          Aps += debond_factor*aps;
       }
    }
 
-   // harped strands
+   ////////////////////////////////
+   // Harped strands
+   ////////////////////////////////
    pStrand = GetStrandMaterial(segmentKey,pgsTypes::Harped);
    aps = pStrand->GetNominalArea();
 
@@ -33580,11 +33538,11 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,Develop
       strand_point->get_Y(&y); // measured in Girder Section Coordinates
       y += Hg; // now measured up from bottom
 
-      // include bar if tension on top and y is greater than centerline or if
-      // tension is not top (tension is bottom) and y is less than centerline
-      bool bIncludeBar = ( (bTensionTop && IsLT(half_depth_elevation,y)) || (!bTensionTop && IsLE(y,half_depth_elevation)) ) ? true : false;
+      // include bar if top half and y is greater than centerline or if
+      // bottom half and y is less than centerline
+      bool bIncludeStrand = ( (!bBottomHalf && IsLT(half_depth_elevation,y)) || (bBottomHalf && IsLE(y,half_depth_elevation)) ) ? true : false;
 
-      if ( bIncludeBar )
+      if ( bIncludeStrand )
       {
          Float64 debond_factor = 1.;
          bool use_one = use_approximate || devAdjust==dlaNone;
@@ -33595,7 +33553,7 @@ Float64 CBridgeAgentImp::GetApsTensionSide(const pgsPointOfInterest& poi,Develop
          else
          {
             GET_IFACE(IPretensionForce,pPSForce);
-            debond_factor = pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Harped,pConfig);
+            debond_factor = pPSForce->GetStrandBondFactor(poi,strandIdx,pgsTypes::Harped,false,pConfig);
          }
 
          Aps += debond_factor*aps;

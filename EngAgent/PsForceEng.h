@@ -135,18 +135,18 @@ public:
 
    //------------------------------------------------------------------------
    // Returns the prestress development length
-   Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
+   Float64 GetDevLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the development length adjustment factor. The factor is 0 at the
    // point where bond begins and 1.0 at the end of the development length
-   Float64 GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const;
+   Float64 GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const;
    Float64 GetDevLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the details of the develpment lenght computations
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
-   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
+   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
+   STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,Float64 fps,Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the prestress hold down force
@@ -199,6 +199,7 @@ private:
    mutable pgsTypes::PrestressTransferComputationType m_PrestressTransferComputationType;
 
    void CreateLossEngineer(const CGirderKey& girderKey) const;
+
    Float64 GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig,const LOSSDETAILS* pDetails) const;
    Float64 GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig,const LOSSDETAILS* pDetails) const;
    Float64 GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx,const GDRCONFIG* pConfig,const LOSSDETAILS* pDetails) const;

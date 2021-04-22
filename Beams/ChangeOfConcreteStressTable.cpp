@@ -46,7 +46,7 @@ rptRcTable(NumColumns,0)
 
 CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IGirder, pGirder);
    bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() && pBridge->GetDeckType() != pgsTypes::sdtNone ? true : false; // if longitudinal joints are structural and there is a deck, the deck dead loads go on the composite section
    bool bIs2StageComposite = pGirder->HasStructuralLongitudinalJoints() && IsStructuralDeck(pBridge->GetDeckType()) ? true : false;

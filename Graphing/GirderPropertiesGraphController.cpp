@@ -259,6 +259,7 @@ bool CGirderPropertiesGraphController::IsInvariantProperty(CGirderPropertiesGrap
 {
    // this properties don't depend on section properties type (gross, transformed, etc)
    if (propertyType == CGirderPropertiesGraphBuilder::Height ||
+      propertyType == CGirderPropertiesGraphBuilder::AreaPrestress ||
       propertyType == CGirderPropertiesGraphBuilder::TendonProfile ||
       propertyType == CGirderPropertiesGraphBuilder::EffectiveFlangeWidth ||
       propertyType == CGirderPropertiesGraphBuilder::Fc ||

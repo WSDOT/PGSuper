@@ -83,6 +83,7 @@
 #include "FinalPrestressLossTable.h"
 
 #include "EffectivePrestressTable.h"
+#include "EffectivePrestressForceTable.h"
 
 #include <algorithm>
 
@@ -102,6 +103,17 @@ void ReportRow(T* pTable,rptChapter* pChapter,IBroker* pBroker,const pgsPointOfI
    }
 
    pTable->AddRow(pChapter,pBroker,poi,row,pDetails,pDisplayUnits,level);
+}
+
+template <class T>
+void ReportRow(T* pTable, rptChapter* pChapter, IBroker* pBroker, const pgsPointOfInterest& poi, RowIndexType row, IEAFDisplayUnits* pDisplayUnits, Uint16 level)
+{
+   if (pTable == nullptr)
+   {
+      return;
+   }
+
+   pTable->AddRow(pChapter, pBroker, poi, row, pDisplayUnits, level);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -263,6 +275,27 @@ void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderK
 void CPsLossEngineer::ReportGeneralLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,bool bDesign,Uint16 level)
 {
    ReportLumpSumMethod(pChapter,beamType,girderKey,pDisplayUnits,bDesign,level);
+
+#if defined _DEBUG
+   // this method is only applicable to PGSuper
+   GET_IFACE(IBridge, pIBridge);
+   ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
+#endif
+   CSegmentKey segmentKey(girderKey, 0);
+
+   PoiList vPoi;
+   GetPointsOfInterest(girderKey, &vPoi);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
+
+   pgsPointOfInterest prev_poi(CSegmentKey(0, 0, 0), 0.0);
+   RowIndexType row = 1;
+   for (const pgsPointOfInterest& poi : vPoi)
+   {
+      ReportLocation(pP, row, poi, pDisplayUnits);
+      ReportRow(pP, pChapter, m_pBroker, poi, row, pDisplayUnits, level);
+      row++;
+      prev_poi = poi;
+   }
 }
 
 void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG*pConfig,LOSSDETAILS* pLosses,LossAgency lossAgency)
@@ -1456,6 +1489,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    CCreepAndShrinkageTable*        pCR        = CCreepAndShrinkageTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    CRelaxationAfterTransferTable*  pR2        = CRelaxationAfterTransferTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    CFinalPrestressLossTable*       pT         = CFinalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
 
    pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.0);
    bool bSkipToNextRow = false;
@@ -1484,6 +1518,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
       ReportLocation(pCR,        row2, poi, pDisplayUnits);
       ReportLocation(pR2,        row2, poi, pDisplayUnits);
       ReportLocation(pT,         row2, poi, pDisplayUnits);
+      ReportLocation(pP, row2, poi, pDisplayUnits);
 
       // fill each row1 with data
       if ( !bSkipToNextRow )
@@ -1503,6 +1538,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
       ReportRow(pCR,       pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pR2,       pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pT,        pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pP, pChapter, m_pBroker, poi, row2, pDisplayUnits, level);
 
       row2++;
       
@@ -1653,6 +1689,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    CEffectivePrestressTable*     pPE   = CEffectivePrestressTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
    CTotalPrestressLossTable*     pT    = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
 
    ///////////////////////////////////////////////////////////////////////
    // Loop over all the POIs and populate the tables with loss information
@@ -1701,6 +1738,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
       ReportLocation(pLLIM, row2, poi, pDisplayUnits);
       ReportLocation(pPE,   row2, poi, pDisplayUnits);
       ReportLocation(pT,    row2, poi, pDisplayUnits);
+      ReportLocation(pP, row2, poi, pDisplayUnits);
 
       // fill each row1 with data
       if ( !bSkipToNextRow )
@@ -1740,6 +1778,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
       ReportRow(pT,   pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
 
       ReportRow(pPE,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pP, pChapter, m_pBroker, poi, row2, pDisplayUnits, level);
 
       row2++;
       
@@ -1835,6 +1874,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    CTxDOT2013RelaxationAfterTransferTable*  pR2        = CTxDOT2013RelaxationAfterTransferTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
    CTxDOT2013TimeDependentLossesTable*      pLT        = CTxDOT2013TimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
    CTotalPrestressLossTable*                pT         = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
 
    pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.00);
    bool bSkipToNextRow = false;
@@ -1864,6 +1904,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
       ReportLocation(pR2,        row2, poi, pDisplayUnits);
       ReportLocation(pLT,        row2, poi, pDisplayUnits);
       ReportLocation(pT,         row2, poi, pDisplayUnits);
+      ReportLocation(pP,         row2, poi, pDisplayUnits);
 
       // fill each row1 with data
       if ( !bSkipToNextRow )
@@ -1884,6 +1925,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
       ReportRow(pR2,       pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pLT,       pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
       ReportRow(pT,        pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pP,        pChapter, m_pBroker, poi, row2, pDisplayUnits, level);
 
       row2++;
       
@@ -1967,6 +2009,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    ReportLumpSumTimeDependentLosses(pChapter,pDetails,pDisplayUnits,level);
 
    CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
 
    pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.0);
    bool bSkipToNextRow = false;
@@ -1992,6 +2035,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 
       ReportLocation(pPTR, row2, poi, pDisplayUnits);
       ReportLocation(pT,   row2, poi, pDisplayUnits);
+      ReportLocation(pP, row2, poi, pDisplayUnits);
 
       if ( !bSkipToNextRow )
       {
@@ -2005,13 +2049,11 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
          ReportRow(pPTH,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
       }
 
-      //if ( intervalIdx == liveLoadIntervalIdx )
-      {
          ReportRow(pPTR,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
          ReportRow(pT,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pP, pChapter, m_pBroker, poi, row2, pDisplayUnits, level);
+
          row2++;
-      }
-      
       row1++;
       prev_poi = poi;
    }
@@ -2090,6 +2132,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    CEffectivePrestressTable*              pPE   = CEffectivePrestressTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
 
    CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
 
    pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.0);
    bool bSkipToNextRow = false;
@@ -2119,6 +2162,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
       ReportLocation(pLLIM, row2, poi, pDisplayUnits);
       ReportLocation(pPE,   row2, poi, pDisplayUnits);
       ReportLocation(pT,    row2, poi, pDisplayUnits);
+      ReportLocation(pP,    row2, poi, pDisplayUnits);
 
       if ( !bSkipToNextRow )
       {
@@ -2140,6 +2184,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
          ReportRow(pLLIM, pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
          ReportRow(pPE,   pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
          ReportRow(pT,    pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+         ReportRow(pP,    pChapter,m_pBroker,poi,row2,pDisplayUnits,level);
 
          row2++;
       }
@@ -2699,18 +2744,18 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *pFpjPerm = pStrandGeom->GetJackingStress(segmentKey, pgsTypes::Permanent, pConfig);
    *pFpjTTS = pStrandGeom->GetJackingStress(segmentKey, pgsTypes::Temporary, pConfig);
 
-   const matPsStrand* pPermStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
+   const matPsStrand* pPermStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Straight);
    ATLASSERT(pPermStrand);
    *pGradePerm = pPermStrand->GetGrade();
    *pTypePerm = pPermStrand->GetType();
    *pCoatingPerm = pPermStrand->GetCoating();
-   *paps = pPermStrand->GetNominalArea();
 
    const matPsStrand* pTempStrand = pSegmentData->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
    ATLASSERT(pTempStrand);
    *pGradeTemp = pTempStrand->GetGrade();
    *pTypeTemp = pTempStrand->GetType();
    *pCoatingTemp = pTempStrand->GetCoating();
+   *paps = pTempStrand->GetNominalArea();
 
    *pGirderLength = pBridge->GetSegmentLength(segmentKey);
    *pSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
@@ -3216,6 +3261,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,0);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, 0);
 
    ///////////////////////////////////////////////////////////////////////
    // Loop over all the POIs and populate the tables with loss information
@@ -3225,9 +3271,11 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
       const LOSSDETAILS* pDetails = pILosses->GetLossDetails( poi );
 
       ReportLocation(pT,row,poi,pDisplayUnits);
+      ReportLocation(pP, row, poi, pDisplayUnits);
 
       // fill each row1 with data
       ReportRow(pT,pChapter,m_pBroker,poi,row,pDetails,pDisplayUnits,0);
+      ReportRow(pP, pChapter, m_pBroker, poi, row, pDisplayUnits, 0);
       row++;
    }
 }
@@ -3253,14 +3301,18 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
    GET_IFACE(ILosses,pILosses);
 
    CFinalPrestressLossTable* pT = CFinalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,0);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, 0);
 
    RowIndexType row = 1;
    for ( const pgsPointOfInterest& poi : vPoi)
    {
-      ReportLocation(pT,row,poi,pDisplayUnits);
+      ReportLocation(pT, row, poi, pDisplayUnits);
+      ReportLocation(pP, row, poi, pDisplayUnits);
+
       const LOSSDETAILS* pDetails = pILosses->GetLossDetails( poi );
 
-      ReportRow(pT, pChapter,m_pBroker,poi,row,pDetails,pDisplayUnits,0);
+      ReportRow(pT, pChapter, m_pBroker, poi, row, pDetails, pDisplayUnits, 0);
+      ReportRow(pP, pChapter, m_pBroker, poi, row, pDisplayUnits, 0);
 
       row++;
    }

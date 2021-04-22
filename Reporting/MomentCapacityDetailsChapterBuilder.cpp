@@ -347,7 +347,7 @@ void write_moment_data_table(IBroker* pBroker,
    {
       rptParagraph* pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
-      (*pPara) << _T("* Used to compute ") << Sub2(_T("d"),_T("v")) << _T(" for shear. Depth to resultant tension force for strands in tension. See PCI Bridge Design Manual, 3rd Edition, MNL-133-11, §8.4.1.2") << rptNewLine;
+      (*pPara) << _T("* Used to compute ") << Sub2(_T("d"),_T("v")) << _T(" for shear. Depth to resultant tension force for strands on the tension half of the section. See PCI Bridge Design Manual, 3rd Edition, MNL-133-11, §8.4.1.2") << rptNewLine;
    }
 
 

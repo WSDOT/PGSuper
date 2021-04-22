@@ -209,6 +209,16 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       break;
       }
 
+   case AreaPrestress:
+   {
+      const unitmgtLength2Data& areaUnit = pDisplayUnits->GetAreaUnit();
+      m_pYFormat = new AreaTool(areaUnit);
+      m_Graph.SetYAxisValueFormat(*m_pYFormat);
+      std::_tstring strYAxisTitle = _T("Aps (") + ((AreaTool*)m_pYFormat)->UnitTag() + _T(")");
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
+      break;
+   }
+
    case KernPoint:
       {
       const unitmgtLengthData& heightUnit = pDisplayUnits->GetComponentDimUnit();
@@ -313,6 +323,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
    GET_IFACE(IIntervals, pIntervals);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
+   std::vector<pgsPointOfInterest> vTemporaryPoi;
    for(const auto& thisGirderKey : vGirderKeys)
    {
       CSegmentKey segmentKey(thisGirderKey,ALL_SEGMENTS);
@@ -325,6 +336,26 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
          // these POI are between segments so they don't apply
          pPoi->RemovePointsOfInterest(vSegmentPoi, POI_CLOSURE);
          pPoi->RemovePointsOfInterest(vSegmentPoi, POI_BOUNDARY_PIER);
+      }
+
+      if (propertyType == AreaPrestress)
+      {
+         // capture the jumps in Aps (for debonded strands) by
+         // adding temporary pois just ahead and back of a debond point
+         PoiList vDebondPoi;
+         pPoi->GetPointsOfInterest(segmentKey, POI_DEBOND, &vDebondPoi);
+         for (const pgsPointOfInterest& poi : vDebondPoi)
+         {
+            vTemporaryPoi.push_back(pgsPointOfInterest(poi.GetSegmentKey(), poi.GetDistFromStart() - 0.001));
+            vTemporaryPoi.push_back(pgsPointOfInterest(poi.GetSegmentKey(), poi.GetDistFromStart() + 0.001));
+         }
+
+         PoiList vTemporaryPoiList;
+         MakePoiList(vTemporaryPoi, &vTemporaryPoiList);
+         vSegmentPoi.insert(std::end(vSegmentPoi), std::begin(vTemporaryPoiList), std::end(vTemporaryPoiList));
+
+         // sort and eliminate duplicates
+         pPoi->SortPoiList(&vSegmentPoi);
       }
 
       vPoi.insert(std::end(vPoi),std::begin(vSegmentPoi),std::end(vSegmentPoi));
@@ -351,6 +382,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
    GET_IFACE_NOCHECK(ISectionProperties, pSectProps);
    GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom);
+   GET_IFACE_NOCHECK(IPretensionForce, pPretensionForce);
 
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
@@ -421,6 +453,15 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
          value2 = pSectProps->GetS(sectPropType,intervalIdx,poi,pgsTypes::BottomGirder);
          break;
          }
+
+      case AreaPrestress:
+      {
+         value1 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Straight);
+         value2 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Harped);
+         value3 = pPretensionForce->GetXferLengthAdjustment(poi, pgsTypes::Straight)*value1 + pPretensionForce->GetXferLengthAdjustment(poi, pgsTypes::Harped)*value2;
+         value4 = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Temporary);
+         break;
+      }
 
       case KernPoint:
          {
@@ -686,6 +727,10 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
       return _T("Kern Point");
       break;
 
+   case AreaPrestress:
+      return _T("Area of Prestressing Strands");
+      break;
+
    case StrandEccentricity:
       return _T("Strand Eccentricity");
       break;
@@ -804,6 +849,25 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
       *pGraph3 = m_Graph.CreateDataSeries(strPropertyLabel3.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, GREEN);
       *pGraph4 = m_Graph.CreateDataSeries(strPropertyLabel4.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, RED);
       break;
+
+   case AreaPrestress:
+   {
+      strPropertyLabel1 = _T("Straight");
+
+      const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(CSegmentKey(girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex, girderKey.girderIndex, 0));
+      pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
+      std::_tstring strAdj(pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight"));
+      strPropertyLabel2 = strAdj;
+
+      strPropertyLabel3 = _T("Permanent Strands (Effective)");
+
+      strPropertyLabel4 = _T("Temporary");
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, ORANGE);
+      *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, BLUE);
+      *pGraph3 = m_Graph.CreateDataSeries(strPropertyLabel3.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, GREEN);
+      *pGraph4 = m_Graph.CreateDataSeries(strPropertyLabel4.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, RED);
+      break;
+   }
 
    case SectionModulus:
    case KernPoint:

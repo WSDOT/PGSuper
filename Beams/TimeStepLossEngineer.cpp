@@ -1690,7 +1690,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          tsDetails.Strands[strandType].As = m_pStrandGeom->GetStrandArea(poi,intervalIdx,strandType);
 
          // location of strands in Girder Section Coordinates (Y=0 at top of girder)
-         tsDetails.Strands[strandType].Ys = (intervalIdx <= stressStrandsIntervalIdx ? 0 : m_pStrandGeom->GetStrandLocation(intervalIdx,poi,strandType));
+            tsDetails.Strands[strandType].Ys = (intervalIdx <= stressStrandsIntervalIdx ? 0 : m_pStrandGeom->GetStrandCG(intervalIdx, poi, strandType).Y());
 
          tsDetails.Strands[strandType].E = EStrand[strandType];
 

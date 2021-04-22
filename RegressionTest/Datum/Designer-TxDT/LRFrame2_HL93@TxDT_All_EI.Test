@@ -54,7 +54,7 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.00 SR520 West Appro    2     6     1)            59  0.6  270  31.56  18.27  13.00  13.00                                              13  70.0  6.0  7.300  8.800   5.397    -5.573    15787   0.764  0.940   6.226 -3.155  0.000  0.000 -3.155 293.29  418.75    3.00    6.17    6.17    0.00    1.37    0.00    1.84    1.76 
+ 102.1   11   9.00 SR520 West Appro    2     6     1)            62  0.6  270  31.46  16.37  13.00  13.00                                              16  70.0  6.0  7.600  9.200   5.420    -5.581    16440   0.765  0.940   6.340 -3.086  0.000  0.000 -3.086 318.79  454.29    3.00    6.17    6.17    0.00    1.41    0.00    1.89    1.95 
 
 
 The Specification Check was Not Successful
@@ -86,13 +86,20 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.00 SR520 West Appro    3     6     1)            66  0.6  270  31.35  14.32  13.25  13.25                                              20  70.0  6.0  8.100  9.800   5.406    -5.556    17345   0.769  0.940   6.414 -2.919  0.000  0.000 -2.919 353.07  500.10    3.00    6.17    6.17    0.00    1.47    0.00    1.97    2.24 
+ 102.1   11   9.00 SR520 West Appro    3     6     1)            70  0.6  270  31.26  12.74  12.25  12.25                                              24  70.0  6.0  6.700  8.200   5.229    -5.441    17346   0.763  0.940   7.807 -3.073  0.000  0.000 -3.073 427.19  636.74    3.00    6.17    6.17    0.00    1.46    0.00    1.96    2.39 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
+Lifting checks failed
+Hauling checks failed
+Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -116,7 +123,7 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   11   9.00 SR520 West Appro    4     6     1)            70  0.6  270  31.26  12.74  12.50  12.50                                              24  70.0  6.0  6.500  8.100   5.186    -5.374    17213   0.762  0.940   7.982 -3.070  0.000  0.000 -3.070 432.30  656.49    3.00    6.17    6.17    0.00    1.46    0.00    1.97    2.40 
+ 102.1   11   9.00 SR520 West Appro    4     6     1)            70  0.6  270  31.26  12.74  12.50  12.50                                              24  70.0  6.0  6.500  8.100   5.186    -5.374    17213   0.762  0.940   7.982 -3.070  0.000  0.000 -3.070 432.30  656.49    3.00    6.17    6.17    0.00    1.47    0.00    1.98    2.40 
 
 
 Girder design was Not Successful
@@ -185,22 +192,15 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1   10   9.00 SR520 West Appro    6     6     1)            70  0.6  270  31.26  12.74  12.50  12.50                                              24  70.0  6.0  5.900  7.300   4.865    -4.879    16448   0.712  0.884   8.080 -3.005  0.000  0.000 -3.005 446.64  753.82    3.00    6.17    6.17    0.00    1.69    0.00    2.28    2.66 
+ 102.1   10   9.00 SR520 West Appro    6     6     1)            70  0.6  270  31.26  12.74  13.75  13.75                                              24  70.0  6.0  8.700 10.000   5.111    -5.032    17838   0.722  0.884   5.909 -2.702  0.000  0.000 -2.702 379.93  593.17    3.00    6.17    6.17    0.00    1.80    0.00    2.41    2.88 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
-Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
-Lifting checks failed
-Hauling checks failed
-Slab Offset ("A" Dimension) check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -234,6 +234,7 @@ Compression stress check failed for Service I Limit State in Interval 8 Remove t
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
 Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
@@ -302,14 +303,21 @@ Confinement zone check failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 102.1    8   9.00 SR520 West Appro    9     5     1)            66  0.6  270  31.35  14.32  13.75  13.75                                              20  70.0  6.0  8.600  9.800   4.105    -4.012    14774   0.747  0.880   5.428 -1.605  0.000  0.000 -1.605 362.63  581.59    3.00    6.17    6.17    0.00    2.16    0.00    2.88    3.69 
+ 102.1    8   9.00 SR520 West Appro    9     5     1)            70  0.6  270  31.26  12.74  12.50  12.50                                              24  70.0  6.0  4.900  6.000   3.832    -3.863    14399   0.731  0.880   8.925 -1.948  0.000  0.000 -1.948 506.51  899.65    3.00    6.17    6.17    0.00    1.96    0.00    2.54    3.50 
 
 
 Girder design was Not Successful
 The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 12 Cast Deck, Apply User Defined Loads
+Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 20 Apply User Defined Loads, Open to Traffic
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Splitting zone check failed.
 Confinement zone check failed.
+Lifting checks failed
+Hauling checks failed
+Slab Offset ("A" Dimension) check failed
 
 

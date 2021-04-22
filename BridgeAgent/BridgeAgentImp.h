@@ -684,8 +684,6 @@ public:
    virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
    virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
-   virtual Float64 GetStrandLocation(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) const override;
-
    virtual void GetStrandProfile(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const override;
    virtual void GetStrandProfile(const CPrecastSegmentData* pSegment, const CStrandData* pStrands,pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const override;
    virtual void GetStrandCGProfile(const CSegmentKey& segmentKey, bool bIncTemp, IPoint2dCollection** ppProfilePoints) const override;
@@ -701,6 +699,7 @@ public:
    virtual StrandIndexType GetNumStrandsBottomHalf(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
    virtual StrandIndexType GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual std::pair<StrandIndexType, StrandIndexType> GetStrandCount(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const override;
    virtual StrandIndexType GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const override;
    virtual StrandIndexType GetMaxStrands(LPCTSTR strGirderName,pgsTypes::StrandType type) const override;
 
@@ -1615,7 +1614,7 @@ private:
 
 
    Float64 GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,bool bDevAdjust,bool bTensionTop) const;
-   Float64 GetApsTensionSide(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,bool bTensionTop, const GDRCONFIG* pConfig=nullptr) const;
+   Float64 GetApsInHalfDepth(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,bool bBottomHalf, const GDRCONFIG* pConfig=nullptr) const;
 
    Float64 GetGirderAptTensionSide(const pgsPointOfInterest& poi,bool bTensionTop) const;
    Float64 GetSegmentAptTensionSide(const pgsPointOfInterest& poi, bool bTensionTop) const;

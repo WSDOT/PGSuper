@@ -31,6 +31,7 @@ Topics
 * @subpage tg_prestress_losses
 * @subpage tg_prestress_losses_txdot
 * @subpage tg_prestress_losses_time_step
+* @subpage tg_prestressing_steel
 * @subpage tg_principal_tensile_stress
 * @subpage tg_reactions
 * @subpage tg_section_properties
@@ -43,4 +44,5 @@ Topics
 * @subpage tg_structural_analysis_models
 * @subpage tg_tensile_stress_limits
 * @subpage tg_time_dependent_material_models
+* @subpage tg_transfer_length
 * @subpage tg_uhpc

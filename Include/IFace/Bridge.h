@@ -1078,12 +1078,12 @@ DEFINE_GUID(IID_IStrandGeometry,
 0x99b7a322, 0x67a8, 0x11d2, 0x88, 0x3a, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IStrandGeometry : IUnknown
 {
-   // Eccentricity values greater than zero indicate the strands are below the cg of the section. 
-   // (+ eccentricity, strands in bottom, - eccentricity, strands in top)
-
+   // Returns the centroid of the prestressing steel in Girder Section Coordinates (0,0 at top CL of girder)
    virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
 
+   // Eccentricity values greater than zero indicate the strands are below the cg of the section. 
+   // (+ eccentricity, strands in bottom, - eccentricity, strands in top)
    // Returns the geometric eccentricity of prestressing strands for the various strand types for the specified configuration.
    // Eccentricity is measured with respect to the centroid of the section at the specified interval
    virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
@@ -1093,9 +1093,6 @@ interface IStrandGeometry : IUnknown
    // Eccentricity is measured with respect to the centroid of the specified section type at the specified interval
    virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
-
-   // Returns the distance from the top of the girder to the geometric CG of the strand in Girder Section Coordinates
-   virtual Float64 GetStrandLocation(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType) const = 0;
 
    // gets a profile view of a strand
    virtual void GetStrandProfile(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const = 0;
@@ -1157,12 +1154,14 @@ interface IStrandGeometry : IUnknown
    virtual void GridPositionToStrandPosition(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, GridIndexType gridIdx, StrandIndexType* pStrandNo1, StrandIndexType* pStrandNo2) const = 0;
 
    virtual StrandIndexType GetStrandCount(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const GDRCONFIG* pConfig = nullptr) const = 0;
+
+   /// Returns the number of strands at a POI. The first value in the returned pair is the total number of strands at the poi and the second value is the number of strands that have debonding
+   virtual std::pair<StrandIndexType, StrandIndexType> GetStrandCount(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual StrandIndexType GetMaxStrands(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const = 0;
    virtual StrandIndexType GetMaxStrands(LPCTSTR strGirderName,pgsTypes::StrandType type) const = 0;
 
-   // Gets the strand area at a poi (deducts the area of debonded strands if bonding has not yet began at the poi)
+   /// Gets the strand area at a poi (deducts the area of debonded strands if bonding has not yet began at the poi)
    virtual Float64 GetStrandArea(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
-
 
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetPjack(const CSegmentKey& segmentKey,bool bIncTemp) const = 0;

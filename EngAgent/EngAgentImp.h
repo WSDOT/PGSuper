@@ -233,9 +233,9 @@ public:
 
    virtual Float64 GetXferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const override;
    virtual Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC, const GDRCONFIG* pConfig=nullptr) const override;
-   virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetDevLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC, const GDRCONFIG* pConfig=nullptr) const override;
+   virtual STRANDDEVLENGTHDETAILS GetDevLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps,Float64 fpe,const GDRCONFIG* pConfig=nullptr) const override;
 
    virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotalForce=true,Float64* pSlope=nullptr,pgsPointOfInterest* pPoi=nullptr,const GDRCONFIG* pConfig=nullptr) const override;

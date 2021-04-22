@@ -1391,21 +1391,21 @@ Float64 CEngAgentImp::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsT
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC, const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC, const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetDevLength(poi,bDebonded,bUHPC,pConfig);
+   return m_PsForceEngineer.GetDevLength(poi,strandType, bDebonded,bUHPC,pConfig);
 }
 
 //-----------------------------------------------------------------------------
-STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi,bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig) const
+STRANDDEVLENGTHDETAILS CEngAgentImp::GetDevLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig) const
 {
-    return m_PsForceEngineer.GetDevLengthDetails(poi,bDebonded,bUHPC,pConfig);
+    return m_PsForceEngineer.GetDevLengthDetails(poi,strandType,bDebonded,bUHPC,pConfig);
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetStrandBondFactor(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,bool bDebonded,const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetDevLengthAdjustment(poi,strandIdx,strandType,pConfig);
+   return m_PsForceEngineer.GetDevLengthAdjustment(poi,strandIdx,strandType,bDebonded,pConfig);
 }
 
 //-----------------------------------------------------------------------------

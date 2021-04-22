@@ -37,6 +37,7 @@ public:
       MomentOfInertia,
       Centroid,
       SectionModulus,
+      AreaPrestress,
       KernPoint,
       StrandEccentricity,
       TendonEccentricity,

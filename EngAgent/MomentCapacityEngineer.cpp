@@ -388,7 +388,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight); // we just want E so it's ok to use Straight
 
    GET_IFACE(IPointOfInterest, pPoi);
    bool bIsOnSegment = pPoi->IsOnSegment(poi);
@@ -409,8 +409,18 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       // otherwise, strands are ignored for negative moment analysis
       if (bIsOnSegment)
       {
+         // The effective prestress does not include a reduction for prestress transfer, however the prestress force does
+         // We need to account for lack of strain in the strand over the transfer length in the analysis
+         // so we will compute the effective prestress as fpe = Ppe/A and then eps as fpe/Ep
          GET_IFACE(IPretensionForce, pPrestressForce);
-         fpe_ps = pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, intervalIdx, pgsTypes::End, pConfig);
+         Float64 Ps = pPrestressForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, pgsTypes::End, pConfig);
+         Float64 Ph = pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, pgsTypes::End, pConfig);
+         Float64 Ppe = Ps + Ph;
+
+         GET_IFACE(IStrandGeometry, pStrandGeom);
+         Float64 Aps = pStrandGeom->GetStrandArea(poi, intervalIdx, pgsTypes::Permanent, pConfig);
+
+         fpe_ps = IsZero(Aps) ? 0.0 : Ppe / Aps;
          eps_initial = fpe_ps / Eps;
       }
    }
@@ -752,7 +762,6 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    Float64 fpt_avg_segment = 0;
    Float64 fpt_avg_girder = 0;
 
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
    const matPsStrand* pSegmentTendon = pMaterial->GetSegmentTendonMaterial(segmentKey);
    const matPsStrand* pGirderTendon = pMaterial->GetGirderTendonMaterial(segmentKey);
 
@@ -804,7 +813,6 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
       if ( 0 < Ns+Nh )
       {
-         Float64 aps = pStrand->GetNominalArea();
          std::array<Float64, 2> Aps = {0,0}; // total area of straight/harped
 
          CComPtr<IStressStrain> ssStrand;
@@ -815,6 +823,10 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             for ( int i = 0; i < 2; i++ ) // straight and harped strands
             {
                pgsTypes::StrandType strandType = (i == 0 ? pgsTypes::Straight : pgsTypes::Harped);
+
+               const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey, strandType);
+               Float64 aps = pStrand->GetNominalArea();
+
                CComPtr<IPoint2dCollection> points;
                if ( pConfig )
                {
@@ -1102,6 +1114,8 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       {
          if ( bPositiveMoment )
          {
+            // we just want grade and type so using Straight is fine
+            const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
             pResistanceFactors->GetFlexuralStrainLimits(pStrand->GetGrade(),pStrand->GetType(),&ecl,&etl);
          }
          else
@@ -1790,8 +1804,9 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 //======================== OPERATIONS =======================================
 void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS) const
 {
+   // just building a strand model with power curve so Straight is fine to get grade and type
    GET_IFACE(IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
 
    StrandGradeType grade = pStrand->GetGrade() == matPsStrand::Gr1725 ? sgtGrade250 : sgtGrade270;
    ProductionMethodType type = pStrand->GetType() == matPsStrand::LowRelaxation ? pmtLowRelaxation : pmtStressRelieved;
@@ -2081,14 +2096,16 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       // strands
       if ( bIsOnSegment || bIsInBoundaryPierDiaphragm )
       {
-         const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-         Float64 aps = pStrand->GetNominalArea();
-         Float64 dps = pStrand->GetNominalDiameter();
          GET_IFACE(IStrandGeometry, pStrandGeom);
          for ( int i = 0; i < 2; i++ ) // straight and harped strands
          {
             StrandIndexType nStrands = (i == 0 ? Ns : Nh);
             pgsTypes::StrandType strandType = (pgsTypes::StrandType)(i);
+          
+            const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey, strandType);
+            Float64 aps = pStrand->GetNominalArea();
+            Float64 dps = pStrand->GetNominalDiameter();
+         
             CComPtr<IPoint2dCollection> points; // strand points are in Girder Section Coordinates
             if ( pConfig )
             {
@@ -3097,7 +3114,7 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetBondFactor(StrandIndexType st
    if ( !m_bNearMidSpan )
    {
       bool bDebonded = IsDebonded(strandIdx,strandType);
-      STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,bDebonded,m_bUHPC, m_pConfig);
+      STRANDDEVLENGTHDETAILS dev_length = m_pPrestressForce->GetDevLengthDetails(m_PoiMidSpan,strandType,bDebonded,m_bUHPC, m_pConfig);
       bond_factor = m_pPrestressForce->GetStrandBondFactor(m_Poi,strandIdx,strandType,dev_length.fps,dev_length.fpe, m_pConfig);
    }
 
@@ -3112,7 +3129,7 @@ bool pgsMomentCapacityEngineer::pgsBondTool::IsDebonded(StrandIndexType strandId
    bool bIsDebonded = pStrandGeom->IsStrandDebonded(segmentKey, strandIdx, strandType, m_pConfig, &Lstart, &Lend);
    if (bIsDebonded)
    {
-      // the strand has debonding, but is it debonded at our location?
+      // the strand has debonding, but is it bonded at our location?
       if (Lstart <= m_DistFromStart && m_DistFromStart <= Lend)
       {
          bIsDebonded = false;

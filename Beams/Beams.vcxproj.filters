@@ -211,6 +211,9 @@
     <ClCompile Include="TxDOTSpreadSlabBeamDistFactorEngineer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EffectivePrestressForceTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\AgeAdjustedMaterial.h">
@@ -469,6 +472,9 @@
       <Filter>IFace</Filter>
     </ClInclude>
     <ClInclude Include="TxDOTSpreadSlabBeamDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectivePrestressForceTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

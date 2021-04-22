@@ -516,6 +516,7 @@
     <ClInclude Include="DeckShrinkageLossTable.h" />
     <ClInclude Include="DistFactorEngineerImpl.h" />
     <ClInclude Include="DoubleTeeFactory.h" />
+    <ClInclude Include="EffectivePrestressForceTable.h" />
     <ClInclude Include="EffectivePrestressTable.h" />
     <ClInclude Include="EffectOfPostTensionedTemporaryStrandsTable.h" />
     <ClInclude Include="ElasticGainDueToDeckPlacementTable.h" />
@@ -667,6 +668,7 @@
     <ClCompile Include="DeckedSlabBeamFactory.cpp" />
     <ClCompile Include="DeckShrinkageLossTable.cpp" />
     <ClCompile Include="DoubleTeeFactory.cpp" />
+    <ClCompile Include="EffectivePrestressForceTable.cpp" />
     <ClCompile Include="EffectivePrestressTable.cpp" />
     <ClCompile Include="EffectOfPostTensionedTemporaryStrandsTable.cpp" />
     <ClCompile Include="ElasticGainDueToDeckPlacementTable.cpp" />

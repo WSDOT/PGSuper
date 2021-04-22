@@ -3116,7 +3116,7 @@ void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* p
 
    // always use half girder length - development length
    GET_IFACE(IPretensionForce, pPrestressForce ); 
-   Float64 dev_len = pPrestressForce->GetDevLength(poi,true,bUHPC); // set debonding to true to get max length
+   Float64 dev_len = pPrestressForce->GetDevLength(poi,pgsTypes::Straight,true,bUHPC); // set debonding to true to get max length
 
    Float64 min_len = gdrlength/2.0 - dev_len;
    *pControl = pgsTypes::mdbDefault;
@@ -3140,7 +3140,7 @@ void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* p
       }
    }
 
-   *pLen = min_len>0.0 ? min_len : 0.0; // don't return less than zero
+   *pLen = 0.0 < min_len ? min_len : 0.0; // don't return less than zero
 }
 
 void CSpecAgentImp::GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey, Float64* pndb, bool* pbUseMinDistance, Float64* pMinDistance) const
@@ -3156,7 +3156,7 @@ Float64 CSpecAgentImp::GetMinDistanceBetweenDebondSections(const CSegmentKey& se
    GetMinDistanceBetweenDebondSections(segmentKey, &ndb, &bMinDist, &minDist);
 
    GET_IFACE(IMaterials, pMaterials);
-   const auto* pStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
+   const auto* pStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight); // only Straight can be debonded
    Float64 db = pStrand->GetNominalDiameter();
    Float64 debond_dist = ndb*db;
    if (bMinDist)
