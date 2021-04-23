@@ -3201,6 +3201,8 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
    harpedStrandMaterial->put_InstallationStage(stressStrandIntervalIdx);
    strandModel->putref_StrandMaterial(Harped, harpedStrandMaterial);
 
+   stressStrandIntervalIdx = GetTemporaryStrandStressingInterval(segmentKey);
+   auto tsRemovalIntervalIdx = m_IntervalManager.GetTemporaryStrandRemovalInterval(segmentKey);
    pStrand = pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary);
    CComPtr<IPrestressingStrand> temporaryStrandMaterial;
    temporaryStrandMaterial.CoCreateInstance(CLSID_PrestressingStrand);
@@ -3209,6 +3211,7 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
    temporaryStrandMaterial->put_Type((StrandMaterialType)pStrand->GetType());
    temporaryStrandMaterial->put_Size((StrandSize)pStrand->GetSize());
    temporaryStrandMaterial->put_InstallationStage(stressStrandIntervalIdx);
+   temporaryStrandMaterial->put_RemovalStage(tsRemovalIntervalIdx);
    strandModel->putref_StrandMaterial(Temporary, temporaryStrandMaterial);
 }
 
