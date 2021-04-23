@@ -1025,9 +1025,13 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    LOG(_T("Strand Area = ") << ::ConvertFromSysUnits(m_aps[pgsTypes::Straight],unitMeasure::Inch2) << _T(" in^2 per strand"));
    LOG(_T("Required area of prestressing = ") << ::ConvertFromSysUnits(Aps,unitMeasure::Inch2) << _T(" in^2"));
 
-#pragma Reminder("WORKING HERE - Mantis 841 - Review this method.... area straight and harped may not be the same")
-   ATLASSERT(IsEqual(m_aps[pgsTypes::Straight],m_aps[pgsTypes::Harped])); // must be the same for this algorithm to work
-   Float64 fN = Aps/m_aps[pgsTypes::Straight];
+   // NOTE: This is a little bit of hack. The original design assumes all strands are the same size. However, straight
+   // and harped strands can now be different sizes. Generally, harped strands will be smaller and carry less force
+   // per strand. Assuming the smaller strand will provided a larger estimate of number of strands and will
+   // thus result in a conservative design. For this reason, the minimum strand area is used to estimate
+   // number of strands required.
+   Float64 aps = Min(m_aps[pgsTypes::Straight],m_aps[pgsTypes::Harped]);
+   Float64 fN = Aps/aps;
    StrandIndexType N = (StrandIndexType)ceil(fN);
    N = Max(N,(StrandIndexType)1); // Must be zero or more strands
 
@@ -2655,7 +2659,6 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
    Float64 Aps = As + Ah + At;
    ATLASSERT(0.0 < Aps);
 
-#pragma Reminder("WORKING HERE - Mantis 841 - Why do we need to compute this here? pStrandGeom should be able to compute in a generic way using the guess configuration")
    Float64 ecc_p1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_p1)/Aps;
    Float64 ecc_m1 = (As*ecc_ss + At*ecc_ts + Ah*ecc_hs_m1)/Aps;
 
@@ -3461,7 +3464,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
 
       const PoiAttributeType attrib_xfer = POI_PSXFER;
 
-      Float64 xfer_length = pPrestress->GetXferLength(m_SegmentKey,pgsTypes::Permanent);
+      // want longest transfer length
+      Float64 xfer_length = Max(pPrestress->GetXferLength(m_SegmentKey, pgsTypes::Straight), pPrestress->GetXferLength(m_SegmentKey, pgsTypes::Harped));
 
       Float64 start_conn = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
       if (xfer_length < start_conn)
@@ -3509,17 +3513,21 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       GET_IFACE(IBridge,pBridge);
       GET_IFACE(IPretensionForce,pPrestress);
 
-      Float64 xfer_length = pPrestress->GetXferLength(m_SegmentKey,pgsTypes::Permanent);
-
       Float64 start_supp = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
       Float64 end_supp   = m_SegmentLength - pBridge->GetSegmentEndEndDistance(m_SegmentKey);
 
       // left and right xfer from ends
-      pgsPointOfInterest lxfer(m_SegmentKey,xfer_length,attrib_xfer);
-      AddPOI(lxfer, start_supp, end_supp);
+      // loop because xfer length can be different if strand sizes are different
+      for (int i = 0; i < 2; i++)
+      {
+         pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+         Float64 xfer_length = pPrestress->GetXferLength(m_SegmentKey, strandType);
+         pgsPointOfInterest lxfer(m_SegmentKey, xfer_length, attrib_xfer);
+         AddPOI(lxfer, start_supp, end_supp);
 
-      pgsPointOfInterest rxfer(m_SegmentKey,m_SegmentLength-xfer_length,attrib_xfer);
-      AddPOI(rxfer, start_supp, end_supp);
+         pgsPointOfInterest rxfer(m_SegmentKey, m_SegmentLength - xfer_length, attrib_xfer);
+         AddPOI(rxfer, start_supp, end_supp);
+      }
 
       if (m_DesignOptions.doDesignForFlexure == dtDesignForDebonding || 
           m_DesignOptions.doDesignForFlexure == dtDesignForDebondingRaised)
@@ -3532,6 +3540,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
          Float64 db_incr = pDebondLimits->GetMinDistanceBetweenDebondSections(m_SegmentKey);
       
          Int16 nincs = (Int16)floor((leftEnd + 1.0e-05)/db_incr); // we know both locs are equidistant from ends
+
+         Float64 xfer_length = pPrestress->GetXferLength(m_SegmentKey, pgsTypes::Straight);
 
          Float64 ldb_loc=0.0;
          Float64 rdb_loc=m_SegmentLength;
@@ -3614,12 +3624,14 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       // This is highly conservative and has caused problems with short span designs, so reduce ld by
       // 15% (rdp - 11/17/2015, after running regression tests)
       // 
-      const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(m_SegmentKey,pgsTypes::Permanent);
-      ATLASSERT(pstrand!=0);
+
+      // straight strands are ok here because we are dealing with debonding, which only happens with straight strands
+      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(m_SegmentKey, pgsTypes::Straight); 
+      ATLASSERT(pStrand != nullptr);
 
       // use US units
-      Float64 db = ::ConvertFromSysUnits(pstrand->GetNominalDiameter(),unitMeasure::Inch);
-      Float64 fpu = ::ConvertFromSysUnits(pstrand->GetUltimateStrength(),unitMeasure::KSI);
+      Float64 db = ::ConvertFromSysUnits(pStrand->GetNominalDiameter(),unitMeasure::Inch);
+      Float64 fpu = ::ConvertFromSysUnits(pStrand->GetUltimateStrength(),unitMeasure::KSI);
 
       Float64 dev_len = fpu*db*4.0/3.0 * 0.85; // 15% reduction is arbitrary, but fixes Mantis 485 and makes better designs.
                                                // More testing may allow more reduction.

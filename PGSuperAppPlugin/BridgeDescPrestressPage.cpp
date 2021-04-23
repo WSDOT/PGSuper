@@ -57,7 +57,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescPrestressPage property page
 
@@ -67,8 +66,6 @@ CGirderDescPrestressPage::CGirderDescPrestressPage() :
 CPropertyPage(CGirderDescPrestressPage::IDD)
 {
 	//{{AFX_DATA_INIT(CGirderDescPrestressPage)
-	m_StrandKey = -1;
-	m_TempStrandKey = -1;
 	//}}AFX_DATA_INIT
 }
 
@@ -83,6 +80,10 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   DDX_Control(pDX, IDC_STRAIGHT_STRAND_SIZE, m_cbStraight);
+   DDX_Control(pDX, IDC_HARPED_STRAND_SIZE, m_cbHarped);
+   DDX_Control(pDX, IDC_TEMP_STRAND_SIZE, m_cbTemporary);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -108,43 +109,52 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       StrandIndexType np;
       if (!pDX->m_bSaveAndValidate)
       {
-         np = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Permanent);
+         ns = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+         nh = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+         np = ns + nh;
       }
 
       DDX_Text(pDX, IDC_NUM_HS, np);
 
-      bool bPjackUserInput = !pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Permanent);
+      if (pDX->m_bSaveAndValidate)
+      {
+         pStrandGeometry->ComputeNumPermanentStrands(np, pParent->m_strGirderName.c_str(), &ns, &nh);
+      }
+
+      ATLASSERT(pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight) == pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped)); // should be the same
+      bool bPjackUserInput = !pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight);
       DDX_Check_Bool(pDX, IDC_HS_JACK, bPjackUserInput);
       if ( pDX->m_bSaveAndValidate )
       {
-         pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Permanent,!bPjackUserInput);
+         pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight,!bPjackUserInput);
+         pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped, !bPjackUserInput);
       }
 
       if (!pDX->m_bSaveAndValidate)
       {
-         Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Permanent);
+         Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Straight) + pParent->m_pSegment->Strands.GetPjack(pgsTypes::Harped);
          DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
       }
       else
       {
          // value is dialog is chopped. recompute to get full precision
-         if (pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Permanent))
+         if (pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight))
          {
-            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Permanent,GetMaxPjack(np, pgsTypes::Permanent));
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight, GetMaxPjack(ns, pgsTypes::Straight));
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Harped, GetMaxPjack(nh, pgsTypes::Harped));
          }
          else
          {
             ATLASSERT(pDX->m_bSaveAndValidate);
             Float64 Pjack;
             DDX_UnitValueAndTag( pDX, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack,   pDisplayUnits->GetGeneralForceUnit() );
-            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Permanent,Pjack);
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight,ns*Pjack/np);
+            pParent->m_pSegment->Strands.SetPjack(pgsTypes::Harped, nh*Pjack/np);
          }
-         Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Permanent);
-         DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, Pjack, GetUltPjack(np, pgsTypes::Permanent ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
+         Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Straight) + pParent->m_pSegment->Strands.GetPjack(pgsTypes::Harped);
+         Float64 PjackMax = GetUltPjack(ns, pgsTypes::Straight) + GetUltPjack(nh, pgsTypes::Harped);
+         DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, Pjack, PjackMax, pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
       }
-
-      // compute number of straight and harped based on num permanent for possible later use below
-      pStrandGeometry->ComputeNumPermanentStrands( np, pParent->m_strGirderName.c_str(), &ns, &nh);
 
       if (pDX->m_bSaveAndValidate)
       {
@@ -576,27 +586,49 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       }
    }
 
-	DDX_CBItemData(pDX, IDC_STRAND_SIZE, m_StrandKey);
-	DDX_CBItemData(pDX, IDC_TEMP_STRAND_SIZE, m_TempStrandKey);
+#if defined _DEBUG
+   if (!pDX->m_bSaveAndValidate && m_CurrStrandDefinitionType == pgsTypes::sdtTotal)
+   {
+      ATLASSERT(m_StrandKey[pgsTypes::Straight] == m_StrandKey[pgsTypes::Harped]); // for total number of strands, straight and harped material have to be the same
+   }
+#endif
+
+	DDX_CBItemData(pDX, IDC_STRAIGHT_STRAND_SIZE, m_StrandKey[pgsTypes::Straight]);
+   DDX_CBItemData(pDX, IDC_HARPED_STRAND_SIZE, m_StrandKey[pgsTypes::Harped]);
+   DDX_CBItemData(pDX, IDC_TEMP_STRAND_SIZE, m_StrandKey[pgsTypes::Temporary]);
 
    if (pDX->m_bSaveAndValidate)
    {
       // strand material
       lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( m_StrandKey ));
-      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( m_StrandKey ));
+      const matPsStrand* pStraightStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Straight]);
+      const matPsStrand* pHarpedStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Harped]);
+      const matPsStrand* pTemporaryStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Temporary]);
+      if (!pPool->CompareStrands(pStraightStrand, pHarpedStrand) || !pPool->CompareStrands(pStraightStrand, pTemporaryStrand))
+      {
+         pDX->PrepareCtrl(IDC_STRAIGHT_STRAND_SIZE);
+         AfxMessageBox(_T("Strands must all be of the same Grade (250 or 270) and Type (low relaxation or stress relieved)"));
+         pDX->Fail();
+      }
 
-      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( m_TempStrandKey ));
+      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pStraightStrand);
+      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pHarpedStrand);
+      pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pTemporaryStrand);
 
       if ( m_CurrStrandDefinitionType == pgsTypes::sdtTotal )
       {
          // Update Pjack for individual strand types
-         StrandIndexType nPermStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Permanent);
+         m_StrandKey[pgsTypes::Harped] = m_StrandKey[pgsTypes::Straight]; // for total number of strands, straight and harped material have to be the same
+         pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped, pPool->GetStrand(m_StrandKey[pgsTypes::Harped]));
+
+         StrandIndexType nStraightStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
+         StrandIndexType nHarpedStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
+         StrandIndexType nPermStrands = nStraightStrands + nHarpedStrands;
          if ( 0 < nPermStrands )
          {
-            StrandIndexType nStraightStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Straight);
-            StrandIndexType nHarpedStrands = pParent->m_pSegment->Strands.GetStrandCount(pgsTypes::Harped);
-            Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Permanent);
+            Float64 PjackStraight = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Straight);
+            Float64 PjackHarped = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Harped);
+            Float64 Pjack = PjackStraight + PjackHarped;
             pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight,Pjack*nStraightStrands/nPermStrands);
             pParent->m_pSegment->Strands.SetPjack(pgsTypes::Harped,Pjack*nHarpedStrands/nPermStrands);
          }
@@ -619,8 +651,9 @@ BEGIN_MESSAGE_MAP(CGirderDescPrestressPage, CPropertyPage)
 	ON_WM_CTLCOLOR()
 	ON_CBN_DROPDOWN(IDC_HP_COMBO_HP, OnDropdownHpComboHp)
 	ON_CBN_DROPDOWN(IDC_HP_COMBO_END, OnDropdownHpComboEnd)
-	ON_CBN_SELCHANGE(IDC_STRAND_SIZE, OnStrandTypeChanged)
-	ON_CBN_SELCHANGE(IDC_TEMP_STRAND_SIZE, OnTempStrandTypeChanged)
+	ON_CBN_SELCHANGE(IDC_STRAIGHT_STRAND_SIZE, OnStraightStrandTypeChanged)
+   ON_CBN_SELCHANGE(IDC_HARPED_STRAND_SIZE, OnHarpedStrandTypeChanged)
+   ON_CBN_SELCHANGE(IDC_TEMP_STRAND_SIZE, OnTempStrandTypeChanged)
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
 	//}}AFX_MSG_MAP
    ON_BN_CLICKED(IDC_EDIT_STRAND_FILL, &CGirderDescPrestressPage::OnBnClickedEditStrandFill)
@@ -678,15 +711,19 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
    // Select the strand size
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   m_StrandKey     = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight)); // straight and harped use the same strand type
-   m_TempStrandKey = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
+   for (int i = 0; i < 3; i++)
+   {
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      m_StrandKey[strandType] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(strandType));
+   }
 
-   if ( sysFlags<Int32>::IsSet(m_StrandKey,matPsStrand::GritEpoxy) )
+   if ( sysFlags<Int32>::IsSet(m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy) ) // straight and harped share epoxy coated settings
    {
       CheckDlgButton(IDC_EPOXY,BST_CHECKED);
    }
 
-   UpdateStrandList(IDC_STRAND_SIZE);
+   UpdateStrandList(IDC_STRAIGHT_STRAND_SIZE);
+   UpdateStrandList(IDC_HARPED_STRAND_SIZE);
    UpdateStrandList(IDC_TEMP_STRAND_SIZE);
 
    // All this work has to be done before CPropertyPage::OnInitDialog().
@@ -769,6 +806,8 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
       ShowEndOffsetControls(FALSE);
       ShowHpOffsetControls(FALSE);
    }
+
+   UpdateStrandTypes();
 
    return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
@@ -1077,7 +1116,13 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
             strandType = pgsTypes::Harped;
             if (m_CurrStrandDefinitionType == pgsTypes::sdtTotal)
             {
-               Pjack = GetMaxPjack(nStrands,pgsTypes::Permanent);
+               CComPtr<IBroker> pBroker;
+               EAFGetBroker(&pBroker);
+               GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+
+               StrandIndexType nStraight, nHarped;
+               pStrandGeometry->ComputeNumPermanentStrands(nStrands, pParent->m_strGirderName.c_str(), &nStraight, &nHarped);
+               Pjack = GetMaxPjack(nStraight,pgsTypes::Straight) + GetMaxPjack(nHarped,pgsTypes::Harped);
             }
             else
             {
@@ -1137,12 +1182,6 @@ Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, IPretensionForce, pPSForce );
 
-   if ( strandType == pgsTypes::Permanent )
-   {
-      strandType = pgsTypes::Straight;
-   }
-
-
    // TRICK CODE
    // If strand stresses are limited immediate prior to transfer, prestress losses must be computed between jacking and prestress transfer in 
    // order to compute PjackMax. Losses are computed from transfer to final in one shot. The side of effect of this is that a bridge analysis
@@ -1180,11 +1219,6 @@ Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
 
 Float64 CGirderDescPrestressPage::GetUltPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   if ( strandType == pgsTypes::Permanent )
-   {
-      strandType = pgsTypes::Straight;
-   }
-
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    const matPsStrand* pStrand = pParent->m_pSegment->Strands.GetStrandMaterial(strandType);
 
@@ -1231,7 +1265,7 @@ void CGirderDescPrestressPage::UpdateStrandControls()
    // harped/straight or permanent strands
    if (m_CurrStrandDefinitionType == pgsTypes::sdtTotal)
    {
-      nStrandsMax = pStrandGeom->GetMaxStrands(pParent->m_strGirderName.c_str(), pgsTypes::Permanent);
+      nStrandsMax = pStrandGeom->GetMaxStrands(pParent->m_strGirderName.c_str(), pgsTypes::Straight) + pStrandGeom->GetMaxStrands(pParent->m_strGirderName.c_str(), pgsTypes::Harped);
 
       pSpin = (CSpinButtonCtrl*)GetDlgItem( IDC_NUM_HS_SPIN );
       uda;
@@ -2665,8 +2699,25 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
       ShowEndOffsetControls(TRUE);
       ShowHpOffsetControls(TRUE);
    }
+
+   UpdateStrandTypes();
 }
 
+void CGirderDescPrestressPage::UpdateStrandTypes()
+{
+   if (m_CurrStrandDefinitionType == pgsTypes::sdtTotal)
+   {
+      GetDlgItem(IDC_STRAIGHT_STRAND_LABEL)->SetWindowText(_T("Permanent Strands"));
+      GetDlgItem(IDC_HARPED_STRAND_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_HARPED_STRAND_SIZE)->ShowWindow(SW_HIDE);
+   }
+   else
+   {
+      GetDlgItem(IDC_STRAIGHT_STRAND_LABEL)->SetWindowText(_T("Straight Strands"));
+      GetDlgItem(IDC_HARPED_STRAND_LABEL)->ShowWindow(SW_SHOW);
+      GetDlgItem(IDC_HARPED_STRAND_SIZE)->ShowWindow(SW_SHOW);
+   }
+}
 
 void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits) 
 {
@@ -2730,7 +2781,8 @@ void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight
 
    pbut->SetCheck( user_input ? 0 : 1);
 
-   pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Permanent, !user_input);
+   pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight, !user_input);
+   pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped, !user_input);
 
    if (user_input)
    {
@@ -2765,10 +2817,11 @@ void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight
          jack_harped = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       }
 
-      pParent->m_pSegment->Strands.SetPjack(pgsTypes::Permanent, jack_straight + jack_harped);
+      pParent->m_pSegment->Strands.SetPjack(pgsTypes::Straight, jack_straight);
+      pParent->m_pSegment->Strands.SetPjack(pgsTypes::Harped, jack_harped);
 
       CDataExchange dx(this,FALSE);
-      Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Permanent);
+      Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Straight) + pParent->m_pSegment->Strands.GetPjack(pgsTypes::Harped);
       DDX_UnitValueAndTag( &dx, IDC_HS_JACK_FORCE, IDC_HS_JACK_FORCE_UNIT, Pjack, pDisplayUnits->GetGeneralForceUnit() );
    }
 }
@@ -2789,12 +2842,17 @@ void CGirderDescPrestressPage::OnDropdownHpComboEnd()
 
 void CGirderDescPrestressPage::OnEpoxyChanged()
 {
-   sysFlags<Int32>::Clear(&m_StrandKey,matPsStrand::None);
-   sysFlags<Int32>::Clear(&m_StrandKey,matPsStrand::GritEpoxy);
-   sysFlags<Int32>::Set(&m_StrandKey,IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
+   // straight and harped always have the same epoxy setting
+   sysFlags<Int32>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::None);
+   sysFlags<Int32>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy);
+   sysFlags<Int32>::Set(&m_StrandKey[pgsTypes::Straight],IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
 
-   UpdateStrandList(IDC_STRAND_SIZE);
+   sysFlags<Int32>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::None);
+   sysFlags<Int32>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::GritEpoxy);
+   sysFlags<Int32>::Set(&m_StrandKey[pgsTypes::Harped], IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
 
+   UpdateStrandList(IDC_STRAIGHT_STRAND_SIZE);
+   UpdateStrandList(IDC_HARPED_STRAND_SIZE);
 }
 
 void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
@@ -2810,7 +2868,7 @@ void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
    sysFlags<Int32>::Clear(&cur_key,matPsStrand::GritEpoxy);
 
    BOOL bIsEpoxy = FALSE;
-   if ( nIDC == IDC_STRAND_SIZE )
+   if ( nIDC == IDC_STRAIGHT_STRAND_SIZE || nIDC == IDC_HARPED_STRAND_SIZE)
    {
       bIsEpoxy = IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? TRUE : FALSE;
    }
@@ -2859,38 +2917,35 @@ void CGirderDescPrestressPage::UpdateStrandList(UINT nIDC)
    }
 }
 
-void CGirderDescPrestressPage::OnStrandTypeChanged() 
+void CGirderDescPrestressPage::OnStrandTypeChanged(int nIDC,pgsTypes::StrandType strandType)
 {
    // Very tricky code here - Update the strand material in order to compute new jacking forces
    // Strand material comes out of the strand pool
-   CComboBox* pList = (CComboBox*)GetDlgItem( IDC_STRAND_SIZE );
+   CComboBox* pList = (CComboBox*)GetDlgItem(nIDC);
    int curSel = pList->GetCurSel();
-   m_StrandKey = (Int32)pList->GetItemData(curSel);
+   m_StrandKey[strandType] = (Int32)pList->GetItemData(curSel);
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand( m_StrandKey ));
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,   pPool->GetStrand( m_StrandKey ));
+   pParent->m_pSegment->Strands.SetStrandMaterial(strandType, pPool->GetStrand(m_StrandKey[strandType]));
 
    // Now we can update pjack values in dialog
    UpdatePjackEdits();
 }
 
+void CGirderDescPrestressPage::OnStraightStrandTypeChanged()
+{
+   OnStrandTypeChanged(IDC_STRAIGHT_STRAND_SIZE, pgsTypes::Straight);
+}
+
+void CGirderDescPrestressPage::OnHarpedStrandTypeChanged()
+{
+   OnStrandTypeChanged(IDC_HARPED_STRAND_SIZE, pgsTypes::Harped);
+}
+
 void CGirderDescPrestressPage::OnTempStrandTypeChanged() 
 {
-   // Very tricky code here - Update the strand material in order to compute new jacking forces
-   // Strand material comes out of the strand pool
-   CComboBox* pList = (CComboBox*)GetDlgItem( IDC_TEMP_STRAND_SIZE );
-   int curSel = pList->GetCurSel();
-   m_TempStrandKey = (Int32)pList->GetItemData(curSel);
-
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand( m_TempStrandKey ));
-
-   // Now we can update pjack values in dialog
-   UpdatePjackEdits();
+   OnStrandTypeChanged(IDC_TEMP_STRAND_SIZE, pgsTypes::Temporary);
 }
 
 BOOL CGirderDescPrestressPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
@@ -3006,20 +3061,6 @@ void CGirderDescPrestressPage::EditDirectSelect()
    {
       UpdateData(FALSE);
 
-      //// put harped strand offsets into controls
-      //CDataExchange DX(this, FALSE);
-      //if (m_AllowEndAdjustment)
-      //{
-      //   Float64 offset = pParent->m_pSegment->Strands.HpOffsetAtEnd;
-      //   DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_END, IDC_HPOFFSET_END_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
-      //}
-
-      //if (m_AllowHpAdjustment)
-      //{
-      //   Float64 offset = pParent->m_pSegment->Strands.HpOffsetAtHp;
-      //   DDX_UnitValueAndTag( &DX, IDC_HPOFFSET_HP, IDC_HPOFFSET_HP_UNIT, offset, pDisplayUnits->GetComponentDimUnit() );
-      //}
-
       // update pjack and display elements
       ShowHideNumStrandControls(m_CurrStrandDefinitionType);
       UpdatePjackEdits();
@@ -3037,9 +3078,9 @@ void CGirderDescPrestressPage::EditDirectRowInput()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,pPool->GetStrand(m_StrandKey));
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,pPool->GetStrand(m_StrandKey));
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,pPool->GetStrand(m_TempStrandKey));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,pPool->GetStrand(m_StrandKey[pgsTypes::Straight]));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,pPool->GetStrand(m_StrandKey[pgsTypes::Harped]));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,pPool->GetStrand(m_StrandKey[pgsTypes::Temporary]));
 
    CPropertySheet dlg(_T("Define Strand Rows"),this);
    dlg.m_psh.dwFlags |= PSH_NOAPPLYNOW;
@@ -3048,12 +3089,14 @@ void CGirderDescPrestressPage::EditDirectRowInput()
    dlg.AddPage(&page);
    if ( dlg.DoModal() == IDOK )
    {
-      m_StrandKey     = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
-      m_TempStrandKey = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
+      m_StrandKey[pgsTypes::Straight] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
+      m_StrandKey[pgsTypes::Harped] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Harped));
+      m_StrandKey[pgsTypes::Temporary] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
 
-      CheckDlgButton(IDC_EPOXY,sysFlags<Int32>::IsSet(m_StrandKey,matPsStrand::GritEpoxy) ? BST_CHECKED : BST_UNCHECKED);
+      CheckDlgButton(IDC_EPOXY,sysFlags<Int32>::IsSet(m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy) ? BST_CHECKED : BST_UNCHECKED);
 
-      UpdateStrandList(IDC_STRAND_SIZE);
+      UpdateStrandList(IDC_STRAIGHT_STRAND_SIZE);
+      UpdateStrandList(IDC_HARPED_STRAND_SIZE);
 
       UpdateData(FALSE);
       ShowHideNumStrandControls(m_CurrStrandDefinitionType);
@@ -3071,9 +3114,9 @@ void CGirderDescPrestressPage::EditDirectStrandInput()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand(m_StrandKey));
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped, pPool->GetStrand(m_StrandKey));
-   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand(m_TempStrandKey));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Straight, pPool->GetStrand(m_StrandKey[pgsTypes::Straight]));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Harped, pPool->GetStrand(m_StrandKey[pgsTypes::Harped]));
+   pParent->m_pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary, pPool->GetStrand(m_StrandKey[pgsTypes::Temporary]));
 
    CPropertySheet dlg(_T("Define Individual Strands"), this);
    dlg.m_psh.dwFlags |= PSH_NOAPPLYNOW;
@@ -3082,12 +3125,14 @@ void CGirderDescPrestressPage::EditDirectStrandInput()
    dlg.AddPage(&page);
    if (dlg.DoModal() == IDOK)
    {
-      m_StrandKey = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
-      m_TempStrandKey = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
+      m_StrandKey[pgsTypes::Straight] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Straight));
+      m_StrandKey[pgsTypes::Harped] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Harped));
+      m_StrandKey[pgsTypes::Temporary] = pPool->GetStrandKey(pParent->m_pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary));
 
-      CheckDlgButton(IDC_EPOXY, sysFlags<Int32>::IsSet(m_StrandKey, matPsStrand::GritEpoxy) ? BST_CHECKED : BST_UNCHECKED);
+      CheckDlgButton(IDC_EPOXY, sysFlags<Int32>::IsSet(m_StrandKey[pgsTypes::Straight], matPsStrand::GritEpoxy) ? BST_CHECKED : BST_UNCHECKED);
 
-      UpdateStrandList(IDC_STRAND_SIZE);
+      UpdateStrandList(IDC_STRAIGHT_STRAND_SIZE);
+      UpdateStrandList(IDC_HARPED_STRAND_SIZE);
 
       UpdateData(FALSE);
       ShowHideNumStrandControls(m_CurrStrandDefinitionType);

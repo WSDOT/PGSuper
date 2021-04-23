@@ -184,14 +184,16 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             *pPara << rptNewLine;
 
-            *pPara << _T("Prestress Transfer Length (Permanent) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Permanent) ) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Straight) = ") << len.SetValue(pPrestressForce->GetXferLength(thisSegmentKey, pgsTypes::Straight)) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Harped) = ") << len.SetValue(pPrestressForce->GetXferLength(thisSegmentKey, pgsTypes::Harped)) << rptNewLine;
             *pPara << _T("Prestress Transfer Length (Temporary) = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Temporary) ) << rptNewLine;
          }
          else
          {
             *pPara << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Permanent) )<< rptNewLine;
             *pPara << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue( pStrandGeom->GetPjack(thisSegmentKey,false)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length = ") << len.SetValue( pPrestressForce->GetXferLength(thisSegmentKey,pgsTypes::Permanent) ) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Straight) = ") << len.SetValue(pPrestressForce->GetXferLength(thisSegmentKey, pgsTypes::Straight)) << rptNewLine;
+            *pPara << _T("Prestress Transfer Length (Harped) = ") << len.SetValue(pPrestressForce->GetXferLength(thisSegmentKey, pgsTypes::Harped)) << rptNewLine;
          }
 
          // Write out strand forces and stresses at the various stages of prestress loss

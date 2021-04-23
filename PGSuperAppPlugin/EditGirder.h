@@ -53,7 +53,7 @@ struct txnEditGirderData
    Float64 m_AssumedExcessCamber;
 
    pgsTypes::BearingType m_BearingType; // 
-   CBearingData2 m_BearingData[2];  // index is pgsTypes::MemberEndType
+   std::array<CBearingData2, 2> m_BearingData;  // index is pgsTypes::MemberEndType
 };
 
 class txnEditGirder : public txnTransaction

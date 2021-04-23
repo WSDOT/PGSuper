@@ -59,7 +59,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 
    GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Eci = pMaterials->GetSegmentEc(segmentKey,releaseIntervalIdx);
-   Float64 Epp = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent)->GetE();
+   Float64 Epp = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(); // OK to use Straight since we just want E
    Float64 Ept = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE();
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());

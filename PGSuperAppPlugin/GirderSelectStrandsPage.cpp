@@ -1456,9 +1456,6 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    EAFGetBroker(&pBroker);
    GET_IFACE2( pBroker, IPretensionForce, pPSForce );
 
-   if ( strandType == pgsTypes::Permanent )
-      strandType = pgsTypes::Straight;
-
 
    // TRICK CODE
    // If strand stresses are limited immediate prior to transfer, prestress losses must be computed between jacking and prestress transfer in 
@@ -1496,9 +1493,6 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
 
 Float64 CGirderSelectStrandsPage::GetUltPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   if ( strandType == pgsTypes::Permanent )
-      strandType = pgsTypes::Straight;
-
    const matPsStrand* pStrand = m_pStrands->GetStrandMaterial(strandType);
 
    // Ultimate strength of strand group

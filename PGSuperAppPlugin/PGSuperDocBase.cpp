@@ -213,20 +213,20 @@ static bool DoesFileExist(const CString& filname);
 
 #pragma Reminder("UPDATE: UpdatePrestressForce should be part of the strand editing dialogs")
 // Function to update prestress force after editing strands
-static void UpdatePrestressForce(pgsTypes::StrandType type, const CSegmentKey& segmentKey,
+static void UpdatePrestressForce(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, 
                                  CPrecastSegmentData& newSegmentData,const CPrecastSegmentData& oldSegmentData, 
                                  IPretensionForce* pPrestress)
 {
 
       // If going from no strands - always compute pjack automatically
-      if(newSegmentData.Strands.IsPjackCalculated(type) ||
-         (0 == oldSegmentData.Strands.GetStrandCount(type) &&
-          0 < newSegmentData.Strands.GetStrandCount(type)))
+      if(newSegmentData.Strands.IsPjackCalculated(strandType) ||
+         (0 == oldSegmentData.Strands.GetStrandCount(strandType) &&
+          0 < newSegmentData.Strands.GetStrandCount(strandType)))
       {
-         newSegmentData.Strands.IsPjackCalculated(type,true);
-         newSegmentData.Strands.SetPjack(type, pPrestress->GetPjackMax(segmentKey, 
-                                                                 *(newSegmentData.Strands.GetStrandMaterial(type)),
-                                                                 newSegmentData.Strands.GetStrandCount(type)));
+         newSegmentData.Strands.IsPjackCalculated(strandType,true);
+         newSegmentData.Strands.SetPjack(strandType, pPrestress->GetPjackMax(segmentKey, 
+                                                                 *(newSegmentData.Strands.GetStrandMaterial(strandType)),
+                                                                 newSegmentData.Strands.GetStrandCount(strandType)));
       }
 }
 
@@ -766,9 +766,9 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
       GET_IFACE(IPretensionForce, pPrestress );
 
-      UpdatePrestressForce(pgsTypes::Straight,  segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Harped,    segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Temporary, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Straight,  newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Harped,    newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Temporary, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
 
       // Fire our transaction
       txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey,newSegmentData);
@@ -842,9 +842,9 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
       GET_IFACE(IPretensionForce, pPrestress );
 
-      UpdatePrestressForce(pgsTypes::Straight,  segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Harped,    segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Temporary, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Straight,  newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Harped,    newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Temporary, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
 
       // Fire our transaction
       txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey,newSegmentData);
@@ -918,9 +918,9 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
       GET_IFACE(IPretensionForce, pPrestress);
 
-      UpdatePrestressForce(pgsTypes::Straight, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Harped, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
-      UpdatePrestressForce(pgsTypes::Temporary, segmentKey, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Straight, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Harped, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
+      UpdatePrestressForce(segmentKey, pgsTypes::Temporary, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
 
       // Fire our transaction
       txnEditPrecastSegment* pTxn = new txnEditPrecastSegment(segmentKey, newSegmentData);

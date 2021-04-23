@@ -52,7 +52,7 @@ static Float64 STRESS_TOLERANCE = ::ConvertToSysUnits(1.0,unitMeasure::PSI);
 //======================== LIFECYCLE  =======================================
 pgsStrandStressArtifact::pgsStrandStressArtifact()
 {
-   for ( Int16 i = 0; i < 4; i++ ) // strand type
+   for ( Int16 i = 0; i < 3; i++ ) // strand type
    {
       for ( Int16 j = 0; j < 4; j++ ) // stress stage (at jacking, befer xfer, etc)
       {
@@ -100,6 +100,7 @@ pgsPointOfInterest pgsStrandStressArtifact::GetPointOfInterest() const
 
 void pgsStrandStressArtifact::SetCheckAtJacking(pgsTypes::StrandType strandType,Float64 demand,Float64 capacity)
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    m_Stress[strandType][JACKING][DEMAND]   = demand;
    m_Stress[strandType][JACKING][CAPACITY] = capacity;
    m_bIsApplicable[strandType][JACKING]    = true;
@@ -107,6 +108,7 @@ void pgsStrandStressArtifact::SetCheckAtJacking(pgsTypes::StrandType strandType,
 
 void pgsStrandStressArtifact::SetCheckBeforeXfer(pgsTypes::StrandType strandType,Float64 demand,Float64 capacity)
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    m_Stress[strandType][BEFORE_XFER][DEMAND]   = demand;
    m_Stress[strandType][BEFORE_XFER][CAPACITY] = capacity;
    m_bIsApplicable[strandType][BEFORE_XFER]    = true;
@@ -114,6 +116,7 @@ void pgsStrandStressArtifact::SetCheckBeforeXfer(pgsTypes::StrandType strandType
 
 void pgsStrandStressArtifact::SetCheckAfterXfer(pgsTypes::StrandType strandType,Float64 demand,Float64 capacity)
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    m_Stress[strandType][AFTER_XFER][DEMAND]   = demand;
    m_Stress[strandType][AFTER_XFER][CAPACITY] = capacity;
    m_bIsApplicable[strandType][AFTER_XFER]    = true;
@@ -121,6 +124,7 @@ void pgsStrandStressArtifact::SetCheckAfterXfer(pgsTypes::StrandType strandType,
 
 void pgsStrandStressArtifact::SetCheckAfterLosses(pgsTypes::StrandType strandType,Float64 demand,Float64 capacity)
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    m_Stress[strandType][AFTER_LOSSES][DEMAND]   = demand;
    m_Stress[strandType][AFTER_LOSSES][CAPACITY] = capacity;
    m_bIsApplicable[strandType][AFTER_LOSSES]    = true;
@@ -128,6 +132,7 @@ void pgsStrandStressArtifact::SetCheckAfterLosses(pgsTypes::StrandType strandTyp
 
 void pgsStrandStressArtifact::GetCheckAtJacking(pgsTypes::StrandType strandType,Float64* pDemand,Float64* pCapacity,bool* pbPassed) const
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    *pDemand   = m_Stress[strandType][JACKING][DEMAND];
    *pCapacity = m_Stress[strandType][JACKING][CAPACITY];
    *pbPassed = IsGE(*pDemand,*pCapacity,STRESS_TOLERANCE);
@@ -135,6 +140,7 @@ void pgsStrandStressArtifact::GetCheckAtJacking(pgsTypes::StrandType strandType,
 
 void pgsStrandStressArtifact::GetCheckBeforeXfer(pgsTypes::StrandType strandType,Float64* pDemand,Float64* pCapacity,bool* pbPassed) const
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    *pDemand   = m_Stress[strandType][BEFORE_XFER][DEMAND];
    *pCapacity = m_Stress[strandType][BEFORE_XFER][CAPACITY];
    *pbPassed = IsGE(*pDemand,*pCapacity,STRESS_TOLERANCE);
@@ -142,6 +148,7 @@ void pgsStrandStressArtifact::GetCheckBeforeXfer(pgsTypes::StrandType strandType
 
 void pgsStrandStressArtifact::GetCheckAfterXfer(pgsTypes::StrandType strandType,Float64* pDemand,Float64* pCapacity,bool* pbPassed) const
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    *pDemand   = m_Stress[strandType][AFTER_XFER][DEMAND];
    *pCapacity = m_Stress[strandType][AFTER_XFER][CAPACITY];
    *pbPassed = IsGE(*pDemand,*pCapacity,STRESS_TOLERANCE);
@@ -149,6 +156,7 @@ void pgsStrandStressArtifact::GetCheckAfterXfer(pgsTypes::StrandType strandType,
 
 void pgsStrandStressArtifact::GetCheckAfterLosses(pgsTypes::StrandType strandType,Float64* pDemand,Float64* pCapacity,bool* pbPassed) const
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    *pDemand   = m_Stress[strandType][AFTER_LOSSES][DEMAND];
    *pCapacity = m_Stress[strandType][AFTER_LOSSES][CAPACITY];
    *pbPassed = IsGE(*pDemand,*pCapacity,STRESS_TOLERANCE);
@@ -158,26 +166,31 @@ void pgsStrandStressArtifact::GetCheckAfterLosses(pgsTypes::StrandType strandTyp
 
 bool pgsStrandStressArtifact::IsCheckAtJackingApplicable(pgsTypes::StrandType strandType) const
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    return m_bIsApplicable[strandType][JACKING];
 }
 
 bool pgsStrandStressArtifact::IsCheckBeforeXferApplicable(pgsTypes::StrandType strandType) const
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    return m_bIsApplicable[strandType][BEFORE_XFER];
 }
 
 bool pgsStrandStressArtifact::IsCheckAfterXferApplicable(pgsTypes::StrandType strandType) const
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    return m_bIsApplicable[strandType][AFTER_XFER];
 }
 
 bool pgsStrandStressArtifact::IsCheckAfterLossesApplicable(pgsTypes::StrandType strandType) const
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    return m_bIsApplicable[strandType][AFTER_LOSSES];
 }
 
 bool pgsStrandStressArtifact::Passed(pgsTypes::StrandType strandType) const
 {
+   ATLASSERT(strandType != pgsTypes::Permanent);
    Float64 cap,demand;
    bool bPassed;
 
@@ -222,7 +235,7 @@ bool pgsStrandStressArtifact::Passed(pgsTypes::StrandType strandType) const
 
 bool pgsStrandStressArtifact::Passed() const
 {
-   for ( Int16 i = 0; i < 4; i++ )
+   for ( Int16 i = 0; i < 3; i++ )
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
       if (!Passed(strandType))
@@ -241,7 +254,7 @@ bool pgsStrandStressArtifact::Passed() const
 //======================== OPERATIONS =======================================
 void pgsStrandStressArtifact::MakeCopy(const pgsStrandStressArtifact& rOther)
 {
-   for ( Int16 i = 0; i < 4; i++ ) // strand type
+   for ( Int16 i = 0; i < 3; i++ ) // strand type
    {
       for ( Int16 j = 0; j < 4; j++ ) // stress stage (at jacking, befer xfer, etc)
       {

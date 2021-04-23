@@ -1951,16 +1951,7 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
    GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   std::vector<pgsTypes::StrandType> strandTypes;
-   if ( pStrands->GetStrandDefinitionType() == pgsTypes::sdtTotal )
-   {
-      strandTypes.push_back(pgsTypes::Permanent);
-   }
-   else
-   {
-      strandTypes.push_back(pgsTypes::Straight);
-      strandTypes.push_back(pgsTypes::Harped);
-   }
+   std::vector<pgsTypes::StrandType> strandTypes{ pgsTypes::Straight, pgsTypes::Harped };
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
@@ -4085,12 +4076,12 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    // NOTE: fps (see below) from the moment capacity analysis already accounts for a reduction
    //       in strand effectiveness based on lack of development. DO NOT ADJUST THE AREA OF PRESTRESS
    //       HERE TO ACCOUNT FOR THE SAME TIME...
-   Float64 aps,aptSegment,aptGirder;
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   Float64 aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi, dlaNone, pConfig) : pStrandGeom->GetApsTopHalf(poi, dlaNone, pConfig));
+   
+   Float64 aptSegment,aptGirder;
    if ( pConfig == nullptr)
    {
-      GET_IFACE(IStrandGeometry,pStrandGeometry);
-      aps = (scd.bTensionBottom ? pStrandGeometry->GetApsBottomHalf(poi,dlaNone) : pStrandGeometry->GetApsTopHalf(poi,dlaNone));
-
       GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
       aptSegment = (scd.bTensionBottom ? pSegmentTendonGeometry->GetSegmentAptBottomHalf(poi) : pSegmentTendonGeometry->GetSegmentAptTopHalf(poi));
 
@@ -4099,8 +4090,6 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
    }
    else
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
-      aps = (scd.bTensionBottom ? pStrandGeom->GetApsBottomHalf(poi,dlaNone,pConfig) : pStrandGeom->GetApsTopHalf(poi,dlaNone,pConfig));
       aptSegment = 0; // no pt for design (design is only for PGSuper)
       aptGirder  = 0; // no pt for design (design is only for PGSuper)
    }
@@ -5065,7 +5054,8 @@ void pgsDesigner2::CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlope
    pSpecEntry->GetMaxStrandSlope(&bCheck,&bDesign,&s50,&s60,&s70);
    pArtifact->IsApplicable( bCheck );
 
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   // we are looking for strand diameter for harped strand slope so use Harped here
+   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Harped);
    Float64 capacity;
    Float64 demand;
 
@@ -8929,7 +8919,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
       {
          LOG(_T("However, Final Was Also Increased to ") << ::ConvertFromSysUnits(fc_new,unitMeasure::KSI) << _T(" KSI") );
          LOG(_T("Restart design with new strengths"));
-         m_DesignerOutcome.SetOutcome(fc_new> fc_old ? pgsDesignCodes::FcIncreased : pgsDesignCodes::FcDecreased);
+         m_DesignerOutcome.SetOutcome(fc_old < fc_new ? pgsDesignCodes::FcIncreased : pgsDesignCodes::FcDecreased);
       }
    } // end else - phase 2 design
 
@@ -8939,16 +8929,16 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
 
 void pgsDesigner2::GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const stbLiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc) const
 {
-   GET_IFACE(IPretensionForce,pPrestressForce);
-   Float64 XferLength =  pPrestressForce->GetXferLength(segmentKey,pgsTypes::Permanent);
-
-   GET_IFACE(IBridge,pBridge);
-   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
-
    ATLASSERT(0 < liftingResults.vSectionResults.size());
 
    // look at lifting locations and transfer lengths
    // Largest of overhang or transfer will control. (from sensitivity study and until proven wrong)
+   GET_IFACE(IPretensionForce,pPrestressForce);
+   Float64 XferLength = Max(pPrestressForce->GetXferLength(segmentKey, pgsTypes::Straight), pPrestressForce->GetXferLength(segmentKey, pgsTypes::Harped));
+
+   GET_IFACE(IBridge,pBridge);
+   Float64 Lg = pBridge->GetSegmentLength(segmentKey);
+
    Float64 left_loc  = Max(XferLength,liftConfig.LeftOverhang);
    Float64 right_loc = Min(Lg - XferLength,Lg - liftConfig.RightOverhang);
 

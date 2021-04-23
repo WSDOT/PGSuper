@@ -299,7 +299,6 @@
 #define IDC_RELEASE_TENSION_MAX_UNIT    1102
 #define IDC_TENSION_MAX_UNIT            1102
 #define IDD_PIER_LAYOUT                 1112
-#define IDC_STRAND_SIZE                 1112
 #define IDC_FINAL                       1112
 #define IDC_TEMP_STRAND_SIZE            1113
 #define IDC_BEFORE_TEMP_STRAND_REMOVAL  1113
@@ -1413,6 +1412,10 @@
 #define IDC_CLOSURE_JOINT_LABEL         2029
 #define IDC_COMBO2                      2030
 #define IDC_CLOSURE_JOINT_CASTING_REGION 2030
+#define IDC_STRAIGHT_STRAND_SIZE        2031
+#define IDC_HARPED_STRAND_SIZE          2032
+#define IDC_STRAIGHT_STRAND_LABEL       2033
+#define IDC_HARPED_STRAND_LABEL         2034
 #define IDC_COMPREP                     2031
 #define IDC_FROM_PIER                   2032
 #define IDC_TO_PIER                     2033
@@ -1596,8 +1599,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        406
-#define _APS_NEXT_COMMAND_VALUE         37020
-#define _APS_NEXT_CONTROL_VALUE         2034
+#define _APS_NEXT_COMMAND_VALUE         37004
+#define _APS_NEXT_CONTROL_VALUE         2035
 #define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

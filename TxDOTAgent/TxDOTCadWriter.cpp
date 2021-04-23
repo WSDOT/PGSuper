@@ -180,7 +180,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    rDataExporter.WriteIntToCell(1, _T("NStot"), m_RowNum, strandNum);
 
 	// STRAND SIZE
-   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 value = strandMatP->GetNominalDiameter();
    value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
    std::_tstring strandSize = FractionalStrandSize (value); // Convert value to fraction representation

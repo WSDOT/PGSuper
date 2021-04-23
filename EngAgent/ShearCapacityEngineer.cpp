@@ -140,7 +140,8 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    // Strands
    if ( bAfter1999 )
    {
-      const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+      // ok to use Straight since we just want material properties
+      const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
 
       //GET_IFACE(IPretensionForce,pPSForce);
       //Float64 xfer = pPSForce->GetXferLengthAdjustment(poi);
@@ -617,7 +618,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       }
    }
 
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight); // we just want E so straight strands is fine
    ATLASSERT(pStrand != nullptr);
    pscd->Eps = pStrand->GetE();
 
@@ -835,7 +836,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       pscd->fpeptGirder = (IsZero(AptGirder) ? 0 : fpeAptGirder/AptGirder);
    }
 
-   // prestress area - factor for development length
+   // prestress area - factor for development length per LRFD 5.7.3.4.2
    Float64 apsu = 0;
    if (pConfig == nullptr)
    {
@@ -852,7 +853,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    {
       // Use approximate method during design. The performance gain is around 30%. However, this does
       // change results slightly in the end zones for some files. If this becomes problematic, check out the 
-      // factor in CBridgeAgentImp::GetApsTensionSide where the accurate method is used only in end zones.
+      // factor in CBridgeAgentImp::GetApsInHalfDepth where the accurate method is used only in end zones.
       if ( pscd->bTensionBottom )
       {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaApproximate,pConfig);

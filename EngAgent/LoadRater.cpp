@@ -1101,8 +1101,9 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       ratingParams.pMaterials->GetDeckRebarProperties(&Eb, &fyb, &fu);
    }
 
-   Eps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Permanent)->GetE();
-   fyps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Permanent)->GetYieldStrength();
+   // just getting material properties so assuming straight strands is fine
+   Eps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
+   fyps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetYieldStrength();
 
    // NOTE: it is ok to use segmentKey here because it promotes to a girder key
    EptSegment = ratingParams.pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();

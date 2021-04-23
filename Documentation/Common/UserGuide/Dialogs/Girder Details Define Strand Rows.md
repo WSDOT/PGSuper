@@ -13,6 +13,9 @@ Permanent Strands | Select the permanent strand size and type from the drop down
 Temporary Strands | Select the temporary strand size and type from the drop down list. Temporary strands are never epoxy coated.
 Pjack | For each strand type, the maximum jacking force is shown. Check the box to enter a different jacking force.
 
+> NOTE: 0.62" and 0.7" Diameter strand capabilities should be considered as experimental features. See @ref tg_prestressing_steel in the @ref technical_guide for more details
+
+
 Strand Grid
 ------------
 Strands are defined in horizontal rows. Multiple rows can be defined at the same elevation in the girder section. You must ensure the clear distance between strands is acceptable. The information in the strand row grid is:
@@ -44,7 +47,9 @@ X2 | Enter the location of the left harp point from the left end of the girder. 
 X3 | Enter the location of the right harp point from the left end of the girder. Use the drop down list to select the measurement unit.
 X4 | Enter the distance from the left end of the girder to the last strand deviation point. Use the drop down list to select the measurement unit.
 
+\todo Update Image
 ![](TwoPointHarpedStrands.png)(Typical two point harped strand. Left Harp Pt Dist = 0%, Right Harp Pt Dist = 100%)
 <br>
 <br>
+\todo Update Image
 ![](FourPointHarpedStrands.png)(Typical three point harped strand. This strand arrangement could be used if the left end of the girder were a cantilever. Another strand deviation could be added at the right end of the girder by changing the Right Harp Pt Dist value)

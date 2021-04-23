@@ -696,57 +696,47 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    GET_IFACE2(pBroker, ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IStrandGeometry,pStrand);
 
-   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(2);
+   StrandIndexType Nt = pStrand->GetMaxStrands(segmentKey, pgsTypes::Temporary);
+
+   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(Nt == 0 ? 2 : 3);
    *pPara << pLayoutTable << rptNewLine;
 
-   for ( int i = 0; i < 2; i++ )
+   std::array<std::_tstring, 3> strStrandType{ _T("Straight"),_T("Harped"),_T("Temporary") };
+
+   for ( int i = 0; i < (Nt == 0 ? 2 : 3); i++ )
    {
-      pgsTypes::StrandType strandType = (i == 0 ? pgsTypes::Permanent : pgsTypes::Temporary);
-      if ( strandType == pgsTypes::Temporary && pStrand->GetMaxStrands(segmentKey,pgsTypes::Temporary) == 0)
-      {
-         continue;
-      }
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
 
-      std::_tstring strTitle;
-      if ( strandType == pgsTypes::Temporary )
-      {
-         strTitle = _T("Temporary Strands");
-      }
-      else
-      {
-         strTitle = _T("Permanent Strands");
-      }
+      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
+      ATLASSERT(pStrand != nullptr);
 
-      const matPsStrand* pstrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
-      ATLASSERT(pstrand!=0);
-
-      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,strTitle.c_str());
+      rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2, strStrandType[strandType].c_str());
       (*pLayoutTable)(0,i) << pTable;
 
       RowIndexType row = 0;
 
       (*pTable)(row,0) << _T("Name");
-      (*pTable)(row,1) << pstrand->GetName().c_str();
+      (*pTable)(row,1) << pStrand->GetName().c_str();
       row++;
 
       (*pTable)(row,0) << _T("Type");
-      (*pTable)(row,1) << (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+      (*pTable)(row,1) << (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
       row++;
 
       (*pTable)(row,0) << RPT_FPU;
-      (*pTable)(row,1) << stress.SetValue( pstrand->GetUltimateStrength() );
+      (*pTable)(row,1) << stress.SetValue(pStrand->GetUltimateStrength() );
       row++;
 
       (*pTable)(row,0) << RPT_FPY;
-      (*pTable)(row,1) << stress.SetValue( pstrand->GetYieldStrength() );
+      (*pTable)(row,1) << stress.SetValue(pStrand->GetYieldStrength() );
       row++;
 
       (*pTable)(row,0) << RPT_EPS;
-      (*pTable)(row,1) << modE.SetValue( pstrand->GetE() );
+      (*pTable)(row,1) << modE.SetValue(pStrand->GetE() );
       row++;
 
       (*pTable)(row,0) << RPT_APS;
-      (*pTable)(row,1) << area.SetValue( pstrand->GetNominalArea() );
+      (*pTable)(row,1) << area.SetValue(pStrand->GetNominalArea() );
       row++;
    }
 }

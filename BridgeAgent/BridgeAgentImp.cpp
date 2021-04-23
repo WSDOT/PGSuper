@@ -5193,9 +5193,8 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
 #endif
 
    // Add POIs at the prestress transfer length from the ends of the girder
-   GET_IFACE(IPretensionForce,pPrestress);
-   Float64 xfer_length = pPrestress->GetXferLength(segmentKey,pgsTypes::Permanent);
-   
+   // since straight and harped strands can have different diameters they 
+   // can have different transfer points, that's why we loop over both strand types
    Float64 left_end_dist = GetSegmentStartEndDistance(segmentKey);
    Float64 left_brg_offset = GetSegmentStartBearingOffset(segmentKey);
    Float64 segment_length = GetSegmentLength(segmentKey);
@@ -5205,22 +5204,29 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    firstSegmentKey.segmentIndex = 0;
    Float64 first_segment_start_offset = GetSegmentStartBearingOffset(firstSegmentKey) - GetSegmentStartEndDistance(firstSegmentKey);
 
-   Float64 d1 = xfer_length;
-   Float64 d2 = segment_length - xfer_length;
+   GET_IFACE(IPretensionForce,pPrestress);
+   for (int i = 0; i < 2; i++)
+   {
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      Float64 xfer_length = pPrestress->GetXferLength(segmentKey, strandType);
 
-   Float64 Xs  = d1;
-   Float64 Xsp = Xs + start_offset;
-   Float64 Xgp = segmentOffset + Xsp;
-   Float64 Xg  = Xgp - first_segment_start_offset;
-   pgsPointOfInterest poiXfer1(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-   VERIFY(m_pPoiMgr->AddPointOfInterest(poiXfer1) != INVALID_ID);
+      Float64 d1 = xfer_length;
+      Float64 d2 = segment_length - xfer_length;
 
-   Xs  = d2;
-   Xsp = Xs + start_offset;
-   Xgp = segmentOffset + Xsp;
-   Xg  = Xgp - first_segment_start_offset;
-   pgsPointOfInterest poiXfer2(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
-   VERIFY(m_pPoiMgr->AddPointOfInterest(poiXfer2) != INVALID_ID);
+      Float64 Xs = d1;
+      Float64 Xsp = Xs + start_offset;
+      Float64 Xgp = segmentOffset + Xsp;
+      Float64 Xg = Xgp - first_segment_start_offset;
+      pgsPointOfInterest poiXfer1(segmentKey, Xs, Xsp, Xg, Xgp, attrib_xfer);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poiXfer1) != INVALID_ID);
+
+      Xs = d2;
+      Xsp = Xs + start_offset;
+      Xgp = segmentOffset + Xsp;
+      Xg = Xgp - first_segment_start_offset;
+      pgsPointOfInterest poiXfer2(segmentKey, Xs, Xsp, Xg, Xgp, attrib_xfer);
+      VERIFY(m_pPoiMgr->AddPointOfInterest(poiXfer2) != INVALID_ID);
+   }
 
    ////////////////////////////////////////////////////////////////
    // debonded strands
@@ -5232,6 +5238,9 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
    for ( Uint16 i = 0; i < 3; i++ )
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+
+      Float64 xfer_length = pPrestress->GetXferLength(segmentKey, strandType);
+
       const std::vector<CDebondData>& vDebond(pStrands->GetDebonding(strandType));
       std::vector<CDebondData>::const_iterator iter(vDebond.begin());
       std::vector<CDebondData>::const_iterator end(vDebond.end());
@@ -5239,27 +5248,27 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
       {
          const CDebondData& debond_info = *iter;
 
-         d1 = debond_info.Length[pgsTypes::metStart];
-         d2 = d1 + xfer_length;
+         Float64 d1 = debond_info.Length[pgsTypes::metStart];
+         Float64 d2 = d1 + xfer_length;
 
          // only add POI if debond and transfer point are on the girder
          if ( d1 < segment_length && d2 < segment_length )
          {
-            ATLASSERT(0 < debond_info.Length[pgsTypes::metStart]);// this should not happen, but if it does it would be nice to know about it because there is a bug somewhere
+            ATLASSERT(0 <= debond_info.Length[pgsTypes::metStart]);// this should not happen, but if it does it would be nice to know about it because there is a bug somewhere
             if (!IsZero(debond_info.Length[pgsTypes::metStart]))
             {
-               Xs = d1;
-               Xsp = Xs + start_offset;
-               Xgp = segmentOffset + Xsp;
-               Xg = Xgp - first_segment_start_offset;
+               Float64 Xs = d1;
+               Float64 Xsp = Xs + start_offset;
+               Float64 Xgp = segmentOffset + Xsp;
+               Float64 Xg = Xgp - first_segment_start_offset;
                pgsPointOfInterest poiDBD(segmentKey, Xs, Xsp, Xg, Xgp, attrib_debond);
                VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
             }
 
-            Xs  = d2;
-            Xsp = Xs + start_offset;
-            Xgp = segmentOffset + Xsp;
-            Xg  = Xgp - first_segment_start_offset;
+            Float64 Xs  = d2;
+            Float64 Xsp = Xs + start_offset;
+            Float64 Xgp = segmentOffset + Xsp;
+            Float64 Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiXFR(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
             VERIFY(m_pPoiMgr->AddPointOfInterest(poiXFR) != INVALID_ID);
          }
@@ -5269,21 +5278,21 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
          // only add POI if debond and transfer point are on the girder
          if ( 0 < d1 && 0 < d2 )
          {
-            ATLASSERT(0 < debond_info.Length[pgsTypes::metStart]); // this should not happen, but if it does it would be nice to know about it because there is a bug somewhere
+            ATLASSERT(0 <= debond_info.Length[pgsTypes::metStart]); // this should not happen, but if it does it would be nice to know about it because there is a bug somewhere
             if (!IsZero(debond_info.Length[pgsTypes::metStart]))
             {
-               Xs = d1;
-               Xsp = Xs + start_offset;
-               Xgp = segmentOffset + Xsp;
-               Xg = Xgp - first_segment_start_offset;
+               Float64 Xs = d1;
+               Float64 Xsp = Xs + start_offset;
+               Float64 Xgp = segmentOffset + Xsp;
+               Float64 Xg = Xgp - first_segment_start_offset;
                pgsPointOfInterest poiDBD(segmentKey, Xs, Xsp, Xg, Xgp, attrib_debond);
                VERIFY(m_pPoiMgr->AddPointOfInterest(poiDBD) != INVALID_ID);
             }
 
-            Xs  = d2;
-            Xsp = Xs + start_offset;
-            Xgp = segmentOffset + Xsp;
-            Xg  = Xgp - first_segment_start_offset;
+            Float64 Xs  = d2;
+            Float64 Xsp = Xs + start_offset;
+            Float64 Xgp = segmentOffset + Xsp;
+            Float64 Xg  = Xgp - first_segment_start_offset;
             pgsPointOfInterest poiXFR(segmentKey,Xs,Xsp,Xg,Xgp,attrib_xfer);
             VERIFY(m_pPoiMgr->AddPointOfInterest(poiXFR) != INVALID_ID);
          }
@@ -16643,10 +16652,10 @@ std::pair<StrandIndexType, StrandIndexType> CBridgeAgentImp::GetStrandCount(cons
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    if (intervalIdx < GetStressStrandInterval(segmentKey) // strands aren't stressed so they aren't even in play yet
-      ||
+      || 
       (strandType == pgsTypes::Temporary && GetTemporaryStrandRemovalInterval(segmentKey) < intervalIdx)) // strand are temporary and they have been removed
    {
-      return std::make_pair(0, 0);
+      return std::make_pair(0, 0); 
    }
 
    auto strand_count(std::make_pair((StrandIndexType)0, (StrandIndexType)0));

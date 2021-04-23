@@ -2859,8 +2859,8 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    pgsTypes::TimeDependentModel model = pLossParams->GetTimeDependentModel();
-   const matPsStrand* pPermanentStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
-   const matPsStrand* pTemporaryStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* pPermanentStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight); // ok to use straight since we are just getting material properties, not strand size
+   const matPsStrand* pTemporaryStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
    if ( pPermanentStrand == pTemporaryStrand )
    {
       if ( model == pgsTypes::tdmAASHTO || model == pgsTypes::tdmACI209 )

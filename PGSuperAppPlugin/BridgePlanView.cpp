@@ -871,7 +871,8 @@ void CBridgePlanView::UpdateSegmentTooltips()
                FormatDimension(fc, pDisplayUnits->GetStressUnit())
             );
 
-            const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Permanent);
+            const matPsStrand* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+            const matPsStrand* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
             const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
 
             StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
@@ -882,31 +883,23 @@ void CBridgePlanView::UpdateSegmentTooltips()
             std::_tstring harp_type(LABEL_HARP_TYPE(pStrandGeom->GetAreHarpedStrandsForcedStraight(segmentKey)));
 
             CString strMsg4;
-            if (pStrandGeom->GetMaxStrands(segmentKey, pgsTypes::Temporary) != 0)
+            if (Nsd == 0)
             {
-               if (Nsd == 0)
-               {
-                  strMsg4.Format(_T("\n\nPermanent Strand\n%s\n# Straight: %2d\n# %s: %2d\n\nTemporary Strands\n%s\n# Temporary: %2d"),
-                     pStrand->GetName().c_str(), Ns, harp_type.c_str(), Nh, pTempStrand->GetName().c_str(), Nt);
-               }
-               else
-               {
-                  strMsg4.Format(_T("\n\nPermanent Strands\n%s\n# Straight: %2d (%2d Debonded)\n# %s: %2d\n\nTemporary Strands\n%s\n# Temporary: %2d"),
-                     pStrand->GetName().c_str(), Ns, Nsd, harp_type.c_str(), Nh, pTempStrand->GetName().c_str(), Nt);
-               }
+               strMsg4.Format(_T("\n\nStraight Strands\n%s\n# Straight: %2d"), pStraightStrand->GetName().c_str(), Ns);
             }
             else
             {
-               if (Nsd == 0)
-               {
-                  strMsg4.Format(_T("\n\nPermanent Strands\n%s\n# Straight: %2d\n# %s: %2d"),
-                     pStrand->GetName().c_str(), Ns, harp_type.c_str(), Nh);
-               }
-               else
-               {
-                  strMsg4.Format(_T("\n\nPermanent Strands\n%s\n# Straight: %2d (%2d Debonded)\n# %s: %2d"),
-                     pStrand->GetName().c_str(), Ns, Nsd, harp_type.c_str(), Nh);
-               }
+               strMsg4.Format(_T("\n\nStraight Strands\n%s\n# Straight: %2d (%2d Debonded)"), pStraightStrand->GetName().c_str(), Ns, Nsd);
+            }
+            CString strHarped;
+            strHarped.Format(_T("\n\n%s Strands\n%s\n# %s: %2d"), harp_type.c_str(), pHarpedStrand->GetName().c_str(), harp_type.c_str(), Nh);
+            strMsg4 += strHarped;
+
+            if (pStrandGeom->GetMaxStrands(segmentKey, pgsTypes::Temporary) != 0)
+            {
+               CString strTemp;
+               strTemp.Format(_T("\n\nTemporary Strands\n%s\n# Temporary: %2d"),pTempStrand->GetName().c_str(), Nt);
+               strMsg4 += strTemp;
             }
 
             CString strMsg5;

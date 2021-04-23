@@ -95,6 +95,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
+   *pParagraph << _T("Prestress losses listed are not adjusted to account for the gradual buildup of the strand force over the transfer length (5.9.4.3.1)") << rptNewLine;
 
    *pParagraph << _T("% Loss Initial = (");
    if ( !bIgnoreInitialRelaxation )

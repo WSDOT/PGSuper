@@ -6947,11 +6947,11 @@ void CProjectAgentImp::SetGirder(const CGirderKey& girderKey,const CSplicedGirde
       //
       // determine if the top width changed
       pgsTypes::TopWidthType currentTopWidthType;
-      Float64 currentLeft[2], currentRight[2];
+      std::array<Float64, 2> currentLeft, currentRight;
       pGirder->GetTopWidth(&currentTopWidthType, &currentLeft[pgsTypes::metStart], &currentRight[pgsTypes::metStart], &currentLeft[pgsTypes::metEnd], &currentRight[pgsTypes::metEnd]);
 
       pgsTypes::TopWidthType topWidthType;
-      Float64 Left[2], Right[2];
+      std::array<Float64, 2> Left, Right;
       girder.GetTopWidth(&topWidthType, &Left[pgsTypes::metStart], &Right[pgsTypes::metStart], &Left[pgsTypes::metEnd], &Right[pgsTypes::metEnd]);
 
       bool bTopWidthChanged = false;
@@ -8387,18 +8387,15 @@ pgsTypes::MeasurementLocation CProjectAgentImp::GetMeasurementLocation() const
 ////////////////////////////////////////////////////////////////////////
 // ISegmentData Methods
 //
-const matPsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const
+const matPsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
 {
-   if ( type == pgsTypes::Permanent )
-   {
-      type = pgsTypes::Straight;
-   }
+   ATLASSERT(strandType != pgsTypes::Permanent);
 
    const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
 
-   return pSegment->Strands.GetStrandMaterial(type);
+   return pSegment->Strands.GetStrandMaterial(strandType);
 }
 
 void CProjectAgentImp::SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const matPsStrand* pMaterial)
@@ -11657,7 +11654,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
             ValidateStrands(segmentKey,pSegment,fromLibrary);
    
             // make sure debond data is consistent with design algorithim
-            Float64 xfer_length = pPrestress->GetXferLength(segmentKey,pgsTypes::Permanent);
+            Float64 xfer_length = pPrestress->GetXferLength(segmentKey,pgsTypes::Straight); // this is related to debonding so we assume only straight strands are debonded
             Float64 ndb, minDist;
             bool bMinDist;
             pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);

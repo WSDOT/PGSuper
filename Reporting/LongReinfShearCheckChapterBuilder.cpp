@@ -424,20 +424,20 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
 
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
-   *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length") << rptNewLine;
+   *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length. ") << RPT_FPS << _T(" = ") << RPT_STRESS(_T("ps,avg")) << _T(" from moment capacity analysis") << rptNewLine;
    if (0 < nMaxSegmentDucts)
    {
       *pParagraph << Sub2(_T("A"), _T("pts")) << _T(" = Area of segment tendons") << rptNewLine;
-      *pParagraph << Sub2(_T("f"), _T("pts")) << _T(" = Stress in segment tendons") << rptNewLine;
+      *pParagraph << RPT_STRESS(_T("pts")) << _T(" = Stress in segment tendons") << rptNewLine;
    }
    if (0 < nGirderDucts)
    {
       *pParagraph << Sub2(_T("A"), _T("ptg")) << _T(" = Area of girder tendons") << rptNewLine;
-      *pParagraph << Sub2(_T("f"), _T("ptg")) << _T(" = Stress in girder tendons") << rptNewLine;
+      *pParagraph << RPT_STRESS(_T("ptg")) << _T(" = Stress in girder tendons") << rptNewLine;
    }
    if (0 < nMaxSegmentDucts + nGirderDucts)
    {
-      *pParagraph << Sub2(_T("A"), _T("pt")) << Sub2(_T("f"), _T("pt")) << _T(" = ") << Sub2(_T("A"), _T("pts")) << Sub2(_T("f"), _T("pts")) << _T(" + ") << Sub2(_T("A"), _T("ptg")) << Sub2(_T("f"), _T("ptg")) << rptNewLine;
+      *pParagraph << Sub2(_T("A"), _T("pt")) << RPT_STRESS(_T("pt")) << _T(" = ") << Sub2(_T("A"), _T("pts")) << RPT_STRESS(_T("pts")) << _T(" + ") << Sub2(_T("A"), _T("ptg")) << RPT_STRESS(_T("ptg")) << rptNewLine;
    }
 
    ColumnIndexType col = 0;
@@ -446,18 +446,18 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,col++) << COLHDR(RPT_FY << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("ps")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,col++) << COLHDR(_T("f")<<Sub(_T("ps")) << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_FPS << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if (0 < nMaxSegmentDucts)
    {
       (*table)(0, col++) << COLHDR(Sub2(_T("A"), _T("pts")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-      (*table)(0, col++) << COLHDR(_T("f") << Sub(_T("pts")) << Super(_T("*")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      (*table)(0, col++) << COLHDR(RPT_STRESS(_T("pts")) << Super(_T("*")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
 
    if ( 0 < nGirderDucts )
    {
       (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("ptg")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,col++) << COLHDR(_T("f")<<Sub(_T("ptg")) << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ptg")) << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    }
 
    (*table)(0,col++) << COLHDR(_T("M")<<Sub(_T("u")),rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
@@ -748,7 +748,7 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
 
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
-   *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length") << rptNewLine;
+   *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length. ") << RPT_FPS << _T(" = ") << RPT_STRESS(_T("ps,avg")) << _T(" from moment capacity analysis") << rptNewLine;
    if (0 < nMaxSegmentDucts)
    {
       *pParagraph << Sub2(_T("A"), _T("pts")) << _T(" = Area of segment tendons") << rptNewLine;

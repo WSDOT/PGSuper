@@ -42,6 +42,8 @@
 
 #include <WBFLGenericBridgeTools.h>
 
+#include <MfcTools\WideDropDownComboBox.h>
+
 class CGirderDescDlg;
 struct IStrandGeometry;
 struct IEAFDisplayUnits;
@@ -62,8 +64,7 @@ public:
 	//{{AFX_DATA(CGirderDescPrestressPage)
 	enum { IDD = IDD_GIRDERDESC_PRESTRESS };
 
-   Int32 m_StrandKey;
-   Int32 m_TempStrandKey;
+   std::array<Int32, 3> m_StrandKey{ -1,-1,-1 };
 	//}}AFX_DATA
 
 // Overrides
@@ -84,6 +85,10 @@ private:
 
 // Implementation
 protected:
+   CWideDropDownComboBox m_cbStraight;
+   CWideDropDownComboBox m_cbHarped;
+   CWideDropDownComboBox m_cbTemporary;
+
 	// Generated message map functions
 	//{{AFX_MSG(CGirderDescPrestressPage)
 	virtual BOOL OnInitDialog();
@@ -100,13 +105,18 @@ protected:
 	afx_msg void OnStrandInputTypeChanged();
 	afx_msg void OnDropdownHpComboHp();
 	afx_msg void OnDropdownHpComboEnd();
-   afx_msg void OnStrandTypeChanged();
+   afx_msg void OnStraightStrandTypeChanged();
+   afx_msg void OnHarpedStrandTypeChanged();
    afx_msg void OnTempStrandTypeChanged();
    afx_msg void OnBnClickedEditStrandFill();
 	//}}AFX_MSG
    afx_msg BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	DECLARE_MESSAGE_MAP()
+
+   void UpdateStrandTypes();
+
+   void OnStrandTypeChanged(int nIDC, pgsTypes::StrandType strandType);
 
    void UpdatePjackEdits();
    void UpdatePjackEdit( UINT nCheckBox  );

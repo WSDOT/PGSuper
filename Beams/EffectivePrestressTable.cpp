@@ -135,6 +135,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
+   *pParagraph << _T("Effective prestress listed is not adjusted to account for the gradual buildup of the strand force over the transfer length (5.9.4.3.1)") << rptNewLine;
    if (  loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::WSDOT_REFINED  )
    {
       // delta fpT

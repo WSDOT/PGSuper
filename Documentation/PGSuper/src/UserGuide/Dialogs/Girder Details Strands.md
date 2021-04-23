@@ -11,6 +11,8 @@ Permanent | Use the drop down list to select the material and size of permanent 
 Grit impregnated epoxy coating | Check if the strand has grit impregnated epoxy coating. See @ref tg_epoxy_coated_strands in the @ref technical_guide for more information.
 Temporary | Use the drop down list to select the material and size of temporary strands. Temporary strands are never grit impregnated epoxy coated.
 
+> NOTE: 0.62" and 0.7" Diameter strand capabilities should be considered as experimental features. See @ref tg_prestressing_steel in the @ref technical_guide for more details
+
 Strand Details
 ---------------
 

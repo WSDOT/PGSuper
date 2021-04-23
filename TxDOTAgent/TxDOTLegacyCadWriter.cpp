@@ -379,7 +379,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& gi
 
 	/* 6. STRAND SIZE */
 	TCHAR    strandSize[4+1];
-   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    value = strandMatP->GetNominalDiameter();
    value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
 
