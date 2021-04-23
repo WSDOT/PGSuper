@@ -2561,7 +2561,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
          pTS->GetBearingOffset(&brgOffset,&brgOffsetMeasure);
          (*pConnectionsTable)(connections_row, connections_col++) << cmpdim.SetValue(brgOffset);
-         (*pConnectionsTable)(connections_row, connections_col++) << GetBearingOffsetMeasureString(brgOffsetMeasure,false,true);
+         (*pConnectionsTable)(connections_row, connections_col++) << GetTempSupportBearingOffsetMeasureString(brgOffsetMeasure,true);
 
          Float64 endDist;
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
