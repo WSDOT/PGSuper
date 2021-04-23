@@ -60,6 +60,7 @@ class CTimelineEvent;
 class CStrandData;
 class CHandlingData;
 class CBearingData2;
+class CSegmentPTData;
 
 class CBridgeChangedHint;
 
@@ -434,6 +435,9 @@ interface ISegmentData : IUnknown
 
    virtual const CStrandData* GetStrandData(const CSegmentKey& segmentKey) const = 0;
    virtual void SetStrandData(const CSegmentKey& segmentKey,const CStrandData& strands) = 0;
+
+   virtual const CSegmentPTData* GetSegmentPTData(const CSegmentKey& segmentKey) const = 0;
+   virtual void SetSegmentPTData(const CSegmentKey& segmentKey,const CSegmentPTData& strands) = 0;
 
    virtual const CHandlingData* GetHandlingData(const CSegmentKey& segmentKey) const = 0;
    virtual void SetHandlingData(const CSegmentKey& segmentKey,const CHandlingData& handling) = 0;
@@ -1190,6 +1194,18 @@ interface IBridgeDescription : IUnknown
    virtual void SetBearingData(GroupIndexType grpIdx, PierIndexType pierIdx, pgsTypes::PierFaceType face, const CBearingData2* pBearingData) = 0;
    virtual void SetBearingData(GroupIndexType grpIdx, PierIndexType pierIdx, pgsTypes::PierFaceType face, GirderIndexType gdrIdx, const CBearingData2* pBearingData) = 0;
    virtual const CBearingData2* GetBearingData(PierIDType pierID, pgsTypes::PierFaceType face, GirderIndexType gdrIdx) const = 0;
+
+   virtual void SetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                                      Float64 endDist, ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure,
+                                      Float64 bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType bearingOffsetMeasurementType) = 0;
+   virtual void GetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                                      Float64* endDist, ConnectionLibraryEntry::EndDistanceMeasurementType* endDistMeasure,
+                                      Float64* bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType* bearingOffsetMeasurementType) const = 0;
+
+   virtual void SetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64 height, Float64 width, ConnectionLibraryEntry::DiaphragmLoadType loadType, Float64 loadLocation) = 0;
+   virtual void GetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64* pHeight, Float64* pWidth, ConnectionLibraryEntry::DiaphragmLoadType* pLoadType, Float64* pLoadLocation) const = 0;
 
    virtual bool IsCompatibleGirder(const CGirderKey& girderKey, LPCTSTR lpszGirderName) const = 0;
    virtual bool AreGirdersCompatible(GroupIndexType groupIdx) const = 0;

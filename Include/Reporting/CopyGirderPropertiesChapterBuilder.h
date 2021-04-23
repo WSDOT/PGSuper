@@ -20,36 +20,25 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_GIRDERCOMPARISONCHAPTERBUILDER_H_
-#define INCLUDED_GIRDERCOMPARISONCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
+#include <IFace\ExtendUI.h>
 
 
 /*****************************************************************************
 CLASS 
-   CGirderComparisonChapterBuilder
+   CCopyGirderPropertiesChapterBuilder
 
-   Builds a report that details the outcome of a design attempt.
-
-
-DESCRIPTION
-   Builds a report that details the outcome of a design attempt.
-
-LOG
-   rab : 12.15.1998 : Created file
+   Chapter builder for reporting construction event CopyGirderProperties
 *****************************************************************************/
 
-class REPORTINGCLASS CGirderComparisonChapterBuilder : public CPGSuperChapterBuilder
+class REPORTINGCLASS CCopyGirderPropertiesChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
-   CGirderComparisonChapterBuilder(bool bSelect = true);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
+   CCopyGirderPropertiesChapterBuilder(bool bSelect = true);
 
    //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const;
@@ -61,35 +50,15 @@ public:
    //------------------------------------------------------------------------
    virtual CChapterBuilder* Clone() const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   //================================
+   // special function to work with control in copy girder dialog
+   void SetCopyGirderProperties(ICopyGirderPropertiesCallback* pCallBack, const CGirderKey& fromGirderKey);
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
+   ICopyGirderPropertiesCallback* m_pCallBack;
+   CGirderKey m_FromGirderKey;
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
    // Prevent accidental copying and assignment
-   CGirderComparisonChapterBuilder(const CGirderComparisonChapterBuilder&) = delete;
-   CGirderComparisonChapterBuilder& operator=(const CGirderComparisonChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   CCopyGirderPropertiesChapterBuilder(const CCopyGirderPropertiesChapterBuilder&) = delete;
+   CCopyGirderPropertiesChapterBuilder& operator=(const CCopyGirderPropertiesChapterBuilder&) = delete;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_GIRDERCOMPARISONCHAPTERBUILDER_H_

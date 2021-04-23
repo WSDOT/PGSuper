@@ -151,9 +151,6 @@
     <ClCompile Include="FlexuralStressCheckTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GirderComparisonChapterBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GirderDetailingCheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -541,6 +538,33 @@
     <ClCompile Include="PrincipalWebStressDetailsReportSpecificationBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CopyGirderPropertiesChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyGirderPropertiesReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyGirderPropertiesReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyPierPropertiesChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyPierPropertiesReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyPierPropertiesReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyTempSupportPropertiesChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyTempSupportPropertiesReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyTempSupportPropertiesReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h">
@@ -700,9 +724,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\GirderDetailingCheck.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reporting\GirderGeometryChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\GirderSeedDataComparisonParagraph.h">
@@ -1093,6 +1114,33 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PrincipalWebStressDetailsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyGirderPropertiesChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyGirderPropertiesReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyGirderPropertiesReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyPierPropertiesChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyPierPropertiesReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyPierPropertiesReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyTempSupportPropertiesChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyTempSupportPropertiesReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyTempSupportPropertiesReportSpecificationBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

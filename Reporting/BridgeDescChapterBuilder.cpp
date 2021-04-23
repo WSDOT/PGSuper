@@ -59,6 +59,7 @@ static void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,
 static void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_bridge_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_connection_abbrevation_footnotes(rptChapter* pChapter);
+static void write_tempsupport_connection_abbrevation_footnotes(rptChapter* pChapter);
 static void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_framing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
@@ -1974,6 +1975,19 @@ void write_connection_abbrevation_footnotes(rptChapter* pChapter)
    *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, false) << rptNewLine;
 }
 
+void write_tempsupport_connection_abbrevation_footnotes(rptChapter* pChapter)
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   *pPara << _T("Bearing Offset Measure") << rptNewLine;
+   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false) << rptNewLine;
+   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false) << rptNewLine;
+   *pPara << rptNewLine;
+   *pPara << _T("End Distance Measure") << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false) << rptNewLine;
+}
 
 void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
@@ -2471,7 +2485,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
    rptRcTable* pConnectionsTable = rptStyleManager::CreateDefaultTable(7,_T("Temporary Support Connections"));
    *pPara << pConnectionsTable << rptNewLine;
-   write_connection_abbrevation_footnotes(pChapter);
+   write_tempsupport_connection_abbrevation_footnotes(pChapter);
 
    pConnectionsTable->SetNumberOfHeaderRows(1);
 
@@ -2553,7 +2567,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
          pTS->GetGirderEndDistance(&endDist,&endDistMeasure);
          (*pConnectionsTable)(connections_row, connections_col++) << cmpdim.SetValue(endDist);
-         (*pConnectionsTable)(connections_row, connections_col++) << GetEndDistanceMeasureString(endDistMeasure,false,true);
+         (*pConnectionsTable)(connections_row, connections_col++) << GetTempSupportEndDistanceMeasureString(endDistMeasure,true);
 
          const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(0);
          IDType cpID = pClosureJoint->GetID();

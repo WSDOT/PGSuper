@@ -210,6 +210,7 @@
 #define IDD_BEARING_PIER_BY_PIER        1004
 #define IDC_APPICON                     1005
 #define IDC_END_DISTANCE                1005
+#define IDD_COPY_GIRDER_PROPERTIES2     1005
 #define IDC_ENGINEER                    1006
 #define IDC_BEARING_OFFSET              1006
 #define IDC_COMPANY                     1007
@@ -302,7 +303,10 @@
 #define IDC_FINAL                       1112
 #define IDC_TEMP_STRAND_SIZE            1113
 #define IDC_BEFORE_TEMP_STRAND_REMOVAL  1113
+#define IDD_COPY_PIER_PROPERTIES        1113
 #define IDC_BEFORE_XFER_TAG             1114
+#define IDD_COPY_PIER_PROPERTIES1       1114
+#define IDD_COPY_TEMPSUPPORT_PROPERTIES 1114
 #define IDC_SHIPPING                    1115
 #define IDC_HPOFFSET_END                1116
 #define IDC_SHIPPING_TAG                1116
@@ -1240,6 +1244,7 @@
 #define IDC_VIEW_TIMELINE_SUMMARY       1904
 #define IDC_LABELS                      1905
 #define IDC_BUTTON2                     1905
+#define IDC_EDIT                        1905
 #define IDC_LOAD_LOCATION_NOTE          1906
 #define IDC_TOP_WIDTH_LABEL             1906
 #define IDI_STIRRUPS                    1906
@@ -1408,6 +1413,9 @@
 #define IDC_CLOSURE_JOINT_LABEL         2029
 #define IDC_COMBO2                      2030
 #define IDC_CLOSURE_JOINT_CASTING_REGION 2030
+#define IDC_COMPREP                     2031
+#define IDC_FROM_PIER                   2032
+#define IDC_TO_PIER                     2033
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1434,6 +1442,12 @@
 #define LAST_DATA_IMPORTER_PLUGIN       33245
 #define FIRST_DATA_EXPORTER_PLUGIN      33250
 #define LAST_DATA_EXPORTER_PLUGIN       33280
+#define FIRST_COPY_GIRDER_PLUGIN        33285
+#define LAST_COPY_GIRDER_PLUGIN         33310
+#define FIRST_COPY_PIER_PLUGIN          33315
+#define LAST_COPY_PIER_PLUGIN           33340
+#define FIRST_COPY_TEMP_SUP_PLUGIN      33345
+#define LAST_COPY_TEMP_SUP_PLUGIN       33370
 #define ID_EDIT_SEGMENT                 36105
 #define ID_EDIT_SEGMENT_MIN             36106
 #define ID_EDIT_SEGMENT_MAX             36135
@@ -1560,14 +1574,30 @@
 #define ID_EDIT_BEARING                 37001
 #define IDM_ERECTION_TOWER              37002
 #define IDM_STRONG_BACK                 37003
+#define ID_COPY_GIRDER                  37004
+#define ID_COPY_PIER                    37005
+#define ID_GIRDER_THISISAPLACEHOLDER    37006
+#define ID_PIER_THISISAPLACEHOLDER      37007
+#define ID_COPY_GIRDER37008             37008
+#define ID_GIRDER_THISISAPLACEHOLDER37009 37009
+#define ID_COPY_PIER37010               37010
+#define ID_PIER_THISISAPLACEHOLDER37011 37011
+#define ID_COPY_TEMPORARYSUPPORT        37012
+#define ID_TEMPORARYSUPPORT_PLACEHOLDER 37013
+#define IDM_COPY_TEMPSUPPORT_PROPS      37014
+#define IDM_COPY_PIER_PROPS             37015
+#define ID_COPY_GIRDER_PROPS            37016
+#define ID_COPY_PIER_PROPS              37017
+#define ID_BUTTON37019                  37019
+#define ID_COPY_TEMPSUPPORT_PROPS       37019
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        405
-#define _APS_NEXT_COMMAND_VALUE         37004
-#define _APS_NEXT_CONTROL_VALUE         2031
+#define _APS_NEXT_RESOURCE_VALUE        406
+#define _APS_NEXT_COMMAND_VALUE         37020
+#define _APS_NEXT_CONTROL_VALUE         2034
 #define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

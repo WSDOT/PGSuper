@@ -27,7 +27,7 @@ Reports are created by selecting a report from the list of available reports. We
 
 After reviewing the report, you will find that PGSuper made a pretty good guess. Since all the other girders are the same, let's copy the parameters from Girder A to all the other girders.
 
-Select *Project > Copy Girder Properties...* This will bring up the Copy Girder Properties window. Select Span 1 Girder A from the left hand column. This is the girder you will be copying from. Select Span 1 All Girders in the right hand column. The properties from Girder A will be copied to these girders. We want to copy all the properties so make sure all the boxes are checked. Press [Copy Now] to copy the properties. ![](Tutorial_General_Copy_Girder_Properties.png)
+Select *Copy > All Girder Properties...* This will bring up the Copy Girder Properties window. Select Span 1 Girder A in the "From" list. This is the girder you will be copying from. Select Span 1 All Girders in the "To" list. The properties from Girder A will be copied to these girders. Note that the Comparison Report enables you to quickly compare differences between the selected From girder and other girders in the bridge. Press [Copy Now] to copy the properties. ![](Tutorial_General_Copy_Girder_Properties.png)
 
 > TIP: Always view report results for all unique girders in the bridge. You should always review at least one exterior and one interior girder.
 

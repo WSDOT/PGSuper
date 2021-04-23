@@ -1,0 +1,564 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2020  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// CopyTempSupportDlg.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "PGSuperApp.h"
+#include "resource.h"
+#include "PGSuperDoc.h"
+#include "PGSpliceDoc.h"
+#include "CopyTempSupportDlg.h"
+
+#include <IFace\Project.h>
+#include <IFace\Bridge.h>
+#include <IFace\Selection.h>
+#include <IFace\Transactions.h>
+#include <IFace\EditByUI.h>
+
+#include <PgsExt\MacroTxn.h>
+#include <PgsExt\BridgeDescription2.h>
+#include <EAF\EAFCustSiteVars.h>
+
+#include <IReportManager.h>
+#include <Reporting\CopyTempSupportPropertiesReportSpecification.h>
+#include <Reporting\CopyTempSupportPropertiesChapterBuilder.h>
+
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CCopyTempSupportDlg dialog
+
+CCopyTempSupportDlg::CCopyTempSupportDlg(IBroker* pBroker, ICopyTemporarySupportPropertiesCallback* pCopyTempSupportPropertiesCallback, CWnd* pParent /*=nullptr*/)
+	: CDialog(CCopyTempSupportDlg::IDD, pParent),
+   m_pBroker(pBroker),
+   m_pCopyTempSupportPropertiesCallback(pCopyTempSupportPropertiesCallback)
+{
+	//{{AFX_DATA_INIT(CCopyTempSupportDlg)
+	//}}AFX_DATA_INIT
+
+   // keep selection around
+   GET_IFACE(ISelection,pSelection);
+   m_FromSelection = pSelection->GetSelection();
+
+   CEAFDocument* pDoc = EAFGetDocument();
+}
+
+BEGIN_MESSAGE_MAP(CCopyTempSupportDlg, CDialog)
+	//{{AFX_MSG_MAP(CCopyTempSupportDlg)
+	ON_WM_SIZE()
+   ON_CBN_SELCHANGE(IDC_FROM_PIER,OnFromTempSupportChanged)
+   ON_CBN_SELCHANGE(IDC_TO_PIER,OnToTempSupportChanged)
+	ON_BN_CLICKED(ID_HELP, OnHelp)
+	ON_BN_CLICKED(IDC_EDIT, OnEdit)
+	ON_BN_CLICKED(IDC_PRINT, OnPrint)
+	//}}AFX_MSG_MAP
+   ON_COMMAND_RANGE(CCS_CMENU_BASE, CCS_CMENU_MAX, OnCmenuSelected)
+   ON_WM_DESTROY()
+   ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
+END_MESSAGE_MAP()
+
+/////////////////////////////////////////////////////////////////////////////
+// CCopyTempSupportDlg message handlers
+
+BOOL CCopyTempSupportDlg::OnInitDialog() 
+{
+   // Want to keep our size GE original size
+   CRect rect;
+   GetWindowRect(&rect);
+   m_cxMin = rect.Width();
+   m_cyMin = rect.Height();
+
+   // set up report window
+   GET_IFACE(IReportManager, pReportMgr);
+   CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Temporary Support Properties Report"));
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+
+   m_pRptSpec = std::dynamic_pointer_cast<CCopyTempSupportPropertiesReportSpecification, CReportSpecification>(pRptSpec);
+
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
+   SetIcon(hIcon,FALSE);
+
+   CDialog::OnInitDialog();
+
+   EnableToolTips(TRUE);
+
+   SetWindowText(m_pCopyTempSupportPropertiesCallback->GetName());
+
+   // set up reporting window
+   UpdateReportData();
+
+   GET_IFACE(IReportManager,pRptMgr);
+   std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
+   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
+
+   // restore the size of the window
+   {
+      CEAFApp* pApp = EAFGetApp();
+      WINDOWPLACEMENT wp;
+      if (pApp->ReadWindowPlacement(CString("Window Positions"),CString("CopyTempSupportDialog"),&wp))
+      {
+         CWnd* pDesktop = GetDesktopWindow();
+         //CRect rDesktop;
+         //pDesktop->GetWindowRect(&rDesktop); // this is the size of one monitor.... use GetSystemMetrics to get the entire desktop
+         CRect rDesktop(0, 0, GetSystemMetrics(SM_CXVIRTUALSCREEN), GetSystemMetrics(SM_CYVIRTUALSCREEN));
+         CRect rDlg(wp.rcNormalPosition);
+         if (rDesktop.PtInRect(rDlg.TopLeft()) && rDesktop.PtInRect(rDlg.BottomRight()))
+         {
+            // if dialog is within the desktop area, set its position... otherwise the default position will be sued
+            SetWindowPos(NULL, wp.rcNormalPosition.left, wp.rcNormalPosition.top, wp.rcNormalPosition.right - wp.rcNormalPosition.left, wp.rcNormalPosition.bottom - wp.rcNormalPosition.top, 0);
+         }
+      }
+   }
+
+   return TRUE;  // return TRUE unless you set the focus to a control
+	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CCopyTempSupportDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialog::DoDataExchange(pDX);
+	//{{AFX_DATA_MAP(CCopyTempSupportDlg)
+   DDX_Control(pDX, IDC_FROM_PIER,   m_FromTempSupport);
+   DDX_Control(pDX, IDC_TO_PIER,     m_ToTempSupport);
+	//}}AFX_DATA_MAP
+
+   if ( pDX->m_bSaveAndValidate )
+   {
+      m_FromTempSupportIdx = GetFromTempSupport();
+      m_ToTempSupports  = GetToTempSupports();
+
+      // Save selection for next time we open
+      m_FromSelection.Type = CSelection::TemporarySupport;
+      m_FromSelection.tsID = m_FromTempSupportIdx;
+   }
+   else
+   {
+      FillComboBoxes(m_FromTempSupport,false);
+      FillComboBoxes(m_ToTempSupport, true );
+
+      int curFromsel = 0;
+      if ( m_FromSelection.Type == CSelection::TemporarySupport  )
+      {
+         curFromsel = (int)m_FromSelection.tsID;
+      }
+
+      m_FromTempSupport.SetCurSel(curFromsel);
+      OnFromTempSupportChanged();
+
+      m_ToTempSupport.SetCurSel(0);
+      OnToTempSupportChanged();
+   }
+}
+
+void CCopyTempSupportDlg::OnFromTempSupportChanged() 
+{
+   int curSel = m_FromTempSupport.GetCurSel();
+   if ( curSel != CB_ERR )
+   {
+      PierIndexType TempSupportIdx = (PierIndexType)m_FromTempSupport.GetItemData(curSel);
+      FillComboBoxes(m_ToTempSupport, true, TempSupportIdx );
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
+
+   m_ToTempSupport.SetCurSel(1);
+
+   EnableCopyNow();
+
+   UpdateReport(); // Report needs to show newly selected girder
+}
+
+void CCopyTempSupportDlg::OnToTempSupportChanged()
+{
+   EnableCopyNow();
+}
+
+PierIndexType CCopyTempSupportDlg::GetFromTempSupport()
+{
+   int curSel = m_FromTempSupport.GetCurSel();
+   if (curSel != CB_ERR)
+   {
+      PierIndexType TempSupportIdx = (PierIndexType)m_FromTempSupport.GetItemData(curSel);
+      return TempSupportIdx;
+   }
+   else
+   {
+      ATLASSERT(0);
+      return INVALID_INDEX;
+   }
+}
+
+std::vector<PierIndexType> CCopyTempSupportDlg::GetToTempSupports()
+{
+   int curSel = m_ToTempSupport.GetCurSel();
+   if (curSel != CB_ERR)
+   {
+      PierIndexType TempSupportIdx = (PierIndexType)m_ToTempSupport.GetItemData(curSel);
+      if (ALL_PIERS == TempSupportIdx)
+      {
+         std::vector<PierIndexType> vec;
+         GET_IFACE(IBridgeDescription,pIBridgeDesc);
+         const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+         GroupIndexType nTempSupports = pBridgeDesc->GetTemporarySupportCount();
+         for (PierIndexType iTempSupport = 0; iTempSupport < nTempSupports; iTempSupport++)
+         {
+            vec.push_back(iTempSupport);
+         }
+
+         return vec;
+      }
+      else
+      {
+         return std::vector<PierIndexType>(1,TempSupportIdx);
+      }
+   }
+   else
+   {
+      ATLASSERT(0);
+      return std::vector<PierIndexType>(1,INVALID_INDEX);
+   }
+}
+
+void CCopyTempSupportDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialog::OnSize(nType, cx, cy);
+
+   if (m_pBrowser)
+   {
+      CRect clientRect;
+      GetClientRect( &clientRect );
+
+      CRect sizeRect(0,0,7,7);
+      MapDialogRect(&sizeRect);
+
+      CRect hiddenRect;
+      GetDlgItem(IDC_BROWSER)->GetWindowRect(&hiddenRect);
+      ScreenToClient(hiddenRect);
+      m_pBrowser->Move(hiddenRect.TopLeft());
+      m_pBrowser->Size(hiddenRect.Size());
+
+      // Figure out the print button's new position
+      CRect btnSizeRect(0,0,50,14);
+      MapDialogRect( &btnSizeRect );
+
+      CRect printRect;
+      printRect.bottom = clientRect.bottom - sizeRect.Height();
+      printRect.right  = clientRect.right  - sizeRect.Width();
+      printRect.left   = printRect.right   - btnSizeRect.Width();
+      printRect.top    = printRect.bottom  - btnSizeRect.Height();
+
+      CButton* pButton = (CButton*)GetDlgItem(IDC_PRINT);
+      pButton->MoveWindow( printRect, FALSE );
+
+      Invalidate();
+   }
+}
+
+void CCopyTempSupportDlg::FillComboBoxes(CComboBox& cbTempSupport, bool bIncludeAllTempSupports, PierIndexType excludeIdx)
+{
+   cbTempSupport.ResetContent();
+
+   if ( bIncludeAllTempSupports )
+   {
+      CString strItem (_T("All TempSupports"));
+      int idx = cbTempSupport.AddString(strItem);
+      cbTempSupport.SetItemData(idx,ALL_PIERS);
+   }
+
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   GroupIndexType nTempSupports = pBridgeDesc->GetTemporarySupportCount();
+   for ( PierIndexType TempSupportIdx = 0; TempSupportIdx < nTempSupports; TempSupportIdx++ )
+   {
+      bool isAbut = TempSupportIdx == 0 || TempSupportIdx == nTempSupports - 1;
+
+      // Don't add TempSupport with exclude idx
+      if (TempSupportIdx != excludeIdx)
+      {
+         const CTemporarySupportData* pTempSupport = pBridgeDesc->GetTemporarySupport(TempSupportIdx);
+
+         CString strts;
+         strts.Format(_T("%s %d"), CTemporarySupportData::AsString(pTempSupport->GetSupportType()), LABEL_TEMPORARY_SUPPORT( TempSupportIdx));
+
+         int idx = cbTempSupport.AddString(strts);
+         cbTempSupport.SetItemData(idx, TempSupportIdx);
+      }
+   }
+
+   cbTempSupport.SetCurSel(0);
+}
+
+void CCopyTempSupportDlg::UpdateReportData()
+{
+   GET_IFACE(IReportManager,pReportMgr);
+   std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+
+   PierIndexType TempSupportIdx = GetFromTempSupport();
+   std::vector<PierIndexType> toTempSupports = GetToTempSupports();
+
+   // We know we put at least one of our own chapter builders into the report builder. Find it and set its data
+   CollectionIndexType numchs = pBuilder->GetChapterBuilderCount();
+   for (CollectionIndexType ich = 0; ich < numchs; ich++)
+   {
+      std::shared_ptr<CChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
+      std::shared_ptr<CCopyTempSupportPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyTempSupportPropertiesChapterBuilder,CChapterBuilder>(pChb);
+
+      if (pRptCpBuilder)
+      {
+         pRptCpBuilder->SetCopyTempSupportProperties(m_pCopyTempSupportPropertiesCallback, TempSupportIdx, toTempSupports);
+      }
+   }
+}
+
+void CCopyTempSupportDlg::UpdateReport()
+{
+   if ( m_pBrowser )
+   {
+      UpdateReportData();
+
+      GET_IFACE(IReportManager,pReportMgr);
+      std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+
+      std::shared_ptr<CReportSpecification> pRptSpec = std::dynamic_pointer_cast<CReportSpecification,CCopyTempSupportPropertiesReportSpecification>(m_pRptSpec);
+
+      std::shared_ptr<rptReport> pReport = pBuilder->CreateReport( pRptSpec );
+      m_pBrowser->UpdateReport( pReport, true );
+   }
+}
+
+void CCopyTempSupportDlg::OnHelp()
+{
+   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_COPYTEMPSUPPORTPROPERTIES );
+}
+
+void CCopyTempSupportDlg::OnOK()
+{
+   // CDialog::OnOK(); // we are completely bypassing the default implementation and doing our own thing
+   // want the dialog to stay open until the Close buttom is pressed
+
+   UpdateData(TRUE);
+
+   // execute transactions
+   pgsMacroTxn* pMacro = new pgsMacroTxn;
+   pMacro->Name(_T("Copy TempSupport Properties"));
+
+   txnTransaction* pTxn = m_pCopyTempSupportPropertiesCallback->CreateCopyTransaction(m_FromTempSupportIdx,m_ToTempSupports);
+   if (pTxn)
+   {
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pTxn);
+   }
+
+   EnableCopyNow();
+   UpdateReport();
+}
+
+void CCopyTempSupportDlg::OnCopyItemStateChanged()
+{
+   EnableCopyNow();
+}
+
+void CCopyTempSupportDlg::OnEdit()
+{
+   PierIndexType fromIdx = GetFromTempSupport();
+
+   GET_IFACE(IEditByUI, pEditByUI);
+   UINT tab = m_pCopyTempSupportPropertiesCallback->GetTempSupportEditorTabIndex();
+   pEditByUI->EditTemporarySupportDescription(fromIdx, tab);
+
+   UpdateReport(); // we update whether any changes are made or not
+
+   EnableCopyNow();
+}
+
+void CCopyTempSupportDlg::OnPrint() 
+{
+   m_pBrowser->Print(true);
+}
+
+void CCopyTempSupportDlg::EnableCopyNow()
+{
+   // Must be able to copy all to girders before enabling control
+   PierIndexType copyFrom = GetFromTempSupport();
+   std::vector<PierIndexType> copyTo = GetToTempSupports();
+
+   BOOL bEnable = m_pCopyTempSupportPropertiesCallback->CanCopy(copyFrom, copyTo) ? TRUE : FALSE;
+
+   GetDlgItem(IDOK)->EnableWindow(bEnable);
+}
+
+void CCopyTempSupportDlg::CleanUp()
+{
+   if ( m_pBrowser )
+   {
+      m_pBrowser = std::shared_ptr<CReportBrowser>();
+   }
+
+   // save the size of the window
+   WINDOWPLACEMENT wp;
+   wp.length = sizeof wp;
+   {
+      CEAFApp* pApp = EAFGetApp();
+      if (GetWindowPlacement(&wp))
+      {
+         wp.flags = 0;
+         wp.showCmd = SW_SHOWNORMAL;
+         pApp->WriteWindowPlacement(CString("Window Positions"),CString("CopyTempSupportDialog"),&wp);
+      }
+   }
+}
+
+
+LRESULT CCopyTempSupportDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+   // prevent the dialog from getting smaller than the original size
+   if ( message == WM_SIZING )
+   {
+      LPRECT rect = (LPRECT)lParam;
+      int cx = rect->right - rect->left;
+      int cy = rect->bottom - rect->top;
+
+      if ( cx < m_cxMin || cy < m_cyMin )
+      {
+         // prevent the dialog from moving right or down
+         if ( wParam == WMSZ_BOTTOMLEFT ||
+              wParam == WMSZ_LEFT       ||
+              wParam == WMSZ_TOP        ||
+              wParam == WMSZ_TOPLEFT    ||
+              wParam == WMSZ_TOPRIGHT )
+         {
+            CRect r;
+            GetWindowRect(&r);
+            rect->left = r.left;
+            rect->top  = r.top;
+         }
+         
+         if (cx < m_cxMin)
+         {
+            rect->right = rect->left + m_cxMin;
+         }
+
+         if (cy < m_cyMin)
+         {
+            rect->bottom = rect->top + m_cyMin;
+         }
+
+         return TRUE;
+      }
+   }
+
+   return CDialog::WindowProc(message, wParam, lParam);
+}
+
+
+void CCopyTempSupportDlg::OnDestroy()
+{
+   CDialog::OnDestroy();
+
+   CleanUp();
+}
+
+void CCopyTempSupportDlg::OnCmenuSelected(UINT id)
+{
+  UINT cmd = id-CCS_CMENU_BASE ;
+
+  switch(cmd)
+  {
+  case CCS_RB_EDIT:
+     OnEdit();
+     break;
+
+  case CCS_RB_FIND:
+     m_pBrowser->Find();
+     break;
+
+  case CCS_RB_SELECT_ALL:
+     m_pBrowser->SelectAll();
+     break;
+
+  case CCS_RB_PRINT:
+     m_pBrowser->Print(true);
+     break;
+
+  case CCS_RB_REFRESH:
+     m_pBrowser->Refresh();
+     break;
+
+  case CCS_RB_VIEW_SOURCE:
+     m_pBrowser->ViewSource();
+     break;
+
+  case CCS_RB_VIEW_BACK:
+     m_pBrowser->Back();
+     break;
+
+  case CCS_RB_VIEW_FORWARD:
+     m_pBrowser->Forward();
+     break;
+
+  default:
+     // must be a toc anchor
+     ATLASSERT(cmd>=CCS_RB_TOC);
+     m_pBrowser->NavigateAnchor(cmd-CCS_RB_TOC);
+  }
+}
+
+BOOL CCopyTempSupportDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
+{
+   TOOLTIPTEXT* pTTT = (TOOLTIPTEXT*)pNMHDR;
+   HWND hwndTool = (HWND)pNMHDR->idFrom;
+   if ( pTTT->uFlags & TTF_IDISHWND )
+   {
+      // idFrom is actually HWND of tool
+      UINT nID = ::GetDlgCtrlID(hwndTool);
+      switch(nID)
+      {
+      case IDC_FROM_PIER:
+         m_strTip = _T("The selected \"From\" support is highlighted in Yellow in Comparison report");
+         break;
+      case IDC_EDIT:
+         m_strTip = _T("Edit the selected \"From\" temporary support");
+         break;
+
+      default:
+         return FALSE;
+      }
+
+      ::SendMessage(pNMHDR->hwndFrom,TTM_SETDELAYTIME,TTDT_AUTOPOP,TOOLTIP_DURATION); // sets the display time to 10 seconds
+      pTTT->lpszText = m_strTip.GetBuffer();
+      pTTT->hinst = nullptr;
+      return TRUE;
+   }
+   return FALSE;
+}

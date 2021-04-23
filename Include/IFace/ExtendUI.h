@@ -39,6 +39,7 @@ interface IEditSplicedGirderCallback;
 interface IEditLoadRatingOptionsCallback;
 
 class CPierData2;
+class rptParagraph;
 
 struct EditBridgeExtension
 {
@@ -95,6 +96,59 @@ interface IEditPierCallback
    // Called by the framework to create a propery page for the Pier dialog when the Pier dialog is created from the Bridge dialog
    virtual CPropertyPage* CreatePropertyPage(IEditPierData* pEditPierData,CPropertyPage* pBridgePropertyPage) = 0;
 };
+
+// Callback interface for copying Pier properties. If you are extending the Pier dialog with
+// additional Pier-based data you may want to also have that data copied when the Copy Pier Properties
+// command is executed. Implement this interface, and register it with the IExtendUI interface to
+// have your Pier properties listed in the Copy Pier Properties dialog and for your code
+// to be notified when it is time to copy the data
+interface ICopyPierPropertiesCallback
+{
+   // Text string to be displayed in the Copy Pier Properties dialog
+   virtual LPCTSTR GetName() = 0;
+
+   // Return TRUE if your Pier properties check box should be included in the copy properties list.
+   // This method is called whenever the selection of the source or target Piers changes.
+   virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
+
+   // called by the framework when you need to create a transaction object that
+   // will cause your Pier data to be copied. Allocate the transaction object
+   // on the heap. The framework will delete it when it is no longer needed.
+   virtual txnTransaction* CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
+
+   // UI has an edit button for this callback. Returns the tab index that will be opened
+   virtual UINT GetPierEditorTabIndex() = 0;
+
+   // returns new paragraph to be inserted into Pier comparison report
+   virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
+};
+
+// Callback interface for copying TempSupport properties. If you are extending the TempSupport dialog with
+// additional TempSupport-based data you may want to also have that data copied when the Copy TempSupport Properties
+// command is executed. Implement this interface, and register it with the IExtendUI interface to
+// have your TempSupport properties listed in the Copy TempSupport Properties dialog and for your code
+// to be notified when it is time to copy the data
+interface ICopyTemporarySupportPropertiesCallback
+{
+   // Text string to be displayed in the Copy TempSupport Properties dialog
+   virtual LPCTSTR GetName() = 0;
+
+   // Return TRUE if your TempSupport properties check box should be included in the copy properties list.
+   // This method is called whenever the selection of the source or target TempSupports changes.
+   virtual BOOL CanCopy(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
+
+   // called by the framework when you need to create a transaction object that
+   // will cause your TempSupport data to be copied. Allocate the transaction object
+   // on the heap. The framework will delete it when it is no longer needed.
+   virtual txnTransaction* CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
+
+   // UI has an edit button for this callback. Returns the tab index that will be opened
+   virtual UINT GetTempSupportEditorTabIndex() = 0;
+
+   // returns new paragraph to be inserted into TempSupport comparison report
+   virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
+};
+
 
 // Extend the Edit Temporary Support Dialog
 interface IEditTemporarySupportData
@@ -247,15 +301,21 @@ interface ICopyGirderPropertiesCallback
    virtual LPCTSTR GetName() = 0;
 
    // Return TRUE if your girder properties check box should be included in the copy properties list.
-   // Example: The Slab Offset parameter should not be copied if it is defined as a single value
-   // for the entire bridge. 
+   // Example: Prestressing can only be copied  among like girders
    // This method is called whenever the selection of the source or target girders changes.
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) = 0;
+
 
    // called by the framework when you need to create a transaction object that
    // will cause your girder data to be copied. Allocate the transaction object
    // on the heap. The framework will delete it when it is no longer needed.
    virtual txnTransaction* CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) = 0;
+
+   // UI has an edit button for this callback. Returns the tab index that will be opened
+   virtual UINT GetGirderEditorTabIndex() = 0;
+
+   // returns new paragraph to be inserted into girder comparison report
+   virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) = 0;
 };
 
 // Callback interface for editing load rating options
@@ -280,7 +340,7 @@ DEFINE_GUID(IID_IExtendUI,
 struct __declspec(uuid("{F477FBFC-2C57-42bf-8FB5-A32296087B64}")) IExtendUI;
 interface IExtendUI : IUnknown
 {
-   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback) = 0;
+   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback,ICopyPierPropertiesCallback* pCopyCallback) = 0;
    virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback) = 0;
    virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback) = 0;
    virtual IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback) = 0;
@@ -315,7 +375,7 @@ DEFINE_GUID(IID_IExtendPGSpliceUI,
 struct __declspec(uuid("{0303E609-6BBD-45b0-AFA2-E642CE7DA219}")) IExtendPGSpliceUI;
 interface IExtendPGSpliceUI : IExtendUI
 {
-   virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback) = 0;
+   virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback, ICopyTemporarySupportPropertiesCallback* pCopyCallBack) = 0;
    virtual IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback=nullptr) = 0;
    virtual IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback) = 0;
    virtual IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback) = 0;

@@ -61,4 +61,7 @@ protected:
 
    void CreatePierReactionsReport();
    void CreateTimelineReport();
+   void CreateCopyGirderPropertiesReport();
+   void CreateCopyPierPropertiesReport();
+   void CreateCopyTempSupportPropertiesReport();
 };

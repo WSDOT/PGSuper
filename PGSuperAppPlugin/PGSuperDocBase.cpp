@@ -124,6 +124,7 @@
 #include "GirderEditorSettingsSheet.h"
 #include "CastDeckDlg.h"
 #include "CopyGirderDlg.h"
+#include "CopyPierDlg.h"
 #include "LiveLoadDistFactorsDlg.h"
 #include "LiveLoadSelectDlg.h"
 #include "EditPointLoadDlg.h"
@@ -245,7 +246,11 @@ BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
 	ON_COMMAND(ID_LOADS_LOADMODIFIERS, OnLoadsLoadModifiers)
    ON_COMMAND(ID_LOADS_LOADFACTORS, OnLoadsLoadFactors)
 	ON_COMMAND(ID_VIEWSETTINGS_GIRDEREDITOR, OnViewsettingsGirderEditor)
-	ON_COMMAND(IDM_COPY_GIRDER_PROPS, OnCopyGirderProps)
+   ON_COMMAND_RANGE(FIRST_COPY_GIRDER_PLUGIN,LAST_COPY_GIRDER_PLUGIN, OnCopyGirderProps)
+   ON_COMMAND_RANGE(FIRST_COPY_PIER_PLUGIN,LAST_COPY_PIER_PLUGIN, OnCopyPierProps)
+	ON_UPDATE_COMMAND_UI(ID_COPY_GIRDER_PROPS, OnUpdateCopyGirderPropsTb)
+	ON_UPDATE_COMMAND_UI(ID_COPY_PIER_PROPS, OnUpdateCopyPierPropsTb)
+
 	ON_COMMAND(IDM_IMPORT_PROJECT_LIBRARY, OnImportProjectLibrary)
 	ON_COMMAND(ID_ADD_POINT_LOAD, OnAddPointload)
 	ON_COMMAND(ID_ADD_DISTRIBUTED_LOAD, OnAddDistributedLoad)
@@ -525,6 +530,11 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
    }
 
    return true;
+}
+
+bool CPGSDocBase::EditTemporarySupportDescription(PierIndexType pierIdx, int nPage)
+{
+   return false;
 }
 
 bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
@@ -1686,10 +1696,16 @@ const std::map<IDType,IGirderSectionViewEventCallback*>& CPGSDocBase::GetGirderS
    return m_GirderSectionViewCallbacks;
 }
 
-IDType CPGSDocBase::RegisterEditPierCallback(IEditPierCallback* pCallback)
+IDType CPGSDocBase::RegisterEditPierCallback(IEditPierCallback* pCallback, ICopyPierPropertiesCallback* pCopyCallback)
 {
    IDType key = m_CallbackID++;
    m_EditPierCallbacks.insert(std::make_pair(key,pCallback));
+
+   if ( pCopyCallback )
+   {
+      m_CopyPierPropertiesCallbacks.insert(std::make_pair(key,pCopyCallback));
+   }
+
    return key;
 }
 
@@ -1711,10 +1727,21 @@ const std::map<IDType,IEditPierCallback*>& CPGSDocBase::GetEditPierCallbacks()
    return m_EditPierCallbacks;
 }
 
-IDType CPGSDocBase::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback)
+const std::map<IDType, ICopyPierPropertiesCallback*>& CPGSDocBase::GetCopyPierPropertiesCallbacks()
+{
+   return m_CopyPierPropertiesCallbacks;
+}
+
+IDType CPGSDocBase::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback, ICopyTemporarySupportPropertiesCallback* pCopyCallBack)
 {
    IDType key = m_CallbackID++;
    m_EditTemporarySupportCallbacks.insert(std::make_pair(key,pCallback));
+
+   if (pCopyCallBack)
+   {
+      m_CopyTempSupportPropertiesCallbacks.insert(std::make_pair(key, pCopyCallBack));
+   }
+
    return key;
 }
 
@@ -2036,6 +2063,8 @@ void CPGSDocBase::OnCreateFinalize()
 
    PopulateReportMenu();
    PopulateGraphMenu();
+   PopulateCopyGirderMenu();
+   PopulateCopyPierMenu();
 
 #pragma Reminder("REVIEW - send email option stopped working, the code has been commented out")
 /* This option works if Outlook and PGSuper are running at the same UAC level
@@ -2492,26 +2521,27 @@ BOOL CPGSDocBase::Init()
    pPGSuper->GetAppUnitSystem(&appUnitSystem);
    CreateDocUnitSystem(appUnitSystem,&m_DocUnitSystem);
 
+   m_CopyPierPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyPierAllProperties));
+   m_CopyPierPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyPierConnectionProperties));
+   m_CopyPierPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyPierDiaphragmProperties));
+   m_CopyPierPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyPierModelProperties));
+
+   m_CopyTempSupportPropertiesCallbacks.insert(std::make_pair(m_CallbackID++, &m_CopyTempSupportConnectionProperties));
 
    // register the standard copy girder callback objects
-   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderType));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderAllProperties));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
-   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderSlabOffset));
 
-#pragma Reminder("REVIEW: is this correct for spliced girders?")
-   // the copy girder properties features really hasn't been tested or made to work for spliced
-   // girders yet.
-   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderType));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderAllProperties));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
-   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderSlabOffset));
 
    return TRUE;
 }
@@ -3559,11 +3589,42 @@ void CPGSDocBase::ClearSelection(BOOL bNotify)
    }
 }
 
-void CPGSDocBase::OnCopyGirderProps() 
+void CPGSDocBase::OnCopyGirderProps(UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CCopyGirderDlg dlg(m_pBroker,m_CopyGirderPropertiesCallbacks);
-   dlg.DoModal();
+
+   try
+   {
+      IDType cb_id = m_CopyGirderPropertiesCallbacksCmdMap.at(nID);
+      ICopyGirderPropertiesCallback* icb = m_CopyGirderPropertiesCallbacks.at(cb_id);
+      ATLASSERT(icb);
+
+      CCopyGirderDlg dlg(m_pBroker, icb);
+      dlg.DoModal();
+   }
+   catch (...)
+   {
+      ATLASSERT(0); // map access out of range is the likely problem
+   }
+}
+
+void CPGSDocBase::OnCopyPierProps(UINT nID)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   try
+   {
+      IDType cb_id = m_CopyPierPropertiesCallbacksCmdMap.at(nID);
+      ICopyPierPropertiesCallback* icb = m_CopyPierPropertiesCallbacks.at(cb_id);
+      ATLASSERT(icb);
+
+      CCopyPierDlg dlg(m_pBroker, icb);
+      dlg.DoModal();
+   }
+   catch (...)
+   {
+      ATLASSERT(0); // map access out of range is the likely problem
+   }
 }
 
 void CPGSDocBase::OnImportProjectLibrary() 
@@ -4423,6 +4484,98 @@ void CPGSDocBase::OnEditTimeline()
    EditTimeline();
 }
 
+void CPGSDocBase::OnUpdateCopyGirderPropsTb(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable( TRUE );
+}
+
+BOOL CPGSDocBase::OnCopyGirderPropsTb(NMHDR* pnmhdr,LRESULT* plr) 
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // This method gets called when the down arrow toolbar button is used
+   // It creates the drop down menu with the report names on it
+   NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
+   if ( pnmtb->iItem != ID_COPY_GIRDER_PROPS )
+   {
+      return FALSE; // not our button
+   }
+
+   CMenu menu;
+   VERIFY( menu.LoadMenu(IDR_GRAPHS) );
+   CMenu* pMenu = menu.GetSubMenu(0);
+   pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
+
+   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+
+   int i = 0;
+   for (const auto& ICallBack : m_CopyGirderPropertiesCallbacks)
+   {
+      UINT nCmd = i++ + FIRST_COPY_GIRDER_PLUGIN;
+      CString copyName = ICallBack.second->GetName();
+      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+   }
+
+
+   GET_IFACE(IEAFToolbars,pToolBars);
+   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   int idx = pToolBar->CommandToIndex(ID_COPY_GIRDER_PROPS,nullptr);
+   CRect rect;
+   pToolBar->GetItemRect(idx,&rect);
+
+   CPoint point(rect.left,rect.bottom);
+   pToolBar->ClientToScreen(&point);
+   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+
+   return TRUE;
+}
+
+void CPGSDocBase::OnUpdateCopyPierPropsTb(CCmdUI* pCmdUI)
+{
+   pCmdUI->Enable( TRUE );
+}
+
+BOOL CPGSDocBase::OnCopyPierPropsTb(NMHDR* pnmhdr,LRESULT* plr) 
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // This method gets called when the down arrow toolbar button is used
+   // It creates the drop down menu with the report names on it
+   NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
+   if ( pnmtb->iItem != ID_COPY_PIER_PROPS )
+   {
+      return FALSE; // not our button
+   }
+
+   CMenu menu;
+   VERIFY( menu.LoadMenu(IDR_GRAPHS) );
+   CMenu* pMenu = menu.GetSubMenu(0);
+   pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
+
+   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+
+   int i = 0;
+   for (const auto& ICallBack : m_CopyPierPropertiesCallbacks)
+   {
+      UINT nCmd = i++ + FIRST_COPY_PIER_PLUGIN;
+      CString copyName = ICallBack.second->GetName();
+      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+   }
+
+
+   GET_IFACE(IEAFToolbars,pToolBars);
+   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   int idx = pToolBar->CommandToIndex(ID_COPY_PIER_PROPS,nullptr);
+   CRect rect;
+   pToolBar->GetItemRect(idx,&rect);
+
+   CPoint point(rect.left,rect.bottom);
+   pToolBar->ClientToScreen(&point);
+   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+
+   return TRUE;
+}
+
 BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) 
 {
     // document classes can't process ON_NOTIFY
@@ -4443,6 +4596,16 @@ BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO
            if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_VIEW_GRAPHS )
            {
               return OnViewGraphs(notify->pNMHDR,notify->pResult); 
+           }
+
+           if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_COPY_GIRDER_PROPS )
+           {
+              return OnCopyGirderPropsTb(notify->pNMHDR, notify->pResult);
+           }
+
+           if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_COPY_PIER_PROPS )
+           {
+              return OnCopyPierPropsTb(notify->pNMHDR, notify->pResult);
            }
         }
     }
@@ -4488,6 +4651,106 @@ void CPGSDocBase::PopulateGraphMenu()
    ASSERT(pGraphMenu != nullptr);
 
    CEAFBrokerDocument::PopulateGraphMenu(pGraphMenu);
+}
+
+void CPGSDocBase::PopulateCopyGirderMenu()
+{
+   CEAFMenu* pMainMenu = GetMainMenu();
+
+   UINT CopyPos = pMainMenu->FindMenuItem(_T("&Copy"));
+   ASSERT( 0 <= CopyPos );
+
+   CEAFMenu* pCopyMenu = pMainMenu->GetSubMenu(CopyPos);
+   ASSERT( pCopyMenu != nullptr );
+
+   UINT GirdersPos = pCopyMenu->FindMenuItem(_T("&Girder"));
+   ASSERT( 0 <= GirdersPos );
+
+   // Get the girders menu
+   CEAFMenu* pGirderMenu = pCopyMenu->GetSubMenu(GirdersPos);
+   ASSERT(pGirderMenu != nullptr);
+
+   // remove any old items
+   UINT nItems = pGirderMenu->GetMenuItemCount();
+   for ( UINT idx = 0; idx < nItems; idx++ )
+   {
+      pGirderMenu->RemoveMenu(0,MF_BYPOSITION,nullptr);
+   }
+
+   m_CopyGirderPropertiesCallbacksCmdMap.clear();
+
+   // if this assert fires, there are more graphs than can be put into the menus
+   // EAF only reserves enough room for EAF_GRAPH_MENU_COUNT graphs
+   const int MENU_COUNT = LAST_COPY_GIRDER_PLUGIN - FIRST_COPY_GIRDER_PLUGIN;
+   ATLASSERT(m_CopyGirderPropertiesCallbacks.size() < MENU_COUNT);
+
+   UINT i = 0;
+   for (const auto& ICallBack : m_CopyGirderPropertiesCallbacks )
+   {
+      UINT nCmd = i + FIRST_COPY_GIRDER_PLUGIN;
+      CString copyName = ICallBack.second->GetName();
+      pGirderMenu->AppendMenu(nCmd,copyName,nullptr);
+
+      // save command ID so we can map UI
+      m_CopyGirderPropertiesCallbacksCmdMap.insert(std::make_pair(nCmd, ICallBack.first));
+
+//      const CBitmap* pBmp = pGraphMgr->GetMenuBitmap(graphName);
+//      pGirderMenu->SetMenuItemBitmaps(nCmd,MF_BYCOMMAND,pBmp,nullptr,nullptr);
+
+      i++;
+
+      ASSERT(i <= MENU_COUNT);
+   }
+}
+
+void CPGSDocBase::PopulateCopyPierMenu()
+{
+   CEAFMenu* pMainMenu = GetMainMenu();
+
+   UINT CopyPos = pMainMenu->FindMenuItem(_T("&Copy"));
+   ASSERT( 0 <= CopyPos );
+
+   CEAFMenu* pCopyMenu = pMainMenu->GetSubMenu(CopyPos);
+   ASSERT( pCopyMenu != nullptr );
+
+   UINT PiersPos = pCopyMenu->FindMenuItem(_T("&Pier"));
+   ASSERT( 0 <= PiersPos );
+
+   // Get the Piers menu
+   CEAFMenu* pPierMenu = pCopyMenu->GetSubMenu(PiersPos);
+   ASSERT(pPierMenu != nullptr);
+
+   // remove any old items
+   UINT nItems = pPierMenu->GetMenuItemCount();
+   for ( UINT idx = 0; idx < nItems; idx++ )
+   {
+      pPierMenu->RemoveMenu(0,MF_BYPOSITION,nullptr);
+   }
+
+   m_CopyPierPropertiesCallbacksCmdMap.clear();
+
+   // if this assert fires, there are more graphs than can be put into the menus
+   // EAF only reserves enough room for EAF_GRAPH_MENU_COUNT graphs
+   const int MENU_COUNT = LAST_COPY_PIER_PLUGIN - FIRST_COPY_PIER_PLUGIN;
+   ATLASSERT(m_CopyPierPropertiesCallbacks.size() < MENU_COUNT);
+
+   UINT i = 0;
+   for (const auto& ICallBack : m_CopyPierPropertiesCallbacks )
+   {
+      UINT nCmd = i + FIRST_COPY_PIER_PLUGIN;
+      CString copyName = ICallBack.second->GetName();
+      pPierMenu->AppendMenu(nCmd,copyName,nullptr);
+
+      // save command ID so we can map UI
+      m_CopyPierPropertiesCallbacksCmdMap.insert(std::make_pair(nCmd, ICallBack.first));
+
+//      const CBitmap* pBmp = pGraphMgr->GetMenuBitmap(graphName);
+//      pPierMenu->SetMenuItemBitmaps(nCmd,MF_BYCOMMAND,pBmp,nullptr,nullptr);
+
+      i++;
+
+      ASSERT(i <= MENU_COUNT);
+   }
 }
 
 void CPGSDocBase::LoadDocumentSettings()

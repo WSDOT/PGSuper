@@ -247,6 +247,7 @@ public:
    virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) override;
    virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage) override;
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) override;
+   virtual bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage) override; 
    virtual void EditLiveLoads() override;
    virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) override;
    virtual bool EditPointLoad(CollectionIndexType loadIdx) override;
@@ -312,7 +313,7 @@ public:
 
 // IExtendUI
 public:
-   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback) override;
+   virtual IDType RegisterEditPierCallback(IEditPierCallback* pCallback,ICopyPierPropertiesCallback* pCopyCallback) override;
    virtual IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback) override;
    virtual IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback) override;
    virtual IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback) override;
@@ -328,7 +329,7 @@ public:
 
 // IExtendPGSpliceUI
 public:
-   virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback) override;
+   virtual IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback, ICopyTemporarySupportPropertiesCallback* pCopyCallBack) override;
    virtual IDType RegisterEditSplicedGirderCallback(IEditSplicedGirderCallback* pCallback,ICopyGirderPropertiesCallback* pCopyCallback) override;
    virtual IDType RegisterEditSegmentCallback(IEditSegmentCallback* pCallback) override;
    virtual IDType RegisterEditClosureJointCallback(IEditClosureJointCallback* pCallback) override;

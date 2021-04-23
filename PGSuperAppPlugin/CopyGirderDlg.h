@@ -32,6 +32,7 @@
 #include "resource.h"
 #include <vector>
 #include "MultiGirderSelectDlg.h"
+#include <Reporting\CopyGirderPropertiesReportSpecification.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyGirderDlg dialog
@@ -40,7 +41,7 @@ class CCopyGirderDlg : public CDialog
 {
 // Construction
 public:
-	CCopyGirderDlg(IBroker* pBroker, std::map<IDType,ICopyGirderPropertiesCallback*>& rCopyGirderPropertiesCallbacks, CWnd* pParent = nullptr);   // standard constructor
+	CCopyGirderDlg(IBroker* pBroker, ICopyGirderPropertiesCallback* pCopyGirderPropertiesCallback, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCopyGirderDlg)
@@ -50,10 +51,6 @@ public:
    CComboBox m_FromGirder;
    CComboBox m_ToGroup;
    CComboBox m_ToGirder;
-
-   CCheckListBox m_PropertiesList;
-   std::vector<IDType> GetCallbackIDs();
-
 	//}}AFX_DATA
 
 // Overrides
@@ -76,13 +73,12 @@ public:
 
 // Implementation
 protected:
-   std::vector<IDType> m_CallbackIDs;
-
    CSelection m_FromSelection;
 
 	// Generated message map functions
 	//{{AFX_MSG(CCopyGirderDlg)
-	virtual BOOL OnInitDialog();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+   virtual BOOL OnInitDialog();
    afx_msg void OnFromGroupChanged();
    afx_msg void OnToGroupChanged();
    afx_msg void OnToGirderChanged();
@@ -90,25 +86,46 @@ protected:
    afx_msg void OnHelp();
    afx_msg void OnBnClickedRadio();
    afx_msg void OnBnClickedSelectGirders();
-   afx_msg void OnCopyItemStateChanged();
+   afx_msg void OnEdit();
+	afx_msg void OnPrint();
+   afx_msg void OnCmenuSelected(UINT id);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   void CopyToSelectionChanged();
+   BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
+
    IBroker* m_pBroker;
-   std::map<IDType,ICopyGirderPropertiesCallback*>& m_rCopyGirderPropertiesCallbacks;
+   ICopyGirderPropertiesCallback* m_pCopyGirderPropertiesCallback;
 
    void FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool bIncludeAllGroups, bool bIncludeAllGirders);
    void FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpIdx,bool bIncludeAllGirders);
 
+   void UpdateReportData();
+   void UpdateReport();
+
    std::map<int,CGirderKey> m_FromListIndicies;
 
 private:
+   std::shared_ptr<CCopyGirderPropertiesReportSpecification> m_pRptSpec;
+   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+
    // map from multi-select dialog
    std::vector<CGirderKey> m_MultiDialogSelections;
+
+   int m_cxMin;
+   int m_cyMin;
+
+   bool m_bIsPGSplice;
+   CString m_strTip;
+
 protected:
    virtual void OnOK();
-   void EnableCopyNow(BOOL bEnable);
+   void EnableCopyNow();
+   void CleanUp();
+
+   virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+public:
+   afx_msg void OnDestroy();
 };
 
 //{{AFX_INSERT_LOCATION}}

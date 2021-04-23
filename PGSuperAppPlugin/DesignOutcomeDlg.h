@@ -87,6 +87,7 @@ protected:
 	virtual void OnCancel();
 	virtual void OnOK();
 	afx_msg void OnHelp();
+   afx_msg void OnCmenuSelected(UINT id);
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

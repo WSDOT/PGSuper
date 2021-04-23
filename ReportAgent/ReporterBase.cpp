@@ -29,6 +29,9 @@
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <Reporting\BridgeAnalysisReportSpecificationBuilder.h>
 #include <Reporting\TimelineManagerReportSpecificationBuilder.h>
+#include <Reporting\CopyGirderPropertiesReportSpecificationBuilder.h>
+#include <Reporting\CopyPierPropertiesReportSpecificationBuilder.h>
+#include <Reporting\CopyTempSupportPropertiesReportSpecificationBuilder.h>
 
 #include <Reporting\AlignmentChapterBuilder.h>
 #include <Reporting\DeckElevationChapterBuilder.h>
@@ -64,6 +67,9 @@
 #include <Reporting\UserDefinedLoadsChapterBuilder.h>
 #include <Reporting\CastingYardRebarRequirementChapterBuilder.h>
 #include <Reporting\BearingSeatElevationsDetailsChapterBuilder2.h>
+#include <Reporting\CopyGirderPropertiesChapterBuilder.h>
+#include <Reporting\CopyPierPropertiesChapterBuilder.h>
+#include <Reporting\CopyTempSupportPropertiesChapterBuilder.h>
 
 #include <Reporting\LoadRatingChapterBuilder.h>
 #include <Reporting\LoadRatingDetailsChapterBuilder.h>
@@ -135,6 +141,9 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreatePrincipalWebStressDetailsReport();
    CreatePierReactionsReport();
    CreateTimelineReport();
+   CreateCopyGirderPropertiesReport();
+   CreateCopyPierPropertiesReport();
+   CreateCopyTempSupportPropertiesReport();
 
 #if defined _DEBUG || defined _BETA_VERSION
    // these are just some testing/debugging reports
@@ -528,6 +537,45 @@ void CReporterBase::CreateTimelineReport()
    //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
    pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
    pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CTimelineChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateCopyGirderPropertiesReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyGirderPropertiesReportSpecificationBuilder>(m_pBroker));
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Copy Girder Properties Report"), true)); // hidden report
+   //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
+   pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CCopyGirderPropertiesChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateCopyPierPropertiesReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyPierPropertiesReportSpecificationBuilder>(m_pBroker));
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Copy Pier Properties Report"), true)); // hidden report
+   //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
+   pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CCopyPierPropertiesChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateCopyTempSupportPropertiesReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyTempSupportPropertiesReportSpecificationBuilder>(m_pBroker));
+
+   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Copy Temporary Support Properties Report"), true)); // hidden report
+   //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
+   pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CCopyTempSupportPropertiesChapterBuilder));
    pRptMgr->AddReportBuilder(pRptBuilder.release());
 }
 

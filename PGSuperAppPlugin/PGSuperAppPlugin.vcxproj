@@ -542,6 +542,10 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClCompile Include="BridgeDescFramingGrid.cpp" />
     <ClCompile Include="BridgeDescFramingPage.cpp" />
     <ClCompile Include="BridgeDescGeneralPage.cpp" />
+    <ClCompile Include="CopyPierDlg.cpp" />
+    <ClCompile Include="CopyPierPropertiesCallbacks.cpp" />
+    <ClCompile Include="CopyTempSupportDlg.cpp" />
+    <ClCompile Include="CopyTempSupportPropertiesCallbacks.cpp" />
     <ClCompile Include="DrawDeckRegionControl.cpp" />
     <ClCompile Include="FileSaveWarningDlg.cpp" />
     <ClCompile Include="GirderDescGeneralPage.cpp" />
@@ -974,6 +978,10 @@ xcopy /y/d/s $(PGSUPERDIR)\Configurations $(BRIDGELINKDIR)\Configurations\
     <ClInclude Include="BridgeDescFramingGrid.h" />
     <ClInclude Include="BridgeDescFramingPage.h" />
     <ClInclude Include="BridgeDescGeneralPage.h" />
+    <ClInclude Include="CopyPierDlg.h" />
+    <ClInclude Include="CopyPierPropertiesCallbacks.h" />
+    <ClInclude Include="CopyTempSupportDlg.h" />
+    <ClInclude Include="CopyTempSupportPropertiesCallbacks.h" />
     <ClInclude Include="DrawDeckRegionControl.h" />
     <ClInclude Include="FileSaveWarningDlg.h" />
     <ClInclude Include="GirderDescGeneralPage.h" />

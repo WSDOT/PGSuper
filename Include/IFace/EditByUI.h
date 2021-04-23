@@ -46,6 +46,11 @@
 #define EPD_CONNECTION     3
 #define EPD_BEARINGS       4
 
+// Temporary support editing
+#define ETS_GENERAL        0
+#define ETS_CONNECTION     1
+#define ETS_SPACING        2
+
 // Span Editing
 #define ESD_GENERAL        0
 #define ESD_CONNECTION     1
@@ -98,6 +103,7 @@ interface IEditByUI : IUnknown
    virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) = 0;
    virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage) = 0;
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) = 0;
+   virtual bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage) = 0;
    virtual void EditLiveLoads() = 0;
    virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) = 0;
    virtual bool EditPointLoad(CollectionIndexType loadIdx) = 0;

@@ -37,6 +37,7 @@
 #include "EditTimelineDlg.h"
 #include "CastClosureJointDlg.h" // for Temporary Support labeling
 #include "ClosureJointDlg.h"
+#include "CopyTempSupportDlg.h"
 
 // Transactions
 #include "EditClosureJoint.h"
@@ -79,6 +80,10 @@ BEGIN_MESSAGE_MAP(CPGSpliceDoc, CPGSDocBase)
 	ON_COMMAND(ID_DELETE, OnDeleteSelection)
 	ON_UPDATE_COMMAND_UI(ID_DELETE, OnUpdateDeleteSelection)
    ON_COMMAND(ID_DELETE_TEMPORARY_SUPPORT,OnDeleteTemporarySupport)
+   ON_COMMAND_RANGE(FIRST_COPY_TEMP_SUP_PLUGIN,LAST_COPY_TEMP_SUP_PLUGIN, OnCopyTempSupportProps)
+   ON_UPDATE_COMMAND_UI_RANGE(FIRST_COPY_TEMP_SUP_PLUGIN,LAST_COPY_TEMP_SUP_PLUGIN,OnUpdateCopyTempSupportProps)
+	ON_UPDATE_COMMAND_UI(ID_COPY_TEMPSUPPORT_PROPS, OnUpdateCopyTempSupportProps)
+
    //}}AFX_MSG_MAP
 
    // this doesn't work for documents... see OnCmdMsg for handling of WM_NOTIFY
@@ -132,6 +137,11 @@ BOOL CPGSpliceDoc::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINF
            if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_EDIT_SEGMENT )
            {
               return OnEditGirderDropDown(notify->pNMHDR,notify->pResult); 
+           }
+
+           if ( notify->pNMHDR->idFrom == m_pPGSuperDocProxyAgent->GetStdToolBarID() && ((NMTOOLBAR*)(notify->pNMHDR))->iItem == ID_COPY_TEMPSUPPORT_PROPS )
+           {
+              return OnCopyTempSupportPropsTb(notify->pNMHDR, notify->pResult);
            }
         }
     }
@@ -499,6 +509,75 @@ void CPGSpliceDoc::OnDeleteTemporarySupport()
    }
 }
 
+void CPGSpliceDoc::OnCopyTempSupportProps(UINT nID)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   try
+   {
+      IDType cb_id = m_CopyTempSupportPropertiesCallbacksCmdMap.at(nID);
+      ICopyTemporarySupportPropertiesCallback* icb = m_CopyTempSupportPropertiesCallbacks.at(cb_id);
+      ATLASSERT(icb);
+
+      CCopyTempSupportDlg dlg(m_pBroker, icb);
+      dlg.DoModal();
+   }
+   catch (...)
+   {
+      ATLASSERT(0); // map access out of range is the likely problem
+   }
+}
+
+void CPGSpliceDoc::OnUpdateCopyTempSupportProps(CCmdUI * pCmdUI)
+{
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   // Can't copy from/to unless there is more than one temp support
+   PierIndexType nts = pBridgeDesc->GetTemporarySupportCount();
+   pCmdUI->Enable(nts > 1);
+}
+
+BOOL CPGSpliceDoc::OnCopyTempSupportPropsTb(NMHDR* pnmhdr,LRESULT* plr) 
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // This method gets called when the down arrow toolbar button is used
+   // It creates the drop down menu with the report names on it
+   NMTOOLBAR* pnmtb = (NMTOOLBAR*)(pnmhdr);
+   if ( pnmtb->iItem != ID_COPY_TEMPSUPPORT_PROPS )
+   {
+      return FALSE; // not our button
+   }
+
+   CMenu menu;
+   VERIFY( menu.LoadMenu(IDR_GRAPHS) );
+   CMenu* pMenu = menu.GetSubMenu(0);
+   pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
+
+   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+
+   int i = 0;
+   for (const auto& ICallBack : m_CopyTempSupportPropertiesCallbacks)
+   {
+      UINT nCmd = i++ + FIRST_COPY_TEMP_SUP_PLUGIN;
+      CString copyName = ICallBack.second->GetName();
+      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+   }
+
+   GET_IFACE(IEAFToolbars,pToolBars);
+   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   int idx = pToolBar->CommandToIndex(ID_COPY_TEMPSUPPORT_PROPS,nullptr);
+   CRect rect;
+   pToolBar->GetItemRect(idx,&rect);
+
+   CPoint point(rect.left,rect.bottom);
+   pToolBar->ClientToScreen(&point);
+   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+
+   return TRUE;
+}
+
 void CPGSpliceDoc::OnEditBridgeDescription() 
 {
    EditBridgeDescription(0); // open to first page
@@ -704,10 +783,62 @@ BOOL CPGSpliceDoc::InitMainMenu()
    CEAFMenu* pLoadMenu = pMainMenu->GetSubMenu(position);
    pLoadMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,nullptr);
 
+   PopulateCopyTempSupportMenu();
+
    return TRUE;
 }
 
 void CPGSpliceDoc::ModifyTemplate(LPCTSTR strTemplate)
 {
    CPGSDocBase::ModifyTemplate(strTemplate);
+}
+
+void CPGSpliceDoc::PopulateCopyTempSupportMenu()
+{
+   CEAFMenu* pMainMenu = GetMainMenu();
+
+   UINT CopyPos = pMainMenu->FindMenuItem(_T("&Copy"));
+   ASSERT( 0 <= CopyPos );
+
+   CEAFMenu* pCopyMenu = pMainMenu->GetSubMenu(CopyPos);
+   ASSERT( pCopyMenu != nullptr );
+
+   UINT TempSupportsPos = pCopyMenu->FindMenuItem(_T("&Temporary Support"));
+   ASSERT( 0 <= TempSupportsPos );
+
+   // Get the Piers menu
+   CEAFMenu* pTempSupportMenu = pCopyMenu->GetSubMenu(TempSupportsPos);
+   ASSERT(pTempSupportMenu != nullptr);
+
+   // remove any old items
+   UINT nItems = pTempSupportMenu->GetMenuItemCount();
+   for ( UINT idx = 0; idx < nItems; idx++ )
+   {
+      pTempSupportMenu->RemoveMenu(0,MF_BYPOSITION,nullptr);
+   }
+
+   m_CopyTempSupportPropertiesCallbacksCmdMap.clear();
+
+   // if this assert fires, there are more graphs than can be put into the menus
+   // EAF only reserves enough room for EAF_GRAPH_MENU_COUNT graphs
+   const int MENU_COUNT = LAST_COPY_TEMP_SUP_PLUGIN - FIRST_COPY_TEMP_SUP_PLUGIN;
+   ATLASSERT(m_CopyTempSupportPropertiesCallbacks.size() < MENU_COUNT);
+
+   UINT i = 0;
+   for (const auto& ICallBack : m_CopyTempSupportPropertiesCallbacks )
+   {
+      UINT nCmd = i + FIRST_COPY_TEMP_SUP_PLUGIN;
+      CString copyName = ICallBack.second->GetName();
+      pTempSupportMenu->AppendMenu(nCmd,copyName,nullptr);
+
+      // save command ID so we can map UI
+      m_CopyTempSupportPropertiesCallbacksCmdMap.insert(std::make_pair(nCmd, ICallBack.first));
+
+//      const CBitmap* pBmp = pGraphMgr->GetMenuBitmap(graphName);
+//      pTempSupportMenu->SetMenuItemBitmaps(nCmd,MF_BYCOMMAND,pBmp,nullptr,nullptr);
+
+      i++;
+
+      ASSERT(i <= MENU_COUNT);
+   }
 }

@@ -818,6 +818,18 @@
     <ClCompile Include="TimelineReportDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CopyPierDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyPierPropertiesCallbacks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyTempSupportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyTempSupportPropertiesCallbacks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PGSuperAppPlugin_i.h" />
@@ -1735,6 +1747,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TimelineReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyPierDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyPierPropertiesCallbacks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyTempSupportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CopyTempSupportPropertiesCallbacks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

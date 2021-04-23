@@ -149,6 +149,10 @@ void CPGSuperDocProxyAgent::CreateToolBars()
    pToolBar->CreateDropDownButton(ID_VIEW_GRAPHS, nullptr,BTNS_WHOLEDROPDOWN);
    pToolBar->CreateDropDownButton(ID_VIEW_REPORTS,nullptr,BTNS_WHOLEDROPDOWN);
 
+   pToolBar->CreateDropDownButton(ID_COPY_GIRDER_PROPS,nullptr,BTNS_WHOLEDROPDOWN);
+   pToolBar->CreateDropDownButton(ID_COPY_PIER_PROPS,nullptr,BTNS_WHOLEDROPDOWN);
+   pToolBar->CreateDropDownButton(ID_COPY_TEMPSUPPORT_PROPS,nullptr,BTNS_WHOLEDROPDOWN);
+
    m_LibToolBarID = pToolBars->CreateToolBar(_T("Library"));
    pToolBar = pToolBars->GetToolBar(m_LibToolBarID);
    pToolBar->LoadToolBar(IDR_LIBTOOLBAR,nullptr);
@@ -1187,6 +1191,21 @@ bool CPGSuperDocProxyAgent::EditPierDescription(PierIndexType pierIdx, int nPage
    return m_pMyDocument->EditPierDescription(pierIdx,nPage);
 }
 
+bool CPGSuperDocProxyAgent::EditTemporarySupportDescription(PierIndexType pierIdx, int nPage)
+{
+   if (IsPGSpliceDocument())
+   {
+      CPGSpliceDoc* pPGSplice = dynamic_cast<CPGSpliceDoc*>(m_pMyDocument);
+      ATLASSERT(pPGSplice != nullptr);
+
+      return pPGSplice->EditTemporarySupportDescription(pierIdx, nPage);
+   }
+   else
+   {
+      return false;
+   }
+}
+
 void CPGSuperDocProxyAgent::EditLiveLoads()
 {
    return m_pMyDocument->OnLiveLoads();
@@ -1418,14 +1437,14 @@ bool CPGSuperDocProxyAgent::UnregisterGirderSectionViewCallback(IDType ID)
    return m_pMyDocument->UnregisterGirderSectionViewCallback(ID);
 }
 
-IDType CPGSuperDocProxyAgent::RegisterEditPierCallback(IEditPierCallback* pCallback)
+IDType CPGSuperDocProxyAgent::RegisterEditPierCallback(IEditPierCallback* pCallback,ICopyPierPropertiesCallback* pCopyCallback)
 {
-   return m_pMyDocument->RegisterEditPierCallback(pCallback);
+   return m_pMyDocument->RegisterEditPierCallback(pCallback, pCopyCallback);
 }
 
-IDType CPGSuperDocProxyAgent::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback)
+IDType CPGSuperDocProxyAgent::RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback, ICopyTemporarySupportPropertiesCallback* pCopyCallBack)
 {
-   return m_pMyDocument->RegisterEditTemporarySupportCallback(pCallback);
+   return m_pMyDocument->RegisterEditTemporarySupportCallback(pCallback, pCopyCallBack);
 }
 
 IDType CPGSuperDocProxyAgent::RegisterEditSpanCallback(IEditSpanCallback* pCallback)

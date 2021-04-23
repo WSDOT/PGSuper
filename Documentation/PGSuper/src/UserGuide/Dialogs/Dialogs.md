@@ -17,6 +17,7 @@ PGSuper Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_construct_segments
 * @subpage ug_dialogs_copy_concrete
 * @subpage ug_dialogs_copy_girder_properties
+* @subpage ug_dialogs_copy_pier_properties
 * @subpage ug_dialogs_design_complete
 * @subpage ug_dialogs_design_live_loads
 * @subpage ug_dialogs_distributed_load

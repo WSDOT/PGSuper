@@ -60,6 +60,7 @@ protected:
 	afx_msg void OnPrint();
 	virtual void OnOK();
 	virtual BOOL OnInitDialog();
+   afx_msg void OnCmenuSelected(UINT id);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

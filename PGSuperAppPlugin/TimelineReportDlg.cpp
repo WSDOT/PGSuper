@@ -27,6 +27,7 @@
 #include "TimelineReportDlg.h"
 #include <IReportManager.h>
 #include <EAF\EAFDocument.h>
+#include <EAF\EAFCustSiteVars.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -55,6 +56,7 @@ BEGIN_MESSAGE_MAP(CTimelineReportDlg, CDialog)
 	//{{AFX_MSG_MAP(CTimelineReportDlg)
 	ON_WM_SIZE()
 	ON_BN_CLICKED(IDC_PRINT, OnPrint)
+   ON_COMMAND_RANGE(CCS_CMENU_BASE, CCS_CMENU_MAX, OnCmenuSelected)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -141,4 +143,49 @@ void CTimelineReportDlg::CleanUp()
          pApp->WriteWindowPlacement(CString("Window Positions"),CString("TimelineManager"),&wp);
       }
    }
+}
+
+void CTimelineReportDlg::OnCmenuSelected(UINT id)
+{
+  UINT cmd = id-CCS_CMENU_BASE ;
+
+  switch(cmd)
+  {
+  case CCS_RB_EDIT:
+//     OnEdit();
+     break;
+
+  case CCS_RB_FIND:
+     m_pBrowser->Find();
+     break;
+
+  case CCS_RB_SELECT_ALL:
+     m_pBrowser->SelectAll();
+     break;
+
+  case CCS_RB_PRINT:
+     m_pBrowser->Print(true);
+     break;
+
+  case CCS_RB_REFRESH:
+     m_pBrowser->Refresh();
+     break;
+
+  case CCS_RB_VIEW_SOURCE:
+     m_pBrowser->ViewSource();
+     break;
+
+  case CCS_RB_VIEW_BACK:
+     m_pBrowser->Back();
+     break;
+
+  case CCS_RB_VIEW_FORWARD:
+     m_pBrowser->Forward();
+     break;
+
+  default:
+     // must be a toc anchor
+     ATLASSERT(cmd>=CCS_RB_TOC);
+     m_pBrowser->NavigateAnchor(cmd-CCS_RB_TOC);
+  }
 }

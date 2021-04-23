@@ -138,9 +138,13 @@ private:
    PierIndexType m_OldStartingPierNumber;
 };
 
-
+// At piers
 LPCTSTR PGSEXTFUNC GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbutment,bool bAbbreviation);
 LPCTSTR PGSEXTFUNC GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type,bool bAbutment,bool bAbbreviation);
+
+// At temporary supports
+LPCTSTR PGSEXTFUNC GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbbreviation);
+LPCTSTR PGSEXTFUNC GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type,bool bAbbreviation);
 
 CString PGSEXTFUNC GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits);
 CString PGSEXTFUNC GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits);

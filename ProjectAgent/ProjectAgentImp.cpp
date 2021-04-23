@@ -7928,6 +7928,50 @@ const CBearingData2* CProjectAgentImp::GetBearingData(PierIDType pierIdx, pgsTyp
    }
 }
 
+void CProjectAgentImp::SetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                             Float64 endDist, ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure,
+                                             Float64 bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType bearingOffsetMeasurementType)
+{
+   CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
+   bool wasSet = false;
+   wasSet |= pPier->SetGirderEndDistance(face, endDist, endDistMeasure);
+   wasSet |= pPier->SetBearingOffset(face, bearingOffset, bearingOffsetMeasurementType);
+
+   if (wasSet)
+   {
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::GetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                             Float64* endDist, ConnectionLibraryEntry::EndDistanceMeasurementType* endDistMeasure,
+                                             Float64* bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType* bearingOffsetMeasurementType) const
+{
+   const CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
+   pPier->GetGirderEndDistance(face, endDist, endDistMeasure);
+   pPier->GetBearingOffset(face, bearingOffset, bearingOffsetMeasurementType);
+}
+
+void CProjectAgentImp::SetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64 height, Float64 width, ConnectionLibraryEntry::DiaphragmLoadType loadType, Float64 loadLocation)
+{
+   CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
+   pPier->SetDiaphragmHeight(face, height);
+   pPier->SetDiaphragmWidth(face, width);
+   pPier->SetDiaphragmLoadType(face, loadType);
+   pPier->SetDiaphragmLoadLocation(face, loadLocation);
+}
+
+void CProjectAgentImp::GetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,
+                                    Float64* pHeight, Float64* pWidth, ConnectionLibraryEntry::DiaphragmLoadType* pLoadType, Float64* pLoadLocation) const
+{
+   const CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
+   *pHeight = pPier->GetDiaphragmHeight(face);
+   *pWidth = pPier->GetDiaphragmWidth(face);
+   *pLoadType = pPier->GetDiaphragmLoadType(face);
+   *pLoadLocation = pPier->GetDiaphragmLoadLocation(face);
+}
+
 bool CProjectAgentImp::IsCompatibleGirder(const CGirderKey& girderKey, LPCTSTR lpszGirderName) const
 {
    ASSERT_GIRDER_KEY(girderKey);
@@ -8405,6 +8449,22 @@ void CProjectAgentImp::SetStrandData(const CSegmentKey& segmentKey,const CStrand
    if ( pSegment->Strands != strands )
    {
       pSegment->Strands = strands;
+      Fire_GirderChanged(segmentKey,GCH_PRESTRESSING_CONFIGURATION);
+   }
+}
+
+const CSegmentPTData* CProjectAgentImp::GetSegmentPTData(const CSegmentKey& segmentKey) const
+{
+   const CPrecastSegmentData* pSegment = GetSegment(segmentKey);
+   return &pSegment->Tendons;
+}
+
+void CProjectAgentImp::SetSegmentPTData(const CSegmentKey& segmentKey,const CSegmentPTData& tendons)
+{
+   CPrecastSegmentData* pSegment = GetSegment(segmentKey);
+   if ( pSegment->Tendons != tendons )
+   {
+      pSegment->Tendons = tendons;
       Fire_GirderChanged(segmentKey,GCH_PRESTRESSING_CONFIGURATION);
    }
 }

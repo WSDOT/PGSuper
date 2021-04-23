@@ -20,6 +20,8 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_construction_loads
 * @subpage ug_dialogs_copy_concrete
 * @subpage ug_dialogs_copy_girder_properties
+* @subpage ug_dialogs_copy_pier_properties
+* @subpage ug_dialogs_copy_tempsupport_properties
 * @subpage ug_dialogs_design_live_loads
 * @subpage ug_dialogs_distributed_load
 * @subpage ug_dialogs_effective_flange_width

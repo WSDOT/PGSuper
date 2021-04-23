@@ -47,6 +47,8 @@
 #include "PGSuperPluginMgr.h"
 
 #include "CopyGirderPropertiesCallbacks.h"
+#include "CopyPierPropertiesCallbacks.h"
+#include "CopyTempSupportPropertiesCallbacks.h"
 
 #define PGSUPER_DOCUMENT_ROOT_NODE_VERSION 3.0
 
@@ -185,6 +187,8 @@ public:
 
    void PopulateReportMenu();
    void PopulateGraphMenu();
+   void PopulateCopyGirderMenu();
+   void PopulateCopyPierMenu();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -237,11 +241,13 @@ public:
    bool UnregisterGirderSectionViewCallback(IDType ID);
    const std::map<IDType, IGirderSectionViewEventCallback*>& GetGirderSectionViewCallbacks();
 
-   IDType RegisterEditPierCallback(IEditPierCallback* pCallback);
+   IDType RegisterEditPierCallback(IEditPierCallback* pCallback, ICopyPierPropertiesCallback* pCopyCallback);
    bool UnregisterEditPierCallback(IDType ID);
    const std::map<IDType, IEditPierCallback*>& GetEditPierCallbacks();
+   const std::map<IDType, ICopyPierPropertiesCallback*>& GetCopyPierPropertiesCallbacks();
 
-   IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback);
+
+   IDType RegisterEditTemporarySupportCallback(IEditTemporarySupportCallback* pCallback, ICopyTemporarySupportPropertiesCallback* pCopyCallBack);
    bool UnregisterEditTemporarySupportCallback(IDType ID);
    const std::map<IDType, IEditTemporarySupportCallback*>& GetEditTemporarySupportCallbacks();
 
@@ -284,6 +290,7 @@ public:
    void EditAlignmentDescription(int nPage);
    bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
    bool EditPierDescription(PierIndexType pierIdx, int nPage);
+   bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage);
    bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey);
    bool EditDirectRowInputPrestressing(const CSegmentKey& segmentKey);
    bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey);
@@ -376,7 +383,9 @@ protected:
 
    // UI/Dialog Extension Callbacks
    std::map<IDType,IEditPierCallback*>              m_EditPierCallbacks;
+   std::map<IDType,ICopyPierPropertiesCallback*>    m_CopyPierPropertiesCallbacks;
    std::map<IDType,IEditTemporarySupportCallback*>  m_EditTemporarySupportCallbacks;
+   std::map<IDType,ICopyTemporarySupportPropertiesCallback*> m_CopyTempSupportPropertiesCallbacks;
    std::map<IDType,IEditSpanCallback*>              m_EditSpanCallbacks;
    std::map<IDType,IEditGirderCallback*>            m_EditGirderCallbacks;
    std::map<IDType,ICopyGirderPropertiesCallback*>  m_CopyGirderPropertiesCallbacks;
@@ -387,14 +396,26 @@ protected:
    std::map<IDType,IEditBridgeCallback*>            m_EditBridgeCallbacks;
    std::map<IDType,IEditLoadRatingOptionsCallback*> m_EditLoadRatingOptionsCallbacks;
 
+   // map  from menu cmd to callback ID
+   std::map<UINT,IDType>  m_CopyGirderPropertiesCallbacksCmdMap;
+   std::map<UINT,IDType>  m_CopyPierPropertiesCallbacksCmdMap;
+   std::map<UINT,IDType>  m_CopyTempSupportPropertiesCallbacksCmdMap;
+
+   // these are the standard copy pier callbacks
+   CCopyPierAllProperties        m_CopyPierAllProperties;
+   CCopyPierConnectionProperties m_CopyPierConnectionProperties;
+   CCopyPierDiaphragmProperties  m_CopyPierDiaphragmProperties;
+   CCopyPierModelProperties      m_CopyPierModelProperties;
+
+   CCopyTempSupportConnectionProperties m_CopyTempSupportConnectionProperties;
+
    // these are the standard copy girder callbacks
-   CCopyGirderType         m_CopyGirderType;
-   CCopyGirderStirrups     m_CopyGirderStirrups;
-   CCopyGirderPrestressing m_CopyGirderPrestressing;
-   CCopyGirderHandling     m_CopyGirderHandling;
-   CCopyGirderMaterial     m_CopyGirderMaterials;
-   CCopyGirderRebar        m_CopyGirderRebar;
-   CCopyGirderSlabOffset   m_CopyGirderSlabOffset;
+   CCopyGirderAllProperties m_CopyGirderAllProperties;
+   CCopyGirderStirrups      m_CopyGirderStirrups;
+   CCopyGirderPrestressing  m_CopyGirderPrestressing;
+   CCopyGirderHandling      m_CopyGirderHandling;
+   CCopyGirderMaterial      m_CopyGirderMaterials;
+   CCopyGirderRebar         m_CopyGirderRebar;
 
 
    psgLibraryManager m_LibMgr;
@@ -487,7 +508,8 @@ protected:
 	afx_msg void OnLoadsLoadModifiers();
    afx_msg void OnLoadsLoadFactors();
 	afx_msg void OnViewsettingsGirderEditor();
-	afx_msg void OnCopyGirderProps();
+	afx_msg void OnCopyGirderProps(UINT nID);
+	afx_msg void OnCopyPierProps(UINT nID);
 	afx_msg void OnImportProjectLibrary();
 	afx_msg void OnAddPointload();
 	afx_msg void OnAddDistributedLoad();
@@ -518,6 +540,10 @@ protected:
    afx_msg void OnAutoCalc();
    afx_msg void OnUpdateAutoCalc(CCmdUI* pCmdUI);
    afx_msg void OnEditTimeline();
+   afx_msg void OnUpdateCopyGirderPropsTb(CCmdUI* pCmdUI); // Tb means toolbar
+   afx_msg BOOL OnCopyGirderPropsTb(NMHDR* pnmtb,LRESULT* plr);
+   afx_msg void OnUpdateCopyPierPropsTb(CCmdUI* pCmdUI);
+   afx_msg BOOL OnCopyPierPropsTb(NMHDR* pnmtb,LRESULT* plr);
 
    afx_msg void OnHelpFinder();
    afx_msg void OnAbout();

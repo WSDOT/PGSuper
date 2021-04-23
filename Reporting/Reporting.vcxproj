@@ -462,6 +462,15 @@
     <ClCompile Include="ConcurrentShearTable.cpp" />
     <ClCompile Include="ConstructabilityCheckTable.cpp" />
     <ClCompile Include="ContinuityCheck.cpp" />
+    <ClCompile Include="CopyGirderPropertiesChapterBuilder.cpp" />
+    <ClCompile Include="CopyGirderPropertiesReportSpecification.cpp" />
+    <ClCompile Include="CopyGirderPropertiesReportSpecificationBuilder.cpp" />
+    <ClCompile Include="CopyPierPropertiesChapterBuilder.cpp" />
+    <ClCompile Include="CopyPierPropertiesReportSpecification.cpp" />
+    <ClCompile Include="CopyPierPropertiesReportSpecificationBuilder.cpp" />
+    <ClCompile Include="CopyTempSupportPropertiesChapterBuilder.cpp" />
+    <ClCompile Include="CopyTempSupportPropertiesReportSpecification.cpp" />
+    <ClCompile Include="CopyTempSupportPropertiesReportSpecificationBuilder.cpp" />
     <ClCompile Include="CrackedSectionDetailsChapterBuilder.cpp" />
     <ClCompile Include="CreepCoefficientChapterBuilder.cpp" />
     <ClCompile Include="CritSectionChapterBuilder.cpp" />
@@ -481,7 +490,6 @@
     <ClCompile Include="FinalLossesChapterBuilder.cpp" />
     <ClCompile Include="FlexuralCapacityCheckTable.cpp" />
     <ClCompile Include="FlexuralStressCheckTable.cpp" />
-    <ClCompile Include="GirderComparisonChapterBuilder.cpp" />
     <ClCompile Include="GirderDetailingCheck.cpp" />
     <ClCompile Include="GirderGeometryChapterBuilder.cpp" />
     <ClCompile Include="GirderSeedDataComparisonParagraph.cpp">
@@ -658,6 +666,15 @@
     <ClInclude Include="..\Include\Reporting\ConfinementCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\ConstructabilityCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\ContinuityCheck.h" />
+    <ClInclude Include="..\Include\Reporting\CopyGirderPropertiesChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CopyGirderPropertiesReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\CopyGirderPropertiesReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CopyPierPropertiesChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CopyPierPropertiesReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\CopyPierPropertiesReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CopyTempSupportPropertiesChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CopyTempSupportPropertiesReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\CopyTempSupportPropertiesReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CreepCoefficientChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CritSectionChapterBuilder.h" />
@@ -678,7 +695,6 @@
     <ClInclude Include="..\Include\Reporting\FlexuralStressCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\GirderComparisonChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\GirderDetailingCheck.h" />
-    <ClInclude Include="..\Include\Reporting\GirderGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\GirderSeedDataComparisonParagraph.h" />
     <ClInclude Include="..\Include\Reporting\HaulingCheck.h" />
     <ClInclude Include="..\Include\Reporting\HaulingCheckChapterBuilder.h" />

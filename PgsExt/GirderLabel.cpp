@@ -233,6 +233,86 @@ LPCTSTR GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasu
    }
 }
 
+LPCTSTR PGSEXTFUNC GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type, bool bAbbreviation)
+{
+   switch( type )
+   {
+   case ConnectionLibraryEntry::FromBearingAlongGirder:
+      if (bAbbreviation)
+      {
+         return _T("FCLB-AG");
+      }
+      else
+      {
+         return _T("Measured From CL Bearing along Girder");
+      }
+
+   case ConnectionLibraryEntry::FromBearingNormalToPier:
+      if ( bAbbreviation )
+      {
+         return _T("FCLB-NCLB");
+      }
+      else
+      {
+         return _T("Measured From and Normal to CL Bearing");
+      }
+
+   case ConnectionLibraryEntry::FromPierAlongGirder:
+      if ( bAbbreviation )
+      {
+         return _T("FTS-AG");
+      }
+      else
+      {
+         return _T("Measured From Temporary Support Line, Along Girder Centerline");
+      }
+
+   case ConnectionLibraryEntry::FromPierNormalToPier:
+      if ( bAbbreviation )
+      {
+         return  _T("FTS-NTS");
+      }
+      else
+      {
+         return _T("Measured From and Normal to Temporary Support Line");
+      }
+
+   default:
+      ATLASSERT(false);
+      return _T("");
+   }
+}
+
+LPCTSTR PGSEXTFUNC GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type, bool bAbbreviation)
+{
+   switch( type )
+   {
+   case ConnectionLibraryEntry::AlongGirder:
+      if ( bAbbreviation )
+      {
+         return _T("FTS-AG");
+      }
+      else
+      {
+         return  _T("Measured From Temporary Support Line, Along Girder Centerline");
+      }
+
+   case ConnectionLibraryEntry::NormalToPier:
+      if ( bAbbreviation )
+      {
+         return _T("FTS-NTS");
+      }
+      else
+      {
+         return _T("Measured From and Normal to Temporary Support Line");
+      }
+
+   default:
+      ATLASSERT(false);
+      return _T("");
+   }
+}
+
 CString GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits)
 {
    CString strLabel;
