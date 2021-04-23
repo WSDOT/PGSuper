@@ -17696,9 +17696,6 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
 
    bool bIncTempStrands = (intervalIdx < tsRemovalIntervalIdx) ? true : false;
 
-   // NOTE: We can't use the eccentricity of the total strands. The eccentricity given is the geometric
-   // centroid of the strands. We need the location of the resultant prestress force.
-   // This is why we are computing the eccentricty below, rather than just getting it.
    std::array<Float64, 3> P{ 0,0,0 };
    if ( intervalIdx < liveLoadIntervalIdx )
    {
@@ -17736,6 +17733,10 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
       pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary)
    };
 
+   // NOTE: We can't use the eccentricity of the total strands. The eccentricity given is the geometric
+   // centroid of the strands. We need the location of the resultant prestress force.
+
+   // Compute the resultant eccentricity of the prestress force (this is different than the geometric eccentricity of the strand area)
    Float64 Pps = std::accumulate(std::cbegin(P), std::cend(P), 0.0);
    gpPoint2d E = IsZero(Pps) ? gpPoint2d(0,0) : std::inner_product(std::cbegin(ecc),std::cend(ecc),std::cbegin(P),gpPoint2d(0,0))/Pps;
 

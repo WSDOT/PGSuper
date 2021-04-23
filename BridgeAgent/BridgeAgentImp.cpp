@@ -3199,6 +3199,8 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
    harpedStrandMaterial->put_InstallationStage(stressStrandIntervalIdx);
    strandModel->putref_StrandMaterial(Harped, harpedStrandMaterial);
 
+   stressStrandIntervalIdx = GetTemporaryStrandStressingInterval(segmentKey);
+   auto tsRemovalIntervalIdx = m_IntervalManager.GetTemporaryStrandRemovalInterval(segmentKey);
    pStrand = pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary);
    CComPtr<IPrestressingStrand> temporaryStrandMaterial;
    temporaryStrandMaterial.CoCreateInstance(CLSID_PrestressingStrand);
@@ -3207,6 +3209,7 @@ void CBridgeAgentImp::CreateStrandModel(IPrecastGirder* girder,ISuperstructureMe
    temporaryStrandMaterial->put_Type((StrandMaterialType)pStrand->GetType());
    temporaryStrandMaterial->put_Size((StrandSize)pStrand->GetSize());
    temporaryStrandMaterial->put_InstallationStage(stressStrandIntervalIdx);
+   temporaryStrandMaterial->put_RemovalStage(tsRemovalIntervalIdx);
    strandModel->putref_StrandMaterial(Temporary, temporaryStrandMaterial);
 }
 
@@ -15969,10 +15972,10 @@ bool CBridgeAgentImp::AreStrandsEngaged(IntervalIndexType intervalIdx, const pgs
    if (strandType == pgsTypes::Temporary)
    {
       IntervalIndexType tsIntallationIntervalIdx = GetTemporaryStrandInstallationInterval(segmentKey);
-      IntervalIndexType tsRemovalIntervalIdx = GetTemporaryStrandRemovalInterval(segmentKey);
+      IntervalIndexType tsRemovalIntervalIdx = GetTemporaryStrandRemovalInterval(segmentKey); // NOTE: Temporary strands are still present at the start of the removal interval (they are gone at the middle and end)
       if (intervalIdx < releaseIntervalIdx || // interval is before release so strands aren't in the segment yet
          (tsIntallationIntervalIdx == INVALID_INDEX || intervalIdx < tsIntallationIntervalIdx) || // if installation interval is INVALID_INDEX there aren't any temp strands or this interval is before the temp strands are installed
-         (tsRemovalIntervalIdx == INVALID_INDEX || tsRemovalIntervalIdx <= intervalIdx) || // if removal interval is INVALID_INDEX there aren't any temp strnads or this interval is after the temp strands are removed
+         (tsRemovalIntervalIdx == INVALID_INDEX || tsRemovalIntervalIdx < intervalIdx) || // if removal interval is INVALID_INDEX there aren't any temp strnads or this interval is after the temp strands are removed
          IsOffSegment(poi) // poi is not on the segment
          )
       {

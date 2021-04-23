@@ -1505,7 +1505,6 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    IndexType deckCastingRegionIdx = m_pPoi->GetDeckCastingRegion(poi);
    ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
-   IntervalIndexType stressStrandsIntervalIdx = m_pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx       = m_pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
    IntervalIndexType liveLoadIntervalIdx      = m_pIntervals->GetLiveLoadInterval();
@@ -1668,18 +1667,31 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    }
 
    // STRAND PARAMETERS
-   if ( bIsOnSegment && stressStrandsIntervalIdx <= intervalIdx )
+   if ( bIsOnSegment )
    {
       // The strands are stressed
       const std::vector<pgsTypes::StrandType>& strandTypes = GetStrandTypes(segmentKey);
-      for(const auto& strandType : strandTypes)
+      for (const auto& strandType : strandTypes)
+      {
+         IntervalIndexType stressStrandsIntervalIdx(INVALID_INDEX), removeStrandsIntervalIdx(INVALID_INDEX);
+         if (strandType == pgsTypes::Temporary)
+         {
+            stressStrandsIntervalIdx = m_pIntervals->GetTemporaryStrandStressingInterval(segmentKey);
+            removeStrandsIntervalIdx = m_pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+         }
+         else
+         {
+            stressStrandsIntervalIdx = m_pIntervals->GetStressStrandInterval(segmentKey);
+         }
+
+         if(stressStrandsIntervalIdx <= intervalIdx && intervalIdx <= removeStrandsIntervalIdx)
       {
          // time from strand stressing to end of this interval
-         Float64 tStressing       = m_pIntervals->GetTime(stressStrandsIntervalIdx,pgsTypes::Start);
-         Float64 tEndThisInterval = m_pIntervals->GetTime(intervalIdx,pgsTypes::End);
+            Float64 tStressing = m_pIntervals->GetTime(stressStrandsIntervalIdx, pgsTypes::Start);
+            Float64 tEndThisInterval = m_pIntervals->GetTime(intervalIdx, pgsTypes::End);
 
 #if defined LUMP_STRANDS
-         tsDetails.Strands[strandType].tEnd = Max(0.0,tEndThisInterval - tStressing);
+            tsDetails.Strands[strandType].tEnd = Max(0.0, tEndThisInterval - tStressing);
 
          // Assumes transformed section properties are based on the strands being lumped in one location
          // Consider modeling each strand individually. This would be a more accurate analysis, however
@@ -1687,41 +1699,41 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          // each strand for each strand type.
 
          // section properties
-         tsDetails.Strands[strandType].As = m_pStrandGeom->GetStrandArea(poi,intervalIdx,strandType);
+            tsDetails.Strands[strandType].As = m_pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
 
          // location of strands in Girder Section Coordinates (Y=0 at top of girder)
             tsDetails.Strands[strandType].Ys = (intervalIdx <= stressStrandsIntervalIdx ? 0 : m_pStrandGeom->GetStrandCG(intervalIdx, poi, strandType).Y());
 
          tsDetails.Strands[strandType].E = EStrand[strandType];
 
-         if ( intervalIdx == stressStrandsIntervalIdx )
+            if (intervalIdx == stressStrandsIntervalIdx)
          {
             // Strands are stressed in this interval.. get Pjack and fpj
-            tsDetails.Strands[strandType].Pj  = m_pStrandGeom->GetPjack(segmentKey,strandType);
+               tsDetails.Strands[strandType].Pj = m_pStrandGeom->GetPjack(segmentKey, strandType);
             tsDetails.Strands[strandType].fpj = m_pStrandGeom->GetJackingStress(segmentKey, strandType);
 
             // strands relax over the duration of the interval. compute the amount of relaxation
-            if ( !bIgnoreRelaxationEffects )
+               if (!bIgnoreRelaxationEffects)
             {
-               tsDetails.Strands[strandType].Relaxation = m_pMaterials->GetIncrementalStrandRelaxationDetails(segmentKey,intervalIdx,tsDetails.Strands[strandType].fpj,strandType);
+                  tsDetails.Strands[strandType].Relaxation = m_pMaterials->GetIncrementalStrandRelaxationDetails(segmentKey, intervalIdx, tsDetails.Strands[strandType].fpj, strandType);
             }
          }
          else
          {
-            TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx-1]);
+               TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx - 1]);
 
             // strands were stressed in a previous interval
-            if ( intervalIdx == releaseIntervalIdx )
+               if (intervalIdx == releaseIntervalIdx)
             {
                // accounts for lack of development and location of debonding
-               Float64 xfer_factor = m_pPSForce->GetXferLengthAdjustment(poi,strandType);
+                  Float64 xfer_factor = m_pPSForce->GetXferLengthAdjustment(poi, strandType);
 
                // xfer_factor reduces the nominal strand force (force based on all strands)
                // to the actual force by making adjustments for lack of full development
                // and debonding. Since the strands data structure contains the actual
                // effective area of strands (area reduced for debonding) we need to
                // get the nominal area here and use it in the calculation below
-               Float64 As = m_pStrandGeom->GetStrandArea(poi,intervalIdx,strandType);
+                  Float64 As = m_pStrandGeom->GetStrandArea(poi, intervalIdx, strandType);
 
                // this the interval when the prestress force is release into the girders, apply the
                // prestress as an external force. The prestress force is the area of strand times
@@ -1747,66 +1759,66 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             // relaxation during this interval
             // by using the effective prestress at the end of the previous interval we get a very good approximation for 
             // the actual (reduced) relaxation. See "Time-Dependent Analysis of Composite Frames", Tadros, Ghali, Dilger, pg 876
-            if ( !bIgnoreRelaxationEffects )
+               if (!bIgnoreRelaxationEffects)
             {
-               tsDetails.Strands[strandType].Relaxation = m_pMaterials->GetIncrementalStrandRelaxationDetails(segmentKey,intervalIdx,prevTimeStepDetails.Strands[strandType].fpe,strandType);
+                  tsDetails.Strands[strandType].Relaxation = m_pMaterials->GetIncrementalStrandRelaxationDetails(segmentKey, intervalIdx, prevTimeStepDetails.Strands[strandType].fpe, strandType);
             }
          }
 
          // apparent strain due to relaxation
-         tsDetails.Strands[strandType].er = -tsDetails.Strands[strandType].Relaxation.fr/EStrand[strandType]; // Tadros 1977, second term in Eqn 8
+            tsDetails.Strands[strandType].er = -tsDetails.Strands[strandType].Relaxation.fr / EStrand[strandType]; // Tadros 1977, second term in Eqn 8
 
          // force required to restrain the apparent relaxation strain
          tsDetails.Strands[strandType].PrRelaxation = tsDetails.Strands[strandType].Relaxation.fr*tsDetails.Strands[strandType].As; // Tadros 1977, Eqn 10
 #else
-         Float64 Pjack = m_pStrandGeom->GetPjack(segmentKey,strandType);
-         StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey,strandType);
-         if ( 0 < nStrands )
+            Float64 Pjack = m_pStrandGeom->GetPjack(segmentKey, strandType);
+            StrandIndexType nStrands = m_pStrandGeom->GetStrandCount(segmentKey, strandType);
+            if (0 < nStrands)
          {
             Pjack /= nStrands; // Pjack per strand
          }
 
-         for ( StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++ )
+            for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
          {
             TIME_STEP_STRAND strand;
-            strand.tEnd = Max(0.0,tEndThisInterval - tStressing);
+               strand.tEnd = Max(0.0, tEndThisInterval - tStressing);
 
-            if ( !bIsInClosure )
+               if (!bIsInClosure)
             {
                // only fill up with data if NOT at closure joint...
 
                // section properties
-               strand.As = m_pMaterials->GetStrandMaterial(segmentKey,strandType)->GetNominalArea();
+                  strand.As = m_pMaterials->GetStrandMaterial(segmentKey, strandType)->GetNominalArea();
 
                // If poi is at a section where this strand is debonded, don't count it
-               if ( !m_pStrandGeom->IsStrandDebonded(poi,strandIdx, strandType) )
+                  if (!m_pStrandGeom->IsStrandDebonded(poi, strandIdx, strandType))
                {
                   strand.As = 0;
                }
    
                // location of strand from top of girder
                CComPtr<IPoint2d> point;
-               m_pStrandGeom->GetStrandPosition(poi,strandIdx,strandType,&point);
+                  m_pStrandGeom->GetStrandPosition(poi, strandIdx, strandType, &point);
                point->get_Y(&strand.Ys);
 
                strand.E = EStrand[strandType];
 
-               if ( intervalIdx == stressStrandsIntervalIdx )
+                  if (intervalIdx == stressStrandsIntervalIdx)
                {
                   // Strands are stress in this interval.. get Pjack and fpj
                   strand.Pj  = (IsZero(strand.As) ? 0 : Pjack);
-                  strand.fpj = (IsZero(strand.As) ? 0 : strand.Pj/strand.As);
+                     strand.fpj = (IsZero(strand.As) ? 0 : strand.Pj / strand.As);
 
                   // strands relax over the duration of the interval. compute the amount of relaxation
-                  if ( !bIgnoreRelaxationEffects )
+                     if (!bIgnoreRelaxationEffects)
                   {
-                     strand.Relaxation = m_pMaterials->GetIncrementalStrandRelaxationDetails(segmentKey,intervalIdx,strand.fpj,strandType);
+                        strand.Relaxation = m_pMaterials->GetIncrementalStrandRelaxationDetails(segmentKey, intervalIdx, strand.fpj, strandType);
                   }
                }
                else
                {
                   // strands were stressed in a previous interval
-                  if ( intervalIdx == releaseIntervalIdx )
+                     if (intervalIdx == releaseIntervalIdx)
                   {
                      // this is the interval when the prestress force is release into the girders, apply the
                      // prestress as an external force. The prestress force is the area of strand times
@@ -1816,7 +1828,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
                      // accounts for lack of development and location of debonding
 #pragma Reminder("UPDATE: this should be the adjustment for the individual strands, not all the strands taken together")
-                     Float64 xfer_factor = m_pPSForce->GetXferLengthAdjustment(poi,strandType);
+                        Float64 xfer_factor = m_pPSForce->GetXferLengthAdjustment(poi, strandType);
 
                      Float64 P = -xfer_factor*strand.As*prevTimeStepDetails.Strands[strandType][strandIdx].fpe;
                      tsDetails.dPi[pgsTypes::pftPretension] += P;
@@ -1838,22 +1850,23 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                   // relaxation during this interval
                   // by using the effective prestress at the end of the previous interval we get a very good approximation for 
                   // the actual (reduced) relaxation. See "Time-Dependent Analysis of Composite Frames", Tadros, Ghali, Dilger, pg 876
-                  if ( !bIgnoreRelaxationEffects )
+                     if (!bIgnoreRelaxationEffects)
                   {
-                     strand.Relaxation = m_pMaterials->GetStrandRelaxation(segmentKey,intervalIdx,prevTimeStepDetails.Strands[strandType][strandIdx].fpe,strandType);
+                        strand.Relaxation = m_pMaterials->GetStrandRelaxation(segmentKey, intervalIdx, prevTimeStepDetails.Strands[strandType][strandIdx].fpe, strandType);
                   }
                }
 
                // apparent strain due to relacation
-               strand.er = -strand.Relaxation.fr/EStrand[strandType]; // Tadros 1977, second term in Eqn 8
+                  strand.er = -strand.Relaxation.fr / EStrand[strandType]; // Tadros 1977, second term in Eqn 8
 
                // force required to resist apparent relaxation strain
                strand.PrRelaxation = strand.Relaxation.fr*strand.As; // Tadros 1977, Eqn 10
             } // if not closure
 
             tsDetails.Strands[strandType].push_back(strand);
-         } // next strand
+            } // next strand
 #endif // LUMP_STRANDS
+         }
       } // next strand type
    }
 
