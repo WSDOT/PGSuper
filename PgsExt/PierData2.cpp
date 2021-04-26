@@ -1748,6 +1748,7 @@ bool CPierData2::SetBearingOffset(pgsTypes::PierFaceType face, Float64 offset, C
    {
       m_GirderBearingOffset[face] = offset;
       m_BearingOffsetMeasurementType[face] = measure;
+      return true;
    }
    else
    {
