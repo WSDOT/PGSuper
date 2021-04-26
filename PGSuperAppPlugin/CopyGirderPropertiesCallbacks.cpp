@@ -34,6 +34,7 @@
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderData.h>
+#include <PgsExt\GirderLabel.h>
 
 #include <Reporter\ReportingUtils.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -400,31 +401,34 @@ bool txnCopyGirderPrestressing::Execute()
    {
       CGirderKey& toGirderKey = *iter;
 
-      // pretensioning
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
-      ATLASSERT(nSegments==pBridge->GetSegmentCount(m_FromGirderKey));
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      if (toGirderKey != m_FromGirderKey)
       {
-         CSegmentKey fromSegmentKey(m_FromGirderKey,segIdx);
-         const CStrandData* pNewStrandData = pSegmentData->GetStrandData(fromSegmentKey);
-         const CSegmentPTData* pNewSegmentPTData = pSegmentData->GetSegmentPTData(fromSegmentKey);
+         // pretensioning
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+         ATLASSERT(nSegments == pBridge->GetSegmentCount(m_FromGirderKey));
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            CSegmentKey fromSegmentKey(m_FromGirderKey, segIdx);
+            const CStrandData* pNewStrandData = pSegmentData->GetStrandData(fromSegmentKey);
+            const CSegmentPTData* pNewSegmentPTData = pSegmentData->GetSegmentPTData(fromSegmentKey);
 
-         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+            CSegmentKey toSegmentKey(toGirderKey, segIdx);
 
-         const CStrandData* pOldStrandData = pSegmentData->GetStrandData(toSegmentKey);
-         m_OldPrestressData.push_back(*pOldStrandData);
-         pSegmentData->SetStrandData(toSegmentKey,*pNewStrandData);
+            const CStrandData* pOldStrandData = pSegmentData->GetStrandData(toSegmentKey);
+            m_OldPrestressData.push_back(*pOldStrandData);
+            pSegmentData->SetStrandData(toSegmentKey, *pNewStrandData);
 
-         const CSegmentPTData* pOldSegmentPTData = pSegmentData->GetSegmentPTData(toSegmentKey);
-         m_OldSegmentPTData.push_back(*pOldSegmentPTData);
-         pSegmentData->SetSegmentPTData(toSegmentKey,*pNewSegmentPTData);
+            const CSegmentPTData* pOldSegmentPTData = pSegmentData->GetSegmentPTData(toSegmentKey);
+            m_OldSegmentPTData.push_back(*pOldSegmentPTData);
+            pSegmentData->SetSegmentPTData(toSegmentKey, *pNewSegmentPTData);
 
+         }
+
+         // post tensioning
+         const CPTData* pNewPTData = pIBridgeDesc->GetPostTensioning(m_FromGirderKey);
+         m_OldPTData.push_back(*pNewPTData);
+         pIBridgeDesc->SetPostTensioning(toGirderKey, *pNewPTData);
       }
-
-      // post tensioning
-      const CPTData* pNewPTData = pIBridgeDesc->GetPostTensioning(m_FromGirderKey);
-      m_OldPTData.push_back(*pNewPTData);
-      pIBridgeDesc->SetPostTensioning(toGirderKey, *pNewPTData);
    }
 
    return true;
@@ -447,25 +451,28 @@ void txnCopyGirderPrestressing::Undo()
    {
       CGirderKey& toGirderKey = *iter;
 
-      // pre tensioning
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+      if (toGirderKey != m_FromGirderKey)
       {
-         CSegmentKey toSegmentKey(toGirderKey,segIdx);
+         // pre tensioning
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(toGirderKey);
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         {
+            CSegmentKey toSegmentKey(toGirderKey, segIdx);
 
-         CStrandData& strandData = *prestressIter;
-         pSegmentData->SetStrandData(toSegmentKey,strandData);
+            CStrandData& strandData = *prestressIter;
+            pSegmentData->SetStrandData(toSegmentKey, strandData);
 
-         CSegmentPTData& ptData = *segmentPTIter;
-         pSegmentData->SetSegmentPTData(toSegmentKey,ptData);
+            CSegmentPTData& ptData = *segmentPTIter;
+            pSegmentData->SetSegmentPTData(toSegmentKey, ptData);
 
-         prestressIter++;
-         segmentPTIter++;
+            prestressIter++;
+            segmentPTIter++;
+         }
+
+         // post tensioning
+         CPTData& ptData = *ptIter;
+         pIBridgeDesc->SetPostTensioning(toGirderKey, ptData);
       }
-
-      // post tensioning
-      CPTData& ptData = *ptIter;
-      pIBridgeDesc->SetPostTensioning(toGirderKey, ptData);
    }
 }
 
@@ -2010,9 +2017,9 @@ void debonding(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayUnits* pDisplayU
 void GirderGroupPostensioningComparison(rptParagraph * pPara, IBroker * pBroker, IEAFDisplayUnits * pDisplayUnits, const CGirderKey & fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IGirder,pGirder);
    GET_IFACE2(pBroker,IEventMap,pEventMap);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IGirderTendonGeometry, pGirderTendonGeometry);
 
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
@@ -2058,6 +2065,8 @@ void GirderGroupPostensioningComparison(rptParagraph * pPara, IBroker * pBroker,
       {
          CGirderKey girderKey(grpIdx, gdrIdx);
 
+         GirderIndexType nWebs = pGirder->GetWebCount(girderKey);
+
          bool isFrom = fromGirderKey == girderKey;
          if (isFrom)
          {
@@ -2072,7 +2081,7 @@ void GirderGroupPostensioningComparison(rptParagraph * pPara, IBroker * pBroker,
 
          WriteCompareCell(p_table, row, col++, isFrom, *pPTFromData == *pPTData);
 
-         DuctIndexType nDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
+         DuctIndexType nDucts = pPTData->GetDuctCount();
          if (nDucts == 0)
          {
             (*p_table)(row, col++) << RPT_NA;
@@ -2086,7 +2095,19 @@ void GirderGroupPostensioningComparison(rptParagraph * pPara, IBroker * pBroker,
             for (DuctIndexType iDuct = 0; iDuct < nDucts; iDuct++)
             {
                ColumnIndexType lcol = col;
-               (*p_table)(row, lcol++) << iDuct + 1 << rptNewLine;
+
+               if (nWebs == 1)
+               {
+                  (*p_table)(row, lcol++) << LABEL_DUCT(iDuct) << rptNewLine;
+               }
+               else
+               {
+                  DuctIndexType first_duct_in_row = nWebs*(iDuct);
+                  DuctIndexType last_duct_in_row  = first_duct_in_row + nWebs - 1;
+                  CString strLabel;
+                  strLabel.Format(_T("%d - %d"), LABEL_DUCT(first_duct_in_row), LABEL_DUCT(last_duct_in_row));
+                  (*p_table)(row, lcol++) << strLabel << rptNewLine;
+               }
 
                const CDuctData* pDuct = pPTData->GetDuct(iDuct);
                (*p_table)(row, lcol++) << pDuct->Name << rptNewLine;
@@ -2109,7 +2130,7 @@ void GirderSegmentPostensioningComparison(rptParagraph * pPara, IBroker * pBroke
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,          pDisplayUnits->GetShearUnit(),         false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
@@ -2196,7 +2217,9 @@ void GirderSegmentPostensioningComparison(rptParagraph * pPara, IBroker * pBroke
 
             WriteCompareCell(p_table, row, col++, isFrom, bEqual);
 
-            DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+            GirderIndexType nWebs = pGirder->GetWebCount(segmentKey);
+
+            DuctIndexType nDucts = pPTData->GetDuctCount();
             if (nDucts == 0)
             {
                (*p_table)(row, col++) << RPT_NA;
@@ -2211,7 +2234,18 @@ void GirderSegmentPostensioningComparison(rptParagraph * pPara, IBroker * pBroke
                for (DuctIndexType iDuct = 0; iDuct < nDucts; iDuct++)
                {
                   ColumnIndexType lcol = col;
-                  (*p_table)(row, lcol++) << iDuct + 1 << rptNewLine;
+                  if (nWebs == 1)
+                  {
+                     (*p_table)(row, lcol++) << LABEL_DUCT(iDuct) << rptNewLine;
+                  }
+                  else
+                  {
+                     DuctIndexType first_duct_in_row = nWebs*(iDuct);
+                     DuctIndexType last_duct_in_row  = first_duct_in_row + nWebs - 1;
+                     CString strLabel;
+                     strLabel.Format(_T("%d - %d"), LABEL_DUCT(first_duct_in_row), LABEL_DUCT(last_duct_in_row));
+                     (*p_table)(row, lcol++) << strLabel << rptNewLine;
+                  }
 
                   const CSegmentDuctData* pDuct = pPTData->GetDuct(iDuct);
                   (*p_table)(row, lcol++) << pDuct->Name << rptNewLine;

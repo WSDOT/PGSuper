@@ -977,8 +977,10 @@ void CParabolicDuctGeometry::AssertValid()
    ATLASSERT(LowPoints.size() == GetSpanCount());
 
    // Start/End piers must be between the start and end of the girder
-   ATLASSERT(m_pGirder->GetPierIndex(pgsTypes::metStart) <= StartPierIdx && EndPierIdx <= m_pGirder->GetPierIndex(pgsTypes::metEnd));
-
+   if (m_pGirder)
+   {
+      ATLASSERT(m_pGirder->GetPierIndex(pgsTypes::metStart) <= StartPierIdx && EndPierIdx <= m_pGirder->GetPierIndex(pgsTypes::metEnd));
+   }
 }
 #endif
 
