@@ -30,6 +30,7 @@
 //
 
 #include <PgsExt\RailingSystem.h>
+#include <MfcTools\WideDropDownComboBox.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescRailingSystemPage dialog
@@ -121,6 +122,9 @@ protected:
    Float64 m_MaxFcUHPC;
    Float64 m_MinNWCDensity;
    Float64 m_MaxLWCDensity;
+
+   CWideDropDownComboBox m_LeftBrrCB;
+   CWideDropDownComboBox m_RightBrrCB;
 
    bool IsDensityInRange(Float64 density,pgsTypes::ConcreteType type);
    bool IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type);
