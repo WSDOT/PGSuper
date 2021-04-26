@@ -154,6 +154,7 @@ struct MINMOMENTCAPDETAILS
    Float64 MrMin2; // 1.33Mu
    Float64 Mcr;
    Float64 Mu;
+   Float64 alpha;
 };
 
 struct PRINCIPALTENSIONWEBSECTIONDETAILS

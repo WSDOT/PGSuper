@@ -1296,8 +1296,11 @@ void pgsMomentCapacityEngineer::ComputeMinMomentCapacity(IntervalIndexType inter
       MrMin1 = 1.20*Mcr;
    }
 
-
-   MrMin2 = 1.33*Mu;
+   Float64 alpha = 1.0 + 0.33*(pmcd->et - pmcd->ecl) / (pmcd->etl - pmcd->ecl);
+   alpha = ::ForceIntoRange(1.0, alpha, 1.33);
+   MrMin2 = alpha*Mu;
+   pmmcd->alpha = alpha;
+   //MrMin2 = 1.33*Mu;
    MrMin =  (bPositiveMoment ? Min(MrMin1,MrMin2) : Max(MrMin1,MrMin2));
 
    if (ls==pgsTypes::StrengthI)
@@ -1401,11 +1404,17 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    ComputeCrackingMoment(intervalIdx,config,poi,fcpe,bPositiveMoment,pcmd);
 }
 
-void pgsMomentCapacityEngineer::GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const
+void pgsMomentCapacityEngineer::GetCrackingMomentFactors(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const
 {
    if ( lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion() )
    {
-      *pG1 = 1.6; // all other concrete structures (not-segmental)
+      GET_IFACE(ISectionProperties, pSectProps);
+      Float64 h = pSectProps->GetHg(intervalIdx, poi);
+      h = ::ConvertFromSysUnits(h, unitMeasure::Feet);
+      *pG1 = 1.6*pow(h, -0.15);
+
+      //*pG1 = 1.6; // all other concrete structures (not-segmental)
+
       *pG2 = 1.1; // bonded strand/tendon
 
       if ( bPositiveMoment )
@@ -1451,7 +1460,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    GetSectionProperties(intervalIdx,poi,config,bPositiveMoment,&Sb,&Sbc);
 
    Float64 g1,g2,g3;
-   GetCrackingMomentFactors(bPositiveMoment,&g1,&g2,&g3);
+   GetCrackingMomentFactors(intervalIdx,poi,bPositiveMoment,&g1,&g2,&g3);
 
    ComputeCrackingMoment(g1,g2,g3,fr,fcpe,Mdnc,Sb,Sbc,pcmd);
 }
@@ -1470,7 +1479,7 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
    GetSectionProperties(intervalIdx,poi,bPositiveMoment,&Sb,&Sbc);
 
    Float64 g1,g2,g3;
-   GetCrackingMomentFactors(bPositiveMoment,&g1,&g2,&g3);
+   GetCrackingMomentFactors(intervalIdx,poi,bPositiveMoment,&g1,&g2,&g3);
 
    ComputeCrackingMoment(g1,g2,g3,fr,fcpe,Mdnc,Sb,Sbc,pcmd);
 }

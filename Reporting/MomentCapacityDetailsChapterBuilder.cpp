@@ -719,7 +719,8 @@ void write_crack_moment_data_table(IBroker* pBroker,
    rptRcScalar scalar;
    scalar.SetFormat( sysNumericFormatTool::Automatic );
    scalar.SetWidth(6);
-   scalar.SetPrecision(2);
+   //scalar.SetPrecision(2);
+   scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
 
    location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
@@ -861,7 +862,8 @@ void write_min_moment_data_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   rptRcTable* table = rptStyleManager::CreateDefaultTable(bBefore2012 ? 7 : 6,_T(""));
+//   rptRcTable* table = rptStyleManager::CreateDefaultTable(bBefore2012 ? 7 : 6,_T(""));
+   rptRcTable* table = rptStyleManager::CreateDefaultTable(bBefore2012 ? 7 : 7, _T(""));
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -891,7 +893,8 @@ void write_min_moment_data_table(IBroker* pBroker,
 
    (*table)(0,col++)  << _T("Loading");
    (*table)(0,col++)  << COLHDR( _T("M") << Sub(_T("u")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
-   (*table)(0,col++)  << COLHDR( _T("1.33M") << Sub(_T("u")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
+   (*table)(0, col++) << symbol(alpha);
+   (*table)(0,col++)  << COLHDR( symbol(alpha) << _T("M") << Sub(_T("u")), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
    (*table)(0,col++)  << COLHDR( symbol(phi) << _T("M") << Sub(_T("n")) << _T(" Min"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit() );
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -923,6 +926,7 @@ void write_min_moment_data_table(IBroker* pBroker,
       (*table)(row,col++) << moment.SetValue( pmmcd->MrMin1 );
       (*table)(row,col++) << pmmcd->LimitState;
       (*table)(row,col++) << moment.SetValue( pmmcd->Mu );
+      (*table)(row,col++) << pmmcd->alpha;
       (*table)(row,col++) << moment.SetValue( pmmcd->MrMin2 );
       (*table)(row,col++) << moment.SetValue( pmmcd->MrMin );
 
