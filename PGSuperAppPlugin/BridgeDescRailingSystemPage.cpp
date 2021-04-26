@@ -169,6 +169,9 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
    }
 
    DDX_CBItemData(pDX,IDC_EVENT,m_EventIndex);
+
+   DDX_Control(pDX, IDC_LEFT_EXTERIORBARRIER, m_LeftBrrCB);
+   DDX_Control(pDX, IDC_RIGHT_EXTERIORBARRIER, m_RightBrrCB);
 }
 
 

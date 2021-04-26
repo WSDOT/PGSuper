@@ -30,6 +30,7 @@
 //
 
 #include "resource.h"
+#include <MfcTools\WideDropDownComboBox.h>
 
 class CGirderDescDlg;
 
@@ -76,6 +77,7 @@ protected:
 
 private:
    CMetaFileStatic m_Picture;
+   CWideDropDownComboBox m_HaulTruckCB;
 };
 
 //{{AFX_INSERT_LOCATION}}

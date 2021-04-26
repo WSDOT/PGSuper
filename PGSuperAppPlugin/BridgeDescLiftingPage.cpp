@@ -131,6 +131,7 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
    Float64 clearspan = segmentLength - pSegment->HandlingData.LeadingSupportPoint - pSegment->HandlingData.TrailingSupportPoint;
    DDV_UnitValueZeroOrMore( pDX, IDC_LEADINGOVERHANG, clearspan, pDisplayUnits->GetSpanLengthUnit() );
 
+   DDX_Control(pDX, IDC_HAUL_TRUCKS, m_HaulTruckCB);
    DDX_CBStringExactCase(pDX,IDC_HAUL_TRUCKS,pSegment->HandlingData.HaulTruckName);
 }
 
