@@ -736,10 +736,12 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivSegmentPostTensionLo
    // The end points of the parabolic duct can be at different elevations so
    // create to loads; one for the left half and one for the right half of
    // the segment. 
+   GET_IFACE(IGirder, pGirder);
+   WebIndexType nWebs = pGirder->GetWebCount(segmentKey);
 
    for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
    {
-      const auto*pDuct = pPTData->GetDuct(ductIdx);
+      const auto* pDuct = pPTData->GetDuct(ductIdx/nWebs);
 
       Float64 Pt = pPTForce->GetSegmentTendonAverageInitialForce(segmentKey, ductIdx);
 
