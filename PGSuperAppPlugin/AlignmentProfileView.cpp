@@ -479,6 +479,15 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
 
    // Label Vertical Curves
    GET_IFACE2(pBroker,IRoadway,pRoadway);
+   Float64 n = 10;
+   Float64 start_station, start_elevation, start_grade;
+   Float64 end_station, end_elevation, end_grade;
+   CComPtr<IPoint2d> pntStart, pntEnd;
+   pRoadway->GetStartPoint(n, &start_station, &start_elevation, &start_grade, &pntStart);
+   pRoadway->GetEndPoint(n, &end_station, &end_elevation, &end_grade, &pntEnd);
+   CreateStationLabel(label_list, start_station);
+   CreateStationLabel(label_list, end_station);
+
    IndexType nVC = pRoadway->GetVertCurveCount();
    for ( IndexType vcIdx = 0; vcIdx < nVC; vcIdx++ )
    {
