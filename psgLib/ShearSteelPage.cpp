@@ -46,6 +46,8 @@ static char THIS_FILE[] = __FILE__;
 
 const DWORD CShearSteelPage::IDD = IDD_EDIT_SHEAR_STEEL;
 
+static Float64 zone_bar_spacing_tolerance = ::ConvertToSysUnits(0.0001, unitMeasure::Feet);
+
 /////////////////////////////////////////////////////////////////////////////
 // CShearSteelPage property page
 
@@ -168,10 +170,19 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
             }
             lsi.BarSpacing = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
+            if (IsEqual(lsi.ZoneLength, lsi.BarSpacing, zone_bar_spacing_tolerance))
+            {
+               // sometimes zone length and bar spacing are the same, but come out a little differently numerically
+               // becase zone length is in feet and bar spacing in inches. For example, zone of 0.20833 ft with spacing of 2.5" are
+               // the same but numerically the bar spacing is greater than the zone length. When this situation occurs,
+               // force the bar spacing to match the zone length
+               lsi.BarSpacing = lsi.ZoneLength;
+            }
+
             // make sure stirrup spacing is greater than zone length
             if (zn+1 < nrows)
             {
-               if (lsi.ZoneLength<=0.00001)
+               if (::IsLE(lsi.ZoneLength,0.0))
                {
                   CString msg;
                   msg.Format(_T("Zone length must be greater than zero in Shear Zone %d"),zn+1);
@@ -182,7 +193,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 
             if ((matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.ConfinementBarSize) && zn < nrows)
             {
-               if (lsi.ZoneLength<lsi.BarSpacing)
+               if (::IsLT(lsi.ZoneLength,lsi.BarSpacing))
                {
                   CString msg;
                   msg.Format(_T("Bar spacing must be less than zone length in Shear Zone %d"),zn+1);
