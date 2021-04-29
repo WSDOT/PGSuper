@@ -602,6 +602,10 @@ void CLongSteelGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 	{
       OnLayoutTypeChanged(nRow);
    }
+   else
+   {
+      __super::OnModifyCell(nRow, nCol);
+   }
 }
 
 matRebar::Size CLongSteelGrid::GetBarSize(ROWCOL row)

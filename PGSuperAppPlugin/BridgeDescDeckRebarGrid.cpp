@@ -563,23 +563,26 @@ void CBridgeDescDeckRebarGrid::UpdateCutoff(ROWCOL nRow,const CPierData2* pPier)
    // there are cases whete this doesn't make sense (simple span at start/end of bridge, unless there are cantilevers)
    // bars and cutoff information not needed is ignored so any "bad input" isn't harmful
 
-   pgsTypes::BoundaryConditionType boundaryConditionType = pPier->GetBoundaryConditionType();
-   if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeBack || 
-        boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeBack ||
-       (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetPrevSpan() == nullptr) ||
-       (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetPrevSpan() == nullptr) 
-      )
+   if (pPier->IsBoundaryPier())
    {
-      bHasLeftCutoff = false;
-   }
+      pgsTypes::BoundaryConditionType boundaryConditionType = pPier->GetBoundaryConditionType();
+      if (boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeBack ||
+         boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeBack ||
+         (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetPrevSpan() == nullptr) ||
+         (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetPrevSpan() == nullptr)
+         )
+      {
+         bHasLeftCutoff = false;
+      }
 
-   if ( boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeAhead || 
-        boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeAhead ||
-       (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetNextSpan() == nullptr) ||
-       (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetNextSpan() == nullptr) 
-      ) 
-   {
-      bHasRightCutoff = false;
+      if (boundaryConditionType == pgsTypes::bctIntegralAfterDeckHingeAhead ||
+         boundaryConditionType == pgsTypes::bctIntegralBeforeDeckHingeAhead ||
+         (boundaryConditionType == pgsTypes::bctIntegralAfterDeck && pPier->GetNextSpan() == nullptr) ||
+         (boundaryConditionType == pgsTypes::bctIntegralBeforeDeck && pPier->GetNextSpan() == nullptr)
+         )
+      {
+         bHasRightCutoff = false;
+      }
    }
 
    if ( bHasLeftCutoff )

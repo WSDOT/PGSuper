@@ -680,9 +680,11 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
 void CCrownSlopeGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
 {
-      // tell parent to draw template if we have valid data
+   // tell parent to draw template if we have valid data
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
-      pParent->OnChange(); 
+   pParent->OnChange(); 
+
+   __super::OnModifyCell(nRow, nCol);
 }
 
 void CCrownSlopeGrid::OnMovedCurrentCell(ROWCOL nRow, ROWCOL nCol)

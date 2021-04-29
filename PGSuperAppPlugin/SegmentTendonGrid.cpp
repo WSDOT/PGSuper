@@ -673,13 +673,15 @@ void CSegmentTendonGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
          UpdateMaxPjack(nRow);
       }
    }
+   else
+   {
+      __super::OnModifyCell(nRow, nCol);
+   }
 
    CGirderSegmentTendonsPage* pParent = (CGirderSegmentTendonsPage*)GetParent();
    ASSERT(pParent->IsKindOf(RUNTIME_CLASS(CGirderSegmentTendonsPage)));
 
    pParent->OnChange();
-
-   CGXGridWnd::OnModifyCell(nRow, nCol);
 }
 
 BOOL CSegmentTendonGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
