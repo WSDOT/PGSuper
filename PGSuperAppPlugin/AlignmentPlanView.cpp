@@ -515,6 +515,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
       CreateStationLabel(label_display_list,end_station,_T("End"),    LABEL_NORMAL_TO_ALIGNMENT, TA_BASELINE | TA_RIGHT);
    }
 
+   // Start/End of station range labels
    GET_IFACE2(pBroker, IRoadway, pRoadway);
    Float64 n = 10;
    Float64 start_station, start_elevation, start_grade;
@@ -524,6 +525,18 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    pRoadway->GetEndPoint(n, &end_station, &end_elevation, &end_grade, &pntEnd);
    CreateStationLabel(label_display_list, start_station);
    CreateStationLabel(label_display_list, end_station);
+
+   // Even station labels
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   Float64 station_step = (pDisplayUnits->GetUnitMode() == eafTypes::umUS ? ::ConvertToSysUnits(100.00, unitMeasure::Feet) : ::ConvertToSysUnits(100.00, unitMeasure::Meter));
+   Float64 start = ::CeilOff(start_station, station_step);
+   Float64 end = ::FloorOff(end_station, station_step);
+   Float64 station = start;
+   do
+   {
+      CreateStationLabel(label_display_list, station);
+      station += station_step;
+   } while (station < end);
 
    // Label Horizontal Curve Points
    IndexType nHC = pRoadway->GetCurveCount();
@@ -627,6 +640,7 @@ void CAlignmentPlanView::CreateStationLabel(iDisplayList* pDisplayList,Float64 s
 
    doLabel->SetTextAlign(textAlign);
    doLabel->SetBkMode(TRANSPARENT);
+   doLabel->SetPointSize(100);
 
    pDisplayList->AddDisplayObject(doLabel);
 }

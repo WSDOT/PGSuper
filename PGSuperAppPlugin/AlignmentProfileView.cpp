@@ -457,10 +457,10 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   CComPtr<iDisplayList> label_list;
-   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_list);
+   CComPtr<iDisplayList> label_display_list;
+   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
 
-   label_list->Clear();
+   label_display_list->Clear();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -473,11 +473,11 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
       GET_IFACE2(pBroker,IBridge,pBridge);
       Float64 start_station = pBridge->GetPierStation(0);
       Float64 end_station = pBridge->GetPierStation(pBridge->GetPierCount()-1);
-      CreateStationLabel(label_list,start_station,_T("Start"),TA_BASELINE | TA_LEFT);
-      CreateStationLabel(label_list,end_station,  _T("End"),  TA_BASELINE | TA_LEFT);
+      CreateStationLabel(label_display_list,start_station,_T("Start"),TA_BASELINE | TA_LEFT);
+      CreateStationLabel(label_display_list,end_station,  _T("End"),  TA_BASELINE | TA_LEFT);
    }
 
-   // Label Vertical Curves
+   // Start/End of station range labels
    GET_IFACE2(pBroker,IRoadway,pRoadway);
    Float64 n = 10;
    Float64 start_station, start_elevation, start_grade;
@@ -485,9 +485,22 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
    CComPtr<IPoint2d> pntStart, pntEnd;
    pRoadway->GetStartPoint(n, &start_station, &start_elevation, &start_grade, &pntStart);
    pRoadway->GetEndPoint(n, &end_station, &end_elevation, &end_grade, &pntEnd);
-   CreateStationLabel(label_list, start_station);
-   CreateStationLabel(label_list, end_station);
+   CreateStationLabel(label_display_list, start_station);
+   CreateStationLabel(label_display_list, end_station);
 
+   // Even station labels
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   Float64 station_step = (pDisplayUnits->GetUnitMode() == eafTypes::umUS ? ::ConvertToSysUnits(100.00, unitMeasure::Feet) : ::ConvertToSysUnits(100.00, unitMeasure::Meter));
+   Float64 start = ::CeilOff(start_station, station_step);
+   Float64 end = ::FloorOff(end_station, station_step);
+   Float64 station = start;
+   do
+   {
+      CreateStationLabel(label_display_list, station);
+      station += station_step;
+   } while (station < end);
+
+   // Label Vertical Curves
    IndexType nVC = pRoadway->GetVertCurveCount();
    for ( IndexType vcIdx = 0; vcIdx < nVC; vcIdx++ )
    {
@@ -508,7 +521,7 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
          Float64 elevation;
          pntPVI->get_Elevation(&elevation);
 
-         CreateStationLabel(label_list,station,elevation,_T("PVI"));
+         CreateStationLabel(label_display_list,station,elevation,_T("PVI"));
       }
       else
       {
@@ -516,13 +529,11 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
          vc->get_BVC(&pntBVC);
          CComPtr<IStation> objStation;
          pntBVC->get_Station(&objStation);
-         Float64 station;
-         objStation->get_Value(&station);
-
+         Float64 bvc_station;
+         objStation->get_Value(&bvc_station);
          Float64 elevation;
          pntBVC->get_Elevation(&elevation);
-
-         CreateStationLabel(label_list,station,elevation,_T("BVC"));
+         CreateStationLabel(label_display_list, bvc_station,elevation,_T("BVC"));
 
          //CComPtr<IProfilePoint> pntPVI;
          //vc->get_PVI(&pntPVI);
@@ -531,16 +542,41 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
          //objStation->get_Value(&station);
          //pntPVI->get_Elevation(&elevation);
 
-         //CreateStationLabel(label_list,station,elevation,_T("PVI"));
+         //CreateStationLabel(label_display_list,station,elevation,_T("PVI"));
 
          CComPtr<IProfilePoint> pntEVC;
          vc->get_EVC(&pntEVC);
          objStation.Release();
          pntEVC->get_Station(&objStation);
-         objStation->get_Value(&station);
+         Float64 evc_station;
+         objStation->get_Value(&evc_station);
          pntEVC->get_Elevation(&elevation);
 
-         CreateStationLabel(label_list,station,elevation,_T("EVC"));
+         CreateStationLabel(label_display_list, evc_station,elevation,_T("EVC"));
+
+         CComPtr<IProfilePoint> low_point;
+         vc->get_LowPoint(&low_point);
+         objStation.Release();
+         low_point->get_Station(&objStation);
+         Float64 low_point_station;
+         objStation->get_Value(&low_point_station);
+         low_point->get_Elevation(&elevation);
+         if (!IsEqual(bvc_station, low_point_station) && !IsEqual(low_point_station, evc_station))
+         {
+            CreateStationLabel(label_display_list, low_point_station, elevation, _T("LP"));
+         }
+
+         CComPtr<IProfilePoint> high_point;
+         vc->get_HighPoint(&high_point);
+         objStation.Release();
+         high_point->get_Station(&objStation);
+         Float64 high_point_station;
+         objStation->get_Value(&high_point_station);
+         high_point->get_Elevation(&elevation);
+         if (!IsEqual(bvc_station, high_point_station) && !IsEqual(high_point_station, evc_station))
+         {
+            CreateStationLabel(label_display_list, high_point_station, elevation, _T("HP"));
+         }
       }
    }
 }
@@ -617,6 +653,7 @@ void CAlignmentProfileView::CreateStationLabel(iDisplayList* pDisplayList,Float6
    doLabel->SetAngle(900);
    doLabel->SetTextAlign(textAlign);
    doLabel->SetBkMode(TRANSPARENT);
+   doLabel->SetPointSize(100);
 
    pDisplayList->AddDisplayObject(doLabel);
 }

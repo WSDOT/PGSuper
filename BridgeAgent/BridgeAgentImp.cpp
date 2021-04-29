@@ -1825,14 +1825,14 @@ void CBridgeAgentImp::ValidateSegmentOrientation(const CSegmentKey& segmentKey) 
    segment->put_Orientation(orientation);
 }
 
-static void ComputeReasonableSurfaceStationRange(CComPtr<ICogoModel> pCogoModel, const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, CComPtr<IAlignment> alignment, 
-                                          const ProfileData2&   profileData, Float64* pStartStation, Float64* pEndStation)
+void CBridgeAgentImp::ComputeReasonableSurfaceStationRange(ICogoModel* pCogoModel, const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, IAlignment* pAlignment, const ProfileData2& profileData, Float64* pStartStation, Float64* pEndStation)
 {
    // Want a reasonable start and end station where we can put our model and retain some numerical accuracy
+   Float64 n = 10;
    Float64 bridge_length = pBridgeDesc->GetLength();
    const CPierData2* pPier = pBridgeDesc->GetPier(0);
    Float64 startStation = pPier->GetStation();
-   startStation -= bridge_length;
+   startStation -= pBridgeDesc->GetSpan(0)->GetSpanLength()/n;
 
    if ( 0 < alignmentData.HorzCurves.size() )
    {
@@ -1858,10 +1858,10 @@ static void ComputeReasonableSurfaceStationRange(CComPtr<ICogoModel> pCogoModel,
 
          CComPtr<IStation> objStation;
          Float64 offset;
-         alignment->Offset(pntTS,&objStation,&offset);
+         pAlignment->Offset(pntTS,&objStation,&offset);
 
          Float64 station;
-         objStation->get_NormalizedValue(alignment,&station);
+         objStation->get_NormalizedValue(pAlignment,&station);
          startStation = Min(startStation,station);
       }
    }
@@ -1881,14 +1881,14 @@ static void ComputeReasonableSurfaceStationRange(CComPtr<ICogoModel> pCogoModel,
       CComPtr<IStation> objStation;
       bvcPoint->get_Station(&objStation);
       Float64 station;
-      objStation->get_NormalizedValue(alignment,&station);
+      objStation->get_NormalizedValue(pAlignment,&station);
       startStation = Min(startStation,station);
    }
 
    // end station
    pPier = pBridgeDesc->GetPier(pBridgeDesc->GetPierCount()-1);
    Float64 endStation = pPier->GetStation();
-   endStation += bridge_length;
+   endStation += pBridgeDesc->GetSpan(pBridgeDesc->GetSpanCount()-1)->GetSpanLength()/n;
 
    if ( 0 < alignmentData.HorzCurves.size() )
    {
@@ -1915,10 +1915,10 @@ static void ComputeReasonableSurfaceStationRange(CComPtr<ICogoModel> pCogoModel,
 
          CComPtr<IStation> objStation;
          Float64 offset;
-         alignment->Offset(pntST,&objStation,&offset);
+         pAlignment->Offset(pntST,&objStation,&offset);
 
          Float64 station;
-         objStation->get_NormalizedValue(alignment,&station);
+         objStation->get_NormalizedValue(pAlignment,&station);
          endStation = Max(endStation,station);
       }
    }
@@ -1936,10 +1936,24 @@ static void ComputeReasonableSurfaceStationRange(CComPtr<ICogoModel> pCogoModel,
       CComPtr<IStation> objStation;
       evcPoint->get_Station(&objStation);
       Float64 station;
-      objStation->get_NormalizedValue(alignment,&station);
+      objStation->get_NormalizedValue(pAlignment,&station);
       endStation = Max(endStation,station);
    }
 
+   Float64 refStation = alignmentData.RefStation;
+   CComPtr<IPoint2d> refPoint;
+   pAlignment->LocatePoint(CComVariant(refStation), omtNormal, 0.0, CComVariant(0), &refPoint);
+   Float64 x, y;
+   refPoint->Location(&x, &y); // this is in local coordinates, we want it in global coordinates
+   x += m_DeltaX;
+   y += m_DeltaY;
+   if (!IsZero(refStation) || !IsZero(x) || !IsZero(y))
+   {
+      // we'll ignore the ref point at 0+00 (N 0, E 0)
+      // this is the default and it probably means the user didn't input the values
+      startStation = Min(startStation, refStation);
+      endStation   = Max(endStation, refStation);
+   }
    *pStartStation = startStation;
    *pEndStation = endStation;
 }
