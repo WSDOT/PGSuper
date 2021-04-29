@@ -632,8 +632,10 @@ void CStrandGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
       ASSERT(pParent);
       pParent->OnChange();
    }
-
-   __super::OnModifyCell(nRow, nCol);
+   else
+   {
+      __super::OnModifyCell(nRow, nCol);
+   }
 }
 
 void CStrandGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)

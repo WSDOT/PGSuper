@@ -628,8 +628,10 @@ void CDuctGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    {
       OnDuctTypeChanged(nRow);
    }
-
-   CGXGridWnd::OnModifyCell(nRow, nCol);
+   else
+   {
+      __super::OnModifyCell(nRow, nCol);
+   }
 }
 
 void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)

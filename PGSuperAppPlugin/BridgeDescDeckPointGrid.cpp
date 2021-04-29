@@ -139,8 +139,10 @@ void CBridgeDescDeckPointGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
       GetParam()->EnableUndo(FALSE);
 
    }
-
-   CGXGridWnd::OnEndEditing(nRow,nCol);
+   else
+   {
+      CGXGridWnd::OnModifyCell(nRow, nCol);
+   }
 }
 
 BOOL CBridgeDescDeckPointGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)

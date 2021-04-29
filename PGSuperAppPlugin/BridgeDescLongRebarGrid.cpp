@@ -441,6 +441,10 @@ void CGirderDescLongRebarGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 	{
       OnLayoutTypeChanged(nRow);
    }
+   else
+   {
+      __super::OnModifyCell(nRow, nCol);
+   }
 }
 
 Float64 CGirderDescLongRebarGrid::GetDistFromStart(ROWCOL row)

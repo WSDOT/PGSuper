@@ -762,7 +762,6 @@ BOOL CGirderTopWidthGrid::ValidateGirderTopWidth()
 
 void CGirderTopWidthGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
 {
-   CGXGridWnd::OnModifyCell(nRow, nCol);
    if (nRow == 1 && 2 <= nCol)
    {
       pgsTypes::TopWidthType type = GetTopWidthTypeFromCell(nCol);
@@ -773,6 +772,10 @@ void CGirderTopWidthGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
       m_pGirderGroup->SetGirderTopWidth(topWidthGroupIdx, type, group.left[pgsTypes::metStart], group.right[pgsTypes::metStart], group.left[pgsTypes::metEnd], group.right[pgsTypes::metEnd]);
 
       UpdateGrid();
+   }
+   else
+   {
+      __super::OnModifyCell(nRow, nCol);
    }
 }
 
