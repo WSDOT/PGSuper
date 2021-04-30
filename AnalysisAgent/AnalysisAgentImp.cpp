@@ -10291,19 +10291,28 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes
    pgsTypes::FaceType topFace = (IsTopStressLocation(topLocation) ? pgsTypes::TopFace : pgsTypes::BottomFace);
    pgsTypes::FaceType botFace = (IsTopStressLocation(botLocation) ? pgsTypes::TopFace : pgsTypes::BottomFace);
 
+   GET_IFACE(IPointOfInterest, pPoi);
    for ( const pgsPointOfInterest& poi : vPoi)
    {
-      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
-      const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
+      if (pPoi->IsOnGirder(poi))
+      {
+         const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi, intervalIdx);
+         const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
 
-      const TIME_STEP_CONCRETE* pTopConcreteElement = (IsGirderStressLocation(topLocation) ? &tsDetails.Girder : &tsDetails.Deck);
-      const TIME_STEP_CONCRETE* pBotConcreteElement = (IsGirderStressLocation(botLocation) ? &tsDetails.Girder : &tsDetails.Deck);
+         const TIME_STEP_CONCRETE* pTopConcreteElement = (IsGirderStressLocation(topLocation) ? &tsDetails.Girder : &tsDetails.Deck);
+         const TIME_STEP_CONCRETE* pBotConcreteElement = (IsGirderStressLocation(botLocation) ? &tsDetails.Girder : &tsDetails.Deck);
 
-      Float64 fTop = pTopConcreteElement->f[topFace][pfType][resultsType];
-      Float64 fBot = pBotConcreteElement->f[botFace][pfType][resultsType];
+         Float64 fTop = pTopConcreteElement->f[topFace][pfType][resultsType];
+         Float64 fBot = pBotConcreteElement->f[botFace][pfType][resultsType];
 
-      pfTop->push_back(fTop);
-      pfBot->push_back(fBot);
+         pfTop->push_back(fTop);
+         pfBot->push_back(fBot);
+      }
+      else
+      {
+         pfTop->push_back(0.0);
+         pfBot->push_back(0.0);
+      }
    }
 }
 

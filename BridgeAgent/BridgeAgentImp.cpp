@@ -31105,13 +31105,25 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
    bool bIsOnSegment               = IsOnSegment(poi);
    bool bIsInBoundaryPierDiaphragm = IsInBoundaryPierDiaphragm(poi);
 
+   const CPierData2* pPier = nullptr;
+   bool bIntegralBack{ false }, bIntegralAhead{ false };
+   if (bIsInBoundaryPierDiaphragm)
+   {
+      PierIndexType pierIdx = GetPier(poi);
+      ATLASSERT(pierIdx != INVALID_INDEX);
+      GET_IFACE(IBridgeDescription, pBridge);
+      pPier = pBridge->GetPier(pierIdx);
+      ATLASSERT(pPier);
+      pPier->IsIntegral(&bIntegralBack, &bIntegralAhead);
+   }
+
    bool bIsSection = true;
    if ( 
         (bIsInClosureJoint && intervalIdx < GetCompositeClosureJointInterval(closureKey)) // in closure and closure concrete isn't cured yet
         ||                                                             // OR
         (bIsOnSegment && intervalIdx < releaseIntervalIdx ) // on segment and segment concrete isn't cured yet
         ||                                                             // OR
-        (bIsInBoundaryPierDiaphragm && intervalIdx < compositeIntervalIdx) // in pier diaphragm and concrete isn't cured yet
+        (bIsInBoundaryPierDiaphragm && (intervalIdx < compositeIntervalIdx || (!pPier->IsContinuous() && !(bIntegralBack && bIntegralAhead)))) // in pier diaphragm and concrete isn't cured yet or there isn't a span-to-span connection (continuous or integral)
       )
    {
       bIsSection = false; // this is not a structural section...
