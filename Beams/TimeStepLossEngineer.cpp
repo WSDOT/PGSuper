@@ -3766,14 +3766,14 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             tsDetails.dPint += tsDetails.GirderTendons[ductIdx].dPi[pfType];
             tsDetails.dMint += tsDetails.GirderTendons[ductIdx].dPi[pfType] * (tsDetails.Ytr - tsDetails.GirderTendons[ductIdx].Ys);
          }
-      }
 
-      // Compute interval results for principal web stress check
-      if (m_PrincipalTensileStressCheckType == ISpecification::pwcNCHRPTimeStepMethod)
-      {
-         const TIME_STEP_DETAILS* pPrevTimeStepDetails = intervalIdx==0 ? nullptr : &details.TimeStepDetails[intervalIdx - 1];
+         // Compute interval results for principal web stress check
+         if (m_PrincipalTensileStressCheckType == ISpecification::pwcNCHRPTimeStepMethod)
+         {
+            const TIME_STEP_DETAILS* pPrevTimeStepDetails = intervalIdx==0 ? nullptr : &details.TimeStepDetails[intervalIdx - 1];
 
-         ComputePrincipalStressInWeb(intervalIdx, poi, pfType, nSegmentDucts, nGirderDucts, tsDetails, pPrevTimeStepDetails);
+            ComputePrincipalStressInWeb(intervalIdx, poi, pfType, nSegmentDucts, nGirderDucts, tsDetails, pPrevTimeStepDetails);
+         }
       }
    } // next product load type
 
@@ -5113,11 +5113,57 @@ void CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey,Poi
    m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE | POI_START_FACE | POI_END_FACE, pPoiLlist;
    *pPoiLlist = m_pPoi->SetPoiList(pPoiLlist);
 #endif
+
+   // remove all poi before the start of the girder
+   auto iter = pPoiList->begin();
+   auto end = pPoiList->end();
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi(*iter);
+      if (m_pPoi->IsOnGirder(poi))
+         break;
+   }
+   pPoiList->erase(pPoiList->begin(), iter);
+
+   // remove all poi after end of the girder
+   auto riter = pPoiList->rbegin();
+   auto rend = pPoiList->rend();
+   iter = pPoiList->end();
+   for (; riter != rend; riter++, iter--)
+   {
+      const pgsPointOfInterest& poi(*riter);
+      if (m_pPoi->IsOnGirder(poi))
+         break;
+   }
+   pPoiList->erase(iter,pPoiList->end());
 }
 
 void CTimeStepLossEngineer::GetAnalysisLocations(const CSegmentKey& segmentKey, PoiList* pPoiList)
 {
    m_pPoi->GetPointsOfInterest(segmentKey, pPoiList);
+
+   // remove all poi before the start of the girder
+   auto iter = pPoiList->begin();
+   auto end = pPoiList->end();
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi(*iter);
+      if (m_pPoi->IsOnGirder(poi))
+         break;
+   }
+   pPoiList->erase(pPoiList->begin(), iter);
+
+   // remove all poi after end of the girder
+   auto riter = pPoiList->rbegin();
+   auto rend = pPoiList->rend();
+   iter = pPoiList->end();
+   for (; riter != rend; riter++, iter--)
+   {
+      const pgsPointOfInterest& poi(*riter);
+      if (m_pPoi->IsOnGirder(poi))
+         break;
+   }
+   pPoiList->erase(iter, pPoiList->end());
 }
 
 void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, pgsTypes::ProductForceType pfType, 
