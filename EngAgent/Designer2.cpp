@@ -10353,7 +10353,7 @@ void pgsDesigner2::DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStar
                Float64 av_add = m_ShearDesignTool.GetRequiredAsForLongReinfShear();
 
                GET_IFACE(IMaterials,pMaterial);
-               Float64 aone_strand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Permanent)->GetNominalArea();
+               Float64 aone_strand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetNominalArea(); // assume straight strands are used to make LRS tie
 
                Float64 nstrands = av_add/aone_strand; // Additional strands needed
                nstrands = CeilOff(nstrands, 1.0);
