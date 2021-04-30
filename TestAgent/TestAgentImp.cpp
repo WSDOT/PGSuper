@@ -41,6 +41,7 @@
 #include <EAF\EAFUIIntegration.h>
 #include <IFace\Intervals.h>
 #include <IFace\PrincipalWebStress.h>
+#include <IFace\DocumentType.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
 #include <psgLib\SpecLibraryEntry.h>
@@ -185,6 +186,7 @@ bool CTestAgentImp::RunTest(long type,
       RunAlignmentTest(resf);
    }
 
+   GET_IFACE(IDocumentType, pDocType);
    GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -327,8 +329,8 @@ bool CTestAgentImp::RunTest(long type,
             VERIFY( RunHaunchTest(resf, poif, extSegmentKey) );
             VERIFY( RunHaunchTest(resf, poif, intSegmentKey) );
 
-            if (type==RUN_REGRESSION) // only do design for regression - cad test should have already run design
-            {
+            if (type==RUN_REGRESSION && pDocType->IsPGSuperDocument()) // only do design for regression - cad test should have already run design
+            { // design only applies to PGSuper documents (not spliced girders)
                VERIFY( RunDesignTest(resf, poif, extSegmentKey) );
                VERIFY( RunDesignTest(resf, poif, intSegmentKey) );
             }
