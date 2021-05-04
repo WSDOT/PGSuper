@@ -69,7 +69,7 @@ class CPGSuperDocProxyAgent;
 class CFileCompatibilityState
 {
 public:
-   CFileCompatibilityState() { ResetFlags(); }
+   CFileCompatibilityState() : m_bCreatingFromTemplate(false) { ResetFlags(); }
 
    // Set/Get version of application that was used to when saving a file (after version 2.1)
    void SetApplicationVersion(LPCTSTR lpszAppVersion) { m_strAppVersion = lpszAppVersion; }

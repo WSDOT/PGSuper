@@ -2263,15 +2263,15 @@ BOOL CPGSDocBase::OpenTheDocument(LPCTSTR lpszPathName)
          {
             return FALSE;
          }
-
-         bSuccess = __super::SaveTheDocument(lpszPathName);
-         if (!bSuccess && AfxMessageBox(_T("Unable to save file in updated format. Would you like to continue?"), MB_YESNO) == IDNO)
-         {
-            return FALSE;
-         }
-
-         m_FileCompatibilityState.FileSaved(lpszPathName, strAppVersion);
       }
+
+      BOOL bSuccess = __super::SaveTheDocument(lpszPathName);
+      if (!bSuccess && AfxMessageBox(_T("Unable to save file in updated format. Would you like to continue?"), MB_YESNO) == IDNO)
+      {
+         return FALSE;
+      }
+
+      m_FileCompatibilityState.FileSaved(lpszPathName, strAppVersion);
    }
   
    return TRUE;
