@@ -70,9 +70,10 @@
 // PGSplice Edit Girder Segment Pages
 #define EGS_GENERAL        0
 #define EGS_PRESTRESSING   1
-#define EGS_LONG_REINF     2
-#define EGS_STIRRUPS       3
-#define EGS_TRANSPORTATION 4
+#define EGS_TENDONS        2
+#define EGS_LONG_REINF     3
+#define EGS_STIRRUPS       4
+#define EGS_TRANSPORTATION 5
 
 /*****************************************************************************
 INTERFACE
