@@ -1828,11 +1828,10 @@ void CBridgeAgentImp::ValidateSegmentOrientation(const CSegmentKey& segmentKey) 
 void CBridgeAgentImp::ComputeReasonableSurfaceStationRange(ICogoModel* pCogoModel, const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, IAlignment* pAlignment, const ProfileData2& profileData, Float64* pStartStation, Float64* pEndStation)
 {
    // Want a reasonable start and end station where we can put our model and retain some numerical accuracy
-   Float64 n = 10;
    Float64 bridge_length = pBridgeDesc->GetLength();
    const CPierData2* pPier = pBridgeDesc->GetPier(0);
    Float64 startStation = pPier->GetStation();
-   startStation -= pBridgeDesc->GetSpan(0)->GetSpanLength()/n;
+   startStation -= bridge_length;
 
    if ( 0 < alignmentData.HorzCurves.size() )
    {
@@ -1888,7 +1887,7 @@ void CBridgeAgentImp::ComputeReasonableSurfaceStationRange(ICogoModel* pCogoMode
    // end station
    pPier = pBridgeDesc->GetPier(pBridgeDesc->GetPierCount()-1);
    Float64 endStation = pPier->GetStation();
-   endStation += pBridgeDesc->GetSpan(pBridgeDesc->GetSpanCount()-1)->GetSpanLength()/n;
+   endStation += bridge_length;
 
    if ( 0 < alignmentData.HorzCurves.size() )
    {
@@ -1954,6 +1953,14 @@ void CBridgeAgentImp::ComputeReasonableSurfaceStationRange(ICogoModel* pCogoMode
       startStation = Min(startStation, refStation);
       endStation   = Max(endStation, refStation);
    }
+
+   if (profileData.VertCurves.size() == 0)
+   {
+      Float64 L = 100;
+      startStation = Min(startStation, profileData.Station + L);
+      endStation   = Max(endStation, profileData.Station + L);
+   }
+
    *pStartStation = startStation;
    *pEndStation = endStation;
 }
