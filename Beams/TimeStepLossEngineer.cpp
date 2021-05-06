@@ -4445,7 +4445,7 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
 	         Float64 fpt1 = fpj - fr1;
 	         Float64 fpt2 = fpj - fr2;
 	         Float64 fps = fpj - dfpF_Xset;
-	         Float64 dDset = (0.5*(fpt1 + fpt2) - fps)*(X2 - X1);
+	         Float64 dDset = 2*(0.5*(fpt1 + fpt2) - fps)*(X2 - X1);
 	         Dset += dDset;
          }
 
@@ -4534,7 +4534,7 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
 	         Float64 fpt1 = fpj - fr1;
 	         Float64 fpt2 = fpj - fr2;
 	         Float64 fps = fpj - dfpF_Xset;
-	         Float64 dDset = (0.5*(fpt1 + fpt2) - fps)*(X1 - X2);
+	         Float64 dDset = 2*(0.5*(fpt1 + fpt2) - fps)*(X1 - X2);
 	         Dset += dDset;
          }
 
@@ -4677,7 +4677,7 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, 
             Float64 fpt1 = fpj - fr1;
             Float64 fpt2 = fpj - fr2;
             Float64 fps = fpj - dfpF_Xset;
-            Float64 dDset = (0.5*(fpt1 + fpt2) - fps)*(X2 - X1);
+            Float64 dDset = 2*(0.5*(fpt1 + fpt2) - fps)*(X2 - X1);
             Dset += dDset;
          }
 
@@ -4766,7 +4766,7 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, 
             Float64 fpt1 = fpj - fr1;
             Float64 fpt2 = fpj - fr2;
             Float64 fps = fpj - dfpF_Xset;
-            Float64 dDset = (0.5*(fpt1 + fpt2) - fps)*(X1 - X2);
+            Float64 dDset = 2*(0.5*(fpt1 + fpt2) - fps)*(X1 - X2);
             Dset += dDset;
          }
 
