@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 109.0    7  15.83 H-3034 variable     1     1     48"D    *     21  0.6  270  18.92  15.63  10.50  10.50                                              5.023  5.349   3.111    -3.652    11498   1.495  1.495   0.489 -0.503 -0.055 -0.038 -0.596  26.00  199.94   10.00   15.00   15.00    4.39    0.66    5.69    0.99    0.00 
+ 109.0    7  15.83 H-3034 variable     1     1     48"D    *     21  0.6  270  18.92  15.63  10.50  10.50                                              5.023  5.349   3.117    -3.666    11549   1.495  1.495   0.485 -0.503 -0.055 -0.038 -0.596  26.00  199.44   10.00   15.00   15.00    4.39    0.66    5.69    1.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -8,6 +8,7 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 3 Prestress Release for Segment 1
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 1
+Compression stress check failed for Service I Limit State in Interval 20 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 22 Cast Deck for Segment 1
 Compression stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 1
@@ -43,7 +44,7 @@ Duct Size check failed for Duct 2.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 109.0    7  15.83 H-3034 variable     1     2     48"D    *     21  0.6  270  18.96  15.67  10.50  10.50                                              5.023  5.349   3.086    -3.576    10958   1.368  1.368   0.520 -0.425 -0.056 -0.038 -0.519  26.09  201.59   10.00   15.00   15.00    4.79    0.77    6.21    1.14    0.00 
+ 109.0    7  15.83 H-3034 variable     1     2     48"D    *     21  0.6  270  18.96  15.67  10.50  10.50                                              5.023  5.349   3.092    -3.590    11009   1.368  1.368   0.516 -0.425 -0.056 -0.038 -0.519  26.09  201.09   10.00   15.00   15.00    4.79    0.77    6.20    1.15    0.00 
 
 
 The Specification Check was Not Successful
@@ -51,6 +52,7 @@ Tendon 1 is overstressed
 Tendon 2 is overstressed
 Tension stress check failed for Service I Limit State in Interval 3 Prestress Release for Segment 1
 Tension stress check failed for Service I Limit State in Interval 5 Place segments into storage for Segment 1
+Compression stress check failed for Service I Limit State in Interval 20 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 22 Cast Deck for Segment 1
 Compression stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 1
