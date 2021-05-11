@@ -127,7 +127,8 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-#pragma Reminder("UPDATE: Bridge Description Chapter - need to include temporary supports, erection sequence, post-tensioning, etc")
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SupportIndexType nTS = pBridge->GetTemporarySupportCount();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    //write_alignment_data( pBroker, pDisplayUnits, pChapter, level);

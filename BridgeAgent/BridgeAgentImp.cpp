@@ -22715,7 +22715,6 @@ Float64 CBridgeAgentImp::GetAg(pgsTypes::SectionPropertyType spType,IntervalInde
 void CBridgeAgentImp::GetCentroid(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const
 {
    const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
-   Float64 area;
    props.ShapeProps->get_Centroid(ppCG);
 }
 

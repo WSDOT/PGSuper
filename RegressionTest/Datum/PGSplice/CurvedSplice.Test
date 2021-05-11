@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 70.00    7  10.50       26122         1     1     60      *     16  0.6  270  45.05  43.08   9.50   9.50                                              5.997  8.128   2.145    -3.800    18701   0.992  0.992  -0.599 -1.799  0.000 -0.081 -1.880  11.53  135.06    1.50    1.50    1.50 
+ 70.00    7  10.50       26122         1     1     60      *     16  0.6  270  44.72  43.08   9.50   9.50                                              5.997  8.128   2.139    -3.815    18687   0.992  0.992  -0.565 -1.799  0.000 -0.081 -1.880  11.63  138.34    1.50    1.50    1.50 
 
 
 The Specification Check was Not Successful
@@ -10,9 +10,11 @@ Tendon 3 is overstressed
 Tension stress check failed for Service I Limit State in Interval 15 Cast closure joint and Cast Deck for Segment 1
 Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 1
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons, Remove Temporary Support for Segment 2
 Tension stress check failed for Service I Limit State in Interval 15 Cast closure joint and Cast Deck for Segment 3
 Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 3
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 4
+Tension stress check failed for Service I Limit State in Interval 18 Stress Tendons, Remove Temporary Support for Segment 4
 Tension stress check failed for Service III Limit State in Interval 26 Time Step for Segment 4
 Tension stress check failed for Service III Limit State in Interval 26 Time Step for Deck
 Tension stress check failed for Service I Limit State in Interval 15 Cast closure joint and Cast Deck for Segment 5
@@ -50,7 +52,7 @@ Duct Size check failed for Duct 3.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 70.00    7  10.50       26122         1     2     60      *     16  0.6  270  45.05  43.49   9.50   9.50                                              5.997  8.128   2.113    -3.715    17336   0.775  0.985  -0.636 -2.132  0.000 -0.083 -2.216  11.20  126.62    1.50    1.50    1.50 
+ 70.00    7  10.50       26122         1     2     60      *     16  0.6  270  44.72  43.49   9.50   9.50                                              5.997  8.128   2.107    -3.729    17468   0.775  0.985  -0.602 -2.133  0.000 -0.083 -2.217  11.30  129.93    1.50    1.50    1.50 
 
 
 The Specification Check was Not Successful
