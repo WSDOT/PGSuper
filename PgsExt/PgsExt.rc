@@ -84,7 +84,7 @@ BEGIN
             VALUE "FileDescription", "PgsExt DLL"
             VALUE "FileVersion", "6.1.0.0"
             VALUE "InternalName", "PgsExt"
-            VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2021, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PgsExt.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "6.1.0.0"

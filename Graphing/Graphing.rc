@@ -88,7 +88,7 @@ BEGIN
             VALUE "FileDescription", "PGSuper Graphing"
             VALUE "FileVersion", "6.1.0.0"
             VALUE "InternalName", "Graphing"
-            VALUE "LegalCopyright", "Copyright © 1999-2020, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2021, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperGraphing.dll"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "6.1.0.0"
