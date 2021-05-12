@@ -355,7 +355,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    }
 
    pTable->SetColumnSpan(row, 0, nColumns);
-   (*pTable)(row++, 0) << Bold(_T("Curve Points (x,y)"));
+   (*pTable)(row++, 0) << Bold(_T("Curve Points (E(x),N(y))"));
 
    if (bHasEntrySpirals)
    {
@@ -820,7 +820,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             {
                pRoadway->GetCurvePoint(hcIdx, cptTS, pgsTypes::pcGlobal, &pnt);
                pnt->Location(&x, &y);
-               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+               (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
             }
          }
          else
@@ -830,17 +830,17 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
                pnt.Release();
                pRoadway->GetCurvePoint(hcIdx, cptTS, pgsTypes::pcGlobal, &pnt);
                pnt->Location(&x, &y);
-               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+               (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
 
                pnt.Release();
                pRoadway->GetCurvePoint(hcIdx, cptSPI1, pgsTypes::pcGlobal, &pnt);
                pnt->Location(&x, &y);
-               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+               (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
 
                pnt.Release();
                pRoadway->GetCurvePoint(hcIdx, cptSC, pgsTypes::pcGlobal, &pnt);
                pnt->Location(&x, &y);
-               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+               (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
             }
 
             if (bHasCircularCurves)
@@ -855,7 +855,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
          pnt.Release();
          pRoadway->GetCurvePoint(hcIdx, cptPI, pgsTypes::pcGlobal, &pnt);
          pnt->Location(&x, &y);
-         (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+         (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
       }
 
       if (IsZero(hc_data.Radius))
@@ -882,7 +882,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
                pnt.Release();
                pRoadway->GetCurvePoint(hcIdx, cptST, pgsTypes::pcGlobal, &pnt);
                pnt->Location(&x, &y);
-               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+               (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
             }
 
             if (bHasExitSpirals)
@@ -904,17 +904,17 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
                pnt.Release();
                pRoadway->GetCurvePoint(hcIdx, cptCS, pgsTypes::pcGlobal, &pnt);
                pnt->Location(&x, &y);
-               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+               (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
 
                pnt.Release();
                pRoadway->GetCurvePoint(hcIdx, cptSPI2, pgsTypes::pcGlobal, &pnt);
                pnt->Location(&x, &y);
-               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+               (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
 
                pnt.Release();
                pRoadway->GetCurvePoint(hcIdx, cptST, pgsTypes::pcGlobal, &pnt);
                pnt->Location(&x, &y);
-               (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+               (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
             }
          }
       }
@@ -930,7 +930,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             pnt.Release();
             pRoadway->GetCurvePoint(hcIdx, cptCCC, pgsTypes::pcGlobal, &pnt);
             pnt->Location(&x, &y);
-            (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+            (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
          }
       }
 
@@ -945,7 +945,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
             pnt.Release();
             pRoadway->GetCurvePoint(hcIdx, cptCC, pgsTypes::pcGlobal, &pnt);
             pnt->Location(&x, &y);
-            (*pTable)(row, col) << length.SetValue(y) << _T(", "); (*pTable)(row++, col) << length.SetValue(x);
+            (*pTable)(row, col) << length.SetValue(x) << _T(", "); (*pTable)(row++, col) << length.SetValue(y);
          }
       }
 
