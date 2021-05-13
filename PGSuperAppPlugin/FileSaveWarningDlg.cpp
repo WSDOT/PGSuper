@@ -22,7 +22,7 @@ CFileSaveWarningDlg::CFileSaveWarningDlg(LPCTSTR lpszAppName, LPCTSTR lpszFileNa
    WORD cbBuf = _MAX_PATH;
 
    ::GetFileTitle(lpszFileName, title, cbBuf);
-   m_strLabel.Format(_T("%s was created with %s version %s. It will be converted to version %s and you will no longer be able to open it with an earlier version."),title,lpszAppName,strOldVersion,strCurrentVersion);
+   m_strLabel.Format(_T("%s was created with %s version %s. It will be converted to version %s the next time it is saved. You will no longer be able to open it with an earlier version."),title,lpszAppName,strOldVersion,strCurrentVersion);
 }
 
 CFileSaveWarningDlg::~CFileSaveWarningDlg()
@@ -61,7 +61,7 @@ BOOL CFileSaveWarningDlg::OnInitDialog()
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DEFAULT_OPTIONS);
    pCB->AddString(_T("Always make a copy when opening older-version files"));
-   pCB->AddString(_T("Never make copy, just convert the file"));
+   pCB->AddString(_T("Never make backup copy"));
    pCB->SetCurSel(0);
    
    CDialog::OnInitDialog();

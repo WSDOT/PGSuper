@@ -3830,8 +3830,8 @@ BEGIN
     LTEXT           "The file you are about to save was created with PGSuper Version 4.1.5. Once saved with Version 5.0.0 you will not be able to open it with an older vesion.",IDC_LABEL,7,7,295,24
     CONTROL         "Make copy of original file before saving\r\n(MyFile.4.1.5.pgs)",IDC_RB_COPY,
                     "Button",BS_AUTORADIOBUTTON | BS_TOP | BS_MULTILINE | WS_GROUP | WS_TABSTOP,7,36,288,18
-    CONTROL         "Convert the file without making a copy",IDC_RB_DONT_COPY,
-                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,56,139,10
+    CONTROL         "Don't make a backup copy of this file",IDC_RB_DONT_COPY,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,7,56,133,10
     CONTROL         "Don't show me this warning",IDC_DONT_WARN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,71,103,10
     COMBOBOX        IDC_DEFAULT_OPTIONS,7,83,263,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "OK",IDOK,143,111,50,14
