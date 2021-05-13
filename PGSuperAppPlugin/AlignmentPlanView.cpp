@@ -572,28 +572,34 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
          if ( IsZero(Ls1) )
          {
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntTS,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("PC"));
          }
          else
          {
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntTS,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("TS"));
 
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntSC,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("SC"));
          }
 
          if ( IsZero(Ls2) )
          {
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntST,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("PT"));
          }
          else
          {
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntCS,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("CS"));
 
             pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntST,&station,&offset);
+            ATLASSERT(IsZero(offset)); // point is on the alignment
             CreateStationLabel(label_display_list,station,_T("ST"));
          }
       }
