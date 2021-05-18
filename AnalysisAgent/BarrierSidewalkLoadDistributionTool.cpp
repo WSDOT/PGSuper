@@ -392,12 +392,12 @@ bool pgsBarrierSidewalkLoadDistributionTool::DistributeSidewalkLoadUnderSw(pgsTy
 
    for ( const auto& sectionPoint : m_GMSWInterSectionPoints)
    {
-      Float64 dist;
-      m_GeomUtil->ShortestDistanceToPoint(swLine, sectionPoint.m_IntersectionPoint, &dist);
+      Float64 offset;
+      m_GeomUtil->ShortestOffsetToPoint(swLine, sectionPoint.m_IntersectionPoint, &offset);
 
-      dist *= sign; // compensate for left or right sidewalk
+      offset *= sign; // compensate for left or right sidewalk
 
-      if (0.0 <= dist)
+      if (0.0 <= offset)
       {
          GMSWs_under_sidewalk.push_back(sectionPoint.m_Gdr);
       }
