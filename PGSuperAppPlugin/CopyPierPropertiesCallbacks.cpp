@@ -297,11 +297,6 @@ txnCopyPierAllProperties::txnCopyPierAllProperties(PierIndexType fromPierIdx,con
 {
    m_FromPierIdx = fromPierIdx;
    m_ToPiers  = toPiers;
-
-   // add our constituent transactions
-   AddTransaction( txnCopyPierConnectionProperties(m_FromPierIdx, m_ToPiers) );
-   AddTransaction( txnCopyPierDiaphragmProperties(m_FromPierIdx, m_ToPiers) );
-   AddTransaction( txnCopyPierModelProperties(m_FromPierIdx, m_ToPiers) );
 }
 
 txnCopyPierAllProperties::~txnCopyPierAllProperties()
@@ -693,11 +688,6 @@ rptParagraph* CCopyPierAllProperties::BuildComparisonReportParagraph(PierIndexTy
 
    PierAllPropertiesComparison(pPara, pBroker, fromPierIdx);
 
-   // Use reports from all other call backs
-   PierConnectionPropertiesComparison(pPara, pBroker, fromPierIdx, toPiers);
-   PierDiaphragmPropertiesComparison(pPara, pBroker, fromPierIdx);
-   PierModelPropertiesComparison(pPara, pBroker, fromPierIdx);
-
    return pPara;
 }
 
@@ -783,7 +773,7 @@ CCopyPierModelProperties::CCopyPierModelProperties()
 
 LPCTSTR CCopyPierModelProperties::GetName()
 {
-   return _T("Type and Dimensions");
+   return _T("Pier Type and Dimensions");
 }
 
 BOOL CCopyPierModelProperties::CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
@@ -1047,7 +1037,7 @@ void PierConnectionPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> p
    }
    else if (canCopyBC == ccbIncompatiblePierType)
    {
-      *pPara << color(Red) << _T("Note: Boundary conditions will not be copied. Pier/BVC Types are incompatible between selected piers.") << color(Black) << rptNewLine;
+      *pPara << color(Red) << _T("Note: Boundary conditions will not be copied. Pier/BC Types are incompatible between selected piers.") << color(Black) << rptNewLine;
    }
 
    *pPara << rptNewLine;

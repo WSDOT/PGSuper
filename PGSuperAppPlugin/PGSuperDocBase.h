@@ -60,7 +60,6 @@
 #define VS_BRIDGE_ALIGNMENT   2
 #define VS_BRIDGE_PROFILE     3
 
-class CCopyGirderDlg;
 class pgsSegmentDesignArtifact;
 class CPGSuperDocProxyAgent;
 
@@ -509,7 +508,9 @@ protected:
    afx_msg void OnLoadsLoadFactors();
 	afx_msg void OnViewsettingsGirderEditor();
 	afx_msg void OnCopyGirderProps(UINT nID);
+	afx_msg void OnCopyGirderPropsAll();
 	afx_msg void OnCopyPierProps(UINT nID);
+	afx_msg void OnCopyPierPropsAll();
 	afx_msg void OnImportProjectLibrary();
 	afx_msg void OnAddPointload();
 	afx_msg void OnAddDistributedLoad();

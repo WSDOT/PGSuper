@@ -35,7 +35,9 @@
 
 class rptParagraph;
 
-class txnCopyGirderAllProperties :  public pgsMacroTxn
+// Class to copy "all" properties. Note that it doesn't exactly do this. It is meant to copy the girder type
+// and clear out data for subsequent copy girder properties transactions
+class txnCopyGirderAllProperties :  public txnTransaction
 {
 public:
    txnCopyGirderAllProperties(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
@@ -146,7 +148,8 @@ private:
    std::vector<CLongitudinalRebarData> m_OldRebarData;
 };
 
-////////////////////////////////////////////////////////////////////////////
+//////////// Girder Copy Callback classes ////////////////////////////////////////////////////////////////
+
 
 class CCopyGirderAllProperties : public ICopyGirderPropertiesCallback
 {

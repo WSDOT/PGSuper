@@ -52,10 +52,10 @@ public:
 
    //================================
    // special function to work with control in copy per dialog
-   void SetCopyTempSupportProperties(ICopyTemporarySupportPropertiesCallback* pCallBack, PierIndexType fromTempSupportIdx, const std::vector<PierIndexType>& toTempSupports);
+   void SetCopyTempSupportProperties(std::vector<ICopyTemporarySupportPropertiesCallback*>& rCallBacks, PierIndexType fromTempSupportIdx, const std::vector<PierIndexType>& toTempSupports);
 
 protected:
-   ICopyTemporarySupportPropertiesCallback* m_pCallBack;
+   std::vector<ICopyTemporarySupportPropertiesCallback*> m_CallBacks;
    PierIndexType m_FromTempSupportIdx;
    std::vector<PierIndexType> m_ToTempSupports;
 

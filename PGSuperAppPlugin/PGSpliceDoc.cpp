@@ -83,6 +83,7 @@ BEGIN_MESSAGE_MAP(CPGSpliceDoc, CPGSDocBase)
    ON_COMMAND_RANGE(FIRST_COPY_TEMP_SUP_PLUGIN,LAST_COPY_TEMP_SUP_PLUGIN, OnCopyTempSupportProps)
    ON_UPDATE_COMMAND_UI_RANGE(FIRST_COPY_TEMP_SUP_PLUGIN,LAST_COPY_TEMP_SUP_PLUGIN,OnUpdateCopyTempSupportProps)
 	ON_UPDATE_COMMAND_UI(ID_COPY_TEMPSUPPORT_PROPS, OnUpdateCopyTempSupportProps)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_COPYTEMPSUPPORTPROPERTIES, OnUpdateCopyTempSupportProps)
 
    //}}AFX_MSG_MAP
 
@@ -516,10 +517,7 @@ void CPGSpliceDoc::OnCopyTempSupportProps(UINT nID)
    try
    {
       IDType cb_id = m_CopyTempSupportPropertiesCallbacksCmdMap.at(nID);
-      ICopyTemporarySupportPropertiesCallback* icb = m_CopyTempSupportPropertiesCallbacks.at(cb_id);
-      ATLASSERT(icb);
-
-      CCopyTempSupportDlg dlg(m_pBroker, icb);
+      CCopyTempSupportDlg dlg(m_pBroker, m_CopyTempSupportPropertiesCallbacks, cb_id);
       dlg.DoModal();
    }
    catch (...)
@@ -561,7 +559,7 @@ BOOL CPGSpliceDoc::OnCopyTempSupportPropsTb(NMHDR* pnmhdr,LRESULT* plr)
    for (const auto& ICallBack : m_CopyTempSupportPropertiesCallbacks)
    {
       UINT nCmd = i++ + FIRST_COPY_TEMP_SUP_PLUGIN;
-      CString copyName = ICallBack.second->GetName();
+      CString copyName = _T("Copy ") + CString(ICallBack.second->GetName());
       contextMenu.AppendMenu(nCmd, copyName, nullptr);
    }
 
@@ -795,28 +793,6 @@ void CPGSpliceDoc::ModifyTemplate(LPCTSTR strTemplate)
 
 void CPGSpliceDoc::PopulateCopyTempSupportMenu()
 {
-   CEAFMenu* pMainMenu = GetMainMenu();
-
-   UINT CopyPos = pMainMenu->FindMenuItem(_T("&Copy"));
-   ASSERT( 0 <= CopyPos );
-
-   CEAFMenu* pCopyMenu = pMainMenu->GetSubMenu(CopyPos);
-   ASSERT( pCopyMenu != nullptr );
-
-   UINT TempSupportsPos = pCopyMenu->FindMenuItem(_T("&Temporary Support"));
-   ASSERT( 0 <= TempSupportsPos );
-
-   // Get the Piers menu
-   CEAFMenu* pTempSupportMenu = pCopyMenu->GetSubMenu(TempSupportsPos);
-   ASSERT(pTempSupportMenu != nullptr);
-
-   // remove any old items
-   UINT nItems = pTempSupportMenu->GetMenuItemCount();
-   for ( UINT idx = 0; idx < nItems; idx++ )
-   {
-      pTempSupportMenu->RemoveMenu(0,MF_BYPOSITION,nullptr);
-   }
-
    m_CopyTempSupportPropertiesCallbacksCmdMap.clear();
 
    // if this assert fires, there are more graphs than can be put into the menus
@@ -828,14 +804,9 @@ void CPGSpliceDoc::PopulateCopyTempSupportMenu()
    for (const auto& ICallBack : m_CopyTempSupportPropertiesCallbacks )
    {
       UINT nCmd = i + FIRST_COPY_TEMP_SUP_PLUGIN;
-      CString copyName = ICallBack.second->GetName();
-      pTempSupportMenu->AppendMenu(nCmd,copyName,nullptr);
 
       // save command ID so we can map UI
       m_CopyTempSupportPropertiesCallbacksCmdMap.insert(std::make_pair(nCmd, ICallBack.first));
-
-//      const CBitmap* pBmp = pGraphMgr->GetMenuBitmap(graphName);
-//      pTempSupportMenu->SetMenuItemBitmaps(nCmd,MF_BYCOMMAND,pBmp,nullptr,nullptr);
 
       i++;
 

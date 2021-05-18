@@ -52,10 +52,10 @@ public:
 
    //================================
    // special function to work with control in copy girder dialog
-   void SetCopyGirderProperties(ICopyGirderPropertiesCallback* pCallBack, const CGirderKey& fromGirderKey);
+   void SetCopyGirderProperties(std::vector<ICopyGirderPropertiesCallback*>& rCallBacks, const CGirderKey& fromGirderKey);
 
 protected:
-   ICopyGirderPropertiesCallback* m_pCallBack;
+   std::vector<ICopyGirderPropertiesCallback*> m_CallBacks;
    CGirderKey m_FromGirderKey;
 private:
    // Prevent accidental copying and assignment

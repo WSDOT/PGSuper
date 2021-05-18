@@ -37,7 +37,6 @@ static char THIS_FILE[] = __FILE__;
 
 CCopyTempSupportPropertiesChapterBuilder::CCopyTempSupportPropertiesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect),
-m_pCallBack(nullptr),
 m_FromTempSupportIdx(INVALID_INDEX)
 {
 }
@@ -46,7 +45,7 @@ m_FromTempSupportIdx(INVALID_INDEX)
 //======================== OPERATIONS =======================================
 LPCTSTR CCopyTempSupportPropertiesChapterBuilder::GetName() const
 {
-   return TEXT("CopyTempSupportProperties");
+   return TEXT("Temporary Support Properties Comparison");
 }
 
 rptChapter* CCopyTempSupportPropertiesChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -58,21 +57,24 @@ rptChapter* CCopyTempSupportPropertiesChapterBuilder::Build(CReportSpecification
    pBrokerRptSpec->GetBroker(&pBroker);
 
    rptChapter* pChapter = new rptChapter(GetName());
-   if (m_pCallBack)
+   if (!m_CallBacks.empty())
    {
-      *pChapter << m_pCallBack->BuildComparisonReportParagraph(m_FromTempSupportIdx, m_ToTempSupports);
+      for (auto callback : m_CallBacks)
+      {
+         *pChapter << callback->BuildComparisonReportParagraph(m_FromTempSupportIdx, m_ToTempSupports);
+      }
+
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << _T("- Note that this report may not show all properties. Refer to the Details report for the pier in question to see a complete listing of properties.");
    }
    else
    {
       ATLASSERT(0);
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << _T("Error, no call back for ") << GetName();
+      *pPara << _T("Nothing to report. Please select a property type");
    }
-
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
-   *pPara << _T("- Note that this report may not show all properties. Refer to the Details report for the girder in question to see a complete listing of properties.");
 
    return pChapter;
 }
@@ -82,9 +84,9 @@ CChapterBuilder* CCopyTempSupportPropertiesChapterBuilder::Clone() const
    return new CCopyTempSupportPropertiesChapterBuilder;
 }
 
-void CCopyTempSupportPropertiesChapterBuilder::SetCopyTempSupportProperties(ICopyTemporarySupportPropertiesCallback* pCallBack, PierIndexType fromTempSupportIdx, const std::vector<PierIndexType>& toTempSupports)
+void CCopyTempSupportPropertiesChapterBuilder::SetCopyTempSupportProperties(std::vector<ICopyTemporarySupportPropertiesCallback*>& rCallBacks, PierIndexType fromTempSupportIdx, const std::vector<PierIndexType>& toTempSupports)
 {
-   m_pCallBack = pCallBack;
+   m_CallBacks = rCallBacks;
    m_FromTempSupportIdx = fromTempSupportIdx;
    m_ToTempSupports = toTempSupports;
 }

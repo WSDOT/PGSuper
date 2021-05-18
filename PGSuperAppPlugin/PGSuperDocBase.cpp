@@ -247,6 +247,8 @@ BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
    ON_COMMAND(ID_LOADS_LOADFACTORS, OnLoadsLoadFactors)
 	ON_COMMAND(ID_VIEWSETTINGS_GIRDEREDITOR, OnViewsettingsGirderEditor)
    ON_COMMAND_RANGE(FIRST_COPY_GIRDER_PLUGIN,LAST_COPY_GIRDER_PLUGIN, OnCopyGirderProps)
+   ON_COMMAND(ID_EDIT_COPYGIRDERPROPERTIES, OnCopyGirderPropsAll)
+   ON_COMMAND(ID_EDIT_COPYPIERPROPERTIES, OnCopyPierPropsAll)
    ON_COMMAND_RANGE(FIRST_COPY_PIER_PLUGIN,LAST_COPY_PIER_PLUGIN, OnCopyPierProps)
 	ON_UPDATE_COMMAND_UI(ID_COPY_GIRDER_PROPS, OnUpdateCopyGirderPropsTb)
 	ON_UPDATE_COMMAND_UI(ID_COPY_PIER_PROPS, OnUpdateCopyPierPropsTb)
@@ -2528,18 +2530,18 @@ BOOL CPGSDocBase::Init()
 
    m_CopyTempSupportPropertiesCallbacks.insert(std::make_pair(m_CallbackID++, &m_CopyTempSupportConnectionProperties));
 
-   // register the standard copy girder callback objects
+   // register the standard copy girder callback objects. Note that the ordering here will be the same as in the properties menus and listbox
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderAllProperties));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
-   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));
+   m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
 
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderAllProperties));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
-   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));
+   m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderPrestressing));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderStirrups));
    m_CopySplicedGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderHandling));
 
@@ -3596,10 +3598,23 @@ void CPGSDocBase::OnCopyGirderProps(UINT nID)
    try
    {
       IDType cb_id = m_CopyGirderPropertiesCallbacksCmdMap.at(nID);
-      ICopyGirderPropertiesCallback* icb = m_CopyGirderPropertiesCallbacks.at(cb_id);
-      ATLASSERT(icb);
 
-      CCopyGirderDlg dlg(m_pBroker, icb);
+      CCopyGirderDlg dlg(m_pBroker, m_CopyGirderPropertiesCallbacks, cb_id);
+      dlg.DoModal();
+   }
+   catch (...)
+   {
+      ATLASSERT(0); // map access out of range is the likely problem
+   }
+}
+
+void CPGSDocBase::OnCopyGirderPropsAll()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   try
+   {
+      CCopyGirderDlg dlg(m_pBroker, m_CopyGirderPropertiesCallbacks, INVALID_ID);
       dlg.DoModal();
    }
    catch (...)
@@ -3615,10 +3630,23 @@ void CPGSDocBase::OnCopyPierProps(UINT nID)
    try
    {
       IDType cb_id = m_CopyPierPropertiesCallbacksCmdMap.at(nID);
-      ICopyPierPropertiesCallback* icb = m_CopyPierPropertiesCallbacks.at(cb_id);
-      ATLASSERT(icb);
 
-      CCopyPierDlg dlg(m_pBroker, icb);
+      CCopyPierDlg dlg(m_pBroker, m_CopyPierPropertiesCallbacks, cb_id);
+      dlg.DoModal();
+   }
+   catch (...)
+   {
+      ATLASSERT(0); // map access out of range is the likely problem
+   }
+}
+
+void CPGSDocBase::OnCopyPierPropsAll()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   try
+   {
+      CCopyPierDlg dlg(m_pBroker, m_CopyPierPropertiesCallbacks, INVALID_ID);
       dlg.DoModal();
    }
    catch (...)
@@ -4509,13 +4537,12 @@ BOOL CPGSDocBase::OnCopyGirderPropsTb(NMHDR* pnmhdr,LRESULT* plr)
    CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
 
    int i = 0;
-   for (const auto& ICallBack : m_CopyGirderPropertiesCallbacks)
+   for (const auto& iCallBack : m_CopyGirderPropertiesCallbacks)
    {
       UINT nCmd = i++ + FIRST_COPY_GIRDER_PLUGIN;
-      CString copyName = ICallBack.second->GetName();
+      CString copyName = _T("Copy ") + CString(iCallBack.second->GetName());
       contextMenu.AppendMenu(nCmd, copyName, nullptr);
    }
-
 
    GET_IFACE(IEAFToolbars,pToolBars);
    CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
@@ -4558,7 +4585,7 @@ BOOL CPGSDocBase::OnCopyPierPropsTb(NMHDR* pnmhdr,LRESULT* plr)
    for (const auto& ICallBack : m_CopyPierPropertiesCallbacks)
    {
       UINT nCmd = i++ + FIRST_COPY_PIER_PLUGIN;
-      CString copyName = ICallBack.second->GetName();
+      CString copyName = _T("Copy ") + CString(ICallBack.second->GetName());
       contextMenu.AppendMenu(nCmd, copyName, nullptr);
    }
 
@@ -4655,32 +4682,8 @@ void CPGSDocBase::PopulateGraphMenu()
 
 void CPGSDocBase::PopulateCopyGirderMenu()
 {
-   CEAFMenu* pMainMenu = GetMainMenu();
-
-   UINT CopyPos = pMainMenu->FindMenuItem(_T("&Copy"));
-   ASSERT( 0 <= CopyPos );
-
-   CEAFMenu* pCopyMenu = pMainMenu->GetSubMenu(CopyPos);
-   ASSERT( pCopyMenu != nullptr );
-
-   UINT GirdersPos = pCopyMenu->FindMenuItem(_T("&Girder"));
-   ASSERT( 0 <= GirdersPos );
-
-   // Get the girders menu
-   CEAFMenu* pGirderMenu = pCopyMenu->GetSubMenu(GirdersPos);
-   ASSERT(pGirderMenu != nullptr);
-
-   // remove any old items
-   UINT nItems = pGirderMenu->GetMenuItemCount();
-   for ( UINT idx = 0; idx < nItems; idx++ )
-   {
-      pGirderMenu->RemoveMenu(0,MF_BYPOSITION,nullptr);
-   }
-
    m_CopyGirderPropertiesCallbacksCmdMap.clear();
 
-   // if this assert fires, there are more graphs than can be put into the menus
-   // EAF only reserves enough room for EAF_GRAPH_MENU_COUNT graphs
    const int MENU_COUNT = LAST_COPY_GIRDER_PLUGIN - FIRST_COPY_GIRDER_PLUGIN;
    ATLASSERT(m_CopyGirderPropertiesCallbacks.size() < MENU_COUNT);
 
@@ -4688,49 +4691,17 @@ void CPGSDocBase::PopulateCopyGirderMenu()
    for (const auto& ICallBack : m_CopyGirderPropertiesCallbacks )
    {
       UINT nCmd = i + FIRST_COPY_GIRDER_PLUGIN;
-      CString copyName = ICallBack.second->GetName();
-      pGirderMenu->AppendMenu(nCmd,copyName,nullptr);
-
       // save command ID so we can map UI
       m_CopyGirderPropertiesCallbacksCmdMap.insert(std::make_pair(nCmd, ICallBack.first));
 
-//      const CBitmap* pBmp = pGraphMgr->GetMenuBitmap(graphName);
-//      pGirderMenu->SetMenuItemBitmaps(nCmd,MF_BYCOMMAND,pBmp,nullptr,nullptr);
-
       i++;
-
-      ASSERT(i <= MENU_COUNT);
    }
 }
 
 void CPGSDocBase::PopulateCopyPierMenu()
 {
-   CEAFMenu* pMainMenu = GetMainMenu();
-
-   UINT CopyPos = pMainMenu->FindMenuItem(_T("&Copy"));
-   ASSERT( 0 <= CopyPos );
-
-   CEAFMenu* pCopyMenu = pMainMenu->GetSubMenu(CopyPos);
-   ASSERT( pCopyMenu != nullptr );
-
-   UINT PiersPos = pCopyMenu->FindMenuItem(_T("&Pier"));
-   ASSERT( 0 <= PiersPos );
-
-   // Get the Piers menu
-   CEAFMenu* pPierMenu = pCopyMenu->GetSubMenu(PiersPos);
-   ASSERT(pPierMenu != nullptr);
-
-   // remove any old items
-   UINT nItems = pPierMenu->GetMenuItemCount();
-   for ( UINT idx = 0; idx < nItems; idx++ )
-   {
-      pPierMenu->RemoveMenu(0,MF_BYPOSITION,nullptr);
-   }
-
    m_CopyPierPropertiesCallbacksCmdMap.clear();
 
-   // if this assert fires, there are more graphs than can be put into the menus
-   // EAF only reserves enough room for EAF_GRAPH_MENU_COUNT graphs
    const int MENU_COUNT = LAST_COPY_PIER_PLUGIN - FIRST_COPY_PIER_PLUGIN;
    ATLASSERT(m_CopyPierPropertiesCallbacks.size() < MENU_COUNT);
 
@@ -4739,17 +4710,10 @@ void CPGSDocBase::PopulateCopyPierMenu()
    {
       UINT nCmd = i + FIRST_COPY_PIER_PLUGIN;
       CString copyName = ICallBack.second->GetName();
-      pPierMenu->AppendMenu(nCmd,copyName,nullptr);
-
       // save command ID so we can map UI
       m_CopyPierPropertiesCallbacksCmdMap.insert(std::make_pair(nCmd, ICallBack.first));
 
-//      const CBitmap* pBmp = pGraphMgr->GetMenuBitmap(graphName);
-//      pPierMenu->SetMenuItemBitmaps(nCmd,MF_BYCOMMAND,pBmp,nullptr,nullptr);
-
       i++;
-
-      ASSERT(i <= MENU_COUNT);
    }
 }
 

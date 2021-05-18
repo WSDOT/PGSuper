@@ -29,6 +29,7 @@
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 #include "CopyPierDlg.h"
+#include "CopyPierPropertiesCallbacks.h"
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -44,6 +45,7 @@
 #include <Reporting\CopyPierPropertiesReportSpecification.h>
 #include <Reporting\CopyPierPropertiesChapterBuilder.h>
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -54,10 +56,10 @@ static char THIS_FILE[] = __FILE__;
 // CCopyPierDlg dialog
 
 
-CCopyPierDlg::CCopyPierDlg(IBroker* pBroker, ICopyPierPropertiesCallback* pCopyPierPropertiesCallback, CWnd* pParent /*=nullptr*/)
+CCopyPierDlg::CCopyPierDlg(IBroker* pBroker, const std::map<IDType,ICopyPierPropertiesCallback*>&  rCopyPierPropertiesCallbacks, IDType selectedID, CWnd* pParent /*=nullptr*/)
 	: CDialog(CCopyPierDlg::IDD, pParent),
    m_pBroker(pBroker),
-   m_pCopyPierPropertiesCallback(pCopyPierPropertiesCallback)
+   m_CopyPierPropertiesCallbacks(rCopyPierPropertiesCallbacks)
 {
 	//{{AFX_DATA_INIT(CCopyPierDlg)
 	//}}AFX_DATA_INIT
@@ -66,7 +68,18 @@ CCopyPierDlg::CCopyPierDlg(IBroker* pBroker, ICopyPierPropertiesCallback* pCopyP
    GET_IFACE(ISelection,pSelection);
    m_FromSelection = pSelection->GetSelection();
 
-   CEAFDocument* pDoc = EAFGetDocument();
+   // Special case here if selected ID is INVALID_ID
+   if (INVALID_ID == selectedID)
+   {
+      for (auto callback : rCopyPierPropertiesCallbacks)
+      {
+         m_SelectedIDs.insert(callback.first);
+      }
+   }
+   else
+   {
+      m_SelectedIDs.insert(selectedID);
+   }
 }
 
 BEGIN_MESSAGE_MAP(CCopyPierDlg, CDialog)
@@ -81,6 +94,8 @@ BEGIN_MESSAGE_MAP(CCopyPierDlg, CDialog)
    ON_COMMAND_RANGE(CCS_CMENU_BASE, CCS_CMENU_MAX, OnCmenuSelected)
    ON_WM_DESTROY()
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
+   ON_LBN_SELCHANGE(IDC_PROPERTY_LIST, &CCopyPierDlg::OnLbnSelchangePropertyList)
+   ON_CLBN_CHKCHANGE(IDC_PROPERTY_LIST, &CCopyPierDlg::OnLbnChkchangePropertyList)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -108,9 +123,10 @@ BOOL CCopyPierDlg::OnInitDialog()
 
    CDialog::OnInitDialog();
 
-   EnableToolTips(TRUE);
+   InitSelectedPropertyList();
+   OnFromPierChangedNoUpdate();
 
-   SetWindowText(m_pCopyPierPropertiesCallback->GetName());
+   EnableToolTips(TRUE);
 
    // set up reporting window
    UpdateReportData();
@@ -148,6 +164,7 @@ void CCopyPierDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CCopyPierDlg)
    DDX_Control(pDX, IDC_FROM_PIER,   m_FromPier);
    DDX_Control(pDX, IDC_TO_PIER,     m_ToPier);
+   DDX_Control(pDX, IDC_PROPERTY_LIST,   m_SelectedPropertyTypesCL);
 	//}}AFX_DATA_MAP
 
    if ( pDX->m_bSaveAndValidate )
@@ -171,14 +188,18 @@ void CCopyPierDlg::DoDataExchange(CDataExchange* pDX)
       }
 
       m_FromPier.SetCurSel(curFromsel);
-      OnFromPierChanged();
-
       m_ToPier.SetCurSel(0);
-      OnToPierChanged();
    }
 }
 
 void CCopyPierDlg::OnFromPierChanged() 
+{
+   OnFromPierChangedNoUpdate();
+   EnableCopyNow();
+   UpdateReport(); // Report needs to show newly selected girder
+}
+
+void CCopyPierDlg::OnFromPierChangedNoUpdate()
 {
    int curSel = m_FromPier.GetCurSel();
    if ( curSel != CB_ERR )
@@ -192,10 +213,6 @@ void CCopyPierDlg::OnFromPierChanged()
    }
 
    m_ToPier.SetCurSel(1);
-
-   EnableCopyNow();
-
-   UpdateReport(); // Report needs to show newly selected girder
 }
 
 void CCopyPierDlg::OnToPierChanged()
@@ -268,17 +285,36 @@ void CCopyPierDlg::OnSize(UINT nType, int cx, int cy)
       m_pBrowser->Move(hiddenRect.TopLeft());
       m_pBrowser->Size(hiddenRect.Size());
 
-      // Figure out the print button's new position
+      // bottom buttons
       CRect btnSizeRect(0,0,50,14);
       MapDialogRect( &btnSizeRect );
 
-      CRect printRect;
-      printRect.bottom = clientRect.bottom - sizeRect.Height();
-      printRect.right  = clientRect.right  - sizeRect.Width();
-      printRect.left   = printRect.right   - btnSizeRect.Width();
-      printRect.top    = printRect.bottom  - btnSizeRect.Height();
+      CRect btnRect;
+      btnRect.bottom = clientRect.bottom - sizeRect.Height();
+      btnRect.right  = clientRect.right  - LONG(sizeRect.Width() * 3); 
+      btnRect.left   = btnRect.right   - btnSizeRect.Width();
+      btnRect.top    = btnRect.bottom  - btnSizeRect.Height();
 
-      CButton* pButton = (CButton*)GetDlgItem(IDC_PRINT);
+      CButton* pButton = (CButton*)GetDlgItem(ID_HELP);
+      pButton->MoveWindow( btnRect, FALSE );
+
+      CRect printRect(btnRect); // put print button directly above Help
+
+      CRect horizOffsetRect(0,0,66,0); // horizontal spacing between buttons
+      MapDialogRect( &horizOffsetRect );
+      CSize horizOffset(-1*horizOffsetRect.Width(),0);
+
+      btnRect += horizOffset;
+      pButton = (CButton*)GetDlgItem(IDCANCEL);
+      pButton->MoveWindow( btnRect, FALSE );
+
+      btnRect += horizOffset;
+      pButton = (CButton*)GetDlgItem(IDOK);
+      pButton->MoveWindow( btnRect, FALSE );
+
+      CSize vertOffset(0, int(btnSizeRect.Height() * 1.75));
+      printRect -= vertOffset;
+      pButton = (CButton*)GetDlgItem(IDC_PRINT);
       pButton->MoveWindow( printRect, FALSE );
 
       Invalidate();
@@ -325,6 +361,8 @@ void CCopyPierDlg::UpdateReportData()
    PierIndexType pierIdx = GetFromPier();
    std::vector<PierIndexType> toPiers = GetToPiers();
 
+   std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
+
    // We know we put at least one of our own chapter builders into the report builder. Find it and set its data
    CollectionIndexType numchs = pBuilder->GetChapterBuilderCount();
    for (CollectionIndexType ich = 0; ich < numchs; ich++)
@@ -334,7 +372,7 @@ void CCopyPierDlg::UpdateReportData()
 
       if (pRptCpBuilder)
       {
-         pRptCpBuilder->SetCopyPierProperties(m_pCopyPierPropertiesCallback, pierIdx, toPiers);
+         pRptCpBuilder->SetCopyPierProperties(callbacks, pierIdx, toPiers);
       }
    }
 }
@@ -355,6 +393,35 @@ void CCopyPierDlg::UpdateReport()
    }
 }
 
+std::vector<ICopyPierPropertiesCallback*> CCopyPierDlg::GetSelectedCopyPierPropertiesCallbacks()
+{
+   // double duty here. saving selected ids and returning callbacks
+   m_SelectedIDs.clear();
+   std::vector<ICopyPierPropertiesCallback*> callbacks;
+
+   int nProps = m_SelectedPropertyTypesCL.GetCount();
+   for ( int ch = 0; ch < nProps; ch++ )
+   {
+      if ( m_SelectedPropertyTypesCL.GetCheck( ch ) == 1 )
+      {
+         IDType id = (IDType)m_SelectedPropertyTypesCL.GetItemData(ch);
+         m_SelectedIDs.insert(id);
+
+         std::map<IDType, ICopyPierPropertiesCallback*>::const_iterator it = m_CopyPierPropertiesCallbacks.find(id);
+         if (it != m_CopyPierPropertiesCallbacks.end())
+         {
+            callbacks.push_back(it->second);
+         }
+         else
+         {
+            ATLASSERT(0); 
+         }
+      }
+   }
+
+   return callbacks;
+}
+
 void CCopyPierDlg::OnHelp()
 {
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_COPYPIERPROPERTIES );
@@ -371,15 +438,21 @@ void CCopyPierDlg::OnOK()
    pgsMacroTxn* pMacro = new pgsMacroTxn;
    pMacro->Name(_T("Copy Pier Properties"));
 
-   txnTransaction* pTxn = m_pCopyPierPropertiesCallback->CreateCopyTransaction(m_FromPierIdx,m_ToPiers);
-   if (pTxn)
+   std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
+   for (auto callback : callbacks)
    {
-      GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pTxn);
+      txnTransaction* pTxn = callback->CreateCopyTransaction(m_FromPierIdx, m_ToPiers);
+      pMacro->AddTransaction(pTxn);
    }
 
-   EnableCopyNow();
+   if (pMacro->GetTxnCount() > 0)
+   {
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pMacro);
+   }
+
    UpdateReport();
+   EnableCopyNow();
 }
 
 void CCopyPierDlg::OnCopyItemStateChanged()
@@ -392,11 +465,16 @@ void CCopyPierDlg::OnEdit()
    PierIndexType fromIdx = GetFromPier();
 
    GET_IFACE(IEditByUI, pEditByUI);
-   UINT tab = m_pCopyPierPropertiesCallback->GetPierEditorTabIndex();
+   UINT tab = 0; // use if nothing is selected
+   std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
+   if (!callbacks.empty())
+   {
+      tab = callbacks.front()->GetPierEditorTabIndex();
+   }
+
    pEditByUI->EditPierDescription(fromIdx, tab);
 
    UpdateReport(); // we update whether any changes are made or not
-
    EnableCopyNow();
 }
 
@@ -411,7 +489,21 @@ void CCopyPierDlg::EnableCopyNow()
    PierIndexType copyFrom = GetFromPier();
    std::vector<PierIndexType> copyTo = GetToPiers();
 
-   BOOL bEnable = m_pCopyPierPropertiesCallback->CanCopy(copyFrom, copyTo) ? TRUE : FALSE;
+   BOOL bEnable;
+   if (-1 != IsAllSelectedInList())
+   {
+      bEnable = TRUE; // can always copy if all is selected
+   }
+   else
+   {
+      std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
+
+      bEnable = callbacks.empty() ? FALSE : TRUE;
+      for (auto callback : callbacks)
+      {
+         bEnable &= callback->CanCopy(copyFrom, copyTo) ? TRUE : FALSE;
+      }
+   }
 
    GetDlgItem(IDOK)->EnableWindow(bEnable);
 }
@@ -559,4 +651,98 @@ BOOL CCopyPierDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult)
       return TRUE;
    }
    return FALSE;
+}
+
+
+void CCopyPierDlg::InitSelectedPropertyList()
+{
+   // Clear out the list box
+   m_SelectedPropertyTypesCL.ResetContent();
+
+   for (const auto& CBpair : m_CopyPierPropertiesCallbacks)
+   {
+      ICopyPierPropertiesCallback* pCB = CBpair.second;
+      int idx = m_SelectedPropertyTypesCL.AddString( pCB->GetName() );
+      if ( idx != LB_ERR )
+      {
+         IDType id = CBpair.first;
+         m_SelectedPropertyTypesCL.SetItemData(idx, id);
+
+         if (m_SelectedIDs.find(id) != m_SelectedIDs.end())
+         {
+            m_SelectedPropertyTypesCL.SetCheck(idx, 1);
+         }
+         else
+         {
+            m_SelectedPropertyTypesCL.SetCheck(idx, 0);
+         }
+      }
+   }
+
+   UpdateSelectedPropertyList();
+
+   m_SelectedPropertyTypesCL.SetCurSel(-1);
+}
+
+void CCopyPierDlg::UpdateSelectedPropertyList()
+{
+   // see if "All Properties" is selected
+   int all_pos = IsAllSelectedInList();
+   bool is_all_selected = all_pos != -1;
+
+   int nProps = m_SelectedPropertyTypesCL.GetCount();
+
+   if (is_all_selected)
+   {
+      // "All" is selected. Set check and enable all in list
+      for (int ch = 0; ch < nProps; ch++)
+      {
+         if (ch != all_pos)
+         {
+            m_SelectedPropertyTypesCL.SetCheck(ch, 1);
+            m_SelectedPropertyTypesCL.Enable(ch, FALSE);
+         }
+      }
+   }
+   else
+   {
+      for (int ch = 0; ch < nProps; ch++)
+      {
+         m_SelectedPropertyTypesCL.Enable(ch, TRUE);
+      }
+   }
+
+   EnableCopyNow();
+}
+
+void CCopyPierDlg::OnLbnSelchangePropertyList()
+{
+   // Do nothing here, but this function seems necessary to catch message for OnLbnChkchangePropertyList below. Otherwise, it won't be called?
+}
+
+void CCopyPierDlg::OnLbnChkchangePropertyList()
+{
+   UpdateSelectedPropertyList();
+   UpdateReport();
+}
+
+int CCopyPierDlg::IsAllSelectedInList()
+{
+   int nProps = m_SelectedPropertyTypesCL.GetCount();
+   for (int ch = 0; ch < nProps; ch++)
+   {
+      int chkval = m_SelectedPropertyTypesCL.GetCheck(ch);
+      if (chkval == 1)
+      {
+         IDType id = (IDType)m_SelectedPropertyTypesCL.GetItemData(ch);
+         std::map<IDType, ICopyPierPropertiesCallback*>::const_iterator it = m_CopyPierPropertiesCallbacks.find(id);
+
+         if (nullptr != dynamic_cast<CCopyPierAllProperties*>(it->second))
+         {
+            return ch;
+         }
+      }
+   }
+
+   return -1;
 }

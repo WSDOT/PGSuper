@@ -33,6 +33,7 @@
 #include <vector>
 #include "MultiGirderSelectDlg.h"
 #include <Reporting\CopyGirderPropertiesReportSpecification.h>
+#include <MfcTools\CheckListBoxEx.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyGirderDlg dialog
@@ -41,7 +42,7 @@ class CCopyGirderDlg : public CDialog
 {
 // Construction
 public:
-	CCopyGirderDlg(IBroker* pBroker, ICopyGirderPropertiesCallback* pCopyGirderPropertiesCallback, CWnd* pParent = nullptr);   // standard constructor
+	CCopyGirderDlg(IBroker* pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);
 
 // Dialog Data
 	//{{AFX_DATA(CCopyGirderDlg)
@@ -51,6 +52,7 @@ public:
    CComboBox m_FromGirder;
    CComboBox m_ToGroup;
    CComboBox m_ToGirder;
+	CCheckListBoxEx	m_SelectedPropertyTypesCL;
 	//}}AFX_DATA
 
 // Overrides
@@ -89,13 +91,16 @@ protected:
    afx_msg void OnEdit();
 	afx_msg void OnPrint();
    afx_msg void OnCmenuSelected(UINT id);
+   afx_msg void OnDestroy();
+//   afx_msg void OnLbnSelchangePropertyList();
+   afx_msg void OnLbnChkchangePropertyList();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
 
-   IBroker* m_pBroker;
-   ICopyGirderPropertiesCallback* m_pCopyGirderPropertiesCallback;
+   void OnFromGroupChangedNoUpdate();
+   void OnToGroupChangedNoUpdate();
 
    void FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool bIncludeAllGroups, bool bIncludeAllGirders);
    void FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpIdx,bool bIncludeAllGirders);
@@ -103,9 +108,18 @@ protected:
    void UpdateReportData();
    void UpdateReport();
 
+   void UpdateSelectedPropertyList();
+   void InitSelectedPropertyList();
+
+   std::vector<ICopyGirderPropertiesCallback*> GetSelectedCopyGirderPropertiesCallbacks();
+
    std::map<int,CGirderKey> m_FromListIndicies;
 
 private:
+   IBroker* m_pBroker;
+   const std::map<IDType, ICopyGirderPropertiesCallback*> m_CopyGirderPropertiesCallbacks;
+   std::set<IDType> m_SelectedIDs; 
+
    std::shared_ptr<CCopyGirderPropertiesReportSpecification> m_pRptSpec;
    std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 
@@ -122,10 +136,11 @@ protected:
    virtual void OnOK();
    void EnableCopyNow();
    void CleanUp();
+   int IsAllSelectedInList(); // return checklist index where All Properties is found
 
    virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+
 public:
-   afx_msg void OnDestroy();
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -372,26 +372,14 @@ BEGIN
         MENUITEM "&Haunch...",                  ID_EDIT_HAUNCH
         MENUITEM "&Timeline...",                ID_EDIT_TIMELINE
         MENUITEM SEPARATOR
+        MENUITEM "&Copy Girder Properties...",  ID_EDIT_COPYGIRDERPROPERTIES
+        MENUITEM "Copy &Pier Properties...",    ID_EDIT_COPYPIERPROPERTIES
+        MENUITEM "Copy Temporary Support Properties...", ID_EDIT_COPYTEMPSUPPORTPROPERTIES
+        MENUITEM SEPARATOR
         MENUITEM "&Insert Span\tIns",           ID_INSERT
         MENUITEM "Insert &Temporary Support\tShift+Ins", ID_INSERT_TEMPORARY_SUPPORT
         MENUITEM "&Delete\tDel",                ID_DELETE
         MENUITEM SEPARATOR
-        MENUITEM "&Copy Girder Properties...",  IDM_COPY_GIRDER_PROPS
-    END
-    POPUP "&Copy"
-    BEGIN
-        POPUP "&Girder"
-        BEGIN
-            MENUITEM "This is a placeholder",       ID_GIRDER_THISISAPLACEHOLDER37009
-        END
-        POPUP "&Pier"
-        BEGIN
-            MENUITEM "This is a placeholder",       ID_PIER_THISISAPLACEHOLDER37011
-        END
-        POPUP "Temporary Support"
-        BEGIN
-            MENUITEM "Placeholder",                 ID_TEMPORARYSUPPORT_PLACEHOLDER
-        END
     END
     POPUP "&Project"
     BEGIN
@@ -539,19 +527,11 @@ BEGIN
         MENUITEM "&Haunch...",                  ID_EDIT_HAUNCH,MFT_STRING,MFS_ENABLED
         MENUITEM "&Timeline...",                ID_EDIT_TIMELINE,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
+        MENUITEM "&Copy Girder Properties...",  ID_EDIT_COPYGIRDERPROPERTIES,MFT_STRING,MFS_ENABLED
+        MENUITEM "Copy &Pier Properties...",    ID_EDIT_COPYPIERPROPERTIES,MFT_STRING,MFS_ENABLED
+        MENUITEM MFT_SEPARATOR
         MENUITEM "&Insert Span\tIns",           ID_INSERT,MFT_STRING,MFS_ENABLED
         MENUITEM "&Delete\tDel",                ID_DELETE,MFT_STRING,MFS_ENABLED
-    END
-    POPUP "&Copy",                          65535,MFT_STRING,MFS_ENABLED
-    BEGIN
-        POPUP "&Girder",                        65535,MFT_STRING,MFS_ENABLED
-        BEGIN
-            MENUITEM "This is a placeholder",       ID_GIRDER_THISISAPLACEHOLDER,MFT_STRING,MFS_ENABLED
-        END
-        POPUP "&Pier",                          65535,MFT_STRING,MFS_ENABLED
-        BEGIN
-            MENUITEM "This is a placeholder",       ID_PIER_THISISAPLACEHOLDER,MFT_STRING,MFS_ENABLED
-        END
     END
     POPUP "&Project",                       65535,MFT_STRING,MFS_ENABLED
     BEGIN
@@ -716,14 +696,16 @@ BEGIN
         MENUITEM "Edit &Prestressing...",       ID_EDIT_PRESTRESSING
         MENUITEM "Edit Sti&rrups...",           ID_EDIT_STIRRUPS
         MENUITEM SEPARATOR
+        MENUITEM "&Copy Girder Properties...",  ID_EDIT_COPYGIRDERPROPERTIES
+        MENUITEM SEPARATOR
         MENUITEM "Design Girder",               ID_GIRDERVIEW_DESIGNGIRDERDIRECT
         MENUITEM "Design Girder (preserve haunch geometry)", ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET
         MENUITEM SEPARATOR
         MENUITEM "Add Poi&nt Load...",          ID_ADD_POINT_LOAD_CTX
         MENUITEM "Add &Distributed Load...",    ID_ADD_DISTRIBUTED_LOAD_CTX
-        MENUITEM "Add End Moment Load...",      ID_ADD_MOMENT_LOAD_CTX
+        MENUITEM "Add End &Moment Load...",     ID_ADD_MOMENT_LOAD_CTX
         MENUITEM SEPARATOR
-        MENUITEM "Section &Cut...",             ID_USER_CUT
+        MENUITEM "Section C&ut...",             ID_USER_CUT
         MENUITEM SEPARATOR
         MENUITEM "&View Settings...",           ID_VIEWSETTINGS
         MENUITEM SEPARATOR
@@ -745,6 +727,8 @@ BEGIN
     BEGIN
         MENUITEM "Edit Girder...",              ID_EDIT_GIRDER
         MENUITEM SEPARATOR
+        MENUITEM "&Copy Girder Properties...",  ID_EDIT_COPYGIRDERPROPERTIES
+        MENUITEM SEPARATOR
         MENUITEM "Design Girder",               ID_PROJECT_DESIGNGIRDERDIRECT
         MENUITEM "Design Girder (preserve haunch geometry)", ID_PROJECT_DESIGNGIRDERDIRECT_PRESERVEHAUNCH
         MENUITEM SEPARATOR
@@ -762,6 +746,8 @@ BEGIN
         MENUITEM "Edit Segment...",             ID_EDIT_SEGMENT
         MENUITEM "Edit Girder...",              ID_EDIT_GIRDER
         MENUITEM SEPARATOR
+        MENUITEM "&Copy Girder Properties...",  ID_EDIT_COPYGIRDERPROPERTIES
+        MENUITEM SEPARATOR
         MENUITEM "View Girder",                 ID_VIEW_GIRDER
         MENUITEM SEPARATOR
         MENUITEM "View Settings...",            ID_VIEWSETTINGS
@@ -774,6 +760,8 @@ BEGIN
     POPUP ""
     BEGIN
         MENUITEM "Edit Girder...",              ID_EDIT_GIRDER
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy Girder Properties...",  ID_EDIT_COPYGIRDERPROPERTIES
         MENUITEM SEPARATOR
         MENUITEM "View Girder",                 ID_VIEW_GIRDER
         MENUITEM SEPARATOR
@@ -800,6 +788,8 @@ BEGIN
         MENUITEM "&Edit",                       ID_EDIT_PIER
         MENUITEM "&Insert",                     ID_INSERT_PIER
         MENUITEM "&Delete",                     ID_DELETE_PIER
+        MENUITEM SEPARATOR
+        MENUITEM "Copy Pier Properties...",     ID_EDIT_COPYPIERPROPERTIES
     END
 END
 
@@ -1295,28 +1285,30 @@ BEGIN
     LTEXT           "Haul Truck",IDC_STATIC,208,197,36,8
 END
 
-IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 537, 232
+IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 635, 294
 STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Copy Girder Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    COMBOBOX        IDC_FROM_SPAN,22,30,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_FROM_GIRDER,88,30,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FROM_SPAN,22,22,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FROM_GIRDER,88,22,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Single Girder, Span, Girderline, or All",IDC_RADIO1,
-                    "Button",BS_AUTORADIOBUTTON,17,109,129,10
-    COMBOBOX        IDC_TO_SPAN,28,122,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_TO_GIRDER,93,122,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Multiple Girders",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,17,143,64,10
-    PUSHBUTTON      "Select Girders\n(0 Selected)",IDC_SELECT_GIRDERS,49,157,78,23,BS_MULTILINE
-    DEFPUSHBUTTON   "Copy Now",IDOK,5,192,48,15
-    PUSHBUTTON      "Close",IDCANCEL,59,192,48,15
-    PUSHBUTTON      "Help",ID_HELP,111,192,50,15
-    GROUPBOX        "Copy From",IDC_STATIC,8,13,154,71
-    GROUPBOX        "Comparison Report",IDC_COMPREP,180,13,348,191
-    GROUPBOX        "Copy To",IDC_STATIC,8,95,154,89
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,188,25,330,167,BS_NOTIFY | NOT WS_VISIBLE | WS_TABSTOP
-    PUSHBUTTON      "Print",IDC_PRINT,478,208,50,14
-    PUSHBUTTON      "Edit",IDC_EDIT,61,59,50,14
+                    "Button",BS_AUTORADIOBUTTON,17,86,129,10
+    COMBOBOX        IDC_TO_SPAN,28,99,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_TO_GIRDER,93,99,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Multiple Girders",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,17,120,64,10
+    PUSHBUTTON      "Select Girders\n(0 Selected)",IDC_SELECT_GIRDERS,49,134,78,23,BS_MULTILINE
+    DEFPUSHBUTTON   "Copy Now",IDOK,455,273,48,15
+    PUSHBUTTON      "Close",IDCANCEL,509,273,48,15
+    PUSHBUTTON      "Help",ID_HELP,561,273,50,15
+    GROUPBOX        "Copy From",IDC_STATIC,8,5,154,60
+    GROUPBOX        "Comparison Report",IDC_COMPREP,172,10,455,261
+    GROUPBOX        "Copy To",IDC_STATIC,8,72,154,89
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,188,17,431,225,BS_NOTIFY | NOT WS_VISIBLE | WS_TABSTOP,WS_EX_STATICEDGE
+    PUSHBUTTON      "Print",IDC_PRINT,561,249,50,14
+    PUSHBUTTON      "Edit",IDC_EDIT,58,43,50,14
+    GROUPBOX        "Select Properties to be Copied",IDC_STATIC,8,169,154,102
+    LISTBOX         IDC_PROPERTY_LIST,15,182,141,83,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_SECTION_CUT_DIALOG DIALOGEX 0, 0, 226, 62
@@ -3839,40 +3831,44 @@ BEGIN
     PUSHBUTTON      "Help",IDC_HELP,252,111,50,14
 END
 
-IDD_COPY_PIER_PROPERTIES DIALOGEX 0, 0, 537, 232
+IDD_COPY_PIER_PROPERTIES DIALOGEX 0, 0, 593, 272
 STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Copy Pier Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        IDC_FROM_PIER,22,30,110,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_TO_PIER,21,118,108,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "Copy Now",IDOK,5,163,48,15
-    PUSHBUTTON      "Close",IDCANCEL,59,163,48,15
-    PUSHBUTTON      "Help",ID_HELP,111,163,50,15
+    COMBOBOX        IDC_TO_PIER,21,108,108,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Copy Now",IDOK,405,251,48,15
+    PUSHBUTTON      "Close",IDCANCEL,459,251,48,15
+    PUSHBUTTON      "Help",ID_HELP,511,251,50,15
     GROUPBOX        "Copy From",IDC_STATIC,8,13,154,71
-    GROUPBOX        "Comparison Report",IDC_COMPREP,173,13,355,191
-    GROUPBOX        "Copy To",IDC_STATIC,8,95,154,59
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,182,25,336,167,NOT WS_VISIBLE | WS_TABSTOP
-    PUSHBUTTON      "Print",IDC_PRINT,478,216,50,14
+    GROUPBOX        "Comparison Report",IDC_COMPREP,173,13,412,233
+    GROUPBOX        "Copy To",IDC_STATIC,8,95,154,39
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,186,25,387,194,NOT WS_VISIBLE | WS_TABSTOP
+    PUSHBUTTON      "Print",IDC_PRINT,512,224,50,14
     PUSHBUTTON      "Edit",IDC_EDIT,61,59,50,14
+    GROUPBOX        "Select Properties to be Copied",IDC_STATIC,8,144,154,102
+    LISTBOX         IDC_PROPERTY_LIST,15,157,141,83,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_COPY_TEMPSUPPORT_PROPERTIES DIALOGEX 0, 0, 537, 232
+IDD_COPY_TEMPSUPPORT_PROPERTIES DIALOGEX 0, 0, 537, 272
 STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Copy Temporary Support Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        IDC_FROM_PIER,22,30,110,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_TO_PIER,21,118,108,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    DEFPUSHBUTTON   "Copy Now",IDOK,5,163,48,15
-    PUSHBUTTON      "Close",IDCANCEL,59,163,48,15
-    PUSHBUTTON      "Help",ID_HELP,111,163,50,15
+    COMBOBOX        IDC_TO_PIER,21,108,108,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "Copy Now",IDOK,353,250,48,15
+    PUSHBUTTON      "Close",IDCANCEL,408,250,48,15
+    PUSHBUTTON      "Help",ID_HELP,461,250,50,15
     GROUPBOX        "Copy From",IDC_STATIC,8,13,154,71
-    GROUPBOX        "Comparison Report",IDC_COMPREP,173,13,355,191
-    GROUPBOX        "Copy To",IDC_STATIC,8,95,154,59
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,182,25,336,167,NOT WS_VISIBLE | WS_TABSTOP
-    PUSHBUTTON      "Print",IDC_PRINT,478,216,50,14
+    GROUPBOX        "Comparison Report",IDC_COMPREP,173,13,355,228
+    GROUPBOX        "Copy To",IDC_STATIC,8,95,154,40
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,182,25,336,184,NOT WS_VISIBLE | WS_TABSTOP
+    PUSHBUTTON      "Print",IDC_PRINT,459,221,50,14
     PUSHBUTTON      "Edit",IDC_EDIT,61,59,50,14
+    GROUPBOX        "Select Properties to be Copied",IDC_STATIC,8,140,154,102
+    LISTBOX         IDC_PROPERTY_LIST,15,153,141,83,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
 
@@ -3941,10 +3937,9 @@ BEGIN
 
     IDD_COPY_GIRDER_PROPERTIES, DIALOG
     BEGIN
-        RIGHTMARGIN, 529
+        RIGHTMARGIN, 627
         VERTGUIDE, 8
-        VERTGUIDE, 526
-        BOTTOMMARGIN, 213
+        BOTTOMMARGIN, 275
     END
 
     IDD_DESIGN_OUTCOME, DIALOG
@@ -4203,10 +4198,9 @@ BEGIN
 
     IDD_COPY_PIER_PROPERTIES, DIALOG
     BEGIN
-        RIGHTMARGIN, 529
+        RIGHTMARGIN, 585
         VERTGUIDE, 8
-        VERTGUIDE, 526
-        BOTTOMMARGIN, 213
+        BOTTOMMARGIN, 253
     END
 
     IDD_COPY_TEMPSUPPORT_PROPERTIES, DIALOG
@@ -4214,7 +4208,7 @@ BEGIN
         RIGHTMARGIN, 529
         VERTGUIDE, 8
         VERTGUIDE, 526
-        BOTTOMMARGIN, 213
+        BOTTOMMARGIN, 253
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -4797,6 +4791,8 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 100, 100,
     0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
     0, 0, 0, 0
 END
 
@@ -4813,6 +4809,8 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 100, 100,
     0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
     0, 0, 0, 0
 END
 
@@ -4828,6 +4826,8 @@ BEGIN
     0, 0, 100, 100,
     0, 0, 0, 0,
     0, 0, 100, 100,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0
 END
@@ -5238,11 +5238,20 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_EDIT_COPYTEMPSUPPORTPROPERTIES 
+                            "Copy properties from selected temporary support to another"
     IDM_COPY_PIER_PROPS     "Copy Properties From One Pier to Another\nCopy Pier Properties"
     ID_COPY_GIRDER_PROPS    "Copy Girder Properties\nCopy Girder Properties"
     ID_COPY_PIER_PROPS      "Copy Pier Properties\nCopy Pier Properties"
     ID_COPY_TEMPSUPPORT_PROPS 
                             "Copy Temporary Support Properties\nCopy Temporary Support Properties"
+END
+
+STRINGTABLE
+BEGIN
+    ID_EDIT_COPYGIRDERPROPERTIES 
+                            "Copy properties from selected girder to another"
+    ID_EDIT_COPYPIERPROPERTIES "Copy properties from selected pier to another"
 END
 
 #endif    // English (United States) resources

@@ -31,8 +31,8 @@
 
 #include "resource.h"
 #include <vector>
-#include "MultiGirderSelectDlg.h"
 #include <Reporting\CopyPierPropertiesReportSpecification.h>
+#include <MfcTools\CheckListBoxEx.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyPierDlg dialog
@@ -41,7 +41,7 @@ class CCopyPierDlg : public CDialog
 {
 // Construction
 public:
-	CCopyPierDlg(IBroker* pBroker, ICopyPierPropertiesCallback* pCopyPierPropertiesCallback, CWnd* pParent = nullptr);   // standard constructor
+	CCopyPierDlg(IBroker* pBroker, const std::map<IDType,ICopyPierPropertiesCallback*>&  pCopyPierPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCopyPierDlg)
@@ -49,6 +49,7 @@ public:
    
    CComboBox m_FromPier;
    CComboBox m_ToPier;
+   CCheckListBoxEx	m_SelectedPropertyTypesCL;
 	//}}AFX_DATA
 
 // Overrides
@@ -83,20 +84,29 @@ protected:
    afx_msg void OnEdit();
 	afx_msg void OnPrint();
    afx_msg void OnCmenuSelected(UINT id);
+   afx_msg void OnDestroy();
+   afx_msg void OnLbnSelchangePropertyList();
+   afx_msg void OnLbnChkchangePropertyList();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
 
+   void OnFromPierChangedNoUpdate();
+
    IBroker* m_pBroker;
-   ICopyPierPropertiesCallback* m_pCopyPierPropertiesCallback;
+   const std::map<IDType, ICopyPierPropertiesCallback*> m_CopyPierPropertiesCallbacks;
+   std::set<IDType> m_SelectedIDs; 
 
    void FillComboBoxes(CComboBox& cbPier, bool bIncludeAllPiers, PierIndexType fromIdx=INVALID_INDEX);
 
    void UpdateReportData();
    void UpdateReport();
 
-   std::map<int,CGirderKey> m_FromListIndicies;
+   void UpdateSelectedPropertyList();
+   void InitSelectedPropertyList();
+
+   std::vector<ICopyPierPropertiesCallback*> GetSelectedCopyPierPropertiesCallbacks();
 
 private:
    std::shared_ptr<CCopyPierPropertiesReportSpecification> m_pRptSpec;
@@ -111,10 +121,9 @@ protected:
    virtual void OnOK();
    void EnableCopyNow();
    void CleanUp();
+   int IsAllSelectedInList(); // return checklist index where All Properties is found
 
    virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-public:
-   afx_msg void OnDestroy();
 };
 
 //{{AFX_INSERT_LOCATION}}

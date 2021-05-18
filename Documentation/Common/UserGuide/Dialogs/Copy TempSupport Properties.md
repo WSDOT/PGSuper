@@ -10,16 +10,20 @@ Copy Properties To
 --------------------
 Select the target Temporary Support To which the properties will be copied. 
 
-Comparison Report
------------------
-This report provides an input echo of all temporary support connection geometries. Values on the selected "To" pier (highlited in yellow) are compared all other temporary supports in the bridge.
-
-Types of Properties that can be Copied
-----------------------------------------
+Select Properties to be Copied
+-------------------------------
+By Default, there is only one option - Connections
 
 Property | Description
 ---------|---------------
 Copy Connection Properties | Copy Temporary Support connection geometry.
+
+Comparison Report
+-----------------
+This report provides an input echo of all temporary support connection geometries. Values on the selected "To" pier (highlighted in yellow) are compared all other temporary supports in the bridge.
+
+Buttons
+--------
 
 Control Buttons | Description
 ----------------| -----------

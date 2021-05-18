@@ -37,7 +37,6 @@ static char THIS_FILE[] = __FILE__;
 
 CCopyPierPropertiesChapterBuilder::CCopyPierPropertiesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect),
-m_pCallBack(nullptr),
 m_FromPierIdx(INVALID_INDEX)
 {
 }
@@ -46,7 +45,7 @@ m_FromPierIdx(INVALID_INDEX)
 //======================== OPERATIONS =======================================
 LPCTSTR CCopyPierPropertiesChapterBuilder::GetName() const
 {
-   return TEXT("CopyPierProperties");
+   return TEXT("Pier Properties Comparison");
 }
 
 rptChapter* CCopyPierPropertiesChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -58,22 +57,23 @@ rptChapter* CCopyPierPropertiesChapterBuilder::Build(CReportSpecification* pRptS
    pBrokerRptSpec->GetBroker(&pBroker);
 
    rptChapter* pChapter = new rptChapter(GetName());
-   if (m_pCallBack)
+   if (!m_CallBacks.empty())
    {
-      *pChapter << m_pCallBack->BuildComparisonReportParagraph(m_FromPierIdx, m_ToPiers);
+      for (auto callback : m_CallBacks)
+      {
+         *pChapter << callback->BuildComparisonReportParagraph(m_FromPierIdx, m_ToPiers);
+      }
+
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << _T("- Note that this report may not show all properties. Refer to the Details report for the pier in question to see a complete listing of properties.");
    }
    else
    {
-      ATLASSERT(0);
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << _T("Error, no call back for ") << GetName();
+      *pPara << _T("Nothing to report. Please select a property type");
    }
-
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
-   *pPara << _T("- Note that this report may not show all properties. Refer to the Details report for the girder in question to see a complete listing of properties.");
-
    return pChapter;
 }
 
@@ -82,9 +82,9 @@ CChapterBuilder* CCopyPierPropertiesChapterBuilder::Clone() const
    return new CCopyPierPropertiesChapterBuilder;
 }
 
-void CCopyPierPropertiesChapterBuilder::SetCopyPierProperties(ICopyPierPropertiesCallback* pCallBack, PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers)
+void CCopyPierPropertiesChapterBuilder::SetCopyPierProperties(std::vector<ICopyPierPropertiesCallback*>& rCallbacks, PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers)
 {
-   m_pCallBack = pCallBack;
+   m_CallBacks = rCallbacks;
    m_FromPierIdx = fromPierIdx;
    m_ToPiers = toPiers;
 }

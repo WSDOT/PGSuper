@@ -203,13 +203,6 @@ txnCopyGirderAllProperties::txnCopyGirderAllProperties(const CGirderKey& fromGir
 {
    m_FromGirderKey = fromGirderKey;
    m_ToGirderKeys  = toGirderKeys;
-
-   // Use individual  transactions to copy segment data
-   AddTransaction( txnCopyGirderMaterial(m_FromGirderKey, m_ToGirderKeys) );
-   AddTransaction( txnCopyGirderPrestressing(m_FromGirderKey, m_ToGirderKeys) );
-   AddTransaction( txnCopyGirderRebar(m_FromGirderKey, m_ToGirderKeys) );
-   AddTransaction( txnCopyGirderStirrups(m_FromGirderKey, m_ToGirderKeys) );
-   AddTransaction( txnCopyGirderHandling(m_FromGirderKey, m_ToGirderKeys) );
 }
 
 txnCopyGirderAllProperties::~txnCopyGirderAllProperties()
@@ -245,8 +238,7 @@ bool txnCopyGirderAllProperties::Execute()
       }
    }
 
-   // let macros do remaining work
-   return pgsMacroTxn::Execute();
+   return true;
 }
 
 void txnCopyGirderAllProperties::Undo()
@@ -279,9 +271,6 @@ void txnCopyGirderAllProperties::Undo()
 
       nameIter++;
    }
-
-   // let macros do remaining work
-   pgsMacroTxn::Undo();
 }
 
 txnTransaction* txnCopyGirderAllProperties::CreateClone() const
@@ -759,30 +748,7 @@ rptParagraph* CCopyGirderAllProperties::BuildComparisonReportParagraph(const CGi
    rptParagraph* pPara = new rptParagraph;
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
    GirderAllPropertiesComparison(pPara, pBroker, fromGirderKey);
-
-   // Use reports from all other call backs
-   GirderMaterialsComparison(pPara, pBroker, fromGirderKey);
-
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
-   if (GirderPrestressingComparison(pPara, pBroker, pDisplayUnits, fromGirderKey))
-   {
-      debonding(pPara, pBroker, pDisplayUnits, fromGirderKey);
-   }
-
-   if (bIsSplicedGirder)
-   {
-      GirderGroupPostensioningComparison(pPara, pBroker, pDisplayUnits, fromGirderKey);
-      GirderSegmentPostensioningComparison(pPara, pBroker, pDisplayUnits, fromGirderKey);
-   }
-
-   GirderLongRebarComparison(pPara, pBroker, pDisplayUnits, fromGirderKey);
-   GirderPrimaryStirrupComparison(pPara, pBroker, pDisplayUnits, fromGirderKey);
-   GirderSecondaryStirrupComparison(pPara, pBroker, pDisplayUnits, fromGirderKey);
-   GirderHandlingComparison(pPara, pBroker, pDisplayUnits, fromGirderKey);
 
    return pPara;
 }
@@ -1062,7 +1028,6 @@ void GirderAllPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroke
    (*p_table)(0,col++) << _T("Same") << rptNewLine <<  _T("as") << rptNewLine <<_T("From") << rptNewLine <<_T("Girder?");
    (*p_table)(0,col++) << _T("Type");
    (*p_table)(0,col++) << _T("Rating") << rptNewLine << _T("Condition") << rptNewLine << _T("Factor");
-
 
    RowIndexType row = 1;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();

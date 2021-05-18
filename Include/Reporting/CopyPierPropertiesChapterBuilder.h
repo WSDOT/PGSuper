@@ -52,10 +52,10 @@ public:
 
    //================================
    // special function to work with control in copy per dialog
-   void SetCopyPierProperties(ICopyPierPropertiesCallback* pCallBack, PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers);
+   void SetCopyPierProperties(std::vector<ICopyPierPropertiesCallback*>& rCallBacks, PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers);
 
 protected:
-   ICopyPierPropertiesCallback* m_pCallBack;
+   std::vector<ICopyPierPropertiesCallback*> m_CallBacks;
    PierIndexType m_FromPierIdx;
    std::vector<PierIndexType> m_ToPiers;
 

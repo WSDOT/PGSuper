@@ -33,6 +33,7 @@
 #include <vector>
 #include "MultiGirderSelectDlg.h"
 #include <Reporting\CopyTempSupportPropertiesReportSpecification.h>
+#include <MfcTools\CheckListBoxEx.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyTempSupportDlg dialog
@@ -41,7 +42,7 @@ class CCopyTempSupportDlg : public CDialog
 {
 // Construction
 public:
-	CCopyTempSupportDlg(IBroker* pBroker, ICopyTemporarySupportPropertiesCallback* pCopyTempSupportPropertiesCallback, CWnd* pParent = nullptr);   // standard constructor
+	CCopyTempSupportDlg(IBroker* pBroker, const std::map<IDType,ICopyTemporarySupportPropertiesCallback*>&  pCopyTempSupportPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCopyTempSupportDlg)
@@ -49,6 +50,7 @@ public:
    
    CComboBox m_FromTempSupport;
    CComboBox m_ToTempSupport;
+   CCheckListBoxEx	m_SelectedPropertyTypesCL;
 	//}}AFX_DATA
 
 // Overrides
@@ -83,20 +85,29 @@ protected:
    afx_msg void OnEdit();
 	afx_msg void OnPrint();
    afx_msg void OnCmenuSelected(UINT id);
+   afx_msg void OnDestroy();
+   afx_msg void OnLbnSelchangePropertyList();
+   afx_msg void OnLbnChkchangePropertyList();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
    BOOL OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResult);
 
+   void OnFromTempSupportChangedNoUpdate();
+
    IBroker* m_pBroker;
-   ICopyTemporarySupportPropertiesCallback* m_pCopyTempSupportPropertiesCallback;
+   const std::map<IDType, ICopyTemporarySupportPropertiesCallback*> m_CopyTempSupportPropertiesCallbacks;
+   std::set<IDType> m_SelectedIDs; 
 
    void FillComboBoxes(CComboBox& cbTempSupport, bool bIncludeAllTempSupports, PierIndexType fromIdx=INVALID_INDEX);
 
    void UpdateReportData();
    void UpdateReport();
 
-   std::map<int,CGirderKey> m_FromListIndicies;
+   void UpdateSelectedPropertyList();
+   void InitSelectedPropertyList();
+
+   std::vector<ICopyTemporarySupportPropertiesCallback*> GetSelectedCopyTempSupportPropertiesCallbacks();
 
 private:
    std::shared_ptr<CCopyTempSupportPropertiesReportSpecification> m_pRptSpec;
@@ -110,10 +121,9 @@ protected:
    virtual void OnOK();
    void EnableCopyNow();
    void CleanUp();
+   int IsAllSelectedInList(); // return checklist index where All Properties is found
 
    virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-public:
-   afx_msg void OnDestroy();
 };
 
 //{{AFX_INSERT_LOCATION}}

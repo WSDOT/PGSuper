@@ -171,7 +171,7 @@ public:
 //////////////////////   Transactions //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
-class txnCopyPierAllProperties :  public pgsMacroTxn
+class txnCopyPierAllProperties :  public txnTransaction
 {
 public:
    txnCopyPierAllProperties(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);

@@ -1198,7 +1198,13 @@ bool CPGSuperDocProxyAgent::EditTemporarySupportDescription(PierIndexType pierId
       CPGSpliceDoc* pPGSplice = dynamic_cast<CPGSpliceDoc*>(m_pMyDocument);
       ATLASSERT(pPGSplice != nullptr);
 
-      return pPGSplice->EditTemporarySupportDescription(pierIdx, nPage);
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+      const CTemporarySupportData* pTsData = pBridgeDesc->GetTemporarySupport(pierIdx);
+
+      PierIndexType tsid = pTsData->GetID();
+
+      return pPGSplice->EditTemporarySupportDescription(tsid, nPage);
    }
    else
    {

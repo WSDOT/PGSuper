@@ -36,8 +36,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CCopyGirderPropertiesChapterBuilder::CCopyGirderPropertiesChapterBuilder(bool bSelect) :
-CPGSuperChapterBuilder(bSelect),
-m_pCallBack(nullptr)
+CPGSuperChapterBuilder(bSelect)
 {
 }
 
@@ -45,7 +44,7 @@ m_pCallBack(nullptr)
 //======================== OPERATIONS =======================================
 LPCTSTR CCopyGirderPropertiesChapterBuilder::GetName() const
 {
-   return TEXT("CopyGirderProperties");
+   return TEXT("Girder Property Comparison");
 }
 
 rptChapter* CCopyGirderPropertiesChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
@@ -57,21 +56,23 @@ rptChapter* CCopyGirderPropertiesChapterBuilder::Build(CReportSpecification* pRp
    pBrokerRptSpec->GetBroker(&pBroker);
 
    rptChapter* pChapter = new rptChapter(GetName());
-   if (m_pCallBack)
+   if (!m_CallBacks.empty())
    {
-      *pChapter << m_pCallBack->BuildComparisonReportParagraph(m_FromGirderKey);
+      for (auto callback : m_CallBacks)
+      {
+         *pChapter << callback->BuildComparisonReportParagraph(m_FromGirderKey);
+      }
+
+      rptParagraph* pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << _T("- Note that this report may not show all properties. Refer to the Details report for the girder in question to see a complete listing of properties.");
    }
    else
    {
-      ATLASSERT(0);
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
-      *pPara << _T("Error, no call back for ") << GetName();
+      *pPara << _T("Nothing to report. Please select a property type");
    }
-
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
-   *pPara << _T("- Note that this report may not show all properties. Refer to the Details report for the girder in question to see a complete listing of properties.");
 
    return pChapter;
 }
@@ -81,8 +82,8 @@ CChapterBuilder* CCopyGirderPropertiesChapterBuilder::Clone() const
    return new CCopyGirderPropertiesChapterBuilder;
 }
 
-void CCopyGirderPropertiesChapterBuilder::SetCopyGirderProperties(ICopyGirderPropertiesCallback * pCallBack, const CGirderKey& fromGirderKey)
+void CCopyGirderPropertiesChapterBuilder::SetCopyGirderProperties(std::vector<ICopyGirderPropertiesCallback*>& rCallBacks, const CGirderKey& fromGirderKey)
 {
-   m_pCallBack = pCallBack;
+   m_CallBacks = rCallBacks;
    m_FromGirderKey = fromGirderKey;
 }

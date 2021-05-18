@@ -29,6 +29,7 @@
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 #include "CopyTempSupportDlg.h"
+#include "CopyTempSupportPropertiesCallbacks.h"
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -52,11 +53,10 @@ static char THIS_FILE[] = __FILE__;
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyTempSupportDlg dialog
-
-CCopyTempSupportDlg::CCopyTempSupportDlg(IBroker* pBroker, ICopyTemporarySupportPropertiesCallback* pCopyTempSupportPropertiesCallback, CWnd* pParent /*=nullptr*/)
+CCopyTempSupportDlg::CCopyTempSupportDlg(IBroker* pBroker, const std::map<IDType,ICopyTemporarySupportPropertiesCallback*>&  rCopyTempSupportPropertiesCallbacks, IDType selectedID, CWnd* pParent /*=nullptr*/)
 	: CDialog(CCopyTempSupportDlg::IDD, pParent),
    m_pBroker(pBroker),
-   m_pCopyTempSupportPropertiesCallback(pCopyTempSupportPropertiesCallback)
+   m_CopyTempSupportPropertiesCallbacks(rCopyTempSupportPropertiesCallbacks)
 {
 	//{{AFX_DATA_INIT(CCopyTempSupportDlg)
 	//}}AFX_DATA_INIT
@@ -65,7 +65,18 @@ CCopyTempSupportDlg::CCopyTempSupportDlg(IBroker* pBroker, ICopyTemporarySupport
    GET_IFACE(ISelection,pSelection);
    m_FromSelection = pSelection->GetSelection();
 
-   CEAFDocument* pDoc = EAFGetDocument();
+   // Special case here if selected ID is INVALID_ID
+   if (INVALID_ID == selectedID)
+   {
+      for (auto callback : rCopyTempSupportPropertiesCallbacks)
+      {
+         m_SelectedIDs.insert(callback.first);
+      }
+   }
+   else
+   {
+      m_SelectedIDs.insert(selectedID);
+   }
 }
 
 BEGIN_MESSAGE_MAP(CCopyTempSupportDlg, CDialog)
@@ -80,6 +91,8 @@ BEGIN_MESSAGE_MAP(CCopyTempSupportDlg, CDialog)
    ON_COMMAND_RANGE(CCS_CMENU_BASE, CCS_CMENU_MAX, OnCmenuSelected)
    ON_WM_DESTROY()
    ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
+   ON_LBN_SELCHANGE(IDC_PROPERTY_LIST, &CCopyTempSupportDlg::OnLbnSelchangePropertyList)
+   ON_CLBN_CHKCHANGE(IDC_PROPERTY_LIST, &CCopyTempSupportDlg::OnLbnChkchangePropertyList)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -107,9 +120,10 @@ BOOL CCopyTempSupportDlg::OnInitDialog()
 
    CDialog::OnInitDialog();
 
-   EnableToolTips(TRUE);
+   InitSelectedPropertyList();
+   OnFromTempSupportChangedNoUpdate();
 
-   SetWindowText(m_pCopyTempSupportPropertiesCallback->GetName());
+   EnableToolTips(TRUE);
 
    // set up reporting window
    UpdateReportData();
@@ -147,6 +161,7 @@ void CCopyTempSupportDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CCopyTempSupportDlg)
    DDX_Control(pDX, IDC_FROM_PIER,   m_FromTempSupport);
    DDX_Control(pDX, IDC_TO_PIER,     m_ToTempSupport);
+   DDX_Control(pDX, IDC_PROPERTY_LIST,   m_SelectedPropertyTypesCL);
 	//}}AFX_DATA_MAP
 
    if ( pDX->m_bSaveAndValidate )
@@ -170,15 +185,20 @@ void CCopyTempSupportDlg::DoDataExchange(CDataExchange* pDX)
       }
 
       m_FromTempSupport.SetCurSel(curFromsel);
-      OnFromTempSupportChanged();
-
       m_ToTempSupport.SetCurSel(0);
-      OnToTempSupportChanged();
    }
 }
 
 void CCopyTempSupportDlg::OnFromTempSupportChanged() 
 {
+   OnFromTempSupportChangedNoUpdate();
+   EnableCopyNow();
+   UpdateReport(); // Report needs to show newly selected girder
+}
+
+void CCopyTempSupportDlg::OnFromTempSupportChangedNoUpdate()
+{
+
    int curSel = m_FromTempSupport.GetCurSel();
    if ( curSel != CB_ERR )
    {
@@ -191,10 +211,6 @@ void CCopyTempSupportDlg::OnFromTempSupportChanged()
    }
 
    m_ToTempSupport.SetCurSel(1);
-
-   EnableCopyNow();
-
-   UpdateReport(); // Report needs to show newly selected girder
 }
 
 void CCopyTempSupportDlg::OnToTempSupportChanged()
@@ -267,17 +283,36 @@ void CCopyTempSupportDlg::OnSize(UINT nType, int cx, int cy)
       m_pBrowser->Move(hiddenRect.TopLeft());
       m_pBrowser->Size(hiddenRect.Size());
 
-      // Figure out the print button's new position
+      // bottom buttons
       CRect btnSizeRect(0,0,50,14);
       MapDialogRect( &btnSizeRect );
 
-      CRect printRect;
-      printRect.bottom = clientRect.bottom - sizeRect.Height();
-      printRect.right  = clientRect.right  - sizeRect.Width();
-      printRect.left   = printRect.right   - btnSizeRect.Width();
-      printRect.top    = printRect.bottom  - btnSizeRect.Height();
+      CRect btnRect;
+      btnRect.bottom = clientRect.bottom - sizeRect.Height();
+      btnRect.right  = clientRect.right  - LONG(sizeRect.Width() * 3); 
+      btnRect.left   = btnRect.right   - btnSizeRect.Width();
+      btnRect.top    = btnRect.bottom  - btnSizeRect.Height();
 
-      CButton* pButton = (CButton*)GetDlgItem(IDC_PRINT);
+      CButton* pButton = (CButton*)GetDlgItem(ID_HELP);
+      pButton->MoveWindow( btnRect, FALSE );
+
+      CRect printRect(btnRect); // put print button directly above Help
+
+      CRect horizOffsetRect(0,0,66,0); // horizontal spacing between buttons
+      MapDialogRect( &horizOffsetRect );
+      CSize horizOffset(-1*horizOffsetRect.Width(),0);
+
+      btnRect += horizOffset;
+      pButton = (CButton*)GetDlgItem(IDCANCEL);
+      pButton->MoveWindow( btnRect, FALSE );
+
+      btnRect += horizOffset;
+      pButton = (CButton*)GetDlgItem(IDOK);
+      pButton->MoveWindow( btnRect, FALSE );
+
+      CSize vertOffset(0, int(btnSizeRect.Height() * 1.75));
+      printRect -= vertOffset;
+      pButton = (CButton*)GetDlgItem(IDC_PRINT);
       pButton->MoveWindow( printRect, FALSE );
 
       Invalidate();
@@ -290,7 +325,7 @@ void CCopyTempSupportDlg::FillComboBoxes(CComboBox& cbTempSupport, bool bInclude
 
    if ( bIncludeAllTempSupports )
    {
-      CString strItem (_T("All TempSupports"));
+      CString strItem (_T("All Temporary Supports"));
       int idx = cbTempSupport.AddString(strItem);
       cbTempSupport.SetItemData(idx,ALL_PIERS);
    }
@@ -327,6 +362,8 @@ void CCopyTempSupportDlg::UpdateReportData()
    PierIndexType TempSupportIdx = GetFromTempSupport();
    std::vector<PierIndexType> toTempSupports = GetToTempSupports();
 
+   std::vector<ICopyTemporarySupportPropertiesCallback*> callbacks = GetSelectedCopyTempSupportPropertiesCallbacks();
+
    // We know we put at least one of our own chapter builders into the report builder. Find it and set its data
    CollectionIndexType numchs = pBuilder->GetChapterBuilderCount();
    for (CollectionIndexType ich = 0; ich < numchs; ich++)
@@ -336,8 +373,7 @@ void CCopyTempSupportDlg::UpdateReportData()
 
       if (pRptCpBuilder)
       {
-         pRptCpBuilder->SetCopyTempSupportProperties(m_pCopyTempSupportPropertiesCallback, TempSupportIdx, toTempSupports);
-      }
+         pRptCpBuilder->SetCopyTempSupportProperties(callbacks, TempSupportIdx, toTempSupports);      }
    }
 }
 
@@ -357,6 +393,35 @@ void CCopyTempSupportDlg::UpdateReport()
    }
 }
 
+std::vector<ICopyTemporarySupportPropertiesCallback*> CCopyTempSupportDlg::GetSelectedCopyTempSupportPropertiesCallbacks()
+{
+   // double duty here. saving selected ids and returning callbacks
+   m_SelectedIDs.clear();
+   std::vector<ICopyTemporarySupportPropertiesCallback*> callbacks;
+
+   int nProps = m_SelectedPropertyTypesCL.GetCount();
+   for ( int ch = 0; ch < nProps; ch++ )
+   {
+      if ( m_SelectedPropertyTypesCL.GetCheck( ch ) == 1 )
+      {
+         IDType id = (IDType)m_SelectedPropertyTypesCL.GetItemData(ch);
+         m_SelectedIDs.insert(id);
+
+         std::map<IDType, ICopyTemporarySupportPropertiesCallback*>::const_iterator it = m_CopyTempSupportPropertiesCallbacks.find(id);
+         if (it != m_CopyTempSupportPropertiesCallbacks.end())
+         {
+            callbacks.push_back(it->second);
+         }
+         else
+         {
+            ATLASSERT(0); 
+         }
+      }
+   }
+
+   return callbacks;
+}
+
 void CCopyTempSupportDlg::OnHelp()
 {
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_COPYTEMPSUPPORTPROPERTIES );
@@ -371,17 +436,23 @@ void CCopyTempSupportDlg::OnOK()
 
    // execute transactions
    pgsMacroTxn* pMacro = new pgsMacroTxn;
-   pMacro->Name(_T("Copy TempSupport Properties"));
+   pMacro->Name(_T("Copy Temporary Support Properties"));
 
-   txnTransaction* pTxn = m_pCopyTempSupportPropertiesCallback->CreateCopyTransaction(m_FromTempSupportIdx,m_ToTempSupports);
-   if (pTxn)
+   std::vector<ICopyTemporarySupportPropertiesCallback*> callbacks = GetSelectedCopyTempSupportPropertiesCallbacks();
+   for (auto callback : callbacks)
    {
-      GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pTxn);
+      txnTransaction* pTxn = callback->CreateCopyTransaction(m_FromTempSupportIdx, m_ToTempSupports);
+      pMacro->AddTransaction(pTxn);
    }
 
-   EnableCopyNow();
+   if (pMacro->GetTxnCount() > 0)
+   {
+      GET_IFACE(IEAFTransactions, pTransactions);
+      pTransactions->Execute(pMacro);
+   }
+
    UpdateReport();
+   EnableCopyNow();
 }
 
 void CCopyTempSupportDlg::OnCopyItemStateChanged()
@@ -394,7 +465,13 @@ void CCopyTempSupportDlg::OnEdit()
    PierIndexType fromIdx = GetFromTempSupport();
 
    GET_IFACE(IEditByUI, pEditByUI);
-   UINT tab = m_pCopyTempSupportPropertiesCallback->GetTempSupportEditorTabIndex();
+   UINT tab = 0; // use if nothing is selected
+   std::vector<ICopyTemporarySupportPropertiesCallback*> callbacks = GetSelectedCopyTempSupportPropertiesCallbacks();
+   if (!callbacks.empty())
+   {
+      tab = callbacks.front()->GetTempSupportEditorTabIndex();
+   }
+
    pEditByUI->EditTemporarySupportDescription(fromIdx, tab);
 
    UpdateReport(); // we update whether any changes are made or not
@@ -413,7 +490,21 @@ void CCopyTempSupportDlg::EnableCopyNow()
    PierIndexType copyFrom = GetFromTempSupport();
    std::vector<PierIndexType> copyTo = GetToTempSupports();
 
-   BOOL bEnable = m_pCopyTempSupportPropertiesCallback->CanCopy(copyFrom, copyTo) ? TRUE : FALSE;
+   BOOL bEnable;
+   if (-1 != IsAllSelectedInList())
+   {
+      bEnable = TRUE; // can always copy if all is selected
+   }
+   else
+   {
+      std::vector<ICopyTemporarySupportPropertiesCallback*> callbacks = GetSelectedCopyTempSupportPropertiesCallbacks();
+
+      bEnable = callbacks.empty() ? FALSE : TRUE;
+      for (auto callback : callbacks)
+      {
+         bEnable &= callback->CanCopy(copyFrom, copyTo) ? TRUE : FALSE;
+      }
+   }
 
    GetDlgItem(IDOK)->EnableWindow(bEnable);
 }
@@ -561,4 +652,85 @@ BOOL CCopyTempSupportDlg::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pResul
       return TRUE;
    }
    return FALSE;
+}
+
+
+
+void CCopyTempSupportDlg::InitSelectedPropertyList()
+{
+   // Clear out the list box
+   m_SelectedPropertyTypesCL.ResetContent();
+
+   for (const auto& CBpair : m_CopyTempSupportPropertiesCallbacks)
+   {
+      ICopyTemporarySupportPropertiesCallback* pCB = CBpair.second;
+      int idx = m_SelectedPropertyTypesCL.AddString( pCB->GetName() );
+      if ( idx != LB_ERR )
+      {
+         IDType id = CBpair.first;
+         m_SelectedPropertyTypesCL.SetItemData(idx, id);
+
+         if (m_SelectedIDs.find(id) != m_SelectedIDs.end())
+         {
+            m_SelectedPropertyTypesCL.SetCheck(idx, 1);
+         }
+         else
+         {
+            m_SelectedPropertyTypesCL.SetCheck(idx, 0);
+         }
+      }
+   }
+
+   UpdateSelectedPropertyList();
+
+   m_SelectedPropertyTypesCL.SetCurSel(-1);
+}
+
+void CCopyTempSupportDlg::UpdateSelectedPropertyList()
+{
+   // see if "All Properties" is selected
+   int all_pos = IsAllSelectedInList();
+   bool is_all_selected = all_pos != -1;
+
+   int nProps = m_SelectedPropertyTypesCL.GetCount();
+
+   if (is_all_selected)
+   {
+      // "All" is selected. Set check and enable all in list
+      for (int ch = 0; ch < nProps; ch++)
+      {
+         if (ch != all_pos)
+         {
+            m_SelectedPropertyTypesCL.SetCheck(ch, 1);
+            m_SelectedPropertyTypesCL.Enable(ch, FALSE);
+         }
+      }
+   }
+   else
+   {
+      for (int ch = 0; ch < nProps; ch++)
+      {
+         m_SelectedPropertyTypesCL.Enable(ch, TRUE);
+      }
+   }
+
+   EnableCopyNow();
+}
+
+void CCopyTempSupportDlg::OnLbnSelchangePropertyList()
+{
+   // Do nothing here, but this function seems necessary to catch message for OnLbnChkchangePropertyList below. Otherwise, it won't be called?
+}
+
+void CCopyTempSupportDlg::OnLbnChkchangePropertyList()
+{
+   UpdateSelectedPropertyList();
+   UpdateReport();
+}
+
+int CCopyTempSupportDlg::IsAllSelectedInList()
+{
+   // "All" not an option - yet
+
+   return -1;
 }
