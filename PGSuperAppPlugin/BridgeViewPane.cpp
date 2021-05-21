@@ -27,6 +27,7 @@
 #include "resource.h"
 #include "PGSuperApp.h"
 #include "BridgeViewPane.h"
+#include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -168,4 +169,22 @@ void CBridgeViewPane::UpdateDrawingArea()
    SetLogicalViewRect(MM_TEXT, rect);
 
    SetScrollSizes(MM_TEXT, size, CScrollView::sizeDefault, CScrollView::sizeDefault);
+}
+
+void CBridgeViewPane::GetUniformStationingData(IBroker* pBroker, Float64 startStation,Float64 endStation,Float64* pStart, Float64* pEnd, Float64* pStep)
+{
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   Float64 station_range = endStation - startStation;
+   Float64 station_step = (pDisplayUnits->GetUnitMode() == eafTypes::umUS ? ::ConvertToSysUnits(100.00, unitMeasure::Feet) : ::ConvertToSysUnits(100.00, unitMeasure::Meter));
+   Float64 num_stations = station_range / station_step;
+   if (10 < num_stations)
+   {
+      num_stations /= 10;
+      num_stations = ceill((IndexType)num_stations);
+      station_step *= num_stations;
+   }
+
+   *pStart = ::CeilOff(startStation, station_step);
+   *pEnd = ::FloorOff(endStation, station_step);
+   *pStep = station_step;
 }

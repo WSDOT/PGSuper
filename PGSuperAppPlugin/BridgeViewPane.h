@@ -86,4 +86,6 @@ protected:
    virtual void UpdateDisplayObjects() = 0;
 
    virtual void UpdateDrawingArea();
+
+   void GetUniformStationingData(IBroker* pBroker, Float64 startStation, Float64 endStation, Float64* pStart, Float64* pEnd, Float64* pStep);
 };

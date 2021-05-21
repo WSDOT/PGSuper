@@ -527,10 +527,8 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    CreateStationLabel(label_display_list, end_station);
 
    // Even station labels
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   Float64 station_step = (pDisplayUnits->GetUnitMode() == eafTypes::umUS ? ::ConvertToSysUnits(100.00, unitMeasure::Feet) : ::ConvertToSysUnits(100.00, unitMeasure::Meter));
-   Float64 start = ::CeilOff(start_station, station_step);
-   Float64 end = ::FloorOff(end_station, station_step);
+   Float64 start, end, station_step;
+   GetUniformStationingData(pBroker, start_station, end_station, &start, &end, &station_step);
    Float64 station = start;
    do
    {
