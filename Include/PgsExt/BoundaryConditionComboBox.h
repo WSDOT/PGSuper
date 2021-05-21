@@ -52,4 +52,7 @@ private:
    int m_PierType;
    bool m_bIsBoundaryPier;
    bool m_bNoDeck;
+public:
+   DECLARE_MESSAGE_MAP()
+   afx_msg void OnCbnDropdown();
 };

@@ -556,7 +556,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
                   );
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   const matPsStrand* pStrand     = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* pStrand     = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    const matPsStrand* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
    StrandIndexType Ns, Nh, Nt, Nsd;

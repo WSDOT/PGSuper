@@ -305,7 +305,6 @@
 #define IDD_COPY_PIER_PROPERTIES        1113
 #define IDC_BEFORE_XFER_TAG             1114
 #define IDD_COPY_PIER_PROPERTIES1       1114
-#define IDD_COPY_TEMPSUPPORT_PROPERTIES 1114
 #define IDC_SHIPPING                    1115
 #define IDC_HPOFFSET_END                1116
 #define IDC_SHIPPING_TAG                1116

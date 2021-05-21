@@ -46,7 +46,7 @@ public:
 
 // Dialog Data
 	//{{AFX_DATA(CCopyTempSupportDlg)
-	enum { IDD = IDD_COPY_TEMPSUPPORT_PROPERTIES };
+	enum { IDD = IDD_COPY_PIER_PROPERTIES };
    
    CComboBox m_FromTempSupport;
    CComboBox m_ToTempSupport;

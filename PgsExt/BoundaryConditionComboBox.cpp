@@ -239,3 +239,34 @@ void CBoundaryConditionComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
    dc.Detach();
 }
+
+BEGIN_MESSAGE_MAP(CBoundaryConditionComboBox, CComboBox)
+   ON_CONTROL_REFLECT(CBN_DROPDOWN, &CBoundaryConditionComboBox::OnCbnDropdown)
+END_MESSAGE_MAP()
+
+
+void CBoundaryConditionComboBox::OnCbnDropdown()
+{
+    // Reset the dropped width
+    int nNumEntries = GetCount();
+    int nWidth = 0;
+    CString str;
+
+    CClientDC dc(this);
+    int nSave = dc.SaveDC();
+    dc.SelectObject(GetFont());
+
+    int nScrollWidth = ::GetSystemMetrics(SM_CXVSCROLL);
+    for (int i = 0; i < nNumEntries; i++)
+    {
+        GetLBText(i, str);
+        int nLength = dc.GetTextExtent(str).cx + nScrollWidth;
+        nWidth = max(nWidth, nLength);
+    }
+    
+    // Add margin space to the calculations
+    nWidth += 20*dc.GetTextExtent(CString(_T("0"))).cx;
+
+    dc.RestoreDC(nSave);
+    SetDroppedWidth(nWidth);
+}

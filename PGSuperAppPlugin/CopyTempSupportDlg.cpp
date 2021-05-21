@@ -120,6 +120,8 @@ BOOL CCopyTempSupportDlg::OnInitDialog()
 
    CDialog::OnInitDialog();
 
+   SetWindowText(_T("Copy Temporary Support Properties"));
+
    InitSelectedPropertyList();
    OnFromTempSupportChangedNoUpdate();
 
@@ -131,12 +133,14 @@ BOOL CCopyTempSupportDlg::OnInitDialog()
    GET_IFACE(IReportManager,pRptMgr);
    std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
    m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
+   m_pBrowser->GetBrowserWnd()->ModifyStyle(0,WS_BORDER);
 
    // restore the size of the window
    {
       CEAFApp* pApp = EAFGetApp();
       WINDOWPLACEMENT wp;
-      if (pApp->ReadWindowPlacement(CString("Window Positions"),CString("CopyTempSupportDialog"),&wp))
+      // Share placement with copy pier dialog
+      if (pApp->ReadWindowPlacement(CString("Window Positions"),CString("CopyPierDialog"),&wp))
       {
          CWnd* pDesktop = GetDesktopWindow();
          //CRect rDesktop;
@@ -525,7 +529,8 @@ void CCopyTempSupportDlg::CleanUp()
       {
          wp.flags = 0;
          wp.showCmd = SW_SHOWNORMAL;
-         pApp->WriteWindowPlacement(CString("Window Positions"),CString("CopyTempSupportDialog"),&wp);
+         // Use same position as copy pier dialog to avoid user confusion
+         pApp->WriteWindowPlacement(CString("Window Positions"),CString("CopyPierDialog"),&wp);
       }
    }
 }

@@ -134,6 +134,7 @@ BOOL CCopyPierDlg::OnInitDialog()
    GET_IFACE(IReportManager,pRptMgr);
    std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
    m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
+   m_pBrowser->GetBrowserWnd()->ModifyStyle(0,WS_BORDER );
 
    // restore the size of the window
    {

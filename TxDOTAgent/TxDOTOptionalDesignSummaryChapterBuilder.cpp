@@ -324,7 +324,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    (*p_table)(row,0) << RPT_FC;
    (*p_table)(row++,1) << stress.SetValue( pGirderData->GetFc() );
 
-   const matPsStrand* pstrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Permanent);
+   const matPsStrand* pstrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
 
    (*p_table)(row,0) << _T("Prestressing Strands");
    (*p_table)(row++,1) << get_strand_size(pstrand->GetSize()) <<_T(", ")
