@@ -11342,6 +11342,7 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
    
    // if girder name conflicts, update the name
    const GirderLibrary&  girderLibrary = m_pLibMgr->GetGirderLibrary();
+   const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
 
    // only update at bridge level if gider is set for entire bridge
    if (m_BridgeDescription.UseSameGirderForEntireBridge() &&
@@ -11365,11 +11366,47 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
          {
             pGroup->RenameGirder(girderTypeGroupIdx,new_name.c_str());
          }
+
+         GirderIndexType nGirders = pGroup->GetGirderCount();
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            CPTData* pPTData = pGirder->GetPostTensioning();
+            IndexType nDucts = pPTData->GetDuctCount();
+            for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+            {
+               CDuctData* pDuct = pGirder->GetPostTensioning()->GetDuct(ductIdx);
+               auto strDuctName = pDuct->Name;
+               std::_tstring strNewDuctName;
+               if (rList.IsConflict(*pDuctLibrary, strDuctName, &strNewDuctName))
+               {
+                  pDuct->Name = strNewDuctName;
+               }
+            }
+
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+            for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+            {
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+               DuctIndexType nDucts = pSegment->Tendons.GetDuctCount();
+               for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+               {
+                  CSegmentDuctData* pDuct = pSegment->Tendons.GetDuct(ductIdx);
+                  auto strDuctName = pDuct->Name;
+                  std::_tstring strNewDuctName;
+                  if (rList.IsConflict(*pDuctLibrary, strDuctName, &strNewDuctName))
+                  {
+                     pDuct->Name = strNewDuctName;
+                  }
+               }
+            }
+         }
       }
    }
 
-   // now use all the girder library entries that are in this model
+   // now use all the girder library entries that are in this model (this uses duct entries also)
    UseGirderLibraryEntries();
+
 
    // left traffic barrier
    const TrafficBarrierLibrary& rbarlib = m_pLibMgr->GetTrafficBarrierLibrary();
