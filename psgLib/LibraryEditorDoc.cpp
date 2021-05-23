@@ -46,6 +46,8 @@
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
 
+#include "LibraryEditorStatusBar.h"
+
 
 
 
@@ -160,27 +162,35 @@ BOOL CLibraryEditorDoc::Init()
 
 void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
 {
-   // Add the document's user interface stuff first
+   __super::DoIntegrateWithUI(bIntegrate);
+
    CEAFMainFrame* pFrame = EAFGetMainFrame();
+
    if ( bIntegrate )
    {
       // set up the toolbar here
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      UINT tbID = pFrame->CreateToolBar(_T("Library"),GetPluginCommandManager());
-      m_pMyToolBar = pFrame->GetToolBar(tbID);
-      m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR,nullptr);
-      m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,nullptr,BTNS_DROPDOWN);
+      {
+         AFX_MANAGE_STATE(AfxGetStaticModuleState());
+         UINT tbID = pFrame->CreateToolBar(_T("Library"), GetPluginCommandManager());
+         m_pMyToolBar = pFrame->GetToolBar(tbID);
+         m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR, nullptr);
+         m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN, nullptr, BTNS_DROPDOWN);
+      }
+
+      // use our status bar
+      CLibraryEditorStatusBar* pSB = new CLibraryEditorStatusBar;
+      pSB->Create(pFrame);
+      pFrame->SetStatusBar(pSB);
    }
    else
    {
       // remove toolbar here
       pFrame->DestroyToolBar(m_pMyToolBar);
       m_pMyToolBar = nullptr;
-   }
 
-   // then call base class, which handles UI integration for
-   // plug-ins
-   CEAFDocument::DoIntegrateWithUI(bIntegrate);
+      // reset the status bar
+      pFrame->SetStatusBar(nullptr);
+   }
 }
 
 HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
@@ -476,7 +486,6 @@ void CLibraryEditorDoc::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathNam
 
    AfxMessageBox( msg1 );
 }
-
 
 BOOL CLibraryEditorDoc::GetStatusBarMessageString(UINT nID,CString& rMessage) const
 {

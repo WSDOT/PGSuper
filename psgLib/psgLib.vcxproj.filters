@@ -274,6 +274,9 @@
     <ClCompile Include="SpecBearingsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LibraryEditorStatusBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AASHTOConcretePage.h">
@@ -574,6 +577,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SpecBearingsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LibraryEditorStatusBar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
