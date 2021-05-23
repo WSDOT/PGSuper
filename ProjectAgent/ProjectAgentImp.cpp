@@ -3371,7 +3371,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
             return hr;
          }
 
-         Int32 key = var.lVal;
+         Int64 key = var.lVal;
          key |= matPsStrand::None;
 
          lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
@@ -5550,9 +5550,9 @@ void CProjectAgentImp::UpdateStrandMaterial()
    // Get the lookup key for the strand material based on the current units
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 
-   std::map<CSegmentKey,Int32> strandKeys[3]; // map value is strand pool key, array index is strand type
-   std::map<CSegmentKey, Int32> segmentTendonKeys;
-   std::map<CGirderKey,Int32> tendonKeys; // map value of strand pool key for ducts
+   std::map<CSegmentKey,Int64> strandKeys[3]; // map value is strand pool key, array index is strand type
+   std::map<CSegmentKey, Int64> segmentTendonKeys;
+   std::map<CGirderKey,Int64> tendonKeys; // map value of strand pool key for ducts
 
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -5565,7 +5565,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
          CGirderKey girderKey(pGirder->GetGirderKey());
 
          CPTData* pPTData = pGirder->GetPostTensioning();
-         Int32 strand_pool_key = pPool->GetStrandKey(pPTData->pStrand);
+         Int64 strand_pool_key = pPool->GetStrandKey(pPTData->pStrand);
          tendonKeys.insert(std::make_pair(girderKey,strand_pool_key));
 
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -5602,7 +5602,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
          CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
          CGirderKey girderKey(pGirder->GetGirderKey());
 
-         Int32 strand_pool_key = tendonKeys[girderKey];
+         Int64 strand_pool_key = tendonKeys[girderKey];
          CPTData* pPTData = pGirder->GetPostTensioning();
          pPTData->pStrand = pPool->GetStrand(strand_pool_key);
 

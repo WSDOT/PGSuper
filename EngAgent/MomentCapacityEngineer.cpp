@@ -1802,13 +1802,27 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 //======================== LIFECYCLE  =======================================
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
+StrandGradeType GetStrandGradeType(matPsStrand::Grade grade)
+{
+   StrandGradeType grade_type;
+   switch (grade)
+   {
+   case matPsStrand::Gr1725: grade_type = sgtGrade250; break;
+   case matPsStrand::Gr1860: grade_type = sgtGrade270; break;
+   case matPsStrand::Gr2070: grade_type = sgtGrade300; break;
+   default: ATLASSERT(false); // is there a new strand grade?
+   }
+
+   return grade_type;
+}
+
 void pgsMomentCapacityEngineer::CreateStrandMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS) const
 {
    // just building a strand model with power curve so Straight is fine to get grade and type
    GET_IFACE(IMaterials,pMaterial);
    const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
 
-   StrandGradeType grade = pStrand->GetGrade() == matPsStrand::Gr1725 ? sgtGrade250 : sgtGrade270;
+   StrandGradeType grade = GetStrandGradeType(pStrand->GetGrade());
    ProductionMethodType type = pStrand->GetType() == matPsStrand::LowRelaxation ? pmtLowRelaxation : pmtStressRelieved;
 
    CComPtr<IPowerFormula> powerFormula;
@@ -1839,7 +1853,7 @@ void pgsMomentCapacityEngineer::CreateGirderTendonMaterial(const CGirderKey& gir
 
 void pgsMomentCapacityEngineer::CreateTendonMaterial(const matPsStrand* pTendon, IStressStrain** ppSS) const
 {
-   StrandGradeType grade = pTendon->GetGrade() == matPsStrand::Gr1725 ? sgtGrade250 : sgtGrade270;
+   StrandGradeType grade = GetStrandGradeType(pTendon->GetGrade());
    ProductionMethodType type = pTendon->GetType() == matPsStrand::LowRelaxation ? pmtLowRelaxation : pmtStressRelieved;
 
    CComPtr<IPowerFormula> powerFormula;

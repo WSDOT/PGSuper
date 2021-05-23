@@ -64,7 +64,7 @@ public:
 	//{{AFX_DATA(CGirderDescPrestressPage)
 	enum { IDD = IDD_GIRDERDESC_PRESTRESS };
 
-   std::array<Int32, 3> m_StrandKey{ -1,-1,-1 };
+   std::array<Int64, 3> m_StrandKey{ -1,-1,-1 };
 	//}}AFX_DATA
 
 // Overrides

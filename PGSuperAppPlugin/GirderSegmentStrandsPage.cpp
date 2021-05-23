@@ -318,7 +318,7 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
       m_StrandKey[strandType] = pPool->GetStrandKey(m_pSegment->Strands.GetStrandMaterial(strandType));
    }
 
-   if ( sysFlags<Int32>::IsSet(m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy) )
+   if ( sysFlags<Int64>::IsSet(m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy) )
    {
       CheckDlgButton(IDC_EPOXY,BST_CHECKED);
    }
@@ -534,13 +534,13 @@ void CGirderSegmentStrandsPage::OnHelp()
 
 void CGirderSegmentStrandsPage::OnEpoxyChanged()
 {
-   sysFlags<Int32>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::None);
-   sysFlags<Int32>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy);
-   sysFlags<Int32>::Set(&m_StrandKey[pgsTypes::Straight],IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
+   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::None);
+   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy);
+   sysFlags<Int64>::Set(&m_StrandKey[pgsTypes::Straight],IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
 
-   sysFlags<Int32>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::None);
-   sysFlags<Int32>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::GritEpoxy);
-   sysFlags<Int32>::Set(&m_StrandKey[pgsTypes::Harped], IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
+   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::None);
+   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::GritEpoxy);
+   sysFlags<Int64>::Set(&m_StrandKey[pgsTypes::Harped], IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
 
    UpdateStrandList(IDC_STRAIGHT_STRAND_SIZE);
    UpdateStrandList(IDC_HARPED_STRAND_SIZE);
@@ -553,10 +553,10 @@ void CGirderSegmentStrandsPage::UpdateStrandList(UINT nIDC)
 
    // capture the current selection, if any
    int cur_sel = pList->GetCurSel();
-   Int32 cur_key = (Int32)pList->GetItemData( cur_sel );
+   Int64 cur_key = (Int64)pList->GetItemData( cur_sel );
    // remove the coating flag from the current key
-   sysFlags<Int32>::Clear(&cur_key,matPsStrand::None);
-   sysFlags<Int32>::Clear(&cur_key,matPsStrand::GritEpoxy);
+   sysFlags<Int64>::Clear(&cur_key,matPsStrand::None);
+   sysFlags<Int64>::Clear(&cur_key,matPsStrand::GritEpoxy);
 
    BOOL bIsEpoxy = FALSE;
    if ( nIDC == IDC_STRAIGHT_STRAND_SIZE || nIDC == IDC_HARPED_STRAND_SIZE)
@@ -564,15 +564,16 @@ void CGirderSegmentStrandsPage::UpdateStrandList(UINT nIDC)
       bIsEpoxy = IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? TRUE : FALSE;
    }
    matPsStrand::Coating coating = (bIsEpoxy ? matPsStrand::GritEpoxy : matPsStrand::None);
-   sysFlags<Int32>::Set(&cur_key,coating); // add the coating flag for the strand type we are changing to
+   sysFlags<Int64>::Set(&cur_key,coating); // add the coating flag for the strand type we are changing to
 
    pList->ResetContent();
 
    int sel_count = 0;  // Keep count of the number of strings added to the combo box
    int new_cur_sel = -1; // This will be in index of the string we want to select.
-   for ( int i = 0; i < 2; i++ )
+   for (int i = 0; i < 3; i++)
    {
-      matPsStrand::Grade grade = (i == 0 ? matPsStrand::Gr1725 : matPsStrand::Gr1860);
+      matPsStrand::Grade grade = (i == 0 ? matPsStrand::Gr1725 :
+                                  i == 1 ? matPsStrand::Gr1860 : matPsStrand::Gr2070);
       for ( int j = 0; j < 2; j++ )
       {
          matPsStrand::Type type = (j == 0 ? matPsStrand::LowRelaxation : matPsStrand::StressRelieved);
@@ -584,7 +585,7 @@ void CGirderSegmentStrandsPage::UpdateStrandList(UINT nIDC)
             const matPsStrand* pStrand = iter.GetCurrentStrand();
             int idx = pList->AddString( pStrand->GetName().c_str() );
                
-            Int32 key = pPool->GetStrandKey( pStrand );
+            auto key = pPool->GetStrandKey( pStrand );
             pList->SetItemData( idx, key );
 
             if ( key == cur_key )
@@ -614,7 +615,7 @@ void CGirderSegmentStrandsPage::OnStrandTypeChanged(int nIDC,pgsTypes::StrandTyp
    // Strand material comes out of the strand pool
    CComboBox* pList = (CComboBox*)GetDlgItem(nIDC);
    int curSel = pList->GetCurSel();
-   m_StrandKey[strandType] = (Int32)pList->GetItemData(curSel);
+   m_StrandKey[strandType] = (Int64)pList->GetItemData(curSel);
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
 

@@ -1186,7 +1186,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          var.Clear();
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("StrandMaterialKey"),&var);
-         Int32 key = var.lVal;
+         Int64 key = var.lVal;
          if ( version < 15 )
          {
             key |= matPsStrand::None; // add default encoding for stand coating type... added in version 15
@@ -1203,7 +1203,7 @@ HRESULT CStrandData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,Float64
          var.Clear();
          var.vt = VT_I4;
          hr = pStrLoad->get_Property(_T("StraightStrandMaterialKey"),&var);
-         Int32 key = var.lVal;
+         Int64 key = var.lVal;
          if ( version < 15 )
          {
             key |= matPsStrand::None; // add default encoding for stand coating type... added in version 15
@@ -1452,7 +1452,7 @@ HRESULT CStrandData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    ///////////////// Added with data block version 11
    // version 15... strand pool key began including a value for strand coating type
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 key = pPool->GetStrandKey(m_StrandMaterial[pgsTypes::Straight]);
+   Int64 key = pPool->GetStrandKey(m_StrandMaterial[pgsTypes::Straight]);
    pStrSave->put_Property(_T("StraightStrandMaterialKey"),CComVariant(key));
    
    key = pPool->GetStrandKey(m_StrandMaterial[pgsTypes::Harped]);

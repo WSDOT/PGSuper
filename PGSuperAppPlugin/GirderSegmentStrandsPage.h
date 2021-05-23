@@ -93,7 +93,7 @@ protected:
    pgsTypes::TTSUsage GetTemporaryStrandUsage();
 
    std::unique_ptr<CStrandGrid> m_pGrid;
-	std::array<Int32, 3> m_StrandKey;
+	std::array<Int64, 3> m_StrandKey;
 
    CPrecastSegmentData* m_pSegment; // holds the strand data for the calling dialog
    CStrandData m_Strands; // holds strand data while editing is occuring (this is used to update the display)
