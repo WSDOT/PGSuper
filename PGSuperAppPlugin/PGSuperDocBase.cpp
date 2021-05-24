@@ -2177,11 +2177,6 @@ BOOL CPGSDocBase::OpenTheDocument(LPCTSTR lpszPathName)
    m_pPGSuperDocProxyAgent->HoldEvents();
    // Events are released in OnCreateFinalize()
 
-   if ( !CEAFBrokerDocument::OpenTheDocument(lpszPathName) )
-   {
-      return FALSE;
-   }
-
    // The file was opened
    m_FileCompatibilityState.FileOpened(lpszPathName);
 
@@ -2275,7 +2270,12 @@ BOOL CPGSDocBase::OpenTheDocument(LPCTSTR lpszPathName)
          m_FileCompatibilityState.FileSaved(lpszPathName, strAppVersion);
       }
    }
-  
+
+   if (!CEAFBrokerDocument::OpenTheDocument(lpszPathName))
+   {
+      return FALSE;
+   }
+
    return TRUE;
 }
 
