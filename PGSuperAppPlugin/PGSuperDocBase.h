@@ -107,6 +107,8 @@ public:
       return strFile;
    }
 
+   CString GetFileName() const { return m_strFilePath; }
+
    // Returns true if the user should be warned that the file format is going to change
    // lpszPathName is name of file that is going to be saved
    // lpszCurrentAppVersion is the application version of the application right now

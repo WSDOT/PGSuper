@@ -2177,99 +2177,9 @@ BOOL CPGSDocBase::OpenTheDocument(LPCTSTR lpszPathName)
    m_pPGSuperDocProxyAgent->HoldEvents();
    // Events are released in OnCreateFinalize()
 
+
    // The file was opened
    m_FileCompatibilityState.FileOpened(lpszPathName);
-
-   // setup the document unit systems (must be done after the file is opened)
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   m_DocUnitSystem->put_UnitMode( IS_US_UNITS(pDisplayUnits) ? umUS : umSI );
-
-   // Deal with making a backup copy of an old format file.
-   // We used to do this during saving, but adding the AutoSave feature made it more logical to
-   // save a backup in the old format at the time the file is opened. That way, after the file is
-   // opened we are always dealing with the more current format.
-   //
-   // We don't want to mess with file formats in command line mode (eg, batch processing or running regression tests)
-   CEAFApp* pApp = EAFGetApp();
-   if (!pApp->IsCommandLineMode())
-   {
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-      CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
-      CString strAppVersion = pPluginApp->GetVersion(true);
-
-      bool bMakeCopy = false;
-      CString strCopyFileName = m_FileCompatibilityState.GetCopyFileName();
-      Uint32 hintSettings = GetUIHintSettings();
-
-      if (sysFlags<Uint32>::IsClear(hintSettings, UIHINT_FILESAVEWARNING))
-      {
-         // if the hint flag is clear, that means we want to warn if appropreate
-         if (m_FileCompatibilityState.PromptToMakeCopy(lpszPathName, strAppVersion))
-         {
-            CFileSaveWarningDlg dlg(GetRootNodeName(), lpszPathName, strCopyFileName, m_FileCompatibilityState.GetApplicationVersion(), strAppVersion, EAFGetMainFrame());
-            auto result = dlg.DoModal();
-            if (result == IDCANCEL)
-            {
-               // user cancelled
-               return FALSE;
-            }
-
-            if (dlg.m_bDontWarn)
-            {
-               // the don't warn me again flag was set...
-
-               // update the hint settings
-               sysFlags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
-               SetUIHintSettings(hintSettings);
-
-               // Save the default option to the registry
-               CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-               CComPtr<IEAFAppPlugin> pAppPlugin;
-               pTemplate->GetPlugin(&pAppPlugin);
-               CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-               CAutoRegistry autoReg(pPGSBase->GetAppName(), pPluginApp);
-               pPluginApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
-
-               // make or don't make copy based on default option
-               bMakeCopy = (dlg.m_DefaultCopyOption == FSW_COPY ? true : false);
-            }
-            else if (dlg.m_CopyOption == FSW_COPY)
-            {
-               bMakeCopy = true;
-            }
-         }
-      }
-      else
-      {
-         // we aren't prompting because the "don't show me again" is enabled.... 
-         // get the default action from the registry
-         CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-         CComPtr<IEAFAppPlugin> pAppPlugin;
-         pTemplate->GetPlugin(&pAppPlugin);
-         CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-         CAutoRegistry autoReg(pPGSBase->GetAppName());
-         CWinApp* pApp = AfxGetApp();
-         int value = pApp->GetProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), FSW_COPY);
-         bMakeCopy = (value == FSW_COPY ? true : false);
-      }
-
-      if (bMakeCopy)
-      {
-         BOOL bSuccess = ::CopyFile(lpszPathName, strCopyFileName, FALSE);
-         if (!bSuccess && AfxMessageBox(_T("Unable to make a copy of the original file. Would you like to continue without the backup copy?"), MB_YESNO) == IDNO)
-         {
-            return FALSE;
-         }
-
-         bSuccess = __super::SaveTheDocument(lpszPathName);
-         if (!bSuccess && AfxMessageBox(_T("Unable to save file in updated format. Would you like to continue?"), MB_YESNO) == IDNO)
-         {
-            return FALSE;
-         }
-
-         m_FileCompatibilityState.FileSaved(lpszPathName, strAppVersion);
-      }
-   }
 
    if (!CEAFBrokerDocument::OpenTheDocument(lpszPathName))
    {
@@ -2416,6 +2326,99 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
    #endif
       m_FileCompatibilityState.SetPreVersion21Flag();
    } // colses the bracket for if ( 1.0 < version )
+
+     // setup the document unit systems (must be done after the file is opened)
+   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   m_DocUnitSystem->put_UnitMode(IS_US_UNITS(pDisplayUnits) ? umUS : umSI);
+
+   // Deal with making a backup copy of an old format file.
+   // We used to do this during saving, but adding the AutoSave feature made it more logical to
+   // save a backup in the old format at the time the file is opened. That way, after the file is
+   // opened we are always dealing with the more current format.
+   //
+   // We don't want to mess with file formats in command line mode (eg, batch processing or running regression tests)
+   CEAFApp* pApp = EAFGetApp();
+   if (!pApp->IsCommandLineMode())
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
+      CString strAppVersion = pPluginApp->GetVersion(true);
+
+      bool bMakeCopy = false;
+      CString strCopyFileName = m_FileCompatibilityState.GetCopyFileName();
+      Uint32 hintSettings = GetUIHintSettings();
+
+      CString strFileName = m_FileCompatibilityState.GetFileName();
+
+      if (sysFlags<Uint32>::IsClear(hintSettings, UIHINT_FILESAVEWARNING))
+      {
+         // if the hint flag is clear, that means we want to warn if appropreate
+         if (m_FileCompatibilityState.PromptToMakeCopy(strFileName, strAppVersion))
+         {
+            CFileSaveWarningDlg dlg(GetRootNodeName(), strFileName, strCopyFileName, m_FileCompatibilityState.GetApplicationVersion(), strAppVersion, EAFGetMainFrame());
+            auto result = dlg.DoModal();
+            if (result == IDCANCEL)
+            {
+               // user cancelled
+               return FALSE;
+            }
+
+            if (dlg.m_bDontWarn)
+            {
+               // the don't warn me again flag was set...
+
+               // update the hint settings
+               sysFlags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
+               SetUIHintSettings(hintSettings);
+
+               // Save the default option to the registry
+               CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+               CComPtr<IEAFAppPlugin> pAppPlugin;
+               pTemplate->GetPlugin(&pAppPlugin);
+               CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+               CAutoRegistry autoReg(pPGSBase->GetAppName(), pPluginApp);
+               pPluginApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
+
+               // make or don't make copy based on default option
+               bMakeCopy = (dlg.m_DefaultCopyOption == FSW_COPY ? true : false);
+            }
+            else if (dlg.m_CopyOption == FSW_COPY)
+            {
+               bMakeCopy = true;
+            }
+         }
+      }
+      else
+      {
+         // we aren't prompting because the "don't show me again" is enabled.... 
+         // get the default action from the registry
+         CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+         CComPtr<IEAFAppPlugin> pAppPlugin;
+         pTemplate->GetPlugin(&pAppPlugin);
+         CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+         CAutoRegistry autoReg(pPGSBase->GetAppName());
+         CWinApp* pApp = AfxGetApp();
+         int value = pApp->GetProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), FSW_COPY);
+         bMakeCopy = (value == FSW_COPY ? true : false);
+      }
+
+      if (bMakeCopy)
+      {
+         BOOL bSuccess = ::CopyFile(strFileName, strCopyFileName, FALSE);
+         if (!bSuccess && AfxMessageBox(_T("Unable to make a copy of the original file. Would you like to continue without the backup copy?"), MB_YESNO) == IDNO)
+         {
+            return FALSE;
+         }
+
+         bSuccess = __super::SaveTheDocument(strFileName);
+         if (!bSuccess && AfxMessageBox(_T("Unable to save file in updated format. Would you like to continue?"), MB_YESNO) == IDNO)
+         {
+            return FALSE;
+         }
+
+         m_FileCompatibilityState.FileSaved(strFileName, strAppVersion);
+      }
+   }
 
    return CEAFBrokerDocument::LoadTheDocument(pStrLoad);
 }
