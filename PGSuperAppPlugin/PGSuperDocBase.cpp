@@ -2317,13 +2317,15 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
       }
       m_FileCompatibilityState.SetApplicationVersion(OLE2T(var.bstrVal));
 
-   #if defined _DEBUG
+#if defined _DEBUG
       TRACE(_T("Loading data saved with PGSuper Version %s\n"), m_FileCompatibilityState.GetApplicationVersion());
+#endif
    }
    else
    {
+#if defined _DEBUG
       TRACE(_T("Loading data saved with PGSuper Version 2.1 or earlier\n"));
-   #endif
+#endif
       m_FileCompatibilityState.SetPreVersion21Flag();
    } // colses the bracket for if ( 1.0 < version )
 
