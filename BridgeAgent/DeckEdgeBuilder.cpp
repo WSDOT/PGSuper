@@ -460,7 +460,7 @@ int CDeckEdgeBuilder::EndParallel(IPath* pPath,Float64 startStation,Float64 endS
    m_Alignment->CreateSubPath(CComVariant(startStation),CComVariant(endStation),&subPath);
 
    CComPtr<IPath> edgeSubPath;
-   subPath->CreateParallelPath(-offset,&edgeSubPath);
+   subPath->CreateOffsetPath(-offset,&edgeSubPath);
 
    CollectionIndexType nPathElements;
    edgeSubPath->get_Count(&nPathElements);

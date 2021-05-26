@@ -11283,7 +11283,9 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
          else
          {
             // p1 and p2 are at the same point... can't create a line
-            alignment->ProjectPoint(p1, &pntIntersect);
+            Float64 distFromStart;
+            VARIANT_BOOL vbOnProjection;
+            alignment->ProjectPoint(p1, &pntIntersect, &distFromStart,&vbOnProjection);
          }
 
          CComPtr<IStation> objStation;
@@ -11333,7 +11335,9 @@ void CBridgeAgentImp::GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType 
          else
          {
             // p1 and p2 are at the same point... can't create a line
-            alignment->ProjectPoint(p1, &pntIntersect);
+            Float64 distFromStart;
+            VARIANT_BOOL vbOnProjection;
+            alignment->ProjectPoint(p1, &pntIntersect, &distFromStart, &vbOnProjection);
          }
 
          CComPtr<IStation> objStation;
