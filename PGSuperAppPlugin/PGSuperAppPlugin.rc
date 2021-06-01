@@ -430,6 +430,7 @@ BEGIN
         MENUITEM "&Hints and Warnings...",      EAFID_OPTIONS_HINTS
         MENUITEM "&Labels...",                  ID_OPTIONS_LABELS
         MENUITEM "&Reporting...",               EAFID_OPTIONS_REPORTING
+        MENUITEM "AutoSave...",                 EAFID_OPTIONS_AUTOSAVE
     END
     POPUP "&View"
     BEGIN
@@ -585,6 +586,7 @@ BEGIN
         MENUITEM "&Hints and Warnings...",      EAFID_OPTIONS_HINTS,MFT_STRING,MFS_ENABLED
         MENUITEM "&Labels...",                  ID_OPTIONS_LABELS,MFT_STRING,MFS_ENABLED
         MENUITEM "&Reporting...",               EAFID_OPTIONS_REPORTING,MFT_STRING,MFS_ENABLED
+        MENUITEM "AutoSave...",                 EAFID_OPTIONS_AUTOSAVE,MFT_STRING,MFS_ENABLED
     END
     POPUP "&View",                          65535,MFT_STRING,MFS_ENABLED
     BEGIN

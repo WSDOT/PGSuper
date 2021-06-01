@@ -427,6 +427,10 @@ BEGIN
         MENUITEM "&Girder View Settings...",    ID_VIEW_GIRDERVIEWSETTINGS
         MENUITEM "&Toolbars...",                ID_VIEW_TOOLBAR
     END
+    POPUP "&Options"
+    BEGIN
+        MENUITEM "AutoSave...",                 EAFID_OPTIONS_AUTOSAVE
+    END
     POPUP "&Help"
     BEGIN
         MENUITEM "&Help Topics",                ID_HELP_FINDER
