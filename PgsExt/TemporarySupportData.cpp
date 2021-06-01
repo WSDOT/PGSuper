@@ -40,7 +40,8 @@ Float64 gs_DefaultGirderBearingOffset2 = ::ConvertToSysUnits(1.0,unitMeasure::Fe
 CLASS
    CTemporarySupportData
 ****************************************************************************/
-CTemporarySupportData::CTemporarySupportData()
+CTemporarySupportData::CTemporarySupportData() :
+   m_SlabOffset{0.0,0.0}
 {
    m_ID    = INVALID_ID;
    m_Index = INVALID_INDEX;

@@ -511,7 +511,7 @@ int CTimelineManager::SetEventByID(EventIDType id,const CTimelineEvent& timeline
       auto* pTimelineEvent = *iter;
       if ( pTimelineEvent->GetID() == id )
       {
-         return SetEventByIndex(std::distance(m_TimelineEvents.cbegin(),iter),pTimelineEvent,bAdjustTimeline);
+         return SetEventByIndex(std::distance(m_TimelineEvents.cbegin(),iter), timelineEvent,bAdjustTimeline);
       }
    }
 

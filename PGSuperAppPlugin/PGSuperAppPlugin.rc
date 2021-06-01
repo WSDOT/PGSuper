@@ -379,7 +379,6 @@ BEGIN
         MENUITEM "&Insert Span\tIns",           ID_INSERT
         MENUITEM "Insert &Temporary Support\tShift+Ins", ID_INSERT_TEMPORARY_SUPPORT
         MENUITEM "&Delete\tDel",                ID_DELETE
-        MENUITEM SEPARATOR
     END
     POPUP "&Project"
     BEGIN

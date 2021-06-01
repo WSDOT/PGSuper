@@ -48,13 +48,14 @@ protected:
 
    CWideDropDownComboBox m_cbErection;
    CWideDropDownComboBox m_cbRemoval;
+   std::array<CCacheEdit, 2> m_wndSlabOffset;
 
    Float64 m_Station;
    std::_tstring m_strOrientation;
    pgsTypes::TemporarySupportType m_Type;
    Float64 m_ElevAdjustment;
    pgsTypes::SlabOffsetType m_SlabOffsetType;
-   std::array<Float64, 2> m_SlabOffset; // use pgsTypes::PierFaceType to access array
+   std::array<Float64, 2> m_SlabOffset{ 0.0,0.0 }; // use pgsTypes::PierFaceType to access array. data only valid if m_SlabOffsetType is sotBridge or sotBearingLine
    pgsTypes::SlabOffsetType m_InitialSlabOffsetType;
 
    int m_PrevErectionEventIdx;
