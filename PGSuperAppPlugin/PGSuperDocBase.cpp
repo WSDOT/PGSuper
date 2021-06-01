@@ -2411,14 +2411,6 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
          {
             return FALSE;
          }
-
-         bSuccess = __super::SaveTheDocument(strFileName);
-         if (!bSuccess && AfxMessageBox(_T("Unable to save file in updated format. Would you like to continue?"), MB_YESNO) == IDNO)
-         {
-            return FALSE;
-         }
-
-         m_FileCompatibilityState.FileSaved(strFileName, strAppVersion);
       }
    }
 
