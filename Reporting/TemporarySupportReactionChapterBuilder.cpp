@@ -88,18 +88,25 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
    analysisType = (analysisType == pgsTypes::Envelope ? pgsTypes::Continuous : analysisType);
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
-   IntervalIndexType intervalIdx = INVALID_INDEX;
+   IntervalIndexType firstErectionIntervalIdx = INVALID_INDEX;
+   IntervalIndexType lastRemovalIntervalIdx = 0;
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
    std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>> vSupports;
    for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++ )
    {
       if ( pBridge->GetTemporarySupportType(tsIdx) == pgsTypes::ErectionTower )
       {
+         IntervalIndexType tsErectionIntervalIdx = pIntervals->GetTemporarySupportErectionInterval(tsIdx);
+         firstErectionIntervalIdx = Min(tsErectionIntervalIdx, firstErectionIntervalIdx);
+
          IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(tsIdx);
-         intervalIdx = Min(tsRemovalIntervalIdx,intervalIdx);
+         lastRemovalIntervalIdx = Max(tsRemovalIntervalIdx, lastRemovalIntervalIdx);
+         
          vSupports.emplace_back(tsIdx,pgsTypes::stTemporary);
       }
    }
+
+   firstErectionIntervalIdx = Max(firstErectionIntervalIdx,pIntervals->GetFirstSegmentErectionInterval(girderKey)); // don't report any interval before first erection... reactions are just zero
 
    nTS = vSupports.size(); // this is the new size after strong backs are removed
 
@@ -111,18 +118,12 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
       return pChapter;
    }
 
-   ATLASSERT(intervalIdx != 0 && intervalIdx != INVALID_INDEX);
-   intervalIdx--; // want the interval before removal
-
    bool bOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    // Setup some unit-value prototypes
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), false);
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false);
-
-   rptParagraph* pPara = new rptParagraph;
-   *pChapter << pPara;
 
    bool bDesign = false;
    bool bRating = false;
@@ -131,7 +132,9 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeck,&bDeckPanels,&bSidewalk,&bShearKey,&bLongitudinalJoint,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
    nCols++; // add one for Type column
    nCols++; // add one for Reaction column
+   nCols++; // add one for Total column
 
+   // Remove columns that aren't applicable
    if ( bSegments )
    {
       nCols--;
@@ -150,232 +153,300 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
       bPermit = false;
    }
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T(""));
-
-   p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-
-   p_table->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(1,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-
-   p_table->SetColumnStyle(2,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   p_table->SetStripeRowColumnStyle(2,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-
-   ColumnIndexType col = 0;
-   p_table->SetNumberOfHeaderRows(2);
-   p_table->SetRowSpan(0,col,2);
-   (*p_table)(0,col++) << _T("Temporary") << rptNewLine << _T("Support");
-
-   p_table->SetRowSpan(0,col,2);
-   (*p_table)(0,col++) << _T("Type");
-
-   p_table->SetRowSpan(0,col,2);
-   (*p_table)(0,col++) << _T("Reaction");
-
-   p_table->SetRowSpan(0,col,2);
-   (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftGirder);
-
-   p_table->SetRowSpan(0,col,2);
-   (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm);
-
-   if (bShearKey)
+   GET_IFACE2(pBroker, IUserDefinedLoads, pUserDefinedLoads);
+   bool bUserLoads = pUserDefinedLoads->DoUserLoadsExist(girderKey);
+   if (bUserLoads)
    {
-      p_table->SetRowSpan(0, col, 2);
-      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
+      nCols += 2;
    }
 
-   if (bLongitudinalJoint)
+   for (IntervalIndexType intervalIdx = firstErectionIntervalIdx; intervalIdx < lastRemovalIntervalIdx; intervalIdx++)
    {
-      p_table->SetRowSpan(0, col, 2);
-      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
-   }
+      rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      *pChapter << pPara;
 
-   if ( bConstruction )
-   {
-      p_table->SetRowSpan(0,col,2);
-      (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftConstruction);
-   }
+      std::_tostringstream os;
+      os << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" ") << pIntervals->GetDescription(intervalIdx) << std::endl;
+      pPara->SetName(os.str().c_str());
+      *pPara << pPara->GetName() << rptNewLine;
 
-   if (bDeck)
-   {
-      p_table->SetRowSpan(0, col, 2);
-      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
+      rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, _T(""));
 
-      p_table->SetRowSpan(0, col, 2);
-      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
-   }
+      pPara = new rptParagraph;
+      *pChapter << pPara;
+      *pPara << p_table << rptNewLine;
+      *pPara << _T("NOTE: Reactions are for a single girder line.") << rptNewLine;
 
-   if ( bDeckPanels )
-   {
-      p_table->SetRowSpan(0,col,2);
-      (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel);
-   }
+      p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   if ( bSidewalk )
-   {
-      p_table->SetRowSpan(0,col,2);
-      (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk);
-   }
+      p_table->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   p_table->SetRowSpan(0,col,2);
-   (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
+      p_table->SetColumnStyle(2, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      p_table->SetStripeRowColumnStyle(2, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   if ( bOverlay )
-   {
-      p_table->SetRowSpan(0,col,2);
-      if ( bFutureOverlay )
-      {
-         (*p_table)(0,col++) << _T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
-      }
-      else
-      {
-         (*p_table)(0,col++) << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
-      }
-   }
-
-   *pPara << p_table << rptNewLine;
-   
-   std::vector<REACTION> vGirderReactions, vDiaphragmReactions, vShearKeyReactions, vLongitudinalJointReactions, vConstructionReactions, vSlabReactions, vSlabPadReactions, vDeckPanelReactions, vSidewalkReactions, vTrafficBarrierReactions, vOverlayReactions;
-   
-   vGirderReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftGirder,bat,rtCumulative);
-   vDiaphragmReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftDiaphragm,bat,rtCumulative);
-   if ( bShearKey )
-   {
-      vShearKeyReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftShearKey,bat,rtCumulative);
-   }
-
-   if (bLongitudinalJoint)
-   {
-      vLongitudinalJointReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftLongitudinalJoint, bat, rtCumulative);
-   }
-
-   if ( bConstruction )
-   {
-      vConstructionReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftConstruction,bat,rtCumulative);
-   }
-
-   if (bDeck)
-   {
-      vSlabReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlab, bat, rtCumulative);
-      vSlabPadReactions = pReactions->GetReaction(girderKey, vSupports, intervalIdx, pgsTypes::pftSlabPad, bat, rtCumulative);
-   }
-
-   if ( bDeckPanels )
-   {
-      vDeckPanelReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftSlabPanel,bat,rtCumulative);
-   }
-   if ( bSidewalk )
-   {
-      vSidewalkReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftSidewalk,bat,rtCumulative);
-   }
-   
-   vTrafficBarrierReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftTrafficBarrier,bat,rtCumulative);
-   
-   if ( bOverlay )
-   {
-      vOverlayReactions = pReactions->GetReaction(girderKey,vSupports,intervalIdx,pgsTypes::pftOverlay,bat,rtCumulative);
-   }
-
-   RowIndexType row = p_table->GetNumberOfHeaderRows();
-   for ( SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++, row += 3 )
-   {
       ColumnIndexType col = 0;
-      p_table->SetRowSpan(row,col,3);
-      (*p_table)(row,col++) << LABEL_TEMPORARY_SUPPORT(vSupports[tsIdx].first);
+      (*p_table)(0, col++) << _T("Temporary") << rptNewLine << _T("Support");
 
-      p_table->SetRowSpan(row,col,3);
-      (*p_table)(row,col++) << _T("Idealized");
+      (*p_table)(0, col++) << _T("Type");
 
-      (*p_table)(row,col) << _T("Fx (") << pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure.UnitTag() << _T(")");
-      (*p_table)(row+1,col) << _T("Fy (") << pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure.UnitTag() << _T(")");
-      (*p_table)(row+2,col) << _T("Mz (") << pDisplayUnits->GetMomentUnit().UnitOfMeasure.UnitTag() << _T(")");
-      col++;
+      (*p_table)(0, col++) << _T("Reaction");
 
-      REACTION reaction = vGirderReactions[tsIdx];
-      (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-      (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-      (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
-      col++;
+      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftGirder);
 
-      reaction = vDiaphragmReactions[tsIdx];
-      (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-      (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-      (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
-      col++;
+      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftDiaphragm);
 
       if (bShearKey)
       {
-         reaction = vShearKeyReactions[tsIdx];
-         (*p_table)(row, col) << force.SetValue(reaction.Fx);
-         (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
-         (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
-         col++;
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
       }
 
       if (bLongitudinalJoint)
       {
-         reaction = vLongitudinalJointReactions[tsIdx];
-         (*p_table)(row, col) << force.SetValue(reaction.Fx);
-         (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
-         (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
-         col++;
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
       }
 
-      if ( bConstruction )
+      if (bConstruction)
       {
-         reaction = vConstructionReactions[tsIdx];
-         (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-         (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-         (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
-         col++;
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftConstruction);
       }
 
       if (bDeck)
       {
-         reaction = vSlabReactions[tsIdx];
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPad);
+      }
+
+      if (bDeckPanels)
+      {
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel);
+      }
+
+      if (bSidewalk)
+      {
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk);
+      }
+
+      (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
+
+      if (bOverlay)
+      {
+         if (bFutureOverlay)
+         {
+            (*p_table)(0, col++) << _T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
+         }
+         else
+         {
+            (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
+         }
+      }
+
+      if (bUserLoads)
+      {
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftUserDC);
+         (*p_table)(0, col++) << pProductLoads->GetProductLoadName(pgsTypes::pftUserDW);
+      }
+
+      (*p_table)(0, col++) << _T("Total");
+
+      // temporary supports can be removed at different times... 
+      // get a list of temporary supports that are still erected during this interval
+      std::vector<std::pair<SupportIndexType, pgsTypes::SupportType>> vSupportsThisInterval;
+      for (auto pair : vSupports)
+      {
+         IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporarySupportRemovalInterval(pair.first);
+         if (intervalIdx < tsRemovalIntervalIdx)
+         {
+            vSupportsThisInterval.emplace_back(pair);
+         }
+      }
+
+      std::vector<REACTION> vGirderReactions, vDiaphragmReactions, vShearKeyReactions, vLongitudinalJointReactions, vConstructionReactions, vSlabReactions, vSlabPadReactions, vDeckPanelReactions, vSidewalkReactions, vTrafficBarrierReactions, vOverlayReactions, vUserDCReactions, vUserDWReactions;
+
+      vGirderReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftGirder, bat, rtCumulative);
+      vDiaphragmReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftDiaphragm, bat, rtCumulative);
+      if (bShearKey)
+      {
+         vShearKeyReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftShearKey, bat, rtCumulative);
+      }
+
+      if (bLongitudinalJoint)
+      {
+         vLongitudinalJointReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftLongitudinalJoint, bat, rtCumulative);
+      }
+
+      if (bConstruction)
+      {
+         vConstructionReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftConstruction, bat, rtCumulative);
+      }
+
+      if (bDeck)
+      {
+         vSlabReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftSlab, bat, rtCumulative);
+         vSlabPadReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftSlabPad, bat, rtCumulative);
+      }
+
+      if (bDeckPanels)
+      {
+         vDeckPanelReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftSlabPanel, bat, rtCumulative);
+      }
+      if (bSidewalk)
+      {
+         vSidewalkReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftSidewalk, bat, rtCumulative);
+      }
+
+      vTrafficBarrierReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftTrafficBarrier, bat, rtCumulative);
+
+      if (bOverlay)
+      {
+         vOverlayReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftOverlay, bat, rtCumulative);
+      }
+
+      if (bUserLoads)
+      {
+         vUserDCReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftUserDC, bat, rtCumulative);
+         vUserDWReactions = pReactions->GetReaction(girderKey, vSupportsThisInterval, intervalIdx, pgsTypes::pftUserDW, bat, rtCumulative);
+      }
+
+      RowIndexType row = p_table->GetNumberOfHeaderRows();
+      SupportIndexType nTSThisInterval = vSupportsThisInterval.size();
+      for (SupportIndexType tsIdx = 0; tsIdx < nTSThisInterval; tsIdx++, row += 3)
+      {
+         ColumnIndexType col = 0;
+         p_table->SetRowSpan(row, col, 3);
+         (*p_table)(row, col++) << LABEL_TEMPORARY_SUPPORT(vSupportsThisInterval[tsIdx].first);
+
+         p_table->SetRowSpan(row, col, 3);
+         (*p_table)(row, col++) << _T("Idealized");
+
+         (*p_table)(row, col) << _T("Fx (") << pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure.UnitTag() << _T(")");
+         (*p_table)(row + 1, col) << _T("Fy (") << pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure.UnitTag() << _T(")");
+         (*p_table)(row + 2, col) << _T("Mz (") << pDisplayUnits->GetMomentUnit().UnitOfMeasure.UnitTag() << _T(")");
+         col++;
+
+         REACTION total;
+
+         REACTION reaction = vGirderReactions[tsIdx];
+         total += reaction;
          (*p_table)(row, col) << force.SetValue(reaction.Fx);
          (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
          (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
          col++;
 
-         reaction = vSlabPadReactions[tsIdx];
+         reaction = vDiaphragmReactions[tsIdx];
+         total += reaction;
          (*p_table)(row, col) << force.SetValue(reaction.Fx);
          (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
          (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
          col++;
-      }
 
-      if ( bDeckPanels )
-      {
-         reaction = vDeckPanelReactions[tsIdx];
-         (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-         (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-         (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
+         if (bShearKey)
+         {
+            reaction = vShearKeyReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+
+         if (bLongitudinalJoint)
+         {
+            reaction = vLongitudinalJointReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+
+         if (bConstruction)
+         {
+            reaction = vConstructionReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+
+         if (bDeck)
+         {
+            reaction = vSlabReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+
+            reaction = vSlabPadReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+
+         if (bDeckPanels)
+         {
+            reaction = vDeckPanelReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+
+         if (bSidewalk)
+         {
+            reaction = vSidewalkReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+
+         reaction = vTrafficBarrierReactions[tsIdx];
+         total += reaction;
+         (*p_table)(row, col) << force.SetValue(reaction.Fx);
+         (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+         (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
          col++;
-      }
 
-      if ( bSidewalk )
-      {
-         reaction = vSidewalkReactions[tsIdx];
-         (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-         (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-         (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
+         if (bOverlay)
+         {
+            reaction = vOverlayReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+
+         if (bUserLoads)
+         {
+            reaction = vUserDCReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+
+            reaction = vUserDWReactions[tsIdx];
+            total += reaction;
+            (*p_table)(row, col) << force.SetValue(reaction.Fx);
+            (*p_table)(row + 1, col) << force.SetValue(reaction.Fy);
+            (*p_table)(row + 2, col) << moment.SetValue(reaction.Mz);
+            col++;
+         }
+
+         (*p_table)(row, col) << force.SetValue(total.Fx);
+         (*p_table)(row + 1, col) << force.SetValue(total.Fy);
+         (*p_table)(row + 2, col) << moment.SetValue(total.Mz);
          col++;
-      }
 
-      reaction = vTrafficBarrierReactions[tsIdx];
-      (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-      (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-      (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
-      col++;
-
-      if ( bOverlay )
-      {
-         reaction = vOverlayReactions[tsIdx];
-         (*p_table)(row,col)   << force.SetValue(reaction.Fx);
-         (*p_table)(row+1,col) << force.SetValue(reaction.Fy);
-         (*p_table)(row+2,col) << moment.SetValue(reaction.Mz);
-         col++;
       }
    }
 
