@@ -23095,28 +23095,11 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
 
    if (coordinateType == pgsTypes::scCentroid)
    {
-      // if the coordinate system type is centroid, the section is currently in girder coordinates
-
-      CComPtr<IShape> shape;
-
-      CComPtr<ICompositeShape> compositeShape;
-      (*ppShape)->QueryInterface(&compositeShape);
-
-      if ( compositeShape )
-      {
-         CComPtr<ICompositeShapeItem> item;
-         compositeShape->get_Item(0,&item);
-         item->get_Shape(&shape);
-      }
-      else
-      {
-         shape = *ppShape;
-      }
-
-      CComPtr<IShapeProperties> shapeProps;
-      shape->get_ShapeProperties(&shapeProps);
+      // the request if for the centroidal coordinate system, the section is currently in girder coordinates
+      // let's convert
       CComPtr<IPoint2d> pntCG;
-      shapeProps->get_Centroid(&pntCG);
+      GetCentroid(intervalIdx, poi, &pntCG);
+
       Float64 cgx(0), cgy(0);
       pntCG->Location(&cgx, &cgy);
 
