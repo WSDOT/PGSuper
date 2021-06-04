@@ -71,8 +71,7 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
    rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << p;
 
-   p->SetName(_T("Strand Eccentricity"));
-   *p << p->GetName() << rptNewLine;
+   *p << _T("Strand Eccentricity") << rptNewLine;
 
    //GET_IFACE2( pBroker, ILossParameters, pLossParams);
    //pgsTypes::LossMethod lossMethod = pLossParams->GetLossMethod();
