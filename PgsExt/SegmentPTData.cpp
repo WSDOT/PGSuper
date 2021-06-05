@@ -525,7 +525,7 @@ HRESULT CSegmentPTData::Save(IStructuredSave* pStrSave, IProgress* pProgress)
    pStrSave->put_Property(_T("InstallationEvent"), CComVariant(InstallationEvent));
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   Int32 key = pPool->GetStrandKey(m_pStrand);
+   auto key = pPool->GetStrandKey(m_pStrand);
    pStrSave->put_Property(_T("TendonMaterialKey"), CComVariant(key));
 
    pStrSave->put_Property(_T("DuctCount"), CComVariant(m_Ducts.size()));
