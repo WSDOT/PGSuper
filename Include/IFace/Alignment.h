@@ -132,22 +132,25 @@ interface IRoadway : IUnknown
    // returns number of crown points along alignment
    virtual IndexType GetCrownPointIndexCount(Float64 station) const = 0;
 
-   // returns index of crown point at alignment, PG
-   virtual IndexType GetControllingCrownPointIndex(Float64 station) const = 0;
+   // returns the ridge point index of the alignment
+   virtual IndexType GetAlignmentPointIndex(Float64 station) const = 0;
 
-   // offset for each crown point
-   virtual Float64 GetCrownPointOffset(IndexType crownPointIdx, Float64 station) const = 0;
+   // returns the offset from the alignment point to the specified ridge point
+   virtual Float64 GetAlignmentOffset(IndexType ridgePointIdx, Float64 station) const = 0;
+
+   // returns the ridge point index for the profile grade line
+   virtual IndexType GetProfileGradeLineIndex(Float64 station) const = 0;
+
+   // returns the offset from the profile grade line to the specified ridge point
+   virtual Float64 GetProfileGradeLineOffset(IndexType ridgePointIdx, Float64 station) const = 0;
 };
 
 
 /*****************************************************************************
 INTERFACE
-   IRoadway
+   IGeometry
 
-   Interface to get alignment information.
-
-DESCRIPTION
-   Interface to get alignment information.
+   Interface to compute geometric information
 *****************************************************************************/
 // {F013DA5F-708F-461b-9905-8BA164A436FA}
 DEFINE_GUID(IID_IGeometry, 

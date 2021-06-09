@@ -77,6 +77,7 @@ protected:
 	virtual BOOL OnInitDialog();
    afx_msg void OnCbnSelchangeNumsegmentsCombo();
    afx_msg void OnCbnSelchangeRidgeptCombo();
+   afx_msg void OnCbnSelchangeProfileGradePointCombo();
    afx_msg void OnUpdateRemove(CCmdUI* pCmdUI);
    afx_msg void OnUpdateSort(CCmdUI* pCmdUI);
 	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
@@ -89,6 +90,7 @@ protected:
    void FillNumSegsCtrl();
    void UpdateNumSegsCtrl();
    void UpdateRidgeptData();
+   void UpdateProfilePointData();
    void UpdateViewSpinner();
 
    CCrownSlopeGrid m_Grid;
@@ -107,6 +109,7 @@ protected:
    std::vector<gpPoint2d> m_DrawnRidgePoints;
 public:
    afx_msg void OnDeltaposViewTemplateSpin(NMHDR *pNMHDR, LRESULT *pResult);
+   afx_msg void OnCbnSelchangeSlopeMeasureType();
 };
 
 //{{AFX_INSERT_LOCATION}}

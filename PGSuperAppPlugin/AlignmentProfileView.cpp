@@ -319,11 +319,29 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
 
    for(Float64 station : vStations)
    {
-      Float64 y = pRoadway->GetElevation(station,0.0);
+      IndexType pglIdx = pRoadway->GetProfileGradeLineIndex(station);
+      Float64 offset = pRoadway->GetAlignmentOffset(pglIdx, station);
+
+      Float64 y = pRoadway->GetElevation(station,offset);
       CComPtr<IPoint2d> pnt;
       pnt.CoCreateInstance(CLSID_Point2d);
       pnt->Move(station,y);
       doProfile->AddPoint(pnt);
+
+      if (IsEqual(station, vStations.front()))
+      {
+         Float64 grade = pRoadway->GetProfileGrade(station);
+         CComPtr<iTextBlock> doText;
+         doText.CoCreateInstance(CLSID_TextBlock);
+         doText->SetPosition(pnt);
+         doText->SetText(_T("PGL"));
+         doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
+         doText->SetBkMode(TRANSPARENT);
+         long angle = long(1800.*grade / M_PI);
+         angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+         doText->SetAngle(angle);
+         display_list->AddDisplayObject(doText);
+      }
 
       y = pRoadway->GetElevation(station,leftOffset);
       pnt.Release();
@@ -613,7 +631,10 @@ void CAlignmentProfileView::CreateStationLabel(iDisplayList* pDisplayList,Float6
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
 
-   Float64 y = pRoadway->GetElevation(station,0.0);
+   IndexType pglIdx = pRoadway->GetProfileGradeLineIndex(station);
+   Float64 offset = pRoadway->GetAlignmentOffset(pglIdx, station);
+
+   Float64 y = pRoadway->GetElevation(station,offset);
    CreateStationLabel(pDisplayList,station,y,strBaseLabel,textAlign);
 }
 

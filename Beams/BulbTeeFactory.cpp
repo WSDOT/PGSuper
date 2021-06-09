@@ -1423,7 +1423,7 @@ void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSeg
       // Assumption here that outer-most ridge points are off of the bridge. Done for performance
       for (IndexType iCP = 1; iCP < numCPs-1; iCP++)
       {
-         Float64 CPO = pAlignment->GetCrownPointOffset(iCP, station);
+         Float64 CPO = pAlignment->GetAlignmentOffset(iCP, station);
 
          if (IsLT(left_edge_offset, CPO) && IsLT(CPO, right_edge_offset))
          {

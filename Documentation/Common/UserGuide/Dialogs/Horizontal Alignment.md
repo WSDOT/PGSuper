@@ -9,6 +9,7 @@ Alignment Definition
 
 Item | Description
 -----|------------
+Name | Name of the alignment (e.g. L-Line) . The name is used to identify the alignment in plan and section views.
 Initial Direction | Enter the direction of the alignment as a bearing in the direction of increasing station. For alignments with horizontal curves, enter the back tangent of the first curve.
 Horizontal Curves | Add a row to the table for each horizontal curve in the alignment. 
 [Add] | Add a horizontal curve

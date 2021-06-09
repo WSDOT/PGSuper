@@ -234,12 +234,18 @@ struct HorzCurveData
 
 struct AlignmentData2
 {
+   std::_tstring Name{ _T("") };
    Float64 Direction;
    std::vector<HorzCurveData> HorzCurves;
 
    bool operator==(const AlignmentData2& other) const
    {
-      if ( Direction != other.Direction )
+      if ( Name != other.Name)
+      {
+         return false;
+      }
+
+      if (Direction != other.Direction)
       {
          return false;
       }
@@ -376,17 +382,26 @@ struct RoadwaySectionTemplate
 
 struct RoadwaySectionData
 {
+   enum SlopeMeasure {RelativeToAlignmentPoint,FromLeftEdge};
+   SlopeMeasure slopeMeasure;
    IndexType NumberOfSegmentsPerSection; // Always have at least 2 outer infinite segments. Inner segments add to this
-   IndexType ControllingRidgePointIdx;   // Not zero based. No ridge points at ends of outer segments. For 2 segment case,
-                                         // this value is 1.
+   IndexType AlignmentPointIdx;   // Not zero based. No ridge points at ends of outer segments. For 2 segment case, this value is 1.
+   IndexType ProfileGradePointIdx; // Not zero based. No ridge points at ends of outer segments. For 2 segment case, this value is 1. If PGL and Alignment are the same, this is equal to AlignmentRidgePointIdx
+
    std::vector<RoadwaySectionTemplate> RoadwaySectionTemplates;
 
    bool operator==(const RoadwaySectionData& other) const
    {
+      if (slopeMeasure != other.slopeMeasure)
+         return false;
+
       if (NumberOfSegmentsPerSection != other.NumberOfSegmentsPerSection)
          return false;
 
-      if (ControllingRidgePointIdx != other.ControllingRidgePointIdx)
+      if (AlignmentPointIdx != other.AlignmentPointIdx)
+         return false;
+
+      if (ProfileGradePointIdx != other.ProfileGradePointIdx)
          return false;
 
       return RoadwaySectionTemplates == other.RoadwaySectionTemplates;

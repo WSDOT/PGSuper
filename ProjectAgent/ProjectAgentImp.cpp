@@ -164,8 +164,10 @@ CProjectAgentImp::CProjectAgentImp()
    cd.Station = 0.0;
    cd.LeftSlope = -0.02;
    cd.RightSlope = -0.02;
+   m_RoadwaySectionData.slopeMeasure = RoadwaySectionData::RelativeToAlignmentPoint;
    m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
-   m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+   m_RoadwaySectionData.AlignmentPointIdx = 1;
+   m_RoadwaySectionData.ProfileGradePointIdx = 1;
    m_RoadwaySectionData.RoadwaySectionTemplates.push_back(cd);
 
    m_DuctilityLevel   = ILoadModifiers::Normal;
@@ -1790,7 +1792,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
    if ( pSave )
    {
       // Save the alignment data
-      hr = pSave->BeginUnit(_T("AlignmentData"),5.0);
+      hr = pSave->BeginUnit(_T("AlignmentData"),6.0);
       if ( FAILED(hr) )
       {
          return hr;
@@ -1800,7 +1802,14 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
 //      hr = pSave->put_Property(_T("AlignmentOffset"),CComVariant(pObj->m_AlignmentOffset));
 //      if ( FAILED(hr) )
 //         return hr;
-      
+
+      // added in version 6
+      hr = pSave->put_Property(_T("Name"), CComVariant(pObj->m_AlignmentData2.Name.c_str()));
+      if (FAILED(hr))
+      {
+         return hr;
+      }
+
       // added in version 5
       hr = pSave->put_Property(_T("RefStation"),CComVariant(pObj->m_AlignmentData2.RefStation));
       if ( FAILED(hr) )
@@ -1911,6 +1920,19 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
 
       Float64 version;
       pLoad->get_Version(&version);
+      if (5 < version)
+      {
+         // added in version 6
+         var.vt = VT_BSTR;
+         hr = pLoad->get_Property(_T("Name"), &var);
+         if (FAILED(hr))
+         {
+            return hr;
+         }
+
+         pObj->m_AlignmentData2.Name = var.bstrVal;
+      }
+
       if ( version < 2 )
       {
          // version 1 style data... read the data and hold in local variables
@@ -2476,8 +2498,14 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
 
    if ( pSave )
    {
-      hr = pSave->BeginUnit(_T("SuperelevationData"),2.0);
+      hr = pSave->BeginUnit(_T("SuperelevationData"),3.0);
       if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
+      hr = pSave->put_Property(_T("SlopeMeasure"), CComVariant((long)pObj->m_RoadwaySectionData.slopeMeasure)); // added in version 3
+      if (FAILED(hr))
       {
          return hr;
       }
@@ -2488,8 +2516,14 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
          return hr;
       }
 
-      hr = pSave->put_Property(_T("ControllingRidgePointIdx"),CComVariant((long)pObj->m_RoadwaySectionData.ControllingRidgePointIdx));
+      hr = pSave->put_Property(_T("ControllingRidgePointIdx"),CComVariant((long)pObj->m_RoadwaySectionData.AlignmentPointIdx));
       if ( FAILED(hr) )
+      {
+         return hr;
+      }
+
+      hr = pSave->put_Property(_T("ProfileGradePointIdx"), CComVariant((long)pObj->m_RoadwaySectionData.ProfileGradePointIdx)); // added in version 3
+      if (FAILED(hr))
       {
          return hr;
       }
@@ -2606,6 +2640,19 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
          // Load current data
          CComVariant var;
 
+         if (2 < superVersion)
+         {
+            // added in version 3
+            var.vt = VT_I4;
+            hr = pLoad->get_Property(_T("SlopeMeasure"), &var);
+            if (FAILED(hr))
+            {
+               return hr;
+            }
+
+            pObj->m_RoadwaySectionData.slopeMeasure = (RoadwaySectionData::SlopeMeasure)(var.lVal);
+         }
+
          var.vt = VT_I4;
          hr = pLoad->get_Property(_T("NumberOfSegmentsPerSection"), &var);
          if ( FAILED(hr) )
@@ -2622,7 +2669,24 @@ HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredL
             return hr;
          }
 
-         pObj->m_RoadwaySectionData.ControllingRidgePointIdx = var.lVal;
+         pObj->m_RoadwaySectionData.AlignmentPointIdx = var.lVal;
+
+         if (2 < superVersion)
+         {
+            // added in version 3
+            var.vt = VT_I4;
+            hr = pLoad->get_Property(_T("ProfileGradePointIdx"), &var);
+            if (FAILED(hr))
+            {
+               return hr;
+            }
+
+            pObj->m_RoadwaySectionData.ProfileGradePointIdx = var.lVal;
+         }
+         else
+         {
+            pObj->m_RoadwaySectionData.ProfileGradePointIdx = pObj->m_RoadwaySectionData.AlignmentPointIdx;
+         }
 
          var.vt = VT_I4;
          hr = pLoad->get_Property(_T("TemplateCount"),&var);
@@ -2877,7 +2941,8 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
    {
       // no crown point offsets
       pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 2;
-      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      pObj->m_RoadwaySectionData.AlignmentPointIdx = 1;
+      pObj->m_RoadwaySectionData.ProfileGradePointIdx = 1;
       for (auto& cd : CrownDataVec)
       {
          RoadwaySectionTemplate templ;
@@ -2892,7 +2957,8 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
    {
       // only have a left crown offset in list
       pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 3;
-      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 2;
+      pObj->m_RoadwaySectionData.AlignmentPointIdx = 2;
+      pObj->m_RoadwaySectionData.ProfileGradePointIdx = 2;
       for (auto& cd : CrownDataVec)
       {
          RoadwaySectionTemplate templ;
@@ -2920,7 +2986,8 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
    {
       // only have a right crown offset in list
       pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 3;
-      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      pObj->m_RoadwaySectionData.AlignmentPointIdx = 1;
+      pObj->m_RoadwaySectionData.ProfileGradePointIdx = 1;
       for (auto& cd : CrownDataVec)
       {
          RoadwaySectionTemplate templ;
@@ -2947,7 +3014,8 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
    {
       // list has both left and right offsets. we need four segments to model this
       pObj->m_RoadwaySectionData.NumberOfSegmentsPerSection = 4;
-      pObj->m_RoadwaySectionData.ControllingRidgePointIdx = 2;
+      pObj->m_RoadwaySectionData.AlignmentPointIdx = 2;
+      pObj->m_RoadwaySectionData.ProfileGradePointIdx = 2;
       for (auto& cd : CrownDataVec)
       {
          RoadwaySectionTemplate templ;

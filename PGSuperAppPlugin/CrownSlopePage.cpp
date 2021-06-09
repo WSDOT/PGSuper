@@ -97,8 +97,10 @@ void CCrownSlopePage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   DDX_CBItemData(pDX, IDC_NUMSEGMENTS_COMBO,  (int&)m_RoadwaySectionData.NumberOfSegmentsPerSection);
-   DDX_CBItemData(pDX, IDC_RIDGEPT_COMBO,  (int&)m_RoadwaySectionData.ControllingRidgePointIdx);
+   DDX_CBItemData(pDX, IDC_SLOPE_MEASURE_TYPE, m_RoadwaySectionData.slopeMeasure);
+   DDX_CBItemData(pDX, IDC_NUMSEGMENTS_COMBO,  m_RoadwaySectionData.NumberOfSegmentsPerSection);
+   DDX_CBItemData(pDX, IDC_RIDGEPT_COMBO,  m_RoadwaySectionData.AlignmentPointIdx);
+   DDX_CBItemData(pDX, IDC_PROFILE_GRADE_POINT, m_RoadwaySectionData.ProfileGradePointIdx);
 	DDX_Control(pDX, IDC_VIEW_TEMPLATE_SPIN, m_SelTemplateSpinner);
 
    // Grid owns a pointer to our roadway data
@@ -139,8 +141,10 @@ BEGIN_MESSAGE_MAP(CCrownSlopePage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_NUMSEGMENTS_COMBO, &CCrownSlopePage::OnCbnSelchangeNumsegmentsCombo)
    ON_UPDATE_COMMAND_UI(IDC_NUMSEGMENTS_COMBO, &CCrownSlopePage::OnUpdateAdd)
    ON_CBN_SELCHANGE(IDC_RIDGEPT_COMBO, &CCrownSlopePage::OnCbnSelchangeRidgeptCombo)
+   ON_CBN_SELCHANGE(IDC_PROFILE_GRADE_POINT, &CCrownSlopePage::OnCbnSelchangeProfileGradePointCombo)
    ON_UPDATE_COMMAND_UI(IDC_RIDGEPT_COMBO, &CCrownSlopePage::OnUpdateAdd)
    ON_NOTIFY(UDN_DELTAPOS, IDC_VIEW_TEMPLATE_SPIN, &CCrownSlopePage::OnDeltaposViewTemplateSpin)
+   ON_CBN_SELCHANGE(IDC_SLOPE_MEASURE_TYPE, &CCrownSlopePage::OnCbnSelchangeSlopeMeasureType)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -165,6 +169,7 @@ void CCrownSlopePage::OnAdd()
 
    UpdateNumSegsCtrl();
    UpdateRidgeptData();
+   UpdateProfilePointData();
 
    int nTemplates = GetTemplateCount();
    m_SelTemplateSpinner.SetRange(0, nTemplates-1);
@@ -181,6 +186,7 @@ void CCrownSlopePage::OnRemove()
       // Just emptied out the grid. data was changed by grid to defaults
       UpdateNumSegsCtrl();
       UpdateRidgeptData();
+      UpdateProfilePointData();
    }
 
    int nTemplates = GetTemplateCount();
@@ -194,14 +200,14 @@ void CCrownSlopePage::OnSort()
    ROWCOL badRow;
    if (m_Grid.IsGridDataValid(&badRow))
    {
-   if (!m_Grid.SortCrossSections(true))
-   {
-         ::AfxMessageBox(_T("Each template must have a unique Station"), MB_OK | MB_ICONWARNING);
-   }
-   else
-   {
-      OnChange();
-   }
+      if (!m_Grid.SortCrossSections(true))
+      {
+            ::AfxMessageBox(_T("Each template must have a unique Station"), MB_OK | MB_ICONWARNING);
+      }
+      else
+      {
+         OnChange();
+      }
    }
    else
    {
@@ -218,10 +224,19 @@ BOOL CCrownSlopePage::OnInitDialog()
 	m_Grid.SubclassDlgItem(IDC_VCURVE_GRID, this);
    m_Grid.CustomInit();
 
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SLOPE_MEASURE_TYPE);
+   int idx = pCB->AddString(_T("relative to Alignment point"));
+   pCB->SetItemData(idx, (DWORD_PTR)RoadwaySectionData::RelativeToAlignmentPoint);
+   idx = pCB->AddString(_T("left to right"));
+   pCB->SetItemData(idx, (DWORD_PTR)RoadwaySectionData::FromLeftEdge);
+
    FillNumSegsCtrl();
    UpdateRidgeptData();
+   UpdateProfilePointData();
 
    CPropertyPage::OnInitDialog();
+
+   OnCbnSelchangeSlopeMeasureType();
 
    UDACCEL accel[2];
    accel[0].nInc = 1;
@@ -298,13 +313,47 @@ void CCrownSlopePage::UpdateRidgeptData()
    if (cursel != CB_ERR && cursel > numridgepts - 1)
    {
       // pick a reasonable default
-      m_RoadwaySectionData.ControllingRidgePointIdx = max(1, numridgepts / 2);
+      m_RoadwaySectionData.AlignmentPointIdx = max(1, numridgepts / 2);
    }
 
-   pcbRidgePts->SetCurSel((int)m_RoadwaySectionData.ControllingRidgePointIdx-1);
+   pcbRidgePts->SetCurSel((int)m_RoadwaySectionData.AlignmentPointIdx-1);
 
    BOOL bEnable = m_Grid.IsGridEmpty() ? FALSE : TRUE;
    pcbRidgePts->EnableWindow(bEnable);
+}
+
+void CCrownSlopePage::UpdateProfilePointData()
+{
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_PROFILE_GRADE_POINT);
+   int cursel = pCB->GetCurSel();
+   int curcnt = pCB->GetCount();
+
+   IndexType numsegs = m_RoadwaySectionData.NumberOfSegmentsPerSection;
+   IndexType numridgepts = m_RoadwaySectionData.NumberOfSegmentsPerSection - 1;
+
+   if (curcnt != numridgepts)
+   {
+      pCB->ResetContent();
+
+      for (IndexType is = 1; is <= numridgepts; is++)
+      {
+         CString strval;
+         strval.Format(_T("%d"), is);
+         int idx = pCB->AddString(strval);
+         pCB->SetItemData(idx, is);
+      }
+   }
+
+   if (cursel != CB_ERR && cursel > numridgepts - 1)
+   {
+      // pick a reasonable default
+      m_RoadwaySectionData.ProfileGradePointIdx = max(1, numridgepts / 2);
+   }
+
+   pCB->SetCurSel((int)m_RoadwaySectionData.ProfileGradePointIdx - 1);
+
+   BOOL bEnable = m_Grid.IsGridEmpty() ? FALSE : TRUE;
+   pCB->EnableWindow(bEnable);
 }
 
 void CCrownSlopePage::OnCbnSelchangeNumsegmentsCombo()
@@ -325,6 +374,7 @@ void CCrownSlopePage::OnCbnSelchangeNumsegmentsCombo()
    }
 
    UpdateRidgeptData();
+   UpdateProfilePointData();
 
    m_Grid.InitRoadwaySectionData(true);
 
@@ -338,11 +388,27 @@ void CCrownSlopePage::OnCbnSelchangeRidgeptCombo()
    int cursel = pcb->GetCurSel();
    if (cursel != CB_ERR)
    {
-      m_RoadwaySectionData.ControllingRidgePointIdx = (IndexType)pcb->GetItemData(cursel);
+      m_RoadwaySectionData.AlignmentPointIdx = (IndexType)pcb->GetItemData(cursel);
    }
    else
    {
-      m_RoadwaySectionData.ControllingRidgePointIdx = 1;
+      m_RoadwaySectionData.AlignmentPointIdx = 1;
+   }
+
+   OnChange(); // redraw schematic
+}
+
+void CCrownSlopePage::OnCbnSelchangeProfileGradePointCombo()
+{
+   CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_PROFILE_GRADE_POINT);
+   int cursel = pcb->GetCurSel();
+   if (cursel != CB_ERR)
+   {
+      m_RoadwaySectionData.ProfileGradePointIdx = (IndexType)pcb->GetItemData(cursel);
+   }
+   else
+   {
+      m_RoadwaySectionData.ProfileGradePointIdx = 1;
    }
 
    OnChange(); // redraw schematic
@@ -445,7 +511,7 @@ void CCrownSlopePage::OnPaint()
       }
 
       Float64 exterior_seg_length(10.0); // default if all segments are zero length
-      if (sum_lengths_of_interior_segments > 0.0)
+      if (0.0 < sum_lengths_of_interior_segments)
       {
          exterior_seg_length = sum_lengths_of_interior_segments / 3.0;
       }
@@ -454,7 +520,7 @@ void CCrownSlopePage::OnPaint()
       // leftmost segment
       m_DrawnRidgePoints.push_back(gpPoint2d(xval, yval));
       xval += exterior_seg_length;
-      yval += -1.0 * currTempl.LeftSlope * exterior_seg_length;
+      yval += (m_RoadwaySectionData.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? -1.0 : 1.0) * currTempl.LeftSlope * exterior_seg_length;
       m_DrawnRidgePoints.push_back(gpPoint2d(xval, yval));
 
       // exterior segments. track which side of controlling ridge point we are on
@@ -463,7 +529,7 @@ void CCrownSlopePage::OnPaint()
       {
          xval += rseg.Length;
 
-         Float64 flipSlope = (ridgePtIdx <= m_RoadwaySectionData.ControllingRidgePointIdx) ? -1.0 : 1.0;
+         Float64 flipSlope = (m_RoadwaySectionData.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? ((ridgePtIdx <= m_RoadwaySectionData.AlignmentPointIdx) ? -1.0 : 1.0) : 1.0);
 
          yval += flipSlope * rseg.Slope * rseg.Length;
 
@@ -552,6 +618,8 @@ void CCrownSlopePage::OnPaint()
    CPen rp_pen(PS_SOLID,LINE_WID,BLACK);
    CBrush crp_brush(RED);
    CPen crp_pen(PS_SOLID,LINE_WID,RED);
+   CBrush pgp_brush(GREEN);
+   CPen pgp_pen(PS_SOLID, LINE_WID, GREEN);
 
    CRect elrect(CPoint(0,0),CSize(LINE_WID*4, LINE_WID*4));
 
@@ -561,22 +629,46 @@ void CCrownSlopePage::OnPaint()
       long dx, dy;
       mapper.WPtoDP(rp.X(), rp.Y(), &dx, &dy);
 
-      if (irp == m_RoadwaySectionData.ControllingRidgePointIdx)
+      if (irp == m_RoadwaySectionData.AlignmentPointIdx && irp == m_RoadwaySectionData.ProfileGradePointIdx)
+      {
+         // if the controlling ridge point and profile grade point are the same, then draw a circle that half in each color
+         elrect.MoveToXY(dx - LINE_WID * 2, dy - LINE_WID * 2);
+
+         pDC->SelectObject(crp_brush);
+         pDC->SelectObject(crp_pen);
+         pDC->SetTextColor(RED);
+         pDC->Pie(elrect, CPoint(elrect.left + elrect.Width() / 2, elrect.top), CPoint(elrect.left + elrect.Width() / 2, elrect.bottom));
+
+         pDC->SelectObject(pgp_brush);
+         pDC->SelectObject(pgp_pen);
+         pDC->SetTextColor(GREEN);
+         pDC->Pie(elrect, CPoint(elrect.left + elrect.Width() / 2, elrect.bottom), CPoint(elrect.left + elrect.Width() / 2, elrect.top));
+      }
+      else if (irp == m_RoadwaySectionData.AlignmentPointIdx)
       {
          pDC->SelectObject(crp_brush);
          pDC->SelectObject(crp_pen);
          pDC->SetTextColor(RED);
+         elrect.MoveToXY(dx - LINE_WID * 2, dy - LINE_WID * 2);
+         pDC->Ellipse(elrect);
+      }
+      else if (irp == m_RoadwaySectionData.ProfileGradePointIdx)
+      {
+         pDC->SelectObject(pgp_brush);
+         pDC->SelectObject(pgp_pen);
+         pDC->SetTextColor(GREEN);
+         elrect.MoveToXY(dx - LINE_WID * 2, dy - LINE_WID * 2);
+         pDC->Ellipse(elrect);
       }
       else
       {
          pDC->SelectObject(rp_brush);
          pDC->SelectObject(rp_pen);
          pDC->SetTextColor(BLACK);
+         elrect.MoveToXY(dx - LINE_WID * 2, dy - LINE_WID * 2);
+         pDC->Ellipse(elrect);
       }
 
-      elrect.MoveToXY(dx-LINE_WID*2,dy-LINE_WID*2);
-
-      pDC->Ellipse(elrect);
 
       CString str;
       str.Format(_T("%d"),irp);
@@ -683,4 +775,29 @@ void CCrownSlopePage::OnDeltaposViewTemplateSpin(NMHDR *pNMHDR, LRESULT *pResult
    m_SelectedTemplate = new_sel;
 
    UpdateViewSpinner();
+}
+
+
+void CCrownSlopePage::OnCbnSelchangeSlopeMeasureType()
+{
+   // TODO: Add your control notification handler code here
+   CWnd* pWnd = GetDlgItem(IDC_SLOPE_NOTE);
+   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SLOPE_MEASURE_TYPE);
+   int idx = pCB->GetCurSel();
+   if (idx == CB_ERR)
+      idx = 0;
+
+   RoadwaySectionData::SlopeMeasure slopeMeasure = (RoadwaySectionData::SlopeMeasure)(pCB->GetItemData(idx));
+   if (slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint)
+   {
+      pWnd->SetWindowText(_T("Slope Sign Convention: Slopes upward and away from the Alignment Point are positive, downward and away are negative. See Help for details."));
+   }
+   else
+   {
+      pWnd->SetWindowText(_T("Slope Sign Convention: Slopes upward and to the right are positive, downward and to the right are negative. See Help for details."));
+   }
+
+   m_RoadwaySectionData.slopeMeasure = slopeMeasure;
+
+   OnChange();
 }

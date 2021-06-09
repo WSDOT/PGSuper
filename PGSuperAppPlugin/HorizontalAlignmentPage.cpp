@@ -77,6 +77,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
    CComPtr<IDirection> direction;
    direction.CoCreateInstance(CLSID_Direction);
 
+   DDX_String(pDX, IDC_NAME, m_AlignmentData.Name);
 
    if ( pDX->m_bSaveAndValidate )
    {

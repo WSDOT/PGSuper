@@ -1489,26 +1489,28 @@ BEGIN
     LTEXT           "- Only filled straight strands are shown in this view\n- Strands shown in light grey or green cannot be debonded",IDC_NOTE2,135,311,269,20
 END
 
-IDD_ALIGNMENT_HORIZONTAL DIALOG 0, 0, 274, 198
+IDD_ALIGNMENT_HORIZONTAL DIALOGEX 0, 0, 275, 220
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Horizontal"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Initial Direction",IDC_STATIC,7,7,49,8
-    EDITTEXT        IDC_DIRECTION,66,7,70,14,ES_AUTOHSCROLL
-    LTEXT           "(N/S hh mm ss.ss E/W)",IDC_STATIC,141,7,76,8
-    CONTROL         "Custom1",IDC_HCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,28,260,90
-    LTEXT           "* Enter bearing of forward tangent or the central angle of the curve",IDC_STATIC,7,121,210,8
-    PUSHBUTTON      "Add",IDC_ADD,56,133,50,14
-    PUSHBUTTON      "Remove",IDC_REMOVE,111,133,50,14
-    PUSHBUTTON      "Sort",IDC_SORT,166,133,50,14
-    CTEXT           "Horizontal Alignment Control Point",IDC_STATIC,7,153,260,10,SS_SUNKEN
-    EDITTEXT        IDC_REFSTATION,17,177,67,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Station",IDC_STATIC,38,166,23,8
-    EDITTEXT        IDC_EASTING,92,177,79,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "East (X)",IDC_STATIC,116,166,26,8
-    EDITTEXT        IDC_NORTHING,175,177,79,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "North (Y)",IDC_STATIC,205,166,29,8
+    LTEXT           "Name",IDC_STATIC,7,9,20,8
+    EDITTEXT        IDC_NAME,35,7,100,14,ES_AUTOHSCROLL
+    LTEXT           "Initial Direction",IDC_STATIC,7,28,49,8
+    EDITTEXT        IDC_DIRECTION,66,26,70,14,ES_AUTOHSCROLL
+    LTEXT           "(N/S hh mm ss.ss E/W)",IDC_STATIC,141,28,76,8
+    CONTROL         "Custom1",IDC_HCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,49,261,90
+    LTEXT           "* Enter bearing of forward tangent or the central angle of the curve",IDC_STATIC,7,142,210,8
+    PUSHBUTTON      "Add",IDC_ADD,56,154,50,14
+    PUSHBUTTON      "Remove",IDC_REMOVE,111,154,50,14
+    PUSHBUTTON      "Sort",IDC_SORT,166,154,50,14
+    CTEXT           "Horizontal Alignment Control Point",IDC_STATIC,7,174,261,10,SS_SUNKEN
+    EDITTEXT        IDC_REFSTATION,17,199,67,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Station",IDC_STATIC,38,187,23,8
+    EDITTEXT        IDC_EASTING,92,199,79,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "East (X)",IDC_STATIC,116,187,26,8
+    EDITTEXT        IDC_NORTHING,175,199,79,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "North (Y)",IDC_STATIC,205,187,29,8
 END
 
 IDD_PROFILE_PAGE DIALOGEX 0, 0, 275, 185
@@ -1533,26 +1535,30 @@ BEGIN
     LTEXT           "Vertical Curves",IDC_STATIC,7,52,48,8
 END
 
-IDD_SUPERELEVATIONS DIALOGEX 0, 0, 423, 293
+IDD_SUPERELEVATIONS DIALOGEX 0, 0, 447, 293
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
 CAPTION "Roadway Cross Sections"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    LTEXT           "Number of Slope Segments per Roadway Cross Section Template ",IDC_STATIC,7,8,184,8
     COMBOBOX        IDC_NUMSEGMENTS_COMBO,191,7,29,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_RIDGEPT_COMBO,333,7,30,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,27,409,70
-    PUSHBUTTON      "Add Row",IDC_ADD,84,100,50,14
-    PUSHBUTTON      "Remove Row",IDC_REMOVE,138,100,50,14
-    PUSHBUTTON      "Sort",IDC_SORT,192,100,50,14
+    LTEXT           "Alignment Point",IDC_STATIC,228,8,55,8
+    COMBOBOX        IDC_RIDGEPT_COMBO,281,7,30,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Profile Grade Point",IDC_STATIC,317,9,60,8
+    COMBOBOX        IDC_PROFILE_GRADE_POINT,381,7,30,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Custom1",IDC_VCURVE_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,7,27,433,70
+    LTEXT           "Slopes are measured",IDC_STATIC,7,102,67,8
+    COMBOBOX        IDC_SLOPE_MEASURE_TYPE,79,100,128,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add Row",IDC_ADD,253,100,50,14
+    PUSHBUTTON      "Remove Row",IDC_REMOVE,307,100,50,14
+    PUSHBUTTON      "Sort",IDC_SORT,361,100,50,14
+    GROUPBOX        "Roadway Cross Section Template View",IDC_STATIC,7,119,433,123
+    LTEXT           "View:",IDC_STATIC,14,133,17,8
     EDITTEXT        IDC_VIEW_TEMPLATE_EDIT,32,129,45,14,ES_AUTOHSCROLL | ES_READONLY
     CONTROL         "",IDC_VIEW_TEMPLATE_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ARROWKEYS | UDS_HORZ,76,129,21,14
-    LTEXT           "Number of Slope Segments per Roadway Cross Section Template ",IDC_STATIC,7,8,184,8
-    LTEXT           "Controlling Ridge Point",IDC_STATIC,245,8,77,8
-    LTEXT           "",IDC_PICTURE,12,145,397,94,WS_BORDER
-    GROUPBOX        "Roadway Cross Section Template View",IDC_STATIC,7,119,409,123
-    LTEXT           "View:",IDC_STATIC,14,133,17,8
-    LTEXT           "Cross Section Templates define the roadway cross section at specified stations. Segment Lengths and Slopes are linearly interpolated between specified stations thus defining the roadway surface. All templates have the same number of linear segments.",IDC_STATIC,12,245,401,18
-    LTEXT           "Slope Sign Convention: Slopes upward and away from the Controlling Ridge Point are positive, downward and away are negative. See Help for more details.",IDC_STATIC,12,266,385,19
+    LTEXT           "",IDC_PICTURE,7,145,433,94,WS_BORDER
+    LTEXT           "Cross Section Templates define the roadway cross section at specified stations. Segment Lengths and Slopes are linearly interpolated between specified stations thus defining the roadway surface. All templates have the same number of linear segments.",IDC_STATIC,12,245,428,18
+    LTEXT           "Slope Sign Convention: Slopes upward and away from the Controlling Ridge Point are positive, downward and away are negative. See Help for more details.",IDC_SLOPE_NOTE,12,266,428,19
 END
 
 IDD_SPAN_LENGTHS DIALOGEX 0, 0, 143, 171
@@ -3947,8 +3953,20 @@ BEGIN
         BOTTOMMARGIN, 331
     END
 
+    IDD_ALIGNMENT_HORIZONTAL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 268
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 213
+    END
+
     IDD_SUPERELEVATIONS, DIALOG
     BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 440
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 285
     END
 
     IDD_GIRDERDESC_GENERAL, DIALOG
@@ -4789,6 +4807,11 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0
+END
+
+IDD_ALIGNMENT_HORIZONTAL AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 

@@ -126,7 +126,8 @@ void CCrownSlopeGrid::RemoveRows()
    else
    {
       m_pRoadwaySectionData->NumberOfSegmentsPerSection = 2;
-      m_pRoadwaySectionData->ControllingRidgePointIdx = 1;
+      m_pRoadwaySectionData->AlignmentPointIdx = 1;
+      m_pRoadwaySectionData->ProfileGradePointIdx = 1;
       m_pRoadwaySectionData->RoadwaySectionTemplates.clear();
       UpdateGridSizeAndHeaders(*m_pRoadwaySectionData);
    }

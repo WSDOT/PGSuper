@@ -871,6 +871,7 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             {
                startAngle -= M_PI;
             }
+            startAngle = M_PI - startAngle;
 
             Float64 endAngle;
             objEndAngle->get_Value(&endAngle);

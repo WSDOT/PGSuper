@@ -2555,9 +2555,8 @@ bool CBridgeAgentImp::BuildCogoModel()
    else
    {
       // we have user defined templates. use input data
-      IndexType controllingRidgePointIdx = section_data.ControllingRidgePointIdx;
-      surface->put_AlignmentPoint(controllingRidgePointIdx);
-      surface->put_ProfileGradePoint(controllingRidgePointIdx);
+      surface->put_AlignmentPoint(section_data.AlignmentPointIdx);
+      surface->put_ProfileGradePoint(section_data.ProfileGradePointIdx);
 
       std::size_t it = 0;
       for (const auto& super : section_data.RoadwaySectionTemplates)
@@ -2567,13 +2566,13 @@ bool CBridgeAgentImp::BuildCogoModel()
          surfaceTemplate->put_Station(CComVariant(super.Station));
 
          // left infinite segment
-         surfaceTemplate->AddSegment(width, -super.LeftSlope, tsHorizontal);
+         surfaceTemplate->AddSegment(width, (section_data.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ?  -1 : 1)*super.LeftSlope, tsHorizontal);
 
          // interior segments
          IndexType ridgePointIdx = 1;
          for (const auto& segment : super.SegmentDataVec)
          {
-            Float64 sign = (ridgePointIdx < controllingRidgePointIdx ? -1 : 1);
+            Float64 sign = section_data.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? (ridgePointIdx < section_data.AlignmentPointIdx ? -1 : 1) : 1;
             surfaceTemplate->AddSegment(segment.Length, sign*segment.Slope, tsHorizontal);
             ridgePointIdx++;
          }
@@ -7104,7 +7103,7 @@ IndexType CBridgeAgentImp::GetCrownPointIndexCount(Float64 station) const
    return cnt+1;
 }
 
-IndexType CBridgeAgentImp::GetControllingCrownPointIndex(Float64 station) const
+IndexType CBridgeAgentImp::GetAlignmentPointIndex(Float64 station) const
 {
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
@@ -7127,7 +7126,7 @@ IndexType CBridgeAgentImp::GetControllingCrownPointIndex(Float64 station) const
 }
 
 
-Float64 CBridgeAgentImp::GetCrownPointOffset(IndexType crownPointIdx, Float64 station) const
+Float64 CBridgeAgentImp::GetAlignmentOffset(IndexType crownPointIdx, Float64 station) const
 {
    CComPtr<IAlignment> alignment;
    GetAlignment(&alignment);
@@ -7151,6 +7150,56 @@ Float64 CBridgeAgentImp::GetCrownPointOffset(IndexType crownPointIdx, Float64 st
 
    Float64 offset;
    surfaceTemplate->GetRidgePointOffset(crownPointIdx,alignmentRidgePointIdx,&offset);
+
+   return offset;
+}
+
+IndexType CBridgeAgentImp::GetProfileGradeLineIndex(Float64 station) const
+{
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+
+   CComPtr<IStation> objStation;
+   objStation.CoCreateInstance(CLSID_Station);
+   objStation->SetStation(INVALID_INDEX, station);
+   CComVariant varStation(objStation);
+
+   CComPtr<IProfile> profile;
+   alignment->get_Profile(&profile);
+
+   CComPtr<ISurface> surface;
+   profile->GetSurface(COGO_FINISHED_SURFACE_ID, varStation, &surface);
+
+   IndexType pgl;
+   surface->get_ProfileGradePoint(&pgl);
+
+   return pgl;
+}
+
+Float64 CBridgeAgentImp::GetProfileGradeLineOffset(IndexType crownPointIdx, Float64 station) const
+{
+   CComPtr<IAlignment> alignment;
+   GetAlignment(&alignment);
+
+   CComPtr<IStation> objStation;
+   objStation.CoCreateInstance(CLSID_Station);
+   objStation->SetStation(INVALID_INDEX, station);
+   CComVariant varStation(objStation);
+
+   CComPtr<IProfile> profile;
+   alignment->get_Profile(&profile);
+
+   CComPtr<ISurface> surface;
+   profile->GetSurface(COGO_FINISHED_SURFACE_ID, varStation, &surface);
+
+   IndexType pgl;
+   surface->get_ProfileGradePoint(&pgl);
+
+   CComPtr<ISurfaceTemplate> surfaceTemplate;
+   surface->CreateSurfaceTemplate(varStation, VARIANT_TRUE, &surfaceTemplate);
+
+   Float64 offset;
+   surfaceTemplate->GetRidgePointOffset(crownPointIdx, pgl, &offset);
 
    return offset;
 }

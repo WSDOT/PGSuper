@@ -207,6 +207,8 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
    const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
 
+   *pPara << _T("Name: ") << alignment.Name << rptNewLine;
+
    CComBSTR bstrBearing;
    direction_formatter->Format(alignment.Direction, CComBSTR("°,\',\""), &bstrBearing);
    *pPara << _T("Direction: ") << RPT_BEARING(OLE2T(bstrBearing)) << rptNewLine;
@@ -961,7 +963,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
 void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
-   GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData ); 
    rptParagraph* pPara;
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), true );
@@ -970,7 +972,7 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
    *pChapter << pPara;
    *pPara << _T("Profile Details") << rptNewLine;
 
-   const ProfileData2& profile = pAlignment->GetProfileData2();
+   const ProfileData2& profile = pRoadwayData->GetProfileData2();
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -1026,7 +1028,14 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
       (*pTable)(row++,col) << _T("Curve ") << col;
       if ( IsZero(vcd.L1) && IsZero(vcd.L2) )
       {
-         Float64 pvi_elevation = pRoadway->GetElevation(vcd.PVIStation,0.0);
+         Float64 pgl_offset = 0;
+         if (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx)
+         {
+            IndexType pglIdx = pRoadway->GetProfileGradeLineIndex(vcd.PVIStation);
+            pgl_offset = pRoadway->GetAlignmentOffset(pglIdx, vcd.PVIStation);
+         }
+
+         Float64 pvi_elevation = pRoadway->GetElevation(vcd.PVIStation,pgl_offset);
          Float64 g1;
          if ( iter == begin )
          {
@@ -1171,9 +1180,11 @@ void write_crown_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapte
    else
    {
       *pPara << _T("Each Roadway Cross Section Template contains ") << section.NumberOfSegmentsPerSection << _T(" segments per section.") << rptNewLine;
-      *pPara << _T("Ridge Point #") << section.ControllingRidgePointIdx << _T(" is the controlling ridge point. It defines the slope sign convention and coincides with the horizontal alignment, profile grade, and superelevation pivot location.") << rptNewLine;
+      *pPara << _T("The horizontal alignment is coincident with Ridge Point #") << section.AlignmentPointIdx << _T(" between Segments ") << section.AlignmentPointIdx << _T(" and ") << (section.AlignmentPointIdx+1) << _T(".") << rptNewLine;
+      *pPara << _T("The profile grade line (PGL) is coincident with Ridge Point #") << section.ProfileGradePointIdx << _T(" between Segments ") << section.ProfileGradePointIdx << _T(" and ") << (section.ProfileGradePointIdx+1) << _T(".") << rptNewLine;
+      *pPara << _T("Slopes are measured ") << (section.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? _T("relative to the alignment point.") : _T("left to right.")) << rptNewLine;
 
-      IndexType numcols = 2 + section.NumberOfSegmentsPerSection * 2 - 2;
+      ColumnIndexType numcols = 2 + section.NumberOfSegmentsPerSection * 2 - 2;
 
       // Setup the table
       rptRcTable* pTable = rptStyleManager::CreateDefaultTable(numcols, _T(""));

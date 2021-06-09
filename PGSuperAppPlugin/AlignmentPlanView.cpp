@@ -255,6 +255,7 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
 
    Float64 n = 10;
    Float64 start_station, start_elevation, start_grade;
@@ -291,6 +292,24 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
       CComPtr<IPoint2d> p;
       pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&p);
       doAlignment->AddPoint(p);
+
+      if (i == 0)
+      {
+         CComPtr<iTextBlock> doText;
+         doText.CoCreateInstance(CLSID_TextBlock);
+         doText->SetPosition(p);
+         doText->SetText(pRoadwayData->GetAlignmentData2().Name.c_str());
+         doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
+         doText->SetBkMode(TRANSPARENT);
+         CComPtr<IDirection> bearing;
+         pRoadway->GetBearing(station, &bearing);
+         Float64 dir;
+         bearing->get_Value(&dir);
+         long angle = long(1800.*dir / M_PI);
+         angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+         doText->SetAngle(angle);
+         display_list->AddDisplayObject(doText);
+      }
    }
 
    doAlignment->put_Width(ALIGNMENT_LINE_WEIGHT);
@@ -304,7 +323,59 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    dispObj->SetID(ALIGNMENT_ID);
 
    ////////////////
+   if (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx)
+   {
+      // draw the profile grade line
+      CComPtr<iPolyLineDisplayObject> doPGL;
+      doPGL.CoCreateInstance(CLSID_PolyLineDisplayObject);
 
+      Float64 station = start_station;
+      for (long i = 0; i < nPoints; i++, station += station_inc)
+      {
+         IndexType alignmentIdx = pRoadway->GetAlignmentPointIndex(station); // get index of crown point corresponding to the alignment
+         Float64 offset = pRoadway->GetProfileGradeLineOffset(alignmentIdx, station); // get the offset from the alignment point to the PGL
+
+         ATLASSERT(!IsZero(offset)); // only drawing PGL if it is offset from alignment so this better not be zero
+
+         bearing.Release();
+         pRoadway->GetBearingNormal(station, &bearing);
+
+         // use -offset because offset is from PGL to alignment... we need to plot alignemnt to PGL offset
+         CComPtr<IPoint2d> p;
+         pRoadway->GetPoint(station, -offset, bearing, pgsTypes::pcGlobal, &p);
+         doPGL->AddPoint(p);
+
+         if (i == 0)
+         {
+            CComPtr<iTextBlock> doText;
+            doText.CoCreateInstance(CLSID_TextBlock);
+            doText->SetPosition(p);
+            doText->SetText(_T("PGL"));
+            doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
+            doText->SetBkMode(TRANSPARENT);
+            CComPtr<IDirection> bearing;
+            pRoadway->GetBearing(station, &bearing);
+            Float64 dir;
+            bearing->get_Value(&dir);
+            long angle = long(1800.*dir / M_PI);
+            angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
+            doText->SetAngle(angle);
+            display_list->AddDisplayObject(doText);
+         }
+      }
+
+      doPGL->put_Width(PROFILE_LINE_WEIGHT);
+      doPGL->put_Color(PROFILE_COLOR);
+      doPGL->put_PointType(plpNone);
+      doPGL->Commit();
+
+      CComPtr<iDisplayObject> dispObj;
+      doPGL->QueryInterface(IID_iDisplayObject, (void**)&dispObj);
+      display_list->AddDisplayObject(dispObj);
+
+   }
+
+   ////////////////
 
    CComPtr<iCoordinateMap> map;
    dispMgr->GetCoordinateMap(&map);
