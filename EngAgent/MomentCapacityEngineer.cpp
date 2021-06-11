@@ -552,9 +552,10 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       CTime startTime = CTime::GetCurrentTime();
 #endif // _DEBUG
 
-      HRESULT hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, smFixedCompressiveStrain, &solution);
+      HRESULT hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, 0.0, smFixedCompressionStrain, &solution);
       if (hr == RC_E_MATERIALFAILURE)
       {
+         ATLASSERT(false); // assert to see how often this happens.... we should do something about this - like drop the material and try again or reduce the compression strain down from -0.003
          WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
          hr = S_OK;
       }
@@ -576,10 +577,11 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          m_MomentCapacitySolver->put_Slices(20);
          m_MomentCapacitySolver->put_SliceGrowthFactor(2);
          m_MomentCapacitySolver->put_AxialTolerance(1.0);
-         hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, smFixedCompressiveStrain, &solution);
+         hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, 0.0, smFixedCompressionStrain, &solution);
 
          if (hr == RC_E_MATERIALFAILURE)
          {
+            ATLASSERT(false); // assert to see how often this happens.... we should do something about this - like drop the material and try again or reduce the compression strain down from -0.003
             WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
             hr = S_OK;
          }
@@ -590,10 +592,11 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             m_MomentCapacitySolver->put_Slices(50);
             m_MomentCapacitySolver->put_SliceGrowthFactor(2);
             m_MomentCapacitySolver->put_AxialTolerance(10.0);
-            hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, smFixedCompressiveStrain, &solution);
+            hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, 0.0, smFixedCompressionStrain, &solution);
 
             if (hr == RC_E_MATERIALFAILURE)
             {
+               ATLASSERT(false); // assert to see how often this happens.... we should do something about this - like drop the material and try again or reduce the compression strain down from -0.003
                WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
                hr = S_OK;
             }
