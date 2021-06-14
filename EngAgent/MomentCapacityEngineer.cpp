@@ -555,7 +555,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       HRESULT hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, 0.0, smFixedCompressionStrain, &solution);
       if (hr == RC_E_MATERIALFAILURE)
       {
-         ATLASSERT(false); // assert to see how often this happens.... we should do something about this - like drop the material and try again or reduce the compression strain down from -0.003
+         //ATLASSERT(false); // assert to see how often this happens.... we should do something about this - like drop the material and try again or reduce the compression strain down from -0.003
          WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
          hr = S_OK;
       }
@@ -581,7 +581,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
          if (hr == RC_E_MATERIALFAILURE)
          {
-            ATLASSERT(false); // assert to see how often this happens.... we should do something about this - like drop the material and try again or reduce the compression strain down from -0.003
+            //ATLASSERT(false); // assert to see how often this happens.... we should do something about this - like drop the material and try again or reduce the compression strain down from -0.003
             WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
             hr = S_OK;
          }
@@ -596,7 +596,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
             if (hr == RC_E_MATERIALFAILURE)
             {
-               ATLASSERT(false); // assert to see how often this happens.... we should do something about this - like drop the material and try again or reduce the compression strain down from -0.003
+               //ATLASSERT(false); // assert to see how often this happens.... we should do something about this - like drop the material and try again or reduce the compression strain down from -0.003
                WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
                hr = S_OK;
             }
