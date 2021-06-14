@@ -1911,10 +1911,17 @@ bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,Inte
       return false;
    }
 
+   if (fc_current < fcRequired)
+   {
    m_FcControl.DoUpdateForShear(fcRequired, intervalIdx, limitState);
    m_pArtifact->SetConcreteStrength(fcRequired);
    m_bConfigDirty = true; // cache is dirty
-   LOG(_T("** Updated Final Concrete Strength to ")<< ::ConvertFromSysUnits(fcRequired,unitMeasure::KSI) << _T(" KSI"));
+      LOG(_T("** Updated Final Concrete Strength to ") << ::ConvertFromSysUnits(fcRequired, unitMeasure::KSI) << _T(" KSI"));
+   }
+   else
+   {
+      LOG(_T("Required f'c is less that current f'c - no change"));
+   }
 
    return true;
 }

@@ -253,7 +253,7 @@ void CDesignGirderDlg::SaveSettings()
    VERIFY(pApp->WriteProfileString(_T("Settings"), _T("HaunchDesign"), DesignHaunch() ? _T("On") : _T("Off")));
    VERIFY(pApp->WriteProfileString(_T("Settings"), _T("PreserveConcreteStrength"), PreserveConcreteStrength() ? _T("On") : _T("Off")));
    VERIFY(pApp->WriteProfileString(_T("Settings"), _T("DesignShear"), DesignForShear() ? _T("On") : _T("Off")));
-   VERIFY(pApp->WriteProfileString(_T("Settings"), _T("DesignStirrupsFromScratch"), DesignWithCurrentStirrups() ? _T("On") : _T("Off")));
+   VERIFY(pApp->WriteProfileString(_T("Settings"), _T("DesignStirrupsFromScratch"), DesignWithCurrentStirrups() ? _T("Off") : _T("On")));
 }
 
 BOOL CDesignGirderDlg::DesignForFlexure()
