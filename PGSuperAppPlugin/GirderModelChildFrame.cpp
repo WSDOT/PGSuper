@@ -676,17 +676,20 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
       if (lHint == HINT_BRIDGECHANGED)
       {
          // If the bridge changed, make sure the girder key is still valid
-         GET_IFACE2(pBroker, IBridge, pBridge);
-         GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-         if (nGroups <= m_GirderKey.groupIndex)
+         if (m_GirderKey.groupIndex != ALL_GROUPS)
          {
-            m_GirderKey.groupIndex = nGroups - 1;
-         }
+            GET_IFACE2(pBroker, IBridge, pBridge);
+            GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+            if (nGroups <= m_GirderKey.groupIndex)
+            {
+               m_GirderKey.groupIndex = nGroups - 1;
+            }
 
-         GirderIndexType nGirders = pBridge->GetGirderCount(m_GirderKey.groupIndex);
-         if (nGirders <= m_GirderKey.girderIndex)
-         {
-            m_GirderKey.girderIndex = nGirders - 1;
+            GirderIndexType nGirders = pBridge->GetGirderCount(m_GirderKey.groupIndex);
+            if (nGirders <= m_GirderKey.girderIndex)
+            {
+               m_GirderKey.girderIndex = nGirders - 1;
+            }
          }
       }
 
