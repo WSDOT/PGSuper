@@ -496,7 +496,7 @@ void CCrownSlopePage::OnPaint()
       // no interior segments. Just draw a triangle centered in view. Use 10 as a default distance
       Float64 yval(0.0);
       m_DrawnRidgePoints.push_back(gpPoint2d(0.0, yval));
-      yval += -1.0 * currTempl.LeftSlope * 10.0;
+      yval += (m_RoadwaySectionData.slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint ? -1.0 : 1.0) * currTempl.LeftSlope * 10.0;
       m_DrawnRidgePoints.push_back(gpPoint2d(10.0, yval));
       yval += 1.0 * currTempl.RightSlope * 10.0;
       m_DrawnRidgePoints.push_back(gpPoint2d(20.0, yval));
