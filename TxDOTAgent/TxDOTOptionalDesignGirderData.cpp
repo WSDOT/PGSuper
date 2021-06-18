@@ -146,7 +146,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
 
    lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    const matPsStrand* pStrand = pPool->GetStrand(m_Grade, m_Type, m_Coating, m_Size);
-   Int32 key=0;
+   Int64 key=0;
    if (pStrand!=nullptr)
    {
       key = pPool->GetStrandKey(pStrand);

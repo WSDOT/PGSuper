@@ -518,8 +518,7 @@ void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeLi
       if ( idx != CB_ERR )
       { 
          // if there wasn't an error adding the size, add a data item
-         Int32 key;
-         key = pPool->GetStrandKey( pStrand );
+         auto key = pPool->GetStrandKey( pStrand );
 
          if ( pList->SetItemData( idx, key ) == CB_ERR )
          {
