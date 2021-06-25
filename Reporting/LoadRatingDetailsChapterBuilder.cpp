@@ -677,7 +677,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    for (auto pRatingArtifact : RatingArtifacts)
    {
       const pgsRatingArtifact::YieldStressRatios& artifacts = pRatingArtifact->GetYieldStressRatios(bPositiveMoment);
-      if (artifacts.size() == 0)
+      if (artifacts.size() != 0)
       {
          isData = true;
          break;
