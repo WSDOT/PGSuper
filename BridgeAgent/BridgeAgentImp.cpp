@@ -6809,9 +6809,10 @@ CollectionIndexType CBridgeAgentImp::GetCurveCount() const
    return nCurves;
 }
 
-void CBridgeAgentImp::GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve) const
+void CBridgeAgentImp::GetCurve(CollectionIndexType idx, IHorzCurve** ppCurve) const
 {
-   VALIDATE( COGO_MODEL );
+   // this is a private method, not accessible through the IAlignment interface
+   VALIDATE(COGO_MODEL);
 
    CComPtr<IHorzCurveCollection> curves;
    m_CogoModel->get_HorzCurves(&curves);
@@ -6824,60 +6825,15 @@ void CBridgeAgentImp::GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve) con
    ATLASSERT(SUCCEEDED(hr));
 }
 
-void CBridgeAgentImp::GetCurvePoint(IndexType hcIdx,CurvePointTypes cpType,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const
+void CBridgeAgentImp::GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinateType pcType,IHorzCurve** ppCurve) const
 {
    CComPtr<IHorzCurve> curve;
-   GetCurve(hcIdx, &curve);
-   ATLASSERT(curve != nullptr);
+   GetCurve(idx, &curve);
 
-   CComPtr<IPoint2d> pnt;
-   switch (cpType)
+   curve->Clone(ppCurve);
+   if (pcType == pgsTypes::pcGlobal)
    {
-   case cptTS:
-      curve->get_TS(&pnt);
-      break;
-
-   case cptSPI1:
-      curve->get_SPI(spEntry, &pnt);
-      break;
-
-   case cptSC:
-      curve->get_SC(&pnt);
-      break;
-
-   case cptPI:
-      curve->get_PI(&pnt);
-      break;
-
-   case cptCS:
-      curve->get_CS(&pnt);
-      break;
-
-   case cptSPI2:
-      curve->get_SPI(spExit, &pnt);
-      break;
-
-   case cptST:
-      curve->get_ST(&pnt);
-      break;
-
-   case cptCC:
-      curve->get_CC(&pnt);
-      break;
-
-   case cptCCC:
-      curve->get_CCC(&pnt);
-      break;
-
-   default:
-      ATLASSERT(false); // is there a new curve point type?
-   }
-
-   pnt->Clone(ppPoint); // copy the point so external users can't change the actual curve
-
-   if ( pcType == pgsTypes::pcGlobal )
-   {
-      (*ppPoint)->Offset(m_DeltaX,m_DeltaY);
+      (*ppCurve)->Offset(m_DeltaX, m_DeltaY);
    }
 }
 

@@ -2773,7 +2773,7 @@ bool CTestAgentImp::RunAlignmentTest(std::_tofstream& resultsFile)
       {
          resultsFile << _T("Curve ") << hcIdx << std::endl;
          CComPtr<IHorzCurve> hc;
-         pRoadway->GetCurve(hcIdx, &hc);
+         pRoadway->GetCurve(hcIdx, pgsTypes::pcGlobal, &hc);
          HCURVESTATIONS stations = pRoadway->GetCurveStations(hcIdx);
          resultsFile << _T("TS : ") << stations.TSStation << std::endl;
          resultsFile << _T("SPI1 : ") << stations.SPI1Station << std::endl;

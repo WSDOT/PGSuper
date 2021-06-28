@@ -55,19 +55,6 @@ typedef struct HCURVESTATIONS
    Float64 STStation;
 } HCURVESTATIONS;
 
-typedef enum CurvePointTypes
-{
-   cptTS,
-   cptSPI1,
-   cptSC,
-   cptPI,
-   cptCS,
-   cptSPI2,
-   cptST,
-   cptCC,
-   cptCCC
-} CurvePointTypes;
-
 /*****************************************************************************
 INTERFACE
    IRoadway
@@ -113,11 +100,8 @@ interface IRoadway : IUnknown
    // Returns number of horizontal curves 
    virtual IndexType GetCurveCount() const = 0;
 
-   // Returns a horizontal curve object. Points are in local coordinates
-   virtual void GetCurve(IndexType hcIdx,IHorzCurve** ppCurve) const = 0;
-
-   // Returns key points for a horizontal curve
-   virtual void GetCurvePoint(IndexType hcIdx,CurvePointTypes cpType,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const = 0;
+   // Returns a horizontal curve object.
+   virtual void GetCurve(IndexType hcIdx, pgsTypes::PlanCoordinateType pcType,IHorzCurve** ppCurve) const = 0;
 
    // Returns the stations of key points for a horizontal curve
    virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) const = 0;

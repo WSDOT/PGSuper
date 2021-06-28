@@ -186,8 +186,7 @@ public:
    virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;
    virtual void GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IPoint2d* point,Float64* pStation,Float64* pOffset) const override;
    virtual CollectionIndexType GetCurveCount() const override;
-   virtual void GetCurve(CollectionIndexType idx,IHorzCurve** ppCurve) const override;
-   virtual void GetCurvePoint(IndexType hcIdx,CurvePointTypes cpType,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;
+   virtual void GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinateType pcType,IHorzCurve** ppCurve) const override;
    virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) const override;
    virtual CollectionIndexType GetVertCurveCount() const override;
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) const override;
@@ -1315,6 +1314,9 @@ private:
 
    std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_HorzCurveKeys; // key is hc index in cogo model. value is (input hc index,cogomodel curve id)... if an input curve has zero radius it is not created in the curve collection in the cogo model
    std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_VertCurveKeys;
+
+   // gets a horizontal curve in local coordinates without making a copy
+   void GetCurve(CollectionIndexType idx, IHorzCurve** ppCurve) const;
 
    // Cache state of asymmetric prestressing information
    enum AsymmetricPrestressing  { Unknown, Yes,  No  };

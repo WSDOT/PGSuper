@@ -612,7 +612,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    for ( IndexType hcIdx = 0; hcIdx < nHC; hcIdx++ )
    {
       CComPtr<IHorzCurve> hc;
-      pRoadway->GetCurve(hcIdx,&hc);
+      pRoadway->GetCurve(hcIdx,pgsTypes::pcGlobal,&hc);
 
       Float64 L;
       hc->get_TotalLength(&L);
@@ -622,7 +622,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
          CComPtr<IPoint2d> pntPI;
          hc->get_PI(&pntPI);
          Float64 station, offset;
-         pRoadway->GetStationAndOffset(pgsTypes::pcLocal,pntPI,&station,&offset);
+         pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,pntPI,&station,&offset);
          CreateStationLabel(label_display_list,station,_T("PI"));
       }
       else
@@ -632,10 +632,10 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
          hc->get_SpiralLength(spExit,&Ls2);
 
          CComPtr<IPoint2d> pntTS, pntSC, pntCS, pntST;
-         pRoadway->GetCurvePoint(hcIdx,cptTS,pgsTypes::pcGlobal,&pntTS);
-         pRoadway->GetCurvePoint(hcIdx,cptSC,pgsTypes::pcGlobal,&pntSC);
-         pRoadway->GetCurvePoint(hcIdx,cptCS,pgsTypes::pcGlobal,&pntCS);
-         pRoadway->GetCurvePoint(hcIdx,cptST,pgsTypes::pcGlobal,&pntST);
+         hc->get_TS(&pntTS);
+         hc->get_SC(&pntSC);
+         hc->get_CS(&pntCS);
+         hc->get_ST(&pntST);
 
          Float64 station, offset;
          if ( IsZero(Ls1) )
