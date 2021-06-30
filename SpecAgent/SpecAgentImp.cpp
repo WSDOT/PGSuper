@@ -25,6 +25,7 @@
 #include "SpecAgent.h"
 #include "SpecAgentImp.h"
 #include "StatusItems.h"
+#include <algorithm>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PsgLib\SpecLibraryEntry.h>

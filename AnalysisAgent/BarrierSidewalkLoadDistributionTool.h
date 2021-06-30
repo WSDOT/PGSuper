@@ -19,7 +19,7 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
-#pragma once;
+#pragma once
 
 // SYSTEM INCLUDES
 //

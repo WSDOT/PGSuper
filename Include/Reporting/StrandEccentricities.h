@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#pragma once;
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 

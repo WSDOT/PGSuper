@@ -124,7 +124,7 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
             CSegmentKey segmentKey(thisGirderKey, segIdx);
             Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
             Float64 endDist = pBridge->GetSegmentStartEndDistance(segmentKey);
-            std::remove_if(std::begin(vShearPoi), std::end(vShearPoi), PoiIsOutsideOfBearings(segmentKey, endDist, endDist + segmentSpanLength));
+            vShearPoi.erase(std::remove_if(std::begin(vShearPoi), std::end(vShearPoi), PoiIsOutsideOfBearings(segmentKey, endDist, endDist + segmentSpanLength)),std::end(vShearPoi));
          }
       }
 

@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <PgsExt\PgsExt.h>
 #include "PrincipalWebStressEngineer.h"
+#include <algorithm>
 
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>

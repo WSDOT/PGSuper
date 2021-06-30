@@ -22,6 +22,7 @@
 
 #include "stdafx.h"
 #include "IntervalManager.h"
+#include <algorithm>
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFStatusCenter.h>
