@@ -235,7 +235,11 @@ struct HorzCurveData
 struct AlignmentData2
 {
    std::_tstring Name{ _T("") };
-   Float64 Direction;
+   Float64 Direction{ 0.0 };
+   // alignment reference point
+   Float64 RefStation{ 0.0 };
+   Float64 xRefPoint{ 0.0 };
+   Float64 yRefPoint{ 0.0 };
    std::vector<HorzCurveData> HorzCurves;
 
    bool operator==(const AlignmentData2& other) const
@@ -280,19 +284,14 @@ struct AlignmentData2
    {
       return !operator==(other);
    }
-
-   // alignment reference point
-   Float64 RefStation;
-   Float64 xRefPoint;
-   Float64 yRefPoint;
 };
 
 struct VertCurveData
 {
-   Float64 PVIStation;
-   Float64 ExitGrade;
-   Float64 L1;
-   Float64 L2;
+   Float64 PVIStation{ 0.0 };
+   Float64 ExitGrade{ 0.0 };
+   Float64 L1{ 0.0 };
+   Float64 L2{ 0.0 };
 
    bool operator==(const VertCurveData& other) const
    {
@@ -305,9 +304,9 @@ struct VertCurveData
 
 struct ProfileData2
 {
-   Float64 Station;
-   Float64 Elevation;
-   Float64 Grade;
+   Float64 Station{ 0.0 };
+   Float64 Elevation{ 0.0 };
+   Float64 Grade{ 0.0 };
    std::vector<VertCurveData> VertCurves;
 
    bool operator==(const ProfileData2& other) const
@@ -343,8 +342,8 @@ struct ProfileData2
 
 struct RoadwaySegmentData
 {
-   Float64 Length;
-   Float64 Slope;
+   Float64 Length{ 0.0 };
+   Float64 Slope{ 0.0 };
 
    bool operator==(const RoadwaySegmentData& other) const
    {
@@ -366,9 +365,9 @@ struct RoadwaySegmentData
 
 struct RoadwaySectionTemplate
 {
-   Float64 Station;
-   Float64 LeftSlope;
-   Float64 RightSlope;
+   Float64 Station{ 0.0 };
+   Float64 LeftSlope{ 0.0 };
+   Float64 RightSlope{ 0.0 };
    std::vector<RoadwaySegmentData> SegmentDataVec; // only used if number of slope segments > 2
 
    bool operator==(const RoadwaySectionTemplate& other) const
@@ -383,10 +382,10 @@ struct RoadwaySectionTemplate
 struct RoadwaySectionData
 {
    enum SlopeMeasure {RelativeToAlignmentPoint,FromLeftEdge};
-   SlopeMeasure slopeMeasure;
-   IndexType NumberOfSegmentsPerSection; // Always have at least 2 outer infinite segments. Inner segments add to this
-   IndexType AlignmentPointIdx;   // Not zero based. No ridge points at ends of outer segments. For 2 segment case, this value is 1.
-   IndexType ProfileGradePointIdx; // Not zero based. No ridge points at ends of outer segments. For 2 segment case, this value is 1. If PGL and Alignment are the same, this is equal to AlignmentRidgePointIdx
+   SlopeMeasure slopeMeasure{ RelativeToAlignmentPoint };
+   IndexType NumberOfSegmentsPerSection{ 2 }; // Always have at least 2 outer infinite segments. Inner segments add to this
+   IndexType AlignmentPointIdx{ 0 };   // Not zero based. No ridge points at ends of outer segments. For 2 segment case, this value is 1.
+   IndexType ProfileGradePointIdx{ 0 }; // Not zero based. No ridge points at ends of outer segments. For 2 segment case, this value is 1. If PGL and Alignment are the same, this is equal to AlignmentRidgePointIdx
 
    std::vector<RoadwaySectionTemplate> RoadwaySectionTemplates;
 
