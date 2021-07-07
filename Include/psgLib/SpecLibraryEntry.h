@@ -836,6 +836,11 @@ public:
    void LimitDistributionFactorsToLanesBeams(bool bInclude);
    bool LimitDistributionFactorsToLanesBeams() const;
 
+   // Set/Get over-arching rule that exterior live load distribution factors
+   // may not be less than adjacent interior factors
+   void SetExteriorLiveLoadDistributionGTAdjacentInteriorRule(bool bValue);
+   bool GetExteriorLiveLoadDistributionGTAdjacentInteriorRule() const;
+
    // Set/Get maxumum angular deviation between girders
    // This parameter is used to determine if girders are approximately parallel
    // per LRFD 4.6.2.2.1
@@ -1574,6 +1579,7 @@ private:
    bool m_bIncludeDualTandem; // if true, the dual tandem loading from LRFD C3.6.1.3.1 is included in the HL93 model
 
    bool m_LimitDistributionFactorsToLanesBeams; 
+   bool m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule;
 
    bool m_bUseRigidMethod; // if true, the rigid method is always used with Type a, e, and k cross section for exterior beam LLDF
 

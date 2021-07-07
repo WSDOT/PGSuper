@@ -833,6 +833,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
          if ( gM1.LeverRuleData.bWasUsed )
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
+            REPORT_LLDF_INTOVERRIDE(gM1);
             ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
@@ -863,12 +864,14 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             if ( gM2.LeverRuleData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
+               REPORT_LLDF_INTOVERRIDE(gM2);
                ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
             }
 
             if ( gM2.RigidData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Rigid Method")) << rptNewLine;
+               REPORT_LLDF_INTOVERRIDE(gM2);
                ReportRigidMethod(pPara,gM2.RigidData,m_pBroker,pDisplayUnits);
             }
 
@@ -1135,15 +1138,27 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
       }
       else
       {
+
+         if ( gV1.EqnData.bWasUsed )
+         {
+            ATLASSERT(gV1.ControllingMethod & INTERIOR_OVERRIDE); // should always be the case since equation data not normally used on exterior beam
+            (*pPara) << Bold(_T("1 Loaded Lane: Spec Equations")) << rptNewLine;
+            REPORT_LLDF_INTOVERRIDE(gV1);
+            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VI_Type_K_SI.png") : _T("mg_1_VI_Type_K_US.png"))) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") <<_T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
+         }
+
          if ( gV1.LeverRuleData.bWasUsed )
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
+            REPORT_LLDF_INTOVERRIDE(gV1);
             ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
          }
 
          if ( gV1.RigidData.bWasUsed )
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Rigid Method")) << rptNewLine;
+            REPORT_LLDF_INTOVERRIDE(gV1);
             (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.RigidData.mg) << rptNewLine;
             (*pPara) << _T("See Moment for details") << rptNewLine;
          }
@@ -1162,6 +1177,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
             if ( gV2.EqnData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Spec Equation")) << rptNewLine;
+               REPORT_LLDF_INTOVERRIDE(gV2);
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VE_Type_K_SI.png") : _T("mg_2_VE_Type_K_US.png"))) << rptNewLine;
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_K_SI.png") : _T("mg_2_VI_Type_K_US.png"))) << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
@@ -1173,12 +1189,14 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
             if ( gV2.LeverRuleData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
+               REPORT_LLDF_INTOVERRIDE(gV2);
                ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
             }
 
             if ( gV2.RigidData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Rigid Method")) << rptNewLine;
+               REPORT_LLDF_INTOVERRIDE(gV2);
                (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.RigidData.mg) << rptNewLine;
                (*pPara) << _T("See Moment for details") << rptNewLine;
             }

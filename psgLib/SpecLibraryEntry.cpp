@@ -49,7 +49,7 @@ static char THIS_FILE[] = __FILE__;
 
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70
-#define CURRENT_VERSION 80.0 
+#define CURRENT_VERSION 81.0 
 
 /****************************************************************************
 CLASS
@@ -228,6 +228,7 @@ m_MinGirderStiffnessRatio(0.90),
 m_LLDFGirderSpacingLocation(0.75),
 m_bIncludeDualTandem(true),
 m_LimitDistributionFactorsToLanesBeams(false),
+m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule(false),
 m_PrestressTransferComputationType(pgsTypes::ptUsingSpecification),
 m_bIncludeForNegMoment(true),
 m_bAllowStraightStrandExtensions(false),
@@ -795,6 +796,9 @@ bool SpecLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    // added in version 31
    pSave->Property(_T("LimitDistributionFactorsToLanesBeams"),m_LimitDistributionFactorsToLanesBeams);
+
+   // added in version 81
+   pSave->Property(_T("ExteriorLiveLoadDistributionGTAdjacentInteriorRule"),m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule);
 
    // moved into Shear block in version 37
    //pSave->Property(_T("LongReinfShearMethod"),(Int16)m_LongReinfShearMethod); // added for version 1.2
@@ -3021,6 +3025,14 @@ bool SpecLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
       }
 
+      if ( 80 < version )
+      {
+         if ( !pLoad->Property(_T("ExteriorLiveLoadDistributionGTAdjacentInteriorRule"),&m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule) )
+         {
+            THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+      }
+
       if ( version < 37 )
       {
          // moved below in version 37
@@ -5009,7 +5021,8 @@ bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<pgsLi
         !::IsEqual(m_MaxAngularDeviationBetweenGirders, rOther.m_MaxAngularDeviationBetweenGirders) ||
         !::IsEqual(m_MinGirderStiffnessRatio,           rOther.m_MinGirderStiffnessRatio) ||
         !::IsEqual(m_LLDFGirderSpacingLocation,         rOther.m_LLDFGirderSpacingLocation) ||
-        m_bUseRigidMethod != rOther.m_bUseRigidMethod)
+        m_bUseRigidMethod != rOther.m_bUseRigidMethod ||
+        m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule != rOther.m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule)
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Live Load Distribution Factors are different"),_T(""),_T("")));
@@ -7477,6 +7490,16 @@ bool SpecLibraryEntry::LimitDistributionFactorsToLanesBeams() const
    return m_LimitDistributionFactorsToLanesBeams;
 }
 
+void SpecLibraryEntry::SetExteriorLiveLoadDistributionGTAdjacentInteriorRule(bool bValue)
+{
+   m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule = bValue;
+}
+
+bool SpecLibraryEntry::GetExteriorLiveLoadDistributionGTAdjacentInteriorRule() const
+{
+   return m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule;
+}
+
 pgsTypes::PrestressTransferComputationType SpecLibraryEntry::GetPrestressTransferComputationType() const
 {
    return m_PrestressTransferComputationType;
@@ -8080,6 +8103,7 @@ void SpecLibraryEntry::MakeCopy(const SpecLibraryEntry& rOther)
    m_bIncludeDualTandem = rOther.m_bIncludeDualTandem;
 
    m_LimitDistributionFactorsToLanesBeams = rOther.m_LimitDistributionFactorsToLanesBeams;
+   m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule = rOther.m_ExteriorLiveLoadDistributionGTAdjacentInteriorRule;
 
    m_PrestressTransferComputationType = rOther.m_PrestressTransferComputationType;
 

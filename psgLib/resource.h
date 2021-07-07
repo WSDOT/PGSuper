@@ -866,6 +866,8 @@
 #define IDC_MIN_SIDEWALK_WIDTH          1437
 #define IDC_FATIGUE_LABEL               1438
 #define IDC_HAUNCH_TOLER                1438
+#define IDC_LANESBEAMS2                 1438
+#define IDC_EXT_ADJACENT_LLDF_RULE      1438
 #define IDC_WEIGHT_LABEL                1439
 #define IDC_MIN_SIDEWALK_WIDTH_UNIT     1439
 #define IDC_EC_LABEL                    1440

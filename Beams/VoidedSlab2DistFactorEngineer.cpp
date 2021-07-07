@@ -743,136 +743,152 @@ void CVoidedSlab2DistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB
 
    if ( lldf.bExteriorGirder )
    {
-      if (gM1.LeverRuleData.bWasUsed )
+      if (gM1.LeverRuleData.bWasUsed)
       {
-         (*pPara) << Bold(_T("1 Loaded Lane")) << rptNewLine;
-         (*pPara) << Bold(_T("Lever Rule")) << rptNewLine;
-         ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
+         (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
+         REPORT_LLDF_INTOVERRIDE(gM1);
+         ReportLeverRule(pPara, true, 1.0, gM1.LeverRuleData, m_pBroker, pDisplayUnits);
       }
 
       if (gM1.EqnData.bWasUsed)
       {
-         (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
-
-         if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & LEVER_RULE))
+         if (gM1.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            (*pPara) << _T("For TxDOT Method, Use ")<<_T("mg") << Super(_T("MI")) << Sub(_T("1"))<<_T(". And,do not apply skew correction factor.")<< rptNewLine;
-
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-            ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
-            (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
-            (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
-            (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
-            (*pPara) << rptNewLine;
-
-            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
-
+            (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior")) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
          }
          else
          {
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_ME_Type_G_SI.png") : _T("mg_1_ME_Type_G_US.png"))) << rptNewLine;
- 
-            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+
+            (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
+            if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & LEVER_RULE))
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
+               (*pPara) << _T("For TxDOT Method, Use ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(". And,do not apply skew correction factor.") << rptNewLine;
+
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
+               ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
+               (*pPara) << _T("K = ") << gM1.EqnData.K << rptNewLine;
+               (*pPara) << _T("C = ") << gM1.EqnData.C << rptNewLine;
+               (*pPara) << _T("D = ") << xdim.SetValue(gM1.EqnData.D) << rptNewLine;
+               (*pPara) << rptNewLine;
+
+               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
+
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-               ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
-               (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
-               (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
-               (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
-               (*pPara) << rptNewLine;
-            }
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_ME_Type_G_SI.png") : _T("mg_1_ME_Type_G_US.png"))) << rptNewLine;
 
-            (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
-            (*pPara) << _T("e = ") << gM1.EqnData.e << rptNewLine;
-            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg*gM1.EqnData.e) << rptNewLine;
+               if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
+               {
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
+               }
+               else
+               {
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
+                  ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
+                  (*pPara) << _T("K = ") << gM1.EqnData.K << rptNewLine;
+                  (*pPara) << _T("C = ") << gM1.EqnData.C << rptNewLine;
+                  (*pPara) << _T("D = ") << xdim.SetValue(gM1.EqnData.D) << rptNewLine;
+                  (*pPara) << rptNewLine;
+               }
+
+               (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg) << rptNewLine;
+               (*pPara) << _T("e = ") << gM1.EqnData.e << rptNewLine;
+               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.EqnData.mg * gM1.EqnData.e) << rptNewLine;
+            }
          }
       }
 
-      if ( gM1.LanesBeamsData.bWasUsed )
+      if (gM1.LanesBeamsData.bWasUsed)
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
-         (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-         ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
+         (*pPara) << _T("Skew correction is not applied to Lanes/Beams method") << rptNewLine;
+         ReportLanesBeamsMethod(pPara, gM1.LanesBeamsData, m_pBroker, pDisplayUnits);
       }
-
        
-      if ( 2 <= lldf.Nl )
+      if (2 <= lldf.Nl)
       {
-
          if (gM2.LeverRuleData.bWasUsed)
          {
             ATLASSERT(gM2.ControllingMethod & LEVER_RULE);
             (*pPara) << rptNewLine;
             (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
-            ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
+            REPORT_LLDF_INTOVERRIDE(gM2);
+            ReportLeverRule(pPara, true, 1.0, gM2.LeverRuleData, m_pBroker, pDisplayUnits);
          }
 
-         if (gM2.EqnData.bWasUsed)
+         if (gM2.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            if (lldf.Method == LLDF_TXDOT && !(gM2.ControllingMethod & LEVER_RULE))
-            {
-               (*pPara) << Bold(_T("2+ Loaded Lanes: Equation Method")) << rptNewLine;
-               (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
-            }
-            else
-            {
-               (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_G_SI.png") : _T("mg_2_ME_Type_G_US.png"))) << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior")) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
+         }
+         else
+         {
 
-               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+            if (gM2.EqnData.bWasUsed)
+            {
+               if (lldf.Method == LLDF_TXDOT && !(gM2.ControllingMethod & LEVER_RULE))
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
+                  (*pPara) << Bold(_T("2+ Loaded Lanes: Equation Method")) << rptNewLine;
+                  (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
                }
                else
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_G_SI.png") : _T("mg_2_MI_Type_G_US.png"))) << rptNewLine;
-                  ATLASSERT(gM2.ControllingMethod & S_OVER_D_METHOD);
-                  (*pPara)<< _T("K = ")<< gM2.EqnData.K << rptNewLine;
-                  (*pPara)<< _T("C = ")<< gM2.EqnData.C << rptNewLine;
-                  (*pPara)<< _T("D = ")<< xdim.SetValue(gM2.EqnData.D) << rptNewLine;
-                  (*pPara) << rptNewLine;
-               }
+                  (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_G_SI.png") : _T("mg_2_ME_Type_G_US.png"))) << rptNewLine;
 
-               (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
-               (*pPara) << _T("e = ") << gM2.EqnData.e << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg*gM2.EqnData.e) << rptNewLine;
+                  if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
+                  {
+                     (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
+                  }
+                  else
+                  {
+                     (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_G_SI.png") : _T("mg_2_MI_Type_G_US.png"))) << rptNewLine;
+                     ATLASSERT(gM2.ControllingMethod & S_OVER_D_METHOD);
+                     (*pPara) << _T("K = ") << gM2.EqnData.K << rptNewLine;
+                     (*pPara) << _T("C = ") << gM2.EqnData.C << rptNewLine;
+                     (*pPara) << _T("D = ") << xdim.SetValue(gM2.EqnData.D) << rptNewLine;
+                     (*pPara) << rptNewLine;
+                  }
+
+                  (*pPara) << _T("mg") << Super(_T("MI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
+                  (*pPara) << _T("e = ") << gM2.EqnData.e << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg * gM2.EqnData.e) << rptNewLine;
+               }
             }
          }
 
-         if ( gM2.LanesBeamsData.bWasUsed )
+         if (gM2.LanesBeamsData.bWasUsed)
          {
             (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
-            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method") << rptNewLine;
+            ReportLanesBeamsMethod(pPara, gM2.LanesBeamsData, m_pBroker, pDisplayUnits);
          }
-      }
 
-      (*pPara) << rptNewLine;
+         (*pPara) << rptNewLine;
 
-      if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
-      {
-         (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         if(lldf.Method != LLDF_TXDOT)
+         if (gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED)
          {
-            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
-            if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
+            (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
+            if (lldf.Method != LLDF_TXDOT)
             {
-               (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
+               Float64 skew_delta_max = ::ConvertToSysUnits(10.0, unitMeasure::Degree);
+               if (fabs(lldf.skew1 - lldf.skew2) < skew_delta_max)
+               {
+                  (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
+               }
             }
-         }
-  
-         (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
-         (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
-         (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
-         if ( lldf.Nl >= 2 )
-         {
-            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
-            (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+
+            (*pPara) << _T("Skew Correction Factor: = ") << scalar.SetValue(gM1.SkewCorrectionFactor) << rptNewLine;
+            (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg);
+            (lldf.Nl == 1 || gM1.mg >= gM2.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+            if (lldf.Nl >= 2)
+            {
+               (*pPara) << _T("Skew Corrected Factor: mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg);
+               (gM2.mg > gM1.mg) ? (*pPara) << Bold(_T(" < Controls")) << rptNewLine : (*pPara) << rptNewLine;
+            }
          }
       }
    }
@@ -1020,99 +1036,117 @@ void CVoidedSlab2DistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_
 
    if ( lldf.bExteriorGirder )
    {
-      if ( gV1.EqnData.bWasUsed )
+      if (gV1.LeverRuleData.bWasUsed)
       {
-         (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
-         if( lldf.Method==LLDF_TXDOT )
+         (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
+         REPORT_LLDF_INTOVERRIDE(gV1);
+         ReportLeverRule(pPara, false, 1.0, gV1.LeverRuleData, m_pBroker, pDisplayUnits);
+      }
+
+      if (gV1.EqnData.bWasUsed)
+      {
+         if (gV1.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            (*pPara) << _T("For TxDOT Method, Use ")<<_T("mg") << Super(_T("MI")) << Sub(_T("1"))<<_T(". And,do not apply skew correction factor.")<< rptNewLine;
-
-            (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-            ATLASSERT(gV1.ControllingMethod & S_OVER_D_METHOD);
-            (*pPara)<< _T("K = ")<< gV1.EqnData.K << rptNewLine;
-            (*pPara)<< _T("C = ")<< gV1.EqnData.C << rptNewLine;
-            (*pPara)<< _T("D = ")<< xdim.SetValue(gV1.EqnData.D) << rptNewLine;
-            (*pPara) << rptNewLine;
-
-            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
+            (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior")) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
          }
-         else 
+         else
          {
 
-            if (gV1.ControllingMethod & MOMENT_OVERRIDE)
+            (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
+            if (lldf.Method == LLDF_TXDOT)
             {
-               (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
-               (*pPara) << _T("e = ") << gV1.EqnData.e << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("(e)(mg") << Super(_T("MI")) << Sub(_T("1")) << _T(") = ") << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
+               (*pPara) << _T("For TxDOT Method, Use ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(". And,do not apply skew correction factor.") << rptNewLine;
+
+               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
+               ATLASSERT(gV1.ControllingMethod & S_OVER_D_METHOD);
+               (*pPara) << _T("K = ") << gV1.EqnData.K << rptNewLine;
+               (*pPara) << _T("C = ") << gV1.EqnData.C << rptNewLine;
+               (*pPara) << _T("D = ") << xdim.SetValue(gV1.EqnData.D) << rptNewLine;
+               (*pPara) << rptNewLine;
+
+               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
             }
             else
             {
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VE_Type_G_SI.png") : _T("mg_1_VE_Type_G_US.png"))) << rptNewLine;
-               (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VI_Type_G_SI.png") : _T("mg_1_VI_Type_G_US.png"))) << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
-               (*pPara) << _T("e = ") << gV1.EqnData.e << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg*gV1.EqnData.e) << rptNewLine;
+
+               if (gV1.ControllingMethod & MOMENT_OVERRIDE)
+               {
+                  (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation") << rptNewLine;
+                  (*pPara) << _T("e = ") << gV1.EqnData.e << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << _T("(e)(mg") << Super(_T("MI")) << Sub(_T("1")) << _T(") = ") << scalar.SetValue(gV1.EqnData.mg * gV1.EqnData.e) << rptNewLine;
+               }
+               else
+               {
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VE_Type_G_SI.png") : _T("mg_1_VE_Type_G_US.png"))) << rptNewLine;
+                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_VI_Type_G_SI.png") : _T("mg_1_VI_Type_G_US.png"))) << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg) << rptNewLine;
+                  (*pPara) << _T("e = ") << gV1.EqnData.e << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.EqnData.mg * gV1.EqnData.e) << rptNewLine;
+               }
             }
          }
 
-      }
-
-      if ( gV1.LeverRuleData.bWasUsed )
-      {
-         (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-         ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
-      }
-
-      if ( gV1.LanesBeamsData.bWasUsed )
-      {
-         (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
-         (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-         ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
+         if (gV1.LanesBeamsData.bWasUsed)
+         {
+            (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method") << rptNewLine;
+            ReportLanesBeamsMethod(pPara, gV1.LanesBeamsData, m_pBroker, pDisplayUnits);
+         }
       }
 
       if ( 2 <= lldf.Nl )
       {
          (*pPara) << rptNewLine;
-         if ( gV2.ControllingMethod & LEVER_RULE )
+         if (gV2.ControllingMethod & LEVER_RULE)
          {
             (*pPara) << Bold(_T("2+ Loaded Lane: Lever Rule")) << rptNewLine;
-            ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
+            REPORT_LLDF_INTOVERRIDE(gV2);
+            ReportLeverRule(pPara, false, 1.0, gV2.LeverRuleData, m_pBroker, pDisplayUnits);
          }
 
-         if ( gV1.EqnData.bWasUsed )
+         if (gV2.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            if( lldf.Method==LLDF_TXDOT )
+            (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for interior")) << rptNewLine;
+            (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("VI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
+         }
+         else
+         {
+            if (gV1.EqnData.bWasUsed)
             {
-               (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
-               (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
-               (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
-            }
-            else 
-            {
-               (*pPara) << Bold(_T("2+ Loaded Lane: Equation")) << rptNewLine;
-
-               if (gV2.ControllingMethod & MOMENT_OVERRIDE)
+               if (lldf.Method == LLDF_TXDOT)
                {
-                  (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
-                  (*pPara) << _T("e = ") << gV2.EqnData.e << rptNewLine;
-                  (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("(e)(mg") << Super(_T("ME")) << Sub(_T("2")) << _T(") = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
+                  (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
+                  (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
+                  (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
                }
                else
                {
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VE_Type_G_SI.png") : _T("mg_2_VE_Type_G_US.png"))) << rptNewLine;
-                  (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_G_SI.png") : _T("mg_2_VI_Type_G_US.png"))) << rptNewLine;
-                  (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
-                  (*pPara) << _T("e = ") << gV2.EqnData.e << rptNewLine;
-                  (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg*gV2.EqnData.e) << rptNewLine;
+                  (*pPara) << Bold(_T("2+ Loaded Lane: Equation")) << rptNewLine;
+
+                  if (gV2.ControllingMethod & MOMENT_OVERRIDE)
+                  {
+                     (*pPara) << _T("Overriden by moment factor because J or I was out of range for shear equation") << rptNewLine;
+                     (*pPara) << _T("e = ") << gV2.EqnData.e << rptNewLine;
+                     (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << _T("(e)(mg") << Super(_T("ME")) << Sub(_T("2")) << _T(") = ") << scalar.SetValue(gV2.EqnData.mg * gV2.EqnData.e) << rptNewLine;
+                  }
+                  else
+                  {
+                     (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VE_Type_G_SI.png") : _T("mg_2_VE_Type_G_US.png"))) << rptNewLine;
+                     (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_VI_Type_G_SI.png") : _T("mg_2_VI_Type_G_US.png"))) << rptNewLine;
+                     (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg) << rptNewLine;
+                     (*pPara) << _T("e = ") << gV2.EqnData.e << rptNewLine;
+                     (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gV2.EqnData.mg * gV2.EqnData.e) << rptNewLine;
+                  }
                }
             }
-         }
 
-         if ( gV2.LanesBeamsData.bWasUsed )
-         {
-            (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
-            (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDisplayUnits);
+            if (gV2.LanesBeamsData.bWasUsed)
+            {
+               (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
+               (*pPara) << _T("Skew correction is not applied to Lanes/Beams method") << rptNewLine;
+               ReportLanesBeamsMethod(pPara, gV2.LanesBeamsData, m_pBroker, pDisplayUnits);
+            }
          }
 
          (*pPara) << rptNewLine;

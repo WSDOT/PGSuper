@@ -872,6 +872,11 @@ void write_bridge_site3(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits*
       ATLASSERT(false); // new method?
    }
 
+   if (pSpecEntry->GetExteriorLiveLoadDistributionGTAdjacentInteriorRule())
+   {
+      *pPara << _T("Exterior Girder Live Doad Distribution Factors cannot be less than those for Adjacent Interior Girder") << rptNewLine;
+   }
+
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    std::_tstring straction = pLiveLoads->GetLLDFSpecialActionText();
    if ( !straction.empty() )

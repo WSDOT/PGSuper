@@ -402,7 +402,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 
          if (gM1.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            (*pPara) << _T("For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls")<< rptNewLine;
+            (*pPara) << LLDF_INTOVERRIDE_STR << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg/gM1.SkewCorrectionFactor) << rptNewLine;
          }
       }
@@ -410,6 +410,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       if (gM1.LeverRuleData.bWasUsed)
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
+         REPORT_LLDF_INTOVERRIDE(gM1);
          ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
       }
 
@@ -450,7 +451,7 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
 
             if (gM2.ControllingMethod & INTERIOR_OVERRIDE)
             {
-               (*pPara) << _T("For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls")<< rptNewLine;
+               (*pPara) << LLDF_INTOVERRIDE_STR << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2+")) << _T(" = ") << scalar.SetValue(gM2.mg/gM2.SkewCorrectionFactor) << rptNewLine;
             }
          }
@@ -644,7 +645,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
       if (gV1.ControllingMethod & INTERIOR_OVERRIDE)
       {
-         (*pPara)<< rptNewLine << _T("For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls")<< rptNewLine;
+         (*pPara)<< rptNewLine << LLDF_INTOVERRIDE_STR << rptNewLine;
          (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg/gV1.SkewCorrectionFactor) << rptNewLine;
       }
 
@@ -694,7 +695,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
          if (gV2.ControllingMethod & INTERIOR_OVERRIDE)
          {
-            (*pPara) << rptNewLine << _T("For TxDOT method, exterior mg cannot be less than interior - Interior mg Controls")<< rptNewLine;
+            (*pPara) << rptNewLine << LLDF_INTOVERRIDE_STR << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("VE")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg/gV2.SkewCorrectionFactor) << rptNewLine;
          }
 
