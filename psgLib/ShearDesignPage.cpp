@@ -222,7 +222,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
 
          // Sort spacing list and remove duplicates
          std::sort(m_BarSpacings.begin(), m_BarSpacings.end());
-         std::unique(m_BarSpacings.begin(), m_BarSpacings.end());
+         m_BarSpacings.erase(std::unique(m_BarSpacings.begin(), m_BarSpacings.end()),m_BarSpacings.end());
 
          // Make sure design algorithm can step from one spacing to the next
          std::vector<Float64>::iterator ittwo=m_BarSpacings.begin();
