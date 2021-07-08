@@ -186,7 +186,7 @@ public:
    virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;
    virtual void GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IPoint2d* point,Float64* pStation,Float64* pOffset) const override;
    virtual CollectionIndexType GetCurveCount() const override;
-   virtual void GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinateType pcType,IHorzCurve** ppCurve) const override;
+   virtual void GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const override;
    virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) const override;
    virtual CollectionIndexType GetVertCurveCount() const override;
    virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) const override;
@@ -219,11 +219,11 @@ public:
    virtual HRESULT LineSegmentCircle(ILineSegment2d* pSeg,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest, IPoint2d** point) const override;
    virtual HRESULT PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point) const override;
    virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point) const override;
-   virtual HRESULT PointOnCurve(IPoint2d* pnt,IHorzCurve* curve,IPoint2d** point) const override;
+   virtual HRESULT PointOnCurve(IPoint2d* pnt,ICompoundCurve* curve,IPoint2d** point) const override;
    virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const override;
    virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const override;
    virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) const override;
-	virtual HRESULT HorzCurve(IHorzCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const override;
+	virtual HRESULT CompoundCurve(ICompoundCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const override;
    virtual HRESULT Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const override;
    virtual HRESULT External(IPoint2d* center1, Float64 radius1,IPoint2d* center2,Float64 radius2,TangentSignType sign, IPoint2d** t1,IPoint2d** t2) const override;
    virtual HRESULT Cross(IPoint2d* center1, Float64 radius1,IPoint2d* center2, Float64 radius2, TangentSignType sign, IPoint2d** t1,IPoint2d** t2) const override;
@@ -1312,11 +1312,11 @@ private:
 
    CComPtr<IBridgeGeometryTool> m_BridgeGeometryTool;
 
-   std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_HorzCurveKeys; // key is hc index in cogo model. value is (input hc index,cogomodel curve id)... if an input curve has zero radius it is not created in the curve collection in the cogo model
+   std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_CompoundCurveKeys; // key is hc index in cogo model. value is (input hc index,cogomodel curve id)... if an input curve has zero radius it is not created in the curve collection in the cogo model
    std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_VertCurveKeys;
 
    // gets a horizontal curve in local coordinates without making a copy
-   void GetCurve(CollectionIndexType idx, IHorzCurve** ppCurve) const;
+   void GetCurve(CollectionIndexType idx, ICompoundCurve** ppCurve) const;
 
    // Cache state of asymmetric prestressing information
    enum AsymmetricPrestressing  { Unknown, Yes,  No  };

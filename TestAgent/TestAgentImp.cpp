@@ -2764,15 +2764,15 @@ bool CTestAgentImp::RunAlignmentTest(std::_tofstream& resultsFile)
    const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
    resultsFile << _T("Direction : ") << alignment.Direction << std::endl;
    resultsFile << _T("Ref Point, X : ") << alignment.xRefPoint << _T(", Y : ") << alignment.yRefPoint << std::endl;
-   resultsFile << _T("HCurveCount : ") << alignment.HorzCurves.size() << std::endl;
+   resultsFile << _T("HCurveCount : ") << alignment.CompoundCurves.size() << std::endl;
 
    IndexType hcIdx = 0; // keeps track of actual curves in the model (curves with zero radious are not curves in the alignment model)
-   for (const auto& hcData : alignment.HorzCurves)
+   for (const auto& hcData : alignment.CompoundCurves)
    {
       if (!IsZero(hcData.Radius))
       {
          resultsFile << _T("Curve ") << hcIdx << std::endl;
-         CComPtr<IHorzCurve> hc;
+         CComPtr<ICompoundCurve> hc;
          pRoadway->GetCurve(hcIdx, pgsTypes::pcGlobal, &hc);
          HCURVESTATIONS stations = pRoadway->GetCurveStations(hcIdx);
          resultsFile << _T("TS : ") << stations.TSStation << std::endl;

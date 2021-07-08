@@ -85,17 +85,17 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
       direction->get_Value(&m_AlignmentData.Direction);
 
       m_Grid.SortCurves();
-      if ( !m_Grid.GetCurveData(m_AlignmentData.HorzCurves) )
+      if ( !m_Grid.GetCurveData(m_AlignmentData.CompoundCurves) )
       {
          AfxMessageBox(_T("Invalid curve data"));
          pDX->Fail();
       }
 
-      std::vector<HorzCurveData>::iterator iter;
+      std::vector<CompoundCurveData>::iterator iter;
       int curveID = 1;
-      for ( iter = m_AlignmentData.HorzCurves.begin(); iter != m_AlignmentData.HorzCurves.end(); iter++, curveID++ )
+      for ( iter = m_AlignmentData.CompoundCurves.begin(); iter != m_AlignmentData.CompoundCurves.end(); iter++, curveID++ )
       {
-         HorzCurveData& hc = *iter;
+         CompoundCurveData& hc = *iter;
          if ( hc.Radius < 0 )
          {
             CString strMsg;
@@ -125,7 +125,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
    {
       direction->put_Value(m_AlignmentData.Direction);
       DDX_Direction(pDX,IDC_DIRECTION,direction,m_DirFormatter);
-      m_Grid.SetCurveData(m_AlignmentData.HorzCurves);
+      m_Grid.SetCurveData(m_AlignmentData.CompoundCurves);
    }
 
    GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);

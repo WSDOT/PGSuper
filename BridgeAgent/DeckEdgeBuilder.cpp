@@ -373,9 +373,9 @@ int CDeckEdgeBuilder::BeginSpline(IPath* pPath,IPoint2d* pPoint,ICubicSpline** p
          CComQIPtr<IMeasure2> measure(m_CogoEngine);
          measure->Direction(prev_point, pPoint, &tangent);
       }
-      else if ( type == petHorzCurve )
+      else if ( type == petCompoundCurve )
       {
-         CComQIPtr<IHorzCurve> hc(punk);
+         CComQIPtr<ICompoundCurve> hc(punk);
          hc->get_FwdTangentBrg(&tangent);
       }
       else if ( type == petLineSegment )

@@ -481,7 +481,7 @@ bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescript
    GET_IFACE2(pBroker,IRoadwayData, pIAlignment);
    bool bAnglePointInAlignment = false;
    const AlignmentData2& alignment_data = pIAlignment->GetAlignmentData2();
-   for (const auto& hc : alignment_data.HorzCurves)
+   for (const auto& hc : alignment_data.CompoundCurves)
    {
       if (IsZero(hc.Radius))
       {

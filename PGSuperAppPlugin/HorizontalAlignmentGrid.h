@@ -53,8 +53,8 @@ public:
 	//}}AFX_VIRTUAL
 
    void SortCurves();
-   void SetCurveData(std::vector<HorzCurveData>& curves);
-   bool GetCurveData(std::vector<HorzCurveData>& curves);
+   void SetCurveData(std::vector<CompoundCurveData>& curves);
+   bool GetCurveData(std::vector<CompoundCurveData>& curves);
 
 // Implementation
 public:
@@ -78,7 +78,7 @@ public:
 
    // get data for a row
    bool GetRowData(ROWCOL nRow,Float64* pStation,Float64* pFwdTangent,bool *pbFwdTangent,Float64* pRadius,Float64* pEntrySpiral,Float64* pExitSpiral);
-   void SetRowData(ROWCOL nRow,HorzCurveData& data);
+   void SetRowData(ROWCOL nRow,CompoundCurveData& data);
 
    virtual int GetColWidth(ROWCOL nCol);
 

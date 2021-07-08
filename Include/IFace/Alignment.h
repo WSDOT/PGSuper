@@ -36,7 +36,7 @@
 
 // FORWARD DECLARATIONS
 //
-interface IHorzCurve;
+interface ICompoundCurve;
 interface IVertCurve;
 interface IDirection;
 interface IPoint2d;
@@ -101,7 +101,7 @@ interface IRoadway : IUnknown
    virtual IndexType GetCurveCount() const = 0;
 
    // Returns a horizontal curve object.
-   virtual void GetCurve(IndexType hcIdx, pgsTypes::PlanCoordinateType pcType,IHorzCurve** ppCurve) const = 0;
+   virtual void GetCurve(IndexType hcIdx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const = 0;
 
    // Returns the stations of key points for a horizontal curve
    virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) const = 0;
@@ -168,13 +168,13 @@ interface IGeometry : IUnknown
    // Project
    virtual HRESULT PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point) const = 0;
    virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point) const = 0;
-   virtual HRESULT PointOnCurve(IPoint2d* pnt,IHorzCurve* curve,IPoint2d** point) const = 0;
+   virtual HRESULT PointOnCurve(IPoint2d* pnt,ICompoundCurve* curve,IPoint2d** point) const = 0;
 
    // Divide
    virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
    virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
    virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
-	virtual HRESULT HorzCurve(IHorzCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const = 0;
+	virtual HRESULT CompoundCurve(ICompoundCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const = 0;
    virtual HRESULT Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const = 0;
 
    // Tangent

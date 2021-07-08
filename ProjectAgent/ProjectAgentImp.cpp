@@ -1838,16 +1838,16 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
          return hr;
       }
 
-      hr = pSave->put_Property(_T("HorzCurveCount"),CComVariant((long)pObj->m_AlignmentData2.HorzCurves.size()));
+      hr = pSave->put_Property(_T("HorzCurveCount"),CComVariant((long)pObj->m_AlignmentData2.CompoundCurves.size()));
       if ( FAILED(hr) )
       {
          return hr;
       }
 
-      std::vector<HorzCurveData>::iterator iter;
-      for ( iter = pObj->m_AlignmentData2.HorzCurves.begin(); iter != pObj->m_AlignmentData2.HorzCurves.end(); iter++ )
+      std::vector<CompoundCurveData>::iterator iter;
+      for ( iter = pObj->m_AlignmentData2.CompoundCurves.begin(); iter != pObj->m_AlignmentData2.CompoundCurves.end(); iter++ )
       {
-         HorzCurveData& hc = *iter;
+         CompoundCurveData& hc = *iter;
 
          hr = pSave->BeginUnit(_T("HorzCurveData"),2.0);
          if ( FAILED(hr) )
@@ -2050,20 +2050,20 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
          if ( method == ALIGN_STRAIGHT )
          {
             pObj->m_AlignmentData2.Direction = Direction;
-            pObj->m_AlignmentData2.HorzCurves.clear();
+            pObj->m_AlignmentData2.CompoundCurves.clear();
          }
          else
          {
             ATLASSERT( method == ALIGN_CURVE );
             pObj->m_AlignmentData2.Direction = BkTangent;
             
-            HorzCurveData hc;
+            CompoundCurveData hc;
             hc.PIStation = PIStation;
             hc.Radius = Radius;
             hc.FwdTangent = FwdTangent;
             hc.EntrySpiral = 0;
             hc.ExitSpiral = 0;
-            pObj->m_AlignmentData2.HorzCurves.push_back(hc);
+            pObj->m_AlignmentData2.CompoundCurves.push_back(hc);
          }
       }
       else
@@ -2114,7 +2114,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
 
          for ( int c = 0; c < nCurves; c++ )
          {
-            HorzCurveData hc;
+            CompoundCurveData hc;
 
             hr = pLoad->BeginUnit(_T("HorzCurveData"));
             if ( FAILED(hr) )
@@ -2181,7 +2181,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
             }
 
 
-            pObj->m_AlignmentData2.HorzCurves.push_back(hc);
+            pObj->m_AlignmentData2.CompoundCurves.push_back(hc);
 
             hr = pLoad->EndUnit();
             if ( FAILED(hr) )

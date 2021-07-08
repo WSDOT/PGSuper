@@ -219,7 +219,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    *pPara << _T(", ")
       << _T("N (Y) ") << length.SetValue(alignment.yRefPoint) << _T(")") << rptNewLine;
 
-   if (alignment.HorzCurves.size() == 0)
+   if (alignment.CompoundCurves.size() == 0)
    {
       return;
    }
@@ -227,7 +227,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    bool bHasEntrySpirals = false;
    bool bHasExitSpirals = false;
    bool bHasCircularCurves = false;
-   for (const auto& hc : alignment.HorzCurves)
+   for (const auto& hc : alignment.CompoundCurves)
    {
       if (!IsZero(hc.EntrySpiral))
       {
@@ -250,7 +250,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   ColumnIndexType nColumns = alignment.HorzCurves.size() + 1;
+   ColumnIndexType nColumns = alignment.CompoundCurves.size() + 1;
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns, _T("Horizontal Curve Data"));
    *pPara << pTable << rptNewLine;
 
@@ -401,8 +401,8 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
    ColumnIndexType col = 1;
    IndexType hcIdx = 0; // keeps tracks of the actual curves in the model (curves with zero radius input are not curves in the alignment model)
-   auto iter = std::cbegin(alignment.HorzCurves);
-   auto end = std::cend(alignment.HorzCurves);
+   auto iter = std::cbegin(alignment.CompoundCurves);
+   auto end = std::cend(alignment.CompoundCurves);
    for ( ; iter != end; iter++, col++)
    {
       const auto& hc_data = *iter;
@@ -410,7 +410,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
       (*pTable)(row++, col) << _T("Curve ") << col;
 
-      CComPtr<IHorzCurve> hc;
+      CComPtr<ICompoundCurve> hc;
 
       CComPtr<IDirection> bkTangent;
       CComPtr<IDirection> fwdTangent;

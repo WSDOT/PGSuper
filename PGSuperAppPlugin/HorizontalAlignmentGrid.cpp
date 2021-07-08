@@ -265,7 +265,7 @@ CString CHorizontalAlignmentGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
     }
 }
 
-void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,HorzCurveData& data)
+void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,CompoundCurveData& data)
 {
 	GetParam()->EnableUndo(FALSE);
 
@@ -383,7 +383,7 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64*
    return true;
 }
 
-void CHorizontalAlignmentGrid::SetCurveData(std::vector<HorzCurveData>& curves)
+void CHorizontalAlignmentGrid::SetCurveData(std::vector<CompoundCurveData>& curves)
 {
    GetParam()->EnableUndo(FALSE);
 
@@ -392,10 +392,10 @@ void CHorizontalAlignmentGrid::SetCurveData(std::vector<HorzCurveData>& curves)
       CGXGridWnd::RemoveRows(1,GetRowCount());
 
    // now fill it up
-   std::vector<HorzCurveData>::iterator iter;
+   std::vector<CompoundCurveData>::iterator iter;
    for ( iter = curves.begin(); iter != curves.end(); iter++ )
    {
-      HorzCurveData& curve_data = *iter;
+      CompoundCurveData& curve_data = *iter;
       AppendRow();
       SetRowData(GetRowCount(),curve_data);
    }
@@ -403,13 +403,13 @@ void CHorizontalAlignmentGrid::SetCurveData(std::vector<HorzCurveData>& curves)
    GetParam()->EnableUndo(TRUE);
 }
 
-bool CHorizontalAlignmentGrid::GetCurveData(std::vector<HorzCurveData>& curves)
+bool CHorizontalAlignmentGrid::GetCurveData(std::vector<CompoundCurveData>& curves)
 {
    curves.clear();
    ROWCOL nRows = GetRowCount();
    for (ROWCOL row = 1; row <= nRows; row++ )
    {
-      HorzCurveData curve_data;
+      CompoundCurveData curve_data;
       if ( !GetRowData(row,&curve_data.PIStation,&curve_data.FwdTangent,&curve_data.bFwdTangent,&curve_data.Radius,&curve_data.EntrySpiral,&curve_data.ExitSpiral) )
       {
          return false;
@@ -421,14 +421,14 @@ bool CHorizontalAlignmentGrid::GetCurveData(std::vector<HorzCurveData>& curves)
    return true;
 }
 
-bool SortByStation(const HorzCurveData& c1,const HorzCurveData& c2)
+bool SortByStation(const CompoundCurveData& c1,const CompoundCurveData& c2)
 {
    return c1.PIStation < c2.PIStation;
 }
 
 void CHorizontalAlignmentGrid::SortCurves()
 {
-   std::vector<HorzCurveData> curves;
+   std::vector<CompoundCurveData> curves;
    if ( GetCurveData(curves) )
    {
       std::sort(curves.begin(),curves.end(),SortByStation);

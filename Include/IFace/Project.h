@@ -211,7 +211,7 @@ DESCRIPTION
 #define PROFILE_STRAIGHT 0
 #define PROFILE_VCURVE   1
 
-struct HorzCurveData
+struct CompoundCurveData
 {
    Float64 PIStation;
    Float64 FwdTangent;
@@ -221,7 +221,7 @@ struct HorzCurveData
 
    bool bFwdTangent; // if true, FwdTangent is the bearing of the forward tangent otherwise it is a delta angle
 
-   bool operator==(const HorzCurveData& other) const
+   bool operator==(const CompoundCurveData& other) const
    {
       return (PIStation == other.PIStation) && 
              (FwdTangent == other.FwdTangent) && 
@@ -240,7 +240,7 @@ struct AlignmentData2
    Float64 RefStation{ 0.0 };
    Float64 xRefPoint{ 0.0 };
    Float64 yRefPoint{ 0.0 };
-   std::vector<HorzCurveData> HorzCurves;
+   std::vector<CompoundCurveData> CompoundCurves;
 
    bool operator==(const AlignmentData2& other) const
    {
@@ -254,7 +254,7 @@ struct AlignmentData2
          return false;
       }
 
-      if ( HorzCurves != other.HorzCurves )
+      if ( CompoundCurves != other.CompoundCurves )
       {
          return false;
       }

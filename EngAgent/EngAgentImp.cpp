@@ -2319,7 +2319,7 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) con
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    const AlignmentData2& alignment_data = pRoadway->GetAlignmentData2();
-   IndexType nCurves = alignment_data.HorzCurves.size();
+   IndexType nCurves = alignment_data.CompoundCurves.size();
    if ( nCurves == 0 )
    {
       return; // no curves

@@ -611,7 +611,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    IndexType nHC = pRoadway->GetCurveCount();
    for ( IndexType hcIdx = 0; hcIdx < nHC; hcIdx++ )
    {
-      CComPtr<IHorzCurve> hc;
+      CComPtr<ICompoundCurve> hc;
       pRoadway->GetCurve(hcIdx,pgsTypes::pcGlobal,&hc);
 
       Float64 L;
