@@ -280,11 +280,11 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
       }
       else if (df_method == pgsTypes::LeverRule)
       {
-         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane);
+         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, ls!=pgsTypes::FatigueI);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes);
+            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, true);
          }
          else
          {
@@ -304,8 +304,8 @@ void CDistFactorEngineerImpl<T>::GetPierDFRaw(PierIndexType pierIdx,GirderIndexT
       if (pSpecEntry->LimitDistributionFactorsToLanesBeams())
       {
          // Compare results with lanes/beams and override if needed
-         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb));
-         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb));
+         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
+         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb),ls != pgsTypes::FatigueI);
 
          // Moment
          if (plldf->gM1.mg < glb1.mg)
@@ -454,10 +454,10 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
       }
       else if (df_method == pgsTypes::LeverRule)
       {
-         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane);
+         plldf->gM1 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, ls != pgsTypes::FatigueI);
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes);
+            plldf->gM2 = pLLDF->DistributeMomentByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, true);
          }
          else
          {
@@ -465,11 +465,11 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
          }
 
 
-         plldf->gV1 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane);
+         plldf->gV1 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::OneLoadedLane, ls != pgsTypes::FatigueI);
 
          if ( 2 <= plldf->Nl  && ls != pgsTypes::FatigueI )
          {
-            plldf->gV2 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes);
+            plldf->gV2 = pLLDF->DistributeShearByLeverRule(loc, lrfdILiveLoadDistributionFactor::TwoOrMoreLoadedLanes, true);
          }
          else
          {
@@ -489,8 +489,8 @@ void CDistFactorEngineerImpl<T>::GetSpanDFRaw(const CSpanKey& spanKey,pgsTypes::
       if (pSpecEntry->LimitDistributionFactorsToLanesBeams())
       {
          // Compare results with lanes/beams and override if needed
-         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb));
-         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb));
+         lrfdILiveLoadDistributionFactor::DFResult glb1 = pLLDF->GetLanesBeamsMethod(1,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
+         lrfdILiveLoadDistributionFactor::DFResult glb2 = pLLDF->GetLanesBeamsMethod(plldf->Nl,GirderIndexType(plldf->Nb), ls != pgsTypes::FatigueI);
 
          // Moment
          if ( plldf->gM1.mg < glb1.mg)

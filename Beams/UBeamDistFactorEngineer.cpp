@@ -284,13 +284,8 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 
-         SPANDETAILS fat_span_lldf;
-         GetSpanDF(spanKey,pgsTypes::FatigueI,USE_CURRENT_FC,&fat_span_lldf);
-
-         PIERDETAILS fat_pier1_lldf;
-         GetPierDF(pier1, gdrIdx, pgsTypes::FatigueI, pgsTypes::Ahead, USE_CURRENT_FC, &fat_pier1_lldf);
-
          std::_tstring superscript;
+
          rptRcScalar scalar2 = scalar;
          rptRcScalar scalar3 = scalar;
 
@@ -307,9 +302,9 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
             pPara = new rptParagraph;
             (*pChapter) << pPara;
 
-            superscript = (fat_pier1_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
-            mpf = fat_pier1_lldf.gM1.GetMultiplePresenceFactor();
-            (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(fat_pier1_lldf.gM1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(fat_pier1_lldf.gM1.mg/mpf);
+            superscript = (pier1_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+            mpf = pier1_lldf.gM1.GetMultiplePresenceFactor();
+            (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(pier1_lldf.gM1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(pier1_lldf.gM1.mg/mpf);
          }
 
          // Positive moment DF
@@ -326,9 +321,9 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 
-         superscript = (fat_span_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
-         mpf = fat_span_lldf.gM1.GetMultiplePresenceFactor();
-         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(fat_span_lldf.gM1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(fat_span_lldf.gM1.mg/mpf);
+         superscript = (span_lldf.bExteriorGirder ? _T("ME") : _T("MI"));
+         mpf = span_lldf.gM1.GetMultiplePresenceFactor();
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gM1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(span_lldf.gM1.mg/mpf);
 
          if ( bContinuousAtEnd || bIntegralAtEnd )
          {
@@ -352,9 +347,9 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
          pPara = new rptParagraph;
          (*pChapter) << pPara;
 
-         superscript = (fat_span_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
-         mpf = fat_span_lldf.gV1.GetMultiplePresenceFactor();
-         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(fat_span_lldf.gV1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(fat_span_lldf.gV1.mg/mpf);
+         superscript = (span_lldf.bExteriorGirder ? _T("VE") : _T("VI"));
+         mpf = span_lldf.gV1.GetMultiplePresenceFactor();
+         (*pPara) << _T("g") << superscript << Sub(_T("Fatigue")) << _T(" = ") << _T("mg") << superscript << Sub(_T("1")) << _T("/m =") << scalar.SetValue(span_lldf.gV1.mg) << _T("/") << scalar3.SetValue(mpf) << _T(" = ") << scalar2.SetValue(span_lldf.gV1.mg/mpf);
       }
    } // next span
 }
