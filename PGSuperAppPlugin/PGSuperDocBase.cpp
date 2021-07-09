@@ -2359,34 +2359,31 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
          {
             CFileSaveWarningDlg dlg(GetRootNodeName(), strFileName, strCopyFileName, m_FileCompatibilityState.GetApplicationVersion(), strAppVersion, EAFGetMainFrame());
             auto result = dlg.DoModal();
-            if (result == IDCANCEL)
+            if (result == IDOK)
             {
-               // user cancelled
-               return FALSE;
-            }
+               if (dlg.m_bDontWarn)
+               {
+                  // the don't warn me again flag was set...
 
-            if (dlg.m_bDontWarn)
-            {
-               // the don't warn me again flag was set...
+                  // update the hint settings
+                  sysFlags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
+                  SetUIHintSettings(hintSettings);
 
-               // update the hint settings
-               sysFlags<Uint32>::Set(&hintSettings, UIHINT_FILESAVEWARNING);
-               SetUIHintSettings(hintSettings);
+                  // Save the default option to the registry
+                  CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
+                  CComPtr<IEAFAppPlugin> pAppPlugin;
+                  pTemplate->GetPlugin(&pAppPlugin);
+                  CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+                  CAutoRegistry autoReg(pPGSBase->GetAppName(), pPluginApp);
+                  pPluginApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
 
-               // Save the default option to the registry
-               CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-               CComPtr<IEAFAppPlugin> pAppPlugin;
-               pTemplate->GetPlugin(&pAppPlugin);
-               CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-               CAutoRegistry autoReg(pPGSBase->GetAppName(), pPluginApp);
-               pPluginApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
-
-               // make or don't make copy based on default option
-               bMakeCopy = (dlg.m_DefaultCopyOption == FSW_COPY ? true : false);
-            }
-            else if (dlg.m_CopyOption == FSW_COPY)
-            {
-               bMakeCopy = true;
+                  // make or don't make copy based on default option
+                  bMakeCopy = (dlg.m_DefaultCopyOption == FSW_COPY ? true : false);
+               }
+               else if (dlg.m_CopyOption == FSW_COPY)
+               {
+                  bMakeCopy = true;
+               }
             }
          }
       }
@@ -2407,9 +2404,9 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
       if (bMakeCopy)
       {
          BOOL bSuccess = ::CopyFile(strFileName, strCopyFileName, FALSE);
-         if (!bSuccess && AfxMessageBox(_T("Unable to make a copy of the original file. Would you like to continue without the backup copy?"), MB_YESNO) == IDNO)
+         if (!bSuccess)
          {
-            return FALSE;
+            AfxMessageBox(_T("Unable to make a copy of the original file. Close this file without save and make a backup copy before re-opening it"));
          }
       }
    }
@@ -4813,15 +4810,20 @@ void CPGSDocBase::LoadDocumentSettings()
 void CPGSDocBase::SaveDocumentSettings()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CEAFBrokerDocument::SaveDocumentSettings();
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    CComPtr<IEAFAppPlugin> pAppPlugin;
    pTemplate->GetPlugin(&pAppPlugin);
    CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-   CAutoRegistry autoReg(pPGSBase->GetAppName());
 
-   CWinApp* pApp = AfxGetApp();
+   {
+      CWinApp* pApp = AfxGetApp();
+      CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
+      CEAFBrokerDocument::SaveDocumentSettings();
+   }
+
+   CEAFApp* pApp = EAFGetApp();
+   CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
 
    VERIFY(pApp->WriteProfileString( _T("Settings"),_T("AutoCalc"),m_bAutoCalcEnabled ? _T("On") : _T("Off") ));
 
