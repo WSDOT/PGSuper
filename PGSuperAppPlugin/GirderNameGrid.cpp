@@ -350,6 +350,9 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
    m_pGirderGroup->AssertValid();
 #endif
 
+   CSpanGirderLayoutPage* pParent = (CSpanGirderLayoutPage*)GetParent();
+   pParent->GirderTypeChanged();
+
    return CGXGridWnd::OnEndEditing(nRow, nCol);
 }
 

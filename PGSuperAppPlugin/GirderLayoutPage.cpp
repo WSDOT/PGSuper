@@ -542,6 +542,11 @@ void CSpanGirderLayoutPage::OnNextPierGirderSpacingMeasureChanged()
    m_SpacingGrid[pgsTypes::metEnd].UpdateGrid();
 }
 
+void CSpanGirderLayoutPage::GirderTypeChanged()
+{
+   OnChangeSameGirderSpacing();
+}
+
 GirderIndexType CSpanGirderLayoutPage::GetMinGirderCount()
 {
    CComPtr<IBeamFactory> factory;
@@ -562,14 +567,6 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
 
    // changing from uniform to general, or general to uniform spacing
    pgsTypes::SupportedBeamSpacing oldSpacingType = pParent->m_BridgeDesc.GetGirderSpacingType();
-
-   int curSel = m_cbGirderSpacingType.GetCurSel();
-   pgsTypes::SupportedBeamSpacing curSpacingType = (pgsTypes::SupportedBeamSpacing)(m_cbGirderSpacingType.GetItemData(curSel));
-   if (oldSpacingType == curSpacingType)
-   {
-      // spacing type didn't really chagne
-      return;
-   }
 
    pgsTypes::SupportedBeamSpacing spacingType = ToggleGirderSpacingType(oldSpacingType);
 
