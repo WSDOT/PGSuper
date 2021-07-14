@@ -27536,11 +27536,14 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
 
    PoiList vPoi;
    GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
-   const pgsPointOfInterest& poiEnd(vPoi.front());
    ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& poiStart(vPoi.front());
    GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& poiMS(vPoi.back());
+   GetPointsOfInterest(segmentKey, POI_END_FACE, &vPoi);
+   ATLASSERT(vPoi.size() == 3);
+   const pgsPointOfInterest& poiEnd(vPoi.back());
 
 
    Float64 Hg  = GetHg(intervalIdx,poiEnd);
@@ -27596,15 +27599,22 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
 
 
    // get camber... measured from end of segment as if it was supported at it's ends
+   // deflections are measured relative to the support points. if there are unequal overhangs
+   // we need to add the maximum overhang deflection to the mid-span deflection.
    GET_IFACE(IProductForces, pProduct);
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   Float64 DXpsMS(0), DpsMS(0), DXpsEnd(0), DpsEnd(0);
+   Float64 DXpsStart(0), DpsStart(0), DXpsMS(0), DpsMS(0), DXpsEnd(0), DpsEnd(0);
 
    GET_IFACE_NOCHECK(ICamber, pCamber);
    if (bUseConfig && !handlingConfig.bIgnoreGirderConfig)
    {
       Float64 xps, ps, xtps, tps;
+      pCamber->GetPrestressDeflection(poiStart, pgsTypes::pddHauling, &handlingConfig.GdrConfig, &xps, &ps);
+      pCamber->GetInitialTempPrestressDeflection(poiStart, pgsTypes::pddHauling, &handlingConfig.GdrConfig, &xtps, &tps);
+      DXpsStart = xps + xtps;
+      DpsStart = ps + tps;
+
       pCamber->GetPrestressDeflection(poiMS, pgsTypes::pddHauling, &handlingConfig.GdrConfig, &xps, &ps);
       pCamber->GetInitialTempPrestressDeflection(poiMS, pgsTypes::pddHauling, &handlingConfig.GdrConfig, &xtps, &tps);
       DXpsMS = xps + xtps;
@@ -27617,13 +27627,15 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    }
    else
    {
+      DpsStart = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiStart, bat, rtCumulative, false);
+      DXpsStart = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiStart, bat, rtCumulative);
       DpsMS = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiMS, bat, rtCumulative, false);
       DXpsMS = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiMS, bat, rtCumulative);
       DpsEnd = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiEnd, bat, rtCumulative, false);
       DXpsEnd = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftPretension, poiEnd, bat, rtCumulative);
    }
 
-   Float64 DXgdrMS, DgdrMS, DXgdrEnd, DgdrEnd;
+   Float64 DXgdrStart, DgdrStart, DXgdrMS, DgdrMS, DXgdrEnd, DgdrEnd;
    if (bUseConfig)
    {
       // need deflection based on support at end of girder (this is because the Offset Factor from Mast's method uses deflecton datum at end of girder)
@@ -27642,55 +27654,73 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
       CComQIPtr<IFem2dModelResults> results(pModel);
 
       Float64 dx, dy, rz;
-      PoiIDPairType femPoiID = poiMap.GetModelPoi(poiMS);
+
+      PoiIDPairType femPoiID = poiMap.GetModelPoi(poiStart);
+      CAnalysisResult arStart(_T(__FILE__), __LINE__);
+      arStart = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
+      DgdrStart = dy;
+
+      femPoiID = poiMap.GetModelPoi(poiMS);
       CAnalysisResult ar(_T(__FILE__),__LINE__);
       ar = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
       DgdrMS = dy;
 
       femPoiID = poiMap.GetModelPoi(poiEnd);
-      CAnalysisResult ar2(_T(__FILE__),__LINE__);
-      ar2 = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
+      CAnalysisResult arEnd(_T(__FILE__),__LINE__);
+      arEnd = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
       DgdrEnd = dy;
 
       GET_IFACE(ISectionProperties, pSectProps);
       Float64 Iyy = pSectProps->GetIyy(releaseIntervalIdx, poiMS);
       Float64 Ixy = pSectProps->GetIxy(releaseIntervalIdx, poiMS);
+      DXgdrStart = (-Ixy / Iyy) * DgdrStart;
       DXgdrMS = (-Ixy / Iyy)*DgdrMS;
       DXgdrEnd = (-Ixy / Iyy)*DgdrEnd;
    }
    else
    {
+      DgdrStart = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftGirder, poiStart, bat, rtCumulative, false);
+      DXgdrStart = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftGirder, poiStart, bat, rtCumulative);
       DgdrMS = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftGirder, poiMS, bat, rtCumulative, false);
       DXgdrMS = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftGirder, poiMS, bat, rtCumulative);
       DgdrEnd = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftGirder, poiEnd, bat, rtCumulative, false);
       DXgdrEnd = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftGirder, poiEnd, bat, rtCumulative);
    }
 
-   Float64 DcreepMS, DXcreepMS, DcreepEnd, DXcreepEnd;
+   Float64 DcreepStart, DXcreepStart, DcreepMS, DXcreepMS, DcreepEnd, DXcreepEnd;
    GET_IFACE(ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
    {
+      DcreepStart = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiStart, bat, rtCumulative, false);
       DcreepMS = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiMS, bat, rtCumulative, false);
       DcreepEnd = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiEnd, bat, rtCumulative, false);
 
+      DcreepStart += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiStart, bat, rtCumulative, false);
       DcreepMS += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiMS, bat, rtCumulative, false);
       DcreepEnd += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiEnd, bat, rtCumulative, false);
 
+      DcreepStart += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiStart, bat, rtCumulative, false);
       DcreepMS += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiMS, bat, rtCumulative, false);
       DcreepEnd += pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiEnd, bat, rtCumulative, false);
 
 
+      DXcreepStart = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiStart, bat, rtCumulative);
       DXcreepMS = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiMS, bat, rtCumulative);
       DXcreepEnd = pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftCreep, poiEnd, bat, rtCumulative);
 
+      DXcreepStart += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiStart, bat, rtCumulative);
       DXcreepMS += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiMS, bat, rtCumulative);
       DXcreepEnd += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftShrinkage, poiEnd, bat, rtCumulative);
 
+      DXcreepStart += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiStart, bat, rtCumulative);
       DXcreepMS += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiMS, bat, rtCumulative);
       DXcreepEnd += pProduct->GetXDeflection(haulingIntervalIdx, pgsTypes::pftRelaxation, poiEnd, bat, rtCumulative);
    }
    else
    {
+      DcreepStart = pCamber->GetCreepDeflection(poiStart, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+      DXcreepStart = pCamber->GetXCreepDeflection(poiStart, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
+
       DcreepMS = pCamber->GetCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
       DXcreepMS = pCamber->GetXCreepDeflection(poiMS, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
 
@@ -27698,18 +27728,19 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
       DXcreepEnd = pCamber->GetXCreepDeflection(poiEnd, ICamber::cpReleaseToDiaphragm, CREEP_MAXTIME, pgsTypes::pddStorage, bUseConfig && !handlingConfig.bIgnoreGirderConfig ? &handlingConfig.GdrConfig : nullptr);
    }
 
-   Float64 ps_camber = (DgdrMS + DpsMS + DcreepMS) - (DgdrEnd + DpsEnd + DcreepEnd);
+   Float64 ps_camber = (DgdrMS + DpsMS + DcreepMS) - 0.5*((DgdrStart + DpsStart + DcreepStart) + (DgdrEnd + DpsEnd + DcreepEnd));
 
+   Float64 DptStart = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPostTensioning, poiStart, bat, rtCumulative, false);
    Float64 DptMS = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPostTensioning, poiMS, bat, rtCumulative, false);
    Float64 DptEnd = pProduct->GetDeflection(haulingIntervalIdx, pgsTypes::pftPostTensioning, poiEnd, bat, rtCumulative, false);
-   Float64 pt_camber = DptMS - DptEnd;
+   Float64 pt_camber = DptMS - 0.5*(DptStart + DptEnd);
 
    Float64 camber = ps_camber + pt_camber;
 
    pProblem->SetCamber(camber);
    pProblem->SetCamberMultiplier(pHaulingCriteria->GetHaulingCamberMultiplier());
 
-   Float64 xcamber = (DXgdrMS + DXpsMS + DXcreepMS) - (DXgdrEnd + DXpsEnd + DXcreepEnd);
+   Float64 xcamber = (DXgdrMS + DXpsMS + DXcreepMS) - 0.5*((DXgdrStart + DXpsStart + DXcreepStart) + (DXgdrEnd + DXpsEnd + DXcreepEnd));
    if (!IsZero(xcamber))
    {
       pProblem->IncludeLateralRollAxisOffset(true);
