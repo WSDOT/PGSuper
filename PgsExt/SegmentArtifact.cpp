@@ -214,12 +214,12 @@ pgsSegmentStabilityArtifact* pgsSegmentArtifact::GetSegmentStabilityArtifact()
    return &m_StabilityArtifact;
 }
 
-void pgsSegmentArtifact::SetLiftingCheckArtifact(const stbLiftingCheckArtifact* artifact)
+void pgsSegmentArtifact::SetLiftingCheckArtifact(const WBFL::Stability::LiftingCheckArtifact* artifact)
 {
    m_pLiftingCheckArtifact = artifact;
 }
 
-const stbLiftingCheckArtifact* pgsSegmentArtifact::GetLiftingCheckArtifact() const
+const WBFL::Stability::LiftingCheckArtifact* pgsSegmentArtifact::GetLiftingCheckArtifact() const
 {
    return m_pLiftingCheckArtifact;
 }

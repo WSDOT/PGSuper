@@ -26887,7 +26887,7 @@ void CBridgeAgentImp::GetSegmentReleaseSupportLocations(const CSegmentKey& segme
    }
 }
 
-const stbGirder* CBridgeAgentImp::GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const
+const WBFL::Stability::Girder* CBridgeAgentImp::GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const
 {
    auto found = m_LiftingStabilityModels.find(segmentKey);
    if ( found != m_LiftingStabilityModels.cend() )
@@ -26896,7 +26896,7 @@ const stbGirder* CBridgeAgentImp::GetSegmentLiftingStabilityModel(const CSegment
    }
 
    IntervalIndexType liftingIntervalIdx = GetLiftSegmentInterval(segmentKey);
-   stbGirder girder;
+   WBFL::Stability::Girder girder;
    ConfigureSegmentStabilityModel(segmentKey,liftingIntervalIdx,&girder);
 
    auto result = m_LiftingStabilityModels.insert(std::make_pair(segmentKey,girder));
@@ -26905,7 +26905,7 @@ const stbGirder* CBridgeAgentImp::GetSegmentLiftingStabilityModel(const CSegment
    return &(found->second);
 }
 
-const stbGirder* CBridgeAgentImp::GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const
+const WBFL::Stability::Girder* CBridgeAgentImp::GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const
 {
    auto found = m_HaulingStabilityModels.find(segmentKey);
    if (found != m_HaulingStabilityModels.cend())
@@ -26914,7 +26914,7 @@ const stbGirder* CBridgeAgentImp::GetSegmentHaulingStabilityModel(const CSegment
    }
 
    IntervalIndexType haulingIntervalIdx = GetHaulSegmentInterval(segmentKey);
-   stbGirder girder;
+   WBFL::Stability::Girder girder;
    ConfigureSegmentStabilityModel(segmentKey, haulingIntervalIdx, &girder);
 
    auto result = m_HaulingStabilityModels.insert(std::make_pair(segmentKey, girder));
@@ -26923,7 +26923,7 @@ const stbGirder* CBridgeAgentImp::GetSegmentHaulingStabilityModel(const CSegment
    return &(found->second);
 }
 
-void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,stbGirder* pGirder) const
+void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,WBFL::Stability::Girder* pGirder) const
 {
    VALIDATE(BRIDGE);
 
@@ -27171,15 +27171,15 @@ void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentK
    pGirder->SetDragCoefficient(pGirderEntry->GetDragCoefficient());
 }
 
-const stbLiftingStabilityProblem* CBridgeAgentImp::GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const
+const WBFL::Stability::LiftingStabilityProblem* CBridgeAgentImp::GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const
 {
    ConfigureSegmentLiftingStabilityProblem(segmentKey,true, handlingConfig,pPoiD,&m_LiftingDesignStabilityProblem);
    return &m_LiftingDesignStabilityProblem;
 }
 
-const stbLiftingStabilityProblem* CBridgeAgentImp::GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const
+const WBFL::Stability::LiftingStabilityProblem* CBridgeAgentImp::GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const
 {
-   std::map<CSegmentKey,stbLiftingStabilityProblem>::iterator found = m_LiftingStabilityProblems.find(segmentKey);
+   std::map<CSegmentKey,WBFL::Stability::LiftingStabilityProblem>::iterator found = m_LiftingStabilityProblems.find(segmentKey);
    if ( found != m_LiftingStabilityProblems.end() )
    {
       return &(found->second);
@@ -27187,17 +27187,17 @@ const stbLiftingStabilityProblem* CBridgeAgentImp::GetSegmentLiftingStabilityPro
 
    IntervalIndexType intervalIdx = m_IntervalManager.GetLiftingInterval(segmentKey);
 
-   stbLiftingStabilityProblem problem;
+   WBFL::Stability::LiftingStabilityProblem problem;
    HANDLINGCONFIG dummy;
    ConfigureSegmentLiftingStabilityProblem(segmentKey,false,dummy,nullptr,&problem);
 
-   std::pair<std::map<CSegmentKey,stbLiftingStabilityProblem>::iterator,bool> result = m_LiftingStabilityProblems.insert(std::make_pair(segmentKey,problem));
+   std::pair<std::map<CSegmentKey,WBFL::Stability::LiftingStabilityProblem>::iterator,bool> result = m_LiftingStabilityProblems.insert(std::make_pair(segmentKey,problem));
    ATLASSERT(result.second == true);
    found = result.first;
    return &(found->second);
 }
 
-void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,stbLiftingStabilityProblem* pProblem) const
+void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingStabilityProblem* pProblem) const
 {
    IntervalIndexType intervalIdx = m_IntervalManager.GetLiftingInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = m_IntervalManager.GetPrestressReleaseInterval(segmentKey);
@@ -27258,7 +27258,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    pProblem->SetLiftAngle(pLiftingCriteria->GetLiftingCableMinInclination());
    pProblem->SetSweepTolerance(pLiftingCriteria->GetLiftingSweepTolerance());
    pProblem->SetSweepGrowth(0.0); // no sweep growth at initial lifting
-   pProblem->SetWindLoading((stbTypes::WindType)pLiftingCriteria->GetLiftingWindType(),pLiftingCriteria->GetLiftingWindLoad());
+   pProblem->SetWindLoading((WBFL::Stability::WindType)pLiftingCriteria->GetLiftingWindType(),pLiftingCriteria->GetLiftingWindLoad());
 
    Float64 Loh, Roh;
    if ( bUseConfig )
@@ -27406,7 +27406,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    std::vector<IntervalIndexType> vPrestressIntervals{ releaseIntervalIdx,releaseIntervalIdx,tsInstallationIntervalIdx }; // straight, harped, temporary
    for( const pgsPointOfInterest& poi : vPoi)
    {
-      stbIAnalysisPoint* pAnalysisPoint = new pgsStabilityAnalysisPoint(poi, POI_LIFT_SEGMENT);
+      WBFL::Stability::IAnalysisPoint* pAnalysisPoint = new pgsStabilityAnalysisPoint(poi, POI_LIFT_SEGMENT);
       pProblem->AddAnalysisPoint(pAnalysisPoint);
 
       Float64 Ytg = -GetY(releaseIntervalIdx,poi,pgsTypes::TopGirder);
@@ -27453,31 +27453,31 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    }
 }
 
-const stbHaulingStabilityProblem* CBridgeAgentImp::GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const
+const WBFL::Stability::HaulingStabilityProblem* CBridgeAgentImp::GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const
 {
-   std::map<CSegmentKey,stbHaulingStabilityProblem>::iterator found = m_HaulingStabilityProblems.find(segmentKey);
+   std::map<CSegmentKey,WBFL::Stability::HaulingStabilityProblem>::iterator found = m_HaulingStabilityProblems.find(segmentKey);
    if ( found != m_HaulingStabilityProblems.end() )
    {
       return &(found->second);
    }
 
-   stbHaulingStabilityProblem problem;
+   WBFL::Stability::HaulingStabilityProblem problem;
    HANDLINGCONFIG dummy;
    ConfigureSegmentHaulingStabilityProblem(segmentKey,false,dummy,nullptr,&problem);
 
-   std::pair<std::map<CSegmentKey,stbHaulingStabilityProblem>::iterator,bool> result = m_HaulingStabilityProblems.insert(std::make_pair(segmentKey,problem));
+   std::pair<std::map<CSegmentKey,WBFL::Stability::HaulingStabilityProblem>::iterator,bool> result = m_HaulingStabilityProblems.insert(std::make_pair(segmentKey,problem));
    ATLASSERT(result.second == true);
    found = result.first;
    return &(found->second);
 }
 
-const stbHaulingStabilityProblem* CBridgeAgentImp::GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const
+const WBFL::Stability::HaulingStabilityProblem* CBridgeAgentImp::GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const
 {
    ConfigureSegmentHaulingStabilityProblem(segmentKey,true, handlingConfig,pPOId,&m_HaulingDesignStabilityProblem);
    return &m_HaulingDesignStabilityProblem;
 }
 
-void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPoiD,stbHaulingStabilityProblem* pProblem) const
+void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPoiD,WBFL::Stability::HaulingStabilityProblem* pProblem) const
 {
    IntervalIndexType intervalIdx = m_IntervalManager.GetHaulingInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = m_IntervalManager.GetPrestressReleaseInterval(segmentKey);
@@ -27532,7 +27532,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    Float64 impactDown,impactUp;
    pHaulingCriteria->GetHaulingImpact(&impactDown,&impactUp);
    pProblem->SetImpact(impactUp,impactDown);
-   pProblem->SetImpactUsage((stbTypes::HaulingImpact)pHaulingCriteria->GetHaulingImpactUsage());
+   pProblem->SetImpactUsage((WBFL::Stability::HaulingImpact)pHaulingCriteria->GetHaulingImpactUsage());
 
    PoiList vPoi;
    GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
@@ -27573,12 +27573,12 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    pProblem->SetSupportPlacementTolerance(pHaulingCriteria->GetHaulingSupportPlacementTolerance());
    pProblem->SetSweepTolerance(pHaulingCriteria->GetHaulingSweepTolerance());
    pProblem->SetSweepGrowth(pHaulingCriteria->GetHaulingSweepGrowth());
-   pProblem->SetWindLoading((stbTypes::WindType)pHaulingCriteria->GetHaulingWindType(),pHaulingCriteria->GetHaulingWindLoad());
+   pProblem->SetWindLoading((WBFL::Stability::WindType)pHaulingCriteria->GetHaulingWindType(),pHaulingCriteria->GetHaulingWindLoad());
 
    pProblem->SetCrownSlope(pHaulingCriteria->GetNormalCrownSlope());
    pProblem->SetSuperelevation(pHaulingCriteria->GetMaxSuperelevation());
 
-   pProblem->SetCentrifugalForceType((stbTypes::CFType)pHaulingCriteria->GetCentrifugalForceType());
+   pProblem->SetCentrifugalForceType((WBFL::Stability::CFType)pHaulingCriteria->GetCentrifugalForceType());
    pProblem->SetVelocity(pHaulingCriteria->GetHaulingSpeed());
    pProblem->SetTurningRadius(pHaulingCriteria->GetTurningRadius());
 
@@ -27779,7 +27779,7 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    std::vector<IntervalIndexType> vPrestressIntervals{ releaseIntervalIdx,releaseIntervalIdx,tsInstallationIntervalIdx }; // straight, harped, temporary
    for( const pgsPointOfInterest& poi : vPoi)
    {
-      stbIAnalysisPoint* pAnalysisPoint = new pgsStabilityAnalysisPoint(poi, POI_HAUL_SEGMENT);
+      WBFL::Stability::IAnalysisPoint* pAnalysisPoint = new pgsStabilityAnalysisPoint(poi, POI_HAUL_SEGMENT);
       pProblem->AddAnalysisPoint(pAnalysisPoint);
 
       Float64 Ytg = -GetY(releaseIntervalIdx, poi, pgsTypes::TopGirder);

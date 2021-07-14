@@ -76,11 +76,18 @@ interface IRebarSection;
 interface IRebarSectionItem;
 interface IRebarLayout;
 
-class stbGirder;
-class stbLiftingStabilityProblem;
-class stbHaulingStabilityProblem;
 interface ISegmentLiftingDesignPointsOfInterest;
 interface ISegmentHaulingDesignPointsOfInterest;
+
+namespace WBFL
+{
+   namespace Stability
+   {
+      class Girder;
+      class LiftingStabilityProblem;
+      class HaulingStabilityProblem;
+   }
+}
 
 // MISCELLANEOUS
 //
@@ -1848,13 +1855,13 @@ interface IGirder : public IUnknown
    virtual void GetSegmentStorageSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) const = 0;
    virtual void GetSegmentReleaseSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) const = 0;
 
-   virtual const stbGirder* GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const = 0;
-   virtual const stbLiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
-   virtual const stbLiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const = 0;
+   virtual const WBFL::Stability::Girder* GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const = 0;
+   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
+   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const = 0;
 
-   virtual const stbGirder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const = 0;
-   virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
-   virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const = 0;
+   virtual const WBFL::Stability::Girder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const = 0;
+   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
+   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const = 0;
 
    // Returns the elevation of web-flange intersections that are included in principal web shear checks
    // The key is the elevation in girder section coordinates and the value is descriptive text

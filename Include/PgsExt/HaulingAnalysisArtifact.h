@@ -127,8 +127,8 @@ public:
    Float64 GetFsRollover(pgsTypes::HaulingSlope slope) const;
    Float64 GetFsFailure(pgsTypes::HaulingSlope slope) const;
 
-   void SetHaulingCheckArtifact(const stbHaulingCheckArtifact& haulingArtifact);
-   const stbHaulingCheckArtifact& GetHaulingCheckArtifact() const;
+   void SetHaulingCheckArtifact(const WBFL::Stability::HaulingCheckArtifact& haulingArtifact);
+   const WBFL::Stability::HaulingCheckArtifact& GetHaulingCheckArtifact() const;
 
 protected:
    // GROUP: DATA MEMBERS
@@ -148,7 +148,7 @@ private:
    // GROUP: DATA MEMBERS
 
 
-   stbHaulingCheckArtifact m_HaulingArtifact;
+   WBFL::Stability::HaulingCheckArtifact m_HaulingArtifact;
 
 public:
    // GROUP: DEBUG
@@ -159,7 +159,7 @@ public:
 
    //------------------------------------------------------------------------
    // Dumps the contents of the object to the given dump context.
-   const stbHaulingStabilityProblem* m_pStabilityProblem; // need this for dump
+   const WBFL::Stability::HaulingStabilityProblem* m_pStabilityProblem; // need this for dump
    virtual void Dump(dbgDumpContext& os) const override;
    #endif // _DEBUG
 

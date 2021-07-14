@@ -364,7 +364,7 @@ public:
    const pgsGirderArtifact* Check(const CGirderKey& girderKey) const;
 
    // Creates a lifting analysis artifact
-   const stbLiftingCheckArtifact* CheckLifting(const CSegmentKey& segmentKey) const;
+   const WBFL::Stability::LiftingCheckArtifact* CheckLifting(const CSegmentKey& segmentKey) const;
 
    // Creates a hauling analysis artifact
    const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey) const;
@@ -380,7 +380,7 @@ public:
    const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) const;
 
    // Returns a lifting analysis artifact if the segment was already checked, otherwise returns nullptr
-   const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const;
+   const WBFL::Stability::LiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const;
 
    // Returns a nauling analysis artifact if the segment was already checked, otherwise returns nullptr
    const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const;
@@ -397,7 +397,7 @@ protected:
 
 private:
    mutable std::map<CGirderKey,std::shared_ptr<pgsGirderArtifact>> m_CheckArtifacts;
-   mutable std::map<CSegmentKey,stbLiftingCheckArtifact> m_LiftingCheckArtifacts;
+   mutable std::map<CSegmentKey,WBFL::Stability::LiftingCheckArtifact> m_LiftingCheckArtifacts;
    mutable std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*> m_HaulingAnalysisArtifacts;
 
    const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) const;
@@ -550,7 +550,7 @@ private:
    void GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom) const;
    void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const pgsPointOfInterest& poi,const StressCheckTask& task) const;
 
-   void GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const stbLiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc) const;
+   void GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const WBFL::Stability::LiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc) const;
 
    void GetShearPointsOfInterest(bool bDesign, const CSegmentKey& segmentKey, pgsTypes::LimitState limitState, IntervalIndexType intervalIdx, PoiList& vPoi) const;
 
@@ -575,7 +575,7 @@ public:
    static bool TestMe(dbgLog& rlog);
    #endif // _UNITTEST
 
-   void DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabilityProblem,const stbLiftingCheckArtifact& artifact,dbgDumpContext& os) const;
+   void DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,const WBFL::Stability::LiftingCheckArtifact& artifact,dbgDumpContext& os) const;
 };
 
 // INLINE METHODS

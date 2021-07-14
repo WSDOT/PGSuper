@@ -25,7 +25,7 @@
 #include <Stability\AnalysisPoint.h>
 #include <PgsExt\PointOfInterest.h>
 
-class PGSEXTCLASS pgsStabilityAnalysisPoint : public stbIAnalysisPoint
+class PGSEXTCLASS pgsStabilityAnalysisPoint : public WBFL::Stability::IAnalysisPoint
 {
 public:
    pgsStabilityAnalysisPoint();
@@ -43,7 +43,7 @@ public:
 
    virtual std::_tstring  AsString(const unitmgtLengthData& lengthUnit,Float64 offset,bool bShowUnit) const override;
 
-   virtual stbIAnalysisPoint* Clone() const override;
+   virtual WBFL::Stability::IAnalysisPoint* Clone() const override;
 
 protected:
    pgsPointOfInterest m_Poi;

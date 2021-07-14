@@ -102,14 +102,14 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
                *pChapter << p;
             }
 
-            const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
-            const stbIGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
-            const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
-            const stbLiftingResults& results = pArtifact->GetLiftingResults();
+            const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
+            const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
+            const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
+            const WBFL::Stability::LiftingResults& results = pArtifact->GetLiftingResults();
 
             Float64 Ll, Lr;
             pStabilityProblem->GetSupportLocations(&Ll, &Lr);
-            stbLiftingStabilityReporter reporter;
+            WBFL::Stability::LiftingStabilityReporter reporter;
             reporter.BuildDetailsChapter(pStabilityModel, pStabilityProblem, &results, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
          } // next segment
       } // next group

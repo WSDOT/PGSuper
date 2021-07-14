@@ -98,12 +98,12 @@ void CLiftingCheck::Build(rptChapter* pChapter,
             *pChapter << p;
 
          }
-         const stbLiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
-         const stbIGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
-         const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
+         const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
+         const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
+         const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
          Float64 Ll, Lr;
          pStabilityProblem->GetSupportLocations(&Ll, &Lr);
-         stbLiftingStabilityReporter reporter;
+         WBFL::Stability::LiftingStabilityReporter reporter;
          reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
       } // next segment
    }

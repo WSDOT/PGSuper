@@ -373,11 +373,11 @@ public:
 public:
    virtual const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) const override;
    virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey) const override;
-   virtual const stbLiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Stability::LiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const override;
    virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const override;
    virtual const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType) const override;
    virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) const override;
-   virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact) const override;
+   virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact) const override;
    virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const override;
    virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const override;
    virtual std::shared_ptr<const pgsISummaryRatingArtifact> GetSummaryRatingArtifact(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const override;
@@ -489,7 +489,7 @@ private:
    mutable std::map<CSegmentKey,SLABOFFSETDETAILS> m_SlabOffsetDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
-   mutable std::map<CSegmentKey, std::map<Float64,stbLiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;
+   mutable std::map<CSegmentKey, std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;
    mutable std::map<CSegmentKey, std::map<Float64,std::shared_ptr<pgsHaulingAnalysisArtifact>,Float64_less> > m_HaulingArtifacts;
 
    // Event Sink Cookies

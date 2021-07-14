@@ -276,7 +276,7 @@ bool CStabilityGraphBuilder::UpdateNow()
          {
             pProgress->UpdateMessage(_T("Working..."));
 
-            stbLiftingCheckArtifact artifact;
+            WBFL::Stability::LiftingCheckArtifact artifact;
             pArtifact->CreateLiftingCheckArtifact(segmentKey,loc,&artifact);
 
             const auto& results = artifact.GetLiftingResults();

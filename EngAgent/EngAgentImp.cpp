@@ -3769,8 +3769,8 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       HANDLINGCONFIG lift_config;
       lift_config.bIgnoreGirderConfig = false;
       lift_config.GdrConfig = config;
-      stbLiftingCheckArtifact artifact1;
-      const stbLiftingStabilityProblem* pStabilityProblem;
+      WBFL::Stability::LiftingCheckArtifact artifact1;
+      const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem;
       lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact1,&pStabilityProblem,LOGGER);
       pDetails->L[PS_TTS] = lift_config.LeftOverhang;
    
@@ -3793,7 +3793,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       config.PrestressConfig.Pjack[pgsTypes::Temporary] = 0;
 
       lift_config.GdrConfig = config;
-      stbLiftingCheckArtifact artifact2;
+      WBFL::Stability::LiftingCheckArtifact artifact2;
       lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact2,&pStabilityProblem,LOGGER);
       pDetails->L[NO_TTS] = lift_config.LeftOverhang;
    
@@ -3818,7 +3818,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       lift_config.LeftOverhang = pDetails->L[NO_TTS];
       lift_config.RightOverhang = pDetails->L[NO_TTS];
 
-      stbLiftingCheckArtifact artifact3;
+      WBFL::Stability::LiftingCheckArtifact artifact3;
       lifting_checker.AnalyzeLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact3);
       pDetails->L[PT_TTS_OPTIONAL] = lift_config.LeftOverhang;
 
@@ -3839,7 +3839,7 @@ void CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       lift_config.LeftOverhang = pDetails->L[PS_TTS];
       lift_config.RightOverhang = pDetails->L[PS_TTS];
 
-      stbLiftingCheckArtifact artifact4;
+      WBFL::Stability::LiftingCheckArtifact artifact4;
       lifting_checker.AnalyzeLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact4);
       pDetails->L[PT_TTS_REQUIRED] = lift_config.LeftOverhang;
    
@@ -4146,7 +4146,7 @@ const pgsSegmentArtifact* CEngAgentImp::GetSegmentArtifact(const CSegmentKey& se
    return pArtifact->GetSegmentArtifact(segmentKey.segmentIndex);
 }
 
-const stbLiftingCheckArtifact* CEngAgentImp::GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const
+const WBFL::Stability::LiftingCheckArtifact* CEngAgentImp::GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const
 {
    return m_Designer.CheckLifting(segmentKey);
 }
@@ -4260,16 +4260,16 @@ const pgsGirderDesignArtifact* CEngAgentImp::GetDesignArtifact(const CGirderKey&
    return &((*found).second);
 }
 
-void CEngAgentImp::CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,stbLiftingCheckArtifact* pArtifact) const
+void CEngAgentImp::CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact) const
 {
    bool bCreate = false;
 
-   typedef std::map<CSegmentKey, std::map<Float64,stbLiftingCheckArtifact,Float64_less> >::iterator iter_type;
+   typedef std::map<CSegmentKey, std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> >::iterator iter_type;
    iter_type found_gdr;
    found_gdr = m_LiftingArtifacts.find(segmentKey);
    if ( found_gdr != m_LiftingArtifacts.end() )
    {
-      std::map<Float64,stbLiftingCheckArtifact,Float64_less>::iterator found;
+      std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less>::iterator found;
       found = (*found_gdr).second.find(supportLoc);
       if ( found != (*found_gdr).second.end() )
       {
@@ -4282,7 +4282,7 @@ void CEngAgentImp::CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Floa
    }
    else
    {
-      std::map<Float64,stbLiftingCheckArtifact,Float64_less> artifacts;
+      std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> artifacts;
       std::pair<iter_type,bool> iter = m_LiftingArtifacts.insert( std::make_pair(segmentKey, artifacts) );
       found_gdr = iter.first;
       bCreate = true;

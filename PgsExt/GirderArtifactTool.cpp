@@ -510,7 +510,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       }
 
       // Lifting
-      const stbLiftingCheckArtifact* pLifting = pArtifact->GetLiftingCheckArtifact();
+      const WBFL::Stability::LiftingCheckArtifact* pLifting = pArtifact->GetLiftingCheckArtifact();
       if (pLifting!=nullptr && !pLifting->Passed() )
       {
          std::_tostringstream os;

@@ -618,7 +618,7 @@ const pgsGirderArtifact* pgsDesigner2::GetGirderArtifact(const CGirderKey& girde
    return nullptr;
 }
 
-const stbLiftingCheckArtifact* pgsDesigner2::GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const
+const WBFL::Stability::LiftingCheckArtifact* pgsDesigner2::GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const
 {
    auto found = m_LiftingCheckArtifacts.find(segmentKey);
    if ( found != m_LiftingCheckArtifacts.end() )
@@ -640,17 +640,17 @@ const pgsHaulingAnalysisArtifact* pgsDesigner2::GetHaulingAnalysisArtifact(const
    return nullptr;
 }
 
-const stbLiftingCheckArtifact* pgsDesigner2::CheckLifting(const CSegmentKey& segmentKey) const
+const WBFL::Stability::LiftingCheckArtifact* pgsDesigner2::CheckLifting(const CSegmentKey& segmentKey) const
 {
    // if we already have the artifact, return it
-   const stbLiftingCheckArtifact* pLiftingArtifact = GetLiftingCheckArtifact(segmentKey);
+   const WBFL::Stability::LiftingCheckArtifact* pLiftingArtifact = GetLiftingCheckArtifact(segmentKey);
    if ( pLiftingArtifact )
    {
       return pLiftingArtifact;
    }
 
    // Nope... need to compute it
-   stbLiftingCheckArtifact liftingArtifact;
+   WBFL::Stability::LiftingCheckArtifact liftingArtifact;
    pgsGirderLiftingChecker lifting_checker(m_pBroker,m_StatusGroupID);
    lifting_checker.CheckLifting(segmentKey,&liftingArtifact);
 
@@ -874,7 +874,7 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
       if ( pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() )
       {
          pProgress->UpdateMessage(_T("Checking lifting"));
-         const stbLiftingCheckArtifact* pLiftingArtifact = CheckLifting(segmentKey);
+         const WBFL::Stability::LiftingCheckArtifact* pLiftingArtifact = CheckLifting(segmentKey);
          pSegmentArtifact->SetLiftingCheckArtifact(pLiftingArtifact);
       }
 
@@ -5252,13 +5252,13 @@ void pgsDesigner2::CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmen
       GET_IFACE(ISegmentLiftingPointsOfInterest, pLiftingPoi);
 
       GET_IFACE(IGirder, pGirder);
-      const stbGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
-      const stbLiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey,config, pLiftingPoi);
+      const WBFL::Stability::Girder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
+      const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey,config, pLiftingPoi);
 
-      stbStabilityEngineer engineer;
-      stbLiftingResults liftingResults = engineer.AnalyzeLifting(pStabilityModel, pStabilityProblem);
+      WBFL::Stability::StabilityEngineer engineer;
+      WBFL::Stability::LiftingResults liftingResults = engineer.AnalyzeLifting(pStabilityModel, pStabilityProblem);
 
-      Float64 zo = liftingResults.Zo[stbTypes::NoImpact];
+      Float64 zo = liftingResults.Zo[WBFL::Stability::NoImpact];
 
       GET_IFACE(IPointOfInterest, pPoi);
       PoiList vPoi;
@@ -8231,7 +8231,7 @@ void pgsDesigner2::GetControllingHarpedEccentricity(IntervalIndexType interval, 
 
 bool pgsDesigner2::CheckLiftingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const
 {
-   stbLiftingCheckArtifact artifact;
+   WBFL::Stability::LiftingCheckArtifact artifact;
 
    HANDLINGCONFIG lift_config;
    lift_config.bIgnoreGirderConfig = false;
@@ -8496,16 +8496,16 @@ void pgsDesigner2::DesignConcreteRelease(Float64 ftop, Float64 fbot) const
 class SectionFinder
 {
 public:
-   static const stbLiftingStabilityProblem* pStabilityProblem;
+   static const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem;
    static Float64 X;
-   static bool Find(const stbLiftingSectionResult& sectionResult) 
+   static bool Find(const WBFL::Stability::LiftingSectionResult& sectionResult) 
    { 
-      const stbIAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+      const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       return IsEqual(SectionFinder::X,pAnalysisPoint->GetLocation()); 
    }
 };
 Float64 SectionFinder::X = 0;
-const stbLiftingStabilityProblem* SectionFinder::pStabilityProblem = nullptr;
+const WBFL::Stability::LiftingStabilityProblem* SectionFinder::pStabilityProblem = nullptr;
 
 void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool bProportioningStrands,IProgress* pProgress) const
 {
@@ -8563,8 +8563,8 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
    HANDLINGCONFIG liftConfig;
    liftConfig.bIgnoreGirderConfig = false;
    liftConfig.GdrConfig = config;
-   stbLiftingCheckArtifact artifact;
-   const stbLiftingStabilityProblem* pStabilityProblem;
+   WBFL::Stability::LiftingCheckArtifact artifact;
+   const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem;
    pgsDesignCodes::OutcomeType result = checker.DesignLifting(segmentKey,liftConfig,pPoiLd,&artifact,&pStabilityProblem,LOGGER);
    SectionFinder::pStabilityProblem = pStabilityProblem;
 
@@ -8584,7 +8584,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
       return;
    }
 
-   const stbLiftingResults& liftingResults = artifact.GetLiftingResults();
+   const WBFL::Stability::LiftingResults& liftingResults = artifact.GetLiftingResults();
 
    // Check to see if the girder is stable for lifting
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
@@ -8696,13 +8696,13 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
          ATLASSERT(poi.HasAttribute(POI_HARPINGPOINT));
 
          SectionFinder::X = poi.GetDistFromStart();
-         std::vector<stbLiftingSectionResult>::const_iterator found = std::find_if(liftingResults.vSectionResults.begin(),liftingResults.vSectionResults.end(),SectionFinder::Find);
+         std::vector<WBFL::Stability::LiftingSectionResult>::const_iterator found = std::find_if(liftingResults.vSectionResults.begin(),liftingResults.vSectionResults.end(),SectionFinder::Find);
          ATLASSERT(found != liftingResults.vSectionResults.end());
-         const stbLiftingSectionResult& sectionResult = *found;
-         fHpTopMin.push_back(sectionResult.fMinDirect[stbTypes::Top]);
-         fHpTopMax.push_back(sectionResult.fMaxDirect[stbTypes::Top]);
-         fHpBotMin.push_back(sectionResult.fMinDirect[stbTypes::Bottom]);
-         fHpBotMax.push_back(sectionResult.fMaxDirect[stbTypes::Bottom]);
+         const WBFL::Stability::LiftingSectionResult& sectionResult = *found;
+         fHpTopMin.push_back(sectionResult.fMinDirect[WBFL::Stability::Top]);
+         fHpTopMax.push_back(sectionResult.fMaxDirect[WBFL::Stability::Top]);
+         fHpBotMin.push_back(sectionResult.fMinDirect[WBFL::Stability::Bottom]);
+         fHpBotMax.push_back(sectionResult.fMaxDirect[WBFL::Stability::Bottom]);
       }
 
       Float64 fTopHpMin = *std::min_element(fHpTopMin.begin(),fHpTopMin.end());
@@ -8927,7 +8927,7 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
    m_DesignerOutcome.SetOutcome(pgsDesignCodes::RetainStrandProportioning);
 }
 
-void pgsDesigner2::GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const stbLiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc) const
+void pgsDesigner2::GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const WBFL::Stability::LiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc) const
 {
    ATLASSERT(0 < liftingResults.vSectionResults.size());
 
@@ -8943,21 +8943,21 @@ void pgsDesigner2::GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,con
    Float64 right_loc = Min(Lg - XferLength,Lg - liftConfig.RightOverhang);
 
    SectionFinder::X = left_loc;
-   std::vector<stbLiftingSectionResult>::const_iterator foundLeft = std::find_if(liftingResults.vSectionResults.begin(),liftingResults.vSectionResults.end(),SectionFinder::Find);
+   std::vector<WBFL::Stability::LiftingSectionResult>::const_iterator foundLeft = std::find_if(liftingResults.vSectionResults.begin(),liftingResults.vSectionResults.end(),SectionFinder::Find);
    ATLASSERT(foundLeft != liftingResults.vSectionResults.end());
 
    SectionFinder::X = right_loc;
-   std::vector<stbLiftingSectionResult>::const_iterator foundRight = std::find_if(liftingResults.vSectionResults.begin(),liftingResults.vSectionResults.end(),SectionFinder::Find);
+   std::vector<WBFL::Stability::LiftingSectionResult>::const_iterator foundRight = std::find_if(liftingResults.vSectionResults.begin(),liftingResults.vSectionResults.end(),SectionFinder::Find);
    ATLASSERT(foundRight != liftingResults.vSectionResults.end());
 
-   const stbLiftingSectionResult& leftSection  = *foundLeft;
-   const stbLiftingSectionResult& rightSection = *foundRight;
+   const WBFL::Stability::LiftingSectionResult& leftSection  = *foundLeft;
+   const WBFL::Stability::LiftingSectionResult& rightSection = *foundRight;
 
-   Float64 fMaxTopLeftEnd = leftSection.fMaxDirect[stbTypes::Top] - leftSection.fps[stbTypes::TopLeft];
-   Float64 fMaxTopRightEnd = rightSection.fMaxDirect[stbTypes::Top] - rightSection.fps[stbTypes::TopRight];
+   Float64 fMaxTopLeftEnd = leftSection.fMaxDirect[WBFL::Stability::Top] - leftSection.fps[WBFL::Stability::TopLeft];
+   Float64 fMaxTopRightEnd = rightSection.fMaxDirect[WBFL::Stability::Top] - rightSection.fps[WBFL::Stability::TopRight];
 
-   Float64 fMinBottomLeftEnd = leftSection.fMinDirect[stbTypes::Bottom] - leftSection.fps[stbTypes::BottomLeft];
-   Float64 fMinBottomRightEnd = rightSection.fMinDirect[stbTypes::Bottom] - rightSection.fps[stbTypes::BottomRight];
+   Float64 fMinBottomLeftEnd = leftSection.fMinDirect[WBFL::Stability::Bottom] - leftSection.fps[WBFL::Stability::BottomLeft];
+   Float64 fMinBottomRightEnd = rightSection.fMinDirect[WBFL::Stability::Bottom] - rightSection.fps[WBFL::Stability::BottomRight];
 
    *pftop = Max(fMaxTopLeftEnd,fMaxTopRightEnd);
    *ptop_loc = (MaxIndex(fMaxTopLeftEnd,fMaxTopRightEnd) == 0 ? left_loc : right_loc);
@@ -9011,8 +9011,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
    HANDLINGCONFIG liftConfig;
    liftConfig.bIgnoreGirderConfig = false;
    liftConfig.GdrConfig = config;
-   stbLiftingCheckArtifact artifact;
-   const stbLiftingStabilityProblem* pStabilityProblem;
+   WBFL::Stability::LiftingCheckArtifact artifact;
+   const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem;
    pgsDesignCodes::OutcomeType result = checker.DesignLifting(segmentKey,liftConfig,pPoiLd,&artifact,&pStabilityProblem,LOGGER);
    SectionFinder::pStabilityProblem = pStabilityProblem; // this is the design problem we will be searching ... set it here and it will get used in multiple calls below
 
@@ -9035,7 +9035,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignForLiftingDebonding(bool bPropo
 
    m_DesignerOutcome.SetOutcome(pgsDesignCodes::LiftingConfigChanged);
 
-   const stbLiftingResults& liftingResults = artifact.GetLiftingResults();
+   const WBFL::Stability::LiftingResults& liftingResults = artifact.GetLiftingResults();
 
    // Check to see if the girder is stable for lifting
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
@@ -9245,7 +9245,7 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
       LOG(_T("Debond levels measured from fully bonded section"));
       liftConfig.GdrConfig.PrestressConfig.Debond[pgsTypes::Straight].clear();
 
-      stbLiftingCheckArtifact artifact;
+      WBFL::Stability::LiftingCheckArtifact artifact;
 
       pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID);
       // Designer manages it's own POIs
@@ -9275,12 +9275,12 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
       std::vector<pgsStrandDesignTool::StressDemand> stress_demands;
       LOG(_T("--- Compute lifting stresses for debonding --- nperm = ")<<nperm);
       GET_IFACE(IGirder,pGirder);
-      const stbILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey,liftConfig,pPoiLd);
-      const stbLiftingResults& results = artifact.GetLiftingResults();
+      const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey,liftConfig,pPoiLd);
+      const WBFL::Stability::LiftingResults& results = artifact.GetLiftingResults();
       stress_demands.reserve(results.vSectionResults.size());
       for( const auto& sectionResult : results.vSectionResults)
       {
-         const stbIAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+         const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
          Float64 poi_loc = pAnalysisPoint->GetLocation();
          if(poi_loc <= lft_end || rgt_end <= poi_loc)
          {
@@ -9297,8 +9297,8 @@ std::vector<DebondLevelType> pgsDesigner2::DesignDebondingForLifting(HANDLINGCON
             Float64 Fpe = FpeStraight + FpeHarped + FpeTemporary;
             force_per_strand = Fpe / (nperm+ntemp);
 
-            Float64 fTop = sectionResult.fMaxDirect[stbTypes::Top];
-            Float64 fBot = sectionResult.fMinDirect[stbTypes::Bottom];
+            Float64 fTop = sectionResult.fMaxDirect[WBFL::Stability::Top];
+            Float64 fBot = sectionResult.fMinDirect[WBFL::Stability::Bottom];
 
             LOG(_T("At ")<< ::ConvertFromSysUnits(poi_loc,unitMeasure::Feet)<<_T(" ft, Ftop = ")<< ::ConvertFromSysUnits(fTop,unitMeasure::KSI) << _T(" ksi Fbot = ")<< ::ConvertFromSysUnits(fBot,unitMeasure::KSI) << _T(" ksi") );
             LOG(_T("Average force per strand = ") << ::ConvertFromSysUnits(Fpe/(nperm+ntemp),unitMeasure::Kip) << _T(" kip"));
@@ -10492,40 +10492,40 @@ void pgsDesigner2::GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTa
    batBottom = pProdForces->GetBridgeAnalysisType(task.stressType == pgsTypes::Compression ? pgsTypes::Minimize : pgsTypes::Maximize);
 }
 
-void pgsDesigner2::DumpLiftingArtifact(const stbLiftingStabilityProblem* pStabilityProblem,const stbLiftingCheckArtifact& artifact,dbgDumpContext& os) const
+void pgsDesigner2::DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,const WBFL::Stability::LiftingCheckArtifact& artifact,dbgDumpContext& os) const
 {
-   os << _T("Dump for stbLiftingCheckArtifact") << endl;
+   os << _T("Dump for WBFL::Stability::LiftingCheckArtifact") << endl;
    os << _T("===================================") <<endl;
 
    os <<_T(" Stress Artifacts")<<endl;
    os << _T("================") <<endl;
-   const stbLiftingResults& results = artifact.GetLiftingResults();
+   const WBFL::Stability::LiftingResults& results = artifact.GetLiftingResults();
    for(const auto& sectionResult : results.vSectionResults)
    {
-      const stbIAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+      const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 
       // NOTE: min_stress and max_stress are backwards to match the original log file dump code from pgsLiftingAnalysisArtifact
-      Float64 min_stress = Max(sectionResult.fMaxDirect[stbTypes::Top],sectionResult.fMaxDirect[stbTypes::Bottom]);
-      Float64 max_stress = Min(sectionResult.fMinDirect[stbTypes::Top],sectionResult.fMinDirect[stbTypes::Bottom]);
+      Float64 min_stress = Max(sectionResult.fMaxDirect[WBFL::Stability::Top],sectionResult.fMaxDirect[WBFL::Stability::Bottom]);
+      Float64 max_stress = Min(sectionResult.fMinDirect[WBFL::Stability::Top],sectionResult.fMinDirect[WBFL::Stability::Bottom]);
       os<<_T("Total Stress: Min =")<<::ConvertFromSysUnits(min_stress,unitMeasure::KSI)<<_T("ksi, Max=")<<::ConvertFromSysUnits(max_stress,unitMeasure::KSI)<<_T("ksi")<<endl;
    }
 
    os <<_T(" Cracking Artifacts")<<endl;
    os << _T("==================") <<endl;
    // we don't do impact or wind for lifting so these values will work
-   stbTypes::ImpactDirection impact = stbTypes::NoImpact;
-   stbTypes::WindDirection wind = stbTypes::Left;
+   WBFL::Stability::ImpactDirection impact = WBFL::Stability::NoImpact;
+   WBFL::Stability::WindDirection wind = WBFL::Stability::Left;
    for(const auto& sectionResult : results.vSectionResults)
    {
-      const stbIAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
+      const WBFL::Stability::IAnalysisPoint* pAnalysisPoint = pStabilityProblem->GetAnalysisPoint(sectionResult.AnalysisPointIndex);
       Float64 loc = pAnalysisPoint->GetLocation();
       os <<_T("At ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft: ");
 
-      stbTypes::Corner corner = sectionResult.MinFScrCorner[impact][wind];
-      if ( corner == stbTypes::TopLeft ||
-           corner == stbTypes::TopRight )
+      WBFL::Stability::Corner corner = sectionResult.MinFScrCorner[impact][wind];
+      if ( corner == WBFL::Stability::TopLeft ||
+           corner == WBFL::Stability::TopRight )
       {
          os << _T("Flange=TopFlange");
       }

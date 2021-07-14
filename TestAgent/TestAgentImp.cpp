@@ -2248,12 +2248,12 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
    const pgsSegmentArtifact* pArtifact = pArtifacts->GetSegmentArtifact(segmentKey);
 
    // lifting
-   const stbLiftingCheckArtifact* pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
+   const WBFL::Stability::LiftingCheckArtifact* pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
    if ( pLiftArtifact != nullptr )
    {
-      const stbLiftingResults& liftingResults = pLiftArtifact->GetLiftingResults();
-      if ( !liftingResults.bIsStable[stbTypes::NoImpact][stbTypes::Left] || !liftingResults.bIsStable[stbTypes::ImpactUp][stbTypes::Left] || !liftingResults.bIsStable[stbTypes::ImpactDown][stbTypes::Left] ||
-           !liftingResults.bIsStable[stbTypes::NoImpact][stbTypes::Right] || !liftingResults.bIsStable[stbTypes::ImpactUp][stbTypes::Right] || !liftingResults.bIsStable[stbTypes::ImpactDown][stbTypes::Right])
+      const WBFL::Stability::LiftingResults& liftingResults = pLiftArtifact->GetLiftingResults();
+      if ( !liftingResults.bIsStable[WBFL::Stability::NoImpact][WBFL::Stability::Left] || !liftingResults.bIsStable[WBFL::Stability::ImpactUp][WBFL::Stability::Left] || !liftingResults.bIsStable[WBFL::Stability::ImpactDown][WBFL::Stability::Left] ||
+           !liftingResults.bIsStable[WBFL::Stability::NoImpact][WBFL::Stability::Right] || !liftingResults.bIsStable[WBFL::Stability::ImpactUp][WBFL::Stability::Right] || !liftingResults.bIsStable[WBFL::Stability::ImpactDown][WBFL::Stability::Right])
       {
          resultsFile<<"Girder is unstable for lifting"<<std::endl;
          return true;

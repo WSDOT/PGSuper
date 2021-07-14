@@ -2524,7 +2524,7 @@ BOOL CPGSDocBase::Init()
 
    m_CopyTempSupportPropertiesCallbacks.insert(std::make_pair(m_CallbackID++, &m_CopyTempSupportConnectionProperties));
 
-   // register the standard copy girder callback objects. Note that the ordering here will be the same as in the properties menus and listbox
+   // register the standard copy girder callback objects. Note that the ordering here will be the same as in the properties menus and liWBFL::Stability::ox
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderAllProperties));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderMaterials));
    m_CopyGirderPropertiesCallbacks.insert(std::make_pair(m_CallbackID++,&m_CopyGirderRebar));

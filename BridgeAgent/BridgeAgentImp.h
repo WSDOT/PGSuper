@@ -1144,12 +1144,12 @@ public:
    virtual void GetSegmentBearingOffset(const CSegmentKey& segmentKey,Float64* pStartBearingOffset,Float64* pEndBearingOffset) const override;
    virtual void GetSegmentStorageSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) const override;
    virtual void GetSegmentReleaseSupportLocations(const CSegmentKey& segmentKey,Float64* pDistFromLeftEnd,Float64* pDistFromRightEnd) const override;
-   virtual const stbGirder* GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const override;
-   virtual const stbLiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const override;
-   virtual const stbLiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const override;
-   virtual const stbGirder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const override;
-   virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const override;
-   virtual const stbHaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const override;
+   virtual const WBFL::Stability::Girder* GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const override;
+   virtual const WBFL::Stability::Girder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const override;
    virtual std::vector<std::tuple<Float64, Float64, std::_tstring>> GetWebSections(const pgsPointOfInterest& poi) const override;
 
 // IGirderTendonGeometry
@@ -1470,15 +1470,15 @@ private:
    Float64 GetCurbOffset(DirectionType side, Float64 Xb) const;
 
    // Stability Modeling
-   mutable std::map<CSegmentKey, stbGirder> m_LiftingStabilityModels;
-   mutable std::map<CSegmentKey, stbGirder> m_HaulingStabilityModels;
-   mutable std::map<CSegmentKey,stbLiftingStabilityProblem> m_LiftingStabilityProblems;
-   mutable std::map<CSegmentKey,stbHaulingStabilityProblem> m_HaulingStabilityProblems;
-   mutable stbLiftingStabilityProblem m_LiftingDesignStabilityProblem;
-   mutable stbHaulingStabilityProblem m_HaulingDesignStabilityProblem;
-   void ConfigureSegmentStabilityModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,stbGirder* pGirder) const;
-   void ConfigureSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,stbLiftingStabilityProblem* problem) const;
-   void ConfigureSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPoiD,stbHaulingStabilityProblem* problem) const;
+   mutable std::map<CSegmentKey, WBFL::Stability::Girder> m_LiftingStabilityModels;
+   mutable std::map<CSegmentKey, WBFL::Stability::Girder> m_HaulingStabilityModels;
+   mutable std::map<CSegmentKey,WBFL::Stability::LiftingStabilityProblem> m_LiftingStabilityProblems;
+   mutable std::map<CSegmentKey,WBFL::Stability::HaulingStabilityProblem> m_HaulingStabilityProblems;
+   mutable WBFL::Stability::LiftingStabilityProblem m_LiftingDesignStabilityProblem;
+   mutable WBFL::Stability::HaulingStabilityProblem m_HaulingDesignStabilityProblem;
+   void ConfigureSegmentStabilityModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,WBFL::Stability::Girder* pGirder) const;
+   void ConfigureSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingStabilityProblem* problem) const;
+   void ConfigureSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPoiD,WBFL::Stability::HaulingStabilityProblem* problem) const;
 
    void Invalidate( Uint16 level );
    Uint16 Validate( Uint16 level );

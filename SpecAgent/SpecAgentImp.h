@@ -250,8 +250,8 @@ public:
    virtual Float64 GetLiftingCamberMultiplier() const override;
    virtual pgsTypes::WindType GetLiftingWindType() const override;
    virtual Float64 GetLiftingWindLoad() const override;
-   virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) const override;
-   virtual stbLiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) const override;
+   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey) const override;
+   virtual WBFL::Stability::LiftingCriteria GetLiftingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig) const override;
 
 // ISegmentHaulingSpecCriteria
 public:
@@ -302,8 +302,8 @@ public:
    virtual pgsTypes::CFType GetCentrifugalForceType() const override;
    virtual Float64 GetHaulingSpeed() const override;
    virtual Float64 GetTurningRadius() const override;
-   virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) const override;
-   virtual stbHaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) const override;
+   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey) const override;
+   virtual WBFL::Stability::HaulingCriteria GetHaulingStabilityCriteria(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig) const override;
 
 // IKdotGirderHaulingSpecCriteria
 public:
