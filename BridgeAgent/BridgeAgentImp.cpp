@@ -23051,6 +23051,45 @@ Float64 CBridgeAgentImp::GetSegmentHeight(const CPrecastSegmentData* pSegment, F
    return beamFactory->GetSegmentHeight(m_pBroker, pSegment, Xs);
 }
 
+bool CBridgeAgentImp::IsStructuralSection(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx) const
+{
+   // figure out where the poi is located and if the concrete is cured enought to make the section act as a structural member
+   CClosureKey closureKey;
+   bool bIsInClosureJoint = IsInClosureJoint(poi, &closureKey);
+   bool bIsOnSegment = IsOnSegment(poi);
+   bool bIsInBoundaryPierDiaphragm = IsInBoundaryPierDiaphragm(poi);
+
+   const CPierData2* pPier = nullptr;
+   bool bIntegralBack{ false }, bIntegralAhead{ false };
+   if (bIsInBoundaryPierDiaphragm)
+   {
+      PierIndexType pierIdx = GetPier(poi);
+      ATLASSERT(pierIdx != INVALID_INDEX);
+      GET_IFACE(IBridgeDescription, pBridge);
+      pPier = pBridge->GetPier(pierIdx);
+      ATLASSERT(pPier);
+      pPier->IsIntegral(&bIntegralBack, &bIntegralAhead);
+   }
+
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType compositeIntervalIdx = GetLastCompositeInterval();
+
+   bool bIsSection = true;
+   if (
+      (bIsInClosureJoint && intervalIdx < GetCompositeClosureJointInterval(closureKey)) // in closure and closure concrete isn't cured yet
+      ||                                                             // OR
+      (bIsOnSegment && intervalIdx < releaseIntervalIdx) // on segment and segment concrete isn't cured yet
+      ||                                                             // OR
+      (bIsInBoundaryPierDiaphragm && (intervalIdx < compositeIntervalIdx || (!pPier->IsContinuous() && !(bIntegralBack && bIntegralAhead)))) // in pier diaphragm and concrete isn't cured yet or there isn't a span-to-span connection (continuous or integral)
+      )
+   {
+      bIsSection = false; // this is not a structural section...
+   }
+   return bIsSection;
+}
+
+
 /////////////////////////////////////////////////////////////////////////
 // IShapes
 //
@@ -31148,30 +31187,7 @@ const CBridgeAgentImp::SectProp& CBridgeAgentImp::GetSectionProperties(IntervalI
    bool bIsInClosureJoint          = IsInClosureJoint(poi,&closureKey);
    bool bIsOnSegment               = IsOnSegment(poi);
    bool bIsInBoundaryPierDiaphragm = IsInBoundaryPierDiaphragm(poi);
-
-   const CPierData2* pPier = nullptr;
-   bool bIntegralBack{ false }, bIntegralAhead{ false };
-   if (bIsInBoundaryPierDiaphragm)
-   {
-      PierIndexType pierIdx = GetPier(poi);
-      ATLASSERT(pierIdx != INVALID_INDEX);
-      GET_IFACE(IBridgeDescription, pBridge);
-      pPier = pBridge->GetPier(pierIdx);
-      ATLASSERT(pPier);
-      pPier->IsIntegral(&bIntegralBack, &bIntegralAhead);
-   }
-
-   bool bIsSection = true;
-   if ( 
-        (bIsInClosureJoint && intervalIdx < GetCompositeClosureJointInterval(closureKey)) // in closure and closure concrete isn't cured yet
-        ||                                                             // OR
-        (bIsOnSegment && intervalIdx < releaseIntervalIdx ) // on segment and segment concrete isn't cured yet
-        ||                                                             // OR
-        (bIsInBoundaryPierDiaphragm && (intervalIdx < compositeIntervalIdx || (!pPier->IsContinuous() && !(bIntegralBack && bIntegralAhead)))) // in pier diaphragm and concrete isn't cured yet or there isn't a span-to-span connection (continuous or integral)
-      )
-   {
-      bIsSection = false; // this is not a structural section...
-   }
+   bool bIsSection                 = IsStructuralSection(poi,intervalIdx);
 
    // if net deck properties are requested and the interval is before the deck is made composite
    // then the deck is not yet structural and its section properties are taken to be zero

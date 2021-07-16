@@ -980,6 +980,7 @@ public:
    virtual Float64 GetSegmentHeightAtPier(const CSegmentKey& segmentKey,PierIndexType pierIdx) const override;
    virtual Float64 GetSegmentHeightAtTemporarySupport(const CSegmentKey& segmentKey,SupportIndexType tsIdx) const override;
    virtual Float64 GetSegmentHeight(const CPrecastSegmentData* pSegment, Float64 Xs) const override;
+   virtual bool IsStructuralSection(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx) const override;
 
 // IShapes
 public:

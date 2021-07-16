@@ -9997,6 +9997,15 @@ void CAnalysisAgentImp::IsDeckInPrecompressedTensileZone(const pgsPointOfInteres
       return;
    }
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (!pPoi->IsOnGirder(poi))
+   {
+      // poi is not on the girder so it can't be in a PTZ
+      *pbTopPTZ = false;
+      *pbBotPTZ = false;
+      return;
+   }
+
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Get the stress when the bridge is in service (that is when live load is applied)
@@ -10061,6 +10070,15 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
       // we know the answer
       *pbTopPTZ = false;
       *pbBotPTZ = true;
+      return;
+   }
+
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (!pPoi->IsOnGirder(poi))
+   {
+      // poi is not on the girder so it can't be in a PTZ
+      *pbTopPTZ = false;
+      *pbBotPTZ = false;
       return;
    }
 
@@ -10156,7 +10174,6 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
    SpanIndexType startSpanIdx, endSpanIdx;
    pBridge->GetSpansForSegment(segmentKey,&startSpanIdx,&endSpanIdx);
 
-   GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
@@ -10286,7 +10303,7 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes
    pfTop->clear();
    pfBot->clear();
 
-   GET_IFACE(ILosses,pLosses);
+   GET_IFACE_NOCHECK(ILosses,pLosses);
 
    pgsTypes::FaceType topFace = (IsTopStressLocation(topLocation) ? pgsTypes::TopFace : pgsTypes::BottomFace);
    pgsTypes::FaceType botFace = (IsTopStressLocation(botLocation) ? pgsTypes::TopFace : pgsTypes::BottomFace);

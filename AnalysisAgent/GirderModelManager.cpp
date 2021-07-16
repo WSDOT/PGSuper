@@ -7611,10 +7611,9 @@ void CGirderModelManager::CreateLBAMSuperstructureMembers(GirderIndexType gdr,bo
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
+   IntervalIndexType startIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(CGirderKey(ALL_GROUPS, gdr));
    for(const auto& girderKey : vGirderKeys)
    {
-      IntervalIndexType startIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
-
       CheckGirderEndGeometry(pBridge,girderKey); // make sure girder is on its bearing - if it isn't an UNWIND exception will throw
 
       // get the girder data

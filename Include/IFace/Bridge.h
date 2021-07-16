@@ -1435,6 +1435,9 @@ interface ISectionProperties : IUnknown
 
    // Returns the height of the segment at Xs based on the specified parameters
    virtual Float64 GetSegmentHeight(const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
+
+   /// Returns true if the specified section provides structural resistance during the specified analysis interval
+   virtual bool IsStructuralSection(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx) const = 0;
 };
 
 /*****************************************************************************

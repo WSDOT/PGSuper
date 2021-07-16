@@ -1593,12 +1593,14 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    tsDetails.Deck.Ea  = EaDeck;
 
    // deck rebar
+   bool bIsStructuralSection = m_pSectProp->IsStructuralSection(poi, intervalIdx);
+
    // NOTE: EDeck can be zero when the deck is composite if the duration of curing time is zero. The deck strength and modulus always start at zero and grow with the time function
-   if (!IsZero(EDeck) && ((bIsInClosure && compositeClosureIntervalIdx <= intervalIdx && compositeDeckIntervalIdx <= intervalIdx) || (!bIsInClosure && compositeDeckIntervalIdx <= intervalIdx)) )
+   if(!IsZero(EDeck) && bIsStructuralSection)
    {
-      // poi is at a closure joint and both the deck and the closure joint are coomposite
-      // or the poi is at any other location and the deck is composite 
-      // so the deck rebar is in play
+      // poi is at a structural section so count the deck rebar.
+      // IsStructuralSection is used when transformed section properties are computed so this should be consistent
+      // and avoid problems in the section properties check during time-step analysis
       for ( int i = 0; i < 2; i++ )
       {
          pgsTypes::DeckRebarMatType matType = pgsTypes::DeckRebarMatType(i);
@@ -5097,6 +5099,8 @@ const std::vector<pgsTypes::StrandType>& CTimeStepLossEngineer::GetStrandTypes(c
 
 void CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey,PoiList* pPoiList)
 {
+   ASSERT_GIRDER_KEY(girderKey); // must be a full girder key
+
    // this does time-step analysis using every POI
 #if defined USE_ALL_POI
    m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),pPoiList);
@@ -5110,57 +5114,12 @@ void CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey,Poi
    m_pPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),POI_CLOSURE | POI_START_FACE | POI_END_FACE, pPoiLlist;
    *pPoiLlist = m_pPoi->SetPoiList(pPoiLlist);
 #endif
-
-   // remove all poi before the start of the girder
-   auto iter = pPoiList->begin();
-   auto end = pPoiList->end();
-   for (; iter != end; iter++)
-   {
-      const pgsPointOfInterest& poi(*iter);
-      if (m_pPoi->IsOnGirder(poi))
-         break;
-   }
-   pPoiList->erase(pPoiList->begin(), iter);
-
-   // remove all poi after end of the girder
-   auto riter = pPoiList->rbegin();
-   auto rend = pPoiList->rend();
-   iter = pPoiList->end();
-   for (; riter != rend; riter++, iter--)
-   {
-      const pgsPointOfInterest& poi(*riter);
-      if (m_pPoi->IsOnGirder(poi))
-         break;
-   }
-   pPoiList->erase(iter,pPoiList->end());
 }
 
 void CTimeStepLossEngineer::GetAnalysisLocations(const CSegmentKey& segmentKey, PoiList* pPoiList)
 {
+   ASSERT_SEGMENT_KEY(segmentKey); // must be a full segment key
    m_pPoi->GetPointsOfInterest(segmentKey, pPoiList);
-
-   // remove all poi before the start of the girder
-   auto iter = pPoiList->begin();
-   auto end = pPoiList->end();
-   for (; iter != end; iter++)
-   {
-      const pgsPointOfInterest& poi(*iter);
-      if (m_pPoi->IsOnGirder(poi))
-         break;
-   }
-   pPoiList->erase(pPoiList->begin(), iter);
-
-   // remove all poi after end of the girder
-   auto riter = pPoiList->rbegin();
-   auto rend = pPoiList->rend();
-   iter = pPoiList->end();
-   for (; riter != rend; riter++, iter--)
-   {
-      const pgsPointOfInterest& poi(*riter);
-      if (m_pPoi->IsOnGirder(poi))
-         break;
-   }
-   pPoiList->erase(iter, pPoiList->end());
 }
 
 void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, pgsTypes::ProductForceType pfType, 
