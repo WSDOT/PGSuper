@@ -67,10 +67,13 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   // Builds the strand eccentricity table.
    void Build(rptChapter* pChapter,
               IBroker* pBroker,const CGirderKey& girderKey,
               IEAFDisplayUnits* pDisplayUnits) const;
+
+   void Build(rptChapter* pChapter,
+      IBroker* pBroker, const CSegmentKey& segmentKey,
+      IEAFDisplayUnits* pDisplayUnits) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

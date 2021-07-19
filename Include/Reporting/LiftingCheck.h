@@ -61,10 +61,13 @@ public:
    CLiftingCheck& operator = (const CLiftingCheck& rOther);
 
    //------------------------------------------------------------------------
-   // Builds the strand eccentricity table.
    virtual void Build(rptChapter* pChapter,
                       IBroker* pBroker,const CGirderKey& girderKey,
                       IEAFDisplayUnits* pDisplayUnits) const;
+
+   virtual void Build(rptChapter* pChapter,
+      IBroker* pBroker, const CSegmentKey& segmentKey,
+      IEAFDisplayUnits* pDisplayUnits) const;
 
 protected:
    //------------------------------------------------------------------------

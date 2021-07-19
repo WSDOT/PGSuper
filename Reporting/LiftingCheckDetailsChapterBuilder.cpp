@@ -90,21 +90,24 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
          SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
-            CSegmentKey thisSegmentKey(thisGirderKey, segIdx);
+            CSegmentKey segmentKey(thisGirderKey, segIdx);
 
             if (1 < nSegments)
             {
+               std::_tstringstream os;
+               os << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << std::endl;
                rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pTitle;
-               *pTitle << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
+               pTitle->SetName(os.str().c_str());
+               *pTitle << pTitle->GetName() << rptNewLine;
 
                rptParagraph* p = new rptParagraph;
                *pChapter << p;
             }
 
-            const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(thisSegmentKey);
-            const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(thisSegmentKey);
-            const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(thisSegmentKey);
+            const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
+            const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
+            const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
             const WBFL::Stability::LiftingResults& results = pArtifact->GetLiftingResults();
 
             Float64 Ll, Lr;

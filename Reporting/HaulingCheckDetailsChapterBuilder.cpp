@@ -89,9 +89,12 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
             if (1 < nSegments)
             {
+               std::_tstringstream os;
+               os << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << std::endl;
                rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pTitle;
-               *pTitle << _T("Segment ") << LABEL_SEGMENT(segmentKey.segmentIndex) << rptNewLine;
+               pTitle->SetName(os.str().c_str());
+               *pTitle << pTitle->GetName() << rptNewLine;
 
                rptParagraph* p = new rptParagraph;
                *pChapter << p;
