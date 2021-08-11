@@ -980,7 +980,7 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
          pTimelineMgr->GetTempSupportEvents(pTS->GetID(),&erectionEventIdx,&removalEventIdx);
          if ( eventIdx < erectionEventIdx || removalEventIdx <= eventIdx )
          {
-            return; // temp support does not exist in this event
+            continue; // temp support does not exist in this event
          }
 
          CComPtr<IBroker> pBroker;
