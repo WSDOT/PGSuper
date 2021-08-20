@@ -2871,6 +2871,8 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Legal.IM_Lane_Routine  = pLiveLoads->GetLaneImpact( pgsTypes::lltLegalRating_Routine);
    oldData.m_Legal.IM_Truck_Special = pLiveLoads->GetTruckImpact(pgsTypes::lltLegalRating_Special);
    oldData.m_Legal.IM_Lane_Special  = pLiveLoads->GetLaneImpact( pgsTypes::lltLegalRating_Special);
+   oldData.m_Legal.IM_Truck_Emergency = pLiveLoads->GetTruckImpact(pgsTypes::lltLegalRating_Emergency);
+   oldData.m_Legal.IM_Lane_Emergency = pLiveLoads->GetLaneImpact(pgsTypes::lltLegalRating_Emergency);
    oldData.m_Legal.RoutineNames     = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
    oldData.m_Legal.SpecialNames = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Special);
    oldData.m_Legal.EmergencyNames = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Emergency);
@@ -2893,6 +2895,7 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Legal.ServiceIII_SH         = pSpec->GetShrinkageFactor(     pgsTypes::ServiceIII_LegalSpecial);
    oldData.m_Legal.ServiceIII_PS         = pSpec->GetSecondaryEffectsFactor(     pgsTypes::ServiceIII_LegalSpecial);
 
+   oldData.m_Legal.bRateForStress = pSpec->RateForStress(pgsTypes::lrLegal_Routine);
    oldData.m_Legal.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrLegal_Routine, &oldData.m_Legal.bLimitTensileStress, &oldData.m_Legal.MaxTensileStress);
    oldData.m_Legal.bRateForShear    = pSpec->RateForShear(pgsTypes::lrLegal_Routine);
    oldData.m_Legal.bExcludeLaneLoad = pSpec->ExcludeLegalLoadLaneLoading();
