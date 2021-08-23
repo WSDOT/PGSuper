@@ -5190,14 +5190,14 @@ Design - Inventory, LRFD Design Tandem + Lane
 lab, 0.0.0.0, 881001, 2.1, 0, 0
 lab, 0.0.0.0, 881001a, 7.34, 0, 0
 lab, 0.0.0.0, 881003, 5.41, 0, 0
-lab, 0.0.0.0, 881003a, 13.77, 0, 0
+lab, 0.0.0.0, 881003a, 0.91, 0, 0
 lab, 0.0.0.0, 881006, 2.24, 0, 0
 lab, 0.0.0.0, 881007, 2.1, 0, 0
 Design - Operating, LRFD Design Truck + Lane
 lab, 0.0.0.0, 881001, 2.61, 0, 0
 lab, 0.0.0.0, 881001a, 7.34, 0, 0
 lab, 0.0.0.0, 881003, 6.1, 0, 0
-lab, 0.0.0.0, 881003a, 13.77, 0, 0
+lab, 0.0.0.0, 881003a, 0.91, 0, 0
 lab, 0.0.0.0, 881007, 2.61, 0, 0
 Design - Operating, LRFD Design Tandem + Lane
 lab, 0.0.0.0, 881001, 2.73, 0, 0
@@ -10392,7 +10392,7 @@ Design - Inventory, LRFD Design Tandem + Lane
 lab, 0.0.0.0, 881001, 2.29, 0, 1
 lab, 0.0.0.0, 881001a, 7.34, 0, 1
 lab, 0.0.0.0, 881003, 6.62, 0, 1
-lab, 0.0.0.0, 881003a, 13.77, 0, 1
+lab, 0.0.0.0, 881003a, 0.91, 0, 1
 lab, 0.0.0.0, 881006, 2.38, 0, 1
 lab, 0.0.0.0, 881007, 2.29, 0, 1
 Design - Operating, LRFD Design Truck + Lane
@@ -15594,7 +15594,7 @@ Design - Inventory, LRFD Design Tandem + Lane
 lab, 0.0.0.0, 881001, 2.29, 0, 2
 lab, 0.0.0.0, 881001a, 7.34, 0, 2
 lab, 0.0.0.0, 881003, 6.62, 0, 2
-lab, 0.0.0.0, 881003a, 13.77, 0, 2
+lab, 0.0.0.0, 881003a, 0.91, 0, 2
 lab, 0.0.0.0, 881006, 2.39, 0, 2
 lab, 0.0.0.0, 881007, 2.29, 0, 2
 Design - Operating, LRFD Design Truck + Lane

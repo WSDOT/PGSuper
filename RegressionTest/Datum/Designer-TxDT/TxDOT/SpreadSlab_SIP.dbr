@@ -11772,7 +11772,7 @@ Design - Inventory, LRFD Design Tandem + Lane
 SIP, 0.0.0.0, 881001, 1.49, 0, 1
 SIP, 0.0.0.0, 881001a, 6.32, 0, 1
 SIP, 0.0.0.0, 881003, 3.43, 0, 1
-SIP, 0.0.0.0, 881003a, 11.52, 0, 1
+SIP, 0.0.0.0, 881003a, 1.12, 0, 1
 SIP, 0.0.0.0, 881006, 1.22, 0, 1
 SIP, 0.0.0.0, 881007, 1.22, 0, 1
 Design - Inventory, LRFD Truck Train [90%(Truck + Lane)]
@@ -11799,7 +11799,7 @@ Design - Operating, LRFD Design Tandem + Lane
 SIP, 0.0.0.0, 881001, 1.94, 0, 1
 SIP, 0.0.0.0, 881001a, 6.32, 0, 1
 SIP, 0.0.0.0, 881003, 4.52, 0, 1
-SIP, 0.0.0.0, 881003a, 11.52, 0, 1
+SIP, 0.0.0.0, 881003a, 1.12, 0, 1
 SIP, 0.0.0.0, 881007, 1.94, 0, 1
 Design - Operating, LRFD Truck Train [90%(Truck + Lane)]
 SIP, 0.0.0.0, 881001, 1.79769e+308, 0, 1

@@ -70,17 +70,25 @@ void AddShape2Section(IGeneralSection *pSection, IShape *pShape, IStressStrain *
 #else
    // Convert shape to a fast polygon (the standard polyshape now uses the faster polyshape implementation)
    // get points from shape and create a faster poly
-   CComPtr<IPoint2dCollection> points;
-   pShape->get_PolyPoints(&points);
+    CComQIPtr<IGenericShape> generic_shape(pShape);
+    if (generic_shape)
+    {
+        pSection->AddShape(pShape, pfgMaterial, pbgMaterial, ei, Le);
+    }
+    else
+    {
+        CComPtr<IPoint2dCollection> points;
+        pShape->get_PolyPoints(&points);
 
-   CComPtr<IPolyShape> poly;
-   HRESULT hr = poly.CoCreateInstance(CLSID_PolyShape);
+        CComPtr<IPolyShape> poly;
+        HRESULT hr = poly.CoCreateInstance(CLSID_PolyShape);
 
-   poly->AddPoints(points);
+        poly->AddPoints(points);
 
-   CComQIPtr<IShape> shape(poly);
+        CComQIPtr<IShape> shape(poly);
 
-   pSection->AddShape(shape, pfgMaterial, pbgMaterial, ei, Le);
+        pSection->AddShape(shape, pfgMaterial, pbgMaterial, ei, Le);
+    }
 #endif
 }
 
@@ -2172,13 +2180,9 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
                // create a single equivalent rectangle for the area of reinforcement in this row
                if ( 0 < rowArea )
                {
-                  Float64 h = dps; // height is diamter of strand
-                  Float64 w = rowArea/dps;
-
-                  CComPtr<IRectangle> bar_shape;
-                  bar_shape.CoCreateInstance(CLSID_Rect);
-                  bar_shape->put_Width(w);
-                  bar_shape->put_Height(h);
+                   CComPtr<IGenericShape> strand_shape;
+                   strand_shape.CoCreateInstance(CLSID_GenericShape);
+                   strand_shape->put_Area(rowArea);
 
                   // get one strand from the row and get it's Y value (all strands in the row are at the same elevation)
                   CComPtr<IPoint2d> point;
@@ -2220,28 +2224,20 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
                   // we need to deducted the sacrifical depth
                   rowY += sacDepth;
 
-                  // position the "strand" rectangle
-                  CComQIPtr<IXYPosition> position(bar_shape);
-                  CComPtr<IPoint2d> hp;
-                  position->get_LocatorPoint(lpHookPoint,&hp);
-                  hp->Move(rowX-dx,rowY-dy);
+                  // position the "strand" shape
+                  CComPtr<IPoint2d> pntCG;
+                  strand_shape->get_Centroid(&pntCG);
+                  pntCG->Move(rowX - dx, rowY - dy);
+                  strand_shape->putref_Centroid(pntCG);
 
                   // determine depth to lowest layer of strand
                   Float64 cy;
-                  hp->get_Y(&cy);
+                  pntCG->get_Y(&cy);
                   dt = Max(dt,fabs(Yc-cy));
 
-                  CComQIPtr<IShape> shape(bar_shape);
+                  CComQIPtr<IShape> shape(strand_shape);
                   Float64 Le = 1.0; // elongation length (unity)
                   AddShape2Section(section,shape,ssStrand,ssGirder,eps_initial,Le);
-
-#if defined _DEBUG
-                  CComPtr<IShapeProperties> props;
-                  shape->get_ShapeProperties(&props);
-                  Float64 area;
-                  props->get_Area(&area);
-                  ATLASSERT( IsEqual(area,rowArea) );
-#endif // _DEBUG
                }
             }
          } // next strand type
@@ -2261,22 +2257,18 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
             Float64 area = pSegmentTendonGeometry->GetSegmentTendonArea(segmentKey, intervalIdx, ductIdx);
 
-            Float64 s = sqrt(area); // side of equivalent square (area = s*s)
-
-            CComPtr<IRectangle> tendon_shape;
-            tendon_shape.CoCreateInstance(CLSID_Rect);
-            tendon_shape->put_Width(s);
-            tendon_shape->put_Height(s);
-
-            CComQIPtr<IXYPosition> position(tendon_shape);
-            CComPtr<IPoint2d> hp;
-            position->get_LocatorPoint(lpHookPoint, &hp);
-            hp->MoveEx(point);
-            hp->Offset(-dx, -dy);
+            CComPtr<IGenericShape> tendon_shape;
+            tendon_shape.CoCreateInstance(CLSID_GenericShape);
+            tendon_shape->put_Area(area);
+            CComPtr<IPoint2d> pntCG;
+            tendon_shape->get_Centroid(&pntCG);
+            pntCG->MoveEx(point);
+            pntCG->Offset(-dx, -dy);
+            tendon_shape->putref_Centroid(pntCG);
 
             // determine depth to lowest layer of strand
             Float64 cy;
-            hp->get_Y(&cy);
+            pntCG->get_Y(&cy);
             dt = Max(dt, fabs(Yc - cy));
 
             Float64 epti = ept_initial_segment[ductIdx];
@@ -2300,22 +2292,18 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
             Float64 area = pGirderTendonGeometry->GetGirderTendonArea(segmentKey, intervalIdx, ductIdx);
 
-            Float64 s = sqrt(area); // side of equivalent square (area = s*s)
-
-            CComPtr<IRectangle> tendon_shape;
-            tendon_shape.CoCreateInstance(CLSID_Rect);
-            tendon_shape->put_Width(s);
-            tendon_shape->put_Height(s);
-
-            CComQIPtr<IXYPosition> position(tendon_shape);
-            CComPtr<IPoint2d> hp;
-            position->get_LocatorPoint(lpHookPoint, &hp);
-            hp->MoveEx(point);
-            hp->Offset(-dx, -dy);
+            CComPtr<IGenericShape> tendon_shape;
+            tendon_shape.CoCreateInstance(CLSID_GenericShape);
+            tendon_shape->put_Area(area);
+            CComPtr<IPoint2d> pntCG;
+            tendon_shape->get_Centroid(&pntCG);
+            pntCG->MoveEx(point);
+            pntCG->Offset(-dx, -dy);
+            tendon_shape->putref_Centroid(pntCG);
 
             // determine depth to lowest layer of strand
             Float64 cy;
-            hp->get_Y(&cy);
+            pntCG->get_Y(&cy);
             dt = Max(dt, fabs(Yc - cy));
 
             Float64 epti = ept_initial_girder[ductIdx];
@@ -2383,25 +2371,19 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
          Float64 dev_length_factor = pRebarGeom->GetDevLengthFactor(barCutPoi,item);
 
-         // create an "area perfect" square
-         // (clips are lot faster than a circle)
-         Float64 s = sqrt(dev_length_factor*as);
-
-         CComPtr<IRectangle> square;
-         square.CoCreateInstance(CLSID_Rect);
-         square->put_Width(s);
-         square->put_Height(s);
-         
-         CComPtr<IPoint2d> hp;
-         square->get_HookPoint(&hp);
-         hp->MoveEx(location);
-         hp->Offset(-dx,-dy+sacDepth);
+         CComPtr<IGenericShape> bar_shape;
+         bar_shape.CoCreateInstance(CLSID_GenericShape);
+         bar_shape->put_Area(dev_length_factor* as);
+         CComPtr<IPoint2d> pntCG;
+         bar_shape->get_Centroid(&pntCG);
+         pntCG->MoveEx(location);
+         pntCG->Offset(-dx, -dy + sacDepth);
 
          Float64 cy;
-         hp->get_Y(&cy);
+         pntCG->get_Y(&cy);
          dt = Max(dt,fabs(Yc-cy));
 
-         CComQIPtr<IShape> shape(square);
+         CComQIPtr<IShape> shape(bar_shape);
          AddShape2Section(section,shape,ssGirderRebar,ssGirder,0,1.0);
 
          item.Release();
@@ -2539,33 +2521,24 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          if ( !IsZero(AsTop) )
          {
             Float64 coverTop = pRebarGeom->GetCoverTopMat();
-            Float64 equiv_height = AsTop / Weff; // model deck rebar as rectangles of equivalent area
-            Float64 equiv_width = Weff;
-            if ( equiv_height < Dslab/16. )
-            {
-               // of the equivalent height is too sort, it doesn't model well
-               equiv_height = Dslab/16.;
-               equiv_width = AsTop/equiv_height;
-            }
-            CComPtr<IRectangle> topRect;
-            topRect.CoCreateInstance(CLSID_Rect);
-            topRect->put_Height(equiv_height);
-            topRect->put_Width(equiv_width);
+            
+            CComPtr<IGenericShape> bar_shape;
+            bar_shape.CoCreateInstance(CLSID_GenericShape);
+            bar_shape->put_Area(AsTop);
 
-            // move the center of the rebar rectangle below the top of the deck rectangle by the cover amount.
+            // move the center of the rebar shape below the top of the deck rectangle by the cover amount.
             // center it horizontally
-            CComQIPtr<IXYPosition> posTop(topRect);
             CComPtr<IPoint2d> pntDeck;
-            posDeck->get_LocatorPoint(lpTopCenter,&pntDeck);
-            pntDeck->Offset(0,-coverTop);
-            posTop->put_LocatorPoint(lpCenterCenter,pntDeck);
+            posDeck->get_LocatorPoint(lpTopCenter, &pntDeck);
+            pntDeck->Offset(0, -coverTop);
+            bar_shape->putref_Centroid(pntDeck);
 
             Float64 cy;
             pntDeck->get_Y(&cy);
             dt = Max(dt,fabs(Yc-cy));
 
-            CComQIPtr<IShape> shapeTop(posTop);
-            AddShape2Section(section,shapeTop,ssSlabRebar,ssSlab,0.00,1.0);
+            CComQIPtr<IShape> shape(bar_shape);
+            AddShape2Section(section,shape,ssSlabRebar,ssSlab,0.00,1.0);
          }
 
 
@@ -2573,33 +2546,24 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          if ( !IsZero(AsBottom) )
          {
             Float64 coverBottom = pRebarGeom->GetCoverBottomMat();
-            Float64 equiv_height = AsBottom / Weff;
-            Float64 equiv_width = Weff;
-            if ( equiv_height < Dslab/16. )
-            {
-               // of the equivalent height is too sort, it doesn't model well
-               equiv_height = Dslab/16.;
-               equiv_width = AsBottom/equiv_height;
-            }
-            CComPtr<IRectangle> botRect;
-            botRect.CoCreateInstance(CLSID_Rect);
-            botRect->put_Height(equiv_height);
-            botRect->put_Width(equiv_width);
 
-            // move the center of the rebar rectangle above the bottom of the deck rectangle by the cover amount.
+            CComPtr<IGenericShape> bar_shape;
+            bar_shape.CoCreateInstance(CLSID_GenericShape);
+            bar_shape->put_Area(AsBottom);
+
+            // move the center of the rebar shape above the bottom of the deck rectangle by the cover amount.
             // center it horizontally
-            CComQIPtr<IXYPosition> posBottom(botRect);
             CComPtr<IPoint2d> pntDeck;
-            posDeck->get_LocatorPoint(lpTopCenter,&pntDeck);
-            pntDeck->Offset(0,-Dslab+coverBottom);
-            posBottom->put_LocatorPoint(lpCenterCenter,pntDeck);
+            posDeck->get_LocatorPoint(lpTopCenter, &pntDeck);
+            pntDeck->Offset(0, -Dslab + coverBottom);
+            bar_shape->putref_Centroid(pntDeck);
 
             Float64 cy;
             pntDeck->get_Y(&cy);
             dt = Max(dt,fabs(Yc-cy));
 
-            CComQIPtr<IShape> shapeBottom(posBottom);
-            AddShape2Section(section,shapeBottom,ssSlabRebar,ssSlab,0.00,1.0);
+            CComQIPtr<IShape> shape(bar_shape);
+            AddShape2Section(section,shape,ssSlabRebar,ssSlab,0.00,1.0);
          }
       }
    }
