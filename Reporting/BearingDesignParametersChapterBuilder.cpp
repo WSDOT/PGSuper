@@ -107,6 +107,13 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    *pChapter << p;
    *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable, bIncludeImpact,true,false,true,pDisplayUnits) << rptNewLine;
 
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   if (1 < nSegments ? true : false)
+   {
+      *p << _T("Erected Segments reactions are the simple span reactions when the segments are first erected") << rptNewLine;
+   }
+
    if( doFinalLoads )
    {
       *p << (bIncludeImpact ? LIVELOAD_PER_LANE : LIVELOAD_PER_LANE_NO_IMPACT) << rptNewLine;
@@ -213,12 +220,9 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    PierIndexType startPierIdx,endPierIdx;
    pBridge->GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
-
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
