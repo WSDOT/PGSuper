@@ -1079,7 +1079,7 @@ interface IBridgeDescription : IUnknown
 
    virtual void UseSameGirderForEntireBridge(bool bSame) = 0;
    virtual bool UseSameGirderForEntireBridge() const = 0;
-   virtual void SetGirderName(LPCTSTR strGirderName) = 0; // sets the name of the girder that is used for the entire bridge
+   virtual void SetGirderName(LPCTSTR strGirderName) = 0; // sets the name of the girder that is used in all spans
 
    virtual void SetGirderSpacingType(pgsTypes::SupportedBeamSpacing sbs) = 0;
    virtual pgsTypes::SupportedBeamSpacing GetGirderSpacingType() const = 0;

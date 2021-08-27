@@ -515,7 +515,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    OnConditionFactorTypeChanged();
 
    CComboBox* pcbSameGirderType = (CComboBox*)GetDlgItem(IDC_GIRDER_NAMEUSE);
-   pcbSameGirderType->AddString(_T("This girder type is used for the entire bridge"));
+   pcbSameGirderType->AddString(_T("This girder type is used in all spans"));
    pcbSameGirderType->AddString(_T("This girder type is assigned to this girder"));
    pcbSameGirderType->SetCurSel(m_bUseSameGirderType ? 0:1);
    UpdateGirderTypeControls();
@@ -1755,7 +1755,7 @@ void CGirderDescGeneralPage::FillAssumedExcessCamberComboBox()
 
    if (m_AssumedExcessCamberType == pgsTypes::aecBridge || m_AssumedExcessCamberType == pgsTypes::aecGirder)
    {
-      int idx = pcbAssumedExcessCamberType->AddString(_T("A single Assumed Excess Camber is used for the entire bridge"));
+      int idx = pcbAssumedExcessCamberType->AddString(_T("A single Assumed Excess Camber is used in all spans"));
       pcbAssumedExcessCamberType->SetItemData(idx, (DWORD_PTR)pgsTypes::aecBridge);
    }
    else

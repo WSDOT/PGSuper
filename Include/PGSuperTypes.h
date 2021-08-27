@@ -495,7 +495,7 @@ typedef struct pgsTypes
 
    typedef enum SlabOffsetType
    {
-      sotBridge,  // a single slab offset is used for the entire bridge
+      sotBridge,  // a single slab offset is used in all spans
       sotBearingLine, // the slab offset is defined at each bearing line at the ends of segments (single value for entire bearing line)
       sotSegment,  // the slab offset is defined at the end of each segment individually
    } SlabOffsetType;
@@ -503,7 +503,7 @@ typedef struct pgsTypes
 
    typedef enum BearingType
    {
-      brtBridge,  // same bearing data is used for the entire bridge
+      brtBridge,  // same bearing data is used in all spans
       brtPier,    // unique bearing is defined at each abutment, pier, and temporary support and applies to all segments supported by that element
       brtGirder,  // unique bearing at each pier for each girder
    } BearingType;
@@ -511,7 +511,7 @@ typedef struct pgsTypes
    // Assummed excess camber input
    typedef enum AssumedExcessCamberType 
    {
-      aecBridge,  // a single camber is used for the entire bridge
+      aecBridge,  // a single camber is used in all spans
       aecSpan,    // the camber is defined at each span
       aecGirder,  // the camber is defined at each girder
    } AssumedExcessCamberType;

@@ -277,7 +277,7 @@ public:
    // Girder Type
    // =================================================================================
 
-   // Indicates if the same girder is used for the entire bridge
+   // Indicates if the same girder is used in all spans
    void UseSameGirderForEntireBridge(bool bSame);
    bool UseSameGirderForEntireBridge() const;
 

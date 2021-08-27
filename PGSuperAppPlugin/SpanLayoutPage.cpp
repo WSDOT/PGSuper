@@ -301,7 +301,7 @@ BOOL CSpanLayoutPage::OnInitDialog()
 
       if (AssumedExcessCamberType == pgsTypes::aecBridge || AssumedExcessCamberType == pgsTypes::aecSpan)
       {
-         pAssumedExcessCamberCB->AddString(_T("The same Assumed Excess Camber is used for the entire bridge"));
+         pAssumedExcessCamberCB->AddString(_T("The same Assumed Excess Camber is used in all spans"));
          pAssumedExcessCamberCB->AddString(_T("Assumed Excess Camber is defined span by span"));
          pAssumedExcessCamberCB->SetCurSel(AssumedExcessCamberType == pgsTypes::aecBridge ? 0 : 1);
       }

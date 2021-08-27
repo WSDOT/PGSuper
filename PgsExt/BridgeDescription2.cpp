@@ -3868,7 +3868,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
 
       if ( ::IsBridgeSpacing(GetGirderSpacingType()) )
       {
-         // the same spacing is used for the entire bridge
+         // the same spacing is used in all spans
          Float64 s = GetGirderSpacing();
          if ( UseSameNumberOfGirdersInAllGroups() )
          {
