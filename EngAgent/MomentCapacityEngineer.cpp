@@ -62,18 +62,18 @@ DIAG_DEFINE_GROUP(MomCap,DIAG_GROUP_DISABLE,0);
 static const Float64 ANGLE_TOL=1.0e-6;
 static const Float64 D_TOL=1.0e-10;
 
-void AddShape2Section(IGeneralSection *pSection, IShape *pShape, IStressStrain *pfgMaterial, IStressStrain *pbgMaterial, Float64 ei,Float64 Le)
+void AddShape2Section(CComBSTR bstrName,IGeneralSection *pSection, IShape *pShape, IStressStrain *pfgMaterial, IStressStrain *pbgMaterial, IPlane3d* initialStrain,Float64 Le,bool bPrimaryShape)
 {
 #if defined USE_ORIGINAL_SHAPE
    // Just add shape as is
-   pSection->AddShape(pShape, pfgMaterial, pbgMaterial, ei, Le);
+   pSection->AddShape(bstrName,pShape, pfgMaterial, pbgMaterial, initialStrain, Le, bPrimaryShape ? VARIANT_TRUE : VARIANT_FALSE);
 #else
    // Convert shape to a fast polygon (the standard polyshape now uses the faster polyshape implementation)
    // get points from shape and create a faster poly
     CComQIPtr<IGenericShape> generic_shape(pShape);
     if (generic_shape)
     {
-        pSection->AddShape(pShape, pfgMaterial, pbgMaterial, ei, Le);
+       pSection->AddShape(bstrName, pShape, pfgMaterial, pbgMaterial, initialStrain, Le, bPrimaryShape ? VARIANT_TRUE : VARIANT_FALSE);
     }
     else
     {
@@ -87,7 +87,7 @@ void AddShape2Section(IGeneralSection *pSection, IShape *pShape, IStressStrain *
 
         CComQIPtr<IShape> shape(poly);
 
-        pSection->AddShape(shape, pfgMaterial, pbgMaterial, ei, Le);
+       pSection->AddShape(bstrName, shape, pfgMaterial, pbgMaterial, initialStrain, Le, bPrimaryShape ? VARIANT_TRUE : VARIANT_FALSE);
     }
 #endif
 }
@@ -2121,6 +2121,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       // strands
       if ( bIsOnSegment || bIsInBoundaryPierDiaphragm )
       {
+         CComPtr<IPlane3d> strand_initial_strain;
+         strand_initial_strain.CoCreateInstance(CLSID_Plane3d);
+         strand_initial_strain->ThroughAltitude(eps_initial);
+
          GET_IFACE(IStrandGeometry, pStrandGeom);
          for ( int i = 0; i < 2; i++ ) // straight and harped strands
          {
@@ -2237,7 +2241,10 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
                   CComQIPtr<IShape> shape(strand_shape);
                   Float64 Le = 1.0; // elongation length (unity)
-                  AddShape2Section(section,shape,ssStrand,ssGirder,eps_initial,Le);
+
+                  CString strName;
+                  strName.Format(_T("Strand Row %d"), LABEL_INDEX(rowIdx));
+                  AddShape2Section(CComBSTR(strName), section, shape, ssStrand, ssGirder, strand_initial_strain, Le, false);
                }
             }
          } // next strand type
@@ -2248,6 +2255,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
      // Segment PT Tendons
    if (bIsOnSegment)
    {
+      ATLASSERT(ept_initial_segment.size() == nSegmentDucts);
       for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
       {
          if (pSegmentTendonGeometry->IsOnDuct(poi))
@@ -2271,11 +2279,16 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             pntCG->get_Y(&cy);
             dt = Max(dt, fabs(Yc - cy));
 
-            Float64 epti = ept_initial_segment[ductIdx];
+            CComPtr<IPlane3d> initial_strain;
+            initial_strain.CoCreateInstance(CLSID_Plane3d);
+            initial_strain->ThroughAltitude(ept_initial_segment[ductIdx]);
             Float64 Le = 1.0; // elongation length (unity)
 
             CComQIPtr<IShape> shape(tendon_shape);
-            AddShape2Section(section, shape, ssSegmentTendon, ssGirder, epti, Le);
+
+            CString strName;
+            strName.Format(_T("Segment Tendon %d"), LABEL_DUCT(ductIdx));
+            AddShape2Section(CComBSTR(strName),section, shape, ssSegmentTendon, ssGirder, initial_strain, Le, false);
          }
       }
    }
@@ -2283,6 +2296,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    // Girder PT Tendons
    if ( bIsOnGirder )
    {
+      ATLASSERT(ept_initial_girder.size() == nGirderDucts);
       for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
       {
          if (pGirderTendonGeometry->IsOnDuct(poi, ductIdx))
@@ -2306,11 +2320,17 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             pntCG->get_Y(&cy);
             dt = Max(dt, fabs(Yc - cy));
 
-            Float64 epti = ept_initial_girder[ductIdx];
+            CComPtr<IPlane3d> initial_strain;
+            initial_strain.CoCreateInstance(CLSID_Plane3d);
+            initial_strain->ThroughAltitude(ept_initial_girder[ductIdx]);
+
             Float64 Le = 1.0; // elongation length (unity)
 
+            CString strName;
+            strName.Format(_T("Girder Tendon %d"), LABEL_DUCT(ductIdx));
+
             CComQIPtr<IShape> shape(tendon_shape);
-            AddShape2Section(section, shape, ssGirderTendon, ssGirder, epti, Le);
+            AddShape2Section(CComBSTR(strName), section, shape, ssGirderTendon, ssGirder, initial_strain, Le, false);
          }
       }
    }
@@ -2384,7 +2404,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          dt = Max(dt,fabs(Yc-cy));
 
          CComQIPtr<IShape> shape(bar_shape);
-         AddShape2Section(section,shape,ssGirderRebar,ssGirder,0,1.0);
+         AddShape2Section(CComBSTR("Rebar"), section, shape, ssGirderRebar, ssGirder, nullptr, 1.0, false);
 
          item.Release();
       }
@@ -2401,14 +2421,14 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       {
          CComQIPtr<IXYPosition> position(leftJointShape);
          position->Offset(-dx, -dy);
-         AddShape2Section(section, leftJointShape, ssLongitudinalJoints, nullptr, 0, 1.0);
+         AddShape2Section(CComBSTR("Left Long. Joint"), section, leftJointShape, ssLongitudinalJoints, nullptr, nullptr, 1.0, false);
       }
 
       if (rightJointShape)
       {
          CComQIPtr<IXYPosition> position(rightJointShape);
          position->Offset(-dx, -dy);
-         AddShape2Section(section, rightJointShape, ssLongitudinalJoints, nullptr, 0, 1.0);
+         AddShape2Section(CComBSTR("Right Long. Joint"), section, rightJointShape, ssLongitudinalJoints, nullptr, nullptr, 1.0, false);
       }
    }
 
@@ -2497,7 +2517,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
          posDeck->get_LocatorPoint(lpTopCenter,&pntTension);
       }
 
-      AddShape2Section(section,shapeDeck,ssSlab,nullptr,0.00,1.0);
+      AddShape2Section(CComBSTR("Deck"), section, shapeDeck, ssSlab, nullptr, nullptr, 1.0, false);
 
       // deck rebar if this is for negative moment
       if ( !bPositiveMoment )
@@ -2538,7 +2558,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             dt = Max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shape(bar_shape);
-            AddShape2Section(section,shape,ssSlabRebar,ssSlab,0.00,1.0);
+            AddShape2Section(CComBSTR("Top Mat Deck Rebar"), section, shape, ssSlabRebar, ssSlab, nullptr, 1.0, false);
          }
 
 
@@ -2563,7 +2583,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             dt = Max(dt,fabs(Yc-cy));
 
             CComQIPtr<IShape> shape(bar_shape);
-            AddShape2Section(section,shape,ssSlabRebar,ssSlab,0.00,1.0);
+            AddShape2Section(CComBSTR("Bottom Mat Deck Rebar"), section, shape, ssSlabRebar, ssSlab, nullptr, 1.0, false);
          }
       }
    }
@@ -3150,11 +3170,11 @@ void pgsMomentCapacityEngineer::ModelShape(IGeneralSection* pSection, IShape* pS
       if (bIsVoid == VARIANT_TRUE)
       {
          // void shape... use only a background material (backgrounds are subtracted)
-         AddShape2Section(pSection, pShape, nullptr, pMaterial, 0.00, 1.0);
+         AddShape2Section(CComBSTR("Void"), pSection, pShape, nullptr, pMaterial, nullptr, 1.0, false);
       }
       else
       {
-         AddShape2Section(pSection, pShape, pMaterial, nullptr, 0.00, 1.0);
+         AddShape2Section(CComBSTR("Girder"), pSection, pShape, pMaterial, nullptr, nullptr, 1.0, true);
       }
    }
 }
