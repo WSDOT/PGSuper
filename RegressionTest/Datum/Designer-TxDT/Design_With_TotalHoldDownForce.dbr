@@ -6107,14 +6107,14 @@ Design - Inventory, LRFD Design Truck + Lane
 rce, 0.0.0.0, 881001, 1.87, 0, 0
 rce, 0.0.0.0, 881001a, 19.51, 0, 0
 rce, 0.0.0.0, 881003, 2.16, 0, 0
-rce, 0.0.0.0, 881003a, 7.43, 0, 0
+rce, 0.0.0.0, 881003a, 31.58, 0, 0
 rce, 0.0.0.0, 881006, 1.48, 0, 0
 rce, 0.0.0.0, 881007, 1.48, 0, 0
 Design - Inventory, LRFD Design Tandem + Lane
 rce, 0.0.0.0, 881001, 2.22, 0, 0
 rce, 0.0.0.0, 881001a, 19.51, 0, 0
 rce, 0.0.0.0, 881003, 2.64, 0, 0
-rce, 0.0.0.0, 881003a, 7.43, 0, 0
+rce, 0.0.0.0, 881003a, 31.58, 0, 0
 rce, 0.0.0.0, 881006, 1.74, 0, 0
 rce, 0.0.0.0, 881007, 1.74, 0, 0
 Design - Operating, LRFD Design Truck + Lane
@@ -6133,7 +6133,7 @@ Legal Load - Routine Commercial Traffic, Type 3
 rce, 0.0.0.0, 881001, 5.64, 0, 0
 rce, 0.0.0.0, 881001a, 19.51, 0, 0
 rce, 0.0.0.0, 881003, 6.52, 0, 0
-rce, 0.0.0.0, 881003a, 7.43, 0, 0
+rce, 0.0.0.0, 881003a, 31.58, 0, 0
 rce, 0.0.0.0, 881006, 3.53, 0, 0
 rce, 0.0.0.0, 881007, 3.53, 0, 0
 Legal Load - Routine Commercial Traffic, Type 3S2
@@ -6168,7 +6168,7 @@ Legal Load - Emergency Vehicles, Type EV3
 rce, 0.0.0.0, 881001, 3.62, 0, 0
 rce, 0.0.0.0, 881001a, 19.51, 0, 0
 rce, 0.0.0.0, 881003, 4.16, 0, 0
-rce, 0.0.0.0, 881003a, 7.43, 0, 0
+rce, 0.0.0.0, 881003a, 31.58, 0, 0
 rce, 0.0.0.0, 881006, 2.08, 0, 0
 rce, 0.0.0.0, 881007, 2.08, 0, 0
 Rating Permit - Routine/Annual Permit, No Live Load Defined
@@ -6182,7 +6182,7 @@ Rating Permit - Special/Limited Crossing Permit, OL1
 rce, 0.0.0.0, 881001, 4.16, 0, 0
 rce, 0.0.0.0, 881001a, 19.51, 0, 0
 rce, 0.0.0.0, 881003, 5.58, 0, 0
-rce, 0.0.0.0, 881003a, 7.43, 0, 0
+rce, 0.0.0.0, 881003a, 31.58, 0, 0
 rce, 0.0.0.0, 881004, 1.27, 0, 0
 rce, 0.0.0.0, 881007, 1.27, 0, 0
 Rating Permit - Special/Limited Crossing Permit, OL2

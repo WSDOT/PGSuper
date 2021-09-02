@@ -21597,7 +21597,7 @@ Design - Inventory, LRFD Design Truck + Lane
 lox, 0.0.0.0, 881001, 1.86, 0, 3
 lox, 0.0.0.0, 881001a, 13.64, 0, 3
 lox, 0.0.0.0, 881003, 2.82, 0, 3
-lox, 0.0.0.0, 881003a, 1.43, 0, 3
+lox, 0.0.0.0, 881003a, 25.85, 0, 3
 lox, 0.0.0.0, 881006, 1.18, 0, 3
 lox, 0.0.0.0, 881007, 1.18, 0, 3
 Design - Inventory, LRFD Design Tandem + Lane
@@ -21611,7 +21611,7 @@ Design - Operating, LRFD Design Truck + Lane
 lox, 0.0.0.0, 881001, 2.42, 0, 3
 lox, 0.0.0.0, 881001a, 13.64, 0, 3
 lox, 0.0.0.0, 881003, 3.66, 0, 3
-lox, 0.0.0.0, 881003a, 1.43, 0, 3
+lox, 0.0.0.0, 881003a, 25.85, 0, 3
 lox, 0.0.0.0, 881007, 2.42, 0, 3
 Design - Operating, LRFD Design Tandem + Lane
 lox, 0.0.0.0, 881001, 2.82, 0, 3
@@ -21644,7 +21644,7 @@ Legal Load - Specialized Hauling Vehicles, NRL
 lox, 0.0.0.0, 881001, 2.92, 0, 3
 lox, 0.0.0.0, 881001a, 13.64, 0, 3
 lox, 0.0.0.0, 881003, 4.7, 0, 3
-lox, 0.0.0.0, 881003a, 1.43, 0, 3
+lox, 0.0.0.0, 881003a, 25.85, 0, 3
 lox, 0.0.0.0, 881006, 1.36, 0, 3
 lox, 0.0.0.0, 881007, 1.36, 0, 3
 Legal Load - Emergency Vehicles, Type EV2
