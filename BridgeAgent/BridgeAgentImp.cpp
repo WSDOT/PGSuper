@@ -15760,8 +15760,11 @@ gpPoint2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalIdx, const pgsP
       cg.Y() = (nStrands == 0) ? 0 : cg_y / nStrands;
    }
 
-   if (!HasAsymmetricGirders())
+   GET_IFACE(ISegmentData, pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+   if (!HasAsymmetricGirders() && pStrands->GetStrandDefinitionType() != pgsTypes::sdtDirectStrandInput)
    {
+      // direct stand input can be asymmetric - can't call HasAsymmetricPrestressing because that causes recursion with this metho
       // don't have asymmetric effects, cg is on CL at X = 0
       ATLASSERT(IsZero(cg.X()));
       cg.X() = 0;
