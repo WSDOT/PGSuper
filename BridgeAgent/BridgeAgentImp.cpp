@@ -5158,7 +5158,8 @@ void CBridgeAgentImp::LayoutHarpingPointPoi(const CSegmentKey& segmentKey,Float6
    girder->get_LeftEndDistance(&left_end);
    girder->get_RightEndDistance(&right_end);
    girder->get_GirderLength(&length);
-   if ( hp1 <= left_end || (length-right_end) <= hp2 )
+   StrandIndexType nHarped = GetStrandCount(segmentKey, pgsTypes::Harped);
+   if ( 0 < nHarped && (hp1 <= left_end || (length-right_end) <= hp2 ))
    {
       // harp points are outside of the support location
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
