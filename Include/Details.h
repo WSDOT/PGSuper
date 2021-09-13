@@ -61,6 +61,10 @@ struct SLABOFFSETDETAILS
    Float64 HaunchDiff; // maximum difference in haunch thickness
 };
 
+#define MN_CONCRETE 0 // concrete crushing at a strain of 0.003
+#define MN_REINFORCEMENT_STRAIN 1 // capacity was limited by strain limit of reinforcement
+#define MN_DEVELOPMENT 2 // capacity was limited by usable reinforcement strain, reduced to account for development
+
 struct MOMENTCAPACITYDETAILS
 {
    Float64 Mr;        // Nominal resistance (Mr = Phi*Mn);
@@ -111,7 +115,9 @@ struct MOMENTCAPACITYDETAILS
 
    // solution object provides the full equilibrium state of the moment
    // capacity solution
+   CComPtr<IGeneralSection> Section; // this is the section that is analyzed
    CComPtr<IMomentCapacitySolution> CapacitySolution;
+   int Controlling; // flag that indicates what controlled the capacity (one of MN_xxx flags)
 };
 
 struct CRACKINGMOMENTDETAILS

@@ -24,7 +24,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                     2     1     tx34          10  0.6  270  13.01  13.01  11.00  11.00   0.50                                               0   0.0  0.0  4.000  5.000   0.982    -1.299     1725   0.778  0.877   0.587 -0.123  0.000 -0.006 -0.130  18.08   71.63    1.00    1.00    1.00    1.43    2.36    1.85    3.07    1.94 
+ 38.00    5   8.50                     2     1     tx34          10  0.6  270  13.01  13.01  11.00  11.00   0.50                                               0   0.0  0.0  4.000  5.000   0.982    -1.299     1725   0.778  0.877   0.587 -0.123  0.000 -0.006 -0.130  18.08   71.63    1.00    1.00    1.00    1.42    2.33    1.84    3.04    1.94 
 
 
 The Specification Check was Successful
@@ -32,7 +32,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                     2     2     tx34          10  0.6  270  13.01  13.01  11.00  11.00   0.50                                               0   0.0  0.0  4.000  5.000   1.187    -1.544     1701   0.762  0.877   0.646 -0.198  0.000 -0.008 -0.206  17.40   68.11    1.00    1.00    1.00    1.19    1.79    1.55    2.88    1.50 
+ 38.00    5   8.50                     2     2     tx34          10  0.6  270  13.01  13.01  11.00  11.00   0.50                                               0   0.0  0.0  4.000  5.000   1.187    -1.544     1701   0.762  0.877   0.646 -0.198  0.000 -0.008 -0.206  17.40   68.11    1.00    1.00    1.00    1.18    1.75    1.53    2.84    1.50 
 
 
 The Specification Check was Successful
@@ -40,9 +40,10 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    5   8.50                     2     3     tx34          10  0.6  270  13.01  13.01  11.00  11.00   0.50                                               0   0.0  0.0  4.000  5.000   1.361    -1.747     1896   0.747  0.849   0.696 -0.263  0.000 -0.011 -0.274  16.66   65.19    1.00    1.00    1.00    1.01    1.48    1.31    2.54    1.18 
+ 38.00    5   8.50                     2     3     tx34          10  0.6  270  13.01  13.01  11.00  11.00   0.50                                               0   0.0  0.0  4.000  5.000   1.361    -1.747     1896   0.747  0.849   0.696 -0.263  0.000 -0.011 -0.274  16.66   65.19    1.00    1.00    1.00    1.00    1.45    1.29    2.49    1.18 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
 

@@ -134,6 +134,11 @@ public:
    Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig = nullptr) const;
 
    //------------------------------------------------------------------------
+   // Returns the transfer length adjustment factor. The factor is 0 at the
+   // point where bond begins and 1.0 at the end of the transfer length
+   Float64 GetXferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const;
+
+   //------------------------------------------------------------------------
    // Returns the prestress development length
    Float64 GetDevLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig=nullptr) const;
 

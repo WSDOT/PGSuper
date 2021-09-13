@@ -10,7 +10,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template      1     2     K4+2          24  0.6  270  24.41  12.66  12.50  12.50                                               6  53.0  6.0  4.800  5.000   2.615    -3.465     5477   0.718  0.884   4.204 -1.455  0.000 -0.050 -1.505  98.96  193.91    1.00    5.50    5.50    1.49    1.65    1.94    2.51    1.30 
+ 50.00    6   9.00    K4 Template      1     2     K4+2          24  0.6  270  24.41  12.66  12.50  12.50                                               6  53.0  6.0  4.800  5.000   2.615    -3.465     5477   0.718  0.884   4.204 -1.455  0.000 -0.050 -1.505  98.96  193.91    1.00    5.50    5.50    1.49    1.64    1.93    2.50    1.30 
 
 
 The Specification Check was Not Successful
@@ -20,7 +20,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 50.00    6   9.00    K4 Template      1     4     K4+2          24  0.6  270  24.41  12.66  12.50  12.50                                               6  53.0  6.0  4.800  5.000   2.615    -3.465     5477   0.718  0.884   4.204 -1.455  0.000 -0.050 -1.505  98.96  193.91    1.00    5.50    5.50    1.49    1.65    1.94    2.51    1.30 
+ 50.00    6   9.00    K4 Template      1     4     K4+2          24  0.6  270  24.41  12.66  12.50  12.50                                               6  53.0  6.0  4.800  5.000   2.615    -3.465     5477   0.718  0.884   4.204 -1.455  0.000 -0.050 -1.505  98.96  193.91    1.00    5.50    5.50    1.49    1.64    1.93    2.51    1.30 
 
 
 The Specification Check was Not Successful

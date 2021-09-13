@@ -111,6 +111,12 @@
 
 #include <Reporting\PrincipalTensionStressDetailsChapterBuilder.h>
 
+#include <Reporting\MomentCapacityReportSpecificationBuilder.h>
+#include <Reporting\MomentCapacityChapterBuilder.h>
+
+#include <Reporting\CrackedSectionReportSpecificationBuilder.h>
+#include <Reporting\CrackedSectionChapterBuilder.h>
+
 #include <IReportManager.h>
 #include <IFace\Project.h>
 
@@ -151,6 +157,9 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateStageByStageDetailsReport();
    CreatePointOfInterestReport();
 #endif
+
+   CreateMomentCapacityDetailsReport();
+   CreateCrackedSectionDetailsReport();
 
    return S_OK;
 }
@@ -576,6 +585,30 @@ void CReporterBase::CreateCopyTempSupportPropertiesReport()
    //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
    pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
    pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CCopyTempSupportPropertiesChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateMomentCapacityDetailsReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::unique_ptr<CReportBuilder> pRptBuilder = std::make_unique<CReportBuilder>(_T("Moment Capacity Details Report"));
+   std::shared_ptr<CReportSpecificationBuilder> pMomentCapacityRptSpecBuilder(std::make_shared<CMomentCapacityReportSpecificationBuilder>(m_pBroker));
+   pRptBuilder->AddTitlePageBuilder(std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+   pRptBuilder->SetReportSpecificationBuilder(pMomentCapacityRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CMomentCapacityChapterBuilder));
+   pRptMgr->AddReportBuilder(pRptBuilder.release());
+}
+
+void CReporterBase::CreateCrackedSectionDetailsReport()
+{
+   GET_IFACE(IReportManager, pRptMgr);
+
+   std::unique_ptr<CReportBuilder> pRptBuilder = std::make_unique<CReportBuilder>(_T("Cracked Section Analysis Details Report"));
+   std::shared_ptr<CReportSpecificationBuilder> pCrackedSectionRptSpecBuilder(std::make_shared<CCrackedSectionReportSpecificationBuilder>(m_pBroker));
+   pRptBuilder->AddTitlePageBuilder(std::shared_ptr<CTitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+   pRptBuilder->SetReportSpecificationBuilder(pCrackedSectionRptSpecBuilder);
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<CChapterBuilder>(new CCrackedSectionChapterBuilder));
    pRptMgr->AddReportBuilder(pRptBuilder.release());
 }
 

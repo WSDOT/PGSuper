@@ -127,7 +127,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    8   8.25                     2     5    Sellw          45  0.6  270  25.27   6.40  11.75  11.75                                              19  59.0  9.4  4.000  5.600   4.895    -5.057     8277   0.720  0.832   6.643 -1.420  0.000 -0.050 -1.470 240.83  378.14    4.50   15.00   15.00    0.00    1.61    0.00    2.14    1.94 
+ 61.00    8   8.25                     2     5    Sellw          45  0.6  270  25.27   6.40  11.75  11.75                                              19  59.0  9.4  4.000  5.600   4.895    -5.057     8277   0.720  0.832   6.643 -1.420  0.000 -0.050 -1.470 240.83  378.14    4.50   15.00   15.00    0.00    1.60    0.00    2.14    1.94 
 
 
 Girder design was Not Successful
@@ -190,7 +190,6 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 Splitting zone check failed.

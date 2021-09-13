@@ -6,6 +6,13 @@
 #define IDC_SELECT_ALL                  255
 #define IDC_CLEAR_ALL                   256
 #define IDD_MULTI_GIRDER_SELECT         317
+
+#define IDD_CRACKED_SECTION_POI         221
+#define IDD_MOMENT_CAPACITY_SECTION_POI 207
+#define IDC_MOMENT1                     223
+#define IDC_MOMENT2                     225
+#define IDC_HELPBTN                     250
+
 #define IDC_SELECT_GRID                 1606
 #define IDD_LOADRATINGREPORT            2999
 #define IDD_SPANGIRDERREPORT            3000

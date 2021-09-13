@@ -64,4 +64,7 @@ protected:
    void CreateCopyGirderPropertiesReport();
    void CreateCopyPierPropertiesReport();
    void CreateCopyTempSupportPropertiesReport();
+
+   void CreateMomentCapacityDetailsReport();
+   void CreateCrackedSectionDetailsReport();
 };

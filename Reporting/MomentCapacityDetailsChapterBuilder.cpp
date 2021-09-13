@@ -162,6 +162,7 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
       }
 
       *pPara << _T("Positive Moment Capacity Details") << rptNewLine;
+      *pPara << _T("Complete strain compatibility analysis results are available in the Moment Capacity Details report") << rptNewLine;
 
       PoiList vPoi;
       pIPOI->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), &vPoi);
@@ -192,6 +193,7 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(CReportSpecification* pR
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          *pChapter << pPara;
          *pPara << _T("Negative Moment Capacity Details") << rptNewLine;
+         *pPara << _T("Complete strain compatibility analysis results are available in the Moment Capacity Details report") << rptNewLine;
 
          write_moment_data_table(pBroker,pDisplayUnits,thisGirderKey, vPoi, pChapter, lastIntervalIdx, strLabel, false);
          if ( !m_bCapacityOnly )
@@ -292,7 +294,7 @@ void write_moment_data_table(IBroker* pBroker,
    ColumnIndexType nColumns;
    if( bPositiveMoment || 0 < nGirderTendons || 0 < nMaxSegmentTendons)
    {
-      nColumns = 12;
+      nColumns = 10;// 12;
       if ( lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::FifthEdition2010 )
       {
          nColumns++; // for PPR
@@ -308,15 +310,15 @@ void write_moment_data_table(IBroker* pBroker,
       nColumns++; // for epsilon_t
    }
 
-   if ( 0 < nMaxSegmentTendons )
-   {
-      nColumns += 2*nMaxSegmentTendons; // fpe and epsilon_pti
-   }
+   //if ( 0 < nMaxSegmentTendons )
+   //{
+   //   nColumns += 2*nMaxSegmentTendons; // fpe and epsilon_pti
+   //}
 
-   if ( 0 < nGirderTendons )
-   {
-      nColumns += 2*nGirderTendons; // fpe and epsilon_pti
-   }
+   //if ( 0 < nGirderTendons )
+   //{
+   //   nColumns += 2*nGirderTendons; // fpe and epsilon_pti
+   //}
 
    if ( bPositiveMoment )
    {
@@ -387,28 +389,28 @@ void write_moment_data_table(IBroker* pBroker,
 
    if ( bPositiveMoment )
    {
-      if ( 0 == nGirderTendons+nMaxSegmentTendons )
-      {
-         (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*table)(0,col++) << Sub2(symbol(epsilon),_T("psi")) << rptNewLine << _T("x 1000");
-      }
-      else
-      {
-         (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*table)(0,col++) << Sub2(symbol(epsilon),_T("psi")) << rptNewLine << _T("x 1000");
+      //if ( 0 == nGirderTendons+nMaxSegmentTendons )
+      //{
+      //   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      //   (*table)(0,col++) << Sub2(symbol(epsilon),_T("psi")) << rptNewLine << _T("x 1000");
+      //}
+      //else
+      //{
+      //   (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      //   (*table)(0,col++) << Sub2(symbol(epsilon),_T("psi")) << rptNewLine << _T("x 1000");
 
-         for (DuctIndexType tendonIdx = 0; tendonIdx < nMaxSegmentTendons; tendonIdx++)
-         {
-            (*table)(0, col++) << COLHDR(_T("Segment Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << RPT_STRESS(_T("pe pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-            (*table)(0, col++) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << Sub2(symbol(epsilon), _T("pti")) << rptNewLine << _T("x 1000");
-         }
+      //   for (DuctIndexType tendonIdx = 0; tendonIdx < nMaxSegmentTendons; tendonIdx++)
+      //   {
+      //      (*table)(0, col++) << COLHDR(_T("Segment Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << RPT_STRESS(_T("pe pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+      //      (*table)(0, col++) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << Sub2(symbol(epsilon), _T("pti")) << rptNewLine << _T("x 1000");
+      //   }
 
-         for ( DuctIndexType tendonIdx = 0; tendonIdx < nGirderTendons; tendonIdx++ )
-         {
-            (*table)(0,col++) << COLHDR(_T("Girder Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << RPT_STRESS(_T("pe pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-            (*table)(0,col++) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << Sub2(symbol(epsilon),_T("pti")) << rptNewLine << _T("x 1000");
-         }
-      }
+      //   for ( DuctIndexType tendonIdx = 0; tendonIdx < nGirderTendons; tendonIdx++ )
+      //   {
+      //      (*table)(0,col++) << COLHDR(_T("Girder Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << RPT_STRESS(_T("pe pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      //      (*table)(0,col++) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << Sub2(symbol(epsilon),_T("pti")) << rptNewLine << _T("x 1000");
+      //   }
+      //}
 
       (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ps,avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
@@ -431,20 +433,20 @@ void write_moment_data_table(IBroker* pBroker,
    {
       if ( 0 < nGirderTendons+nMaxSegmentTendons)
       {
-         (*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-         (*table)(0,col++) << Sub2(symbol(epsilon),_T("psi")) << rptNewLine << _T("x 1000");
+         //(*table)(0,col++) << COLHDR(RPT_STRESS(_T("pe ps")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+         //(*table)(0,col++) << Sub2(symbol(epsilon),_T("psi")) << rptNewLine << _T("x 1000");
 
-         for (DuctIndexType tendonIdx = 0; tendonIdx < nMaxSegmentTendons; tendonIdx++)
-         {
-            (*table)(0, col++) << COLHDR(_T("Segment Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << RPT_STRESS(_T("pe pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-            (*table)(0, col++) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << Sub2(symbol(epsilon), _T("pti")) << rptNewLine << _T("x 1000");
-         }
+         //for (DuctIndexType tendonIdx = 0; tendonIdx < nMaxSegmentTendons; tendonIdx++)
+         //{
+         //   (*table)(0, col++) << COLHDR(_T("Segment Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << RPT_STRESS(_T("pe pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         //   (*table)(0, col++) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << Sub2(symbol(epsilon), _T("pti")) << rptNewLine << _T("x 1000");
+         //}
 
-         for (DuctIndexType tendonIdx = 0; tendonIdx < nGirderTendons; tendonIdx++)
-         {
-            (*table)(0, col++) << COLHDR(_T("Girder Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << RPT_STRESS(_T("pe pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-            (*table)(0, col++) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << Sub2(symbol(epsilon), _T("pti")) << rptNewLine << _T("x 1000");
-         }
+         //for (DuctIndexType tendonIdx = 0; tendonIdx < nGirderTendons; tendonIdx++)
+         //{
+         //   (*table)(0, col++) << COLHDR(_T("Girder Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << RPT_STRESS(_T("pe pt")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+         //   (*table)(0, col++) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx) << rptNewLine << Sub2(symbol(epsilon), _T("pti")) << rptNewLine << _T("x 1000");
+         //}
 
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ps,avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
@@ -512,29 +514,29 @@ void write_moment_data_table(IBroker* pBroker,
 
       if ( bPositiveMoment)
       {
-         (*table)(row,col++) << stress.SetValue( pmcd->fpe_ps );
-         (*table)(row,col++) << strain.SetValue(pmcd->eps_initial * 1000);
+         //(*table)(row,col++) << stress.SetValue( pmcd->fpe_ps );
+         //(*table)(row,col++) << strain.SetValue(pmcd->eps_initial * 1000);
 
-         DuctIndexType nSegmentTendons = pSegmentTendonGeometry->GetDuctCount(segmentKey);
-         for ( DuctIndexType tendonIdx = 0; tendonIdx < nMaxSegmentTendons; tendonIdx++ )
-         {
-            if (tendonIdx < nSegmentTendons && bIsOnSegment)
-            {
-               (*table)(row, col++) << stress.SetValue(pmcd->fpe_pt_segment[tendonIdx]);
-               (*table)(row, col++) << strain.SetValue(pmcd->ept_initial_segment[tendonIdx] * 1000);
-            }
-            else
-            {
-               (*table)(row, col++) << _T("");
-               (*table)(row, col++) << _T("");
-            }
-         }
+         //DuctIndexType nSegmentTendons = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+         //for ( DuctIndexType tendonIdx = 0; tendonIdx < nMaxSegmentTendons; tendonIdx++ )
+         //{
+         //   if (tendonIdx < nSegmentTendons && bIsOnSegment)
+         //   {
+         //      (*table)(row, col++) << stress.SetValue(pmcd->fpe_pt_segment[tendonIdx]);
+         //      (*table)(row, col++) << strain.SetValue(pmcd->ept_initial_segment[tendonIdx] * 1000);
+         //   }
+         //   else
+         //   {
+         //      (*table)(row, col++) << _T("");
+         //      (*table)(row, col++) << _T("");
+         //   }
+         //}
 
-         for (DuctIndexType tendonIdx = 0; tendonIdx < nGirderTendons; tendonIdx++)
-         {
-            (*table)(row, col++) << stress.SetValue(pmcd->fpe_pt_girder[tendonIdx]);
-            (*table)(row, col++) << strain.SetValue(pmcd->ept_initial_girder[tendonIdx] * 1000);
-         }
+         //for (DuctIndexType tendonIdx = 0; tendonIdx < nGirderTendons; tendonIdx++)
+         //{
+         //   (*table)(row, col++) << stress.SetValue(pmcd->fpe_pt_girder[tendonIdx]);
+         //   (*table)(row, col++) << strain.SetValue(pmcd->ept_initial_girder[tendonIdx] * 1000);
+         //}
 
          (*table)(row,col++) << stress.SetValue( pmcd->fps_avg );
 
@@ -557,29 +559,29 @@ void write_moment_data_table(IBroker* pBroker,
       {
          if ( 0 < nGirderTendons+nMaxSegmentTendons )
          {
-            (*table)(row,col++) << stress.SetValue( pmcd->fpe_ps );
-            (*table)(row,col++) << strain.SetValue(pmcd->eps_initial * 1000);
+            //(*table)(row,col++) << stress.SetValue( pmcd->fpe_ps );
+            //(*table)(row,col++) << strain.SetValue(pmcd->eps_initial * 1000);
 
-            DuctIndexType nSegmentTendons = pSegmentTendonGeometry->GetDuctCount(segmentKey);
-            for (DuctIndexType tendonIdx = 0; tendonIdx < nMaxSegmentTendons; tendonIdx++)
-            {
-               if (tendonIdx < nSegmentTendons && bIsOnSegment)
-               {
-                  (*table)(row, col++) << stress.SetValue(pmcd->fpe_pt_segment[tendonIdx]);
-                  (*table)(row, col++) << strain.SetValue(pmcd->ept_initial_segment[tendonIdx] * 1000);
-               }
-               else
-               {
-                  (*table)(row, col++) << _T("");
-                  (*table)(row, col++) << _T("");
-               }
-            }
+            //DuctIndexType nSegmentTendons = pSegmentTendonGeometry->GetDuctCount(segmentKey);
+            //for (DuctIndexType tendonIdx = 0; tendonIdx < nMaxSegmentTendons; tendonIdx++)
+            //{
+            //   if (tendonIdx < nSegmentTendons && bIsOnSegment)
+            //   {
+            //      (*table)(row, col++) << stress.SetValue(pmcd->fpe_pt_segment[tendonIdx]);
+            //      (*table)(row, col++) << strain.SetValue(pmcd->ept_initial_segment[tendonIdx] * 1000);
+            //   }
+            //   else
+            //   {
+            //      (*table)(row, col++) << _T("");
+            //      (*table)(row, col++) << _T("");
+            //   }
+            //}
 
-            for ( DuctIndexType tendonIdx = 0; tendonIdx < nGirderTendons; tendonIdx++ )
-            {
-               (*table)(row,col++) << stress.SetValue(pmcd->fpe_pt_girder[tendonIdx]);
-               (*table)(row,col++) << strain.SetValue(pmcd->ept_initial_girder[tendonIdx]*1000);
-            }
+            //for ( DuctIndexType tendonIdx = 0; tendonIdx < nGirderTendons; tendonIdx++ )
+            //{
+            //   (*table)(row,col++) << stress.SetValue(pmcd->fpe_pt_girder[tendonIdx]);
+            //   (*table)(row,col++) << strain.SetValue(pmcd->ept_initial_girder[tendonIdx]*1000);
+            //}
 
             (*table)(row,col++) << stress.SetValue( pmcd->fps_avg );
 

@@ -17,7 +17,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 59.25    6  10.25                     1     2     U54     *     26  1/2  270  16.20  16.20   8.00   8.00                                              4.000  5.000   4.227    -3.724     9850   0.655  0.936  -2.552 -2.248 -0.148 -0.105 -2.501  12.45   65.68    1.00    1.00    1.00    0.00    0.40    0.00    0.51    0.00 
+ 59.25    6  10.25                     1     2     U54     *     26  1/2  270  16.20  16.20   8.00   8.00                                              4.000  5.000   4.227    -3.724     9850   0.655  0.936  -2.552 -2.248 -0.148 -0.105 -2.501  12.45   65.68    1.00    1.00    1.00    0.00    0.39    0.00    0.50    0.00 
 
 
 The Specification Check was Not Successful

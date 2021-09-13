@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      1     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   4  42.0 42.0  4.700  5.400   2.263    -2.859     3350   0.683  0.683   1.890 -0.783  0.000 -0.037 -0.821  61.74  168.36    3.75    9.50    9.50    0.00    1.11    0.00    1.91    1.21 
+ 40.00    6   7.25    K3 Template      1     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   4  42.0 42.0  4.700  5.400   2.263    -2.859     3350   0.683  0.683   1.890 -0.783  0.000 -0.037 -0.821  61.74  168.36    3.75    9.50    9.50    0.00    1.11    0.00    1.90    1.21 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 
@@ -25,14 +25,13 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      1     4     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.200   2.283    -2.841     3233   0.630  0.761   2.349 -0.876  0.000 -0.036 -0.913  61.24  154.71    3.75    5.00    5.00    0.00    0.91    0.00    1.62    1.31 
+ 40.00    6   7.25    K3 Template      1     4     New           26  1/2  270  13.95  13.20  10.50  10.50    4    2.0    8     2    0   0   0   0   0   2  42.0 42.0  4.500  5.200   2.283    -2.841     3233   0.630  0.761   2.349 -0.876  0.000 -0.036 -0.913  61.24  154.71    3.75    5.00    5.00    0.00    0.91    0.00    1.59    1.31 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Ultimate vertical shear capacity check failed for Strength II Limit State
@@ -89,16 +88,14 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5  Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   7.25    K3 Template      3     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   4  42.0 42.0  4.700  5.400   2.263    -2.859     3350   0.683  0.683   1.890 -0.783  0.000 -0.037 -0.821  61.74  168.36    3.75    9.50    9.50    0.00    1.01    0.00    1.79    1.21 
+ 40.00    6   7.25    K3 Template      3     1     New           28  1/2  270  11.59  10.52  10.25  10.25    4    2.0    8     2    0   0   0   0   0   4  42.0 42.0  4.700  5.400   2.263    -2.859     3350   0.683  0.683   1.890 -0.783  0.000 -0.037 -0.821  61.74  168.36    3.75    9.50    9.50    0.00    1.01    0.00    1.77    1.21 
                                                                                                                   4.0    8     2    0   0   0   0   0 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength II Limit State
-Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -124,7 +121,6 @@ The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Minimum fillet value exceeded for bridge check failed

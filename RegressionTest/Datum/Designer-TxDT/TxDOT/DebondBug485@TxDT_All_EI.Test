@@ -16,7 +16,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.19    Waco Creek       1     5    4SB12           6  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.574    -0.769      266   0.355  0.355   0.145 -0.019  0.000  0.000 -0.019   5.15   19.63    1.00    1.00    1.00    1.45    6.70    1.88   10.18    2.16 
+ 39.25    9   0.19    Waco Creek       1     5    4SB12           6  1/2  270   3.50   3.50   5.00   5.00                                              4.000  5.000   0.574    -0.769      266   0.355  0.355   0.145 -0.019  0.000  0.000 -0.019   5.15   19.63    1.00    1.00    1.00    1.45    6.70    1.88   10.19    2.16 
 
 
 The Specification Check was Successful
@@ -96,7 +96,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.17    Waco Creek       5     1    5SB12          28  1/2  270   3.50   3.50   5.00   5.00  14    2.5   28    14   10   4   0   0   0   4.000  5.000   2.292    -2.989      877   0.438  0.438   1.850 -0.358  0.000 -0.179 -0.537  60.83  164.02    1.00    1.00    1.00    1.29    5.02    1.67    6.61    1.13 
+ 39.25    9   0.17    Waco Creek       5     1    5SB12          28  1/2  270   3.50   3.50   5.00   5.00  14    2.5   28    14   10   4   0   0   0   4.000  5.000   2.292    -2.989      877   0.438  0.438   1.850 -0.358  0.000 -0.179 -0.537  60.83  164.02    1.00    1.00    1.00    1.29    4.00    1.67    6.53    1.13 
 
 
 The Specification Check was Successful
@@ -104,7 +104,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 39.25    9   0.17    Waco Creek       5     2    5SB12          26  1/2  270   3.50   3.50   5.00   5.00  12    2.5   26    12   10   2   0   0   0   4.000  5.000   2.265    -2.943      852   0.417  0.417   1.626 -0.364  0.000 -0.178 -0.542  51.84  141.41    1.00    1.00    1.00    1.32    5.27    1.72    6.93    1.03 
+ 39.25    9   0.17    Waco Creek       5     2    5SB12          26  1/2  270   3.50   3.50   5.00   5.00  12    2.5   26    12   10   2   0   0   0   4.000  5.000   2.265    -2.943      852   0.417  0.417   1.626 -0.364  0.000 -0.178 -0.542  51.84  141.41    1.00    1.00    1.00    1.32    4.71    1.72    6.87    1.03 
 
 
 The Specification Check was Successful

@@ -1390,6 +1390,11 @@ Float64 CEngAgentImp::GetXferLengthAdjustment(const pgsPointOfInterest& poi,pgsT
    return m_PsForceEngineer.GetXferLengthAdjustment(poi,strandType,pConfig);
 }
 
+Float64 CEngAgentImp::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig) const
+{
+   return m_PsForceEngineer.GetXferLengthAdjustment(poi, strandType, strandIdx, pConfig);
+}
+
 //-----------------------------------------------------------------------------
 Float64 CEngAgentImp::GetDevLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC, const GDRCONFIG* pConfig) const
 {

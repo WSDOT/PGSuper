@@ -516,6 +516,152 @@ Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pg
    return adjust;
 }
 
+Float64 pgsPsForceEng::GetXferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig) const
+{
+   ATLASSERT(strandType != pgsTypes::Permanent); // there isn't a composite adjustment
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+   Float64 xfer_length = GetXferLength(segmentKey, strandType);
+
+   GET_IFACE(IBridge, pBridge);
+   Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
+   Float64 Xpoi_from_left_end = Max(poi.GetDistFromStart(),0.0); // can be negative if POI is before start of segment (like in a closure joint or pier diaphragm)
+   Float64 Xpoi_from_right_end = Max(segment_length - Xpoi_from_left_end,0.0); // can be negative if POI is beyond end of segment (like in a closure joint or pier diaphragm)
+
+   Float64 adjust = 1.0;
+
+   GET_IFACE(ISegmentData, pSegmentData);
+   const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
+
+   if (pStrands->GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
+   {
+      StrandIndexType startStrandIdx = 0;
+      const auto& strandRows = pStrands->GetStrandRows();
+      for (const CStrandRow& strandRow : strandRows)
+      {
+         if (strandRow.m_StrandType != (StrandType)strandType)
+         {
+            continue;
+         }
+
+         StrandIndexType endStrandIdx = startStrandIdx + strandRow.m_nStrands;
+         if(startStrandIdx <= strandIdx && strandIdx <= endStrandIdx)
+         {
+            if (strandRow.m_bIsDebonded[etStart] || strandRow.m_bIsDebonded[etEnd])
+            {
+               Float64 Xleft_bond = strandRow.m_bIsDebonded[etStart] ? strandRow.m_DebondLength[etStart] : 0;
+               Float64 Xright_bond = segment_length - strandRow.m_bIsDebonded[etEnd] ? strandRow.m_DebondLength[etEnd] : 0;
+
+               if (Xleft_bond < Xpoi_from_left_end && Xpoi_from_left_end < Xright_bond)
+               {
+                  // poi is at a section where the strands are bonded (not in a debond region)
+
+                  // see if the poi is in a transfer length region
+                  Float64 left_distance = Xpoi_from_left_end - Xleft_bond; // distance from start of bonding on left end to the poi
+                  Float64 right_distance = Xright_bond - Xpoi_from_left_end; // distance from start of bonding on right end to the poi
+
+                  if (left_distance < xfer_length)
+                  {
+                     // poi is in the transfer length region on the left end
+                     adjust = left_distance / xfer_length;
+                  }
+                  else if (right_distance < xfer_length)
+                  {
+                     // poi is in the transfer length region on the right end
+                     adjust = right_distance / xfer_length;
+                  }
+                  else
+                  {
+                     // poi is in a region where the strand is fully bonded
+                     adjust = 1.0;
+                  }
+               }
+               else
+               {
+                  adjust = 0.0; // the POI isn't in a location where bond has started yet
+               }
+            }
+            else
+            {
+               // this strand doesn't have any debonding
+               if (Xpoi_from_left_end < xfer_length)
+               {
+                  // poi is in the transfer length at the left end
+                  adjust = Xpoi_from_left_end / xfer_length;
+               }
+               else if (Xpoi_from_right_end < xfer_length)
+               {
+                  // poi is in the transfer length at the right end
+                  adjust = Xpoi_from_right_end / xfer_length;
+               }
+               else
+               {
+                  // poi is in the fully transfered region
+                  adjust = 1.0;
+               }
+            }
+            break; // we found our strand, no need to continue looping
+         }
+         startStrandIdx = endStrandIdx;
+      }
+   }
+   else
+   {
+      GET_IFACE(IStrandGeometry, pStrandGeom);
+      Float64 debond_left, debond_right;
+      if (pStrandGeom->IsStrandDebonded(segmentKey, strandIdx, strandType, pConfig, &debond_left, &debond_right))
+      {
+         // this is the debonding information for the strand we are interested in
+         if (debond_left < Xpoi_from_left_end && Xpoi_from_left_end < debond_right)
+         {
+            // poi is at a section where the strands are bonded (not in a debond region)
+
+            Float64 left_distance = Xpoi_from_left_end - debond_left; // distance from start of bonding on left end to the poi
+            Float64 right_distance = debond_right - Xpoi_from_left_end; // distance from start of bonding on right end to the poi
+
+            if (left_distance < xfer_length)
+            {
+               adjust = left_distance / xfer_length;
+            }
+            else if (right_distance < xfer_length)
+            {
+               adjust = right_distance / xfer_length;
+            }
+            else
+            {
+               adjust = 1.0;
+            }
+         }
+         else
+         {
+            // bonding for the subject strand has not started at this section (eg, the strand is debonded here so there is no force transfer)
+            adjust = 0.0;
+         }
+      }
+      else
+      {
+         // this strand doesn't have any debonding
+         if (Xpoi_from_left_end < xfer_length)
+         {
+            // poi is in the transfer length at the left end
+            adjust = Xpoi_from_left_end / xfer_length;
+         }
+         else if (Xpoi_from_right_end < xfer_length)
+         {
+            // poi is in the transfer length at the right end
+            adjust = Xpoi_from_right_end / xfer_length;
+         }
+         else
+         {
+            // poi is in the fully transfered region
+            adjust = 1.0;
+         }
+      }
+   }
+
+   return adjust;
+}
+
 Float64 pgsPsForceEng::GetDevLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,bool bUHPC,const GDRCONFIG* pConfig) const
 {
    STRANDDEVLENGTHDETAILS details = GetDevLengthDetails(poi,strandType,bDebonded,bUHPC,pConfig);

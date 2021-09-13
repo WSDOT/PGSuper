@@ -30,6 +30,7 @@
 //
 #include <Details.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\Bridge.h>
 
 // LOCAL INCLUDES
 //
@@ -139,6 +140,27 @@ private:
    CComPtr<IMomentCapacitySolver> m_MomentCapacitySolver;
    CComPtr<ICrackedSectionSolver> m_CrackedSectionSolver;
 
+   struct StrandMaterial
+   {
+      pgsTypes::StrandType strandType;
+      Float64 bondFactor;
+      bool bDevelopmentReducedStrainCapacity;
+      CComPtr<IStressStrain> ssMaterial;
+
+      StrandMaterial(pgsTypes::StrandType strandType, Float64 bondFactor, bool bDevelopmentReducedStrainCapacity, IStressStrain* pMaterial) :
+         strandType(strandType), bondFactor(bondFactor), ssMaterial(pMaterial), bDevelopmentReducedStrainCapacity(bDevelopmentReducedStrainCapacity)
+      {
+      }
+      bool operator<(const StrandMaterial& other) const
+      {
+         if (strandType < other.strandType) return true;
+         if (other.strandType < strandType) return false;
+         if (::IsLT(bondFactor, other.bondFactor)) return true;
+         return false;
+      }
+   };
+   mutable std::set<StrandMaterial> m_StrandMaterial;
+
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
@@ -149,13 +171,19 @@ private:
    public:
       pgsBondTool(IBroker* pBroker,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr);
 
-      Float64 GetBondFactor(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const;
+      const pgsPointOfInterest& GetPOI() const { return m_Poi; }
+
+      Float64 GetTransferLengthFactor(StrandIndexType strandIdx, pgsTypes::StrandType strandType) const;
+      Float64 GetDevelopmentLengthFactor(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const;
+
+      // returns true if the strand has any bonding (eg, the poi is beyond the debond point)
       bool IsDebonded(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const;
       
    private:
 
       IBroker* m_pBroker;
       CComPtr<IPretensionForce> m_pPrestressForce;
+      CComPtr<IStrandGeometry> m_pStrandGeometry;
 
       pgsPointOfInterest m_Poi;
       pgsPointOfInterest m_PoiMidSpan;
@@ -167,12 +195,12 @@ private:
    };
 
    // GROUP: OPERATIONS
-   void CreateStrandMaterial(const CSegmentKey& segmentKey,IStressStrain** ppSS) const;
+   void CreateStrandMaterial(const CSegmentKey& segmentKey, pgsBondTool& bondTool, pgsTypes::StrandType strandType,StrandIndexType strandIdx,Float64 initialStrain,bool* pbDevelopmentReducedStrainCapacity,IStressStrain** ppSS) const;
    void CreateSegmentTendonMaterial(const CSegmentKey& segmentKey, IStressStrain** ppSS) const;
    void CreateGirderTendonMaterial(const CGirderKey& girderKey, IStressStrain** ppSS) const;
    void CreateTendonMaterial(const matPsStrand* pTendon, IStressStrain** ppSS) const;
 
-   MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,Float64 fpe_ps,Float64 eps_initial_strand, const std::vector<Float64>& fpe_pt_segment, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& fpe_pt_girder,const std::vector<Float64>& ept_initial_girder,bool bPositiveMoment) const;
+   MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig, Float64 fpe_ps_all_strands, Float64 eps_initial_all_strands, const std::array<std::vector<Float64>, 2>& fpe_ps, const std::array<std::vector<Float64>, 2>& eps_initial_strand, const std::vector<Float64>& fpe_pt_segment, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& fpe_pt_girder,const std::vector<Float64>& ept_initial_girder,bool bPositiveMoment) const;
    void ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const CRACKINGMOMENTDETAILS* pcmd,MINMOMENTCAPDETAILS* pmmcd) const;
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const;
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const;
@@ -184,7 +212,7 @@ private:
    void ComputeCrackingMoment(Float64 g1,Float64 g2,Float64 g3,Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd) const;
    void GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const;
 
-   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, Float64 eps_initial, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& ept_initial_girder, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, Float64* pdt, Float64* pH, Float64* pHaunch, std::map<StrandIndexType, Float64>* pBondFactors) const;
+   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, const std::array<std::vector<Float64>, 2>& eps_initial, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& ept_initial_girder, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, Float64* pdt, IndexType* pReinfIdx, Float64* pH, Float64* pHaunch,bool* pbDevelopmentReducedStrainCapacity) const;
 
    // GROUP: INQUIRY
 

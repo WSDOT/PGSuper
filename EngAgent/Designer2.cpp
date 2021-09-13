@@ -9958,11 +9958,11 @@ void pgsDesigner2::RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,p
 
       const MOMENTCAPACITYDETAILS* pmcd = pMomentCapacity->GetMomentCapacityDetails( intervalIdx, poi, true, &config );
 
-      LOG(_T("fpe = ") << ::ConvertFromSysUnits( pmcd->fpe_ps, unitMeasure::KSI) << _T(" KSI") );
+      //LOG(_T("fpe = ") << ::ConvertFromSysUnits( pmcd->fpe_ps, unitMeasure::KSI) << _T(" KSI") );
       LOG(_T("fps_avg = ") << ::ConvertFromSysUnits( pmcd->fps_avg, unitMeasure::KSI) << _T(" KSI") );
       LOG(_T("fpt_avg_segment = ") << ::ConvertFromSysUnits(pmcd->fpt_avg_segment, unitMeasure::KSI) << _T(" KSI"));
       LOG(_T("fpt_avg_girder = ") << ::ConvertFromSysUnits(pmcd->fpt_avg_girder, unitMeasure::KSI) << _T(" KSI"));
-      LOG(_T("e initial = ") << pmcd->eps_initial );
+      //LOG(_T("e initial = ") << pmcd->eps_initial );
       LOG(_T("phi = ") << pmcd->Phi );
       LOG(_T("C = ") << ::ConvertFromSysUnits( pmcd->C, unitMeasure::Kip) << _T(" kip"));
       LOG(_T("dc = ") << ::ConvertFromSysUnits( pmcd->dc, unitMeasure::Inch) << _T(" inch"));

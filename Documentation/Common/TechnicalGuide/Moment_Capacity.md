@@ -2,7 +2,7 @@ Moment Capacity {#tg_moment_capacity}
 ======================================
 Moment capacity is computed using a non-linear strain-compatibility methodology. Non-linear material models are used for concrete materials, prestressing strands, and mild reinforcement.
 
-A non linear approach is used in lieu of the AASHTO and PCI approaches because the research done in Reference 1 (below) has shown that for T-beams with different concrete strengths in the flange and web, the traditional equivalent rectangular concrete compressive stress distribution does not provide a reliable estimate of flexural strength.
+A non linear approach is used in lieu of the AASHTO approaches because the equations provided in Section 5.6.3.1.1 are not applicable to all situations (see C5.6.3.1.1), the AASHTO equations neglect the contribution of the top flange of I-Beams, and the research done in Reference 1 (below) has shown that for T-beams with different concrete strengths in the flange and web, the traditional equivalent rectangular concrete compressive stress distribution does not provide a reliable estimate of flexural strength.
 
 Theory
 ----------
@@ -10,18 +10,21 @@ The basic theory and assumptions for the non-linear analysis are:
 1. The strength design of flexural members is based on satisfaction of applicable conditions of equilibrium and compatibility of strains.
 2. Strain in the reinforcement and concrete is assumed to be directly proportional to the distance from the neutral axis.
 3. The maximum useable strain at the extreme concrete compression fiber is assumed to be 0.003.
-4. For positive moment analysis; the effects of non-prestressed (mild steel) reinforcement are included in the analysis at the user's option. The area of girder rebar is adjusted for lack of development. Deck rebar is ignored
-5. For negative moment analysis; the effects of non-prestressed (mild steel) Deck reinforcement are included in the analysis. Rebar in the girder is included at the user's option
-6. The tensile strength of concrete is neglected.
-7. The non-linear concrete stress-strain relationship is taken from Reference 2.
-8. The material model of stress-strain behavior for low relaxation and stress relieved prestressing strands utilizes the "power formula" taken from the PCI Bridge Design Manual.
-9. The distance c from the fiber of maximum strain to the neutral axis is measured in a direction perpendicular to that axis.
+4. The maximum useable strain in prestressing strand is 0.035 as defined in ASTM A416.
+5. For positive moment analysis; the effects of non-prestressed (mild steel) reinforcement are included in the analysis at the user's option. The area of girder rebar is adjusted for lack of development. Deck rebar is ignored
+6. For negative moment analysis; the effects of non-prestressed (mild steel) Deck reinforcement are included in the analysis. Rebar in the girder is included at the user's option
+7. The tensile strength of concrete is neglected.
+8. The non-linear concrete stress-strain relationship is taken from Reference 2.
+9. The material model of stress-strain behavior for low relaxation and stress relieved prestressing strands utilizes the "power formula" taken from the PCI Bridge Design Manual.
+10. The distance c from the fiber of maximum strain to the neutral axis is measured in a direction perpendicular to that axis.
 
 NOTE: Mild reinforcement is only used in the capacity analysis if permitted by the Project Criteria. For bridge systems without a cast in place deck or overlay, the mild reinforcement in the girder is used in the negative moment capacity analysis, regardless of the settings in the Project Criteria.
 
 Solution Method
 ----------------
-The non-linear compressive behavior of prestressed beam sections is modelled by slicing the compression area of the section into horizontal strips. Strains are computed at the midpoint of each strip and then stresses are computed using the concrete material model. The moment contribution by each strip is then determined by multiplying the stress in the strip by the strip area to get the force and then multiplying this force by the distance from the strip's geometrical centroid to the neutral axis. First 30 strips are used. If the program cannot converge on a solution, then 50 and 100 strips are used. The strips are re-generated each time the neutral axis location is changed.
+The non-linear compressive behavior of prestressed beam sections is modelled by slicing the compression area of the section into horizontal strips. Strains are computed at the midpoint of each strip and then stresses are computed using the concrete material model. The moment contribution by each strip is then determined by multiplying the stress in the strip by the strip area to get the force and then multiplying this force by the distance from the strip's geometrical centroid to the top of the non-composite girder section. Analysis with 30 strips provides reasonable accuracy.
+
+At the conclusion of the analysis, the strain in the reinforcement is compared to the minimum required elongation specified in the applicable ASTM. If the strain in the reinforcement exceeds the minimum required elogation the moment capacity is over predicted. The strain at the level of the reinforcement is fixed at the minimum elongation and the capacity analysis is repeated. The resulting strain in the concrete will be less than 0.003 and the rectangular stress distribution approximation from the AASHTO specifications cannot be used providing further justification for the non-linear strain-compatibility solution.
 
 Ultimate moment capacity is computed relative to the condition of zero strain in the non-prestressed materials in the cross section. The following flow chart illustrates the high level procedure for this method:
 
