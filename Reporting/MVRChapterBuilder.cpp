@@ -291,7 +291,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          *p << _T("$ Pedestrian values are per girder") << rptNewLine;
       }
 
-      *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE_NO_IMPACT : LIVELOAD_PER_LANE) << rptNewLine;
+      *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE : LIVELOAD_PER_LANE_NO_IMPACT) << rptNewLine;
       *p << rptNewLine;
       LiveLoadTableFooter(pBroker,p, girderKey,bDesign,bRating);
    }
@@ -340,7 +340,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             *p << _T("$ Pedestrian values are per girder") << rptNewLine;
          }
 
-         *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE_NO_IMPACT : LIVELOAD_PER_LANE) << rptNewLine;
+         *p << (pBearingDesign->BearingLiveLoadReactionsIncludeImpact() ? LIVELOAD_PER_LANE : LIVELOAD_PER_LANE_NO_IMPACT) << rptNewLine;
          *p << rptNewLine;
          LiveLoadTableFooter(pBroker, p, thisGirderKey, bDesign, bRating);
 
