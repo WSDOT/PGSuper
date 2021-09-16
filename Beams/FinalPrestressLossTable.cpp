@@ -178,8 +178,8 @@ void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    if ( !m_bIgnoreElasticGain )
    {
-      (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToDeckPlacement() );
-      (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL() );
+      (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToDeckPlacement(true/*apply elastic gains reduction*/) );
+      (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL(true/*apply elastic gains reduction*/) );
    }
 
 

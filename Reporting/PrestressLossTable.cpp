@@ -647,7 +647,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                pgsTypes::LiveLoadType llType = LiveLoadTypeFromLimitState(limitState);
                if (IsDesignRatingType(ratingType))
                {
-                  (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent, limitState, bIncludeElasticEffects));
+                  (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent, limitState, bIncludeElasticEffects, true/*include elastic gain reduction*/));
                }
                else
                {
@@ -664,7 +664,7 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
                      {
                         continue;
                      }
-                     (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent,limitState, bIncludeElasticEffects,vehicleIdx));
+                     (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent,limitState, bIncludeElasticEffects, true/*include elastic gain reduction*/,vehicleIdx));
                   }
                }
             }
@@ -673,15 +673,15 @@ rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segm
    }
    else
    {
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI, bIncludeElasticEffects));
-      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII, bIncludeElasticEffects));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceI, bIncludeElasticEffects, true/*include elastic gain reduction*/));
+      (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIII, bIncludeElasticEffects, true/*include elastic gain reduction*/));
       if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
       {
-         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA, bIncludeElasticEffects));
+         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::ServiceIA, bIncludeElasticEffects, true/*include elastic gain reduction*/));
       }
       else
       {
-         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI, bIncludeElasticEffects));
+         (*p_table)(row++, col) << stress.SetValue(pPrestressForce->GetEffectivePrestressWithLiveLoad(poi, pgsTypes::Permanent/*pgsTypes::AfterLossesWithLiveLoad*/, pgsTypes::FatigueI, bIncludeElasticEffects, true/*include elastic gain reduction*/));
       }
    }
 

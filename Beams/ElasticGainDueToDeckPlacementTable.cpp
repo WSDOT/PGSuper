@@ -463,6 +463,6 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* p
       }
    }
 
-   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() );
-   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToDeckPlacement() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1(true/*apply elastic gains reduction*/) );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToDeckPlacement(true/*apply elastic gains reduction*/) );
 }

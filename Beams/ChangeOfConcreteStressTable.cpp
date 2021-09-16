@@ -177,5 +177,5 @@ void CChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,
       (*this)(row + rowOffset, col++) << dim.SetValue(Ybc2);
       (*this)(row + rowOffset, col++) << mom_inertia.SetValue(Ic2);
    }
-   (*this)(row+rowOffset, col++) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1() );
+   (*this)(row+rowOffset, col++) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1(true/*apply elastic gains reduction*/) );
 }

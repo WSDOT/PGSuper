@@ -357,6 +357,7 @@ Minimum fillet value exceeded for bridge check failed
 
 Girder design was Not Successful
 The Specification Check was Not Successful
+Stresses in the prestressing strands are too high.
 Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State

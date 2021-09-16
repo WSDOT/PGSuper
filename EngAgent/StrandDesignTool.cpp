@@ -984,11 +984,11 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    Float64 loss;
    if ( pDesignParams->task.intervalIdx < liveLoadIntervalIdx )
    {
-      loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->task.intervalIdx,pgsTypes::End,&guess);
+      loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->task.intervalIdx,pgsTypes::End,true/*apply elastic gain reduction*/, &guess);
    }
    else
    {
-      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState,INVALID_INDEX/*controlling live load*/,true/*include elastic effects*/, &guess);
+      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState,INVALID_INDEX/*controlling live load*/,true/*include elastic effects*/, true/*apply elastic gain reduction*/, &guess);
    }
 
 #if defined _DEBUG
@@ -2536,7 +2536,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(m_SegmentKey);
-   Float64 loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,liftingIntervalIdx,pgsTypes::End,&guess);
+   Float64 loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,liftingIntervalIdx,pgsTypes::End, true/*apply elastic gain reduction*/, &guess);
 
    LOG(_T("Estimated losses at lifting for this strand configuration = ")
       << ::ConvertFromSysUnits(loss,unitMeasure::KSI) << _T(" KSI"));
@@ -2602,11 +2602,11 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
    Float64 loss;
    if ( intervalIdx < liveLoadIntervalIdx )
    {
-      loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End,&guess);
+      loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End, true/*apply elastic gain reduction*/, &guess);
    }
    else
    {
-      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII,INVALID_INDEX/*controlling live load*/, true/*include elastic effects*/, &guess);
+      loss = psfeng.GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII,INVALID_INDEX/*controlling live load*/, true/*include elastic effects*/, true/*apply elastic gain reduction*/, &guess);
    }
 
    if (intervalIdx == releaseIntervalIdx)

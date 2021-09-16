@@ -192,8 +192,8 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    Float64 dfpT = pDetails->pLosses->PermanentStrand_Final(); 
 
-   Float64 dfpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement();
-   Float64 dfpSIDL = pDetails->pLosses->ElasticGainDueToSIDL();
+   Float64 dfpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement(true/*apply elastic gains reduction*/);
+   Float64 dfpSIDL = pDetails->pLosses->ElasticGainDueToSIDL(true/*apply elastic gains reduction*/);
 
    dfpT += dfpES + dfpp + dfptr - dfpED - dfpSIDL;
    (*this)(row+rowOffset,col++) << stress.SetValue(dfpT);

@@ -255,8 +255,8 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
 
    Float64 fpR0   = pDetails->pLosses->PermanentStrand_RelaxationLossesBeforeTransfer(); // R0
    Float64 fpES   = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses(); // ES
-   Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement(); // ED
-   Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL(); // SIDL
+   Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement(true/*apply elastic gains reduction*/); // ED
+   Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL(true/*apply elastic gains reduction*/); // SIDL
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();

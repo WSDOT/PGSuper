@@ -1988,9 +1988,8 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
 
       if ( pAllow->CheckStressAfterLosses() && strandType != pgsTypes::Temporary )
       {
-         Float64 fpe_ServiceI   = pPsForce->GetEffectivePrestressWithLiveLoad(mid_span_poi,strandType,pgsTypes::ServiceI);
-         Float64 fpe_ServiceIII = pPsForce->GetEffectivePrestressWithLiveLoad(mid_span_poi,strandType,pgsTypes::ServiceIII);
-         Float64 fpe = Max(fpe_ServiceI,fpe_ServiceIII);
+         // LRFD 5.9.2.2 is a Service I check
+         Float64 fpe = pPsForce->GetEffectivePrestressWithLiveLoad(mid_span_poi,strandType,pgsTypes::ServiceI,true/*include elastic gains*/, false/*don't apply elastic gain reduction factor*/);
          pArtifact->SetCheckAfterLosses( strandType, fpe, pAllow->GetAllowableAfterLosses(segmentKey,strandType) );
       }
    }

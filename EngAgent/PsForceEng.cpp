@@ -264,7 +264,7 @@ Float64 pgsPsForceEng::GetPjackMax(const CSegmentKey& segmentKey,const matPsStra
 
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType stressStrandsIntervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
-      Float64 loss = GetEffectivePrestressLoss(poi,pgsTypes::Permanent,stressStrandsIntervalIdx,pgsTypes::End);
+      Float64 loss = GetEffectivePrestressLoss(poi,pgsTypes::Permanent,stressStrandsIntervalIdx,pgsTypes::End,false/*don't apply elastic gain reduction*/,nullptr);
 
       Float64 fpu = strand.GetUltimateStrength();
       Float64 aps = strand.GetNominalArea();
@@ -955,7 +955,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
       GET_IFACE(ISegmentData, pSegmentData);
       const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
 
-      Float64 fpe = GetEffectivePrestress(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, pConfig); // this fpj - loss + gain, without adjustment
+      Float64 fpe = GetEffectivePrestress(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, true/*apply elastic gain reduction*/, pConfig); // this fpj - loss + gain, without adjustment
 
       // Reduce for transfer effect (no transfer effect if the strands aren't released)
       GET_IFACE(IIntervals, pIntervals);
@@ -974,7 +974,7 @@ Float64 pgsPsForceEng::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes:
 
 Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
-   return GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,true/*include elastic effects*/,pConfig);
+   return GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,true/*include elastic effects*/,true/*apply elastic gain reduction*/, pConfig);
 }
 
 Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, bool bIncludeElasticEffects, const GDRCONFIG* pConfig) const
@@ -1019,7 +1019,7 @@ Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& p
    GET_IFACE(ISegmentData,pSegmentData );
    const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
 
-   Float64 fpe = GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,bIncludeElasticEffects,pConfig); // this fpj - loss + gain, without adjustment
+   Float64 fpe = GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,bIncludeElasticEffects,true/*apply elastic gain reduction*/, pConfig); // this fpj - loss + gain, without adjustment
    Float64 adjust = GetXferLengthAdjustment(poi, strandType, pConfig);
 
    Float64 P = adjust*Aps*fpe;
@@ -1027,7 +1027,7 @@ Float64 pgsPsForceEng::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& p
    return P;
 }
 
-Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, bool bApplyElasticGainReduction,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( pPoi->IsOffSegment(poi) )
@@ -1036,12 +1036,12 @@ Float64 pgsPsForceEng::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,p
    }
 
    Float64 time_dependent_loss = GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,pConfig);
-   Float64 instantaneous_effects = GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,pConfig);
+   Float64 instantaneous_effects = GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime, bApplyElasticGainReduction,pConfig);
    Float64 effective_loss = time_dependent_loss - instantaneous_effects;
    return effective_loss;
 }
 
-Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx,bool bIncludeElasticEffects, const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx,bool bIncludeElasticEffects, bool bApplyElasticGainReduction, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( pPoi->IsOffSegment(poi) )
@@ -1064,7 +1064,7 @@ Float64 pgsPsForceEng::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInt
    Float64 instantaneous_effects = 0;
    if (bIncludeElasticEffects)
    {
-      instantaneous_effects = GetInstantaneousEffectsWithLiveLoad(poi, strandType, limitState, vehicleIdx, pConfig);
+      instantaneous_effects = GetInstantaneousEffectsWithLiveLoad(poi, strandType, limitState, bApplyElasticGainReduction, vehicleIdx, pConfig);
    }
    Float64 effective_loss = time_dependent_loss - instantaneous_effects;
    return effective_loss;
@@ -1392,7 +1392,7 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
    }
 }
 
-Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, bool bApplyElasticGainReduction,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( pPoi->IsOffSegment(poi) )
@@ -1412,10 +1412,10 @@ Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgs
       pDetails = pLosses->GetLossDetails(poi,intervalIdx);
    }
 
-   return GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,pConfig,pDetails);
+   return GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime, bApplyElasticGainReduction,pConfig,pDetails);
 }
 
-Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig,const LOSSDETAILS* pDetails) const
+Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, bool bApplyElasticGainReduction,const GDRCONFIG* pConfig,const LOSSDETAILS* pDetails) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1568,7 +1568,7 @@ Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgs
             }
             else
             {
-               gain += pDetails->pLosses->ElasticGainDueToDeckPlacement();
+               gain += pDetails->pLosses->ElasticGainDueToDeckPlacement(bApplyElasticGainReduction);
             }
          }
       }
@@ -1587,7 +1587,7 @@ Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgs
             }
             else
             {
-               gain += pDetails->pLosses->ElasticGainDueToSIDL();
+               gain += pDetails->pLosses->ElasticGainDueToSIDL(bApplyElasticGainReduction);
             }
          }
       }
@@ -1596,7 +1596,7 @@ Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgs
    }
 }
 
-Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx, const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, bool bApplyElasticGainReduction, VehicleIndexType vehicleIdx, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(ILosses,pLosses);
    const LOSSDETAILS* pDetails;
@@ -1619,10 +1619,10 @@ Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInter
       pDetails = pLosses->GetLossDetails(poi,liveLoadIntervalIdx);
    }
 
-   return GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState,vehicleIdx,pConfig,pDetails);
+   return GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState, bApplyElasticGainReduction,vehicleIdx,pConfig,pDetails);
 }
 
-Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx,const GDRCONFIG* pConfig,const LOSSDETAILS* pDetails) const
+Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, bool bApplyElasticGainReduction,VehicleIndexType vehicleIdx,const GDRCONFIG* pConfig,const LOSSDETAILS* pDetails) const
 {
    ATLASSERT(!IsStrengthLimitState(limitState)); // limit state must be servie or fatigue
 
@@ -1639,12 +1639,12 @@ Float64 pgsPsForceEng::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInter
 
    pgsTypes::IntervalTimeType intervalTime = pgsTypes::End;
 
-   Float64 gain = GetInstantaneousEffects(poi,strandType,liveLoadIntervalIdx,intervalTime,pConfig,pDetails);
-   gain += GetElasticGainDueToLiveLoad(poi, strandType, limitState, vehicleIdx, true/*include live load factor*/,pConfig, pDetails);
+   Float64 gain = GetInstantaneousEffects(poi,strandType,liveLoadIntervalIdx,intervalTime, bApplyElasticGainReduction,pConfig,pDetails);
+   gain += GetElasticGainDueToLiveLoad(poi, strandType, limitState, vehicleIdx, true/*include live load factor*/, bApplyElasticGainReduction,pConfig, pDetails);
    return gain;
 }
 
-Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects, const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects, bool bApplyElasticGainReduction, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IPointOfInterest, pPoi);
    if (pPoi->IsOffSegment(poi))
@@ -1686,7 +1686,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi, pgsT
    Float64 loss;
    if (bIncludeElasticEffects)
    {
-      loss = GetEffectivePrestressLoss(poi, strandType, intervalIdx, intervalTime, pConfig);
+      loss = GetEffectivePrestressLoss(poi, strandType, intervalIdx, intervalTime, bApplyElasticGainReduction, pConfig);
    }
    else
    {
@@ -1699,7 +1699,7 @@ Float64 pgsPsForceEng::GetEffectivePrestress(const pgsPointOfInterest& poi, pgsT
    return fpe;
 }
 
-Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx, bool bIncludeElasticEffects, const GDRCONFIG* pConfig) const
+Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx, bool bIncludeElasticEffects, bool bApplyElasticGainReduction, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx;
@@ -1712,7 +1712,7 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
       liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    }
 
-   Float64 fpe = GetEffectivePrestress(poi, strandType, liveLoadIntervalIdx, pgsTypes::End, bIncludeElasticEffects, pConfig);
+   Float64 fpe = GetEffectivePrestress(poi, strandType, liveLoadIntervalIdx, pgsTypes::End, bIncludeElasticEffects, bApplyElasticGainReduction, pConfig);
 
    if (IsZero(fpe)) // this happens where there are no strands, or the strands aren't jacked
       return 0;
@@ -1730,14 +1730,14 @@ Float64 pgsPsForceEng::GetEffectivePrestressWithLiveLoad(const pgsPointOfInteres
 
    if (bIncludeElasticEffects)
    {
-      Float64 dfpLL = GetElasticGainDueToLiveLoad(poi, strandType, limitState, vehicleIdx, true/*include live load factor*/, pConfig, pDetails);
+      Float64 dfpLL = GetElasticGainDueToLiveLoad(poi, strandType, limitState, vehicleIdx, true/*include live load factor*/, bApplyElasticGainReduction, pConfig, pDetails);
       fpe += dfpLL;
    }
 
    return fpe;
 }
 
-Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, bool bIncludeLiveLoadFactor, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails) const
+Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, bool bIncludeLiveLoadFactor, bool bApplyElasticGainReduction, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails) const
 {
    ATLASSERT(!IsStrengthLimitState(limitState)); // limit state must be service or fatigue
 
@@ -1819,6 +1819,16 @@ Float64 pgsPsForceEng::GetElasticGainDueToLiveLoad(const pgsPointOfInterest& poi
          GET_IFACE(ILibrary, pLibrary);
          const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
          Float64 K_liveload = pSpecEntry->GetLiveLoadElasticGain();
+
+         if ((pDetails->LossMethod == pgsTypes::AASHTO_LUMPSUM_2005 ||
+             pDetails->LossMethod == pgsTypes::AASHTO_REFINED_2005 ||
+             pDetails->LossMethod == pgsTypes::WSDOT_LUMPSUM_2005 ||
+             pDetails->LossMethod == pgsTypes::WSDOT_REFINED_2005)
+             &&
+             !bApplyElasticGainReduction)
+         {
+           K_liveload = 1.0;
+         }
 
          llGain = pDetails->pLosses->ElasticGainDueToLiveLoad(Mmax);
          llGain *= K_liveload;

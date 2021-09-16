@@ -384,6 +384,6 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
    }
 
    (*this)(row+rowOffset,col++) << cg.SetValue( Ybg );
-   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcd2() );
-   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->GetDeltaFcd2(true/*apply elastic gains reduction*/) );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticGainDueToSIDL(true/*apply elastic gains reduction*/) );
 }

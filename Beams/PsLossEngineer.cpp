@@ -356,9 +356,9 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    Float64 ApsPerm;
    Float64 ApsTTS;
    Float64 Mdlg;
-   Float64 Madlg;
-   Float64 Msidl1;
-   Float64 Msidl2;
+   std::vector<std::pair<Float64, Float64>> Madlg;
+   std::vector<std::pair<Float64, Float64>> Msidl1;
+   std::vector<std::pair<Float64, Float64>> Msidl2;
 
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
@@ -547,9 +547,9 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    Float64 ApsPerm;
    Float64 ApsTTS;
    Float64 Mdlg;
-   Float64 Madlg;
-   Float64 Msidl1;
-   Float64 Msidl2;
+   std::vector<std::pair<Float64, Float64>> Madlg;
+   std::vector<std::pair<Float64, Float64>> Msidl1;
+   std::vector<std::pair<Float64, Float64>> Msidl2;
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
 
@@ -781,9 +781,9 @@ lrfdElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEst
    Float64 ApsPerm;
    Float64 ApsTTS;
    Float64 Mdlg;
-   Float64 Madlg;
-   Float64 Msidl1;
-   Float64 Msidl2;
+   std::vector<std::pair<Float64, Float64>> Madlg;
+   std::vector<std::pair<Float64, Float64>> Msidl1;
+   std::vector<std::pair<Float64, Float64>> Msidl2;
 
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
@@ -1029,9 +1029,9 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    Float64 ApsPerm;
    Float64 ApsTTS;
    Float64 Mdlg;
-   Float64 Madlg;
-   Float64 Msidl1;
-   Float64 Msidl2;
+   std::vector<std::pair<Float64, Float64>> Madlg;
+   std::vector<std::pair<Float64, Float64>> Msidl1;
+   std::vector<std::pair<Float64, Float64>> Msidl2;
 
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
@@ -1350,8 +1350,9 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
    Float64 ApsPerm;
    Float64 ApsTTS;
    Float64 Mdlg;
-   Float64 Madlg;
-   Float64 Msidl1, Msidl2;
+   std::vector<std::pair<Float64, Float64>> Madlg;
+   std::vector<std::pair<Float64, Float64>> Msidl1;
+   std::vector<std::pair<Float64, Float64>> Msidl2;
 
    Float64 rh;
    Float64 ti,th,td,tf; // initial time, time of hauling,time of deck placment, final time
@@ -2661,9 +2662,9 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    Float64* pApsPerm,
    Float64* pApsTTS,
    Float64* pMdlg,
-   Float64* pMadlg,
-   Float64* pMsidl1,
-   Float64* pMsidl2,
+   std::vector<std::pair<Float64, Float64>>* pMadlg,
+   std::vector<std::pair<Float64, Float64>>* pMsidl1,
+   std::vector<std::pair<Float64, Float64>>* pMsidl2,
    Float64* prh,
    Float64* pti,
    Float64* pth,
@@ -3007,24 +3008,24 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
    if ( poi.GetDistFromStart() < end_size || end_size + *pSpanLength < poi.GetDistFromStart() )
    {
-      *pMadlg = 0;
+      *pMadlg = std::vector<std::pair<Float64, Float64>>{ std::make_pair(0.0,0.0) };
    }
    else
    {
-      *pMadlg = 0;
+      *pMadlg = std::vector<std::pair<Float64, Float64>>();
       if (castDiaphragmIntervalIdx != INVALID_INDEX)
       {
-         *pMadlg +=  K_dia*(pProdForces->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative));
+         pMadlg->emplace_back(pProdForces->GetMoment(castDiaphragmIntervalIdx, pgsTypes::pftDiaphragm, poi, bat, rtCumulative), K_dia);
       }
 
       if (castShearKeyIntervalIdx != INVALID_INDEX)
       {
-         *pMadlg += K_dia*(pProdForces->GetMoment(castShearKeyIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtCumulative));
+         pMadlg->emplace_back(pProdForces->GetMoment(castShearKeyIntervalIdx, pgsTypes::pftShearKey, poi, bat, rtCumulative), K_dia);
       }
 
       if (castLongitudinalJointIntervalIdx != INVALID_INDEX)
       {
-         *pMadlg += K_slab*(pProdForces->GetMoment(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, bat, rtCumulative));
+         pMadlg->emplace_back(pProdForces->GetMoment(castLongitudinalJointIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, bat, rtCumulative), K_slab);
       }
       
       if ( !pGirder->HasStructuralLongitudinalJoints() )
@@ -3033,8 +3034,8 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
          // (see below for the case when the bridge has structural longitudinal joints)
          if (castDeckIntervalIdx != INVALID_INDEX)
          {
-            *pMadlg += K_slab * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative) 
-                    +  K_slabpad * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtCumulative);
+            pMadlg->emplace_back(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative), K_slab);
+            pMadlg->emplace_back(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtCumulative), K_slabpad);
          }
       }
 
@@ -3051,7 +3052,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
          {
             if ( intervalIdx <= noncompositeUserLoadIntervalIdx )
             {
-               *pMadlg += K * pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental);
+               pMadlg->emplace_back(pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental), K);
             }
          }
       }
@@ -3059,13 +3060,14 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
       if ( pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP )
       {
-         *pMadlg += K_slab * pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtCumulative );
+         pMadlg->emplace_back(pProdForces->GetMoment( castDeckIntervalIdx, pgsTypes::pftSlabPanel, poi, bat, rtCumulative ), K_slab);
       }
    }
 
-   *pMsidl1 = 0;
-   *pMsidl2 = K_railing * (pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative ) +
-                          pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftSidewalk,       poi, bat, rtCumulative ));
+   *pMsidl1 = std::vector<std::pair<Float64, Float64>>();;
+   *pMsidl2 = std::vector<std::pair<Float64, Float64>>();;
+   pMsidl2->emplace_back(pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftTrafficBarrier, poi, bat, rtCumulative ) +
+                         pProdForces->GetMoment( railingSystemIntervalIdx, pgsTypes::pftSidewalk,       poi, bat, rtCumulative ), K_railing);
 
    if (pGirder->HasStructuralLongitudinalJoints())
    {
@@ -3073,8 +3075,8 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       // of the bare girder and the joints
       if (castDeckIntervalIdx != INVALID_INDEX)
       {
-         *pMsidl1 = K_slab * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative) 
-                  +  K_slabpad * pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtCumulative);
+         pMsidl1->emplace_back(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlab, poi, bat, rtCumulative), K_slab);
+         pMsidl1->emplace_back(pProdForces->GetMoment(castDeckIntervalIdx, pgsTypes::pftSlabPad, poi, bat, rtCumulative), K_slabpad);
       }
    }
 
@@ -3092,11 +3094,11 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
          {
             if (pGirder->HasStructuralLongitudinalJoints() && intervalIdx < compositeDeckIntervalIdx)
             {
-               *pMsidl1 += K * pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental);
+               pMsidl1->emplace_back(pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental),K);
             }
             else
             {
-               *pMsidl2 += K * pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental);
+               pMsidl2->emplace_back(pProdForces->GetMoment(intervalIdx, pfType, poi, bat, rtIncremental),K);
             }
          }
       }
@@ -3108,7 +3110,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    // See PCI BDM Example 9.1a that supports this approach
    if ( pBridge->HasOverlay() && overlayIntervalIdx != INVALID_INDEX )
    {
-      *pMsidl2 += K_overlay*pProdForces->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtCumulative );
+      pMsidl2->emplace_back(pProdForces->GetMoment( overlayIntervalIdx, pgsTypes::pftOverlay, poi, bat, rtCumulative ), K_overlay);
    }
 
 
@@ -3122,13 +3124,13 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
       if (pGirder->HasStructuralLongitudinalJoints())
       {
-         *pMsidl1 += K_slab*Mslab;
-         *pMsidl1 += K_slabpad*Mslabpad;
+         pMsidl1->emplace_back(Mslab, K_slab);
+         pMsidl1->emplace_back(Mslabpad, K_slabpad);
       }
       else
       {
-         *pMadlg += K_slab*Mslab;
-         *pMadlg += K_slabpad*Mslabpad;
+         pMadlg->emplace_back(Mslab, K_slab);
+         pMadlg->emplace_back(Mslabpad, K_slabpad);
       }
    }
 

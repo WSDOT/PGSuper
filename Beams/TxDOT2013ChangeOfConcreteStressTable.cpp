@@ -81,7 +81,7 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
       *pParagraph << Sub2(_T("M"),_T("sd")) << _T(" = ") << moment.SetValue( ptl->GetSdMoment())<< _T(" = Moment at mid-girder due to deck weight and other superimposed dead loads")  << rptNewLine;
       *pParagraph << Sub2(_T("e"),_T("m")) << _T(" = ") <<ecc.SetValue( pDetails->pLosses->GetEccPermanentFinal().Y()) << rptNewLine;
       *pParagraph << Sub2(_T("I"),_T("g")) << _T(" = ") << mom_inertia.SetValue(Ixx) << rptNewLine << rptNewLine;
-      *pParagraph << Sub2(_T("f"),_T("cdp")) << _T(" = ") << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() ) << rptNewLine << rptNewLine;
+      *pParagraph << Sub2(_T("f"),_T("cdp")) << _T(" = ") << stress.SetValue( pDetails->pLosses->GetDeltaFcd1(true/*apply elastic gains reduction*/) ) << rptNewLine << rptNewLine;
 
       return nullptr; // no table needed for 0.7fpu case
    }
@@ -133,5 +133,5 @@ void CTxDOT2013ChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker*
    (*this)(row+rowOffset,1) << moment.SetValue( ptl->GetSdMoment() );
    (*this)(row+rowOffset,2) << dim.SetValue( pDetails->pLosses->GetEccPermanentFinal().Y() );
    (*this)(row+rowOffset,3) << mom_inertia.SetValue( Ixx );
-   (*this)(row+rowOffset,4) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1() );
+   (*this)(row+rowOffset,4) << stress.SetValue( pDetails->pLosses->GetDeltaFcd1(true/*apply elastic gains reduction*/) );
 }

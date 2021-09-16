@@ -1217,12 +1217,12 @@ void CEngAgentImp::ClearDesignLosses()
 
 Float64 CEngAgentImp::GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetEffectivePrestressLoss(poi,strandType,intervalIdx,intervalTime,pConfig);
+   return m_PsForceEngineer.GetEffectivePrestressLoss(poi,strandType,intervalIdx,intervalTime,true/*apply elastic gain reduction*/,pConfig);
 }
 
-Float64 CEngAgentImp::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx,bool bIncludeElasticEffects, const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx,bool bIncludeElasticEffects, bool bApplyElasticGainReduction, const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetEffectivePrestressLossWithLiveLoad(poi,strandType,limitState,vehicleIdx, bIncludeElasticEffects, pConfig);
+   return m_PsForceEngineer.GetEffectivePrestressLossWithLiveLoad(poi,strandType,limitState,vehicleIdx, bIncludeElasticEffects, bApplyElasticGainReduction, pConfig);
 }
 
 Float64 CEngAgentImp::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
@@ -1232,12 +1232,12 @@ Float64 CEngAgentImp::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTy
 
 Float64 CEngAgentImp::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,pConfig);
+   return m_PsForceEngineer.GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,true/*apply elastic gain reduction*/, pConfig);
 }
 
 Float64 CEngAgentImp::GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx, const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState,vehicleIdx,pConfig);
+   return m_PsForceEngineer.GetInstantaneousEffectsWithLiveLoad(poi,strandType,limitState,true/*apply elastic gain reduction*/,vehicleIdx, pConfig);
 }
 
 Float64 CEngAgentImp::GetGirderTendonFrictionLoss(const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
@@ -1584,12 +1584,12 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
 
 Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,true/*include elastic effects*/, pConfig);
+   return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,true/*include elastic effects*/,true/*include elastic gain reductions*/, pConfig);
 }
 
 Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects) const
 {
-   return m_PsForceEngineer.GetEffectivePrestress(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, nullptr);
+   return m_PsForceEngineer.GetEffectivePrestress(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, true/*include elastic gain reductions*/, nullptr);
 }
 
 Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, bool bIncludeElasticEffects, VehicleIndexType vehicleIndex) const
@@ -1614,14 +1614,14 @@ Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& po
    return m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi, strandType, limitState, vehicleIndex, true /*include elastic effects*/, pConfig);
 }
 
-Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, bool bIncludeElasticEffects, VehicleIndexType vehicleIndex) const
+Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, bool bIncludeElasticEffects, bool bApplyElasticGainReduction, VehicleIndexType vehicleIndex) const
 {
-   return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi, strandType, limitState, vehicleIndex, bIncludeElasticEffects, nullptr);
+   return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi, strandType, limitState, vehicleIndex, bIncludeElasticEffects, bApplyElasticGainReduction, nullptr);
 }
 
 Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,true /*include elastic effects*/, pConfig);
+   return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi,strandType,limitState,vehicleIndex,true /*include elastic effects*/, true/*apply elastic gain reductino*/, pConfig);
 }
 
 void CEngAgentImp::GetEccentricityEnvelope(const pgsPointOfInterest& rpoi,const GDRCONFIG& config, Float64* pLowerBound, Float64* pUpperBound) const
