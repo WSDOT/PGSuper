@@ -9970,7 +9970,7 @@ void pgsDesigner2::RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,p
       LOG(_T("Moment Arm = ") << ::ConvertFromSysUnits( pmcd->MomentArm, unitMeasure::Inch) << _T(" inch"));
 
       GET_IFACE(ILosses,pILosses);
-      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/, true/*include elastic effects*/, &config);
+      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceIII, INVALID_INDEX/*controlling live load*/, true/*include elastic effects*/, true/*apply elastic gain reduction*/, &config);
       LOG(_T("Losses = ") << ::ConvertFromSysUnits( check_loss, unitMeasure::KSI) << _T(" KSI") );
 
       CRACKINGMOMENTDETAILS cmd;

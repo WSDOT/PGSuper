@@ -147,7 +147,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
    *pPara << CreateImage(pmcd->CapacitySolution, bPositiveMoment);
 
    // Table
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(14,_T(""));
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(16,_T(""));
    (*pPara) << pTable << rptNewLine;
 
    pTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -166,9 +166,9 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*pTable)(0, col++) << _T("Total") << rptNewLine << _T("Strain");
    (*pTable)(0, col++) << RPT_FPX << _T("/") << RPT_FPS;
    //(*pTable)(0, col++) << _T("Strain") << rptNewLine << _T("Limit"); // want to report this if strains are limited
-   //(*pTable)(0, col++) << COLHDR(_T("Foreground") << rptNewLine << _T("Stress (Fg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   //(*pTable)(0, col++) << COLHDR(_T("Background") << rptNewLine << _T("Stress (Bg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
-   (*pTable)(0, col++) << COLHDR(_T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Foreground") << rptNewLine << _T("Stress (Fg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Background") << rptNewLine << _T("Stress (Bg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pTable)(0, col++) << COLHDR(_T("Stress") << rptNewLine << _T("(Fg - Bg)"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*pTable)(0, col++) << COLHDR(symbol(delta) << _T("F =") << rptNewLine << _T("(Area)(Stress)"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
    (*pTable)(0, col++) << COLHDR(symbol(delta) << _T("M =") << rptNewLine << _T("(") << symbol(delta) << _T("F") << _T(")(") << Sub2(_T("Y"), _T("cg")) << _T(")"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
 
@@ -235,13 +235,19 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
       Float64 total_strain;
       slice->get_TotalStrain(&total_strain);
 
+      Float64 f = 0;
+      HRESULT hr_stress = S_OK;
+      Float64 emin = 0, emax = 0;
+      Float64 E = 0;
+
       CComPtr<IStressStrain> ss;
       slice->get_ForegroundMaterial(&ss);
-      Float64 f;
-      HRESULT hr_stress = ss->ComputeStress(total_strain, &f);
-
-      Float64 emin, emax;
+      if (ss)
+      {
+         ss->ComputeStress(total_strain, &f);
       ss->StrainLimits(&emin, &emax);
+         ss->get_ModulusOfElasticity(&E);
+      }
 
       Float64 fgStress,bgStress,netStress;
       slice->get_ForegroundStress(&fgStress);
@@ -255,8 +261,6 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
       Float64 F = slice_area * netStress;
       Float64 M = F*cgY;
 
-      Float64 E;
-      ss->get_ModulusOfElasticity(&E);
       Float64 fpe = E * initial_strain;
 
       Float64 fpx_fps = 0.0;
@@ -304,8 +308,8 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
          (*pTable)(row, col++) << fpx_fps;
       }
       //(*pTable)(row, col++) << (fgStress < 0 ? emin : emax); // report if strains are limited
-      //(*pTable)(row, col++) << stress.SetValue(fgStress);
-      //(*pTable)(row, col++) << stress.SetValue(bgStress);
+      (*pTable)(row, col++) << stress.SetValue(fgStress);
+      (*pTable)(row, col++) << stress.SetValue(bgStress);
       (*pTable)(row, col++) << stress.SetValue(netStress);
       (*pTable)(row, col++) << force.SetValue(F);
       (*pTable)(row, col++) << moment.SetValue(M);
@@ -321,6 +325,11 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
 
    *pPara << _T("Resultant Force  = ") << symbol(SUM) << _T("(") << symbol(delta) << _T("F) = ") << force.SetValue(sum_force)   << rptNewLine;
    *pPara << _T("Resultant Moment = ") << symbol(SUM) << _T("(") << symbol(delta) << _T("M) = ") << moment.SetValue(sum_moment) << rptNewLine;
+
+   *pPara << rptNewLine;
+   *pPara << _T("Foreground (Fg) stress = stress in section materials (including voided areas)") << rptNewLine;
+   *pPara << _T("Background (Bg) stress = stress in voids that is subtracted from voided area") << rptNewLine;
+   *pPara << rptNewLine;
 
    std::_tstring strImagePath = rptStyleManager::GetImagePath();
    *pPara << _T("Unconfined Concrete Stress-Strain Model") << rptNewLine;

@@ -552,11 +552,10 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
    CComPtr<IGeneralSection> section;
    CComPtr<IPoint2d> pntCompression; // location of the extreme compression face
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
-   IndexType reinfIdx;
    Float64 H; // overall height of section
    Float64 Haunch; // haunch build up that is modeled
    bool bDevelopmentReducedStrainCapacity; // indicates if the strain limit in reinforcement is reduced because of lack of full development length
-   BuildCapacityProblem(intervalIdx,poi,pConfig,eps_initial,ept_initial_segment,ept_initial_girder,bondTool,bPositiveMoment,&section,&pntCompression,&dt,&reinfIdx,&H,&Haunch,&bDevelopmentReducedStrainCapacity);
+   BuildCapacityProblem(intervalIdx,poi,pConfig,eps_initial,ept_initial_segment,ept_initial_girder,bondTool,bPositiveMoment,&section,&pntCompression,&dt,&H,&Haunch,&bDevelopmentReducedStrainCapacity);
 
    CComPtr<IMomentCapacitySolution> solution;
    if (section)
@@ -566,7 +565,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 #endif // _DEBUG_SECTION_DUMP
 
       m_MomentCapacitySolver->putref_Section(section);
-      m_MomentCapacitySolver->put_Slices(10);
+      m_MomentCapacitySolver->put_Slices(30);
       m_MomentCapacitySolver->put_SliceGrowthFactor(3);
       m_MomentCapacitySolver->put_MaxIterations(50);
 
@@ -594,13 +593,52 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       {
          WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
 
-         // assume that the reinforcement ultimate strain was exceeded since we limit concrete strain to -0.003
+         CComPtr<IGeneralSectionSolution> general_solution;
+         solution->get_GeneralSectionSolution(&general_solution);
 
-         // solve the problem again with the strain at the reinforcement furthest from the neutral axis limited to its maximum value
+         Float64 max_overstrain_ratio = 0;
+         IndexType controllingOverstrainedSliceIdx = INVALID_INDEX;
 
-         // get shape for controlling reinforcement
+         IndexType nSlices;
+         general_solution->get_SliceCount(&nSlices);
+         for (IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++)
+         {
+            CComPtr<IGeneralSectionSlice> slice;
+            general_solution->get_Slice(sliceIdx, &slice);
+            VARIANT_BOOL vbExceededStrainLimit;
+            slice->ExceededStrainLimit(&vbExceededStrainLimit);
+            if (vbExceededStrainLimit == VARIANT_TRUE)
+            {
+               Float64 total_strain;
+               slice->get_TotalStrain(&total_strain);
+               CComPtr<IStressStrain> fgMaterial;
+               slice->get_ForegroundMaterial(&fgMaterial);
+               // if fgMaterial is null, slice is a void so we will skip it
+               if (fgMaterial)
+               {
+                   Float64 emin, emax;
+                   fgMaterial->StrainLimits(&emin, &emax);
+                   Float64 overstrain_ratio = Max(total_strain / emin, total_strain / emax);
+
+                   if (max_overstrain_ratio < overstrain_ratio)
+                   {
+                       max_overstrain_ratio = overstrain_ratio;
+                       controllingOverstrainedSliceIdx = sliceIdx;
+                   }
+               }
+            }
+         }
+
+         ATLASSERT(controllingOverstrainedSliceIdx != INVALID_INDEX); // if this is INVALID_INDEX, we didn't an over strained slice but should have
+
+         CComPtr<IGeneralSectionSlice> slice;
+         general_solution->get_Slice(controllingOverstrainedSliceIdx, &slice);
+
+         IndexType shapeIdx;
+         slice->get_ShapeIndex(&shapeIdx);
+
          CComPtr<IShape> s;
-         section->get_Shape(reinfIdx, &s);
+         section->get_Shape(shapeIdx, &s);
          CComQIPtr<IGenericShape> shape(s);
          ATLASSERT(shape); // either this isn't reinforcement, the index is wrong, or reinforcement was modeled with something other than the generic shape
          CComPtr<IPoint2d> pntCG;
@@ -610,13 +648,13 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 
          // get the foreground model for the shape and get its max usable strain
          CComPtr<IStressStrain> ssModel;
-         section->get_ForegroundMaterial(reinfIdx, &ssModel);
+         section->get_ForegroundMaterial(shapeIdx, &ssModel);
          Float64 emin, emax;
          ssModel->StrainLimits(&emin, &emax);
 
          // get the initial strain
          CComPtr<IPlane3d> initial_strain;
-         section->get_InitialStrain(reinfIdx, &initial_strain);
+         section->get_InitialStrain(shapeIdx, &initial_strain);
          Float64 ei;
          initial_strain->GetZ(Xcg, Ycg, &ei);
 
@@ -1669,7 +1707,6 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    CComPtr<IGeneralSection> beam_section;
    CComPtr<IPoint2d> pntCompression; // needed to figure out the result geometry
    Float64 dt; // depth from top of section to extreme layer of tensile reinforcement
-   IndexType reinfIdx; // index of general section shape associated with dt
    Float64 H; // overall height of section
    Float64 Haunch; // haunch build up that is modeled
    bool bDevelopmentReducedStrainCapacity; // indicates if the strain limit in reinforcement is reduced because of lack of full development length
@@ -1693,7 +1730,7 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   BuildCapacityProblem(liveLoadIntervalIdx,poi,nullptr,e_initial_strands,e_initial_segment_tendons,e_initial_girder_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&dt,&reinfIdx,&H,&Haunch,&bDevelopmentReducedStrainCapacity);
+   BuildCapacityProblem(liveLoadIntervalIdx,poi,nullptr,e_initial_strands,e_initial_segment_tendons,e_initial_girder_tendons,bondTool,bPositiveMoment,&beam_section,&pntCompression,&dt,&H,&Haunch,&bDevelopmentReducedStrainCapacity);
 
    // determine neutral axis angle
    // compression is on the left side of the neutral axis
@@ -1859,7 +1896,7 @@ void pgsMomentCapacityEngineer::CreateTendonMaterial(const matPsStrand* pTendon,
    (*ppSS)->AddRef();
 }
 
-void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,const std::array<std::vector<Float64>, 2>& eps_initial,const std::vector<Float64>& ept_initial_segment,const std::vector<Float64>& ept_initial_girder,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,Float64* pdt, IndexType* pReinfIdx, Float64* pH,Float64* pHaunch, bool* pbDevelopmentReducedStrainCapacity) const
+void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,const std::array<std::vector<Float64>, 2>& eps_initial,const std::vector<Float64>& ept_initial_segment,const std::vector<Float64>& ept_initial_girder,pgsBondTool& bondTool,bool bPositiveMoment,IGeneralSection** ppProblem,IPoint2d** pntCompression,Float64* pdt, Float64* pH,Float64* pHaunch, bool* pbDevelopmentReducedStrainCapacity) const
 {
    *pbDevelopmentReducedStrainCapacity = false;
 
@@ -1905,7 +1942,6 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
    Float64 dt = 0; // depth from compression face to extreme layer of tensile reinforcement
-   IndexType reinfIdx = INVALID_INDEX; // index of the general section shape associated with dt
 
    GET_IFACE(IStrandGeometry, pStrandGeom);
    StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight,pConfig);
@@ -2162,30 +2198,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
                // determine depth to lowest layer of strand
                Float64 cy;
                pntCG->get_Y(&cy);
-
-               if (IsLE(dt,fabs(Yc - cy)))
-               {
-                  if (reinfIdx != INVALID_INDEX)
-                  {
-                     Float64 emin, emax;
-                     ssStrand->StrainLimits(&emin, &emax);
-                     CComPtr<IStressStrain> ss;
-                     section->get_ForegroundMaterial(reinfIdx, &ss);
-                     Float64 _emin, _emax;
-                     ss->StrainLimits(&_emin, &_emax);
-
-                     if (IsLE(emax,_emax))
-                     {
-                        dt = fabs(Yc - cy);
-                        section->get_ShapeCount(&reinfIdx);
-                     }
-                  }
-                  else
-                  {
-                     dt = fabs(Yc - cy);
-                     section->get_ShapeCount(&reinfIdx);
-                  }
-               }
+               dt = Max(dt, fabs(Yc - cy));
 
                CComPtr<IPlane3d> strand_initial_strain;
                strand_initial_strain.CoCreateInstance(CLSID_Plane3d);
@@ -2225,11 +2238,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             // determine depth to lowest layer of strand
             Float64 cy;
             pntCG->get_Y(&cy);
-            if (dt < fabs(Yc - cy))
-            {
-               dt = fabs(Yc - cy);
-               section->get_ShapeCount(&reinfIdx);
-            }
+            dt = Max(dt, fabs(Yc - cy));
 
             CComPtr<IPlane3d> initial_strain;
             initial_strain.CoCreateInstance(CLSID_Plane3d);
@@ -2269,11 +2278,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
             // determine depth to lowest layer of strand
             Float64 cy;
             pntCG->get_Y(&cy);
-            if (dt < fabs(Yc - cy))
-            {
-               dt = fabs(Yc - cy);
-               section->get_ShapeCount(&reinfIdx);
-            }
+            dt = Max(dt, fabs(Yc - cy));
 
             CComPtr<IPlane3d> initial_strain;
             initial_strain.CoCreateInstance(CLSID_Plane3d);
@@ -2356,11 +2361,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
          Float64 cy;
          pntCG->get_Y(&cy);
-         if (dt < fabs(Yc - cy))
-         {
-            dt = fabs(Yc - cy);
-            section->get_ShapeCount(&reinfIdx);
-         }
+         dt = Max(dt, fabs(Yc - cy));
 
          CComQIPtr<IShape> shape(bar_shape);
          AddShape2Section(CComBSTR("Rebar"), section, shape, ssGirderRebar, ssGirder, nullptr, 1.0, false);
@@ -2508,11 +2509,7 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
             Float64 cy;
             pntDeck->get_Y(&cy);
-            if (dt < fabs(Yc - cy))
-            {
-               dt = fabs(Yc - cy);
-               section->get_ShapeCount(&reinfIdx);
-            }
+            dt = Max(dt, fabs(Yc - cy));
 
             CComQIPtr<IShape> shape(bar_shape);
             AddShape2Section(CComBSTR("Top Mat Deck Rebar"), section, shape, ssSlabRebar, ssSlab, nullptr, 1.0, false);
@@ -2537,11 +2534,8 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
             Float64 cy;
             pntDeck->get_Y(&cy);
-            if (dt < fabs(Yc - cy))
-            {
-               dt = fabs(Yc - cy);
-               section->get_ShapeCount(&reinfIdx);
-            }
+            dt = Max(dt, fabs(Yc - cy));
+
 
             CComQIPtr<IShape> shape(bar_shape);
             AddShape2Section(CComBSTR("Bottom Mat Deck Rebar"), section, shape, ssSlabRebar, ssSlab, nullptr, 1.0, false);
@@ -2559,7 +2553,6 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    pntTension->DistanceEx(*pntCompression,pH);
 
    *pdt = dt;
-   *pReinfIdx = reinfIdx;
 
    (*ppProblem) = section;
    (*ppProblem)->AddRef();

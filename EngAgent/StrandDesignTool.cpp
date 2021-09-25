@@ -1000,7 +1000,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    }
    else
    {
-      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState, INVALID_INDEX/*controlling live load*/, true/*include elastic effects*/, &guess);
+      Float64 check_loss = pILosses->GetEffectivePrestressLossWithLiveLoad(poi,pgsTypes::Permanent,pDesignParams->task.limitState, INVALID_INDEX/*controlling live load*/, true/*include elastic effects*/, true/*apply elastic gain reduction*/, &guess);
       ATLASSERT(IsEqual(loss,check_loss));
    }
 #endif // _DEBUG

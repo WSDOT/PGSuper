@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     1    WF95P    *      8  0.6  270  43.76  43.60   9.00   9.00   4   0.00    0     0                                               5.000 10.258   1.253    -0.942     5430   0.670  0.755  -3.701 -0.450  0.000 -0.036 -0.486  -6.87   36.38    0.00    0.00    0.00    0.07    0.00    0.08    0.00    0.00 
+ 40.58    6   7.17                     1     1    WF95P    *      8  0.6  270  43.76  43.60   9.00   9.00   4   0.00    0     0                                               5.000 10.258   1.253    -0.942     5430   0.670  0.755  -3.701 -0.450  0.000 -0.036 -0.486  -6.87   36.38    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
 Warning: Irregular, Non-standard debonding increments used for beam 1 in span 1. Cannot write debonding information to TxDOT CAD format.
 
 
@@ -46,7 +46,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    6   7.17                     1     2    WF95P    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258   1.026    -0.677     4318   0.650  0.755  -5.379 -0.479  0.000 -0.036 -0.515   0.00    0.00    0.00    0.00    0.00    0.09    0.00    0.11    0.00    0.00 
+ 40.58    6   7.17                     1     2    WF95P    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258   1.026    -0.677     4318   0.650  0.755  -5.379 -0.479  0.000 -0.036 -0.515   0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00 
 
 
 The Specification Check was Not Successful
