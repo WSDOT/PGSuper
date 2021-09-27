@@ -2482,7 +2482,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
       return;
    }
 
-   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2_NOCHECK(pBroker,ILosses,pLosses);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IMaterials,pMaterials);
