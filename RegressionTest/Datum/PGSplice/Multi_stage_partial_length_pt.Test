@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    11284   0.956  1.048  -0.841 -0.715  0.000 -0.049 -0.764   0.00    0.00    0.00    0.00    0.00    2.48    0.51    3.22    0.69    0.00 
+ 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    11273   0.956  1.048  -0.841 -0.715  0.000 -0.049 -0.764   0.00    0.00    0.00    0.00    0.00    2.49    0.51    3.23    0.68    0.00 
 
 
 The Specification Check was Not Successful
@@ -18,6 +18,7 @@ Tension stress check failed for Service I Limit State in Interval 23 Cast closur
 Tension stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 1
 Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 1
+Compression stress check failed for Service I Limit State in Interval 35 Load Rating for Segment 1
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
@@ -46,6 +47,7 @@ Tension stress check failed for Service I Limit State in Interval 28 Install Rai
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Segment 4
 Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
@@ -67,7 +69,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    10155   0.677  1.048  -0.858 -0.702  0.000 -0.049 -0.751   0.00    0.00    0.00    0.00    0.00    3.49    0.55    4.52    0.73    0.00 
+ 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    10142   0.677  1.048  -0.858 -0.702  0.000 -0.049 -0.752   0.00    0.00    0.00    0.00    0.00    3.50    0.54    4.53    0.72    0.00 
 
 
 The Specification Check was Not Successful
@@ -85,6 +87,7 @@ Tension stress check failed for Service I Limit State in Interval 23 Cast closur
 Tension stress check failed for Service I Limit State in Interval 26 Stress Tendons for Segment 1
 Compression stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 1
 Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Segment 1
+Compression stress check failed for Service I Limit State in Interval 35 Load Rating for Segment 1
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Segment 1
 Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 35 Load Rating for Deck

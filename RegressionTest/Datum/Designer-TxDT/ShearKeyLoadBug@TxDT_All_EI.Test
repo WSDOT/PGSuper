@@ -13,6 +13,7 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 Splitting zone check failed.
@@ -89,6 +90,7 @@ Ultimate moment capacity (negative moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 Splitting zone check failed.
@@ -113,6 +115,7 @@ Tension stress check failed for Service III Limit State in Interval 19 Open to T
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
@@ -189,6 +192,8 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Ultimate moment capacity (negative moment) check failed for Strength II Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
 Stirrup detailing checks failed for the Strength II Limit State.
 Splitting zone check failed.
@@ -303,7 +308,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   9.31                     5     1    Sellw          26  0.6  270  12.42   3.84   8.75   8.75                                              10  30.0  4.9 14.000 15.000   5.685    -6.524     3806   1.014  1.068   2.498 -1.314  0.000 -0.111 -1.425  80.71   94.67    1.00    1.00    1.00    0.00    1.25    0.00    2.31    1.22 
+ 61.00    9   9.31                     5     1    Sellw          26  0.6  270  12.42   3.84   8.75   8.75                                              10  30.0  4.9 14.000 15.000   5.685    -6.524     3806   1.014  1.068   2.498 -1.314  0.000 -0.111 -1.425  80.71   94.67    1.00    1.00    1.00    0.00    1.21    0.00    2.24    1.22 
 
 
 Girder design was Not Successful
@@ -329,7 +334,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    9   9.31                     5     2    Sellw          26  0.6  270  12.42   3.84   8.75   8.75                                              10  30.0  4.9 14.000 15.000   5.573    -6.222     3407   0.786  0.962   2.458 -1.306  0.000 -0.112 -1.418  80.52   93.04    1.00    1.00    1.00    0.00    1.45    0.00    2.65    1.51 
+ 61.00    9   9.31                     5     2    Sellw          26  0.6  270  12.42   3.84   8.75   8.75                                              10  30.0  4.9 14.000 15.000   5.573    -6.222     3407   0.786  0.962   2.458 -1.306  0.000 -0.112 -1.418  80.52   93.04    1.00    1.00    1.00    0.00    1.40    0.00    2.62    1.51 
 
 
 Girder design was Not Successful

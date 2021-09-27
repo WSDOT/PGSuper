@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    11341   0.956  1.048  -0.823 -0.694  0.000 -0.048 -0.742   0.00    0.00    0.00    0.00    0.00    2.47    0.52    3.20    0.71    0.00 
+ 40.58    4  10.50                     1     1    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258    11330   0.956  1.048  -0.823 -0.694  0.000 -0.048 -0.742   0.00    0.00    0.00    0.00    0.00    2.48    0.52    3.21    0.70    0.00 
 
 
 The Specification Check was Not Successful
@@ -54,6 +54,7 @@ Tension stress check failed for Service I Limit State in Interval 26 Cast deck r
 Tension stress check failed for Service I Limit State in Interval 29 Stress Tendons for Deck
 Tension stress check failed for Service I Limit State in Interval 31 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 38 Load Rating for Deck
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Horizontal Interface Shears/Length check failed for Strength I Limit State [5.7.4].
@@ -75,7 +76,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258     9958   0.677  1.048  -0.823 -0.685  0.000 -0.049 -0.734   0.00    0.00    0.00    0.00    0.00    3.47    0.56    4.50    0.74    0.00 
+ 40.58    4  10.50                     1     2    U66PT    *      0  0.6  270   0.00   0.00   9.00   9.00                                              5.000 10.258  10.258    10.258     9943   0.677  1.048  -0.823 -0.685  0.000 -0.049 -0.734   0.00    0.00    0.00    0.00    0.00    3.48    0.55    4.51    0.74    0.00 
 
 
 The Specification Check was Not Successful

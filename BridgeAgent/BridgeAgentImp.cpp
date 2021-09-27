@@ -33818,12 +33818,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
             if (0 < rebarData.TopSpacing)
             {
                Float64 fnBars = rebarSectionWidth / rebarData.TopSpacing;
-               Float64 cnBars = ceil(fnBars);
-               // we want the number of bars computed based on spacing, rounded down... however, the
-               // number of bars (fnBars) can be approximately equal to the ceiling of (fnBars). For example
-               // rebarSectionWidth/rebarData.Spacing can be 3.99999. The rounded down value would be 3, but
-               // what we really has is 4 bars.
-               nBars = (IsEqual(cnBars, fnBars) ? IndexType(cnBars) : IndexType(fnBars)) + 1;
+               nBars = ::Round(fnBars); // round to nearest integer
             }
 
             Float64 As = nBars*pBar->GetNominalArea()/rebarSectionWidth;
@@ -33851,12 +33846,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
             if (0 < rebarData.BottomSpacing)
             {
                Float64 fnBars = rebarSectionWidth / rebarData.BottomSpacing;
-               Float64 cnBars = ceil(fnBars);
-               // we want the number of bars computed based on spacing, rounded down... however, the
-               // number of bars (fnBars) can be approximately equal to the ceiling of (fnBars). For example
-               // rebarSectionWidth/rebarData.Spacing can be 3.99999. The rounded down value would be 3, but
-               // what we really has is 4 bars.
-               nBars = (IsEqual(cnBars, fnBars) ? IndexType(cnBars) : IndexType(fnBars)) + 1;
+               nBars = ::Round(fnBars); // round to nearest integer
             }
 
             Float64 As = nBars*pBar->GetNominalArea()/rebarSectionWidth;
@@ -33912,12 +33902,7 @@ void CBridgeAgentImp::GetDeckMatData(const pgsPointOfInterest& poi,pgsTypes::Dec
                   if (0 < nmRebarData.Spacing)
                   {
                      Float64 fnBars = rebarSectionWidth / nmRebarData.Spacing;
-                     Float64 cnBars = ceil(fnBars);
-                     // we want the number of bars computed based on spacing, rounded down... however, the
-                     // number of bars (fnBars) can be approximately equal to the ceiling of (fnBars). For example
-                     // rebarSectionWidth/rebarData.Spacing can be 3.99999. The rounded down value would be 3, but
-                     // what we really has is 4 bars.
-                     nBars = (IsEqual(cnBars, fnBars) ? IndexType(cnBars) : IndexType(fnBars)) + 1;
+                     nBars = ::Round(fnBars); // round to nearest integer
                   }
 
                   Float64 As = nBars*pBar->GetNominalArea()/rebarSectionWidth;

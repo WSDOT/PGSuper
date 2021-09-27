@@ -11,7 +11,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (    1     2     IV      *     49  0.6  270  24.51  19.16   8.25   8.25                                               5  56.0  4.0  8.300  8.300   4.686    -5.405    10012   0.585  1.000   3.499 -1.954 -0.137 -0.222 -2.313 188.57  304.79    1.75    5.00    5.00    0.00    1.12    0.00    1.57    2.01 
+ 66.67    9  10.50 KAPOLEI BRIDGE (    1     2     IV      *     49  0.6  270  24.51  19.16   8.25   8.25                                               5  56.0  4.0  8.300  8.300   4.686    -5.405    10012   0.585  1.000   3.499 -1.954 -0.137 -0.222 -2.313 188.57  304.79    1.75    5.00    5.00    0.00    1.11    0.00    1.56    2.01 
 
 
 Girder design was Not Successful
@@ -44,7 +44,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (    2     1     IV      *     48  0.6  270  24.81  18.31  10.75  10.75                                               6  56.0  4.0  7.600  7.600   4.547    -5.335     9861   0.660  1.000   4.630 -1.831 -0.146 -0.236 -2.213 198.79  300.50    1.75    5.00    5.00    0.00    1.30    0.00    1.82    1.85 
+ 66.67    9   7.92 KAPOLEI BRIDGE (    2     1     IV      *     48  0.6  270  24.81  18.31  10.75  10.75                                               6  56.0  4.0  7.600  7.600   4.547    -5.335     9861   0.660  1.000   4.630 -1.831 -0.146 -0.236 -2.213 198.79  300.50    1.75    5.00    5.00    0.00    1.28    0.00    1.81    1.85 
 
 
 Girder design was Not Successful
@@ -53,7 +53,6 @@ Tension stress check failed for Service I Limit State in Interval 8 Remove tempo
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
 Compression stress check failed for Service I Limit State in Interval 20 Open to Traffic
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -92,7 +91,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (    3     1     IV      *     45  0.6  270  24.98  19.16  10.00  10.00                                               5  56.0  4.0  7.600  7.600   4.239    -4.941     9310   0.660  1.000   3.588 -1.526 -0.124 -0.201 -1.852 169.63  304.22    1.75    5.00    5.00    0.00    1.23    0.00    1.72    1.90 
+ 66.67    9   7.92 KAPOLEI BRIDGE (    3     1     IV      *     45  0.6  270  24.98  19.16  10.00  10.00                                               5  56.0  4.0  7.600  7.600   4.239    -4.941     9310   0.660  1.000   3.588 -1.526 -0.124 -0.201 -1.852 169.63  304.22    1.75    5.00    5.00    0.00    1.21    0.00    1.71    1.90 
 
 
 Girder design was Not Successful
