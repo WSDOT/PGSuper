@@ -211,8 +211,6 @@ CEngAgentImp::CEngAgentImp() :
 m_ShearCapEngineer(nullptr,0),
 m_bAreDistFactorEngineersValidated(false)
 {
-   m_pMomentCapacityEngineer = std::make_unique<pgsMomentCapacityEngineer>(nullptr, 0);
-   m_pPrincipalWebStressEngineer = std::make_unique<pgsPrincipalWebStressEngineer>(nullptr, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -971,17 +969,16 @@ STDMETHODIMP CEngAgentImp::Init()
    CREATE_LOGFILE("EngAgent");
    EAF_AGENT_INIT;
 
+   m_pMomentCapacityEngineer = std::make_unique<pgsMomentCapacityEngineer>(m_pBroker,m_StatusGroupID);
+   m_pPrincipalWebStressEngineer = std::make_unique<pgsPrincipalWebStressEngineer>(m_pBroker, m_StatusGroupID);
+
    m_PsForceEngineer.SetBroker(m_pBroker);
-   m_pMomentCapacityEngineer->SetBroker(m_pBroker);
    m_ShearCapEngineer.SetBroker(m_pBroker);
-   m_pPrincipalWebStressEngineer->SetBroker(m_pBroker);
    m_Designer.SetBroker(m_pBroker);
    m_LoadRater.SetBroker(m_pBroker);
 
    m_Designer.SetStatusGroupID(m_StatusGroupID);
    m_PsForceEngineer.SetStatusGroupID(m_StatusGroupID);
-   m_pMomentCapacityEngineer->SetStatusGroupID(m_StatusGroupID);
-   m_pPrincipalWebStressEngineer->SetStatusGroupID(m_StatusGroupID);
    m_ShearCapEngineer.SetStatusGroupID(m_StatusGroupID);
 
    // regiter the callback ID's we will be using

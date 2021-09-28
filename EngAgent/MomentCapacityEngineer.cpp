@@ -102,6 +102,8 @@ CLASS
 //======================== LIFECYCLE  =======================================
 pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID)
 {
+   ATLASSERT(pBroker != nullptr);
+
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
    CREATE_LOGFILE("MomentCapacity");
@@ -122,6 +124,9 @@ pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGrou
    {
       THROW_SHUTDOWN(_T("Installation Problem - Unable to create Cracked Section Solver"),XREASON_COMCREATE_ERROR,true);
    }
+
+   GET_IFACE(IEAFStatusCenter, pStatusCenter);
+   m_scidUnknown = pStatusCenter->RegisterCallback(new pgsUnknownErrorStatusCallback());
 }
 
 pgsMomentCapacityEngineer::~pgsMomentCapacityEngineer()
@@ -143,8 +148,11 @@ void pgsMomentCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID
 {
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
+   if (m_scidUnknown == INVALID_ID)
+   {
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      m_scidUnknown = pStatusCenter->RegisterCallback(new pgsUnknownErrorStatusCallback());
+   }
 }
 
 Float64 pgsMomentCapacityEngineer::GetMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const GDRCONFIG* pConfig) const
