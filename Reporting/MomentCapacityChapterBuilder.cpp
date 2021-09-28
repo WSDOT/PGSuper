@@ -236,7 +236,6 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
       slice->get_TotalStrain(&total_strain);
 
       Float64 f = 0;
-      HRESULT hr_stress = S_OK;
       Float64 emin = 0, emax = 0;
       Float64 E = 0;
 
@@ -245,7 +244,7 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
       if (ss)
       {
          ss->ComputeStress(total_strain, &f);
-      ss->StrainLimits(&emin, &emax);
+         ss->StrainLimits(&emin, &emax);
          ss->get_ModulusOfElasticity(&E);
       }
 
@@ -286,8 +285,10 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
       (*pTable)(row, col++) << initial_strain;
       (*pTable)(row, col++) << incremental_strain;
-#if defined _DEBUG
-      if (hr_stress == S_FALSE)
+#if defined _DEBUG || defined _BETA_VERSION
+      VARIANT_BOOL vbExceededStrainLimit;
+      slice->ExceededStrainLimit(&vbExceededStrainLimit);
+      if (vbExceededStrainLimit == VARIANT_TRUE)
       {
          (*pTable)(row, col).SetFillBackGroundColor(rptRiStyle::Red);
          (*pTable)(row, col++) << total_strain << _T(" (") << emax << _T(")");
