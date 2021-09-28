@@ -8275,7 +8275,7 @@ void CGirderModelManager::GetLBAMBoundaryConditions(bool bContinuous,const CTime
       // don't have any interior supports, and are supported by strong backs at each end
       bool bIsDropIn = pSegment->IsDropIn();
       bool bIsPropped = pSegment->IsPropped();
-      if ( pTS->GetSupportType() == pgsTypes::ErectionTower || bIsDropIn || bIsPropped)
+      if ( pTS->GetSupportType() == pgsTypes::ErectionTower || ((bIsDropIn || bIsPropped) && pTS->GetSupportType() != pgsTypes::StrongBack))
       {
          CClosureKey closureKey(pClosure->GetClosureKey());
          GET_IFACE(IIntervals,pIntervals);
