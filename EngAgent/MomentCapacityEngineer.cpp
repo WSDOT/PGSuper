@@ -680,7 +680,6 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
       {
          GET_IFACE(IEAFStatusCenter, pStatusCenter);
          GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
-         GET_IFACE(IDocumentType, pDocType);
 
          CString strErrorCode;
          switch (hr)
