@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     1    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.964    -3.860     7066   0.526  0.721   3.981 -2.346  0.000 -0.150 -2.496 158.65  454.94    1.00    1.00    1.00    1.88    1.96    2.43    2.62    1.07 
+ 44.00    6   7.60                     1     1    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.964    -3.860     7066   0.526  0.721   3.981 -2.346  0.000 -0.150 -2.496 158.65  454.94    1.00    1.00    1.00    1.88    1.96    2.44    2.61    1.07 
 
 
 The Specification Check was Not Successful
@@ -10,18 +10,7 @@ Debond arrangement checks failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     2    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.935    -3.825     6993   0.520  0.721   3.981 -2.291  0.000 -0.151 -2.442 158.65  456.40    1.00    1.00    1.00    1.90    1.97    2.46    2.62    1.11 
-
-
-The Specification Check was Not Successful
-Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
-Debond arrangement checks failed.
-Slab Offset ("A" Dimension) check failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     1     4    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.935    -3.825     6993   0.520  0.721   3.981 -2.291  0.000 -0.151 -2.442 158.65  456.40    1.00    1.00    1.00    1.90    1.97    2.46    2.62    1.11 
+ 44.00    6   7.60                     1     2    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.935    -3.825     6993   0.520  0.721   3.981 -2.291  0.000 -0.151 -2.442 158.65  456.40    1.00    1.00    1.00    1.90    1.97    2.47    2.62    1.11 
 
 
 The Specification Check was Not Successful
@@ -32,17 +21,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     2     1    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.964    -3.860     7066   0.526  0.721   3.981 -2.346  0.000 -0.150 -2.496 158.65  454.94    1.00    1.00    1.00    1.88    1.96    2.43    2.62    1.07 
-
-
-The Specification Check was Not Successful
-Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
-Debond arrangement checks failed.
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     2     2    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.935    -3.825     6993   0.520  0.721   3.981 -2.291  0.000 -0.151 -2.442 158.65  456.40    1.00    1.00    1.00    1.90    1.97    2.46    2.62    1.11 
+ 44.00    6   7.60                     1     4    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.935    -3.825     6993   0.520  0.721   3.981 -2.291  0.000 -0.151 -2.442 158.65  456.40    1.00    1.00    1.00    1.90    1.97    2.47    2.62    1.11 
 
 
 The Specification Check was Not Successful
@@ -53,7 +32,28 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   7.60                     2     4    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.935    -3.825     6993   0.520  0.721   3.981 -2.291  0.000 -0.151 -2.442 158.65  456.40    1.00    1.00    1.00    1.90    1.97    2.46    2.62    1.11 
+ 44.00    6   7.60                     2     1    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.964    -3.860     7066   0.526  0.721   3.981 -2.346  0.000 -0.150 -2.496 158.65  454.94    1.00    1.00    1.00    1.88    1.96    2.44    2.61    1.07 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Debond arrangement checks failed.
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   7.60                     2     2    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.935    -3.825     6993   0.520  0.721   3.981 -2.291  0.000 -0.151 -2.442 158.65  456.40    1.00    1.00    1.00    1.90    1.97    2.47    2.62    1.11 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Debond arrangement checks failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 44.00    6   7.60                     2     4    5XB40          50  0.6  270  14.82  14.48  11.25  11.25   2.00  14    2.5   28    14    2   8   2   0   2   4.800  5.800   3.935    -3.825     6993   0.520  0.721   3.981 -2.291  0.000 -0.151 -2.442 158.65  456.40    1.00    1.00    1.00    1.90    1.97    2.47    2.62    1.11 
 
 
 The Specification Check was Not Successful

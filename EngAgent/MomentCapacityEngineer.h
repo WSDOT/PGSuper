@@ -135,7 +135,7 @@ private:
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
-   StatusCallbackIDType m_scidUnknown;
+   StatusCallbackIDType m_scidMomentCapacity;
 
    CComPtr<IMomentCapacitySolver> m_MomentCapacitySolver;
    CComPtr<ICrackedSectionSolver> m_CrackedSectionSolver;

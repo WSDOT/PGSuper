@@ -9,7 +9,7 @@ Debond arrangement checks failed.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 30.58    8   0.00    Lake Creek       1     2    Slab_          22  0.6  270   6.48   6.44   8.25   8.25   4    2.0   18     4    2   0   2   0   0   4.500 12.000   3.075    -3.085     1448   0.298  0.422   2.732 -0.369 -0.049 -0.093 -0.510  75.23  197.21    3.00    1.50    1.50    2.14    3.98    2.78    5.21    2.13 
+ 30.58    8   0.00    Lake Creek       1     2    Slab_          22  0.6  270   6.48   6.44   8.25   8.25   4    2.0   18     4    2   0   2   0   0   4.500 12.000   3.075    -3.085     1448   0.298  0.422   2.732 -0.369 -0.049 -0.093 -0.510  75.23  197.21    3.00    1.50    1.50    2.14    3.98    2.77    5.21    2.13 
 
 
 The Specification Check was Not Successful

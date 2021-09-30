@@ -127,8 +127,8 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
    (*pPara) << _T("Nominal Capacity, ") << Sub2(_T("M"),_T("n")) << _T(" = ") << moment.SetValue(pmcd->Mn) << rptNewLine;
    (*pPara) << _T("Moment Arm = ") << Sub2(_T("d"),_T("e")) << _T(" - ") << Sub2(_T("d"),_T("c")) << _T(" = ") << Sub2(_T("M"),_T("n")) << _T("/T = ") << dist.SetValue(pmcd->MomentArm) << rptNewLine;
 
-   std::array<std::_tstring, 3> strControl{ _T("concrete crushing"), _T("maximum reinforcement strain"), _T("maximum reinforcement strain with stress limited by lack of full development [5.9.4.3.2]") };
-   (*pPara) << _T("Moment capacity controlled by ") << strControl[pmcd->Controlling] << rptNewLine;
+   //std::array<std::_tstring, 3> strControl{ _T("concrete crushing"), _T("maximum reinforcement strain"), _T("maximum reinforcement strain with stress limited by lack of full development [5.9.4.3.2]") };
+   //(*pPara) << _T("Moment capacity controlled by ") << strControl[pmcd->Controlling] << rptNewLine;
 
    // if this is a zero capacity section, just return since there is nothing else to show
    if ( IsZero(pmcd->Mn) )
@@ -285,21 +285,19 @@ rptChapter* CMomentCapacityChapterBuilder::Build(CReportSpecification* pRptSpec,
       }
       (*pTable)(row, col++) << initial_strain;
       (*pTable)(row, col++) << incremental_strain;
-#if defined _DEBUG || defined _BETA_VERSION
+
       VARIANT_BOOL vbExceededStrainLimit;
       slice->ExceededStrainLimit(&vbExceededStrainLimit);
       if (vbExceededStrainLimit == VARIANT_TRUE)
       {
          (*pTable)(row, col).SetFillBackGroundColor(rptRiStyle::Red);
-         (*pTable)(row, col++) << total_strain << _T(" (") << emax << _T(")");
+         (*pTable)(row, col++) << total_strain << _T(" (") << (total_strain < 0 ? emin : emax) << _T(")");
       }
       else
       {
          (*pTable)(row, col++) << total_strain;
       }
-#else
-      (*pTable)(row, col++) << total_strain;
-#endif
+
       if (IsZero(fpx_fps))
       {
          (*pTable)(row, col++) << _T("");

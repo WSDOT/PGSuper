@@ -126,7 +126,7 @@ pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGrou
    }
 
    GET_IFACE(IEAFStatusCenter, pStatusCenter);
-   m_scidUnknown = pStatusCenter->RegisterCallback(new pgsUnknownErrorStatusCallback());
+   m_scidMomentCapacity = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning));
 }
 
 pgsMomentCapacityEngineer::~pgsMomentCapacityEngineer()
@@ -148,10 +148,10 @@ void pgsMomentCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID
 {
    m_StatusGroupID = statusGroupID;
 
-   if (m_scidUnknown == INVALID_ID)
+   if (m_scidMomentCapacity == INVALID_ID)
    {
       GET_IFACE(IEAFStatusCenter, pStatusCenter);
-      m_scidUnknown = pStatusCenter->RegisterCallback(new pgsUnknownErrorStatusCallback());
+      m_scidMomentCapacity = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning));
    }
 }
 
@@ -573,7 +573,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 #endif // _DEBUG_SECTION_DUMP
 
       m_MomentCapacitySolver->putref_Section(section);
-      m_MomentCapacitySolver->put_Slices(30);
+      m_MomentCapacitySolver->put_Slices(10);
       m_MomentCapacitySolver->put_SliceGrowthFactor(3);
       m_MomentCapacitySolver->put_MaxIterations(50);
 
@@ -593,94 +593,88 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
 #endif // _DEBUG
 
       HRESULT hr = m_MomentCapacitySolver->Solve(0.00, na_angle, ec, 0.0, smFixedCompressionStrain, &solution);
-      if (hr == S_OK)
-      {
-         mcd.Controlling = MN_CONCRETE; // capacity was controlled by concrete strain
-      }
-      else if (hr == RC_E_MATERIALFAILURE)
-      {
-         WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
 
-         CComPtr<IGeneralSectionSolution> general_solution;
-         solution->get_GeneralSectionSolution(&general_solution);
+      // This block of commented out code was an attempt to revision the moment capacity solution with the
+      // strain in the reinforcement exceeded their maximum elongation. However, this solution did not work well.
+      // 
+      //if (hr == S_OK)
+      //{
+      //   mcd.Controlling = MN_CONCRETE; // capacity was controlled by concrete strain
+      //}
+      //else if (hr == RC_E_MATERIALFAILURE)
+      //{
+      //   WATCHX(MomCap, 0, _T("Exceeded material strain limit"));
 
-         Float64 max_overstrain_ratio = 0;
-         IndexType controllingOverstrainedSliceIdx = INVALID_INDEX;
+      //   CComPtr<IGeneralSectionSolution> general_solution;
+      //   solution->get_GeneralSectionSolution(&general_solution);
 
-         IndexType nSlices;
-         general_solution->get_SliceCount(&nSlices);
-         for (IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++)
-         {
-            CComPtr<IGeneralSectionSlice> slice;
-            general_solution->get_Slice(sliceIdx, &slice);
-            VARIANT_BOOL vbExceededStrainLimit;
-            slice->ExceededStrainLimit(&vbExceededStrainLimit);
-            if (vbExceededStrainLimit == VARIANT_TRUE)
-            {
-               Float64 total_strain;
-               slice->get_TotalStrain(&total_strain);
-               CComPtr<IStressStrain> fgMaterial;
-               slice->get_ForegroundMaterial(&fgMaterial);
-               // if fgMaterial is null, slice is a void so we will skip it
-               if (fgMaterial)
-               {
-                   Float64 emin, emax;
-                   fgMaterial->StrainLimits(&emin, &emax);
-                   Float64 overstrain_ratio = Max(total_strain / emin, total_strain / emax);
+      //   Float64 max_overstrain_ratio = 0;
+      //   IndexType controllingOverstrainedSliceIdx = INVALID_INDEX;
 
-                   if (max_overstrain_ratio < overstrain_ratio)
-                   {
-                       max_overstrain_ratio = overstrain_ratio;
-                       controllingOverstrainedSliceIdx = sliceIdx;
-                   }
-               }
-            }
-         }
+      //   IndexType nSlices;
+      //   general_solution->get_SliceCount(&nSlices);
+      //   for (IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++)
+      //   {
+      //      CComPtr<IGeneralSectionSlice> slice;
+      //      general_solution->get_Slice(sliceIdx, &slice);
+      //      VARIANT_BOOL vbExceededStrainLimit;
+      //      slice->ExceededStrainLimit(&vbExceededStrainLimit);
+      //      if (vbExceededStrainLimit == VARIANT_TRUE)
+      //      {
+      //         Float64 total_strain;
+      //         slice->get_TotalStrain(&total_strain);
+      //         CComPtr<IStressStrain> fgMaterial;
+      //         slice->get_ForegroundMaterial(&fgMaterial);
+      //         // if fgMaterial is null, slice is a void so we will skip it
+      //         if (fgMaterial)
+      //         {
+      //             Float64 emin, emax;
+      //             fgMaterial->StrainLimits(&emin, &emax);
+      //             Float64 overstrain_ratio = Max(total_strain / emin, total_strain / emax);
 
-         ATLASSERT(controllingOverstrainedSliceIdx != INVALID_INDEX); // if this is INVALID_INDEX, we didn't an over strained slice but should have
+      //             if (max_overstrain_ratio < overstrain_ratio)
+      //             {
+      //                 max_overstrain_ratio = overstrain_ratio;
+      //                 controllingOverstrainedSliceIdx = sliceIdx;
+      //             }
+      //         }
+      //      }
+      //   }
 
-         CComPtr<IGeneralSectionSlice> slice;
-         general_solution->get_Slice(controllingOverstrainedSliceIdx, &slice);
+      //   ATLASSERT(controllingOverstrainedSliceIdx != INVALID_INDEX); // if this is INVALID_INDEX, we didn't an over strained slice but should have
 
-         IndexType shapeIdx;
-         slice->get_ShapeIndex(&shapeIdx);
+      //   CComPtr<IGeneralSectionSlice> slice;
+      //   general_solution->get_Slice(controllingOverstrainedSliceIdx, &slice);
 
-         CComPtr<IShape> s;
-         section->get_Shape(shapeIdx, &s);
-         CComQIPtr<IGenericShape> shape(s);
-         ATLASSERT(shape); // either this isn't reinforcement, the index is wrong, or reinforcement was modeled with something other than the generic shape
-         CComPtr<IPoint2d> pntCG;
-         shape->get_Centroid(&pntCG);
-         Float64 Xcg, Ycg;
-         pntCG->Location(&Xcg, &Ycg);
+      //   IndexType shapeIdx;
+      //   slice->get_ShapeIndex(&shapeIdx);
 
-         // get the foreground model for the shape and get its max usable strain
-         CComPtr<IStressStrain> ssModel;
-         section->get_ForegroundMaterial(shapeIdx, &ssModel);
-         Float64 emin, emax;
-         ssModel->StrainLimits(&emin, &emax);
+      //   CComPtr<IShape> s;
+      //   section->get_Shape(shapeIdx, &s);
+      //   CComQIPtr<IGenericShape> shape(s);
+      //   ATLASSERT(shape); // either this isn't reinforcement, the index is wrong, or reinforcement was modeled with something other than the generic shape
+      //   CComPtr<IPoint2d> pntCG;
+      //   shape->get_Centroid(&pntCG);
+      //   Float64 Xcg, Ycg;
+      //   pntCG->Location(&Xcg, &Ycg);
 
-         // get the initial strain
-         CComPtr<IPlane3d> initial_strain;
-         section->get_InitialStrain(shapeIdx, &initial_strain);
-         Float64 ei;
-         initial_strain->GetZ(Xcg, Ycg, &ei);
+      //   // get the foreground model for the shape and get its max usable strain
+      //   CComPtr<IStressStrain> ssModel;
+      //   section->get_ForegroundMaterial(shapeIdx, &ssModel);
+      //   Float64 emin, emax;
+      //   ssModel->StrainLimits(&emin, &emax);
 
-         Float64 e = emax - ei;
-         hr = m_MomentCapacitySolver->Solve(0.0, na_angle, e, Ycg, smFixedStrain, &solution.p);
-         ATLASSERT(SUCCEEDED(hr));
-         mcd.Controlling = bDevelopmentReducedStrainCapacity ? MN_DEVELOPMENT : MN_REINFORCEMENT_STRAIN;
-      }
+      //   // get the initial strain
+      //   CComPtr<IPlane3d> initial_strain;
+      //   section->get_InitialStrain(shapeIdx, &initial_strain);
+      //   Float64 ei;
+      //   initial_strain->GetZ(Xcg, Ycg, &ei);
 
-      // It is ok if this assert fires... All it means is that the solver didn't find a solution
-      // on its first try. The purpose of this assert is to help gauge how often this happens.
-      // Second and third attempts are made below
-#if defined _DEBUG
-      if (hr == RC_E_INITCONCRETE)       ATLASSERT(SUCCEEDED(hr));
-      if (hr == RC_E_SOLUTIONNOTFOUND)   ATLASSERT(SUCCEEDED(hr));
-      if (hr == RC_E_BEAMNOTSYMMETRIC)   ATLASSERT(SUCCEEDED(hr));
-      if (hr == RC_E_MATERIALFAILURE)    ATLASSERT(SUCCEEDED(hr));
-#endif // _DEBUG
+      //   Float64 e = emax - ei;
+      //   hr = m_MomentCapacitySolver->Solve(0.0, na_angle, e, Ycg, smFixedStrain, &solution.p);
+      //   ATLASSERT(SUCCEEDED(hr));
+      //   mcd.Controlling = bDevelopmentReducedStrainCapacity ? MN_DEVELOPMENT : MN_REINFORCEMENT_STRAIN;
+      //}
 
       if (FAILED(hr))
       {
@@ -733,7 +727,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
             poi.GetID()
             /*, strFileName*/
          );
-         pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID, m_scidUnknown, _T(__FILE__), __LINE__, msg);
+         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidMomentCapacity, msg);
          pStatusCenter->Add(pStatusItem);
 
          //THROW_UNWIND(msg, -1);
