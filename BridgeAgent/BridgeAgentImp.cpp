@@ -12440,9 +12440,9 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
       Float64 Hb = pBearingData->GetNetBearingHeight();
 
       // BCL elevation
-      // Adjust height for cross slope orientation. This is a reduction because the distance is measured along the cl of the tilted girder
+      // Adjust height for cross slope orientation. This is an increase because the distance is measured along the cl of the tilted girder
       // Adjust height for profile longitudinal slope. This increases height because the bearing lies vertically below the bearing station.
-      Float64 girderHeightAdjustment = cosGirderLatSlope / cosGirderLongSlope;
+      Float64 girderHeightAdjustment = 1/(cosGirderLatSlope * cosGirderLongSlope);
       Float64 heightBCL = (Hg + Hb) * girderHeightAdjustment;
 
       Float64 elevBCL = workPointElevation - heightBCL;
@@ -12473,9 +12473,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
       // Girders can have multiple bearings measured by spacing from BCL. Need total slope of girder along pier
       // Sign convention here is looking up station; right to left going upwards
       Float64 girderSlopeAlongPier = girderOrientation*sin(girderPierSkewAngle) + girderSlope*cos(girderPierSkewAngle);
-
       Float64 cosGirderSlopeAlongPier = CosSlope(girderSlopeAlongPier);
-      Float64 sinGirderSlopeAlongPier = SinSlope(girderSlopeAlongPier);
 
       // Tricky:
       // Bearing Dependent data. Girders can have multiple bearings or two edges 
@@ -12552,8 +12550,8 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
             elevDetails.BearingIdx = brgIdx - 1;
          }
 
+         // Compute station and offset of directly above CL Bearing
          Float64 station, offset;
-
          CComPtr<IPoint2d> brgPoint;
          ByDistDir(pointBCL, brgLocAdjusted, pierDirVar, 0.0, &brgPoint);
          GetStationAndOffset(pgsTypes::pcLocal, brgPoint, &station, &offset);
@@ -12561,6 +12559,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          elevDetails.Station = station;
          elevDetails.Offset = offset;
 
+         // compute elevation of roadway surface directly above bearing
          elevDetails.FinishedGradeElevation = GetElevation(station, offset);
 
          elevDetails.GrossSlabDepth = grossSlabDepth;
@@ -12583,9 +12582,10 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
          elevDetails.OverlayDepth = adjOverlayDepth;
          elevDetails.SlabOffset = slabOffset; // this is a vertical dimension.... don't adjust for roadway angle
 
-         // Bearing seat elevation is elevBCL + rize of pier over bearing spacing
-         elevDetails.BrgSeatElevation = elevBCL + brgLoc*sinGirderSlopeAlongPier;
+         // bearing seat elevation is roadway surface elevation directly above CL bearing less height of girder, bearing, overlay, and slab offset
+         elevDetails.BrgSeatElevation = elevDetails.FinishedGradeElevation - (heightBCL + elevDetails.OverlayDepth + elevDetails.SlabOffset);
 
+         // top of bearing is bottom of bearing + bearing height
          elevDetails.TopBrgElevation =  elevDetails.BrgSeatElevation + elevDetails.BrgHeight;
 
          elevDetails.BearingDeduct = elevDetails.FinishedGradeElevation - elevDetails.BrgSeatElevation;
